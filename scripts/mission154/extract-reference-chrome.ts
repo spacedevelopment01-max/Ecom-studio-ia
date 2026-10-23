@@ -18,7 +18,7 @@ const globalDefs = JSON.parse(fs.readFileSync('theme-base/config/settings_schema
 try {
     for (const id of Object.keys(shapes.themes)) {
         const { spec } = await demoProject(user.id, id as any);
-        shapes.themes[id].settings = Object.fromEntries(Object.entries(spec.settings).filter(([key]) => { const d = globalDefs.find((d: any) => d.id === key); return d && visual.has(d.type) && !forbidden.test(key) && (!key.startsWith('cart_') || key === 'cart_type'); }));
+        shapes.themes[id].settings = Object.fromEntries(Object.entries(spec.settings).filter(([key]) => { const d = globalDefs.find((d: any) => d.id === key); return d && visual.has(d.type) && !forbidden.test(key) && (!key.startsWith('cart_') || key === 'cart_type') && !key.startsWith('cookie_'); }));
         shapes.themes[id].groups = Object.fromEntries(Object.entries(spec.groups).map(([key, group]) => [key, {
             order: group.order,
             sections: Object.fromEntries(group.order.map(sid => {

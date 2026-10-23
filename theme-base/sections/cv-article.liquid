@@ -20,8 +20,9 @@
       </nav>
     {%- endif -%}
     {%- if s.eyebrow != blank -%}<p class="cv-article__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
-    {%- comment -%} Sans titre : suite d'un article coupé par un encart (MUSEAU CLUB), un seul H1 par page. {%- endcomment -%}
-    {%- if s.heading != blank -%}<h1 class="es-heading cv-article__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <span class="cv-article__accent">{{ s.heading_accent | escape }}</span>{% endif %}</h1>{%- endif -%}
+    {%- comment -%} Suite d'un article coupé par un encart (MUSEAU CLUB) : titre en H2 ou absent, un seul H1 par page. {%- endcomment -%}
+    {%- assign title_tag = s.heading_tag | default: 'h1' -%}
+    {%- if s.heading != blank -%}<{{ title_tag }} class="es-heading cv-article__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <span class="cv-article__accent">{{ s.heading_accent | escape }}</span>{% endif %}</{{ title_tag }}>{%- endif -%}
     {%- if s.intro != blank -%}<div class="es-rte cv-article__intro">{{ s.intro }}</div>{%- endif -%}
     {%- if s.author != blank -%}
       <div class="cv-article__byline">
@@ -108,75 +109,505 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "select", "id": "style", "label": "Type d'article", "default": "listicle", "options": [ { "value": "listicle", "label": "Liste de raisons" }, { "value": "advertorial", "label": "Récit (publi-rédactionnel)" } ] },
-    { "type": "select", "id": "width", "label": "Largeur du texte", "default": "narrow", "options": [ { "value": "narrow", "label": "Étroite (lecture)" }, { "value": "regular", "label": "Normale" } ] },
-    { "type": "text", "id": "label_bar", "label": "Bandeau d'étiquette", "info": "Ex. « Publi-rédactionnel de démonstration ». Vide : aucun bandeau." },
-    { "type": "text", "id": "crumb_label", "label": "Fil d'Ariane : page actuelle", "info": "Vide : aucun fil d'Ariane." },
-    { "type": "url", "id": "crumb_link", "label": "Fil d'Ariane : lien intermédiaire" },
-    { "type": "text", "id": "crumb_link_label", "label": "Fil d'Ariane : libellé intermédiaire" },
-    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
-    { "type": "text", "id": "heading", "label": "Titre", "default": "Quatre raisons de l'adopter" },
-    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
-    { "type": "richtext", "id": "intro", "label": "Chapeau" },
-    { "type": "text", "id": "author", "label": "Signature", "info": "Initiales affichées dans un rond, jamais de portrait." },
-    { "type": "text", "id": "date_text", "label": "Date ou mise à jour" },
-    { "type": "text", "id": "rating_text", "label": "Ligne de note sous la signature", "info": "Toujours marquée « Note fictive » sans application d'avis réelle." },
-    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Auteur, récit et notes fictifs, rédigés pour la démonstration." },
-    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
-    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
-    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+    {
+      "type": "select",
+      "id": "style",
+      "label": "Type d'article",
+      "default": "listicle",
+      "options": [
+        {
+          "value": "listicle",
+          "label": "Liste de raisons"
+        },
+        {
+          "value": "advertorial",
+          "label": "Récit (publi-rédactionnel)"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largeur du texte",
+      "default": "narrow",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "Étroite (lecture)"
+        },
+        {
+          "value": "regular",
+          "label": "Normale"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "label_bar",
+      "label": "Bandeau d'étiquette",
+      "info": "Ex. « Publi-rédactionnel de démonstration ». Vide : aucun bandeau."
+    },
+    {
+      "type": "text",
+      "id": "crumb_label",
+      "label": "Fil d'Ariane : page actuelle",
+      "info": "Vide : aucun fil d'Ariane."
+    },
+    {
+      "type": "url",
+      "id": "crumb_link",
+      "label": "Fil d'Ariane : lien intermédiaire"
+    },
+    {
+      "type": "text",
+      "id": "crumb_link_label",
+      "label": "Fil d'Ariane : libellé intermédiaire"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Quatre raisons de l'adopter"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "default": "h1",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1 (ouverture de page)"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre en accent"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Chapeau"
+    },
+    {
+      "type": "text",
+      "id": "author",
+      "label": "Signature",
+      "info": "Initiales affichées dans un rond, jamais de portrait."
+    },
+    {
+      "type": "text",
+      "id": "date_text",
+      "label": "Date ou mise à jour"
+    },
+    {
+      "type": "text",
+      "id": "rating_text",
+      "label": "Ligne de note sous la signature",
+      "info": "Toujours marquée « Note fictive » sans application d'avis réelle."
+    },
+    {
+      "type": "text",
+      "id": "demo_note",
+      "label": "Mention de démonstration",
+      "default": "Auteur, récit et notes fictifs, rédigés pour la démonstration."
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Animation",
+      "default": "rise",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucune"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée en fondu"
+        },
+        {
+          "value": "zoom",
+          "label": "Léger zoom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "animation_speed",
+      "label": "Vitesse",
+      "default": "normal",
+      "options": [
+        {
+          "value": "slow",
+          "label": "Lente"
+        },
+        {
+          "value": "normal",
+          "label": "Normale"
+        },
+        {
+          "value": "fast",
+          "label": "Rapide"
+        }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espace au-dessus",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espace en dessous",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
   ],
   "blocks": [
-    { "type": "heading", "name": "Intertitre", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un intertitre" } ] },
-    { "type": "paragraph", "name": "Paragraphe", "settings": [ { "type": "richtext", "id": "text", "label": "Texte" } ] },
-    { "type": "image", "name": "Visuel", "settings": [
-      { "type": "image_picker", "id": "image", "label": "Visuel" },
-      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
-      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
-      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
-      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-      { "type": "text", "id": "caption", "label": "Légende" }
-    ] },
-    { "type": "point", "name": "Point numéroté", "settings": [
-      { "type": "text", "id": "title", "label": "Titre", "default": "Une bonne raison" },
-      { "type": "richtext", "id": "text", "label": "Texte" },
-      { "type": "image_picker", "id": "image", "label": "Visuel" },
-      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
-      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
-      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
-      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
-    ] },
-    { "type": "checklist", "name": "Liste cochée", "settings": [
-      { "type": "text", "id": "title", "label": "Titre" },
-      { "type": "textarea", "id": "items", "label": "Éléments", "info": "Un par ligne ; « Titre — détail » met le titre en gras." }
-    ] },
-    { "type": "quote", "name": "Citation", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Une phrase à retenir." }, { "type": "text", "id": "author", "label": "Signature" } ] },
-    { "type": "box", "name": "Encadré", "settings": [
-      { "type": "text", "id": "title", "label": "Titre" },
-      { "type": "richtext", "id": "text", "label": "Texte" },
-      { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [ { "value": "plain", "label": "Sobre" }, { "value": "accent", "label": "Accentué" } ] }
-    ] },
-    { "type": "cta", "name": "Bouton", "settings": [
-      { "type": "text", "id": "label", "label": "Libellé", "default": "Découvrir" },
-      { "type": "url", "id": "link", "label": "Lien" },
-      { "type": "text", "id": "note", "label": "Note sous le bouton" }
-    ] },
-    { "type": "rating", "name": "Notes fictives", "settings": [
-      { "type": "text", "id": "heading", "label": "Titre", "default": "Répartition des notes" },
-      { "type": "text", "id": "score", "label": "Note globale", "default": "4,8/5" },
-      { "type": "range", "id": "p5", "label": "Part des 5 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 70 },
-      { "type": "range", "id": "p4", "label": "Part des 4 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 25 },
-      { "type": "range", "id": "p3", "label": "Part des 3 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 5 },
-      { "type": "range", "id": "p2", "label": "Part des 2 étoiles", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 0 },
-      { "type": "range", "id": "p1", "label": "Part des 1 étoile", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 0 },
-      { "type": "textarea", "id": "criteria", "label": "Notes par critère", "info": "Un par ligne, « Critère : note »." }
-    ] }
+    {
+      "type": "heading",
+      "name": "Intertitre",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texte",
+          "default": "Un intertitre"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "name": "Paragraphe",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "name": "Visuel",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Visuel"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier image fourni avec le thème"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Description du visuel"
+        },
+        {
+          "type": "text",
+          "id": "media_role",
+          "label": "Rôle du visuel attendu"
+        },
+        {
+          "type": "range",
+          "id": "focus_x",
+          "label": "Point focal horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "focus_y",
+          "label": "Point focal vertical",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Légende"
+        }
+      ]
+    },
+    {
+      "type": "point",
+      "name": "Point numéroté",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre",
+          "default": "Une bonne raison"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Visuel"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier image fourni avec le thème"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Description du visuel"
+        },
+        {
+          "type": "text",
+          "id": "media_role",
+          "label": "Rôle du visuel attendu"
+        },
+        {
+          "type": "range",
+          "id": "focus_x",
+          "label": "Point focal horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "focus_y",
+          "label": "Point focal vertical",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    },
+    {
+      "type": "checklist",
+      "name": "Liste cochée",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "textarea",
+          "id": "items",
+          "label": "Éléments",
+          "info": "Un par ligne ; « Titre — détail » met le titre en gras."
+        }
+      ]
+    },
+    {
+      "type": "quote",
+      "name": "Citation",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texte",
+          "default": "Une phrase à retenir."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Signature"
+        }
+      ]
+    },
+    {
+      "type": "box",
+      "name": "Encadré",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "default": "plain",
+          "options": [
+            {
+              "value": "plain",
+              "label": "Sobre"
+            },
+            {
+              "value": "accent",
+              "label": "Accentué"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "name": "Bouton",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Libellé",
+          "default": "Découvrir"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Lien"
+        },
+        {
+          "type": "text",
+          "id": "note",
+          "label": "Note sous le bouton"
+        }
+      ]
+    },
+    {
+      "type": "rating",
+      "name": "Notes fictives",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Titre",
+          "default": "Répartition des notes"
+        },
+        {
+          "type": "text",
+          "id": "score",
+          "label": "Note globale",
+          "default": "4,8/5"
+        },
+        {
+          "type": "range",
+          "id": "p5",
+          "label": "Part des 5 étoiles",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 70
+        },
+        {
+          "type": "range",
+          "id": "p4",
+          "label": "Part des 4 étoiles",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 25
+        },
+        {
+          "type": "range",
+          "id": "p3",
+          "label": "Part des 3 étoiles",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 5
+        },
+        {
+          "type": "range",
+          "id": "p2",
+          "label": "Part des 2 étoiles",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        },
+        {
+          "type": "range",
+          "id": "p1",
+          "label": "Part des 1 étoile",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        },
+        {
+          "type": "textarea",
+          "id": "criteria",
+          "label": "Notes par critère",
+          "info": "Un par ligne, « Critère : note »."
+        }
+      ]
+    }
   ],
   "max_blocks": 40,
-  "presets": [ { "name": "Article éditorial", "blocks": [ { "type": "point" }, { "type": "point" }, { "type": "point" }, { "type": "cta" } ] } ]
+  "presets": [
+    {
+      "name": "Article éditorial",
+      "blocks": [
+        {
+          "type": "point"
+        },
+        {
+          "type": "point"
+        },
+        {
+          "type": "point"
+        },
+        {
+          "type": "cta"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

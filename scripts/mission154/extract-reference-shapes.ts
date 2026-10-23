@@ -13,6 +13,7 @@ const { demoProject } = await import('../../tests/demo-fixtures');
 const { sectionSchema } = await import('../../src/lib/theme/spec');
 const { getAsset } = await import('../../src/lib/library');
 const user = await createUser('reference-shapes@example.test', 'structural-extraction-only', 'Structural test');
+const MUSEAU_DEMO_ONLY = /^page\.(journal|les-petits-rituels-des-grandes-balades|preparer-son-sac-pour-la-balade|choisir-la-taille-de-son-harnais|des-idees-pour-changer-de-chemin|le-quotidien-en-bonne-compagnie|finaliser-ma-commande|confirmation-de-commande|connexion|creer-un-compte|mot-de-passe-oublie|mon-compte|commande-1001|mes-adresses|informations-personnelles)$/;
 const result: any = { sourceCommit: '5dd5f63011c1e0a4ee2369fe1b2565c4e899f71e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
 // Schema types identify styling rather than content. Coordinates of hotspots are content, never design.
 // TRAVERSE : ses cartes sur photo et celles du carnet sont des paysages (rôle « situation ») ; les photos de détail du client
@@ -37,15 +38,22 @@ try {
             // la page du carnet et y publie ses propres articles.
             if (key === 'page.deux-jours-un-autre-decor')
                 continue;
+            // MUSEAU CLUB (maquettes du 23 octobre) : journal, articles d'exemple, exemple de commande et écrans de compte
+            // restent dans la démonstration (un client publie ses articles ; commande et compte sont ceux de Shopify).
+            if (MUSEAU_DEMO_ONLY.test(key))
+                continue;
             const sections: any = {};
-            for (const sid of t.order) {
+            // MUSEAU CLUB : le dessin du guide des tailles est celui d'un chien (tour de cou, tour de poitrail) ; il ne
+            // passe jamais chez un client dont les produits ne sont pas des accessoires pour chiens.
+            const order = t.order.filter(sid => !(t.sections[sid].type === 'cv-banner' && t.sections[sid].settings.layout === 'illustration'));
+            for (const sid of order) {
                 const s = t.sections[sid], schema = sectionSchema(spec, s.type);
                 const pick = (values: any, defs: any[]) => Object.fromEntries(Object.entries(values ?? {}).filter(([k]) => { const d = defs.find(x => x.id === k); return d && visual.has(d.type) && !forbidden.test(k); }));
                 sections[sid] = { type: s.type, settings: pick(s.settings, schema?.settings ?? []), media: media(s.settings, s.type), blocks: Object.fromEntries((s.block_order ?? Object.keys(s.blocks ?? {})).map(bid => { const b = s.blocks![bid]; return [bid, { type: b.type, settings: pick(b.settings, schema?.blocks.find(x => x.type === b.type)?.settings ?? []), media: media(b.settings, s.type), ...(b.disabled ? { initiallyHidden: true } : {}) }]; })), block_order: s.block_order ?? Object.keys(s.blocks ?? {}), ...(s.disabled ? { initiallyHidden: true } : {}) };
             }
-            templates[key] = { sections, order: t.order };
+            templates[key] = { sections, order };
         }
-        result.themes[id] = { templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor').map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
+        result.themes[id] = { templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor' && !MUSEAU_DEMO_ONLY.test(`page.${p.handle}`)).map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail|tailles/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
         console.log(id, Object.keys(templates).length, 'templates', Object.values(templates).reduce((n: number, t: any) => n + t.order.length, 0), 'sections');
     }
     fs.writeFileSync('src/lib/theme/reference-shapes.json', JSON.stringify(result, null, 2) + '\n');
