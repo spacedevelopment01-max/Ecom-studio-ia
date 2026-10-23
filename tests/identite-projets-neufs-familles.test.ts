@@ -24,6 +24,7 @@ import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { getAsset } from "@/lib/library";
 import { renderPage } from "@/lib/theme/render";
 import { FAMILY_LIBRARY, libraryId } from "@/lib/theme/section-families";
+import { sectionIncompatibility } from "@/lib/theme/section-compat";
 import { run } from "@/lib/db";
 import { CONTROL_BRANDS, DEMO_WORDS, controlProject } from "./control-brands-fixtures";
 import { POST as addSection } from "@/app/api/projects/[id]/theme/sections/route";
@@ -60,6 +61,9 @@ describe("identité automatique sur des projets neufs : deux marques par famille
         }
         saveThemeVersion(pid, spec, "Pages de contrôle", "user");
         for (const e of FAMILY_LIBRARY[family]) for (const d of e.dispositions) {
+          // Dispositions réservées à un autre thème (immobilier Maison & Horizon) : la route les refuse, la galerie les masque.
+          const why = sectionIncompatibility(spec, d.type, family);
+          if (why) { expect(d.type, why).toMatch(/^re-/); continue; }
           const r = await fr(() => addSection(post({ type: libraryId(e, d), template: `page.ctl-${e.n}` }), ctx(pid)));
           expect(r.status, `${b.name} ${e.key}~${d.id} : ${r.status === 200 ? "" : JSON.stringify(await r.clone().json())}`).toBe(200);
         }

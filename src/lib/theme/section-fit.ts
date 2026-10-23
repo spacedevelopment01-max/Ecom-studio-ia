@@ -59,11 +59,11 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "ed-contact": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-finishes": { kinds: SHOP, themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   // Immobilier (MAISON & HORIZON, issue #172) : sections stylées par assets/horizon.css, chargé avec ce thème seulement.
+  // « re-bien » (fiche d'un bien) n'y figure pas : composant structurel posé par le moteur, jamais ajouté depuis la galerie.
   "re-hero": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-listings": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-tiles": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-feature": { kinds: ["services"], themes: ["maison-horizon"] },
-  "re-bien": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-form": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-favorites": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-account": { kinds: ["services"], themes: ["maison-horizon"] },

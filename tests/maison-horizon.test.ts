@@ -155,7 +155,7 @@ describe("Maison & Horizon : les biens alimentent le thème", () => {
   });
 
   it("les sections immobilières sont réservées au thème Maison & Horizon", () => {
-    for (const type of ["re-hero", "re-listings", "re-tiles", "re-feature", "re-form", "re-bien"]) {
+    for (const type of ["re-hero", "re-listings", "re-tiles", "re-feature", "re-form", "re-favorites", "re-account"]) {
       expect(sectionFitReason(type, { kind: "services", theme: "rive", settings: { editorial_profile: "journal" } }), type).not.toBe("");
       expect(sectionFitReason(type, { kind: "services", theme: "maison-horizon", settings: { editorial_profile: "horizon" } }), type).toBe("");
     }
