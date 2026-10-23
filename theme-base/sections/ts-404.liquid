@@ -1,0 +1,35 @@
+{%- comment -%}
+  TABLE SAISON : page introuvable. Assiette vide vue du dessus, « Cette page n'est pas à la carte », retour à
+  l'accueil et lien vers la carte.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-404">
+  {% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, loading: 'eager' %}
+  <div class="ts-404__inner">
+    <h1 class="ts-title">{{ s.heading | newline_to_br }}</h1>
+    {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+    <div class="ts-btns">
+      {%- if s.button_label != blank -%}<a class="ts-btn" href="{{ s.button_link | default: '/' }}">{{ s.button_label }}</a>{%- endif -%}
+      {%- if s.button2_label != blank -%}<a class="ts-btn ts-btn--paper" style="border-color: var(--ts-line)" href="{{ s.button2_link | default: '/pages/la-carte' }}">{{ s.button2_label }}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page introuvable du restaurant",
+  "class": "ts-404-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Cette page\nn'est pas\nà la carte" },
+    { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>La page que vous recherchez semble s'être mise en appétit ailleurs.</p>" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Retour à l'accueil" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Texte du second bouton", "default": "Découvrir la carte" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" }
+  ],
+  "presets": [{ "name": "Page introuvable du restaurant" }]
+}
+{% endschema %}

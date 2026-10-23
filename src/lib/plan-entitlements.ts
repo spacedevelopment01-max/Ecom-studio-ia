@@ -7,7 +7,7 @@ export const PLAN_THEME_ORDER: Record<PlanFamily, readonly (string | null)[]> = 
   // MUSEAU CLUB est une boutique spécialisée (décision du 21 octobre, 12 h 58).
   specialty: ['fraise','sillon','noctil','traverse','museau-club'],
   catalog: ['orbe','onde','heuren','alcove','souple'],
-  services: ['rive',null,null,null,null],
+  services: ['rive','table-saison',null,null,null],
 };
 export const BASE_SECTIONS: Record<PlanFamily, readonly string[]> = {
   specialty: ['hero','benefits','details','specs','howto','purchase','faq','contact'],

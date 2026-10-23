@@ -1384,3 +1384,6 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 /* SOUPLE (issue #158) : le caractère est porté par le profil éditorial « poudre ». */
 .dir-souple .es-heading { letter-spacing: -.01em; line-height: 1.08; }
 .dir-souple .es-button { border-radius: 10px; }
+/* TABLE SAISON (issue #175) : le caractère est porté par ses sections ts-* et table-saison.css (chargée par « Réglages du restaurant »). */
+.dir-table-saison .es-heading { letter-spacing: -.005em; line-height: 1.08; }
+.dir-table-saison .es-header__cta .es-icon { display: none; }

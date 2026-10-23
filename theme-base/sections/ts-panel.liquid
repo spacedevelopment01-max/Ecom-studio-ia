@@ -1,0 +1,24 @@
+{%- comment -%}
+  TABLE SAISON : panneau bordeaux d'hospitalité (titre, texte, rameau au trait), page Le lieu.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-panel">
+  <div class="ts-wrap">
+    {%- if s.heading != blank -%}<h2 class="ts-title">{{ s.heading | newline_to_br }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+  </div>
+  {%- if s.ornament -%}{% render 'ts-ornament', name: 'branch' %}{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Panneau bordeaux",
+  "class": "ts-panel-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "L'art de recevoir, au fil des saisons" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "ornament", "label": "Ornement botanique", "default": true }
+  ],
+  "presets": [{ "name": "Panneau bordeaux" }]
+}
+{% endschema %}

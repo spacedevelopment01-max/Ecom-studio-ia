@@ -1,0 +1,35 @@
+{%- comment -%}
+  TABLE SAISON : deux offres côte à côte avec photo, titre, filet et texte (Repas de groupe, Événement privé).
+{%- endcomment -%}
+<section class="ts-section">
+  <div class="ts-wrap ts-cards2">
+    {%- for block in section.blocks -%}
+      {%- if block.settings.heading == blank -%}{%- continue -%}{%- endif -%}
+      <article {{ block.shopify_attributes }}>
+        {% render 'ts-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.image_position, sizes: '(min-width: 750px) 40vw, 100vw' %}
+        <h2 class="ts-title">{{ block.settings.heading }}</h2>
+        <span class="ts-rule" aria-hidden="true"></span>
+        {%- if block.settings.text != blank -%}<div class="ts-text">{{ block.settings.text }}</div>{%- endif -%}
+      </article>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Offres de groupe",
+  "class": "ts-cards-section",
+  "max_blocks": 3,
+  "settings": [],
+  "blocks": [
+    { "type": "card", "name": "Offre", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "heading", "label": "Titre" },
+      { "type": "richtext", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "presets": [{ "name": "Offres de groupe", "blocks": [{ "type": "card", "settings": { "heading": "Repas de groupe" } }, { "type": "card", "settings": { "heading": "Événement privé" } }] }]
+}
+{% endschema %}

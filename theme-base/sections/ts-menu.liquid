@@ -1,0 +1,81 @@
+{%- comment -%}
+  TABLE SAISON : la carte du restaurant. Onglets-ancres des rubriques (Entrées, Plats, Desserts, Boissons), chaque
+  rubrique avec ses plats (nom, description, prix, pastille végétarienne) et une photo à droite ou à gauche ; mention
+  « exemple », légende végétarienne et note allergènes réglables. Les prix sont ceux saisis par le restaurant.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-menu" data-ts-menu>
+  {%- assign cats = section.blocks | where: 'type', 'category' -%}
+  {%- if s.show_tabs and cats.size > 1 -%}
+    <nav class="ts-menu__tabs" aria-label="{{ s.tabs_label | escape }}">
+      <div class="ts-wrap">
+        {%- for c in cats -%}<a class="ts-tab" href="#{{ c.settings.anchor | default: c.settings.title | handleize }}"{% if forloop.first %} aria-current="true"{% endif %}>{{ c.settings.title }}</a>{%- endfor -%}
+      </div>
+    </nav>
+  {%- endif -%}
+  <div class="ts-wrap">
+    {%- for block in section.blocks -%}
+      {%- if block.type != 'category' -%}{%- continue -%}{%- endif -%}
+      <div class="ts-menu__cat{% if block.settings.image_side == 'left' %} ts-menu__cat--image-left{% endif %}" id="{{ block.settings.anchor | default: block.settings.title | handleize }}" {{ block.shopify_attributes }}>
+        <div>
+          <h2 class="ts-title">{{ block.settings.title }}</h2>
+          {%- for item in section.blocks offset: forloop.index -%}
+            {%- if item.type == 'category' -%}{%- break -%}{%- endif -%}
+            {%- if item.settings.name == blank -%}{%- continue -%}{%- endif -%}
+            <div class="ts-item" {{ item.shopify_attributes }}>
+              <h3 class="ts-item__name">{{ item.settings.name }}{% if item.settings.vegetarian %}<span class="ts-veg" title="{{ s.veg_label | escape }}">{% render 'ts-icon', name: 'leaf' %}<span class="ts-visually-hidden">{{ s.veg_label }}</span></span>{% endif %}</h3>
+              <span class="ts-item__price">{{ item.settings.price }}</span>
+              {%- if item.settings.description != blank -%}<p class="ts-item__desc">{{ item.settings.description }}</p>{%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+        {%- if block.settings.image != blank or block.settings.image_asset != blank -%}
+          <div class="ts-menu__media">{% render 'ts-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, sizes: '(min-width: 750px) 40vw, 100vw' %}</div>
+        {%- endif -%}
+      </div>
+    {%- endfor -%}
+    {%- if s.cta_label != blank -%}<a class="ts-btn ts-btn--block ts-menu__cta" href="{{ s.cta_link | default: '/pages/reserver' }}">{{ s.cta_label }}</a>{%- endif -%}
+    <div class="ts-menu__note">
+      {%- if s.note != blank -%}<span>{{ s.note }}</span>{%- endif -%}
+      <span class="ts-menu__legend">
+        {%- if s.veg_label != blank -%}<span><span class="ts-veg">{% render 'ts-icon', name: 'leaf' %}</span>{{ s.veg_label }}</span>{%- endif -%}
+        {%- if s.allergens != blank -%}<span>{{ s.allergens }}</span>{%- endif -%}
+      </span>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "La carte",
+  "class": "ts-menu-section",
+  "max_blocks": 50,
+  "settings": [
+    { "type": "checkbox", "id": "show_tabs", "label": "Onglets des rubriques", "default": true },
+    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (accessibilité)", "default": "Rubriques de la carte" },
+    { "type": "text", "id": "veg_label", "label": "Mention végétarienne", "default": "Plat végétarien" },
+    { "type": "text", "id": "allergens", "label": "Note allergènes", "default": "Pour les allergènes, renseignez-vous auprès de l'équipe." },
+    { "type": "text", "id": "note", "label": "Mention sous la carte" },
+    { "type": "text", "id": "cta_label", "label": "Bouton sur téléphone", "default": "Réserver une table" },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    { "type": "category", "name": "Rubrique", "settings": [
+      { "type": "text", "id": "title", "label": "Nom de la rubrique", "default": "Entrées" },
+      { "type": "text", "id": "anchor", "label": "Ancre (adresse de la rubrique)" },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description de l'image" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "select", "id": "image_side", "label": "Position de la photo", "default": "right", "options": [{ "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" }] }
+    ] },
+    { "type": "item", "name": "Plat de la carte", "settings": [
+      { "type": "text", "id": "name", "label": "Nom du plat" },
+      { "type": "text", "id": "description", "label": "Description" },
+      { "type": "text", "id": "price", "label": "Prix affiché" },
+      { "type": "checkbox", "id": "vegetarian", "label": "Plat végétarien", "default": false }
+    ] }
+  ],
+  "presets": [{ "name": "La carte" }]
+}
+{% endschema %}
