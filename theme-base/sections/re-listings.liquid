@@ -36,18 +36,18 @@
     {%- if s.show_filters and mode != 'featured' and mode != 'similar' -%}
     <div class="re-panel">
     {%- if s.tabs == 'transaction' and s.buy_url != blank and s.rent_url != blank -%}
-    <nav class="re-tabs" aria-label="{{ s.tabs_label | default: 'Type de recherche' | escape }}">
+    <nav class="re-tabs" aria-label="Type de recherche">
       <a class="re-tab{% if mode == 'vente' %} is-active{% endif %}" href="{{ s.buy_url }}"{% if mode == 'vente' %} aria-current="page"{% endif %}>{{ s.tab_buy | default: 'Acheter' | escape }}</a>
       <a class="re-tab{% if mode == 'location' %} is-active{% endif %}" href="{{ s.rent_url }}"{% if mode == 'location' %} aria-current="page"{% endif %}>{{ s.tab_rent | default: 'Louer' | escape }}</a>
     </nav>
     {%- elsif s.tabs == 'view' -%}
-    <div class="re-tabs" role="group" aria-label="{{ s.tabs_label | default: 'Affichage' | escape }}">
+    <div class="re-tabs" role="group" aria-label="Affichage">
       <button type="button" class="re-tab is-active" aria-pressed="true" data-re-view="map">{% render 'mh-icon', name: 'map' %} {{ s.tab_map | default: 'Carte' | escape }}</button>
       <button type="button" class="re-tab" aria-pressed="false" data-re-view="list">{% render 'mh-icon', name: 'list' %} {{ s.tab_list | default: 'Liste' | escape }}</button>
     </div>
     {%- endif -%}
     {%- if layout == 'map' -%}<button type="button" class="re-filters-toggle re-btn re-btn--line" data-re-filters-toggle aria-expanded="false" aria-controls="Filtres-{{ section.id }}">{% render 'mh-icon', name: 'filter' %} {{ s.filters_button | default: 'Filtres' | escape }}</button>{%- endif -%}
-    <form class="re-filters" id="Filtres-{{ section.id }}" data-re-filters role="search" aria-label="{{ s.filters_label | default: 'Affiner la recherche' | escape }}">
+    <form class="re-filters" id="Filtres-{{ section.id }}" data-re-filters role="search" aria-label="Affiner la recherche">
       <div class="re-field re-field--city"><label for="Ville-{{ section.id }}">{{ s.label_city | default: 'Ville ou secteur' }}</label><input id="Ville-{{ section.id }}" name="ville" type="text" list="Villes-{{ section.id }}" placeholder="{{ s.placeholder_city | escape }}" autocomplete="off"><datalist id="Villes-{{ section.id }}" data-re-cities></datalist></div>
       <div class="re-field"><label for="Type-{{ section.id }}">Type de bien</label><select id="Type-{{ section.id }}" name="type"><option value="">Tous les types</option><option value="maison">Maison</option><option value="appartement">Appartement</option><option value="villa">Villa</option><option value="loft">Loft</option><option value="propriete">Propriété</option><option value="mas">Mas</option></select></div>
       <div class="re-field"><label for="Budget-{{ section.id }}">{% if mode == 'location' %}Budget max / mois{% else %}Budget max{% endif %}</label><select id="Budget-{{ section.id }}" name="max"><option value="">Tous les budgets</option>{%- if mode == 'location' -%}{%- assign steps = '800:800 €,1000:1 000 €,1250:1 250 €,1500:1 500 €,2000:2 000 €,2500:2 500 €,3000:3 000 €' | split: ',' -%}{%- else -%}{%- assign steps = '300000:300 000 €,500000:500 000 €,750000:750 000 €,1000000:1 000 000 €,1500000:1 500 000 €,2000000:2 000 000 €,3000000:3 000 000 €' | split: ',' -%}{%- endif -%}{%- for st in steps -%}{%- assign kv = st | split: ':' -%}<option value="{{ kv[0] }}">{{ kv[1] }}</option>{%- endfor -%}</select></div>
@@ -157,7 +157,6 @@
     { "type": "text", "id": "tab_rent", "label": "Onglet Louer", "default": "Louer" },
     { "type": "text", "id": "tab_map", "label": "Onglet Carte", "default": "Carte" },
     { "type": "text", "id": "tab_list", "label": "Onglet Liste", "default": "Liste" },
-    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (lecteurs d'écran)" },
     { "type": "text", "id": "filters_button", "label": "Bouton des filtres (carte)", "default": "Filtres" },
     { "type": "text", "id": "default_city", "label": "Ville proposée d'office", "info": "Utilisée quand l'adresse ne contient aucun critère (ex. la carte s'ouvre sur une ville)." },
     { "type": "header", "content": "Carte illustrative" },
@@ -172,7 +171,6 @@
     { "type": "text", "id": "reset_label", "label": "Bouton d'effacement", "default": "Effacer les filtres" },
     { "type": "text", "id": "empty_text", "label": "Aucun résultat", "default": "Aucun bien ne correspond à votre recherche." },
     { "type": "text", "id": "none_text", "label": "Aucun bien publié", "default": "Aucun bien n'est publié pour le moment." },
-    { "type": "text", "id": "filters_label", "label": "Nom du formulaire (lecteurs d'écran)", "default": "Affiner la recherche" },
     { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
     { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }

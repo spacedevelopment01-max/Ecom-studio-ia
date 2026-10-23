@@ -10,7 +10,7 @@
 <article class="re-card re-card--{{ st }}{% unless bien.disponible.value %} is-closed{% endunless %}" data-re-card data-ref="{{ bien.reference.value | escape }}" data-transaction="{{ bien.transaction.value }}" data-type="{{ bien.type_bien.value }}" data-city="{{ bien.ville.value | downcase | escape }}" data-price="{% if is_rent %}{{ bien.loyer_hc.value }}{% else %}{{ bien.prix.value }}{% endif %}" data-surface="{{ bien.surface.value }}" data-rooms="{{ bien.pieces.value }}" data-bedrooms="{{ bien.chambres.value }}" data-tags="{{ bien.filtres.value }}" data-x="{{ bien.carte_x.value }}" data-y="{{ bien.carte_y.value }}" data-title="{{ bien.titre.value | escape }}" data-url="{{ bien.system.url }}" data-amount="{% if is_rent %}{{ bien.loyer_hc_texte.value }} / mois{% else %}{{ bien.prix_texte.value }}{% endif %}">
   <div class="re-card__media">
     <a class="re-card__photo" href="{{ bien.system.url }}" tabindex="-1" aria-hidden="true">
-      {%- if cover -%}{% render 'es-image', asset: cover.file, alt: cover.alt, class: 're-card__img', loading: loading | default: 'lazy' %}{%- endif -%}
+      {%- assign img_loading = loading | default: 'lazy' -%}{%- if cover -%}{% render 'es-image', asset: cover.file, alt: cover.alt, class: 're-card__img', loading: img_loading %}{%- endif -%}
     </a>
     {%- if st == 'home' or st == 'list' -%}<span class="re-badge re-badge--{{ bien.transaction.value }}">{{ bien.transaction_label.value }}</span>{%- endif -%}
     {%- if bien.statut_label.value != blank -%}<span class="re-badge re-badge--closed">{{ bien.statut_label.value }}</span>{%- endif -%}

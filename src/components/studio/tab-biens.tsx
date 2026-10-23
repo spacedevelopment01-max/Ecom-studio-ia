@@ -6,7 +6,7 @@
  * biens similaires du site la lisent toute seule. Les contrôles (photos du projet, champs requis pour publier, états
  * vendu / loué) sont faits par le serveur (src/lib/biens.ts) ; ici, on affiche ses messages tels quels.
  */
-import { useEffect, useState } from "react";
+import { cloneElement, useEffect, useId, useState, type ReactElement, type ReactNode } from "react";
 import { Archive, ArrowDown, ArrowUp, Check, Eye, ImagePlus, KeyRound, Map as MapIcon, Plus, RotateCcw, Save, Send, Trash2, Undo2 } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Spinner, Textarea, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
@@ -34,6 +34,11 @@ const STATUS: Record<Status, { fr: string; en: string; tone: "neutral" | "ok" | 
 const TYPES: [string, string, string][] = [["maison", "Maison", "House"], ["appartement", "Appartement", "Apartment"], ["villa", "Villa", "Villa"], ["loft", "Loft", "Loft"], ["propriete", "Propriété", "Estate"], ["mas", "Mas", "Farmhouse"], ["terrain", "Terrain", "Land"], ["autre", "Autre", "Other"]];
 const EXTERIORS: [string, string, string][] = [["jardin", "Jardin", "Garden"], ["terrasse", "Terrasse", "Terrace"], ["balcon", "Balcon", "Balcony"], ["cour", "Cour", "Courtyard"]];
 const CLASSES = ["A", "B", "C", "D", "E", "F", "G"];
+/** Champ du formulaire : libellé relié à sa saisie (lecteurs d'écran, clic sur le libellé). */
+function Fld({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactElement<{ id?: string }> }) {
+  const id = useId();
+  return <Field label={label} hint={hint} htmlFor={id}>{cloneElement(children, { id })}</Field>;
+}
 const thumb = (assetId: string) => `/api/files/${assetId}?thumb=1`;
 const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\s/g, "").replace(",", ".")));
 const euros = (n: number | null) => (n == null ? "" : `${n.toLocaleString("fr-FR")} €`);
@@ -143,7 +148,7 @@ function AddBien({ open, onClose, onCreated }: { open: boolean; onClose: () => v
         <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t("Transaction", "Transaction")}>
           {(["vente", "location"] as const).map((x) => <button key={x} type="button" role="radio" aria-checked={transaction === x} onClick={() => setTransaction(x)} className={cx("rounded-2xl border-2 p-4 text-left text-sm", transaction === x ? "border-signal" : "border-line")}>{x === "vente" ? t("À vendre", "For sale") : t("À louer", "For rent")}</button>)}
         </div>
-        <Field label={t("Titre du bien (facultatif)", "Property title (optional)")} hint={t("Ex. « Maison avec jardin ». Une référence (V-0001, L-0001…) est attribuée d'office.", "E.g. “House with garden”. A reference (V-0001, L-0001…) is assigned automatically.")}><Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} /></Field>
+        <Fld label={t("Titre du bien (facultatif)", "Property title (optional)")} hint={t("Ex. « Maison avec jardin ». Une référence (V-0001, L-0001…) est attribuée d'office.", "E.g. “House with garden”. A reference (V-0001, L-0001…) is assigned automatically.")}><Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} /></Fld>
         <div className="flex justify-end gap-2"><Button variant="secondary" onClick={onClose}>{t("Annuler", "Cancel")}</Button><Button variant="signal" loading={busy} onClick={create}>{t("Créer le brouillon", "Create draft")}</Button></div>
       </div>
     </Modal>
@@ -176,37 +181,37 @@ function EditBien({ bien, onClose, onSaved, preview }: { bien: Bien; onClose: ()
     set("photos", [...d.photos, ...fresh]);
   };
   const numField = (k: "price" | "rent" | "charges" | "deposit" | "surface" | "land" | "rooms" | "bedrooms", label: string, hint?: string) => (
-    <Field label={label} hint={hint}><Input inputMode="decimal" value={d[k] ?? ""} onChange={(e) => set(k, num(e.target.value) as never)} /></Field>
+    <Fld label={label} hint={hint}><Input inputMode="decimal" value={d[k] ?? ""} onChange={(e) => set(k, num(e.target.value) as never)} /></Fld>
   );
   return (
     <Modal open onClose={onClose} title={`${bien.ref} — ${d.headline || d.title || t("Nouveau bien", "New property")}`} xl>
       <div className="grid gap-6">
         {live && <p className="rounded-xl bg-info-soft px-3 py-2 text-sm text-info">{t("Ce bien est en ligne : ses champs essentiels doivent rester remplis pour enregistrer. Son adresse sur le site ne change pas.", "This property is live: its essential fields must stay filled to save. Its address on the site doesn't change.")}</p>}
         <section className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("Transaction", "Transaction")}><Select value={transaction} onChange={(e) => setTransaction(e.target.value as never)} disabled={live}><option value="vente">{t("À vendre", "For sale")}</option><option value="location">{t("À louer", "For rent")}</option></Select></Field>
-          <Field label={t("Type de bien", "Property type")}><Select value={d.type} onChange={(e) => set("type", e.target.value)}>{TYPES.map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select></Field>
-          <Field label={t("Titre (cartes et listes) *", "Title (cards and lists) *")}><Input value={d.title} maxLength={120} onChange={(e) => set("title", e.target.value)} /></Field>
-          <Field label={t("Titre de la fiche (facultatif)", "Listing headline (optional)")} hint={t("Ex. « Une maison ouverte sur le jardin ».", "E.g. “A house open onto the garden”.")}><Input value={d.headline} maxLength={140} onChange={(e) => set("headline", e.target.value)} /></Field>
-          <Field label={t("Accroche (une phrase)", "Summary (one sentence)")}><Input value={d.summary} maxLength={180} onChange={(e) => set("summary", e.target.value)} /></Field>
-          <Field label={t("Ville *", "City *")} hint={t("Ex. « Lyon 6e » : les arrondissements comptent comme la même ville pour les biens similaires.", "E.g. “Lyon 6e”: districts count as the same city for similar listings.")}><Input value={d.city} maxLength={80} onChange={(e) => set("city", e.target.value)} /></Field>
-          <Field label={t("Code postal", "Postcode")}><Input value={d.postalCode} maxLength={12} onChange={(e) => set("postalCode", e.target.value)} /></Field>
-          <Field label={t("Secteur ou quartier", "Area")}><Input value={d.sector} maxLength={80} onChange={(e) => set("sector", e.target.value)} /></Field>
-          <Field label={t("Adresse", "Address")}><Input value={d.address} maxLength={160} onChange={(e) => set("address", e.target.value)} /></Field>
-          <Field label={t("Adresse affichée sur le site", "Address shown on the site")}><Select value={d.addressVisibility} onChange={(e) => set("addressVisibility", e.target.value as never)}><option value="secteur">{t("Ville et secteur seulement", "City and area only")}</option><option value="exacte">{t("Adresse exacte", "Exact address")}</option><option value="masquee">{t("Rien", "Nothing")}</option></Select></Field>
+          <Fld label={t("Transaction", "Transaction")}><Select value={transaction} onChange={(e) => setTransaction(e.target.value as never)} disabled={live}><option value="vente">{t("À vendre", "For sale")}</option><option value="location">{t("À louer", "For rent")}</option></Select></Fld>
+          <Fld label={t("Type de bien", "Property type")}><Select value={d.type} onChange={(e) => set("type", e.target.value)}>{TYPES.map(([v, fr, en]) => <option key={v} value={v}>{t(fr, en)}</option>)}</Select></Fld>
+          <Fld label={t("Titre (cartes et listes) *", "Title (cards and lists) *")}><Input value={d.title} maxLength={120} onChange={(e) => set("title", e.target.value)} /></Fld>
+          <Fld label={t("Titre de la fiche (facultatif)", "Listing headline (optional)")} hint={t("Ex. « Une maison ouverte sur le jardin ».", "E.g. “A house open onto the garden”.")}><Input value={d.headline} maxLength={140} onChange={(e) => set("headline", e.target.value)} /></Fld>
+          <Fld label={t("Accroche (une phrase)", "Summary (one sentence)")}><Input value={d.summary} maxLength={180} onChange={(e) => set("summary", e.target.value)} /></Fld>
+          <Fld label={t("Ville *", "City *")} hint={t("Ex. « Lyon 6e » : les arrondissements comptent comme la même ville pour les biens similaires.", "E.g. “Lyon 6e”: districts count as the same city for similar listings.")}><Input value={d.city} maxLength={80} onChange={(e) => set("city", e.target.value)} /></Fld>
+          <Fld label={t("Code postal", "Postcode")}><Input value={d.postalCode} maxLength={12} onChange={(e) => set("postalCode", e.target.value)} /></Fld>
+          <Fld label={t("Secteur ou quartier", "Area")}><Input value={d.sector} maxLength={80} onChange={(e) => set("sector", e.target.value)} /></Fld>
+          <Fld label={t("Adresse", "Address")}><Input value={d.address} maxLength={160} onChange={(e) => set("address", e.target.value)} /></Fld>
+          <Fld label={t("Adresse affichée sur le site", "Address shown on the site")}><Select value={d.addressVisibility} onChange={(e) => set("addressVisibility", e.target.value as never)}><option value="secteur">{t("Ville et secteur seulement", "City and area only")}</option><option value="exacte">{t("Adresse exacte", "Exact address")}</option><option value="masquee">{t("Rien", "Nothing")}</option></Select></Fld>
         </section>
         <section className="grid gap-4 sm:grid-cols-3">
           {transaction === "vente" ? numField("price", t("Prix (€) *", "Price (€) *")) : <>{numField("rent", t("Loyer hors charges (€ / mois) *", "Rent excl. charges (€ / month) *"))}{numField("charges", t("Charges (€ / mois)", "Charges (€ / month)"))}{numField("deposit", t("Dépôt de garantie (€)", "Deposit (€)"))}</>}
-          <Field label={t("Honoraires", "Fees")} hint={t("Vide : « À préciser ».", "Empty: “To be specified”.")}><Input value={d.fees} maxLength={200} onChange={(e) => set("fees", e.target.value)} /></Field>
+          <Fld label={t("Honoraires", "Fees")} hint={t("Vide : « À préciser ».", "Empty: “To be specified”.")}><Input value={d.fees} maxLength={200} onChange={(e) => set("fees", e.target.value)} /></Fld>
           {numField("surface", t("Surface habitable (m²) *", "Living area (m²) *"))}
           {numField("land", t("Terrain (m²)", "Land (m²)"))}
           {numField("rooms", t("Pièces", "Rooms"))}
           {numField("bedrooms", t("Chambres", "Bedrooms"))}
-          <Field label={t("Étage", "Floor")}><Input value={d.floor} maxLength={40} onChange={(e) => set("floor", e.target.value)} /></Field>
-          <Field label={t("Meublé", "Furnished")}><Select value={d.furnished == null ? "" : d.furnished ? "1" : "0"} onChange={(e) => set("furnished", e.target.value === "" ? null : e.target.value === "1")}><option value="">{t("Non précisé", "Not specified")}</option><option value="1">{t("Oui", "Yes")}</option><option value="0">{t("Non", "No")}</option></Select></Field>
-          <Field label={t("Disponibilité", "Availability")}><Input value={d.availability} maxLength={60} onChange={(e) => set("availability", e.target.value)} /></Field>
-          <Field label={t("Taxe foncière", "Property tax")}><Input value={d.propertyTax} maxLength={60} onChange={(e) => set("propertyTax", e.target.value)} /></Field>
-          <Field label="DPE"><Select value={d.dpe ?? ""} onChange={(e) => set("dpe", e.target.value || null)}><option value="">{t("À renseigner", "To be filled")}</option>{CLASSES.map((c) => <option key={c}>{c}</option>)}</Select></Field>
-          <Field label="GES"><Select value={d.ges ?? ""} onChange={(e) => set("ges", e.target.value || null)}><option value="">{t("À renseigner", "To be filled")}</option>{CLASSES.map((c) => <option key={c}>{c}</option>)}</Select></Field>
+          <Fld label={t("Étage", "Floor")}><Input value={d.floor} maxLength={40} onChange={(e) => set("floor", e.target.value)} /></Fld>
+          <Fld label={t("Meublé", "Furnished")}><Select value={d.furnished == null ? "" : d.furnished ? "1" : "0"} onChange={(e) => set("furnished", e.target.value === "" ? null : e.target.value === "1")}><option value="">{t("Non précisé", "Not specified")}</option><option value="1">{t("Oui", "Yes")}</option><option value="0">{t("Non", "No")}</option></Select></Fld>
+          <Fld label={t("Disponibilité", "Availability")}><Input value={d.availability} maxLength={60} onChange={(e) => set("availability", e.target.value)} /></Fld>
+          <Fld label={t("Taxe foncière", "Property tax")}><Input value={d.propertyTax} maxLength={60} onChange={(e) => set("propertyTax", e.target.value)} /></Fld>
+          <Fld label="DPE"><Select value={d.dpe ?? ""} onChange={(e) => set("dpe", e.target.value || null)}><option value="">{t("À renseigner", "To be filled")}</option>{CLASSES.map((c) => <option key={c}>{c}</option>)}</Select></Fld>
+          <Fld label="GES"><Select value={d.ges ?? ""} onChange={(e) => set("ges", e.target.value || null)}><option value="">{t("À renseigner", "To be filled")}</option>{CLASSES.map((c) => <option key={c}>{c}</option>)}</Select></Fld>
         </section>
         <section className="grid gap-3">
           <p className="text-sm font-medium">{t("Extérieurs et piscine (filtres du site)", "Outdoor space and pool (site filters)")}</p>
@@ -214,8 +219,8 @@ function EditBien({ bien, onClose, onSaved, preview }: { bien: Bien; onClose: ()
             {EXTERIORS.map(([v, fr, en]) => { const on = d.exteriors.includes(v); return <button key={v} type="button" aria-pressed={on} onClick={() => set("exteriors", on ? d.exteriors.filter((x) => x !== v) : [...d.exteriors, v])} className={cx("rounded-full border px-3 py-1 text-sm", on ? "border-signal bg-signal-soft" : "border-line")}>{t(fr, en)}</button>; })}
             <button type="button" aria-pressed={d.pool} onClick={() => set("pool", !d.pool)} className={cx("rounded-full border px-3 py-1 text-sm", d.pool ? "border-signal bg-signal-soft" : "border-line")}>{t("Piscine", "Pool")}</button>
           </div>
-          <Field label={t("Équipements (un par ligne)", "Features (one per line)")}><Textarea autoGrow value={d.features.join("\n")} onChange={(e) => set("features", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 40))} /></Field>
-          <Field label={t("Description (paragraphes séparés par une ligne vide)", "Description (paragraphs separated by a blank line)")}><Textarea autoGrow value={d.description} maxLength={6000} onChange={(e) => set("description", e.target.value)} /></Field>
+          <Fld label={t("Équipements (un par ligne)", "Features (one per line)")}><Textarea autoGrow value={d.features.join("\n")} onChange={(e) => set("features", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 40))} /></Fld>
+          <Fld label={t("Description (paragraphes séparés par une ligne vide)", "Description (paragraphs separated by a blank line)")}><Textarea autoGrow value={d.description} maxLength={6000} onChange={(e) => set("description", e.target.value)} /></Fld>
         </section>
         <section className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-medium">{t(`Photos (${d.photos.length}) * — la première est la photo de couverture`, `Photos (${d.photos.length}) * — the first one is the cover`)}</p><Button size="sm" variant="secondary" icon={<ImagePlus className="size-4" />} onClick={() => setPicker("photos")}>{t("Ajouter des photos du projet", "Add project photos")}</Button></div>
@@ -238,7 +243,7 @@ function EditBien({ bien, onClose, onSaved, preview }: { bien: Bien; onClose: ()
           </div>
         </section>
         <section className="grid gap-3 sm:grid-cols-2">
-          <Field label={t("Le quartier (texte)", "The neighbourhood (text)")}><Textarea autoGrow value={d.neighborhood.text} maxLength={1200} onChange={(e) => set("neighborhood", { ...d.neighborhood, text: e.target.value })} /></Field>
+          <Fld label={t("Le quartier (texte)", "The neighbourhood (text)")}><Textarea autoGrow value={d.neighborhood.text} maxLength={1200} onChange={(e) => set("neighborhood", { ...d.neighborhood, text: e.target.value })} /></Fld>
           <div className="grid gap-2">
             <p className="text-sm font-medium">{t("Lieux proches (un par ligne : lieu | précision)", "Nearby places (one per line: place | detail)")}</p>
             <Textarea autoGrow value={d.neighborhood.places.map((x) => (x.detail ? `${x.label} | ${x.detail}` : x.label)).join("\n")} onChange={(e) => set("neighborhood", { ...d.neighborhood, places: e.target.value.split("\n").map((l) => l.split("|").map((x) => x.trim())).filter((x) => x[0]).slice(0, 6).map(([label, detail]) => ({ label, detail: detail ?? "" })) })} />
@@ -250,8 +255,8 @@ function EditBien({ bien, onClose, onSaved, preview }: { bien: Bien; onClose: ()
         </section>
         <section className="grid gap-3 sm:grid-cols-3">
           <div className="sm:col-span-3 flex items-center gap-2 text-sm font-medium"><MapIcon className="size-4" />{t("Position sur la carte illustrative (0 à 100) — ce n'est pas une géolocalisation", "Position on the illustrative map (0 to 100) — not a geolocation")}</div>
-          <Field label={t("Horizontal (%)", "Horizontal (%)")}><Input inputMode="numeric" value={d.map?.x ?? ""} onChange={(e) => { const x = num(e.target.value); set("map", x == null ? null : { x: Math.max(0, Math.min(100, x)), y: d.map?.y ?? 50 }); }} /></Field>
-          <Field label={t("Vertical (%)", "Vertical (%)")}><Input inputMode="numeric" value={d.map?.y ?? ""} onChange={(e) => { const y = num(e.target.value); set("map", y == null ? null : { x: d.map?.x ?? 50, y: Math.max(0, Math.min(100, y)) }); }} /></Field>
+          <Fld label={t("Horizontal (%)", "Horizontal (%)")}><Input inputMode="numeric" value={d.map?.x ?? ""} onChange={(e) => { const x = num(e.target.value); set("map", x == null ? null : { x: Math.max(0, Math.min(100, x)), y: d.map?.y ?? 50 }); }} /></Fld>
+          <Fld label={t("Vertical (%)", "Vertical (%)")}><Input inputMode="numeric" value={d.map?.y ?? ""} onChange={(e) => { const y = num(e.target.value); set("map", y == null ? null : { x: d.map?.x ?? 50, y: Math.max(0, Math.min(100, y)) }); }} /></Fld>
           <div className="flex flex-wrap items-end gap-2">
             {([["featured", t("À la une (accueil)", "Featured (home)")], ["exceptional", t("Bien d'exception", "Exceptional property")], ["demo", t("Exemple de démonstration", "Demo example")]] as const).map(([k, label]) => <button key={k} type="button" aria-pressed={d[k]} onClick={() => set(k, !d[k])} className={cx("rounded-full border px-3 py-1 text-sm", d[k] ? "border-signal bg-signal-soft" : "border-line")}>{label}</button>)}
           </div>

@@ -729,6 +729,8 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4, link: "/pages/acheter", note: "" }),
       tune(k.R.servicesList(1, "cards", { withImages: false }), { layout: "thumbs", action_style: "arrow", eyebrow: "", padding_top: 48, padding_bottom: 48 }),
       tune(k.faqSec(1, 3, "lines"), { layout: "side", style: "lines", padding_top: 40, padding_bottom: 64 }),
+      // Coordonnées réelles du client (adresse, téléphone, horaires) : la bande de contact de la planche 01.
+      k.R.practical(1),
       k.lib("cta-banner", 3, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
     ],
   },

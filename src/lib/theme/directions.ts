@@ -16,6 +16,7 @@ import { planForTheme, themeRank } from "./theme-access";
 import { isActiveThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
+import { addRealEstateSite } from "./real-estate-site";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
 export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -1328,5 +1329,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       for (const block of Object.values(section.blocks ?? {})) if (block.type === "buy_buttons") block.settings.show_dynamic_checkout = false;
     }
   }
+  // Maison & Horizon (issue #172) : pages de recherche, fiche d'un bien et favoris pour les biens de l'onglet « Biens ».
+  if (d.id === "maison-horizon" && svc) addRealEstateSite(result, lang);
   return result;
 }
