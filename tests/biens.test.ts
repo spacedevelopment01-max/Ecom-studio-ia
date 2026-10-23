@@ -92,7 +92,7 @@ describe("Biens : alimentation du thème", () => {
     expect(Object.values(files).sort()).toEqual([p1, p2, p3].sort());
     const drop = bienDrop(biens[1], "/p");
     expect(drop.loyer_cc_texte.value).toBe(euros(1290));
-    expect(euros(1290)).toBe("1 290 €");
+    expect(euros(1290)).toBe("1 290 €");
     expect(drop.photos_count.value).toBe(2);
     expect(drop.system.url).toBe(`/p/pages/bien/${biens[1].handle}`);
     expect(drop.filtres.value).toContain("meuble");

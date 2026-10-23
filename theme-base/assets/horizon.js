@@ -195,5 +195,109 @@
     var initial = read(); toForm(initial); render(initial);
   });
 
+  /* ── Fiche d'un bien : galerie, visionneuse, partage, demande, « voir plus », accordéons ───────────────────── */
+  var mobile = window.matchMedia("(max-width: 749px)");
+  function openDialog(d) { if (!d) return; if (typeof d.showModal === "function") { if (!d.open) d.showModal(); } else d.setAttribute("open", ""); }
+  function closeDialog(d) { if (!d) return; if (typeof d.close === "function" && d.open) d.close(); else d.removeAttribute("open"); }
+  document.querySelectorAll("[data-re-bien]").forEach(function (root) {
+    var ref = root.getAttribute("data-ref") || "";
+    /* Visionneuse : les photos de la galerie dans l'ordre (le plan à part), compteur réel. */
+    var lb = root.querySelector("[data-re-lightbox]"), img = lb && lb.querySelector("[data-re-lb-img]"), cap = lb && lb.querySelector("[data-re-lb-caption]"), cnt = lb && lb.querySelector("[data-re-lb-count]");
+    var items = Array.prototype.slice.call(root.querySelectorAll("[data-re-lb]"));
+    var group = function (g) { return items.filter(function (el) { return (el.getAttribute("data-re-lb-group") || "photos") === g; }); };
+    var list = [], at = 0, opener = null;
+    function show(i) { if (!list.length) return; at = (i + list.length) % list.length; var el = list[at]; img.src = el.getAttribute("data-re-lb"); img.alt = el.getAttribute("data-re-lb-alt") || ""; cap.textContent = el.getAttribute("data-re-lb-alt") || ""; cnt.textContent = list.length > 1 ? (at + 1) + " / " + list.length : ""; lb.classList.toggle("is-single", list.length < 2); }
+    function openAt(g, i, from) { if (!lb) return; list = group(g); opener = from || null; show(i); openDialog(lb); }
+    items.forEach(function (el) { el.addEventListener("click", function () { var g = el.getAttribute("data-re-lb-group") || "photos"; openAt(g, group(g).indexOf(el), el); }); });
+    root.querySelectorAll("[data-re-lb-open]").forEach(function (b) { b.addEventListener("click", function () { openAt("photos", +b.getAttribute("data-re-lb-open") || 0, b); }); });
+    if (lb) {
+      lb.querySelector("[data-re-prev]").addEventListener("click", function () { show(at - 1); });
+      lb.querySelector("[data-re-next]").addEventListener("click", function () { show(at + 1); });
+      lb.addEventListener("keydown", function (e) { if (e.key === "ArrowLeft") show(at - 1); if (e.key === "ArrowRight") show(at + 1); });
+      lb.addEventListener("click", function (e) { if (e.target === lb) closeDialog(lb); });
+      lb.addEventListener("close", function () { if (opener) opener.focus(); });
+      var x0 = null; lb.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true }); lb.addEventListener("touchend", function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) show(at + (dx < 0 ? 1 : -1)); x0 = null; });
+    }
+    root.querySelectorAll("[data-re-close]").forEach(function (b) { b.addEventListener("click", function () { closeDialog(b.closest("dialog")); }); });
+    /* Compteur du défilement (téléphone). */
+    var track = root.querySelector("[data-re-track]"), current = root.querySelector("[data-re-current]");
+    if (track && current) track.addEventListener("scroll", function () { var w = track.clientWidth || 1; current.textContent = String(Math.min(track.children.length, Math.round(track.scrollLeft / w) + 1)); }, { passive: true });
+    /* Bandeau de photos (location). */
+    var strip = root.querySelector("[data-re-strip-track]");
+    if (strip) { var step = function (d) { strip.scrollBy({ left: d * strip.clientWidth * 0.8, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }; var pv = root.querySelector("[data-re-strip-prev]"), nx = root.querySelector("[data-re-strip-next]"); if (pv) pv.addEventListener("click", function () { step(-1); }); if (nx) nx.addEventListener("click", function () { step(1); }); }
+    /* Partage : partage natif du téléphone, sinon lien copié (ou affiché si la copie est refusée). */
+    root.querySelectorAll("[data-re-share]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var url = location.href.split("#")[0], title = b.getAttribute("data-title") || document.title;
+        if (navigator.share) { navigator.share({ title: title, url: url }).catch(function () {}); return; }
+        var done = function () { announce("Lien du bien copié."); var t = b.querySelector("span"); if (t) { var old = t.textContent; t.textContent = "Lien copié"; setTimeout(function () { t.textContent = old; }, 2200); } };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, function () { window.prompt("Copiez le lien du bien :", url); });
+        else window.prompt("Copiez le lien du bien :", url);
+      });
+    });
+    /* « Voir plus » : description repliée sur téléphone seulement si elle dépasse. */
+    var clamp = root.querySelector("[data-re-clamp]"), more = root.querySelector("[data-re-more]");
+    function syncClamp() { if (!clamp || !more) return; if (more.getAttribute("aria-expanded") === "true") return; clamp.classList.toggle("is-clamped", mobile.matches); more.hidden = !(mobile.matches && clamp.scrollHeight > clamp.clientHeight + 4); }
+    if (more) more.addEventListener("click", function () { var open = more.getAttribute("aria-expanded") !== "true"; more.setAttribute("aria-expanded", open ? "true" : "false"); clamp.classList.toggle("is-clamped", !open); more.firstChild.textContent = open ? "Voir moins " : "Voir plus "; });
+    /* Accordéons : ouverts sur ordinateur ; sur téléphone, seul le premier reste ouvert. */
+    var accs = Array.prototype.slice.call(root.querySelectorAll("[data-re-acc]"));
+    function syncAcc() { accs.forEach(function (d, i) { if (mobile.matches) { if (!d.hasAttribute("data-touched")) d.open = i === 0; } else d.open = true; }); }
+    accs.forEach(function (d) { d.querySelector("summary").addEventListener("click", function (e) { if (!mobile.matches) { e.preventDefault(); return; } d.setAttribute("data-touched", ""); }); });
+    var syncAll = function () { syncClamp(); syncAcc(); };
+    if (mobile.addEventListener) mobile.addEventListener("change", syncAll);
+    syncAll();
+    /* Demande (visite, rappel, dossier) : vérification avant l'envoi ; en démonstration, rien n'est envoyé. */
+    var dialog = root.querySelector("[data-re-dialog]"), form = dialog && dialog.querySelector("form");
+    if (dialog && form) {
+      form.setAttribute("novalidate", "");
+      var title = dialog.querySelector("[data-re-dialog-title]"), mode = form.querySelector("[data-re-mode]"), phone = form.querySelector("[data-re-phone]"), star = form.querySelector("[data-re-phone-required]"), status = form.querySelector("[data-re-status]");
+      var asker = null;
+      root.querySelectorAll("[data-re-ask]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var m = b.getAttribute("data-re-ask"); asker = b;
+          mode.value = m; title.textContent = title.getAttribute("data-" + m) || title.textContent;
+          var needPhone = m === "rappel"; phone.required = needPhone; star.hidden = !needPhone;
+          form.querySelectorAll("[data-re-only]").forEach(function (el) { el.hidden = el.getAttribute("data-re-only") !== m; });
+          status.textContent = ""; form.classList.remove("is-done");
+          openDialog(dialog); var first = form.querySelector("input:not([type=hidden])"); if (first) first.focus();
+        });
+      });
+      dialog.addEventListener("close", function () { if (asker) asker.focus(); });
+      validateForm(form, function () {
+        if (status.hasAttribute("data-demo")) { status.textContent = "Demande vérifiée. Ce site est une démonstration : rien n'a été envoyé et aucune visite n'est réservée."; form.classList.add("is-done"); return false; }
+        return true;
+      });
+      if (status.textContent.trim()) openDialog(dialog);
+    }
+    /* Barre fixe du téléphone : visible une fois l'en-tête de la fiche dépassé. */
+    var sticky = root.querySelector("[data-re-sticky]"), head = root.querySelector(".re-bien__facts");
+    if (sticky && head && "IntersectionObserver" in window) new IntersectionObserver(function (e) { sticky.classList.toggle("is-visible", !e[0].isIntersecting && e[0].boundingClientRect.top < 0); }).observe(head);
+    void ref;
+  });
+
+  /* Vérification commune des formulaires Maison & Horizon (champs requis, e-mail, téléphone). `ok` décide de l'envoi. */
+  function validateForm(form, ok) {
+    var msg = { required: "Ce champ est à remplir.", email: "Saisissez une adresse e-mail valide (ex. : nom@domaine.fr).", phone: "Saisissez un numéro de téléphone valide.", consent: "Cochez cette case pour envoyer votre demande.", choice: "Choisissez une option." };
+    function clear(el) { el.removeAttribute("aria-invalid"); var box = el.closest("label, .re-field, fieldset"), err = box && box.querySelector(".re-error"); if (err) err.remove(); el.removeAttribute("aria-describedby"); }
+    function fail(el, text, i) { el.setAttribute("aria-invalid", "true"); var box = el.closest("label, .re-field, fieldset"); if (!box) return; var err = box.querySelector(".re-error"); if (!err) { err = document.createElement("span"); err.className = "re-error"; err.id = "re-err-" + i + "-" + Math.random().toString(36).slice(2, 7); box.appendChild(err); } err.textContent = text; el.setAttribute("aria-describedby", err.id); }
+    function check(scope) {
+      var first = null;
+      Array.prototype.forEach.call((scope || form).querySelectorAll("input, select, textarea"), function (el, i) {
+        if (el.type === "hidden" || el.type === "submit" || el.disabled || el.closest("[hidden]")) return;
+        clear(el);
+        var v = el.type === "checkbox" || el.type === "radio" ? (el.type === "radio" ? !!form.querySelector('input[name="' + el.name + '"]:checked') : el.checked) : String(el.value || "").trim(), text = "";
+        if (el.required && !v) text = el.type === "checkbox" ? msg.consent : el.type === "radio" || el.tagName === "SELECT" ? msg.choice : msg.required;
+        else if (el.type === "email" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) text = msg.email;
+        else if (el.type === "tel" && v && !/^[+0-9 ().-]{8,20}$/.test(v)) text = msg.phone;
+        if (text) { fail(el, text, i); if (!first) first = el; }
+      });
+      return first;
+    }
+    form.addEventListener("input", function (e) { if (e.target.getAttribute("aria-invalid")) clear(e.target); });
+    form.addEventListener("submit", function (e) { var bad = check(); if (bad) { e.preventDefault(); bad.focus(); return; } if (!ok()) e.preventDefault(); });
+    return check;
+  }
+  window.MaisonHorizon.validateForm = validateForm;
+
   syncFavorites();
 })();

@@ -280,6 +280,8 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
     es_demo_contact: spec.meta?.demo?.isDemo === true && spec.meta.demo.contactTest === true,
+    // Démonstration du studio : les formulaires Maison & Horizon n'envoient rien et le disent (jamais de fausse confirmation).
+    es_demo: spec.meta?.demo?.isDemo === true,
     policies,
     enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",

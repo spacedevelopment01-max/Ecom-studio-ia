@@ -1,0 +1,361 @@
+{%- comment -%}
+  Fiche d'un bien (Maison & Horizon, planches 03 et 04) : une seule section pour tous les biens, à vendre ou à louer.
+  Tout vient de la fiche saisie dans l'onglet « Biens » (métaobjet `metaobject`) : photos dans l'ordre choisi, compteur
+  réel, plan, équipements, quartier, montants. Un champ vide reste « à préciser » ou « à renseigner », jamais inventé.
+  Demande de visite, rappel ou dossier : formulaire de contact de la boutique ; dans une démonstration du studio, rien
+  n'est envoyé et le message le dit (aucune visite réservée, aucun rendez-vous confirmé).
+  Questions fréquentes et étapes : blocs de la section, chacun pour la vente, la location ou les deux.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign b = metaobject -%}
+{%- if b != blank -%}
+{%- assign kind = b.transaction.value -%}
+{%- assign photos = b.photos.value -%}
+{%- assign count = b.photos_count.value -%}
+{%- assign base_city = b.ville.value | split: ' ' | first -%}
+{%- capture place -%}{{ b.localisation.value }}{% if b.secteur.value != blank %}{{ ' – ' }}{{ b.secteur.value }}{% elsif b.demo.value %}{{ ' — secteur de démonstration' }}{% endif %}{%- endcapture -%}
+{%- capture amount -%}{%- if kind == 'location' -%}{{ b.loyer_cc_texte.value }}{%- else -%}{{ b.prix_texte.value }}{%- endif -%}{%- endcapture -%}
+{%- capture fav_button -%}<button type="button" class="re-action" data-re-fav="{{ b.reference.value | escape }}" aria-pressed="false" aria-label="Ajouter aux favoris : {{ b.titre.value | escape }}">{% render 'mh-icon', name: 'heart' %}<span data-re-fav-text data-on="Dans vos favoris" data-off="Ajouter aux favoris">Ajouter aux favoris</span></button>{%- endcapture -%}
+{%- capture share_button -%}<button type="button" class="re-action" data-re-share data-title="{{ b.titre_fiche.value | escape }}">{% render 'mh-icon', name: 'share' %}<span>{{ s.share_label | default: 'Partager' | escape }}</span></button>{%- endcapture -%}
+{%- capture visit_label -%}{%- if kind == 'location' -%}{{ s.visit_label_rent | default: 'Organiser une visite' }}{%- else -%}{{ s.visit_label_sale | default: 'Demander une visite' }}{%- endif -%}{%- endcapture -%}
+{%- capture second_label -%}{%- if kind == 'location' -%}{{ s.file_label | default: 'Préparer mon dossier' }}{%- else -%}{{ s.callback_label | default: 'Être rappelé' }}{%- endif -%}{%- endcapture -%}
+{%- capture second_mode -%}{%- if kind == 'location' -%}dossier{%- else -%}rappel{%- endif -%}{%- endcapture -%}
+<section class="es-section re-bien re-bien--{{ kind }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-bien data-ref="{{ b.reference.value | escape }}">
+  <div class="es-container">
+    <div class="re-bien__crumbs">
+      <nav aria-label="Fil d'Ariane"><ol>
+        <li><a href="{{ routes.root_url }}">Accueil</a></li>
+        {%- if kind == 'location' -%}<li><a href="{{ s.rent_url | default: routes.root_url }}">Louer</a></li>{%- else -%}<li><a href="{{ s.buy_url | default: routes.root_url }}">Acheter</a></li>{%- endif -%}
+        <li><a href="{% if kind == 'location' %}{{ s.rent_url | default: routes.root_url }}{% else %}{{ s.buy_url | default: routes.root_url }}{% endif %}?ville={{ base_city | url_encode }}">{{ base_city }}</a></li>
+        <li aria-current="page">{{ b.titre_fiche.value }}</li>
+      </ol></nav>
+      {%- if b.demo.value -%}<p class="re-note">{% if kind == 'location' %}Loyer et charges de démonstration{% else %}Biens et prix de démonstration{% endif %}</p>{%- endif -%}
+    </div>
+
+    {%- capture heading_block -%}
+      <div class="re-bien__badges">
+        <span class="re-chip re-chip--{{ kind }}">{% if kind == 'location' %}Location{% else %}À vendre{% endif %}</span>
+        {%- if b.statut_label.value != blank -%}<span class="re-chip re-chip--closed">{{ b.statut_label.value }}</span>{%- endif -%}
+        {%- if b.demo.value and kind == 'location' -%}<span class="re-chip re-chip--soft">Biens et prix de démonstration</span>{%- endif -%}
+      </div>
+      <h1 class="re-bien__title">{{ b.titre_fiche.value }}</h1>
+      <p class="re-bien__place">{% if kind == 'location' %}{% render 'mh-icon', name: 'pin' %}{% endif %}<span>{{ place }}</span></p>
+      {%- if kind == 'location' and b.accroche.value != blank -%}<p class="re-bien__lede">{{ b.accroche.value }}</p>{%- endif -%}
+    {%- endcapture -%}
+
+    {%- if kind != 'location' -%}
+    <header class="re-bien__head">
+      <div>{{ heading_block }}
+        <p class="re-bien__price">{{ amount }}{% if b.demo.value %} <small class="re-note">Biens et prix de démonstration</small>{% endif %}</p>
+      </div>
+      <div class="re-bien__tools">{{ fav_button }}{{ share_button }}</div>
+    </header>
+    {%- endif -%}
+
+    {%- comment -%} Galerie : mosaïque (ordinateur), défilement avec compteur (téléphone), visionneuse plein écran. {%- endcomment -%}
+    {%- if count > 0 -%}
+    <div class="re-gallery re-gallery--n{% if count > 5 %}5{% else %}{{ count }}{% endif %}" data-re-gallery>
+      <div class="re-gallery__track" data-re-track>
+        {%- for ph in photos -%}
+        <button type="button" class="re-gallery__item{% if forloop.index > 5 %} re-gallery__item--more{% endif %}" data-re-lb="{{ ph.file | asset_url }}" data-re-lb-alt="{{ ph.alt | escape }}" data-re-index="{{ forloop.index0 }}" aria-label="Agrandir la photo {{ forloop.index }} sur {{ count }}{% if ph.alt != blank %} : {{ ph.alt | escape }}{% endif %}">
+          {% if forloop.first %}{% assign ld = 'eager' %}{% else %}{% assign ld = 'lazy' %}{% endif %}{% render 'es-image', asset: ph.file, alt: ph.alt, class: 're-gallery__img', loading: ld %}
+        </button>
+        {%- endfor -%}
+      </div>
+      <p class="re-gallery__counter" aria-hidden="true"><span data-re-current>1</span> / {{ count }}</p>
+      {%- if kind != 'location' -%}<span class="re-chip re-chip--{{ kind }} re-gallery__chip">À vendre</span>{%- endif -%}
+      <button type="button" class="re-gallery__all" data-re-lb-open="0">{% render 'mh-icon', name: 'camera' %}<span>{% if count > 1 %}Voir les {{ count }} photos{% else %}Voir la photo{% endif %}</span></button>
+    </div>
+    {%- endif -%}
+
+    {%- if kind == 'location' -%}
+    <header class="re-bien__head re-bien__head--rent">
+      <div>{{ heading_block }}</div>
+      <div class="re-bien__pricebox">
+        <div class="re-bien__pricerow"><p class="re-bien__price">{{ b.loyer_cc_texte.value }}<small> / mois</small></p>{{ fav_button | replace: 're-action"', 're-action re-action--icon"' }}</div>
+        <p class="re-bien__cc">charges comprises</p>
+        {%- if b.demo.value -%}<p class="re-note">Loyer et charges de démonstration</p>{%- endif -%}
+        <div class="re-bien__ctas">
+          <button type="button" class="re-btn re-btn--green" data-re-ask="visite">{% render 'mh-icon', name: 'calendar' %} {{ visit_label }}</button>
+          <button type="button" class="re-btn re-btn--line" data-re-ask="{{ second_mode }}">{% render 'mh-icon', name: 'document' %} {{ second_label }}</button>
+        </div>
+      </div>
+    </header>
+    {%- endif -%}
+
+    <ul class="re-bien__facts" role="list">
+      {%- if b.surface.value -%}<li>{% render 'mh-icon', name: 'surface' %}<span><strong>{{ b.surface_texte.value }}</strong><small>{% if kind == 'location' %}Surface{% else %}Surface habitable{% endif %}</small></span></li>{%- endif -%}
+      {%- if b.pieces.value -%}<li>{% render 'mh-icon', name: 'rooms' %}<span><strong>{{ b.pieces.value }} pièce{% if b.pieces.value > 1 %}s{% endif %}</strong><small>{% if kind == 'location' and b.chambres.value %}Dont {{ b.chambres.value }} chambre{% if b.chambres.value > 1 %}s{% endif %}{% else %}Nombre de pièces{% endif %}</small></span></li>{%- endif -%}
+      {%- if b.chambres.value -%}<li>{% render 'mh-icon', name: 'bed' %}<span><strong>{{ b.chambres.value }} chambre{% if b.chambres.value > 1 %}s{% endif %}</strong>{% if kind != 'location' %}<small>Chambres</small>{% endif %}</span></li>{%- endif -%}
+      {%- if kind == 'location' -%}
+        {%- if b.meuble.value == true -%}<li>{% render 'mh-icon', name: 'sofa' %}<span><strong>Meublé</strong><small>Location meublée</small></span></li>{%- elsif b.meuble.value == false -%}<li>{% render 'mh-icon', name: 'sofa' %}<span><strong>Non meublé</strong><small>Location vide</small></span></li>{%- endif -%}
+      {%- elsif b.terrain.value -%}<li>{% render 'mh-icon', name: 'land' %}<span><strong>{{ b.terrain_texte.value }}</strong><small>Terrain</small></span></li>{%- endif -%}
+    </ul>
+
+    <div class="re-bien__layout">
+      <div class="re-bien__main">
+        <div class="re-bien__row{% if kind == 'location' %} re-bien__row--two{% endif %}">
+          <div class="re-bien__block">
+            <h2 class="re-bien__h2">Description</h2>
+            {%- if b.paragraphes.value.size > 0 -%}
+            <div class="re-bien__desc" data-re-clamp>
+              {%- for para in b.paragraphes.value -%}<p>{{ para | escape }}</p>{%- endfor -%}
+            </div>
+            <button type="button" class="re-more" data-re-more aria-expanded="false" hidden>Voir plus {% render 'mh-icon', name: 'chevron' %}</button>
+            {%- else -%}<p class="re-muted">Description à renseigner.</p>{%- endif -%}
+          </div>
+          {%- if kind == 'location' -%}
+          <details class="re-acc re-bien__block" open data-re-acc>
+            <summary class="re-bien__h2">Informations financières</summary>
+            <table class="re-table">
+              <tr><th scope="row">Loyer hors charges</th><td>{% if b.loyer_hc.value %}{{ b.loyer_hc_texte.value }} / mois{% else %}À préciser{% endif %}</td></tr>
+              <tr><th scope="row">Charges</th><td>{% if b.charges.value %}{{ b.charges_texte.value }} / mois{% else %}À préciser{% endif %}</td></tr>
+              <tr class="is-total"><th scope="row">Loyer charges comprises</th><td>{% if b.charges.value %}{{ b.loyer_cc_texte.value }} / mois{% else %}À préciser{% endif %}</td></tr>
+              <tr><th scope="row">Dépôt de garantie</th><td>{% if b.depot.value %}{{ b.depot_texte.value }}{% else %}À préciser{% endif %}</td></tr>
+              <tr><th scope="row">Honoraires locataire</th><td>{{ b.honoraires.value | default: 'À préciser' }}</td></tr>
+              <tr><th scope="row">Date de disponibilité</th><td>{{ b.disponibilite.value | default: 'À préciser' }}</td></tr>
+            </table>
+            {%- if b.demo.value -%}<p class="re-note">Loyer et charges de démonstration</p>{%- endif -%}
+          </details>
+          {%- endif -%}
+        </div>
+
+        <div class="re-bien__row{% if kind == 'location' %} re-bien__row--two{% endif %}">
+          {%- if b.equipements.value.size > 0 -%}
+          <details class="re-acc re-bien__block" open data-re-acc>
+            <summary class="re-bien__h2">Prestations et équipements</summary>
+            <ul class="re-equip" role="list">
+              {%- for e in b.equipements.value -%}<li>{% render 're-equipment-icon', label: e %}<span>{{ e | escape }}</span></li>{%- endfor -%}
+            </ul>
+          </details>
+          {%- endif -%}
+          {%- if kind == 'location' -%}
+          <details class="re-acc re-bien__block" open data-re-acc>
+            <summary class="re-bien__h2">Diagnostic de performance énergétique</summary>
+            {% render 're-energy', bien: b, layout: 'scales' %}
+          </details>
+          {%- endif -%}
+        </div>
+
+        {%- if kind != 'location' -%}
+        <div class="re-bien__row re-bien__row--plan">
+          {%- assign plan = b.plan.value -%}
+          {%- if plan -%}
+          <details class="re-acc re-bien__block" open data-re-acc>
+            <summary class="re-bien__h2">Plan illustratif</summary>
+            <button type="button" class="re-plan" data-re-lb="{{ plan.file | asset_url }}" data-re-lb-alt="{{ plan.alt | escape }}" data-re-lb-group="plan" aria-label="Agrandir le plan illustratif">{% render 'es-image', asset: plan.file, alt: plan.alt, class: 're-plan__img', loading: 'lazy' %}</button>
+            <p class="re-caption">Plan illustratif non contractuel</p>
+          </details>
+          {%- endif -%}
+          <details class="re-acc re-bien__block re-energy-box" open data-re-acc>
+            <summary class="re-bien__h2">{% if b.dpe.value == blank and b.ges.value == blank %}DPE / GES à renseigner{% else %}DPE / GES{% endif %}</summary>
+            {% render 're-energy', bien: b, layout: 'text' %}
+          </details>
+        </div>
+        {%- endif -%}
+
+        {%- if kind == 'location' and count > 1 -%}
+        <div class="re-bien__block re-strip" data-re-strip>
+          <div class="re-strip__head"><h2 class="re-bien__h2">Galerie photos</h2><button type="button" class="re-link" data-re-lb-open="0">Voir toutes les photos ({{ count }}) {% render 'mh-icon', name: 'arrow' %}</button></div>
+          <div class="re-strip__rail">
+            <button type="button" class="re-strip__nav re-strip__nav--prev" data-re-strip-prev aria-label="Photos précédentes">{% render 'mh-icon', name: 'arrow-left' %}</button>
+            <div class="re-strip__track" data-re-strip-track>
+              {%- for ph in photos -%}<button type="button" class="re-strip__item" data-re-lb-open="{{ forloop.index0 }}" aria-label="Agrandir la photo {{ forloop.index }} sur {{ count }}">{% render 'es-image', asset: ph.file, alt: ph.alt, class: 're-strip__img', loading: 'lazy' %}</button>{%- endfor -%}
+            </div>
+            <button type="button" class="re-strip__nav re-strip__nav--next" data-re-strip-next aria-label="Photos suivantes">{% render 'mh-icon', name: 'arrow' %}</button>
+          </div>
+        </div>
+        {%- endif -%}
+
+        <div class="re-bien__row re-bien__row--place">
+          <details class="re-acc re-bien__block" open data-re-acc>
+            <summary class="re-bien__h2">Localisation</summary>
+            <p class="re-muted re-bien__where">{{ place }}</p>
+            <div class="re-locate">
+              <div class="re-locate__map">
+                {%- if s.map_image != blank or s.map_asset != blank -%}{% render 'ed-media', image: s.map_image, asset: s.map_asset, alt: s.map_alt, loading: 'lazy' %}{%- endif -%}
+                {%- if b.carte_x.value != nil and b.carte_y.value != nil -%}<span class="re-locate__pin" style="left:{{ b.carte_x.value }}%;top:{{ b.carte_y.value }}%;">{% render 'mh-icon', name: 'pin' %}{% if b.secteur.value != blank %}<small>{{ b.secteur.value }}<br>{{ b.ville.value }}</small>{% endif %}</span>{%- endif -%}
+                <span class="re-locate__label">{{ s.map_label | default: 'Carte illustrative : emplacement approximatif' | escape }}</span>
+              </div>
+              {%- if b.quartier_lieux.value.size > 0 -%}
+              <ul class="re-places" role="list">
+                {%- for pl in b.quartier_lieux.value -%}<li>{% assign pl_label = pl.label | downcase %}{% if pl_label contains 'métro' or pl_label contains 'gare' or pl_label contains 'tram' %}{% render 'mh-icon', name: 'metro' %}{% elsif pl_label contains 'commerce' %}{% render 'mh-icon', name: 'shop' %}{% else %}{% render 'mh-icon', name: 'pin' %}{% endif %}<span><strong>{{ pl.label | escape }}</strong>{% if pl.detail != blank %}<small>{{ pl.detail | escape }}</small>{% endif %}</span></li>{%- endfor -%}
+              </ul>
+              {%- endif -%}
+            </div>
+          </details>
+          {%- if b.quartier_texte.value != blank or b.quartier_photos.value.size > 0 -%}
+          <div class="re-bien__block re-hood re-hood--n{{ b.quartier_photos.value.size }}">
+            <h2 class="re-bien__h2{% if kind != 'location' %} re-hood__title{% endif %}">{% if kind == 'location' %}Le quartier{% else %}{{ s.hood_title | default: 'Le quartier' | escape }}{% endif %}</h2>
+            {%- if b.quartier_texte.value != blank -%}<p class="re-hood__text">{{ b.quartier_texte.value | escape }}</p>{%- endif -%}
+            {%- if b.quartier_photos.value.size > 0 -%}
+            <ul class="re-hood__photos" role="list">
+              {%- for ph in b.quartier_photos.value -%}<li><figure>{% render 'es-image', asset: ph.file, alt: ph.alt, class: 're-hood__img', loading: 'lazy' %}{% if b.quartier_photos.value.size == 1 and ph.alt != blank %}<figcaption class="re-caption">{{ ph.alt | escape }}</figcaption>{% endif %}</figure></li>{%- endfor -%}
+            </ul>
+            {%- endif -%}
+          </div>
+          {%- endif -%}
+        </div>
+
+        {%- if kind != 'location' -%}
+        <details class="re-acc re-bien__block re-bien__money" open data-re-acc>
+          <summary class="re-bien__h2">Détails financiers</summary>
+          <div class="re-bien__money-grid">
+            <table class="re-table re-table--money">
+              <tr><th scope="row">Prix de vente</th><td class="re-accent">{% if b.prix.value %}{{ b.prix_texte.value }}{% else %}À préciser{% endif %}</td></tr>
+              <tr><th scope="row">Honoraires d'agence</th><td>{{ b.honoraires.value | default: 'À préciser' }}</td></tr>
+              <tr><th scope="row">Prix hors honoraires</th><td>À préciser</td></tr>
+            </table>
+            <div>
+              <h3 class="re-h3">Informations complémentaires</h3>
+              {%- assign feats = b.equipements.value | join: '|' | downcase -%}
+              <dl class="re-specs">
+                <div><dt>Type de bien</dt><dd>{{ b.type_label.value }}</dd></div>
+                <div><dt>Surface habitable</dt><dd>{{ b.surface_texte.value | default: 'À préciser' }}</dd></div>
+                <div><dt>Nombre de pièces</dt><dd>{{ b.pieces.value | default: 'À préciser' }}</dd></div>
+                <div><dt>Nombre de chambres</dt><dd>{{ b.chambres.value | default: 'À préciser' }}</dd></div>
+                {%- if b.terrain.value -%}<div><dt>Surface du terrain</dt><dd>{{ b.terrain_texte.value }}</dd></div>{%- endif -%}
+                <div><dt>Stationnement</dt><dd>{% if feats contains 'stationnement' or feats contains 'parking' or feats contains 'garage' %}Oui{% else %}À préciser{% endif %}</dd></div>
+                <div><dt>Cave</dt><dd>{% if feats contains 'cave' %}Oui{% else %}À préciser{% endif %}</dd></div>
+                <div><dt>Taxe foncière</dt><dd>{{ b.taxe_fonciere.value | default: 'À préciser' }}</dd></div>
+                <div><dt>Disponibilité</dt><dd>{{ b.disponibilite.value | default: 'À préciser' }}</dd></div>
+              </dl>
+            </div>
+          </div>
+        </details>
+        {%- endif -%}
+      </div>
+
+      {%- if kind != 'location' -%}
+      <aside class="re-bien__aside">
+        <div class="re-ask">
+          <h2 class="re-ask__title">{{ s.ask_title | default: 'Ce bien vous intéresse ?' | escape }}</h2>
+          <p class="re-muted">{{ s.ask_text | default: 'Nos conseillers sont à votre disposition pour organiser une visite ou vous rappeler.' | escape }}</p>
+          <button type="button" class="re-btn re-btn--accent" data-re-ask="visite">{{ visit_label }}</button>
+          <button type="button" class="re-btn re-btn--line" data-re-ask="{{ second_mode }}">{{ second_label }}</button>
+          <div class="re-ask__tools">{{ fav_button }}{{ share_button | replace: '>Partager<', '>Partager ce bien<' }}</div>
+        </div>
+      </aside>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Étapes et questions fréquentes : blocs de la section, filtrés selon le bien (vente, location ou les deux). {%- endcomment -%}
+    {%- assign steps = 0 -%}{%- assign questions = 0 -%}
+    {%- for block in section.blocks -%}{%- if block.settings.applies == 'all' or block.settings.applies == kind -%}{%- if block.type == 'step' -%}{%- assign steps = steps | plus: 1 -%}{%- else -%}{%- assign questions = questions | plus: 1 -%}{%- endif -%}{%- endif -%}{%- endfor -%}
+    {%- if steps > 0 -%}
+    <div class="re-bien__steps">
+      <h2 class="re-bien__h2">{% if kind == 'location' %}{{ s.steps_title_rent | default: 'Votre location en toute sérénité' | escape }}{% else %}{{ s.steps_title_sale | default: 'Votre achat, étape par étape' | escape }}{% endif %}</h2>
+      {%- if kind == 'location' and s.steps_text_rent != blank -%}<p class="re-muted">{{ s.steps_text_rent | escape }}</p>{%- endif -%}
+      <ol class="re-steps" role="list">
+        {%- assign n = 0 -%}
+        {%- for block in section.blocks -%}{%- if block.type == 'step' -%}{%- if block.settings.applies == 'all' or block.settings.applies == kind -%}{%- assign n = n | plus: 1 -%}
+        <li {{ block.shopify_attributes }}><span class="re-steps__num">{{ n }}</span>{% render 'mh-icon', name: block.settings.icon %}<span><strong>{{ block.settings.title | escape }}</strong><small>{{ block.settings.text | escape }}</small></span></li>
+        {%- endif -%}{%- endif -%}{%- endfor -%}
+      </ol>
+    </div>
+    {%- endif -%}
+    {%- if questions > 0 -%}
+    <details class="re-acc re-bien__faq" open data-re-acc>
+      <summary class="re-bien__h2">Questions fréquentes</summary>
+      <div class="re-faq">
+        {%- for block in section.blocks -%}{%- if block.type == 'question' -%}{%- if block.settings.applies == 'all' or block.settings.applies == kind -%}
+        <details class="re-faq__item" {{ block.shopify_attributes }}><summary>{{ block.settings.question | escape }}{% render 'mh-icon', name: 'chevron' %}</summary><div class="re-faq__answer">{{ block.settings.answer }}</div></details>
+        {%- endif -%}{%- endif -%}{%- endfor -%}
+      </div>
+    </details>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%} Barre fixe du téléphone : prix et bouton de visite. {%- endcomment -%}
+  <div class="re-sticky" data-re-sticky>
+    <p class="re-sticky__price">{{ amount }}{% if kind == 'location' %}<small> / mois</small><span>charges comprises</span>{% endif %}</p>
+    {{ fav_button | replace: 're-action"', 're-action re-action--icon"' }}
+    <button type="button" class="re-btn re-btn--{% if kind == 'location' %}green{% else %}accent{% endif %}" data-re-ask="visite">{% render 'mh-icon', name: 'calendar' %} {{ visit_label }}</button>
+  </div>
+
+  {%- comment -%} Demande (visite, rappel, dossier) : formulaire de contact de la boutique, validé avant l'envoi. {%- endcomment -%}
+  <dialog class="re-dialog" data-re-dialog aria-labelledby="Demande-{{ section.id }}">
+    {%- form 'contact', class: 're-form' -%}
+      <button type="button" class="re-dialog__close" data-re-close aria-label="Fermer">{% render 'mh-icon', name: 'close' %}</button>
+      <h2 class="re-dialog__title" id="Demande-{{ section.id }}" data-re-dialog-title data-visite="{{ visit_label | escape }}" data-rappel="{{ s.callback_label | default: 'Être rappelé' | escape }}" data-dossier="{{ s.file_label | default: 'Préparer mon dossier' | escape }}">{{ visit_label }}</h2>
+      <p class="re-muted re-dialog__bien">{{ b.titre_fiche.value }} · {{ b.localisation.value }} · Réf. {{ b.reference.value }}</p>
+      <input type="hidden" name="contact[bien]" value="{{ b.reference.value | escape }} — {{ b.titre_fiche.value | escape }}">
+      <input type="hidden" name="contact[demande]" value="visite" data-re-mode>
+      <div class="re-form__grid">
+        <label class="re-field"><span>Nom *</span><input name="contact[name]" autocomplete="name" required></label>
+        <label class="re-field"><span>E-mail *</span><input type="email" name="contact[email]" autocomplete="email" required></label>
+        <label class="re-field"><span>Téléphone <em data-re-phone-required hidden>*</em></span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel" data-re-phone></label>
+        <label class="re-field" data-re-only="visite"><span>Vos disponibilités</span><input name="contact[disponibilites]" placeholder="Ex. : en semaine après 18 h, samedi matin"></label>
+        <label class="re-field re-field--wide"><span>Message</span><textarea name="contact[body]" rows="4" maxlength="2000"></textarea></label>
+        <label class="re-check re-field--wide"><input type="checkbox" name="contact[consentement]" value="oui" required> <span>J'accepte que mes coordonnées servent uniquement à répondre à cette demande. *</span></label>
+      </div>
+      <p class="re-form__note">{% if shop.es_demo %}Démonstration : ce formulaire vérifie votre saisie mais n'envoie rien. Aucune visite n'est réservée.{% else %}L'agence vous recontacte pour convenir d'un créneau : aucune visite n'est réservée automatiquement.{% endif %}</p>
+      <div class="re-form__actions"><button type="submit" class="re-btn re-btn--accent">Envoyer ma demande</button><button type="button" class="re-btn re-btn--line" data-re-close>Annuler</button></div>
+      <p class="re-form__status" role="status" aria-live="polite" data-re-status{% if shop.es_demo %} data-demo{% endif %}>{%- if form.posted_successfully? -%}Votre demande a été transmise à l'agence, qui vous recontacte. Aucune visite n'est réservée tant qu'elle ne vous l'a pas confirmée.{%- endif -%}</p>
+      {%- if form.errors -%}<div class="re-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+    {%- endform -%}
+  </dialog>
+
+  {%- comment -%} Visionneuse : photos du bien dans l'ordre, compteur réel, clavier (flèches, Échap). {%- endcomment -%}
+  <dialog class="re-lightbox" data-re-lightbox aria-label="Photos du bien">
+    <button type="button" class="re-lightbox__close" data-re-close aria-label="Fermer">{% render 'mh-icon', name: 'close' %}</button>
+    <button type="button" class="re-lightbox__nav re-lightbox__nav--prev" data-re-prev aria-label="Photo précédente">{% render 'mh-icon', name: 'arrow-left' %}</button>
+    <figure class="re-lightbox__figure"><img data-re-lb-img alt=""><figcaption><span data-re-lb-caption></span> <span class="re-lightbox__count" data-re-lb-count></span></figcaption></figure>
+    <button type="button" class="re-lightbox__nav re-lightbox__nav--next" data-re-next aria-label="Photo suivante">{% render 'mh-icon', name: 'arrow' %}</button>
+  </dialog>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Fiche d'un bien",
+  "tag": "div",
+  "class": "section-re-bien",
+  "settings": [
+    { "type": "paragraph", "content": "Les informations du bien (photos, plan, prix, équipements, quartier) se modifient dans l'onglet « Biens » du studio." },
+    { "type": "url", "id": "buy_url", "label": "Page « Acheter »" },
+    { "type": "url", "id": "rent_url", "label": "Page « Louer »" },
+    { "type": "text", "id": "visit_label_sale", "label": "Bouton de visite (vente)", "default": "Demander une visite" },
+    { "type": "text", "id": "visit_label_rent", "label": "Bouton de visite (location)", "default": "Organiser une visite" },
+    { "type": "text", "id": "callback_label", "label": "Bouton de rappel (vente)", "default": "Être rappelé" },
+    { "type": "text", "id": "file_label", "label": "Bouton du dossier (location)", "default": "Préparer mon dossier" },
+    { "type": "text", "id": "share_label", "label": "Bouton de partage", "default": "Partager" },
+    { "type": "text", "id": "ask_title", "label": "Titre de l'encadré de contact", "default": "Ce bien vous intéresse ?" },
+    { "type": "text", "id": "ask_text", "label": "Texte de l'encadré de contact", "default": "Nos conseillers sont à votre disposition pour organiser une visite ou vous rappeler." },
+    { "type": "text", "id": "hood_title", "label": "Titre du quartier (vente)", "default": "Un quartier recherché" },
+    { "type": "header", "content": "Carte illustrative" },
+    { "type": "image_picker", "id": "map_image", "label": "Image de la carte" },
+    { "type": "text", "id": "map_asset", "label": "Image de la carte (fichier du thème)" },
+    { "type": "text", "id": "map_alt", "label": "Description de la carte" },
+    { "type": "text", "id": "map_label", "label": "Mention sur la carte", "default": "Carte illustrative : emplacement approximatif" },
+    { "type": "header", "content": "Étapes" },
+    { "type": "text", "id": "steps_title_sale", "label": "Titre des étapes (vente)", "default": "Votre achat, étape par étape" },
+    { "type": "text", "id": "steps_title_rent", "label": "Titre des étapes (location)", "default": "Votre location en toute sérénité" },
+    { "type": "text", "id": "steps_text_rent", "label": "Texte sous le titre (location)" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 8 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Étape",
+      "settings": [
+        { "type": "select", "id": "applies", "label": "Biens concernés", "default": "location", "options": [ { "value": "all", "label": "Tous" }, { "value": "vente", "label": "À vendre" }, { "value": "location", "label": "À louer" } ] },
+        { "type": "select", "id": "icon", "label": "Icône", "default": "calendar", "options": [ { "value": "calendar", "label": "Calendrier" }, { "value": "document", "label": "Document" }, { "value": "key", "label": "Clé" }, { "value": "handshake", "label": "Poignée de main" }, { "value": "signature", "label": "Signature" }, { "value": "check", "label": "Coche" } ] },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" }
+      ]
+    },
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        { "type": "select", "id": "applies", "label": "Biens concernés", "default": "all", "options": [ { "value": "all", "label": "Tous" }, { "value": "vente", "label": "À vendre" }, { "value": "location", "label": "À louer" } ] },
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Réponse" }
+      ]
+    }
+  ]
+}
+{% endschema %}

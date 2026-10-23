@@ -238,7 +238,6 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
   };
   const template = (rows: [string, SectionInstance][]): TemplateJson => ({ order: rows.map(([k]) => k), sections: Object.fromEntries(rows) });
   const pad = (top: number, bottom = top) => ({ padding_top: top, padding_bottom: bottom });
-  const bienUrl = (ref: string) => { const b = biens.find((x) => x.ref === ref); return b ? `/pages/bien/${b.handle}` : "/pages/acheter"; };
   const BUY = "/pages/acheter", RENT = "/pages/louer", MAP = "/pages/carte", CONTACT = "/pages/contact", ESTIMATE = "/pages/estimer", SELL = "/pages/vendre", LET = "/pages/mettre-en-location", AGENCY = "/pages/agence", ADVICE = "/pages/conseils", FAVORITES = "/pages/favoris";
   const tile = (settings: Record<string, unknown>) => ({ type: "tile", settings });
   const pageHero = (heading: string, text: string, file: string, extra: Record<string, unknown> = {}) => section("re-hero", { layout: "page", height: "short", text_side: "middle", ...img(file), heading, text: p(text), ...extra, color_scheme: "scheme-1", padding_bottom: 0 });
@@ -290,6 +289,23 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
     ["map", section("re-listings", { mode: "vente", layout: "map", heading: "", note: "", link_label: "", limit: 0, show_filters: true, use_url: true, show_count: true, show_sort: true, per_page: 0, tabs: "view", overlap: true, default_city: "Aix-en-Provence", ...img("carte-reference.png", "map"), map_label: "Carte illustrative", ...pad(0, 48) })],
   ]);
 
+  // ── Fiche d'un bien (planches 03 et 04) : un seul modèle pour tous les biens, rempli par l'onglet « Biens ». ────
+  const q = (question: string, answer: string, applies = "location") => ({ type: "question", settings: { applies, question, answer: p(answer) } });
+  spec.templates["metaobject/bien"] = template([
+    ["bien", section("re-bien", { buy_url: BUY, rent_url: RENT, ...img("carte-reference.png", "map"), map_label: "Carte illustrative : emplacement approximatif", hood_title: "Un quartier recherché", steps_text_rent: "Un accompagnement simple et personnalisé à chaque étape.", padding_top: 8, padding_bottom: 32 }, [
+      { type: "step", settings: { applies: "location", icon: "calendar", title: "Visiter le bien", text: "Organisez une visite selon vos disponibilités." } },
+      { type: "step", settings: { applies: "location", icon: "document", title: "Constituer votre dossier", text: "Nous vous guidons sur les pièces à fournir." } },
+      { type: "step", settings: { applies: "location", icon: "key", title: "Signer et emménager", text: "Une fois votre dossier validé, vous signez votre bail et récupérez les clés." } },
+      q("Le logement est-il meublé ?", "C'est indiqué en tête de fiche et dans les équipements (« Meublé »). Pour la liste du mobilier, demandez-la à l'agence."),
+      q("Les charges comprennent-elles l'eau et l'internet ?", "Le montant des charges figure dans les informations financières ; leur détail est à renseigner par l'agence."),
+      q("Quand est-il disponible ?", "La date figure dans les informations financières. « Date à confirmer » signifie que l'agence vous la précisera."),
+      q("Y a-t-il un stationnement à proximité ?", "Information à renseigner par l'agence pour ce bien."),
+      q("Quels sont les documents à fournir pour le dossier de location ?", "L'agence vous remet la liste des pièces à fournir (liste à renseigner par l'agence)."),
+      q("Puis-je visiter le bien rapidement ?", "Envoyez une demande de visite depuis cette fiche : l'agence vous recontacte pour convenir d'un créneau. Aucune visite n'est réservée automatiquement."),
+    ])],
+    ["similar", section("re-listings", { mode: "similar", layout: "mini", heading: "Autres biens [transaction] à [ville]", note: "", link_label: "", limit: 4, same_city: true, ...pad(8, 48) })],
+  ]);
+
   // Pages, menus, en-tête et pied (planches 01 à 07).
   spec.store.pages = pages.map((pg) => ({ handle: pg.handle, title: pg.title, template_suffix: pg.handle, body_html: "", seo: pg.seo }));
   for (const key of Object.keys(spec.templates)) if (key.startsWith("page.")) delete spec.templates[key];
@@ -315,6 +331,5 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
   spec.store.shopName = "Maison & Horizon";
   spec.store.seo = { title: "Maison & Horizon | Acheter, vendre, louer une maison ou un appartement", description: "Maisons, appartements et propriétés de caractère à vendre et à louer, estimation sur demande. Marque, biens et prix de démonstration." };
   spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "", fab_back_to_top: false };
-  void bienUrl;
   hidePendingBlocks(spec);
 }

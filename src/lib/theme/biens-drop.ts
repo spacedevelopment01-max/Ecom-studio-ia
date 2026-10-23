@@ -6,8 +6,8 @@
  */
 import type { StoreBien } from "./spec";
 
-const nbsp = " ";
-/** 485000 → « 485 000 € » (espace fine insécable, comme les maquettes). */
+const nbsp = "\u00A0";
+/** 485000 → « 485 000 € » (espace insécable : la fine insécable est presque invisible en DM Sans aux petites tailles). */
 export const euros = (n: number | null | undefined) => (n == null ? "" : `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, nbsp)}${" "}€`);
 const num = (n: number | null | undefined) => (n == null ? "" : String(Math.round(n * 10) / 10).replace(".", ","));
 
