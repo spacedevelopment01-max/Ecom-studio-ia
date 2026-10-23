@@ -100,7 +100,9 @@ try {
   const site = await context.newPage(); await site.goto(preview("/pages/louer?ville=Lille"), { waitUntil: "load" });
   await site.locator('[data-ref="L-0014"]').waitFor({ timeout: 60000 }); await site.waitForTimeout(800);
   await site.screenshot({ path: path.join(out, "mh-06-site-louer-lille.png"), fullPage: true });
-  await site.locator('[data-ref="L-0014"] a').first().click(); await site.getByRole("heading", { level: 1, name: TITLE }).waitFor({ timeout: 60000 });
+  // Bandeau cookies : on répond comme un visiteur ; puis clic sur le titre (lien qui couvre toute la carte).
+  const refuse = site.locator("[data-cookie-banner] [data-cookie-choice=refuse]").first(); if (await refuse.isVisible()) await refuse.click();
+  await site.locator('[data-ref="L-0014"]').getByRole("link", { name: TITLE }).click(); await site.getByRole("heading", { level: 1, name: TITLE }).waitFor({ timeout: 60000 });
   await site.screenshot({ path: path.join(out, "mh-07-fiche-publiee.png"), fullPage: false }); await site.close();
   steps.push({ step: "publié : visible sur la page Louer (filtre Lille) et fiche ouverte, version du thème inchangée", ok: true, version: version.id });
   await page.keyboard.press("Escape");
