@@ -299,5 +299,34 @@
   }
   window.MaisonHorizon.validateForm = validateForm;
 
+  /* ── Formulaires de pages (estimation en trois étapes, rappel, contact, alerte) ───────────────────────────── */
+  var DEMO_DONE = {
+    estimate: "Demande vérifiée. Ce site est une démonstration : rien n'a été envoyé et aucune estimation n'est calculée en ligne.",
+    callback: "Demande vérifiée. Ce site est une démonstration : rien n'a été envoyé et aucun rappel n'est programmé.",
+    contact: "Message vérifié. Ce site est une démonstration : rien n'a été envoyé.",
+    alert: "Critères vérifiés. Ce site est une démonstration : aucune alerte n'est créée et aucun e-mail ne sera envoyé.",
+  };
+  document.querySelectorAll(".re-form-section form").forEach(function (form) {
+    form.setAttribute("novalidate", "");
+    var status = form.querySelector("[data-re-status]"), kind = status ? status.getAttribute("data-kind") : "contact";
+    var check = validateForm(form, function () {
+      if (status && status.hasAttribute("data-demo")) { status.textContent = DEMO_DONE[kind] || DEMO_DONE.contact; form.classList.add("is-done"); status.focus && status.setAttribute("tabindex", "-1"); status.focus(); return false; }
+      return true;
+    });
+    var steps = Array.prototype.slice.call(form.querySelectorAll("[data-re-step]")), marks = Array.prototype.slice.call(form.querySelectorAll("[data-re-stepper] li"));
+    if (!steps.length) return;
+    var at = 0;
+    function go(i) {
+      at = i;
+      steps.forEach(function (st, j) { st.hidden = j !== i; });
+      marks.forEach(function (m, j) { m.classList.toggle("is-current", j === i); m.classList.toggle("is-done", j < i); if (j === i) m.setAttribute("aria-current", "step"); else m.removeAttribute("aria-current"); });
+      var first = steps[i].querySelector("input:not([type=hidden]), select, textarea"); if (first) first.focus();
+      announce("Étape " + (i + 1) + " sur " + steps.length + " : " + (marks[i] ? marks[i].textContent.replace(/^\d+/, "").trim() : ""));
+    }
+    form.querySelectorAll("[data-re-next-step]").forEach(function (b) { b.addEventListener("click", function () { var bad = check(steps[at]); if (bad) { bad.focus(); return; } go(Math.min(steps.length - 1, at + 1)); }); });
+    form.querySelectorAll("[data-re-prev-step]").forEach(function (b) { b.addEventListener("click", function () { go(Math.max(0, at - 1)); }); });
+    form.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT" && at < steps.length - 1) { e.preventDefault(); var next = steps[at].querySelector("[data-re-next-step]"); if (next) next.click(); } });
+  });
+
   syncFavorites();
 })();

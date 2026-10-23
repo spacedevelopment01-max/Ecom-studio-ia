@@ -65,9 +65,9 @@
         {%- if s.eyebrow != blank -%}<p class="re-feature__kicker">{{ s.eyebrow | escape }}</p>{%- endif -%}
         {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-feature__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
         {%- if s.text != blank -%}<div class="re-feature__text">{{ s.text }}</div>{%- endif -%}
-        {%- if s.button_label != blank -%}<p class="re-feature__more"><a class="re-link" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}
+        {%- if s.button_label != blank -%}{%- if s.button_style == 'button' -%}<div class="re-actions"><a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></div>{%- else -%}<p class="re-feature__more"><a class="re-link" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}{%- endif -%}
       </div>
-      <div class="re-feature__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'lazy' %}</div>
+      <div class="re-feature__media{% if s.quote != blank %} re-feature__media--quote{% endif %}">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'lazy' %}{% if s.quote != blank %}<p class="re-feature__quote">{{ s.quote | escape | newline_to_br }}</p>{% endif %}</div>
     </div>
   {%- endif -%}
 </section>
@@ -94,6 +94,8 @@
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "button_style", "label": "Bouton (histoire)", "default": "link", "options": [ { "value": "link", "label": "Lien souligné" }, { "value": "button", "label": "Bouton plein" } ] },
+    { "type": "textarea", "id": "quote", "label": "Phrase sur panneau vert (histoire)" },
     { "type": "select", "id": "side", "label": "Place de la photo (histoire)", "default": "right", "options": [ { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" } ] },
     { "type": "header", "content": "Bande de contact" },
     { "type": "text", "id": "phone", "label": "Téléphone" },

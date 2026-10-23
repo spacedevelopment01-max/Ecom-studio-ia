@@ -289,6 +289,73 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
     ["map", section("re-listings", { mode: "vente", layout: "map", heading: "", note: "", link_label: "", limit: 0, show_filters: true, use_url: true, show_count: true, show_sort: true, per_page: 0, tabs: "view", overlap: true, default_city: "Aix-en-Provence", ...img("carte-reference.png", "map"), map_label: "Carte illustrative", ...pad(0, 48) })],
   ]);
 
+  // ── Propriétaires : estimation, vendre, mettre en location (planche 06) ─────────────────────────────────────
+  const qa = (title: string, text: string) => tile({ title, text });
+  const ownerHero = (eyebrow: string, heading: string, text: string, file: string, buttons: Record<string, unknown> = {}) => section("re-hero", { layout: "page", height: "medium", text_side: "middle", ...img(file), eyebrow, heading, text: p(text), ...buttons, color_scheme: "scheme-1", padding_bottom: 0 });
+  page("estimer", "Estimer", { title: "Estimer votre bien | Maison & Horizon", description: "Demandez l'estimation de votre maison ou de votre appartement en trois étapes : un conseiller étudie votre bien et vous recontacte. Aucun prix calculé en ligne." }, [
+    ["hero", ownerHero("Estimation de bien immobilier", "Quelle est la valeur\nde votre bien ?", "Faites estimer votre bien par nos experts, pour un avis de valeur fiable et personnalisé, en fonction de votre bien, de son environnement et du marché local.", "estimation-hero.webp", { height: "tall", room_below: 170 })],
+    ["form", section("re-form", { kind: "estimate", overlap: true, quote: "Chaque bien a une histoire, la vôtre mérite une estimation sur mesure.", ...img("estimation-terrasse.webp"), caption: "Une expertise locale pour révéler tout le potentiel de votre bien.", submit_label: "Envoyer ma demande d'estimation", ...pad(0, 32) })],
+    ["method", section("re-tiles", { layout: "icons", align: "center", columns: 4, heading: "Une estimation à affiner avec notre agence", text: p("Notre estimation repose sur une analyse du marché local, de votre bien et de ses spécificités. Elle constitue une première indication, à affiner lors d'un échange avec nos conseillers."), color_scheme: "scheme-1", ...pad(24, 24) }, [
+      tile({ icon: "chart", title: "Analyse du marché local", text: "Étude des biens similaires récemment vendus et en cours de commercialisation." }),
+      tile({ icon: "estimate", title: "Prise en compte des spécificités", text: "Emplacement, état général, prestations, potentiel d'évolution." }),
+      tile({ icon: "shield", title: "Un regard d'expert", text: "Un conseiller qui connaît votre secteur étudie votre demande." }),
+      tile({ icon: "chat", title: "Un échange personnalisé", text: "Une estimation affinée lors d'un rendez-vous, sur place ou en visio." }),
+    ])],
+    ["faq", section("re-tiles", { layout: "questions", heading: "Vos questions sur l'estimation", side_image_asset: asset("estimation-salon.webp"), side_image_alt: MH_MEDIA["estimation-salon.webp"], ...pad(24, 48) }, [
+      qa("L'estimation en ligne est-elle fiable ?", "Ce formulaire ne calcule pas de prix : il transmet les caractéristiques de votre bien à un conseiller, qui vous donne son avis de valeur après étude, puis l'affine lors d'un échange."),
+      qa("Combien de temps faut-il pour obtenir une estimation ?", "Délai à préciser par l'agence."),
+      qa("L'estimation est-elle gratuite et sans engagement ?", "Conditions à préciser par l'agence."),
+      qa("Faut-il forcément un rendez-vous sur place ?", "Non : l'échange peut avoir lieu sur place ou en visio, selon votre choix."),
+    ])],
+  ]);
+  page("vendre", "Vendre", { title: "Vendre votre bien | Maison & Horizon", description: "De l'estimation à la signature : une méthode en cinq étapes pour vendre votre maison ou votre appartement sereinement." }, [
+    ["hero", ownerHero("Vente immobilière", "Vendre votre bien,\navec un accompagnement clair", "De l'estimation à la signature, nous vous guidons à chaque étape pour une vente sereine, dans le respect de vos objectifs.", "vendre-hero.webp", { button_label: "Demander une estimation", button_link: ESTIMATE, button2_label: "Nous contacter", button2_link: CONTACT })],
+    ["steps", section("re-tiles", { layout: "steps", heading: "Un accompagnement en 5 étapes", text: p("Une méthode claire et personnalisée, pour avancer en toute confiance."), ...pad(36, 24) }, [
+      tile({ icon: "house", title: "Estimation de votre bien", text: "Analyse du marché et avis de valeur par nos conseillers." }),
+      tile({ icon: "document", title: "Préparation de la vente", text: "Conseils sur la mise en valeur, diagnostics et documents." }),
+      tile({ icon: "search", title: "Diffusion de l'annonce", text: "Photos et mise en avant sur les canaux choisis avec vous." }),
+      tile({ icon: "pin", title: "Organisation des visites", text: "Sélection des acquéreurs et visites qualifiées." }),
+      tile({ icon: "signature", title: "Offre et signature", text: "Accompagnement jusqu'à la signature chez le notaire." }),
+    ])],
+    ["engagements", section("re-tiles", { layout: "icons", heading: "Nos engagements\npour une vente réussie", side_image_asset: asset("vendre-maison.webp"), side_image_alt: MH_MEDIA["vendre-maison.webp"], media_icon: "house", media_title: "Proximité", media_text: "Une connaissance locale de votre secteur.", ...pad(24, 24) }, [
+      tile({ icon: "estimate", title: "Une estimation juste et argumentée", text: "Basée sur une étude du marché local." }),
+      tile({ icon: "document", title: "Une stratégie de commercialisation sur mesure", text: "Photos, diffusion ciblée, mise en valeur du bien." }),
+      tile({ icon: "user", title: "Un accompagnement personnalisé", text: "Un interlocuteur dédié tout au long de votre projet." }),
+      tile({ icon: "people", title: "Une sélection rigoureuse des acquéreurs", text: "Des visites qualifiées pour gagner du temps." }),
+      tile({ icon: "signature", title: "Un suivi jusqu'à la signature", text: "Coordination avec les notaires et toutes les parties prenantes." }),
+    ])],
+    ["cta", section("re-feature", { layout: "story", heading: "Parlons de votre projet de vente", text: p("Chaque bien est unique. Échangeons ensemble sur vos objectifs et les meilleures options pour une vente sereine."), button_style: "button", button_label: "Demander une estimation", button_link: ESTIMATE, ...img("vendre-olivier.webp"), quote: "Une vente réussie, c'est avant tout une histoire de confiance et d'écoute.", color_scheme: "scheme-2", ...pad(32, 32) })],
+    ["faq", section("re-tiles", { layout: "questions", heading: "Questions fréquentes", side_image_asset: asset("vendre-village.webp"), side_image_alt: MH_MEDIA["vendre-village.webp"], media_side: "right", ...pad(32, 48) }, [
+      qa("Combien de temps faut-il pour vendre un bien ?", "Cela dépend du bien, de son prix et du marché local : l'agence vous donne son analyse lors de l'estimation."),
+      qa("Quels sont les diagnostics obligatoires ?", "La liste dépend du bien (année de construction, installations…) : l'agence vous indique ceux à réaliser pour le vôtre."),
+      qa("Quels sont les frais d'agence ?", "Honoraires à préciser par l'agence (barème à renseigner)."),
+      qa("Comment est fixé le prix de vente ?", "À partir de l'avis de valeur du conseiller et de votre décision : c'est vous qui fixez le prix."),
+    ])],
+  ]);
+  page("mettre-en-location", "Mettre en location", { title: "Mettre votre bien en location | Maison & Horizon", description: "Loyer, annonce, visites, dossier et bail : une méthode en cinq étapes pour louer votre bien. Demandez à être rappelé." }, [
+    ["hero", ownerHero("Location immobilière", "Mettre votre bien\nen location", "Un accompagnement professionnel pour louer votre bien dans les meilleures conditions, en toute sérénité.", "mise-location-hero.webp", { button_label: "Être rappelé par un conseiller", button_link: "#rappel", button2_label: "Nos services", button2_link: "#services" })],
+    ["method", section("re-tiles", { layout: "steps", heading: "Notre méthode pour une location réussie", text: p("Une approche structurée pour valoriser votre bien et trouver le bon locataire."), side_image_asset: asset("mise-location-salon.webp"), side_image_alt: MH_MEDIA["mise-location-salon.webp"], ...pad(36, 24) }, [
+      tile({ title: "Découvrir votre bien", text: "Analyse de ses atouts et de son potentiel locatif." }),
+      tile({ title: "Définir le loyer", text: "Étude du marché local pour un positionnement juste." }),
+      tile({ title: "Préparer l'annonce", text: "Conseils sur la mise en valeur, photos." }),
+      tile({ title: "Organiser les visites", text: "Sélection des candidats et visites qualifiées." }),
+      tile({ title: "Finaliser la location", text: "Étude des dossiers, rédaction du bail et état des lieux." }),
+    ])],
+    ["callback", section("re-form", { kind: "callback", anchor: "rappel", heading: "Demandez à être rappelé", text: p("Échangeons sur votre projet de mise en location et sur nos solutions d'accompagnement."), submit_label: "Être rappelé", quote: "Confiez votre bien en toute sérénité", ...img("mise-location-balcon.webp"), aside_style: "green", ...pad(24, 24) })],
+    ["services", section("re-tiles", { layout: "cards", anchor: "services", columns: 4, heading: "Nos prestations de gestion locative", badge: "Prestations à préciser", text: p("Nos services de gestion locative s'adaptent à vos besoins. Le détail des prestations, conditions et honoraires vous est communiqué par l'agence."), ...pad(24, 24) }, [
+      tile({ icon: "search", title: "Recherche de locataire", text: "Diffusion de l'annonce et sélection des dossiers." }),
+      tile({ icon: "document", title: "Rédaction du bail", text: "Bail et état des lieux." }),
+      tile({ icon: "chart", title: "Suivi administratif", text: "Quittances, révisions de loyer, relation locataire." }),
+      tile({ icon: "house", title: "Gestion courante", text: "Prestations à préciser avec l'agence." }),
+    ])],
+    ["faq", section("re-tiles", { layout: "questions", heading: "Questions fréquentes", side_image_asset: asset("mise-location-chambre.webp"), side_image_alt: MH_MEDIA["mise-location-chambre.webp"], media_side: "right", ...pad(24, 48) }, [
+      qa("Comment est fixé le loyer ?", "À partir de l'étude du marché local par l'agence, dans le respect des règles applicables à votre commune (à vérifier pour votre bien)."),
+      qa("Quels documents sont nécessaires ?", "Liste à renseigner par l'agence."),
+      qa("Quelle est la durée d'un bail de location ?", "Elle dépend du type de location (vide ou meublée) : l'agence vous l'indique pour votre bien."),
+      qa("Proposez-vous la gestion locative ?", "Oui, plusieurs prestations sont proposées ; leur détail et leurs conditions sont à préciser par l'agence."),
+    ])],
+  ]);
+
   // ── Fiche d'un bien (planches 03 et 04) : un seul modèle pour tous les biens, rempli par l'onglet « Biens ». ────
   const q = (question: string, answer: string, applies = "location") => ({ type: "question", settings: { applies, question, answer: p(answer) } });
   spec.templates["metaobject/bien"] = template([

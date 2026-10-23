@@ -1,0 +1,155 @@
+{%- comment -%}
+  Formulaires Maison & Horizon (formulaire de contact de la boutique, vérifié avant l'envoi) :
+  - « Estimation » : trois étapes (votre bien, votre projet, vos coordonnées). Aucun prix n'est calculé : la demande va
+    à un conseiller, qui donne son avis de valeur après étude.
+  - « Rappel » : nom, téléphone, créneau, message (propriétaires bailleurs).
+  - « Contact » : motif en tuiles, coordonnées, message.
+  - « Alerte » : critères d'une recherche ; l'envoi des nouveaux biens par e-mail dépend d'un service d'e-mails que la
+    boutique doit brancher (dit à l'écran) : le thème ne promet aucun envoi automatique.
+  Dans une démonstration du studio, rien n'est envoyé et le message le dit.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign kind = s.kind | default: 'contact' -%}
+{%- assign has_media = false -%}{%- if s.image != blank or s.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
+<section class="es-section re-form-section re-form-section--{{ kind }}{% if s.overlap %} re-form-section--overlap{% endif %}{% if has_media or s.quote != blank %} re-form-section--aside{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %}>
+  <div class="es-container re-form-section__grid">
+    <div class="re-form-card">
+      {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-title re-form-card__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+      {%- if s.text != blank -%}<div class="re-muted re-form-card__text">{{ s.text }}</div>{%- endif -%}
+      {%- form 'contact', class: 're-form re-form--inline' -%}
+        <input type="hidden" name="contact[formulaire]" value="{{ kind }}">
+        {%- if kind == 'estimate' -%}
+          <ol class="re-stepper" role="list" data-re-stepper>
+            <li class="is-current" aria-current="step"><span>1</span>{{ s.step1 | default: 'Votre bien' | escape }}</li>
+            <li><span>2</span>{{ s.step2 | default: 'Votre projet' | escape }}</li>
+            <li><span>3</span>{{ s.step3 | default: 'Vos coordonnées' | escape }}</li>
+          </ol>
+          <fieldset class="re-step" data-re-step="1">
+            <legend class="visually-hidden">{{ s.step1 | default: 'Votre bien' | escape }}</legend>
+            <fieldset class="re-field re-field--wide re-choice">
+              <legend>Quel type de bien souhaitez-vous faire estimer ? *</legend>
+              <div class="re-choice__tiles">
+                <label class="re-tilechoice"><input type="radio" name="contact[type_de_bien]" value="Appartement" required>{% render 'mh-icon', name: 'building' %}<span>Appartement</span></label>
+                <label class="re-tilechoice"><input type="radio" name="contact[type_de_bien]" value="Maison" required>{% render 'mh-icon', name: 'house' %}<span>Maison</span></label>
+              </div>
+            </fieldset>
+            <label class="re-field re-field--wide"><span>Dans quelle ville se situe votre bien ? *</span><input name="contact[ville]" autocomplete="address-level2" placeholder="Ex. : Bordeaux" required></label>
+            <label class="re-field re-field--wide"><span>Adresse du bien</span><input name="contact[adresse]" autocomplete="street-address" placeholder="Ex. : 12 rue des Acacias"></label>
+            <label class="re-field"><span>Surface habitable (m²) *</span><input type="number" name="contact[surface]" min="5" max="5000" inputmode="numeric" placeholder="Ex. : 120" required></label>
+            <label class="re-field"><span>Nombre de pièces</span><select name="contact[pieces]"><option value="">Sélectionner</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6 et plus</option></select></label>
+            <fieldset class="re-field re-field--wide re-choice">
+              <legend>Dispose-t-il d'un extérieur ?</legend>
+              <div class="re-choice__pills"><label class="re-pill"><input type="radio" name="contact[exterieur]" value="Oui"><span>Oui</span></label><label class="re-pill"><input type="radio" name="contact[exterieur]" value="Non"><span>Non</span></label></div>
+            </fieldset>
+            <div class="re-form__actions re-field--wide"><button type="button" class="re-btn re-btn--accent re-btn--block" data-re-next-step>Continuer {% render 'mh-icon', name: 'arrow' %}</button></div>
+          </fieldset>
+          <fieldset class="re-step" data-re-step="2" hidden>
+            <legend class="visually-hidden">{{ s.step2 | default: 'Votre projet' | escape }}</legend>
+            <fieldset class="re-field re-field--wide re-choice">
+              <legend>Quel est votre projet ? *</legend>
+              <div class="re-choice__pills"><label class="re-pill"><input type="radio" name="contact[projet]" value="Vendre" required><span>Vendre</span></label><label class="re-pill"><input type="radio" name="contact[projet]" value="Mettre en location" required><span>Mettre en location</span></label><label class="re-pill"><input type="radio" name="contact[projet]" value="Me renseigner" required><span>Me renseigner</span></label></div>
+            </fieldset>
+            <label class="re-field"><span>Échéance</span><select name="contact[echeance]"><option value="">Sélectionner</option><option>Dans les 3 mois</option><option>Dans 3 à 6 mois</option><option>Dans plus de 6 mois</option><option>Pas encore définie</option></select></label>
+            <label class="re-field"><span>État général</span><select name="contact[etat]"><option value="">Sélectionner</option><option>Refait à neuf</option><option>Bon état</option><option>Travaux à prévoir</option></select></label>
+            <label class="re-field re-field--wide"><span>Ce qui rend votre bien particulier</span><textarea name="contact[body]" rows="3" maxlength="2000" placeholder="Vue, rénovation récente, jardin, stationnement…"></textarea></label>
+            <div class="re-form__actions re-field--wide"><button type="button" class="re-btn re-btn--line" data-re-prev-step>{% render 'mh-icon', name: 'arrow-left' %} Retour</button><button type="button" class="re-btn re-btn--accent" data-re-next-step>Continuer {% render 'mh-icon', name: 'arrow' %}</button></div>
+          </fieldset>
+          <fieldset class="re-step" data-re-step="3" hidden>
+            <legend class="visually-hidden">{{ s.step3 | default: 'Vos coordonnées' | escape }}</legend>
+            <label class="re-field"><span>Nom *</span><input name="contact[name]" autocomplete="name" required></label>
+            <label class="re-field"><span>Téléphone</span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel"></label>
+            <label class="re-field re-field--wide"><span>E-mail *</span><input type="email" name="contact[email]" autocomplete="email" required></label>
+            <label class="re-check re-field--wide"><input type="checkbox" name="contact[consentement]" value="oui" required> <span>J'accepte que ces informations servent uniquement à étudier ma demande d'estimation. *</span></label>
+            <p class="re-form__note re-field--wide">{% if shop.es_demo %}Démonstration : ce formulaire vérifie votre saisie mais n'envoie rien.{% else %}Aucun prix n'est calculé en ligne : un conseiller étudie votre bien et vous recontacte pour vous donner son avis de valeur.{% endif %}</p>
+            <div class="re-form__actions re-field--wide"><button type="button" class="re-btn re-btn--line" data-re-prev-step>{% render 'mh-icon', name: 'arrow-left' %} Retour</button><button type="submit" class="re-btn re-btn--accent">{{ s.submit_label | default: 'Envoyer ma demande' | escape }}</button></div>
+          </fieldset>
+        {%- else -%}
+          <div class="re-form__grid">
+            {%- if kind == 'contact' -%}
+              <fieldset class="re-field re-field--wide re-choice">
+                <legend>{{ s.motif_label | default: 'Votre demande concerne' | escape }} *</legend>
+                <div class="re-choice__tiles re-choice__tiles--4">
+                  {%- assign motifs = s.motifs | default: 'Acheter|house,Louer|key,Vendre ou estimer|estimate,Autre question|chat' | split: ',' -%}
+                  {%- for m in motifs -%}{%- assign parts = m | split: '|' -%}{%- assign motif_icon = parts[1] | strip | default: 'chat' -%}
+                  <label class="re-tilechoice"><input type="radio" name="contact[motif]" value="{{ parts[0] | strip | escape }}" required>{% render 'mh-icon', name: motif_icon %}<span>{{ parts[0] | strip | escape }}</span></label>
+                  {%- endfor -%}
+                </div>
+              </fieldset>
+            {%- endif -%}
+            {%- if kind == 'alert' -%}
+              <label class="re-field"><span>Projet *</span><select name="contact[projet]" required><option value="">Sélectionner</option><option>Acheter</option><option>Louer</option></select></label>
+              <label class="re-field"><span>Ville ou secteur *</span><input name="contact[ville]" placeholder="Ex. : Aix-en-Provence" required></label>
+              <label class="re-field"><span>Type de bien</span><select name="contact[type_de_bien]"><option value="">Tous les types</option><option>Maison</option><option>Appartement</option><option>Villa</option><option>Loft</option><option>Propriété</option></select></label>
+              <label class="re-field"><span>Budget maximum (€)</span><input type="number" name="contact[budget]" min="0" step="1000" inputmode="numeric" placeholder="Ex. : 600000"></label>
+              <label class="re-field"><span>Surface minimum (m²)</span><input type="number" name="contact[surface]" min="0" inputmode="numeric" placeholder="Ex. : 80"></label>
+              <label class="re-field"><span>Chambres minimum</span><select name="contact[chambres]"><option value="">Indifférent</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+            {%- endif -%}
+            <label class="re-field"><span>{% if kind == 'callback' %}Nom complet{% else %}Nom{% endif %} *</span><input name="contact[name]" autocomplete="name" placeholder="{% if kind == 'callback' %}Ex. : Camille Durand{% endif %}" required></label>
+            {%- if kind == 'callback' -%}
+              <label class="re-field"><span>Téléphone *</span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel" placeholder="Ex. : 06 12 34 56 78" required></label>
+              <label class="re-field"><span>Créneau souhaité</span><select name="contact[creneau]"><option value="">Sélectionner un créneau</option><option>En semaine, le matin</option><option>En semaine, l'après-midi</option><option>En semaine, après 18 h</option><option>Le samedi</option></select></label>
+              <label class="re-field"><span>Votre message (facultatif)</span><input name="contact[body]" maxlength="500" placeholder="Votre message…"></label>
+            {%- else -%}
+              <label class="re-field"><span>E-mail *</span><input type="email" name="contact[email]" autocomplete="email" required></label>
+              {%- if kind == 'contact' -%}<label class="re-field re-field--wide"><span>Téléphone</span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel"></label>
+              <label class="re-field re-field--wide"><span>Votre message *</span><textarea name="contact[body]" rows="5" maxlength="4000" required placeholder="{{ s.message_placeholder | escape }}"></textarea></label>{%- endif -%}
+            {%- endif -%}
+            <label class="re-check re-field--wide"><input type="checkbox" name="contact[consentement]" value="oui" required> <span>{{ s.consent_label | default: "J'accepte que mes coordonnées servent uniquement à répondre à ma demande." | escape }} *</span></label>
+            <p class="re-form__note re-field--wide">{% if shop.es_demo %}Démonstration : ce formulaire vérifie votre saisie mais n'envoie rien.{% elsif kind == 'alert' %}{{ s.alert_note | default: "Votre demande d'alerte est transmise à l'agence. L'envoi automatique des nouveaux biens par e-mail demande un service d'e-mails relié à la boutique." | escape }}{% elsif kind == 'callback' %}Un conseiller vous rappelle au créneau choisi, dans la mesure du possible.{% else %}L'agence vous répond par e-mail ou par téléphone.{% endif %}</p>
+            <div class="re-form__actions re-field--wide"><button type="submit" class="re-btn re-btn--accent">{{ s.submit_label | default: 'Envoyer' | escape }} {% render 'mh-icon', name: 'arrow' %}</button></div>
+          </div>
+        {%- endif -%}
+        <p class="re-form__status" role="status" aria-live="polite" data-re-status data-kind="{{ kind }}"{% if shop.es_demo %} data-demo{% endif %}>{%- if form.posted_successfully? -%}{{ s.success_message | default: "Merci : votre demande a bien été transmise à l'agence, qui vous recontacte." | escape }}{%- endif -%}</p>
+        {%- if form.errors -%}<div class="re-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+      {%- endform -%}
+    </div>
+    {%- if has_media or s.quote != blank -%}
+    <aside class="re-form-aside{% if s.aside_style == 'green' %} re-form-aside--green{% endif %}">
+      {%- if s.quote != blank -%}<p class="re-form-aside__quote">{{ s.quote | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if has_media -%}
+      <figure class="re-form-aside__media">
+        {% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, loading: 'lazy' %}
+        {%- if s.caption != blank -%}<figcaption>{{ s.caption | escape | newline_to_br }}</figcaption>{%- endif -%}
+      </figure>
+      {%- endif -%}
+    </aside>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Formulaire immobilier",
+  "tag": "div",
+  "class": "section-re-form",
+  "settings": [
+    { "type": "select", "id": "kind", "label": "Formulaire", "default": "contact", "options": [ { "value": "estimate", "label": "Demande d'estimation (3 étapes)" }, { "value": "callback", "label": "Être rappelé" }, { "value": "contact", "label": "Contact avec motif" }, { "value": "alert", "label": "Alerte de recherche" } ] },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "overlap", "label": "Posé sur la photo d'ouverture", "default": false },
+    { "type": "text", "id": "step1", "label": "Étape 1 (estimation)", "default": "Votre bien" },
+    { "type": "text", "id": "step2", "label": "Étape 2 (estimation)", "default": "Votre projet" },
+    { "type": "text", "id": "step3", "label": "Étape 3 (estimation)", "default": "Vos coordonnées" },
+    { "type": "text", "id": "motif_label", "label": "Question du motif (contact)", "default": "Votre demande concerne" },
+    { "type": "text", "id": "motifs", "label": "Motifs (contact)", "default": "Acheter|house,Louer|key,Vendre ou estimer|estimate,Autre question|chat", "info": "Libellé|icône, séparés par des virgules." },
+    { "type": "text", "id": "message_placeholder", "label": "Exemple de message" },
+    { "type": "text", "id": "consent_label", "label": "Consentement" },
+    { "type": "text", "id": "alert_note", "label": "Précision sous l'alerte" },
+    { "type": "text", "id": "submit_label", "label": "Bouton d'envoi", "default": "Envoyer" },
+    { "type": "text", "id": "success_message", "label": "Message après envoi (boutique en ligne)" },
+    { "type": "header", "content": "À côté du formulaire" },
+    { "type": "textarea", "id": "quote", "label": "Phrase mise en avant" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "textarea", "id": "caption", "label": "Légende de la photo" },
+    { "type": "select", "id": "aside_style", "label": "Style de la colonne", "default": "plain", "options": [ { "value": "plain", "label": "Clair" }, { "value": "green", "label": "Panneau vert" } ] },
+    { "type": "text", "id": "anchor", "label": "Ancre (lien direct)", "info": "Ex. « rappel » : un bouton peut mener à #rappel." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "presets": [ { "name": "Formulaire immobilier" } ]
+}
+{% endschema %}

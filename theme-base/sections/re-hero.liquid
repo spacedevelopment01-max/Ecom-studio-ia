@@ -5,7 +5,7 @@
   - « Page » : surtitre, titre, texte, mention et jusqu'à deux boutons (pages intérieures, propriétaires, agence).
 {%- endcomment -%}
 {%- assign s = section.settings -%}
-<section class="es-section re-hero re-hero--{{ s.layout }} re-hero--h-{{ s.height }}{% if s.text_side == 'bottom' %} re-hero--bottom{% endif %} color-{{ s.color_scheme }}" style="--pt:0px;--pb:{{ s.padding_bottom }}px;" data-re-hero>
+<section class="es-section re-hero re-hero--{{ s.layout }} re-hero--h-{{ s.height }}{% if s.text_side == 'bottom' %} re-hero--bottom{% endif %} color-{{ s.color_scheme }}" style="--pt:0px;--pb:{{ s.padding_bottom }}px;{% if s.room_below > 0 %}--re-room:{{ s.room_below }}px;{% endif %}" data-re-hero>
   <div class="re-hero__photo">
     {% render 'ed-media', image: s.image, asset: s.image_asset, mobile_asset: s.mobile_image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, loading: 'eager', role_label: 'Photo d’ouverture' %}
   </div>
@@ -84,6 +84,7 @@
     { "type": "text", "id": "label_budget", "label": "Libellé du budget", "default": "Budget" },
     { "type": "text", "id": "search_label", "label": "Bouton de recherche", "default": "Rechercher" },
     { "type": "text", "id": "search_title", "label": "Nom du formulaire (lecteurs d'écran)", "default": "Rechercher un bien" },
+    { "type": "range", "id": "room_below", "label": "Espace sous le texte (bloc posé sur la photo)", "min": 0, "max": 240, "step": 10, "unit": "px", "default": 0 },
     { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
   ],
