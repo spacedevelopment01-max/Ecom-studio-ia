@@ -71,8 +71,8 @@
     function setKind(k) {
       kind = k;
       form.querySelectorAll("[data-re-tab]").forEach(function (t) { var on = t.getAttribute("data-re-tab") === k; t.classList.toggle("is-active", on); t.setAttribute("aria-selected", on ? "true" : "false"); });
-      var url = form.getAttribute(k === "vente" ? "data-buy" : "data-rent");
-      if (url) form.setAttribute("action", url);
+      var target = form.querySelector('[data-re-target="' + k + '"]');
+      if (target && target.getAttribute("href")) form.setAttribute("action", target.getAttribute("href"));
       fillBudgets(form, k);
     }
     form.querySelectorAll("[data-re-tab]").forEach(function (t) { t.addEventListener("click", function () { setKind(t.getAttribute("data-re-tab")); }); });

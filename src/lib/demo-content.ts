@@ -17,7 +17,7 @@ export function demos(file: "manifest.json" | "manifest.en.json" = "manifest.jso
 }
 
 /** Les seules démonstrations du studio (priorité du 19 octobre 2026) ; toute autre entrée du manifeste est ignorée. */
-export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon"] as const;
+export const DEMO_IDS = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"] as const;
 
 const present = (src: string | undefined) => !!src && fs.existsSync(path.join(process.cwd(), "public", src.replace(/^\//, "")));
 /**

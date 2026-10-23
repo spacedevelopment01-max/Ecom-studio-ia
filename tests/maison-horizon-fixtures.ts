@@ -189,7 +189,7 @@ export async function maisonHorizonProject(userId: string) {
     contactMode: "form" as const, contactModes: ["form" as const],
   };
   const local = localBrand(product, "Maison & Horizon", { business: "services", services });
-  saveBrand(pid, { ...local.brand, name: "Maison & Horizon", generatedBy: "local" as const, tagline: "Un lieu à vous. Une nouvelle histoire.", story: "Maison & Horizon est une marque de démonstration du studio : une agence pour acheter, vendre et louer des maisons et des appartements de caractère.", positioning: "Maisons, appartements, propriétés d'exception : en ville comme à la campagne, un accompagnement pour acheter, vendre ou louer.", palette: { primary: "#1F3A2F", secondary: "#E7DCC8", accent: "#B4553A", light: "#F7F2EA", dark: "#16241C" }, direction: "maison-horizon" as never });
+  saveBrand(pid, { ...local.brand, name: "Maison & Horizon", generatedBy: "local" as const, tagline: "Un lieu à vous. Une nouvelle histoire.", story: "Maison & Horizon est une marque de démonstration du studio : une agence pour acheter, vendre et louer des maisons et des appartements de caractère.", positioning: "Maisons, appartements, propriétés d'exception : en ville comme à la campagne, un accompagnement pour acheter, vendre ou louer.", palette: { primary: "#163A2C", secondary: "#E7DCC8", accent: "#AC4E2A", light: "#F7F2EA", dark: "#16241C" }, direction: "maison-horizon" as never });
   saveStrategy(pid, local.strategy);
   saveServices(pid, services);
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", "mono", "services", now(), pid);

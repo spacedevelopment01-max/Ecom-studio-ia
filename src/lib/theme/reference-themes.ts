@@ -717,11 +717,19 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     palette: (k) => {
       const ivory = k.light("#F7F2EA");
       const band = k.mix(ivory, "#D9C9AE", 0.32);
-      // Vert profond de la marque (sa teinte, assombrie au besoin) : #1F3A2F pour la démonstration.
+      // Vert profond de la marque (sa teinte, assombrie au besoin) : #163A2C pour la démonstration.
       const green = k.tint(k.p.primary, 0.18);
       return [k.scheme(ivory, green, k.accentOn(ivory)), k.scheme(band, green, k.accentOn(band)), k.scheme(green, ivory, k.onDark(green), 0.06), k.scheme("#FFFFFF", green, k.accentOn("#FFFFFF"))];
     },
-    home: (k) => [k.lib("re-hero", 1, { layout: "home", heading: k.hero.heading, image_asset: k.im.hero ?? k.im.lifestyle ?? "" }), k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4 }), k.faqSec(1, 4, "lines"), k.cta(3)],
+    // Composition « boutique » de repli (le thème sert les agences, catégorie Prestations de services) : sections communes.
+    home: (k) => [
+      k.lib("image-with-text", 1, { layout: "image-left", image_asset: k.im.lifestyle ?? k.im.hero ?? "" }),
+      k.lib("featured-purchase", 1),
+      k.feat(3, "plain", 2),
+      k.lib("media-gallery", 2),
+      k.faqSec(1, 4, "lines"),
+      k.cta(3),
+    ],
     product: (k) => [k.faqSec(1, 4, "lines")],
     // Accueil de la planche 01 : ouverture et recherche, biens à la une, puis les sections de l'agence.
     services: (k) => [

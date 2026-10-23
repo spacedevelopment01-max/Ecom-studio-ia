@@ -135,7 +135,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   // public/demo/maison-horizon/ (hors dépôt, non inscrit au manifeste de l'accueil du studio).
   if (id === "maison-horizon") {
     const c = await maisonHorizonProject(userId);
-    const demo: ManifestDemo = { id, brand: "Maison & Horizon", product: "Achat, vente et location de biens immobiliers", sector: "Agence immobilière", category: "services", direction: "maison-horizon" as DirectionId, palette: ["#1F3A2F", "#E7DCC8", "#B4553A", "#F7F2EA", "#16241C"], photo: "/demo/maison-horizon/accueil-hero.webp", logo: "", images: [], business: "services" };
+    const demo: ManifestDemo = { id, brand: "Maison & Horizon", product: "Achat, vente et location de biens immobiliers", sector: "Agence immobilière", category: "services", direction: "maison-horizon" as DirectionId, palette: ["#163A2C", "#E7DCC8", "#AC4E2A", "#F7F2EA", "#16241C"], photo: "/demo/maison-horizon/accueil-hero.webp", logo: "", images: [], business: "services" };
     return { pid: c.pid, spec: c.spec, demo, missing: c.missing, project: loadProject(c.pid), services: true };
   }
   const d = demoManifest(id), ident = IDENTITY[id];

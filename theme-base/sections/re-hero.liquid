@@ -24,7 +24,9 @@
       {%- endif -%}
     </div>
     {%- if s.layout == 'home' -%}
-    <form class="re-search" action="{{ s.buy_url | default: routes.root_url }}" method="get" data-re-search data-buy="{{ s.buy_url }}" data-rent="{{ s.rent_url }}" role="search" aria-label="{{ s.search_title | default: 'Rechercher un bien' | escape }}">
+    <form class="re-search" action="{{ s.buy_url | default: routes.root_url }}" method="get" data-re-search role="search" aria-label="{{ s.search_title | default: 'Rechercher un bien' | escape }}">
+      {%- comment -%} Adresses des pages Acheter et Louer en liens (réécrites comme tous les liens dans l'aperçu). {%- endcomment -%}
+      <a href="{{ s.buy_url | default: routes.root_url }}" data-re-target="vente" hidden tabindex="-1" aria-hidden="true"></a><a href="{{ s.rent_url | default: routes.root_url }}" data-re-target="location" hidden tabindex="-1" aria-hidden="true"></a>
       <div class="re-tabs" role="tablist">
         <button type="button" role="tab" class="re-tab is-active" aria-selected="true" data-re-tab="vente">{{ s.tab_buy | default: 'Acheter' | escape }}</button>
         <button type="button" role="tab" class="re-tab" aria-selected="false" data-re-tab="location">{{ s.tab_rent | default: 'Louer' | escape }}</button>

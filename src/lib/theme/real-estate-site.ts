@@ -32,6 +32,8 @@ export function addRealEstateSite(spec: ThemeSpec, lang: Lang) {
     { handle: "carte", title: t("Carte des biens", "Property map"), rows: [["hero", hero(t("Nos biens sur la carte", "Our properties on the map"), t("Choisissez une ville pour placer ses biens sur la carte illustrative.", "Choose a city to place its properties on the illustrative map."))], ["map", section("re-listings", { mode: "vente", layout: "map", heading: "", note: "", link_label: "", limit: 0, show_filters: true, use_url: true, show_count: true, show_sort: true, tabs: "view", overlap: true, map_label: t("Carte illustrative", "Illustrative map"), padding_top: 0, padding_bottom: 48 })]] },
     { handle: "estimer", title: t("Estimer", "Valuation"), rows: [["hero", section("re-hero", { layout: "page", height: "medium", eyebrow: t("Estimation", "Valuation"), heading: t("Faites estimer votre bien", "Get your property valued"), text: p(t("Décrivez votre bien : un conseiller l'étudie et vous recontacte avec son avis de valeur.", "Describe your property: an adviser studies it and gets back to you with a valuation.")), image_asset: heroImage, room_below: 150, padding_bottom: 0 })], ["form", section("re-form", { kind: "estimate", overlap: true, padding_top: 0, padding_bottom: 48 })]] },
     { handle: "favoris", title: t("Mes favoris", "My favourites"), rows: [["fav", section("re-favorites", { buy_url: BUY, rent_url: RENT, padding_top: 24, padding_bottom: 48 })]] },
+    // Tableau de bord de ce navigateur (favoris, recherches récentes) : jamais présenté comme un compte client.
+    { handle: "mon-espace", title: t("Mon espace", "My space"), rows: [["dash", section("re-account", { layout: "dashboard", heading: t("Mon projet immobilier", "My property project"), text: t("Vos favoris et vos recherches récentes, gardés dans ce navigateur.", "Your favourites and recent searches, kept in this browser."), favorites_url: FAVORITES, contact_url: "/pages/contact", padding_top: 24, padding_bottom: 48 })]] },
   ];
   for (const pg of pages) {
     if (spec.store.pages.some((x) => x.handle === pg.handle)) continue;
@@ -48,7 +50,7 @@ export function addRealEstateSite(spec: ThemeSpec, lang: Lang) {
   if (main && !main.links.some((l) => l.url === BUY)) main.links.splice(1, 0, { title: t("Acheter", "Buy"), url: BUY }, { title: t("Louer", "Rent"), url: RENT }, { title: t("Estimer", "Valuation"), url: ESTIMATE });
   const footer = spec.store.menus.footer;
   if (footer && !footer.links.some((l) => l.url === MAP)) footer.links.unshift({ title: t("Carte des biens", "Property map"), url: MAP }, { title: t("Mes favoris", "My favourites"), url: FAVORITES });
-  for (const g of Object.values(spec.groups)) for (const s of Object.values(g.sections)) if (s.type === "header") Object.assign(s.settings, { favorites_link: FAVORITES, favorites_label: t("Mes favoris", "My favourites") });
+  for (const g of Object.values(spec.groups)) for (const s of Object.values(g.sections)) if (s.type === "header") Object.assign(s.settings, { favorites_link: FAVORITES, favorites_label: t("Mes favoris", "My favourites"), account_link: "/pages/mon-espace" });
   // L'accueil mène aux pages créées ici.
   for (const s of Object.values(spec.templates.index?.sections ?? {})) {
     if (s.type === "re-hero") Object.assign(s.settings, { buy_url: BUY, rent_url: RENT });

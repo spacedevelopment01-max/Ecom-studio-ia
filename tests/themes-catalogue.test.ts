@@ -34,12 +34,12 @@ const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.i
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
   it("définit 41 thèmes (30 anciens, lisibles seulement, + 11 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158) et n'en propose que 11 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(41);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(41);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(41);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
+    expect(DIRECTIONS).toHaveLength(42);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(42);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(42);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["maison-horizon", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -145,7 +145,10 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
     // Sections créées pour les bibliothèques par famille (issue #141) : elles servent par la galerie de leur famille.
     const { ALL_ENTRIES } = await import("@/lib/theme/section-families");
-    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-")) used.add(d.type);
+    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-") || d.type.startsWith("re-")) used.add(d.type);
+    // Maison & Horizon (issue #172) : informations légales à onglets et article de conseils, composés par sa démonstration
+    // (tests/maison-horizon-fixtures.ts) ; un site client garde la page légale et le journal du moteur.
+    for (const t of ["re-legal", "re-article"]) outside.add(t);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });

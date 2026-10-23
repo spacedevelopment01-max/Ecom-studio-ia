@@ -54,6 +54,17 @@ const SECTION_LIBRARY_EN: Record<string, { name: string; description: string; ke
   "ed-diptych": { name: "Editorial diptych", description: "Asymmetric photographs with independent captions and links.", keywords: "editorial composition scene photograph" },
   "ed-scene": { name: "Scene and story", description: "A portrait, panorama or illustrated closing with complete copy.", keywords: "editorial composition scene photograph" },
   "ed-study": { name: "Concept study", description: "Two captioned views; a comparison control only when images align.", keywords: "editorial composition scene photograph" },
+  // Maison & Horizon (issue #172) : agence immobilière, biens lus dans l'onglet « Biens ».
+  "re-hero": { name: "Property opening", description: "Large photo with a Buy / Rent search (city, type, budget) or a page title with buttons.", keywords: "real estate opening search buy rent" },
+  "re-listings": { name: "Property list", description: "Properties from the Properties tab: featured row, grid with filters, sort and pages, illustrative map with list, or similar properties.", keywords: "real estate listings properties filters map" },
+  "re-tiles": { name: "Property tiles", description: "Two paths, services in a row, captioned areas, articles, numbered steps, cards with filter tabs, commitments or questions.", keywords: "real estate tiles services areas steps" },
+  "re-feature": { name: "Property highlight", description: "An exceptional property, a story with a photo, a photo band, a large photo with a card, a centred call or a contact strip.", keywords: "real estate highlight exceptional property story band" },
+  "re-bien": { name: "Property listing page", description: "Body of a property page, used once per page: gallery and viewer, key figures, description, features, plan, energy ratings, map, neighbourhood, money details and request form.", keywords: "real estate property page gallery viewing" },
+  "re-form": { name: "Property form", description: "Three-step valuation request, call-back, contact with topic or search alert; checked before sending, no price calculated.", keywords: "real estate form valuation call-back alert contact" },
+  "re-favorites": { name: "Favourites and comparison", description: "Properties saved in this browser, removal and side-by-side comparison; not a customer account.", keywords: "real estate favourites compare saved" },
+  "re-account": { name: "Customer area", description: "Sign in or create an account (platform accounts), or a dashboard of this browser's favourites and recent searches.", keywords: "real estate account dashboard sign in" },
+  "re-legal": { name: "Legal information tabs", description: "Legal notice, fees, privacy and cookies in tabs; missing professional details stay “to be filled in”.", keywords: "legal notice fees privacy cookies tabs" },
+  "re-article": { name: "Advice article", description: "Introduction, photo, numbered parts and a key takeaway box.", keywords: "article advice blog parts takeaway" },
   "ed-contact": { name: "First conversation", description: "A short form with editable room choices and explicitly enabled test recording.", keywords: "editorial composition scene photograph" },
 
   "cv-hero": { name: "Conversion hero", description: "Large product visual, rating line (always marked fictional without a reviews app), two-part heading, checked benefits, big button, guarantee line.", keywords: "conversion sales page hero checklist" },
@@ -189,6 +200,17 @@ export const SECTION_LIBRARY: LibraryEntry[] = [
   { type: "ed-diptych", name: "Diptyque éditorial", category: "Images et vidéos", description: "Photographies asymétriques, légendes et liens indépendants.", keywords: "éditorial composition photographie" },
   { type: "ed-scene", name: "Scène et récit", category: "Images et vidéos", description: "Image verticale, panorama ou conclusion illustrée et récit complet.", keywords: "éditorial composition photographie" },
   { type: "ed-study", name: "Étude d’intention", category: "Images et vidéos", description: "Deux vues légendées ; comparateur uniquement si les images sont alignées.", keywords: "éditorial composition photographie" },
+  // Maison & Horizon (issue #172) : agence immobilière, biens lus dans l'onglet « Biens ».
+  { type: "re-hero", name: "Ouverture immobilière", category: "Ouverture", description: "Grande photo avec recherche Acheter / Louer (ville, type, budget), ou titre de page et boutons.", keywords: "immobilier ouverture recherche acheter louer" },
+  { type: "re-listings", name: "Liste de biens", category: "Services", description: "Biens de l'onglet Biens : rangée à la une, grille avec filtres, tri et pages, carte illustrative et liste, ou biens similaires.", keywords: "immobilier biens annonces filtres carte" },
+  { type: "re-tiles", name: "Tuiles immobilières", category: "Textes", description: "Deux chemins, services en ligne, secteurs légendés, articles, étapes numérotées, cartes filtrables, engagements ou questions.", keywords: "immobilier tuiles services secteurs étapes" },
+  { type: "re-feature", name: "Mise en avant immobilière", category: "Textes", description: "Bien d'exception, histoire et photo, bandeau photo, grande photo et encart, appel centré ou bande de contact.", keywords: "immobilier bien d'exception histoire bandeau" },
+  { type: "re-bien", name: "Fiche d'un bien", category: "Structure", description: "Corps de la fiche d'un bien, une fois par page (ne s'ajoute pas) : galerie et visionneuse, chiffres clés, description, équipements, plan, diagnostics, carte, quartier, montants et demande.", keywords: "immobilier fiche bien galerie visite" },
+  { type: "re-form", name: "Formulaire immobilier", category: "Conversion", description: "Demande d'estimation en trois étapes, rappel, contact avec motif ou alerte de recherche ; vérifié avant l'envoi, aucun prix calculé.", keywords: "immobilier formulaire estimation rappel alerte contact" },
+  { type: "re-favorites", name: "Favoris et comparaison", category: "Avancé", description: "Biens mis de côté dans ce navigateur, retrait et comparaison côte à côte ; ce n'est pas un compte client.", keywords: "immobilier favoris comparer sélection" },
+  { type: "re-account", name: "Espace client", category: "Avancé", description: "Connexion ou création de compte (comptes de la plateforme), ou tableau de bord des favoris et recherches de ce navigateur.", keywords: "immobilier compte espace tableau de bord connexion" },
+  { type: "re-legal", name: "Informations légales à onglets", category: "Textes", description: "Mentions, honoraires, confidentialité et cookies en onglets ; les mentions professionnelles manquantes restent « à renseigner ».", keywords: "mentions légales honoraires confidentialité cookies onglets" },
+  { type: "re-article", name: "Article de conseils", category: "Textes", description: "Introduction, photo, parties numérotées et encadré « À retenir ».", keywords: "article conseils blog parties" },
   { type: "ed-contact", name: "Premier échange", category: "Conversion", description: "Formulaire court, type de pièce éditable, enregistrement en test si explicitement autorisé.", keywords: "éditorial composition photographie" },
 
   { type: "cv-hero", name: "Ouverture conversion", category: "Ouverture", description: "Grand visuel produit, ligne de note (toujours marquée fictive sans application d’avis), titre en deux temps, bénéfices cochés, grand bouton, ligne de garantie.", keywords: "conversion page de vente ouverture coches" },
@@ -352,7 +374,8 @@ export const SECTION_LIBRARY: LibraryEntry[] = [
 export const SECTION_CATEGORIES: SectionCategory[] = ["Ouverture", "Produit", "Preuves", "Animations", "Images et vidéos", "Collections", "Textes", "Conversion", "Services", "Avancé", "Structure"];
 
 /** Sections qui ne s'ajoutent pas depuis la bibliothèque (structure de page, gabarits). */
-export const NOT_ADDABLE = new Set(["header", "footer", "announcement-bar", "cart-drawer"]);
+// « re-bien » : corps de la fiche d'un bien (modèle metaobject/bien), comme un gabarit de page.
+export const NOT_ADDABLE = new Set(["header", "footer", "announcement-bar", "cart-drawer", "re-bien"]);
 export const addable = (type: string) => !type.startsWith("main-") && !NOT_ADDABLE.has(type);
 /** Composant structurel : présent dans la bibliothèque pour être retrouvé et réglé, mais ni ajouté ni dupliqué. */
 export const structural = (type: string) => !addable(type);
