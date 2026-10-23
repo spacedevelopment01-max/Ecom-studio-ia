@@ -1,0 +1,184 @@
+[
+  {
+    "path": "maquettes/01-accueil-composition.webp",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 427230,
+    "sha256": "1ac6bdeb8172e0354a64b459fbc01538b944a4e01ccf6b9513af63547eab7c59"
+  },
+  {
+    "path": "lecture-jpg/maquettes/01-accueil-composition.jpg",
+    "width": 1024,
+    "height": 1536,
+    "bytes": 683219,
+    "sha256": "63a4eca1aca2d3ac62affdea67ec57fb54ba5aa259689bee9eddb7c10499450b"
+  },
+  {
+    "path": "maquettes/02-commerce-composition.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 349114,
+    "sha256": "1216c5a7e98b2a82bca83921833ed8a01d1c6e35f3bf4e82914ba7027025cea3"
+  },
+  {
+    "path": "lecture-jpg/maquettes/02-commerce-composition.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 582628,
+    "sha256": "0ac9e15bd7095292ee4fc34a9cef48dfabf8246f4aeb14fc58124b910bb01b4c"
+  },
+  {
+    "path": "maquettes/03-pages-complementaires.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 395916,
+    "sha256": "54836608eca539f2c700ec2e2e83accab68fc9bc1387632835cc826377e8bced"
+  },
+  {
+    "path": "lecture-jpg/maquettes/03-pages-complementaires.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 638428,
+    "sha256": "7a2928bf452d08aebd2f08999bbbe46ce41715bec7e16b634f776d363bb9de8a"
+  },
+  {
+    "path": "maquettes/04-article-et-legal.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 408770,
+    "sha256": "a61c3d47bc0849ebc6f020314ffa57464eefa1d8e58edee1720ba864a3b049dc"
+  },
+  {
+    "path": "lecture-jpg/maquettes/04-article-et-legal.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 685926,
+    "sha256": "a190bf6246a0f7111c7445ef4d51319a6fb7e01b12f375c40f8676039b46f2ef"
+  },
+  {
+    "path": "medias/detail-boucle.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 579872,
+    "sha256": "53679bc238e28e4f06ef13e7de5d94cb497728cca2641ceb475aa7e4bceb0abf"
+  },
+  {
+    "path": "lecture-jpg/medias/detail-boucle.jpg",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 782105,
+    "sha256": "befd85871d3b20ac0999bf8e97f2dcceecb501b6e44270a3ccd9775b1aa86c77"
+  },
+  {
+    "path": "medias/detail-poche.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 2382768,
+    "sha256": "1d6b3528e1c3913bf17e0b1bc9a0a88edf8a3513ffab00f0f852cee1b4af08a8"
+  },
+  {
+    "path": "lecture-jpg/medias/detail-poche.jpg",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1163576,
+    "sha256": "e25cb71a2b6ce24a0b4e52502fafa3c7c929a761833b76552489e05d236c4eca"
+  },
+  {
+    "path": "medias/detail-poignee.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 558712,
+    "sha256": "6b3da57d4561bc25914fe3892979d5afadfefaa2c5b5535fb284bbc2da786a94"
+  },
+  {
+    "path": "lecture-jpg/medias/detail-poignee.jpg",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 739657,
+    "sha256": "b27e70e2a57e18d4e3b533815aedabf38dcdc323bff373f531a32e125de15850"
+  },
+  {
+    "path": "medias/hero-gare.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 383744,
+    "sha256": "1c4c25fba1a2cc357a92bc2d1f72185647c2b03ff3e9a3b0856dbb0be633818d"
+  },
+  {
+    "path": "lecture-jpg/medias/hero-gare.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 627371,
+    "sha256": "0e2bbfb2b65b20fc70bada88a947ce6de1beef3396df8f249d66bf0b0e948df6"
+  },
+  {
+    "path": "medias/lac.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 439576,
+    "sha256": "30adf504ef7ac957d2648d1777fab62cbb82cab2bf84f61f51ffe4f11472948a"
+  },
+  {
+    "path": "lecture-jpg/medias/lac.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 642277,
+    "sha256": "5f78fafe6e94db24f01369e7b6547824bd034b40a033167b8779b58efd15200d"
+  },
+  {
+    "path": "medias/montagne.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 325040,
+    "sha256": "43177df267ce135bf802f6b215c7cc209fdadfa361d6ce8ef04d291a0ef4043a"
+  },
+  {
+    "path": "lecture-jpg/medias/montagne.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 521558,
+    "sha256": "9adb045ea33196f9d9456188f82561b58d8892a10aca779a991e7b83476370b6"
+  },
+  {
+    "path": "medias/paysage.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 653094,
+    "sha256": "2a559d800afa31ca7808f3b1a7f528b6ee4cb3c4dc71e76604109520375fafaa"
+  },
+  {
+    "path": "lecture-jpg/medias/paysage.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 946930,
+    "sha256": "543cdd933f210619cb3460c4f3949644cb6607c5b4e548a17976f09f2c7e6fd5"
+  },
+  {
+    "path": "medias/produit-reference.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 241004,
+    "sha256": "ff4bb11e082aa73822d91fabf92b23f97e438786b67048778f40c67cbc174c43"
+  },
+  {
+    "path": "lecture-jpg/medias/produit-reference.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 356378,
+    "sha256": "92c6b229fe876ea8b94716e055f9fa09a855129d933914103365147a266bac96"
+  },
+  {
+    "path": "medias/train.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 408808,
+    "sha256": "22b830a723faca7bb36f3c7cd4ab3256b3c028ad86dae335e6ecc415edb0226b"
+  },
+  {
+    "path": "lecture-jpg/medias/train.jpg",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 599997,
+    "sha256": "4e262f00e279ae8443369ad7c92499cc4af51c2ca26e9f05352f267c14a1c7da"
+  }
+]
