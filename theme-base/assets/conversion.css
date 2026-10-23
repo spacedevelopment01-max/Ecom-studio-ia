@@ -899,6 +899,9 @@ body[data-conversion="astral"][data-ds] .es-cookies__prefs{display:grid;gap:8px;
 body[data-conversion="astral"][data-ds] .es-cookies__prefs .es-check{padding:10px 12px;border-radius:12px;background:#fff;border:1px solid var(--nt-line);font-size:.86rem}
 body[data-conversion="astral"][data-ds] .es-cookies__needed{padding:10px 12px;border-radius:12px;background:var(--nt-pale);font-size:.84rem;margin:0}
 body[data-conversion="astral"][data-ds] .es-cookies__btn{min-height:44px;min-width:140px}
+/* Boutons sous le texte (comme la fenêtre de la planche 07) : avec « Personnaliser », les quatre boutons ne serrent plus le texte. */
+body[data-conversion="astral"][data-ds] .es-cookies__inner{grid-template-columns:auto minmax(0,1fr)}
+body[data-conversion="astral"][data-ds] .es-cookies__actions{grid-column:1/-1}
 @media(max-width:749px){body[data-conversion="astral"][data-ds] :is(.fs-journal--row,.fs-journal--list) .fs-post__media{position:relative;display:block;min-height:110px}body[data-conversion="astral"][data-ds] :is(.fs-journal--row,.fs-journal--list) .fs-post__media .ed-media{position:absolute;inset:0;height:100%;min-height:0}}
 /* Ouverture sans visuel (projet qui n'a pas encore de photo) : aucun cadre vide. */
 body[data-conversion="astral"] .cv-hero__media:not(:has(.ed-media)){display:none}
@@ -913,15 +916,18 @@ body[data-conversion="astral"] .cv-hero__media:not(:has(.ed-media)){display:none
   body[data-conversion="astral"][data-ds] :is(.cv-banner--image-left,.cv-banner--image-right) .cv-banner__inner{grid-template-columns:1fr}
   body[data-conversion="astral"][data-ds] .cv-banner--image-right .cv-banner__media{order:0}
   body[data-conversion="astral"][data-ds] .cv-cards--columns .cv-cards__grid{grid-template-columns:1fr}
+  body[data-conversion="astral"][data-ds] .cv-cards--columns:not(.cv-cards--mcarousel) .cv-card__media .ed-media{aspect-ratio:7/2;min-height:0}
+  body[data-conversion="astral"][data-ds] .cv-cards--columns:not(.cv-cards--mcarousel) .cv-card__copy{padding:12px 60px 14px 16px}
   body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-cards__grid{grid-template-columns:1fr}
   body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card{grid-template-columns:1fr;min-height:0}
   body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card__media{position:relative;inset:auto;aspect-ratio:16/10}
   body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card__media::after{background:linear-gradient(180deg,transparent 60%,var(--nt-night))}
   body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card__copy{grid-column:1;padding:6px 20px 26px}
   body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-steps__list{grid-template-columns:1fr;gap:14px}
-  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step{grid-template-columns:96px auto minmax(0,1fr);grid-template-rows:auto;align-items:center}
-  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step__media{grid-column:1;grid-row:1}
-  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step__media .ed-media{aspect-ratio:1/1}
+  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step{flex-direction:row;align-items:center;gap:14px}
+  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step__media{flex:0 0 clamp(84px,24vw,112px)}
+  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step__media .ed-media{aspect-ratio:4/3;border-radius:12px}
+  body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step__body{flex:1;min-width:0}
   body[data-conversion="astral"][data-ds] .cv-steps--cards .cv-step::after{content:none!important}
   body[data-conversion="astral"][data-ds] .cv-steps .cv-head .cv-title{text-align:left}
   body[data-conversion="astral"][data-ds] .fs-journal--row .fs-journal__list,body[data-conversion="astral"][data-ds] .fs-journal--list .fs-journal__list{grid-template-columns:1fr}
@@ -930,6 +936,23 @@ body[data-conversion="astral"] .cv-hero__media:not(:has(.ed-media)){display:none
   body[data-conversion="astral"][data-ds] .fs-journal .fs-post__copy{padding:12px 14px}
   body[data-conversion="astral"][data-ds] .es-faq--side .es-faq__grid{display:flex;flex-direction:column}
   body[data-conversion="astral"][data-ds] .es-faq--side.color-scheme-2 .es-faq__head{order:2}
+}
+/* Ouvertures des pages intérieures : grand titre comme sur les planches 04, 05 et 07. */
+body[data-conversion="astral"][data-ds] .cv-banner--background:not(.cv-banner--night) h1.cv-title{font-size:clamp(2.2rem,4.4vw,4rem);line-height:1.03}
+/* Journal (planche 04) : deux grandes cartes par rangée, catégorie au-dessus du titre. */
+body[data-conversion="astral"][data-ds] .fs-journal--grid .fs-journal__list{grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,2.4vw,32px)}
+body[data-conversion="astral"][data-ds] .fs-journal--grid .fs-post__media .ed-media{aspect-ratio:2/1}
+body[data-conversion="astral"][data-ds] .fs-journal--grid .fs-meta{display:block;font:800 .72rem/1.2 var(--font-body);letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--c-accent) 62%,var(--c-text))}
+body[data-conversion="astral"][data-ds] .fs-journal--grid .fs-item__title{font-size:clamp(1.15rem,1.6vw,1.45rem)}
+/* Page introuvable : la chambre reste visible derrière le texte (planche 07). */
+body[data-conversion="astral"][data-ds] .es-404--photo::before{background:linear-gradient(180deg,color-mix(in srgb,var(--nt-night) 78%,transparent),color-mix(in srgb,var(--nt-night) 52%,transparent) 60%,color-mix(in srgb,var(--nt-night) 30%,transparent))}
+body[data-conversion="astral"][data-ds] .es-404--photo :is(h1,.es-muted){color:#fff;text-shadow:0 2px 14px rgba(10,10,38,.7)}
+body[data-conversion="astral"][data-ds] .es-404--photo h1{font-size:clamp(2rem,3.6vw,3.2rem)}
+@media(max-width:749px){
+  body[data-conversion="astral"][data-ds] .cv-banner--background:not(.cv-banner--night) h1.cv-title{font-size:clamp(2rem,9vw,2.6rem)}
+  body[data-conversion="astral"][data-ds] .fs-journal--grid .fs-journal__list{grid-template-columns:1fr}
+  body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card__media{aspect-ratio:16/9}
+  body[data-conversion="astral"][data-ds] .cv-cards--overlay .cv-card__media .ed-media{min-height:0}
 }
 @media (prefers-reduced-motion:reduce){body[data-conversion="astral"][data-ds] :is(.cv-button,.es-button){transition:none;transform:none!important}}
 
@@ -1893,6 +1916,7 @@ body[data-conversion="club"][data-ds] .es-legal__title{display:none}
 .cv-rise__inner{container-type:inline-size;display:grid;grid-template-columns:minmax(0,calc(var(--rise-mw,44) * 1%)) minmax(0,1fr);gap:clamp(24px,4vw,72px);align-items:center}
 .cv-rise--no-media .cv-rise__inner{grid-template-columns:minmax(0,1fr)}
 .cv-rise--media-right .cv-rise__media{order:2}
+.cv-rise--media-right .cv-rise__inner{grid-template-columns:minmax(0,1fr) minmax(0,calc(var(--rise-mw,44) * 1%))}
 .cv-rise__media{position:relative;isolation:isolate;pointer-events:none;align-self:start;margin-top:calc(var(--rise-on) * -1 * (var(--rise,20) * var(--rise-mw,44) * .01cqi + var(--pt,32px)))}
 .cv-rise__img{position:relative;z-index:1;display:block;width:100%;height:auto;filter:drop-shadow(0 26px 30px rgba(15,12,46,.26))}
 .cv-rise__decor{position:absolute;z-index:-1;left:-12%;top:18%;width:124%;height:auto;overflow:visible}
@@ -1907,7 +1931,7 @@ body[data-conversion="club"][data-ds] .es-legal__title{display:none}
 .cv-rise__note{font-size:.78rem;color:color-mix(in srgb,var(--c-text) 72%,transparent)}
 .cv-rise__form{margin:0}
 @media(max-width:749px){
-  .cv-rise__inner{grid-template-columns:minmax(0,1fr);gap:18px}
+  .cv-rise__inner,.cv-rise--media-right .cv-rise__inner{grid-template-columns:minmax(0,1fr);gap:18px}
   .cv-rise__media{order:0!important;justify-self:center;width:calc(var(--rise-mwm,78) * 1cqi);margin-top:calc(var(--rise-on) * -1 * (var(--rise-m,26) * var(--rise-mwm,78) * .01cqi + var(--pt,32px)))}
   .shopify-section:has(:is(.cv-banner--background,.es-hero-full)) + .shopify-section .cv-rise--auto.cv-rise--curve::before{content:"";position:absolute;left:0;right:0;top:-30px;height:31px;border-radius:50% 50% 0 0/100% 100% 0 0;background:var(--c-bg);z-index:-1;pointer-events:none}
   .cv-rise__buy{justify-content:space-between}

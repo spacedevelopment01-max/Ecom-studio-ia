@@ -27,8 +27,8 @@ import { catalogTheme } from "@/lib/theme/theme-catalog";
 import { ACTIVE_THEMES, themeKinds, themePreviewPath } from "@/lib/theme/theme-fit";
 import { THEME_FAMILY, FAMILY_LIBRARY, isStructuralType } from "@/lib/theme/section-families";
 import { themeAllowed } from "@/lib/theme/theme-access";
-import { composeShop } from "@/lib/engine/shop";
-import { saveBrand, loadProject } from "@/lib/projects";
+import { composeShop, buildShop } from "@/lib/engine/shop";
+import { saveBrand, loadProject, currentTheme } from "@/lib/projects";
 import { libraryLoader } from "@/lib/theme/loader";
 import { cmsExport } from "@/lib/cms-v2/export";
 import { designLayer } from "@/lib/cms-v2/design";
@@ -36,6 +36,9 @@ import { demoProject } from "./demo-fixtures";
 import { NOCTIL_MEDIA, NOCTIL_PAGES, NOCTIL_PRICE, NOCTIL_ARTICLES } from "./noctil-fixtures";
 import { KIT_EXCLUDED } from "./noctil-traverse-fixtures";
 import { seedHoldout } from "./lot1-holdout-fixtures";
+import { clientFixture } from "./mission154-fixtures";
+import sharp from "sharp";
+import { saveAsset } from "@/lib/library";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
@@ -305,6 +308,34 @@ describe("NOCTIL appliqué à un autre projet : identité du projet, jamais cell
     const rise = Object.values(spec.templates.index.sections).find((s) => s.type === "cv-rise");
     if (rise && !String(rise.settings.image_asset ?? "").includes("detoure")) expect(rise.settings.overlap).toBe("none");
     expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#B9A6F9/);
+  });
+
+  it("bandeaux des pages chez un client : titre de la page en ouverture, un argument différent par bandeau, « Une question ? » sur les pages d'aide", async () => {
+    const f = await clientFixture({ services: false, copySource: "ai" });
+    await fr(() => buildShop(null, f.pid, { direction: ID, useAi: false }));
+    const spec = currentTheme(f.pid)!.spec;
+    const pageTitle = (template: string) => spec.store.pages.find((x) => `page.${x.template_suffix}` === template)?.title;
+    for (const [template, page] of Object.entries(spec.templates)) {
+      const banners = (page.order ?? Object.keys(page.sections)).map((id) => page.sections[id]).filter((s) => s?.type === "cv-banner" && !s.disabled);
+      const headings = banners.map((s) => String(s.settings.heading));
+      expect(new Set(headings).size, template).toBe(headings.length);
+      const hero = banners.find((s) => s.settings.heading_tag === "h1");
+      if (template.startsWith("page.") && hero) expect(hero.settings.heading, template).toBe(pageTitle(template));
+    }
+    expect(spec.templates["page.mentions-legales"]?.sections.hero?.settings.heading).not.toBe(loadProject(f.pid).product.name);
+    expect(spec.templates["page.livraison-retours"]?.sections.question?.settings.heading).toBe("Une question ?");
+  });
+
+  it("détourage du client avec une grande marge transparente : la remontée en tient compte (haut visible du produit)", async () => {
+    const f = await clientFixture({ services: false, copySource: "ai", brand: "Céramor" });
+    // Dessin d'essai à fond transparent : le haut du produit est à 24 % de la hauteur (la démonstration : 8,85 %).
+    const cut = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><path d="M250 330 Q450 250 650 330 L640 640 Q450 720 260 640 Z" fill="#325d67"/><circle cx="450" cy="250" r="30" fill="#2a4f58"/></svg>`)).png().toBuffer();
+    await saveAsset({ projectId: f.pid, userId: f.user.id, data: cut, name: "theiere-detouree.png", mime: "image/png", origin: "upload", role: "cutout", status: "approved", meta: { width: 900, height: 900, alt: "Théière détourée" } });
+    await fr(() => buildShop(null, f.pid, { direction: ID, useAi: false }));
+    const rise = Object.values(currentTheme(f.pid)!.spec.templates.index.sections).find((s) => s.type === "cv-rise")!;
+    expect(rise.settings.overlap).toBe("auto");
+    expect(rise.settings.rise).toBe(36);
+    expect(rise.settings.mobile_rise).toBe(50);
   });
 });
 

@@ -61,6 +61,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     index.order = index.order.slice(0, res.applied.length);
     index.sections = Object.fromEntries(index.order.map((id) => [id, index.sections[id]]));
     for (const g of Object.values(spec.groups)) for (const s of Object.values(g.sections)) (s as { disabled?: boolean }).disabled = true;
+    // Bandeau de cookies du thème masqué : il cacherait la section montrée.
+    spec.settings = { ...spec.settings, cookie_banner: false };
     const r = await renderPage({ spec, base, cart: [], designMode: PREVIEW_DESIGN_MODE.has(type) }, "/", new URLSearchParams());
     // Aperçu non interactif (pas de navigation), animations d'apparition jouées tout de suite.
     // Bandeau discret : l'aperçu montre des contenus d'exemple (avis, logos…) que le marchand remplacera.

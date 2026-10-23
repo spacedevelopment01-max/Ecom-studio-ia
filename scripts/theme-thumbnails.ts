@@ -37,6 +37,8 @@ try {
     const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
     const shot = async (page: string, width: number, height: number) => {
       const p = await browser.newPage({ viewport: { width, height }, reducedMotion: "reduce" });
+      // Bandeau de cookies (MUSEAU CLUB, NOCTIL) : déjà répondu, la vignette montre la boutique et non le bandeau.
+      await p.addInitScript(() => { try { localStorage.setItem("es-cookie-consent", '{"analytics":false,"marketing":false}'); } catch { /* stockage indisponible */ } });
       await p.goto(`${origin}/${page}`, { waitUntil: "networkidle" });
       await p.evaluate(() => document.querySelectorAll("img[loading=lazy]").forEach((i) => ((i as HTMLImageElement).loading = "eager")));
       await p.waitForLoadState("networkidle");

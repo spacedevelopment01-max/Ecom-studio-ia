@@ -135,6 +135,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const onlyFiles: Record<string, string> = {};
     const nativeTemplates = spec.templates;
     const occurrences = new Map<string, number>();
+    // Arguments du client pour les bandeaux successifs de NOCTIL (caractéristiques, puis étapes), sans doublon.
+    const bannerEntries = [...copy.features.items.map(x => ({ title: x.title, text: x.text })), ...copy.story.steps.map(x => ({ title: x.title, text: x.text }))]
+        .filter(x => genuine(x.title) && genuine(x.text))
+        .filter((x, i, all) => all.findIndex(v => v.title.trim().toLocaleLowerCase() === x.title.trim().toLocaleLowerCase()) === i);
     for (const [template, layout] of Object.entries(shape.templates)) {
         if (p.business === 'services' && template.startsWith('product'))
             continue;
@@ -154,6 +158,28 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             const binding = bindClientCopy(spec, p, copy, sh.type, sh.settings, role, n, role === 'home' ? opening : undefined);
             let section = binding.section;
             binding.missing.forEach(c => pageIssues(sid, c));
+            // NOCTIL (profil « astral ») : ses pages intérieures enchaînent plusieurs bandeaux photo. Le premier bandeau d'une page
+            // porte le titre de la page ; les bandeaux suivants (et, sur l'accueil, ceux qui suivent l'appel à l'achat) prennent
+            // chacun un argument différent du client ; faute d'argument, le bandeau reste masqué (jamais le même titre répété).
+            if (sh.type === 'cv-banner' && spec.settings.conversion_profile === 'astral') {
+                const pageTitle = spec.store.pages.find(x => `page.${x.template_suffix}` === template)?.title ?? labels[role];
+                // Rang parmi les bandeaux « suivants » : après l'ouverture et l'appel à l'achat sur l'accueil, après le bandeau
+                // d'ouverture (titre principal H1) ailleurs.
+                const heroFirst = role !== 'home' && layout.order.map(x => layout.sections[x]).find(x => x.type === 'cv-banner')?.settings.heading_tag === 'h1';
+                const later = n - (role === 'home' ? 2 : heroFirst ? 1 : 0);
+                if (heroFirst && n === 0 && pageTitle)
+                    section.settings = { ...section.settings, eyebrow: p.brand?.name ?? p.name, heading: pageTitle, text: role === 'contact' && genuine(copy.contact.text) ? paragraph(copy.contact.text) : '' };
+                else if (later >= 0 && ['details', 'shipping', 'faq', 'contact'].includes(role))
+                    // Pages d'aide : l'encart « Une question ? » renvoie vers le contact du client.
+                    section.settings = { ...section.settings, eyebrow: '', heading: t('Une question ?', 'A question?'), text: genuine(copy.contact.text) ? paragraph(copy.contact.text) : '', button_label: t('Nous contacter', 'Contact us'), button_link: contactUrl };
+                else if (later >= 0) {
+                    const entry = bannerEntries[later];
+                    if (entry)
+                        section.settings = { ...section.settings, eyebrow: '', heading: entry.title, text: paragraph(entry.text) };
+                    else
+                        pageIssues(sid, 'information_required');
+                }
+            }
             const schema = sectionSchema(spec, sh.type);
             if (sh.type === 'main-product') {
                 const native = Object.values(nativeTemplates[template]?.sections ?? {}).find(s => s.type === 'main-product');
@@ -174,7 +200,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 const candidates = pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services'));
                 // The opening image is never left empty while the project has a fitting view of its own product: the
                 // requested role first, then another product view (no hotspot position or demo media is reused).
-                const asset = explicit ?? chooseClientMedium(candidates, wanted, used, frame)
+                // « Produit en surplomb » (NOCTIL) : le détourage du client (fond transparent) d'abord ; une photo à fond plein
+                // ne remonte jamais sur la photo du dessus (voir plus bas).
+                const cutout = sh.type === 'cv-rise' && field === 'image_asset' && !block ? candidates.find(a => a.role === 'packshot' && /cutout/.test(a.sourceRole) && /\.(png|webp|avif|svg)$/.test(a.file) && !used.has(a.id)) : undefined;
+                const asset = explicit ?? cutout ?? chooseClientMedium(candidates, wanted, used, frame)
                     ?? (opening && !block ? (['packshot', 'detail', 'opening'] as MediaRole[]).filter(r => r !== wanted).map(r => chooseClientMedium(candidates, r, used, frame)).find(Boolean) : undefined);
                 const slot: ContentSlot = { key: desiredKey, page: template, section: sid, ...(block ? { block } : {}), field, role: wanted, aspect: targetAspect, alignment: asset?.reviewed ? 'declared' : asset ? 'to_review' : 'missing' };
                 plan.slots.push(slot);
@@ -185,6 +214,16 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 }
                 used.add(asset.id);
                 settings[field] = asset.file;
+                if (sh.type === 'cv-rise' && field === 'image_asset' && !block && !/cutout/.test(asset.sourceRole))
+                    Object.assign(settings, { overlap: 'none', decor: false, curve: false });
+                // Détourage du client : la remontée compte à partir du haut VISIBLE du produit. Une marge transparente plus haute
+                // que celle du détourage de la démonstration (8,85 % de sa hauteur) est ajoutée à la remontée, sans dépasser 50 %.
+                if (sh.type === 'cv-rise' && field === 'image_asset' && !block && /cutout/.test(asset.sourceRole) && asset.alphaTop !== undefined) {
+                    const extra = Math.max(0, asset.alphaTop - .0885) * (asset.height / asset.width) * 100;
+                    for (const key of ['rise', 'mobile_rise'])
+                        if (typeof settings[key] === 'number')
+                            settings[key] = Math.min(50, Math.round((settings[key] as number) + extra));
+                }
                 onlyFiles[asset.file] = asset.id;
                 Object.assign(slot, { assetId: asset.id, file: asset.file, description: asset.description });
                 const defs = block ? schema?.blocks.find(x => x.type === section.blocks?.[block]?.type)?.settings : schema?.settings;

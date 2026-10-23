@@ -46,6 +46,7 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "cv-gallery": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-specs": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-banner": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
+  "cv-rise": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-stories": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-ingredients": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-quote": { themes: CONVERSION_THEMES, profiles: ["conversion"] },

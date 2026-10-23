@@ -54,6 +54,7 @@ run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,sou
 // (aucune IA, aucune image de la démonstration), rangé comme un détourage du client.
 const client = await clientFixture({ brand: "Céramor" });
 const cut = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><path d="M250 330 Q450 250 650 330 L640 640 Q450 720 260 640 Z" fill="#325d67"/><path d="M640 400 Q790 420 760 540 Q740 600 640 600" fill="none" stroke="#325d67" stroke-width="42"/><path d="M260 420 L130 330" stroke="#325d67" stroke-width="44" stroke-linecap="round"/><ellipse cx="450" cy="300" rx="150" ry="34" fill="#2a4f58"/><circle cx="450" cy="250" r="30" fill="#2a4f58"/></svg>`)).png().toBuffer();
+const cutTop = await (async () => { const { data, info } = await sharp(cut).ensureAlpha().raw().toBuffer({ resolveWithObject: true }); for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) if (data[(y * info.width + x) * info.channels + 3] > 24) return y / info.height; return 0; })();
 const cutAsset = await saveAsset({ projectId: client.pid, userId: client.user.id, data: cut, name: "theiere-anse-detouree.png", mime: "image/png", origin: "upload", role: "cutout", status: "approved", meta: { width: 900, height: 900, alt: "Théière Anse détourée (dessin d'essai du contrôle)" } });
 await fr(() => buildShop(null, client.pid, { direction: "noctil", useAi: false }));
 const clientTheme = currentTheme(client.pid)!, clientSpec = clientTheme.spec;
@@ -63,8 +64,8 @@ assert.ok(clientRise, "section « Produit en surplomb » dans l'accueil du clien
 assert.equal(clientRise!.settings.overlap, "auto", "débordement actif avec le détourage du client");
 assert.ok(String(clientRise!.settings.image_asset).length > 0 && clientSpec.files[String(clientRise!.settings.image_asset)] === cutAsset.id, `détourage du client utilisé (${clientRise!.settings.image_asset})`);
 const dev = spawn("npx", ["next", "dev", "-p", String(PORT), "-H", "127.0.0.1"], { env: { ...process.env, DATA_DIR: temp, STOCK_OFFLINE: "1", NEXT_TELEMETRY_DISABLED: "1" }, stdio: ["ignore", "pipe", "pipe"], detached: true });
-const stopDev = () => { try { process.kill(-dev.pid!, "SIGTERM"); } catch { /* arrêté */ } }; process.on("exit", stopDev);
-let log = ""; dev.stdout.on("data", (d) => { log += d; }); dev.stderr.on("data", (d) => { log += d; });
+let log = "";
+const stopDev = () => { try { fs.writeFileSync(path.join(out, "studio-dev.log"), log.slice(-20000)); } catch { /* sans journal */ } try { process.kill(-dev.pid!, "SIGTERM"); } catch { /* arrêté */ } }; process.on("exit", stopDev); dev.stdout.on("data", (d) => { log += d; }); dev.stderr.on("data", (d) => { log += d; });
 const started = Date.now();
 for (;;) { if (Date.now() - started > 240000) throw new Error("Studio non démarré :\n" + log.slice(-2000)); try { const r = await fetch(`${origin}/connexion`); if (r.ok) break; } catch { /* pas prêt */ } await new Promise((r) => setTimeout(r, 1500)); }
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
@@ -132,11 +133,14 @@ try {
   const actions = async (id: string) => { const list = await index(); const s = list.find((x) => x.id === id)!; const nth = list.filter((x) => x.name === s.name).findIndex((x) => x.id === id); return page.getByRole("button", { name: `Actions pour « ${s.name} »` }).nth(nth); };
   await (await actions(homeRise.id)).click(); await page.getByRole("menuitem", { name: /Modifier les réglages/ }).click();
   const panel = page.locator("[data-setting='rise']").first().locator("xpath=ancestor::*[@data-section-settings][1]"); await panel.waitFor({ timeout: 180000 }); await page.waitForTimeout(600);
-  const slide = async (key: string, steps: number) => { const r = panel.locator(`[data-setting='${key}'] input[type=range]`); await r.focus(); for (let i = 0; i < Math.abs(steps); i++) await r.press(steps > 0 ? "ArrowRight" : "ArrowLeft"); await page.waitForTimeout(2500); };
+  // Curseur placé directement sur la valeur voulue (comme à la souris), puis quitté : le studio enregistre le réglage.
+  // (Aux flèches du clavier, seul le premier cran est enregistré : limite de l'éditeur commun, signalée dans le rapport.)
+  const slide = async (key: string, steps: number) => { const r = panel.locator(`[data-setting='${key}'] input[type=range]`); await r.focus(); await r.evaluate((el, d) => { const input = el as HTMLInputElement; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, String(Number(input.value) + d)); input.dispatchEvent(new Event("input", { bubbles: true })); }, steps); await page.waitForTimeout(400); const saved = page.waitForResponse((res) => /\/theme\/ops/.test(res.url()) && res.request().method() === "POST", { timeout: 120000 }); await r.blur(); await saved; await page.waitForTimeout(1500); };
   const before = JSON.stringify(await section(homeRise.id));
   const rise0 = Number(before.match(/"rise":(\d+)/)![1]), width0 = Number(before.match(/"media_width":(\d+)/)![1]);
   await slide("rise", 10); await slide("media_width", -4);
-  await frame().locator(`.cv-rise[style*="--rise:${rise0 + 10};"]`).first().waitFor({ timeout: 120000 }); await page.waitForTimeout(1500);
+  const saved = JSON.stringify(await section(homeRise.id)); console.log("réglages enregistrés :", saved.match(/"rise":\d+/)?.[0], saved.match(/"media_width":\d+/)?.[0]);
+  await frame().locator(`.cv-rise[style*="--rise:${rise0 + 10};"]`).first().waitFor({ timeout: 120000 }).catch(async (e) => { await shot(page, "04-echec"); console.log("aperçu :", await frame().locator(".cv-rise").first().getAttribute("style").catch(() => "?"), await page.locator("iframe[src*='/preview/']").count()); throw e; }); await page.waitForTimeout(1500);
   const m1 = await riseMetrics(frame());
   assert.ok((m1.overlap ?? 0) > (m0.overlap ?? 0), `le produit remonte davantage (${m0.overlap} → ${m1.overlap} px)`);
   assert.ok(m1.width < m0.width, `le produit est plus petit (${m0.width} → ${m1.width} px)`);
@@ -181,7 +185,9 @@ try {
     const visible = await preview.evaluate(() => document.body.innerText);
     const leak = visible.match(/NOCTIL|galaxie|projecteur|petit monde|ciel immense|Prix de démonstration|69 €/i);
     assert.ok(!leak, `aucun texte ni prix de la démonstration (trouvé : ${leak?.[0]})`);
-    const m = await preview.locator(".cv-rise").first().evaluate((r) => { const img = r.querySelector(".cv-rise__img") as HTMLImageElement; const b = img.getBoundingClientRect(); const prev = r.closest(".shopify-section")!.previousElementSibling!.getBoundingClientRect(); return { on: getComputedStyle(r).getPropertyValue("--rise-on").trim(), src: img.getAttribute("src"), above: Math.round(prev.bottom - b.top) }; });
+    // Haut VISIBLE du produit du client (première ligne non transparente du fichier), au-dessus du bas de sa photo d'ouverture.
+    const m = await preview.locator(".cv-rise").first().evaluate((r, top) => { const img = r.querySelector(".cv-rise__img") as HTMLImageElement; const b = img.getBoundingClientRect(); const prev = r.closest(".shopify-section")!.previousElementSibling!.getBoundingClientRect(); return { on: getComputedStyle(r).getPropertyValue("--rise-on").trim(), src: img.getAttribute("src"), above: Math.round(prev.bottom - b.top), visible: Math.round(prev.bottom - (b.top + b.height * top)) }; }, cutTop);
+    assert.ok(m.visible > 20, `le haut visible du produit du client dépasse sur sa photo (${m.visible} px)`);
     assert.equal(m.on, "1", "débordement actif sur la photo d'ouverture du client");
     assert.ok(m.src && m.src.includes(String(clientRise!.settings.image_asset).replace(/\.[a-z]+$/, "")), `détourage du client affiché (${m.src})`);
     await preview.locator(".cv-rise").first().scrollIntoViewIfNeeded(); await preview.evaluate(() => scrollBy(0, -260)); await preview.waitForTimeout(800);

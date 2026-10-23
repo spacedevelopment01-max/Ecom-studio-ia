@@ -79,10 +79,16 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heur
         for (const [i, id] of value.order.entries())
             for (const [key, setting] of Object.entries(value.sections[id].settings))
                 // Titre de page rallumé quand la section titrée (H1) est masquée faute de contenu authentique (Atelier Rive, Projets).
-                if (!['heading_tag', 'focus_x', 'focus_y'].includes(key) && !(key === 'show_title' && Object.values(s.templates[target].sections).some(x => x.disabled && x.settings.heading_tag === 'h1')))
+                // NOCTIL : sans détourage du client, le produit en surplomb ne déborde plus (réglages propres à la photo).
+                if (!['heading_tag', 'focus_x', 'focus_y'].includes(key) && !(key === 'show_title' && Object.values(s.templates[target].sections).some(x => x.disabled && x.settings.heading_tag === 'h1')) && !(value.sections[id].type === 'cv-rise' && ['overlap', 'decor', 'curve'].includes(key)))
                     expect(s.templates[target].sections[s.templates[target].order[i]].settings[key], `${direction} ${key} reference composition`).toEqual(setting);
     }
     expect(s.meta!.adaptation!.slots.some(x => x.assetId)).toBe(true);
+    // NOCTIL : le client n'a pas de produit détouré, sa photo à fond plein ne remonte jamais sur l'ouverture.
+    if (direction === 'noctil') {
+        const rise = Object.values(s.templates.index.sections).find(x => x.type === 'cv-rise');
+        expect(rise?.settings).toMatchObject({ overlap: 'none', decor: false, curve: false });
+    }
     for (const [tplKey, tpl] of Object.entries(s.templates))
         for (const [sectionId, section] of Object.entries(tpl.sections)) {
             if (section.type === 'timeline' && f.copy.story.steps.length) {
