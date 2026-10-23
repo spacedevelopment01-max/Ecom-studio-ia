@@ -23,6 +23,8 @@ import { DIRECTIONS, isRetiredDirection, type DirectionId } from "@/lib/theme/di
 import { composedDirectionSpec } from "@/lib/theme/direction-thumb";
 import { modelById, previewModelSpec } from "@/lib/theme/page-templates";
 import { loadProject } from "@/lib/projects";
+// Biens immobiliers du projet (onglet « Biens ») ajoutés à la copie rendue, jamais à la version enregistrée.
+import { withBiens } from "@/lib/biens";
 
 export const runtime = "nodejs";
 
@@ -50,7 +52,7 @@ async function load(req: Request, ctx: P) {
     // Thème retiré du catalogue : prévisualisé seulement s'il est déjà celui du projet (jamais proposé à un nouveau choix).
     if (isRetiredDirection(d) && currentTheme(id)?.spec.direction !== d) throw new HttpError(404, L("Thème retiré du catalogue.", "Theme withdrawn from the catalogue."));
     const spec = await composedDirectionSpec(id, d as DirectionId, currentTheme(id)?.spec.language ?? uiLang());
-    return { id, vid, spec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
+    return { id, vid, spec: withBiens(spec, id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
   }
   // « model-<modèle> » : un modèle de page appliqué à une copie du site du projet (aperçu, rien d'enregistré).
   if (vid.startsWith("model-")) {
@@ -60,11 +62,11 @@ async function load(req: Request, ctx: P) {
     const q = new URL(req.url).searchParams;
     const r = previewModelSpec(cur.spec as ThemeSpec, loadProject(id), model, { productHandle: q.get("produit") ?? undefined, service: q.get("prestation") ?? undefined });
     // Le chemin demandé est celui de la page du modèle ; les liens internes de l'aperçu mènent au site actuel.
-    return { id, vid, spec: r.spec, segs: path?.length ? path : r.path.split("/").filter(Boolean), base: `/preview/${id}/v/${seg}`, redirect };
+    return { id, vid, spec: withBiens(r.spec, id), segs: path?.length ? path : r.path.split("/").filter(Boolean), base: `/preview/${id}/v/${seg}`, redirect };
   }
   const v = vid === "current" ? currentTheme(id) : themeVersion(id, vid);
   if (!v) throw new HttpError(404, L("Version de boutique introuvable.", "Store version not found."));
-  return { id, vid, spec: v.spec as ThemeSpec, segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
+  return { id, vid, spec: withBiens(v.spec as ThemeSpec, id), segs: path ?? [], base: `/preview/${id}/v/${seg}`, redirect };
 }
 
 /**

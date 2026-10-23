@@ -14,6 +14,7 @@ import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionI
 import { intlLocale, pick, type Lang } from "../i18n";
 import { L } from "../i18n-server";
 import { sampleBlogs } from "./preview-samples";
+import { bienDrops } from "./biens-drop";
 
 // ---------------------------------------------------------------- polices
 
@@ -282,6 +283,8 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     policies,
     enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",
+    // Biens immobiliers (Maison & Horizon) : `shop.metaobjects.bien.values`, comme les métaobjets de Shopify.
+    metaobjects: { bien: { values: bienDrops(spec.store.biens, base) } },
   };
   const routes = {
     root_url: `${base}/`,
@@ -734,6 +737,12 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   }
   if (p === "/search") return { template: "search", status: 200, search: search.get("q") ?? "" };
   if (p === "/cart") return { template: "cart", status: 200 };
+  // Fiche d'un bien immobilier (Maison & Horizon) : page du métaobjet « bien », comme dans Shopify.
+  m = p.match(/^\/pages\/bien\/([^/]+)$/);
+  if (m) {
+    const bien = (spec.store.biens ?? []).find((b) => b.handle === m![1]);
+    return bien && spec.templates["metaobject/bien"] ? { template: "metaobject/bien", status: 200, handle: bien.handle } : { template: "404", status: 404 };
+  }
   m = p.match(/^\/pages\/([^/]+)$/);
   if (m) {
     const page = spec.store.pages.find((x) => x.handle === m![1]);
@@ -778,6 +787,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const globalSettings = globalSettingsFor(files, opts.base);
 
   let page: any = null;
+  let metaobject: any = null;
   // Accueil : titre pour Google (Theme V2) quand il existe, sinon le nom de la boutique.
   let pageTitle = tplKey === "index" && opts.spec.store.seo?.title ? opts.spec.store.seo.title : opts.spec.store.shopName;
   let seoDescription: string | null = tplKey === "index" ? opts.spec.store.seo?.description || null : null;
@@ -790,6 +800,12 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
     pageTitle = sp?.seo?.title || sp?.title || pageTitle;
     seoDescription = sp?.seo?.description || null;
+  } else if (tplKey === "metaobject/bien") {
+    metaobject = (store.shop.metaobjects.bien.values as any[]).find((b) => b.system.handle === route.handle) ?? null;
+    if (metaobject) {
+      pageTitle = `${metaobject.titre.value} | ${opts.spec.store.shopName}`;
+      seoDescription = String(metaobject.accroche.value || metaobject.description.value).slice(0, 160) || null;
+    }
   } else if (tplKey === "product" || tplKey.startsWith("product.")) {
     const product = storeProducts(opts.spec).find((p) => p.handle === route.handle);
     pageTitle = product?.seo?.title || store.product.title;
@@ -819,6 +835,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     product: tplKey === "product" || tplKey.startsWith("product.") ? store.product : null,
     cart: store.cart,
     page,
+    metaobject,
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
     // Articles « Exemple » pour l'aperçu du studio uniquement (section featured-blog) ; jamais dans le thème exporté.
     blogs: sampleBlogs(opts.spec, opts.base, lang),
