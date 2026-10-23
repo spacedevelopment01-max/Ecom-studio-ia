@@ -183,11 +183,12 @@ export const VISIBLE_STATUSES: BienStatus[] = ["published", "sold", "rented"];
 const ext = (mime: string) => (mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : mime === "image/svg+xml" ? "svg" : "jpg");
 
 /** Les biens visibles du projet, prêts pour le thème, et les fichiers de leurs photos (nom → média du projet). */
-export function storeBiens(projectId: string): { biens: StoreBien[]; files: Record<string, string> } {
+export function storeBiens(projectId: string, opts: { preview?: string | null } = {}): { biens: StoreBien[]; files: Record<string, string> } {
   const files: Record<string, string> = {};
   const mime = (assetId: string) => one<{ mime: string }>("SELECT mime FROM assets WHERE id = ?", assetId)?.mime ?? "image/jpeg";
   const file = (p: { assetId: string; alt: string }) => { const name = `es-bien-${p.assetId}.${ext(mime(p.assetId))}`; files[name] = p.assetId; return { file: name, alt: p.alt }; };
-  const biens = listBiens(projectId).filter((b) => VISIBLE_STATUSES.includes(b.status)).map((b): StoreBien => {
+  // Aperçu d'un brouillon ou d'un bien retiré depuis l'onglet Biens : ce bien seul s'ajoute, le temps de l'aperçu.
+  const biens = listBiens(projectId).filter((b) => VISIBLE_STATUSES.includes(b.status) || (opts.preview && b.id === opts.preview)).map((b): StoreBien => {
     const d = b.data;
     return {
       ref: b.ref, handle: b.handle, transaction: b.transaction, status: b.status, type: d.type, title: d.title, headline: d.headline, summary: d.summary, description: d.description,
@@ -201,8 +202,8 @@ export function storeBiens(projectId: string): { biens: StoreBien[]; files: Reco
 }
 
 /** Copie du thème avec les biens du projet (aperçu, export, démonstration) ; le thème enregistré n'est jamais modifié. */
-export function withBiens(spec: ThemeSpec, projectId: string): ThemeSpec {
-  const { biens, files } = storeBiens(projectId);
+export function withBiens(spec: ThemeSpec, projectId: string, opts: { preview?: string | null } = {}): ThemeSpec {
+  const { biens, files } = storeBiens(projectId, opts);
   if (!biens.length && !spec.store.biens) return spec;
   return { ...spec, files: { ...spec.files, ...files }, store: { ...spec.store, biens } };
 }
