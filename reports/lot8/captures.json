@@ -1,0 +1,483 @@
+{
+  "schema": "lot8-captures-1",
+  "codeCommit": "33ee10f9609456b773ae56c69993b7264f542af3",
+  "provider": "Stripe SIMULÉ ; aucun paiement réel",
+  "items": [
+    {
+      "file": "01-offres-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1321,
+      "bytes": 246909,
+      "sha256": "fd9227caa063b15aa3c1bd0d98fb0470778a38515853672bbb8187638691777c"
+    },
+    {
+      "file": "01-offres-creer-mobile.png",
+      "width": 390,
+      "height": 2840,
+      "bytes": 233284,
+      "sha256": "89c4d50ae7733c09afba85db748b6cfe1b9b3798c304c0c5518c5a60aaa56a36"
+    },
+    {
+      "file": "02-retour-sans-preuve-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 91635,
+      "sha256": "7f65cfdce15beac89d16a1a62a22e4608035dc66a94503d4595e96deb96601ac"
+    },
+    {
+      "file": "02-retour-sans-preuve-creer-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 64623,
+      "sha256": "738098cd1470f8410ccd0c94b8f1036dbf1560ec8e7a1928e09c8ca8a327b7c8"
+    },
+    {
+      "file": "03-abonnement-recharge-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 134236,
+      "sha256": "252a093e5ec7e135d239042bf9982886abc3c2490c9d431e7441f8c80c8b2e44"
+    },
+    {
+      "file": "03-abonnement-recharge-creer-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 58144,
+      "sha256": "77f52237574a0341259f0894c5f556949e9b9f717941110febb84c7fa5b7cf48"
+    },
+    {
+      "file": "03b-authentification-refus-simule-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 148104,
+      "sha256": "64f70211a51acc1d3049f6b50f7384e127651de57083cea8976581e723f0c007"
+    },
+    {
+      "file": "03b-authentification-refus-simule-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 66159,
+      "sha256": "5dc51d80677de608afbda2066f11ba90ab25db284d7c1df7a6eec28f8c52ae0b"
+    },
+    {
+      "file": "04-compte-factures-creer-ordinateur.png",
+      "width": 1440,
+      "height": 2167,
+      "bytes": 162223,
+      "sha256": "462987c2e1d691048d77db52be4247d4a16bef947bef04168bfd2926064dfb06"
+    },
+    {
+      "file": "04-compte-factures-creer-mobile.png",
+      "width": 390,
+      "height": 2605,
+      "bytes": 151189,
+      "sha256": "cb0982148077d3fd62d1bd7b34df8ce665783e6127d1413c1b66fd378a8de411"
+    },
+    {
+      "file": "05-droits-video-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 150244,
+      "sha256": "72283a30bc394b5b0cbc4395c98fe98b3e599f2a863df898cfb99bcc2ab864fb"
+    },
+    {
+      "file": "05-droits-video-creer-mobile.png",
+      "width": 390,
+      "height": 1294,
+      "bytes": 90015,
+      "sha256": "96657b92d92198222d892c3f7695ae1dc2928b34534a712b80777c32bb08afc3"
+    },
+    {
+      "file": "06-droits-publicite-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1054,
+      "bytes": 193523,
+      "sha256": "a3662314bbef2572270289ec86671135661521e4e226345aff656deda4b6487d"
+    },
+    {
+      "file": "06-droits-publicite-creer-mobile.png",
+      "width": 390,
+      "height": 1938,
+      "bytes": 137663,
+      "sha256": "85c01afd6bd3ace58dc1b3a8272819c971708a7322fcd143d476fb6c6dc86de2"
+    },
+    {
+      "file": "07-rdv-initial-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 62274,
+      "sha256": "24d13bbea95e5ede2d2282245797573826323d9b8f56f9593b336d9dba460b09"
+    },
+    {
+      "file": "07-rdv-initial-creer-mobile.png",
+      "width": 390,
+      "height": 867,
+      "bytes": 55619,
+      "sha256": "68f3e4fda65a3516364674210666204ac5c8d61dee4a14f228b61c52aa055877"
+    },
+    {
+      "file": "08-rdv-confirme-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 85734,
+      "sha256": "405078ca03c7ada26ecdff61e8d9ee2d23b91cf90a29de8ba003b6cb7e214e9d"
+    },
+    {
+      "file": "08-rdv-confirme-creer-mobile.png",
+      "width": 390,
+      "height": 1123,
+      "bytes": 78825,
+      "sha256": "5de9ad02bb38232874b16b9eaef7bc4cec11c5a8f62699bf707fe80e567876c7"
+    },
+    {
+      "file": "09-rdv-annule-creer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 84873,
+      "sha256": "3d49ff6643f6b54be13b7cd05e3d254ce23faf481a77a568af73d3a240809db8"
+    },
+    {
+      "file": "09-rdv-annule-creer-mobile.png",
+      "width": 390,
+      "height": 1149,
+      "bytes": 76404,
+      "sha256": "6b5716f756bca839ebcbbad6239a54a41085fa9d61643381f5fad5cba1df7550"
+    },
+    {
+      "file": "01-offres-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1321,
+      "bytes": 246909,
+      "sha256": "fd9227caa063b15aa3c1bd0d98fb0470778a38515853672bbb8187638691777c"
+    },
+    {
+      "file": "01-offres-vendre-mobile.png",
+      "width": 390,
+      "height": 2840,
+      "bytes": 233284,
+      "sha256": "89c4d50ae7733c09afba85db748b6cfe1b9b3798c304c0c5518c5a60aaa56a36"
+    },
+    {
+      "file": "02-retour-sans-preuve-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 91946,
+      "sha256": "b6724aa08e8e7a0e55370d7a9e9f3d2c0bb3915a70be5dfd77045de1df53d48b"
+    },
+    {
+      "file": "02-retour-sans-preuve-vendre-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 65111,
+      "sha256": "4d1310c76235331c7e3e8248f3513886355a4ea4bff900b2f46c7fe5fdde5299"
+    },
+    {
+      "file": "03-abonnement-recharge-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 136792,
+      "sha256": "b5f7dde526770557f873388e5375a2aea0464825b732100e70d12a024e80f2e0"
+    },
+    {
+      "file": "03-abonnement-recharge-vendre-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 60618,
+      "sha256": "e3d495df36bc8122846766c17b38d9edfaa4f9c4e5008a71f5317a672103266c"
+    },
+    {
+      "file": "04-compte-factures-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 2167,
+      "bytes": 164076,
+      "sha256": "6e440323a22ed8b7db384f6dcbc04b453612d77bd31d6aa6e777f931e21d838d"
+    },
+    {
+      "file": "04-compte-factures-vendre-mobile.png",
+      "width": 390,
+      "height": 2627,
+      "bytes": 153606,
+      "sha256": "e2b4996ce3f2642f6ddf20cdfd514ec1bddf07ee339504551b860cb6d91b4c7c"
+    },
+    {
+      "file": "05-droits-video-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 130955,
+      "sha256": "146fa88672b0dcd14afcf53f0ea8ea12d20a0e2731f865e102347fa9f304090f"
+    },
+    {
+      "file": "05-droits-video-vendre-mobile.png",
+      "width": 390,
+      "height": 1138,
+      "bytes": 78035,
+      "sha256": "7436b1e5459388a0ccd880fc075fa8d285bede3210a67693682e8f543eace833"
+    },
+    {
+      "file": "06-droits-publicite-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1030,
+      "bytes": 189988,
+      "sha256": "1f63e99a1becddb6991d4eaaa38d746b70725ff6ea812f8e50c061e0ca48155e"
+    },
+    {
+      "file": "06-droits-publicite-vendre-mobile.png",
+      "width": 390,
+      "height": 1878,
+      "bytes": 134854,
+      "sha256": "a35c8851fab8714dd32e36092d56596658a54276c97918004181ba720eedbf10"
+    },
+    {
+      "file": "07-rdv-initial-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 67377,
+      "sha256": "649808c9b42988f9ce10a874a095ad9376a20ea65ad67eb255b801c6465e97cc"
+    },
+    {
+      "file": "07-rdv-initial-vendre-mobile.png",
+      "width": 390,
+      "height": 945,
+      "bytes": 60639,
+      "sha256": "ff3d46fc62cc2c438dd5979e57c52f7a1621295e9691549821c0c7c1840d5bdc"
+    },
+    {
+      "file": "08-rdv-confirme-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 90606,
+      "sha256": "457cce78639892a583e2644c70b73c7d9d0f6e814a281ae3aceae47d56a00b56"
+    },
+    {
+      "file": "08-rdv-confirme-vendre-mobile.png",
+      "width": 390,
+      "height": 1201,
+      "bytes": 83890,
+      "sha256": "fa694626b948fa3a62416cdffb815c11c2960f44236b33106b28158de93f0b25"
+    },
+    {
+      "file": "09-rdv-annule-vendre-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 89969,
+      "sha256": "9ee1d4795c5b59018bef1a59e86db8bf3423c75d842597913307f9c9d90bf636"
+    },
+    {
+      "file": "09-rdv-annule-vendre-mobile.png",
+      "width": 390,
+      "height": 1227,
+      "bytes": 81216,
+      "sha256": "1018e791ceab392ce911e0bde799f9250e45cd007c237101633ab5cac0ae1482"
+    },
+    {
+      "file": "01-offres-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1321,
+      "bytes": 246909,
+      "sha256": "fd9227caa063b15aa3c1bd0d98fb0470778a38515853672bbb8187638691777c"
+    },
+    {
+      "file": "01-offres-dominer-mobile.png",
+      "width": 390,
+      "height": 2840,
+      "bytes": 233284,
+      "sha256": "89c4d50ae7733c09afba85db748b6cfe1b9b3798c304c0c5518c5a60aaa56a36"
+    },
+    {
+      "file": "02-retour-sans-preuve-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 92062,
+      "sha256": "1f9b4f50ca3384e03444593beedf878de65f2bec3fc58457cec2c4dce89ad8e3"
+    },
+    {
+      "file": "02-retour-sans-preuve-dominer-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 65291,
+      "sha256": "d3f7a0ea8d1addeb4edb760762a40fe878a8eded844ef0bb6cedf72950a40f8f"
+    },
+    {
+      "file": "03-abonnement-recharge-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 135265,
+      "sha256": "c8eb744caeaa574169f75fbb2e0c713ad54c2db2bc000cc381fc674c16e94f0a"
+    },
+    {
+      "file": "03-abonnement-recharge-dominer-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 59743,
+      "sha256": "a10aa1578142f44545c284895c4feb5fc09fb99d99083cbdb8abf9222b6a5855"
+    },
+    {
+      "file": "04-compte-factures-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 2167,
+      "bytes": 163367,
+      "sha256": "7f1bb3191767cb5619c81506246484d205ca2e204ed0bf1515d169cf2403cad4"
+    },
+    {
+      "file": "04-compte-factures-dominer-mobile.png",
+      "width": 390,
+      "height": 2627,
+      "bytes": 152594,
+      "sha256": "51a1e0b32c74416c7781747f98219b33f16a3e9abe94a69ad3daf4f9fc41e44f"
+    },
+    {
+      "file": "05-droits-video-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 134333,
+      "sha256": "1682775f9d21713b01b0dc44befdf37db0e7fc341225c1de54004207867301fb"
+    },
+    {
+      "file": "05-droits-video-dominer-mobile.png",
+      "width": 390,
+      "height": 1198,
+      "bytes": 82737,
+      "sha256": "feb65b2b5068ac9d5b23485e015095a888ea6f4bd791438da27e016d893b0421"
+    },
+    {
+      "file": "06-droits-publicite-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1112,
+      "bytes": 211972,
+      "sha256": "13d84ddfcfd7f7d05280465a6cc078c41abeb4c9070ac9e43f35bb892b010ac1"
+    },
+    {
+      "file": "06-droits-publicite-dominer-mobile.png",
+      "width": 390,
+      "height": 2032,
+      "bytes": 154792,
+      "sha256": "1938247049fe967f3c82f1d07b09d5988cb7ca2a3045637b85402fc37c8ff328"
+    },
+    {
+      "file": "07-rdv-initial-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 73017,
+      "sha256": "23d7769be215b3dec862509cb2c166d2ba043bf8ba23d847f48e6d0d7f0c9024"
+    },
+    {
+      "file": "07-rdv-initial-dominer-mobile.png",
+      "width": 390,
+      "height": 1023,
+      "bytes": 66041,
+      "sha256": "d5391bd6678ddcf50cd0edcb99ee17c3e912c785204d6dc39015f50447ff4ed9"
+    },
+    {
+      "file": "08-rdv-confirme-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 95353,
+      "sha256": "695266eb5903bff1b51bf38e19731671aebec18cf1eed4185075cfa45cd64523"
+    },
+    {
+      "file": "08-rdv-confirme-dominer-mobile.png",
+      "width": 390,
+      "height": 1279,
+      "bytes": 88273,
+      "sha256": "bdb7201876fc94f9cc3c6f81f672d8489c12d9a70f73c08bea43911113aa029c"
+    },
+    {
+      "file": "09-rdv-annule-dominer-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 75952,
+      "sha256": "28bfd408c0c5160d235ea9f55f17f491576934bd2e98095780bc7e09bc744520"
+    },
+    {
+      "file": "09-rdv-annule-dominer-mobile.png",
+      "width": 390,
+      "height": 1023,
+      "bytes": 66485,
+      "sha256": "84f2b17cb60dfd3eaded148756481f743281b59f22c1d193ac8cdce0b3aa3de5"
+    },
+    {
+      "file": "10-assistance-diagnostic-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 80378,
+      "sha256": "491d95d511190853423244a06ebec97a40082ec0fff294afc7ae5fdea38f218d"
+    },
+    {
+      "file": "10-assistance-diagnostic-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 50518,
+      "sha256": "a5a51c0cb80ddddeaa7d18c3d194d0974227bed00149460cf6c8b25570f7701e"
+    },
+    {
+      "file": "11-assistance-equipe-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 80553,
+      "sha256": "f30f98edcbfaa22ba50ac884e766cb8a955455c89a1d2dcd29d70c1ed6e916b9"
+    },
+    {
+      "file": "11-assistance-equipe-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 61607,
+      "sha256": "578d5f3686816e473beb67dfc7f53c58f9c252db3be0a050fcbb16fdcf24202e"
+    },
+    {
+      "file": "12-assistance-reponse-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 72397,
+      "sha256": "e72dd523c447f314ddf48d71444aad8c507f87bbf27856d4338bb85ad69e0039"
+    },
+    {
+      "file": "12-assistance-reponse-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 52110,
+      "sha256": "0fc146e915a6c94eb5b28b45f75ce2345047b526c19a7033a7dd8e9adfa6c4da"
+    },
+    {
+      "file": "13-demande-lien-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 55081,
+      "sha256": "3d26df1b2b9417e4daa2478b964fd40d898b7791f59777f6b88eebf71a0ff216"
+    },
+    {
+      "file": "13-demande-lien-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 43764,
+      "sha256": "d5107923890d69140611941693cd3d0e3e9cca42c51a9e2195fdff2df958c302"
+    },
+    {
+      "file": "14-mot-de-passe-change-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 40924,
+      "sha256": "0a263b9572b9105426563c244eba20cabab8e175bd9d8b12ff266c3158d50ffe"
+    },
+    {
+      "file": "14-mot-de-passe-change-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 32536,
+      "sha256": "7ad8576a444df969ce15530312288d7dd899dcf0fd22b0128d67648a11520174"
+    },
+    {
+      "file": "15-lien-usage-unique-ordinateur.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 29842,
+      "sha256": "d3220a8f0f47a928d43708717ddf62c90218f68c2b04a3a741aed5e84e46805c"
+    },
+    {
+      "file": "15-lien-usage-unique-mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 23539,
+      "sha256": "b7e1f470be47bb934f16742c14d6832376134dccd8b9c6001b21f5717f8e2a84"
+    }
+  ]
+}
