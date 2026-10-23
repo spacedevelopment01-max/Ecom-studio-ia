@@ -22,6 +22,8 @@ import { compileTheme } from "@/lib/theme/compile";
 import { renderPage } from "@/lib/theme/render";
 import { sectionFitReason } from "@/lib/theme/section-fit";
 import { runWithLang } from "@/lib/i18n-server";
+import { cmsExport } from "@/lib/cms-v2/export";
+import { unzipSync, strFromU8 } from "fflate";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { curateMaisonHorizon, MH_BIENS, MH_DIR, MH_MEDIA, MH_UNUSED, maisonHorizonProject } from "./maison-horizon-fixtures";
@@ -127,6 +129,29 @@ describe("Maison & Horizon : les biens alimentent le thème", () => {
     const missing = await page(spec, pid, "/nulle-part");
     expect(missing.status).toBe(404);
     expect(text(missing.html)).toContain("Cette adresse reste à trouver");
+  });
+
+  it("export : biens joints (données, métaobjets Shopify, marche à suivre), photos dans les médias, rien créé en silence", async () => {
+    const { user, pid, spec, photo } = await bareProject("export");
+    const b = createBien(user.id, pid, { transaction: "vente", data: { title: "Maison export", city: "Rennes", surface: 90, price: 300000, photos: [{ assetId: await photo("e.jpg", "#a75"), alt: "Façade" }] } });
+    const live = setBienStatus(pid, b.id, "published");
+    const withListings = withBiens(spec, pid);
+    for (const platform of ["shopify", "woocommerce", "prestashop"] as const) {
+      const e = await fr(() => cmsExport(platform, withListings, () => null));
+      const z = unzipSync(e.zip), names = Object.keys(z);
+      const find = (suffix: string) => names.find((n) => n.endsWith(suffix));
+      expect(find("biens/biens.json"), platform).toBeTruthy();
+      expect(find("biens/LISEZ-MOI.md"), platform).toBeTruthy();
+      expect(e.issues.some((i) => i.code === "listings_require_import"), platform).toBe(true);
+      if (platform === "shopify") {
+        expect(names).toContain("templates/metaobject/bien.json");
+        const meta = JSON.parse(strFromU8(z[find("biens/shopify-metaobjets.json")!])) as { definition: { type: string; fieldDefinitions: { key: string; type: string }[] }; entries: { handle: string; fields: { key: string; value: string }[] }[] };
+        expect(meta.definition.type).toBe("bien");
+        expect(meta.definition.fieldDefinitions.find((f) => f.key === "photos")?.type).toBe("json");
+        expect(meta.entries[0].handle).toBe(live.handle);
+        expect(meta.entries[0].fields.find((f) => f.key === "prix")?.value).toBe("300000");
+      }
+    }
   });
 
   it("les sections immobilières sont réservées au thème Maison & Horizon", () => {
