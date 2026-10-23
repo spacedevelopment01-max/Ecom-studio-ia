@@ -1,0 +1,655 @@
+{
+  "methode": "Recréation photographique IA, référence extraite de la maquette, dimensions natives conservées.",
+  "contraintes": "Respecter sujet, composition, matériaux, éclairage et palette de la référence. Photo seule sans texte, bouton, interface ou logo. Reconstituer les zones masquées. Format paysage 1536x1024, portrait 1024x1536 ou panoramique selon emplacement.",
+  "scenes": [
+    {
+      "name": "accueil-hero",
+      "board": "04.png",
+      "box": [
+        0,
+        0,
+        811,
+        264
+      ],
+      "scene": "wide luxury hair salon interior, long stone counters and large mirrors, cognac leather chairs, foliage, warm natural light"
+    },
+    {
+      "name": "accueil-coupe",
+      "board": "04.png",
+      "box": [
+        29,
+        276,
+        275,
+        399
+      ],
+      "scene": "hair cutting scissors and dark hair brushes resting on warm travertine worktop, close up"
+    },
+    {
+      "name": "accueil-couleur",
+      "board": "04.png",
+      "box": [
+        284,
+        276,
+        529,
+        399
+      ],
+      "scene": "black hair coloring bowls and brushes on beige stone surface, natural warm light"
+    },
+    {
+      "name": "accueil-soin",
+      "board": "04.png",
+      "box": [
+        539,
+        276,
+        784,
+        399
+      ],
+      "scene": "rolled cream towels and dark cosmetic bottles beside green foliage on travertine"
+    },
+    {
+      "name": "accueil-salon",
+      "board": "04.png",
+      "box": [
+        376,
+        494,
+        811,
+        693
+      ],
+      "scene": "wide elegant hair salon with arched mirrors, warm tan leather chairs, stone consoles and plants"
+    },
+    {
+      "name": "detail-fleurs",
+      "board": "04.png",
+      "box": [
+        0,
+        997,
+        133,
+        1122
+      ],
+      "scene": "white flower arrangement on stone counter in elegant hair salon"
+    },
+    {
+      "name": "detail-miroir",
+      "board": "04.png",
+      "box": [
+        141,
+        997,
+        321,
+        1122
+      ],
+      "scene": "arched salon mirror and cognac leather styling chair in warm sunlight"
+    },
+    {
+      "name": "detail-etageres",
+      "board": "04.png",
+      "box": [
+        331,
+        997,
+        475,
+        1122
+      ],
+      "scene": "illuminated product shelves and stone counter in warm beige hair salon"
+    },
+    {
+      "name": "detail-bac",
+      "board": "04.png",
+      "box": [
+        483,
+        997,
+        660,
+        1122
+      ],
+      "scene": "sculptural beige stone washbasin and brass tap, hair salon"
+    },
+    {
+      "name": "detail-attente",
+      "board": "04.png",
+      "box": [
+        669,
+        997,
+        811,
+        1122
+      ],
+      "scene": "comfortable beige armchair and flowers by sunlit salon window"
+    },
+    {
+      "name": "accueil-conseil",
+      "board": "04.png",
+      "box": [
+        406,
+        1197,
+        780,
+        1333
+      ],
+      "scene": "hair salon stone reception console flowers and tan styling chair, warm afternoon light"
+    },
+    {
+      "name": "prestations-hero",
+      "board": "05.png",
+      "box": [
+        17,
+        47,
+        570,
+        257
+      ],
+      "scene": "wide salon with two rounded mirrors over stone counter, three cognac chairs, warm mood"
+    },
+    {
+      "name": "prestation-coupe",
+      "board": "05.png",
+      "box": [
+        47,
+        309,
+        159,
+        385
+      ],
+      "scene": "tan salon styling chair facing round mirror and travertine console"
+    },
+    {
+      "name": "prestation-brushing",
+      "board": "05.png",
+      "box": [
+        47,
+        398,
+        159,
+        474
+      ],
+      "scene": "round hair brushes in dark holder on salon stone counter"
+    },
+    {
+      "name": "prestation-coloration",
+      "board": "05.png",
+      "box": [
+        47,
+        487,
+        159,
+        563
+      ],
+      "scene": "several black salon coloring bowls with cream and copper mixtures, brushes on counter"
+    },
+    {
+      "name": "prestation-balayage",
+      "board": "05.png",
+      "box": [
+        47,
+        576,
+        159,
+        651
+      ],
+      "scene": "brown hair swatches with metallic foil strips on salon colorist worktop, closeup"
+    },
+    {
+      "name": "prestation-soin",
+      "board": "05.png",
+      "box": [
+        47,
+        664,
+        159,
+        741
+      ],
+      "scene": "unbranded white beige and black hair treatment bottles on stone shelf"
+    },
+    {
+      "name": "prestations-experience",
+      "board": "05.png",
+      "box": [
+        17,
+        758,
+        570,
+        898
+      ],
+      "scene": "wide salon wash area, dark cosmetic bottles on stone island, tan leather wash chair, moody light"
+    },
+    {
+      "name": "fiche-coupe-hero",
+      "board": "05.png",
+      "box": [
+        842,
+        47,
+        1132,
+        283
+      ],
+      "scene": "closeup cognac leather styling chair in front of travertine console and arched mirror, dark brushes"
+    },
+    {
+      "name": "fiche-moment",
+      "board": "05.png",
+      "box": [
+        883,
+        779,
+        1115,
+        899
+      ],
+      "scene": "warm salon still life flowers brushes and cosmetics on stone counter"
+    },
+    {
+      "name": "longueur-courte",
+      "board": "01.png",
+      "box": [
+        617,
+        482,
+        699,
+        565
+      ],
+      "scene": "back view of adult woman with short softly wavy dark brown bob haircut, cream blouse, neutral salon background"
+    },
+    {
+      "name": "longueur-mi-longue",
+      "board": "01.png",
+      "box": [
+        717,
+        482,
+        798,
+        565
+      ],
+      "scene": "back view of adult woman with shoulder length wavy chestnut brown hair, neutral warm salon background"
+    },
+    {
+      "name": "longueur-longue",
+      "board": "01.png",
+      "box": [
+        816,
+        482,
+        895,
+        565
+      ],
+      "scene": "back view of adult woman with long wavy brunette hair and caramel highlights, neutral salon background"
+    },
+    {
+      "name": "reservation-prestation",
+      "board": "02.png",
+      "box": [
+        342,
+        78,
+        506,
+        473
+      ],
+      "scene": "vertical salon interior, arched gold mirror, stone counter and cognac chair with chrome base"
+    },
+    {
+      "name": "reservation-miniature",
+      "board": "02.png",
+      "box": [
+        563,
+        355,
+        647,
+        407
+      ],
+      "scene": "small green plant in black pot on beige salon counter with golden accessories"
+    },
+    {
+      "name": "reservation-recapitulatif",
+      "board": "02.png",
+      "box": [
+        305,
+        690,
+        471,
+        771
+      ],
+      "scene": "wide salon interior with arched mirrors stone counters and tan styling chairs"
+    },
+    {
+      "name": "reservation-confirmation",
+      "board": "02.png",
+      "box": [
+        559,
+        738,
+        703,
+        859
+      ],
+      "scene": "two warm beige hair salon chairs facing arched mirrors and travertine consoles"
+    },
+    {
+      "name": "reservation-adresse",
+      "board": "02.png",
+      "box": [
+        812,
+        911,
+        1016,
+        984
+      ],
+      "scene": "minimal hair salon waiting bench brown cushions large green plant and stone wall"
+    },
+    {
+      "name": "salon-hero",
+      "board": "03.png",
+      "box": [
+        5,
+        34,
+        374,
+        240
+      ],
+      "scene": "wide boutique hair salon, tan leather chairs and sculptural stone reception desk with flowers"
+    },
+    {
+      "name": "salon-cadre",
+      "board": "03.png",
+      "box": [
+        16,
+        379,
+        127,
+        486
+      ],
+      "scene": "white ceramic shampoo wash basins with dark chairs and illuminated shelves"
+    },
+    {
+      "name": "salon-details",
+      "board": "03.png",
+      "box": [
+        134,
+        379,
+        244,
+        486
+      ],
+      "scene": "stone reception console with white flowers and indoor green plant"
+    },
+    {
+      "name": "salon-approche",
+      "board": "03.png",
+      "box": [
+        252,
+        379,
+        361,
+        486
+      ],
+      "scene": "hair brushes and cosmetics displayed on warm illuminated wooden shelves"
+    },
+    {
+      "name": "salon-bandeau",
+      "board": "03.png",
+      "box": [
+        4,
+        747,
+        374,
+        950
+      ],
+      "scene": "wide hair salon with gold arched mirrors tan chairs and travertine island with green flower arrangement"
+    },
+    {
+      "name": "inspiration-hero",
+      "board": "03.png",
+      "box": [
+        392,
+        35,
+        760,
+        226
+      ],
+      "scene": "closeup brown glossy hair swatches and black comb on cream fabric, editorial flatlay"
+    },
+    {
+      "name": "inspiration-coupe-outils",
+      "board": "03.png",
+      "box": [
+        408,
+        338,
+        519,
+        451
+      ],
+      "scene": "gold scissors and black comb on ivory textile, closeup flat lay"
+    },
+    {
+      "name": "inspiration-coupe-fauteuil",
+      "board": "03.png",
+      "box": [
+        524,
+        338,
+        635,
+        451
+      ],
+      "scene": "close detail cognac leather salon chair beside travertine counter"
+    },
+    {
+      "name": "inspiration-coupe-detail",
+      "board": "03.png",
+      "box": [
+        640,
+        338,
+        745,
+        451
+      ],
+      "scene": "vase with delicate dried branches on stone counter warm salon"
+    },
+    {
+      "name": "inspiration-couleur-meches",
+      "board": "03.png",
+      "box": [
+        408,
+        526,
+        519,
+        639
+      ],
+      "scene": "fan of natural blonde brown and black hair color swatches on cream background"
+    },
+    {
+      "name": "inspiration-couleur-bols",
+      "board": "03.png",
+      "box": [
+        524,
+        526,
+        635,
+        639
+      ],
+      "scene": "two black salon bowls with copper and auburn color powder, closeup"
+    },
+    {
+      "name": "inspiration-couleur-reflets",
+      "board": "03.png",
+      "box": [
+        640,
+        526,
+        745,
+        639
+      ],
+      "scene": "silky long chestnut hair with copper highlights, macro texture, no face"
+    },
+    {
+      "name": "inspiration-soin-produits",
+      "board": "03.png",
+      "box": [
+        408,
+        709,
+        519,
+        822
+      ],
+      "scene": "hair treatment bottles on stone counter beside leafy branch in vase"
+    },
+    {
+      "name": "inspiration-soin-bacs",
+      "board": "03.png",
+      "box": [
+        524,
+        709,
+        635,
+        822
+      ],
+      "scene": "white ceramic salon shampoo basin with cognac leather reclining chair"
+    },
+    {
+      "name": "inspiration-soin-serviettes",
+      "board": "03.png",
+      "box": [
+        640,
+        709,
+        745,
+        822
+      ],
+      "scene": "rolled beige towels and small ceramic cup with green foliage on stone worktop"
+    },
+    {
+      "name": "texture-travertin",
+      "board": "03.png",
+      "box": [
+        392,
+        843,
+        760,
+        950
+      ],
+      "scene": "closeup warm beige pink travertine natural stone texture, soft directional light"
+    },
+    {
+      "name": "journal-hero",
+      "board": "03.png",
+      "box": [
+        777,
+        34,
+        1148,
+        230
+      ],
+      "scene": "dark ceramic vase with delicate dried branches on layered stone shelves, warm moody background"
+    },
+    {
+      "name": "journal-visite",
+      "board": "03.png",
+      "box": [
+        790,
+        248,
+        955,
+        420
+      ],
+      "scene": "cognac leather salon chair facing gold arched mirror and stone console"
+    },
+    {
+      "name": "journal-outils",
+      "board": "03.png",
+      "box": [
+        790,
+        441,
+        870,
+        516
+      ],
+      "scene": "hair brushes comb and scissors on beige textile flatlay"
+    },
+    {
+      "name": "journal-nuances",
+      "board": "03.png",
+      "box": [
+        878,
+        441,
+        956,
+        516
+      ],
+      "scene": "closeup flowing long chestnut hair with soft copper highlights"
+    },
+    {
+      "name": "journal-rituel",
+      "board": "03.png",
+      "box": [
+        966,
+        441,
+        1045,
+        516
+      ],
+      "scene": "collection of dark and white hair treatment bottles on stone tray"
+    },
+    {
+      "name": "journal-coulisses",
+      "board": "03.png",
+      "box": [
+        1055,
+        441,
+        1134,
+        516
+      ],
+      "scene": "warm salon stone reception desk with flower vase and mirrors"
+    },
+    {
+      "name": "article-brosses",
+      "board": "03.png",
+      "box": [
+        790,
+        635,
+        945,
+        866
+      ],
+      "scene": "natural wooden hair brushes and combs in round travertine holder on beige linen"
+    },
+    {
+      "name": "contact-hero",
+      "board": "03.png",
+      "box": [
+        1164,
+        34,
+        1532,
+        245
+      ],
+      "scene": "wide elegant salon reception, stone island with vase dried branches, tan chairs arched mirrors"
+    },
+    {
+      "name": "contact-bandeau",
+      "board": "03.png",
+      "box": [
+        1164,
+        865,
+        1532,
+        950
+      ],
+      "scene": "panoramic salon interior with tan styling chairs beside stone counter"
+    },
+    {
+      "name": "retrouver-rendez-vous",
+      "board": "06.png",
+      "box": [
+        12,
+        47,
+        507,
+        455
+      ],
+      "scene": "luxury salon with large gold arched mirrors, stone columns counters and tan chairs, reconstruct full continuous interior without central dialog, no lettering"
+    },
+    {
+      "name": "mon-rendez-vous",
+      "board": "06.png",
+      "box": [
+        660,
+        144,
+        745,
+        267
+      ],
+      "scene": "vertical view salon styling chair in tan leather, arched mirror and branches in vase"
+    },
+    {
+      "name": "deplacer-rendez-vous",
+      "board": "06.png",
+      "box": [
+        1067,
+        122,
+        1132,
+        186
+      ],
+      "scene": "salon tan chair before tall arched mirror with stone console"
+    },
+    {
+      "name": "faq-hero",
+      "board": "06.png",
+      "box": [
+        13,
+        550,
+        507,
+        715
+      ],
+      "scene": "wide salon wash area with row of cognac chairs dark shampoo basins and illuminated product shelves"
+    },
+    {
+      "name": "legal-hero",
+      "board": "06.png",
+      "box": [
+        523,
+        550,
+        1015,
+        721
+      ],
+      "scene": "stone salon reception desk with dried branches and warm wall, remove wall lettering"
+    },
+    {
+      "name": "creneau-indisponible",
+      "board": "06.png",
+      "box": [
+        1032,
+        550,
+        1524,
+        879
+      ],
+      "scene": "wide bright salon styling area arched mirrors stone counters and tan chairs, reconstruct behind modal, no dialog"
+    }
+  ]
+}
