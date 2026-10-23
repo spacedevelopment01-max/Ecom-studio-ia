@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Prix de l'IA (choix du propriétaire, 16/10) : jamais d'euros montrés au client, tout coût est un % du budget IA du
  * mois de son compte (même base que la jauge « Reste … % ») ; devis = coût probable (un essai, sans marge de

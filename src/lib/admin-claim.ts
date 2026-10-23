@@ -33,7 +33,7 @@ export function requestAdminClaim(u: Pick<User, "id" | "email" | "role">): strin
     sendMailInBackground({ to: u.email, subject: "E-COM STUDIO IA — confirmer l'accès administrateur", text: `Pour activer l'administration sur ce compte, ouvrez ce lien en étant connecté (valable 24 heures, une seule fois) :\n\n${url}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message.` }, "admin-claim");
   } else {
     // Sans envoi d'e-mails : le lien n'est visible que dans le journal du serveur (propriétaire de l'hébergement).
-    console.info(`[admin] Lien de confirmation de l'accès administrateur (24 h, usage unique) : ${url}`);
+    console.info("[admin] Confirmation administration en attente : configurez l’envoi d’e-mails. Aucun jeton n’est écrit dans les journaux.");
   }
   return url;
 }

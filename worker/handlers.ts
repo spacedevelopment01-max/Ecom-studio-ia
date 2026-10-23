@@ -2,6 +2,8 @@ import { jobStrategy, withStrategyScope, strategyStamp } from "../src/lib/strate
 import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
 import { assertJobEntitlements } from "../src/lib/job-entitlements";
+import { assertJobScope } from "../src/lib/project-security";
+import { withAccessScope } from "../src/lib/access-scope";
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
@@ -431,7 +433,7 @@ export const handlers: Record<string, Handler> = {
     const projectId = ctx.payload.projectId;
     const p = loadProject(projectId);
     const folders = listFolders(projectId).filter((f) => f.system_key);
-    const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId);
+    const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId,p.userId);
     if (!loose.length) return { moved: 0 };
     const rules: [RegExp, string][] = [
       [/logo/, "brand.logos"],
@@ -513,4 +515,16 @@ export const HANDLER_TYPES = Object.keys(handlers);
 for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);
 
 // Recheck current rights even for jobs queued before a downgrade.
-for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);const pid=ctx.job.project_id;const selected=pid?jobStrategy(pid,action,ctx.payload,true):null;const stamp=selected;if(pid&&Object.hasOwn(ctx.payload,"strategyVersion")&&ctx.payload.strategyVersion!==(stamp?.id??null)&&!ctx.payload.strategyAwaitingChoice)throw new HttpError(409,"L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.","strategy_changed");return pid?withStrategyScope(pid,()=>execute(ctx),selected):execute(ctx);}; }
+for (const action of Object.keys(handlers)) {
+  const execute = handlers[action];
+  handlers[action] = async ctx => withAccessScope({ userId: ctx.job.user_id, projectId: ctx.job.project_id ?? undefined, kind:"worker" }, async () => {
+    assertJobScope({ userId: ctx.job.user_id, projectId: ctx.job.project_id, payload: ctx.payload, parentId: ctx.job.parent_id, dependsOn: json<string[]>(ctx.job.depends_on, []) });
+    assertJobEntitlements(action, ctx.job.project_id, ctx.payload);
+    const pid = ctx.job.project_id;
+    const selected = pid ? jobStrategy(pid, action, ctx.payload, true) : null;
+    if (pid && Object.hasOwn(ctx.payload, "strategyVersion") && ctx.payload.strategyVersion !== (selected?.id ?? null) && !ctx.payload.strategyAwaitingChoice) {
+      throw new HttpError(409, "L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.", "strategy_changed");
+    }
+    return pid ? withStrategyScope(pid, () => execute(ctx), selected) : execute(ctx);
+  });
+}

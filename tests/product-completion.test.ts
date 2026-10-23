@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Produit incomplet sur la photo (partie hors cadre, perdue dans l'ombre, cachée) : JAMAIS utilisé tel quel.
  * Avec l'IA : reconstruit en entier (photo du client en référence), contrôlé « même produit », puis détouré et

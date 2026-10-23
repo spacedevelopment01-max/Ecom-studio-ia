@@ -77,6 +77,7 @@ export function openThemeZip(zip: Uint8Array): ThemeArchive {
   try {
     entries = unzipSync(zip, {
       filter: (f) => {
+        if (f.name.includes("\\") || f.name.startsWith("/") || f.name.split("/").some(p => p === ".." || p === ".") || /[\x00-\x1f]/.test(f.name)) throw new Error("Unsafe archive path");
         if (f.name.endsWith("/") || f.name.includes("__MACOSX")) return false;
         count++;
         total += f.originalSize;
@@ -89,6 +90,7 @@ export function openThemeZip(zip: Uint8Array): ThemeArchive {
     throw new Error(L("Ce fichier n'est pas un ZIP lisible. Dans Shopify : Boutique en ligne › Thèmes › … › Télécharger le fichier du thème.", "This file isn't a readable ZIP. In Shopify: Online Store › Themes › … › Download theme file."));
   }
   if (tooBig) throw new Error(L("Ce ZIP est trop volumineux une fois décompressé (plus de 200 Mo, un fichier de plus de 25 Mo ou plus de 5 000 fichiers) : ce n'est pas un export de thème Shopify ordinaire.", "This ZIP is too large once decompressed (over 200 MB, a file over 25 MB or over 5,000 files): it isn't an ordinary Shopify theme export."));
+  if (Object.values(entries).some(data => data.length > MAX_ENTRY) || Object.values(entries).reduce((n, data) => n + data.length, 0) > MAX_UNZIPPED) throw new Error(L("Archive décompressée trop volumineuse.", "Unpacked archive too large."));
   const layout = Object.keys(entries).find((p) => /(^|\/)layout\/theme\.liquid$/.test(p) && !p.includes("__MACOSX"));
   if (!layout) throw new Error(L("Aucun fichier layout/theme.liquid : ce ZIP ne contient pas un thème Shopify.", "No layout/theme.liquid file: this ZIP doesn't contain a Shopify theme."));
   const root = layout.slice(0, layout.length - "layout/theme.liquid".length);

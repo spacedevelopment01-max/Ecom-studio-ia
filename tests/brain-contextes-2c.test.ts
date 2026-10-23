@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Project Brain 2C — contenu des scopes explicites sur les fixtures, et traces :
  *  - Sébastien Blanc : logo, image, stock, SEO contiennent l'utile et pas le reste ; coordonnées hors site jamais transmises ;

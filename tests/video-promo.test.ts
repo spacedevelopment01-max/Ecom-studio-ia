@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Vidéo « publicité » : vraie image derrière chaque plan, titres propres (jamais coupés sur « à » ni sur « ? »),
  * coordonnées réelles seulement, musique composée agréable (sans souffle de bruit aux coupes), plans Pixabay

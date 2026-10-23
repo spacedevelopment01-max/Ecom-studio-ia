@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 import { grantProjectPlan } from "./communication-choice-fixture";
 import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
@@ -22,8 +23,8 @@ async function fixture(service = false) {
     frames: async()=>[Buffer.from("image de contrôle simulée")],
         reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
         keyframe: vi.fn(async () => png),
-    clip: vi.fn(async () => Buffer.from("faux clip : orchestration uniquement")),
-    stock: vi.fn(async (_p, k) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`stock ${k}`), name: `stock-${k}.mp4`, mime: "video/mp4", role: "clip", origin: "import" })).id, durationS: 8 })),
+    clip: vi.fn(async () => videoByteFixture()),
+    stock: vi.fn(async (_p, k) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `stock-${k}.mp4`, mime: "video/mp4", role: "clip", origin: "import" })).id, durationS: 8 })),
     spentMicro: () => 0,
     render: vi.fn(async () => "rendu-simule"),
   };
@@ -93,7 +94,7 @@ describe("Mission vidéo : refus explicites et acquis conservés (fournisseurs s
       if (checkpoints.has(key)) return checkpoints.get(key) as T;
       const value = await fn(); if(key.endsWith(":clip-asset-0") && !interrupted){interrupted=true;throw new Error("interruption après réception");} checkpoints.set(key, value); return value;
     } } as unknown as JobContext;
-    deps.clip = vi.fn(async () => Buffer.from("clip simulé"));
+    deps.clip = vi.fn(async () => videoByteFixture());
     const req = { as: "post", key: "test-video-reprise", scenes: 6, totalS: 30 } as const;
     await expect(runThreeScenes(ctx, p.id, req, deps)).rejects.toThrow("interruption après réception");
     await runThreeScenes(ctx, p.id, req, deps);

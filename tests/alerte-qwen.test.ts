@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Alerte du propriétaire quand Qwen-Image 3.0 Pro (modèle d'images du studio) est inutilisable et qu'une image passe
  * par un autre modèle (décision du propriétaire, 16/10/2026) : e-mail aux administrateurs + notification dans

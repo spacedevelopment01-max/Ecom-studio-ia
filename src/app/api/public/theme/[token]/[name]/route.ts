@@ -2,6 +2,8 @@ import { verifyMedia } from "@/lib/public-url";
 import { themeVersion } from "@/lib/projects";
 import { cmsExport } from "@/lib/cms-v2/export";
 import { libraryLoader } from "@/lib/theme/loader";
+import { one } from "@/lib/db";
+import { withAccessScope } from "@/lib/access-scope";
 
 export const runtime = "nodejs";
 
@@ -16,6 +18,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
   const [projectId, versionId] = v.ref.split(":");
   const t = themeVersion(projectId, versionId);
   if (!t) return new Response("Introuvable", { status: 404 });
-  const { zip } = await cmsExport("shopify", t.spec, libraryLoader, { projectId });
-  return new Response(new Uint8Array(zip), { headers: { "Content-Type": "application/zip" } });
+  const owner = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id=?", projectId);
+  if (!owner) return new Response("Introuvable", { status: 404 });
+  const { zip } = await withAccessScope({ userId: owner.user_id, projectId }, () => cmsExport("shopify", t.spec, libraryLoader, { projectId }));
+  return new Response(new Uint8Array(zip), { headers: { "Content-Type": "application/zip", "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" } });
 }

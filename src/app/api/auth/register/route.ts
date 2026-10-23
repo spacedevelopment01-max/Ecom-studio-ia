@@ -1,25 +1,19 @@
 import { z } from "zod";
-import { createUser, startSession } from "@/lib/auth";
-import { requestAdminClaim } from "@/lib/admin-claim";
-import { body, fail, handle, ok } from "@/lib/http";
-import { L, setUserLang, uiLang } from "@/lib/i18n-server";
-import { clientIp, LIMITS, rateCount, rateHit } from "@/lib/rate-limit";
+import { body, fail, handle, ok, safeInternalPath } from "@/lib/http";
+import { L, uiLang } from "@/lib/i18n-server";
+import { clientIp, LIMITS, rateTake } from "@/lib/rate-limit";
+import { mailConfigured } from "@/lib/mail";
+import { requestRegistration } from "@/lib/registration";
 
 export const POST = handle(async (req: Request) => {
-  const b = await body(req, z.object({ email: z.string(), password: z.string(), name: z.string().optional() }));
-  // Chaque compte ouvre la découverte gratuite (studio de démonstration, sans IA) : nombre de comptes limité par adresse IP,
-  // par heure et par jour (il n'existe pas encore de vérification de l'adresse e-mail).
+  const b = await body(req, z.object({ email: z.string().trim().toLowerCase().email().max(200), password: z.string().min(8).max(200), name: z.string().max(200).optional(), next: z.string().max(500).optional() }));
   const ip = clientIp(req);
-  const key = ip ? `register:ip:${ip}` : null;
-  if (key && (rateCount(key, LIMITS.registerPerIpHour.windowMs) >= LIMITS.registerPerIpHour.max || rateCount(key, LIMITS.registerPerIpDay.windowMs) >= LIMITS.registerPerIpDay.max)) {
-    return fail(429, L("Trop de comptes créés depuis cette connexion. Réessayez plus tard.", "Too many accounts created from this connection. Please try again later."));
-  }
-  const u = await createUser(b.email, b.password, b.name ?? "");
-  if (key) rateHit(key);
-  // Mémorise la langue de l'interface sur le compte (tâches en arrière-plan, notifications, e-mails).
-  setUserLang(u.id, uiLang());
-  await startSession(u.id);
-  // Adresse ADMIN_EMAIL : lien de confirmation de l'accès administrateur (le rôle n'est jamais donné d'office).
-  const adminLink = requestAdminClaim(u);
-  return ok({ user: { id: u.id, email: u.email, role: u.role }, adminConfirmation: adminLink ? "sent" : null });
+  const limits = [
+    { key: `register:email:${b.email}`, max: 3, windowMs: 3600_000 },
+    ...(ip ? [{ key: `register:ip:${ip}`, ...LIMITS.registerPerIpHour }, { key: `register:ip:${ip}`, ...LIMITS.registerPerIpDay }] : []),
+  ];
+  if (!rateTake(limits)) return fail(429, L("Trop de demandes. Réessayez plus tard.", "Too many requests. Please try again later."));
+  if (!mailConfigured()) return fail(503, L("La confirmation par e-mail n’est pas disponible. Contactez l’assistance pour créer votre compte.", "Email confirmation is unavailable. Contact support to create your account."), "mail_unavailable");
+  await requestRegistration({ email: b.email, password: b.password, name: b.name ?? "", lang: uiLang(), next: safeInternalPath(b.next) });
+  return ok({ ok: true, confirmationRequired: true, message: L("Si cette adresse peut être inscrite, l’envoi d’un lien de confirmation valable une heure a été demandé. Vérifiez votre boîte et les indésirables ; si vous avez déjà un compte, connectez-vous.", "If this address can be registered, sending a confirmation link valid for one hour has been requested. Check your inbox and spam; if you already have an account, sign in.") });
 });

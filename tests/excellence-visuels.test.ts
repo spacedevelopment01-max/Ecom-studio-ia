@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Passe « excellence » des visuels : ligne photographique de la marque (moodboard dérivé de la piste créative),
  * grille du directeur artistique sur les briefs photo (réponses IA simulées excellentes, moyennes, mauvaises),

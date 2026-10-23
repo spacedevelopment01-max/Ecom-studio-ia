@@ -5,7 +5,9 @@
 import fs from "node:fs";
 import { recordPreviewContact } from "@/lib/theme/preview-contact";
 import { HttpError, currentUser, ownedProject } from "@/lib/auth";
-import { handle } from "@/lib/http";
+import { boundedBody, handle } from "@/lib/http";
+import { identifyActor, identifyProject } from "@/lib/access-scope";
+import { portablePreview } from "@/lib/theme/preview-transport";
 import { currentTheme, themeVersion } from "@/lib/projects";
 import { compileTheme, importedBinary, themeAssetBinary } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
@@ -35,14 +37,17 @@ type P = { params: Promise<{ id: string; vid: string; path?: string[] }> };
 async function load(req: Request, ctx: P) {
   const { id, vid: seg, path } = await ctx.params;
   const { vid, token } = splitPreviewSegment(seg);
+  const signedOwner = token ? verifyPreview(token, id) : null;
   let redirect: string | null = null;
-  if (!token || !verifyPreview(token, id)) {
+  if (!signedOwner) {
     const user = await currentUser();
     if (!user) throw new HttpError(401, L("Connexion requise.", "Sign-in required."));
     ownedProject(user, id);
+    identifyActor(user.id);
     const url = new URL(req.url);
     redirect = `/preview/${id}/v/${previewSegment(vid, user.id, id)}${path?.length ? `/${path.map(encodeURIComponent).join("/")}` : "/"}${url.search}`;
-  }
+  } else identifyActor(signedOwner);
+  identifyProject(id);
   // « dir-<direction> » : la boutique du projet composée dans une autre direction (vignettes de l'onglet Marque), rien d'enregistré.
   if (vid.startsWith("dir-")) {
     const d = vid.slice(4);
@@ -106,6 +111,11 @@ async function sectionsFor(spec: ThemeSpec, base: string, cart: PreviewCartLine[
   return renderNamedSections({ spec, base, cart }, names.split(",").slice(0, 5), "/");
 }
 
+async function previewJson(data:unknown,spec:ThemeSpec,base:string,origin:string){
+  const body=await portablePreview(JSON.stringify(data),spec,base,origin,true);
+  return new Response(body,{headers:{"Content-Type":"application/json; charset=utf-8"}});
+}
+
 /**
  * En-têtes communs : lecture par le document cloisonné (origine « null ») ; tout fichier ouvert directement
  * (page, SVG d'un thème importé…) reste lui aussi dans le bac à sable.
@@ -116,6 +126,8 @@ function withCors(req: Request, res: Response) {
   res.headers.set("X-Content-Type-Options", "nosniff");
   // Aperçu privé : jamais indexé, même si un lien circule (robots.txt l'interdit déjà à l'exploration).
   res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  res.headers.set("Cache-Control", "private, no-store");
+  res.headers.set("Referrer-Policy", "no-referrer");
   return res;
 }
 
@@ -126,7 +138,13 @@ export const OPTIONS = async (req: Request) =>
   });
 
 export const GET = handle(async (req: Request, ctx: P) => withCors(req, await get(req, ctx)));
-export const POST = handle(async (req: Request, ctx: P) => withCors(req, await post(req, ctx)));
+export const POST = handle(async (req: Request, ctx: P) => withCors(req, await post(req, ctx)), {
+  allowOpaqueOrigin: req => {
+    const match = new URL(req.url).pathname.match(/^\/preview\/([a-z0-9]+)\/v\/([^/]+)\//);
+    const token = match ? splitPreviewSegment(match[2]).token : null;
+    return !!(match && token && verifyPreview(token, match[1]));
+  },
+});
 
 async function get(req: Request, ctx: P): Promise<Response> {
   const { id, spec, segs, base, redirect } = await load(req, ctx);
@@ -159,15 +177,17 @@ async function get(req: Request, ctx: P): Promise<Response> {
   }
   let cart: PreviewCartLine[];
   try { cart = reconcileOfferCart(spec, await readCart(id)); } catch (e) { throw new HttpError(422, purchaseErrorMessage(e, spec.language ?? "fr")); }
-  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return Response.json(cartJson(spec, cart, base));
-  if (url.searchParams.get("sections")) return Response.json(await sectionsFor(spec, base, cart, url.searchParams.get("sections")));
+  if (path === "/cart.js" || (path === "/cart" && req.headers.get("accept")?.includes("application/json"))) return previewJson(cartJson(spec, cart, base),spec,base,url.origin);
+  if (url.searchParams.get("sections")) return previewJson(await sectionsFor(spec, base, cart, url.searchParams.get("sections")),spec,base,url.origin);
   const r = await renderPage({ spec, base, cart }, path, url.searchParams);
-  const html = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
+  const tools = url.searchParams.get("es_raw") === "1" ? r.html : r.html.replace("</body>", `${previewTools(uiLang(), spec.store.business, spec.meta?.demo?.contactTest === true && spec.meta.demo.isDemo === true)}${stockBadgeTool(stockPhotosInTheme(spec, getAsset, uiLang()).map((x) => ({ file: x.file, label: stockPhotoLabel(x.source, uiLang()) })))}</body>`);
+  const html = await portablePreview(tools, spec, base, url.origin);
   return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp(), "Referrer-Policy": "no-referrer" } });
 }
 
 async function post(req: Request, ctx: P): Promise<Response> {
   const { id, spec, segs, base } = await load(req, ctx);
+  req = new Request(req.url, { method: req.method, headers: req.headers, body: await boundedBody(req, 65536) as BodyInit });
   const path = "/" + segs.join("/");
   if (path === "/contact") {
     if (Number(req.headers.get("content-length")) > 16000) throw new HttpError(413, "Request too large");
@@ -219,7 +239,7 @@ async function post(req: Request, ctx: P): Promise<Response> {
   await writeCart(id, cart);
   const sections = await sectionsFor({ ...spec }, base, cart, data.sections ?? null);
   if (ct.includes("application/json") || req.headers.get("accept")?.includes("application/json") || path.endsWith(".js") || data.sections) {
-    return Response.json({ ...cartJson(spec, cart, base), sections });
+    return previewJson({ ...cartJson(spec, cart, base), sections },spec,base,new URL(req.url).origin);
   }
   return new Response(null, { status: 303, headers: { Location: `${base}/cart` } });
 }

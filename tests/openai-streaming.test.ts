@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Génération OpenAI EN FLUX dans le moteur multimédia (méthode de l'essai réel du logo Sébastien Blanc) — AUCUN
  * appel payant : le vrai SDK OpenAI parle à un faux serveur local qui renvoie le VRAI logo déjà payé

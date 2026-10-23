@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 import { creativeContract } from "@/lib/social-v2/creative-contract";
 import { stableHash } from "@/lib/brain/hash";
 /**
@@ -13,7 +14,7 @@ import type { Project } from "@/lib/projects";
 
 export async function fakeImage(p: Project, name: string, kind: "image" | "video" = "image", meta?: Record<string, unknown>) {
   const data = await sharp({ create: { width: 64, height: 80, channels: 3, background: { r: 120, g: 90, b: 60 } } }).jpeg().toBuffer();
-  return saveAsset({ projectId: p.id, userId: p.userId, data, name, mime: kind === "video" ? "video/mp4" : "image/jpeg", role: "social", origin: "generated", status: "approved", ...(kind === "video" ? { kind: "video" } : {}), ...(meta ? { meta } : {}) });
+  return saveAsset({ projectId: p.id, userId: p.userId, data: kind === "video" ? videoByteFixture() : data, name, mime: kind === "video" ? "video/mp4" : "image/jpeg", role: "social", origin: "generated", status: "approved", ...(kind === "video" ? { kind: "video" } : {}), ...(meta ? { meta } : {}) });
 }
 
 export type DepsLog = { image: number; video: number; ad: number; local: number; rewrite: number; paid: number; aiPost: number };

@@ -191,15 +191,18 @@ describe("I-2 / M-3 / I-4 publication Shopify", () => {
 describe("I-3 sections sur mesure et aperçus cloisonnés", () => {
   const section = (extra: string) => `<div>{{ section.settings.t }}</div>${extra}\n{% schema %}{"name":"Démo","settings":[{"type":"text","id":"t","label":"T"}],"presets":[{"name":"Démo"}]}{% endschema %}`;
 
-  it("refuse tout script chargé hors du thème (//, http, data:, script_tag, import), accepte asset_url et le script en ligne", async () => {
+  it("refuse tout script chargé hors du thème (//, http, data:, script_tag, import), réserve les scripts au code natif et garde les animations CSS", async () => {
     const { validateCustomSection, hasExternalScript, applyOps } = await import("@/lib/theme/ops");
     for (const bad of ['<script defer src="//evil.example/x.js"></script>', "<script src=https://evil.example/x.js></script>", '<script src="data:text/javascript,alert(1)"></script>', '<script src="/x.js"></script>', "{{ '//cdn.example/x.js' | script_tag }}", "<script>import('https://evil.example/m.js')</script>", "<script>document.head.appendChild(document.createElement('script'))</script>"]) {
       expect(hasExternalScript(bad), bad).toBe(true);
       expect(validateCustomSection(section(bad)), bad).toMatch(/scripts externes/);
     }
-    for (const good of [`<script src="{{ 'es-demo.js' | asset_url }}" defer></script>`, "<script>document.documentElement.classList.add('js')</script>"]) {
-      expect(hasExternalScript(good), good).toBe(false);
-      expect(validateCustomSection(section(good)), good).toBeNull();
+    for (const untrusted of [`<script src="{{ 'es-demo.js' | asset_url }}" defer></script>`, "<script>document.documentElement.classList.add('js')</script>"]) {
+      expect(hasExternalScript(untrusted), untrusted).toBe(false);
+      expect(validateCustomSection(section(untrusted)), untrusted).not.toBeNull();
+    }
+    for (const trusted of [`<script src="{{ 'theme.js' | asset_url }}" defer></script>`, '<style>@keyframes in{from{opacity:0}to{opacity:1}}.sample{animation:in 1s}</style>']) {
+      expect(validateCustomSection(section(trusted)), trusted).toBeNull();
     }
     const r = applyOps(sampleSpec(), [{ op: "custom_section", type: "es-custom-demo", name: "Démo", liquid: section('<script defer src="//evil.example/x.js"></script>') }]);
     expect(r.rejected).toHaveLength(1);

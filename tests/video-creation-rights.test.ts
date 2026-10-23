@@ -1,3 +1,5 @@
+import {videoByteFixture} from "./video-byte-fixture";
+import {jpegByteFixture} from "./image-byte-fixture";
 import { describe, expect, it, vi } from "vitest";
 import {chooseGeneralistForTest} from './strategy-choice-fixture';
 import {grantProjectPlan} from './communication-choice-fixture';
@@ -25,7 +27,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     const scenario=localScenePlan(p,null,request);scenario.scenes[0].title="Titre conservé";
     const j=enqueue({userId:u.id,projectId:pid,type:"video.scenario",label:"Scénario simulé",payload:{request}});
     expect(claimNext(["video.scenario"])?.id).toBe(j.id);completeJob(j.id,{scenario,scope:videoScope(p,sceneApprovalRequest(request))});
-    const photo=await saveAsset({projectId:pid,userId:u.id,data:Buffer.from("photo simulée"),name:"source.jpg",mime:"image/jpeg",role:"scene",origin:"upload"});
+    const photo=await saveAsset({projectId:pid,userId:u.id,data:jpegByteFixture(),name:"source.jpg",mime:"image/jpeg",role:"scene",origin:"upload"});
     // A scene photo is not a stable original product reference: it changes only the selected image.
     const response=await route.POST(new Request("http://localhost",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"plan",...request,generation:"staged",sceneImages:[{assetId:photo.id,use:"reuse"}],draftPlan:scenario,scenarioJobId:j.id})}),{params:Promise.resolve({id:pid})});
     const next=await response.json();expect(response.status,JSON.stringify(next)).toBe(200);expect(next.scenario.scenes[0].title).toBe("Titre conservé");expect(next.approvalToken).toBeTruthy();
@@ -63,7 +65,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     approvalToken=(await(await route.POST(req("plan"),ctx)).json()).approvalToken;
     expect((await route.POST(req("create"), ctx)).status).toBe(200);
     expect(all("SELECT id FROM jobs WHERE project_id = ? AND type='video.scenes'", pid)).toHaveLength(1);
-    await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from("fichier simulé, aucun encodage testé ici"), name: "simulation.mp4", mime: "video/mp4", role: "video", origin: "import", status: "review", meta: { scenes: { as: "ad" }, creative: { notes: ["Voix indisponible"] }, finalCheck: { summary: { unchecked: ["Fidélité produit"], issues: [{ detail: "Scènes trop proches" }] } } } });
+    await saveAsset({ projectId: pid, userId: u.id, data: videoByteFixture(), name: "simulation.mp4", mime: "video/mp4", role: "video", origin: "import", status: "review", meta: { scenes: { as: "ad" }, creative: { notes: ["Voix indisponible"] }, finalCheck: { summary: { unchecked: ["Fidélité produit"], issues: [{ detail: "Scènes trop proches" }] } } } });
     const listed = await (await route.GET(new Request(`http://localhost/api/projects/${pid}/creative/video`), ctx)).json();
     expect(listed.videos[0]).toMatchObject({ reviewRequired: true });
     expect(listed.videos[0].warnings).toEqual(expect.arrayContaining(["Voix indisponible", "Scènes trop proches", "Non vérifié : Fidélité produit"]));

@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Choix de la meilleure photo libre (Pixabay d'abord) pour une publicité : parmi les photos pertinentes, celle qui a
  * une zone calme pour le texte, le bon cadrage et une bonne définition — sans jamais passer devant la pertinence

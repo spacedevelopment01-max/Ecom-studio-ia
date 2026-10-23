@@ -32,13 +32,13 @@
     "liquidjs": "^10.30.0",
     "lucide-react": "^1.50.0",
     "nanoid": "^6.0.1",
-    "next": "^15.5.27",
+    "next": "^15.5.28",
     "nodemailer": "^10.0.15",
     "openai": "^7.27.0",
     "opentype.js": "^2.0.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "sanitize-html": "^2.18.0",
+    "sanitize-html": "^2.18.1",
     "sharp": "^0.35.5",
     "spessasynth_core": "^4.3.22",
     "undici": "^7.30.0",
@@ -65,7 +65,12 @@
   "overrides": {
     "@imgly/background-removal-node": {
       "lodash": "^4.18.1",
-      "zod": "^3.22.3"
-    }
+      "zod": "^3.22.3",
+      "sharp": "^0.35.5"
+    },
+    "next": {
+      "postcss": "^8.5.28"
+    },
+    "vite": "^8.3.5"
   }
 }

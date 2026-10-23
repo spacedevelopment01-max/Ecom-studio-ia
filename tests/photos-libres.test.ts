@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** Photos libres de droits : lecture des réponses Pexels, Pixabay et Openverse (sans réseau), crédit affiché. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { searchSource, searchStock, stockCredit } from "@/lib/stock/photos";

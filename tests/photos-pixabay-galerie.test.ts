@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Photos libres : Pixabay est interrogé en premier, avec de grandes pages de résultats en haute définition ; une
  * recherche de galerie réunit beaucoup plus de candidates qu'un emplacement. Fournisseurs simulés, aucun réseau.

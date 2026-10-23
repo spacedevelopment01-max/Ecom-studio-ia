@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Trace des appels (phase 1A) : chaque appel réellement envoyé à un fournisseur laisse une ligne `ai_calls`
  * (étape, jetons séparés, cache lu/écrit, latence, modèle demandé et servi, statut, coût) ; une reprise avec la même

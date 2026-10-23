@@ -7,6 +7,8 @@
 import { unzipSync, zipSync, strToU8 } from "fflate";
 import type { AssetLoader } from "../theme/compile";
 import { renderPage } from "../theme/render";
+import { assertSafeThemeContent } from "../theme/content-security";
+import { assertImportedExportAccess } from "../theme/import-export-access";
 import type { ThemeSpec } from "../theme/spec";
 import { guardPurchaseExport, purchaseExportManifest } from "../theme/purchase-offers";
 import { exportKit } from "../theme/platforms";
@@ -33,6 +35,8 @@ export function safeFileName(name: string): string {
 
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
 export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
+  assertSafeThemeContent(spec0);
+  assertImportedExportAccess(spec0);
   const guardedOffers = guardPurchaseExport(spec0, platform);
   const spec = structuredClone(adaptForPlatform(guardedOffers.spec, platform));
   const fileCount = Object.keys(spec.files).length;

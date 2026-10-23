@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Banque de musiques libres de droits (Openverse) : licences commerciales seulement (jamais NC ni ND), pas d'effets
  * sonores ni d'ambiances angoissantes, pistes assez longues, licence et mention enregistrées avec la piste, piste

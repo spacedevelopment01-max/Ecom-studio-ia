@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Idempotence (phase 1B) : aucune clé d'usage ne dépend de l'heure ; une tâche reprise après une interruption relit
  * ses points de reprise (logos complets, textes de la boutique) au lieu de repayer les appels déjà faits.

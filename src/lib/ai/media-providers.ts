@@ -1,3 +1,4 @@
+import { publicDownload } from "../public-download";
 import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
@@ -76,7 +77,7 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
           if (receipt.usage) recordMedia(receipt.usage);
           else if (previous.status === "uncertain" || previous.status === "held") operationPending();
           else t.recorded = true;
-          const response = await providerFetch(receipt.downloadUrl);
+          const response = await publicDownload(receipt.downloadUrl);
           if (!response.ok) throw new PermanentError(L("Le média acquis n'a pas pu être récupéré. Il est conservé chez le fournisseur ; aucune nouvelle génération lancée.", "The acquired media could not be retrieved. It is kept at the provider; no new generation was started."));
           const file = `ai-results/${previous.id}.bin`, data = Buffer.from(await response.arrayBuffer());
           putFile(file, data);
@@ -264,8 +265,12 @@ function sent() {
   if (t) t.sent = true;
 }
 const providerFetch: typeof fetch = (input, init) => {
+  const url=new URL(typeof input==="string"?input:input instanceof URL?input.href:input.url);
+  const headers=new Headers(init?.headers??(input instanceof Request?input.headers:undefined));
+  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
+  if(/^Key /i.test(headers.get("authorization")??"")&&url.origin!=="https://queue.fal.run")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   sent();
-  return fetch(input, init);
+  return fetch(input, {...init,redirect:"error"});
 };
 /** Refus explicite du fournisseur (clé, requête, quota) : rien n'a été produit, la réservation est rendue. */
 function refusal<E extends Error>(e: E): E {
@@ -1046,7 +1051,7 @@ async function falDownload(out: any): Promise<Buffer> {
   if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
   let data: Buffer;
   try {
-    const v = await providerFetch(url);
+    const v = await publicDownload(url);
     if (!v.ok) throw new Error(`HTTP ${v.status}`);
     data = Buffer.from(await v.arrayBuffer());
   } catch (e) {
@@ -1092,7 +1097,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
       if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune image.", "fal.ai returned no image."));
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "fal", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
       saveProviderReceipt(trace.reservation!, { downloadUrl: url });
-      const img = await providerFetch(url);
+      const img = await publicDownload(url);
       if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible. Une reprise récupérera ce résultat sans nouvelle génération.", "Image produced but download failed. A retry will retrieve it without generating again."));
       return Buffer.from(await img.arrayBuffer());
     }
@@ -1128,7 +1133,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const usage = { userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "alibaba", model, unit: "image" as const, quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey };
   saveProviderReceipt(mediaTrace.getStore()!.reservation!, { downloadUrl: url, usage });
   recordMedia(usage);
-  const img = await providerFetch(url);
+  const img = await publicDownload(url);
   if (!img.ok) throw new PermanentError(L(`Image produite par Alibaba Cloud mais impossible à télécharger (${img.status}).`, `Image produced by Alibaba Cloud but could not be downloaded (${img.status}).`));
   return Buffer.from(await img.arrayBuffer());
 }
@@ -1168,7 +1173,7 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
   const prev: Saved | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
   gate(ctx, cost("alibaba", model, { seconds }).micro, "video", "alibaba", model);
   const download = async (url: string) => {
-    const v = await providerFetch(url);
+    const v = await publicDownload(url);
     if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez Alibaba Cloud mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer (adresse valable environ 24 h).`, `Video finished at Alibaba Cloud but could not be downloaded (${v.status}). A retry will fetch it without paying again (address valid about 24 h).`));
     return Buffer.from(await v.arrayBuffer());
   };

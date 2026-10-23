@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Routage multimédia V2 (images, logos, publicités, vidéos, UGC) — fournisseurs SIMULÉS, aucun appel payant :
  *  - manuel par défaut : principal actuel inchangé (OpenAI GPT Image 1, Veo 3) ;
@@ -52,11 +53,12 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   if (url.includes("multimodal-generation/generation")) return json({output:{choices:[{message:{content:[{image:"https://img.test/alibaba.png"}]}}]}});
   if (url.includes(":generateContent")) return json({ modelVersion:"reported-version-simulation",candidates: [{ content: { parts: [{ inlineData: { data: PNG } }] } }] });
   if (url.includes(":predictLongRunning")) return net.veoRefused ? json({ error: { message: "request rejected" } }, 400) : net.veo503 ? json({ error: { message: "indisponible" } }, 503) : json({ name: "operations/op1" });
-  if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://video.test/clip.mp4" } }] } } });
+  if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://generativelanguage.googleapis.com/v1beta/files/fixture-video:download" } }] } } });
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
   if (url.endsWith("/status")) return json({ status: "COMPLETED" });
   if (url === "https://queue.fal.run/x/requests/1") return json({ video: { url: "https://video.test/fal.mp4" }, images: [{ url: "https://img.test/fal.png" }] });
   if (url === "https://video.test/fal.mp4" && net.falFileDown) throw new TypeError("fetch failed");
+  if (url.includes("/files/fixture-video:download")) return new Response(mp4);
   if (url.startsWith("https://video.test/")) return new Response(mp4);
   if (url.startsWith("https://img.test/")) return new Response(Buffer.from(PNG, "base64"));
   return json({}, 404);

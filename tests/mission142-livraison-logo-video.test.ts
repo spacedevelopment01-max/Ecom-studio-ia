@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 /** Contrats de livraison des handlers natifs ; moteurs simulés, vrais fichiers locaux et base isolée. */
 import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import sharp from "sharp";
@@ -28,7 +29,8 @@ it.each(["video.v2","video.v2.render"])("%s : une référence vidéo vide ne dev
  const{u,pid}=await fixture();const j=await execute(type,pid,u.id,{request:{render:true},docKey:"document-fictif"});expect(j.status).toBe("failed");expect(j.error).toBeTruthy();
 });
 it.each(["missing","foreign","corrupt"])("vidéo %s : fichier absent, illisible ou étranger refusé",async mode=>{
- const{u,pid}=await fixture();output.video=mode==="missing"?"missing-video-contract":(await saveAsset({projectId:mode==="foreign"?seedImageFixture(u.id,"hightech"):pid,userId:u.id,data:Buffer.from("not a video"),name:"invalid-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"})).id;
+ const{u,pid}=await fixture();output.video=mode==="missing"?"missing-video-contract":(await saveAsset({projectId:mode==="foreign"?seedImageFixture(u.id,"hightech"):pid,userId:u.id,data:videoByteFixture(),name:"invalid-test.mp4",mime:"video/mp4",role:"video",origin:"generated",status:"review"})).id;
+ if(mode==="corrupt"){const fs=await import("node:fs");const {storagePath}=await import("@/lib/storage");fs.writeFileSync(storagePath(getAsset(output.video)!.storage_key),"corrupted historical fixture");}
  expect((await execute("video.v2",pid,u.id,{request:{render:true}})).status).toBe("failed");
 });
 it("workflow direct : aucun fichier vidéo ne devient une étape terminée",async()=>{

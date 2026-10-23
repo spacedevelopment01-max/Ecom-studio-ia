@@ -1,0 +1,222 @@
+{
+  "schema": "lot9-dependency-audit-1",
+  "date": "2026-10-23",
+  "scope": "npm registry audit of dependency lock; no production scanning",
+  "before": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 2,
+      "moderate": 1,
+      "high": 4,
+      "critical": 1,
+      "total": 8
+    },
+    "dependencies": {
+      "prod": 171,
+      "dev": 151,
+      "optional": 145,
+      "peer": 54,
+      "peerOptional": 0,
+      "total": 390
+    }
+  },
+  "after": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 118,
+      "dev": 157,
+      "optional": 128,
+      "peer": 31,
+      "peerOptional": 0,
+      "total": 320
+    }
+  },
+  "packages": [
+    {
+      "package": "@imgly/background-removal-node",
+      "severity": "high",
+      "range": "",
+      "nodes": [
+        "node_modules/@imgly/background-removal-node"
+      ],
+      "advisories": []
+    },
+    {
+      "package": "@vitest/mocker",
+      "severity": "low",
+      "range": "",
+      "nodes": [
+        "node_modules/@vitest/mocker"
+      ],
+      "advisories": []
+    },
+    {
+      "package": "next",
+      "severity": "critical",
+      "range": "",
+      "nodes": [
+        "node_modules/next"
+      ],
+      "advisories": [
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when SVG files are used",
+          "url": "https://github.com/advisories/GHSA-2464-fhr4-w9xw",
+          "severity": "critical",
+          "range": ">=10.0.0 <=15.5.27"
+        },
+        {
+          "title": "Next.js: Denial of Service in App Router using Server Actions",
+          "url": "https://github.com/advisories/GHSA-p3m5-59mp-jv5r",
+          "severity": "high",
+          "range": ">=13.0.0 <=15.5.27"
+        }
+      ]
+    },
+    {
+      "package": "postcss",
+      "severity": "high",
+      "range": "",
+      "nodes": [
+        "node_modules/next/node_modules/postcss"
+      ],
+      "advisories": [
+        {
+          "title": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+          "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+          "severity": "moderate",
+          "range": "<8.5.10"
+        },
+        {
+          "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+          "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "severity": "high",
+          "range": "<=8.5.11"
+        },
+        {
+          "title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+          "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+          "severity": "moderate",
+          "range": "<=8.5.22"
+        },
+        {
+          "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+          "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+          "severity": "high",
+          "range": "<=8.5.17"
+        }
+      ]
+    },
+    {
+      "package": "sanitize-html",
+      "severity": "moderate",
+      "range": "",
+      "nodes": [
+        "node_modules/sanitize-html"
+      ],
+      "advisories": [
+        {
+          "title": "ApostropheCMS sanitize-html: unbounded recursion when re-sanitizing the fallback of a discarded iframe (stack overflow, nestingLimit not enforced)",
+          "url": "https://github.com/advisories/GHSA-c9rx-x947-fp3h",
+          "severity": "moderate",
+          "range": ">=2.18.0 <2.18.1"
+        }
+      ]
+    },
+    {
+      "package": "sharp",
+      "severity": "high",
+      "range": "",
+      "nodes": [
+        "node_modules/@imgly/background-removal-node/node_modules/sharp"
+      ],
+      "advisories": [
+        {
+          "title": "sharp inherited vulnerabilities in libvips: CVE-2026-33327, CVE-2026-33328, CVE-2026-35590, CVE-2026-35591",
+          "url": "https://github.com/advisories/GHSA-f88m-g3jw-g9cj",
+          "severity": "high",
+          "range": "<0.35.0"
+        },
+        {
+          "title": "sharp: Vulnerabilities in libheif: GHSA-g89c-p67h-r497 and GHSA-2jg2-4ch7-h545",
+          "url": "https://github.com/advisories/GHSA-rgj7-g3m4-5g8c",
+          "severity": "high",
+          "range": "<0.35.4"
+        },
+        {
+          "title": "sharp : Vulnerability in librsvg dependency CVE-2026-96889",
+          "url": "https://github.com/advisories/GHSA-wq5f-xc86-pv6w",
+          "severity": "high",
+          "range": "<0.35.5"
+        }
+      ]
+    },
+    {
+      "package": "vite",
+      "severity": "high",
+      "range": "",
+      "nodes": [
+        "node_modules/vite"
+      ],
+      "advisories": [
+        {
+          "title": "launch-editor: escapeCmdArgs() omits % escaping on Windows",
+          "url": "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+          "severity": "moderate",
+          "range": ">=8.3.0 <=8.3.2"
+        },
+        {
+          "title": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors",
+          "url": "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+          "severity": "moderate",
+          "range": ">=8.3.0 <=8.3.2"
+        },
+        {
+          "title": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows",
+          "url": "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+          "severity": "high",
+          "range": ">=8.3.0 <=8.3.2"
+        },
+        {
+          "title": "Vite: Cross origin script execution through Vite custom middleware",
+          "url": "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+          "severity": "low",
+          "range": ">=8.3.0 <=8.3.2"
+        },
+        {
+          "title": "Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine",
+          "url": "https://github.com/advisories/GHSA-rq7h-c2jc-7f22",
+          "severity": "moderate",
+          "range": ">=8.3.0 <=8.3.2"
+        },
+        {
+          "title": "Vite: First 4 bytes of files outside of `server.fs` setting is exposed by `?vite-wasm-instance`",
+          "url": "https://github.com/advisories/GHSA-vfpm-58rq-9qcg",
+          "severity": "moderate",
+          "range": ">=8.3.0 <=8.3.2"
+        }
+      ]
+    },
+    {
+      "package": "vitest",
+      "severity": "low",
+      "range": "",
+      "nodes": [
+        "node_modules/vitest"
+      ],
+      "advisories": []
+    }
+  ],
+  "limits": [
+    "No universal security certification; registry advisories and lock graph only.",
+    "Background-removal ML inference not exercised: model weights absent, no paid/provider calls.",
+    "Runtime dependency overlay isolated locally; npm ci and Docker verification remain CI checks."
+  ],
+  "finalLockSha256": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf"
+}

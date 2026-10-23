@@ -13,6 +13,7 @@ import { ProjectSubscriptionDialog, SUB_STATUS } from "./studio/project-subscrip
 import { SecurityCard } from "./password-forms";
 import { PaymentStatus } from './payment-status';
 import { SupportPanel } from './support-panel';
+import { PrivacyPanel } from './privacy-panel';
 import { PLANS, type Billing, type PlanId } from "@/lib/plans";
 
 export function AccountPage() {
@@ -85,6 +86,7 @@ export function AccountPage() {
         {/* Mot de passe et déconnexion (visible même si le forfait ne se charge pas) */}
         <SecurityCard />
         <SupportPanel />
+        <PrivacyPanel />
         {me?.user.role==='admin'&&<SupportPanel queue />}
       </main>
     </div>

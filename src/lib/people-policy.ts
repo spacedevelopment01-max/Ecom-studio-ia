@@ -32,7 +32,8 @@ export function peopleAllowed(projectId: string | null | undefined): boolean {
   if (!projectId) return false;
   try {
     const row = one<{ settings_json: string | null }>("SELECT settings_json FROM projects WHERE id = ?", projectId);
-    if (json<PeopleSettings>(row?.settings_json ?? null, {}).peopleAllowed === true) return true;
+    const allowed=json<PeopleSettings>(row?.settings_json ?? null, {}).peopleAllowed;
+    if(typeof allowed==="boolean")return allowed;
   } catch {
     return false;
   }
@@ -41,6 +42,7 @@ export function peopleAllowed(projectId: string | null | undefined): boolean {
 
 /** Même règle à partir d'un projet déjà chargé (réglages lus sans nouvelle requête). */
 export function peopleAllowedFor(p: { id: string; settings?: unknown }): boolean {
+  if ((p.settings as PeopleSettings | undefined)?.peopleAllowed === false) return false;
   if ((p.settings as PeopleSettings | undefined)?.peopleAllowed === true) return true;
   return clientImageWithPerson(p.id);
 }

@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Retouche par l'IA d'une photo livrée : le client écrit sa demande dans l'éditeur, la photo de la publicité part au
  * modèle d'images AVEC la demande (rien d'autre ne doit bouger), la nouvelle photo garde le cadre de l'ancienne et

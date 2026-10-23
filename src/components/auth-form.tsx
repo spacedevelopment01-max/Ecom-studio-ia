@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, Button, Field, Input, Logo, ThemeToggle } from "./ui";
 import { LangSwitch, useLang, useT } from "./i18n";
@@ -12,21 +11,21 @@ import { safeNextPath } from "@/lib/safe-path";
 /** `next` : page demandée avant la connexion (chemin interne vérifié), où l'on revient ensuite. */
 /** `background` : photo de démonstration (kit privé) passée par la page quand le fichier existe ; sinon un fond uni, jamais une image cassée. */
 export function AuthForm({ mode, plan, next: nextPath, background }: { mode: "login" | "register"; plan?: { id: PlanId; billing: Billing } | null; next?: string | null; background?: string | null }) {
-  const router = useRouter();
   const t = useT();
   const { lang } = useLang();
   const afterPlan = plan ? `/studio/compte?plan=${plan.id}&billing=${plan.billing}` : null;
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmation, setConfirmation] = useState(false);
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
     try {
-      await api(`/api/auth/${mode === "login" ? "login" : "register"}`, { body: Object.fromEntries(f) });
-      router.push(afterPlan ?? safeNextPath(nextPath ?? new URLSearchParams(window.location.search).get("suite")));
-      router.refresh();
+      await api(`/api/auth/${mode === "login" ? "login" : "register"}`, { body: { ...Object.fromEntries(f), next: afterPlan ?? safeNextPath(nextPath ?? new URLSearchParams(window.location.search).get("suite")) } });
+      if (mode === "register") { setConfirmation(true); setLoading(false); return; }
+      window.location.assign(afterPlan ?? safeNextPath(nextPath ?? new URLSearchParams(window.location.search).get("suite")));
     } catch (err) {
       setError((err as Error).message);
       setLoading(false);
@@ -57,6 +56,7 @@ export function AuthForm({ mode, plan, next: nextPath, background }: { mode: "lo
             </p>
           )}
           <form onSubmit={submit} className="mt-8 grid gap-4">
+            {confirmation && <p role="status" className="rounded-2xl border border-line p-4 text-sm">{t("Si cette adresse peut être inscrite, l’envoi d’un lien valable une heure a été demandé. Vérifiez votre boîte et les indésirables. Si vous avez déjà un compte, connectez-vous.", "If this address can be registered, sending a link valid for one hour has been requested. Check your inbox and spam. If you already have an account, sign in.")}</p>}
             {mode === "register" && (
               <Field label={t("Prénom ou nom", "First name or full name")} htmlFor="name">
                 <Input id="name" name="name" autoComplete="name" />
