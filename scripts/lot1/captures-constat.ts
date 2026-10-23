@@ -11,23 +11,28 @@ import { chromium } from "playwright";
 const base = process.env.BASE_URL ?? "http://127.0.0.1:3210";
 const out = path.resolve(process.argv[2] ?? "reports/lot1/captures");
 fs.mkdirSync(out, { recursive: true });
-const shots: { name: string; url: string; selector: string; open?: string }[] = [
-  { name: "cgv-forfaits", url: "/conditions", selector: "section:has(> h2:text-matches('^3\\\\.'))" },
+const shots: { name: string; url: string; selector: string; open?: string | string[] }[] = [
+  { name: "cgv-forfaits", url: "/conditions", selector: "section:has(> h2:text-is('3. Forfaits, prix et paiement'))" },
   { name: "accueil-themes", url: "/", selector: "#themes" },
   { name: "accueil-offres", url: "/", selector: "#offre", open: "#offre details summary" },
-  { name: "accueil-questions", url: "/", selector: "#questions" },
+  { name: "accueil-questions", url: "/", selector: "#questions", open: ["#questions :text('Puis-je changer de forfait')", "#questions :text('Puis-je me faire rembourser')"] },
 ];
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
 const result: Record<string, string[]> = {};
 try {
   for (const [device, width] of [["ordinateur", 1440], ["telephone", 390]] as const) {
     const page = await browser.newPage({ viewport: { width, height: 900 }, deviceScaleFactor: 1, locale: "fr-FR" });
+    // Introduction animée déjà « vue » : la page s'affiche directement (même règle que le site, une fois par visite).
+    await page.addInitScript(() => sessionStorage.setItem("ecsSeen", "1"));
     // Aucun appel sortant pendant les captures (seul le serveur local isolé répond).
     await page.route("**/*", (r) => (r.request().url().startsWith(base) || r.request().url().startsWith("data:") ? r.continue() : r.abort()));
     for (const s of shots) {
       await page.goto(base + s.url, { waitUntil: "networkidle" });
-      await page.addStyleTag({ content: ".reveal{opacity:1!important;transform:none!important}" });
-      if (s.open) await page.locator(s.open).first().click().catch(() => {});
+      // Animations d'apparition figées et indicateur du serveur de développement masqué.
+      await page.addStyleTag({ content: ".reveal{opacity:1!important;transform:none!important} nextjs-portal{display:none!important}" });
+      // Le bandeau de navigation fixe recouvrirait le milieu d'une capture de section longue.
+      if (s.url === "/") await page.addStyleTag({ content: "body header{visibility:hidden!important}" });
+      for (const o of [s.open ?? []].flat()) await page.locator(o).first().click().catch(() => {});
       const el = page.locator(s.selector).first();
       await el.scrollIntoViewIfNeeded();
       await page.waitForTimeout(400);

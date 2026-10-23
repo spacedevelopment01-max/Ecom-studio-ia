@@ -12,7 +12,7 @@ Documents livrés : `LOT1_PERIMETRE_V1.md` (01), ce rapport (02, 04, livraison),
 | Action | Demandé | Réalisé | Testé | Bloqué / non fait | Preuve |
 |---|---|---|---|---|---|
 | 01 | Liste de référence V1 | Matrice fonction → règle → état → responsable → code/SHA → preuve → limite ; décisions de Thomas séparées des règles historiques ; V2 (hébergement/domaines) ; cible 15 thèmes ; accueil en fin de V1 | relu contre le code de `0a6aa1dd` et les têtes de PR | validation par Thomas | `LOT1_PERIMETRE_V1.md` |
-| 02 | Intégration existante, sort de #127, combinaisons | Graphe vérifié (§ 2) ; aucune perte silencieuse ; #127 vérifié fonction par fonction ; combinaison #170 → #168 → #166 préparée sans conflit, testée ; #167 essayée à blanc | voir § 2 | fusions #166/#168/#170 en attente de Thomas ; #167 non reçue ; #171 non publiée | § 2, `reports/lot1/` |
+| 02 | Intégration existante, sort de #127, combinaisons | Graphe vérifié (§ 2) ; aucune perte silencieuse ; #127 vérifié fonction par fonction ; combinaison #170 → #168 → #166 préparée sans conflit, testée ; #167 essayée à blanc ; **test du pilote dépendant du jour corrigé** | suites complètes, recette ciblée 315/315, 7 jours × 244 | fusions #166/#168/#170 en attente de Thomas ; #167 non reçue ; #171 non publiée | § 2, `reports/lot1/` |
 | 03 | Sauvegarde, migration, restauration | Inventaire ; scripts réutilisables avec garde-fous ; 3 époques synthétiques × 2 codes ; restauration effective dans une autre copie ; retour du code ≠ retour des données | 6 essais (45 ou 46 contrôles chacun) + 5 tests automatiques | **données réelles de Thomas non testées** (aucun accès) | `LOT1_MIGRATION_RESTAURATION.md`, `reports/lot1/essais/` |
 | 04 | Offres et documentation alignées | README aligné ; grille vérifiée dans le code par un test ; écarts de l'accueil, des CGV et de l'aide recensés sans modifier ces pages réservées ou contractuelles ; décisions ouvertes isolées | `tests/lot1-grille-offres.test.ts` | écrans d'offres du studio : fichiers en cours de modification par #170 (Codex), non retouchés pour ne pas créer de conflit | § 4 |
 
@@ -61,13 +61,47 @@ Tests de `main` qui portent ces fonctions : `calendrier-une-phrase`, `calendrier
 
 ### Recette sur têtes figées (sans fournisseur payant)
 
-[RÉSULTATS À COMPLÉTER EN FIN D'EXÉCUTION]
+Toutes les commandes ont tourné dans ce conteneur (4 processeurs), sur des copies séparées, fournisseurs simulés,
+aucun réseau fournisseur.
+
+| Tête figée | Contrôle | Résultat |
+|---|---|---|
+| `main` `0a6aa1dd` | `npx tsc --noEmit` | réussi |
+| `main` `0a6aa1dd` | `npx vitest run` (suite complète) | 356 fichiers : **2 876 réussis, 11 ignorés, 1 échec** = `migration-v2.test.ts` « calendrier de la création… » **dépassement du délai de 120 s** sous charge ; rejoué seul : 6/6 réussis |
+| ce lot `fa10eff2` (avant correctif des types) | suite complète | 358 fichiers : **2 886 réussis, 11 ignorés, 1 échec** = même dépassement de délai ; rejoué seul : 6/6 |
+| ce lot `91031b70` | `npx tsc --noEmit` | réussi (après correction du typage de l'environnement dans `scripts/lot1`) |
+| candidate `fddf1383` (#170 + #168 + #166) | `tsc` + suite complète | types réussis ; 362 fichiers : **2 975 réussis, 11 ignorés, 1 échec** = même dépassement de délai ; rejoué seul : 6/6 |
+| ce lot `91031b70` et candidate `65a5ef26` (+ lot 1) | recette ciblée, 29 fichiers : catalogue/familles (`catalogue-actif`, `themes-catalogue`, `bibliotheques-familles*`, `isolation-forfait-familles`, `identite-projets-neufs-familles`), droits (`permissions-forfaits`, `mission150-*`, `forfaits-interface`, `quotas`, `lot1-grille-offres`), choix/adaptation/sauvegarde (`mission154-adaptation`, `lot1-sauvegarde-restauration`), devis/reprises (`idempotence-reprise`, `devis-image-modele-route`, `image-ratee-reprise`, `preparation-analyse-reprise`), calendrier/quota (`calendrier-*`, `social-autopilot-*`, `social-v2-engine`), services général vs campagnes (`mission160-service-scopes`, `mission160-strategy`, `publications-services`, `publications-campagnes`, `services-theme`) | **315/315 réussis** sur les deux têtes |
+| `main` `0a6aa1dd` et candidate `fddf1383` | `social-autopilot-limites`, `social-autopilot-pilote`, `calendrier-reservation` avec la date fixée sur **chacun des 7 jours** (`scripts/lot1/recette-jours.sh`) | **défaut reproduit** : `social-autopilot-pilote` « budget… plafond de la semaine » échoue les **mercredis et jeudis** sur les deux têtes |
+| ce lot `91031b70` | les 32 fichiers publications / calendrier / quotas / blog / forfaits, sur les 7 jours | **244/244 réussis chaque jour** |
+
+Le dépassement de délai de `migration-v2` se produit aussi sur `main` sans aucune modification, passe seul et passe
+en CI GitHub sur `main` (run 39805634053) : lenteur de ce conteneur, pas une régression. Aucun délai n'a été allongé ni
+aucun test retiré.
+
+**Défaut corrigé (test dépendant du jour).** Selon le jour, les trois prochaines publications du pilote sont des
+images ou des carrousels de deux images : 0,30 € à 0,70 € au coût fictif, au-dessus du plafond de 0,50 € fixé par le
+test. Le code respecte bien le plafond, mais le test dépendait du jour. Correction dans
+`tests/social-autopilot-pilote.test.ts` : un plafond de 1 € pour la première tâche, puis un plafond ramené au montant
+engagé pour prouver le refus. Les vérifications sont les mêmes, aucune n'est retirée. Preuve : échec reproduit le
+mercredi et le jeudi avant correction, 9/9 sur les 7 jours après.
+
+**Constats sur le pilote, non corrigés (règle de dépense du domaine Publications, à proposer à Thomas) :**
+1. Quand le devis des prochaines publications dépasse ce qui reste du plafond, **rien** n'est produit (tout attend
+   l'IA), même si une partie tiendrait dans le plafond.
+2. Une tâche payante encore en attente est comptée **deux fois** dans le plafond de la semaine : dans « dépensé »
+   (journal `paid_job`) et dans « engagé » (tâche en file). C'est prudent, jamais de dépassement, mais le plafond
+   consenti se trouve réduit tant que la tâche n'est pas finie (`src/lib/social-v2/autopilot.ts`, `spentThisWeek` et
+   `engaged`).
 
 ### Combinaison candidate et ordre proposé
 
 Copie isolée `claude/lot1-integration-candidate` partie de `0a6aa1dd` : fusion réelle (commits de fusion, aucun
 cherry-pick, aucune résolution globale) de #170 (`46738852`) → #168 (`dbfc05ad`) → #166 (`27777896`), tête
-**`fddf1383`**. Aucun conflit de texte. Chevauchements réels :
+**`fddf1383`**, puis ce lot (`91031b70`) → **`65a5ef26`**. Aucun conflit de texte. Cette branche est restée **locale**
+(non publiée : publier une branche qui réunit les PR d'autres conversations attend l'accord de Thomas). Elle se
+reconstruit à l'identique avec `git checkout -b <nom> 0a6aa1dd` puis `git merge --no-ff` des quatre têtes dans cet
+ordre. Chevauchements réels :
 
 | Fichier | PR | Résolution constatée |
 |---|---|---|
@@ -113,7 +147,7 @@ IA = 40 % du HT de l'abonnement, 50 % du HT d'une recharge. Aucun pourcentage in
 | Où | Écart | Pourquoi non corrigé | Propriétaire |
 |---|---|---|---|
 | CGV (`src/app/conditions/page.tsx`, § 3) | affiche « chaque mois **0 visuels IA et 0 vidéos IA** », une liste de packs **vide** (« Packs, à ajouter à un forfait :  TTC… »), une phrase de report « sauf avec les forfaits , où… » sans forfait ; ne cite ni la recharge de 10 €, ni l'appel initial, ni les droits de la grille | contrat : aucune modification sans Thomas (et relecture juridique) | Thomas |
-| Accueil (`src/app/page.tsx`) | « Onze thèmes… **inclus dans tout forfait** » (faux : 1 / 3 / tous) | page réservée à la refonte de fin de V1 | refonte accueil |
+| Accueil (`src/app/page.tsx`) | « Onze thèmes… **inclus dans tout forfait** » (faux : 1 / 3 / tous) ; section Thèmes « **Quatre modèles de référence** » et « l'IA … en crée un tout nouveau pour vous » (11 thèmes actifs ; thème sur mesure réservé à Dominer, 2 par mois) ; « **Quatre offres** claires » alors que Découverte n'est pas un forfait | page réservée à la refonte de fin de V1 | refonte accueil |
 | Accueil, tableau des forfaits (`src/components/pricing.tsx`, affiché sur l'accueil) | Dominer : « Avancées **+ UGC** » (aucune capacité UGC vérifiée) ; « Connexions sociales : oui » sans dire que la publication réelle n'est pas essayée ; aucune ligne « angles 1 / 2 / 5 » | idem | refonte accueil |
 | Accueil, FAQ | « Une hausse est facturée au prorata » et « satisfait ou remboursé 14 jours » : règles historiques non confirmées | idem + décision | Thomas |
 | Aide, tutoriel « Images » (`src/lib/tutorials/images.ts`) | « Votre produit est toujours composé à partir de ses vraies photos ; les textes sont ajoutés par-dessus » : contraire à la règle des images finales 100 % IA | domaine 3 (tutoriels et leurs vidéos narrées) | domaine 3 |
@@ -156,10 +190,40 @@ budget IA du projet, renouvelé chaque mois ; une recharge de 10 € TTC peut lu
 
 ## 6. Captures et non-régression
 
-Aucun écran du studio n'est modifié par ce lot (README, scripts, tests et documents seulement) : pas de capture
-avant/après d'écran modifié. Captures de constat des écrans concernés par les écarts du § 4 :
-[À COMPLÉTER EN FIN D'EXÉCUTION]
+Aucun écran du studio n'est modifié par ce lot (README, scripts, tests et documents seulement), donc pas de capture
+avant/après d'écran modifié. Captures de **constat** des écarts du § 4, prises sur `main` `0a6aa1dd` avec une base
+vide isolée, un port dédié, aucun appel sortant et aucun worker (`scripts/lot1/captures-constat.ts`), à 1440 px et
+390 px : `reports/lot1/captures/`.
+
+| Capture | Ce qu'elle montre |
+|---|---|
+| `cgv-forfaits-ordinateur.png`, `-telephone.png` | « 0 visuels IA et 0 vidéos IA » chaque mois, packs vides, « sauf avec les forfaits , où… » |
+| `accueil-offres-ordinateur.png`, `-telephone.png` | grille 49/89/129 cohérente avec `plans.ts` ; « Quatre offres claires » (Découverte comptée comme une offre), « Avancées + UGC », « Connexions sociales » |
+| `accueil-themes-ordinateur.png`, `-telephone.png` | « **Quatre modèles de référence** » (11 thèmes actifs) ; « l'IA … en crée un tout nouveau pour vous » |
+| `accueil-questions-ordinateur.png`, `-telephone.png` | réponses « Une hausse est facturée au prorata », « satisfait ou remboursé pendant 14 jours » |
+
+Limite : les vignettes des démonstrations sont vides sur ces captures, parce que le kit privé `public/demo/` de
+Thomas n'est pas dans le dépôt. Les captures ont été vérifiées une à une. Une première série, recouverte par
+l'introduction animée et par le bandeau fixe, a été écartée et refaite.
+
+Non-régression : suites complètes et recette ciblée du § 2 (aucun test retiré ni affaibli).
 
 ## 7. Résumé simple
 
-[À COMPLÉTER EN FIN D'EXÉCUTION]
+**Ce qui marche, prouvé ici (sur des copies, avec des données fictives) :**
+- La grille 49 / 89 / 129 € est bien celle que le studio applique : un projet par abonnement, droits, quotas, budget
+  IA caché. Un test le vérifie désormais.
+- Rien n'a été perdu en route : l'intégration #162 contient tout le travail des PR précédentes, et ce qu'il restait
+  d'utile de #127 a été repris. Les « visuels gratuits » restent écartés.
+- Les trois PR de Codex en attente (#170, #168, #166) se combinent sans conflit, et tous leurs tests passent ensemble.
+- Une sauvegarde complète (base, médias, liste des réglages) se fait sans arrêter le studio. Elle se restaure dans un
+  autre dossier et se vérifie. Une ancienne base passe à la nouvelle version sans perte, deux fois de suite.
+- Un test du calendrier qui échouait le mercredi et le jeudi est réparé.
+
+**Ce qui reste à décider par Thomas :** le § 4 en liste 10. Les principaux : anciens comptes à plusieurs boutiques,
+anciens crédits offerts, prorata, résiliation, appel par compte ou par projet, texte des CGV. S'y ajoutent l'ordre des
+fusions (#170 → #168 → #166) et le comportement du pilote quand le plafond est presque atteint.
+
+**Branche livrée et studio réellement servi :** tout est sur la branche de ce lot, **rien n'est fusionné, rien n'est
+déployé**. Le studio habituel de Thomas n'a pas été touché et sa version n'a pas été vérifiée. La sauvegarde de ses
+vraies données n'a pas été faite : la procédure est prête (`LOT1_MIGRATION_RESTAURATION.md` § 5).
