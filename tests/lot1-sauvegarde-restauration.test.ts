@@ -123,7 +123,7 @@ describe("Lot 1 — sauvegarde et restauration", () => {
     fs.writeFileSync(path.join(hist, "fabrication.json"), JSON.stringify({ synthetic: true, commit: "dcfc13b184cb4f2dc43d4f5473da45f60340b1f9" }));
     const report = path.join(root, "rapport.json");
     const tsx = path.join(process.cwd(), "node_modules", ".bin", "tsx");
-    execFileSync(tsx, ["scripts/lot1/essai-complet.ts", "--source", hist, "--code", process.cwd(), "--travail", dir("essai"), "--rapport", report], { env: { PATH: process.env.PATH }, stdio: "pipe" });
+    execFileSync(tsx, ["scripts/lot1/essai-complet.ts", "--source", hist, "--code", process.cwd(), "--travail", dir("essai"), "--rapport", report], { env: { PATH: process.env.PATH } as unknown as NodeJS.ProcessEnv, stdio: "pipe" });
     const r = JSON.parse(fs.readFileSync(report, "utf8"));
     expect(r.reussi).toBe(true);
     expect(r.controles.filter((c: { ok: boolean }) => !c.ok)).toEqual([]);

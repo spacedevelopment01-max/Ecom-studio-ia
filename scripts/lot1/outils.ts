@@ -140,7 +140,9 @@ const gitCommit = () => {
   }
 };
 
-export type BackupOptions = { dataDir: string; dest: string; databaseFile?: string; storageDir?: string; env?: NodeJS.ProcessEnv };
+/** Environnement minimal (sans les variables obligatoires imposées au type global par Next). */
+export type Env = Record<string, string | undefined>;
+export type BackupOptions = { dataDir: string; dest: string; databaseFile?: string; storageDir?: string; env?: Env };
 
 /**
  * Sauvegarde cohérente : instantané SQLite (API de sauvegarde en ligne), puis médias, puis contrôle des références.
@@ -189,7 +191,7 @@ export async function backup(o: BackupOptions): Promise<Manifest> {
     const dataDirs: Record<string, FileEntry[]> = {};
     for (const sub of DATA_SUBDIRS) dataDirs[sub] = copyFiles(path.join(dataDir, sub), path.join(dest, "data", sub), listFiles(path.join(dataDir, sub)));
 
-    const env = o.env ?? process.env;
+    const env: Env = o.env ?? process.env;
     manifest = {
       format: "ecom-studio-ia/sauvegarde-lot1",
       version: 1,
@@ -311,6 +313,12 @@ export function neutralize(dataDir: string, opts: { forbid?: string[] } = {}) {
 /** Environnement minimal pour ouvrir une copie de recette : aucune clé héritée, publication et passerelle IA coupées. */
 export function recetteEnv(dataDir: string, extra: Record<string, string> = {}): NodeJS.ProcessEnv {
   return {
+    ...recetteVars(dataDir),
+    ...extra,
+  } as NodeJS.ProcessEnv;
+}
+function recetteVars(dataDir: string): Record<string, string> {
+  return {
     PATH: process.env.PATH ?? "/usr/bin:/bin",
     HOME: process.env.HOME ?? "/tmp",
     DATA_DIR: path.resolve(dataDir),
@@ -318,6 +326,5 @@ export function recetteEnv(dataDir: string, extra: Record<string, string> = {}):
     STOCK_OFFLINE: "1",
     // Secret différent de celui du studio : les valeurs chiffrées de la copie restent illisibles.
     APP_SECRET: crypto.randomBytes(32).toString("base64url"),
-    ...extra,
   };
 }

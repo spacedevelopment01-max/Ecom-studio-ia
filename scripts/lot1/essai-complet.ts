@@ -26,6 +26,7 @@ for (const forbidden of [process.env.DATA_DIR, path.join(process.cwd(), "data")]
     throw new Error("Source = dossier de données en service : ajouter --source-en-service-lecture-seule (lecture seule, sauvegarde en ligne).");
   }
 }
+const live = process.argv.includes("--source-en-service-lecture-seule");
 globalThis.fetch = (async () => {
   throw new Error("Réseau interdit pendant l'essai.");
 }) as typeof fetch;
@@ -174,7 +175,8 @@ n.close();
 ok("recette — plus aucune tâche prête à partir", pending === 0, neutral);
 ok("recette — aucun secret ni jeton dans la copie", secrets === 0 && tokens === 0);
 
-ok("source jamais modifiée", sha256File(sourceDb) === sourceHashBefore);
+// Base en service : le site et le worker continuent d'écrire, son empreinte change normalement (rien n'y est écrit ici).
+if (!live) ok("source jamais modifiée", sha256File(sourceDb) === sourceHashBefore);
 
 const report = {
   date: new Date().toISOString(),
