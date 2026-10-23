@@ -568,6 +568,7 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
   f("money", (c: unknown) => money(c, lang));
+  f("money_without_trailing_zeros", (c: unknown) => money(c, lang).replace(/[.,]00(?=\D|$)/, ""));
   f("money_with_currency", (c: unknown) => (c === null || c === undefined ? priceToSet(lang) : `${money(c, lang)} EUR`));
   f("money_without_currency", (c: unknown) => (c === null || c === undefined ? "" : lang === "en" ? (Number(c) / 100).toFixed(2) : (Number(c) / 100).toFixed(2).replace(".", ",")));
   f("t", (key: string, ...args: any[]) => translate(locale, key, Object.fromEntries(args.filter(Array.isArray))));

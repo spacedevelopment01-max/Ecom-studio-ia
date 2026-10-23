@@ -700,6 +700,13 @@
         "info": "N'indiquez que des engagements réels (livraison, retours)."
       },
       {
+        "type": "checkbox",
+        "id": "price_trim_zeros",
+        "label": "Prix ronds sans « ,00 »",
+        "info": "Ex. « 129 € » au lieu de « 129,00 € » (les centimes restent affichés quand il y en a).",
+        "default": false
+      },
+      {
         "type": "header",
         "content": "Présentation du panier"
       },

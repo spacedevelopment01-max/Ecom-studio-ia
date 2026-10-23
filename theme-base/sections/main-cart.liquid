@@ -57,7 +57,7 @@
   endif
 -%}
 {%- if has_hero -%}
-<div class="es-cart__hero color-{{ section.settings.hero_color_scheme | default: 'scheme-2' }}">
+<div class="es-cart__hero color-{{ section.settings.hero_color_scheme | default: 'scheme-2' }}"{% if section.settings.hero_zoom > 100 and cart.item_count > 0 %} style="--cv-zoom:{{ section.settings.hero_zoom | divided_by: 100.0 }};"{% endif %}>
   {% render 'ed-media', image: hero_pick, asset: hero_asset, alt: '', focus_x: section.settings.hero_focus_x, focus_y: section.settings.hero_focus_y, loading: 'eager' %}
   <div class="es-container es-cart__hero-copy"><h1 class="es-heading es-cart__hero-title">{{ hero_title | escape | newline_to_br }}</h1></div>
 </div>
@@ -104,7 +104,7 @@
               <div class="es-line-item__info">
                 <a href="{{ item.url }}" class="es-line-item__title">{{ item.product.title }}</a>
                 {%- unless item.product.has_only_default_variant -%}<p class="es-muted es-small">{{ item.variant.title }}</p>{%- endunless -%}
-                <p class="es-small">{{ item.final_price | money }}</p>
+                <p class="es-small">{% if settings.price_trim_zeros %}{{ item.final_price | money_without_trailing_zeros }}{% else %}{{ item.final_price | money }}{% endif %}</p>
                 <label class="visually-hidden" for="Qty-{{ forloop.index }}">{{ 'products.product.quantity' | t }}</label>
                 {%- if section.settings.qty_buttons and item.properties._es_gift == blank -%}
                   <div class="es-qty es-qty--small es-cart__qty">
@@ -117,7 +117,7 @@
                 {%- endif -%}
                 {% if item.properties._es_gift %}<input type="hidden" name="updates[]" value="{{ item.quantity }}">{% endif %}
               </div>
-              <div class="es-line-item__total">{% if item_saving > 0 %}<s class="es-line-item__compare"><span class="visually-hidden">{{ 'cart.compare_price' | t }} </span>{{ item_original | money }}</s> {% endif %}{{ item.final_line_price | money }}{% if item_saving > 0 and settings.cart_show_savings %}<span class="es-line-item__saving">{{ 'purchase.save' | t }} {{ item_saving | money }}</span>{% endif %}</div>
+              <div class="es-line-item__total">{% if item_saving > 0 %}<s class="es-line-item__compare"><span class="visually-hidden">{{ 'cart.compare_price' | t }} </span>{% if settings.price_trim_zeros %}{{ item_original | money_without_trailing_zeros }}{% else %}{{ item_original | money }}{% endif %}</s> {% endif %}{% if settings.price_trim_zeros %}{{ item.final_line_price | money_without_trailing_zeros }}{% else %}{{ item.final_line_price | money }}{% endif %}{% if item_saving > 0 and settings.cart_show_savings %}<span class="es-line-item__saving">{{ 'purchase.save' | t }} {% if settings.price_trim_zeros %}{{ item_saving | money_without_trailing_zeros }}{% else %}{{ item_saving | money }}{% endif %}</span>{% endif %}</div>
               {% unless item.properties._es_gift %}<a href="{{ item.url_to_remove }}" class="es-line-item__remove es-link-button">{% if section.settings.remove_label != blank %}{{ section.settings.remove_label | escape }}{% else %}{{ 'cart.remove' | t }}{% endif %}</a>{% else %}<span class="es-small">{{ 'purchase.gift' | t }}</span>{% endunless %}
             </li>
           {%- endfor -%}
@@ -147,9 +147,9 @@
             </div>
           {%- endif -%}
           {%- if settings.cart_show_savings and savings > 0 -%}
-            <div class="es-drawer__row es-drawer__savings"><span>{{ 'cart.savings' | t }}</span><strong class="es-drawer__savings-tag">{% render 'icon', name: 'gift' %}−{{ savings | money }}</strong></div>
+            <div class="es-drawer__row es-drawer__savings"><span>{{ 'cart.savings' | t }}</span><strong class="es-drawer__savings-tag">{% render 'icon', name: 'gift' %}−{% if settings.price_trim_zeros %}{{ savings | money_without_trailing_zeros }}{% else %}{{ savings | money }}{% endif %}</strong></div>
           {%- endif -%}
-          <div class="es-drawer__total es-drawer__row"><span>{% if settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span><strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{{ original_total | money }}</s> {% endif %}{{ cart.total_price | money }}</strong></div>
+          <div class="es-drawer__total es-drawer__row"><span>{% if settings.cart_total_count %}{{ 'cart.total_items' | t: count: cart.item_count }}{% else %}{{ 'cart.subtotal' | t }}{% endif %}</span><strong>{% if settings.cart_show_savings and savings > 0 %}<s class="es-drawer__compare">{% if settings.price_trim_zeros %}{{ original_total | money_without_trailing_zeros }}{% else %}{{ original_total | money }}{% endif %}</s> {% endif %}{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</strong></div>
           {%- if section.settings.summary_note != blank -%}<p class="es-muted es-small es-cart__note">{{ section.settings.summary_note | escape }}</p>{%- endif -%}
           {%- if section.settings.show_taxes_note != false -%}<p class="es-muted es-small">{{ 'cart.taxes_and_shipping' | t }}</p>{%- endif -%}
           {%- if section.settings.show_update != false -%}<button type="submit" name="update" class="es-button es-button--secondary es-button--full">{{ 'cart.update' | t }}</button>{%- endif -%}
@@ -219,6 +219,7 @@
     { "type": "text", "id": "hero_image_asset", "label": "Photo du bandeau (fichier du thème)" },
     { "type": "range", "id": "hero_focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "hero_focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "hero_zoom", "label": "Agrandissement de la photo (panier rempli)", "info": "Au-delà de 100 %, la photo est agrandie autour du point focal.", "min": 100, "max": 250, "step": 5, "unit": "%", "default": 100 },
     { "type": "textarea", "id": "hero_heading", "label": "Titre sur le bandeau", "info": "Vide : le titre du panier." },
     { "type": "image_picker", "id": "hero_empty_image", "label": "Photo du bandeau, panier vide" },
     { "type": "text", "id": "hero_empty_image_asset", "label": "Photo du bandeau, panier vide (fichier du thème)" },

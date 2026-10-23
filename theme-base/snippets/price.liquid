@@ -7,6 +7,9 @@
   assign compare_at_price = target.compare_at_price
   assign price = target.price
   assign money_price = price | money
+  if settings.price_trim_zeros
+    assign money_price = price | money_without_trailing_zeros
+  endif
 -%}
 <div class="es-price{% if compare_at_price > price %} es-price--sale{% endif %}{% if target.available == false %} es-price--soldout{% endif %}" data-price>
   {%- if compare_at_price > price -%}

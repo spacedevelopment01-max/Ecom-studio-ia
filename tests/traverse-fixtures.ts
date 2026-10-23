@@ -118,12 +118,12 @@ function curateTraverse(k: Kit) {
     const mp = t.sections[t.order.find((x) => t.sections[x].type === "main-product")!];
     const schema = sectionSchema(spec, "main-product")!;
     const block = (type: string, settings: Record<string, unknown>) => ({ type, settings: withDefaults(schema.blocks.find((b) => b.type === type)?.settings, settings) });
-    mp.settings = { ...mp.settings, product_target: "product:main", purchase_enabled: false, gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1", display_heading: "PRÊT POUR VENDREDI.", display_intro: "", padding_top: 24, padding_bottom: 32 };
+    mp.settings = { ...mp.settings, product_target: "product:main", purchase_enabled: false, gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1", display_heading: "PRÊT POUR VENDREDI.", display_intro: "", padding_top: 24, padding_bottom: 32 };
     // Titre éditorial (H1), prix et mention de démonstration, quantité et ajout, phrase, trois gros plans légendés ;
     // les informations inconnues restent dans l'éditeur, masquées.
     mp.blocks = {
       title: block("title", {}),
-      price: block("price", {}),
+      price: block("price", { show_taxes: false }),
       demo: block("text", { text: p("Prix de démonstration") }),
       buy: block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: false }),
       text: block("text", { text: p("Le sac de vos prochains départs.") }),
@@ -134,7 +134,7 @@ function curateTraverse(k: Kit) {
     mp.block_order = ["title", "price", "demo", "buy", "text", "tiles", "specs", "shipping"];
   }
   overlay(k.productKey(), [
-    section("cv-banner", { ...img("hero-gare.webp"), layout: "background", band_height: "medium", veil: "left", mobile_valign: "center", title_rule: true, focus_x: 70, focus_y: 50, mobile_focus_x: 74, mobile_focus_y: 50, eyebrow: "", heading: "LES PROCHAINS\nDÉPARTS\nCOMMENCENT ICI.", heading_accent: "", text: "", price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
+    section("cv-banner", { ...img("hero-gare.webp"), layout: "background", band_height: "tall", veil: "left", mobile_valign: "center", title_rule: true, focus_x: 70, focus_y: 50, mobile_focus_x: 74, mobile_focus_y: 50, eyebrow: "", heading: "LES PROCHAINS\nDÉPARTS\nCOMMENCENT ICI.", heading_accent: "", text: "", price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
     section("cv-gallery", { layout: "grid", columns: 3, ratio: "square", eyebrow: "", heading: "", heading_accent: "", text: "", ai_label: "", animation: "fade", color_scheme: "scheme-1", padding_top: 8, padding_bottom: 8 }, [
       { type: "image", settings: { ...img("detail-poche.webp"), caption: "" } },
       { type: "image", settings: { ...img("detail-boucle.webp"), caption: "" } },
@@ -149,14 +149,14 @@ function curateTraverse(k: Kit) {
   // ─── Boutique : bandeau puis la grille (un seul sac, pas de fausse collection) ────────────────────────────────────
   spec.templates.collection = { order: ["hero", "main"], sections: {
     hero: section("cv-banner", { ...img("paysage.webp"), layout: "background", band_height: "tall", veil: "left", mobile_valign: "center", title_rule: true, focus_x: 50, focus_y: 50, mobile_focus_x: 45, mobile_focus_y: 50, eyebrow: "", heading: "UN SAC.\nVOS PROCHAINS\nDÉPARTS.", heading_tag: "h1", heading_accent: "", text: "", price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
-    main: section("main-collection", { per_page: 12, columns: 3, enable_filters: false, enable_sorting: true, show_header: false, show_count: true, card_vendor: true, card_button_label: "VOIR LE PRODUIT", card_ratio: "square", color_scheme: "scheme-1" }),
+    main: section("main-collection", { per_page: 12, columns: 2, enable_filters: false, enable_sorting: true, show_header: false, show_count: true, card_vendor: true, card_button_label: "VOIR LE PRODUIT", card_ratio: "square", color_scheme: "scheme-1" }),
   } };
 
   // ─── Panier : bandeau photo (rempli et vide), tableau, bandeau final ; mention de démonstration sous le total ──────
-  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "", hero_image_asset: img("train.webp").image_asset, hero_focus_x: 35, hero_focus_y: 45, hero_heading: "VOTRE PANIER.", hero_empty_image_asset: img("montagne.webp").image_asset, hero_empty_heading: "VOTRE PANIER\nEST VIDE.", table_head: true, show_update: false, show_taxes_note: false, summary_note: "Prix de démonstration", empty_icon: "backpack", empty_image_asset: "", empty_heading: "Il est temps de planifier vos prochains départs.", empty_text: "", empty_button_label: "DÉCOUVRIR LA BOUTIQUE", empty_button_link: "/collections/all", qty_buttons: true, remove_label: "Supprimer", continue_label: "Continuer vos achats" };
-  spec.templates.cart.sections.horizons = section("cv-banner", { ...img("paysage.webp"), layout: "background", band_height: "medium", veil: "left", mobile_valign: "center", hide_when_cart_empty: true, focus_x: 50, focus_y: 50, mobile_focus_x: 70, mobile_focus_y: 50, eyebrow: "", heading: "MÊMES HORIZONS.\nAUTREMENT.", heading_accent: "", text: "", price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 });
+  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "", hero_image_asset: img("train.webp").image_asset, hero_zoom: 200, hero_focus_x: 0, hero_focus_y: 40, hero_heading: "VOTRE PANIER.", hero_empty_image_asset: img("paysage.webp").image_asset, hero_empty_heading: "VOTRE PANIER\nEST VIDE.", table_head: true, show_update: false, show_taxes_note: false, summary_note: "Prix de démonstration", empty_icon: "backpack", empty_image_asset: "", empty_heading: "Il est temps de planifier vos prochains départs.", empty_text: "", empty_button_label: "DÉCOUVRIR LA BOUTIQUE", empty_button_link: "/collections/all", qty_buttons: true, remove_label: "Supprimer", continue_label: "Continuer vos achats" };
+  spec.templates.cart.sections.horizons = section("cv-banner", { ...img("paysage.webp"), layout: "background", band_height: "tall", veil: "left", mobile_valign: "center", hide_when_cart_empty: true, focus_x: 50, focus_y: 50, mobile_focus_x: 70, mobile_focus_y: 50, eyebrow: "", heading: "MÊMES HORIZONS.\nAUTREMENT.", heading_accent: "", text: "", price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 });
   spec.templates.cart.order.push("horizons");
-  spec.settings = { ...spec.settings, cart_heading: "VOTRE PANIER.", cart_reassurance: "", cart_checkout_label: "PROCÉDER AU PAIEMENT" };
+  spec.settings = { ...spec.settings, price_trim_zeros: true, cart_heading: "VOTRE PANIER.", cart_reassurance: "", cart_checkout_label: "PROCÉDER AU PAIEMENT" };
 
   // ─── Pages (planches 03 et 04) : bandeau photo (H1), puis contenu ─────────────────────────────────────────────────
   const hero = (heading: string, text: string, extra: Record<string, unknown> = {}) => section("cv-banner", { ...img("paysage.webp"), layout: "background", band_height: "tall", veil: "left", mobile_valign: "center", focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, eyebrow: "", heading, heading_tag: "h1", heading_accent: "", text, price_text: "", price_note: "", button_label: "", button_link: "", note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0, ...extra });
@@ -185,7 +185,7 @@ function curateTraverse(k: Kit) {
       { type: "row", settings: { ...img("montagne.webp"), anchor: "preparer", eyebrow: "02", heading: "Préparer l'essentiel.", heading_accent: "", text: p("Billets, hébergement, itinéraire : les éléments clés pour un voyage serein et sans stress."), button_label: "", button_link: "" } },
       { type: "row", settings: { ...img("train.webp"), anchor: "trajet", eyebrow: "03", heading: "Profiter du trajet.", heading_accent: "", text: p("Observer, se détendre, s'inspirer : le trajet fait partie du voyage."), button_label: "", button_link: "" } },
     ])],
-    ["suite", section("cv-banner", { ...img("hero-gare.webp"), layout: "background", band_height: "short", veil: "left", mobile_valign: "center", focus_x: 20, focus_y: 45, mobile_focus_x: 20, mobile_focus_y: 45, eyebrow: "", heading: "Envie de plus d'inspirations ?", heading_accent: "", text: p("Explorez tous nos articles et idées de voyages."), price_text: "", price_note: "", button_label: "Voir le journal", button_link: "/pages/en-route", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 })],
+    ["suite", section("cv-banner", { ...img("lac.webp"), layout: "background", band_height: "short", image_zoom: 200, veil: "left", mobile_valign: "center", focus_x: 0, focus_y: 30, mobile_focus_x: 0, mobile_focus_y: 30, eyebrow: "", heading: "Envie de plus d'inspirations ?", heading_accent: "", text: p("Explorez tous nos articles et idées de voyages."), price_text: "", price_note: "", button_label: "Voir le journal", button_link: "/pages/en-route", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 })],
   ]);
   page("notre-approche", "Notre approche", { title: "Notre approche | TRAVERSE", description: "Moins attendre. Plus partir. Une vision simple du voyage, le temps d'un week-end." }, [
     ["hero", hero("NOTRE APPROCHE.", p("Moins attendre. Plus partir."), { focus_x: 40 })],

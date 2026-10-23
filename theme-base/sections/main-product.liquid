@@ -62,7 +62,7 @@
             {%- when 'price' -%}
               <div class="es-product__price" {{ block.shopify_attributes }} data-price-wrap><div class="es-product__price-line">{% render 'price', product: product, use_variant: true %}{% if section.settings.purchase_enabled and section.settings.purchase_unit_label != blank %}<span class="es-product__price-note" data-price-note>{{ section.settings.purchase_unit_label | escape }}</span>{% endif %}</div>
                 {%- comment -%} Produit sans prix (aperçu du studio) : aucune mention de taxes ni de livraison autour d'un prix absent. {%- endcomment -%}
-                {% if product.price != nil %}<p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>{% endif %}
+                {% if product.price != nil and block.settings.show_taxes != false %}<p class="es-small es-muted">{{ 'products.product.taxes_included' | t }}</p>{% endif %}
               </div>
             {%- when 'text' -%}
               <div class="es-rte es-product__text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
@@ -172,9 +172,12 @@
               <ul class="es-product__tiles" role="list" {{ block.shopify_attributes }}>
                 {%- for i in (1..3) -%}
                   {%- liquid
-                    assign t_image = block.settings['image_' | append: i]
-                    assign t_pick = block.settings['picker_' | append: i]
-                    assign t_caption = block.settings['caption_' | append: i]
+                    assign k_image = 'image_' | append: i
+                    assign k_pick = 'picker_' | append: i
+                    assign k_caption = 'caption_' | append: i
+                    assign t_image = block.settings[k_image]
+                    assign t_pick = block.settings[k_pick]
+                    assign t_caption = block.settings[k_caption]
                   -%}
                   {%- if t_image != blank or t_pick != blank -%}
                     <li class="es-product__tile">{% render 'ed-media', image: t_pick, asset: t_image, alt: t_caption %}{% if t_caption != blank %}<span>{{ t_caption | escape }}</span>{% endif %}</li>
@@ -308,7 +311,7 @@
     { "type": "@app" },
     { "type": "eyebrow", "name": "Surtitre", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Texte", "info": "Vide : nom du fabricant." } ] },
     { "type": "title", "name": "Titre", "limit": 1, "settings": [] },
-    { "type": "price", "name": "Prix", "limit": 1, "settings": [] },
+    { "type": "price", "name": "Prix", "limit": 1, "settings": [ { "type": "checkbox", "id": "show_taxes", "label": "Mention « taxes incluses »", "default": true } ] },
     { "type": "text", "name": "Texte", "settings": [ { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>Une phrase d'accroche.</p>" }, { "type": "text", "id": "product_handle", "label": "Réservé au produit (handle)", "info": "Vide : affiché sur toutes les fiches. Sinon, seulement sur la fiche de ce produit." } ] },
     { "type": "buy_buttons", "name": "Boutons d'achat", "limit": 1, "settings": [
       { "type": "select", "id": "picker", "label": "Sélecteur de variantes", "default": "buttons", "options": [ { "value": "buttons", "label": "Boutons" }, { "value": "dropdown", "label": "Liste déroulante" } ] },

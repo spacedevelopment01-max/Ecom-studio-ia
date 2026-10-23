@@ -9,6 +9,8 @@
     <h1 class="visually-hidden">{{ collection.title }}</h1>
     {%- endif -%}
     {%- paginate collection.products by section.settings.per_page -%}
+      <div class="es-collection__bar">
+      {%- if section.settings.show_count != false -%}<p class="es-small es-muted es-collection__count">{{ 'collections.product_count' | t: count: collection.products_count }}</p>{%- endif -%}
       <form class="es-filters" data-filters action="{{ collection.url }}" method="get">
         {%- if section.settings.enable_filters -%}
           {%- for filter in collection.filters -%}
@@ -40,7 +42,7 @@
         {%- endif -%}
         <noscript><button type="submit" class="es-button es-button--small">{{ 'collections.apply' | t }}</button></noscript>
       </form>
-      {%- if section.settings.show_count != false -%}<p class="es-small es-muted es-collection__count">{{ 'collections.product_count' | t: count: collection.products_count }}</p>{%- endif -%}
+      </div>
       <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">
         {%- for product in collection.products -%}
           {% render 'product-card', product_card: product, show_secondary: true, ratio: section.settings.card_ratio, show_vendor: section.settings.card_vendor, button_label: section.settings.card_button_label %}
