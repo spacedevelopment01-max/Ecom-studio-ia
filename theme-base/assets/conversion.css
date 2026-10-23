@@ -1623,3 +1623,4 @@ body[data-conversion="club"][data-ds] .cv-cards--pills .cv-cards__grid:has(>:nth
 body[data-conversion="club"][data-ds] .es-legal__title{display:none}
 body[data-conversion="club"][data-ds] .cv-specs--table .cv-specs__head :is(.cv-title,.cv-head__text){text-align:left;margin-inline:0}
 @media(max-width:749px){body[data-conversion="club"][data-ds] .cv-banner--background.cv-banner--h-tall .cv-banner__inner{min-height:540px}}
+@media(max-width:749px){body[data-conversion="club"][data-ds] .es-collection .es-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
