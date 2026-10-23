@@ -23,6 +23,9 @@ vérifiées avant conversion (61/61 conformes).
 
 ## Matrice planche → écran → page → capture
 
+Comparaisons côte à côte (planche originale à gauche, rendu à droite) : `reports/issue175/comparaisons/` ; captures
+téléphone 360 / 390 / 430 px : `reports/issue175/captures/` ; contrôles effectués : `reports/issue175/RESULTATS.md`.
+
 | Planche | Écran ou état | Page de la démo | Capture (ordinateur / téléphone) | Écart connu |
 |---|---|---|---|---|
 | 01 | Accueil ordinateur | `/` (`accueil.html`) | accueil-1440 | Réseaux sociaux du pied absents (aucun compte réel à relier). |
