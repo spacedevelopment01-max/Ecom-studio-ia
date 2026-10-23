@@ -1,0 +1,917 @@
+[
+  {
+    "fichier": "images/accueil-hero.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      9,
+      41,
+      793,
+      273
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 987479,
+    "sha256": "c32a57f03b167d5d29e54539ec138e627a42f1e49a87e91abd5713da7785172a",
+    "scene": "roasted white fish on ceramic plate with seasonal vegetables on linen table, wine glass on right, warmly lit French bistro"
+  },
+  {
+    "fichier": "images/accueil-philosophie.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      385,
+      274,
+      791,
+      421
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1264738,
+    "sha256": "fc7023acb8bf8343742c7f27bbabcece8fba4ef07ec5af3bb1fa0b6b219c404f",
+    "scene": "French bistro dining room in daylight, dressed wooden tables white linen, indoor foliage and warm sconces"
+  },
+  {
+    "fichier": "images/risotto-champignons.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      62,
+      475,
+      273,
+      569
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 938758,
+    "sha256": "ea3efe0b00e19403670f06a8ec36c41e65493992481bf721c456582db1c28a49",
+    "scene": "close view of mushroom risotto with herbs in a rustic shallow ceramic bowl"
+  },
+  {
+    "fichier": "images/poisson-roti.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      292,
+      475,
+      512,
+      569
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1057133,
+    "sha256": "1c1d9007f845ef2c69ce72c1a5062637ee9115a6ff6f74c888ec30ca048a5305",
+    "scene": "roast white fish with green vegetables and golden sauce on ceramic plate"
+  },
+  {
+    "fichier": "images/tarte-pommes-creme.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      532,
+      475,
+      742,
+      569
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 926130,
+    "sha256": "8329118b301a6c0942ebc0f9a6cf503f4817ce55db7ec94ea2825e94448f7188",
+    "scene": "individual apple tart with a high swirl of cream on top, rustic pastry photography"
+  },
+  {
+    "fichier": "images/categorie-entrees.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      374,
+      658,
+      491,
+      792
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 898462,
+    "sha256": "95965ea5f256b5b91dfde6565bfb0b63843b305bcb1e83fecc2cae2d60f55df4",
+    "scene": "square terrine topped with red vegetable garnish, small vegetables on plate"
+  },
+  {
+    "fichier": "images/categorie-plats.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      501,
+      658,
+      618,
+      792
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1033174,
+    "sha256": "14cf4c88ab8eca573846c2ed0ce933d58e30b28c424cbd3da1ce2c7dd0887d53",
+    "scene": "two seared scallops with small vegetables and herbs on rustic plate"
+  },
+  {
+    "fichier": "images/categorie-desserts.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      628,
+      658,
+      747,
+      792
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 852790,
+    "sha256": "e6af3b1a414d15466a9605d83024828b881ab1bd3dadefab41085f5e29b2138f",
+    "scene": "whole poached golden pear standing on dark crumble on a plate"
+  },
+  {
+    "fichier": "images/accueil-lieu.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      10,
+      807,
+      439,
+      955
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1114951,
+    "sha256": "96c1b6822513781b2234a49f81c2eaf08b474f3ce22530d38664059b96cda8a9",
+    "scene": "wide warm elegant French bistro, white tablecloths, dark wooden chairs, big window left"
+  },
+  {
+    "fichier": "images/ingredient-artichauts.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      344,
+      964,
+      448,
+      1080
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1173975,
+    "sha256": "f00e7f5d90872ca19a33987cb1a12122ffc89097bf059f75c4ace5fcfc105116",
+    "scene": "fresh purple green artichokes closeup filling the frame"
+  },
+  {
+    "fichier": "images/ingredient-carottes.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      457,
+      964,
+      562,
+      1080
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1205947,
+    "sha256": "44d146692469a65876bce0767decc9194cc3b87474cd6d0b697135fbb2ebfa59",
+    "scene": "multicoloured carrots orange purple yellow with green tops closeup"
+  },
+  {
+    "fichier": "images/ingredient-girolles.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      571,
+      964,
+      676,
+      1080
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1251619,
+    "sha256": "daf458a58202c9eac1c69008bd16239f8f373e8394862169f7bc99f62010fc37",
+    "scene": "fresh golden chanterelle mushrooms macro texture"
+  },
+  {
+    "fichier": "images/ingredient-herbes.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      685,
+      964,
+      792,
+      1080
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1241176,
+    "sha256": "f9c7702ba864c8906c49df06d778802770f6753ef8ced4b21c96c8f970e579fa",
+    "scene": "fresh green herbs sage rosemary dill closeup"
+  },
+  {
+    "fichier": "images/dejeuner.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      193,
+      1087,
+      382,
+      1200
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 862490,
+    "sha256": "be3bc3f157ce42b7ebccd0ad463daa33c89dc36025d014c9b15845392e089c1d",
+    "scene": "light seasonal vegetable dish on cream ceramic plate at lunch, natural daylight"
+  },
+  {
+    "fichier": "images/diner.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      574,
+      1087,
+      791,
+      1200
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 876462,
+    "sha256": "57caa2ef18841764cca13f3509c2fe639a20c72447b5f52657eaa1c85026ca49",
+    "scene": "intimate dinner table with candles wine glasses linen warm dark bistro"
+  },
+  {
+    "fichier": "images/accueil-evenements.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      10,
+      1206,
+      791,
+      1317
+    ],
+    "largeur": 1932,
+    "hauteur": 814,
+    "octets": 1087618,
+    "sha256": "deaacf55455c1fea564255f60a04e1201be4ffd79e60725cd4d4bcd452defded",
+    "scene": "wide French bistro dining room with dressed tables for small private event, no guests"
+  },
+  {
+    "fichier": "images/accueil-reservation.jpg",
+    "planche": "maquettes/01.png",
+    "rectangle_reference": [
+      9,
+      1388,
+      791,
+      1470
+    ],
+    "largeur": 2170,
+    "hauteur": 725,
+    "octets": 789865,
+    "sha256": "8bcfc705093c499347de29f66a21e4a2a833e847823b2c3a1b5327689ce57631",
+    "scene": "close wide dressed bistro table, wine glasses candle folded linen and plates"
+  },
+  {
+    "fichier": "images/carte-veloute.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      12,
+      49,
+      471,
+      263
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1032781,
+    "sha256": "b4d57b19cad0e1bea2142196a392f50ba28c7e4cd8cf545c87388891e1fadfc7",
+    "scene": "creamy seasonal vegetable veloute with golden roasted garnish and herbs in large rustic bowl on dark wood"
+  },
+  {
+    "fichier": "images/salade-betteraves.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      280,
+      311,
+      471,
+      444
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1112487,
+    "sha256": "a5e0d3575ef3d61386b411356884bf51fe5eec85ed09606f7390aacfae9c4dcf",
+    "scene": "roasted beetroot and fresh goat cheese salad, walnuts and baby leaves on rustic plate"
+  },
+  {
+    "fichier": "images/tarte-pommes-glace.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      13,
+      642,
+      210,
+      770
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1055949,
+    "sha256": "8a05f95267033a2124a8daa1d6285eefb446d5eb13ef0d613dfc4d09518dceaf",
+    "scene": "slice of apple tart with vanilla ice cream scoop, caramelized apples on rustic plate"
+  },
+  {
+    "fichier": "images/espresso.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      302,
+      779,
+      471,
+      918
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 978372,
+    "sha256": "e4ee6a7585856aa7d66ceb8a993b07cef0ba5014820a9299258b0e45fc5d2362",
+    "scene": "espresso in handmade white ceramic cup on saucer on dark wooden table"
+  },
+  {
+    "fichier": "images/saisons-hero.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      489,
+      49,
+      949,
+      297
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 798405,
+    "sha256": "37a00bb9eed3690f06b7ebc7fd26d4356a3aca71b4947f2d279dc926e2a9ec01",
+    "scene": "warm evening bistro interior with vase branches on console, dressed table wine glasses and candle"
+  },
+  {
+    "fichier": "images/volaille-grenailles.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      801,
+      378,
+      937,
+      526
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1205585,
+    "sha256": "34bd6f6f107e2c29a41275d71a9a782399d2b23e1a0da36ee83866945d2d0050",
+    "scene": "roasted golden poultry with small roast potatoes and thyme on rustic plate"
+  },
+  {
+    "fichier": "images/saisons-salle.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      489,
+      733,
+      948,
+      933
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1146626,
+    "sha256": "e5dd618705688cbfaa1b2b9e92f6e47f36259bce8b9e0d9f2b93ec4e402e585c",
+    "scene": "wide cozy French bistro with white linen tables, chairs, candles, dark walls, golden sconces"
+  },
+  {
+    "fichier": "images/groupes-hero.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      968,
+      49,
+      1360,
+      296
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 987731,
+    "sha256": "7c111bf472e54aaea62a8c549628189d1888e1179ed8969ec3055b783fa3ec32",
+    "scene": "long white linen banquet table with glasses candles flowers in warm bistro, no people"
+  },
+  {
+    "fichier": "images/groupes-table.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      985,
+      310,
+      1154,
+      435
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1054301,
+    "sha256": "67b84b020005a630be3a0127074fac0ab4a54c519933471c57e22a7a0125ad6d",
+    "scene": "close perspective down long dressed banquet table white linen glassware and flowers"
+  },
+  {
+    "fichier": "images/groupes-soiree.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      1178,
+      310,
+      1344,
+      435
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 952684,
+    "sha256": "ab190c7fc614962313e5f62521fe434ea4952411fbd1915c650ab6146cc2e493",
+    "scene": "dark warm intimate bistro room at night with candles and empty tables"
+  },
+  {
+    "fichier": "images/groupes-detail.jpg",
+    "planche": "maquettes/02.png",
+    "rectangle_reference": [
+      1236,
+      545,
+      1360,
+      820
+    ],
+    "largeur": 1024,
+    "hauteur": 1536,
+    "octets": 1123145,
+    "sha256": "376b527e69df3ea9ee7abb6c32dab1b73b9c11583910dcfb8ccb81af464fdf51",
+    "scene": "vertical detail flowers in glass vase and wine glasses on white linen banquet table"
+  },
+  {
+    "fichier": "images/reservation-etape-1.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      13,
+      50,
+      509,
+      202
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 979136,
+    "sha256": "183888c41eba12b476aff0a22f4435123bdc9dda22b1bfcb4d63eaeb84627950",
+    "scene": "wide warm bistro reservation hero with elegant linen tables and candles"
+  },
+  {
+    "fichier": "images/reservation-detail-1.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      311,
+      348,
+      487,
+      493
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 976264,
+    "sha256": "099b6a50ebf695f66e37b3b768028fa69018836f4dc9b832221b944ff3c81646",
+    "scene": "wine glasses candle and small flower vase on table with burgundy upholstered chairs"
+  },
+  {
+    "fichier": "images/reservation-etape-2.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      524,
+      50,
+      1015,
+      207
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 940932,
+    "sha256": "57f13ad943923df38a1247c123c9ab8dee53ab4eccb904acf364c56895ac15db",
+    "scene": "two seared scallops on a rustic shallow plate with delicate vegetable garnish and golden herb sauce"
+  },
+  {
+    "fichier": "images/reservation-etape-3.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      1031,
+      50,
+      1523,
+      196
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1018971,
+    "sha256": "2087a9e781f12406fe241f5e1a2eda1583edfda8004be179144876b96c43afd6",
+    "scene": "French bistro interior with burgundy velvet banquettes on left and linen tables, warm light"
+  },
+  {
+    "fichier": "images/reservation-detail-3.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      1364,
+      348,
+      1506,
+      478
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 863074,
+    "sha256": "e2b59ce2f979e2e41cd196a3ef17888b9d90b696a585565c61e2becde915ba21",
+    "scene": "candle and flowers centerpiece on small table with burgundy chairs in warm bistro"
+  },
+  {
+    "fichier": "images/reservation-confirmee.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      17,
+      605,
+      565,
+      743
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1041287,
+    "sha256": "cba09edd9a77657b4f51177e101d46efebe36bf7c9c4bd34ffb28f54e7f2d144",
+    "scene": "wide evening restaurant room with green foliage and tables warmly lit"
+  },
+  {
+    "fichier": "images/reservation-confirmation-detail.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      424,
+      763,
+      534,
+      924
+    ],
+    "largeur": 1024,
+    "hauteur": 1536,
+    "octets": 806037,
+    "sha256": "568ff11455949ab4da6314ebddb40b815dd4b6464334058d3f578b09a5769f44",
+    "scene": "vertical close-up table with folded linen glasses candle and warm wooden chair"
+  },
+  {
+    "fichier": "images/reservation-indisponible.jpg",
+    "planche": "maquettes/03.png",
+    "rectangle_reference": [
+      587,
+      605,
+      1068,
+      761
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 936770,
+    "sha256": "0f662e3989f9bef48881aee89d12ae370621324bde802c0018596016eab1da22",
+    "scene": "fine dining seasonal roasted vegetable dish on cream puree with leaves, elegant ceramic plate"
+  },
+  {
+    "fichier": "images/lieu-hero.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      9,
+      38,
+      376,
+      338
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1008144,
+    "sha256": "1f35bfb6026b17410cd3e430cc6138163b37e3e20d5af426d1cfdf0624615523",
+    "scene": "warm French bistro dining room, dark wood chairs, candles, floral arrangement foreground, no people"
+  },
+  {
+    "fichier": "images/lieu-assiette.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      244,
+      351,
+      375,
+      513
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1321795,
+    "sha256": "f123dfa08fa623628e7c1fdded7c07cb512f4c1cb075a995a04265584c8d582e",
+    "scene": "roasted carrots and seasonal vegetables with creamy sauce on rustic ceramic dish"
+  },
+  {
+    "fichier": "images/lieu-table.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      9,
+      526,
+      192,
+      661
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 813146,
+    "sha256": "9afb8739f5525518ba5192f2ba1881b434055bdabccc42d0e8e5b9836ef72d2f",
+    "scene": "small candlelit table with wine glasses white linen and flower branches"
+  },
+  {
+    "fichier": "images/lieu-cuisine.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      202,
+      526,
+      375,
+      661
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1240485,
+    "sha256": "41daa4645f924b94809682cae5cba7a1da4f89d4d465f25e049a8a9625a19cc4",
+    "scene": "empty professional open restaurant kitchen with brass pendant lights, plate stacks, fresh herbs"
+  },
+  {
+    "fichier": "images/lieu-figues.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      9,
+      790,
+      132,
+      928
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1054554,
+    "sha256": "055f7fb6e5cbac2bdac94f0a29f5a70fbc3123f6ad29652c43a4d34a344d7751",
+    "scene": "sliced fresh figs and seasonal garnish on cream sauce fine dining plate"
+  },
+  {
+    "fichier": "images/lieu-fleurs.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      139,
+      790,
+      245,
+      928
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 967651,
+    "sha256": "60b1e82fbc72ea03c57fd08961d1a1d6e78b2a766a0a4e7e78e9378607580c87",
+    "scene": "amber flowers and branches in tall vase on small dark wooden table beside candle"
+  },
+  {
+    "fichier": "images/lieu-banquette.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      254,
+      790,
+      375,
+      928
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 762398,
+    "sha256": "b06664e8887cedd9a9fc0b24fe12a357d14ae0ef93da481b416ae02cfe73c5dd",
+    "scene": "burgundy velvet restaurant banquette, white linen table, warm candlelight"
+  },
+  {
+    "fichier": "images/galerie-assiette-verte.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      395,
+      194,
+      551,
+      332
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1125409,
+    "sha256": "df299c93d0d9f05215bc7ee97a34ac2e368d78ce236b35522e19ce364262e4ef",
+    "scene": "seasonal vegetables brussels sprouts carrots and herbs arranged over cream sauce on ceramic plate"
+  },
+  {
+    "fichier": "images/galerie-salle.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      559,
+      194,
+      759,
+      332
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 874624,
+    "sha256": "6d27d9931b9ccf9e9f317297d7b9c99f93fffa72896f71cca40b4b500c8c5453",
+    "scene": "warm bistro dining room, linen table closeup with dark wooden chairs"
+  },
+  {
+    "fichier": "images/galerie-facade.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      395,
+      340,
+      565,
+      479
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1501330,
+    "sha256": "6f310044aaf528295d60eb570156bd16af7bf49c10d3a73434c67f26d2c807e1",
+    "scene": "classic dark green French bistro facade entrance with glazed double doors, plants and warm lamps, no lettering"
+  },
+  {
+    "fichier": "images/galerie-tomates.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      572,
+      340,
+      673,
+      479
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1221267,
+    "sha256": "7edd469f05fbc3bc7e2ae6a957151d881cc2707462c4504f4ee6cce4ec5cd8ef",
+    "scene": "burrata with colourful tomatoes and herb oil in rustic shallow bowl"
+  },
+  {
+    "fichier": "images/galerie-asperges.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      682,
+      340,
+      759,
+      479
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1232569,
+    "sha256": "b3a1f35e84daa6fd3be1dfc162c307f5b65129bb56ba0f7bc71bb70ed233aaf2",
+    "scene": "closeup fresh green asparagus spears"
+  },
+  {
+    "fichier": "images/galerie-poisson.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      395,
+      487,
+      576,
+      619
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1119712,
+    "sha256": "067df507ddc670af0b227b36eb75df64754fbf9cc8142037b541e897a49e9122",
+    "scene": "crispy skin fish fillet in vivid green herb sauce on rustic plate"
+  },
+  {
+    "fichier": "images/galerie-detail-table.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      584,
+      487,
+      759,
+      619
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 756103,
+    "sha256": "bdbadeb7aa8eea9ecedd87917536f61400592833a703bee61107b633e892919b",
+    "scene": "small dressed table with two wine glasses candle and vase white flowers"
+  },
+  {
+    "fichier": "images/galerie-mur.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      395,
+      625,
+      577,
+      755
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 922410,
+    "sha256": "e946ad325f34d2354ead1ca6455f3813412942b6ff94e8f2390ca3c6185c2d10",
+    "scene": "warm restaurant wall with framed pictures and sconces above linen tables"
+  },
+  {
+    "fichier": "images/galerie-figues.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      585,
+      625,
+      759,
+      755
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1077659,
+    "sha256": "07db8d855f9f9495b36309cb0cabc6500c8b88a7879f8d931d7c4f3147caaf4b",
+    "scene": "sliced ripe figs with dark sauce and seasonal garnishes on rustic ceramic plate"
+  },
+  {
+    "fichier": "images/galerie-cuisine.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      395,
+      763,
+      614,
+      928
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 932892,
+    "sha256": "c2124c103b8f0e30fd63cd6fcd1610a4d0e1f9e4ea7e3ced88622b5395d07dc9",
+    "scene": "professional open bistro kitchen empty with copper lamps and many stacked ceramic plates"
+  },
+  {
+    "fichier": "images/galerie-pain-huile.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      623,
+      763,
+      759,
+      928
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1280296,
+    "sha256": "dd39aac8d911f5362dacbcfe9464c512b39b604fa6f01ea1abda2541f469b825",
+    "scene": "crusty rustic bread beside shallow ceramic bowl of olive oil with herbs"
+  },
+  {
+    "fichier": "images/contact-terrasse.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      777,
+      138,
+      1142,
+      340
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1426418,
+    "sha256": "69ba22f8241840a25314c39d5ba249c85f0d71757c59335931435f37442282dc",
+    "scene": "dark green Parisian bistro exterior terrace at dusk, empty outdoor chairs tables plants warm lamps, no signs"
+  },
+  {
+    "fichier": "images/faq-assiette.jpg",
+    "planche": "maquettes/04.png",
+    "rectangle_reference": [
+      1159,
+      673,
+      1528,
+      931
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 855217,
+    "sha256": "ebdd83696fdbdeee8204735e3c8a5937cc41b503a6f191732540d4719f3e7d98",
+    "scene": "seasonal vegetable dish on linen table with wine glass and candle warm bistro background"
+  },
+  {
+    "fichier": "images/retrouver-reservation.jpg",
+    "planche": "maquettes/05.png",
+    "rectangle_reference": [
+      279,
+      47,
+      509,
+      486
+    ],
+    "largeur": 1024,
+    "hauteur": 1536,
+    "octets": 929600,
+    "sha256": "6a0900766fa3dfc07cccb8f470eeb3962836bc4273d7f0c434a7d8842b36db68",
+    "scene": "vertical close view dressed white linen dining table, ceramic plates folded linen wine glass candle flowers"
+  },
+  {
+    "fichier": "images/ma-reservation.jpg",
+    "planche": "maquettes/05.png",
+    "rectangle_reference": [
+      793,
+      140,
+      984,
+      316
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 848652,
+    "sha256": "dddffcff8b146078c4b1fd162dacf70321a584980967cb58364a04bd914a97af",
+    "scene": "linen table wine glasses candle and flowers in warm bistro"
+  },
+  {
+    "fichier": "images/modifier-reservation.jpg",
+    "planche": "maquettes/05.png",
+    "rectangle_reference": [
+      1352,
+      46,
+      1527,
+      270
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 880611,
+    "sha256": "053d41c380d4f1de3da25583839d4036b82f1ed9b56c015b4360762c9e67186d",
+    "scene": "olive branches in glass vase beside candle on restaurant table with amber lamp behind"
+  },
+  {
+    "fichier": "images/demande-groupe-confirmee.jpg",
+    "planche": "maquettes/05.png",
+    "rectangle_reference": [
+      285,
+      606,
+      509,
+      959
+    ],
+    "largeur": 1024,
+    "hauteur": 1536,
+    "octets": 989921,
+    "sha256": "143ec46ded359ca3c80557dc45d3b108c2e271dc16c769a39bfaf3ffb9986890",
+    "scene": "vertical warm bistro room with white linen tables burgundy banquette and branches"
+  },
+  {
+    "fichier": "images/404-assiette.jpg",
+    "planche": "maquettes/05.png",
+    "rectangle_reference": [
+      1030,
+      606,
+      1527,
+      960
+    ],
+    "largeur": 1536,
+    "hauteur": 1024,
+    "octets": 1298859,
+    "sha256": "499bfa44938d0b93be7194c4b684dd10b2dd221d58026cb46b82aef731ab42f8",
+    "scene": "overhead empty off-white rustic ceramic plate on linen cloth with a few decorative crumbs herbs and red sauce dots near rim, fork and knife to the right, center completely empty, no text"
+  }
+]
