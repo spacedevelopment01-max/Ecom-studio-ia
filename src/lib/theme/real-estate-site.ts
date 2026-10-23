@@ -5,17 +5,17 @@
  * « favoris » de l'en-tête. Les pages de services (prestations, à propos, contact, FAQ, mentions) restent.
  * Textes génériques et vrais : aucun bien, prix, coordonnée ni promesse inventés ; les formulaires disent ce qu'ils font.
  */
-import { sectionSchema, withDefaults, type SectionInstance, type TemplateJson, type ThemeSpec } from "./spec";
+// Types seulement : ce fichier est chargé par l'onglet Marque du studio (navigateur), via directions.ts.
+import type { SectionInstance, TemplateJson, ThemeSpec } from "./spec";
 
 type Lang = "fr" | "en";
 
 export function addRealEstateSite(spec: ThemeSpec, lang: Lang) {
   const t = (fr: string, en: string) => (lang === "en" ? en : fr);
   const p = (s: string) => `<p>${s}</p>`;
-  const section = (type: string, settings: Record<string, unknown>, blocks: { type: string; settings: Record<string, unknown> }[] = []): SectionInstance | null => {
-    const schema = sectionSchema(spec, type); if (!schema) return null;
-    return { type, settings: withDefaults(schema.settings, settings), blocks: Object.fromEntries(blocks.map((b, i) => [`b${i}`, { type: b.type, settings: withDefaults(schema.blocks.find((x) => x.type === b.type)?.settings, b.settings) }])), block_order: blocks.map((_, i) => `b${i}`) };
-  };
+  // Réglages donnés seulement : les valeurs par défaut viennent du schéma de la section au rendu (comme Shopify).
+  const section = (type: string, settings: Record<string, unknown>, blocks: { type: string; settings: Record<string, unknown> }[] = []): SectionInstance | null =>
+    ({ type, settings, blocks: Object.fromEntries(blocks.map((b, i) => [`b${i}`, { type: b.type, settings: b.settings }])), block_order: blocks.map((_, i) => `b${i}`) });
   const template = (rows: [string, SectionInstance | null][]): TemplateJson => {
     const ok = rows.filter((r): r is [string, SectionInstance] => !!r[1]);
     return { order: ok.map(([k]) => k), sections: Object.fromEntries(ok) };

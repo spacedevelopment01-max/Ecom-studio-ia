@@ -154,6 +154,13 @@ describe("Maison & Horizon : les biens alimentent le thème", () => {
     }
   });
 
+  it("le site immobilier se compose aussi dans le navigateur (onglet Marque) : aucun module serveur importé", () => {
+    // directions.ts → real-estate-site.ts est chargé côté client ; un import de spec.ts y tirerait la base de données.
+    const src = fs.readFileSync(path.join(process.cwd(), "src/lib/theme/real-estate-site.ts"), "utf8");
+    const imports = [...src.matchAll(/^import\s+(?!type\b).*$/gm)].map((m) => m[0]);
+    expect(imports).toEqual([]);
+  });
+
   it("les sections immobilières sont réservées au thème Maison & Horizon", () => {
     for (const type of ["re-hero", "re-listings", "re-tiles", "re-feature", "re-form", "re-favorites", "re-account"]) {
       expect(sectionFitReason(type, { kind: "services", theme: "rive", settings: { editorial_profile: "journal" } }), type).not.toBe("");
