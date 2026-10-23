@@ -149,8 +149,8 @@
     },
     {
       "file": "build.log",
-      "bytes": 14467,
-      "sha256": "4e31f4bc184dcee1aa373270c2f11e717b90211923d12a6600143d8b6fe6e8c1"
+      "bytes": 14460,
+      "sha256": "752c9193b650d011a1762ddac455744aa8adcb1df1d2c897c4bb0c3831c4d8cf"
     },
     {
       "file": "dependances.json",
@@ -189,8 +189,8 @@
     },
     {
       "file": "tests-complets.log",
-      "bytes": 392,
-      "sha256": "f00fc23c13adbf7527e188fc9d58ede0cc2ff058975b0e755b215d72a8f76928"
+      "bytes": 391,
+      "sha256": "12609e3708c3f55f597a26f563a6b4f0ae1070d23bf320c88f6e0788f57e7bf3"
     },
     {
       "file": "theme-check.log",
