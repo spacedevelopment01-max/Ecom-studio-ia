@@ -11,7 +11,7 @@
 {%- assign s = section.settings -%}
 {%- assign kind = s.kind | default: 'contact' -%}
 {%- assign has_media = false -%}{%- if s.image != blank or s.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
-<section class="es-section re-form-section re-form-section--{{ kind }}{% if s.overlap %} re-form-section--overlap{% endif %}{% if has_media or s.quote != blank %} re-form-section--aside{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %}>
+<section class="es-section re-form-section re-form-section--{{ kind }}{% if s.overlap %} re-form-section--overlap{% endif %}{% if has_media or s.quote != blank or s.aside_style == 'info' %} re-form-section--aside{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %}>
   <div class="es-container re-form-section__grid">
     <div class="re-form-card">
       {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-title re-form-card__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
@@ -77,20 +77,24 @@
               </fieldset>
             {%- endif -%}
             {%- if kind == 'alert' -%}
-              <label class="re-field"><span>Projet *</span><select name="contact[projet]" required><option value="">Sélectionner</option><option>Acheter</option><option>Louer</option></select></label>
-              <label class="re-field"><span>Ville ou secteur *</span><input name="contact[ville]" placeholder="Ex. : Aix-en-Provence" required></label>
-              <label class="re-field"><span>Type de bien</span><select name="contact[type_de_bien]"><option value="">Tous les types</option><option>Maison</option><option>Appartement</option><option>Villa</option><option>Loft</option><option>Propriété</option></select></label>
-              <label class="re-field"><span>Budget maximum (€)</span><input type="number" name="contact[budget]" min="0" step="1000" inputmode="numeric" placeholder="Ex. : 600000"></label>
-              <label class="re-field"><span>Surface minimum (m²)</span><input type="number" name="contact[surface]" min="0" inputmode="numeric" placeholder="Ex. : 80"></label>
-              <label class="re-field"><span>Chambres minimum</span><select name="contact[chambres]"><option value="">Indifférent</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+              <fieldset class="re-field re-field--wide re-choice">
+                <legend class="visually-hidden">Projet</legend>
+                <div class="re-choice__seg"><label class="re-seg"><input type="radio" name="contact[projet]" value="Achat" checked><span>Achat</span></label><label class="re-seg"><input type="radio" name="contact[projet]" value="Location"><span>Location</span></label></div>
+              </fieldset>
+              <label class="re-field re-field--wide"><span>Ville ou secteur *</span><input name="contact[ville]" placeholder="Ex. : Bordeaux, Aix-en-Provence…" required></label>
+              <label class="re-field"><span>Budget minimum (€)</span><input type="number" name="contact[budget_min]" min="0" step="1000" inputmode="numeric" placeholder="Min"></label>
+              <label class="re-field"><span>Budget maximum (€)</span><input type="number" name="contact[budget_max]" min="0" step="1000" inputmode="numeric" placeholder="Max"></label>
+              <label class="re-field"><span>Type de bien</span><select name="contact[type_de_bien]"><option value="">Tous les types</option><option>Maison</option><option>Appartement</option><option>Villa</option><option>Loft</option><option>Propriété</option><option>Terrain</option></select></label>
+              <label class="re-field"><span>Nombre de pièces</span><select name="contact[pieces]"><option value="">Indifférent</option><option>1 et +</option><option>2 et +</option><option>3 et +</option><option>4 et +</option><option>5 et +</option></select></label>
             {%- endif -%}
-            <label class="re-field"><span>{% if kind == 'callback' %}Nom complet{% else %}Nom{% endif %} *</span><input name="contact[name]" autocomplete="name" placeholder="{% if kind == 'callback' %}Ex. : Camille Durand{% endif %}" required></label>
+            {%- unless kind == 'alert' -%}<label class="re-field"><span>{% if kind == 'callback' %}Nom complet{% else %}Nom{% endif %} *</span><input name="contact[name]" autocomplete="name" placeholder="{% if kind == 'callback' %}Votre nom{% else %}Votre nom{% endif %}" required></label>{%- endunless -%}
             {%- if kind == 'callback' -%}
               <label class="re-field"><span>Téléphone *</span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel" placeholder="Ex. : 06 12 34 56 78" required></label>
               <label class="re-field"><span>Créneau souhaité</span><select name="contact[creneau]"><option value="">Sélectionner un créneau</option><option>En semaine, le matin</option><option>En semaine, l'après-midi</option><option>En semaine, après 18 h</option><option>Le samedi</option></select></label>
               <label class="re-field"><span>Votre message (facultatif)</span><input name="contact[body]" maxlength="500" placeholder="Votre message…"></label>
             {%- else -%}
-              <label class="re-field"><span>E-mail *</span><input type="email" name="contact[email]" autocomplete="email" required></label>
+              <label class="re-field"><span>E-mail *</span><input type="email" name="contact[email]" autocomplete="email" placeholder="votre@email.fr" required></label>
+              {%- if kind == 'alert' -%}<label class="re-field"><span>Fréquence des alertes</span><select name="contact[frequence]"><option>Dès qu'un bien correspond</option><option>Une fois par jour</option><option>Une fois par semaine</option></select></label>{%- endif -%}
               {%- if kind == 'contact' -%}<label class="re-field re-field--wide"><span>Téléphone</span><input type="tel" name="contact[phone]" autocomplete="tel" inputmode="tel"></label>
               <label class="re-field re-field--wide"><span>Votre message *</span><textarea name="contact[body]" rows="5" maxlength="4000" required placeholder="{{ s.message_placeholder | escape }}"></textarea></label>{%- endif -%}
             {%- endif -%}
@@ -103,7 +107,21 @@
         {%- if form.errors -%}<div class="re-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
       {%- endform -%}
     </div>
-    {%- if has_media or s.quote != blank -%}
+    {%- if s.aside_style == 'info' -%}
+    <aside class="re-form-aside re-form-aside--info">
+      <div class="re-infobox">
+        <h2 class="re-infobox__title">{{ s.info_title | default: 'Nos coordonnées' | escape }}</h2>
+        <ul class="re-infobox__list" role="list">
+          <li>{% render 'mh-icon', name: 'pin' %}<span><strong>Adresse</strong>{% if s.address != blank %}{{ s.address | escape | newline_to_br }}{% else %}<em>À renseigner</em>{% endif %}</span></li>
+          <li>{% render 'mh-icon', name: 'phone' %}<span><strong>Téléphone</strong>{% if s.phone != blank %}<a href="tel:{{ s.phone | remove: ' ' | remove: '.' }}">{{ s.phone | escape }}</a>{% else %}<em>À renseigner</em>{% endif %}</span></li>
+          <li>{% render 'mh-icon', name: 'mail' %}<span><strong>E-mail</strong>{% if s.email != blank %}<a href="mailto:{{ s.email | escape }}">{{ s.email | escape }}</a>{% else %}<em>À renseigner</em>{% endif %}</span></li>
+        </ul>
+        <h2 class="re-infobox__title">Horaires d'ouverture</h2>
+        <p class="re-muted">{% if s.hours != blank %}{{ s.hours | escape | newline_to_br }}{% else %}<em>À renseigner</em>{% endif %}</p>
+      </div>
+      {%- if has_media -%}<div class="re-infobox__map">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, loading: 'lazy' %}<span class="re-locate__label">{{ s.caption | default: 'Carte illustrative' | escape }}</span></div>{%- endif -%}
+    </aside>
+    {%- elsif has_media or s.quote != blank -%}
     <aside class="re-form-aside{% if s.aside_style == 'green' %} re-form-aside--green{% endif %}">
       {%- if s.quote != blank -%}<p class="re-form-aside__quote">{{ s.quote | escape | newline_to_br }}</p>{%- endif -%}
       {%- if has_media -%}
@@ -144,7 +162,12 @@
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "textarea", "id": "caption", "label": "Légende de la photo" },
-    { "type": "select", "id": "aside_style", "label": "Style de la colonne", "default": "plain", "options": [ { "value": "plain", "label": "Clair" }, { "value": "green", "label": "Panneau vert" } ] },
+    { "type": "select", "id": "aside_style", "label": "Style de la colonne", "default": "plain", "options": [ { "value": "plain", "label": "Clair" }, { "value": "green", "label": "Panneau vert" }, { "value": "info", "label": "Coordonnées et carte illustrative" } ] },
+    { "type": "text", "id": "info_title", "label": "Titre des coordonnées", "default": "Nos coordonnées" },
+    { "type": "textarea", "id": "address", "label": "Adresse", "info": "Vide : « À renseigner »." },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "textarea", "id": "hours", "label": "Horaires d'ouverture" },
     { "type": "text", "id": "anchor", "label": "Ancre (lien direct)", "info": "Ex. « rappel » : un bouton peut mener à #rappel." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },

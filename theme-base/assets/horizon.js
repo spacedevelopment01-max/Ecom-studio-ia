@@ -15,6 +15,11 @@
     set: function (list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) { /* stockage refusé : les favoris restent le temps de la page */ } memory = list; },
   };
   var memory = store.get();
+  var SKEY = "mh-recherches:" + ((shopMeta && shopMeta.getAttribute("content")) || "boutique");
+  var searches = {
+    get: function () { try { var v = JSON.parse(localStorage.getItem(SKEY) || "[]"); return Array.isArray(v) ? v.filter(function (x) { return x && typeof x.url === "string" && x.url.charAt(0) === "/"; }) : []; } catch (e) { return []; } },
+    set: function (list) { try { localStorage.setItem(SKEY, JSON.stringify(list)); } catch (e) { /* stockage refusé */ } },
+  };
   function favorites() { return memory.slice(); }
   function syncFavorites() {
     var list = favorites();
@@ -27,6 +32,8 @@
       var text = b.querySelector("[data-re-fav-text]");
       if (text) text.textContent = on ? (text.getAttribute("data-on") || "Dans vos favoris") : (text.getAttribute("data-off") || "Ajouter aux favoris");
     });
+    document.querySelectorAll("[data-re-fav-total]").forEach(function (c) { c.textContent = String(list.length); });
+    document.querySelectorAll("[data-re-fav-word]").forEach(function (c) { c.textContent = list.length > 1 ? "biens enregistrés" : "bien enregistré"; });
     document.querySelectorAll("[data-re-fav-count]").forEach(function (c) { c.textContent = String(list.length); c.hidden = list.length === 0 && c.hasAttribute("data-hide-empty"); });
     document.dispatchEvent(new CustomEvent("mh:favorites", { detail: list }));
   }
@@ -184,7 +191,15 @@
         }
       }
     }
-    function apply(push) { var c = fromForm(); render(c); write(c, push); }
+    function apply(push) { var c = fromForm(); render(c); write(c, push); remember(c); }
+    /* Recherches récentes (tableau de bord « Mon espace ») : gardées dans ce navigateur, cinq au plus. */
+    function remember(c) {
+      var keys = Object.keys(c).filter(function (k) { return k !== "page" && k !== "tri"; }); if (!keys.length) return;
+      var labels = []; if (c.ville) labels.push(c.ville); if (c.type) labels.push(c.type.charAt(0).toUpperCase() + c.type.slice(1)); if (c.max) labels.push("jusqu'à " + money(+c.max)); if (c.surface) labels.push(c.surface + " m² et +"); if (c.chambres) labels.push(c.chambres + " ch. et +"); if (c.meuble === "oui") labels.push("meublé"); if (c.ext) labels.push("extérieur"); if (c.piscine) labels.push("piscine");
+      var q = new URLSearchParams(); keys.forEach(function (k) { q.set(k, c[k]); });
+      var entry = { kind: root.getAttribute("data-mode"), label: labels.join(" · ") || "Recherche", url: location.pathname + "?" + q.toString(), count: cards.filter(function (card) { return matches(card, c); }).length, at: Date.now() };
+      var list = searches.get().filter(function (x) { return x.url !== entry.url; }); list.unshift(entry); searches.set(list.slice(0, 5));
+    }
     if (form) {
       form.addEventListener("submit", function (e) { e.preventDefault(); apply(true); var first = cards.filter(function (c) { return !c.hidden; })[0]; if (first) announce((count && count.textContent) || ""); });
       form.addEventListener("change", function (e) { if (e.target.matches("select, input[type=checkbox]")) apply(false); });
@@ -326,6 +341,94 @@
     form.querySelectorAll("[data-re-next-step]").forEach(function (b) { b.addEventListener("click", function () { var bad = check(steps[at]); if (bad) { bad.focus(); return; } go(Math.min(steps.length - 1, at + 1)); }); });
     form.querySelectorAll("[data-re-prev-step]").forEach(function (b) { b.addEventListener("click", function () { go(Math.max(0, at - 1)); }); });
     form.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT" && at < steps.length - 1) { e.preventDefault(); var next = steps[at].querySelector("[data-re-next-step]"); if (next) next.click(); } });
+  });
+
+  /* ── Favoris : biens de la liste, retrait, comparaison ──────────────────────────────────────────────────── */
+  document.querySelectorAll("[data-re-favorites]").forEach(function (root) {
+    var items = Array.prototype.slice.call(root.querySelectorAll("[data-re-fav-item]")), empty = root.querySelector("[data-re-fav-empty]");
+    var cmpBtn = root.querySelector("[data-re-compare]"), table = root.querySelector("[data-re-compare-table]");
+    function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function buildTable(refs) {
+      var cards = refs.map(function (r) { var it = items.filter(function (i) { return i.getAttribute("data-re-fav-item") === r; })[0]; return it && it.querySelector("[data-re-card]"); }).filter(Boolean);
+      var row = function (label, fn) { return "<tr><th scope=\"row\">" + label + "</th>" + cards.map(function (c) { return "<td>" + fn(c) + "</td>"; }).join("") + "</tr>"; };
+      var d = function (c, k) { return c.getAttribute("data-" + k) || ""; };
+      var place = function (c) { var p = c.querySelector(".re-card__place"); return p ? p.textContent : ""; };
+      var img = function (c) { var i = c.querySelector("img"); return i ? "<img src=\"" + esc(i.currentSrc || i.src) + "\" alt=\"\" loading=\"lazy\">" : ""; };
+      table.innerHTML = "<div class=\"re-compare__scroll\"><table class=\"re-table re-compare__table\"><caption class=\"visually-hidden\">Comparaison des biens favoris</caption><thead><tr><th scope=\"col\"><span class=\"visually-hidden\">Critère</span></th>" + cards.map(function (c) { return "<th scope=\"col\">" + img(c) + "<a href=\"" + esc(d(c, "url")) + "\">" + esc(d(c, "title")) + "</a></th>"; }).join("") + "</tr></thead><tbody>" +
+        row("Transaction", function (c) { return d(c, "transaction") === "location" ? "Location" : "Vente"; }) +
+        row("Prix ou loyer", function (c) { return esc(d(c, "amount")); }) +
+        row("Lieu", function (c) { return esc(place(c)); }) +
+        row("Type", function (c) { var t = d(c, "type"); return esc(t.charAt(0).toUpperCase() + t.slice(1)); }) +
+        row("Surface", function (c) { return d(c, "surface") ? esc(d(c, "surface")) + " m²" : "—"; }) +
+        row("Pièces", function (c) { return esc(d(c, "rooms") || "—"); }) +
+        row("Chambres", function (c) { return esc(d(c, "bedrooms") || "—"); }) +
+        row("Extérieur", function (c) { return (" " + d(c, "tags") + " ").indexOf(" exterieur ") >= 0 ? "Oui" : "—"; }) +
+        row("Piscine", function (c) { return (" " + d(c, "tags") + " ").indexOf(" piscine ") >= 0 ? "Oui" : "—"; }) +
+        "</tbody></table></div><p class=\"re-note\">Données des fiches. Les montants des biens à louer sont hors charges.</p>";
+    }
+    function sync() {
+      var list = favorites(), shown = 0;
+      items.forEach(function (it) { var on = list.indexOf(it.getAttribute("data-re-fav-item")) >= 0; it.hidden = !on; if (on) shown++; });
+      if (empty) empty.hidden = shown > 0;
+      if (cmpBtn) { cmpBtn.disabled = shown < 2; if (shown < 2 && table) { table.hidden = true; cmpBtn.setAttribute("aria-expanded", "false"); } else if (!table.hidden) buildTable(list.filter(function (r) { return items.some(function (i) { return i.getAttribute("data-re-fav-item") === r; }); })); }
+    }
+    if (cmpBtn && table) cmpBtn.addEventListener("click", function () {
+      var open = table.hidden; table.hidden = !open; cmpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) { buildTable(favorites().filter(function (r) { return items.some(function (i) { return i.getAttribute("data-re-fav-item") === r; }); })); table.focus(); }
+    });
+    document.addEventListener("mh:favorites", sync);
+    sync();
+  });
+
+  /* ── Mon espace : onglets, mot de passe, formulaires sans compte, tableau de bord ─────────────────────── */
+  function tabs(group, onSelect) {
+    var list = Array.prototype.slice.call(group.querySelectorAll('[role="tab"]'));
+    function select(t, focus) { list.forEach(function (o) { var on = o === t; o.classList.toggle("is-active", on); o.setAttribute("aria-selected", on ? "true" : "false"); o.tabIndex = on ? 0 : -1; var panel = document.getElementById(o.getAttribute("aria-controls")); if (panel) panel.hidden = !on; }); if (focus) t.focus(); if (onSelect) onSelect(t); }
+    list.forEach(function (t, i) {
+      t.addEventListener("click", function () { select(t); });
+      t.addEventListener("keydown", function (e) { var j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? list.length - 1 : null; if (j === null) return; e.preventDefault(); select(list[(j + list.length) % list.length], true); });
+    });
+    return { select: select, list: list };
+  }
+  document.querySelectorAll("[data-re-account]").forEach(function (root) {
+    var tl = root.querySelector('[role="tablist"]'); if (tl) tabs(tl);
+    root.querySelectorAll("[data-re-password]").forEach(function (b) { b.addEventListener("click", function () { var input = b.parentElement.querySelector("input"); var show = input.type === "password"; input.type = show ? "text" : "password"; b.setAttribute("aria-pressed", show ? "true" : "false"); b.setAttribute("aria-label", show ? "Masquer le mot de passe" : "Afficher le mot de passe"); }); });
+    root.querySelectorAll("[data-re-account-form]").forEach(function (form) {
+      form.setAttribute("novalidate", "");
+      var status = form.querySelector("[data-re-account-status]");
+      validateForm(form, function () { if (status) status.textContent = "Saisie vérifiée, mais la connexion n'est pas disponible sur ce site : aucun compte n'est créé ni ouvert."; return false; });
+    });
+    var total = root.querySelector("[data-re-searches-total]"), ul = root.querySelector("[data-re-searches]"), none = root.querySelector("[data-re-searches-empty]");
+    function drawSearches() {
+      if (!ul) return; var list = searches.get(); ul.innerHTML = "";
+      list.forEach(function (x) { var li = document.createElement("li"); var a = document.createElement("a"); a.href = x.url; a.textContent = (x.kind === "location" ? "Location · " : "Achat · ") + x.label; var small = document.createElement("small"); small.textContent = x.count + " bien" + (x.count > 1 ? "s" : "") + " au moment de la recherche"; li.appendChild(a); li.appendChild(small); ul.appendChild(li); });
+      if (total) total.textContent = String(list.length); if (none) none.hidden = list.length > 0; ul.hidden = !list.length;
+    }
+    drawSearches();
+    var forget = root.querySelector("[data-re-forget]");
+    if (forget) forget.addEventListener("click", function () { if (!window.confirm("Effacer les favoris et les recherches récentes gardés dans ce navigateur ?")) return; searches.set([]); window.MaisonHorizon.setFavorites([]); drawSearches(); announce("Données de ce navigateur effacées."); });
+  });
+
+  /* ── Informations légales : onglets, ouverture par l'adresse (#honoraires…) ───────────────────────────── */
+  document.querySelectorAll("[data-re-legal]").forEach(function (root) {
+    var tl = root.querySelector('[role="tablist"]'); if (!tl) return;
+    var t = tabs(tl, function (tab) { var id = tab.getAttribute("data-re-legal-tab"); try { history.replaceState(history.state, "", "#" + id); } catch (e) { /* aperçu */ } });
+    function fromHash() { var id = (location.hash || "").slice(1) || root.getAttribute("data-initial"); var tab = t.list.filter(function (x) { return x.getAttribute("data-re-legal-tab") === id; })[0]; if (tab) t.select(tab); }
+    window.addEventListener("hashchange", fromHash); fromHash();
+  });
+
+  /* ── Tuiles filtrables (conseils) ─────────────────────────────────────────────────────────────────────── */
+  document.querySelectorAll("[data-re-tile-filters]").forEach(function (bar) {
+    var list = bar.parentElement.querySelector("[data-re-tile-list]"); if (!list) return;
+    var tiles = Array.prototype.slice.call(list.children);
+    bar.querySelectorAll("[data-re-tile-filter]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var tag = b.getAttribute("data-re-tile-filter"), n = 0;
+        bar.querySelectorAll("[data-re-tile-filter]").forEach(function (o) { var on = o === b; o.classList.toggle("is-active", on); o.setAttribute("aria-pressed", on ? "true" : "false"); });
+        tiles.forEach(function (t) { var on = !tag || t.getAttribute("data-tag") === tag; t.hidden = !on; if (on) n++; });
+        announce(n + " article" + (n > 1 ? "s" : "") + (tag ? " : " + tag : ""));
+      });
+    });
   });
 
   syncFavorites();

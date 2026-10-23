@@ -28,7 +28,16 @@
       {%- if s.link_label != blank and s.link != blank -%}<a class="re-link" href="{{ s.link }}">{{ s.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
     </header>
     {%- endif -%}
-    <ul class="re-tiles__list" role="list">
+    {%- if s.filter_tabs -%}
+      {%- assign tags = '' -%}
+      {%- for block in section.blocks -%}{%- if block.settings.meta != blank -%}{%- assign key = '|' | append: block.settings.meta | append: '|' -%}{%- unless tags contains key -%}{%- assign tags = tags | append: key -%}{%- endunless -%}{%- endif -%}{%- endfor -%}
+      <div class="re-tabs re-tabs--line re-tiles__filters" role="group" aria-label="{{ s.filter_label | default: 'Filtrer par rubrique' | escape }}" data-re-tile-filters>
+        <button type="button" class="re-tab is-active" aria-pressed="true" data-re-tile-filter="">{{ s.all_label | default: 'Tous' | escape }}</button>
+        {%- assign list = tags | split: '|' -%}
+        {%- for t in list -%}{%- if t != blank -%}<button type="button" class="re-tab" aria-pressed="false" data-re-tile-filter="{{ t | escape }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+      </div>
+    {%- endif -%}
+    <ul class="re-tiles__list" role="list"{% if s.filter_tabs %} data-re-tile-list{% endif %}>
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
         {%- assign has_media = false -%}{%- if b.image != blank or b.image_asset != blank -%}{%- assign has_media = true -%}{%- endif -%}
@@ -36,19 +45,19 @@
         <li class="re-tile re-tile--question" {{ block.shopify_attributes }}><details><summary>{{ b.title | escape }}{% render 'mh-icon', name: 'plus' %}</summary><p class="re-tile__text">{{ b.text | escape | newline_to_br }}</p></details></li>
         {%- continue -%}
         {%- endif -%}
-        <li class="re-tile{% if b.link != blank %} re-tile--link{% endif %}" {{ block.shopify_attributes }}>
+        <li class="re-tile{% if b.link != blank %} re-tile--link{% endif %}{% if b.link == blank and layout == 'cards' and b.badge != blank %} re-tile--soon{% endif %}" data-tag="{{ b.meta | escape }}" {{ block.shopify_attributes }}>
           {%- if has_media and layout != 'services' and layout != 'icons' and layout != 'steps' -%}
             <div class="re-tile__media">{% render 'ed-media', image: b.image, asset: b.image_asset, alt: b.image_alt, loading: 'lazy' %}</div>
           {%- endif -%}
           {%- if layout == 'steps' -%}<span class="re-tile__num" aria-hidden="true">{{ forloop.index }}</span>{%- endif -%}
           {%- if b.icon != blank and b.icon != 'none' and layout != 'sectors' and layout != 'articles' -%}<span class="re-tile__icon">{% render 'mh-icon', name: b.icon %}</span>{%- endif -%}
           <div class="re-tile__body">
-            {%- if b.meta != blank -%}<p class="re-tile__meta">{{ b.meta | escape }}</p>{%- endif -%}
+            {%- if b.meta != blank -%}<p class="re-tile__meta">{% if layout == 'cards' %}<span class="re-chip re-chip--tag">{{ b.meta | escape }}</span>{% else %}{{ b.meta | escape }}{% endif %}</p>{%- endif -%}
             {%- if b.title != blank -%}
               <h3 class="re-tile__title">{%- if b.link != blank and b.link_label == blank -%}<a href="{{ b.link }}">{{ b.title | escape }}</a>{%- else -%}{{ b.title | escape }}{%- endif -%}</h3>
             {%- endif -%}
             {%- if b.text != blank -%}<p class="re-tile__text">{{ b.text | escape }}</p>{%- endif -%}
-            {%- if b.link != blank and b.link_label != blank -%}<a class="re-link re-tile__link" href="{{ b.link }}">{{ b.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+            {%- if b.link != blank and b.link_label != blank -%}<a class="re-link re-tile__link" href="{{ b.link }}">{{ b.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- elsif b.badge != blank -%}<p class="re-tile__badge">{{ b.badge | escape }}</p>{%- endif -%}
           </div>
           {%- if layout == 'split' and b.link != blank -%}<span class="re-tile__arrow" aria-hidden="true">{% render 'mh-icon', name: 'arrow' %}</span>{%- endif -%}
         </li>
@@ -72,6 +81,9 @@
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "link_label", "label": "Libellé du lien" },
     { "type": "url", "id": "link", "label": "Lien" },
+    { "type": "checkbox", "id": "filter_tabs", "label": "Onglets de filtre (d'après la rubrique des tuiles)", "default": false },
+    { "type": "text", "id": "all_label", "label": "Onglet « tout »", "default": "Tous" },
+    { "type": "text", "id": "filter_label", "label": "Nom des onglets (lecteurs d'écran)" },
     { "type": "select", "id": "align", "label": "Alignement", "default": "left", "options": [ { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Centré" } ] },
     { "type": "range", "id": "columns", "label": "Colonnes (cartes, engagements)", "min": 2, "max": 4, "step": 1, "default": 3 },
     { "type": "text", "id": "note", "label": "Mention sous les tuiles" },
@@ -102,7 +114,8 @@
         { "type": "text", "id": "title", "label": "Titre" },
         { "type": "textarea", "id": "text", "label": "Texte" },
         { "type": "text", "id": "link_label", "label": "Libellé du lien", "info": "Vide : toute la tuile est cliquable (si un lien est donné)." },
-        { "type": "url", "id": "link", "label": "Lien" }
+        { "type": "url", "id": "link", "label": "Lien" },
+        { "type": "text", "id": "badge", "label": "Mention sans lien", "info": "Ex. « Article à venir » quand la page n'existe pas encore." }
       ]
     }
   ],

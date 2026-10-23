@@ -24,7 +24,6 @@ import { saveAsset } from "../src/lib/library";
 import { createBien, setBienStatus, type BienData } from "../src/lib/biens";
 import { sectionSchema, withDefaults, type SectionInstance, type TemplateJson, type ThemeSpec } from "../src/lib/theme/spec";
 import { seedHoldout } from "./lot1-holdout-fixtures";
-import { hidePendingBlocks } from "./engine-demo-copy";
 
 export const MH_PROVENANCE = "Dossier MAISON & HORIZON du 23 octobre 2026 (issue #172, docs/briefs/maison-horizon) — démonstration du studio, reconstitutions IA fournies par Thomas, sans personne, biens et prix d'exemple, aucun envoi réel";
 export const MH_DIR = path.join(process.cwd(), "public", "demo", "maison-horizon");
@@ -238,7 +237,7 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
   };
   const template = (rows: [string, SectionInstance][]): TemplateJson => ({ order: rows.map(([k]) => k), sections: Object.fromEntries(rows) });
   const pad = (top: number, bottom = top) => ({ padding_top: top, padding_bottom: bottom });
-  const BUY = "/pages/acheter", RENT = "/pages/louer", MAP = "/pages/carte", CONTACT = "/pages/contact", ESTIMATE = "/pages/estimer", SELL = "/pages/vendre", LET = "/pages/mettre-en-location", AGENCY = "/pages/agence", ADVICE = "/pages/conseils", FAVORITES = "/pages/favoris";
+  const BUY = "/pages/acheter", RENT = "/pages/louer", MAP = "/pages/carte", CONTACT = "/pages/contact", ESTIMATE = "/pages/estimer", SELL = "/pages/vendre", LET = "/pages/mettre-en-location", AGENCY = "/pages/agence", ADVICE = "/pages/conseils", FAVORITES = "/pages/favoris", ARTICLE = "/pages/conseil-questions-visite", ALERT = "/pages/alertes", SPACE = "/pages/mon-espace", PROJECT = "/pages/mon-projet";
   const tile = (settings: Record<string, unknown>) => ({ type: "tile", settings });
   const pageHero = (heading: string, text: string, file: string, extra: Record<string, unknown> = {}) => section("re-hero", { layout: "page", height: "short", text_side: "middle", ...img(file), heading, text: p(text), ...extra, color_scheme: "scheme-1", padding_bottom: 0 });
 
@@ -265,9 +264,9 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
     ])],
     ["agency", section("re-feature", { layout: "story", eyebrow: "Notre agence", heading: "Une équipe passionnée par\nles lieux et par les gens.", text: p("Maison & Horizon, c'est une agence à taille humaine, animée par la même exigence : vous offrir un accompagnement sincère, discret et sur-mesure, au service de vos projets de vie.") + p("<small>Marque de démonstration du studio.</small>"), button_label: "Découvrir l'agence", button_link: AGENCY, ...img("accueil-agence.webp"), side: "right", ...pad(24, 24) })],
     ["advice", section("re-tiles", { layout: "articles", heading: "Nos conseils", link_label: "Voir tous les conseils", link: ADVICE, ...pad(24, 24) }, [
-      tile({ ...img("article-hero.webp"), meta: "Conseil d'achat", title: "Achat immobilier : les étapes clés pour un projet serein", link_label: "Lire l'article", link: "/pages/conseil-etapes-achat" }),
-      tile({ ...img("conseil-location.webp"), meta: "Conseil de location", title: "Location meublée ou vide : quelle solution pour votre projet ?", link_label: "Lire l'article", link: "/pages/conseil-meuble-ou-vide" }),
-      tile({ ...img("conseil-luberon.webp"), meta: "Vivre ici", title: "Le Luberon : un art de vivre entre nature et patrimoine", link_label: "Lire l'article", link: "/pages/conseil-luberon" }),
+      tile({ ...img("conseil-achat.webp"), meta: "Acheter", title: "Les bonnes questions à poser lors d'une visite", link_label: "Lire l'article", link: ARTICLE }),
+      tile({ ...img("conseil-location.webp"), meta: "Louer", title: "Location meublée ou vide : quelle solution pour votre projet ?", badge: "Article à venir" }),
+      tile({ ...img("conseil-luberon.webp"), meta: "Vivre ici", title: "Le Luberon : un art de vivre entre nature et patrimoine", badge: "Article à venir" }),
     ])],
     ["contact", section("re-feature", { layout: "strip", heading: "Une question ?\nParlons de votre projet.", phone: "", phone_note: "Téléphone : à renseigner", email: "", email_note: "E-mail : à renseigner", button_label: "Nous contacter", button_link: CONTACT, ...pad(16, 16) })],
   ]);
@@ -356,6 +355,81 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
     ])],
   ]);
 
+  // ── Agence, conseils, article, contact (planche 05) ─────────────────────────────────────────────────────────
+  page("agence", "L'agence", { title: "L'agence | Maison & Horizon", description: "Une agence à taille humaine pour acheter, vendre ou louer des lieux de vie de caractère. Marque de démonstration." }, [
+    ["hero", pageHero("Une agence,\ndes projets de vie", "Des lieux uniques, des histoires singulières. Maison & Horizon vous accompagne avec exigence et bienveillance dans tous vos projets immobiliers.", "agence-hero.webp", { height: "medium", button_label: "Découvrir notre approche", button_link: "#approche", note: "Marque de démonstration du studio." })],
+    ["roots", section("re-feature", { layout: "overlay", heading: "Ancrés dans un art\nde vivre local", text: p("Nous mettons notre connaissance du territoire au service de vos projets. Maisons de charme, appartements contemporains ou biens d'exception : nous sélectionnons des lieux de vie en harmonie avec leur environnement."), button_label: "Découvrir nos biens", button_link: BUY, ...img("village.webp"), ...pad(32, 24) })],
+    ["approach", section("re-tiles", { layout: "icons", anchor: "approche", columns: 3, heading: "Notre approche", ...pad(24, 24) }, [
+      tile({ icon: "house", title: "Écoute et exigence", text: "Comprendre vos besoins pour vous proposer des biens en adéquation avec vos projets de vie." }),
+      tile({ icon: "leaf", title: "Un regard durable", text: "Valoriser des biens de qualité, dans le respect de leur histoire et de leur environnement." }),
+      tile({ icon: "handshake", title: "Un accompagnement sur mesure", text: "À chaque étape, nous sommes à vos côtés pour avancer en toute sérénité." }),
+    ])],
+    ["horizons", section("re-feature", { layout: "overlay", heading: "Des biens pour\ntous vos horizons", text: p("Résidences principales, maisons de famille, pied-à-terre ou investissements : nous vous guidons vers des biens qui résonnent avec vos aspirations."), button_label: "Découvrir nos biens", button_link: BUY, ...img("agence-piscine.webp"), ...pad(24, 32) })],
+    ["cta", section("re-feature", { layout: "cta", heading: "Parlons de votre projet", text: p("Une question, une envie, un projet ? Notre équipe est à votre écoute pour vous accompagner."), button_label: "Nous contacter", button_link: CONTACT, color_scheme: "scheme-3", ...pad(0) })],
+  ]);
+  const soon = "Article à venir";
+  page("conseils", "Conseils", { title: "Nos conseils immobiliers | Maison & Horizon", description: "Des articles pour vous guider à chaque étape de votre projet immobilier : acheter, louer, vendre." }, [
+    ["hero", pageHero("Nos conseils\nimmobiliers", "Des articles pour vous guider à chaque étape de votre projet immobilier.", "conseils-hero.webp")],
+    ["list", section("re-tiles", { layout: "cards", columns: 2, filter_tabs: true, all_label: "Tous les articles", note: "Un seul article est rédigé dans cette démonstration ; les autres sont annoncés « à venir ».", ...pad(28, 48) }, [
+      tile({ ...img("article-hero.webp"), meta: "Acheter", title: "Les bonnes questions à poser lors d'une visite", text: "Préparez votre visite et ne passez pas à côté des détails essentiels.", link_label: "Lire l'article", link: ARTICLE }),
+      tile({ ...img("article-vente.webp"), meta: "Vendre", title: "Comment valoriser son bien avant la mise en vente", text: "Des conseils pratiques pour révéler tout le potentiel de votre bien.", badge: soon }),
+      tile({ ...img("article-cuisine.webp"), meta: "Louer", title: "Location vide ou meublée : que choisir ?", text: "Avantages, contraintes : faites le bon choix selon votre projet.", badge: soon }),
+      tile({ ...img("article-terrasse.webp"), meta: "Acheter", title: "Les quartiers à connaître dans la région", text: "Cadre de vie, commodités : notre regard sur les secteurs recherchés.", badge: soon }),
+      tile({ ...img("article-escalier.webp"), meta: "Vendre", title: "Les diagnostics immobiliers : ce qu'il faut savoir", text: "Ce qu'ils couvrent et quand les faire réaliser.", badge: soon }),
+      tile({ ...img("article-location.webp"), meta: "Louer", title: "Mettre un bien en location : les étapes clés", text: "De la préparation du bien à la signature du bail.", badge: soon }),
+    ])],
+  ]);
+  const ul = (items: string[]) => `<ul>${items.map((x) => `<li>${x}</li>`).join("")}</ul>`;
+  page("conseil-questions-visite", "Les bonnes questions à poser lors d'une visite", { title: "Les bonnes questions à poser lors d'une visite | Maison & Horizon", description: "Le bien, les charges, le quartier, les aspects pratiques : les questions à poser pour préparer une visite immobilière." }, [
+    ["hero", pageHero("Les bonnes questions\nà poser lors d'une visite", "", "article-hero.webp", { height: "short", eyebrow: "Acheter", meta: "Publié dans Acheter · Temps de lecture : 3 min" })],
+    ["body", section("re-article", { intro: p("Une visite est bien plus qu'une simple découverte : c'est l'occasion de recueillir des informations essentielles pour vous projeter et faire le bon choix. Voici les questions clés à poser pour ne rien oublier."), ...img("conseil-achat.webp"), ...pad(32, 16) }, [
+      { type: "part", settings: { title: "Le bien et ses caractéristiques", body: p("Commencez par des questions concrètes sur le bien lui-même : son état général, son année de construction, les travaux déjà réalisés ou à prévoir, ainsi que les équipements inclus.") + ul(["Quelle est l'année de construction ?", "Des travaux ont-ils été réalisés récemment ?", "Quels sont les équipements inclus dans la vente ?", "Y a-t-il des travaux à prévoir ?"]) } },
+      { type: "part", settings: { title: "Les charges et la gestion", body: p("Pour un appartement ou une maison en copropriété, il est important de bien comprendre le montant des charges et ce qu'elles couvrent.") + ul(["Quel est le montant des charges de copropriété ?", "Que comprennent-elles ?", "Y a-t-il des travaux votés ou à venir dans la copropriété ?", "Quelle est la taxe foncière ?"]) } },
+      { type: "part", settings: { title: "L'environnement et le quartier", body: p("Le cadre de vie compte autant que le bien. Renseignez-vous sur les commodités, les transports, les établissements scolaires et l'ambiance du quartier.") + ul(["Quels sont les commerces et services à proximité ?", "Y a-t-il des écoles, collèges ou lycées à proximité ?", "Quels sont les moyens de transport disponibles ?", "Comment est l'ambiance du quartier (calme, animé, familial…) ?"]) } },
+      { type: "part", settings: { title: "Les aspects pratiques", body: p("Enfin, pensez aux détails qui facilitent le quotidien et qui peuvent faire la différence.") + ul(["Quelle est l'orientation du bien ?", "Y a-t-il un extérieur (balcon, terrasse, jardin) ?", "Le stationnement est-il facile ?", "Y a-t-il des contraintes particulières (règlement de copropriété, servitudes…) ?"]) } },
+      { type: "callout", settings: { title: "À retenir", body: p("Une visite bien préparée vous permet de comparer plus facilement les biens et de vous projeter sereinement. N'hésitez pas à prendre des notes et à poser toutes vos questions, même les plus précises.") } },
+    ])],
+    ["related", section("re-tiles", { layout: "articles", heading: "Articles liés", link_label: "Tous les conseils", link: ADVICE, ...pad(16, 48) }, [
+      tile({ ...img("article-vente.webp"), meta: "Vendre", title: "Comment valoriser son bien avant la mise en vente", badge: soon }),
+      tile({ ...img("article-cuisine.webp"), meta: "Louer", title: "Location vide ou meublée : que choisir ?", badge: soon }),
+      tile({ ...img("article-terrasse.webp"), meta: "Acheter", title: "Les quartiers à connaître dans la région", badge: soon }),
+    ])],
+  ]);
+  page("contact", "Contact", { title: "Contact | Maison & Horizon", description: "Une question, un projet d'achat, de location ou de vente ? Écrivez à l'agence. Coordonnées à renseigner." }, [
+    ["hero", section("re-hero", { layout: "page", height: "medium", text_side: "bottom", ...img("contact-hero.webp"), heading: "Parlons de votre projet", text: p("Une question, une envie, un projet immobilier ? Nous sommes à votre écoute pour vous accompagner."), color_scheme: "scheme-1", padding_bottom: 0 })],
+    ["form", section("re-form", { kind: "contact", heading: "Vos coordonnées", motifs: "Acheter|house,Louer|key,Vendre|tag,Mettre en location|building", message_placeholder: "Parlez-nous de votre projet…", submit_label: "Envoyer ma demande", aside_style: "info", ...img("carte-reference.png"), caption: "Carte illustrative : adresse à renseigner", ...pad(32, 32) })],
+    ["side", section("re-feature", { layout: "overlay", heading: "À vos côtés,\nà chaque étape", text: p("Que vous souhaitiez acheter, louer, vendre ou mettre un bien en location, notre équipe est là pour vous conseiller."), button_style: "button", button_label: "Voir nos biens", button_link: BUY, ...img("contact-village.webp"), ...pad(16, 48) })],
+  ]);
+
+  // ── Favoris, alerte, espace, informations légales, cookies (planche 07) ─────────────────────────────────────
+  page("favoris", "Mes favoris", { title: "Mes favoris | Maison & Horizon", description: "Les biens que vous avez mis de côté, à comparer côte à côte. Gardés dans ce navigateur, sans compte." }, [
+    ["fav", section("re-favorites", { buy_url: BUY, rent_url: RENT, alert_url: ALERT, ...pad(24, 48) })],
+  ]);
+  page("alertes", "Créer une alerte", { title: "Créer une alerte | Maison & Horizon", description: "Indiquez vos critères (ville, budget, type, pièces) : l'agence reçoit votre demande d'alerte." }, [
+    ["form", section("re-form", { kind: "alert", heading: "Créer une alerte", heading_tag: "h1", text: p("Recevez les nouveaux biens correspondant à vos critères."), submit_label: "Créer l'alerte", consent_label: "J'accepte de recevoir par e-mail les nouvelles annonces correspondant à ces critères.", ...img("alerte-maison.webp"), ...pad(24, 48) })],
+  ]);
+  page("mon-espace", "Mon espace", { title: "Mon espace | Maison & Horizon", description: "Accédez à votre compte ou créez un espace. Les comptes dépendent de la plateforme de la boutique." }, [
+    ["account", section("re-account", { layout: "login", heading: "Mon espace", text: "Accédez à votre compte ou créez un nouvel espace.", ...img("compte-interieur.webp"), ...pad(24, 48) })],
+  ]);
+  page("mon-projet", "Mon projet immobilier", { title: "Mon projet immobilier | Maison & Horizon", description: "Vos favoris et vos recherches récentes, gardés dans ce navigateur, et vos accès rapides." }, [
+    ["dash", section("re-account", { layout: "dashboard", heading: "Mon projet immobilier", text: "Suivez votre projet et retrouvez vos outils au même endroit.", favorites_url: FAVORITES, alert_url: ALERT, contact_url: CONTACT, visit_image_asset: asset("espace-visite.webp"), visit_image_alt: MH_MEDIA["espace-visite.webp"], ...pad(24, 48) })],
+  ]);
+  const todo = (label: string) => `${label} : <em>[À renseigner]</em>`;
+  const legalTabs = [
+    { type: "tab", settings: { title: "Mentions légales", anchor: "mentions", heading: "Mentions légales", body: p("Maison & Horizon est une marque de démonstration du studio : aucune agence n'est exploitée sous ce nom et aucun message envoyé depuis ce site n'est transmis.") + p("<em>[À compléter]</em> Raison sociale, forme juridique, capital, siège social, numéro RCS, directeur de la publication, hébergeur du site.") + p([todo("Carte professionnelle"), todo("Délivrée par"), todo("Garantie financière"), todo("Assurance responsabilité civile professionnelle")].join("<br>")) } },
+    { type: "tab", settings: { title: "Honoraires", anchor: "honoraires", heading: "Barème des honoraires", body: p("Le barème des honoraires de l'agence (vente et location) est à afficher ici avant publication.") + p("<em>[À renseigner]</em>") } },
+    { type: "tab", settings: { title: "Confidentialité", anchor: "confidentialite", heading: "Données personnelles", body: p("Les formulaires du site (demande de visite, rappel, estimation, alerte, contact) recueillent les informations saisies (nom, e-mail, téléphone, message, critères) pour répondre à votre demande.") + p("Vos favoris et vos recherches récentes restent dans votre navigateur : ils ne sont pas envoyés à l'agence.") + p([todo("Responsable du traitement"), todo("Durée de conservation"), todo("Contact pour exercer vos droits (accès, rectification, effacement)")].join("<br>")) } },
+    { type: "tab", settings: { title: "Cookies", anchor: "cookies", heading: "Cookies et stockage dans le navigateur", body: p("Ce site garde dans votre navigateur vos favoris, vos recherches récentes et votre choix de cookies, pour que ces fonctions marchent d'une page à l'autre.") + p("Le thème n'ajoute aucun outil de mesure d'audience ni de publicité. Les cookies posés par la plateforme qui héberge la boutique sont à vérifier et à décrire ici : <em>[À renseigner]</em>"), cookie_button: true } },
+  ];
+  page("mentions-legales", "Informations légales", { title: "Informations légales | Maison & Horizon", description: "Mentions légales, honoraires, confidentialité et cookies. Éléments de démonstration à compléter avant publication." }, [
+    ["legal", section("re-legal", { heading: "Informations légales", text: "Consultez nos informations légales et nos engagements de transparence.", notice: "Les contenus de cette page sont des éléments de démonstration, à compléter et à valider avant publication.", contact_text: `Pour toute question, vous pouvez nous contacter via notre <a href="${CONTACT}">formulaire de contact</a>.`, ...img("legal-plaque.webp"), ...pad(24, 48) }, legalTabs)],
+  ]);
+  page("cookies", "Cookies", { title: "Cookies | Maison & Horizon", description: "Les informations gardées dans votre navigateur et vos choix de cookies, modifiables à tout moment." }, [
+    ["legal", section("re-legal", { heading: "Informations légales", text: "Consultez nos informations légales et nos engagements de transparence.", notice: "Les contenus de cette page sont des éléments de démonstration, à compléter et à valider avant publication.", initial_tab: "cookies", ...img("legal-plaque.webp"), ...pad(24, 48) }, legalTabs)],
+  ]);
+  // Page introuvable.
+  spec.templates["404"] = template([["hero", section("re-hero", { layout: "page", height: "tall", text_side: "middle", ...img("404-village.webp"), heading: "Cette adresse\nreste à trouver", text: p("La page que vous recherchez n'existe pas ou a peut-être été déplacée."), button_label: "Retour à l'accueil", button_link: "/", button2_label: "Voir nos biens", button2_link: BUY, color_scheme: "scheme-1", padding_bottom: 0 })]]);
+
   // ── Fiche d'un bien (planches 03 et 04) : un seul modèle pour tous les biens, rempli par l'onglet « Biens ». ────
   const q = (question: string, answer: string, applies = "location") => ({ type: "question", settings: { applies, question, answer: p(answer) } });
   spec.templates["metaobject/bien"] = template([
@@ -382,10 +456,10 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
     "footer-acheter": { title: "Acheter", links: [{ title: "Tous nos biens à vendre", url: BUY }, { title: "Maisons", url: `${BUY}?type=maison` }, { title: "Appartements", url: `${BUY}?type=appartement` }, { title: "Voir sur la carte", url: MAP }] },
     "footer-louer": { title: "Louer", links: [{ title: "Tous nos biens à louer", url: RENT }, { title: "Appartements", url: `${RENT}?type=appartement` }, { title: "Maisons", url: `${RENT}?type=maison` }, { title: "Locations meublées", url: `${RENT}?meuble=oui` }] },
     "footer-proprietaires": { title: "Propriétaires", links: [{ title: "Demander une estimation", url: ESTIMATE }, { title: "Vendre", url: SELL }, { title: "Mettre en location", url: LET }] },
-    "footer-agence": { title: "L'agence", links: [{ title: "Notre agence", url: AGENCY }, { title: "Conseils", url: ADVICE }, { title: "Contact", url: CONTACT }, { title: "Mes favoris", url: FAVORITES }] },
-    legal: { title: "Informations", links: [{ title: "Mentions légales", url: "/pages/mentions-legales" }, { title: "Cookies", url: "/pages/cookies" }] },
+    "footer-agence": { title: "L'agence", links: [{ title: "Notre agence", url: AGENCY }, { title: "Conseils", url: ADVICE }, { title: "Contact", url: CONTACT }, { title: "Mes favoris", url: FAVORITES }, { title: "Mon espace", url: PROJECT }] },
+    legal: { title: "Informations", links: [{ title: "Informations légales", url: "/pages/mentions-legales" }, { title: "Confidentialité", url: "/pages/mentions-legales#confidentialite" }, { title: "Cookies", url: "/pages/cookies" }] },
   };
-  for (const sec of Object.values(spec.groups.header?.sections ?? {})) if (sec.type === "header") sec.settings = { ...sec.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: false, show_cart: false, account_link: "", favorites_link: FAVORITES, favorites_label: "Mes favoris", cta_label: "Nous contacter", cta_link: CONTACT, cta_icon: "none", phone: "", color_scheme: "scheme-1" };
+  for (const sec of Object.values(spec.groups.header?.sections ?? {})) if (sec.type === "header") sec.settings = { ...sec.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: false, show_cart: false, account_link: PROJECT, favorites_link: FAVORITES, favorites_label: "Mes favoris", cta_label: "Nous contacter", cta_link: CONTACT, cta_icon: "none", phone: "", color_scheme: "scheme-1" };
   for (const g of Object.values(spec.groups)) for (const [sid, sec] of Object.entries(g.sections)) {
     if (sec.type === "announcement-bar") sec.disabled = true;
     if (sec.type !== "footer") continue;
@@ -397,6 +471,6 @@ export function curateMaisonHorizon(spec: ThemeSpec, ids: Record<string, string>
   spec.meta = { ...spec.meta, demo: { isDemo: true, provenance: MH_PROVENANCE, contactTest: false } };
   spec.store.shopName = "Maison & Horizon";
   spec.store.seo = { title: "Maison & Horizon | Acheter, vendre, louer une maison ou un appartement", description: "Maisons, appartements et propriétés de caractère à vendre et à louer, estimation sur demande. Marque, biens et prix de démonstration." };
-  spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "", fab_back_to_top: false };
-  hidePendingBlocks(spec);
+  spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "", fab_back_to_top: false, cookie_banner: true, cookie_title: "Vos préférences de cookies", cookie_text: "Ce site garde vos favoris et vos choix dans votre navigateur. Aucun outil de mesure d'audience ni de publicité n'est ajouté par le thème.", cookie_policy_link: "/pages/cookies", cookie_policy_label: "En savoir plus" };
+  // Pas de hidePendingBlocks : la consigne veut les mentions « à renseigner » visibles (rien d'inventé, rien de caché).
 }
