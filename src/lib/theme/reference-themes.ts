@@ -17,6 +17,7 @@
  * globaux (`conversion_profile`, `editorial_profile`) et les sections de sa famille.
  */
 import type { CatalogTheme, ThemeLook } from "./theme-catalog";
+import { TABLE_SAISON_THEME } from "./table-saison";
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -673,4 +674,6 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.booking(3),
     ],
   },
+  // TABLE SAISON (issue #175) : restaurant de la famille Services, défini dans table-saison.ts.
+  TABLE_SAISON_THEME,
 ];

@@ -2,7 +2,7 @@
 
 Généré par `scripts/sections-inventory.ts` le 2026-10-19 ; contrôlé par `tests/section-library-coverage.test.ts` (une section ajoutée sans entrée de bibliothèque ou absente de cet inventaire fait échouer la CI).
 
-**157 sections** dans `theme-base/sections/` : **143 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 157/157 (FR et EN). Sections avec réglages d'animation : 17.
+**180 sections** dans `theme-base/sections/` (dont les 23 sections `ts-*` de TABLE SAISON, issue #175, ajoutées à la main ci-dessous) : **166 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 180/180 (FR et EN). Sections avec réglages d'animation : 17.
 
 Toute section de page est **ajoutable, duplicable, déplaçable, masquable, supprimable et sauvegardée** (menu « … » et poignée de la structure ; chaque action crée une version restaurable). Les réglages de chaque section s'éditent **manuellement** (panneau « Modifier les réglages » : textes, visuels, liens, boutons, couleurs, formats, dispositions, blocs et leur ordre, animations) et **par l'IA** (discussion) : mêmes opérations `/theme/ops`, même source de données.
 
@@ -190,3 +190,33 @@ Colonnes : famille d'origine ; fichiers qui utilisent la section (générateurs,
 - **ORBE / Atelier Rive (éditorial, lot 2B)** : 7 sections — `ed-contact`, `ed-diptych`, `ed-finishes`, `ed-opening`, `ed-scene`, `ed-statement`, `ed-study`
 - **Thèmes de référence (lot 2A)** : 5 sections — `ref-editorial`, `ref-hero`, `ref-narrative`, `ref-notes`, `ref-offers`
 - **Moteur v2 (Codex)** : 13 sections — `v2-band`, `v2-banner`, `v2-benefits`, `v2-cards`, `v2-cta`, `v2-facts`, `v2-faq`, `v2-hero`, `v2-index`, `v2-media`, `v2-specs`, `v2-split`, `v2-steps`
+
+## TABLE SAISON (issue #175) — sections du thème restaurant
+
+Lignes produites par `scripts/sections-inventory.ts` le 2026-10-23 et ajoutées seules (le reste de l'inventaire n'est pas régénéré, pour ne pas toucher aux lignes des autres travaux en cours).
+
+| Section | Nom (bibliothèque) | Catégorie | Famille d'origine | Utilisée par | Variantes | Réglages | Blocs | Bibliothèque | A | F |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `ts-404` | Page introuvable du restaurant | Avancé | Base du studio (11 directions) | table-saison.ts | — | 9 (text ×4, url ×2, image_picker ×1, textarea ×1, richtext ×1) | — | ajoutable | — | oui |
+| `ts-banner` | Bandeau photo du restaurant | Conversion | Base du studio (11 directions) | table-saison.ts | align (2) | 13 (text ×5, range ×3, image_picker ×1, textarea ×1, richtext ×1, url ×1, select ×1) | — | ajoutable | — | oui |
+| `ts-booking` | Réservation de table | Services | Base du studio (11 directions) | table-saison.ts | — | 62 (text ×52, textarea ×7, url ×3) | — | ajoutable | — | — |
+| `ts-cards` | Offres de groupe | Services | Base du studio (11 directions) | table-saison.ts | — | 0 () | Offre · max 3 | ajoutable | — | oui |
+| `ts-contact` | Nous rendre visite | Services | Base du studio (11 directions) | table-saison.ts | — | 31 (text ×26, textarea ×4, richtext ×1) | — | ajoutable | — | — |
+| `ts-dishes` | Plats en avant | Services | Base du studio (11 directions) | table-saison.ts | style (2) | 7 (text ×4, richtext ×1, select ×1, url ×1) | Plat · max 6 | ajoutable | — | oui |
+| `ts-faq` | Questions du restaurant | Textes | Base du studio (11 directions) | table-saison.ts | layout (2) | 4 (text ×2, select ×1, checkbox ×1) | Catégorie, Question · max 30 | ajoutable | — | — |
+| `ts-footnote` | Mentions du pied de page | Avancé | Base du studio (11 directions) | table-saison.ts | — | 7 (text ×4, url ×3) | — | ajoutable | — | — |
+| `ts-gallery` | Galerie du restaurant | Images et vidéos | Base du studio (11 directions) | table-saison.ts | — | 10 (text ×10) | Photo · max 30 | ajoutable | — | oui |
+| `ts-hero` | Ouverture du restaurant | Ouverture | Base du studio (11 directions) | table-saison.ts | layout (4) | 18 (text ×7, select ×2, richtext ×2, url ×2, range ×2, image_picker ×1, textarea ×1, checkbox ×1) | — | ajoutable | — | oui |
+| `ts-ingredients` | Produits de saison | Images et vidéos | Base du studio (11 directions) | table-saison.ts | — | 5 (text ×2, textarea ×1, richtext ×1, url ×1) | Photo · max 4 | ajoutable | — | oui |
+| `ts-intro` | Titre de page du restaurant | Textes | Base du studio (11 directions) | table-saison.ts | — | 8 (text ×2, range ×2, url ×1, textarea ×1, richtext ×1, select ×1) | — | ajoutable | — | — |
+| `ts-legal` | Page légale du restaurant | Textes | Base du studio (11 directions) | table-saison.ts | — | 11 (text ×6, url ×4, range ×1) | Rubrique · max 16 | ajoutable | — | — |
+| `ts-manage` | Gestion d'une réservation | Services | Base du studio (11 directions) | table-saison.ts | — | 34 (text ×27, richtext ×2, url ×2, select ×1, image_picker ×1, textarea ×1) | — | ajoutable | — | oui |
+| `ts-menu` | La carte du restaurant | Services | Base du studio (11 directions) | table-saison.ts | — | 7 (text ×5, checkbox ×1, url ×1) | Rubrique, Plat de la carte · max 50 | ajoutable | — | oui |
+| `ts-moments` | Déjeuner et dîner | Services | Base du studio (11 directions) | table-saison.ts | — | 0 () | Moment · max 2 | ajoutable | — | oui |
+| `ts-panel` | Panneau bordeaux | Textes | Base du studio (11 directions) | table-saison.ts | — | 3 (textarea ×1, richtext ×1, checkbox ×1) | — | ajoutable | — | — |
+| `ts-photos` | Rangée de photos | Images et vidéos | Base du studio (11 directions) | table-saison.ts | — | 3 (text ×2, checkbox ×1) | Photo · max 3 | ajoutable | — | oui |
+| `ts-quote` | Citation et boutons | Textes | Base du studio (11 directions) | table-saison.ts | — | 6 (text ×2, url ×2, textarea ×1, checkbox ×1) | — | ajoutable | — | — |
+| `ts-request` | Demande de groupe | Conversion | Base du studio (11 directions) | table-saison.ts | — | 15 (text ×11, richtext ×2, range ×1, image_picker ×1) | — | ajoutable | — | oui |
+| `ts-restaurant` | Réglages du restaurant | Services | Base du studio (11 directions) | table-saison.ts | — | 40 (text ×17, url ×9, range ×5, color ×3, textarea ×3, checkbox ×2, select ×1) | — | ajoutable | — | — |
+| `ts-split` | Texte et photo du restaurant | Textes | Base du studio (11 directions) | table-saison.ts | — | 17 (text ×6, select ×5, textarea ×1, richtext ×1, url ×1, image_picker ×1, range ×1, checkbox ×1) | — | ajoutable | — | oui |
+| `ts-teaser` | Bandeau de la carte | Services | Base du studio (11 directions) | table-saison.ts | — | 6 (text ×2, textarea ×1, richtext ×1, url ×1, checkbox ×1) | Catégorie · max 4 | ajoutable | — | oui |

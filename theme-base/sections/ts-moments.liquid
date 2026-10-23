@@ -1,0 +1,44 @@
+{%- comment -%}
+  TABLE SAISON : deux moments côte à côte (déjeuner sur fond clair, dîner sur fond bordeaux), photo en fondu à droite.
+{%- endcomment -%}
+<section class="ts-section ts-moments">
+  {%- for block in section.blocks -%}
+    {%- assign b = block.settings -%}
+    {%- if b.heading == blank -%}{%- continue -%}{%- endif -%}
+    <article class="ts-moment ts-moment--{{ b.style }}" {{ block.shopify_attributes }}>
+      {%- if b.image != blank or b.image_asset != blank -%}
+        <div class="ts-moment__media">{% render 'ts-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position, sizes: '(min-width: 750px) 30vw, 60vw' %}</div>
+      {%- endif -%}
+      <div class="ts-moment__shade" aria-hidden="true"></div>
+      <div class="ts-moment__body">
+        {%- if b.eyebrow != blank -%}<p class="ts-eyebrow">{{ b.eyebrow }}</p>{%- endif -%}
+        <h2 class="ts-title">{{ b.heading | newline_to_br }}</h2>
+        {%- if b.text != blank -%}<div class="ts-text">{{ b.text }}</div>{%- endif -%}
+        {%- if b.button_label != blank -%}<a class="ts-btn" href="{{ b.button_link | default: '/pages/la-carte' }}">{{ b.button_label }}</a>{%- endif -%}
+      </div>
+    </article>
+  {%- endfor -%}
+</section>
+
+{% schema %}
+{
+  "name": "Déjeuner et dîner",
+  "class": "ts-moments-section",
+  "max_blocks": 2,
+  "settings": [],
+  "blocks": [
+    { "type": "moment", "name": "Moment", "settings": [
+      { "type": "select", "id": "style", "label": "Fond", "default": "light", "options": [{ "value": "light", "label": "Clair" }, { "value": "dark", "label": "Bordeaux" }] },
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+      { "type": "textarea", "id": "heading", "label": "Titre" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+    ] }
+  ],
+  "presets": [{ "name": "Déjeuner et dîner", "blocks": [{ "type": "moment", "settings": { "style": "light", "heading": "Le déjeuner" } }, { "type": "moment", "settings": { "style": "dark", "heading": "Le dîner" } }] }]
+}
+{% endschema %}

@@ -23,14 +23,14 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
 
   it("catalogue actif (consigne 6264783184) : les onze thèmes de référence selon le forfait et leur famille ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(41);
-    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
+    expect(THEME_ORDER).toHaveLength(42);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison"]);
     expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([1, 3, 5]);
     // Premier forfait qui ouvre chaque thème (rang dans sa famille, plan-entitlements.ts) : boutique spécialisée
     // fraise, sillon, noctil, traverse, museau-club ; E-commerce orbe, onde, heuren, alcove, souple ; services rive.
-    const first: Record<string, "creer" | "vendre" | "dominer"> = { fraise: "creer", orbe: "creer", rive: "creer", sillon: "vendre", noctil: "vendre", onde: "vendre", heuren: "vendre", traverse: "dominer", "museau-club": "dominer", alcove: "dominer", souple: "dominer" };
+    const first: Record<string, "creer" | "vendre" | "dominer"> = { fraise: "creer", orbe: "creer", rive: "creer", sillon: "vendre", noctil: "vendre", onde: "vendre", heuren: "vendre", traverse: "dominer", "museau-club": "dominer", alcove: "dominer", souple: "dominer", "table-saison": "vendre" };
     const rank = { creer: 0, vendre: 1, dominer: 2 };
-    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]) {
+    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison"]) {
       expect(themeAllowed(null, id)).toBe(false);
       for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(rank[plan] >= rank[first[id]]);
       expect(planForTheme(id)).toBe(first[id]);

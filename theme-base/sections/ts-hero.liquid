@@ -1,0 +1,73 @@
+{%- comment -%}
+  TABLE SAISON : ouverture photographique. Dispositions : « home » (texte à gauche sur la photo, deux boutons ; sur
+  téléphone la photo puis le bloc sombre), « page » (grand titre, filet et sous-titre), « center » (titre centré),
+  « fade » (texte sur l'ivoire, photo qui s'efface vers lui : Retrouver ma réservation, demande de groupe reçue).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign tag = s.heading_tag | default: 'h1'
+  assign btn1_class = 'ts-btn'
+  assign btn2_class = 'ts-btn ts-btn--light'
+  if s.layout == 'fade'
+    assign btn1_class = 'ts-btn ts-btn--olive'
+    assign btn2_class = 'ts-link ts-link--plain'
+  endif
+  assign has_media = false
+  if s.image != blank or s.image_asset != blank
+    assign has_media = true
+  endif
+-%}
+<section class="ts-section ts-hero ts-hero--{{ s.layout }}{% if s.layout == 'home' %} ts-hero--stack{% endif %}" style="--ts-hero-h: {{ s.height }}px; --ts-hero-h-mobile: {{ s.height_mobile }}px;">
+  {%- if has_media -%}
+    <div class="ts-hero__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile, loading: 'eager' %}</div>
+  {%- endif -%}
+  <div class="ts-hero__shade" aria-hidden="true"></div>
+  <div class="ts-wrap ts-hero__inner">
+    <div class="ts-hero__content">
+      {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<{{ tag }} class="ts-title">{{ s.heading | newline_to_br }}</{{ tag }}>{%- endif -%}
+      {%- if s.show_rule -%}<span class="ts-rule" aria-hidden="true"></span>{%- endif -%}
+      {%- if s.text != blank -%}<div class="ts-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.text_2 != blank -%}<div class="ts-hero__text">{{ s.text_2 }}</div>{%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+        <div class="ts-btns">
+          {%- if s.button_label != blank -%}<a class="{{ btn1_class }}" href="{{ s.button_link | default: '/pages/reserver' }}">{{ s.button_label }}</a>{%- endif -%}
+          {%- if s.button2_label != blank -%}<a class="{{ btn2_class }}" href="{{ s.button2_link | default: '/' }}">{{ s.button2_label }}{% if s.layout == 'fade' %} {% render 'ts-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture du restaurant",
+  "class": "ts-hero-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [
+      { "value": "home", "label": "Accueil : texte à gauche, deux boutons" },
+      { "value": "page", "label": "Page : grand titre et sous-titre" },
+      { "value": "center", "label": "Titre centré" },
+      { "value": "fade", "label": "Texte sur fond clair, photo en fondu" }
+    ] },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description de l'image" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%", "info": "Position horizontale et verticale (ex. 60% 40%)." },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le goût des bonnes choses." },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1", "options": [{ "value": "h1", "label": "Titre principal (H1)" }, { "value": "h2", "label": "Sous-titre (H2)" }] },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": false },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text_2", "label": "Second paragraphe" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Texte du second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 240, "max": 760, "step": 10, "default": 460, "unit": "px" },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 200, "max": 640, "step": 10, "default": 340, "unit": "px" }
+  ],
+  "presets": [{ "name": "Ouverture du restaurant" }]
+}
+{% endschema %}

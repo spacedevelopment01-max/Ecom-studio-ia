@@ -26,8 +26,9 @@ import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
+import { tableSaisonProject, TS_MEDIA } from "./table-saison-fixtures";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "table-saison";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -89,6 +90,12 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   souple: {
     tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.", price: null,
     media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // TABLE SAISON (issue #175, restaurant de la famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  "table-saison": {
+    tagline: "Le goût des bonnes choses. Le plaisir d'être ensemble.", summary: "Restaurant fictif de démonstration : cuisine de saison et esprit bistrot.", story: "Une cuisine de saison et une table qui rassemble, dans un lieu chaleureux à l'esprit bistrot.", positioning: "Restaurant de cuisine de saison (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: [{ key: "dejeuner", name: "Déjeuner", description: "Une carte de saison au déjeuner." }, { key: "diner", name: "Dîner", description: "Une atmosphère plus intime le soir." }, { key: "groupes", name: "Grandes tablées", description: "Repas de groupe et événements privés." }], contactMode: "form" },
+    media: Object.fromEntries(TS_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
   },
   rive: {
     tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -158,6 +165,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await ondeProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // TABLE SAISON (issue #175) : restaurant composé par le moteur dans son thème puis rédigé d'après les cinq planches,
+  // 61 photos du kit converties en WebP et suivies dans public/theme-assets/table-saison/.
+  if (id === "table-saison" && !options.direction) {
+    const c = await tableSaisonProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
   if (id === "fraise" && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
@@ -183,7 +196,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "table-saison" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

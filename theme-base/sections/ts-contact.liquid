@@ -1,0 +1,123 @@
+{%- comment -%}
+  TABLE SAISON : nous rendre visite. Coordonnées (adresse, téléphone, e-mail), horaires et note, plan (vrai plan
+  OpenStreetMap relié aux coordonnées réglées, chargé à la demande, ou illustration marquée « Plan illustratif »),
+  accès (voiture, transports, vélo) et formulaire « Nous écrire » (nom, e-mail, sujet, message). Les valeurs vides
+  restent « [À renseigner] » : aucune coordonnée n'est inventée.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign todo = s.todo_label | default: '[À renseigner]'
+  assign phone_href = s.phone | remove: ' ' | remove: '.' | remove: '-'
+  assign has_coords = false
+  if s.latitude != blank and s.longitude != blank
+    assign has_coords = true
+  endif
+-%}
+<section class="ts-section ts-contact">
+  <div class="ts-wrap">
+    <div class="ts-contact__infos">
+      <div>
+        <p class="ts-info">{% render 'ts-icon', name: 'pin' %}<strong>{{ s.label_address }}</strong><span>{% if s.address != blank %}{{ s.address }}{% else %}{{ todo }}{% endif %}</span></p>
+        <p class="ts-info">{% render 'ts-icon', name: 'phone' %}<strong>{{ s.label_phone }}</strong>{% if s.phone != blank %}<a href="tel:{{ phone_href }}">{{ s.phone }}</a>{% else %}<span>{{ todo }}</span>{% endif %}</p>
+        <p class="ts-info">{% render 'ts-icon', name: 'mail' %}<strong>{{ s.label_email }}</strong>{% if s.email != blank %}<a href="mailto:{{ s.email }}">{{ s.email }}</a>{% else %}<span>{{ todo }}</span>{% endif %}</p>
+      </div>
+      <div>
+        <p class="ts-info">{% render 'ts-icon', name: 'clock' %}<strong>{{ s.label_hours }}</strong><span>{% if s.hours != blank %}{{ s.hours }}{% else %}{{ s.hours_todo | default: todo }}{% endif %}</span></p>
+        {%- if s.hours_note != blank -%}<p class="ts-contact__note">{{ s.hours_note }}</p>{%- endif -%}
+      </div>
+    </div>
+
+    <div class="ts-contact__map">
+      <div>
+        <h2 class="ts-title ts-title--s" style="margin-bottom: 14px; color: var(--ts-ink)">{{ s.label_map }}</h2>
+        <div class="ts-map" data-ts-map{% if has_coords %} data-lat="{{ s.latitude | escape }}" data-lng="{{ s.longitude | escape }}"{% endif %}>
+          <svg class="ts-map__art" viewBox="0 0 340 270" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+            <rect width="340" height="270" fill="#EAE4D8"/>
+            <path d="M-10 70 350 20M-10 160 350 120M40 -10 110 280M180 -10 230 280M270 -10 300 280M-10 230 350 200" stroke="#FBF8F2" stroke-width="9"/>
+            <path d="M-10 115 350 70M70 -10 160 280M-10 30 120 280M240 -10 150 280" stroke="#FBF8F2" stroke-width="4"/>
+            <path d="M250 0c20 30 50 40 90 40v-40Z" fill="#D7DEC7"/><path d="M0 240c40-20 70-10 90 30H0Z" fill="#D7DEC7"/>
+            <path d="M210 95 260 70 290 150 230 170Z" fill="#E1DACB"/>
+          </svg>
+          {% render 'ts-icon', name: 'pin', class: 'ts-map__pin' %}
+          {%- if has_coords -%}
+            <button type="button" class="ts-btn ts-btn--paper ts-map__load" data-ts-map-load style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);min-height:36px;font-size:13px">{{ s.label_map_load }}</button>
+          {%- else -%}
+            <span class="ts-map__label">{{ s.label_map_demo }}</span>
+          {%- endif -%}
+        </div>
+        {%- if s.address != blank -%}<p style="margin:10px 0 0;font-size:13px"><a class="ts-link ts-link--plain" href="https://www.openstreetmap.org/search?query={{ s.address | url_encode }}" target="_blank" rel="noopener">{{ s.label_map_open }}</a></p>{%- endif -%}
+      </div>
+      <div class="ts-access">
+        <h2 class="ts-title ts-title--s" style="color: var(--ts-ink); margin-top: 26px">{{ s.label_access }}</h2>
+        <p class="ts-info">{% render 'ts-icon', name: 'car' %}<strong>{{ s.label_car }}</strong><span>{{ s.access_car | default: todo }}</span></p>
+        <p class="ts-info">{% render 'ts-icon', name: 'train' %}<strong>{{ s.label_transit }}</strong><span>{{ s.access_transit | default: todo }}</span></p>
+        <p class="ts-info">{% render 'ts-icon', name: 'bike' %}<strong>{{ s.label_bike }}</strong><span>{{ s.access_bike | default: todo }}</span></p>
+      </div>
+    </div>
+
+    <div class="ts-contact__form">
+      <h2 class="ts-title">{{ s.form_heading }}</h2>
+      {%- if s.form_text != blank -%}<div class="ts-text">{{ s.form_text }}</div>{%- endif -%}
+      <div data-ts-request="contact">
+        {%- form 'contact', class: 'ts-form' -%}
+          <input type="hidden" name="contact[kind]" value="contact">
+          <div class="ts-form__row">
+            <label class="ts-field"><span class="ts-visually-hidden">{{ s.label_name }}</span><input class="ts-input" type="text" name="contact[name]" required autocomplete="name" placeholder="{{ s.label_name | escape }}"></label>
+            <label class="ts-field"><span class="ts-visually-hidden">{{ s.label_email }}</span><input class="ts-input" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ s.label_email | escape }}"></label>
+          </div>
+          <label class="ts-field"><span class="ts-visually-hidden">{{ s.label_subject }}</span>
+            <select class="ts-input" name="contact[subject]" required>
+              <option value="">{{ s.label_subject }}</option>
+              {%- assign subjects = s.subjects | newline_to_br | split: '<br />' -%}
+              {%- for sub in subjects -%}{%- assign t = sub | strip -%}{%- if t != blank -%}<option>{{ t }}</option>{%- endif -%}{%- endfor -%}
+            </select>
+          </label>
+          <label class="ts-field"><span class="ts-visually-hidden">{{ s.label_message }}</span><textarea class="ts-input" name="contact[body]" rows="4" required placeholder="{{ s.label_message | escape }}"></textarea></label>
+          <p class="ts-status" role="status" aria-live="polite" hidden data-ts-status></p>
+          <div><button type="submit" class="ts-btn" style="min-width: 240px">{{ s.button_label }}</button></div>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Nous rendre visite",
+  "class": "ts-contact-section",
+  "settings": [
+    { "type": "text", "id": "todo_label", "label": "Texte d'une information à compléter", "default": "[À renseigner]" },
+    { "type": "text", "id": "label_address", "label": "Libellé de l'adresse", "default": "Adresse" },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "label_phone", "label": "Libellé du téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "label_email", "label": "Libellé de l'e-mail", "default": "E-mail" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "text", "id": "label_hours", "label": "Libellé des horaires", "default": "Horaires" },
+    { "type": "textarea", "id": "hours", "label": "Horaires" },
+    { "type": "text", "id": "hours_todo", "label": "Horaires à confirmer", "default": "[À confirmer]" },
+    { "type": "textarea", "id": "hours_note", "label": "Note sur les horaires", "default": "Les horaires peuvent varier selon la saison. N'hésitez pas à nous contacter pour toute demande particulière." },
+    { "type": "text", "id": "label_map", "label": "Titre du plan", "default": "Plan d'accès" },
+    { "type": "text", "id": "latitude", "label": "Latitude du restaurant", "info": "Avec la longitude : vrai plan OpenStreetMap, chargé quand le visiteur le demande. Sinon : illustration marquée « Plan illustratif »." },
+    { "type": "text", "id": "longitude", "label": "Longitude du restaurant" },
+    { "type": "text", "id": "label_map_demo", "label": "Mention du plan illustratif", "default": "Plan illustratif" },
+    { "type": "text", "id": "label_map_load", "label": "Bouton du plan interactif", "default": "Afficher le plan interactif" },
+    { "type": "text", "id": "label_map_open", "label": "Lien vers le plan", "default": "Ouvrir l'adresse dans OpenStreetMap" },
+    { "type": "text", "id": "label_access", "label": "Titre des accès", "default": "Accès" },
+    { "type": "text", "id": "label_car", "label": "Libellé voiture", "default": "En voiture" },
+    { "type": "text", "id": "access_car", "label": "Accès en voiture" },
+    { "type": "text", "id": "label_transit", "label": "Libellé transports", "default": "En transports en commun" },
+    { "type": "text", "id": "access_transit", "label": "Accès en transports" },
+    { "type": "text", "id": "label_bike", "label": "Libellé vélo", "default": "À vélo" },
+    { "type": "text", "id": "access_bike", "label": "Accès à vélo" },
+    { "type": "text", "id": "form_heading", "label": "Titre du formulaire", "default": "Nous écrire" },
+    { "type": "richtext", "id": "form_text", "label": "Texte du formulaire" },
+    { "type": "text", "id": "label_name", "label": "Libellé du nom", "default": "Nom" },
+    { "type": "text", "id": "label_subject", "label": "Libellé du sujet", "default": "Sujet" },
+    { "type": "textarea", "id": "subjects", "label": "Sujets proposés (un par ligne)", "default": "Réservation\nGroupe ou événement\nAutre demande" },
+    { "type": "text", "id": "label_message", "label": "Libellé du message", "default": "Votre message" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Envoyer le message" }
+  ],
+  "presets": [{ "name": "Nous rendre visite" }]
+}
+{% endschema %}

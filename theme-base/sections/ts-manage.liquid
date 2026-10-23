@@ -1,0 +1,142 @@
+{%- comment -%}
+  TABLE SAISON : gestion d'une réservation. Vues : « lookup » (retrouver par e-mail : la réponse est toujours neutre,
+  le lien sécurisé part par e-mail ; jamais les réservations d'autrui), « detail » (adresse masquée, statut, date, heure,
+  personnes, préférences, lieu, modifier, annuler) et « modify » (personnes, date, heure revérifiés). L'annulation passe
+  par une fenêtre de confirmation ; une réservation annulée n'apparaît plus comme active.
+  Accès : numéro et jeton dans l'adresse (#r=…&t=…). En démonstration : réservation fictive TS-0001, signalée comme telle.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-manage-wrap" data-ts-manage="{{ s.view }}">
+  <p class="ts-sim" data-ts-sim hidden>{{ s.demo_banner }}</p>
+  {%- case s.view -%}
+    {%- when 'lookup' -%}
+      <div class="ts-hero ts-hero--fade" style="--ts-hero-h: 560px;">
+        <div class="ts-hero__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, loading: 'eager' %}</div>
+        <div class="ts-hero__shade" aria-hidden="true"></div>
+        <div class="ts-wrap ts-hero__inner">
+          <div class="ts-hero__content">
+            {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+            <h1 class="ts-title">{{ s.heading | newline_to_br }}</h1>
+            {%- if s.text != blank -%}<div class="ts-hero__text">{{ s.text }}</div>{%- endif -%}
+            <form class="ts-lookup" data-ts-lookup novalidate style="margin-top: 28px">
+              <label class="ts-field"><span class="ts-visually-hidden">{{ s.email_label }}</span><input class="ts-input" type="email" name="email" required autocomplete="email" placeholder="{{ s.email_label | escape }}"><span class="ts-error" hidden></span></label>
+              <button type="submit" class="ts-btn ts-btn--block">{{ s.button_label }}</button>
+              <p class="ts-status" role="status" aria-live="polite" hidden data-ts-status></p>
+            </form>
+            {%- if s.help != blank -%}<div class="ts-text" style="margin-top: 26px; font-size: 14px">{{ s.help }}</div>{%- endif -%}
+          </div>
+        </div>
+      </div>
+    {%- when 'detail' -%}
+      <div class="ts-manage">
+        <div class="ts-wrap">
+          <a class="ts-intro__back" href="{{ s.back_link | default: '/' }}">{% render 'ts-icon', name: 'arrow-left' %}{{ s.back_label }}</a>
+          <div class="ts-manage__head">
+            <div>
+              <h1 class="ts-title ts-title--xl">{{ s.heading }}</h1>
+              {%- if s.text != blank -%}<div class="ts-text" style="margin: 8px 0 22px">{{ s.text }}</div>{%- endif -%}
+            </div>
+            <p class="ts-ref" data-ts-ref></p>
+          </div>
+          <p class="ts-status ts-status--warn" role="status" hidden data-ts-status></p>
+          <div data-ts-res-body>
+            <div class="ts-manage__grid">
+              <div class="ts-manage__card">
+                <div class="ts-kv">{% render 'ts-icon', name: 'user' %}<small>{{ s.label_party }}</small><strong data-ts-out="party"></strong></div>
+                <div class="ts-kv">{% render 'ts-icon', name: 'calendar-grid' %}<small>{{ s.label_date }}</small><strong data-ts-out="date"></strong></div>
+                <div class="ts-kv">{% render 'ts-icon', name: 'clock' %}<small>{{ s.label_time }}</small><strong data-ts-out="time"></strong></div>
+                <div class="ts-kv">{% render 'ts-icon', name: 'check-circle' %}<small>{{ s.label_status }}</small><span class="ts-badge" data-ts-out="status"></span></div>
+              </div>
+              <div class="ts-manage__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position %}</div>
+            </div>
+            <div class="ts-manage__actions" data-ts-actions>
+              <a class="ts-btn ts-btn--olive" href="{{ s.modify_link | default: '/pages/modifier-ma-reservation' }}" data-ts-modify-link>{{ s.modify_label }}</a>
+              <button type="button" class="ts-btn ts-btn--ghost" data-ts-cancel-open>{{ s.cancel_label }}</button>
+            </div>
+            <div class="ts-manage__boxes">
+              <div class="ts-box"><h3>{{ s.label_contact }}</h3><p>{% render 'ts-icon', name: 'mail' %}<span data-ts-out="email"></span></p></div>
+              <div class="ts-box"><h3>{{ s.label_prefs }} <small>{{ s.optional }}</small></h3><p>{% render 'ts-icon', name: 'note' %}<span data-ts-out="note"></span></p><button type="button" class="ts-linkbtn" data-ts-note-open>{{ s.add_note }}</button>
+                <form data-ts-note-form hidden style="margin-top:10px; display:grid; gap:8px"><label class="ts-field"><span class="ts-visually-hidden">{{ s.label_prefs }}</span><textarea class="ts-input" name="note" rows="2" maxlength="600"></textarea></label><button type="submit" class="ts-btn ts-btn--line">{{ s.save_note }}</button></form>
+              </div>
+              <div class="ts-box ts-box--wide"><p style="align-items:flex-start">{% render 'ts-icon', name: 'pin' %}<span><strong style="display:block;font-weight:600;color:var(--ts-ink)">{{ s.label_place }}</strong>{{ shop.name | upcase }}<br><span data-ts-out="address"></span></span></p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {%- when 'modify' -%}
+      <div class="ts-modify">
+        <form class="ts-modify__form" data-ts-modify novalidate>
+          <a class="ts-intro__back" href="{{ s.back_link | default: '/pages/ma-reservation' }}" data-ts-back-res>{% render 'ts-icon', name: 'arrow-left' %}{{ s.back_label }}</a>
+          <h1 class="ts-title ts-title--xl">{{ s.heading }}</h1>
+          {%- if s.text != blank -%}<div class="ts-text" style="margin: 8px 0 26px">{{ s.text }}</div>{%- endif -%}
+          <p class="ts-status ts-status--warn" role="status" hidden data-ts-status></p>
+          <div class="ts-kv">{% render 'ts-icon', name: 'user' %}<label for="ts-m-party-{{ section.id }}">{{ s.label_party }}</label><select class="ts-input" id="ts-m-party-{{ section.id }}" name="party" data-ts-m-party></select></div>
+          <div class="ts-kv">{% render 'ts-icon', name: 'calendar-grid' %}<label for="ts-m-date-{{ section.id }}">{{ s.label_date }}</label><input class="ts-input" type="date" id="ts-m-date-{{ section.id }}" name="date" data-ts-m-date required></div>
+          <div class="ts-kv">{% render 'ts-icon', name: 'clock' %}<label for="ts-m-time-{{ section.id }}">{{ s.label_time }}</label><select class="ts-input" id="ts-m-time-{{ section.id }}" name="time" data-ts-m-time required></select></div>
+          <div class="ts-modify__summary" aria-live="polite"><strong>{{ s.summary_label }}</strong><span data-ts-m-summary></span></div>
+          <button type="submit" class="ts-btn ts-btn--olive">{{ s.save_label }}</button>
+          <p class="ts-modify__cancel"><button type="button" class="ts-linkbtn" style="margin:0" data-ts-cancel-open>{{ s.cancel_label }}</button></p>
+        </form>
+        <div class="ts-modify__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, loading: 'eager' %}</div>
+      </div>
+  {%- endcase -%}
+  {%- if s.view != 'lookup' -%}
+    <div class="ts-dialog" role="dialog" aria-modal="true" aria-labelledby="ts-cancel-title-{{ section.id }}" hidden data-ts-cancel-dialog>
+      <div class="ts-dialog__backdrop" data-ts-cancel-close></div>
+      <div class="ts-dialog__panel">
+        <button type="button" class="ts-dialog__close" data-ts-cancel-close aria-label="{{ s.close_label | escape }}">{% render 'ts-icon', name: 'close' %}</button>
+        <h2 class="ts-title" id="ts-cancel-title-{{ section.id }}">{{ s.cancel_title }}</h2>
+        <p>{{ s.cancel_text }}</p>
+        <div class="ts-dialog__note">{% render 'ts-icon', name: 'shield' %}<span>{{ s.cancel_conditions }}</span></div>
+        <div class="ts-dialog__actions">
+          <button type="button" class="ts-btn ts-btn--ghost" data-ts-cancel-close>{{ s.back_label_short }}</button>
+          <button type="button" class="ts-btn" data-ts-cancel-confirm>{{ s.cancel_confirm }}</button>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Gestion d'une réservation",
+  "class": "ts-manage-section",
+  "settings": [
+    { "type": "select", "id": "view", "label": "Vue", "default": "detail", "options": [{ "value": "lookup", "label": "Retrouver ma réservation" }, { "value": "detail", "label": "Ma réservation" }, { "value": "modify", "label": "Modifier ma réservation" }] },
+    { "type": "text", "id": "demo_banner", "label": "Bandeau de démonstration", "default": "Démonstration : aucune réservation réelle" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Ma réservation" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "email_label", "label": "Libellé de l'e-mail", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Retrouver ma réservation" },
+    { "type": "richtext", "id": "help", "label": "Aide sous le formulaire" },
+    { "type": "text", "id": "back_label", "label": "Texte du lien de retour", "default": "Retour" },
+    { "type": "url", "id": "back_link", "label": "Lien de retour" },
+    { "type": "text", "id": "label_party", "label": "Libellé du nombre de personnes", "default": "Nombre de personnes" },
+    { "type": "text", "id": "label_date", "label": "Libellé de la date", "default": "Date" },
+    { "type": "text", "id": "label_time", "label": "Libellé de l'heure", "default": "Heure" },
+    { "type": "text", "id": "label_status", "label": "Libellé du statut", "default": "Statut" },
+    { "type": "text", "id": "modify_label", "label": "Bouton modifier", "default": "Modifier ma réservation" },
+    { "type": "url", "id": "modify_link", "label": "Page Modifier ma réservation" },
+    { "type": "text", "id": "cancel_label", "label": "Bouton annuler", "default": "Annuler ma réservation" },
+    { "type": "text", "id": "label_contact", "label": "Titre des coordonnées", "default": "Vos coordonnées" },
+    { "type": "text", "id": "label_prefs", "label": "Titre des préférences", "default": "Préférences" },
+    { "type": "text", "id": "optional", "label": "Mention facultatif", "default": "(optionnel)" },
+    { "type": "text", "id": "add_note", "label": "Lien ajouter une note", "default": "Ajouter une note" },
+    { "type": "text", "id": "save_note", "label": "Bouton enregistrer la note", "default": "Enregistrer la note" },
+    { "type": "text", "id": "label_place", "label": "Titre du lieu", "default": "Le lieu" },
+    { "type": "text", "id": "summary_label", "label": "Titre du résumé", "default": "Résumé de la modification" },
+    { "type": "text", "id": "save_label", "label": "Bouton enregistrer", "default": "Enregistrer les modifications" },
+    { "type": "text", "id": "cancel_title", "label": "Titre de la confirmation d'annulation", "default": "Confirmer l'annulation ?" },
+    { "type": "text", "id": "cancel_text", "label": "Texte de la confirmation d'annulation", "default": "Êtes-vous sûr(e) de vouloir annuler cette réservation ?" },
+    { "type": "text", "id": "cancel_conditions", "label": "Conditions d'annulation", "default": "Conditions à préciser." },
+    { "type": "text", "id": "back_label_short", "label": "Bouton garder la réservation", "default": "Retour" },
+    { "type": "text", "id": "cancel_confirm", "label": "Bouton confirmer l'annulation", "default": "Confirmer l'annulation" },
+    { "type": "text", "id": "close_label", "label": "Bouton fermer", "default": "Fermer" }
+  ],
+  "presets": [{ "name": "Gestion d'une réservation" }]
+}
+{% endschema %}

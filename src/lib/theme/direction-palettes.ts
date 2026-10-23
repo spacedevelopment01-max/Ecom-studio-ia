@@ -55,6 +55,7 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   "museau-club": { primary: "#1636C9", secondary: "#EFE6D2", accent: "#F2C14E", light: "#FBF7EE", dark: "#0B1B5E" }, // bleu cobalt des sangles, crème de la maille, jaune du socle, marine du logo
   souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
   alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
+  "table-saison": { primary: "#6E1F2D", secondary: "#E8DFCF", accent: "#6E1F2D", light: "#F6F0E5", dark: "#2A2421" }, // bordeaux des boutons et du pied, lin, ivoire, encre chaude (issue #175)
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 
