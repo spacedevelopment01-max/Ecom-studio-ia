@@ -153,15 +153,20 @@ describe("Autopilot V2 — pilote", async () => {
     expect(free.log.local).toBe(0);
     expect(one<{ body: string }>("SELECT body FROM notifications WHERE project_id = ? AND title LIKE 'Budget IA%'", p.id)!.body).toMatch(/recharge de 10 €/);
 
+    // Plafond de 1 € : il couvre les 3 prochaines publications quel que soit le jour de la semaine où le test tourne
+    // (selon le jour, ce sont des images ou des carrousels de 2 images : 0,30 € à 0,70 € au coût fictif de 0,10 €).
     const q = await project("vendre");
-    ap.saveSettings(q, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 0.5, visual: "ai_image" });
+    ap.saveSettings(q, { active: true, perDay: 1, horizonDays: 7, platforms: ["instagram"], paidCapEurWeek: 1, visual: "ai_image" });
     const paid = mockSocialDeps({ aiActive: true, cost: 100_000 });
     const r1 = await fr(() => ap.runAutopilot(q, paid.deps));
     expect(r1.paidJob).toBeTruthy();
     expect(paid.log.paid).toBe(0); // la dépense passe par la tâche de production (réservation du budget), pas ici
     const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE id = ?", r1.paidJob)!;
-    expect(JSON.parse(job.payload).approvedEstimateMicro).toBeLessThanOrEqual(500_000);
-    // Nouvelles publications à produire, plafond de la semaine déjà engagé : gratuit.
+    const engaged = JSON.parse(job.payload).approvedEstimateMicro as number;
+    expect(engaged).toBeGreaterThan(0);
+    expect(engaged).toBeLessThanOrEqual(1_000_000);
+    // Nouvelles publications à produire, plafond de la semaine ramené au montant déjà engagé : gratuit.
+    ap.saveSettings(q, { paidCapEurWeek: engaged / 1_000_000 });
     run("UPDATE posts SET media = '[]' WHERE plan_id = ?", `auto-${q.id}`);
     const r2 = await fr(() => ap.runAutopilot(q, paid.deps));
     expect(r2.paidJob).toBeNull();
