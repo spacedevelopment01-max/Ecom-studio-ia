@@ -364,6 +364,9 @@ const SERVICES: FamilyEntry[] = [
     d("cartouche", "Photo pleine largeur et cartouche", "Full-width photo and title card", "ed-opening", "background", { layout: "cartouche" }),
     // Atelier Rive (maquettes du 23 octobre).
     d("banner", "Bandeau photo, titre blanc et deux boutons", "Photo band, white title and two buttons", "ed-opening", "background", { layout: "banner" }),
+    // Maison & Horizon (issue #172) : agence immobilière.
+    d("re-search", "Grande photo et recherche Acheter / Louer", "Large photo and Buy / Rent search", "re-hero", "background", { layout: "home", height: "tall" }),
+    d("re-page", "Photo, titre et boutons (pages intérieures)", "Photo, title and buttons (inner pages)", "re-hero", "background", { layout: "page", height: "medium" }),
   ]),
   e("services", 2, "offers", { fr: "Prestations proposées", en: "Services offered" }, { fr: "Catalogue de services en cartes, liste ou panneaux.", en: "Service catalogue as cards, a list or panels." }, "prestations services catalogue", [
     d("list", "Liste", "List", "services-list", "list", { layout: "list" }),
@@ -371,6 +374,11 @@ const SERVICES: FamilyEntry[] = [
     // Atelier Rive (maquettes du 23 octobre).
     d("thumbs", "Miniatures en ligne", "Thumbnails in a row", "services-list", "cards-rows", { layout: "thumbs", action_style: "arrow" }),
     d("illustrated", "Colonnes illustrées, listes et boutons", "Illustrated columns, lists and buttons", "services-list", "grid-3", { layout: "cards", action_style: "button" }),
+    // Maison & Horizon (issue #172).
+    d("re-services", "Services en ligne, icônes au trait", "Services in a row, line icons", "re-tiles", "grid-3", { layout: "services" }),
+    d("re-paths", "Deux chemins : texte et deux photos", "Two paths: text and two photos", "re-tiles", "split-right", { layout: "split" }, [{ type: "tile" }, { type: "tile" }]),
+    d("re-sectors", "Secteurs en photos légendées", "Areas as captioned photos", "re-tiles", "grid-4", { layout: "sectors" }, [{ type: "tile" }, { type: "tile" }, { type: "tile" }, { type: "tile" }]),
+    d("re-cards", "Cartes avec photo et onglets de filtre", "Photo cards with filter tabs", "re-tiles", "grid-3", { layout: "cards", filter_tabs: true }),
   ]),
   e("services", 3, "detail", { fr: "Détail d'une prestation", en: "Service detail" }, { fr: "Périmètre, contenu et livrables d'un service.", en: "Scope, content and deliverables of a service." }, "détail prestation périmètre livrables", [
     d("split", "Résumé fixe et détail", "Fixed summary and detail", "fs-service", "sticky", { layout: "split" }),
@@ -389,6 +397,10 @@ const SERVICES: FamilyEntry[] = [
     d("grid", "Grille", "Grid", "portfolio", "grid-3", { layout: "grid" }),
     // Atelier Rive (maquettes du 23 octobre).
     d("asym", "Galerie asymétrique filtrable", "Asymmetric filterable gallery", "portfolio", "mosaic", { layout: "asym" }),
+    // Maison & Horizon (issue #172) : les biens de l'onglet « Biens », jamais saisis dans la section.
+    d("re-featured", "Biens à la une en rangée", "Featured properties in a row", "re-listings", "grid-4", { mode: "featured", layout: "home", limit: 4 }),
+    d("re-search-grid", "Biens avec filtres, tri et pages", "Properties with filters, sort and pages", "re-listings", "grid-3", { mode: "vente", layout: "grid", show_filters: true, show_count: true, show_sort: true, per_page: 6, limit: 0 }),
+    d("re-map", "Carte illustrative et liste", "Illustrative map and list", "re-listings", "split-left", { mode: "vente", layout: "map", show_filters: true, show_count: true, show_sort: true, tabs: "view", limit: 0 }),
   ]),
   e("services", 6, "case", { fr: "Étude de cas", en: "Case study" }, { fr: "Demande, contraintes, réponse et résultat d'un projet.", en: "Request, constraints, answer and result of a project." }, "étude de cas projet demande contraintes résultat", [
     d("sticky", "Image fixe pendant le récit", "Image fixed during the story", "fs-case", "sticky", { layout: "sticky" }),
@@ -429,6 +441,11 @@ const SERVICES: FamilyEntry[] = [
     d("stacked", "Photo, présentation et valeurs illustrées", "Photo, introduction and illustrated values", "about", "stacked", { layout: "stacked" }),
     // « Scène et texte » rejoint le bandeau photo : une même section ne sert qu'une seule fonction de la famille.
     d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
+    // Maison & Horizon (issue #172).
+    d("re-exception", "Bien d'exception : panneau vert et grande photo", "Exceptional property: green panel and large photo", "re-feature", "split-right", { layout: "bien" }),
+    d("re-story", "Texte et photo", "Text and photo", "re-feature", "split-right", { layout: "story" }),
+    d("re-overlay", "Grande photo et encart", "Large photo and text card", "re-feature", "background", { layout: "overlay" }),
+    d("re-band", "Bandeau photo et bouton", "Photo band and button", "re-feature", "band", { layout: "band" }),
   ]),
   e("services", 12, "credentials", { fr: "Qualifications et assurances", en: "Qualifications and insurance" }, { fr: "Diplômes, certifications et assurances réels.", en: "Real diplomas, certifications and insurance." }, "qualifications certifications assurances diplômes", [
     d("list", "Liste détaillée", "Detailed list", "fs-credentials", "list", { layout: "list" }),
@@ -476,6 +493,11 @@ const SERVICES: FamilyEntry[] = [
     // Atelier Rive (maquettes du 23 octobre).
     d("band-split", "Bandeau d'appel, titre à gauche", "Call-to-action band, title on the left", "cta-banner", "band", { style: "split", parallax: false, overlay: 0, color_scheme: "scheme-2" }),
     d("card", "Carte d'appel avec petite photo", "Call-to-action card with a small photo", "cta-banner", "cards-rows", { style: "card", parallax: false }),
+    // Maison & Horizon (issue #172) : formulaires vérifiés, rien de promis qui ne soit tenu.
+    d("re-contact", "Motif en tuiles et coordonnées", "Topic tiles and contact details", "re-form", "form-split", { kind: "contact", aside_style: "info" }),
+    d("re-callback", "Demande de rappel", "Call-back request", "re-form", "form-split", { kind: "callback" }),
+    d("re-estimate", "Demande d'estimation en trois étapes", "Three-step valuation request", "re-form", "form", { kind: "estimate" }),
+    d("re-alert", "Alerte de recherche", "Search alert", "re-form", "form-split", { kind: "alert" }),
   ]),
 ];
 
@@ -485,7 +507,9 @@ export const ALL_ENTRIES: FamilyEntry[] = [...SPECIALTY, ...CATALOG, ...SERVICES
 /** Composants hors des 20 sections : structure des pages, modèles techniques, pages légales et articles. */
 // « demo-order » et « demo-account » : écrans d'exemple de commande et d'espace client des boutiques de démonstration
 // (MUSEAU CLUB) ; sur une vraie boutique, ces écrans sont ceux de Shopify : jamais proposés dans la galerie.
-export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account"]);
+// « re-bien », « re-favorites », « re-account », « re-legal », « re-article » (Maison & Horizon) : fiche d'un bien,
+// favoris, espace, informations légales et article — des pages entières, pas des sections de la galerie.
+export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "re-bien", "re-favorites", "re-account", "re-legal", "re-article"]);
 export const isStructuralType = (type: string) => type.startsWith("main-") || STRUCTURAL_TYPES.has(type);
 
 /** Types de sections proposables dans une famille (union des dispositions de ses 20 entrées). */

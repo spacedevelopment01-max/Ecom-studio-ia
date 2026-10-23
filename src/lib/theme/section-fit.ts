@@ -58,6 +58,17 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "ed-study": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-contact": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-finishes": { kinds: SHOP, themes: EDITORIAL_THEMES, profiles: ["editorial"] },
+  // Immobilier (MAISON & HORIZON, issue #172) : sections stylées par assets/horizon.css, chargé avec ce thème seulement.
+  "re-hero": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-listings": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-tiles": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-feature": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-bien": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-form": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-favorites": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-account": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-legal": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-article": { kinds: ["services"], themes: ["maison-horizon"] },
   // Compositions de référence (Vitrine, Jardin) et leurs dérivées.
   "ref-hero": { themes: REFERENCE_THEMES },
   "ref-editorial": { themes: REFERENCE_THEMES },
