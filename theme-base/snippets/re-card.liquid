@@ -1,0 +1,45 @@
+{%- comment -%}
+  Carte d'un bien (Maison & Horizon). Paramètres : bien (métaobjet « bien »), style : home | grid | list | mini,
+  summary (true : accroche sous la carte), loading, fav_label. Les attributs data-* servent aux filtres, au tri,
+  à la carte et aux favoris (assets/horizon.js) : ils reprennent les valeurs de la fiche du bien.
+  Location : loyer hors charges puis « + charges » ; le total charges comprises est sur la fiche.
+{%- endcomment -%}
+{%- assign st = style | default: 'grid' -%}
+{%- assign cover = bien.couverture.value -%}
+{%- assign is_rent = false -%}{%- if bien.transaction.value == 'location' -%}{%- assign is_rent = true -%}{%- endif -%}
+<article class="re-card re-card--{{ st }}{% unless bien.disponible.value %} is-closed{% endunless %}" data-re-card data-ref="{{ bien.reference.value | escape }}" data-transaction="{{ bien.transaction.value }}" data-type="{{ bien.type_bien.value }}" data-city="{{ bien.ville.value | downcase | escape }}" data-price="{% if is_rent %}{{ bien.loyer_hc.value }}{% else %}{{ bien.prix.value }}{% endif %}" data-surface="{{ bien.surface.value }}" data-rooms="{{ bien.pieces.value }}" data-bedrooms="{{ bien.chambres.value }}" data-tags="{{ bien.filtres.value }}" data-x="{{ bien.carte_x.value }}" data-y="{{ bien.carte_y.value }}" data-title="{{ bien.titre.value | escape }}" data-url="{{ bien.system.url }}" data-amount="{% if is_rent %}{{ bien.loyer_hc_texte.value }} / mois{% else %}{{ bien.prix_texte.value }}{% endif %}">
+  <div class="re-card__media">
+    <a class="re-card__photo" href="{{ bien.system.url }}" tabindex="-1" aria-hidden="true">
+      {%- if cover -%}{% render 'es-image', asset: cover.file, alt: cover.alt, class: 're-card__img', loading: loading | default: 'lazy' %}{%- endif -%}
+    </a>
+    {%- if st == 'home' or st == 'list' -%}<span class="re-badge re-badge--{{ bien.transaction.value }}">{{ bien.transaction_label.value }}</span>{%- endif -%}
+    {%- if bien.statut_label.value != blank -%}<span class="re-badge re-badge--closed">{{ bien.statut_label.value }}</span>{%- endif -%}
+    {%- if st != 'home' -%}<button type="button" class="re-fav re-fav--on-photo" data-re-fav="{{ bien.reference.value | escape }}" aria-pressed="false" aria-label="{{ fav_label | default: 'Ajouter aux favoris' }} : {{ bien.titre.value | escape }}">{% render 'mh-icon', name: 'heart' %}</button>{%- endif -%}
+  </div>
+  <div class="re-card__body">
+    {%- if st == 'home' -%}
+      <div class="re-card__price-row">
+        <p class="re-card__price">{% if is_rent %}{{ bien.loyer_hc_texte.value }}<small> / mois</small>{% else %}{{ bien.prix_texte.value }}{% endif %}</p>
+        <button type="button" class="re-fav" data-re-fav="{{ bien.reference.value | escape }}" aria-pressed="false" aria-label="{{ fav_label | default: 'Ajouter aux favoris' }} : {{ bien.titre.value | escape }}">{% render 'mh-icon', name: 'heart' %}</button>
+      </div>
+      {%- if is_rent and bien.charges.value -%}<p class="re-card__charges">+ {{ bien.charges_texte.value }} de charges</p>{%- endif -%}
+      <h3 class="re-card__title"><a href="{{ bien.system.url }}">{{ bien.titre.value }}</a></h3>
+      <p class="re-card__place">{{ bien.localisation.value }}</p>
+    {%- else -%}
+      <h3 class="re-card__title"><a href="{{ bien.system.url }}">{{ bien.titre.value }}</a></h3>
+      <p class="re-card__place">{{ bien.localisation.value }}</p>
+      <p class="re-card__price">{% if is_rent %}{{ bien.loyer_hc_texte.value }}<small> / mois</small>{% else %}{{ bien.prix_texte.value }}{% endif %}</p>
+      {%- if is_rent and bien.charges.value -%}<p class="re-card__charges">+ {{ bien.charges_texte.value }} de charges</p>{%- endif -%}
+    {%- endif -%}
+    {%- unless st == 'mini' -%}
+    <ul class="re-facts" role="list">
+      {%- if bien.surface.value -%}<li>{% render 'mh-icon', name: 'surface' %}<span>{{ bien.surface_texte.value }}</span></li>{%- endif -%}
+      {%- if bien.pieces.value -%}<li>{% render 'mh-icon', name: 'rooms' %}<span>{{ bien.pieces.value }} pièce{% if bien.pieces.value > 1 %}s{% endif %}</span></li>{%- endif -%}
+      {%- if bien.chambres.value -%}<li>{% render 'mh-icon', name: 'bed' %}<span>{% if st == 'home' %}{{ bien.chambres.value }} ch.{% else %}{{ bien.chambres.value }} chambre{% if bien.chambres.value > 1 %}s{% endif %}{% endif %}</span></li>{%- endif -%}
+    </ul>
+    {%- else -%}
+    <p class="re-card__mini-facts">{% if bien.type_label.value %}{{ bien.type_label.value }}{% endif %}{% if bien.pieces.value %} · {{ bien.pieces.value }} pièce{% if bien.pieces.value > 1 %}s{% endif %}{% endif %}{% if bien.surface.value %} · {{ bien.surface_texte.value }}{% endif %}{% if bien.meuble.value %} · Meublé{% endif %}</p>
+    {%- endunless -%}
+    {%- if summary and bien.accroche.value != blank -%}<p class="re-card__summary">{{ bien.accroche.value }}</p>{%- endif -%}
+  </div>
+</article>

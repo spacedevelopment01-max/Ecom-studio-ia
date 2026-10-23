@@ -1,0 +1,92 @@
+{%- comment -%}
+  Ouverture Maison & Horizon : grande photo et titre serif blanc.
+  - « Accueil » : panneau de recherche Acheter / Louer posé sur le bas de la photo (localisation, type, budget) ; il
+    mène à la page Acheter ou Louer, déjà filtrée (critères dans l'adresse).
+  - « Page » : surtitre, titre, texte, mention et jusqu'à deux boutons (pages intérieures, propriétaires, agence).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="es-section re-hero re-hero--{{ s.layout }} re-hero--h-{{ s.height }}{% if s.text_side == 'bottom' %} re-hero--bottom{% endif %} color-{{ s.color_scheme }}" style="--pt:0px;--pb:{{ s.padding_bottom }}px;" data-re-hero>
+  <div class="re-hero__photo">
+    {% render 'ed-media', image: s.image, asset: s.image_asset, mobile_asset: s.mobile_image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, loading: 'eager', role_label: 'Photo d’ouverture' %}
+  </div>
+  <div class="es-container re-hero__inner">
+    <div class="re-hero__copy">
+      {%- if s.eyebrow != blank -%}<p class="re-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h1' }} class="re-hero__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h1' }}>{%- endif -%}
+      {%- if s.text != blank -%}<div class="re-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.meta != blank -%}<p class="re-hero__meta">{{ s.meta }}</p>{%- endif -%}
+      {%- if s.note != blank -%}<p class="re-hero__note">{{ s.note | escape }}</p>{%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+      <div class="re-actions">
+        {%- if s.button_label != blank -%}<a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+        {%- if s.button2_label != blank -%}<a class="re-btn re-btn--ghost" href="{{ s.button2_link | default: '#' }}">{{ s.button2_label | escape }}</a>{%- endif -%}
+      </div>
+      {%- endif -%}
+    </div>
+    {%- if s.layout == 'home' -%}
+    <form class="re-search" action="{{ s.buy_url | default: routes.root_url }}" method="get" data-re-search data-buy="{{ s.buy_url }}" data-rent="{{ s.rent_url }}" role="search" aria-label="{{ s.search_title | default: 'Rechercher un bien' | escape }}">
+      <div class="re-tabs" role="tablist">
+        <button type="button" role="tab" class="re-tab is-active" aria-selected="true" data-re-tab="vente">{{ s.tab_buy | default: 'Acheter' | escape }}</button>
+        <button type="button" role="tab" class="re-tab" aria-selected="false" data-re-tab="location">{{ s.tab_rent | default: 'Louer' | escape }}</button>
+      </div>
+      <div class="re-search__fields">
+        <div class="re-field re-field--city"><label for="Lieu-{{ section.id }}">{{ s.label_place | default: 'Localisation' | escape }}</label><input id="Lieu-{{ section.id }}" name="ville" type="text" list="Lieux-{{ section.id }}" placeholder="{{ s.placeholder_place | escape }}" autocomplete="off"><datalist id="Lieux-{{ section.id }}">{%- assign seen = '' -%}{%- for b in shop.metaobjects.bien.values -%}{%- assign key = '|' | append: b.ville.value | append: '|' -%}{%- unless seen contains key -%}<option value="{{ b.ville.value | escape }}">{%- assign seen = seen | append: key -%}{%- endunless -%}{%- endfor -%}</datalist></div>
+        <div class="re-field"><label for="Genre-{{ section.id }}">{{ s.label_type | default: 'Type de bien' | escape }}</label><select id="Genre-{{ section.id }}" name="type"><option value="">Tous les biens</option><option value="maison">Maison</option><option value="appartement">Appartement</option><option value="villa">Villa</option><option value="loft">Loft</option><option value="propriete">Propriété</option><option value="mas">Mas</option></select></div>
+        <fieldset class="re-field re-field--budget"><legend>{{ s.label_budget | default: 'Budget' | escape }}</legend>
+          <div class="re-budget">
+            <label class="visually-hidden" for="Min-{{ section.id }}">Budget minimum</label><select id="Min-{{ section.id }}" name="min" data-re-budget="min"><option value="">Min</option></select>
+            <span aria-hidden="true">—</span>
+            <label class="visually-hidden" for="Max-{{ section.id }}">Budget maximum</label><select id="Max-{{ section.id }}" name="max" data-re-budget="max"><option value="">Max</option></select>
+          </div>
+        </fieldset>
+        <button type="submit" class="re-btn re-btn--accent re-search__go">{{ s.search_label | default: 'Rechercher' | escape }} {% render 'mh-icon', name: 'search' %}</button>
+      </div>
+    </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture immobilière",
+  "tag": "div",
+  "class": "section-re-hero",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [ { "value": "home", "label": "Accueil : recherche Acheter / Louer" }, { "value": "page", "label": "Page : titre, texte et boutons" } ] },
+    { "type": "select", "id": "height", "label": "Hauteur", "default": "tall", "options": [ { "value": "tall", "label": "Grande" }, { "value": "medium", "label": "Moyenne" }, { "value": "short", "label": "Basse" } ] },
+    { "type": "select", "id": "text_side", "label": "Place du texte", "default": "middle", "options": [ { "value": "middle", "label": "Au milieu à gauche" }, { "value": "bottom", "label": "En bas à gauche" } ] },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Photo sur téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Cadrage horizontal sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Cadrage vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un lieu à vous.\nUne nouvelle histoire." },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "inline_richtext", "id": "meta", "label": "Ligne d'information (article : rubrique, temps de lecture)" },
+    { "type": "text", "id": "note", "label": "Mention", "info": "Par exemple « Biens et prix de démonstration »." },
+    { "type": "text", "id": "button_label", "label": "Bouton principal" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "header", "content": "Recherche (accueil)" },
+    { "type": "url", "id": "buy_url", "label": "Page « Acheter »" },
+    { "type": "url", "id": "rent_url", "label": "Page « Louer »" },
+    { "type": "text", "id": "tab_buy", "label": "Onglet Acheter", "default": "Acheter" },
+    { "type": "text", "id": "tab_rent", "label": "Onglet Louer", "default": "Louer" },
+    { "type": "text", "id": "label_place", "label": "Libellé du lieu", "default": "Localisation" },
+    { "type": "text", "id": "placeholder_place", "label": "Exemple de lieu", "default": "Où souhaitez-vous vivre ?" },
+    { "type": "text", "id": "label_type", "label": "Libellé du type", "default": "Type de bien" },
+    { "type": "text", "id": "label_budget", "label": "Libellé du budget", "default": "Budget" },
+    { "type": "text", "id": "search_label", "label": "Bouton de recherche", "default": "Rechercher" },
+    { "type": "text", "id": "search_title", "label": "Nom du formulaire (lecteurs d'écran)", "default": "Rechercher un bien" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "presets": [ { "name": "Ouverture immobilière" } ]
+}
+{% endschema %}

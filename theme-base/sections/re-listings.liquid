@@ -1,0 +1,118 @@
+{%- comment -%}
+  Liste de biens (Maison & Horizon) : à la une, à vendre, à louer, tous, ou similaires (fiche d'un bien). Les biens
+  viennent de l'onglet « Biens » du projet (shop.metaobjects.bien.values) : rien n'est saisi dans la section.
+  Filtres, tri, pagination et favoris : assets/horizon.js (les critères sont lus et gardés dans l'adresse).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign mode = s.mode | default: 'featured' -%}
+{%- assign layout = s.layout | default: 'grid' -%}
+{%- assign card_style = 'grid' -%}
+{%- if layout == 'home' -%}{%- assign card_style = 'home' -%}{%- elsif layout == 'mini' -%}{%- assign card_style = 'mini' -%}{%- elsif layout == 'list' -%}{%- assign card_style = 'list' -%}{%- endif -%}
+{%- assign all_biens = shop.metaobjects.bien.values -%}
+{%- assign featured_count = 0 -%}
+{%- for b in all_biens -%}{%- if b.a_la_une.value and b.disponible.value -%}{%- assign featured_count = featured_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+{%- assign limit = s.limit | default: 0 -%}
+{%- assign shown = 0 -%}
+<section class="es-section re-listings re-listings--{{ layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-listings data-mode="{{ mode }}" data-per-page="{{ s.per_page | default: 0 }}"{% if s.use_url %} data-use-url{% endif %}>
+  <div class="es-container">
+    {%- if s.heading != blank or s.note != blank or s.link_label != blank -%}
+    <header class="re-head">
+      {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-title">{{ s.heading | escape }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+      <div class="re-head__aside">
+        {%- if s.note != blank -%}<span class="re-note">{{ s.note | escape }}</span>{%- endif -%}
+        {%- if s.link_label != blank and s.link != blank -%}<a class="re-link" href="{{ s.link }}">{{ s.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    </header>
+    {%- endif -%}
+    {%- if s.show_filters and mode != 'featured' and mode != 'similar' -%}
+    <form class="re-filters" data-re-filters role="search" aria-label="{{ s.filters_label | default: 'Affiner la recherche' | escape }}">
+      <div class="re-field re-field--city"><label for="Ville-{{ section.id }}">{{ s.label_city | default: 'Ville ou secteur' }}</label><input id="Ville-{{ section.id }}" name="ville" type="text" list="Villes-{{ section.id }}" placeholder="{{ s.placeholder_city | escape }}" autocomplete="off"><datalist id="Villes-{{ section.id }}" data-re-cities></datalist></div>
+      <div class="re-field"><label for="Type-{{ section.id }}">Type de bien</label><select id="Type-{{ section.id }}" name="type"><option value="">Tous les types</option><option value="maison">Maison</option><option value="appartement">Appartement</option><option value="villa">Villa</option><option value="loft">Loft</option><option value="propriete">Propriété</option><option value="mas">Mas</option></select></div>
+      <div class="re-field"><label for="Budget-{{ section.id }}">{% if mode == 'location' %}Budget max / mois{% else %}Budget max{% endif %}</label><select id="Budget-{{ section.id }}" name="max"><option value="">Tous les budgets</option>{%- if mode == 'location' -%}{%- assign steps = '800:800 €,1000:1 000 €,1250:1 250 €,1500:1 500 €,2000:2 000 €,2500:2 500 €,3000:3 000 €' | split: ',' -%}{%- else -%}{%- assign steps = '300000:300 000 €,500000:500 000 €,750000:750 000 €,1000000:1 000 000 €,1500000:1 500 000 €,2000000:2 000 000 €,3000000:3 000 000 €' | split: ',' -%}{%- endif -%}{%- for st in steps -%}{%- assign kv = st | split: ':' -%}<option value="{{ kv[0] }}">{{ kv[1] }}</option>{%- endfor -%}</select></div>
+      {%- if mode == 'location' -%}
+      <div class="re-field"><label for="Meuble-{{ section.id }}">Meublé ?</label><select id="Meuble-{{ section.id }}" name="meuble"><option value="">Indifférent</option><option value="oui">Meublé</option><option value="non">Non meublé</option></select></div>
+      <div class="re-field"><label for="Dispo-{{ section.id }}">Disponibilité</label><select id="Dispo-{{ section.id }}" name="dispo"><option value="">Indifférent</option><option value="oui">Disponible</option></select></div>
+      {%- else -%}
+      <div class="re-field"><label for="Surface-{{ section.id }}">Surface min</label><select id="Surface-{{ section.id }}" name="surface"><option value="">Toutes</option><option value="50">50 m²</option><option value="80">80 m²</option><option value="100">100 m²</option><option value="150">150 m²</option><option value="200">200 m²</option></select></div>
+      <div class="re-field"><label for="Chambres-{{ section.id }}">Chambres</label><select id="Chambres-{{ section.id }}" name="chambres"><option value="">Toutes</option><option value="1">1 et +</option><option value="2">2 et +</option><option value="3">3 et +</option><option value="4">4 et +</option><option value="5">5 et +</option></select></div>
+      {%- endif -%}
+      <button type="submit" class="re-btn re-btn--accent" data-re-apply>{{ s.search_label | default: 'Rechercher' | escape }}</button>
+      <div class="re-filters__more">
+        <label class="re-check"><input type="checkbox" name="ext" value="1"> Avec extérieur</label>
+        <label class="re-check"><input type="checkbox" name="piscine" value="1"> Avec piscine</label>
+        {%- if mode == 'location' -%}<label class="re-check"><input type="number" name="surface" min="0" step="10" inputmode="numeric" placeholder="Surface min (m²)" aria-label="Surface minimum en m²"></label>{%- endif -%}
+        <button type="button" class="re-reset" data-re-reset>{{ s.reset_label | default: 'Effacer les filtres' | escape }}</button>
+      </div>
+    </form>
+    {%- endif -%}
+    {%- if s.show_count or s.show_sort -%}
+    <div class="re-toolbar">
+      {%- if s.show_count -%}<p class="re-count" data-re-count aria-live="polite"></p>{%- endif -%}
+      {%- if s.show_sort -%}<label class="re-sort"><span>Trier :</span><select name="tri" data-re-sort><option value="">Pertinence</option><option value="prix-asc">Prix croissant</option><option value="prix-desc">Prix décroissant</option><option value="surface-desc">Surface décroissante</option></select></label>{%- endif -%}
+    </div>
+    {%- endif -%}
+    <div class="re-grid" data-re-grid>
+      {%- for bien in all_biens -%}
+        {%- if mode == 'vente' and bien.transaction.value != 'vente' -%}{%- continue -%}{%- endif -%}
+        {%- if mode == 'location' and bien.transaction.value != 'location' -%}{%- continue -%}{%- endif -%}
+        {%- if mode == 'featured' -%}
+          {%- unless bien.disponible.value -%}{%- continue -%}{%- endunless -%}
+          {%- if featured_count > 0 and bien.a_la_une.value != true -%}{%- continue -%}{%- endif -%}
+        {%- endif -%}
+        {%- if mode == 'similar' -%}
+          {%- if metaobject == blank -%}{%- continue -%}{%- endif -%}
+          {%- if bien.system.handle == metaobject.system.handle or bien.transaction.value != metaobject.transaction.value or bien.disponible.value != true -%}{%- continue -%}{%- endif -%}
+          {%- if s.same_city and bien.ville.value != metaobject.ville.value -%}{%- continue -%}{%- endif -%}
+        {%- endif -%}
+        {%- if limit > 0 and shown >= limit -%}{%- break -%}{%- endif -%}
+        {%- assign shown = shown | plus: 1 -%}
+        {%- if shown <= 3 and layout != 'mini' -%}{%- assign ld = 'eager' -%}{%- else -%}{%- assign ld = 'lazy' -%}{%- endif -%}
+        {% render 're-card', bien: bien, style: card_style, summary: s.show_summary, loading: ld %}
+      {%- endfor -%}
+    </div>
+    {%- if shown == 0 and mode != 'similar' -%}<p class="re-empty-static">{{ s.none_text | default: 'Aucun bien n’est publié pour le moment.' | escape }}</p>{%- endif -%}
+    <div class="re-empty" data-re-empty hidden>
+      <p>{{ s.empty_text | default: 'Aucun bien ne correspond à votre recherche.' | escape }}</p>
+      <button type="button" class="re-btn re-btn--line" data-re-reset>{{ s.reset_label | default: 'Effacer les filtres' | escape }}</button>
+    </div>
+    {%- if s.per_page > 0 -%}<nav class="re-pager" data-re-pager aria-label="Pages de résultats" hidden></nav>{%- endif -%}
+    {%- if layout == 'home' and s.link_label != blank and s.link != blank -%}<p class="re-more-mobile"><a class="re-link" href="{{ s.link }}">{{ s.link_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Liste de biens",
+  "tag": "div",
+  "class": "section-re-listings",
+  "settings": [
+    { "type": "select", "id": "mode", "label": "Biens montrés", "default": "featured", "options": [ { "value": "featured", "label": "À la une (sinon les premiers disponibles)" }, { "value": "vente", "label": "À vendre" }, { "value": "location", "label": "À louer" }, { "value": "all", "label": "Tous" }, { "value": "similar", "label": "Similaires (fiche d'un bien)" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [ { "value": "home", "label": "Rangée de cartes (accueil)" }, { "value": "grid", "label": "Grille de résultats" }, { "value": "list", "label": "Liste (à côté d'une carte)" }, { "value": "mini", "label": "Petites cartes en ligne" } ] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Nos biens à la une" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "text", "id": "note", "label": "Mention", "default": "Biens et prix de démonstration", "info": "Petite mention à droite du titre (à vider pour de vrais biens)." },
+    { "type": "text", "id": "link_label", "label": "Libellé du lien", "default": "Voir tous les biens" },
+    { "type": "url", "id": "link", "label": "Lien" },
+    { "type": "range", "id": "limit", "label": "Nombre de biens (0 = tous)", "min": 0, "max": 24, "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "show_summary", "label": "Accroche sous la carte", "default": false },
+    { "type": "checkbox", "id": "same_city", "label": "Similaires : même ville seulement", "default": false },
+    { "type": "header", "content": "Recherche" },
+    { "type": "checkbox", "id": "show_filters", "label": "Barre de filtres", "default": false },
+    { "type": "checkbox", "id": "use_url", "label": "Lire et garder les critères dans l'adresse", "default": true, "info": "Les recherches de l'accueil arrivent filtrées ; le retour arrière garde les critères." },
+    { "type": "checkbox", "id": "show_count", "label": "Nombre de biens trouvés", "default": false },
+    { "type": "checkbox", "id": "show_sort", "label": "Tri", "default": false },
+    { "type": "range", "id": "per_page", "label": "Biens par page (0 = sans pagination)", "min": 0, "max": 24, "step": 1, "default": 0 },
+    { "type": "text", "id": "label_city", "label": "Libellé de la ville", "default": "Ville ou secteur" },
+    { "type": "text", "id": "placeholder_city", "label": "Exemple de ville", "default": "Ex : Aix-en-Provence, Lyon…" },
+    { "type": "text", "id": "search_label", "label": "Bouton de recherche", "default": "Rechercher" },
+    { "type": "text", "id": "reset_label", "label": "Bouton d'effacement", "default": "Effacer les filtres" },
+    { "type": "text", "id": "empty_text", "label": "Aucun résultat", "default": "Aucun bien ne correspond à votre recherche." },
+    { "type": "text", "id": "none_text", "label": "Aucun bien publié", "default": "Aucun bien n'est publié pour le moment." },
+    { "type": "text", "id": "filters_label", "label": "Nom du formulaire (lecteurs d'écran)", "default": "Affiner la recherche" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "presets": [ { "name": "Liste de biens" } ]
+}
+{% endschema %}

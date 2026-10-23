@@ -54,6 +54,7 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   heuren: { primary: "#15233E", secondary: "#D9DDE3", accent: "#C0C6D0", light: "#F7F5F0", dark: "#0D1526" }, // bleu nuit du cadran, argent brumeux, argent des index et du boîtier, ivoire
   "museau-club": { primary: "#1636C9", secondary: "#EFE6D2", accent: "#F2C14E", light: "#FBF7EE", dark: "#0B1B5E" }, // bleu cobalt des sangles, crème de la maille, jaune du socle, marine du logo
   souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
+  "maison-horizon": { primary: "#1F3A2F", secondary: "#E7DCC8", accent: "#B4553A", light: "#F7F2EA", dark: "#16241C" }, // vert profond, ivoire et terre cuite (maquettes du 23 octobre)
   alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };

@@ -693,4 +693,43 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.booking(3),
     ],
   },
+  {
+    // Issue #172 (23 octobre 2026, mission autorisée par Thomas) : agence immobilière, achat ET location, d'après les
+    // sept maquettes du dossier docs/briefs/maison-horizon. Famille Prestations de services ; les biens viennent de
+    // l'onglet « Biens » du projet (src/lib/biens.ts) et alimentent l'accueil, les listes, la carte et les fiches.
+    id: "maison-horizon",
+    name: "Maison & Horizon",
+    tagline: "Agence immobilière, vert profond, ivoire et terre cuite",
+    description: "Site d'agence immobilière d'après les sept maquettes du 23 octobre : grande photo d'ouverture et recherche Acheter / Louer, biens à la une, achat, location et carte, fiche de vente et fiche de location (galerie, visionneuse, informations financières, diagnostics, quartier, biens similaires), estimation en trois étapes, vendre et mettre en location, agence, conseils, contact, favoris, alertes et espace client. Les biens se saisissent une fois dans l'onglet « Biens ».",
+    bestFor: ["agence immobilière", "achat et location", "gestion locative", "estimation", "prestations de services"],
+    en: { tagline: "Estate agency, deep green, ivory and terracotta", description: "Estate agency website based on the seven 23 October mockups: large opening photograph with a Buy / Rent search, featured properties, buy, rent and map pages, sale and rental property pages (gallery, viewer, financial details, energy ratings, neighbourhood, similar properties), three-step valuation, sell and let pages, agency, advice, contact, favourites, alerts and client area. Properties are entered once in the “Properties” tab.", bestFor: ["estate agency", "buying and renting", "letting management", "valuation", "professional services"] },
+    fonts: { heading: "lora_n4", body: "dm_sans_n4" },
+    previewFonts: { heading: "Lora", body: "DM Sans" },
+    motion: "subtle",
+    photoMood: "terroir",
+    kinds: ["services"],
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer-right", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 2, card: 2 }, headingScale: 104, tracking: -1, pageWidth: 1320, ds: "craft", density: "airy", buttonUppercase: false }),
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: false, color_scheme: "scheme-1" },
+    settings: { editorial_profile: "horizon", conversion_profile: "none", motion_intensity: "subtle" },
+    mainProduct: { gallery_layout: "stack", sticky_bar: false, color_scheme: "scheme-1" },
+    // Ivoire (fond), vert profond (textes, bandeaux, pied), terre cuite (boutons d'action) ; une bande ivoire plus
+    // soutenue et un aplat vert. Un client garde ses couleurs, lisibles sur ivoire et en aplat.
+    palette: (k) => {
+      const ivory = k.light("#F7F2EA");
+      const band = k.mix(ivory, "#D9C9AE", 0.32);
+      const green = k.night(0.16, 0.32);
+      const accent = k.onLight(ivory);
+      return [k.scheme(ivory, green, accent), k.scheme(band, green, k.onLight(band)), k.scheme(green, ivory, k.onDark(green), 0.06), k.scheme("#FFFFFF", green, k.onLight("#FFFFFF"))];
+    },
+    home: (k) => [k.lib("re-hero", 1, { layout: "home", heading: k.hero.heading, image_asset: k.im.hero ?? k.im.lifestyle ?? "" }), k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4 }), k.faqSec(1, 4, "lines"), k.cta(3)],
+    product: (k) => [k.faqSec(1, 4, "lines")],
+    // Accueil de la planche 01 : ouverture et recherche, biens à la une, puis les sections de l'agence.
+    services: (k) => [
+      k.lib("re-hero", 1, { layout: "home", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? "", buy_url: "/pages/acheter", rent_url: "/pages/louer" }),
+      k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4, link: "/pages/acheter", note: "" }),
+      tune(k.R.servicesList(1, "cards", { withImages: false }), { layout: "thumbs", action_style: "arrow", eyebrow: "", padding_top: 48, padding_bottom: 48 }),
+      tune(k.faqSec(1, 3, "lines"), { layout: "side", style: "lines", padding_top: 40, padding_bottom: 64 }),
+      k.lib("cta-banner", 3, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
+    ],
+  },
 ];

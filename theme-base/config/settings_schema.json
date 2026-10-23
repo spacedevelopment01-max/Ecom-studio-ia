@@ -999,6 +999,10 @@
           {
             "value": "poudre",
             "label": "Poudre : rose poudré, prune et liège, serif fine, mosaïque et cadres doux"
+          },
+          {
+            "value": "horizon",
+            "label": "Horizon : ivoire, vert profond et terre cuite, titres serif, grandes photos (agence immobilière)"
           }
         ]
       },
