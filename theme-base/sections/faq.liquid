@@ -13,7 +13,7 @@
   <div class="es-container es-faq__grid">
     <header class="es-faq__head">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
       {%- if section.settings.text != blank -%}<div class="es-rte es-muted" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
       {%- if section.settings.search and section.blocks.size > 0 -%}
         <div class="es-faq__search" data-reveal="up" role="search">

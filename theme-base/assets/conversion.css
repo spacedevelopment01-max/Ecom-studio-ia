@@ -489,6 +489,11 @@ body[data-conversion="contrast"] .es-stat__value{color:var(--c-accent-ink,var(--
 @media(min-width:990px){.cv-specs--side .cv-specs__inner{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start}.cv-specs--side .cv-specs__head{text-align:left;margin:0}.cv-specs--side .cv-specs__head .cv-title--h2{text-align:left}.cv-specs--side .cv-head__text{margin:0}.cv-specs--stacked .cv-specs__groups{max-width:820px;margin:0 auto;width:100%}}
 
 /* ===== Bannière d'achat ===== */
+:is(.cv-banner,.cv-card)[style*="--cv-zoom"] .ed-image{transform:scale(var(--cv-zoom));transform-origin:var(--ed-fx,50%) var(--ed-fy,50%)}
+@media(max-width:749px){:is(.cv-banner,.cv-card)[style*="--cv-zoom"] .ed-image{transform-origin:var(--ed-fxm,var(--ed-fx,50%)) var(--ed-fym,var(--ed-fy,50%))}}
+/* L'agrandissement est un cadrage, pas une animation : il reste avec « réduire les animations » et au survol. */
+@media(hover:hover){.motion-ready [style*="--cv-zoom"] .cv-zoomable:hover img.ed-image{transform:scale(calc(var(--cv-zoom) * 1.03))}}
+@media(prefers-reduced-motion:reduce){:is(.cv-banner,.cv-card)[style*="--cv-zoom"] .ed-image{transform:scale(var(--cv-zoom))!important}}
 .cv-banner__inner{display:grid;gap:22px;border-radius:var(--cv-card-radius);overflow:hidden;background:var(--c-surface);border:var(--cv-border);box-shadow:var(--cv-shadow)}
 .cv-banner__media .ed-media{aspect-ratio:1;height:100%}.cv-banner__media img{width:100%;height:100%;object-fit:cover;display:block}
 .cv-banner__copy{padding:clamp(22px,4vw,48px);display:grid;gap:12px;align-content:center}
@@ -670,64 +675,260 @@ body[data-conversion="astral"] .es-footer__heading{font-weight:600}
 body[data-conversion="astral"] .cv-hero__media:not(:has(.ed-media)){display:none}
 @media(min-width:990px){body[data-conversion="astral"] .cv-hero--stacked .cv-hero__media{max-width:1080px;margin-inline:auto}}
 
-/* ─── Profil « itinéraire » (TRAVERSE, issue #152) ───────────────────────────────────────────────────────────────
-   Carnet de voyage éditorial : crème, pierre et olive, serif de magazine, filets fins et angles droits, colonnes
-   asymétriques (visuels décalés, titres alignés à gauche), légendes en italique et numéros d'étape. Pas d'ombre
-   portée ; un seul effet décoratif (léger zoom des photos au survol), coupé par « réduire les animations ». */
-body[data-conversion="itineraire"]{--cv-radius:2px;--cv-card-radius:2px;--cv-border:1px solid rgba(var(--c-text-rgb),.22);--cv-shadow:none;--cv-title-case:none;--cv-accent-case:none;--cv-accent-font:var(--font-heading,Georgia,serif);--cv-button-radius:2px;--cv-button-bg:var(--c-accent-fill,var(--c-accent));--cv-button-border:0;--cv-button-shadow:none}
-body[data-conversion="itineraire"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.22);--cv-button-bg:var(--c-accent-fill,var(--c-accent))}
-body[data-conversion="itineraire"] .es-section{padding-top:var(--pt,104px);padding-bottom:var(--pb,104px)}
-body[data-conversion="itineraire"] :is(.cv-title,.es-h2,.es-section-head .es-heading,.es-product__title,.cv-head .cv-title){font-weight:400;letter-spacing:-.02em;line-height:1.02;text-transform:none}
-body[data-conversion="itineraire"] .cv-title{font-size:clamp(2.3rem,5.8vw,4.6rem)}
-body[data-conversion="itineraire"] :is(.cv-accent,.es-heading em){font-family:var(--cv-accent-font);font-style:italic;font-weight:400;color:var(--c-accent-ink,var(--c-accent))}
-body[data-conversion="itineraire"] :is(.es-eyebrow,.cv-eyebrow){letter-spacing:.2em;text-transform:uppercase;font-size:.7rem;font-weight:700}
-/* Titres de section alignés à gauche, avec un filet court : la page se lit comme un carnet. */
-@media(min-width:990px){body[data-conversion="itineraire"] :is(.cv-head,.es-section-head){text-align:left;margin-left:0;max-width:760px}body[data-conversion="itineraire"] .cv-head :is(.cv-title,.cv-title--h2,.cv-text){text-align:left;margin-left:0}}
-body[data-conversion="itineraire"] :is(.cv-head,.es-section-head)::after{content:"";display:block;width:56px;height:2px;margin:18px 0 0;background:var(--c-accent-ink,var(--c-accent))}
-@media(max-width:989px){body[data-conversion="itineraire"] :is(.cv-head,.es-section-head)::after{margin-inline:auto}}
-body[data-conversion="itineraire"] :is(.cv-hero .cv-title,.cv-banner .cv-title,.cv-feature .cv-title)::after{content:none}
-/* Bannière d'ouverture asymétrique : visuel plus large que le texte, texte calé en bas. */
-@media(min-width:990px){body[data-conversion="itineraire"] .cv-banner--image-left .cv-banner__inner,body[data-conversion="itineraire"] .cv-banner--image-right .cv-banner__inner{grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr)}body[data-conversion="itineraire"] .cv-banner__copy{align-content:end;padding:clamp(32px,4vw,60px)}}
-body[data-conversion="itineraire"] .cv-banner .cv-title{font-size:clamp(2.1rem,4vw,3.6rem)}
-body[data-conversion="itineraire"] .cv-banner__media .ed-media{border-radius:0}
-/* Boutons : rectangles olive en capitales espacées ; secondaire souligné. */
-body[data-conversion="itineraire"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)){font-weight:700;letter-spacing:.14em;font-size:.8rem;border:0;box-shadow:none;transition:background-color .25s ease}
-body[data-conversion="itineraire"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)):hover{background:color-mix(in srgb,var(--c-accent) 82%,#000)}
-body[data-conversion="itineraire"][data-ds] .es-button--secondary{border-radius:2px;letter-spacing:.14em;font-size:.8rem;border:1px solid rgba(var(--c-text-rgb),.5);background:transparent}
-body[data-conversion="itineraire"] .es-header__cta{border-radius:2px}
-/* Trois temps en liste : numéros d'étape et filets. */
-body[data-conversion="itineraire"] .es-feature{border-top:1px solid rgba(var(--c-text-rgb),.22);padding-top:20px}
-body[data-conversion="itineraire"] .es-feature .es-h4{font-family:var(--font-heading,inherit);font-weight:400;font-size:1.5rem}
-body[data-conversion="itineraire"] .es-feature__num{font-family:var(--font-heading,inherit);color:var(--c-accent-ink,var(--c-accent))}
-body[data-conversion="itineraire"] .es-feature__icon{display:none}
-/* Alternance des moments du voyage : visuels décalés en hauteur sur ordinateur (carnet asymétrique), cadre fin. */
-@media(min-width:990px){body[data-conversion="itineraire"] .cv-alt__row:nth-child(even) .cv-alt__media{margin-top:72px}body[data-conversion="itineraire"] .cv-alt__row:nth-child(odd) .cv-alt__copy{padding-top:48px}}
-body[data-conversion="itineraire"] :is(.cv-alt__media,.cv-feature__media,.cv-gallery__item,.cv-ingr__visual,.es-iwt__media) .ed-media,body[data-conversion="itineraire"] .es-iwt__media img{border-radius:0}
-body[data-conversion="itineraire"] :is(.cv-alt__media,.es-iwt__media){outline:1px solid rgba(var(--c-text-rgb),.22);outline-offset:10px}
-body[data-conversion="itineraire"] .cv-gallery__caption{font-family:var(--font-heading,inherit);font-style:italic;font-size:.95rem;letter-spacing:0}
-/* Gros plans en lignes et matières : filets plutôt que cartes. */
-body[data-conversion="itineraire"] :is(.cv-card,.cv-ingr__item){background:transparent;border:0;border-top:1px solid rgba(var(--c-text-rgb),.22);border-radius:0;box-shadow:none}
-body[data-conversion="itineraire"] :is(.cv-card__media,.cv-ingr__media) .ed-media{border-radius:0}
-body[data-conversion="itineraire"] .es-faq__item{background:transparent;box-shadow:none;border:0;border-bottom:1px solid rgba(var(--c-text-rgb),.22);border-radius:0;margin:0}
-body[data-conversion="itineraire"] .es-faq__item summary{padding:22px 0;font-weight:400;font-family:var(--font-heading,inherit);font-size:1.15rem}
-body[data-conversion="itineraire"] .es-faq__item .es-faq__panel{padding:0 0 20px}
-body[data-conversion="itineraire"] .es-ctabs__tab[aria-selected="true"]{font-weight:700}
-body[data-conversion="itineraire"] .es-announcement{font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.7rem}
-body[data-conversion="itineraire"] .es-cart-count{background:var(--c-accent-ink,var(--c-accent));color:var(--c-bg)}
-body[data-conversion="itineraire"] .es-product__title{font-weight:400;letter-spacing:-.015em}
-body[data-conversion="itineraire"] .purchase__offer{box-shadow:none}
-body[data-conversion="itineraire"] .purchase__badge,body[data-conversion="itineraire"] .es-pill{background:transparent;color:var(--c-text);border:1px solid rgba(var(--c-text-rgb),.4);font-weight:600;border-radius:2px}
-body[data-conversion="itineraire"] .es-callout{background:transparent;color:var(--c-text);border-color:rgba(var(--c-text-rgb),.22);border-radius:2px}
-body[data-conversion="itineraire"] .es-callout .es-icon{color:var(--c-accent-ink,var(--c-accent))}
-body[data-conversion="itineraire"] .es-footer__heading{font-family:var(--font-heading,inherit);font-weight:400;font-size:1.2rem}
-body[data-conversion="itineraire"] :is(.cv-gallery__item,.cv-alt__media) img{transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
-body[data-conversion="itineraire"] :is(.cv-gallery__item,.cv-alt__media):hover img{transform:scale(1.025)}
+/* ─── Profil « itinéraire » (TRAVERSE, maquettes du 23 octobre) ──────────────────────────────────────────────────
+   Week-ends dehors : fonds blancs, titres condensés (police des titres, Anton pour la démonstration), grandes photos
+   de paysages en bandeaux, boutons pleins de l'accent (orange), coins presque droits, pied de page sombre (vert sapin).
+   Les capitales viennent du texte saisi, jamais d'une transformation : le marchand garde la main sur la casse. */
+body[data-conversion="itineraire"]{--cv-radius:3px;--cv-card-radius:0px;--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-shadow:none;--cv-title-case:none;--cv-accent-case:none;--cv-accent-font:var(--font-heading);--cv-button-radius:3px;--cv-button-shadow:none;--cv-button-border:0;--tv-line:rgba(var(--c-text-rgb),.14);--tv-gap:clamp(10px,1vw,14px)}
+body[data-conversion="itineraire"] [class*="color-scheme-"]{--cv-border:1px solid rgba(var(--c-text-rgb),.16);--cv-button-bg:var(--c-accent)}
+body[data-conversion="itineraire"] .es-section{padding-top:var(--pt,64px);padding-bottom:var(--pb,64px)}
+body[data-conversion="itineraire"] .es-container{max-width:calc(var(--page-width,1360px) + 48px)}
+/* Titres : condensés, serrés, sans faux gras. */
+body[data-conversion="itineraire"] :is(.cv-title,.es-h1,.es-h2,.es-section-head .es-heading,.es-product__title,.cv-card__title,.cv-alt__title,.es-faq__head .es-heading,.es-cart__hero-title,.es-footer__brand,.es-header__wordmark,.fs-notes__title){font-family:var(--font-heading);font-weight:400;letter-spacing:0;text-transform:none;line-height:.98}
+body[data-conversion="itineraire"] :is(.cv-head,.es-section-head)::after{content:none}
+body[data-conversion="itineraire"] :is(.cv-eyebrow,.es-eyebrow){letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;font-weight:700}
+body[data-conversion="itineraire"] .es-rte p{margin:0 0 .5em}body[data-conversion="itineraire"] .es-rte p:last-child{margin-bottom:0}
+/* Boutons : pleins de l'accent, texte de contraste, coins presque droits ; variante en contour sur les photos. */
+body[data-conversion="itineraire"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)){background:var(--c-accent);color:var(--c-accent-text,#fff);border:0;border-radius:var(--cv-button-radius);box-shadow:none;font-family:var(--font-body);font-weight:600;letter-spacing:0;text-transform:none;font-size:1rem;padding:14px 26px;min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:12px}
+body[data-conversion="itineraire"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)):hover{background:color-mix(in srgb,var(--c-accent) 86%,#000)}
+body[data-conversion="itineraire"][data-ds] .cv-button--outline{background:transparent!important;color:#fff!important;box-shadow:inset 0 0 0 1.5px currentColor!important}
+body[data-conversion="itineraire"][data-ds] .cv-button--outline:hover{background:rgba(255,255,255,.12)!important}
+body[data-conversion="itineraire"] .cv-button .es-icon,body[data-conversion="itineraire"] .es-button .es-icon{width:18px;height:18px}
+body[data-conversion="itineraire"][data-ds] .es-button--secondary{border-radius:var(--cv-button-radius)}
+
+/* En-tête : nom condensé à gauche, menu centré, panier à droite ; filet discret. */
+body[data-conversion="itineraire"] .es-header{border-bottom:1px solid var(--tv-line)}
+body[data-conversion="itineraire"] .es-header__wordmark{font-size:clamp(1.6rem,2.3vw,2.15rem);letter-spacing:.005em}
+body[data-conversion="itineraire"] .es-header__nav a{font-size:.88rem;font-weight:500;letter-spacing:0;text-transform:none}
+@media(min-width:990px){body[data-conversion="itineraire"] .es-header__inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}body[data-conversion="itineraire"] .es-header__nav{justify-self:center}body[data-conversion="itineraire"] .es-header__icons{justify-self:end}}
+
+/* Bandeaux photo (visuel en fond) : photo pleine largeur, voile sombre à gauche, texte blanc. */
+body[data-conversion="itineraire"] .cv-banner--background{padding-top:var(--pt,0);padding-bottom:var(--pb,0)}
+body[data-conversion="itineraire"] .cv-banner--background .es-container{max-width:none;padding:0}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__inner{min-height:var(--tv-band,420px);display:grid;align-items:center;border:0;border-radius:0;background:#14211a;overflow:hidden}
+body[data-conversion="itineraire"] .cv-banner--h-hero{--tv-band:clamp(520px,46vw,700px)}body[data-conversion="itineraire"] .cv-banner--h-tall{--tv-band:clamp(380px,34vw,520px)}body[data-conversion="itineraire"] .cv-banner--h-medium{--tv-band:clamp(300px,23vw,380px)}body[data-conversion="itineraire"] .cv-banner--h-short{--tv-band:clamp(220px,16vw,280px)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__media .ed-media{height:100%}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__media img{object-position:var(--ed-fx,50%) var(--ed-fy,50%)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__media::after{content:"";position:absolute;inset:0;pointer-events:none}
+body[data-conversion="itineraire"] .cv-banner--veil-left .cv-banner__media::after{background:linear-gradient(90deg,rgba(8,14,10,.62) 0%,rgba(8,14,10,.34) 38%,rgba(8,14,10,0) 66%)}
+body[data-conversion="itineraire"] .cv-banner--veil-full .cv-banner__media::after{background:rgba(8,14,10,.42)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__copy{position:relative;z-index:1;background:none;backdrop-filter:none;border-radius:0;margin:0;padding:clamp(28px,4vw,56px) clamp(20px,4vw,64px);max-width:min(760px,62%);color:#fff;gap:clamp(10px,1.2vw,16px)}
+body[data-conversion="itineraire"] .cv-banner--veil-none .cv-banner__copy{color:var(--c-text);background:rgba(var(--c-bg-rgb),.9)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__title{font-size:clamp(2.4rem,5.4vw,5rem);color:inherit;line-height:.96}
+body[data-conversion="itineraire"] .cv-banner--h-short .cv-banner__title,body[data-conversion="itineraire"] .cv-banner--h-medium .cv-banner__title{font-size:clamp(2.2rem,4.6vw,4.2rem)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__text{font-size:clamp(1.05rem,1.45vw,1.35rem);line-height:1.35;color:inherit}
+body[data-conversion="itineraire"] .cv-banner__text p:first-child:not(:last-child){font-family:var(--font-heading);font-size:clamp(1.4rem,2.2vw,2rem);line-height:1.05;margin-bottom:.45em}
+body[data-conversion="itineraire"] .cv-banner--rule .cv-banner__title::after{content:"";display:block;width:64px;height:5px;margin-top:.32em;background:var(--c-accent)}
+body[data-conversion="itineraire"] .cv-banner__button{margin-top:clamp(6px,1vw,14px)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-eyebrow{color:inherit;opacity:.92}
+
+/* Trois cartes de paysages : photo, titre et phrase posés en bas à gauche. */
+body[data-conversion="itineraire"] .cv-cards--overlay .es-container{max-width:none;padding-inline:var(--tv-gap)}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-cards__grid{grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:var(--tv-gap)}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card{position:relative;display:block;border:0;border-radius:0;background:#14211a;aspect-ratio:16/8.6;overflow:hidden;box-shadow:none}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__media,body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__media .ed-media{position:absolute;inset:0;height:100%;min-height:0}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__media::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(6,12,8,.66) 0%,rgba(6,12,8,.18) 52%,rgba(6,12,8,0) 72%)}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__copy{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:clamp(14px,1.6vw,22px) clamp(16px,1.6vw,22px);color:#fff;gap:4px}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__title{font-size:clamp(1.7rem,2.6vw,2.4rem);color:#fff}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__text{font-size:clamp(.95rem,1.1vw,1.08rem);color:#fff}
+body[data-conversion="itineraire"] .cv-card__cover{color:inherit;text-decoration:none}body[data-conversion="itineraire"] .cv-card__cover::after{content:"";position:absolute;inset:0}
+/* Cartes « visuel au-dessus » (carnet) : photo, titre, phrase, lien. */
+body[data-conversion="itineraire"] .cv-cards--columns .cv-cards__grid{gap:clamp(18px,2vw,28px)}
+body[data-conversion="itineraire"] .cv-cards--columns .cv-card{display:grid;grid-template-columns:1fr;border:0;border-radius:0;background:none;box-shadow:none;align-content:start}
+body[data-conversion="itineraire"] .cv-cards--columns .cv-card__media .ed-media{aspect-ratio:4/3;min-height:0}
+body[data-conversion="itineraire"] .cv-cards--columns .cv-card__copy{padding:16px 0 0;gap:8px;align-content:start}
+body[data-conversion="itineraire"] .cv-cards--columns .cv-card__title{font-family:var(--font-body);font-weight:700;font-size:1.1rem;line-height:1.3}
+body[data-conversion="itineraire"] .cv-cards--columns .cv-card__text{font-size:.95rem;color:rgba(var(--c-text-rgb),.75)}
+body[data-conversion="itineraire"] .cv-card__link{display:inline-flex;align-items:center;gap:8px;color:var(--c-accent-ink,var(--c-accent));font-weight:600;font-size:.92rem;text-decoration:none;margin-top:4px}
+body[data-conversion="itineraire"] .cv-card__link .es-icon{width:16px;height:16px}
+
+/* Essentiels : produit, texte, bouton et icônes, gros plans légendés à droite. */
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__inner{display:grid;gap:clamp(20px,2.6vw,40px);align-items:center}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__media .ed-media{aspect-ratio:1;background:#F4F3EF}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__media img{object-fit:contain}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__copy{display:grid;gap:16px;align-content:center}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-title{font-size:clamp(2.2rem,3.4vw,3.2rem);text-align:left}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__text{font-size:1.02rem;color:rgba(var(--c-text-rgb),.82)}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-button{order:3;justify-self:start;width:auto}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-points{order:4;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0 0;padding:0;list-style:none}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-point{display:grid;justify-items:center;text-align:center;gap:8px;padding:0;border:0;background:none}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-point__icon{display:grid;place-items:center;width:40px;height:40px;background:none;color:var(--c-text)}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-point__icon .es-icon{width:34px;height:34px;stroke-width:1.3}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-point__title{font-family:var(--font-body);font-size:.78rem;font-weight:500;line-height:1.25;margin:0}
+body[data-conversion="itineraire"] .cv-feature__details{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--tv-gap)}
+body[data-conversion="itineraire"] .cv-feature__detail .ed-media{aspect-ratio:4/3;border-radius:0}
+body[data-conversion="itineraire"] .cv-feature__detail:nth-child(3):last-child{grid-column:1/-1}
+body[data-conversion="itineraire"] .cv-feature__detail:nth-child(3):last-child .ed-media{aspect-ratio:8/3}
+body[data-conversion="itineraire"] .cv-feature__caption{margin:6px 0 0;font-size:.82rem;font-weight:500}
+@media(min-width:990px){body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__inner{grid-template-columns:minmax(0,.95fr) minmax(0,1fr) minmax(0,1.15fr)}}
+
+/* Carte d'achat : photo, nom, phrase, prix et sa mention, bouton ; liste cochée à droite. */
+body[data-conversion="itineraire"] .cv-hero--card .cv-hero__inner{display:grid;gap:clamp(18px,2.6vw,40px);align-items:center}
+body[data-conversion="itineraire"] .cv-hero--card .cv-hero__media .ed-media{aspect-ratio:16/11;border-radius:0}
+body[data-conversion="itineraire"] .cv-hero--card .cv-title{font-size:clamp(1.9rem,2.8vw,2.6rem);text-align:left}
+body[data-conversion="itineraire"] .cv-hero--card .cv-hero__text{font-size:1rem}
+body[data-conversion="itineraire"] .cv-hero__price{margin:6px 0 0;font-family:var(--font-heading);font-size:clamp(2rem,3vw,2.7rem);line-height:1;display:grid;gap:6px}
+body[data-conversion="itineraire"] .cv-hero__price-note{font-family:var(--font-body);font-size:.9rem;color:rgba(var(--c-text-rgb),.72)}
+body[data-conversion="itineraire"] .cv-hero--card .cv-button{width:auto;justify-self:start}
+body[data-conversion="itineraire"] .cv-hero__aside{display:grid;gap:14px;margin:0;padding:0;list-style:none}
+body[data-conversion="itineraire"] .cv-hero__aside li{display:flex;gap:14px;align-items:center;font-size:1rem}
+body[data-conversion="itineraire"] .cv-hero__aside .cv-check{width:26px;height:26px;border-radius:50%;border:1.5px solid currentColor;background:none;color:var(--c-text);display:grid;place-items:center}
+body[data-conversion="itineraire"] .cv-hero__aside .cv-check .es-icon{width:15px;height:15px}
+@media(min-width:990px){body[data-conversion="itineraire"] .cv-hero--card .cv-hero__inner{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr) minmax(0,.85fr)}body[data-conversion="itineraire"] .cv-hero--card .cv-hero__copy{display:grid;gap:10px}}
+
+/* Questions : titre à gauche, lien « toutes les questions » à droite, questions en cadres fins. */
+body[data-conversion="itineraire"] .es-faq--stacked .es-faq__head{text-align:left;max-width:none;margin-inline:0;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px}
+body[data-conversion="itineraire"] .es-faq--stacked .es-faq__list{max-width:none}
+body[data-conversion="itineraire"] .es-faq__head .es-heading{font-size:clamp(1.8rem,2.6vw,2.4rem)}
+body[data-conversion="itineraire"] .es-faq__contact{margin:0}
+body[data-conversion="itineraire"] .es-faq__contact .es-button{background:none!important;color:var(--c-text)!important;padding:0!important;min-height:0!important;border:0!important;box-shadow:none!important;font-weight:500;font-size:.9rem}
+body[data-conversion="itineraire"] .es-faq__item{background:transparent;box-shadow:none;border:1px solid var(--tv-line);border-radius:0;margin:0 0 -1px}
+body[data-conversion="itineraire"] .es-faq__item summary{padding:16px 18px;font-weight:500;font-size:.98rem;font-family:var(--font-body)}
+body[data-conversion="itineraire"] .es-faq__item .es-faq__panel{padding:0 18px 16px}
+body[data-conversion="itineraire"] .es-faq--lines .es-faq__item{border-width:0 0 1px}
+body[data-conversion="itineraire"] .es-faq--lines .es-faq__item summary{padding-inline:0}
+body[data-conversion="itineraire"] .es-faq--lines .es-faq__item .es-faq__panel{padding-inline:0}
+
+/* Pied de page vert sapin : marque et phrase, colonnes de liens, inscription, bas de page. */
+body[data-conversion="itineraire"] .es-footer{font-size:.92rem}
+body[data-conversion="itineraire"] .es-footer__brand{font-size:clamp(1.8rem,2.4vw,2.3rem);color:inherit;text-decoration:none}
+body[data-conversion="itineraire"] .es-footer__tagline{font-size:.88rem;max-width:30ch;opacity:.85}
+body[data-conversion="itineraire"] .es-footer__links{gap:10px}body[data-conversion="itineraire"] .es-footer__links a{text-decoration:none}
+body[data-conversion="itineraire"] .es-footer__links--icon a{display:inline-flex;align-items:center;gap:10px}
+body[data-conversion="itineraire"] .es-footer__links--icon .es-icon{width:22px;height:22px}
+body[data-conversion="itineraire"] .es-footer__block--newsletter .es-footer__heading{font-family:var(--font-body);font-weight:700;font-size:.95rem;letter-spacing:0;text-transform:none}
+body[data-conversion="itineraire"] .es-footer .es-inline-field{border:1px solid rgba(255,255,255,.55);border-radius:3px;display:flex;align-items:center;padding:2px 2px 2px 12px;background:transparent}
+body[data-conversion="itineraire"] .es-footer .es-inline-field input{background:transparent;border:0;color:inherit;flex:1;min-width:0;padding:10px 0}
+body[data-conversion="itineraire"] .es-footer .es-inline-field input::placeholder{color:rgba(255,255,255,.7)}
+body[data-conversion="itineraire"] .es-footer .es-inline-field .es-button{background:transparent!important;min-height:40px!important;padding:0 12px!important;font-size:0!important;color:inherit!important}
+body[data-conversion="itineraire"] .es-footer .es-inline-field .es-button::after{content:"→";font-size:1.25rem;line-height:1}
+body[data-conversion="itineraire"] .es-footer__bottom{font-size:.8rem;opacity:.85}
+body[data-conversion="itineraire"] .es-footer__legal{display:flex;flex-wrap:wrap;gap:20px;list-style:none;margin:0;padding:0}
+body[data-conversion="itineraire"] .es-footer__legal a{color:inherit;text-decoration:none}
+
+/* Fiche produit : miniatures à gauche de la grande photo, titre condensé, prix, quantité et ajout pleine largeur. */
+body[data-conversion="itineraire"] .es-product__title{font-size:clamp(2.6rem,4.4vw,4.2rem);line-height:.95}
+body[data-conversion="itineraire"] .es-product .es-media-frame,body[data-conversion="itineraire"] .es-product__thumb{background:#F4F3EF}
+body[data-conversion="itineraire"] .es-product__img{object-fit:contain}
+@media(min-width:990px){body[data-conversion="itineraire"] .es-product--carousel .es-product__gallery{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:start}body[data-conversion="itineraire"] .es-product--carousel .es-product__thumbs{grid-row:1;grid-column:1;flex-direction:column;margin:0;overflow:visible}body[data-conversion="itineraire"] .es-product--carousel .es-product__track{grid-row:1;grid-column:2}body[data-conversion="itineraire"] .es-product--carousel .es-product__thumb{width:76px;height:76px}}
+body[data-conversion="itineraire"] .es-product__thumb{border-radius:0;border:1px solid transparent}body[data-conversion="itineraire"] .es-product__thumb.is-active{border-color:var(--c-text)}
+body[data-conversion="itineraire"] .es-product [data-purchase] .es-button,body[data-conversion="itineraire"] .es-product .es-buy-buttons .es-button{width:100%;text-transform:uppercase;letter-spacing:.02em}
+body[data-conversion="itineraire"] .es-product__tiles{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+body[data-conversion="itineraire"] .es-product__tile .ed-media{aspect-ratio:1;background:#F4F3EF}
+body[data-conversion="itineraire"] .es-product__tile span{display:block;margin-top:6px;font-size:.78rem;text-align:center}
+/* Galerie de gros plans et de scènes : grille serrée, sans légende. */
+body[data-conversion="itineraire"] .cv-gallery .cv-gallery__item .ed-media{border-radius:0}
+
+/* Boutique : compte et tri sur une ligne, carte sur fond gris clair, marque, nom, prix, bouton. */
+body[data-conversion="itineraire"] .es-collection__count{margin:0}
+body[data-conversion="itineraire"] .es-card__media{background:#F4F3EF;border-radius:0}
+body[data-conversion="itineraire"] .es-card__img{object-fit:contain}
+body[data-conversion="itineraire"] .es-card__vendor{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+body[data-conversion="itineraire"] .es-card__title{font-family:var(--font-body);font-weight:600;font-size:.98rem}
+body[data-conversion="itineraire"] .es-card__button{margin-top:10px;width:100%;text-transform:uppercase;letter-spacing:.02em;font-size:.88rem!important;min-height:44px!important}
+
+/* Panier : bandeau photo avec le titre, tableau, total à droite, panier vide avec pictogramme. */
+body[data-conversion="itineraire"] .es-cart__hero{position:relative;min-height:clamp(220px,22vw,320px);display:grid;align-items:end;overflow:hidden;background:#14211a}
+body[data-conversion="itineraire"] .es-cart__hero .ed-media{position:absolute;inset:0}body[data-conversion="itineraire"] .es-cart__hero .ed-media img{width:100%;height:100%;object-fit:cover;object-position:var(--ed-fx,50%) var(--ed-fy,50%)}
+body[data-conversion="itineraire"] .es-cart__hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,14,10,.6),rgba(8,14,10,.1) 70%)}
+body[data-conversion="itineraire"] .es-cart__hero-copy{position:relative;z-index:1;padding-block:clamp(24px,4vw,48px)}
+body[data-conversion="itineraire"] .es-cart__hero-title{color:#fff;font-size:clamp(2.6rem,5.4vw,5rem);margin:0}
+body[data-conversion="itineraire"] .es-cart__hero-title::after{content:"";display:block;width:64px;height:5px;margin-top:.3em;background:var(--c-accent)}
+body[data-conversion="itineraire"] .es-cart__head{display:grid;grid-template-columns:minmax(0,1fr) 160px 120px;gap:16px;font-size:.82rem;font-weight:600;padding-bottom:10px;border-bottom:1px solid var(--tv-line);margin:0}
+body[data-conversion="itineraire"] .es-cart__note{margin:0}
+body[data-conversion="itineraire"] .es-cart__empty{text-align:center;justify-items:center}
+body[data-conversion="itineraire"] .es-cart__empty-icon .es-icon{width:76px;height:76px;stroke-width:1}
+body[data-conversion="itineraire"] .es-cart__empty .es-button{text-transform:uppercase;letter-spacing:.02em}
+body[data-conversion="itineraire"] .es-drawer__checkout{text-transform:uppercase;letter-spacing:.02em}
+
+/* Alternance (article, notre approche) : grand numéro, titre condensé. */
+body[data-conversion="itineraire"] .cv-alt__row .cv-eyebrow{font-family:var(--font-heading);font-size:2.4rem;letter-spacing:0;line-height:1;font-weight:400}
+body[data-conversion="itineraire"] .cv-alt__title{font-size:clamp(1.8rem,2.6vw,2.4rem)}
+body[data-conversion="itineraire"] .cv-alt__media .ed-media{border-radius:0}
+body[data-conversion="itineraire"] .cv-alt__row{scroll-margin-top:90px}
+
+/* Contact : formulaire à gauche, photo à droite. */
+body[data-conversion="itineraire"] .es-contact--bare .es-contact__grid{grid-template-columns:minmax(0,1fr)}
+@media(min-width:990px){body[data-conversion="itineraire"] .es-contact--image .es-contact__grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}body[data-conversion="itineraire"] .es-contact--image:not(.es-contact--bare) .es-contact__grid{grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr)}}
+body[data-conversion="itineraire"] .es-contact__form{background:none;border:0;padding:0;border-radius:0}
+body[data-conversion="itineraire"] .es-contact__form label{font-weight:500;font-size:.88rem}
+body[data-conversion="itineraire"] .es-contact__form input:not([type=checkbox]),body[data-conversion="itineraire"] .es-contact__form .es-textarea{border-radius:2px;border:1px solid rgba(var(--c-text-rgb),.22)}
+body[data-conversion="itineraire"] .es-contact__image .ed-media{height:100%;min-height:320px}
+body[data-conversion="itineraire"] .es-contact__status:empty{display:none}
+
+/* Notes à compléter : titre, texte et encadré crème « À compléter ». */
+body[data-conversion="itineraire"] .fs-notes{list-style:none;margin:0;padding:0;display:grid;gap:clamp(18px,2vw,26px)}
+@media(min-width:750px){body[data-conversion="itineraire"] .fs-notes--2{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(28px,4vw,64px)}}
+body[data-conversion="itineraire"] .fs-notes__item{display:grid;gap:12px;align-content:start}
+body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__item{background:#F9F4EC;padding:16px 20px}
+body[data-conversion="itineraire"] .fs-notes__title{display:flex;align-items:center;gap:12px;font-size:1.25rem;margin:0}
+body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__title{font-size:1.05rem;text-transform:uppercase;letter-spacing:.01em}
+body[data-conversion="itineraire"] .fs-notes__box{display:flex;gap:14px;align-items:flex-start;background:#F9F4EC;padding:16px 18px;border-radius:2px}
+body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__box{padding:4px 0 0;background:none}
+body[data-conversion="itineraire"] .fs-notes__box .fs-icon{width:22px;height:22px;flex:none}
+body[data-conversion="itineraire"] .fs-notes__box p{margin:0;display:grid;gap:2px;font-size:.9rem}body[data-conversion="itineraire"] .fs-notes__box strong{font-weight:700}
+
+/* Téléphone : en-tête compact, bandeaux plus courts, cartes en bandes, essentiels empilés, carte d'achat en deux temps. */
+@media(max-width:749px){
+  body[data-conversion="itineraire"] .cv-banner--h-hero{--tv-band:min(128vw,560px)}body[data-conversion="itineraire"] .cv-banner--h-tall{--tv-band:300px}body[data-conversion="itineraire"] .cv-banner--h-medium{--tv-band:240px}body[data-conversion="itineraire"] .cv-banner--h-short{--tv-band:200px}
+  body[data-conversion="itineraire"] .cv-banner--background .cv-banner__copy{max-width:100%;padding:24px 20px}
+  body[data-conversion="itineraire"] .cv-banner--mv-top .cv-banner__inner{align-items:start}body[data-conversion="itineraire"] .cv-banner--mv-bottom .cv-banner__inner{align-items:end}
+  body[data-conversion="itineraire"] .cv-banner--mv-top .cv-banner__media::after{background:linear-gradient(180deg,rgba(8,14,10,.62) 0%,rgba(8,14,10,.2) 45%,rgba(8,14,10,0) 70%)}
+  body[data-conversion="itineraire"] .cv-banner--background .cv-banner__title{font-size:clamp(2.1rem,10.5vw,3rem)}
+  body[data-conversion="itineraire"] .cv-banner--background .cv-banner__text{font-size:1rem}
+  body[data-conversion="itineraire"] .cv-cards--overlay .cv-cards__grid{grid-template-columns:1fr;gap:8px}
+  body[data-conversion="itineraire"] .cv-cards--overlay .cv-card{aspect-ratio:auto;min-height:104px}
+  body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__media::after{background:linear-gradient(90deg,rgba(6,12,8,.6),rgba(6,12,8,.05) 80%)}
+  body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__copy{position:relative;top:auto;bottom:auto;padding:22px 18px}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__inner{display:flex;flex-direction:column;align-items:stretch}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__copy{display:contents}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-title{order:1}body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__text{order:2}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__media{order:3;max-width:300px;margin-inline:auto;width:100%}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-button{order:4;align-self:center}
+  body[data-conversion="itineraire"] .cv-feature--essentials .cv-points{order:5;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:18px}
+  body[data-conversion="itineraire"] .cv-feature__details{order:6}
+  body[data-conversion="itineraire"] .cv-hero--card .cv-hero__inner{grid-template-columns:120px minmax(0,1fr);align-items:start;gap:16px}
+  body[data-conversion="itineraire"] .cv-hero--card .cv-hero__aside{grid-column:1/-1}
+  body[data-conversion="itineraire"] .cv-hero--card .cv-button{width:100%}
+  body[data-conversion="itineraire"] .es-header__wordmark{font-size:1.5rem}
+  body[data-conversion="itineraire"] .es-cart__head{display:none}
+  body[data-conversion="itineraire"] .es-product__tiles{gap:8px}
+  body[data-conversion="itineraire"] .es-footer__legal{gap:14px}
+}
+/* Photos à format fixe dans une grille avec légende : la hauteur suit le format (sinon elles débordent sur la légende). */
+body[data-conversion="itineraire"] :is(.cv-feature__detail,.es-product__tile,.cv-cards--columns .cv-card__media,.cv-hero--card .cv-hero__media,.cv-feature--essentials .cv-feature__media) .ed-media{height:auto}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-points{border:0;background:none;box-shadow:none;border-radius:0}
+body[data-conversion="itineraire"] .es-faq__contact .es-button{text-transform:none!important;letter-spacing:0!important}
+body[data-conversion="itineraire"] .es-faq--stacked .es-faq__grid{gap:clamp(18px,2vw,28px)}
+body[data-conversion="itineraire"] .es-footer .es-inline-field{height:auto}
+body[data-conversion="itineraire"] .es-footer .es-inline-field input{height:auto;padding:12px 0;font-size:.92rem}
+body[data-conversion="itineraire"] .es-footer .es-inline-field .es-button{display:inline-flex!important;align-items:center;justify-content:center;width:44px;flex:none}
+body[data-conversion="itineraire"] .es-footer .es-inline-field .es-button::after{font-size:1.3rem!important;font-family:var(--font-body);opacity:1!important;position:static!important;background:none!important;width:auto!important;height:auto!important;transform:none!important;line-height:1!important;color:currentColor}
+@media(max-width:989px){body[data-conversion="itineraire"] .es-header__inner{display:flex;align-items:center;gap:6px}body[data-conversion="itineraire"] .es-header__logo{order:-1;margin-right:auto}body[data-conversion="itineraire"] .es-header__burger{order:3}body[data-conversion="itineraire"] .es-header__icons{order:2}}
+@media(max-width:749px){body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__text br,body[data-conversion="itineraire"] .cv-hero--card .cv-hero__text br{display:none}}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__title{font-size:clamp(1.9rem,3.2vw,3rem)}
+body[data-conversion="itineraire"] .cv-cards--overlay .cv-card__text{font-size:clamp(.98rem,1.3vw,1.2rem)}
+body[data-conversion="itineraire"] .cv-banner--background .cv-banner__text{font-size:clamp(1.05rem,1.6vw,1.5rem)}
+body[data-conversion="itineraire"][data-ds] :is(.cv-button,.es-button:not(.es-button--secondary):not(.es-link-button)){min-height:clamp(48px,3.9vw,58px);font-size:clamp(1rem,1.15vw,1.12rem);padding-inline:clamp(22px,2vw,30px)}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__media img{object-fit:cover}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__media .ed-media{aspect-ratio:4/4.3}
+body[data-conversion="itineraire"] :is(.cv-hero--card,.cv-feature--essentials) .cv-button{width:auto!important;justify-self:start}
+body[data-conversion="itineraire"] .es-faq__item summary{padding:12px 18px}
+body[data-conversion="itineraire"] .es-footer{padding-top:clamp(36px,4vw,56px)}
+body[data-conversion="itineraire"] .es-header__nav a{font-size:.95rem}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-feature__text{font-size:clamp(1rem,1.15vw,1.12rem)}
+body[data-conversion="itineraire"] .cv-feature--essentials .cv-point__title{font-size:.84rem}
+body[data-conversion="itineraire"] .cv-feature__caption{font-size:.88rem}
+body[data-conversion="itineraire"] .cv-hero--card .cv-hero__text,body[data-conversion="itineraire"] .cv-hero__aside li{font-size:clamp(1rem,1.15vw,1.1rem)}
+body[data-conversion="itineraire"] .es-faq__item summary{font-size:clamp(.98rem,1.1vw,1.06rem)}
+body[data-conversion="itineraire"] .es-faq__contact .es-button{font-size:.95rem!important}
+body[data-conversion="itineraire"] .es-faq__item{padding:0}
+body[data-conversion="itineraire"] [data-cart-count][hidden]{display:none!important}
+body[data-conversion="itineraire"] .es-footer .es-inline-field{flex-direction:row!important;padding:0 0 0 14px}
+body[data-conversion="itineraire"] .es-footer .es-inline-field input{padding:12px 0!important;margin:0}
+@media(max-width:749px){body[data-conversion="itineraire"] .es-footer__block--links:first-child .es-footer__links{display:flex;flex-wrap:wrap;gap:10px 22px}body[data-conversion="itineraire"] .cv-hero--card .cv-hero__inner{grid-template-columns:140px minmax(0,1fr)}body[data-conversion="itineraire"] .cv-hero--card .cv-hero__media .ed-media{aspect-ratio:1}body[data-conversion="itineraire"] .es-footer__grid{gap:24px}}
+@media(max-width:749px){body[data-conversion="itineraire"] .cv-hero--card .cv-button{white-space:nowrap;padding-inline:16px!important;font-size:.98rem!important;gap:8px}}
 @media (prefers-reduced-motion:reduce){body[data-conversion="itineraire"] :is(.cv-gallery__item,.cv-alt__media) img{transition:none;transform:none!important}}
-/* Ouverture sans visuel : la bannière prend la largeur de lecture, sans colonne vide. */
-body[data-conversion="itineraire"] .cv-banner__media:not(:has(.ed-media)){display:none}
-@media(min-width:990px){body[data-conversion="itineraire"] .cv-banner__inner:not(:has(.cv-banner__media .ed-media)){grid-template-columns:minmax(0,1fr);max-width:880px}}
-/* Fiche en galerie empilée sur ordinateur : toutes les vues défilent déjà, la rangée de miniatures ferait doublon. */
-@media(min-width:990px){body[data-conversion="itineraire"] .es-product--stack .es-product__thumbs{display:none}}
 
 /* ─── Profil « club » (MUSEAU CLUB, issue #158 ; boutique spécialisée depuis la décision du 21 octobre) : crème et bleu
    cobalt, titres épais et serrés, sur-titres en pastille, photos et cartes aux coins arrondis, boutons en pastille. */

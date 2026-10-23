@@ -371,62 +371,58 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "traverse",
     name: "Traverse",
-    tagline: "Carnet de voyage, pierre et olive",
-    description: "Boutique spécialisée pour un objet de voyage, en carnet éditorial : bannière asymétrique visuel à gauche, trois temps du voyage en liste, alternance quotidien / départ / destination, repères interactifs sur le produit, matières à côté d'un gros plan, inventaire de ce qu'on emporte, achat encadré, FAQ en lignes et inscription illustrée. Crème, pierre et olive, serif de magazine, en-tête sur deux rangées et pied en carte.",
+    tagline: "Week-ends dehors : grandes photos, titres condensés, orange",
+    description: "Boutique spécialisée pour un sac de voyage, d'après les maquettes du 23 octobre : grandes photos de paysages, titres condensés en capitales, boutons orange, pied vert sapin. Ouverture plein cadre, trois cartes de paysages, essentiels du produit avec icônes et gros plans, bandeau « changez de décor », carte d'achat, questions et rappel final.",
     bestFor: ["boutique spécialisée", "bagagerie", "voyage", "sport et plein air", "accessoire du quotidien"],
-    en: { tagline: "Travel notebook, stone and olive", description: "Specialty store for a travel object, as an editorial notebook: asymmetric banner with the visual on the left, three stages of travel as a list, everyday / departure / destination alternation, interactive markers on the product, materials beside a close-up, an inventory of what you carry, a framed purchase, line FAQ and an illustrated sign-up. Cream, stone and olive, magazine serif, a two-row header and a card footer.", bestFor: ["specialty store", "luggage", "travel", "sport and outdoors", "everyday accessory"] },
-    fonts: { heading: "playfair_display_n4", body: "chivo_n4" },
-    previewFonts: { heading: "Playfair Display", body: "Chivo" },
+    en: { tagline: "Weekends outdoors: large photos, condensed headings, orange", description: "Specialty store for a travel bag, from the 23 October mock-ups: large landscape photos, condensed capital headings, orange buttons, fir-green footer. Full-bleed opening, three landscape cards, product essentials with icons and close-ups, \"change of scenery\" band, purchase card, questions and closing call.", bestFor: ["specialty store", "luggage", "travel", "sport and outdoors", "everyday accessory"] },
+    fonts: { heading: "anton_n4", body: "inter_n4" },
+    previewFonts: { heading: "Anton", body: "Inter" },
     motion: "subtle",
     photoMood: "terroir",
     kinds: ["specialty"],
-    // En-tête « Deux rangées avec offre » (nom en tête de page, menu dessous, encarts dans le sous-menu) et pied « Carte
-    // d'assistance » : dispositions qu'aucun autre thème de la famille n'utilise.
-    look: look({ headerLayout: "two-rows", shape: "bar", icons: "plain", menu: "cards", footer: "card", ann: "static", card: "minimal", button: "solid", radius: { button: 2, card: 2 }, headingCase: "none", tracking: -1, headingScale: 108, pageWidth: 1400, density: "airy", buttonUppercase: true }),
+    // Maquettes TRAVERSE du 23 octobre (docs/design/traverse-reference-20261023) : nom condensé à gauche, menu au centre,
+    // panier à droite ; pied vert sapin, marque à gauche et colonnes.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 3, card: 0 }, headingCase: "none", tracking: 0, headingScale: 100, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: false }),
     settings: { conversion_profile: "itineraire", editorial_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { mega_menu: "columns-promo", mobile_promo: "top", show_cart: true },
-    // Galerie empilée sur ordinateur (les vues défilent à côté de l'achat qui reste visible), cadre naturel : rien de coupé.
-    mainProduct: { gallery_layout: "stack", gallery_ratio: "natural", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    // Fiche : miniatures à gauche de la grande photo, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Blanc, encre presque noire, vert sapin (tiré du sombre de la marque), gris très clair des fonds produit, crème des
+    // encadrés « à compléter » ; boutons pleins de l'accent tel quel (orange pour la démonstration), texte blanc ou encre
+    // selon le contraste.
     palette: (k) => {
-      const cream = k.light("#F5F1E8");
-      const olive = k.night(0.16, 0.28);
-      const stone = k.mix(cream, "#8A8270", 0.22);
-      return [k.scheme(cream, olive, k.onLight(cream)), k.scheme(olive, cream, k.onDark(olive), 0.06), k.filled(k.p.primary), k.scheme(stone, olive, k.onLight(stone))];
+      const ink = "#171717";
+      const forest = k.night(0.12, 0.5);
+      const lum = (hex: string) => { const c = hex.replace("#", ""); const v = [0, 2, 4].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+      const onAccent = 1.05 / (lum(k.p.accent) + 0.05) >= 2.6 ? "#FFFFFF" : ink;
+      const own = (sc: ReturnType<typeof k.scheme>) => ({ ...sc, accent: k.p.accent, accent_text: onAccent });
+      return [own(k.scheme("#FFFFFF", ink, k.p.accent)), own(k.scheme(forest, "#FFFFFF", k.p.accent, 0.08)), own(k.scheme("#F4F3EF", ink, k.p.accent)), own(k.scheme("#F9F4EC", ink, k.p.accent))];
     },
-    // Accueil : carnet de voyage. Bannière asymétrique, trois temps en liste, alternance des moments du voyage, repères
-    // sur le produit, matières à côté d'un gros plan, ce qu'on emporte, achat encadré, questions et inscription illustrée.
+    // Accueil de la maquette : ouverture plein cadre, trois cartes de paysages, essentiels (produit, icônes, gros plans),
+    // bandeau « changez de décor », carte d'achat avec liste cochée, questions, rappel final.
     home: (k) => [
-      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, layout: "image-left", heading_tag: "h1", animation: "fade", price_text: "", price_note: "" }),
-      k.lib("features-grid", 4, { layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left" }),
-      ((moments) => k.lib("cv-alternating", 1, { layout: "alternate", ratio: "portrait" }, { hide: moments.length < 2, blocks: moments.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.lib("cv-hotspots", 1, { image_asset: k.im.packshot ?? k.im.cutout, layout: "side", ratio: "square" }),
-      k.lib("cv-ingredients", 4, { layout: "split", image_asset: k.im.detail1 ?? "", ratio: "square" }),
-      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
-      k.lib("featured-purchase", 1, { purchase_style: "outlined", image_fit: "contain" }),
-      k.faqSec(1, 5, "lines"),
-      ...k.either(k.lib("newsletter-media", 2, { layout: "left", image_asset: k.im.banner ?? "", legal: k.privacy }, { hide: !k.im.banner }), k.newsletter(2)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "overlay", heading: "", text: "", padding_top: 12, padding_bottom: 12 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      ((details) => k.lib("cv-feature", 1, { layout: "essentials", image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, padding_top: 24, padding_bottom: 40 }, { blocks: details.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+      k.lib("cv-hero", 1, { layout: "card", image_ratio: "square", image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, rating_text: "", guarantee_text: "", padding_top: 32, padding_bottom: 32 }),
+      k.faqSec(1, 4, "cards"),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "short", veil: "left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.banner) }),
     ],
-    // Fiche : galerie empilée et achat, gros plans en lignes, onglets soulignés, préparation du départ en cartes, galerie
-    // des lieux en grille, engagements en liste et questions.
+    // Fiche de la maquette : galerie et achat, bandeau « les prochains départs », gros plans et scènes en grille, questions.
     product: (k) => [
-      ((shots) => k.lib("cv-cards", 4, { layout: "rows" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.cutout].filter((f): f is string => !!f)),
-      k.lib("content-tabs", 1, { tab_style: "underline", image_position: "left" }),
-      k.lib("cv-steps", 1, { layout: "cards" }),
-      ((places) => k.lib("cv-gallery", 2, { layout: "grid", columns: 3, ratio: "portrait" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2].filter((f): f is string => !!f)),
-      k.lib("fs-commitments", 4, { layout: "list" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", title_rule: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "", button_label: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
+      ((shots) => k.lib("cv-gallery", 1, { layout: "grid", columns: 3, ratio: "square", heading: "", text: "", ai_label: "", padding_top: 8, padding_bottom: 8 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.faqSec(1, 5, "lines"),
     ],
-    // Site de services (repli) : bannière visuel à droite, trois temps en liste, prestations, alternance de réalisations,
-    // méthode, image et texte, questions et prise de contact.
+    // Site de services (repli) : même grammaire, ouverture plein cadre, trois cartes, prestations, méthode, questions et contact.
     services: (k) => [
-      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle, layout: "image-right", heading_tag: "h1" }),
-      k.lib("features-grid", 4, { layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "overlay", heading: "", text: "", padding_top: 12, padding_bottom: 12 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.R.servicesList(1, "list"),
-      ((moments) => k.lib("cv-alternating", 1, { layout: "alternate", ratio: "portrait" }, { hide: moments.length < 2, blocks: moments.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.R.method(2, "howto-v"),
-      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
-      k.faqSec(1, 5, "lines"),
-      k.R.booking(2),
+      k.R.method(1, "howto-h"),
+      k.faqSec(1, 5, "cards"),
+      k.R.booking(1),
     ],
   },
   {

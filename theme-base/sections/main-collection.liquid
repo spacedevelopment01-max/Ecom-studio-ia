@@ -1,9 +1,13 @@
 <section class="es-section es-collection color-{{ section.settings.color_scheme }}" style="--pt: 48px; --pb: 96px;">
   <div class="es-container">
+    {%- if section.settings.show_header != false -%}
     <header class="es-collection__head">
       <h1 class="es-heading es-h1" data-reveal="lines">{{ collection.title }}</h1>
       {%- if collection.description != blank -%}<div class="es-rte es-muted es-lead">{{ collection.description }}</div>{%- endif -%}
     </header>
+    {%- else -%}
+    <h1 class="visually-hidden">{{ collection.title }}</h1>
+    {%- endif -%}
     {%- paginate collection.products by section.settings.per_page -%}
       <form class="es-filters" data-filters action="{{ collection.url }}" method="get">
         {%- if section.settings.enable_filters -%}
@@ -36,10 +40,10 @@
         {%- endif -%}
         <noscript><button type="submit" class="es-button es-button--small">{{ 'collections.apply' | t }}</button></noscript>
       </form>
-      <p class="es-small es-muted">{{ 'collections.product_count' | t: count: collection.products_count }}</p>
+      {%- if section.settings.show_count != false -%}<p class="es-small es-muted es-collection__count">{{ 'collections.product_count' | t: count: collection.products_count }}</p>{%- endif -%}
       <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">
         {%- for product in collection.products -%}
-          {% render 'product-card', product_card: product, show_secondary: true, ratio: 'portrait' %}
+          {% render 'product-card', product_card: product, show_secondary: true, ratio: section.settings.card_ratio, show_vendor: section.settings.card_vendor, button_label: section.settings.card_button_label %}
         {%- else -%}
           <p class="es-empty">{{ 'collections.empty' | t }}</p>
         {%- endfor -%}
@@ -57,6 +61,11 @@
     { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
     { "type": "checkbox", "id": "enable_filters", "label": "Filtres", "default": true },
     { "type": "checkbox", "id": "enable_sorting", "label": "Tri", "default": true },
+    { "type": "checkbox", "id": "show_header", "label": "Titre et description de la collection", "info": "Décochez quand un bandeau au-dessus porte déjà le titre (le titre reste lu par les lecteurs d'écran).", "default": true },
+    { "type": "checkbox", "id": "show_count", "label": "Nombre de produits", "default": true },
+    { "type": "select", "id": "card_ratio", "label": "Format des photos des cartes", "default": "portrait", "options": [ { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" } ] },
+    { "type": "checkbox", "id": "card_vendor", "label": "Marque au-dessus du nom", "default": false },
+    { "type": "text", "id": "card_button_label", "label": "Bouton sous chaque carte", "info": "Ex. « Voir le produit ». Vide : pas de bouton." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
   ]
 }

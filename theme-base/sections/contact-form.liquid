@@ -1,5 +1,20 @@
-<section class="es-section es-contact color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+{%- liquid
+  comment
+    Photo à côté du formulaire et messages dans la page (maquette TRAVERSE) : champs vérifiés avant l'envoi, envoi en
+    cours, réussite seulement après la réponse, échec annoncé. Sans photo ni titre, le formulaire occupe la colonne.
+  endcomment
+  assign has_image = false
+  if section.settings.image != blank or section.settings.image_asset != blank
+    assign has_image = true
+  endif
+  assign has_intro = false
+  if section.settings.heading != blank or section.settings.text != blank or section.settings.email != blank or section.settings.hours != blank or section.settings.response != blank
+    assign has_intro = true
+  endif
+-%}
+<section class="es-section es-contact{% if has_image %} es-contact--image{% endif %}{% unless has_intro %} es-contact--bare{% endunless %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;"{% if section.settings.inline_states %} data-ed-contact{% if request.host == 'apercu' and shop.es_demo_contact %} data-preview-test="true"{% endif %} data-msg-required="{{ 'contact.errors.required' | t | escape }}" data-msg-email="{{ 'contact.errors.email' | t | escape }}" data-msg-choice="{{ 'contact.errors.choice' | t | escape }}" data-msg-consent="{{ 'contact.errors.consent' | t | escape }}" data-msg-sending="{{ 'contact.sending' | t | escape }}" data-msg-failed="{{ 'contact.failed' | t | escape }}" data-msg-success="{{ 'contact.success' | t | escape }}"{% endif %}>
   <div class="es-container es-contact__grid">
+    {%- if has_intro -%}
     <header class="es-contact__intro">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
       <h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>
@@ -12,18 +27,21 @@
         </ul>
       {%- endif -%}
     </header>
+    {%- endif -%}
     {%- form 'contact', id: 'ContactForm', class: 'es-form es-contact__form' -%}
       {%- if form.posted_successfully? -%}<p class="es-form-success" role="status">{{ 'contact.success' | t }}</p>{%- endif -%}
       {%- if form.errors -%}<div class="es-form-error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
       <div class="es-form__row">
-        <label>{{ 'contact.name' | t }}<input type="text" name="contact[name]" autocomplete="name" value="{{ form.name }}"></label>
-        <label>{{ 'contact.email' | t }} *<input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"></label>
+        <label>{{ 'contact.name' | t }}{% if section.settings.require_name %} *{% endif %}<input type="text" name="contact[name]" autocomplete="name" value="{{ form.name }}"{% if section.settings.require_name %} required{% endif %}{% if section.settings.name_placeholder != blank %} placeholder="{{ section.settings.name_placeholder | escape }}"{% endif %}></label>
+        <label>{{ 'contact.email' | t }} *<input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"{% if section.settings.email_placeholder != blank %} placeholder="{{ section.settings.email_placeholder | escape }}"{% endif %}></label>
       </div>
-      <label>{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>
-      <label>{{ 'contact.message' | t }}<textarea name="contact[body]" rows="6" class="es-textarea">{{ form.body }}</textarea></label>
-      <button type="submit" class="es-button">{{ 'contact.send' | t }}</button>
+      {%- if section.settings.show_phone != false -%}<label>{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>{%- endif -%}
+      <label>{{ 'contact.message' | t }}{% if section.settings.require_message %} *{% endif %}<textarea name="contact[body]" rows="6" class="es-textarea"{% if section.settings.require_message %} required{% endif %}{% if section.settings.message_placeholder != blank %} placeholder="{{ section.settings.message_placeholder | escape }}"{% endif %}>{{ form.body }}</textarea></label>
+      <button type="submit" class="es-button">{% if section.settings.submit_label != blank %}{{ section.settings.submit_label | escape }}{% else %}{{ 'contact.send' | t }}{% endif %}</button>
+      {%- if section.settings.inline_states -%}<p class="es-small es-contact__status" data-contact-status aria-live="polite"></p>{%- endif -%}
       {%- if request.host == 'apercu' and section.settings.preview_note -%}<p class="es-small es-muted es-form-note">{{ 'contact.preview_demo' | t }}</p>{%- endif -%}
     {%- endform -%}
+    {%- if has_image -%}<div class="es-contact__image">{% render 'ed-media', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.image_alt %}</div>{%- endif -%}
   </div>
 </section>
 
@@ -54,6 +72,19 @@
     { "type": "text", "id": "hours", "label": "Horaires", "info": "Facultatif. Ex. : du lundi au vendredi, 9 h – 18 h." },
     { "type": "checkbox", "id": "preview_note", "label": "Dans l'aperçu du studio, indiquer que l'envoi n'est pas actif", "default": false },
     { "type": "text", "id": "response", "label": "Délai de réponse", "info": "Facultatif. Indiquez uniquement un délai que vous tenez réellement." },
+    { "type": "header", "content": "Formulaire" },
+    { "type": "checkbox", "id": "show_phone", "label": "Champ téléphone", "default": true },
+    { "type": "checkbox", "id": "require_name", "label": "Nom obligatoire", "default": false },
+    { "type": "checkbox", "id": "require_message", "label": "Message obligatoire", "default": false },
+    { "type": "text", "id": "name_placeholder", "label": "Exemple dans le champ nom", "info": "Ex. « Votre nom »." },
+    { "type": "text", "id": "email_placeholder", "label": "Exemple dans le champ e-mail", "info": "Ex. « votre@email.com »." },
+    { "type": "text", "id": "message_placeholder", "label": "Exemple dans le champ message", "info": "Ex. « Votre message »." },
+    { "type": "text", "id": "submit_label", "label": "Texte du bouton", "info": "Vide : « Envoyer »." },
+    { "type": "checkbox", "id": "inline_states", "label": "Messages dans la page", "info": "Champs vérifiés avant l'envoi, envoi en cours, réussite ou échec affichés sous le bouton.", "default": false },
+    { "type": "header", "content": "Photo" },
+    { "type": "image_picker", "id": "image", "label": "Photo à côté du formulaire" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 48 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }

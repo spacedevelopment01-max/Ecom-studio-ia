@@ -24,6 +24,7 @@ import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
+import { traverseProject, TRAVERSE_MEDIA } from "./traverse-fixtures";
 import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
@@ -70,7 +71,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   },
   traverse: {
     tagline: "Un sac, trois temps du voyage.", summary: "Sac à dos de voyage vert olive : grande poche frontale zippée, sangles latérales à boucle noire, poignée sur le dessus, bretelles noires.", story: "TRAVERSE suit la même personne du bureau du matin au quai de départ, puis jusqu'à la destination.", positioning: "Un sac de voyage pour le quotidien, le départ et la destination.", price: null,
-    media: Object.fromEntries(KIT_MEDIA.traverse.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+    media: Object.fromEntries(TRAVERSE_MEDIA.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   // HEUREN et ALCÔVE (issue #155, e-commerce mono-produit) : identité utilisée seulement pour la preuve d'adaptation.
   heuren: {
@@ -140,7 +141,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   // NOCTIL et TRAVERSE (issue #152) : même parcours que SILLON, kits suivis dans public/theme-assets/<id>/.
-  if ((id === "noctil" || id === "traverse") && !options.direction) {
+  // TRAVERSE (dossier du 23 octobre) : refaite d'après les maquettes, neuf photos séparées dans public/theme-assets/traverse/.
+  if (id === "traverse" && !options.direction) {
+    const c = await traverseProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
+  }
+  if (id === "noctil" && !options.direction) {
     const c = await kitProject(userId, id);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }

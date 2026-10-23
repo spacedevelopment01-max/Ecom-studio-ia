@@ -1,7 +1,8 @@
 {%- comment -%}
   Ouverture « conversion » : grand visuel produit, ligne de note (toujours identifiée comme note fictive si elle ne vient
   pas d'une application d'avis), titre en deux temps (gras + accent manuscrit), bénéfices cochés, grand bouton,
-  ligne de garantie. Mobile : visuel puis texte ; ordinateur : texte et visuel côte à côte.
+  ligne de garantie. Mobile : visuel puis texte ; ordinateur : texte et visuel côte à côte. « Carte produit »
+  (maquettes TRAVERSE) : photo, nom, phrase, prix et sa mention, bouton, puis la liste cochée dans une colonne à droite.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -26,16 +27,22 @@
       {%- endif -%}
       <{{ s.heading_tag }} class="es-heading cv-title"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag }}>
       {%- if s.text != blank -%}<div class="es-rte cv-hero__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
-      {%- if checks.size > 0 -%}
+      {%- if s.price_text != blank -%}<p class="cv-hero__price"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.price_text | escape }}{% if s.price_note != blank %}<small class="cv-hero__price-note">{{ s.price_note | escape }}</small>{% endif %}</p>{%- endif -%}
+      {%- if checks.size > 0 and s.layout != 'card' -%}
         <ul class="cv-checks" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
           {%- for block in checks -%}<li {{ block.shopify_attributes }}><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
         </ul>
       {%- endif -%}
       {%- if s.button_label != blank -%}
-        <a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}</a>
+        <a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>
       {%- endif -%}
       {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
     </div>
+    {%- if checks.size > 0 and s.layout == 'card' -%}
+      <ul class="cv-checks cv-hero__aside" role="list"{% render 'cv-reveal', animation: section.settings.animation %}>
+        {%- for block in checks -%}<li {{ block.shopify_attributes }}><span class="cv-check" aria-hidden="true">{% render 'icon', name: 'check' %}</span><span>{{ block.settings.text | escape }}</span></li>{%- endfor -%}
+      </ul>
+    {%- endif -%}
   </div>
 </section>
 
@@ -52,7 +59,7 @@
     { "type": "select", "id": "image_ratio", "label": "Format du visuel", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "wide", "label": "Large" }, { "value": "tall", "label": "Haut" } ] },
     { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "image-right", "options": [ { "value": "image-right", "label": "Texte à gauche, visuel à droite" }, { "value": "image-left", "label": "Visuel à gauche, texte à droite" }, { "value": "stacked", "label": "Visuel au-dessus du texte" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "image-right", "options": [ { "value": "image-right", "label": "Texte à gauche, visuel à droite" }, { "value": "image-left", "label": "Visuel à gauche, texte à droite" }, { "value": "stacked", "label": "Visuel au-dessus du texte" } , { "value": "card", "label": "Carte produit : photo, prix, liste cochée à droite" } ] },
     { "type": "text", "id": "rating_text", "label": "Ligne de note", "info": "Ex. « 4,8/5 · 6 avis de démonstration ». Vide : aucune note." },
     { "type": "range", "id": "rating_percent", "label": "Étoiles remplies", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 100 },
     { "type": "text", "id": "rating_note", "label": "Mention à côté de la note", "info": "Vide : « Note fictive ». Retirez-la seulement avec une vraie application d'avis." },
@@ -60,8 +67,11 @@
     { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent", "info": "Second temps du titre, en style manuscrit et couleur d'accent." },
     { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1", "options": [ { "value": "h1", "label": "H1 (accueil)" }, { "value": "h2", "label": "H2" } ] },
     { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "price_text", "label": "Prix affiché", "info": "Texte libre, ex. « 129 € ». Vide : aucun prix." },
+    { "type": "text", "id": "price_note", "label": "Mention sous le prix", "info": "Ex. « Prix de démonstration »." },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false },
     { "type": "text", "id": "guarantee_text", "label": "Ligne de garantie", "info": "Uniquement une politique réelle, ou un exemple identifié." },
     { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
     { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },

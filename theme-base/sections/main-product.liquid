@@ -167,6 +167,20 @@
                   </div>
                 </div>
               {%- endif -%}
+            {%- when 'tiles' -%}
+              {%- comment -%} Trois vignettes légendées sous l'achat (maquette TRAVERSE) : gros plans du produit. {%- endcomment -%}
+              <ul class="es-product__tiles" role="list" {{ block.shopify_attributes }}>
+                {%- for i in (1..3) -%}
+                  {%- liquid
+                    assign t_image = block.settings['image_' | append: i]
+                    assign t_pick = block.settings['picker_' | append: i]
+                    assign t_caption = block.settings['caption_' | append: i]
+                  -%}
+                  {%- if t_image != blank or t_pick != blank -%}
+                    <li class="es-product__tile">{% render 'ed-media', image: t_pick, asset: t_image, alt: t_caption %}{% if t_caption != blank %}<span>{{ t_caption | escape }}</span>{% endif %}</li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>
             {%- when 'callout' -%}
               {%- if block.settings.text != blank -%}
                 <div class="es-callout" {{ block.shopify_attributes }}>{% render 'icon', name: block.settings.icon %}<div class="es-rte">{{ block.settings.text }}</div></div>
@@ -361,6 +375,17 @@
     { "type": "siblings", "name": "Autres saveurs ou modèles", "limit": 1, "settings": [
       { "type": "collection", "id": "collection", "label": "Collection des variantes (ex. toutes les saveurs)" },
       { "type": "text", "id": "heading", "label": "Titre", "default": "Choisissez votre saveur" }
+    ] },
+    { "type": "tiles", "name": "Vignettes légendées", "limit": 1, "settings": [
+      { "type": "image_picker", "id": "picker_1", "label": "Vignette 1" },
+      { "type": "text", "id": "image_1", "label": "Vignette 1 (fichier du thème)" },
+      { "type": "text", "id": "caption_1", "label": "Légende 1" },
+      { "type": "image_picker", "id": "picker_2", "label": "Vignette 2" },
+      { "type": "text", "id": "image_2", "label": "Vignette 2 (fichier du thème)" },
+      { "type": "text", "id": "caption_2", "label": "Légende 2" },
+      { "type": "image_picker", "id": "picker_3", "label": "Vignette 3" },
+      { "type": "text", "id": "image_3", "label": "Vignette 3 (fichier du thème)" },
+      { "type": "text", "id": "caption_3", "label": "Légende 3" }
     ] },
     { "type": "callout", "name": "Encart d'information", "settings": [
       { "type": "select", "id": "icon", "label": "Pictogramme", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "shield", "label": "Protection" }, { "value": "truck", "label": "Livraison" }, { "value": "leaf", "label": "Nature" }, { "value": "gift", "label": "Cadeau" }, { "value": "globe", "label": "Monde" }, { "value": "heart", "label": "Cœur" } ] },

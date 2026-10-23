@@ -1,7 +1,8 @@
 {%- comment -%}
 Engagements (e-commerce : engagements de la marque ; services : engagements de service) et garanties et livraison
   (boutique spécialisée) : éléments iconés avec leur preuve (lien vers le document qui les établit). Grille, liste
-  numérotée, ou image et liste.
+  numérotée, ou image et liste. « Notes à compléter » (maquettes TRAVERSE : livraison, retours, pages légales) : titre,
+  texte et encadré « À compléter » par rubrique, sur une ou deux colonnes.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -19,6 +20,20 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
     {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
     <div class="fs-commit__body{% if s.layout == 'split' %} fs-split{% endif %}">
       {%- if s.layout == 'split' -%}<div class="fs-split__media"{% render 'fs-reveal', effect: 'curtain' %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>{%- endif -%}
+      {%- if s.layout == 'notes' -%}
+      <ol class="fs-notes fs-notes--{{ s.columns | default: '1' }}" role="list">
+        {%- for block in section.blocks -%}
+          <li class="fs-notes__item" {{ block.shopify_attributes }}>
+            <h3 class="fs-notes__title">{% if block.settings.icon != 'none' %}<span class="fs-commit__icon">{% render 'fs-icon', name: block.settings.icon %}</span>{% endif %}<span>{{ block.settings.title | escape }}</span></h3>
+            {%- if block.settings.text != blank -%}<div class="fs-item__text">{{ block.settings.text }}</div>{%- endif -%}
+            {%- if block.settings.box_title != blank or block.settings.box_text != blank -%}
+              <div class="fs-notes__box">{% render 'fs-icon', name: 'info' %}<p>{% if block.settings.box_title != blank %}<strong>{{ block.settings.box_title | escape }}</strong>{% endif %}{% if block.settings.box_text != blank %}<span>{{ block.settings.box_text | escape }}</span>{% endif %}</p></div>
+            {%- endif -%}
+            {%- if block.settings.proof_label != blank and block.settings.proof_link != blank -%}<a class="fs-link" href="{{ block.settings.proof_link }}">{{ block.settings.proof_label | escape }}</a>{%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ol>
+      {%- else -%}
       <ol class="fs-commit__list fs-commit__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 4 | at_least: 2 }}{% endif %}" role="list">
         {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
           <li class="fs-commit__item{% if s.layout == 'grid' %} {{ cards }}{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
@@ -31,6 +46,7 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
           </li>
         {%- endfor -%}
       </ol>
+      {%- endif -%}
     </div>
     {%- if s.note != blank -%}<p class="fs-note">{{ s.note | escape }}</p>{%- endif -%}
   </div>
@@ -110,9 +126,29 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
         {
           "value": "aside",
           "label": "Aide au choix : titre et liens"
+        },
+        {
+          "value": "notes",
+          "label": "Notes à compléter (livraison, pages légales)"
         }
       ],
       "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Colonnes des notes",
+      "options": [
+        {
+          "value": "1",
+          "label": "Une colonne"
+        },
+        {
+          "value": "2",
+          "label": "Deux colonnes"
+        }
+      ],
+      "default": "1"
     },
     {
       "type": "image_picker",
@@ -251,6 +287,14 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
           "label": "Icône",
           "options": [
             {
+              "value": "none",
+              "label": "Aucune"
+            },
+            {
+              "value": "info",
+              "label": "Information"
+            },
+            {
               "value": "check",
               "label": "Coche"
             },
@@ -332,6 +376,18 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
           "type": "url",
           "id": "proof_link",
           "label": "Lien de la preuve"
+        },
+        {
+          "type": "text",
+          "id": "box_title",
+          "label": "Titre de l'encadré",
+          "info": "Ex. « À compléter »."
+        },
+        {
+          "type": "text",
+          "id": "box_text",
+          "label": "Texte de l'encadré",
+          "info": "Ex. « Informations à ajouter ici. »"
         }
       ]
     }
@@ -344,6 +400,6 @@ Engagements (e-commerce : engagements de la marque ; services : engagements de s
       }
     }
   ],
-  "max_blocks": 8
+  "max_blocks": 12
 }
 {% endschema %}

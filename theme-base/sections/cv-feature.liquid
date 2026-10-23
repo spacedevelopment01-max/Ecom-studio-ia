@@ -1,24 +1,26 @@
 {%- comment -%}
   Visuel et argumentaire : image du produit, titre en deux temps, texte, pastilles cochées ou carte de points détaillés
   (icône, titre, texte), bouton et ligne de garantie. Mobile : visuel puis texte ; ordinateur : deux colonnes ou empilé.
+  « Essentiels » (maquettes TRAVERSE) : produit, titre, bouton et rangée d'icônes, puis une grille de gros plans légendés.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
   assign pills = section.blocks | where: 'type', 'pill'
   assign points = section.blocks | where: 'type', 'point'
+  assign details = section.blocks | where: 'type', 'detail'
 -%}
 <section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-feature cv-feature--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   <div class="es-container cv-feature__inner">
     {%- if s.heading != blank and s.layout == 'stacked' -%}
       <header class="cv-head">
-        <h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        <h2 class="es-heading cv-title cv-title--h2"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
         {%- if s.text != blank -%}<div class="es-rte cv-head__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       </header>
     {%- endif -%}
     <div class="cv-feature__media"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
     <div class="cv-feature__copy">
       {%- if s.heading != blank and s.layout != 'stacked' -%}
-        <h2 class="es-heading cv-title cv-title--h2 cv-title--left"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
+        <h2 class="es-heading cv-title cv-title--h2 cv-title--left"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</h2>
         {%- if s.text != blank -%}<div class="es-rte cv-feature__text"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.text }}</div>{%- endif -%}
       {%- endif -%}
       {%- if pills.size > 0 -%}
@@ -36,9 +38,19 @@
           {%- endfor -%}
         </ul>
       {%- endif -%}
-      {%- if s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}</a>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
       {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
     </div>
+    {%- if details.size > 0 -%}
+      <ul class="cv-feature__details" role="list" style="--n:{{ details.size }}"{% render 'cv-reveal', animation: section.settings.animation %}>
+        {%- for block in details -%}
+          <li class="cv-feature__detail" {{ block.shopify_attributes }}>
+            {% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}
+            {%- if block.settings.caption != blank -%}<p class="cv-feature__caption">{{ block.settings.caption | escape }}</p>{%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
   </div>
 </section>
 
@@ -54,12 +66,13 @@
     { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
     { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "stacked", "label": "Titre, visuel, puis points" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "stacked", "label": "Titre, visuel, puis points" }, { "value": "essentials", "label": "Produit, texte et icônes, gros plans à droite" } ] },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Pourquoi ce produit" },
     { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "button_label", "label": "Bouton" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false },
     { "type": "text", "id": "guarantee_text", "label": "Ligne de garantie", "info": "Uniquement une politique réelle, ou un exemple identifié." },
     { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
     { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
@@ -70,12 +83,21 @@
   "blocks": [
     { "type": "pill", "name": "Pastille cochée", "settings": [ { "type": "text", "id": "text", "label": "Texte", "default": "Un point fort" } ] },
     { "type": "point", "name": "Point détaillé", "settings": [
-      { "type": "select", "id": "icon", "label": "Icône", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "clock", "label": "Horloge" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "bolt", "label": "Éclair" }, { "value": "sound", "label": "Son" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" } ] },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "check", "options": [ { "value": "check", "label": "Coche" }, { "value": "clock", "label": "Horloge" }, { "value": "sparkle", "label": "Étincelle" }, { "value": "heart", "label": "Cœur" }, { "value": "shield", "label": "Bouclier" }, { "value": "bolt", "label": "Éclair" }, { "value": "sound", "label": "Son" }, { "value": "leaf", "label": "Feuille" }, { "value": "drop", "label": "Goutte" }, { "value": "hand", "label": "Main" }, { "value": "zip", "label": "Fermeture éclair" }, { "value": "buckle", "label": "Boucle" }, { "value": "handle", "label": "Poignée" }, { "value": "backpack", "label": "Sac à dos" }, { "value": "parcel", "label": "Colis" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" } ] },
       { "type": "text", "id": "title", "label": "Titre", "default": "Un point détaillé" },
       { "type": "richtext", "id": "text", "label": "Texte" }
+    ] },
+    { "type": "detail", "name": "Gros plan légendé", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Visuel" },
+      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
+      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
+      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
+      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "text", "id": "caption", "label": "Légende" }
     ] }
   ],
-  "max_blocks": 8,
+  "max_blocks": 14,
   "presets": [ { "name": "Visuel et argumentaire", "blocks": [ { "type": "pill" }, { "type": "pill" }, { "type": "pill" } ] } ]
 }
 {% endschema %}

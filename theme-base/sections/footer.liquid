@@ -125,9 +125,9 @@
                 {%- if block.settings.heading != blank -%}<h2 class="es-footer__heading">{{ block.settings.heading }}</h2>{%- endif -%}
                 <div class="es-rte">{{ block.settings.text }}</div>
               {%- when 'links' -%}
-                <h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>
-                <ul role="list" class="es-footer__links">
-                  {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+                {%- if block.settings.hide_heading -%}<h2 class="visually-hidden">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>{%- else -%}<h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>{%- endif -%}
+                <ul role="list" class="es-footer__links{% if block.settings.icon != blank and block.settings.icon != 'none' %} es-footer__links--icon{% endif %}">
+                  {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{% if block.settings.icon != blank and block.settings.icon != 'none' %}{% render 'icon', name: block.settings.icon %}{% endif %}{{ link.title }}</a></li>{%- endfor -%}
                 </ul>
               {%- when 'newsletter' -%}
                 <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
@@ -165,7 +165,12 @@
     {%- endif -%}
 
     <div class="es-footer__bottom">
-      <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+      <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}{% if section.settings.bottom_text != blank %}. {{ section.settings.bottom_text | escape }}{% endif %}</p>
+      {%- if section.settings.bottom_menu != blank and linklists[section.settings.bottom_menu].links.size > 0 -%}
+        <ul role="list" class="es-footer__policies es-footer__legal">
+          {%- for link in linklists[section.settings.bottom_menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+        </ul>
+      {%- endif -%}
       {%- if section.settings.show_policies -%}
         <ul role="list" class="es-footer__policies">
           {%- for policy in shop.policies -%}
@@ -239,6 +244,8 @@
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },
+    { "type": "text", "id": "bottom_text", "label": "Mention après le copyright", "info": "Ex. « Tous droits réservés. »" },
+    { "type": "link_list", "id": "bottom_menu", "label": "Liens du bas de page", "info": "Ex. mentions légales, CGV, confidentialité." },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
   ],
   "blocks": [
@@ -248,7 +255,9 @@
     ] },
     { "type": "links", "name": "Liens", "settings": [
       { "type": "text", "id": "heading", "label": "Titre" },
-      { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" }
+      { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+      { "type": "checkbox", "id": "hide_heading", "label": "Masquer le titre (lu par les lecteurs d'écran)", "default": false },
+      { "type": "select", "id": "icon", "label": "Icône devant chaque lien", "default": "none", "options": [ { "value": "none", "label": "Aucune" }, { "value": "parcel", "label": "Colis" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" } ] }
     ] },
     { "type": "newsletter", "name": "Lettre d'information", "limit": 1, "settings": [
       { "type": "text", "id": "heading", "label": "Titre", "default": "Restons en contact" },
