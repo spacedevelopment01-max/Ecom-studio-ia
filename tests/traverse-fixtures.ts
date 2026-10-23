@@ -185,7 +185,7 @@ function curateTraverse(k: Kit) {
       { type: "row", settings: { ...img("montagne.webp"), anchor: "preparer", eyebrow: "02", heading: "Préparer l'essentiel.", heading_accent: "", text: p("Billets, hébergement, itinéraire : les éléments clés pour un voyage serein et sans stress."), button_label: "", button_link: "" } },
       { type: "row", settings: { ...img("train.webp"), anchor: "trajet", eyebrow: "03", heading: "Profiter du trajet.", heading_accent: "", text: p("Observer, se détendre, s'inspirer : le trajet fait partie du voyage."), button_label: "", button_link: "" } },
     ])],
-    ["suite", section("cv-banner", { ...img("lac.webp"), layout: "background", band_height: "short", image_zoom: 200, veil: "left", mobile_valign: "center", focus_x: 0, focus_y: 30, mobile_focus_x: 0, mobile_focus_y: 30, eyebrow: "", heading: "Envie de plus d'inspirations ?", heading_accent: "", text: p("Explorez tous nos articles et idées de voyages."), price_text: "", price_note: "", button_label: "Voir le journal", button_link: "/pages/en-route", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 })],
+    ["suite", section("cv-banner", { ...img("paysage.webp"), layout: "background", band_height: "short", image_zoom: 140, veil: "left", mobile_valign: "center", focus_x: 50, focus_y: 22, mobile_focus_x: 40, mobile_focus_y: 30, eyebrow: "", heading: "Envie de plus d'inspirations ?", heading_accent: "", text: p("Explorez tous nos articles et idées de voyages."), price_text: "", price_note: "", button_label: "Voir le journal", button_link: "/pages/en-route", button_style: "solid", button_arrow: true, note: "", animation: "fade", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 })],
   ]);
   page("notre-approche", "Notre approche", { title: "Notre approche | TRAVERSE", description: "Moins attendre. Plus partir. Une vision simple du voyage, le temps d'un week-end." }, [
     ["hero", hero("NOTRE APPROCHE.", p("Moins attendre. Plus partir."), { focus_x: 40 })],
@@ -206,7 +206,7 @@ function curateTraverse(k: Kit) {
   ]);
   page("contact", "Contact", { title: "Contact | TRAVERSE", description: "Une question, une suggestion ou simplement envie d'échanger ? Écrivez-nous. Dans cette démonstration, aucun message n'est envoyé." }, [
     ["hero", hero("On prépare le départ\nensemble.", p("Une question, une suggestion ou simplement envie d'échanger ? Écrivez-nous, nous vous répondrons dès que possible."), { focus_x: 60 })],
-    ["form", section("contact-form", { ...img("train.webp"), eyebrow: "", heading: "", text: "", email: "", hours: "", response: "", show_phone: false, require_name: true, submit_label: "Envoyer le message", inline_states: true, preview_note: false, color_scheme: "scheme-1", padding_top: 48, padding_bottom: 72 })],
+    ["form", section("contact-form", { ...img("train.webp"), eyebrow: "", heading: "", text: "", email: "", hours: "", response: "", show_phone: false, require_name: true, require_message: true, name_placeholder: "Votre nom", email_placeholder: "votre@email.com", message_placeholder: "Votre message", submit_label: "Envoyer le message", inline_states: true, preview_note: false, color_scheme: "scheme-1", padding_top: 48, padding_bottom: 72 })],
   ]);
   page("livraison-retours", "Livraison et retours", { title: "Livraison et retours | TRAVERSE", description: "Toutes les informations pratiques au même endroit : livraison, retours et échanges (modèle à compléter)." }, [
     ["hero", hero("Livraison et retours.", p("Toutes les informations pratiques<br>au même endroit."), { focus_x: 45 })],
@@ -249,7 +249,7 @@ function curateTraverse(k: Kit) {
     { title: "Confidentialité", url: "/pages/confidentialite" },
   ] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: false, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
+  header.settings = { ...header.settings, menu: "main-menu", layout: "nav-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: false, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
   header.blocks = {}; header.block_order = [];
   spec.groups.header.sections = { header };
   spec.groups.header.order = ["header"];

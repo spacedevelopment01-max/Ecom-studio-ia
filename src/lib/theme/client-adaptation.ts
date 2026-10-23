@@ -299,6 +299,13 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         // Une page dont la section titrée (H1) reste masquée faute de contenu authentique (galerie de projets d'Atelier Rive
         // sans réalisation du client) garde son titre : le titre de page, éteint pour éviter un double H1, se rallume.
         const h1 = (sid: string) => sections[sid].settings.heading_tag === 'h1';
+        // Une page intérieure dont le titre de page est éteint par la composition (TRAVERSE : le bandeau porte le titre)
+        // garde le H1 de référence sur ce bandeau resté visible ; sinon la page n'aurait aucun titre principal.
+        const titleOff = layout.order.some(sid => sections[sid].type === 'main-page' && sections[sid].settings.show_title === false);
+        if (titleOff && !layout.order.some(sid => !sections[sid].disabled && h1(sid))) {
+            const carrier = layout.order.find(sid => !sections[sid].disabled && layout.sections[sid].settings.heading_tag === 'h1');
+            if (carrier) sections[carrier].settings.heading_tag = 'h1';
+        }
         if (layout.order.some(sid => sections[sid].disabled && h1(sid)) && !layout.order.some(sid => !sections[sid].disabled && h1(sid)))
             for (const sid of layout.order)
                 if (sections[sid].type === 'main-page' && sections[sid].settings.show_title === false)

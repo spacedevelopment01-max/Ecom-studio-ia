@@ -110,6 +110,8 @@ function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string
     });
   }
   // Détail de projet (Atelier Rive) : seules les photos de détail reçoivent une photo du projet, pas les parties du récit.
+  // Essentiels (TRAVERSE) : seuls les gros plans légendés reçoivent une photo du projet, pas les icônes.
+  if (type === "cv-feature") outBlocks = outBlocks.map((b) => (b.type === "detail" && !b.settings?.image_asset ? { type: b.type, settings: { ...(b.settings ?? {}), image_asset: nextPhoto() ?? "" } } : b));
   if (type === "fs-case") outBlocks = outBlocks.map((b) => (b.type === "photo" && !b.settings?.image_asset ? { type: b.type, settings: { ...(b.settings ?? {}), image_asset: nextPhoto() ?? "" } } : b));
   return { settings: out, blocks: outBlocks.length ? outBlocks : blocks };
 }

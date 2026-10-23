@@ -861,13 +861,15 @@ body[data-conversion="itineraire"] .es-contact__status:empty{display:none}
 body[data-conversion="itineraire"] .fs-notes{list-style:none;margin:0;padding:0;display:grid;gap:clamp(18px,2vw,26px)}
 @media(min-width:750px){body[data-conversion="itineraire"] .fs-notes--2{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(28px,4vw,64px)}}
 body[data-conversion="itineraire"] .fs-notes__item{display:grid;gap:12px;align-content:start}
-body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__item{background:#F9F4EC;padding:16px 20px}
-body[data-conversion="itineraire"] .fs-notes__title{display:flex;align-items:center;gap:12px;font-size:1.25rem;margin:0}
-body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__title{font-size:1.05rem;text-transform:uppercase;letter-spacing:.01em}
+body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__item{background:#F9F4EC;padding:clamp(20px,2.2vw,30px) clamp(20px,2.6vw,36px);gap:14px}
+body[data-conversion="itineraire"] .fs-notes__title{display:flex;align-items:center;gap:14px;font-size:clamp(1.35rem,1.7vw,1.6rem);margin:0}
+body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__item{gap:18px}body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__item>p,body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__item>div:not(.fs-notes__box){font-size:1rem}
+@media(min-width:750px){body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__item+.fs-notes__item{border-left:1px solid rgba(23,23,23,.14);padding-left:clamp(28px,4vw,64px)}body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__box{padding:22px 24px}}
+body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__title{font-size:clamp(1.3rem,1.9vw,1.75rem);text-transform:uppercase;letter-spacing:.01em}
 body[data-conversion="itineraire"] .fs-notes__box{display:flex;gap:14px;align-items:flex-start;background:#F9F4EC;padding:16px 18px;border-radius:2px}
 body[data-conversion="itineraire"] .fs-notes--1 .fs-notes__box{padding:4px 0 0;background:none}
-body[data-conversion="itineraire"] .fs-notes__box .fs-icon{width:22px;height:22px;flex:none}
-body[data-conversion="itineraire"] .fs-notes__box p{margin:0;display:grid;gap:2px;font-size:.9rem}body[data-conversion="itineraire"] .fs-notes__box strong{font-weight:700}
+body[data-conversion="itineraire"] .fs-notes__box .fs-icon{width:28px;height:28px;flex:none;margin-top:2px}
+body[data-conversion="itineraire"] .fs-notes__box p{margin:0;display:grid;gap:4px;font-size:1rem}body[data-conversion="itineraire"] .fs-notes__box p strong{font-size:1.08rem}body[data-conversion="itineraire"] .fs-notes__box p span{color:var(--c-muted,rgba(23,23,23,.72))}body[data-conversion="itineraire"] .fs-notes__box strong{font-weight:700}
 
 /* Téléphone : en-tête compact, bandeaux plus courts, cartes en bandes, essentiels empilés, carte d'achat en deux temps. */
 @media(max-width:749px){
@@ -974,7 +976,7 @@ body[data-conversion="itineraire"] .es-cart--hero .es-drawer__checkout{min-heigh
 body[data-conversion="itineraire"] .es-cart__continue{display:block;text-align:center;margin-top:12px;text-decoration:underline}
 body[data-conversion="itineraire"] .es-contact .es-form__row{grid-template-columns:minmax(0,1fr)}
 body[data-conversion="itineraire"] .fs-notes__title .fs-commit__icon{color:var(--c-text);background:none;width:auto;height:auto}
-body[data-conversion="itineraire"] .fs-notes__title .fs-icon{width:28px;height:28px}
+body[data-conversion="itineraire"] .fs-notes__title .fs-icon{width:28px;height:28px}body[data-conversion="itineraire"] .fs-notes--2 .fs-notes__title .fs-icon{width:36px;height:36px;stroke-width:1.4}
 body[data-conversion="itineraire"] .cv-alt__row .cv-eyebrow{color:var(--c-text)}
 @media(max-width:749px){body[data-conversion="itineraire"] .es-card__button{font-size:.8rem!important;padding-inline:8px!important;white-space:nowrap;letter-spacing:0}body[data-conversion="itineraire"] .es-card__info{padding:12px}}
 @media (prefers-reduced-motion:reduce){body[data-conversion="itineraire"] :is(.cv-gallery__item,.cv-alt__media) img{transition:none;transform:none!important}}

@@ -382,7 +382,7 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     kinds: ["specialty"],
     // Maquettes TRAVERSE du 23 octobre (docs/design/traverse-reference-20261023) : nom condensé à gauche, menu au centre,
     // panier à droite ; pied vert sapin, marque à gauche et colonnes.
-    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 3, card: 0 }, headingCase: "none", tracking: 0, headingScale: 100, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    look: look({ headerLayout: "nav-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 3, card: 0 }, headingCase: "none", tracking: 0, headingScale: 100, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: false }),
     settings: { conversion_profile: "itineraire", editorial_profile: "none", motion_intensity: "subtle" },
     headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
     // Fiche : miniatures à gauche de la grande photo, zoom, barre d'achat sur téléphone.
@@ -415,12 +415,14 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       ((shots) => k.lib("cv-gallery", 1, { layout: "grid", columns: 3, ratio: "square", heading: "", text: "", ai_label: "", padding_top: 8, padding_bottom: 8 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.faqSec(1, 5, "lines"),
     ],
-    // Site de services (repli) : même grammaire, ouverture plein cadre, trois cartes, prestations, méthode, questions et contact.
+    // Site de services (repli) : même grammaire, ouverture plein cadre, trois cartes, prestations, réalisations alternées,
+    // bandeau photo, questions et contact.
     services: (k) => [
       k.lib("cv-banner", 2, { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
       ((shots) => k.lib("cv-cards", 1, { layout: "overlay", heading: "", text: "", padding_top: 12, padding_bottom: 12 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.R.servicesList(1, "list"),
-      k.R.method(1, "howto-h"),
+      ((rows) => k.lib("cv-alternating", 1, { layout: "image-right", ratio: "landscape" }, { hide: rows.length < 1, blocks: rows.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.lifestyle2, k.im.detail1].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
       k.faqSec(1, 5, "cards"),
       k.R.booking(1),
     ],

@@ -5,8 +5,6 @@
       <h1 class="es-heading es-h1" data-reveal="lines">{{ collection.title }}</h1>
       {%- if collection.description != blank -%}<div class="es-rte es-muted es-lead">{{ collection.description }}</div>{%- endif -%}
     </header>
-    {%- else -%}
-    <h1 class="visually-hidden">{{ collection.title }}</h1>
     {%- endif -%}
     {%- paginate collection.products by section.settings.per_page -%}
       <div class="es-collection__bar">
@@ -63,7 +61,7 @@
     { "type": "range", "id": "columns", "min": 2, "max": 4, "step": 1, "label": "Colonnes", "default": 3 },
     { "type": "checkbox", "id": "enable_filters", "label": "Filtres", "default": true },
     { "type": "checkbox", "id": "enable_sorting", "label": "Tri", "default": true },
-    { "type": "checkbox", "id": "show_header", "label": "Titre et description de la collection", "info": "Décochez quand un bandeau au-dessus porte déjà le titre (le titre reste lu par les lecteurs d'écran).", "default": true },
+    { "type": "checkbox", "id": "show_header", "label": "Titre et description de la collection", "info": "Décochez quand un bandeau au-dessus porte déjà le titre de la page (H1).", "default": true },
     { "type": "checkbox", "id": "show_count", "label": "Nombre de produits", "default": true },
     { "type": "select", "id": "card_ratio", "label": "Format des photos des cartes", "default": "portrait", "options": [ { "value": "portrait", "label": "Portrait" }, { "value": "square", "label": "Carré" } ] },
     { "type": "checkbox", "id": "card_vendor", "label": "Marque au-dessus du nom", "default": false },

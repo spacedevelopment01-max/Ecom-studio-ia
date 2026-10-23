@@ -50,6 +50,11 @@ const SPECIALTY: FamilyEntry[] = [
     d("stacked", "Visuel au-dessus", "Visual on top", "cv-hero", "stacked", { layout: "stacked" }),
     d("background", "Visuel en fond", "Background visual", "cv-banner", "background", { layout: "background" }),
     d("banner", "Bannière visuel et prix", "Visual and price banner", "cv-banner", "split-left", { layout: "image-left" }),
+    // TRAVERSE (dossier du 23 octobre).
+    d("photo-band", "Grande photo, titre et bouton", "Large photo, title and button", "cv-banner", "background", { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", button_arrow: true }),
+    d("band", "Bandeau photo et bouton en contour", "Photo band and outlined button", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true }),
+    d("product-card", "Carte produit, prix et liste cochée", "Product card, price and checklist", "cv-hero", "split-left", { layout: "card", button_arrow: true },
+      [{ type: "check" }, { type: "check" }, { type: "check" }]),
   ]),
   e("specialty", 2, "benefits", { fr: "Bénéfices du produit", en: "Product benefits" }, { fr: "Avantages clients avec icônes, illustrations ou photos.", en: "Customer benefits with icons, illustrations or photos." }, "bénéfices avantages atouts icônes", [
     d("grid", "Grille", "Grid", "features-grid", "grid-4", { layout: "grid", columns: 4, columns_mobile: "2", style: "plain" }),
@@ -58,11 +63,16 @@ const SPECIALTY: FamilyEntry[] = [
     d("carousel", "Carrousel", "Carousel", "features-grid", "carousel", { layout: "carousel", columns: 4, columns_mobile: "1", style: "cards" }),
     d("visual", "Autour d'un visuel", "Around a visual", "cv-feature", "stacked", { layout: "stacked" }),
     d("visual-left", "Visuel à gauche", "Visual on the left", "cv-feature", "split-left", { layout: "image-left" }),
+    // TRAVERSE : produit, titre, bouton et rangée d'icônes, gros plans légendés à droite.
+    d("essentials", "Essentiels : produit, icônes et gros plans", "Essentials: product, icons and close-ups", "cv-feature", "split-left", { layout: "essentials", button_arrow: true },
+      [{ type: "point", settings: { icon: "zip" } }, { type: "point", settings: { icon: "buckle" } }, { type: "point", settings: { icon: "handle" } }, { type: "point", settings: { icon: "parcel" } }, { type: "detail" }, { type: "detail" }, { type: "detail" }]),
     d("marquee", "Bandeau défilant", "Scrolling band", "marquee", "marquee", { size: "small" }),
   ]),
   e("specialty", 3, "details", { fr: "Détails du produit", en: "Product details" }, { fr: "Gros plans légendés ou repères interactifs sur le produit.", en: "Captioned close-ups or interactive markers on the product." }, "détails gros plan repères points interactifs", [
     d("rows", "Gros plans en lignes", "Close-ups in rows", "cv-cards", "cards-rows", { layout: "rows" }),
     d("columns", "Gros plans en colonnes", "Close-ups in columns", "cv-cards", "grid-3", { layout: "columns" }),
+    // TRAVERSE : trois photos, titre et phrase posés dessus.
+    d("photo-cards", "Cartes sur photo", "Cards on photos", "cv-cards", "grid-3", { layout: "overlay" }),
     d("hotspots", "Repères interactifs", "Interactive markers", "cv-hotspots", "hotspots", { layout: "side" }),
     d("hotspots-stacked", "Repères, liste dessous", "Markers, list below", "cv-hotspots", "hotspots", { layout: "stacked" }),
   ]),
@@ -144,8 +154,12 @@ const SPECIALTY: FamilyEntry[] = [
     d("shield", "Garantie mise en avant", "Highlighted guarantee", "cv-guarantee", "featured"),
     d("grid", "Engagements en grille", "Commitments grid", "fs-commitments", "grid-4", { layout: "grid" }),
     d("list", "Liste détaillée", "Detailed list", "fs-commitments", "list", { layout: "list" }),
+    // TRAVERSE : rubriques et encadrés « À compléter » (livraison, retours, pages légales).
+    d("notes", "Notes à compléter", "Notes to complete", "fs-commitments", "list", { layout: "notes", columns: "2" },
+      [{ type: "item", settings: { icon: "truck", box_title: "À compléter" } }, { type: "item", settings: { icon: "box", box_title: "À compléter" } }]),
   ]),
-  e("specialty", 18, "faq", { fr: "Questions fréquentes", en: "Frequently asked questions" }, { fr: "Questions / réponses organisées par sujet.", en: "Questions and answers organised by topic." }, "faq questions réponses", [
+  e("specialty", 18
+, "faq", { fr: "Questions fréquentes", en: "Frequently asked questions" }, { fr: "Questions / réponses organisées par sujet.", en: "Questions and answers organised by topic." }, "faq questions réponses", [
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards", layout: "stacked" }),
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines", layout: "stacked" }),
     d("side", "Titre à côté", "Title beside", "faq", "split-left", { style: "lines", layout: "side" }),
@@ -157,6 +171,8 @@ const SPECIALTY: FamilyEntry[] = [
   ]),
   e("specialty", 20, "contact", { fr: "Contact", en: "Contact" }, { fr: "Coordonnées et formulaire de questions.", en: "Contact details and question form." }, "contact formulaire coordonnées", [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
+    // TRAVERSE : formulaire vérifié dans la page, photo à droite.
+    d("form-photo", "Formulaire et photo", "Form and photo", "contact-form", "split-left", { inline_states: true, show_phone: false, require_name: true }),
     d("channels", "Moyens de contact", "Ways to reach us", "fs-stores", "cards", { layout: "channels" }),
   ]),
 ];

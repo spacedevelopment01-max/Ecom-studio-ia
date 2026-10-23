@@ -2,8 +2,8 @@
  * NOCTIL et TRAVERSE (issue #152) : quatrième et cinquième thèmes « boutique spécialisée ». Garde-fous :
  *  - thèmes actifs du catalogue, famille « boutique spécialisée », profils graphiques propres (« astral », « itinéraire ») ;
  *  - compositions distinctes entre elles et de FRAISE, ONDE, SILLON (sections, ordre, en-têtes et pieds de page) ;
- *  - démonstrations composées par le vrai moteur puis rédigées dans le même ordre ; 31 médias utilisés, TRAVERSE
- *    ambiance-04 jamais importé ni affiché ;
+ *  - démonstration NOCTIL composée par le vrai moteur puis rédigée dans le même ordre ; 16 médias utilisés (TRAVERSE,
+ *    refaite d'après le dossier du 23 octobre, est vérifiée dans traverse.test.ts) ;
  *  - rien d'inventé (aucun prix, avis, note, garantie, caractéristique), aucun « à compléter » public, champs inconnus
  *    conservés masqués dans l'éditeur ; SEO par page, un H1 par page ;
  *  - un autre projet installé dans ces thèmes garde sa propre identité ; exports Shopify / WooCommerce / PrestaShop.
@@ -38,19 +38,21 @@ const visibleText = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g,
 const LIBRARY = new Set(FAMILY_LIBRARY.specialty.flatMap((e) => e.dispositions.map((d) => d.type)));
 const zipText = (z: Record<string, Uint8Array>, re: RegExp) => Object.entries(z).filter(([k]) => re.test(k)).map(([, v]) => strFromU8(v)).join("\n");
 
-const PLAN: Record<KitId, { profile: string; fonts: { heading: string; body: string }; home: string[]; product: string[]; pages: string[]; header: string; footer: string; brand: RegExp; leak: RegExp }> = {
+const PLAN: Record<KitId | "traverse", { profile: string; fonts: { heading: string; body: string }; home: string[]; product: string[]; pages: string[]; header: string; footer: string; brand: RegExp; leak: RegExp }> = {
   noctil: {
     profile: "astral", fonts: { heading: "space_grotesk_n5", body: "karla_n4" },
     home: ["cv-hero", "features-grid", "cv-gallery", "image-with-text", "cv-cards", "cta-banner", "faq", "newsletter"],
     product: ["main-product", "cv-ingredients", "content-tabs", "timeline", "cv-feature", "fs-commitments", "faq", "product-recommendations"],
     pages: ["univers", "aide"], header: "floating", footer: "centered", brand: /NOCTIL/, leak: /NOCTIL|galaxie|la nuit entre|une autre nuit|Préparer sa nuit/i,
   },
+  // TRAVERSE refait d'après le dossier du 23 octobre : démonstration, adaptation et exports vérifiés dans traverse.test.ts.
   traverse: {
-    profile: "itineraire", fonts: { heading: "playfair_display_n4", body: "chivo_n4" },
-    home: ["cv-banner", "features-grid", "cv-alternating", "cv-hotspots", "cv-ingredients", "image-with-text", "featured-purchase", "faq", "newsletter-media"],
-    product: ["main-product", "cv-cards", "content-tabs", "cv-steps", "cv-gallery", "fs-commitments", "faq", "product-recommendations"],
-    pages: ["carnet-de-route", "aide"], header: "two-rows", footer: "card", brand: /TRAVERSE/, leak: /TRAVERSE|quai de départ|Carnet de route|trois temps/i,
+    profile: "itineraire", fonts: { heading: "anton_n4", body: "inter_n4" },
+    home: ["cv-banner", "cv-cards", "cv-feature", "cv-banner", "cv-hero", "faq", "cv-banner"],
+    product: ["main-product", "cv-banner", "cv-gallery", "faq", "product-recommendations"],
+    pages: ["en-route", "deux-jours-un-autre-decor", "notre-approche", "faq", "contact", "livraison-retours", "mentions-legales", "confidentialite", "cgv"], header: "outdoor", footer: "brand-left", brand: /TRAVERSE/, leak: /TRAVERSE|FERMEZ L'ORDI|Vos essentiels|CHANGEZ DE DÉCOR/i,
   },
+
 };
 
 describe("NOCTIL et TRAVERSE : thèmes actifs de la famille « boutique spécialisée »", () => {
@@ -92,7 +94,7 @@ describe("NOCTIL et TRAVERSE : thèmes actifs de la famille « boutique spécial
   });
 });
 
-for (const id of ["noctil", "traverse"] as const) describe(`${id.toUpperCase()} : démonstration`, async () => {
+for (const id of ["noctil"] as const) describe(`${id.toUpperCase()} : démonstration`, async () => {
   const user = await createUser(`${id}-demo@example.invalid`, "isolated-test-only", id);
   const f = await fr(() => demoProject(user.id, id));
   const { spec } = f;
@@ -122,11 +124,11 @@ for (const id of ["noctil", "traverse"] as const) describe(`${id.toUpperCase()} 
     expect(currentChromePreset("specialty", "footer", footer.settings)?.id).toBe(PLAN[id].footer);
   });
 
-  it("médias : chaque fichier du kit est utilisé (ambiance-04 de TRAVERSE exclu, jamais importé ni affiché)", () => {
+  it("médias : chaque fichier du kit est utilisé", () => {
     expect(f.missing).toEqual([]);
     const shown = all + JSON.stringify(spec.store.product.images);
     for (const m of KIT_MEDIA[id]) expect(shown, m.file).toContain(`${id}-${m.file}`);
-    expect(KIT_MEDIA[id].length).toBe(id === "traverse" ? 15 : 16);
+    expect(KIT_MEDIA[id].length).toBe(16);
     for (const x of KIT_EXCLUDED[id]) {
       expect(all).not.toContain(`${id}-${x.file}`);
       expect(Object.keys(spec.files)).not.toContain(`${id}-${x.file}`);
@@ -180,7 +182,7 @@ for (const id of ["noctil", "traverse"] as const) describe(`${id.toUpperCase()} 
 
 describe("NOCTIL et TRAVERSE appliqués à un autre projet : identité du projet, jamais celle de la démonstration", async () => {
   const user = await createUser("kit-autre@example.invalid", "isolated-test-only", "Autre");
-  for (const id of ["noctil", "traverse"] as const) it(`${id} : aucune trace de la démo, couleurs et nom du projet, dispositions du thème`, async () => {
+  for (const id of ["noctil"] as const) it(`${id} : aucune trace de la démo, couleurs et nom du projet, dispositions du thème`, async () => {
     const pid = seedHoldout(user.id, 0, "Atelier Verre");
     const p = loadProject(pid);
     saveBrand(pid, { ...p.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: id });
@@ -203,7 +205,7 @@ describe("NOCTIL et TRAVERSE appliqués à un autre projet : identité du projet
   });
 });
 
-for (const id of ["noctil", "traverse"] as const) describe(`${id.toUpperCase()} : exports`, async () => {
+for (const id of ["noctil"] as const) describe(`${id.toUpperCase()} : exports`, async () => {
   const user = await createUser(`${id}-exports@example.invalid`, "isolated-test-only", "Exports");
   const demo = await fr(() => demoProject(user.id, id));
   const media = KIT_MEDIA[id].map((m) => `${id}-${m.file}`);
