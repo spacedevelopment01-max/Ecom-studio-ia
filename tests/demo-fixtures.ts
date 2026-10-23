@@ -22,7 +22,8 @@ import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
-import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
+import { kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
+import { noctilProject } from "./noctil-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { traverseProject, TRAVERSE_MEDIA } from "./traverse-fixtures";
 import { ondeProject } from "./onde-fixtures";
@@ -67,7 +68,7 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   },
   // NOCTIL et TRAVERSE (issue #152) : identité utilisée seulement pour la preuve d'adaptation dans un autre thème.
   noctil: {
-    tagline: "La nuit, à portée de plafond.", summary: "Projecteur de galaxies : sphère indigo mate tenue par un arceau, objectif rond à l'avant, socle rond avec un bouton éclairé de violet.", story: "NOCTIL est né d'une envie simple : garder un morceau de ciel nocturne à la maison.", positioning: "Un projecteur de galaxies pour le salon, la chambre et les coins où l'on aime éteindre la grande lumière.", price: null,
+    tagline: "Un petit monde. Un ciel immense.", summary: "Projecteur de galaxies : sphère bleu nuit mate tenue par un arceau, objectif rond à l'avant, socle rond avec un bouton éclairé de violet.", story: "NOCTIL est né d'une idée simple : offrir aux enfants un espace où leur imagination peut s'envoler.", positioning: "Un projecteur de galaxies pour transformer la chambre d'un enfant en ciel étoilé.", price: null,
     media: Object.fromEntries(KIT_MEDIA.noctil.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   traverse: {
@@ -147,8 +148,9 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await traverseProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // NOCTIL : refait d'après les maquettes du 23 octobre (tests/noctil-fixtures.ts), produit détouré en surplomb.
   if (id === "noctil" && !options.direction) {
-    const c = await kitProject(userId, id);
+    const c = await noctilProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   // HEUREN et ALCÔVE (issue #155) : même parcours, famille E-commerce, kits suivis dans public/theme-assets/<id>/.

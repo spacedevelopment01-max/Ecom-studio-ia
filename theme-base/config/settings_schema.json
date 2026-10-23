@@ -32,6 +32,13 @@
         "default": 140
       },
       {
+        "type": "checkbox",
+        "id": "logo_light_on_dark",
+        "label": "Logo éclairci sur fond sombre",
+        "info": "Pour un logo foncé : sur l'en-tête transparent, le pied et les menus sombres, il s'affiche en version claire (couleurs inversées).",
+        "default": false
+      },
+      {
         "type": "image_picker",
         "id": "favicon",
         "label": "Favicon"

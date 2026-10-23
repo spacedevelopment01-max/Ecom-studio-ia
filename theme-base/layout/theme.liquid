@@ -161,7 +161,7 @@
   <script src="{{ 'family.js' | asset_url }}" defer="defer"></script>
 </head>
 
-  <body data-editorial="{{ settings.editorial_profile | default: 'none' }}" data-conversion="{{ settings.conversion_profile | default: 'none' }}" data-ds="{{ settings.ds_language | default: 'none' }}" data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+  <body data-editorial="{{ settings.editorial_profile | default: 'none' }}" data-conversion="{{ settings.conversion_profile | default: 'none' }}" data-ds="{{ settings.ds_language | default: 'none' }}"{% if settings.logo_light_on_dark %} data-logo-light{% endif %} data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
 
     {% sections 'header-group' %}

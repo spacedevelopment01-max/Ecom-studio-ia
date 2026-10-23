@@ -4,12 +4,17 @@
   eux dans la même charte. Rien n'est envoyé : les champs sont désactivés et la commande est un exemple (blocs
   « ligne »). Sur une vraie boutique, ces écrans sont ceux des comptes clients de Shopify (modèles « customers/* » du
   thème pour les comptes classiques ; les nouveaux comptes clients sont des pages de Shopify, hors thème).
+  NOCTIL (planche 06 du 23 octobre) : entrée « Aperçu » dans le menu (avec un pictogramme par entrée, menu aussi sur le
+  détail de commande) et cartes libres (blocs « Carte ») : mise en avant, facture d'exemple, aide.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
   assign layout = s.layout | default: 'login'
   assign subtotal = 0
   for block in section.blocks
+    if block.type != 'line'
+      continue
+    endif
     assign lp = all_products[block.settings.product] | default: block.settings.product
     if lp.title != blank
       assign lq = block.settings.quantity | default: 1
@@ -21,6 +26,7 @@
 {%- capture lines -%}
   <ul class="es-acct__lines" role="list">
     {%- for block in section.blocks -%}
+      {%- if block.type != 'line' -%}{%- continue -%}{%- endif -%}
       {%- assign lp = all_products[block.settings.product] | default: block.settings.product -%}
       {%- if lp.title != blank -%}
         {%- assign lq = block.settings.quantity | default: 1 -%}
@@ -37,6 +43,8 @@
     <div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.unknown_value | escape }}</dd></div>
   </dl>
 {%- endcapture -%}
+{%- capture cards_before -%}{%- for block in section.blocks -%}{%- if block.type == 'card' and block.settings.style == 'promo' -%}{% render 'demo-account-card', block: block %}{%- endif -%}{%- endfor -%}{%- endcapture -%}
+{%- capture cards_after -%}{%- for block in section.blocks -%}{%- if block.type == 'card' and block.settings.style != 'promo' -%}{% render 'demo-account-card', block: block %}{%- endif -%}{%- endfor -%}{%- endcapture -%}
 <section class="es-section es-acct es-acct--{{ layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
   <div class="es-container">
     {%- case layout -%}
@@ -59,7 +67,7 @@
               {%- if layout == 'login' and s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
               {%- if s.button_label != blank -%}<a class="es-button es-acct__primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}</a>{%- endif -%}
               {%- if s.secondary_label != blank -%}
-                {%- if layout == 'login' -%}<p class="es-acct__or"><span>{{ s.or_label | escape }}</span></p>{%- endif -%}
+                {%- if layout == 'login' -%}<p class="es-acct__or"><span>{{ 'customer.login.or' | t }}</span></p>{%- endif -%}
                 <a class="es-button es-button--secondary es-acct__secondary" href="{{ s.secondary_link | default: '#' }}">{{ s.secondary_label | escape }}</a>
               {%- endif -%}
             </form>
@@ -67,6 +75,7 @@
           {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__photo">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
         </div>
       {%- when 'order' -%}
+        {%- if s.overview_label != blank -%}<div class="es-acct__grid">{% render 'demo-account-menu', s: s, layout: layout %}<div class="es-acct__main">{%- endif -%}
         {%- if s.back_label != blank -%}<p class="es-acct__back"><a href="{{ s.account_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %} {{ s.back_label | escape }}</a></p>{%- endif -%}
         <header class="es-acct__head es-acct__head--order">
           <h1 class="es-heading es-acct__title">{{ s.heading | escape }}</h1>
@@ -82,20 +91,18 @@
           <div class="es-acct__card"><h2 class="es-acct__card-title">{{ 'customer.orders.shipping' | t }}</h2><p>{{ s.unknown_value | escape }}</p></div>
           <div class="es-acct__card"><h2 class="es-acct__card-title">{{ s.payment_title | escape }}</h2><p>{{ s.unknown_value | escape }}</p></div>
         </div>
+        {{ cards_before }}{{ cards_after }}
+        {%- if s.overview_label != blank -%}</div></div>{%- endif -%}
       {%- else -%}
         <header class="es-acct__head">
           <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
           {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
         </header>
         <div class="es-acct__grid">
-          <nav class="es-acct__menu" aria-label="{{ s.menu_label | escape }}">
-            <a href="{{ s.account_link | default: '#' }}"{% if layout == 'account' %} aria-current="page"{% endif %}>{% render 'icon', name: 'cart' %}<span>{{ s.orders_label | escape }}</span></a>
-            <a href="{{ s.addresses_link | default: '#' }}"{% if layout == 'addresses' %} aria-current="page"{% endif %}>{% render 'icon', name: 'truck' %}<span>{{ 'customer.addresses.title' | t }}</span></a>
-            <a href="{{ s.infos_link | default: '#' }}"{% if layout == 'infos' %} aria-current="page"{% endif %}>{% render 'icon', name: 'account' %}<span>{{ s.infos_label | escape }}</span></a>
-            <a href="{{ s.logout_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %}<span>{{ 'customer.logout' | t }}</span></a>
-          </nav>
+          {% render 'demo-account-menu', s: s, layout: layout %}
           <div class="es-acct__main">
             <p class="es-acct__demo">{{ s.demo_note | escape }}</p>
+            {{ cards_before }}
             {%- if layout == 'account' -%}
               <h2 class="es-heading es-acct__subtitle">{{ s.orders_label | escape }}</h2>
               <a class="es-acct__card es-acct__order" href="{{ s.order_link | default: '#' }}">
@@ -126,6 +133,7 @@
                 </fieldset>
               </div>
             {%- endif -%}
+            {{ cards_after }}
           </div>
         </div>
     {%- endcase -%}
@@ -216,12 +224,6 @@
       "label": "Lien du bouton secondaire"
     },
     {
-      "type": "text",
-      "id": "or_label",
-      "label": "Séparateur",
-      "default": "ou"
-    },
-    {
       "type": "header",
       "content": "Liens entre les écrans"
     },
@@ -264,6 +266,12 @@
       "id": "menu_label",
       "label": "Nom du menu du compte",
       "default": "Mon compte"
+    },
+    {
+      "type": "text",
+      "id": "overview_label",
+      "label": "Entrée « Aperçu » du menu",
+      "info": "Facultatif, ex. « Aperçu » : ajoute l'accueil du compte au menu, un pictogramme par entrée, et le menu sur le détail de commande."
     },
     {
       "type": "text",
@@ -449,6 +457,88 @@
           "max": 5,
           "step": 1,
           "default": 1
+        }
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Carte",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Présentation",
+          "default": "plain",
+          "options": [
+            {
+              "value": "plain",
+              "label": "Simple (après le contenu)"
+            },
+            {
+              "value": "promo",
+              "label": "Mise en avant (avant le contenu)"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Pictogramme",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "Aucun"
+            },
+            {
+              "value": "file",
+              "label": "Document"
+            },
+            {
+              "value": "help",
+              "label": "Question"
+            },
+            {
+              "value": "pin",
+              "label": "Adresse"
+            },
+            {
+              "value": "order",
+              "label": "Commande"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Bouton"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Lien du bouton",
+          "info": "Sans lien, le bouton n'est pas affiché."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Image (fichier du thème)"
         }
       ]
     }

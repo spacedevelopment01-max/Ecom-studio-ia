@@ -86,7 +86,7 @@
     {%- if cart.item_count == 0 -%}
       <div class="es-cart__empty{% if section.settings.empty_image != blank or section.settings.empty_image_asset != blank %} es-cart__empty--media{% endif %}">
         {%- if section.settings.empty_image != blank or section.settings.empty_image_asset != blank -%}<div class="es-cart__empty-media">{% render 'ed-media', image: section.settings.empty_image, asset: section.settings.empty_image_asset, alt: '' %}</div>{%- endif -%}
-        {%- if section.settings.empty_icon != blank and section.settings.empty_icon != 'none' -%}<span class="es-cart__empty-icon" aria-hidden="true">{% render 'icon', name: section.settings.empty_icon %}</span>{%- endif -%}
+        {%- if section.settings.empty_icon == 'planet' -%}<span class="es-cart__empty-illus" aria-hidden="true">{% render 'planet-illustration' %}</span>{%- elsif section.settings.empty_icon != blank and section.settings.empty_icon != 'none' -%}<span class="es-cart__empty-icon" aria-hidden="true">{% render 'icon', name: section.settings.empty_icon %}</span>{%- endif -%}
         <p class="es-lead es-cart__empty-title">{{ section.settings.empty_heading | default: empty_title }}</p>
         {%- if section.settings.empty_text != blank -%}<p class="es-cart__empty-text es-muted">{{ section.settings.empty_text | escape }}</p>{%- endif -%}
         <a href="{{ section.settings.empty_button_link | default: routes.all_products_collection_url }}" class="es-button">{% if section.settings.empty_button_label != blank %}{{ section.settings.empty_button_label | escape }}{% else %}{{ 'cart.continue' | t }}{% endif %}</a>
@@ -436,6 +436,10 @@
         {
           "value": "cart",
           "label": "Panier"
+        },
+        {
+          "value": "planet",
+          "label": "Planète dessinée"
         }
       ]
     },

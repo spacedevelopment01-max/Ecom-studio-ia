@@ -202,6 +202,8 @@
                   <div class="es-eta__step">{% render 'icon', name: 'truck' %}<div><span class="es-small es-muted">{{ block.settings.label }}</span><strong data-eta-range>{{ 'products.product.eta.within' | t: count: block.settings.max_days }}</strong></div></div>
                 </div>
               {%- endif -%}
+            {%- when 'links' -%}
+              {% render 'product-links', block: block %}
             {%- when 'reassurance' -%}
               <ul class="es-reassure es-reassure--{{ block.settings.layout | default: 'list' }}" role="list" {{ block.shopify_attributes }}>
                 {%- if block.settings.item1 != blank -%}<li>{% render 'icon', name: block.settings.icon1 %}<span>{{ block.settings.item1 }}</span></li>{%- endif -%}
@@ -418,6 +420,14 @@
       { "type": "range", "id": "max_days", "min": 0, "max": 30, "step": 1, "label": "Délai maximal (jours)", "default": 0 },
       { "type": "checkbox", "id": "business_days", "label": "Jours ouvrés (sans samedi ni dimanche)", "default": true },
       { "type": "text", "id": "label", "label": "Libellé", "default": "Livraison estimée" }
+    ] },
+    { "type": "links", "name": "Liens utiles", "limit": 1, "settings": [
+      { "type": "text", "id": "label_1", "label": "Lien 1 (texte)", "default": "Guide d'utilisation" },
+      { "type": "url", "id": "link_1", "label": "Lien 1" },
+      { "type": "select", "id": "icon_1", "label": "Icône du lien 1", "default": "book", "options": [ { "value": "book", "label": "Livre" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "ruler", "label": "Règle" }, { "value": "info", "label": "Information" }, { "value": "chat", "label": "Message" } ] },
+      { "type": "text", "id": "label_2", "label": "Lien 2 (texte)", "default": "Livraison et retours" },
+      { "type": "url", "id": "link_2", "label": "Lien 2" },
+      { "type": "select", "id": "icon_2", "label": "Icône du lien 2", "default": "truck", "options": [ { "value": "book", "label": "Livre" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "ruler", "label": "Règle" }, { "value": "info", "label": "Information" }, { "value": "chat", "label": "Message" } ] }
     ] },
     { "type": "reassurance", "name": "Réassurance", "limit": 1, "settings": [
       { "type": "select", "id": "layout", "label": "Présentation", "default": "list", "options": [ { "value": "list", "label": "Liste" }, { "value": "row", "label": "Trois pictogrammes en ligne" } ] },

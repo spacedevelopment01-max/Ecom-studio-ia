@@ -3,6 +3,8 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
   la main (blocs). Mise en page éditoriale (un article en avant), grille, ou liste.
   MUSEAU CLUB (maquettes du 23 octobre) : rangée de petites cartes (vignette, titre, lien), filtres en pastilles tirés
   des catégories des articles, catégorie en pastille sur la photo.
+  NOCTIL (maquettes du 23 octobre) : pagination des articles choisis (n par page, numéros et « Suivant »), combinée aux
+  filtres ; sans JavaScript, tous les articles restent visibles.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -49,7 +51,8 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
       {%- endif -%}
     {%- endcapture -%}
     {%- if items != blank -%}
-      <ul class="fs-journal__list fs-journal__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--3{% endif %}" role="list">{{ items }}</ul>
+      <ul class="fs-journal__list fs-journal__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--3{% endif %}" role="list"{% if s.per_page > 0 and section.blocks.size > s.per_page %} data-paginate="{{ s.per_page }}"{% endif %}>{{ items }}</ul>
+      {%- if s.per_page > 0 and section.blocks.size > s.per_page -%}<nav class="fs-pager" data-pager aria-label="{{ 'general.pagination' | t }}" data-page-label="{{ 'general.page' | t }}" data-next-label="{{ 'general.next' | t }}"></nav>{%- endif -%}
     {%- elsif request.host == 'apercu' -%}
       <div class="ed-media ed-media--pending fs-pending"><p>{{ 'editorial.pending_media' | t }}</p></div>
     {%- endif -%}
@@ -162,6 +165,16 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
       "max": 9,
       "step": 1,
       "default": 3
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Articles par page",
+      "info": "0 : tous les articles choisis sur une seule page. Au-delà, des numéros de page apparaissent sous la liste.",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "default": 0
     },
     {
       "type": "checkbox",

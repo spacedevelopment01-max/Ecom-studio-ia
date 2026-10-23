@@ -4,11 +4,14 @@
   photos, titre et phrase posés en bas à gauche ; « Visuel au-dessus » accepte un lien sous chaque carte (carnet).
   « Photos à pastille » (maquettes MUSEAU CLUB) : titre et texte à gauche, photos arrondies et leur pastille-lien ;
   légendes numérotées en option.
+  NOCTIL (maquettes du 23 octobre) : surtitre par carte (cartes sur la nuit de la fiche), section masquée quand le panier
+  est vide (« Vous aimerez aussi » de la page panier), carrousel sur téléphone.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
 -%}
-<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-cards cv-cards--{{ s.layout }}{% if s.numbered %} cv-cards--numbered{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+{%- if s.hide_when_cart_empty and cart.item_count == 0 -%}{%- else -%}
+<section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-cards cv-cards--{{ s.layout }}{% if s.numbered %} cv-cards--numbered{% endif %}{% if s.mobile_carousel %} cv-cards--mcarousel{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   <div class="es-container">
     {%- if s.heading != blank or s.text != blank -%}
       <header class="cv-head">
@@ -24,6 +27,7 @@
             {%- if s.layout == 'pills' -%}
             {%- if block.settings.link != blank -%}<a class="cv-card__pill cv-card__cover" href="{{ block.settings.link }}">{{ block.settings.title | escape }} {% render 'icon', name: 'arrow' %}</a>{%- else -%}<span class="cv-card__pill">{{ block.settings.title | escape }}</span>{%- endif -%}
             {%- else -%}
+            {%- if block.settings.eyebrow != blank -%}<p class="cv-eyebrow cv-card__eyebrow">{{ block.settings.eyebrow | escape }}</p>{%- endif -%}
             <h3 class="es-heading cv-card__title">{% if block.settings.link != blank and s.layout == 'overlay' %}<a class="cv-card__cover" href="{{ block.settings.link }}">{{ block.settings.title | escape }}</a>{% else %}{{ block.settings.title | escape }}{% endif %}</h3>
             {%- if block.settings.text != blank -%}<div class="es-rte cv-card__text">{{ block.settings.text }}</div>{%- endif -%}
             {%- if block.settings.link != blank and block.settings.link_label != blank and s.layout != 'overlay' -%}<a class="cv-card__link" href="{{ block.settings.link }}">{{ block.settings.link_label | escape }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
@@ -34,6 +38,7 @@
     </div>
   </div>
 </section>
+{%- endif -%}
 
 {% schema %}
 {
@@ -85,6 +90,20 @@
       "type": "checkbox",
       "id": "numbered",
       "label": "Numéroter les légendes",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_cart_empty",
+      "label": "Masquer quand le panier est vide",
+      "info": "Pour des cartes placées sur la page panier.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_carousel",
+      "label": "Carrousel sur téléphone",
+      "info": "Sur téléphone, les éléments défilent un à un au lieu de s'empiler.",
       "default": false
     },
     {
@@ -208,6 +227,11 @@
           "step": 5,
           "unit": "%",
           "default": 100
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Surtitre"
         },
         {
           "type": "text",

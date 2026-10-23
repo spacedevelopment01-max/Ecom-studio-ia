@@ -5,6 +5,7 @@
     "previous": "Previous",
     "next": "Next",
     "pagination": "Pagination",
+    "page": "Page",
     "pause": "Pause",
     "play": "Play",
     "error": "Something went wrong. Please try again.",
@@ -305,6 +306,9 @@
   },
   "contact": {
     "name": "Name",
+    "order": "Order number (optional)",
+    "subject": "Subject",
+    "subject_choose": "Choose a subject",
     "email": "Email",
     "phone": "Phone",
     "message": "Message",
@@ -328,7 +332,8 @@
       "title": "Log in",
       "password": "Password",
       "submit": "Sign in",
-      "forgot": "Forgot your password?"
+      "forgot": "Forgot your password?",
+      "or": "or"
     },
     "recover": {
       "title": "Reset your password",

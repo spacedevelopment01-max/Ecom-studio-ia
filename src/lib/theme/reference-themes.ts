@@ -3,7 +3,7 @@
  * automatique) : FRAISE et ONDE (boutique spécialisée, profil « conversion » Lumora / Pawish), ORBE (e-commerce,
  * composition éditoriale « objet et ambiances »), Atelier Rive (prestations de services, composition « journal ») et
  * SILLON (boutique spécialisée, profil « nomade » : objet que l’on emporte, serif fine, cuivre), NOCTIL (boutique
- * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
+ * spécialisée, profil « astral » : crème, bleu nuit et lavande, produit en surplomb ; refait d'après les maquettes du 23 octobre) et TRAVERSE (boutique spécialisée, profil
  * « itinéraire » : carnet de voyage éditorial, crème, pierre et olive), issue #152 ; HEUREN (e-commerce mono-produit,
  * profil éditorial « cadran » : bleu nuit, argent, serif fine) et ALCÔVE (e-commerce mono-produit, profil « arrondi » :
  * courbes, terre cuite, sable), issue #155 ; MUSEAU CLUB (e-commerce de quatre produits, profil « club » : crème et bleu
@@ -311,60 +311,64 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "noctil",
     name: "Noctil",
-    tagline: "Nuit immersive, lumière d'espace",
-    description: "Boutique spécialisée pour un objet de lumière : ouverture nocturne où le produit apparaît entier au-dessus du titre, bénéfices en cartes lumineuses, carrousel de pièces une à une, récit superposé, gros plans en colonnes, bandeau d'achat sur une scène et FAQ en cartes. Indigo profond, lavande et violet, titres géométriques, en-tête flottant arrondi sur fond clair et pied centré.",
-    bestFor: ["boutique spécialisée", "objet de lumière", "décoration de nuit", "chambre et salon", "produit d'ambiance"],
-    en: { tagline: "Immersive night, space light", description: "Specialty store for a light object: night opening where the product appears whole above the headline, benefits in glowing cards, a carousel of rooms one by one, an overlapping story, close-ups in columns, a purchase band over a scene and FAQ cards. Deep indigo, lavender and violet, geometric headings, a rounded floating header on a light ground and a centred footer.", bestFor: ["specialty store", "light object", "night decor", "bedroom and living room", "ambience product"] },
-    fonts: { heading: "space_grotesk_n5", body: "karla_n4" },
-    previewFonts: { heading: "Space Grotesk", body: "Karla" },
+    tagline: "Crème, bleu nuit et lavande, ciel étoilé",
+    description: "Boutique spécialisée pour un objet à offrir, d'après les maquettes du 23 octobre : ouverture de nuit sur une grande photo (texte clair à gauche), le produit détouré qui déborde sur le bas de la photo avec son prix et l'ajout au panier, trois cartes de scènes, bandeaux sombres arrondis, trois étapes illustrées, derniers articles, questions et appel final sur fond de nuit. Fonds crème, bleu nuit profond, boutons lavande, étoiles dorées, titres ronds en gras.",
+    bestFor: ["boutique spécialisée", "objet à offrir", "univers de l'enfant", "décoration de chambre", "objet de lumière"],
+    en: { tagline: "Cream, midnight blue and lavender, starry sky", description: "Specialty store for a gift object, from the 23 October mock-ups: a night opening over a large photo (light text on the left), the cut-out product overlapping the bottom of the photo with its price and add-to-cart, three scene cards, rounded dark bands, three illustrated steps, latest articles, questions and a closing call on a night background. Cream backgrounds, deep midnight blue, lavender buttons, golden stars, bold rounded headings.", bestFor: ["specialty store", "gift object", "children's world", "bedroom decor", "light object"] },
+    fonts: { heading: "nunito_n8", body: "nunito_n4" },
+    previewFonts: { heading: "Nunito", body: "Nunito" },
     motion: "subtle",
     photoMood: "nocturne",
     kinds: ["specialty"],
-    // En-tête « Barre flottante arrondie » sur fond lavande (le logo, sombre, reste lisible) et pied « Centré avec lettre
-    // d'information » : ni le logo centré de FRAISE / ONDE, ni le bouton d'achat et le grand nom de marque de SILLON.
-    look: look({ headerLayout: "logo-left", shape: "pill", icons: "circles", menu: "sheet", footer: "centered", ann: "static", card: "boxed", button: "solid", radius: { button: 14, card: 18 }, headingCase: "none", tracking: -2, headingScale: 104, pageWidth: 1280, density: "airy", buttonUppercase: false, dark: true }),
-    settings: { conversion_profile: "astral", editorial_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { color_scheme: "scheme-2", mega_menu: "none", show_cart: true },
-    // Galerie en carrousel, cadre carré : une vue à la fois, le produit entier dès l'ouverture de la fiche sur téléphone.
+    // Maquettes NOCTIL du 23 octobre (docs/design/noctil-reference-20261023) : logo à gauche, menu à côté, compte et
+    // panier en pastille lavande à droite ; en-tête transparent sur la photo d'ouverture de l'accueil ; pied bleu nuit,
+    // marque à gauche, colonnes de liens.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 18 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1280, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "astral", editorial_profile: "none", motion_intensity: "subtle", card_arrow: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: true, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    // Fiche : grande vue et vignettes (à gauche sur ordinateur, dessous sur téléphone), zoom, barre d'achat qui suit.
     mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Crème (fonds), bleu nuit (bandeaux, pied), lavande pâle (panneaux d'aide), lavande pleine (boutons) : tirées de la
+    // marque (sombre, clair, primaire) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const night = k.night(0.09, 0.55);
-      const lavender = k.light("#ECE8FA");
-      const indigo = k.night(0.17, 0.5);
-      return [k.scheme(night, lavender, k.onDark(night), 0.07), k.scheme(lavender, night, k.onLight(lavender)), k.filled(k.p.accent), k.scheme(indigo, lavender, k.onDark(indigo), 0.08)];
+      const cream = k.light("#F8F5EF");
+      const night = k.night(0.1, 0.5);
+      const ink = k.p.dark;
+      const pale = k.mix(cream, k.p.primary, 0.16);
+      return [k.scheme(cream, ink, k.onLight(cream)), k.scheme(night, "#F8F5EF", k.onDark(night), 0.06), k.scheme(pale, ink, k.onLight(pale)), k.filled(k.p.primary)];
     },
-    // Accueil : une narration de nuit. Le produit entier au-dessus du titre (lisible sur téléphone), bénéfices en cartes
-    // lumineuses, les pièces une à une en carrousel, récit superposé, gros plans en colonnes, bandeau d'achat sur une
-    // scène, questions en cartes et inscription. Chaque visuel n'apparaît qu'une fois ; toute section vide reste masquée.
+    // Accueil (planche 01) : ouverture de nuit, produit détouré en surplomb avec prix et ajout au panier, trois scènes en
+    // cartes, bandeau sombre, trois étapes, bandeau sur photo, derniers articles, questions et appel final sur la nuit.
+    // Sans produit détouré, la section garde le produit dans sa propre bande (aucun cadre opaque sur la photo).
     home: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.hero ?? k.im.packshot ?? k.im.lifestyle, image_ratio: "wide", layout: "stacked", heading_tag: "h1", animation: "fade" }),
-      k.lib("features-grid", 1, { layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center" }),
-      ((rooms) => k.lib("cv-gallery", 4, { layout: "carousel", ratio: "portrait" }, { hide: rooms.length < 2, blocks: rooms.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f)),
-      k.lib("image-with-text", 2, { layout: "overlap", ratio: "portrait", image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", reveal: "up" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
-      ((shots) => k.lib("cv-cards", 1, { layout: "columns" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.cutout].filter((f): f is string => !!f)),
-      k.lib("cta-banner", 4, { style: "center", image_asset: k.im.banner ?? k.im.scene2 ?? "", overlay: 55, parallax: false }),
-      k.faqSec(2, 5, "cards"),
-      k.newsletter(4),
+      k.lib("cv-banner", 2, { layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("cv-rise", 1, { image_asset: k.im.cutout ?? k.im.packshot ?? "", overlap: k.im.cutout ? "auto" : "none", decor: !!k.im.cutout, curve: !!k.im.cutout, button_arrow: true, padding_top: 32, padding_bottom: 24 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "columns", padding_top: 16, padding_bottom: 24 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "right", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.lifestyle2) }),
+      k.lib("cv-steps", 1, { layout: "cards", padding_top: 24, padding_bottom: 24 }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
+      k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 24, padding_bottom: 24 }),
+      k.lib("faq", 2, { style: "lines", layout: "side", open_first: true, padding_top: 40, padding_bottom: 40 }),
     ],
-    // Fiche : galerie en carrousel et achat, puis ce qui compose l'objet (cartes), onglets en pastilles, préparation de
-    // la nuit en frise, une scène avec bénéfices, engagements en grille et questions. Rien d'affirmé sans donnée.
+    // Fiche (planche 02) : galerie et achat, bandeau d'aventure, trois bénéfices en icônes, deux gros plans sur la nuit,
+    // trois instants, les chambres sur fond de nuit, « avant de choisir » (tout ce qui n'est pas connu reste « à confirmer »),
+    // questions et articles.
     product: (k) => [
-      k.lib("cv-ingredients", 4, { layout: "cards", columns: 3 }),
-      k.lib("content-tabs", 1, { tab_style: "pills", image_position: "right" }),
-      k.lib("timeline", 2, { image_asset: "" }),
-      k.lib("cv-feature", 1, { image_asset: k.im.scene3 ?? k.im.scene1, layout: "stacked" }),
-      k.lib("fs-commitments", 4, { layout: "grid" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      k.lib("features-grid", 1, { layout: "row", columns: 3, columns_mobile: "1", style: "plain", heading_align: "left", padding_top: 24, padding_bottom: 24 }),
+      ((shots) => k.lib("cv-cards", 2, { layout: "overlay", padding_top: 0, padding_bottom: 0 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      ((shots) => k.lib("cv-gallery", 2, { layout: "grid", ratio: "landscape", padding_top: 32, padding_bottom: 32 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.faqSec(1, 5, "lines"),
+      k.lib("fs-journal", 2, { layout: "row", limit: 2, align: "left", padding_top: 24, padding_bottom: 24 }),
     ],
-    // Site de services (repli) : ouverture empilée, prestations en cartes, gros plans en colonnes, méthode, bandeau
-    // d'appel, questions et prise de contact — sans l'enchaînement de SILLON, de FRAISE ni de TRAVERSE.
+    // Site de services (repli) : ouverture de nuit, prestations en cartes, méthode en étapes, bandeau photo, questions,
+    // prise de contact — sans l'enchaînement de TRAVERSE ni de MUSEAU CLUB.
     services: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.hero ?? k.im.lifestyle, image_ratio: "wide", layout: "stacked", heading_tag: "h1" }),
-      k.R.servicesList(4, "cards"),
-      ((shots) => k.lib("cv-cards", 2, { layout: "columns" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "night", band_height: "tall", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.R.servicesList(1, "cards", { withImages: true }),
       k.R.method(1, "howto-h"),
-      k.lib("cta-banner", 4, { style: "center", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", overlay: 55, parallax: false }),
-      k.faqSec(2, 5, "cards"),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "right", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.banner) }),
+      k.faqSec(2, 5, "lines"),
       k.R.booking(1),
     ],
   },

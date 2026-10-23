@@ -4,6 +4,8 @@
   Réglages historiques conservés (heading, text, style, structured_data, color_scheme, marges).
   MUSEAU CLUB (maquettes du 23 octobre) : photo à côté des questions (le titre posé sur la photo), thèmes en onglets
   tirés du thème de chaque question.
+  NOCTIL (maquettes du 23 octobre) : mention courte par question (« À confirmer ») et deux FAQ côte à côte sur
+  ordinateur (« À côté de la FAQ voisine »), empilées sur téléphone ; thèmes en intertitres (« Titres des thèmes »).
 {%- endcomment -%}
 {%- liquid
   assign layout = section.settings.layout | default: 'side'
@@ -12,7 +14,7 @@
   endif
 -%}
 {%- assign faq_photo = false -%}{%- if section.settings.image != blank or section.settings.image_asset != blank -%}{%- assign faq_photo = true -%}{%- endif -%}
-<section class="es-section es-faq es-faq--{{ section.settings.style }} es-faq--{{ layout }} es-faq--cols-{{ section.settings.columns | default: '1' }}{% if faq_photo %} es-faq--photo{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-es-faq{% if section.settings.open_first %} data-open-first{% endif %}>
+<section class="es-section es-faq es-faq--{{ section.settings.style }} es-faq--{{ layout }} es-faq--cols-{{ section.settings.columns | default: '1' }}{% if faq_photo %} es-faq--photo{% endif %}{% if section.settings.pair %} es-faq--pair{% endif %} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-es-faq{% if section.settings.open_first %} data-open-first{% endif %}>
   <div class="es-container es-faq__grid">
     <header class="es-faq__head">
       {%- if faq_photo -%}<div class="es-faq__photo">{% render 'ed-media', image: section.settings.image, asset: section.settings.image_asset, alt: section.settings.image_alt, focus_x: section.settings.focus_x, focus_y: section.settings.focus_y %}</div>{%- endif -%}
@@ -44,12 +46,15 @@
         </div>
         {%- endif -%}
       {%- endif -%}
+      {%- assign prev_topic = '' -%}
       {%- for block in section.blocks -%}
         {%- assign bt = block.settings.topic | handleize -%}
+        {%- if section.settings.topic_titles and section.settings.topics != true and block.settings.topic != blank and block.settings.topic != prev_topic -%}<h3 class="es-heading es-faq__topic">{{ block.settings.topic | escape }}</h3>{%- endif -%}
+        {%- assign prev_topic = block.settings.topic -%}
         <details class="es-accordion es-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" data-faq-item{% if section.settings.topics %} data-chip-item="{{ bt }}"{% if first_topic != blank and bt != first_topic %} hidden{% endif %}{% endif %}{% if forloop.first and section.settings.open_first %} open{% endif %} {{ block.shopify_attributes }}>
           <summary>
             {%- if section.settings.style == 'numbered' -%}<span class="es-faq__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{%- endif -%}
-            <span class="es-faq__q">{{ block.settings.question }}</span>
+            <span class="es-faq__q">{{ block.settings.question }}</span>{%- if block.settings.badge != blank -%}<span class="es-faq__badge">{{ block.settings.badge | escape }}</span>{%- endif -%}
             <span class="es-faq__icon" aria-hidden="true"><i></i><i></i></span>
           </summary>
           <div class="es-faq__panel" data-faq-panel><div class="es-rte es-accordion__body">{{ block.settings.answer }}</div></div>
@@ -74,10 +79,17 @@
 .es-faq--stacked .es-faq__list { width: 100%; max-width: 880px; margin-inline: auto; }
 .es-faq--stacked.es-faq--cols-2 .es-faq__list { max-width: none; }
 @media (min-width: 990px) {
+  .shopify-section:has(> .es-faq--pair) { float: left; width: 50%; }
+  .shopify-section:has(> .es-faq--pair) + .shopify-section:not(:has(> .es-faq--pair)) { clear: both; }
+  .es-faq--pair .es-faq__head { text-align: left; margin-inline: 0; max-width: none; }
+  .es-faq--pair .es-faq__list { max-width: none; }
   .es-faq--side .es-faq__head { position: sticky; top: calc(var(--header-h) + 32px); align-self: start; }
   .es-faq--cols-2 .es-faq__list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; align-items: start; }
 }
 .es-faq__item summary { min-height: 64px; }
+.es-faq__topic { margin: 28px 0 8px; font-size: 1.15rem; }
+.es-faq__topic:first-child { margin-top: 0; }
+.es-faq__badge { flex: none; margin-left: auto; margin-right: 10px; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 600; line-height: 1.3; background: color-mix(in srgb, var(--c-accent) 14%, var(--c-bg)); color: var(--c-text); }
 .es-faq__q { flex: 1; text-wrap: pretty; }
 .es-faq__num { flex: none; min-width: 2.2em; font-variant-numeric: tabular-nums; font-size: .82rem; letter-spacing: .08em; color: var(--c-accent); }
 .es-faq__icon { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(var(--c-text-rgb), .16); transition: background .35s, border-color .35s, transform .5s var(--ease-out); }
@@ -270,6 +282,13 @@ mark.es-faq__hl { background: rgba(var(--c-accent-rgb), .22); color: inherit; bo
       "default": false
     },
     {
+      "type": "checkbox",
+      "id": "topic_titles",
+      "label": "Titres des thèmes",
+      "info": "Le thème de chaque question devient un intertitre au-dessus de son groupe (sans les pastilles de filtre).",
+      "default": false
+    },
+    {
       "type": "select",
       "id": "columns",
       "label": "Colonnes de questions",
@@ -285,6 +304,13 @@ mark.es-faq__hl { background: rgba(var(--c-accent-rgb), .22); color: inherit; bo
         }
       ],
       "info": "Avec deux colonnes, le titre passe au-dessus."
+    },
+    {
+      "type": "checkbox",
+      "id": "pair",
+      "label": "À côté de la FAQ voisine (ordinateur)",
+      "info": "Deux FAQ consécutives cochées se placent côte à côte ; elles s'empilent sur téléphone.",
+      "default": false
     },
     {
       "type": "checkbox",
@@ -369,6 +395,12 @@ mark.es-faq__hl { background: rgba(var(--c-accent-rgb), .22); color: inherit; bo
           "id": "answer",
           "label": "Réponse",
           "default": "<p>Une réponse exacte et vérifiée.</p>"
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Mention courte",
+          "info": "Facultatif, ex. « À confirmer » : affichée à côté de la question."
         },
         {
           "type": "text",

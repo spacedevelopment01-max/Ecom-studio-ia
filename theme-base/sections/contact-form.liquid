@@ -2,6 +2,7 @@
   comment
     Photo à côté du formulaire et messages dans la page (maquette TRAVERSE) : champs vérifiés avant l'envoi, envoi en
     cours, réussite seulement après la réponse, échec annoncé. Sans photo ni titre, le formulaire occupe la colonne.
+    NOCTIL (planche 05) : numéro de commande facultatif, sujet à choisir dans une liste, case d'accord obligatoire.
   endcomment
   assign has_image = false
   if section.settings.image != blank or section.settings.image_asset != blank
@@ -35,8 +36,14 @@
         <label>{{ 'contact.name' | t }}{% if section.settings.require_name %} *{% endif %}<input type="text" name="contact[name]" autocomplete="name" value="{{ form.name }}"{% if section.settings.require_name %} required{% endif %}{% if section.settings.name_placeholder != blank %} placeholder="{{ section.settings.name_placeholder | escape }}"{% endif %}></label>
         <label>{{ 'contact.email' | t }} *<input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"{% if section.settings.email_placeholder != blank %} placeholder="{{ section.settings.email_placeholder | escape }}"{% endif %}></label>
       </div>
+      {%- if section.settings.order_field -%}<label>{{ 'contact.order' | t }}<input type="text" name="contact[order]" autocomplete="off" value="{{ form.order }}"{% if section.settings.order_placeholder != blank %} placeholder="{{ section.settings.order_placeholder | escape }}"{% endif %}></label>{%- endif -%}
+      {%- if section.settings.subjects != blank -%}
+        {%- assign subject_list = section.settings.subjects | newline_to_br | split: '<br />' -%}
+        <label>{{ 'contact.subject' | t }} *<select name="contact[subject]" required class="es-select"><option value="">{{ 'contact.subject_choose' | t }}</option>{%- for o in subject_list -%}{%- assign o = o | strip -%}{%- if o != blank -%}<option value="{{ o | escape }}">{{ o | escape }}</option>{%- endif -%}{%- endfor -%}</select></label>
+      {%- endif -%}
       {%- if section.settings.show_phone != false -%}<label>{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}"></label>{%- endif -%}
       <label>{{ 'contact.message' | t }}{% if section.settings.require_message %} *{% endif %}<textarea name="contact[body]" rows="6" class="es-textarea"{% if section.settings.require_message %} required{% endif %}{% if section.settings.message_placeholder != blank %} placeholder="{{ section.settings.message_placeholder | escape }}"{% endif %}>{{ form.body }}</textarea></label>
+      {%- if section.settings.consent_text != blank -%}<label class="es-check es-contact__consent"><input type="checkbox" name="contact[consent]" value="oui" required> <span>{{ section.settings.consent_text | escape }}</span></label>{%- endif -%}
       <button type="submit" class="es-button">{% if section.settings.submit_label != blank %}{{ section.settings.submit_label | escape }}{% else %}{{ 'contact.send' | t }}{% endif %}</button>
       {%- if section.settings.inline_states -%}<p class="es-small es-contact__status" data-contact-status aria-live="polite"></p>{%- endif -%}
       {%- if request.host == 'apercu' and section.settings.preview_note -%}<p class="es-small es-muted es-form-note">{{ 'contact.preview_demo' | t }}</p>{%- endif -%}
@@ -79,6 +86,10 @@
     { "type": "text", "id": "name_placeholder", "label": "Exemple dans le champ nom", "info": "Ex. « Votre nom »." },
     { "type": "text", "id": "email_placeholder", "label": "Exemple dans le champ e-mail", "info": "Ex. « votre@email.com »." },
     { "type": "text", "id": "message_placeholder", "label": "Exemple dans le champ message", "info": "Ex. « Votre message »." },
+    { "type": "checkbox", "id": "order_field", "label": "Champ numéro de commande (facultatif)", "default": false },
+    { "type": "text", "id": "order_placeholder", "label": "Exemple dans le champ numéro de commande", "info": "Ex. « NOCTIL-0001 »." },
+    { "type": "textarea", "id": "subjects", "label": "Sujets proposés", "info": "Un sujet par ligne : le visiteur en choisit un (obligatoire). Vide : pas de liste." },
+    { "type": "text", "id": "consent_text", "label": "Case d'accord (obligatoire)", "info": "Ex. « J'accepte que mes informations soient utilisées uniquement pour répondre à ma demande. » Vide : pas de case." },
     { "type": "text", "id": "submit_label", "label": "Texte du bouton", "info": "Vide : « Envoyer »." },
     { "type": "checkbox", "id": "inline_states", "label": "Messages dans la page", "info": "Champs vérifiés avant l'envoi, envoi en cours, réussite ou échec affichés sous le bouton.", "default": false },
     { "type": "header", "content": "Photo" },

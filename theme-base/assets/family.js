@@ -105,13 +105,47 @@
 })();
 
 /* Filtres en pastilles (journal, boutique, questions par thème — maquettes MUSEAU CLUB) : un bouton [data-chip-filter]
-   montre les éléments [data-chip-item] de sa section dont la catégorie correspond ; « Tous » (valeur vide) montre tout. */
+   montre les éléments [data-chip-item] de sa section dont la catégorie correspond ; « Tous » (valeur vide) montre tout.
+   Pagination (journal NOCTIL) : une liste [data-paginate="n"] ne montre que n éléments filtrés à la fois ; les numéros
+   de page et « Suivant » sont des boutons construits ici (sans JavaScript, tout reste visible). */
 (function () {
+  function pages(root) {
+    var items = [].slice.call(root.querySelectorAll('[data-chip-item]'));
+    var on = items.filter(function (it) { return it.getAttribute('data-out') !== '1'; });
+    var list = root.querySelector('[data-paginate]');
+    if (!list) { items.forEach(function (it) { it.hidden = it.getAttribute('data-out') === '1'; }); return; }
+    var per = parseInt(list.getAttribute('data-paginate'), 10) || on.length || 1;
+    var n = Math.max(1, Math.ceil(on.length / per));
+    var cur = Math.min(parseInt(list.getAttribute('data-page') || '1', 10) || 1, n);
+    list.setAttribute('data-page', cur);
+    items.forEach(function (it) { it.hidden = true; });
+    on.forEach(function (it, i) { it.hidden = Math.floor(i / per) + 1 !== cur; });
+    var nav = root.querySelector('[data-pager]'); if (!nav) return;
+    nav.hidden = n < 2; nav.innerHTML = '';
+    for (var p = 1; p <= n; p++) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'fs-pager__page' + (p === cur ? ' is-active' : '');
+      b.textContent = p; b.setAttribute('data-page-go', p); b.setAttribute('aria-label', (nav.getAttribute('data-page-label') || 'Page') + ' ' + p);
+      if (p === cur) b.setAttribute('aria-current', 'page');
+      nav.appendChild(b);
+    }
+    if (cur < n) { var nx = document.createElement('button'); nx.type = 'button'; nx.className = 'fs-pager__next'; nx.setAttribute('data-page-go', cur + 1); nx.setAttribute('aria-label', nav.getAttribute('data-next-label') || 'Suivant'); nx.textContent = '→'; nav.appendChild(nx); }
+  }
   document.addEventListener('click', function (e) {
+    var g = e.target.closest && e.target.closest('[data-page-go]');
+    if (g) {
+      var r = g.closest('section') || document, l = r.querySelector('[data-paginate]');
+      if (l) { l.setAttribute('data-page', g.getAttribute('data-page-go')); pages(r); var f = r.querySelector('[data-pager] [aria-current]'); if (f) f.focus(); if (r.scrollIntoView) r.scrollIntoView({ block: 'start' }); }
+      return;
+    }
     var b = e.target.closest && e.target.closest('[data-chip-filter]'); if (!b) return;
     var root = b.closest('section') || document;
     var tag = b.getAttribute('data-chip-filter');
     root.querySelectorAll('[data-chip-filter]').forEach(function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-    root.querySelectorAll('[data-chip-item]').forEach(function (it) { it.hidden = !!tag && (' ' + it.getAttribute('data-chip-item') + ' ').indexOf(' ' + tag + ' ') < 0; });
+    root.querySelectorAll('[data-chip-item]').forEach(function (it) { it.setAttribute('data-out', tag && (' ' + it.getAttribute('data-chip-item') + ' ').indexOf(' ' + tag + ' ') < 0 ? '1' : ''); });
+    var list = root.querySelector('[data-paginate]'); if (list) list.setAttribute('data-page', '1');
+    pages(root);
   });
+  function init(scope) { [].forEach.call((scope || document).querySelectorAll('[data-paginate]'), function (l) { pages(l.closest('section') || document); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { init(document); }); else init(document);
+  document.addEventListener('shopify:section:load', function (e) { init(e.target); });
 })();

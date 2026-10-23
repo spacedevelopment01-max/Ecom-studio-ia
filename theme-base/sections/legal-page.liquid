@@ -2,6 +2,8 @@
   Page légale lisible (CGV, mentions légales, confidentialité…) : sommaire automatique tiré des titres, ancres,
   date de mise à jour, barre de lecture. Contenu : la page Shopify affichée, sinon les parties saisies ici.
   Aucun texte juridique n'est fourni : espaces réservés explicites.
+  NOCTIL (maquettes du 23 octobre) : menu des pages légales à gauche (page en cours mise en avant), au lieu du sommaire
+  ou au-dessus de lui.
 {%- endcomment -%}
 {%- liquid
   assign use_page = false
@@ -28,7 +30,19 @@
       </div>
       {%- if section.settings.intro != blank -%}<div class="es-rte es-legal__intro">{{ section.settings.intro }}</div>{%- endif -%}
     </header>
-    <div class="es-legal__layout{% unless section.settings.show_toc %} es-legal__layout--solo{% endunless %}">
+    {%- assign legal_menu = linklists[section.settings.pages_menu] -%}
+    <div class="es-legal__layout{% unless section.settings.show_toc or legal_menu.links.size > 0 %} es-legal__layout--solo{% endunless %}">
+      {%- if legal_menu.links.size > 0 and section.settings.show_toc -%}<div class="es-legal__side">{%- endif -%}
+      {%- if legal_menu.links.size > 0 -%}
+        <nav class="es-legal__pages" aria-label="{{ legal_menu.title | escape }}">
+          <ul role="list">
+            {%- for link in legal_menu.links -%}
+              {%- assign last_part = link.url | split: '/' | last -%}
+              <li><a href="{{ link.url }}"{% if page != blank and last_part == page.handle %} aria-current="page"{% endif %}>{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
       {%- if section.settings.show_toc -%}
         <nav class="es-legal__toc" aria-labelledby="LegalToc-{{ section.id }}" data-legal-toc>
           <details class="es-legal__details" open data-legal-details>
@@ -43,6 +57,7 @@
           </details>
         </nav>
       {%- endif -%}
+      {%- if legal_menu.links.size > 0 and section.settings.show_toc -%}</div>{%- endif -%}
       <article class="es-legal__body es-rte" data-legal-body>
         {%- if use_page -%}
           {{ page.content }}
@@ -68,6 +83,9 @@
 .es-legal__progress span { display: block; height: 100%; width: 100%; background: var(--c-accent); transform-origin: left; transform: scaleX(var(--p, 0)); }
 .es-legal__head { max-width: 860px; margin: 0 auto clamp(28px, 5vw, 56px); padding-bottom: clamp(20px, 3vw, 32px); border-bottom: 1px solid var(--c-border); }
 .es-legal__title { margin-bottom: .3em; }
+.es-legal__pages ul { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 4px; }
+.es-legal__pages a { display: block; padding: 10px 14px; border-radius: 10px; color: inherit; text-decoration: none; font-size: .9rem; }
+.es-legal__pages a[aria-current="page"] { background: color-mix(in srgb, var(--c-accent) 16%, var(--c-bg)); font-weight: 700; }
 .es-legal__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
 .es-legal__date { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: .88rem; color: var(--c-muted); }
 .es-legal__date .es-icon { width: 16px; height: 16px; }
@@ -231,6 +249,12 @@
       "id": "show_toc",
       "label": "Sommaire automatique",
       "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "pages_menu",
+      "label": "Menu des pages légales",
+      "info": "Facultatif : liens vers les autres pages légales, à gauche du texte ; la page en cours est mise en avant."
     },
     {
       "type": "checkbox",

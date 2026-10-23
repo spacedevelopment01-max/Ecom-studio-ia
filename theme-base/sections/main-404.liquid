@@ -1,11 +1,28 @@
-<section class="es-section es-404 color-{{ section.settings.color_scheme }}" style="--pt: 120px; --pb: 160px;">
-  <div class="es-container es-center">
-    <p class="es-404__code" data-reveal="mask">404</p>
-    <h1 class="es-heading es-h2">{{ section.settings.heading }}</h1>
-    <p class="es-muted">{{ section.settings.text }}</p>
+{%- comment -%}
+  Page introuvable. NOCTIL (maquettes du 23 octobre, planche 07) : photo de fond facultative sous un voile, illustration
+  (étoile et planètes dessinées, modifiables) à la place du « 404 », un seul bouton réglable (« Retour à l'accueil »).
+  Sans ces réglages, la page garde sa présentation d'origine (404, continuer les achats, rechercher).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign has_photo = false
+  if s.image != blank or s.image_asset != blank
+    assign has_photo = true
+  endif
+-%}
+<section class="es-section es-404{% if has_photo %} es-404--photo{% endif %} color-{{ s.color_scheme }}" style="--pt: 120px; --pb: 160px;">
+  {%- if has_photo -%}<div class="es-404__bg">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: '', focus_x: 50, focus_y: 70, loading: 'eager' %}</div>{%- endif -%}
+  <div class="es-container es-center es-404__inner">
+    {%- if s.illustration == 'star' -%}<span class="es-404__illus" aria-hidden="true">{% render 'star-illustration' %}</span>{%- else -%}<p class="es-404__code" data-reveal="mask">404</p>{%- endif -%}
+    <h1 class="es-heading es-h2">{{ s.heading }}</h1>
+    <p class="es-muted">{{ s.text }}</p>
     <div class="es-actions es-actions--center">
-      <a href="{{ routes.all_products_collection_url }}" class="es-button">{{ 'cart.continue' | t }}</a>
-      <a href="{{ routes.search_url }}" class="es-button es-button--secondary">{{ 'general.search' | t }}</a>
+      {%- if s.button_label != blank -%}
+        <a href="{{ s.button_link | default: routes.root_url }}" class="es-button">{{ s.button_label | escape }} {% render 'icon', name: 'arrow' %}</a>
+      {%- else -%}
+        <a href="{{ routes.all_products_collection_url }}" class="es-button">{{ 'cart.continue' | t }}</a>
+        <a href="{{ routes.search_url }}" class="es-button es-button--secondary">{{ 'general.search' | t }}</a>
+      {%- endif -%}
     </div>
   </div>
 </section>
@@ -16,6 +33,11 @@
   "settings": [
     { "type": "text", "id": "heading", "label": "Titre", "default": "Cette page s'est égarée." },
     { "type": "text", "id": "text", "label": "Texte", "default": "Le lien est peut-être ancien. Le reste de la boutique vous attend." },
+    { "type": "select", "id": "illustration", "label": "Au-dessus du titre", "default": "code", "options": [ { "value": "code", "label": "Le nombre 404" }, { "value": "star", "label": "Étoile et planètes dessinées" } ] },
+    { "type": "image_picker", "id": "image", "label": "Photo de fond" },
+    { "type": "text", "id": "image_asset", "label": "Photo de fond (fichier du thème)" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "info": "Vide : « Continuer mes achats » et « Rechercher »." },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" }
   ]
 }

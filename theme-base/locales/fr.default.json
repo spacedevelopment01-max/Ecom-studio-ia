@@ -5,6 +5,7 @@
     "previous": "Précédent",
     "next": "Suivant",
     "pagination": "Pagination",
+    "page": "Page",
     "pause": "Mettre en pause",
     "play": "Lire",
     "error": "Une erreur est survenue. Réessayez.",
@@ -305,6 +306,9 @@
   },
   "contact": {
     "name": "Nom",
+    "order": "Numéro de commande (facultatif)",
+    "subject": "Sujet",
+    "subject_choose": "Sélectionnez un sujet",
     "email": "E-mail",
     "phone": "Téléphone",
     "message": "Message",
@@ -328,7 +332,8 @@
       "title": "Connexion",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "forgot": "Mot de passe oublié ?"
+      "forgot": "Mot de passe oublié ?",
+      "or": "ou"
     },
     "recover": {
       "title": "Réinitialiser le mot de passe",

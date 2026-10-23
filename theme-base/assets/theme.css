@@ -1405,3 +1405,31 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .es-cookies__btn { min-height: 42px; padding: 8px 16px; font-size: .88rem; }
 @media (max-width: 749px) { .es-cookies__inner { grid-template-columns: 1fr; } .es-cookies__icon { display: none; } .es-cookies__actions { justify-content: stretch; } .es-cookies__btn { flex: 1 1 auto; } }
 .es-collection__item { min-width: 0; }
+/* Liens utiles sous l'achat (bloc « Liens utiles » de la fiche). */
+.es-product-links { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 18px 0 0; padding: 0; list-style: none; }
+.es-product-links a { display: inline-flex; align-items: center; gap: 8px; color: inherit; font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; min-height: 32px; }
+.es-product-links .es-icon { width: 20px; height: 20px; flex: none; }
+/* Panier en pastille (réglage « Texte à côté de l'icône du panier » de l'en-tête). */
+.es-cart-link--label { width: auto; padding: 0 16px 0 12px; gap: 6px; border-radius: 999px; display: inline-flex; align-items: center; }
+.es-cart-link--label .es-cart-link__label { font-weight: 600; font-size: .9rem; }
+@media (max-width: 749px) { .es-cart-link--label { padding: 0; width: 44px; justify-content: center; } .es-cart-link--label .es-cart-link__label { display: none; } }
+/* Planète dessinée (panier vide « Planète dessinée », page introuvable). */
+.es-planet { display: block; width: min(240px, 60vw); height: auto; margin: 0 auto 8px; color: var(--c-accent); }
+.es-planet__stars { fill: var(--cv-star, #F2B84B); }
+.es-cart__empty-illus { display: block; }
+/* Logo foncé éclairci sur fond sombre (réglage « Logo éclairci sur fond sombre ») : en-tête transparent posé sur la
+   photo d'ouverture (les profils au pied sombre, comme « astral », l'appliquent aussi au pied). Couleurs inversées puis
+   teinte rétablie : les nuances du logo restent. */
+body[data-logo-light] .es-header--transparent:not(.is-scrolled) .es-header__logo-img{filter:invert(1) hue-rotate(180deg)}
+/* Page introuvable : photo de fond sous un voile, étoile dessinée. */
+.es-404--photo { position: relative; overflow: hidden; }
+.es-404__bg { position: absolute; inset: 0; z-index: 0; }
+.es-404__bg .ed-media { position: absolute; inset: 0; height: 100%; }
+.es-404__bg img { width: 100%; height: 100%; object-fit: cover; }
+.es-404--photo::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, var(--c-bg) 0%, color-mix(in srgb, var(--c-bg) 82%, transparent) 55%, color-mix(in srgb, var(--c-bg) 30%, transparent) 100%); }
+.es-404__inner { position: relative; z-index: 2; }
+.es-404__illus { display: block; }
+.es-star-illus { display: block; width: min(320px, 80vw); height: auto; margin: 0 auto 12px; color: var(--c-accent); }
+.es-star-illus__star { fill: var(--cv-star, #F2B84B); filter: drop-shadow(0 0 18px rgba(255, 214, 120, .55)); }
+.es-star-illus__planet { fill: color-mix(in srgb, var(--c-accent) 70%, #fff); opacity: .85; }
+.es-star-illus__dots { fill: var(--cv-star, #F2B84B); }
