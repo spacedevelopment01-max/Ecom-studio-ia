@@ -1,0 +1,157 @@
+{
+  "demo": "museau-club",
+  "clientProducts": [
+    "Théière Anse",
+    "Théière Anse",
+    "Tasse Anse",
+    "Sous-tasse Anse",
+    "Plateau Anse"
+  ],
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "forfait « dominer » : fonctions proposées (34)",
+      "ok": true,
+      "offered": [
+        "Présentation principale",
+        "Bénéfices du produit",
+        "Détails du produit",
+        "Composition et matériaux",
+        "Caractéristiques",
+        "Mode d'emploi",
+        "Résultats et preuves",
+        "Avis et témoignages",
+        "Presse et distinctions",
+        "Garanties et livraison",
+        "Situations d'utilisation",
+        "Démonstration vidéo",
+        "Produits complémentaires",
+        "Histoire de la marque",
+        "Fabrication et savoir-faire",
+        "Questions fréquentes",
+        "Contact",
+        "Comparatif",
+        "Achat et offres",
+        "Newsletter",
+        "Article (corps)",
+        "Blog (corps)",
+        "Boutique (corps)",
+        "Boutique fermée (corps)",
+        "Bandeau d'annonce",
+        "En-tête",
+        "Fiche produit (corps)",
+        "Liste des collections (corps)",
+        "Page de contenu (corps)",
+        "Page introuvable (corps)",
+        "Page panier (corps)",
+        "Panier latéral",
+        "Pied de page",
+        "Recherche (corps)"
+      ]
+    },
+    {
+      "step": "galerie : « Présentation principale › light-veil » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › panel-left » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › panel-right » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › size-guide » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Bénéfices du produit › numbered » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Détails du produit › pills » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Caractéristiques › table » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Caractéristiques › cards-open » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Histoire de la marque › journal-row » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Produits complémentaires › over-photo » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Produits complémentaires › plus » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Questions fréquentes › topics » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Newsletter › background » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "ajout du panneau arrondi depuis la galerie",
+      "ok": true,
+      "section": "cv_banner_1",
+      "image": "es-en-situation-1-e31ugl.jpg"
+    },
+    {
+      "step": "titre, texte du bouton, photo remplacée et couleurs modifiés dans le panneau",
+      "ok": true,
+      "image": "es-en-situation-1-e31ugl.jpg → es-scene-c7t8vq.jpg"
+    },
+    {
+      "step": "section dupliquée (copie modifiable)",
+      "ok": true,
+      "copy": "cv_banner_2"
+    },
+    {
+      "step": "section déplacée",
+      "ok": true,
+      "from": 11,
+      "to": 10
+    },
+    {
+      "step": "rechargement : ajout, réglages, photo, copie et ordre conservés",
+      "ok": true,
+      "structure": [
+        "cv-banner",
+        "fs-products",
+        "cv-banner",
+        "cv-feature",
+        "fs-products",
+        "cv-cards",
+        "cv-banner",
+        "cv-banner",
+        "fs-journal",
+        "faq",
+        "cv-banner",
+        "newsletter-media",
+        "cv-banner"
+      ]
+    },
+    {
+      "step": "projet client à quatre produits en MUSEAU CLUB (accueil) : logo, produits et textes du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/6a8cdofx0fkzj50n/v/i4m2n7fg0obhx6bo~tndqyu._de5JD_rVaScwjacD4I-1ezVOQwQ875Z/assets/es-client-yyac0vqwzk7rv8tt.png"
+    },
+    {
+      "step": "projet client à quatre produits en MUSEAU CLUB (produit) : logo, produits et textes du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/6a8cdofx0fkzj50n/v/i4m2n7fg0obhx6bo~tndqz6.RuLHYqiLTqk1z7qNpXhfKo38SDsii2Aw/assets/es-client-yyac0vqwzk7rv8tt.png"
+    }
+  ],
+  "date": "2026-10-23T09:43:02.166Z"
+}
