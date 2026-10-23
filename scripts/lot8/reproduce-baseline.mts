@@ -1,0 +1,22 @@
+/** Reproduction sans réseau des défauts de main avant corrections. Données et copies de source isolées. */
+import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import crypto from 'node:crypto';import {execFileSync} from 'node:child_process';
+const repo=process.cwd(),base='0a6aa1dd6dfa5932a5e42e027cef2a3335e74679';
+const root=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-lot8-baseline-'));process.env.DATA_DIR=root;process.env.APP_SECRET=crypto.randomBytes(32).toString('hex');delete process.env.DATABASE_FILE;delete process.env.STORAGE_DIR;
+if(fs.existsSync(path.join(repo,'.env'))||fs.existsSync(path.join(repo,'.env.local')))throw new Error('No client environment permitted');
+const hashes:Record<string,string>={};
+for(const [file,dest] of [['payments.ts','baseline-payments.ts'],['payments-v2.ts','baseline-v2.ts']]){
+ const source=execFileSync('git',['show',`${base}:src/lib/${file}`],{encoding:'utf8'});hashes[file]=crypto.createHash('sha256').update(source).digest('hex');
+ const transformed=source.replace(/from ["'](\.\/[^"']+)["']/g,(_,relative)=>`from ${JSON.stringify(relative==='./payments'?path.join(root,'baseline-payments.ts'):path.join(repo,'src/lib',relative.slice(2)))}`).replace(/import\(["']\.\/payments-v2["']\)/g,`import(${JSON.stringify(path.join(root,'baseline-v2.ts'))})`);
+ fs.writeFileSync(path.join(root,dest),transformed);
+}
+const {createUser}=await import('../../src/lib/auth');const {id,now,one,run}=await import('../../src/lib/db');const {setSetting}=await import('../../src/lib/settings');const {balance,getSubscription,syncAllowance}=await import('../../src/lib/billing');const {grantProjectPlan}=await import('../../src/lib/project-subscriptions');
+setSetting('stripe.secretKey','sk_test_isolated_baseline');let requests=0;globalThis.fetch=(async(input:any)=>{if(!String(input).startsWith('https://api.stripe.com/v1/checkout/sessions'))throw new Error('External request forbidden');requests++;return new Response(JSON.stringify({id:`cs_fixture_${requests}`,url:'https://checkout.stripe.test/fixture'}),{status:200});}) as typeof fetch;
+const oldPay=await import(path.join(root,'baseline-payments.ts')),oldV2=await import(path.join(root,'baseline-v2.ts'));
+async function fixture(){const u=await createUser(`baseline-${id()}@example.test`,'isolated-only-password','Recette de référence');run("UPDATE users SET role='client' WHERE id=?",u.id);getSubscription(u.id);run("UPDATE subscriptions SET status='manual',plan='creer' WHERE user_id=?",u.id);syncAllowance(u.id);const pid=id();run('INSERT INTO projects(id,user_id,name,created_at,updated_at) VALUES(?,?,?,?,?)',pid,u.id,'Produit de test',now(),now());const key=grantProjectPlan(pid,'creer');return {u,pid,key};}
+const paid=(f:Awaited<ReturnType<typeof fixture>>,amount:number)=>({id:`evt_${id()}`,type:'checkout.session.completed',data:{object:{id:`cs_${id()}`,client_reference_id:f.u.id,payment_status:'paid',amount_total:amount,metadata:{kind:'topup_v2',user_id:f.u.id,project_id:f.pid}}}});
+const a=await fixture();await oldPay.packCheckout(a.u,'visuals');
+const before=balance(a.u.id,a.pid).topupBalance;await oldV2.applyV2Event(paid(a,0));const after=balance(a.u.id,a.pid).topupBalance;
+const b=await fixture(),e=paid(b,1000);run(`CREATE TRIGGER isolated_crash BEFORE UPDATE OF topup_balance ON wallets WHEN NEW.user_id='${b.key}' BEGIN SELECT RAISE(ABORT,'isolated crash'); END`);let interrupted=false;try{await oldV2.applyV2Event(e);}catch{interrupted=true;}run('DROP TRIGGER isolated_crash');const receiptSurvived=!!one('SELECT 1 FROM payments WHERE stripe_id=?',e.data.object.id);await oldV2.applyV2Event(e);const retryBalance=balance(b.u.id,b.pid).topupBalance;
+if(requests!==1||after<=before||!interrupted||!receiptSurvived||retryBalance!==0)throw new Error('Baseline defects not reproduced as expected');
+const result={schema:'lot8-baseline-1',baseCommit:base,sourceSha256:hashes,realProviderCalls:0,realPayments:0,providerTransport:'in-process fixture, no network',isolatedData:true,checks:[{defect:'RETIRED_PACK_STILL_PURCHASABLE',reproduced:true,simulatedCheckoutRequests:requests},{defect:'ZERO_TOPUP_CREDITS_DEFAULT_TEN_EUROS',reproduced:true,creditedMicro:after-before},{defect:'RECEIPT_WITHOUT_CREDIT_AFTER_INTERRUPTION',reproduced:true,receiptSurvived,retryCreditMicro:retryBalance}]};
+fs.mkdirSync(path.join(repo,'reports/lot8'),{recursive:true});fs.writeFileSync(path.join(repo,'reports/lot8/baseline.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

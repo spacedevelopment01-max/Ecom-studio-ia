@@ -416,7 +416,7 @@ export function StudioHome() {
   // Retour du paiement : l'abonnement n'existe qu'une fois le paiement confirmé par le serveur (quelques secondes).
   useEffect(() => {
     if (!params.paiement) return;
-    toast(params.paiement === "ok" ? "ok" : "bad", params.paiement === "ok" ? t("Paiement reçu. Votre abonnement apparaît dès sa confirmation (quelques secondes), puis vous créez votre projet.", "Payment received. Your subscription appears as soon as it's confirmed (a few seconds), then you create your project.") : t("Paiement annulé : rien n'a été débité.", "Payment canceled: nothing was charged."));
+    toast("info", params.paiement === "ok" ? t("Retour du paiement : votre abonnement apparaîtra après confirmation par le serveur. Consultez son état avant un nouvel achat.", "Back from payment: your subscription will appear after server confirmation. Check its status before another purchase.") : t("Vous avez quitté le paiement. Vérifiez son état avant de recommencer.", "You left checkout. Check its status before trying again."));
     window.history.replaceState(null, "", "/studio");
   }, [params.paiement, toast, t]);
   useEffect(() => {

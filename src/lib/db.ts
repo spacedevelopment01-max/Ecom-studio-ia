@@ -629,6 +629,62 @@ CREATE TABLE IF NOT EXISTS stripe_events (
   created INTEGER NOT NULL DEFAULT 0, -- horodatage Stripe de l'événement (secondes)
   processed_at INTEGER NOT NULL
 );
+-- Verrou reprenable des webhooks : aucune donnée de carte, aucun secret ni message fournisseur.
+CREATE TABLE IF NOT EXISTS stripe_event_claims (
+  id TEXT PRIMARY KEY,
+  owner TEXT NOT NULL,
+  lease_until INTEGER NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0
+);
+-- L'identité et les paramètres d'une ouverture Checkout survivent à une coupure réseau.
+CREATE TABLE IF NOT EXISTS checkout_intents (
+  id TEXT PRIMARY KEY,
+  signature TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  params_json TEXT NOT NULL,
+  lease_until INTEGER NOT NULL DEFAULT 0,
+  session_id TEXT,
+  created_at INTEGER NOT NULL,
+  closed_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS checkout_intents_open ON checkout_intents(signature) WHERE closed_at IS NULL;
+CREATE TABLE IF NOT EXISTS billing_mutations (
+  id TEXT PRIMARY KEY,
+  scope TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  path TEXT NOT NULL,
+  params_json TEXT NOT NULL,
+  response_json TEXT,
+  outcome TEXT,
+  lease_until INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  applied_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS billing_mutations_pending ON billing_mutations(scope) WHERE applied_at IS NULL;
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id TEXT,
+  subject TEXT NOT NULL,
+  category TEXT NOT NULL,
+  job_id TEXT,
+  status TEXT NOT NULL DEFAULT 'open',
+  request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(user_id, request_key)
+);
+CREATE INDEX IF NOT EXISTS support_tickets_owner ON support_tickets(user_id, updated_at);
+CREATE TABLE IF NOT EXISTS support_messages (
+  id TEXT PRIMARY KEY,
+  ticket_id TEXT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  staff INTEGER NOT NULL DEFAULT 0,
+  body TEXT NOT NULL,
+  request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(ticket_id, user_id, request_key)
+);
 -- Arrêt des anciens abonnements Stripe (changement de forfait) : réessayé par le worker jusqu'à confirmation.
 CREATE TABLE IF NOT EXISTS stripe_cancellations (
   subscription_id TEXT PRIMARY KEY,

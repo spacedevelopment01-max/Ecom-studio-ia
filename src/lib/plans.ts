@@ -294,6 +294,7 @@ export type BillingView = {
   /** Le pack Lancement a déjà été acheté (achat unique). */
   launchPackBought: boolean;
   paymentsLive: boolean;
+  paymentMode?: 'test'|'live'|'unconfigured'|'unknown';
   /** Utilisation de l'IA en % seulement : forfait du mois et crédits achetés (null s'il n'y en a pas) ; null sans forfait. */
   ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number } | null;
   /** Derniers paiements (abonnement, packs). */

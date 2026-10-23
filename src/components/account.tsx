@@ -11,6 +11,8 @@ import { LangSwitch, useLang, useT } from "./i18n";
 import { formatEur, useBilling } from "./billing-client";
 import { ProjectSubscriptionDialog, SUB_STATUS } from "./studio/project-subscription";
 import { SecurityCard } from "./password-forms";
+import { PaymentStatus } from './payment-status';
+import { SupportPanel } from './support-panel';
 import { PLANS, type Billing, type PlanId } from "@/lib/plans";
 
 export function AccountPage() {
@@ -29,7 +31,7 @@ export function AccountPage() {
     }
     const p = u.searchParams.get("paiement");
     if (!p) return;
-    toast(p === "ok" ? "ok" : "bad", p === "ok" ? t("Paiement reçu. Votre compte se met à jour dès la confirmation du paiement (quelques secondes).", "Payment received. Your account updates as soon as the payment is confirmed (a few seconds).") : t("Paiement annulé : rien n'a été débité.", "Payment canceled: nothing was charged."));
+    toast("info", p === "ok" ? t("Retour du paiement : sa confirmation doit encore être vérifiée côté serveur. Consultez l’état ci-dessous.", "Back from payment: server confirmation still needs to be checked. See the status below.") : t("Vous avez quitté le paiement. Vérifiez son état avant de recommencer.", "You left checkout. Check its status before trying again."));
     window.history.replaceState(null, "", "/studio/compte");
     const timer = setTimeout(reload, 4000);
     return () => clearTimeout(timer);
@@ -57,6 +59,7 @@ export function AccountPage() {
           <>
             {/* Abonnements : un par projet */}
             <Subscriptions paymentsOpen={b.paymentsLive} />
+            <PaymentStatus billing={b} onChecked={reload} />
 
             {/* Historique */}
             <Card className="p-6 sm:p-7">
@@ -81,24 +84,26 @@ export function AccountPage() {
         )}
         {/* Mot de passe et déconnexion (visible même si le forfait ne se charge pas) */}
         <SecurityCard />
+        <SupportPanel />
+        {me?.user.role==='admin'&&<SupportPanel queue />}
       </main>
     </div>
   );
 }
 
-type SubRow = { id: string; name: string; brand: string | null; subscription: { plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean } | null };
+type SubRow = { id: string; name: string; brand: string | null; subscription: { plan: PlanId; status: string; billing: Billing | null; priceCents?: number | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean } | null };
 
 /** Les abonnements du compte : un par projet, plus ceux payés en attente de création de projet. */
 function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
   const t = useT();
   const { lang } = useLang();
-  const { data, reload } = useApi<{ projects: SubRow[]; pending: { id: string; plan: PlanId; billing: Billing | null; status: string }[] }>("/api/projects");
+  const { data, reload } = useApi<{ projects: SubRow[]; pending: { id: string; plan: PlanId; billing: Billing | null; priceCents?: number | null; status: string }[] }>("/api/projects");
   const [manage, setManage] = useState<SubRow | null>(null);
   if (!data) return <div className="skeleton h-40 rounded-3xl" />;
   const rows = data.projects.filter((p) => p.subscription);
   // Montant facturé : abonnements payés (ceux offerts par l'équipe ne sont pas facturés).
   const active = rows.filter((p) => p.subscription?.status === "active");
-  const monthly = [...active.map((p) => p.subscription!), ...data.pending.filter((s) => s.status === "active")].reduce((sum, s) => sum + (s.billing === "year" ? PLANS[s.plan].price.year / 12 : PLANS[s.plan].price.month), 0);
+  const monthly = [...active.map((p) => p.subscription!), ...data.pending.filter((s) => s.status === "active")].reduce((sum, s) => sum + ((s.priceCents ?? Math.round(PLANS[s.plan].price[s.billing === "year" ? "year" : "month"] * 100)) / 100 / (s.billing === "year" ? 12 : 1)), 0);
   return (
     <Card className="p-6 sm:p-7">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -106,7 +111,7 @@ function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
           <h2 className="font-display text-2xl font-semibold">{t("Mes abonnements", "My subscriptions")}</h2>
           <p className="mt-1 text-sm text-ink-2">{t("1 abonnement = 1 projet. Chaque projet a son forfait, son budget IA et ses recharges.", "1 subscription = 1 project. Each project has its own plan, AI budget and top-ups.")}</p>
         </div>
-        {monthly > 0 && <p className="text-sm text-ink-2">{t("Total des abonnements actifs :", "Total active subscriptions:")} <strong className="font-display text-xl text-ink">{formatEur(Math.round(monthly * 100) / 100, lang)}</strong> {t("TTC / mois", "incl. VAT / month")}</p>}
+        {monthly > 0 && <p className="text-sm text-ink-2">{t("Total mensuel équivalent des abonnements actifs :", "Monthly equivalent of active subscriptions:")} <strong className="font-display text-xl text-ink">{formatEur(Math.round(monthly * 100) / 100, lang)}</strong> {t("TTC / mois", "incl. VAT / month")}</p>}
       </div>
       {rows.length === 0 && data.pending.length === 0 ? (
         <div className="mt-5 rounded-2xl bg-paper-2 p-4 text-sm text-ink-2">
