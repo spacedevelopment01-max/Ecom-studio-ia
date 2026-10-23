@@ -138,6 +138,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     for (const kind of ["fraise", "onde"] as const) add((await conversionProject(user.id, kind)).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
+    // Écrans d'exemple (commande, espace client) des boutiques de démonstration : composés par la démonstration MUSEAU CLUB
+    // (tests/museau-fixtures.ts), jamais par le moteur ni proposés dans une galerie (sur une vraie boutique : Shopify).
+    for (const t of ["demo-order", "demo-account"]) outside.add(t);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
     // Sections créées pour les bibliothèques par famille (issue #141) : elles servent par la galerie de leur famille.

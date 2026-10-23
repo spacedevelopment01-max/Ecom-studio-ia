@@ -104,55 +104,303 @@
   "tag": "section",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "paragraph", "content": "Page d'exemple pour une boutique de démonstration : aucun champ n'est envoyé, aucune carte n'est demandée. Sur une vraie boutique, la commande et sa confirmation sont des pages de Shopify." },
-    { "type": "select", "id": "layout", "label": "Page", "default": "checkout", "options": [ { "value": "checkout", "label": "Finaliser la commande" }, { "value": "confirmation", "label": "Confirmation" } ] },
-    { "type": "text", "id": "eyebrow", "label": "Pastille au-dessus du titre", "default": "Exemple de démonstration" },
-    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Finaliser ma commande" },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "text", "id": "demo_notice", "label": "Mention de démonstration (formulaire)", "default": "Exemple de démonstration : les champs sont désactivés, rien n'est envoyé ni payé." },
-    { "type": "header", "content": "Étapes" },
-    { "type": "text", "id": "contact_title", "label": "Étape contact", "default": "1. Contact" },
-    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "Adresse e-mail" },
-    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.com" },
-    { "type": "text", "id": "address_title", "label": "Étape adresse", "default": "2. Adresse de livraison" },
-    { "type": "text", "id": "first_name_label", "label": "Champ prénom", "default": "Prénom" },
-    { "type": "text", "id": "last_name_label", "label": "Champ nom", "default": "Nom" },
-    { "type": "text", "id": "address_label", "label": "Champ adresse", "default": "Adresse" },
-    { "type": "text", "id": "address_placeholder", "label": "Exemple d'adresse", "default": "Numéro et nom de la rue" },
-    { "type": "text", "id": "zip_label", "label": "Champ code postal", "default": "Code postal" },
-    { "type": "text", "id": "city_label", "label": "Champ ville", "default": "Ville" },
-    { "type": "text", "id": "country_label", "label": "Champ pays", "default": "Pays" },
-    { "type": "text", "id": "country_value", "label": "Pays affiché", "default": "France" },
-    { "type": "text", "id": "shipping_title", "label": "Étape livraison", "default": "3. Livraison" },
-    { "type": "text", "id": "payment_title", "label": "Étape paiement", "default": "4. Paiement" },
-    { "type": "textarea", "id": "payment_text", "label": "Texte de l'étape paiement", "default": "Paiement désactivé dans cette démonstration. Sur une vraie boutique, le paiement se fait sur la page sécurisée de Shopify." },
-    { "type": "header", "content": "Récapitulatif" },
-    { "type": "text", "id": "summary_title", "label": "Titre", "default": "Récapitulatif" },
-    { "type": "text", "id": "item_label", "label": "Mot « article »", "default": "article" },
-    { "type": "text", "id": "items_label", "label": "Mot « articles »", "default": "articles" },
-    { "type": "text", "id": "subtotal_label", "label": "Libellé du sous-total", "default": "Sous-total" },
-    { "type": "text", "id": "shipping_label", "label": "Libellé livraison", "default": "Livraison" },
-    { "type": "text", "id": "shipping_value", "label": "Texte livraison", "default": "À calculer" },
-    { "type": "text", "id": "total_note", "label": "Mention sous le récapitulatif", "default": "Prix de démonstration" },
-    { "type": "header", "content": "Bouton et photo" },
-    { "type": "text", "id": "button_label", "label": "Bouton" },
-    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
-    { "type": "text", "id": "button_note", "label": "Mention sous le bouton" },
-    { "type": "image_picker", "id": "image", "label": "Photo (confirmation)" },
-    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
-    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
-    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 40 },
-    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64 }
+    {
+      "type": "paragraph",
+      "content": "Page d'exemple pour une boutique de démonstration : aucun champ n'est envoyé, aucune carte n'est demandée. Sur une vraie boutique, la commande et sa confirmation sont des pages de Shopify."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Page",
+      "default": "checkout",
+      "options": [
+        {
+          "value": "checkout",
+          "label": "Finaliser la commande"
+        },
+        {
+          "value": "confirmation",
+          "label": "Confirmation"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Pastille au-dessus du titre",
+      "default": "Exemple de démonstration"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Finaliser ma commande"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "text",
+      "id": "demo_notice",
+      "label": "Mention de démonstration (formulaire)",
+      "default": "Exemple de démonstration : les champs sont désactivés, rien n'est envoyé ni payé."
+    },
+    {
+      "type": "header",
+      "content": "Étapes"
+    },
+    {
+      "type": "text",
+      "id": "contact_title",
+      "label": "Étape contact",
+      "default": "1. Contact"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Champ e-mail",
+      "default": "Adresse e-mail"
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Exemple d'e-mail",
+      "default": "votre@email.com"
+    },
+    {
+      "type": "text",
+      "id": "address_title",
+      "label": "Étape adresse",
+      "default": "2. Adresse de livraison"
+    },
+    {
+      "type": "text",
+      "id": "first_name_label",
+      "label": "Champ prénom",
+      "default": "Prénom"
+    },
+    {
+      "type": "text",
+      "id": "last_name_label",
+      "label": "Champ nom",
+      "default": "Nom"
+    },
+    {
+      "type": "text",
+      "id": "address_label",
+      "label": "Champ adresse",
+      "default": "Adresse"
+    },
+    {
+      "type": "text",
+      "id": "address_placeholder",
+      "label": "Exemple d'adresse",
+      "default": "Numéro et nom de la rue"
+    },
+    {
+      "type": "text",
+      "id": "zip_label",
+      "label": "Champ code postal",
+      "default": "Code postal"
+    },
+    {
+      "type": "text",
+      "id": "city_label",
+      "label": "Champ ville",
+      "default": "Ville"
+    },
+    {
+      "type": "text",
+      "id": "country_label",
+      "label": "Champ pays",
+      "default": "Pays"
+    },
+    {
+      "type": "text",
+      "id": "country_value",
+      "label": "Pays affiché",
+      "default": "France"
+    },
+    {
+      "type": "text",
+      "id": "shipping_title",
+      "label": "Étape livraison",
+      "default": "3. Livraison"
+    },
+    {
+      "type": "text",
+      "id": "payment_title",
+      "label": "Étape paiement",
+      "default": "4. Paiement"
+    },
+    {
+      "type": "textarea",
+      "id": "payment_text",
+      "label": "Texte de l'étape paiement",
+      "default": "Paiement désactivé dans cette démonstration. Sur une vraie boutique, le paiement se fait sur la page sécurisée de Shopify."
+    },
+    {
+      "type": "header",
+      "content": "Récapitulatif"
+    },
+    {
+      "type": "text",
+      "id": "summary_title",
+      "label": "Titre",
+      "default": "Récapitulatif"
+    },
+    {
+      "type": "text",
+      "id": "item_label",
+      "label": "Mot « article »",
+      "default": "article"
+    },
+    {
+      "type": "text",
+      "id": "items_label",
+      "label": "Mot « articles »",
+      "default": "articles"
+    },
+    {
+      "type": "text",
+      "id": "subtotal_label",
+      "label": "Libellé du sous-total",
+      "default": "Sous-total"
+    },
+    {
+      "type": "text",
+      "id": "shipping_label",
+      "label": "Libellé livraison",
+      "default": "Livraison"
+    },
+    {
+      "type": "text",
+      "id": "shipping_value",
+      "label": "Texte livraison",
+      "default": "À calculer"
+    },
+    {
+      "type": "text",
+      "id": "total_note",
+      "label": "Mention sous le récapitulatif",
+      "default": "Prix de démonstration"
+    },
+    {
+      "type": "header",
+      "content": "Bouton et photo"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Bouton"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton"
+    },
+    {
+      "type": "text",
+      "id": "button_note",
+      "label": "Mention sous le bouton"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo (confirmation)"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Photo (fichier du thème)"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Texte alternatif de la photo"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
   ],
   "blocks": [
-    { "type": "line", "name": "Ligne du récapitulatif", "limit": 6, "settings": [
-      { "type": "product", "id": "product", "label": "Produit" },
-      { "type": "textarea", "id": "variant_label", "label": "Variante affichée", "info": "Ex. « Bleu cobalt » puis, à la ligne, « Taille M »." },
-      { "type": "range", "id": "quantity", "label": "Quantité", "min": 1, "max": 5, "step": 1, "default": 1 }
-    ] }
+    {
+      "type": "line",
+      "name": "Ligne du récapitulatif",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produit"
+        },
+        {
+          "type": "textarea",
+          "id": "variant_label",
+          "label": "Variante affichée",
+          "info": "Ex. « Bleu cobalt » puis, à la ligne, « Taille M »."
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Exemple de commande"
+    }
   ]
 }
 {% endschema %}

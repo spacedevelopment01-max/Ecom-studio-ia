@@ -17,10 +17,6 @@
       assign subtotal = subtotal | plus: lt
     endif
   endfor
-  assign with_menu = false
-  if layout == 'account' or layout == 'addresses' or layout == 'infos'
-    assign with_menu = true
-  endif
 -%}
 {%- capture lines -%}
   <ul class="es-acct__lines" role="list">
@@ -54,13 +50,13 @@
               <fieldset class="es-acct__fields" disabled>
                 <legend class="visually-hidden">{{ s.heading | escape }}</legend>
                 {%- if layout == 'register' -%}
-                  <label class="es-acct__field"><span>{{ s.first_name_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field"><span>{{ s.last_name_label | escape }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
                 {%- endif -%}
                 <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"></label>
-                {%- unless layout == 'recover' -%}<label class="es-acct__field"><span>{{ s.password_label | escape }}</span><input type="password" autocomplete="off"></label>{%- endunless -%}
+                {%- unless layout == 'recover' -%}<label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><input type="password" autocomplete="off"></label>{%- endunless -%}
               </fieldset>
-              {%- if layout == 'login' and s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ s.recover_label | escape }}</a></p>{%- endif -%}
+              {%- if layout == 'login' and s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
               {%- if s.button_label != blank -%}<a class="es-button es-acct__primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}</a>{%- endif -%}
               {%- if s.secondary_label != blank -%}
                 {%- if layout == 'login' -%}<p class="es-acct__or"><span>{{ s.or_label | escape }}</span></p>{%- endif -%}
@@ -83,7 +79,7 @@
           {{ lines }}
         </div>
         <div class="es-acct__duo">
-          <div class="es-acct__card"><h2 class="es-acct__card-title">{{ s.address_title | escape }}</h2><p>{{ s.unknown_value | escape }}</p></div>
+          <div class="es-acct__card"><h2 class="es-acct__card-title">{{ 'customer.orders.shipping' | t }}</h2><p>{{ s.unknown_value | escape }}</p></div>
           <div class="es-acct__card"><h2 class="es-acct__card-title">{{ s.payment_title | escape }}</h2><p>{{ s.unknown_value | escape }}</p></div>
         </div>
       {%- else -%}
@@ -94,9 +90,9 @@
         <div class="es-acct__grid">
           <nav class="es-acct__menu" aria-label="{{ s.menu_label | escape }}">
             <a href="{{ s.account_link | default: '#' }}"{% if layout == 'account' %} aria-current="page"{% endif %}>{% render 'icon', name: 'cart' %}<span>{{ s.orders_label | escape }}</span></a>
-            <a href="{{ s.addresses_link | default: '#' }}"{% if layout == 'addresses' %} aria-current="page"{% endif %}>{% render 'icon', name: 'truck' %}<span>{{ s.addresses_label | escape }}</span></a>
+            <a href="{{ s.addresses_link | default: '#' }}"{% if layout == 'addresses' %} aria-current="page"{% endif %}>{% render 'icon', name: 'truck' %}<span>{{ 'customer.addresses.title' | t }}</span></a>
             <a href="{{ s.infos_link | default: '#' }}"{% if layout == 'infos' %} aria-current="page"{% endif %}>{% render 'icon', name: 'account' %}<span>{{ s.infos_label | escape }}</span></a>
-            <a href="{{ s.logout_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %}<span>{{ s.logout_label | escape }}</span></a>
+            <a href="{{ s.logout_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %}<span>{{ 'customer.logout' | t }}</span></a>
           </nav>
           <div class="es-acct__main">
             <p class="es-acct__demo">{{ s.demo_note | escape }}</p>
@@ -108,15 +104,15 @@
               </a>
               {%- if s.empty_text != blank -%}<p class="es-acct__empty">{{ s.empty_text | escape }}</p>{%- endif -%}
             {%- elsif layout == 'addresses' -%}
-              <h2 class="es-heading es-acct__subtitle">{{ s.addresses_label | escape }}</h2>
+              <h2 class="es-heading es-acct__subtitle">{{ 'customer.addresses.title' | t }}</h2>
               <div class="es-acct__card"><p>{{ s.empty_text | escape }}</p>
                 <fieldset class="es-acct__fields es-acct__fields--two" disabled>
-                  <legend>{{ s.address_title | escape }}</legend>
-                  <label class="es-acct__field"><span>{{ s.first_name_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field"><span>{{ s.last_name_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field es-acct__field--full"><span>{{ s.street_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field"><span>{{ s.zip_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field"><span>{{ s.city_label | escape }}</span><input type="text" autocomplete="off"></label>
+                  <legend>{{ 'customer.orders.shipping' | t }}</legend>
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field es-acct__field--full"><span>{{ 'customer.addresses.address1' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.addresses.zip' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.addresses.city' | t }}</span><input type="text" autocomplete="off"></label>
                 </fieldset>
               </div>
             {%- else -%}
@@ -124,8 +120,8 @@
               <div class="es-acct__card">
                 <fieldset class="es-acct__fields es-acct__fields--two" disabled>
                   <legend class="visually-hidden">{{ s.infos_label | escape }}</legend>
-                  <label class="es-acct__field"><span>{{ s.first_name_label | escape }}</span><input type="text" autocomplete="off"></label>
-                  <label class="es-acct__field"><span>{{ s.last_name_label | escape }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
                   <label class="es-acct__field es-acct__field--full"><span>{{ s.email_label | escape }}</span><input type="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"></label>
                 </fieldset>
               </div>
@@ -138,71 +134,329 @@
 
 {% schema %}
 {
-  "name": "Espace client (démonstration)",
+  "name": "Espace client (démo)",
   "tag": "section",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "paragraph", "content": "Écrans d'exemple pour une boutique de démonstration : rien n'est envoyé. Sur une vraie boutique, la connexion, le compte et les commandes sont ceux des comptes clients de Shopify." },
-    { "type": "select", "id": "layout", "label": "Écran", "default": "login", "options": [ { "value": "login", "label": "Connexion" }, { "value": "register", "label": "Créer un compte" }, { "value": "recover", "label": "Mot de passe oublié" }, { "value": "account", "label": "Mon compte (commandes)" }, { "value": "order", "label": "Détail d'une commande" }, { "value": "addresses", "label": "Adresses" }, { "value": "infos", "label": "Informations personnelles" } ] },
-    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Bon retour parmi nous !" },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Exemple de démonstration : aucune donnée n'est envoyée." },
-    { "type": "text", "id": "button_label", "label": "Bouton principal" },
-    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
-    { "type": "text", "id": "secondary_label", "label": "Bouton secondaire" },
-    { "type": "url", "id": "secondary_link", "label": "Lien du bouton secondaire" },
-    { "type": "text", "id": "or_label", "label": "Séparateur", "default": "ou" },
-    { "type": "header", "content": "Liens entre les écrans" },
-    { "type": "text", "id": "recover_label", "label": "Lien « mot de passe oublié »", "default": "Mot de passe oublié ?" },
-    { "type": "url", "id": "recover_link", "label": "Page « mot de passe oublié »" },
-    { "type": "url", "id": "account_link", "label": "Page « mon compte »" },
-    { "type": "url", "id": "order_link", "label": "Page « détail de commande »" },
-    { "type": "url", "id": "addresses_link", "label": "Page « adresses »" },
-    { "type": "url", "id": "infos_link", "label": "Page « informations personnelles »" },
-    { "type": "url", "id": "logout_link", "label": "Lien « déconnexion »" },
-    { "type": "header", "content": "Libellés" },
-    { "type": "text", "id": "menu_label", "label": "Nom du menu du compte", "default": "Mon compte" },
-    { "type": "text", "id": "orders_label", "label": "Commandes", "default": "Mes commandes" },
-    { "type": "text", "id": "addresses_label", "label": "Adresses", "default": "Adresses" },
-    { "type": "text", "id": "infos_label", "label": "Informations personnelles", "default": "Informations personnelles" },
-    { "type": "text", "id": "logout_label", "label": "Déconnexion", "default": "Déconnexion" },
-    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "Adresse e-mail" },
-    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.com" },
-    { "type": "text", "id": "password_label", "label": "Champ mot de passe", "default": "Mot de passe" },
-    { "type": "text", "id": "first_name_label", "label": "Champ prénom", "default": "Prénom" },
-    { "type": "text", "id": "last_name_label", "label": "Champ nom", "default": "Nom" },
-    { "type": "text", "id": "street_label", "label": "Champ adresse", "default": "Adresse" },
-    { "type": "text", "id": "zip_label", "label": "Champ code postal", "default": "Code postal" },
-    { "type": "text", "id": "city_label", "label": "Champ ville", "default": "Ville" },
-    { "type": "header", "content": "Commande d'exemple" },
-    { "type": "text", "id": "order_title", "label": "Nom de la commande", "default": "Commande n°1001" },
-    { "type": "text", "id": "pill", "label": "Pastille", "default": "Démonstration" },
-    { "type": "text", "id": "back_label", "label": "Lien de retour", "default": "Retour à mes commandes" },
-    { "type": "text", "id": "notice_title", "label": "Titre de l'encadré", "default": "Commande d'exemple." },
-    { "type": "text", "id": "lines_title", "label": "Titre des articles", "default": "Articles commandés" },
-    { "type": "text", "id": "quantity_label", "label": "Mot « quantité »", "default": "Quantité :" },
-    { "type": "text", "id": "price_note", "label": "Mention sous les prix", "default": "Prix de démonstration" },
-    { "type": "text", "id": "subtotal_label", "label": "Libellé du sous-total", "default": "Sous-total" },
-    { "type": "text", "id": "shipping_label", "label": "Libellé livraison", "default": "Livraison" },
-    { "type": "text", "id": "address_title", "label": "Titre adresse", "default": "Adresse de livraison" },
-    { "type": "text", "id": "payment_title", "label": "Titre paiement", "default": "Mode de paiement" },
-    { "type": "text", "id": "unknown_value", "label": "Valeur inconnue", "default": "À renseigner" },
-    { "type": "text", "id": "empty_text", "label": "Texte sous la liste" },
-    { "type": "header", "content": "Photo (connexion, création de compte)" },
-    { "type": "image_picker", "id": "image", "label": "Photo" },
-    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
-    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
-    { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 32 },
-    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 160, "step": 4, "unit": "px", "default": 64 }
+    {
+      "type": "paragraph",
+      "content": "Écrans d'exemple pour une boutique de démonstration : rien n'est envoyé. Sur une vraie boutique, la connexion, le compte et les commandes sont ceux des comptes clients de Shopify."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Écran",
+      "default": "login",
+      "options": [
+        {
+          "value": "login",
+          "label": "Connexion"
+        },
+        {
+          "value": "register",
+          "label": "Créer un compte"
+        },
+        {
+          "value": "recover",
+          "label": "Mot de passe oublié"
+        },
+        {
+          "value": "account",
+          "label": "Mon compte (commandes)"
+        },
+        {
+          "value": "order",
+          "label": "Détail d'une commande"
+        },
+        {
+          "value": "addresses",
+          "label": "Adresses"
+        },
+        {
+          "value": "infos",
+          "label": "Informations personnelles"
+        }
+      ]
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Bon retour parmi nous !"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "text",
+      "id": "demo_note",
+      "label": "Mention de démonstration",
+      "default": "Exemple de démonstration : aucune donnée n'est envoyée."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Bouton principal"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton principal"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Bouton secondaire"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Lien du bouton secondaire"
+    },
+    {
+      "type": "text",
+      "id": "or_label",
+      "label": "Séparateur",
+      "default": "ou"
+    },
+    {
+      "type": "header",
+      "content": "Liens entre les écrans"
+    },
+    {
+      "type": "url",
+      "id": "recover_link",
+      "label": "Page « mot de passe oublié »"
+    },
+    {
+      "type": "url",
+      "id": "account_link",
+      "label": "Page « mon compte »"
+    },
+    {
+      "type": "url",
+      "id": "order_link",
+      "label": "Page « détail de commande »"
+    },
+    {
+      "type": "url",
+      "id": "addresses_link",
+      "label": "Page « adresses »"
+    },
+    {
+      "type": "url",
+      "id": "infos_link",
+      "label": "Page « informations personnelles »"
+    },
+    {
+      "type": "url",
+      "id": "logout_link",
+      "label": "Lien « déconnexion »"
+    },
+    {
+      "type": "header",
+      "content": "Libellés"
+    },
+    {
+      "type": "text",
+      "id": "menu_label",
+      "label": "Nom du menu du compte",
+      "default": "Mon compte"
+    },
+    {
+      "type": "text",
+      "id": "orders_label",
+      "label": "Commandes",
+      "default": "Mes commandes"
+    },
+    {
+      "type": "text",
+      "id": "infos_label",
+      "label": "Informations personnelles",
+      "default": "Informations personnelles"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Champ e-mail",
+      "default": "Adresse e-mail"
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Exemple d'e-mail",
+      "default": "votre@email.com"
+    },
+    {
+      "type": "header",
+      "content": "Commande d'exemple"
+    },
+    {
+      "type": "text",
+      "id": "order_title",
+      "label": "Nom de la commande",
+      "default": "Commande n°1001"
+    },
+    {
+      "type": "text",
+      "id": "pill",
+      "label": "Pastille",
+      "default": "Démonstration"
+    },
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Lien de retour",
+      "default": "Retour à mes commandes"
+    },
+    {
+      "type": "text",
+      "id": "notice_title",
+      "label": "Titre de l'encadré",
+      "default": "Commande d'exemple."
+    },
+    {
+      "type": "text",
+      "id": "lines_title",
+      "label": "Titre des articles",
+      "default": "Articles commandés"
+    },
+    {
+      "type": "text",
+      "id": "quantity_label",
+      "label": "Mot « quantité »",
+      "default": "Quantité :"
+    },
+    {
+      "type": "text",
+      "id": "price_note",
+      "label": "Mention sous les prix",
+      "default": "Prix de démonstration"
+    },
+    {
+      "type": "text",
+      "id": "subtotal_label",
+      "label": "Libellé du sous-total",
+      "default": "Sous-total"
+    },
+    {
+      "type": "text",
+      "id": "shipping_label",
+      "label": "Libellé livraison",
+      "default": "Livraison"
+    },
+    {
+      "type": "text",
+      "id": "payment_title",
+      "label": "Titre paiement",
+      "default": "Mode de paiement"
+    },
+    {
+      "type": "text",
+      "id": "unknown_value",
+      "label": "Valeur inconnue",
+      "default": "À renseigner"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Texte sous la liste"
+    },
+    {
+      "type": "header",
+      "content": "Photo (connexion, création de compte)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Photo (fichier du thème)"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Texte alternatif de la photo"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
   ],
   "blocks": [
-    { "type": "line", "name": "Article de la commande", "limit": 6, "settings": [
-      { "type": "product", "id": "product", "label": "Produit" },
-      { "type": "range", "id": "quantity", "label": "Quantité", "min": 1, "max": 5, "step": 1, "default": 1 }
-    ] }
+    {
+      "type": "line",
+      "name": "Article de la commande",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produit"
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Espace client (démo)"
+    }
   ]
 }
 {% endschema %}

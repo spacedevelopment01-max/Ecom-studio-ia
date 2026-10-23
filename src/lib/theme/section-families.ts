@@ -55,6 +55,13 @@ const SPECIALTY: FamilyEntry[] = [
     d("band", "Bandeau photo et bouton en contour", "Photo band and outlined button", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true }),
     d("product-card", "Carte produit, prix et liste cochée", "Product card, price and checklist", "cv-hero", "split-left", { layout: "card", button_arrow: true },
       [{ type: "check" }, { type: "check" }, { type: "check" }]),
+    // MUSEAU CLUB (maquettes du 23 octobre) : grande photo sur voile clair, panneaux arrondis, guide des tailles
+    // illustré, appel final avec le produit et son prix.
+    d("light-veil", "Ouverture lumineuse, voile clair", "Bright opening, light veil", "cv-banner", "background", { layout: "spotlight", band_height: "hero", veil: "light", button_arrow: true }),
+    d("panel-left", "Panneau arrondi à gauche, photo à droite", "Rounded panel on the left, photo on the right", "cv-banner", "split-right", { layout: "panel-left", button_arrow: true }),
+    d("panel-right", "Photo à gauche, panneau arrondi à droite", "Photo on the left, rounded panel on the right", "cv-banner", "split-left", { layout: "panel-right", button_arrow: true }),
+    d("size-guide", "Guide des tailles illustré", "Illustrated size guide", "cv-banner", "drawing", { layout: "illustration", illus_label_1: "Tour de cou", illus_label_2: "Tour de poitrail", button_arrow: true }),
+    d("buy-band", "Appel final avec le produit et son prix", "Final call with the product and its price", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "light", button_arrow: true }),
   ]),
   e("specialty", 2, "benefits", { fr: "Bénéfices du produit", en: "Product benefits" }, { fr: "Avantages clients avec icônes, illustrations ou photos.", en: "Customer benefits with icons, illustrations or photos." }, "bénéfices avantages atouts icônes", [
     d("grid", "Grille", "Grid", "features-grid", "grid-4", { layout: "grid", columns: 4, columns_mobile: "2", style: "plain" }),
@@ -66,6 +73,9 @@ const SPECIALTY: FamilyEntry[] = [
     // TRAVERSE : produit, titre, bouton et rangée d'icônes, gros plans légendés à droite.
     d("essentials", "Essentiels : produit, icônes et gros plans", "Essentials: product, icons and close-ups", "cv-feature", "split-left", { layout: "essentials", button_arrow: true },
       [{ type: "point", settings: { icon: "zip" } }, { type: "point", settings: { icon: "buckle" } }, { type: "point", settings: { icon: "handle" } }, { type: "point", settings: { icon: "parcel" } }, { type: "detail" }, { type: "detail" }, { type: "detail" }]),
+    // MUSEAU CLUB : produit en grand et trois gros plans ronds numérotés.
+    d("numbered", "Produit et gros plans numérotés", "Product and numbered close-ups", "cv-feature", "split-right", { layout: "numbered", detail_shape: "circle", detail_numbers: true, button_arrow: true },
+      [{ type: "detail" }, { type: "detail" }, { type: "detail" }]),
     d("marquee", "Bandeau défilant", "Scrolling band", "marquee", "marquee", { size: "small" }),
   ]),
   e("specialty", 3, "details", { fr: "Détails du produit", en: "Product details" }, { fr: "Gros plans légendés ou repères interactifs sur le produit.", en: "Captioned close-ups or interactive markers on the product." }, "détails gros plan repères points interactifs", [
@@ -73,6 +83,9 @@ const SPECIALTY: FamilyEntry[] = [
     d("columns", "Gros plans en colonnes", "Close-ups in columns", "cv-cards", "grid-3", { layout: "columns" }),
     // TRAVERSE : trois photos, titre et phrase posés dessus.
     d("photo-cards", "Cartes sur photo", "Cards on photos", "cv-cards", "grid-3", { layout: "overlay" }),
+    // MUSEAU CLUB : photos à pastilles (lieu, moment) et photos numérotées.
+    d("pills", "Photos à pastilles, titre à gauche", "Photos with pill labels, title on the left", "cv-cards", "grid-3", { layout: "pills" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("numbered", "Photos numérotées", "Numbered photos", "cv-cards", "grid-3", { layout: "columns", numbered: true }),
     d("hotspots", "Repères interactifs", "Interactive markers", "cv-hotspots", "hotspots", { layout: "side" }),
     d("hotspots-stacked", "Repères, liste dessous", "Markers, list below", "cv-hotspots", "hotspots", { layout: "stacked" }),
   ]),
@@ -84,6 +97,11 @@ const SPECIALTY: FamilyEntry[] = [
   e("specialty", 5, "specs", { fr: "Caractéristiques", en: "Specifications" }, { fr: "Informations précises en tableau, liste ou accordéons.", en: "Precise information as a table, list or accordions." }, "caractéristiques fiche technique dimensions accordéons onglets", [
     d("side", "Titre à côté, accordéons", "Title beside, accordions", "cv-specs", "accordion", { layout: "side" }),
     d("stacked", "Accordéons empilés", "Stacked accordions", "cv-specs", "accordion", { layout: "stacked" }),
+    // MUSEAU CLUB : tableau des tailles (valeurs « À renseigner ») et cartes ouvertes à pictogramme (livraison, retours).
+    d("table", "Tableau (guide des tailles)", "Table (size guide)", "cv-specs", "table", { layout: "table" },
+      [{ type: "group", settings: { title: "S", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }, { type: "group", settings: { title: "M", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }, { type: "group", settings: { title: "L", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }]),
+    d("cards-open", "Cartes ouvertes à pictogramme", "Open cards with icons", "cv-specs", "cards-rows", { layout: "cards" },
+      [{ type: "group", settings: { icon: "truck", title: "Livraison", rows: "Délais : À renseigner\nFrais : À renseigner" } }, { type: "group", settings: { icon: "return", title: "Retours", rows: "Procédure : À renseigner" } }]),
     d("tabs", "Onglets", "Tabs", "content-tabs", "tabs", { tab_style: "underline" }),
     d("tabs-pills", "Onglets en pastilles", "Pill tabs", "content-tabs", "tabs", { tab_style: "pills" }),
   ]),
@@ -132,6 +150,9 @@ const SPECIALTY: FamilyEntry[] = [
     d("statement", "Grande déclaration", "Large statement", "rich-text", "statement", { style: "statement" }),
     d("image-left", "Image et texte", "Image and text", "image-with-text", "split-left", { layout: "image-left" }),
     d("overlap", "Image et texte superposés", "Overlapping image and text", "image-with-text", "split-right", { layout: "overlap" }),
+    // MUSEAU CLUB : le journal de la marque (rangée de petites cartes ; grille à pastilles par catégorie).
+    d("journal-row", "Articles du journal en rangée", "Journal articles in a row", "fs-journal", "cards-rows", { layout: "row" }),
+    d("journal-grid", "Journal à pastilles", "Journal with filter pills", "fs-journal", "grid-2", { layout: "grid", filters: true, tag_on_image: true, show_excerpt: true }),
   ]),
   e("specialty", 14, "making", { fr: "Fabrication et savoir-faire", en: "Making and know-how" }, { fr: "Conception, fabrication et contrôles qualité.", en: "Design, making and quality checks." }, "fabrication savoir-faire conception contrôle qualité", [
     d("steps", "Étapes illustrées", "Illustrated steps", "fs-making", "steps", { layout: "steps" }),
@@ -149,6 +170,10 @@ const SPECIALTY: FamilyEntry[] = [
     d("recommended", "Recommandations automatiques", "Automatic recommendations", "product-recommendations", "grid-4", { intent: "complementary" }),
     d("grid", "Sélection manuelle en grille", "Manual selection grid", "fs-products", "grid-3", { layout: "grid", source: "manual" }),
     d("carousel", "Sélection en carrousel", "Selection carousel", "fs-products", "carousel", { layout: "carousel", source: "manual" }),
+    // MUSEAU CLUB : photo et produits côte à côte, produits posés sur une photo, ensemble assorti relié par des « + ».
+    d("media", "Photo et produits", "Photo and products", "fs-products", "split-left", { layout: "media", source: "manual" }),
+    d("over-photo", "Produits posés sur une photo", "Products over a photo", "fs-products", "background", { layout: "over-photo", source: "manual", exclude_current: true }),
+    d("plus", "Ensemble assorti (+)", "Matching set (+)", "fs-products", "grid-4", { layout: "plus", source: "manual" }),
   ]),
   e("specialty", 17, "guarantees", { fr: "Garanties et livraison", en: "Guarantees and delivery" }, { fr: "Expédition, retours, garantie et assistance.", en: "Shipping, returns, warranty and support." }, "garantie livraison expédition retours assistance", [
     d("shield", "Garantie mise en avant", "Highlighted guarantee", "cv-guarantee", "featured"),
@@ -164,10 +189,15 @@ const SPECIALTY: FamilyEntry[] = [
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines", layout: "stacked" }),
     d("side", "Titre à côté", "Title beside", "faq", "split-left", { style: "lines", layout: "side" }),
     d("numbered", "Numérotées", "Numbered", "faq", "list", { style: "numbered", layout: "stacked" }),
+    // MUSEAU CLUB : recherche et thèmes en pastilles ; photo avec le titre posé dessus.
+    d("topics", "Recherche et thèmes", "Search and topics", "faq", "tabs", { style: "cards", layout: "stacked", search: true, topics: true }),
+    d("photo", "Photo et questions", "Photo and questions", "faq", "split-left", { style: "lines", layout: "side" }),
   ]),
   e("specialty", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Invitation à recevoir les actualités.", en: "Invitation to receive news." }, "newsletter inscription e-mail", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),
     d("visual", "Inscription avec visuel", "Sign-up with visual", "newsletter-media", "split-right"),
+    // MUSEAU CLUB : bandeau photo, texte et champ côte à côte.
+    d("background", "Inscription sur photo", "Sign-up over a photo", "newsletter-media", "background", { layout: "background" }),
   ]),
   e("specialty", 20, "contact", { fr: "Contact", en: "Contact" }, { fr: "Coordonnées et formulaire de questions.", en: "Contact details and question form." }, "contact formulaire coordonnées", [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
@@ -428,7 +458,9 @@ export const FAMILY_LIBRARY: Record<FamilyId, FamilyEntry[]> = { specialty: SPEC
 export const ALL_ENTRIES: FamilyEntry[] = [...SPECIALTY, ...CATALOG, ...SERVICES];
 
 /** Composants hors des 20 sections : structure des pages, modèles techniques, pages légales et articles. */
-export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps"]);
+// « demo-order » et « demo-account » : écrans d'exemple de commande et d'espace client des boutiques de démonstration
+// (MUSEAU CLUB) ; sur une vraie boutique, ces écrans sont ceux de Shopify : jamais proposés dans la galerie.
+export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account"]);
 export const isStructuralType = (type: string) => type.startsWith("main-") || STRUCTURAL_TYPES.has(type);
 
 /** Types de sections proposables dans une famille (union des dispositions de ses 20 entrées). */

@@ -574,7 +574,7 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     // assorti à côté d'une photo, trois petites aventures, guide des tailles illustré, la marque, derniers articles,
     // questions avec photo, inscription sur photo.
     home: (k) => [
-      k.lib("cv-banner", 1, { layout: "background", band_height: "hero", veil: "light", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("cv-banner", 1, { layout: "spotlight", band_height: "hero", veil: "light", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
       k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", heading: "", text: "", padding_top: 0, padding_bottom: 24 }),
       k.lib("cv-banner", 3, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
       ((details) => k.lib("cv-feature", 1, { layout: "numbered", detail_shape: "circle", detail_numbers: true, image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, padding_top: 40, padding_bottom: 40 }, { blocks: details.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),

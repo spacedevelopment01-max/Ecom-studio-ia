@@ -11,9 +11,10 @@
   assign s = section.settings
   assign speed = s.animation_speed | default: 'normal'
   assign buy = s.buy_product
+  # « spotlight » (ouverture MUSEAU CLUB) : rendu « visuel en fond » avec sa propre classe, voile clair conseillé.
 -%}
 {%- if s.hide_when_cart_empty and cart.item_count == 0 -%}{%- else -%}
-<section class="es-section cv-banner cv-banner--{{ s.layout }} cv-banner--h-{{ s.band_height | default: 'auto' }} cv-banner--mv-{{ s.mobile_valign | default: 'center' }} cv-banner--veil-{{ s.veil | default: 'none' }}{% if s.title_rule %} cv-banner--rule{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;{% if s.image_zoom > 100 %}--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }};{% endif %}">
+<section class="es-section cv-banner cv-banner--{% if s.layout == 'spotlight' %}background cv-banner--spotlight{% else %}{{ s.layout }}{% endif %} cv-banner--h-{{ s.band_height | default: 'auto' }} cv-banner--mv-{{ s.mobile_valign | default: 'center' }} cv-banner--veil-{{ s.veil | default: 'none' }}{% if s.title_rule %} cv-banner--rule{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;{% if s.image_zoom > 100 %}--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }};{% endif %}">
   <div class="es-container">
     <div class="cv-banner__inner"{% render 'cv-reveal', animation: s.animation %}>
       {%- if s.layout == 'illustration' -%}
@@ -57,7 +58,7 @@
     { "type": "range", "id": "mobile_focus_y", "label": "Point focal vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement du visuel", "info": "Au-delà de 100 %, la photo est agrandie autour du point focal (pour cadrer un paysage sans le produit, par exemple).", "min": 100, "max": 250, "step": 5, "unit": "%", "default": 100 },
     { "type": "select", "id": "image_loading", "label": "Chargement du visuel", "default": "lazy", "options": [ { "value": "lazy", "label": "Différé" }, { "value": "eager", "label": "Immédiat (haut de page)" } ] },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" }, { "value": "panel-left", "label": "Panneau arrondi à gauche, photo à droite" }, { "value": "panel-right", "label": "Photo à gauche, panneau arrondi à droite" }, { "value": "illustration", "label": "Illustration du guide des tailles" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" }, { "value": "spotlight", "label": "Ouverture lumineuse : grande photo, texte sur voile clair" }, { "value": "panel-left", "label": "Panneau arrondi à gauche, photo à droite" }, { "value": "panel-right", "label": "Photo à gauche, panneau arrondi à droite" }, { "value": "illustration", "label": "Illustration du guide des tailles" } ] },
     { "type": "text", "id": "illus_label_1", "label": "Illustration : premier repère", "default": "Tour de cou" },
     { "type": "text", "id": "illus_label_2", "label": "Illustration : second repère", "default": "Tour de poitrail" },
     { "type": "text", "id": "illus_note", "label": "Illustration : bulle", "info": "Facultatif, ex. « Mesurez le tour de cou à l'endroit indiqué »." },

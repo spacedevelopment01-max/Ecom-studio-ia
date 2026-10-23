@@ -20,7 +20,8 @@
       </nav>
     {%- endif -%}
     {%- if s.eyebrow != blank -%}<p class="cv-article__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
-    <h1 class="es-heading cv-article__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <span class="cv-article__accent">{{ s.heading_accent | escape }}</span>{% endif %}</h1>
+    {%- comment -%} Sans titre : suite d'un article coupé par un encart (MUSEAU CLUB), un seul H1 par page. {%- endcomment -%}
+    {%- if s.heading != blank -%}<h1 class="es-heading cv-article__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <span class="cv-article__accent">{{ s.heading_accent | escape }}</span>{% endif %}</h1>{%- endif -%}
     {%- if s.intro != blank -%}<div class="es-rte cv-article__intro">{{ s.intro }}</div>{%- endif -%}
     {%- if s.author != blank -%}
       <div class="cv-article__byline">

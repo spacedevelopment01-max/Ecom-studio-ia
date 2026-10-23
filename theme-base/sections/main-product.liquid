@@ -215,26 +215,7 @@
   </div>
 
   {%- if section.settings.sticky_bar and section.settings.purchase_enabled != true -%}
-    <div class="es-sticky-buy color-{{ section.settings.color_scheme }}" data-sticky-buy hidden>
-      <div class="es-container es-sticky-buy__inner">
-        <div class="es-sticky-buy__product">
-          {%- if product.featured_media -%}{{ product.featured_media | image_url: width: 120 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}
-          <div>
-            <p class="es-sticky-buy__title">{{ product.title }}</p>
-            <p class="es-sticky-buy__meta"><span data-sticky-meta>{% unless product.has_only_default_variant %}{{ product.selected_or_first_available_variant.title }}{% endunless %}</span> <strong data-sticky-total{% if settings.price_trim_zeros %} data-trim-zeros{% endif %}>{% if settings.price_trim_zeros %}{{ product.selected_or_first_available_variant.price | money_without_trailing_zeros }}{% else %}{{ product.selected_or_first_available_variant.price | money }}{% endif %}</strong></p>
-          </div>
-        </div>
-        {%- comment -%} Taille dans la barre (maquettes MUSEAU CLUB) : la même option que le formulaire principal, synchronisée. {%- endcomment -%}
-        {%- for option in product.options_with_values -%}
-          {%- assign on = option.name | downcase -%}
-          {%- if option.values.size > 1 and on == 'taille' or option.values.size > 1 and on == 'size' -%}
-            <label class="visually-hidden" for="StickyOption-{{ section.id }}">{{ option.name }}</label>
-            <select id="StickyOption-{{ section.id }}" class="es-select es-sticky-buy__option" data-sticky-option="{{ forloop.index0 }}">{%- for value in option.values -%}<option value="{{ value | escape }}"{% if option.selected_value == value %} selected{% endif %}>{{ value }}</option>{%- endfor -%}</select>
-          {%- endif -%}
-        {%- endfor -%}
-        <button type="button" class="es-button" data-sticky-add {% if current_variant.available == false or current_variant.price == nil %}disabled{% endif %}>{% if current_variant.price == nil %}{{ 'products.product.not_for_sale' | t }}{% else %}{{ 'products.product.add_to_cart' | t }}{% endif %}</button>
-      </div>
-    </div>
+    {% render 'sticky-buy', product: product, current_variant: current_variant, scheme: section.settings.color_scheme, section_id: section.id %}
   {%- endif -%}
 
   {%- comment -%} Données structurées : seulement ce que la boutique connaît. Une variante sans prix (prix à définir) n'a pas d'offre ; aucune note ni avis n'est déclaré ici. {%- endcomment -%}

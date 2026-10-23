@@ -21,7 +21,7 @@
   <div class="es-container">
     <header class="es-legal__head">
       {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
-      {%- if title != blank -%}<h1 class="es-heading es-h2 es-legal__title">{{ title }}</h1>{%- endif -%}
+      {%- if title != blank and section.settings.show_title != false -%}<h1 class="es-heading es-h2 es-legal__title">{{ title }}</h1>{%- endif -%}
       <div class="es-legal__meta">
         {%- if section.settings.updated != blank -%}<p class="es-legal__date">{% render 'icon', name: 'clock' %}<span>{{ 'sections.legal_page.updated' | t }} {{ section.settings.updated }}</span></p>{%- endif -%}
         {%- if section.settings.show_print -%}<button type="button" class="es-legal__print" data-legal-print>{{ 'sections.legal_page.print' | t }}</button>{%- endif -%}
@@ -175,31 +175,153 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "paragraph", "content": "Aucun texte juridique n'est fourni : utilisez des textes validés pour votre activité (Shopify › Paramètres › Politiques, ou un professionnel du droit)." },
-    { "type": "select", "id": "source", "label": "Contenu", "default": "page", "options": [{ "value": "page", "label": "Contenu de la page Shopify (à défaut, les parties)" }, { "value": "blocks", "label": "Parties saisies ici" }], "info": "Sur un modèle de page, le texte de la page s'affiche et ses titres forment le sommaire." },
-    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Informations légales" },
-    { "type": "text", "id": "heading", "label": "Titre", "info": "Vide : titre de la page Shopify." },
-    { "type": "text", "id": "updated", "label": "Date de mise à jour", "default": "[À compléter : date]" },
-    { "type": "richtext", "id": "intro", "label": "Introduction (facultatif)" },
-    { "type": "checkbox", "id": "show_toc", "label": "Sommaire automatique", "default": true },
-    { "type": "checkbox", "id": "show_print", "label": "Bouton « Imprimer »", "default": true },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    {
+      "type": "paragraph",
+      "content": "Aucun texte juridique n'est fourni : utilisez des textes validés pour votre activité (Shopify › Paramètres › Politiques, ou un professionnel du droit)."
+    },
+    {
+      "type": "select",
+      "id": "source",
+      "label": "Contenu",
+      "default": "page",
+      "options": [
+        {
+          "value": "page",
+          "label": "Contenu de la page Shopify (à défaut, les parties)"
+        },
+        {
+          "value": "blocks",
+          "label": "Parties saisies ici"
+        }
+      ],
+      "info": "Sur un modèle de page, le texte de la page s'affiche et ses titres forment le sommaire."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre",
+      "default": "Informations légales"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "info": "Vide : titre de la page Shopify."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Afficher le titre",
+      "info": "À décocher quand un bandeau d'ouverture porte déjà le titre de la page (un seul H1).",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "updated",
+      "label": "Date de mise à jour",
+      "default": "[À compléter : date]"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Introduction (facultatif)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_toc",
+      "label": "Sommaire automatique",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_print",
+      "label": "Bouton « Imprimer »",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 96
+    }
   ],
   "blocks": [
-    { "type": "part", "name": "Partie", "settings": [
-      { "type": "text", "id": "title", "label": "Titre de la partie", "default": "[À compléter : titre de la partie]" },
-      { "type": "richtext", "id": "text", "label": "Texte", "default": "<p>[À compléter : texte validé de cette partie. Aucun texte juridique n'est fourni par défaut.]</p>" }
-    ] }
+    {
+      "type": "part",
+      "name": "Partie",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre de la partie",
+          "default": "[À compléter : titre de la partie]"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte",
+          "default": "<p>[À compléter : texte validé de cette partie. Aucun texte juridique n'est fourni par défaut.]</p>"
+        }
+      ]
+    }
   ],
   "max_blocks": 30,
-  "presets": [{ "name": "Page légale", "blocks": [
-    { "type": "part", "settings": { "title": "[À compléter : Article 1 — Objet]" } },
-    { "type": "part", "settings": { "title": "[À compléter : Article 2 — Commandes]" } },
-    { "type": "part", "settings": { "title": "[À compléter : Article 3 — Prix et paiement]" } },
-    { "type": "part", "settings": { "title": "[À compléter : Article 4 — Livraison]" } },
-    { "type": "part", "settings": { "title": "[À compléter : Article 5 — Rétractation et retours]" } }
-  ] }]
+  "presets": [
+    {
+      "name": "Page légale",
+      "blocks": [
+        {
+          "type": "part",
+          "settings": {
+            "title": "[À compléter : Article 1 — Objet]"
+          }
+        },
+        {
+          "type": "part",
+          "settings": {
+            "title": "[À compléter : Article 2 — Commandes]"
+          }
+        },
+        {
+          "type": "part",
+          "settings": {
+            "title": "[À compléter : Article 3 — Prix et paiement]"
+          }
+        },
+        {
+          "type": "part",
+          "settings": {
+            "title": "[À compléter : Article 4 — Livraison]"
+          }
+        },
+        {
+          "type": "part",
+          "settings": {
+            "title": "[À compléter : Article 5 — Rétractation et retours]"
+          }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
