@@ -46,7 +46,7 @@ try {
   // 1. L'onglet « Biens » : la liste des 27 biens de la démonstration, dans le menu du studio.
   await page.goto(`${origin}/studio/${f.pid}/biens`, { waitUntil: "networkidle", timeout: 240000 });
   const nudge = page.locator("[data-tuto-nudge]").getByRole("button", { name: /^(Masquer|Dismiss)$/ }); if (await nudge.count()) await nudge.click();
-  await page.getByText("Vos biens à vendre et à louer").waitFor({ timeout: 120000 });
+  await page.getByText("Vos biens à vendre et à louer", { exact: true }).waitFor({ timeout: 120000 });
   await page.getByRole("link", { name: /^Biens/ }).first().waitFor({ timeout: 30000 });
   const listed = await page.locator("li").filter({ hasText: /V-0001|L-0001/ }).count();
   assert.ok(listed >= 2, "biens de la démonstration listés");
