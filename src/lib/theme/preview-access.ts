@@ -78,6 +78,12 @@ export function previewCors(req: Request, headers: Headers): Headers {
   if (req.headers.get("origin") === "null") {
     headers.set("Access-Control-Allow-Origin", "null");
     headers.append("Vary", "Origin");
+    // Ouvert seul, l'aperçu peut avoir besoin du cookie du proxy privé. Ne permettre
+    // sa réponse qu'avec une capacité déjà valide, jamais par la seule session.
+    try {
+      const parts=new URL(req.url).pathname.match(/^\/preview\/([^/]+)\/v\/([^/]+)(?:\/|$)/);
+      if(parts){const{token}=splitPreviewSegment(decodeURIComponent(parts[2]));if(token&&verifyPreview(token,decodeURIComponent(parts[1])))headers.set("Access-Control-Allow-Credentials","true");}
+    } catch { /* Une URL ou une capacité invalide n'ajoute aucun droit. */ }
   }
   return headers;
 }
