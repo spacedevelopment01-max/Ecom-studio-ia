@@ -44,7 +44,7 @@ run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,sou
 // Projet client fictif : logo, produit « Théière Anse », photos et textes saisis ; habillé en TRAVERSE sans IA.
 const client = await clientFixture({ brand: "Céramor" });
 await fr(() => buildShop(null, client.pid, { direction: "traverse", useAi: false }));
-const clientSpec = currentTheme(client.pid)!.spec;
+const clientTheme = currentTheme(client.pid)!, clientSpec = clientTheme.spec;
 assert.equal(clientSpec.direction, "traverse"); assert.ok(clientSpec.settings.logo_asset, "logo du client posé dans le thème");
 const dev = spawn("npx", ["next", "dev", "-p", String(PORT), "-H", "127.0.0.1"], { env: { ...process.env, DATA_DIR: temp, STOCK_OFFLINE: "1", NEXT_TELEMETRY_DISABLED: "1" }, stdio: ["ignore", "pipe", "pipe"], detached: true });
 const stopDev = () => { try { process.kill(-dev.pid!, "SIGTERM"); } catch { /* arrêté */ } }; process.on("exit", stopDev);
@@ -54,6 +54,8 @@ for (;;) { if (Date.now() - started > 240000) throw new Error("Studio non démar
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
 const steps: Record<string, unknown>[] = [];
 const shot = async (page: Page, name: string) => { await page.screenshot({ path: path.join(out, `traverse-${name}.png`) }); };
+/** Pleine page : images chargées à la demande forcées, page parcourue puis images décodées avant la capture. */
+const loadAll = async (p: Page) => { await p.evaluate(async () => { document.querySelectorAll("img[loading=lazy]").forEach((i) => ((i as HTMLImageElement).loading = "eager")); for (let y = 0; y < document.documentElement.scrollHeight; y += 500) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } scrollTo(0, 0); await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); }); await p.waitForTimeout(500); };
 type Structure = { template: string; sections: { id: string; type: string; name: string }[] }[];
 try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: "fr-FR", ...(process.env.VIDEO_DIR ? { recordVideo: { dir: process.env.VIDEO_DIR, size: { width: 1440, height: 900 } } } : {}) }); const page = await context.newPage();
@@ -161,15 +163,15 @@ try {
   const preview = await clientCtx.newPage();
   for (const [route, name] of [["", "accueil"], [`products/${clientSpec.store.product.handle}`, "produit"]] as const) {
     await preview.setViewportSize({ width: 1440, height: 900 });
-    await preview.goto(`${origin}/preview/${client.pid}/${route}`, { waitUntil: "networkidle", timeout: 240000 });
+    await preview.goto(`${origin}/preview/${client.pid}/v/${clientTheme.version.id}/${route}`, { waitUntil: "networkidle", timeout: 240000 });
     const html = await preview.content();
     const logo = await preview.locator(".es-header__logo-img").first().getAttribute("src");
     assert.ok(logo && logo.includes(String(clientSpec.settings.logo_asset).replace(/\.[a-z]+$/, "")), `logo du client dans l'en-tête (${logo})`);
     assert.ok(html.includes("Théière Anse") && html.includes("Céramor"), `${name} : produit et marque du client`);
     assert.ok(!/theme-assets\/traverse|traverse-(hero-gare|lac|montagne|train|paysage|produit-reference|detail-)/.test(html), `${name} : aucune photo de la démonstration`);
     assert.ok(!/FERMEZ L'ORDI|PRÊT POUR VENDREDI|CHANGEZ DE DÉCOR|LA SUITE EST DEHORS/i.test(html), `${name} : aucun texte de la démonstration`);
-    await preview.screenshot({ path: path.join(out, `traverse-09-client-${name}.png`), fullPage: true });
-    await preview.setViewportSize({ width: 390, height: 844 }); await preview.reload({ waitUntil: "networkidle" });
+    await loadAll(preview); await preview.screenshot({ path: path.join(out, `traverse-09-client-${name}.png`), fullPage: true });
+    await preview.setViewportSize({ width: 390, height: 844 }); await preview.reload({ waitUntil: "networkidle" }); await loadAll(preview);
     await preview.screenshot({ path: path.join(out, `traverse-10-client-${name}-telephone.png`), fullPage: true });
     steps.push({ step: `projet client en TRAVERSE (${name}) : logo, produit et photos du client, rien de la démonstration`, ok: true, logo });
   }

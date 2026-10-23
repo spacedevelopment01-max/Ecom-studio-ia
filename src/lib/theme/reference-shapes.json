@@ -8835,7 +8835,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -8864,7 +8864,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -8879,7 +8879,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -8894,7 +8894,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -9043,7 +9043,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9176,7 +9176,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9299,7 +9299,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9519,7 +9519,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9629,7 +9629,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9707,7 +9707,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9736,7 +9736,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -9751,7 +9751,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -9766,7 +9766,7 @@
                   "media": [
                     {
                       "field": "image_asset",
-                      "role": "detail",
+                      "role": "use",
                       "aspect": 1.5
                     }
                   ]
@@ -9827,7 +9827,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -9916,7 +9916,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -10009,7 +10009,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -10150,7 +10150,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],
@@ -10291,7 +10291,7 @@
               "media": [
                 {
                   "field": "image_asset",
-                  "role": "opening",
+                  "role": "use",
                   "aspect": 1.5
                 }
               ],

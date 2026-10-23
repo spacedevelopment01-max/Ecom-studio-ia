@@ -270,6 +270,38 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 if (!provided)
                     pageIssues(sid, 'legal_information_required');
             }
+            // TRAVERSE : livraison et pages légales en notes « À compléter ». Le bandeau porte le titre ; les rubriques sont celles
+            // du client (texte fourni) ou un encadré à compléter, jamais les rubriques ni la rédaction d'une autre page.
+            const legalNotes = sh.type === 'fs-commitments' && section.settings.layout === 'notes' && ['privacy', 'terms', 'legal', 'shipping'].includes(role);
+            if (legalNotes) {
+                const page = spec.store.pages.find(x => `page.${x.template_suffix}` === template);
+                const body = role === 'shipping' ? copy.shipping.body_html : page?.body_html ?? '';
+                const provided = genuine(plain(body)) && !/à compléter|to complete|placeholder/i.test(plain(body));
+                const todoBox = { box_title: t('À compléter', 'To complete'), box_text: t('Ces informations doivent être fournies et vérifiées par le professionnel avant publication.', 'The business must provide and verify this information before publication.') };
+                const item = (title: string, icon: string, text: string, box: boolean) => ({ type: 'item', settings: { icon, title, text, proof_label: '', proof_link: '', ...(box ? todoBox : { box_title: '', box_text: '' }) } });
+                section.settings = { ...section.settings, eyebrow: '', heading: '', heading_accent: '', text: '', button_label: '', button_link: '', note: '' };
+                section.blocks = role === 'shipping'
+                    ? { shipping: item(t('Livraison', 'Shipping'), 'truck', provided ? body : '', !provided), returns: item(t('Retours et échanges', 'Returns and exchanges'), 'box', '', true) }
+                    : { client_part: item(provided ? (page?.title ?? labels[role]) : t('Informations à fournir', 'Information to provide'), 'none', provided ? body : '', !provided) };
+                section.block_order = Object.keys(section.blocks);
+                if (!provided)
+                    pageIssues(sid, 'legal_information_required');
+            }
+            // Essentiels (TRAVERSE) : chaque icône et chaque gros plan reçoit une caractéristique confirmée du produit, dans
+            // l'ordre ; une icône sans caractéristique est retirée (aucun libellé inventé).
+            if (sh.type === 'cv-feature' && section.settings.layout === 'essentials' && section.blocks) {
+                const facts = p.product.facts.filter(f => genuine(f.label) && genuine(f.value));
+                let i = 0, j = 0;
+                for (const bid of [...(section.block_order ?? [])]) {
+                    const b = section.blocks[bid];
+                    if (b?.type === 'point') {
+                        const f = facts[i++];
+                        if (f) b.settings = { ...b.settings, title: f.label, text: '' };
+                        else { delete section.blocks[bid]; section.block_order = section.block_order!.filter(x => x !== bid); }
+                    }
+                    if (b?.type === 'detail') b.settings = { ...b.settings, caption: facts[j++]?.label ?? '' };
+                }
+            }
             // An opening is never a dated offer: campaign name, dates or conditions the client did not give stay empty.
             if (opening)
                 for (const [k, v] of Object.entries(section.settings))
@@ -292,7 +324,7 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             // restent publiées en pleine largeur et l'image manquante reste signalée.
             const decorative = (i: { code: string; field?: string }) => i.code === 'media_missing' && sh.type === 'timeline' && i.field === 'image_asset';
             const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code) && !decorative(i));
-            section.disabled = blocked && !opening && sh.type !== 'legal-page';
+            section.disabled = blocked && !opening && sh.type !== 'legal-page' && !legalNotes;
             sections[sid] = section;
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }

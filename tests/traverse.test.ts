@@ -20,13 +20,15 @@ import { FAMILY_LIBRARY, THEME_FAMILY } from "@/lib/theme/section-families";
 import { resolveLibraryType } from "@/lib/theme/family-gallery";
 import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { currentChromePreset } from "@/lib/theme/family-chrome";
-import { composeShop } from "@/lib/engine/shop";
-import { saveBrand, loadProject } from "@/lib/projects";
+import { buildShop, composeShop } from "@/lib/engine/shop";
+import { saveBrand, loadProject, currentTheme } from "@/lib/projects";
+import { sectionContentContext } from "@/lib/theme/section-content";
 import { libraryLoader } from "@/lib/theme/loader";
 import { cmsExport } from "@/lib/cms-v2/export";
 import { demoProject } from "./demo-fixtures";
 import { TRAVERSE_MEDIA, TRAVERSE_HANDLE } from "./traverse-fixtures";
 import { seedHoldout } from "./lot1-holdout-fixtures";
+import { clientFixture } from "./mission154-fixtures";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
@@ -137,6 +139,8 @@ describe("TRAVERSE : démonstration", async () => {
     expect(html).toContain("Envoyer le message");
     for (const k of ["required", "email", "sending", "failed", "success"]) expect(html, k).toMatch(new RegExp(`data-msg-${k}="[^"]+"`));
     expect(visible(html)).not.toMatch(/Merci, nous revenons vers vous/);
+    // Après un envoi réussi, le formulaire masqué disparaît vraiment (le style de grille ne l'écrase pas).
+    expect(fs.readFileSync(path.join("theme-base", "assets", "theme.css"), "utf8")).toMatch(/\.es-form\[hidden\]\s*\{\s*display:\s*none/);
   });
 
   it("en-tête et pied de page : dispositions de la famille reconnues, propres à TRAVERSE", () => {
@@ -180,6 +184,19 @@ describe("TRAVERSE : chaque composition dans la galerie « Boutique spécialisé
     const cards = resolveLibraryType("fam:specialty.details~photo-cards");
     const filledCards = withProjectMedia(f.spec, cards.type, cards.settings, cards.blocks);
     expect(filledCards.blocks?.every((b) => String(b.settings?.image_asset ?? "") !== "")).toBe(true);
+    // Aperçu réel de la galerie (rédaction du projet appliquée) : icônes, gros plans et photos gardés ; notes neutres.
+    const ctx = sectionContentContext(loadProject(f.pid), f.spec, false, "index");
+    const essCopy = withProjectMedia(f.spec, ess.type, { ...ess.settings }, ess.blocks, ctx);
+    expect(essCopy.blocks?.some((b) => b.type === "pill")).toBe(false);
+    expect(essCopy.blocks?.filter((b) => b.type === "detail").every((b) => String(b.settings?.image_asset ?? "") !== "")).toBe(true);
+    expect(essCopy.blocks?.filter((b) => b.type === "point").every((b) => String(b.settings?.title ?? "") !== "")).toBe(true);
+    const cardsCopy = withProjectMedia(f.spec, cards.type, { ...cards.settings }, cards.blocks, ctx);
+    expect(cardsCopy.blocks?.length).toBeGreaterThan(1);
+    expect(cardsCopy.blocks?.every((b) => String(b.settings?.image_asset ?? "") !== "")).toBe(true);
+    const notes = resolveLibraryType("fam:specialty.guarantees~notes");
+    const notesCopy = withProjectMedia(f.spec, notes.type, { ...notes.settings }, notes.blocks, ctx);
+    expect(JSON.stringify(notesCopy)).not.toMatch(/garanti/i);
+    expect(notesCopy.blocks?.map((b) => b.settings?.title)).toEqual(["Livraison", "Retours et échanges"]);
   });
 });
 
@@ -199,6 +216,24 @@ describe("TRAVERSE appliqué à un autre projet : rien de TRAVERSE", async () =>
       expect(html, route).not.toMatch(/theme-assets\/traverse|traverse-(hero-gare|lac|montagne|train|paysage|produit-reference|detail-)/);
     }
     expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toContain("#F2591A");
+  });
+
+  it("projet client complet : pages légales sans rubriques de livraison ; essentiels avec ses caractéristiques et ses gros plans", async () => {
+    const f = await clientFixture({ brand: "Céramor" });
+    await fr(() => buildShop(null, f.pid, { direction: "traverse", useAi: false }));
+    const spec = currentTheme(f.pid)!.spec;
+    for (const handle of ["mentions-legales", "confidentialite", "cgv"]) {
+      const notes = Object.values(spec.templates[`page.${handle}`].sections).find((x) => x.type === "fs-commitments")!;
+      expect(notes.disabled ?? false, handle).toBe(false);
+      expect(JSON.stringify(notes.blocks), handle).not.toMatch(/Livraison|Retours/);
+      expect(JSON.stringify(notes.blocks), handle).toContain("Informations à fournir");
+    }
+    const ess = Object.values(spec.templates.index.sections).find((x) => x.type === "cv-feature" && x.settings.layout === "essentials")!;
+    expect(ess.disabled ?? false).toBe(false);
+    const blocks = Object.values(ess.blocks ?? {});
+    const facts = f.project.product.facts.map((x) => x.label);
+    expect(blocks.filter((b) => b.type === "point").every((b) => facts.includes(String(b.settings.title)))).toBe(true);
+    expect(blocks.filter((b) => b.type === "detail").every((b) => String(b.settings.image_asset ?? "") !== "")).toBe(true);
   });
 });
 
