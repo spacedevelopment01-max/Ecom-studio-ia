@@ -288,11 +288,21 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 pageIssues(sid, 'information_required');
             if (sh.type === 'main-product' && p.business === 'services')
                 pageIssues(sid, 'product_page_not_for_services');
-            const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code));
+            // La photo à côté des étapes en colonnes (Atelier Rive) accompagne la méthode : sans elle, les étapes du client
+            // restent publiées en pleine largeur et l'image manquante reste signalée.
+            const decorative = (i: { code: string; field?: string }) => i.code === 'media_missing' && sh.type === 'timeline' && i.field === 'image_asset';
+            const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code) && !decorative(i));
             section.disabled = blocked && !opening && sh.type !== 'legal-page';
             sections[sid] = section;
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
+        // Une page dont la section titrée (H1) reste masquée faute de contenu authentique (galerie de projets d'Atelier Rive
+        // sans réalisation du client) garde son titre : le titre de page, éteint pour éviter un double H1, se rallume.
+        const h1 = (sid: string) => sections[sid].settings.heading_tag === 'h1';
+        if (layout.order.some(sid => sections[sid].disabled && h1(sid)) && !layout.order.some(sid => !sections[sid].disabled && h1(sid)))
+            for (const sid of layout.order)
+                if (sections[sid].type === 'main-page' && sections[sid].settings.show_title === false)
+                    sections[sid].settings.show_title = true;
         spec.templates[template] = { sections, order: [...layout.order] };
     }
     // Chrome is part of the chosen composition, not the rotating initial-store variant.

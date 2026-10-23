@@ -312,7 +312,6 @@ const SERVICES: FamilyEntry[] = [
     d("accordion", "Accordéons", "Accordions", "fs-needs", "accordion", { layout: "accordion" }),
     // Atelier Rive (maquettes du 23 octobre).
     d("row", "Titre, texte et besoins en ligne", "Title, text and needs in a row", "fs-needs", "grid-3", { layout: "row", align: "left" }),
-    d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
   ]),
   e("services", 5, "portfolio", { fr: "Réalisations", en: "Projects" }, { fr: "Portfolio avec visuels, légendes et liens.", en: "Portfolio with visuals, captions and links." }, "réalisations portfolio projets", [
     d("editorial", "Éditorial", "Editorial", "portfolio", "asym", { layout: "editorial" }),
@@ -357,6 +356,8 @@ const SERVICES: FamilyEntry[] = [
     // Atelier Rive (maquettes du 23 octobre).
     d("band", "Bandeau photo et phrase", "Photo band and statement", "ed-scene", "band", { layout: "band", text_side: "left", band_height: "medium" }),
     d("stacked", "Photo, présentation et valeurs illustrées", "Photo, introduction and illustrated values", "about", "stacked", { layout: "stacked" }),
+    // « Scène et texte » rejoint le bandeau photo : une même section ne sert qu'une seule fonction de la famille.
+    d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
   ]),
   e("services", 12, "credentials", { fr: "Qualifications et assurances", en: "Qualifications and insurance" }, { fr: "Diplômes, certifications et assurances réels.", en: "Real diplomas, certifications and insurance." }, "qualifications certifications assurances diplômes", [
     d("list", "Liste détaillée", "Detailed list", "fs-credentials", "list", { layout: "list" }),
