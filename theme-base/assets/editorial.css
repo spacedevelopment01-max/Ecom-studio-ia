@@ -525,7 +525,7 @@ body[data-editorial="cadran"] .es-collection__title,body[data-editorial="cadran"
 .ed-form__done svg path{fill:none}
 .ed-form__done p{margin:0}
 
-/* ─── Atelier Rive (profil « journal ») d'après les maquettes du 23 octobre : fonds blancs, serif fine contrastée
+/* ─── Profil « journal » (maquettes de services du 23 octobre) : fonds blancs, serif fine contrastée
    (Newsreader), corps Inter, boutons prune pleins, grandes photos sans arrondi, filets fins. ──────────────────────── */
 body[data-editorial="journal"]{--rv-line:color-mix(in srgb,var(--c-text) 16%,transparent);--rv-muted:color-mix(in srgb,var(--c-text) 72%,transparent)}
 body[data-editorial="journal"] .ed-shell{width:min(1240px,calc(100% - 2*clamp(20px,7vw,100px)))}

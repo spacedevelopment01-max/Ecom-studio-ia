@@ -402,7 +402,7 @@ const SERVICES: FamilyEntry[] = [
     d("form-image", "Formulaire et image", "Form and image", "ed-contact", "form-split"),
     d("band", "Bandeau d'appel", "Call-to-action band", "cta-banner", "band", { style: "center" }),
     // Atelier Rive (maquettes du 23 octobre).
-    d("band-split", "Bandeau d'appel, titre à gauche", "Call-to-action band, title on the left", "cta-banner", "band", { style: "split", parallax: false }),
+    d("band-split", "Bandeau d'appel, titre à gauche", "Call-to-action band, title on the left", "cta-banner", "band", { style: "split", parallax: false, overlay: 0, color_scheme: "scheme-2" }),
     d("card", "Carte d'appel avec petite photo", "Call-to-action card with a small photo", "cta-banner", "cards-rows", { style: "card", parallax: false }),
   ]),
 ];

@@ -453,7 +453,7 @@ body:not(.motion-on) .fs-refs__marquee { overflow-x: auto; -webkit-mask-image: n
 @media(prefers-reduced-motion:reduce){.fs-look__plus::after{transition:none}}
 .fs-lookbook--detail .fs-look__media .ed-media{aspect-ratio:auto;height:auto}
 .fs-lookbook--detail .fs-look__media .ed-image{height:auto}
-/* ─── Besoins « en ligne » et détail de projet (maquette Atelier Rive du 23 octobre) ───────────────────────────────── */
+/* ─── Besoins « en ligne » et détail de projet (maquettes de services du 23 octobre) ───────────────────────────────── */
 .fs-needs--row .fs-head{margin-bottom:clamp(28px,4vw,48px)}
 .fs-needs__list--row{list-style:none;margin:0;padding:0;display:grid;gap:24px}
 .fs-needs__list--row .fs-need{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}

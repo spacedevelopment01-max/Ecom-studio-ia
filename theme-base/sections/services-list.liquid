@@ -79,11 +79,14 @@
 </section>
 
 {% stylesheet %}
-/* Miniatures en ligne (maquette Atelier Rive) : petite photo carrée, titre, texte court et flèche, sans carte. */
-.es-svc--thumbs .es-svc__item { display: grid; grid-template-columns: clamp(72px, 7vw, 104px) minmax(0, 1fr); column-gap: 20px; align-items: start; background: none; border: 0; border-radius: 0; overflow: visible; }
+/* Miniatures en ligne (maquettes de services du 23 octobre) : petite photo carrée, titre, texte court et flèche, sans carte. */
+.es-svc--thumbs .es-svc__item { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 20px; align-items: start; background: none; border: 0; border-radius: 0; overflow: visible; }
+/* Sans photo, la prestation garde toute la largeur ; avec photo, la miniature occupe la colonne de gauche. */
+.es-svc--thumbs .es-svc__item--media { grid-template-columns: clamp(72px, 7vw, 104px) minmax(0, 1fr); }
 .es-svc--thumbs .es-svc__media { aspect-ratio: 1; grid-row: 1 / span 2; }
 .es-svc--thumbs .es-svc__body { padding: 0; gap: 6px; }
-.es-svc--thumbs .es-svc__action { grid-column: 2; padding: 0; margin-top: 8px; }
+.es-svc--thumbs .es-svc__action { padding: 0; margin-top: 8px; }
+.es-svc--thumbs .es-svc__item--media .es-svc__action { grid-column: 2; }
 @media (min-width: 750px) { .es-svc--thumbs .es-svc__list { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: clamp(20px, 3vw, 44px); } }
 .es-svc__button { margin-top: auto; align-self: flex-start; }
 .es-svc__head { max-width: 760px; margin-bottom: clamp(28px, 4.4vw, 56px); }

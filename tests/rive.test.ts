@@ -178,6 +178,13 @@ describe("Atelier Rive : chaque composition dans la galerie Services", () => {
     const filled = withProjectMedia(f.spec, r.type, r.settings, r.blocks);
     expect(filled.blocks?.filter((b) => b.type === "photo").every((b) => String(b.settings?.image_asset ?? "") !== "")).toBe(true);
   });
+  it("le bandeau d'appel partagé reste un aplat de couleur ; la carte d'appel reçoit sa petite photo", async () => {
+    const user = await createUser("rive-galerie-cta@example.invalid", "isolated-test-only", "Galerie");
+    const f = await fr(() => demoProject(user.id, "rive"));
+    const split = resolveLibraryType("fam:services.contact~band-split"), card = resolveLibraryType("fam:services.contact~card");
+    expect(String(withProjectMedia(f.spec, split.type, split.settings).settings.image_asset ?? "")).toBe("");
+    expect(String(withProjectMedia(f.spec, card.type, card.settings).settings.image_asset ?? "")).not.toBe("");
+  });
 });
 
 describe("Atelier Rive appliqué à un autre projet de services : rien d'Atelier Rive", async () => {

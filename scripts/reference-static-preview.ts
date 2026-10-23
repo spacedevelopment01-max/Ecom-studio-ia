@@ -38,16 +38,26 @@ async function get(pathAndQuery: string, headers: Record<string, string> = {}) {
 async function post(pathname: string, body: string, contentType: string) { const url = new URL(pathname, ORIGIN); return POST(new Request(url, { method: "POST", headers: { "content-type": contentType, accept: "application/json" }, body }), ctxFor(url)); }
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
-const runs: { id: DemoId; direction: DemoId; name: string }[] = [
+const runs: { id: DemoId; direction: DemoId; name: string; holdout?: number }[] = [
   { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" },
     // HEUREN (consigne du 22 octobre) : le fauteuil d'ALCÔVE, ses images et ses textes, composé dans HEUREN.
-    { id: "alcove" as DemoId, direction: "heuren" as DemoId, name: "alcove-en-heuren" }] : []),
+    { id: "alcove" as DemoId, direction: "heuren" as DemoId, name: "alcove-en-heuren" },
+    // Atelier Rive (consigne du 23 octobre) : un autre projet de services (accord de piano, jeu inédit sans photo) composé dans Rive.
+    { id: "rive" as DemoId, direction: "rive" as DemoId, name: "piano-en-rive", holdout: 2 }] : []),
 ];
+/** Projet de services du jeu inédit (aucune photo, aucun texte de démonstration) composé dans le thème donné. */
+async function holdoutIn(index: number, direction: DemoId) {
+  const { seedHoldout } = await import("../tests/lot1-holdout-fixtures"); const { loadProject, saveBrand } = await import("../src/lib/projects"); const { composeShop } = await import("../src/lib/engine/shop");
+  const pid = seedHoldout(user.id, index, "Atelier musical"), p = loadProject(pid);
+  saveBrand(pid, { ...p.brand!, name: "Atelier musical", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction });
+  const { spec } = await composeShop(pid, direction, null, false);
+  return { spec, pid, services: true, missing: [] as string[], demo: { brand: "Atelier musical", category: "Accord de piano" } };
+}
 const summary: Record<string, unknown>[] = [];
 try {
   for (const run of runs.filter((r) => !only || only.includes(r.name))) await runWithLang({ content: "fr", ui: "fr" }, async () => {
-    const f = await demoProject(user.id, run.id, run.direction === run.id ? { testVideo: fs.existsSync(testVideo) ? testVideo : undefined } : { direction: run.direction }), { spec, pid, services } = f, version = saveThemeVersion(pid, spec, "Aperçu statique", "user");
+    const f = run.holdout !== undefined ? await holdoutIn(run.holdout, run.direction) : await demoProject(user.id, run.id, run.direction === run.id ? { testVideo: fs.existsSync(testVideo) ? testVideo : undefined } : { direction: run.direction }), { spec, pid, services } = f, version = saveThemeVersion(pid, spec, "Aperçu statique", "user");
     const base = `/preview/${pid}/v/${previewSegment(version.id, user.id, pid)}`, dir = path.join(out, run.name); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(path.join(dir, "assets"), { recursive: true }); fs.mkdirSync(path.join(dir, "fonts")); if (!services) fs.mkdirSync(path.join(dir, "panier"));
     const title = f.demo.brand, productHandle = services ? null : spec.store.product.handle, productTitle = services ? f.demo.brand : spec.store.product.title;
     const pageHandles = spec.store.pages.map((p) => p.handle);
