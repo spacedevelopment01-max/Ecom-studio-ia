@@ -18,6 +18,7 @@ import { guardPurchaseExport, purchaseExportManifest, purchaseTargetHandles, sha
 import { storeProducts } from "./store-products";
 import { productTemplateAssignments, productTemplateManifest } from "./product-templates";
 import { assertSafeThemeContent } from "./content-security";
+import { assertStaticSvg } from "../upload-security";
 import { assertImportedExportAccess } from "./import-export-access";
 
 export type ThemeFiles = Map<string, string>; // chemin → contenu texte (assets binaires exclus)
@@ -145,8 +146,11 @@ export async function themeAssetBinary(spec: ThemeSpec, filename: string, load: 
   const src = load(assetId);
   if (!src) return null;
   const ext = filename.split(".").pop()!.toLowerCase();
-  // « r2 » : version de la conversion (logos SVG convertis en PNG depuis la phase 10A) — les anciens fichiers en cache ne servent plus.
-  const key = crypto.createHash("sha1").update(`r2:${assetId}:${filename}:${src.updated}:${src.data.length}`).digest("hex");
+  // Valider aussi les anciens fichiers avant le cache et avant toute conversion.
+  if(ext==="svg"||src.mime==="image/svg+xml")assertStaticSvg(src.data);
+  const digest=crypto.createHash("sha256").update(src.data).digest("hex");
+  // r3 : identité des octets, pas seulement leur longueur ; aucun ancien cache actif réutilisé.
+  const key = crypto.createHash("sha1").update(`r3:${assetId}:${filename}:${src.updated}:${digest}`).digest("hex");
   const cached = path.join(ASSET_CACHE, `${key}.${ext}`);
   const owner=one<{project_id:string;user_id:string}>("SELECT project_id,user_id FROM assets WHERE id=?",assetId);
   if(owner)run("INSERT INTO asset_cache_entries(cache_key,asset_id,project_id,user_id) VALUES(?,?,?,?) ON CONFLICT(cache_key) DO NOTHING",`${key}.${ext}`,assetId,owner.project_id,owner.user_id);

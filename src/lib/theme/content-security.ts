@@ -27,6 +27,11 @@ export function unsafeContentReason(html:string,liquid=false):string|null{
 }
 
 export function assertSafeThemeContent(spec:ThemeSpec){
+  // Les fichiers liés sont des médias, jamais un second canal pour remplacer le code natif.
+  for(const name of Object.keys(spec.files??{})){
+    const segments=name.split("/");
+    if(name.length>240||name.startsWith("/")||/[\\\u0000-\u001f\u007f]/.test(name)||segments.some(s=>!s||s.startsWith("."))||! /\.(?:png|jpe?g|gif|webp|avif|heic|heif|svg|ico|bmp|tiff?|mp4|webm|mov|m4v|mp3|wav|ogg|m4a|aac|woff2?|ttf|otf|pdf|zip|glb|gltf|usdz)$/i.test(name))throw new HttpError(422,"Une liaison de média ne peut pas remplacer un fichier de code. La version existante est conservée. / A media binding cannot replace code. The existing version is kept.","unsafe_theme_asset");
+  }
   function visit(value:unknown,depth=0){
     if(depth>35)throw new HttpError(422,"Contenu trop imbriqué / Content too deeply nested","unsafe_theme_content");
     if(typeof value==="string"){
