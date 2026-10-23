@@ -608,7 +608,7 @@ body[data-editorial="journal"] .es-timeline__side--aside .es-h4{font-family:var(
 body[data-editorial="journal"] .es-timeline__aside-text{font-size:14px;color:var(--rv-muted);margin:0}
 /* Bandeau photo : pleine largeur, texte serif blanc à gauche. */
 body[data-editorial="journal"] .ed-scene--band .ed-shell{width:100%}
-body[data-editorial="journal"] .ed-scene--band .ed-title{font-size:clamp(30px,2.9vw,44px);line-height:1.1;max-width:15ch;color:#fff}
+body[data-editorial="journal"] .ed-scene--band .ed-title{font-size:clamp(30px,2.9vw,44px);line-height:1.1;max-width:24ch;color:#fff}
 body[data-editorial="journal"] .ed-scene--band.ed-scene--h-medium{--band-h:clamp(240px,18vw,280px)}
 /* Questions : titre à gauche, questions courtes sur filets. */
 body[data-editorial="journal"] .es-faq .es-heading{font-size:clamp(28px,2.4vw,36px)}
@@ -674,6 +674,8 @@ body[data-editorial="journal"] .es-footer .es-footer__brand{font-family:var(--fo
   body[data-editorial="journal"] .es-header .es-header__wordmark{font-size:23px}
   body[data-editorial="journal"] .es-header__cta{display:none}
   body[data-editorial="journal"] .ed-scene--band .ed-title{font-size:27px;max-width:13ch}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__copy{order:-1}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__media>.ed-media{aspect-ratio:4/3}
   body[data-editorial="journal"] .es-folio__filters{flex-wrap:nowrap;overflow-x:auto;gap:20px;scrollbar-width:none}
   body[data-editorial="journal"] .es-folio__filter{white-space:nowrap}
   body[data-editorial="journal"] .ed-contact__grid>header{display:flex;flex-direction:column}
