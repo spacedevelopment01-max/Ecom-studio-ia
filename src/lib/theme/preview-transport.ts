@@ -4,10 +4,18 @@ import { compileTheme, importedBinary, themeAssetBinary } from "./compile";
 import { fontFilePath } from "./render";
 import { libraryLoader } from "./loader";
 import type { ThemeSpec } from "./spec";
+import { getSetting } from "../settings";
+
+/** Origine publique de confiance derrière un proxy ; aucun en-tête fourni par le navigateur. */
+export function previewParentOrigin(requestOrigin:string):string {
+  try { return new URL(getSetting("app.url") || process.env.APP_URL || requestOrigin).origin; }
+  catch { return requestOrigin; }
+}
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function portablePreview(html: string, spec: ThemeSpec, base: string, parentOrigin: string, fragment=false): Promise<string> {
+  parentOrigin=previewParentOrigin(parentOrigin);
   const files = compileTheme(spec);
   const cache = new Map<string, string>();
   const missing = new Set<string>();
@@ -55,11 +63,14 @@ export async function portablePreview(html: string, spec: ThemeSpec, base: strin
   }
   async function replace(text: string, stack: string[] = []) {
     const re = new RegExp(`${escape(base)}/(assets|__fonts)/([\\w%./-]+)(?:\\?[^\\s"'<>)]*)?`, "g");
+    const replacements=new Map<string,string>();
     for (const m of [...text.matchAll(re)]) {
       const asset = await resource(m[1], decodeURIComponent(m[2]), stack);
-      if (asset) text = text.split(m[0]).join(asset);
+      if (asset) replacements.set(m[0],asset);
     }
-    return text;
+    // Une URL sans query peut être le préfixe d'une autre : remplacer une seule fois
+    // dans le texte d'origine, sinon un data URI reçoit un suffixe « ?width » invalide.
+    return text.replace(re,match=>replacements.get(match)??match);
   }
   html = await replace(html);
   if(fragment)return html;

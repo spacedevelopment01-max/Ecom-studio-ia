@@ -10,6 +10,7 @@ import { readForm } from "@/lib/http";
 import { HttpError } from "@/lib/auth";
 import { signMedia } from "@/lib/public-url";
 import { saveAsset } from "@/lib/library";
+import { putFile } from "@/lib/storage";
 import { createUser } from "@/lib/auth";
 import { run } from "@/lib/db";
 import { runWithLang } from "@/lib/i18n-server";
@@ -39,7 +40,11 @@ describe("Sécurité (audit de stabilisation)", () => {
     const u = await createUser(`sec${Date.now()}@test.fr`, "motdepasse-test", "S");
     const pid = `p-sec-${u.id}`;
     run("INSERT INTO projects (id, user_id, name, created_at, updated_at) VALUES (?,?,?,?,?)", pid, u.id, "Sec", Date.now(), Date.now());
-    const svg = await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'), name: "x.svg", mime: "image/svg+xml", origin: "upload" });
+    const active=Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+    await expect(saveAsset({projectId:pid,userId:u.id,data:active,name:'active.svg',mime:'image/svg+xml',origin:'upload'})).rejects.toMatchObject({status:415});
+    const svg = await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20"/></svg>'), name: "x.svg", mime: "image/svg+xml", origin: "upload" });
+    // Fichier historique corrompu après un import désormais refusé : le téléchargement reste inerte.
+    putFile(svg.storage_key,active);
     const { GET } = await import("@/app/api/public/media/[token]/[name]/route");
     const r = await GET(new Request("http://x"), { params: Promise.resolve({ token: signMedia("asset", svg.id) }) });
     expect(r.headers.get("content-type")).toBe("application/octet-stream");
@@ -47,7 +52,8 @@ describe("Sécurité (audit de stabilisation)", () => {
     expect(r.headers.get("x-content-type-options")).toBe("nosniff");
     expect(r.headers.get("content-security-policy")).toMatch(/sandbox/);
     // Extension de stockage : jamais « .m3u8 » venue du nom (liste de lecture interprétée par ffmpeg).
-    const pl = await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from("#EXTM3U"), name: "clip.m3u8", mime: "application/x-inconnu", origin: "upload" });
+    await expect(saveAsset({projectId:pid,userId:u.id,data:Buffer.from("#EXTM3U"),name:"clip.m3u8",mime:"application/x-inconnu",origin:"upload"})).rejects.toMatchObject({status:415});
+    const pl = await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from("#EXTM3U"), name: "clip.m3u8", mime: "application/x-inconnu", origin: "generated" });
     expect(pl.storage_key.endsWith(".bin")).toBe(true);
   });
 
