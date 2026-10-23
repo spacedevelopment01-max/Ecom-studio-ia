@@ -590,7 +590,7 @@ body[data-editorial="horizon"] .es-footer__wordmark { font-family: var(--font-he
 .re-tiles--icons.re-tiles--with-media .re-tiles__list { grid-template-columns: minmax(0, 1fr); gap: 0; }
 .re-tiles--icons.re-tiles--with-media .re-tile { grid-template-columns: auto minmax(0, 1fr); gap: 16px; padding: 12px 0; border-top: 1px solid var(--mh-line); }
 .re-tiles--icons.re-tiles--with-media .re-tile:first-child { border-top: 0; }
-.re-tiles--icons .re-tile__icon .es-icon { width: 32px; height: 32px; }
+.re-tiles--icons .re-tile__icon .es-icon { width: 40px; height: 40px; }
 .re-tiles--icons .re-tile__title { font: 600 .88rem/1.35 var(--font-body); }
 .re-tiles--centered .re-tiles__head { display: grid; justify-items: center; text-align: center; }
 .re-tiles--centered .re-tiles__text { margin-left: auto; margin-right: auto; }
