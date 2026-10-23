@@ -13,6 +13,16 @@ fs.mkdirSync(STORAGE_DIR, { recursive: true });
 export function storagePath(key: string): string {
   const p = path.resolve(STORAGE_DIR, key);
   if (!p.startsWith(path.resolve(STORAGE_DIR) + path.sep)) throw new Error("Clé de stockage invalide.");
+  // Vérifier chaque composant existant : un chemin lexical sûr peut traverser un lien symbolique.
+  let cur = path.resolve(STORAGE_DIR);
+  for (const part of path.relative(cur, p).split(path.sep)) {
+    cur = path.join(cur, part);
+    try {
+      if (fs.lstatSync(cur).isSymbolicLink()) throw new Error("Clé de stockage invalide.");
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+    }
+  }
   return p;
 }
 
@@ -41,6 +51,7 @@ export function removeFile(key: string) {
 }
 
 export function tmpDir(prefix: string) {
+  if (!/^[a-zA-Z0-9_-]{1,80}$/.test(prefix)) throw new Error("Préfixe temporaire invalide.");
   const d = path.join(DATA_DIR, "tmp", `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   fs.mkdirSync(d, { recursive: true });
   return d;

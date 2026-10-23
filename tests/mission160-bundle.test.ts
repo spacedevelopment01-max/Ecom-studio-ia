@@ -55,7 +55,7 @@ it('archives, retouches et autre compte : aucune inclusion abusive dans un devis
 });
 
 it('création rédactionnelle : moteur IA complet, textes exacts conservés et points de reprise séparés',async()=>{
- const f=await fixture();const original=enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{projectId:f.pid,request:{as:'ad',format:'portrait',headline:'Mon texte exact',subject:{kind:'product',key:'main'},sourceAssetId:'ancien',expectedCopyKey:'ancien-contexte'}}});
+ const f=await fixture();const original=enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{projectId:f.pid,request:{as:'ad',format:'portrait',headline:'Mon texte exact',subject:{kind:'product',key:'main'},sourceAssetId:f.old[1].id,expectedCopyKey:'ancien-contexte'}}});
  run("UPDATE jobs SET status='done',result=? WHERE id=?",JSON.stringify({assetId:f.old[0].id}),original.id);run('UPDATE assets SET role=?,meta=? WHERE id=?','ad',JSON.stringify({aiAd:true,aiPost:{},finalImage:{},aspect:'4:5'}),f.old[0].id);
  const q=quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:f.old[0].id}]);expect(q.items[0].type).toBe('image.ai_post');expect(q.items[0].request.headline).toBe('Mon texte exact');expect(q.items[0].request).not.toHaveProperty('sourceAssetId');expect(q.items[0].request).not.toHaveProperty('expectedCopyKey');
  const b=confirmStrategyBundle(f.pid,q.id,true);const ctx=new JobContext(getJob(b.jobId!)!);const first=creativeRevisionContext(ctx,b.items[0],1000),second=creativeRevisionContext(ctx,{...b.items[0],oldId:f.old[1].id},1000);

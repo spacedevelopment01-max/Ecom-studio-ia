@@ -34,7 +34,10 @@ describe("Mission 142 : suivi et isolation des tâches", () => {
     expect(enqueue({ userId: b.id, type: second.type, idempotencyKey: "double-click" }).id).toBe(second.id);
   });
   it("un prérequis disparu est bloqué avec un message visible plutôt qu'attendu pour toujours", async () => {
-    const u = await user(), job = enqueue({ userId: u.id, type: "test142.missing", dependsOn: ["missing-step"] });
+    const u = await user();
+    expect(()=>enqueue({ userId: u.id, type: "test142.missing", dependsOn: ["missing-step"] })).toThrow();
+    const job=enqueue({ userId: u.id, type: "test142.missing" });
+    run("UPDATE jobs SET depends_on=? WHERE id=?",JSON.stringify(["missing-step"]),job.id);
     expect(claimNext([job.type])).toBeNull();
     expect(getJob(job.id)?.status).toBe("blocked");
     expect(getJob(job.id)?.message).toBeTruthy();
@@ -43,7 +46,9 @@ describe("Mission 142 : suivi et isolation des tâches", () => {
     const a = await user(), b = await user();
     const foreign = enqueue({ userId: a.id, type: "test142.foreign" });
     run("UPDATE jobs SET status='done' WHERE id=?", foreign.id);
-    const job = enqueue({ userId: b.id, type: "test142.dep", dependsOn: [foreign.id] });
+    expect(()=>enqueue({ userId: b.id, type: "test142.dep", dependsOn: [foreign.id] })).toThrow();
+    const job = enqueue({ userId: b.id, type: "test142.dep" });
+    run("UPDATE jobs SET depends_on=? WHERE id=?",JSON.stringify([foreign.id]),job.id);
     expect(claimNext([job.type])).toBeNull();
     expect(getJob(job.id)?.status).toBe("blocked");
   });

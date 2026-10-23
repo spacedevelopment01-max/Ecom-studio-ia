@@ -202,7 +202,7 @@ function PreviewPane({ item, projectId, versionId, template, onAdd, adding, disa
             title={t(`Aperçu : ${item.name}`, `Preview: ${item.name}`)}
             src={src}
             loading="lazy"
-            sandbox={sameOrigin ? "allow-scripts allow-same-origin" : "allow-scripts"}
+            sandbox="allow-scripts"
             onLoad={() => setLoaded(true)}
             className={cx("absolute left-0 top-0 origin-top-left border-0 transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0")}
             style={{ width: FRAME_W, height: Math.min(height, FRAME_H * 1.6), transform: `scale(${scale})` }}

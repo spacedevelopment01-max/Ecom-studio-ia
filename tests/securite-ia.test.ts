@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Sécurité de l'IA (phase 1C) :
  *  - aucun appel payant sans droits, même hors tâche de fond (runForUser) ;

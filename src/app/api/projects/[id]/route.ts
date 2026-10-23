@@ -20,20 +20,20 @@ import { L, uiLang } from "@/lib/i18n-server";
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const pipeline = one<Job>("SELECT * FROM jobs WHERE project_id = ? AND type = 'pipeline.run' ORDER BY created_at DESC LIMIT 1", p.id);
-  const active = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND status IN ('queued','running','paused') ORDER BY created_at DESC LIMIT 20", p.id);
-  const counts = Object.fromEntries(all<{ role: string; n: number }>("SELECT role, COUNT(*) n FROM assets WHERE project_id = ? AND deleted_at IS NULL GROUP BY role", p.id).map((r) => [r.role, r.n]));
+  const pipeline = one<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? AND type = 'pipeline.run' ORDER BY created_at DESC LIMIT 1", p.id,p.userId);
+  const active = all<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? AND status IN ('queued','running','paused') ORDER BY created_at DESC LIMIT 20", p.id,p.userId);
+  const counts = Object.fromEntries(all<{ role: string; n: number }>("SELECT role, COUNT(*) n FROM assets WHERE project_id = ? AND user_id=? AND deleted_at IS NULL GROUP BY role", p.id,p.userId).map((r) => [r.role, r.n]));
   const posts = Object.fromEntries(all<{ status: string; n: number }>("SELECT status, COUNT(*) n FROM posts WHERE project_id = ? GROUP BY status", p.id).map((r) => [r.status, r.n]));
   const theme = currentTheme(p.id);
-  const logo = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", p.id);
+  const logo = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND user_id=? AND role = 'logo' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", p.id,p.userId);
   // Services : la photo d'ouverture est une photo de l'activité (réalisations, équipe, lieu) ou un visuel créé.
   const cover = one<{ id: string }>(
     p.business === "services"
-      ? "SELECT id FROM assets WHERE project_id = ? AND role IN ('lifestyle','scene','banner','social') AND deleted_at IS NULL AND status != 'rejected' ORDER BY (role = 'lifestyle') DESC, (origin = 'upload') DESC, created_at DESC LIMIT 1"
-      : "SELECT id FROM assets WHERE project_id = ? AND role IN ('scene','packshot') AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1",
-    p.id,
+      ? "SELECT id FROM assets WHERE project_id = ? AND user_id=? AND role IN ('lifestyle','scene','banner','social') AND deleted_at IS NULL AND status != 'rejected' ORDER BY (role = 'lifestyle') DESC, (origin = 'upload') DESC, created_at DESC LIMIT 1"
+      : "SELECT id FROM assets WHERE project_id = ? AND user_id=? AND role IN ('scene','packshot') AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at DESC LIMIT 1",
+    p.id,p.userId,
   );
-  const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at LIMIT 1", p.id);
+  const cutout = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND user_id=? AND role = 'cutout' AND deleted_at IS NULL AND status != 'rejected' ORDER BY created_at LIMIT 1", p.id,p.userId);
   const b = balance(user.id, p.id);
   return ok({
     // Forfait du PROJET (un abonnement = un projet) : ouvre les créations d'images et de vidéos dans l'écran.

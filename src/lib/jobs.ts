@@ -20,6 +20,10 @@ import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
 import { withTrace } from "./ai/trace";
+import { assertJobScope } from "./project-security";
+import { accessScope } from "./access-scope";
+import { HttpError } from "./auth";
+import { rateTake } from "./rate-limit";
 
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled" | "blocked" | "paused";
 
@@ -63,6 +67,7 @@ export type EnqueueInput = {
 };
 
 export function enqueue(input: EnqueueInput): Job {
+  assertJobScope(input);
   // La langue des contenus voyage avec la tâche (et ses sous-tâches) : choisie pour l'action ou celle du projet.
   if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
     input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
@@ -75,6 +80,7 @@ export function enqueue(input: EnqueueInput): Job {
     if (existing) return scopedDuplicate(existing,input);
   }
   assertJobEntitlements(input.type,input.projectId,input.payload);
+  if(accessScope()?.kind==="http"&&!rateTake([{key:`job-submit:${input.userId}`,max:60,windowMs:60000}]))throw new HttpError(429,L("Trop de demandes rapprochées. Attendez une minute ; vos tâches existantes sont conservées.","Too many requests. Wait a minute; existing tasks are kept."),"job_submit_rate");
   const jid = id();
   const t = now();
   // ON CONFLICT : deux demandes simultanées avec la même clé renvoient la même tâche (au lieu d'une erreur 500).
@@ -351,41 +357,48 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
 }
 
 export function cancelJob(jid: string) {
+  const job=controlledJob(jid);if(!job)return;
   const cancelled = L("Annulée", "Canceled");
   run("UPDATE jobs SET status='cancelled', message=?, finished_at=?, updated_at=? WHERE id=? AND status IN ('queued','running','blocked','paused')", cancelled, now(), now(), jid);
   // Les sous-tâches sont annulées aussi, y compris celles en cours (leur worker s'arrête à son prochain point
   // d'avancement : aucune dépense ne continue après « Arrêter »).
-  run("UPDATE jobs SET status='cancelled', message=?, finished_at=?, updated_at=? WHERE parent_id=? AND status IN ('queued','blocked','running','paused')", cancelled, now(), now(), jid);
+  run("UPDATE jobs SET status='cancelled', message=?, finished_at=?, updated_at=? WHERE parent_id=? AND user_id=? AND project_id IS ? AND status IN ('queued','blocked','running','paused')", cancelled, now(), now(), jid,job.user_id,job.project_id);
 }
+
+function controlledJob(jid:string){const job=getJob(jid),scope=accessScope();if(job&&scope?.userId&&scope.userId!==job.user_id&&!scope.administration)throw new HttpError(404,L("Tâche introuvable.","Task not found."));return job;}
 
 /**
  * Pause : une tâche en file n'est plus prise ; une tâche en cours s'arrête à son prochain point
  * d'avancement. Les étapes terminées restent enregistrées (points de reprise).
  */
 export function pauseJob(jid: string) {
+  const job=controlledJob(jid);if(!job)return;
   const t = now();
   // L'essai consommé par une tâche interrompue volontairement n'est pas compté. Le bail du worker est
   // conservé : tant qu'il n'a pas rendu la main, une reprise rapide ne peut pas lancer un second worker.
   const paused = L("En pause", "Paused");
-  run("UPDATE jobs SET status='paused', message=?, attempts=MAX(0, attempts-1), updated_at=? WHERE (id=? OR parent_id=?) AND status='running'", paused, t, jid, jid);
-  run("UPDATE jobs SET status='paused', message=?, updated_at=? WHERE (id=? OR parent_id=?) AND status IN ('queued','blocked')", paused, t, jid, jid);
+  run("UPDATE jobs SET status='paused', message=?, attempts=MAX(0, attempts-1), updated_at=? WHERE (id=? OR parent_id=?) AND user_id=? AND project_id IS ? AND status='running'", paused, t, jid, jid,job.user_id,job.project_id);
+  run("UPDATE jobs SET status='paused', message=?, updated_at=? WHERE (id=? OR parent_id=?) AND user_id=? AND project_id IS ? AND status IN ('queued','blocked')", paused, t, jid, jid,job.user_id,job.project_id);
 }
 
 /** Reprise après une pause : repart du dernier point de reprise. */
 export function resumeJob(jid: string) {
-  const job=getJob(jid);const payload=json<any>(job?.payload,{});
+  const job=controlledJob(jid);if(!job)return;const payload=json<any>(job.payload,{});
+  assertJobScope({userId:job.user_id,projectId:job.project_id,payload,parentId:job.parent_id,dependsOn:json<string[]>(job.depends_on,[])});
   if(job?.project_id && payload.strategyAwaitingChoice){const stamp=strategyStamp(job.project_id);if(!stamp)throw new UserFacingError(L("Choisissez d’abord votre angle marketing dans Marque.","First choose your marketing angle in Brand."));run("UPDATE jobs SET payload=? WHERE id=?",JSON.stringify({...payload,strategyAwaitingChoice:false,strategyVersion:stamp.id,strategyInputDigest:currentStrategyInputDigest(job.project_id)}),jid);}
 
-  run("UPDATE jobs SET status='queued', run_at=?, message=?, updated_at=? WHERE (id=? OR parent_id=?) AND status='paused'", now(), L("Reprise…", "Resuming…"), now(), jid, jid);
+  run("UPDATE jobs SET status='queued', run_at=?, message=?, updated_at=? WHERE (id=? OR parent_id=?) AND user_id=? AND project_id IS ? AND status='paused'", now(), L("Reprise…", "Resuming…"), now(), jid, jid,job.user_id,job.project_id);
 }
 
 /** Relance manuelle : repart du dernier point de reprise. */
 export function retryJob(jid: string, opts: { recoveryOnly?: boolean } = {}) {
+  const root=controlledJob(jid);if(!root)return;
+  assertJobScope({userId:root.user_id,projectId:root.project_id,payload:json(root.payload,{}),parentId:root.parent_id,dependsOn:json<string[]>(root.depends_on,[])});
   if (opts.recoveryOnly) {
     const job = getJob(jid);
     if (!job || job.status !== "failed") return;
     run("UPDATE jobs SET payload=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(job.payload, {}), recoveryOnly: true }), jid);
-    for (const child of all<{id:string;depends_on:string}>("SELECT id,depends_on FROM jobs WHERE status='queued' AND depends_on LIKE ?",`%${jid}%`)) {
+    for (const child of all<{id:string;depends_on:string}>("SELECT id,depends_on FROM jobs WHERE status='queued' AND user_id=? AND project_id IS ? AND depends_on LIKE ?",root.user_id,root.project_id,`%${jid}%`)) {
       if (json<string[]>(child.depends_on,[]).includes(jid)) run("UPDATE jobs SET status='blocked',message=?,updated_at=? WHERE id=? AND status='queued'",L("Étape conservée en attente d'une confirmation après récupération.","Step kept pending confirmation after recovery."),now(),child.id);
     }
   }
@@ -399,7 +412,7 @@ export function retryJob(jid: string, opts: { recoveryOnly?: boolean } = {}) {
   // Une récupération sans nouvel achat ne réactive pas d'autres tâches potentiellement payantes.
   if (opts.recoveryOnly) return;
   // Les tâches bloquées parce que celle-ci avait échoué attendent de nouveau (elles partiront quand elle aura réussi).
-  for (const b of all<{ id: string; depends_on: string }>("SELECT id, depends_on FROM jobs WHERE status='blocked' AND depends_on LIKE ?", `%${jid}%`)) {
+  for (const b of all<{ id: string; depends_on: string }>("SELECT id, depends_on FROM jobs WHERE status='blocked' AND user_id=? AND project_id IS ? AND depends_on LIKE ?",root.user_id,root.project_id, `%${jid}%`)) {
     if (json<string[]>(b.depends_on, []).includes(jid)) run("UPDATE jobs SET status='queued', message=?, updated_at=? WHERE id=? AND status='blocked'", L("En attente de l'étape relancée", "Waiting for the retried step"), now(), b.id);
   }
 }

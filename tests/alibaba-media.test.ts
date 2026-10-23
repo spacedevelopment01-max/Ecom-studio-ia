@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Alibaba Cloud Model Studio — Qwen-Image (images) et Wan (vidéos), fournisseur SIMULÉ : aucun appel réel, aucune
  * dépense. Vérifie : modèles verrouillés tant qu'ils ne sont pas confirmés et tarifés, adresse par région, requêtes

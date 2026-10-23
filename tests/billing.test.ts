@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 import { describe, expect, it } from "vitest";
 import { createUser } from "@/lib/auth";
 import { run } from "@/lib/db";

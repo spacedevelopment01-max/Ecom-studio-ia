@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Logo complet dessiné par l'IA d'images : brief détaillé du directeur artistique, nom vérifié lettre par lettre ;
  * un nom mal écrit est redessiné une fois avec le défaut précis, le raté n'est ni proposé ni décompté ; barrière de

@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** Chemins qui ne servent qu'avec l'IA connectée : réglage Veo, demandes en deux parties avec un verbe accentué. */
 import { describe, expect, it } from "vitest";
 import { veoPersonGeneration } from "@/lib/ai/media-providers";

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { id, now, one, run } from "./db";
 import { randomToken, sha256 } from "./secrets";
 import { L } from "./i18n-server";
+import { identifyActor, identifyAdministration } from "./access-scope";
 
 export const SESSION_COOKIE = "ecs_session";
 const SESSION_DAYS = 30;
@@ -57,6 +58,9 @@ export async function verifyLogin(email: string, password: string): Promise<User
 }
 
 export async function startSession(userId: string) {
+  const jar = await cookies();
+  const previous = jar.get(SESSION_COOKIE)?.value;
+  if (previous) run("DELETE FROM sessions WHERE id=?", sha256(previous));
   const token = randomToken(32);
   run(
     "INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?,?,?,?)",
@@ -65,7 +69,6 @@ export async function startSession(userId: string) {
     now() + SESSION_DAYS * 86400_000,
     now(),
   );
-  const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
@@ -88,7 +91,7 @@ export function userFromToken(token: string | undefined | null): User | null {
     "SELECT u.id, u.email, u.name, u.role, u.timezone, u.created_at, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?",
     sha256(token),
   );
-  if (!row || row.expires_at < now()) return null;
+  if (!row || row.expires_at <= now()) return null;
   const { expires_at: _, ...u } = row;
   return u;
 }
@@ -101,12 +104,14 @@ export async function currentUser(): Promise<User | null> {
 export async function requireUser(): Promise<User> {
   const u = await currentUser();
   if (!u) throw new HttpError(401, L("Connexion requise.", "Sign-in required."));
+  identifyActor(u.id);
   return u;
 }
 
 export async function requireAdmin(): Promise<User> {
   const u = await requireUser();
   if (u.role !== "admin") throw new HttpError(403, L("Accès réservé à l'administration.", "Access restricted to administrators."));
+  identifyAdministration();
   return u;
 }
 

@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Audit de l'onglet Images : images finales 100 % IA (jamais une photo libre en secours d'une image demandée à l'IA),
  * IA d'images indisponible dite clairement (raison, aucun bouton payant qui échouerait), modèle du studio

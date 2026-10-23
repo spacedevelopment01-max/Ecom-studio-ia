@@ -40,7 +40,7 @@ export type MediaInventory = {
 const roleOf = (a: Asset, m: any): MediaRole => /^(logo(?:-|$)|favicon(?:-|$))/.test(a.role ?? '') ? 'logo' : a.kind === 'video' ? 'video' : m.themeContent?.role ?? (String(m.slot ?? '').startsWith('theme:') ? String(m.slot).split(':')[1] as MediaRole : /packshot|cutout/.test(a.role ?? '') || m.triage?.kind === 'packshot' ? 'packshot' : a.role === 'detail' ? 'detail' : /making|method/.test(a.role ?? '') ? 'method' : m.authenticWork === true ? 'realization' : a.role === 'banner' ? 'opening' : 'use');
 export async function inventoryClientMedia(p: Project): Promise<MediaInventory> {
     const usable: ClientMedium[] = [], excluded: MediaInventory['excluded'] = [], hashes = new Set<string>();
-    for (const a of all<Asset>("SELECT * FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind IN ('image','video') ORDER BY (status='approved') DESC, created_at ASC, id ASC", p.id)) {
+    for (const a of all<Asset>("SELECT * FROM assets WHERE project_id=? AND user_id=? AND deleted_at IS NULL AND kind IN ('image','video') ORDER BY (status='approved') DESC, created_at ASC, id ASC", p.id,p.userId)) {
         const m = json<any>(a.meta, {}), lineage = inspectSiteMediaLineage(a, p.id, getAsset);
         let reason = !isAutoUsable(a) ? 'media_rejected' : lineage.issue ? 'source_not_site_media' : m.demo?.isDemo || m.lot2a?.demo ? 'demo_media' : p.business === 'products' && m.stock ? 'product_stock_forbidden' : m.people === true && a.origin === 'generated' && !m.peopleConsent ? 'people_not_authorized' : '';
         if (/^(brand-board|palette-board|identity-board)/.test(a.role ?? ''))

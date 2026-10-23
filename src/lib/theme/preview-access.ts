@@ -11,6 +11,7 @@
 import crypto from "node:crypto";
 import { one } from "../db";
 import { derivedKey } from "../secrets";
+import { shareBinding } from "../share-links";
 
 const TTL_SECONDS = 12 * 3600;
 
@@ -22,18 +23,21 @@ const sign = (payload: string) => crypto.createHmac("sha256", key()).update(payl
 /** Clé d'aperçu d'un projet, liée à son propriétaire. */
 export function signPreview(userId: string, projectId: string, ttlSeconds = TTL_SECONDS): string {
   const exp = Math.floor(Date.now() / 1000) + ttlSeconds;
-  return `${exp.toString(36)}.${sign(`${projectId}.${userId}.${exp}`)}`;
+  return `${exp.toString(36)}.${sign(`${projectId}.${userId}.${exp}.${shareBinding(projectId) ?? "unavailable"}`)}`;
 }
 
 /** Propriétaire du projet si la clé est valable (signature, échéance, projet toujours à lui), sinon null. */
 export function verifyPreview(token: string, projectId: string): string | null {
-  const [exp36, sig] = token.split(".");
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [exp36, sig] = parts;
   if (!exp36 || !sig || !/^[0-9a-z]{1,12}$/.test(exp36)) return null;
   const exp = parseInt(exp36, 36);
   if (!Number.isFinite(exp) || exp < Date.now() / 1000) return null;
   const owner = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id = ?", projectId)?.user_id;
-  if (!owner) return null;
-  const expected = sign(`${projectId}.${owner}.${exp}`);
+  const binding = shareBinding(projectId);
+  if (!owner || !binding) return null;
+  const expected = sign(`${projectId}.${owner}.${exp}.${binding}`);
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   return owner;
 }
@@ -48,22 +52,17 @@ export function splitPreviewSegment(seg: string): { vid: string; token: string |
 }
 
 /**
- * Cloisonnement strict (origine opaque) : partout, sauf derrière un proxy qui exige ses propres cookies pour
- * chaque fichier. GitHub Codespaces (adresse *.app.github.dev) refuse les requêtes d'une origine opaque
- * (CSS, scripts, images de l'aperçu) : l'aperçu s'affichait sans mise en forme. Là, l'aperçu garde le bac à
- * sable mais avec son origine. Réglable par PREVIEW_ISOLATION=on|off.
+ * Origine opaque dans tous les environnements. Le transport des ressources et le pont borné du
+ * studio permettent l'affichage derrière un proxy privé sans rendre sa session au document importé.
  */
 export function previewIsolated(): boolean {
-  const v = (process.env.PREVIEW_ISOLATION ?? "").trim().toLowerCase();
-  if (["off", "0", "false", "no"].includes(v)) return false;
-  if (["on", "1", "true", "yes"].includes(v)) return true;
-  return process.env.CODESPACES !== "true";
+  return true;
 }
 
 const SANDBOX_TOKENS = "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals";
 
 /** Attribut `sandbox` de l'iframe d'aperçu (le même que l'en-tête CSP). */
-export const previewSandbox = (tokens = SANDBOX_TOKENS) => (previewIsolated() ? tokens : `${tokens} allow-same-origin`);
+export const previewSandbox = (tokens = SANDBOX_TOKENS) => tokens.split(/\s+/).filter(t => t !== "allow-same-origin").join(" ");
 
 /**
  * Bac à sable de la page d'aperçu (même ouverte hors du studio) : scripts permis, mais origine opaque,
@@ -71,7 +70,7 @@ export const previewSandbox = (tokens = SANDBOX_TOKENS) => (previewIsolated() ? 
  */
 export const previewCsp = (tokens = SANDBOX_TOKENS) => `sandbox ${previewSandbox(tokens)}; frame-ancestors 'self'`;
 
-/** Valeur stricte (référence ; préférer previewCsp(), qui suit l'environnement). */
+/** Valeur stricte de référence ; préférer previewCsp() pour les jetons facultatifs. */
 export const PREVIEW_SANDBOX_CSP = `sandbox ${SANDBOX_TOKENS}; frame-ancestors 'self'`;
 
 /** Le document de l'aperçu (origine « null ») lit ses propres fichiers et le panier de démonstration. */

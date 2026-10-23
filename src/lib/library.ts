@@ -12,6 +12,9 @@ import { EXT_BY_MIME, kindFromMime, putFile, readFile, storagePath, tmpDir } fro
 import { L } from "./i18n-server";
 import { HttpError } from "./auth";
 import { execTool } from "./exec-tool";
+import { assertAssetScope, assetWithinScope, assertProjectOwner } from "./project-security";
+import { checkedUpload, assertStaticSvg } from "./upload-security";
+import { provenanceState } from "./media/provenance";
 
 const exec = execTool;
 
@@ -163,7 +166,7 @@ export type SaveAssetInput = {
 
 async function probeVideo(file: string): Promise<{ width?: number; height?: number; duration?: number }> {
   try {
-    const { stdout } = await exec("ffprobe", ["-v", "error", "-print_format", "json", "-show_streams", "-show_format", file]);
+    const { stdout } = await exec("ffprobe", ["-protocol_whitelist", "file,pipe", "-v", "error", "-print_format", "json", "-show_streams", "-show_format", file]);
     const j = JSON.parse(stdout);
     const v = (j.streams || []).find((s: any) => s.codec_type === "video");
     return { width: v?.width, height: v?.height, duration: Number(j.format?.duration) || undefined };
@@ -175,6 +178,16 @@ async function probeVideo(file: string): Promise<{ width?: number; height?: numb
 const SAFE_EXT = new Set(["png", "jpg", "jpeg", "webp", "gif", "avif", "heic", "heif", "svg", "mp4", "mov", "webm", "m4v", "mp3", "wav", "m4a", "ogg", "pdf", "zip", "csv", "txt", "json", "md", "docx", "xlsx", "pptx", "ttf", "otf", "woff", "woff2", "psd", "ai", "eps"]);
 
 export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
+  assertProjectOwner(input.userId, input.projectId);
+  if (!assetWithinScope({ user_id: input.userId, project_id: input.projectId })) throw new HttpError(404, L("Média introuvable.", "Media not found."));
+  for (const ref of [input.sourceAssetId, input.versionOf]) {
+    if (ref && !one("SELECT 1 FROM assets WHERE id=? AND project_id=? AND user_id=?", ref, input.projectId, input.userId)) throw new HttpError(404, L("Média introuvable.", "Media not found."));
+  }
+  if (input.folderId && !one("SELECT 1 FROM folders WHERE id=? AND project_id=?", input.folderId, input.projectId)) throw new HttpError(404, L("Dossier introuvable.", "Folder not found."));
+  // La bibliothèque est commune aux autres points d'entrée (démarrage, logo, import), pas seulement à l'onglet Fichiers.
+  if (input.origin === "upload") input = { ...input, mime: await checkedUpload(input.data, input.name, input.mime) };
+  if (input.mime === "image/svg+xml" || input.mime.startsWith("image/") && /^[\uFEFF\s]*</.test(input.data.subarray(0,1024).toString("utf8"))) assertStaticSvg(input.data);
+  if (input.mime.startsWith("video/")) await checkedUpload(input.data, "video." + (EXT_BY_MIME[input.mime] ?? "bin"), input.mime);
   const strategy = input.origin === "generated" ? strategyStamp(input.projectId) : null;
   const { marketingStrategy: _untrustedStamp, ...meta } = input.meta ?? {};
   const aid = id();
@@ -210,7 +223,7 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
     try {
       const dir = tmpDir("poster");
       const poster = path.join(dir, "poster.jpg");
-      await exec("ffmpeg", ["-y", "-ss", String(Math.min(1.2, (duration ?? 2) / 2)), "-i", file, "-frames:v", "1", "-q:v", "3", poster]);
+      await exec("ffmpeg", ["-y", "-protocol_whitelist", "file,pipe", "-ss", String(Math.min(1.2, (duration ?? 2) / 2)), "-i", file, "-frames:v", "1", "-q:v", "3", poster]);
       thumbKey = `${input.userId}/${input.projectId}/${aid}.thumb.webp`;
       putFile(thumbKey, await sharp(poster).resize(640, 640, { fit: "inside" }).webp({ quality: 80 }).toBuffer());
       fs.rmSync(dir, { recursive: true, force: true });
@@ -256,16 +269,19 @@ export async function saveAsset(input: SaveAssetInput): Promise<Asset> {
 }
 
 export function getAsset(assetId: string): Asset | undefined {
-  return one<Asset>("SELECT * FROM assets WHERE id = ?", assetId);
+  const a = one<Asset>("SELECT * FROM assets WHERE id = ?", assetId);
+  return a && assetWithinScope(a) ? a : undefined;
 }
 
 export function projectAsset(projectId: string, assetId: string): Asset {
   const a = one<Asset>("SELECT * FROM assets WHERE id = ? AND project_id = ?", assetId, projectId);
   if (!a) throw new Error(L("Média introuvable dans ce projet.", "Media not found in this project."));
+  assertAssetScope(a);
   return a;
 }
 
 export function assetData(a: Asset): Buffer {
+  assertAssetScope(a);
   return readFile(a.storage_key);
 }
 
@@ -274,6 +290,10 @@ export function assetMeta<T = Record<string, unknown>>(a: Asset): T {
 }
 
 export function addUsage(assetId: string, targetType: string, targetId: string, label = "") {
+  const asset=getAsset(assetId);
+  if(!asset)throw new HttpError(404,L("Média introuvable.","Media not found."));
+  assertAssetScope(asset);
+  if(targetType==="post"&&!one("SELECT 1 FROM posts WHERE id=? AND project_id=?",targetId,asset.project_id)||targetType==="brand"&&targetId!==asset.project_id)throw new HttpError(404,L("Destination introuvable.","Target not found."));
   run(
     "INSERT INTO asset_usages (asset_id, target_type, target_id, label, created_at) VALUES (?,?,?,?,?) ON CONFLICT DO UPDATE SET label = excluded.label",
     assetId,
@@ -289,7 +309,8 @@ export function removeUsages(targetType: string, targetId: string) {
 }
 
 export function usagesOf(assetId: string) {
-  return all<{ target_type: string; target_id: string; label: string }>("SELECT target_type, target_id, label FROM asset_usages WHERE asset_id = ?", assetId);
+  const a=getAsset(assetId);if(!a)return[];
+  return all<{ target_type: string; target_id: string; label: string }>("SELECT target_type, target_id, label FROM asset_usages WHERE asset_id = ?", assetId).filter(u=>u.target_type==="post"?!!one("SELECT 1 FROM posts WHERE id=? AND project_id=?",u.target_id,a.project_id):u.target_type==="brand"?u.target_id===a.project_id:u.target_type==="theme_section");
 }
 
 /** URL authentifiée servie par l'application. */
@@ -297,7 +318,9 @@ export const assetUrl = (a: { id: string }, opts: { thumb?: boolean; download?: 
   `/api/files/${a.id}${opts.thumb ? "?thumb=1" : opts.download ? "?download=1" : ""}`;
 
 export function publicAssetSummary(a: Asset) {
+  assertAssetScope(a);
   const meta = assetMeta(a);
+  const localRef = (ref: string | null) => ref && one("SELECT 1 FROM assets WHERE id=? AND user_id=? AND project_id=?", ref, a.user_id, a.project_id) ? ref : null;
   return {
     id: a.id,
     name: a.name,
@@ -308,17 +331,18 @@ export function publicAssetSummary(a: Asset) {
     width: a.width,
     height: a.height,
     duration: a.duration,
-    folderId: a.folder_id,
+    folderId: a.folder_id && one("SELECT 1 FROM folders WHERE id=? AND project_id=?",a.folder_id,a.project_id) ? a.folder_id : null,
     origin: a.origin,
     status: a.status,
     starred: !!a.starred,
     version: a.version,
-    versionOf: a.version_of,
-    sourceAssetId: a.source_asset_id,
+    versionOf: localRef(a.version_of),
+    sourceAssetId: localRef(a.source_asset_id),
     createdAt: a.created_at,
     url: assetUrl(a),
     thumbUrl: a.thumb_key ? assetUrl(a, { thumb: true }) : a.kind === "image" ? assetUrl(a) : null,
     downloadUrl: assetUrl(a, { download: true }),
     meta,
+    provenance: provenanceState(a.origin,meta),
   };
 }

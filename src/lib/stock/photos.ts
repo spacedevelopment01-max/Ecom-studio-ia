@@ -1,3 +1,4 @@
+import { publicDownload } from "../public-download";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -102,7 +103,7 @@ export async function searchStock(queries: string[], orientation: Orientation, l
 
 /** Télécharge une photo (taille et type vérifiés), ramenée à 2400 px au plus, en JPEG. */
 export async function downloadStock(p: StockPhoto): Promise<Buffer> {
-  const r = await fetch(p.url, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(30_000) });
+  const r = await publicDownload(p.url, {maxBytes:25_000_000,accept:"image/*",timeoutMs:30000});
   if (!r.ok) throw new Error(`${p.source} ${r.status}`);
   if (!/^image\//.test(r.headers.get("content-type") ?? "image/")) throw new Error(L("ce n'est pas une image", "not an image"));
   const buf = Buffer.from(await r.arrayBuffer());
@@ -226,7 +227,7 @@ export async function searchStockVideos(queries: VideoQuery[], orientation: "lan
 
 /** Télécharge une vidéo libre de droits (MP4, 80 Mo au plus). */
 export async function downloadStockVideo(v: StockVideo): Promise<Buffer> {
-  const r = await fetch(v.url, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(90_000) });
+  const r = await publicDownload(v.url, {maxBytes:80_000_000,accept:"video/*",timeoutMs:90000});
   if (!r.ok) throw new Error(`${v.source} ${r.status}`);
   const buf = Buffer.from(await r.arrayBuffer());
   if (buf.length > 80_000_000) throw new Error(L("vidéo trop lourde", "video too large"));

@@ -2,7 +2,7 @@
  * Limitation de débit persistante (SQLite) : inscriptions, tentatives de connexion, mot de passe oublié.
  * Partagée entre les processus et conservée au redémarrage ; les entrées anciennes sont purgées.
  */
-import { now, one, run } from "./db";
+import { now, one, run, tx } from "./db";
 import { getSetting } from "./settings";
 
 const KEEP_MS = 2 * 86400_000;
@@ -31,6 +31,15 @@ export function rateHit(key: string) {
 
 export function rateClear(key: string) {
   run("DELETE FROM rate_events WHERE key = ?", key);
+}
+
+/** Réserve avant le premier await : les requêtes parallèles partagent le même plafond SQLite. */
+export function rateTake(limits: { key: string; max: number; windowMs: number }[]): boolean {
+  return tx(() => {
+    if (limits.some(l => rateCount(l.key, l.windowMs) >= l.max)) return false;
+    for (const key of new Set(limits.map(l => l.key))) rateHit(key);
+    return true;
+  });
 }
 
 /** Limites appliquées (exportées pour les tests). */

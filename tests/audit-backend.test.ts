@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Non-régression de l'audit du serveur (paiements, quotas, tâches, sécurité). Chaque test rejoue un défaut corrigé.
  * Stripe est simulé (fetch remplacé) : aucun appel réseau réel.

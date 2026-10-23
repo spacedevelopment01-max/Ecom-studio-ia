@@ -7,6 +7,7 @@ import { HttpError, ownedProject, requireUser } from "@/lib/auth";
 import { getAsset, publicAssetSummary, usagesOf, type Asset } from "@/lib/library";
 import { storagePath } from "@/lib/storage";
 import { L } from "@/lib/i18n-server";
+import { assertAssetScope } from "@/lib/project-security";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ async function assetOf(ctx: { params: Promise<{ fid: string }> }) {
   const a = getAsset(fid);
   if (!a) throw new HttpError(404, L("Fichier introuvable.", "File not found."));
   ownedProject(user, a.project_id);
+  assertAssetScope(a);
   return a;
 }
 
@@ -24,9 +26,10 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ fid: str
   const a = await assetOf(ctx);
   const u = new URL(req.url).searchParams;
   if (u.get("info") === "1") {
-    const versions = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND (id = ? OR version_of = ? OR id = ?) ORDER BY version", a.project_id, a.version_of ?? a.id, a.version_of ?? a.id, a.version_of ?? "");
-    const derived = all<Asset>("SELECT * FROM assets WHERE source_asset_id = ? AND deleted_at IS NULL", a.id);
-    const source = a.source_asset_id ? getAsset(a.source_asset_id) : null;
+    const versions = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND (id = ? OR version_of = ? OR id = ?) ORDER BY version", a.project_id,a.user_id, a.version_of ?? a.id, a.version_of ?? a.id, a.version_of ?? "");
+    const derived = all<Asset>("SELECT * FROM assets WHERE source_asset_id = ? AND project_id = ? AND user_id = ? AND deleted_at IS NULL", a.id, a.project_id, a.user_id);
+    const candidate = a.source_asset_id ? getAsset(a.source_asset_id) : null;
+    const source = candidate?.project_id === a.project_id && candidate?.user_id === a.user_id ? candidate : null;
     return ok({ asset: publicAssetSummary(a), usages: usagesOf(a.id), versions: versions.map(publicAssetSummary), derived: derived.map(publicAssetSummary), source: source ? publicAssetSummary(source) : null });
   }
   const key = u.get("thumb") === "1" && a.thumb_key ? a.thumb_key : a.storage_key;
@@ -35,7 +38,7 @@ export const GET = handle(async (req: Request, ctx: { params: Promise<{ fid: str
   const mime = key === a.thumb_key ? "image/webp" : a.mime;
   const headers: Record<string, string> = {
     "Content-Type": mime,
-    "Cache-Control": "private, max-age=3600",
+    "Cache-Control": "private, no-store",
     "Accept-Ranges": "bytes",
     "X-Content-Type-Options": "nosniff",
   };

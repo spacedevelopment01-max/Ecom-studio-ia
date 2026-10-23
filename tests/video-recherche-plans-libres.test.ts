@@ -1,3 +1,5 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
+import {videoByteFixture} from "./video-byte-fixture";
 /**
  * Recherche de plans libres (onglet Vidéos › Chercher des plans libres). Bug signalé : projet « contretemps » (escape
  * game, services), 16:9, recherche « escape game » → « rien trouvé », alors que Pixabay a des plans qui collent
@@ -24,7 +26,7 @@ function fakePixabay() {
   calls = [];
   vi.stubGlobal("fetch", async (u: string | URL) => {
     const url = new URL(String(u));
-    if (url.hostname === "cdn.pixabay.com") return new Response(new Uint8Array(2048), { headers: { "content-type": "video/mp4" } });
+    if (url.hostname === "cdn.pixabay.com") return new Response(new Uint8Array(videoByteFixture()), { headers: { "content-type": "video/mp4" } });
     if (url.hostname !== "pixabay.com") throw new Error(`réseau interdit : ${url.hostname}`);
     const q = url.searchParams.get("q") ?? "";
     const lang = url.searchParams.get("lang") ?? "en";

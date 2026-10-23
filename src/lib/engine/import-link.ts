@@ -155,15 +155,19 @@ function getOnce(u: URL, headers: Record<string, string>, maxBytes: number, time
         resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) });
       };
       const timer = setTimeout(() => {
+        done = true;
         req.destroy();
-        finish();
+        reject(new Error(L("Délai dépassé : import incomplet refusé.", "Timed out: incomplete import refused.")));
       }, timeoutMs);
       stream.on("data", (c: Buffer) => {
         if (done) return;
         size += c.length;
         if (size > maxBytes) {
+          done = true;
+          clearTimeout(timer);
           req.destroy();
-          return finish();
+          reject(new Error(L("Import trop volumineux.", "Import too large.")));
+          return;
         }
         chunks.push(c);
       });
@@ -181,7 +185,7 @@ function getOnce(u: URL, headers: Record<string, string>, maxBytes: number, time
   });
 }
 
-export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?: string } = {}): Promise<{ url: string; status: number; type: string; body: Buffer }> {
+export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?: string; timeoutMs?:number } = {}): Promise<{ url: string; status: number; type: string; body: Buffer }> {
   let url = raw;
   for (let hop = 0; hop < 5; hop++) {
     const u = await assertPublicUrl(url);
@@ -189,6 +193,7 @@ export async function safeFetch(raw: string, opts: { maxBytes?: number; accept?:
       u,
       { "User-Agent": "Mozilla/5.0 (compatible; EcomStudioIA/1.0; +analyse de fiche produit)", Accept: opts.accept ?? "text/html,application/json;q=0.9,*/*;q=0.5", "Accept-Language": C("fr-FR,fr;q=0.9,en;q=0.6", "en-US,en;q=0.9,fr;q=0.6") },
       opts.maxBytes ?? 3_000_000,
+      opts.timeoutMs ?? 15_000,
     );
     const location = r.headers.location;
     if (r.status >= 300 && r.status < 400 && location) {
@@ -312,6 +317,7 @@ export async function fetchImage(url: string): Promise<Buffer | null> {
   try {
     const r = await safeFetch(url, { maxBytes: 15_000_000, accept: "image/*" });
     if (r.status !== 200 || !/^image\//.test(r.type)) return null;
+    if (/^[\uFEFF\s]*</.test(r.body.subarray(0,1024).toString("utf8"))) (await import("../upload-security")).assertStaticSvg(r.body);
     return r.body;
   } catch {
     return null;
