@@ -212,4 +212,14 @@ Dossier : [`docs/design/noctil-reference-20261023/resultats/`](../design/noctil-
 
 ## État vérifié
 
-À compléter à l'envoi.
+- **Code vérifié : commit `f8b7025a`** (branche `claude/themes-differenciation`, PR #167). Le commit suivant ne change que ce
+  rapport.
+- En local sur ce commit : `npx tsc --noEmit` sans erreur ; `npx vitest run` **2 930 réussis, 2 ignorés, 0 échec** ;
+  Theme Check rapide (5 thèmes FR, EN, multi, niche, services, ZIP) et NOCTIL (FR, EN, services) : 0 erreur ; contrôle du
+  studio, parcours d'interactions et non-régression comme décrits plus haut.
+- **CI GitHub sur `f8b7025a` : réussie** (exécution 39965915734, deuxième essai) : image Docker construite et démarrée ;
+  types, tests, Theme Check des 30 thèmes et build de production réussis. Le premier essai avait été arrêté par la
+  limite de 45 minutes : l'installation de ffmpeg sur la machine de GitHub avait pris 37 minutes, avant les tests (même
+  cause probable pour les trois exécutions annulées plus tôt dans la journée sur cette branche).
+- Démonstration exportée et captures faites sur ce code (aperçu statique local, hors studio de Thomas).
+- Modèle utilisé pour cette mission : Opus, effort élevé.
