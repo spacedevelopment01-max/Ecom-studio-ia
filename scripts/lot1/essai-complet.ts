@@ -128,17 +128,18 @@ const walletsBefore = walletsOf();
 const opened = openWith(mig, ["--vues"]) as { vues?: unknown; strategies?: Record<string, { version: number; angle: string } | null> };
 const vues = opened.vues;
 const strategies = opened.strategies ?? null;
-// Mise en conformité des anciens portefeuilles (règle 40 % / 50 % du code) : chaque baisse doit être tracée au relevé.
+// Mise en conformité des anciens portefeuilles (règle 40 % / 50 % du code) : toute baisse des crédits hors forfait
+// (recharges, qui n'expirent pas) doit être inscrite au relevé. Le budget du mois, lui, se renouvelle à chaque période.
 const walletsAfter = walletsOf();
 const lowered = walletsAfter.filter((a) => {
   const b = walletsBefore.find((x) => x.user_id === a.user_id)!;
-  return a.topup_balance < b.topup_balance || a.monthly_allowance < b.monthly_allowance;
+  return a.topup_balance < b.topup_balance;
 });
 {
   const l = openReadonly(path.join(mig, "studio.db"));
   const traced = lowered.every((w) => !!l.prepare("SELECT 1 FROM ledger WHERE user_id = ? AND type = 'adjustment'").get(w.user_id));
   l.close();
-  ok("budgets — toute baisse d'un ancien portefeuille est inscrite au relevé", traced, lowered.length ? lowered.map((w) => w.user_id) : undefined);
+  ok("budgets — toute baisse des crédits hors forfait est inscrite au relevé", traced, lowered.length ? lowered.map((w) => w.user_id) : undefined);
 }
 if (beforeFp.marketing_strategy_active?.count) ok("angles — stratégie active historique relue par le code testé", !!strategies && Object.values(strategies).filter(Boolean).length === beforeFp.marketing_strategy_active.count, strategies);
 

@@ -127,18 +127,20 @@ d.transaction(() => {
   // Ancien abonnement du compte A (avant « un abonnement = un projet ») : clé = id du client, payé, Développer mensuel.
   if (!v2) put("subscriptions", { user_id: "u-historique-a", plan: "vendre", billing: "month", status: "active", stores: 3, stripe_customer_id: "cus_synthetique_a", stripe_subscription_id: "sub_synthetique_a", current_period_start: T0, current_period_end: T0 + 30 * day, updated_at: T0 });
   if (!v2) put("subscriptions", { user_id: "u-historique-b", plan: "dominer", billing: "year", status: "active", stores: 1, stripe_customer_id: "cus_synthetique_b", stripe_subscription_id: "sub_synthetique_b", current_period_start: T0, current_period_end: T0 + 365 * day, updated_at: T0 });
-  for (const u of ["u-historique-a", "u-historique-b"]) {
-    put("wallets", { user_id: u, period_start: T0, period_end: T0 + 30 * day, monthly_allowance: 2_000_000, monthly_used: 500_000, topup_balance: u === "u-historique-a" ? 500_000 : 3_000_000, topup_period_added: u === "u-historique-a" ? 500_000 : 3_000_000, topup_period_used: 0, updated_at: T0 });
+  // Portefeuilles : par compte avant les forfaits V2, par abonnement ensuite (clé = identifiant de l'abonnement).
+  const walletKeys = v2 ? ["s-a-mono", "s-b-unique"] : ["u-historique-a", "u-historique-b"];
+  for (const u of walletKeys) {
+    put("wallets", { user_id: u, period_start: T0, period_end: T0 + 30 * day, monthly_allowance: 2_000_000, monthly_used: 500_000, topup_balance: u === walletKeys[0] ? 500_000 : 3_000_000, topup_period_added: u === walletKeys[0] ? 500_000 : 3_000_000, topup_period_used: 0, updated_at: T0 });
     put("ledger", { id: `l-${u}-1`, user_id: u, type: "grant", bucket: "monthly", amount: 2_000_000, ref: `sub-${u}`, note: "Budget IA du mois", created_at: T0 });
     put("ledger", { id: `l-${u}-2`, user_id: u, type: "usage", bucket: "monthly", amount: -500_000, ref: `job-${u}`, note: "Image IA", created_at: T0 + day });
     put("quota_usage", { user_id: u, period_start: T0, key: "blog", included: 5, rollover: 0, used: 2 });
   }
   // Compte B : ancien budget hors forfait offert (aucun paiement de recharge ni de pack ne le justifie).
-  put("ledger", { id: "l-b-offert", user_id: "u-historique-b", type: "grant", bucket: "topup", amount: 3_000_000, ref: null, note: "Ancien budget de création offert", created_at: T0 });
-  put("ledger", { id: "l-a-recharge", user_id: "u-historique-a", type: "topup", bucket: "topup", amount: 500_000, ref: "pi_synthetique_recharge", note: "Recharge IA 10 €", created_at: T0 + 2 * day });
+  put("ledger", { id: "l-b-offert", user_id: walletKeys[1], type: "grant", bucket: "topup", amount: 3_000_000, ref: null, note: "Ancien budget de création offert", created_at: T0 });
+  put("ledger", { id: "l-a-recharge", user_id: walletKeys[0], type: "topup", bucket: "topup", amount: 500_000, ref: "pi_synthetique_recharge", note: "Recharge IA 10 €", created_at: T0 + 2 * day });
   put("pack_balances", { user_id: "u-historique-a", key: "visuals", balance: 12 });
   put("pack_purchases", { id: "pp-a-visuels", user_id: "u-historique-a", pack: "visuals", ref: "cs_synthetique_pack", created_at: T0 + 2 * day });
-  for (const [i, kind] of ["subscription", "topup", "pack"].entries()) put("payments", { id: `pay-a-${i}`, user_id: "u-historique-a", kind, amount_cents: [8900, 1000, 1490][i], status: "paid", stripe_id: `cs_synthetique_${i}`, label: kind, created_at: T0 + i * day });
+  for (const [i, kind] of ["subscription", "topup", "pack"].entries()) put("payments", { id: `pay-a-${i}`, user_id: "u-historique-a", account_key: v2 ? "s-a-mono" : null, project_id: v2 ? "p-a-mono" : null, kind, amount_cents: [8900, 1000, 1490][i], status: "paid", stripe_id: `cs_synthetique_${i}`, label: kind, created_at: T0 + i * day });
   put("payments", { id: "pay-b-0", user_id: "u-historique-b", kind: "subscription", amount_cents: 129000, status: "paid", stripe_id: "cs_synthetique_b", label: "subscription", created_at: T0 });
   // Tâches : terminée, en file, en cours (bail), en pause, échouée.
   for (const [i, status] of ["done", "queued", "running", "paused", "failed"].entries()) {

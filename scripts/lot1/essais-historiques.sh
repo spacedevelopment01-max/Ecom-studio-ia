@@ -17,6 +17,7 @@ codes=("$@"); [ ${#codes[@]} -gt 0 ] || codes=("$repo")
 mkdir -p "$work" "$reports"
 [ -z "$(ls -A "$work")" ] || { echo "$work n'est pas vide" >&2; exit 1; }
 tsx="$repo/node_modules/.bin/tsx"
+failed=0
 for c in dcfc13b1 d97e0b95 0a6aa1dd; do
   wt="$work/code-$c"
   git -C "$repo" worktree add -q --detach "$wt" "$c"
@@ -25,7 +26,8 @@ for c in dcfc13b1 d97e0b95 0a6aa1dd; do
   for code in "${codes[@]}"; do
     name="$(git -C "$code" rev-parse --short=8 HEAD)"
     env -u DATA_DIR -u DATABASE_FILE -u STORAGE_DIR "$tsx" "$repo/scripts/lot1/essai-complet.ts" --source "$work/base-$c" --code "$code" \
-      --travail "$work/essai-$c-par-$name" --rapport "$reports/essai-base-$c-code-$name.json" | tail -1
+      --travail "$work/essai-$c-par-$name" --rapport "$reports/essai-base-$c-code-$name.json" | tail -1 || failed=1
   done
   git -C "$repo" worktree remove --force "$wt"
 done
+exit "$failed"
