@@ -1,0 +1,46 @@
+{%- comment -%}
+  Corps d'un article de conseils (Maison & Horizon, planche 05) : introduction, photo, parties numérotées et encadré
+  « À retenir ». L'ouverture (titre, rubrique, temps de lecture) est une « Ouverture immobilière » au-dessus.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="es-section re-article color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container re-article__wrap">
+    {%- if s.intro != blank -%}<div class="re-article__intro">{{ s.intro }}</div>{%- endif -%}
+    {%- if s.image != blank or s.image_asset != blank -%}<figure class="re-article__figure">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, loading: 'lazy' %}</figure>{%- endif -%}
+    {%- assign n = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'part' -%}
+        {%- assign n = n | plus: 1 -%}
+        <div class="re-article__part" {{ block.shopify_attributes }}>
+          <h2 class="re-article__h2">{% if s.numbered %}{{ n }}. {% endif %}{{ block.settings.title | escape }}</h2>
+          <div class="re-article__body">{{ block.settings.body }}</div>
+        </div>
+      {%- else -%}
+        <aside class="re-article__callout" {{ block.shopify_attributes }}>{% render 'mh-icon', name: 'idea' %}<div><p class="re-article__callout-title">{{ block.settings.title | escape }}</p><div class="re-article__body">{{ block.settings.body }}</div></div></aside>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Article de conseils",
+  "tag": "div",
+  "class": "section-re-article",
+  "settings": [
+    { "type": "richtext", "id": "intro", "label": "Introduction" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "checkbox", "id": "numbered", "label": "Numéroter les parties", "default": true },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 24 }
+  ],
+  "blocks": [
+    { "type": "part", "name": "Partie", "settings": [ { "type": "text", "id": "title", "label": "Titre" }, { "type": "richtext", "id": "body", "label": "Texte" } ] },
+    { "type": "callout", "name": "À retenir", "settings": [ { "type": "text", "id": "title", "label": "Titre", "default": "À retenir" }, { "type": "richtext", "id": "body", "label": "Texte" } ] }
+  ],
+  "presets": [ { "name": "Article de conseils", "blocks": [ { "type": "part" } ] } ]
+}
+{% endschema %}

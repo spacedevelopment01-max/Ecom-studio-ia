@@ -81,6 +81,10 @@
         }
       {% endfor %}
 
+      {%- comment -%} Couleurs de chaque jeu, disponibles partout (ex. bouton jaune du jeu 4 posé sur un fond crème, MUSEAU CLUB). {%- endcomment -%}
+      :root {
+        {% for scheme in settings.color_schemes -%}--s{{ forloop.index }}-bg: {{ scheme.settings.background }}; --s{{ forloop.index }}-text: {{ scheme.settings.text }}; --s{{ forloop.index }}-accent: {{ scheme.settings.accent }}; --s{{ forloop.index }}-accent-text: {{ scheme.settings.accent_text }};{% endfor %}
+      }
       :root {
         --font-heading: {{ heading_font.family }}, {{ heading_font.fallback_families }};
         --font-heading-style: {{ heading_font.style }};
@@ -150,14 +154,22 @@
       window.themeSettings = { moneyFormat: {{ shop.money_format | json }}, cartType: {{ settings.cart_type | json }}, motion: {{ settings.motion_enabled | json }}, parallax: {{ settings.motion_parallax | json }} };
     </script>
     {{ 'purchase-offers.css' | asset_url | stylesheet_tag }}
+    {%- comment -%} Maison & Horizon : chargé en dernier (ses règles priment sur la couche commune). {%- endcomment -%}
+    {%- if settings.editorial_profile == 'horizon' -%}{{ 'horizon.css' | asset_url | stylesheet_tag }}<meta name="mh-shop" content="{{ shop.name | handleize }}">{%- endif -%}
+    {%- comment -%} SOUPLE (maquettes du 23 octobre, docs/theme-briefs/souple) : chargé en dernier, comme horizon.css. {%- endcomment -%}
+    {%- if settings.conversion_profile == 'souple' -%}{{ 'souple.css' | asset_url | stylesheet_tag }}{%- endif -%}
+    {%- if settings.conversion_profile == 'onde' -%}{{ 'onde.css' | asset_url | stylesheet_tag }}{%- endif -%}
   <script src="{{ 'purchase-offers.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'reference-interactions.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'editorial.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'conversion.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'family.js' | asset_url }}" defer="defer"></script>
+  {%- if settings.editorial_profile == 'horizon' -%}<script src="{{ 'horizon.js' | asset_url }}" defer="defer"></script>{%- endif -%}
+  {%- if settings.conversion_profile == 'souple' -%}<script src="{{ 'souple.js' | asset_url }}" defer="defer"></script>{%- endif -%}
+  {%- if settings.conversion_profile == 'onde' -%}<script src="{{ 'onde.js' | asset_url }}" defer="defer"></script>{%- endif -%}
 </head>
 
-  <body data-editorial="{{ settings.editorial_profile | default: 'none' }}" data-conversion="{{ settings.conversion_profile | default: 'none' }}" data-ds="{{ settings.ds_language | default: 'none' }}" data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
+  <body data-editorial="{{ settings.editorial_profile | default: 'none' }}" data-conversion="{{ settings.conversion_profile | default: 'none' }}" data-ds="{{ settings.ds_language | default: 'none' }}"{% if settings.logo_light_on_dark %} data-logo-light{% endif %} data-density="{{ settings.ds_density | default: 'balanced' }}" class="es-body dir-{{ settings.style_preset }} template-{{ template.name }}{% if template.suffix %} template-{{ template.name }}-{{ template.suffix }}{% endif %} button-{{ settings.button_style }} header-{{ settings.header_shape }} card-{{ settings.card_style }}{% if settings.button_shine %} has-shine{% endif %}{% if settings.glow_enabled %} has-glow{% endif %}{% if settings.motion_enabled %} motion-on{% endif %} color-scheme-1">
     <a class="skip-link visually-hidden-focusable" href="#MainContent">{{ 'accessibility.skip_to_text' | t }}</a>
 
     {% sections 'header-group' %}
@@ -173,6 +185,7 @@
     {%- endif -%}
 
     {% render 'floating-actions' %}
+    {%- if settings.cookie_banner -%}{% render 'cookie-banner' %}{%- endif -%}
     <div class="es-toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>

@@ -1,12 +1,19 @@
 {% assign s = section.settings %}
 <section class="ed-section ed-contact color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
-<div class="ed-shell ed-contact__grid"><header><p class="ed-kicker">{{ s.label | escape }}</p><h2 class="ed-title">{{ s.heading | escape }}</h2><div class="ed-prose">{{ s.text }}</div>{% if s.media_role != blank or s.image_asset != blank or s.image != blank %}<div class="ed-contact__image">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role %}</div>{% endif %}</header><div data-error-message="{{ 'contact.error' | t | escape }}" data-ed-contact{% if request.host == 'apercu' and shop.es_demo_contact %} data-preview-test="true"{% endif %}>
+<div class="ed-shell ed-contact__grid"><header><p class="ed-kicker">{{ s.label | escape }}</p>{%- assign htag = s.heading_tag | default: 'h2' -%}<{{ htag }} class="ed-title">{{ s.heading | escape }}</{{ htag }}><div class="ed-prose">{{ s.text }}</div>{% if s.media_role != blank or s.image_asset != blank or s.image != blank %}<div class="ed-contact__image">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, mobile_image: s.mobile_image, mobile_asset: s.mobile_image_asset %}</div>{% endif %}</header><div data-error-message="{{ 'contact.error' | t | escape }}" data-ed-contact{% if request.host == 'apercu' and shop.es_demo_contact %} data-preview-test="true"{% endif %} data-msg-required="{{ 'contact.errors.required' | t | escape }}" data-msg-email="{{ 'contact.errors.email' | t | escape }}" data-msg-choice="{{ 'contact.errors.choice' | t | escape }}" data-msg-consent="{{ 'contact.errors.consent' | t | escape }}" data-msg-sending="{{ 'contact.sending' | t | escape }}" data-msg-failed="{{ 'contact.failed' | t | escape }}" data-msg-success="{% if s.success_message != blank %}{{ s.success_message | escape }}{% else %}{{ 'contact.success' | t | escape }}{% endif %}">
  {% form 'contact', class: 'ed-form' %}
- {% if form.posted_successfully? %}<p role="status">{{ 'contact.success' | t }}</p>{% endif %}{% if form.errors %}<div role="alert">{{ form.errors | default_errors }}</div>{% endif %}
- <label>{{ 'contact.name' | t }}<input name="contact[name]" autocomplete="name" value="{{ form.name | default: customer.name | escape }}" maxlength="160" required></label>
- <label>{{ 'contact.email' | t }}<input type="email" name="contact[email]" autocomplete="email" value="{{ form.email | default: customer.email | escape }}" maxlength="254" required></label>
- <label>{{ s.room_label | escape }}<select name="contact[room]" required><option value="">{{ s.room_placeholder | escape }}</option>{% assign rooms = s.rooms | newline_to_br | split: '<br />' %}{% for room in rooms %}{% assign room_name = room | strip %}{% if room_name != blank %}<option value="{{ room_name | escape }}">{{ room_name | escape }}</option>{% endif %}{% endfor %}</select></label>
- <label>{{ 'contact.message' | t }}<textarea name="contact[body]" rows="5" maxlength="4000" required>{{ form.body | escape }}</textarea></label>
+ {% if form.posted_successfully? %}<p role="status">{% if s.success_message != blank %}{{ s.success_message | escape }}{% else %}{{ 'contact.success' | t }}{% endif %}</p>{% endif %}{% if form.errors %}<div role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+ <div class="ed-form__row">
+ <label class="ed-field"><span class="ed-field__label">{% if s.name_label != blank %}{{ s.name_label | escape }}{% else %}{{ 'contact.name' | t }}{% endif %}</span><input name="contact[name]" autocomplete="name" value="{{ form.name | default: customer.name | escape }}" maxlength="160" required{% if s.name_placeholder != blank %} placeholder="{{ s.name_placeholder | escape }}"{% endif %}></label>
+ <label class="ed-field"><span class="ed-field__label">{% if s.email_label != blank %}{{ s.email_label | escape }}{% else %}{{ 'contact.email' | t }}{% endif %}</span><input type="email" name="contact[email]" autocomplete="email" value="{{ form.email | default: customer.email | escape }}" maxlength="254" required{% if s.email_placeholder != blank %} placeholder="{{ s.email_placeholder | escape }}"{% endif %}></label>
+ </div>
+ <div class="ed-form__row">
+ {%- if s.place_label != blank -%}<label class="ed-field"><span class="ed-field__label">{{ s.place_label | escape }}</span><input name="contact[place]" autocomplete="address-level2" maxlength="160"{% if s.place_placeholder != blank %} placeholder="{{ s.place_placeholder | escape }}"{% endif %}></label>{%- endif -%}
+ <label class="ed-field"><span class="ed-field__label">{{ s.room_label | escape }}</span><select name="contact[room]" required><option value="">{{ s.room_placeholder | escape }}</option>{% assign rooms = s.rooms | newline_to_br | split: '<br />' %}{% for room in rooms %}{% assign room_name = room | strip %}{% if room_name != blank %}<option value="{{ room_name | escape }}">{{ room_name | escape }}</option>{% endif %}{% endfor %}</select></label>
+ </div>
+ <label class="ed-field"><span class="ed-field__label">{% if s.message_label != blank %}{{ s.message_label | escape }}{% else %}{{ 'contact.message' | t }}{% endif %}</span><textarea name="contact[body]" rows="5" maxlength="4000" required{% if s.message_placeholder != blank %} placeholder="{{ s.message_placeholder | escape }}"{% endif %}>{{ form.body | escape }}</textarea></label>
+ {%- if s.show_files -%}<label class="ed-field ed-files"><span class="ed-field__label">{{ s.files_label | escape }}</span><span class="ed-files__zone"><span class="ed-files__cta">{{ s.files_cta | escape }}</span>{% if s.files_hint != blank %}<span class="ed-files__hint">{{ s.files_hint | escape }}</span>{% endif %}<input type="file" name="contact[files]" multiple accept="image/jpeg,image/png,application/pdf" data-ed-files></span><span class="ed-files__list" data-ed-files-list aria-live="polite"></span></label>{%- endif -%}
+ {%- if s.consent_label != blank -%}<label class="ed-consent"><input type="checkbox" name="contact[consent]" value="oui" required><span>{{ s.consent_label | escape }}{% if s.consent_link != blank and s.consent_link_label != blank %} <a href="{{ s.consent_link }}">{{ s.consent_link_label | escape }}</a>{% endif %}</span></label>{%- endif -%}
  <button type="submit" class="ed-button">{{ s.submit_label | escape }}</button><p role="status" aria-live="polite" data-contact-status></p>
  {% endform %}
  </div></div></section>
@@ -76,6 +83,22 @@
       "label": "Titre"
     },
     {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Niveau du titre",
+      "options": [
+        {
+          "value": "h2",
+          "label": "Titre de section (H2)"
+        },
+        {
+          "value": "h1",
+          "label": "Titre principal de la page (H1)"
+        }
+      ],
+      "default": "h2"
+    },
+    {
       "type": "richtext",
       "id": "text",
       "label": "Texte"
@@ -89,6 +112,43 @@
       "type": "url",
       "id": "button_link",
       "label": "Destination"
+    },
+    {
+      "type": "header",
+      "content": "Champs du formulaire"
+    },
+    {
+      "type": "text",
+      "id": "name_label",
+      "label": "Libellé du nom",
+      "info": "Vide : « Nom »."
+    },
+    {
+      "type": "text",
+      "id": "name_placeholder",
+      "label": "Exemple dans le champ nom"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Libellé de l'e-mail",
+      "info": "Vide : « E-mail »."
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Exemple dans le champ e-mail"
+    },
+    {
+      "type": "text",
+      "id": "place_label",
+      "label": "Libellé du lieu (facultatif)",
+      "info": "Vide : pas de champ lieu."
+    },
+    {
+      "type": "text",
+      "id": "place_placeholder",
+      "label": "Exemple dans le champ lieu"
     },
     {
       "type": "text",
@@ -110,6 +170,64 @@
     },
     {
       "type": "text",
+      "id": "message_label",
+      "label": "Libellé du message",
+      "info": "Vide : « Message »."
+    },
+    {
+      "type": "text",
+      "id": "message_placeholder",
+      "label": "Exemple dans le message"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_files",
+      "label": "Zone d'ajout de photos ou d'un plan",
+      "default": false,
+      "info": "Le formulaire de contact Shopify ne transmet pas de fichiers : à raccorder à un service d'envoi avant la mise en ligne."
+    },
+    {
+      "type": "text",
+      "id": "files_label",
+      "label": "Libellé de l'ajout de fichiers",
+      "default": "Ajouter des photos ou un plan (facultatif)"
+    },
+    {
+      "type": "text",
+      "id": "files_cta",
+      "label": "Texte de la zone d'ajout",
+      "default": "Choisir des fichiers"
+    },
+    {
+      "type": "text",
+      "id": "files_hint",
+      "label": "Formats acceptés",
+      "default": "JPG, PNG ou PDF"
+    },
+    {
+      "type": "text",
+      "id": "consent_label",
+      "label": "Case de consentement (facultatif)",
+      "info": "Vide : pas de case. Remplie : la case est obligatoire."
+    },
+    {
+      "type": "text",
+      "id": "consent_link_label",
+      "label": "Lien du consentement : texte"
+    },
+    {
+      "type": "url",
+      "id": "consent_link",
+      "label": "Lien du consentement : destination"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Message après un envoi réussi",
+      "info": "Vide : message par défaut du thème."
+    },
+    {
+      "type": "text",
       "id": "submit_label",
       "label": "Action du formulaire",
       "default": "Demander un premier échange"
@@ -128,6 +246,16 @@
       "type": "text",
       "id": "image_alt",
       "label": "Description de l’image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Image sur téléphone (facultatif)"
+    },
+    {
+      "type": "text",
+      "id": "mobile_image_asset",
+      "label": "Image sur téléphone (fichier du projet)"
     },
     {
       "type": "text",

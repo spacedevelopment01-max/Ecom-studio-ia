@@ -1,0 +1,122 @@
+{
+  "demo": "traverse",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "forfait « dominer » : fonctions proposées (34)",
+      "ok": true,
+      "offered": [
+        "Présentation principale",
+        "Bénéfices du produit",
+        "Détails du produit",
+        "Composition et matériaux",
+        "Caractéristiques",
+        "Mode d'emploi",
+        "Résultats et preuves",
+        "Avis et témoignages",
+        "Presse et distinctions",
+        "Garanties et livraison",
+        "Situations d'utilisation",
+        "Démonstration vidéo",
+        "Produits complémentaires",
+        "Histoire de la marque",
+        "Fabrication et savoir-faire",
+        "Questions fréquentes",
+        "Contact",
+        "Comparatif",
+        "Achat et offres",
+        "Newsletter",
+        "Article (corps)",
+        "Blog (corps)",
+        "Boutique (corps)",
+        "Boutique fermée (corps)",
+        "Bandeau d'annonce",
+        "En-tête",
+        "Fiche produit (corps)",
+        "Liste des collections (corps)",
+        "Page de contenu (corps)",
+        "Page introuvable (corps)",
+        "Page panier (corps)",
+        "Panier latéral",
+        "Pied de page",
+        "Recherche (corps)"
+      ]
+    },
+    {
+      "step": "galerie : « Présentation principale › photo-band » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › band » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › product-card » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Bénéfices du produit › essentials » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Détails du produit › photo-cards » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Garanties et livraison › notes » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Contact › form-photo » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "ajout du bandeau photo depuis la galerie",
+      "ok": true,
+      "section": "cv_banner_1",
+      "image": "es-en-situation-1-c0omxr.jpg"
+    },
+    {
+      "step": "titre, texte du bouton, bouton en contour, photo remplacée et couleurs modifiés dans le panneau",
+      "ok": true,
+      "image": "es-en-situation-1-c0omxr.jpg → es-scene-nod919.jpg"
+    },
+    {
+      "step": "section dupliquée (copie modifiable)",
+      "ok": true,
+      "copy": "cv_banner_5"
+    },
+    {
+      "step": "section déplacée",
+      "ok": true,
+      "from": 7,
+      "to": 6
+    },
+    {
+      "step": "rechargement : ajout, réglages, photo, copie et ordre conservés",
+      "ok": true,
+      "structure": [
+        "cv-banner",
+        "cv-cards",
+        "cv-feature",
+        "cv-banner",
+        "cv-hero",
+        "faq",
+        "cv-banner",
+        "cv-banner",
+        "cv-banner"
+      ]
+    },
+    {
+      "step": "projet client en TRAVERSE (accueil) : logo, produit et photos du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/rpcyx4un76i0w5t0/v/qpjo1mzm5ibf129h~tndhno.wsiWmSnq0EP53qaJhOyIw6c2lFuXnnYk/assets/es-client-7x9uxl91k81j4wlj.png"
+    },
+    {
+      "step": "projet client en TRAVERSE (produit) : logo, produit et photos du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/rpcyx4un76i0w5t0/v/qpjo1mzm5ibf129h~tndho5.5ag3dzjWx6C2aW8C43mRNipdfxv0oBuX/assets/es-client-7x9uxl91k81j4wlj.png"
+    }
+  ],
+  "date": "2026-10-23T06:22:01.769Z"
+}

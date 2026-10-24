@@ -1,0 +1,325 @@
+[
+  {
+    "path": "CONSIGNE_VALIDEE.md",
+    "bytes": 9944,
+    "sha256": "5930ed1617987e75fec5b754521cb8e1280d18d724448d87e59511f28749406c",
+    "git_blob": "1b9c1777de114fff290874d3716f710951596c8d"
+  },
+  {
+    "path": "MEDIAS.md",
+    "bytes": 4662,
+    "sha256": "4d4ef58eec3b3edbfc9c758b55d88b540ef8a05cfc16d1c41aec28f90569fd27",
+    "git_blob": "3f2eb9cf626d106a8d33bc042b67e78d1c7f8eca"
+  },
+  {
+    "path": "README.md",
+    "bytes": 1217,
+    "sha256": "a98663fdfec9c6ae9da97dfde6c270f680ff0ee6dcf1896e00f094e7e7107119",
+    "git_blob": "a055ff55df25cff9377e254cbf4560210decb46a"
+  },
+  {
+    "path": "maquettes/01-accueil.jpg",
+    "bytes": 936918,
+    "sha256": "be4a43bddf3c8eb14032a36888e38a0507d9811f5eaed3ad2478e577b9a26b34",
+    "git_blob": "ca64264198d86641eeb3cf40baba16c9a9fd5c3a",
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/02-produit.jpg",
+    "bytes": 909750,
+    "sha256": "f9b9001bc0e33ebdce4e56bf8ee1e52f865f05ef83004d88b4440133b30b93f3",
+    "git_blob": "1665d168da05c7f2efc55326a4c59b4ad91d960d",
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/03-commerce.jpg",
+    "bytes": 748331,
+    "sha256": "2244eefcc72ab3dd9f58ba5db85a338c08746d7a54c9a3d5bb5f9cd89ac29327",
+    "git_blob": "0e704fd0be18729e48b805530e3a5709e8d80d0b",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/04-univers-journal.jpg",
+    "bytes": 1044431,
+    "sha256": "ce67a9ab3abe77709b2b903156e8222598a31f388a3c104cf21ef795edf803aa",
+    "git_blob": "fd3227e27c055f0cf6c5f4dba0d293ef7fa994ed",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/05-aide.jpg",
+    "bytes": 912538,
+    "sha256": "09ba6cac09e0aef1d22f2daa2580ab184d0bbfc278fb20b14ebc018f5d5e7a97",
+    "git_blob": "ddb420b1cc9aa1a95bc1281dc0366ad0a0d3135f",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/06-compte.jpg",
+    "bytes": 705906,
+    "sha256": "032bebca7209cd03de33ae6921d678f29651449d4224f0671f6a18a640542af8",
+    "git_blob": "78b16f4e8a9006d6d12bcb2e8e66ed7d7d9fdda8",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "maquettes/07-legal-etats.jpg",
+    "bytes": 814491,
+    "sha256": "04c1ba51abbf590cadf82541e2b8edff2a95fc073790442d693b3caef373fd2a",
+    "git_blob": "ff0112fe84b4e8f889c681dc7e4a97bca2fbc91a",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/aide-planete.webp",
+    "bytes": 426896,
+    "sha256": "f4fe313dc35672579a5e80c78197bcd6029984939fdd6a8b5e47dea6d2418a11",
+    "git_blob": "5df31b2f746071c8ac289f96ea16ae5b35df8c89",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-01.webp",
+    "bytes": 172394,
+    "sha256": "eb0d61fbc75f5e57fcaf4b2849f3f98055370b170c09eb75e6615a680a25f044",
+    "git_blob": "52379bf70cb7cf2d227ab5d98141d4489624aa72",
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-02.webp",
+    "bytes": 256004,
+    "sha256": "3efe39eb9657fe835d4ca6e416535af17f2115b018138a567982c08b6f6d1c65",
+    "git_blob": "f7637f2e90300f3ab8a495a75786c9c3a60d3f30",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-03.webp",
+    "bytes": 132528,
+    "sha256": "960ecd09aaa75093fe82ff0276ccefb4bcf21bc86b5bd18603cd2d8d920afb5c",
+    "git_blob": "29eaee6d6bfdd8c3a36940efb865c8866b495991",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-04.webp",
+    "bytes": 396674,
+    "sha256": "b9541870287273ac0dcc2e36659fd9f7d233454d2c01a45da4d063661acc47a6",
+    "git_blob": "6007eebbd3ea9ba174f8d06a918d0f5c67cad7ea",
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-05.webp",
+    "bytes": 265238,
+    "sha256": "7c7479ca48bdbb069c528bd3b33fc942883a3f08b2be352cd8572427db37974e",
+    "git_blob": "8734fdb6cf4fcc25aaab05fc98349ebdac98c5bb",
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-06.webp",
+    "bytes": 224672,
+    "sha256": "7cf84d2e780b44c687f76afbf8da10ed2eb2ad22a9150527ac20d355c75de7b8",
+    "git_blob": "eff684c2dce64142b5a3d63c3f45fbac9a92c1f0",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-07.webp",
+    "bytes": 241394,
+    "sha256": "d2f8f5622373ee1837bd03782421ae34018c45ef6911a2f4588213adce96aa01",
+    "git_blob": "e5c62ab2b4ef2b0b8d678947e583458b79ac3c52",
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-08.webp",
+    "bytes": 269898,
+    "sha256": "324de45933a679f1c896028e96e5746029b2978e28e169f1a200da6547d8542c",
+    "git_blob": "0e1b288151f99a7783ba81799155249efcb70868",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-09.webp",
+    "bytes": 219182,
+    "sha256": "7cb5e4d2d2b547f46218caedcef998bb0df898ce1953e5dcaee0a0ceb0445541",
+    "git_blob": "35034746ffcc68ebd11aeccc1efea64c89478222",
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/ambiance-10.webp",
+    "bytes": 208954,
+    "sha256": "bc4917815272e7d4e2e3e0b7c47451673c82f9c5c05ccd92808465fd1e688d10",
+    "git_blob": "0a86b31a2ef6f0d6f5994d6fc773da05980a7077",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/bibliotheque.webp",
+    "bytes": 321196,
+    "sha256": "93a1e722c6171a333a15e575a504bc79ea4ccb258bedd0c6f0039cac3603b4d6",
+    "git_blob": "b0ad41e5f84dc62e2e868981971dbbd0670afeec",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/chambre-fusee.webp",
+    "bytes": 513292,
+    "sha256": "6d3ce2cb3e34c4579898449518818cfff3e21495b9fa5b8cfa29085e63ae80d1",
+    "git_blob": "e481e1b01cd5cc8c826178d0cf1e0699334776df",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/chambre-rose.webp",
+    "bytes": 501528,
+    "sha256": "47d9766acfa8cf5554928ee27018c2980fd95a0c9b93ea987f4c511b10a2b615",
+    "git_blob": "cab749c3edc4013111bee372408bd7feddc41266",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/hero-chambre.webp",
+    "bytes": 353562,
+    "sha256": "2c426c80c63b431dbb38583eb0c7e950b3ff2eb40a73bf16519cb7f6531843ab",
+    "git_blob": "674b913755ac0093dfff1ffbe2d5b06d81810d65",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/journal-livres.webp",
+    "bytes": 208804,
+    "sha256": "689a1314074a878ff3ec5c1572b1c2e16c61fcc81c981cff727da54370a013f2",
+    "git_blob": "cfbb171fe7eb992c0df177712686ef7055e5ab07",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/logo.webp",
+    "bytes": 211108,
+    "sha256": "b548447d8624e5f1016d924a9a26cd7c6df3149939afa37b0bc31ab4d4c1f564",
+    "git_blob": "78cb290222f764ffbf2425eaada1da6b4d26aaf5",
+    "width": 2172,
+    "height": 724,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "path": "medias/peluches.webp",
+    "bytes": 360842,
+    "sha256": "1f05803370481fc700d3b16ac01af3b41ec0571ff534c1337fc5d282acba3ec5",
+    "git_blob": "ce1fe5623f13b2be4ea025b93ad1c6fd8ced161c",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/produit-01.webp",
+    "bytes": 141808,
+    "sha256": "078d56783a12a81b11d4e49dfeb8f66e83047bd99a5cc50eea5e01b28408310a",
+    "git_blob": "e9ec55a4a23241ea81dda6832b4ffe008600528b",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/produit-02.webp",
+    "bytes": 153834,
+    "sha256": "e79bf6ec8ab04506a2daff1293000e3d536a2afa9bd0cc20dd72841fc0df55eb",
+    "git_blob": "4cb78460e65e03e39e029ba7fd812fead7a72ec6",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/produit-03.webp",
+    "bytes": 171320,
+    "sha256": "25309ba743a9389d98876b3ec4b9b59c94f8e952700caca2b0c6e57e3fd0be46",
+    "git_blob": "f90005699e342bd06b8a1b5e6f524eb5e41436af",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/produit-04.webp",
+    "bytes": 381230,
+    "sha256": "1986fe65bf64803afdb6afb95f7ee44f8ab09b59a7d46d330dcc437a49c4f2e4",
+    "git_blob": "9b9bcbc405fe342b9caffa4e9dd765d25db2c7b0",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/produit-05.webp",
+    "bytes": 308142,
+    "sha256": "fed7b8133580fa5a71c58e1058a8025b0d18a4a7884828dd8cd717bd7602029c",
+    "git_blob": "7be8d67097d0bf3bdb0ba68d589da829dd2b513b",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/projecteur-chambre.webp",
+    "bytes": 286150,
+    "sha256": "b0bea2e4c597595465bc4b9834281bd6b46b4498abd437e746969fc9a7ec9d28",
+    "git_blob": "d7e08bd783a53acf1aeb405cb974e99f174cda95",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  },
+  {
+    "path": "medias/projecteur-detoure.png",
+    "bytes": 1427709,
+    "sha256": "894d94c97bebdebe428bf6e9af07be5e5af68dbc1b21ee72fe126faeaff54e71",
+    "git_blob": "6351d5463699481612c1edd8b4f8192d286f2ae7",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "path": "medias/tipi.webp",
+    "bytes": 425138,
+    "sha256": "9e7f94f91f776811a698beef6e99d424da38e986dbc2b551fde692372dbe80cb",
+    "git_blob": "e8a4bd37fecb35b34abe7d1fd78bdc25c5e1515f",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB"
+  }
+]

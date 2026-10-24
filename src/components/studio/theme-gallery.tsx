@@ -74,6 +74,7 @@ export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbo
                   <Eye className="size-4" aria-hidden /> {demo?.ready ? t("Voir la démo complète", "View the full demo") : demo?.preparing || !demos ? t("Démo complète en préparation…", "Full demo being prepared…") : t("Démo complète indisponible", "Full demo unavailable")}
                 </button>
               )}
+              {onDemo && reference && !demo?.ready && !demo?.preparing && demo?.missing && <p className="mt-2 text-xs text-muted" data-demo-missing={d.id}>{t("Ses visuels ne sont pas installés sur ce serveur.", "Its images are not installed on this server.")}</p>}
               {onPick && unfit && <p className="mt-4 text-sm text-muted">{unfit}</p>}
               {onPick && !unfit && locked && d.plan && <p className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted"><Lock className="size-4" aria-hidden /> {t(`Avec le forfait ${PLANS[d.plan].name.fr}`, `With the ${PLANS[d.plan].name.en} plan`)}</p>}
               {onPick && !unfit && !locked && (

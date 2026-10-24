@@ -4,7 +4,7 @@
    Aucun paiement, aucun envoi : toute action hors des états pré-calculés affiche un message explicite. */
 (function () {
   'use strict';
-  var KEY = 'es-static-cart', limitMsg = 'Aperçu statique : cette combinaison n’a pas été pré-calculée (12 articles ou 3 lignes au plus). Retirez une ligne pour continuer.';
+  var KEY = 'es-static-cart', limitMsg = 'Aperçu statique : cette combinaison n’a pas été pré-calculée (le panier de démonstration est limité). Retirez un article pour continuer.';
   var transitions = null, cache = {};
   function sync(url) { try { var x = new XMLHttpRequest(); x.open('GET', url, false); x.send(null); return x.status === 200 || x.status === 0 ? x.responseText : null; } catch (e) { return null; } }
   function load(url) { if (cache[url]) return cache[url]; var t = sync(url); cache[url] = t ? JSON.parse(t) : null; return cache[url]; }
@@ -37,6 +37,9 @@
       var top = function () { try { document.documentElement.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' }); } catch (e) { document.documentElement.scrollIntoView(true); } };
       top(); window.addEventListener('load', function () { top(); setTimeout(top, 120); }, { once: true });
     })();
+    /* En-tête transparent posé sur l'ouverture (HEUREN) : il reste sous la mention d'aperçu tant qu'elle est visible. */
+    function below() { var h = document.querySelector('.es-header--transparent'); if (!h) return; var b = Math.max(0, n.getBoundingClientRect().bottom); h.style.top = b + 'px'; }
+    below(); window.addEventListener('scroll', below, { passive: true }); window.addEventListener('resize', below);
     offset(); setInterval(offset, 600); window.addEventListener('scroll', offset, { passive: true }); window.addEventListener('resize', offset);
   }
 
@@ -93,13 +96,21 @@
     var key = p.get('id') || (p.get('line') && items[Number(p.get('line')) - 1] && items[Number(p.get('line')) - 1].key); if (!key) return;
     var r = apply('change:' + key + ':' + Number(p.get('quantity') || 0)); if (!r) { note(limitMsg); return; } location.href = 'panier.html';
   });
+  /* Formulaire de contact du thème (premier échange) : transport simulé, rien n'est envoyé. Le thème valide les champs,
+     affiche « envoi en cours », puis le succès après la réponse ; « ?envoi=echec » dans l'adresse simule un échec. */
+  window.__esContactDemoNote = 'Démonstration : aucun message n\u2019est réellement envoyé.';
+  window.__esContactTransport = function () { return new Promise(function (ok, ko) { setTimeout(function () { if (/[?&]envoi=echec/.test(location.search)) ko(new Error('échec simulé')); else ok({ ok: true }); }, 900); }); };
   document.addEventListener('DOMContentLoaded', banner);
   /* Formulaires (délégués au document : le contenu principal peut être remplacé par un état enregistré). */
   document.addEventListener('submit', function (e) {
     var form = e.target; if (!form || form.tagName !== 'FORM') return;
     if (form.hasAttribute('data-product-form') || form.closest('[data-purchase]')) return; /* gérés par le thème */
+    /* Maison & Horizon : recherche de biens (page filtrée), filtres et formulaires vérifiés par assets/horizon.js. */
+    if (form.hasAttribute('data-re-search') || form.hasAttribute('data-re-filters') || form.closest('[data-re-bien], .re-form-section, [data-re-account]')) return;
+    /* SOUPLE : commande d'exemple en étapes et espace client de démonstration, vérifiés par assets/family.js. */
+    if (form.hasAttribute('data-order-form') || form.hasAttribute('data-acct-form')) return;
     if (form.id === 'CartForm') {
-      e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
+      e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { var demo = document.querySelector('[data-demo-checkout]'); if (demo && demo.getAttribute('href')) { location.href = demo.getAttribute('href'); return; } note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
       var inputs = form.querySelectorAll('input[name="updates[]"]'), st = state(stateKey()), items = st && st.cart ? st.cart.items : [];
       for (var i = 0; i < inputs.length && i < items.length; i++) { var want = Number(inputs[i].value); if (want !== items[i].quantity) { var r = apply('change:' + items[i].key + ':' + want); if (!r) { note(limitMsg); return; } } }
       location.href = 'panier.html'; return;

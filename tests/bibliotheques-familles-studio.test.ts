@@ -119,8 +119,8 @@ describe("bibliothèques par famille dans le studio", () => {
     // Services : jamais de panier ni de recherche dans les en-têtes proposés.
     expect((await fr(() => disposition.POST(post({ chrome: { part: "header", preset: "phone" } }), ctx(rive.pid)))).status).toBe(200);
     expect(hdr(rive).s.settings.show_cart).toBe(false);
-    // Le bouton de la démonstration (« Décrire mon projet », consigne du 21 octobre, 21 h 45) est conservé.
-    expect(hdr(rive).s.settings.cta_label).toBe("Décrire mon projet");
+    // Le bouton de la démonstration (« Parlons de votre projet », maquette Atelier Rive du 23 octobre) est conservé.
+    expect(hdr(rive).s.settings.cta_label).toBe("Parlons de votre projet");
   }, 240_000);
 
   it("identité automatique : la même section dans deux marques de la même famille prend le nom, les textes et le style de chacune", async () => {

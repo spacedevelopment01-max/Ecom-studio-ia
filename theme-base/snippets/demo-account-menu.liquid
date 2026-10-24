@@ -1,0 +1,19 @@
+{%- comment -%}
+  Menu de l'espace client de démonstration (section « Espace client (démo) »). Paramètres : s (réglages de la section),
+  layout (écran affiché). Avec « Entrée Aperçu » renseignée (NOCTIL) : Aperçu, Commandes (détail de la commande
+  d'exemple), Adresses, Informations, Déconnexion, un pictogramme par entrée ; sinon le menu d'origine (MUSEAU CLUB).
+{%- endcomment -%}
+<nav class="es-acct__menu" aria-label="{{ s.menu_label | escape }}">
+  {%- if s.overview_label != blank -%}
+    <a href="{{ s.account_link | default: '#' }}"{% if layout == 'account' %} aria-current="page"{% endif %}>{% render 'icon', name: 'home' %}<span>{{ s.overview_label | escape }}</span></a>
+    <a href="{{ s.order_link | default: '#' }}"{% if layout == 'order' %} aria-current="page"{% endif %}>{% render 'icon', name: 'order' %}<span>{{ s.orders_label | escape }}</span></a>
+    <a href="{{ s.addresses_link | default: '#' }}"{% if layout == 'addresses' %} aria-current="page"{% endif %}>{% render 'icon', name: 'pin' %}<span>{{ 'customer.addresses.title' | t }}</span></a>
+    <a href="{{ s.infos_link | default: '#' }}"{% if layout == 'infos' %} aria-current="page"{% endif %}>{% render 'icon', name: 'account' %}<span>{{ s.infos_label | escape }}</span></a>
+    <a href="{{ s.logout_link | default: '#' }}">{% render 'icon', name: 'logout' %}<span>{{ 'customer.logout' | t }}</span></a>
+  {%- else -%}
+    <a href="{{ s.account_link | default: '#' }}"{% if layout == 'account' %} aria-current="page"{% endif %}>{% render 'icon', name: 'cart' %}<span>{{ s.orders_label | escape }}</span></a>
+    <a href="{{ s.addresses_link | default: '#' }}"{% if layout == 'addresses' %} aria-current="page"{% endif %}>{% render 'icon', name: 'truck' %}<span>{{ 'customer.addresses.title' | t }}</span></a>
+    <a href="{{ s.infos_link | default: '#' }}"{% if layout == 'infos' %} aria-current="page"{% endif %}>{% render 'icon', name: 'account' %}<span>{{ s.infos_label | escape }}</span></a>
+    <a href="{{ s.logout_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %}<span>{{ 'customer.logout' | t }}</span></a>
+  {%- endif -%}
+</nav>

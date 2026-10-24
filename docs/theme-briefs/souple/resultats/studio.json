@@ -1,0 +1,141 @@
+{
+  "demo": "souple",
+  "clientProducts": [
+    "Théière Anse",
+    "Théière Anse",
+    "Tasse Anse",
+    "Sous-tasse Anse",
+    "Plateau Anse"
+  ],
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "forfait « dominer » : fonctions proposées (35)",
+      "ok": true,
+      "offered": [
+        "Présentation principale",
+        "Produit à la une",
+        "Matières et finitions",
+        "Dimensions et proportions",
+        "Entretien et durabilité",
+        "Engagements de la marque",
+        "Avis clients",
+        "Presse et distinctions",
+        "Ambiance et lookbook",
+        "Usages et installation",
+        "Collections et catégories",
+        "Sélection de produits",
+        "Histoire de la maison",
+        "Fabrication et ateliers",
+        "Journal et inspirations",
+        "Informations d'achat et FAQ",
+        "Contact et points de vente",
+        "Comparatif de références",
+        "Campagne commerciale",
+        "Newsletter",
+        "Article (corps)",
+        "Bandeau d'annonce",
+        "Blog (corps)",
+        "Boutique (corps)",
+        "Boutique fermée (corps)",
+        "En-tête",
+        "Fiche d'un bien",
+        "Fiche produit (corps)",
+        "Liste des collections (corps)",
+        "Page de contenu (corps)",
+        "Page introuvable (corps)",
+        "Page panier (corps)",
+        "Panier latéral",
+        "Pied de page",
+        "Recherche (corps)"
+      ]
+    },
+    {
+      "step": "galerie : « Présentation principale › scene » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › soft-panel » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › brand-band » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Sélection de produits › infos » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Produit à la une › close-up » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Produit à la une › details-box » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Usages et installation › worlds » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Usages et installation › pills » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Usages et installation › photo-cards » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "ajout du panneau à courbe douce depuis la galerie",
+      "ok": true,
+      "section": "cv_banner_1",
+      "image": "es-en-situation-1-7z1hay.jpg"
+    },
+    {
+      "step": "titre, texte du bouton, photo remplacée et couleurs modifiés dans le panneau",
+      "ok": true,
+      "image": "es-en-situation-1-7z1hay.jpg → es-lifestyle-z6yx69.jpg"
+    },
+    {
+      "step": "section dupliquée (copie modifiable)",
+      "ok": true,
+      "copy": "cv_banner_2"
+    },
+    {
+      "step": "section déplacée",
+      "ok": true,
+      "from": 10,
+      "to": 9
+    },
+    {
+      "step": "rechargement : ajout, réglages, photo, copie et ordre conservés",
+      "ok": true,
+      "structure": [
+        "cv-banner",
+        "fs-products",
+        "cv-banner",
+        "cv-feature",
+        "cv-banner",
+        "cv-cards",
+        "cv-banner",
+        "fs-journal",
+        "faq",
+        "cv-banner",
+        "newsletter",
+        "cv-banner"
+      ]
+    },
+    {
+      "step": "projet client à quatre produits en SOUPLE (accueil) : logo, produits et textes du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/6e622jh7ubr6ywiv/v/cf6449m607stpqd5~tnfx41.18kQs6pDrEel2GBvfafbJFNeSV2ZFgt9/assets/es-client-ze6w7jhgsep7smoq.png"
+    },
+    {
+      "step": "projet client à quatre produits en SOUPLE (produit) : logo, produits et textes du client, rien de la démonstration",
+      "ok": true,
+      "logo": "/preview/6e622jh7ubr6ywiv/v/cf6449m607stpqd5~tnfx4a.5ig3rV9X-qNJo2Vw4pmxZoUzkUIGdebX/assets/es-client-ze6w7jhgsep7smoq.png"
+    }
+  ],
+  "date": "2026-10-24T13:50:45.244Z"
+}

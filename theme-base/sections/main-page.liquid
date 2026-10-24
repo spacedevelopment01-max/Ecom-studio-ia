@@ -1,8 +1,10 @@
-<section class="es-section es-page color-{{ section.settings.color_scheme }} es-page--{{ section.settings.width }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+<section class="es-section es-page color-{{ section.settings.color_scheme }} es-page--{{ section.settings.width }}{% if section.settings.show_title == false and page.content == blank %} es-page--untitled{% endif %}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  {%- if section.settings.show_title != false or page.content != blank -%}
   <div class="es-container es-page__inner">
-    <h1 class="es-heading es-h1" data-reveal="lines">{{ page.title }}</h1>
+    {%- if section.settings.show_title != false -%}<h1 class="es-heading es-h1" data-reveal="lines">{{ page.title }}</h1>{%- endif -%}
     <div class="es-rte es-page__content" data-reveal="up">{{ page.content }}</div>
   </div>
+  {%- endif -%}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -19,10 +21,55 @@
 {
   "name": "Contenu de page",
   "settings": [
-    { "type": "select", "id": "width", "label": "Largeur du texte", "default": "narrow", "options": [ { "value": "narrow", "label": "Étroite" }, { "value": "wide", "label": "Large" } ] },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 64 },
-    { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Afficher le titre de la page",
+      "default": true,
+      "info": "Décoché : le titre principal est porté par la première section de la page (le fil d'Ariane reste)."
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largeur du texte",
+      "default": "narrow",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "Étroite"
+        },
+        {
+          "value": "wide",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge haute",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 200,
+      "step": 8,
+      "unit": "px",
+      "label": "Marge basse",
+      "default": 96
+    }
   ]
 }
 {% endschema %}

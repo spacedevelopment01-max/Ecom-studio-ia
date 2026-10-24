@@ -24,7 +24,7 @@ export const THEME_ORDER: DirectionId[] = [
   "manifeste", "laboratoire", "cinema", "rituel", "horizon", "signal", "tribu", "etabli", "velours", "lancement",
   // 31 à 41 — Thèmes de référence (issue #137, SILLON : issue #148, NOCTIL et TRAVERSE : issue #152, HEUREN et ALCÔVE :
   // issue #155, MUSEAU CLUB et SOUPLE : issue #158), droits par famille centralisés dans plan-entitlements.ts (#150, #154).
-  "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple",
+  "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

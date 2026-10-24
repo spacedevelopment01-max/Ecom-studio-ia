@@ -1,0 +1,76 @@
+{%- comment -%}
+  Favoris et comparaison (Maison & Horizon, planche 07). Les biens mis de côté avec le cœur sont gardés dans ce
+  navigateur (sans compte : ils ne suivent pas d'un appareil à l'autre, ce que la page dit). Tous les biens visibles
+  sont rendus masqués ; assets/horizon.js montre ceux de la liste, les retire, et compare la sélection.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="es-section re-favorites color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-favorites>
+  <div class="es-container">
+    <header class="re-head re-favorites__head">
+      <div>
+        <h1 class="re-title">{{ s.heading | default: 'Mes favoris' | escape }}</h1>
+        {%- if s.text != blank -%}<p class="re-muted">{{ s.text | escape }}</p>{%- endif -%}
+      </div>
+      <p class="re-note" aria-live="polite"><span data-re-fav-total>0</span> <span data-re-fav-word>bien enregistré</span></p>
+    </header>
+    <ul class="re-grid re-favorites__grid" role="list" data-re-fav-grid>
+      {%- for bien in shop.metaobjects.bien.values -%}
+      <li class="re-favorites__item" data-re-fav-item="{{ bien.reference.value | escape }}" hidden>
+        {% render 're-card', bien: bien, style: 'grid', loading: 'lazy', fav_label: 'Ajouter aux favoris' %}
+        <div class="re-favorites__row">
+          <a class="re-link" href="{{ bien.system.url }}">{{ s.view_label | default: 'Voir le bien' | escape }} {% render 'mh-icon', name: 'arrow' %}</a>
+          <button type="button" class="re-action" data-re-fav="{{ bien.reference.value | escape }}" aria-pressed="true" aria-label="Retirer des favoris : {{ bien.titre.value | escape }}">{% render 'mh-icon', name: 'trash' %}<span>Retirer</span></button>
+        </div>
+      </li>
+      {%- endfor -%}
+    </ul>
+    <div class="re-empty" data-re-fav-empty>
+      <p>{{ s.empty_text | default: "Aucun bien enregistré pour le moment. Touchez le cœur d'un bien pour le retrouver ici." | escape }}</p>
+      <div class="re-actions">{%- if s.buy_url != blank -%}<a class="re-btn re-btn--accent" href="{{ s.buy_url }}">Voir les biens à vendre</a>{%- endif -%}{%- if s.rent_url != blank -%}<a class="re-btn re-btn--line" href="{{ s.rent_url }}">Voir les biens à louer</a>{%- endif -%}</div>
+    </div>
+    <div class="re-favorites__tools">
+      <div class="re-toolbox">
+        {% render 'mh-icon', name: 'compare' %}
+        <div><h2 class="re-toolbox__title">{{ s.compare_title | default: 'Comparer mes favoris' | escape }}</h2><p class="re-muted">{{ s.compare_text | default: 'Analysez et comparez les biens que vous avez sélectionnés.' | escape }}</p></div>
+        <button type="button" class="re-btn re-btn--green" data-re-compare aria-expanded="false" aria-controls="Comparaison-{{ section.id }}" disabled>{{ s.compare_button | default: 'Comparer la sélection' | escape }} (<span data-re-fav-total>0</span>) {% render 'mh-icon', name: 'arrow' %}</button>
+      </div>
+      <div class="re-compare" id="Comparaison-{{ section.id }}" data-re-compare-table hidden tabindex="-1"></div>
+      {%- if s.alert_url != blank -%}
+      <div class="re-toolbox">
+        {% render 'mh-icon', name: 'bell' %}
+        <div><h2 class="re-toolbox__title">{{ s.alert_title | default: 'Créer une alerte personnalisée' | escape }}</h2><p class="re-muted">{{ s.alert_text | default: 'Soyez informé des nouveaux biens correspondant à vos critères.' | escape }}</p></div>
+        <a class="re-btn re-btn--line" href="{{ s.alert_url }}">{{ s.alert_button | default: 'Créer une alerte' | escape }} {% render 'mh-icon', name: 'arrow' %}</a>
+      </div>
+      {%- endif -%}
+    </div>
+    <p class="re-note re-favorites__note">{{ s.note | default: 'Vos favoris sont gardés dans ce navigateur, sans compte : ils ne suivent pas d’un appareil à l’autre.' | escape }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Favoris et comparaison",
+  "tag": "div",
+  "class": "section-re-favorites",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Mes favoris" },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Retrouvez ici les biens que vous avez sauvegardés." },
+    { "type": "text", "id": "view_label", "label": "Lien vers le bien", "default": "Voir le bien" },
+    { "type": "text", "id": "empty_text", "label": "Aucun favori" },
+    { "type": "url", "id": "buy_url", "label": "Page « Acheter »" },
+    { "type": "url", "id": "rent_url", "label": "Page « Louer »" },
+    { "type": "text", "id": "compare_title", "label": "Titre de la comparaison", "default": "Comparer mes favoris" },
+    { "type": "text", "id": "compare_text", "label": "Texte de la comparaison", "default": "Analysez et comparez les biens que vous avez sélectionnés." },
+    { "type": "text", "id": "compare_button", "label": "Bouton de comparaison", "default": "Comparer la sélection" },
+    { "type": "url", "id": "alert_url", "label": "Page « Créer une alerte »" },
+    { "type": "text", "id": "alert_title", "label": "Titre de l'alerte", "default": "Créer une alerte personnalisée" },
+    { "type": "text", "id": "alert_text", "label": "Texte de l'alerte", "default": "Soyez informé des nouveaux biens correspondant à vos critères." },
+    { "type": "text", "id": "alert_button", "label": "Bouton de l'alerte", "default": "Créer une alerte" },
+    { "type": "text", "id": "note", "label": "Mention sur la conservation des favoris" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 }
+  ],
+  "presets": [ { "name": "Favoris et comparaison" } ]
+}
+{% endschema %}

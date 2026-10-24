@@ -24,6 +24,7 @@ import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { getAsset } from "@/lib/library";
 import { renderPage } from "@/lib/theme/render";
 import { FAMILY_LIBRARY, libraryId } from "@/lib/theme/section-families";
+import { sectionIncompatibility } from "@/lib/theme/section-compat";
 import { run } from "@/lib/db";
 import { CONTROL_BRANDS, DEMO_WORDS, controlProject } from "./control-brands-fixtures";
 import { POST as addSection } from "@/app/api/projects/[id]/theme/sections/route";
@@ -60,6 +61,10 @@ describe("identité automatique sur des projets neufs : deux marques par famille
         }
         saveThemeVersion(pid, spec, "Pages de contrôle", "user");
         for (const e of FAMILY_LIBRARY[family]) for (const d of e.dispositions) {
+          // Dispositions réservées à un autre thème (immobilier Maison & Horizon, sections « cv- » de SOUPLE et « on- » d'ONDE
+          // dans la famille E-commerce) : la route les refuse, la galerie les masque.
+          const why = sectionIncompatibility(spec, d.type, family);
+          if (why) { expect(d.type, why).toMatch(/^(re-|cv-|on-)/); continue; }
           const r = await fr(() => addSection(post({ type: libraryId(e, d), template: `page.ctl-${e.n}` }), ctx(pid)));
           expect(r.status, `${b.name} ${e.key}~${d.id} : ${r.status === 200 ? "" : JSON.stringify(await r.clone().json())}`).toBe(200);
         }
@@ -98,8 +103,11 @@ describe("identité automatique sur des projets neufs : deux marques par famille
   it("changement de disposition : titre, texte et réglages de style choisis par l'utilisateur sont gardés", async () => {
     const pid = await fr(() => controlProject(user.id, "catalog", CONTROL_BRANDS.catalog.brands[0]));
     // Une fonction dont les dispositions passent d'une section du thème à une autre (conversion du contenu).
-    const entry = FAMILY_LIBRARY.catalog.find((e) => new Set(e.dispositions.map((d) => d.type)).size > 1 && e.key !== "catalog.featured")!;
-    const [d1, d2] = [entry.dispositions[0], entry.dispositions.find((d) => d.type !== entry.dispositions[0].type)!];
+    // Seules comptent les sections que le thème installé sait rendre (les sections « cv- » de SOUPLE lui sont refusées).
+    const installed = currentTheme(pid)!.spec;
+    const usable = (e: (typeof FAMILY_LIBRARY.catalog)[number]) => e.dispositions.filter((d) => !sectionIncompatibility(installed, d.type, "catalog"));
+    const entry = FAMILY_LIBRARY.catalog.find((e) => new Set(usable(e).map((d) => d.type)).size > 1 && e.key !== "catalog.featured")!;
+    const [d1, d2] = [usable(entry)[0], usable(entry).find((d) => d.type !== usable(entry)[0].type)!];
     expect((await fr(() => addSection(post({ type: libraryId(entry, d1), template: "index", index: 1 }), ctx(pid)))).status).toBe(200);
     const sid = currentTheme(pid)!.spec.templates.index.order[1];
     const ops = [

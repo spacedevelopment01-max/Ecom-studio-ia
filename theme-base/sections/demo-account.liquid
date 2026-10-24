@@ -1,0 +1,622 @@
+{%- comment -%}
+  Espace client d'une boutique de démonstration (MUSEAU CLUB, planche 08 du 23 octobre) : connexion, création de compte,
+  mot de passe oublié, accueil du compte, détail d'une commande, adresses et informations personnelles, reliés entre
+  eux dans la même charte. Rien n'est envoyé : les champs sont désactivés et la commande est un exemple (blocs
+  « ligne »). Sur une vraie boutique, ces écrans sont ceux des comptes clients de Shopify (modèles « customers/* » du
+  thème pour les comptes classiques ; les nouveaux comptes clients sont des pages de Shopify, hors thème).
+  NOCTIL (planche 06 du 23 octobre) : entrée « Aperçu » dans le menu (avec un pictogramme par entrée, menu aussi sur le
+  détail de commande) et cartes libres (blocs « Carte ») : mise en avant, facture d'exemple, aide.
+  SOUPLE (planche 06 du 23 octobre) : écran « Connexion et inscription » (deux cartes posées sur la photo), formulaires
+  testables avec un compte fictif affiché (aucune vraie inscription, aucun e-mail : chaque envoi le dit), et suivi
+  d'exemple sur le détail de commande (blocs « Étape de suivi »). L'accès reste une démonstration : rien ne protège une
+  vraie donnée, et localStorage n'est jamais une authentification.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'login'
+  assign subtotal = 0
+  for block in section.blocks
+    if block.type != 'line'
+      continue
+    endif
+    assign lp = all_products[block.settings.product] | default: block.settings.product
+    if lp.title != blank
+      assign lq = block.settings.quantity | default: 1
+      assign lt = lp.price | times: lq
+      assign subtotal = subtotal | plus: lt
+    endif
+  endfor
+-%}
+{%- capture lines -%}
+  <ul class="es-acct__lines" role="list">
+    {%- for block in section.blocks -%}
+      {%- if block.type != 'line' -%}{%- continue -%}{%- endif -%}
+      {%- assign lp = all_products[block.settings.product] | default: block.settings.product -%}
+      {%- if lp.title != blank -%}
+        {%- assign lq = block.settings.quantity | default: 1 -%}
+        <li class="es-acct__line" {{ block.shopify_attributes }}>
+          <span class="es-acct__thumb">{%- if lp.featured_media -%}{{ lp.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: lp.title }}{%- endif -%}</span>
+          <span class="es-acct__line-info"><strong>{{ lp.title | escape }}</strong><span>{{ s.quantity_label | escape }} {{ lq }}</span></span>
+          <span class="es-acct__price">{% if settings.price_trim_zeros %}{{ lp.price | times: lq | money_without_trailing_zeros }}{% else %}{{ lp.price | times: lq | money }}{% endif %}{%- if s.price_note != blank -%}<small>{{ s.price_note | escape }}</small>{%- endif -%}</span>
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  </ul>
+  <dl class="es-acct__totals">
+    <div><dt>{{ s.subtotal_label | escape }}</dt><dd>{% if settings.price_trim_zeros %}{{ subtotal | money_without_trailing_zeros }}{% else %}{{ subtotal | money }}{% endif %}</dd></div>
+    <div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.unknown_value | escape }}</dd></div>
+  </dl>
+{%- endcapture -%}
+{%- capture cards_before -%}{%- for block in section.blocks -%}{%- if block.type == 'card' and block.settings.style == 'promo' -%}{% render 'demo-account-card', block: block %}{%- endif -%}{%- endfor -%}{%- endcapture -%}
+{%- capture cards_after -%}{%- for block in section.blocks -%}{%- if block.type == 'card' and block.settings.style != 'promo' -%}{% render 'demo-account-card', block: block %}{%- endif -%}{%- endfor -%}{%- endcapture -%}
+<section class="es-section es-acct es-acct--{{ layout }} color-{{ s.color_scheme }}" style="--pt: {{ s.padding_top }}px; --pb: {{ s.padding_bottom }}px;">
+  <div class="es-container">
+    {%- case layout -%}
+      {%- when 'login', 'register', 'recover' -%}
+        <div class="es-acct__auth">
+          <div class="es-acct__auth-copy">
+            <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
+            {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
+            <form class="es-acct__card" action="#" novalidate aria-describedby="AcctDemo-{{ section.id }}"{% if s.interactive %} data-acct-form="{{ layout }}" data-demo-email="{{ s.demo_email | escape }}" data-demo-password="{{ s.demo_password | escape }}" data-success="{{ s.button_link | escape }}" data-msg-unknown="{{ s.unknown_login_text | escape }}" data-msg-sent="{{ s.sent_text | escape }}"{% else %} onsubmit="return false"{% endif %}>
+              <p class="es-acct__demo" id="AcctDemo-{{ section.id }}">{{ s.demo_note | escape }}</p>
+              <fieldset class="es-acct__fields"{% unless s.interactive %} disabled{% endunless %}>
+                <legend class="visually-hidden">{{ s.heading | escape }}</legend>
+                {%- if layout == 'register' -%}
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
+                {%- endif -%}
+                <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"{% if s.interactive %} required{% endif %}><small class="es-acct__error" data-error hidden></small></label>
+                {%- unless layout == 'recover' -%}<label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off"{% if s.interactive %} required minlength="4"{% endif %}><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>{%- endunless -%}
+              </fieldset>
+              {%- if s.interactive and s.demo_email != blank and layout == 'login' -%}<p class="es-acct__hint">{{ s.demo_hint | escape }} <code>{{ s.demo_email | escape }}</code> / <code>{{ s.demo_password | escape }}</code></p>{%- endif -%}
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
+              {%- if layout == 'login' and s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
+              {%- if s.button_label != blank -%}{%- if s.interactive -%}<button type="submit" class="es-button es-acct__primary">{{ s.button_label | escape }}</button>{%- else -%}<a class="es-button es-acct__primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}</a>{%- endif -%}{%- endif -%}
+              {%- if s.secondary_label != blank -%}
+                {%- if layout == 'login' -%}<p class="es-acct__or"><span>{{ 'customer.login.or' | t }}</span></p>{%- endif -%}
+                <a class="es-button es-button--secondary es-acct__secondary" href="{{ s.secondary_link | default: '#' }}">{{ s.secondary_label | escape }}</a>
+              {%- endif -%}
+            </form>
+          </div>
+          {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__photo">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
+        </div>
+      {%- when 'auth' -%}
+        {%- comment -%} Connexion et inscription côte à côte, sur la photo (SOUPLE). {%- endcomment -%}
+        <div class="es-acct__duo-auth">
+          {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__bg">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'eager' %}</div>{%- endif -%}
+          <div class="es-acct__duo-copy">
+            <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
+            {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
+          </div>
+          <div class="es-acct__duo-cards">
+            <form class="es-acct__card" action="#" novalidate data-acct-form="login" data-demo-email="{{ s.demo_email | escape }}" data-demo-password="{{ s.demo_password | escape }}" data-success="{{ s.account_link | escape }}" data-msg-unknown="{{ s.unknown_login_text | escape }}">
+              <h2 class="es-acct__card-title">{{ s.login_title | escape }}</h2>
+              <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}" required><small class="es-acct__error" data-error hidden></small></label>
+              <label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off" required minlength="4"><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>
+              {%- if s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
+              <button type="submit" class="es-button es-acct__primary">{{ s.button_label | default: 'customer.login.submit' | t | escape }}</button>
+              {%- if s.demo_email != blank -%}<p class="es-acct__hint">{{ s.demo_hint | escape }} <code>{{ s.demo_email | escape }}</code> / <code>{{ s.demo_password | escape }}</code></p>{%- endif -%}
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
+            </form>
+            <form class="es-acct__card" action="#" novalidate data-acct-form="register" data-msg-sent="{{ s.sent_text | escape }}">
+              <h2 class="es-acct__card-title">{{ s.register_title | escape }}</h2>
+              <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}" required><small class="es-acct__error" data-error hidden></small></label>
+              <label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off" required minlength="8"><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>
+              <button type="submit" class="es-button es-acct__primary">{{ s.secondary_label | escape }}</button>
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
+            </form>
+          </div>
+        </div>
+      {%- when 'order' -%}
+        {%- if s.overview_label != blank -%}<div class="es-acct__grid">{% render 'demo-account-menu', s: s, layout: layout %}<div class="es-acct__main">{%- endif -%}
+        {%- if s.back_label != blank -%}<p class="es-acct__back"><a href="{{ s.account_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %} {{ s.back_label | escape }}</a></p>{%- endif -%}
+        <header class="es-acct__head es-acct__head--order">
+          <h1 class="es-heading es-acct__title">{{ s.heading | escape }}</h1>
+          {%- if s.pill != blank -%}<span class="es-acct__pill">{{ s.pill | escape }}</span>{%- endif -%}
+          {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
+        </header>
+        <p class="es-acct__notice">{% render 'icon', name: 'cart' %}<span><strong>{{ s.notice_title | escape }}</strong> {{ s.demo_note | escape }}</span></p>
+        <div class="es-acct__card">
+          <h2 class="es-acct__card-title">{{ s.lines_title | escape }}</h2>
+          {{ lines }}
+        </div>
+        <div class="es-acct__duo">
+          <div class="es-acct__card"><h2 class="es-acct__card-title">{{ 'customer.orders.shipping' | t }}</h2><p>{{ s.unknown_value | escape }}</p></div>
+          <div class="es-acct__card"><h2 class="es-acct__card-title">{{ s.payment_title | escape }}</h2><p>{{ s.unknown_value | escape }}</p></div>
+        </div>
+        {%- assign tracks = section.blocks | where: 'type', 'track' -%}
+        {%- if tracks.size > 0 -%}
+          <div class="es-acct__card es-acct__track">
+            <h2 class="es-acct__card-title">{{ s.tracking_title | escape }}</h2>
+            <ol class="es-acct__steps" role="list">
+              {%- for block in tracks -%}<li class="es-acct__step{% if block.settings.done %} is-done{% endif %}" {{ block.shopify_attributes }}><span class="es-acct__dot" aria-hidden="true"></span><span class="es-acct__step-label">{{ block.settings.label | escape }}</span>{%- if block.settings.date_text != blank -%}<span class="es-acct__step-date">{{ block.settings.date_text | escape }}</span>{%- endif -%}<span class="visually-hidden">{% if block.settings.done %}{{ s.done_label | escape }}{% else %}{{ s.todo_label | escape }}{% endif %}</span></li>{%- endfor -%}
+            </ol>
+          </div>
+        {%- endif -%}
+        {{ cards_before }}{{ cards_after }}
+        {%- if s.overview_label != blank -%}</div></div>{%- endif -%}
+      {%- else -%}
+        {%- comment -%} Tableau de bord : bandeau photo facultatif au-dessus du titre (SOUPLE, planche 06). {%- endcomment -%}
+        {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__banner">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
+        <header class="es-acct__head">
+          <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
+          {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
+        </header>
+        <div class="es-acct__grid">
+          {% render 'demo-account-menu', s: s, layout: layout %}
+          <div class="es-acct__main">
+            <p class="es-acct__demo">{{ s.demo_note | escape }}</p>
+            {{ cards_before }}
+            {%- if layout == 'account' -%}
+              <h2 class="es-heading es-acct__subtitle">{{ s.orders_label | escape }}</h2>
+              <a class="es-acct__card es-acct__order" href="{{ s.order_link | default: '#' }}">
+                <span class="es-acct__order-head"><strong>{{ s.order_title | escape }}</strong>{%- if s.pill != blank -%}<span class="es-acct__pill">{{ s.pill | escape }}</span>{%- endif -%}{% render 'icon', name: 'arrow' %}</span>
+                {{ lines }}
+              </a>
+              {%- if s.empty_text != blank -%}<p class="es-acct__empty">{{ s.empty_text | escape }}</p>{%- endif -%}
+            {%- elsif layout == 'addresses' -%}
+              <h2 class="es-heading es-acct__subtitle">{{ 'customer.addresses.title' | t }}</h2>
+              <div class="es-acct__card"><p>{{ s.empty_text | escape }}</p>
+                <fieldset class="es-acct__fields es-acct__fields--two" disabled>
+                  <legend>{{ 'customer.orders.shipping' | t }}</legend>
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field es-acct__field--full"><span>{{ 'customer.addresses.address1' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.addresses.zip' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.addresses.city' | t }}</span><input type="text" autocomplete="off"></label>
+                </fieldset>
+              </div>
+            {%- else -%}
+              <h2 class="es-heading es-acct__subtitle">{{ s.infos_label | escape }}</h2>
+              <div class="es-acct__card">
+                <fieldset class="es-acct__fields es-acct__fields--two" disabled>
+                  <legend class="visually-hidden">{{ s.infos_label | escape }}</legend>
+                  <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
+                  <label class="es-acct__field es-acct__field--full"><span>{{ s.email_label | escape }}</span><input type="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"></label>
+                </fieldset>
+              </div>
+            {%- endif -%}
+            {{ cards_after }}
+          </div>
+        </div>
+    {%- endcase -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Espace client (démo)",
+  "tag": "section",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Écrans d'exemple pour une boutique de démonstration : rien n'est envoyé. Sur une vraie boutique, la connexion, le compte et les commandes sont ceux des comptes clients de Shopify."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Écran",
+      "default": "login",
+      "options": [
+        {
+          "value": "login",
+          "label": "Connexion"
+        },
+        {
+          "value": "auth",
+          "label": "Connexion et inscription côte à côte"
+        },
+        {
+          "value": "register",
+          "label": "Créer un compte"
+        },
+        {
+          "value": "recover",
+          "label": "Mot de passe oublié"
+        },
+        {
+          "value": "account",
+          "label": "Mon compte (commandes)"
+        },
+        {
+          "value": "order",
+          "label": "Détail d'une commande"
+        },
+        {
+          "value": "addresses",
+          "label": "Adresses"
+        },
+        {
+          "value": "infos",
+          "label": "Informations personnelles"
+        }
+      ]
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Titre",
+      "default": "Bon retour parmi nous !"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "text",
+      "id": "demo_note",
+      "label": "Mention de démonstration",
+      "default": "Exemple de démonstration : aucune donnée n'est envoyée."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Bouton principal"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Lien du bouton principal"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Bouton secondaire"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Lien du bouton secondaire"
+    },
+    {
+      "type": "header",
+      "content": "Liens entre les écrans"
+    },
+    {
+      "type": "url",
+      "id": "recover_link",
+      "label": "Page « mot de passe oublié »"
+    },
+    {
+      "type": "url",
+      "id": "account_link",
+      "label": "Page « mon compte »"
+    },
+    {
+      "type": "url",
+      "id": "order_link",
+      "label": "Page « détail de commande »"
+    },
+    {
+      "type": "url",
+      "id": "addresses_link",
+      "label": "Page « adresses »"
+    },
+    {
+      "type": "url",
+      "id": "infos_link",
+      "label": "Page « informations personnelles »"
+    },
+    {
+      "type": "url",
+      "id": "logout_link",
+      "label": "Lien « déconnexion »"
+    },
+    {
+      "type": "header",
+      "content": "Libellés"
+    },
+    {
+      "type": "text",
+      "id": "menu_label",
+      "label": "Nom du menu du compte",
+      "default": "Mon compte"
+    },
+    {
+      "type": "text",
+      "id": "overview_label",
+      "label": "Entrée « Aperçu » du menu",
+      "info": "Facultatif, ex. « Aperçu » : ajoute l'accueil du compte au menu, un pictogramme par entrée, et le menu sur le détail de commande."
+    },
+    {
+      "type": "text",
+      "id": "orders_label",
+      "label": "Commandes",
+      "default": "Mes commandes"
+    },
+    {
+      "type": "text",
+      "id": "infos_label",
+      "label": "Informations personnelles",
+      "default": "Informations personnelles"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Champ e-mail",
+      "default": "Adresse e-mail"
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Exemple d'e-mail",
+      "default": "votre@email.com"
+    },
+    {
+      "type": "header",
+      "content": "Commande d'exemple"
+    },
+    {
+      "type": "text",
+      "id": "order_title",
+      "label": "Nom de la commande",
+      "default": "Commande n°1001"
+    },
+    {
+      "type": "text",
+      "id": "pill",
+      "label": "Pastille",
+      "default": "Démonstration"
+    },
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Lien de retour",
+      "default": "Retour à mes commandes"
+    },
+    {
+      "type": "text",
+      "id": "notice_title",
+      "label": "Titre de l'encadré",
+      "default": "Commande d'exemple."
+    },
+    {
+      "type": "text",
+      "id": "lines_title",
+      "label": "Titre des articles",
+      "default": "Articles commandés"
+    },
+    {
+      "type": "text",
+      "id": "quantity_label",
+      "label": "Mot « quantité »",
+      "default": "Quantité :"
+    },
+    {
+      "type": "text",
+      "id": "price_note",
+      "label": "Mention sous les prix",
+      "default": "Prix de démonstration"
+    },
+    {
+      "type": "text",
+      "id": "subtotal_label",
+      "label": "Libellé du sous-total",
+      "default": "Sous-total"
+    },
+    {
+      "type": "text",
+      "id": "shipping_label",
+      "label": "Libellé livraison",
+      "default": "Livraison"
+    },
+    {
+      "type": "text",
+      "id": "payment_title",
+      "label": "Titre paiement",
+      "default": "Mode de paiement"
+    },
+    {
+      "type": "text",
+      "id": "unknown_value",
+      "label": "Valeur inconnue",
+      "default": "À renseigner"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Texte sous la liste"
+    },
+    {
+      "type": "header",
+      "content": "Photo (connexion, création de compte)"
+    },
+    { "type": "header", "content": "Formulaires testables (démonstration)" },
+    { "type": "checkbox", "id": "interactive", "label": "Formulaires testables avec un compte fictif", "info": "Les champs sont vérifiés ; rien n'est envoyé ni enregistré. Sur une vraie boutique, utilisez les comptes clients de la plateforme.", "default": false },
+    { "type": "text", "id": "demo_email", "label": "E-mail du compte fictif", "default": "demo@souple.example" },
+    { "type": "text", "id": "demo_password", "label": "Mot de passe du compte fictif", "default": "demo" },
+    { "type": "text", "id": "demo_hint", "label": "Phrase avant les identifiants fictifs", "default": "Compte de démonstration :" },
+    { "type": "text", "id": "unknown_login_text", "label": "Message : identifiants inconnus", "default": "Ces identifiants ne correspondent pas au compte de démonstration." },
+    { "type": "text", "id": "sent_text", "label": "Message après envoi simulé", "default": "Démonstration : aucun compte n'est créé et aucun e-mail n'est envoyé." },
+    { "type": "text", "id": "login_title", "label": "Titre de la carte de connexion", "default": "Se connecter" },
+    { "type": "text", "id": "register_title", "label": "Titre de la carte d'inscription", "default": "Créer un compte" },
+    { "type": "text", "id": "show_password_label", "label": "Bouton « Afficher le mot de passe »", "default": "Afficher le mot de passe" },
+    { "type": "text", "id": "tracking_title", "label": "Titre du suivi", "default": "Exemple de suivi de livraison" },
+    { "type": "text", "id": "done_label", "label": "Étape franchie (lecteurs d'écran)", "default": "étape franchie" },
+    { "type": "text", "id": "todo_label", "label": "Étape à venir (lecteurs d'écran)", "default": "étape à venir" },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Photo (fichier du thème)"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Texte alternatif de la photo"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Marge haute",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Marge basse",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "track",
+      "name": "Étape de suivi",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Étape", "default": "Commande confirmée" },
+        { "type": "text", "id": "date_text", "label": "Date ou mention" },
+        { "type": "checkbox", "id": "done", "label": "Étape franchie", "default": false }
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Article de la commande",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produit"
+        },
+        {
+          "type": "range",
+          "id": "quantity",
+          "label": "Quantité",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Carte",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Présentation",
+          "default": "plain",
+          "options": [
+            {
+              "value": "plain",
+              "label": "Simple (après le contenu)"
+            },
+            {
+              "value": "promo",
+              "label": "Mise en avant (avant le contenu)"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Pictogramme",
+          "default": "none",
+          "options": [
+            {
+              "value": "none",
+              "label": "Aucun"
+            },
+            {
+              "value": "file",
+              "label": "Document"
+            },
+            {
+              "value": "help",
+              "label": "Question"
+            },
+            {
+              "value": "pin",
+              "label": "Adresse"
+            },
+            {
+              "value": "order",
+              "label": "Commande"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Titre"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texte"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Bouton"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Lien du bouton",
+          "info": "Sans lien, le bouton n'est pas affiché."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Image (fichier du thème)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Espace client (démo)"
+    }
+  ]
+}
+{% endschema %}

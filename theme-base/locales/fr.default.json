@@ -5,6 +5,7 @@
     "previous": "Précédent",
     "next": "Suivant",
     "pagination": "Pagination",
+    "page": "Page",
     "pause": "Mettre en pause",
     "play": "Lire",
     "error": "Une erreur est survenue. Réessayez.",
@@ -301,17 +302,31 @@
     "compare_price": "Prix avant remise",
     "payment_methods": "Moyens de paiement",
     "close": "Fermer le panier",
-    "preview_note": "Aperçu de démonstration · paiement désactivé"
+    "preview_note": "Aperçu de démonstration · paiement désactivé",
+    "view_cart": "Voir mon panier",
+    "shipping": "Livraison",
+    "shipping_next_step": "Calculée à l'étape suivante"
   },
   "contact": {
     "name": "Nom",
+    "order": "Numéro de commande (facultatif)",
+    "subject": "Sujet",
+    "subject_choose": "Sélectionnez un sujet",
     "email": "E-mail",
     "phone": "Téléphone",
     "message": "Message",
     "send": "Envoyer",
     "success": "Merci, nous revenons vers vous rapidement.",
     "error": "Vérifiez votre demande avant de réessayer.",
-    "preview_demo": "Aperçu du studio : l'envoi n'est pas actif dans cette démonstration ; la validation du formulaire, elle, est réelle."
+    "preview_demo": "Aperçu du studio : l'envoi n'est pas actif dans cette démonstration ; la validation du formulaire, elle, est réelle.",
+    "errors": {
+      "required": "Ce champ est à remplir.",
+      "email": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr).",
+      "choice": "Choisissez une option.",
+      "consent": "Cochez la case pour que nous puissions vous répondre."
+    },
+    "sending": "Envoi en cours…",
+    "failed": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
   },
   "customer": {
     "account": "Mon compte",
@@ -320,7 +335,8 @@
       "title": "Connexion",
       "password": "Mot de passe",
       "submit": "Se connecter",
-      "forgot": "Mot de passe oublié ?"
+      "forgot": "Mot de passe oublié ?",
+      "or": "ou"
     },
     "recover": {
       "title": "Réinitialiser le mot de passe",

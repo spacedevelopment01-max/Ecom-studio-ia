@@ -1,0 +1,227 @@
+[
+  {
+    "name": "Accueil : le bouton panier d'une carte ajoute le produit",
+    "pass": true,
+    "detail": "compteur « 1 »"
+  },
+  {
+    "name": "Panier : tapis + brique = 78 € en sous-total",
+    "pass": true,
+    "detail": "Livraison Calculée à l'étape suivante Sous-total (2 articles) 78 € Prix de démonstration Passer commande Continuer mes a"
+  },
+  {
+    "name": "Panier : livraison « Calculée à l'étape suivante », aucun total final",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Panier : quantité de la brique portée à 2 → 97 €",
+    "pass": true,
+    "detail": "Livraison Calculée à l'étape suivante Sous-total (3 articles) 97 € Prix de démonstration Passer comm"
+  },
+  {
+    "name": "Panier : contenu conservé après rechargement",
+    "pass": true,
+    "detail": "Livraison Calculée à l'étape suivante Sous-total (3 articles) 97 € Prix de démon"
+  },
+  {
+    "name": "Panier : retirer la brique → 59 €",
+    "pass": true,
+    "detail": "Livraison Calculée à l'étape suivante Sous-total (1 articles) 59 € Prix de démon"
+  },
+  {
+    "name": "Panier → « Passer commande » mène à la commande d'exemple",
+    "pass": true,
+    "detail": "/page-passer-commande.html"
+  },
+  {
+    "name": "Commande : récapitulatif repris du panier (78 €)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : case des actualités décochée",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : e-mail vide refusé",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : e-mail invalide refusé",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : étape Adresse après un e-mail valide",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : code postal invalide refusé",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : étape Livraison",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : retour à l'Adresse sans perte de saisie",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Commande : récapitulatif exact (e-mail, adresse, livraison)",
+    "pass": true,
+    "detail": "Paiement Sur une boutique en ligne, le paiement se fait sur la page sécurisée de la plateforme (par exemple Shopify Checkout). Ici, aucune carte n'est demandée."
+  },
+  {
+    "name": "Commande : aucun champ de carte",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Confirmation : exemple avec les articles et le sous-total 78 €",
+    "pass": true,
+    "detail": "Aperçu de démonstration · paiement désactivé Aller au contenu La boutique Notre approche Le journal Aide 2 EXEMPLE DE CONFIRMATION Merci, votre commande d'exemp"
+  },
+  {
+    "name": "Boutique : 4 produits au départ",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Boutique : « Tapis (1) » → 1 produit",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Boutique : « Accessoires (3) » → 3 produits",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Boutique : tri prix croissant puis décroissant",
+    "pass": true,
+    "detail": "Sangle de yoga / Brique de yoga / Anneau Pilates / Tapis de yoga | Tapis de yoga / Anneau Pilates / Brique de yoga / Sangle de yoga"
+  },
+  {
+    "name": "Boutique : état vide présent (masqué tant qu'un produit correspond)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Recherche : page de résultat",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Recherche : aucun résultat annoncé",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Fiche : une vignette change la grande photo",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Fiche : zoom ouvert",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Fiche : zoom fermé avec Échap",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Fiche : quantité +1",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone : barre d'achat visible après défilement",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "FAQ : le sommaire mène au thème",
+    "pass": true,
+    "detail": "#faq-template--es__questions-livraison"
+  },
+  {
+    "name": "FAQ : une question s'ouvre",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Contact : envoi vide refusé (champs obligatoires signalés)",
+    "pass": true,
+    "detail": "6 champ(s)"
+  },
+  {
+    "name": "Connexion : identifiants inconnus refusés",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Connexion : afficher le mot de passe",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Connexion : compte de démonstration → Mon compte",
+    "pass": true,
+    "detail": "/page-mon-compte.html"
+  },
+  {
+    "name": "404 : photo dans la forme en S, retour à l'accueil",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Cookies : bandeau à la première visite",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Cookies : « Personnaliser » montre les choix",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Cookies : « Tout refuser » ferme le bandeau et mémorise",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Cookies : bandeau rouvert depuis la page Cookies",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone 360 px : aucune page plus large que l'écran (35 pages)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone 390 px : aucune page plus large que l'écran (35 pages)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Téléphone 430 px : aucune page plus large que l'écran (35 pages)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Aucune requête vers l'extérieur",
+    "pass": true,
+    "detail": ""
+  }
+]

@@ -1,0 +1,14 @@
+{%- comment -%}
+  Liens utiles sous l'achat (maquette NOCTIL du 23 octobre, planche 02) : deux liens soulignés avec leur icône, par
+  exemple « Guide d'utilisation » et « Livraison et retours ». Un lien sans adresse n'est pas affiché (jamais de lien
+  inerte). Paramètre : block (bloc « Liens utiles » de la fiche).
+{%- endcomment -%}
+{%- liquid
+  assign b = block.settings
+-%}
+{%- if b.link_1 != blank or b.link_2 != blank -%}
+<ul class="es-product-links" role="list" {{ block.shopify_attributes }}>
+  {%- if b.link_1 != blank and b.label_1 != blank -%}<li><a href="{{ b.link_1 }}">{% render 'icon', name: b.icon_1 %}<span>{{ b.label_1 | escape }}</span></a></li>{%- endif -%}
+  {%- if b.link_2 != blank and b.label_2 != blank -%}<li><a href="{{ b.link_2 }}">{% render 'icon', name: b.icon_2 %}<span>{{ b.label_2 | escape }}</span></a></li>{%- endif -%}
+</ul>
+{%- endif -%}

@@ -3,7 +3,7 @@
  * automatique) : FRAISE et ONDE (boutique spécialisée, profil « conversion » Lumora / Pawish), ORBE (e-commerce,
  * composition éditoriale « objet et ambiances »), Atelier Rive (prestations de services, composition « journal ») et
  * SILLON (boutique spécialisée, profil « nomade » : objet que l’on emporte, serif fine, cuivre), NOCTIL (boutique
- * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
+ * spécialisée, profil « astral » : crème, bleu nuit et lavande, produit en surplomb ; refait d'après les maquettes du 23 octobre) et TRAVERSE (boutique spécialisée, profil
  * « itinéraire » : carnet de voyage éditorial, crème, pierre et olive), issue #152 ; HEUREN (e-commerce mono-produit,
  * profil éditorial « cadran » : bleu nuit, argent, serif fine) et ALCÔVE (e-commerce mono-produit, profil « arrondi » :
  * courbes, terre cuite, sable), issue #155 ; MUSEAU CLUB (e-commerce de quatre produits, profil « club » : crème et bleu
@@ -16,7 +16,10 @@
  * section masquée, à compléter dans le studio. Le caractère graphique de chaque référence est porté par les profils
  * globaux (`conversion_profile`, `editorial_profile`) et les sections de sa famille.
  */
-import type { CatalogTheme, ThemeLook } from "./theme-catalog";
+import type { CatalogTheme, Row, ThemeLook } from "./theme-catalog";
+
+/** Même ligne de composition, quelques réglages de disposition en plus (contenus du moteur inchangés). */
+const tune = (r: Row, extra: Record<string, unknown>): Row => [r[0], { ...r[1], ...extra }, r[2], r[3]];
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -86,50 +89,48 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "onde",
     name: "Onde",
-    tagline: "Studio graphite, signal vert",
-    description: "Boutique mono-produit de la famille E-commerce pour un objet technique : campagne en ouverture sur une bannière sombre, achat du produit tout de suite après, un détail en gros plan, trois usages en index, un bandeau d'appel, questions en cartes et inscription. Graphite profond, vert signal, titres Chivo, menu en colonnes avec encart et pied de page en colonnes.",
+    tagline: "Graphite et lime, titres géométriques gras",
+    description: "Boutique mono-produit de la famille E-commerce, d'après les sept planches du 24 octobre : ouverture sombre au grand titre géométrique, grand mot en contour et produit débordant, bande lime, gros plans légendés, scènes en grandes photos, composition en cercles, journal, questions en bande graphite et inscription lime. Fiche à carte d'achat graphite, panier et commande d'exemple dessinés. Graphite profond, gris clair, blanc et lime ; titres Montserrat gras, textes Inter.",
     bestFor: ["e-commerce", "high-tech", "audio", "produit unique", "objet technique"],
-    en: { tagline: "Graphite studio, green signal", description: "Single-product store from the E-commerce family for a technical object: a campaign opening on a dark banner, the product purchase right after, one close-up detail, three uses as an index, a call-to-action band, card questions and a sign-up. Deep graphite, signal green, Chivo headings, a column menu with a promo and a column footer.", bestFor: ["e-commerce", "high-tech", "audio", "single product", "technical object"] },
-    fonts: { heading: "chivo_n7", body: "inter_n4" },
-    previewFonts: { heading: "Chivo", body: "Inter" },
+    en: { tagline: "Graphite and lime, bold geometric headings", description: "Single-product store from the E-commerce family, from the seven 24 October boards: dark opening with a large geometric heading, outlined wordmark with an overflowing product, lime band, captioned close-ups, large scene photos, circle composition, journal, questions in a graphite band and a lime sign-up. Product page with a graphite purchase card, designed cart and sample checkout. Deep graphite, light grey, white and lime; bold Montserrat headings, Inter text.", bestFor: ["e-commerce", "high-tech", "audio", "single product", "technical object"] },
+    fonts: { heading: "montserrat_n7", body: "inter_n4" },
+    previewFonts: { heading: "Montserrat", body: "Inter" },
     motion: "subtle",
     photoMood: "nocturne",
     kinds: ["catalog"],
-    // Refonte E-commerce (décision de Thomas du 21 octobre, issue #158) : en-tête « Méga menu en colonnes » (le produit,
-    // ses détails et ses usages, avec un encart) et pied « Plan du catalogue en colonnes », dispositions de la famille
-    // qu'ORBE, HEUREN et ALCÔVE n'utilisent pas.
-    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 6, card: 14 }, headingCase: "none", tracking: -2, headingScale: 104, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: true, dark: true }),
-    settings: { editorial_profile: "studio", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { layout: "logo-left", mega_menu: "columns-promo", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
-    // Galerie en carrousel, cadre carré : le casque entier dans chaque vue, une vue à la fois sur téléphone.
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Planches ONDE (docs/theme-briefs/onde) : en-tête et pied propres (« on-header », « on-footer »), fiche dessinée
+    // (« on-product » ; la section Produit commune reste présente, masquée), sections « on-* » stylées par onde.css.
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 9, card: 6 }, headingCase: "none", tracking: -3, headingScale: 104, pageWidth: 1440, gallery: "carousel", density: "balanced", buttonUppercase: false, dark: true }),
+    settings: { editorial_profile: "none", conversion_profile: "onde", motion_intensity: "subtle", price_trim_zeros: true, card_price_note: "", fab_back_to_top: false },
+    headerSettings: { layout: "logo-left", mega_menu: "none", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1" },
+    ownProductBody: true,
+    headerRow: (k) => ["on-header", { logo_light_asset: k.im.logoLight ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", mobile_menu: "main-menu", legal_menu: "footer", search: true, cart_link_label: k.t("Mon panier", "My cart"), search_label: k.t("Rechercher…", "Search…") }],
+    footerRow: (k) => ["on-footer", { logo_light_asset: k.im.logoLight ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", second_menu: "footer", legal_menu: "footer", group1_title: k.t("Explorer", "Explore"), group1_menu: "main-menu", group2_title: k.t("Informations", "Information"), group2_menu: "footer", group3_title: "", style_default: "wordmark", style_product: "wordmark", style_collection: "lime", style_cart: "slim", show_social: true }],
     palette: (k) => {
-      const ink = k.night(0.09, 0.04);
-      const panel = k.night(0.15, 0.05);
-      const paper = k.light("#F2F3EF");
-      return [k.scheme(ink, paper, k.onDark(ink), 0.06), k.scheme(paper, ink, k.onLight(paper)), k.filled(k.p.accent), k.scheme(panel, paper, k.onDark(panel), 0.08)];
+      const ink = k.night(0.06, 0.03);
+      const paper = k.light("#F1F2F1");
+      return [k.scheme(paper, ink, k.onLight(paper)), k.scheme(ink, paper, k.onDark(ink), 0.06), k.filled(k.p.accent), k.scheme(k.night(0.1, 0.03), paper, k.onDark(ink), 0.08)];
     },
-    // Accueil : la campagne du casque en ouverture, l'achat juste après, un détail en gros plan, trois usages (salon,
-    // train, studio), un bandeau d'appel, les questions et l'inscription. Chaque visuel n'apparaît qu'une fois.
+    // Accueil (planches 01 et 05) : ouverture sombre, grand mot et produit, bande lime, détails, scènes, cercles, journal,
+    // questions, inscription. Textes et photos du projet ; une section sans photo du projet reste masquée.
     home: (k) => [
-      // La campagne attend une campagne datée du client ; sans elle, l'ouverture devient une scène et sa liste avec le
-      // titre de la page (jamais d'accueil sans ouverture ni titre).
-      ...k.either(
-        k.lib("fs-campaign", 1, { layout: "background", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", offer_title: "", offer_text: "", period_text: "", conditions: "", padding_top: 0, padding_bottom: 0 }),
-        k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", padding_top: 24, padding_bottom: 72 }),
-      ),
-      k.lib("featured-purchase", 2, { purchase_style: "outlined", image_fit: "contain" }),
-      k.lib("ed-finishes", 4, { image_asset: k.im.detail1 ?? "" }, { hide: !k.im.detail1 }),
-      ((uses) => k.lib("ed-diptych", 1, { layout: "index" }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.lib("cta-banner", 1, { image_asset: k.im.lifestyle ?? k.im.hero ?? "", style: "center", overlay: 45, parallax: false }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
-      k.faqSec(1, 5, "cards"),
-      ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
+      k.lib("on-banner", 1, { layout: "split", tone: "dark", heading_tag: "h1", image_asset: k.im.hero ?? k.im.banner ?? k.im.lifestyle ?? "", image_side: "right", image_width: 60, button_style: "lime", wave: "bottom", min_height: 666, mobile_min_height: 690, title_size: 74, mobile_title_size: 40, mobile_order: "image-first", image_loading: "eager", padding_top: 192, padding_bottom: 0 }),
+      k.lib("on-banner", 1, { layout: "wordmark", tone: "light", wordmark: k.t("", ""), cutout_asset: k.im.cutout ?? "", show_price: true, card_link_label: k.t("Découvrir", "Discover"), button_style: "lime", min_height: 279, mobile_min_height: 600, padding_top: 0, padding_bottom: 0 }, { hide: !k.im.cutout }),
+      k.lib("on-banner", 1, { layout: "split", tone: "lime", text_beside: true, wave: "behind", min_height: 364, mobile_min_height: 0, title_size: 92, mobile_title_size: 46, text_width: 1100, padding_top: 0, padding_bottom: 0 }),
+      ((shots) => k.lib("on-cards", 1, { layout: "details", tone: "dark", button_style: "outline-light", columns: 3, card_height: 250, mobile_card_height: 150, side_width: 330, mobile_layout: "rows", card_arrow: false, padding_top: 30, padding_bottom: 26 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f)),
+      ((uses) => k.lib("on-cards", 1, { layout: "scenes", tone: "dark", title_top: true, columns: uses.length, card_height: 291, mobile_card_height: 236, gap: 0, title_size: 30, mobile_title_size: 26, mobile_layout: "carousel", padding_top: 0, padding_bottom: 0 }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("on-journal", 1, { layout: "row", tone: "white", button_style: "outline", card_height: 160, padding_top: 10, padding_bottom: 36 }),
+      k.lib("on-faq", 1, { layout: "row", tone: "dark", title_size: 17, padding_top: 10, padding_bottom: 10 }),
+      k.lib("on-newsletter", 4, { layout: "row", tone: "lime", title_size: 30, padding_top: 22, padding_bottom: 22 }),
     ],
-    // Fiche : galerie en carrousel et achat, l'arceau en gros plan, une scène à côté de son texte, questions en cartes.
+    // Fiche (planches 01 et 05) : ouverture claire et carte d'achat, gros plans, une scène, questions, bandeau d'achat.
     product: (k) => [
-      k.lib("ed-finishes", 4, { image_asset: k.im.detail2 ?? k.im.detail1 ?? "" }, { hide: !(k.im.detail2 ?? k.im.detail1) }),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene3 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene3 ?? k.im.scene1) }),
-      k.faqSec(1, 5, "cards"),
+      k.lib("on-product", 1, { min_height: 780, title_size: 62, mobile_title_size: 40, sticky_bar: true, quantity_label: k.t("Quantité", "Quantity"), add_label: k.t("Ajouter au panier", "Add to cart"), home_label: k.t("Accueil", "Home") }, { blocks: [{ type: "tab", settings: { label: k.t("Vue d'ensemble", "Overview"), anchor: "vue-d-ensemble" } }, { type: "tab", settings: { label: "Design", anchor: "design" } }, { type: "tab", settings: { label: k.t("Questions", "Questions"), anchor: "questions" } }] }),
+      ((shots) => k.lib("on-cards", 1, { anchor: "design", layout: "grid", tone: "white", columns: shots.length, card_height: 235, mobile_card_height: 150, gap: 22, mobile_layout: "two", card_arrow: false, padding_top: 36, padding_bottom: 36 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f)),
+      k.lib("on-banner", 1, { layout: "background", tone: "dark", image_asset: k.im.scene1 ?? k.im.lifestyle ?? "", button_style: "outline-light", min_height: 300, mobile_min_height: 620, title_size: 56, mobile_title_size: 34, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.scene1 ?? k.im.lifestyle) }),
+      k.lib("on-faq", 1, { anchor: "questions", layout: "columns", tone: "white", title_size: 17, padding_top: 6, padding_bottom: 30 }),
+      k.lib("on-banner", 3, { layout: "cta", tone: "lime", wave: "burst", button_action: "add", use_page_product: true, button_style: "dark", mobile_icon_only: true, button_icon: "arrow", min_height: 130, mobile_min_height: 200, title_size: 48, mobile_title_size: 26, padding_top: 0, padding_bottom: 0 }),
     ],
     // Site de services (repli) : repères sur la photo d'ouverture, prestations en liste, deux réalisations côte à côte,
     // infos pratiques, questions à côté du titre et prise de contact.
@@ -198,22 +199,26 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "rive",
     name: "Atelier Rive",
-    tagline: "Journal et espaces",
-    description: "Composition « journal » pour une entreprise de services : ouverture en grand titre sur trois lignes, approche en déclaration, récit interactif des accompagnements, prestations, méthode, inspirations en diptyque, scène, infos pratiques et premier échange ; papier et vert profond ou couleurs de la marque.",
-    bestFor: ["prestations de services", "architecture d'intérieur", "conseil", "atelier", "devis"],
-    en: { tagline: "Journal and spaces", description: "“Journal” composition for a services business: three-line headline opening, approach as a statement, interactive story of the services, offer, method, inspirations as a diptych, scene, practical info and first conversation; paper and deep green or the brand colors.", bestFor: ["services", "interior design", "consulting", "workshop", "quotes"] },
-    fonts: { heading: "archivo_n6", body: "work_sans_n4" },
-    previewFonts: { heading: "Archivo", body: "Work Sans" },
+    tagline: "Intérieurs sur mesure, grandes photos",
+    description: "Site de services d'après les maquettes du 23 octobre : grande photo d'ouverture et titre serif blanc, besoins en ligne, galerie de projets asymétrique et filtrable, prestations en miniatures, méthode en trois temps, bandeau photo, questions côte à côte et bandeau prune ; fonds blancs, boutons prune, pages projets, atelier et contact.",
+    bestFor: ["prestations de services", "architecture d'intérieur", "décoration", "atelier", "premier rendez-vous"],
+    en: { tagline: "Tailored interiors, large photographs", description: "Services website based on the 23 October mockups: large opening photograph with a white serif headline, needs in a row, asymmetric filterable project gallery, services as thumbnails, three-step method, photo band, questions side by side and a plum band; white backgrounds, plum buttons, project, studio and contact pages.", bestFor: ["services", "interior design", "decoration", "studio", "first appointment"] },
+    fonts: { heading: "newsreader_n4", body: "inter_n4" },
+    previewFonts: { heading: "Newsreader", body: "Inter" },
     motion: "subtle",
     photoMood: "terroir",
     kinds: ["services"],
-    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "split", ann: "static", card: "minimal", button: "frame", radius: { button: 0, card: 0 }, headingScale: 112, tracking: -2, pageWidth: 1440, ds: "craft", density: "airy" }),
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer-right", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: -1, pageWidth: 1360, ds: "craft", density: "airy", buttonUppercase: false }),
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: false, color_scheme: "scheme-1" },
     settings: { editorial_profile: "journal", conversion_profile: "none", motion_intensity: "subtle" },
     mainProduct: { gallery_layout: "stack", sticky_bar: false, color_scheme: "scheme-1" },
+    // Maquettes du 23 octobre : fonds blancs, texte presque noir, couleur de marque (prune pour la démonstration) sur les
+    // boutons et le bandeau d'appel ; un client garde sa propre couleur, lisible sur blanc et en aplat.
     palette: (k) => {
-      const paper = k.light("#EEEAE2");
-      const deep = k.night(0.18, 0.25);
-      return [k.scheme(paper, deep, k.onLight(paper)), k.scheme(deep, paper, k.onDark(deep), 0.06), k.scheme("#FFFFFF", deep, k.onLight("#FFFFFF")), k.filled(k.p.accent)];
+      const ink = k.night(0.11, 0.16);
+      const accent = k.onLight("#FFFFFF");
+      const band = k.filled(accent);
+      return [k.scheme("#FFFFFF", ink, accent), { ...band, accent: band.text, accent_text: band.background }, k.scheme("#FFFFFF", ink, accent), k.filled(accent)];
     },
     home: (k) => [
       k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.lifestyle ?? k.im.hero }),
@@ -226,18 +231,16 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     ],
     product: (k) => [k.lib("ed-scene", 2, { layout: "split" }), k.faqSec(1, 4, "lines")],
     services: (k) => [
-      k.lib("ed-opening", 1, { layout: "journal", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 }),
-      k.lib("ed-statement", 1),
-      k.lib("ref-narrative", 1),
-      k.R.servicesList(3, "list"),
-      k.R.method(1, "timeline"),
-      // Pas de diptyque sur l'accueil : il reprenait la photo d'ouverture (contrôle du 19 octobre) ; les réalisations montrent déjà quatre photos distinctes.
-      ...k.R.portfolio(1, "editorial"),
-      k.R.testimonials(2),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? k.im.scene3 }),
-      k.R.practical(3),
-      k.faqSec(1, 5, "lines"),
-      k.R.contactForm(1, "Et si l'on commençait par votre projet ?"),
+      // Accueil de la maquette du 23 octobre, dans l'ordre : photo d'ouverture et titre blanc, besoins en ligne, galerie
+      // asymétrique, prestations en miniatures, méthode en trois temps avec photo, bandeau photo, questions, bandeau prune.
+      k.lib("ed-opening", 1, { layout: "banner", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1, copy_surface: false, padding_top: 0, padding_bottom: 0 }),
+      k.lib("fs-needs", 1, { layout: "row", align: "left", effect: "none", padding_top: 72, padding_bottom: 40 }),
+      ...(k.R.portfolio(1, "editorial") as Row[]).map((r) => tune(r, { layout: "asym", eyebrow: "", show_filters: false, show_tags: false, caption_style: "kicker", link_style: "arrow", padding_top: 32, padding_bottom: 48 })),
+      tune(k.R.servicesList(1, "cards", { withImages: true }), { layout: "thumbs", action_style: "arrow", eyebrow: "", padding_top: 48, padding_bottom: 48 }),
+      tune(k.R.method(1, "timeline"), { layout: "columns", eyebrow: "", padding_top: 48, padding_bottom: 32 }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "left", band_height: "medium", text_offset: 44, image_asset: k.im.detail2 ?? k.im.lifestyle2 ?? k.im.scene3 }),
+      tune(k.faqSec(1, 3, "lines"), { layout: "side", style: "lines", padding_top: 40, padding_bottom: 64 }),
+      k.lib("cta-banner", 2, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
     ],
   },
   {
@@ -306,164 +309,176 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "noctil",
     name: "Noctil",
-    tagline: "Nuit immersive, lumière d'espace",
-    description: "Boutique spécialisée pour un objet de lumière : ouverture nocturne où le produit apparaît entier au-dessus du titre, bénéfices en cartes lumineuses, carrousel de pièces une à une, récit superposé, gros plans en colonnes, bandeau d'achat sur une scène et FAQ en cartes. Indigo profond, lavande et violet, titres géométriques, en-tête flottant arrondi sur fond clair et pied centré.",
-    bestFor: ["boutique spécialisée", "objet de lumière", "décoration de nuit", "chambre et salon", "produit d'ambiance"],
-    en: { tagline: "Immersive night, space light", description: "Specialty store for a light object: night opening where the product appears whole above the headline, benefits in glowing cards, a carousel of rooms one by one, an overlapping story, close-ups in columns, a purchase band over a scene and FAQ cards. Deep indigo, lavender and violet, geometric headings, a rounded floating header on a light ground and a centred footer.", bestFor: ["specialty store", "light object", "night decor", "bedroom and living room", "ambience product"] },
-    fonts: { heading: "space_grotesk_n5", body: "karla_n4" },
-    previewFonts: { heading: "Space Grotesk", body: "Karla" },
+    tagline: "Crème, bleu nuit et lavande, ciel étoilé",
+    description: "Boutique spécialisée pour un objet à offrir, d'après les maquettes du 23 octobre : ouverture de nuit sur une grande photo (texte clair à gauche), le produit détouré qui déborde sur le bas de la photo avec son prix et l'ajout au panier, trois cartes de scènes, bandeaux sombres arrondis, trois étapes illustrées, derniers articles, questions et appel final sur fond de nuit. Fonds crème, bleu nuit profond, boutons lavande, étoiles dorées, titres ronds en gras.",
+    bestFor: ["boutique spécialisée", "objet à offrir", "univers de l'enfant", "décoration de chambre", "objet de lumière"],
+    en: { tagline: "Cream, midnight blue and lavender, starry sky", description: "Specialty store for a gift object, from the 23 October mock-ups: a night opening over a large photo (light text on the left), the cut-out product overlapping the bottom of the photo with its price and add-to-cart, three scene cards, rounded dark bands, three illustrated steps, latest articles, questions and a closing call on a night background. Cream backgrounds, deep midnight blue, lavender buttons, golden stars, bold rounded headings.", bestFor: ["specialty store", "gift object", "children's world", "bedroom decor", "light object"] },
+    fonts: { heading: "nunito_n8", body: "nunito_n4" },
+    previewFonts: { heading: "Nunito", body: "Nunito" },
     motion: "subtle",
     photoMood: "nocturne",
     kinds: ["specialty"],
-    // En-tête « Barre flottante arrondie » sur fond lavande (le logo, sombre, reste lisible) et pied « Centré avec lettre
-    // d'information » : ni le logo centré de FRAISE / ONDE, ni le bouton d'achat et le grand nom de marque de SILLON.
-    look: look({ headerLayout: "logo-left", shape: "pill", icons: "circles", menu: "sheet", footer: "centered", ann: "static", card: "boxed", button: "solid", radius: { button: 14, card: 18 }, headingCase: "none", tracking: -2, headingScale: 104, pageWidth: 1280, density: "airy", buttonUppercase: false, dark: true }),
-    settings: { conversion_profile: "astral", editorial_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { color_scheme: "scheme-2", mega_menu: "none", show_cart: true },
-    // Galerie en carrousel, cadre carré : une vue à la fois, le produit entier dès l'ouverture de la fiche sur téléphone.
+    // Maquettes NOCTIL du 23 octobre (docs/design/noctil-reference-20261023) : logo à gauche, menu à côté, compte et
+    // panier en pastille lavande à droite, menu du téléphone à droite (le bouton y est) ; en-tête transparent sur la photo
+    // d'ouverture de l'accueil ; pied bleu nuit en colonnes (marque, liens).
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 999, card: 18 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1280, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "astral", editorial_profile: "none", motion_intensity: "subtle", card_arrow: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: true, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    // Fiche : grande vue et vignettes (à gauche sur ordinateur, dessous sur téléphone), zoom, barre d'achat qui suit.
     mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Crème (fonds), bleu nuit (bandeaux, pied), lavande pâle (panneaux d'aide), lavande pleine (boutons) : tirées de la
+    // marque (sombre, clair, primaire) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const night = k.night(0.09, 0.55);
-      const lavender = k.light("#ECE8FA");
-      const indigo = k.night(0.17, 0.5);
-      return [k.scheme(night, lavender, k.onDark(night), 0.07), k.scheme(lavender, night, k.onLight(lavender)), k.filled(k.p.accent), k.scheme(indigo, lavender, k.onDark(indigo), 0.08)];
+      const cream = k.light("#F8F5EF");
+      const night = k.night(0.1, 0.5);
+      const ink = k.p.dark;
+      const pale = k.mix(cream, k.p.primary, 0.16);
+      return [k.scheme(cream, ink, k.onLight(cream)), k.scheme(night, "#F8F5EF", k.onDark(night), 0.06), k.scheme(pale, ink, k.onLight(pale)), k.filled(k.p.primary)];
     },
-    // Accueil : une narration de nuit. Le produit entier au-dessus du titre (lisible sur téléphone), bénéfices en cartes
-    // lumineuses, les pièces une à une en carrousel, récit superposé, gros plans en colonnes, bandeau d'achat sur une
-    // scène, questions en cartes et inscription. Chaque visuel n'apparaît qu'une fois ; toute section vide reste masquée.
+    // Accueil (planche 01) : ouverture de nuit, produit détouré en surplomb avec prix et ajout au panier, trois scènes en
+    // cartes, bandeau sombre, trois étapes, bandeau sur photo, questions et appel final sur la nuit (les articles du journal
+    // de la démonstration s'ajoutent à la rédaction : un projet sans articles n'en montre pas). Sans produit détouré, la
+    // section garde le produit dans sa propre bande (aucun cadre opaque sur la photo).
     home: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.hero ?? k.im.packshot ?? k.im.lifestyle, image_ratio: "wide", layout: "stacked", heading_tag: "h1", animation: "fade" }),
-      k.lib("features-grid", 1, { layout: "grid", columns: 4, columns_mobile: "2", style: "glow", heading_align: "center" }),
-      ((rooms) => k.lib("cv-gallery", 4, { layout: "carousel", ratio: "portrait" }, { hide: rooms.length < 2, blocks: rooms.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f)),
-      k.lib("image-with-text", 2, { layout: "overlap", ratio: "portrait", image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", reveal: "up" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
-      ((shots) => k.lib("cv-cards", 1, { layout: "columns" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.cutout].filter((f): f is string => !!f)),
-      k.lib("cta-banner", 4, { style: "center", image_asset: k.im.banner ?? k.im.scene2 ?? "", overlay: 55, parallax: false }),
-      k.faqSec(2, 5, "cards"),
-      k.newsletter(4),
+      k.lib("cv-banner", 2, { layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("cv-rise", 1, { image_asset: k.im.cutout ?? k.im.packshot ?? "", overlap: k.im.cutout ? "auto" : "none", decor: !!k.im.cutout, curve: !!k.im.cutout, button_arrow: true, padding_top: 32, padding_bottom: 24 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "columns", padding_top: 16, padding_bottom: 24 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "right", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.lifestyle2) }),
+      k.lib("cv-steps", 1, { layout: "cards", padding_top: 24, padding_bottom: 24 }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
+      k.lib("faq", 2, { style: "lines", layout: "side", open_first: true, padding_top: 40, padding_bottom: 40 }),
     ],
-    // Fiche : galerie en carrousel et achat, puis ce qui compose l'objet (cartes), onglets en pastilles, préparation de
-    // la nuit en frise, une scène avec bénéfices, engagements en grille et questions. Rien d'affirmé sans donnée.
+    // Fiche (planche 02) : galerie et achat, bandeau d'aventure, trois bénéfices en icônes, deux gros plans sur la nuit,
+    // trois instants, les chambres sur fond de nuit, « avant de choisir » (tout ce qui n'est pas connu reste « à confirmer »),
+    // questions et articles.
     product: (k) => [
-      k.lib("cv-ingredients", 4, { layout: "cards", columns: 3 }),
-      k.lib("content-tabs", 1, { tab_style: "pills", image_position: "right" }),
-      k.lib("timeline", 2, { image_asset: "" }),
-      k.lib("cv-feature", 1, { image_asset: k.im.scene3 ?? k.im.scene1, layout: "stacked" }),
-      k.lib("fs-commitments", 4, { layout: "grid" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      k.lib("features-grid", 1, { layout: "row", columns: 3, columns_mobile: "1", style: "plain", heading_align: "left", padding_top: 24, padding_bottom: 24 }),
+      ((shots) => k.lib("cv-cards", 2, { layout: "overlay", padding_top: 0, padding_bottom: 0 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      ((shots) => k.lib("cv-gallery", 2, { layout: "grid", ratio: "landscape", padding_top: 32, padding_bottom: 32 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.faqSec(1, 5, "lines"),
+      k.lib("fs-journal", 2, { layout: "row", limit: 2, align: "left", padding_top: 24, padding_bottom: 24 }),
     ],
-    // Site de services (repli) : ouverture empilée, prestations en cartes, gros plans en colonnes, méthode, bandeau
-    // d'appel, questions et prise de contact — sans l'enchaînement de SILLON, de FRAISE ni de TRAVERSE.
+    // Site de services (repli) : ouverture de nuit, atouts en rangée, prestations en cartes, méthode, une photo et son
+    // texte, questions, prise de contact — sans l'enchaînement de TRAVERSE, de SILLON ni de MUSEAU CLUB.
     services: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.hero ?? k.im.lifestyle, image_ratio: "wide", layout: "stacked", heading_tag: "h1" }),
-      k.R.servicesList(4, "cards"),
-      ((shots) => k.lib("cv-cards", 2, { layout: "columns" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "night", band_height: "tall", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("features-grid", 1, { layout: "row", columns: 3, columns_mobile: "1", style: "plain", heading_align: "left", padding_top: 28, padding_bottom: 28 }),
+      k.R.servicesList(1, "cards", { withImages: true }),
       k.R.method(1, "howto-h"),
-      k.lib("cta-banner", 4, { style: "center", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", overlay: 55, parallax: false }),
-      k.faqSec(2, 5, "cards"),
+      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", reveal: "up" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
+      k.faqSec(2, 5, "lines"),
       k.R.booking(1),
     ],
   },
   {
     id: "traverse",
     name: "Traverse",
-    tagline: "Carnet de voyage, pierre et olive",
-    description: "Boutique spécialisée pour un objet de voyage, en carnet éditorial : bannière asymétrique visuel à gauche, trois temps du voyage en liste, alternance quotidien / départ / destination, repères interactifs sur le produit, matières à côté d'un gros plan, inventaire de ce qu'on emporte, achat encadré, FAQ en lignes et inscription illustrée. Crème, pierre et olive, serif de magazine, en-tête sur deux rangées et pied en carte.",
+    tagline: "Week-ends dehors : grandes photos, titres condensés, orange",
+    description: "Boutique spécialisée pour un sac de voyage, d'après les maquettes du 23 octobre : grandes photos de paysages, titres condensés en capitales, boutons orange, pied vert sapin. Ouverture plein cadre, trois cartes de paysages, essentiels du produit avec icônes et gros plans, bandeau « changez de décor », carte d'achat, questions et rappel final.",
     bestFor: ["boutique spécialisée", "bagagerie", "voyage", "sport et plein air", "accessoire du quotidien"],
-    en: { tagline: "Travel notebook, stone and olive", description: "Specialty store for a travel object, as an editorial notebook: asymmetric banner with the visual on the left, three stages of travel as a list, everyday / departure / destination alternation, interactive markers on the product, materials beside a close-up, an inventory of what you carry, a framed purchase, line FAQ and an illustrated sign-up. Cream, stone and olive, magazine serif, a two-row header and a card footer.", bestFor: ["specialty store", "luggage", "travel", "sport and outdoors", "everyday accessory"] },
-    fonts: { heading: "playfair_display_n4", body: "chivo_n4" },
-    previewFonts: { heading: "Playfair Display", body: "Chivo" },
+    en: { tagline: "Weekends outdoors: large photos, condensed headings, orange", description: "Specialty store for a travel bag, from the 23 October mock-ups: large landscape photos, condensed capital headings, orange buttons, fir-green footer. Full-bleed opening, three landscape cards, product essentials with icons and close-ups, \"change of scenery\" band, purchase card, questions and closing call.", bestFor: ["specialty store", "luggage", "travel", "sport and outdoors", "everyday accessory"] },
+    fonts: { heading: "anton_n4", body: "inter_n4" },
+    previewFonts: { heading: "Anton", body: "Inter" },
     motion: "subtle",
     photoMood: "terroir",
     kinds: ["specialty"],
-    // En-tête « Deux rangées avec offre » (nom en tête de page, menu dessous, encarts dans le sous-menu) et pied « Carte
-    // d'assistance » : dispositions qu'aucun autre thème de la famille n'utilise.
-    look: look({ headerLayout: "two-rows", shape: "bar", icons: "plain", menu: "cards", footer: "card", ann: "static", card: "minimal", button: "solid", radius: { button: 2, card: 2 }, headingCase: "none", tracking: -1, headingScale: 108, pageWidth: 1400, density: "airy", buttonUppercase: true }),
+    // Maquettes TRAVERSE du 23 octobre (docs/design/traverse-reference-20261023) : nom condensé à gauche, menu au centre,
+    // panier à droite ; pied vert sapin, marque à gauche et colonnes.
+    look: look({ headerLayout: "nav-left", shape: "bar", icons: "plain", menu: "drawer-right", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 3, card: 0 }, headingCase: "none", tracking: 0, headingScale: 100, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: false }),
     settings: { conversion_profile: "itineraire", editorial_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { mega_menu: "columns-promo", mobile_promo: "top", show_cart: true },
-    // Galerie empilée sur ordinateur (les vues défilent à côté de l'achat qui reste visible), cadre naturel : rien de coupé.
-    mainProduct: { gallery_layout: "stack", gallery_ratio: "natural", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    // Fiche : miniatures à gauche de la grande photo, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Blanc, encre presque noire, vert sapin (tiré du sombre de la marque), gris très clair des fonds produit, crème des
+    // encadrés « à compléter » ; boutons pleins de l'accent tel quel (orange pour la démonstration), texte blanc ou encre
+    // selon le contraste.
     palette: (k) => {
-      const cream = k.light("#F5F1E8");
-      const olive = k.night(0.16, 0.28);
-      const stone = k.mix(cream, "#8A8270", 0.22);
-      return [k.scheme(cream, olive, k.onLight(cream)), k.scheme(olive, cream, k.onDark(olive), 0.06), k.filled(k.p.primary), k.scheme(stone, olive, k.onLight(stone))];
+      const ink = "#171717";
+      const forest = k.night(0.12, 0.5);
+      const lum = (hex: string) => { const c = hex.replace("#", ""); const v = [0, 2, 4].map((i) => parseInt(c.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+      const onAccent = 1.05 / (lum(k.p.accent) + 0.05) >= 2.6 ? "#FFFFFF" : ink;
+      const own = (sc: ReturnType<typeof k.scheme>) => ({ ...sc, accent: k.p.accent, accent_text: onAccent });
+      return [own(k.scheme("#FFFFFF", ink, k.p.accent)), own(k.scheme(forest, "#FFFFFF", k.p.accent, 0.08)), own(k.scheme("#F4F3EF", ink, k.p.accent)), own(k.scheme("#F9F4EC", ink, k.p.accent))];
     },
-    // Accueil : carnet de voyage. Bannière asymétrique, trois temps en liste, alternance des moments du voyage, repères
-    // sur le produit, matières à côté d'un gros plan, ce qu'on emporte, achat encadré, questions et inscription illustrée.
+    // Accueil de la maquette : ouverture plein cadre, trois cartes de paysages, essentiels (produit, icônes, gros plans),
+    // bandeau « changez de décor », carte d'achat avec liste cochée, questions, rappel final.
     home: (k) => [
-      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, layout: "image-left", heading_tag: "h1", animation: "fade", price_text: "", price_note: "" }),
-      k.lib("features-grid", 4, { layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left" }),
-      ((moments) => k.lib("cv-alternating", 1, { layout: "alternate", ratio: "portrait" }, { hide: moments.length < 2, blocks: moments.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.lib("cv-hotspots", 1, { image_asset: k.im.packshot ?? k.im.cutout, layout: "side", ratio: "square" }),
-      k.lib("cv-ingredients", 4, { layout: "split", image_asset: k.im.detail1 ?? "", ratio: "square" }),
-      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
-      k.lib("featured-purchase", 1, { purchase_style: "outlined", image_fit: "contain" }),
-      k.faqSec(1, 5, "lines"),
-      ...k.either(k.lib("newsletter-media", 2, { layout: "left", image_asset: k.im.banner ?? "", legal: k.privacy }, { hide: !k.im.banner }), k.newsletter(2)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "overlay", heading: "", text: "", padding_top: 12, padding_bottom: 12 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      ((details) => k.lib("cv-feature", 1, { layout: "essentials", image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, padding_top: 24, padding_bottom: 40 }, { blocks: details.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+      k.lib("cv-hero", 1, { layout: "card", image_ratio: "square", image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, rating_text: "", guarantee_text: "", padding_top: 32, padding_bottom: 32 }),
+      k.faqSec(1, 4, "cards"),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "short", veil: "left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.banner) }),
     ],
-    // Fiche : galerie empilée et achat, gros plans en lignes, onglets soulignés, préparation du départ en cartes, galerie
-    // des lieux en grille, engagements en liste et questions.
+    // Fiche de la maquette : galerie et achat, bandeau « les prochains départs », gros plans et scènes en grille, questions.
     product: (k) => [
-      ((shots) => k.lib("cv-cards", 4, { layout: "rows" }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.cutout].filter((f): f is string => !!f)),
-      k.lib("content-tabs", 1, { tab_style: "underline", image_position: "left" }),
-      k.lib("cv-steps", 1, { layout: "cards" }),
-      ((places) => k.lib("cv-gallery", 2, { layout: "grid", columns: 3, ratio: "portrait" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2].filter((f): f is string => !!f)),
-      k.lib("fs-commitments", 4, { layout: "list" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", title_rule: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "", button_label: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
+      ((shots) => k.lib("cv-gallery", 1, { layout: "grid", columns: 3, ratio: "square", heading: "", text: "", ai_label: "", padding_top: 8, padding_bottom: 8 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.faqSec(1, 5, "lines"),
     ],
-    // Site de services (repli) : bannière visuel à droite, trois temps en liste, prestations, alternance de réalisations,
-    // méthode, image et texte, questions et prise de contact.
+    // Site de services (repli) : même grammaire, ouverture plein cadre, trois cartes, prestations, réalisations alternées,
+    // bandeau photo, questions et contact.
     services: (k) => [
-      k.lib("cv-banner", 1, { image_asset: k.im.hero ?? k.im.lifestyle, layout: "image-right", heading_tag: "h1" }),
-      k.lib("features-grid", 4, { layout: "grid", columns: 1, columns_mobile: "1", style: "lines", heading_align: "left" }),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "overlay", heading: "", text: "", padding_top: 12, padding_bottom: 12 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
       k.R.servicesList(1, "list"),
-      ((moments) => k.lib("cv-alternating", 1, { layout: "alternate", ratio: "portrait" }, { hide: moments.length < 2, blocks: moments.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.R.method(2, "howto-v"),
-      k.lib("image-with-text", 1, { layout: "image-left", ratio: "landscape", image_asset: k.im.lifestyle2 ?? k.im.detail2 ?? "", reveal: "curtain" }, { hide: !(k.im.lifestyle2 ?? k.im.detail2) }),
-      k.faqSec(1, 5, "lines"),
-      k.R.booking(2),
+      ((rows) => k.lib("cv-alternating", 1, { layout: "image-right", ratio: "landscape" }, { hide: rows.length < 1, blocks: rows.map((f) => ({ type: "row", settings: { image_asset: f } })) }))([k.im.lifestyle2, k.im.detail1].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+      k.faqSec(1, 5, "cards"),
+      k.R.booking(1),
     ],
   },
   {
     id: "heuren",
     name: "Heuren",
-    tagline: "Bleu nuit et précision",
-    description: "Boutique mono-produit de la famille E-commerce pour un objet de précision : titre puis grand paysage, déclaration en bleu nuit autour d'un gros plan, repères interactifs sur le produit, bannière en plein cadre, deux usages côte à côte, achat encadré, questions et inscription illustrée. Ivoire, bleu nuit et argent, serif fine, logo centré avec menu à gauche et pied de page encadré.",
-    bestFor: ["e-commerce", "horlogerie", "accessoire", "produit unique", "objet de précision"],
-    en: { tagline: "Midnight blue and precision", description: "Single-product store from the E-commerce family for a precision object: title then a wide landscape, a midnight-blue statement around a close-up, interactive markers on the product, a full-frame banner, two uses side by side, framed purchase, questions and an illustrated sign-up. Ivory, midnight blue and silver, fine serif, centred logo with the menu on the left and a boxed footer.", bestFor: ["e-commerce", "watches", "accessory", "single product", "precision object"] },
-    fonts: { heading: "instrument_serif_n4", body: "inter_n4" },
-    previewFonts: { heading: "Instrument Serif", body: "Inter" },
+    tagline: "Bleu nuit, blanc et champagne",
+    description: "Boutique mono-produit de la famille E-commerce pour un objet à offrir : grandes photographies pleine largeur, fonds blanc et bleu nuit, boutons champagne, titres fins sans empattement. Ouverture plein écran, réassurance, cadeau en coffret, triptyque des occasions, gros plan avec liens de détail, présentation et achat, aide au choix, questions et rappel final.",
+    bestFor: ["e-commerce", "horlogerie", "accessoire", "produit unique", "cadeau"],
+    en: { tagline: "Midnight blue, white and champagne", description: "Single-product store from the E-commerce family for an object to give: large full-width photographs, white and midnight-blue backgrounds, champagne buttons, thin sans-serif headings. Full-screen opening, reassurance, gift box, triptych of occasions, close-up with detail links, presentation and purchase, help to choose, questions and closing reminder.", bestFor: ["e-commerce", "watchmaking", "accessory", "single product", "gift"] },
+    fonts: { heading: "jost_n3", body: "jost_n4" },
+    previewFonts: { heading: "Jost", body: "Jost" },
     motion: "subtle",
     photoMood: "galerie",
     kinds: ["catalog"],
-    // En-tête « Logo centré, menu à gauche » (fond blanc : le logo HEUREN est livré sur fond blanc) et pied « Encadré » :
-    // dispositions de la famille E-commerce qu'ORBE n'utilise pas.
-    look: look({ headerLayout: "nav-left", shape: "bar", menu: "fullscreen", footer: "boxed", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 112, tracking: -1, pageWidth: 1360, gallery: "grid", ds: "maison", density: "airy", buttonUppercase: true }),
+    // Maquette HEUREN du 22 octobre (docs/design/heuren-reference-20261022) : nom en lettres espacées à gauche, menu au
+    // centre, en-tête transparent sur l'ouverture ; pied bleu nuit sur une ligne.
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "fullscreen", footer: "minimal", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingScale: 100, tracking: 0, pageWidth: 1360, gallery: "carousel", ds: "maison", density: "airy", buttonUppercase: false }),
     settings: { editorial_profile: "cadran", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { mega_menu: "columns", mobile_submenu: "accordion", show_cart: true, color_scheme: "scheme-3" },
-    // Galerie en grille, cadre carré (les vues sont carrées : montre entière, bracelet compris), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    headerSettings: { mega_menu: "none", mobile_submenu: "accordion", show_cart: true, transparent_on_home: true, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" },
+    // Galerie à miniatures sur fond gris très clair, zoom, pastille de couleur, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Fond blanc pur, bleu nuit, gris très clair des fonds produit ; boutons de la couleur d'accent de la marque (champagne
+    // pour la démonstration).
     palette: (k) => {
-      const ivory = k.light("#F7F5F0");
-      const navy = k.night(0.13, 0.42);
-      return [k.scheme(ivory, navy, k.onLight(ivory)), k.scheme(navy, ivory, k.onDark(navy), 0.07), k.scheme("#FDFEFD", navy, k.onLight("#FDFEFD")), k.scheme(k.mix(ivory, "#AEB6C2", 0.35), navy, k.onLight(k.mix(ivory, "#AEB6C2", 0.35)))];
+      const navy = k.night(0.12, 0.45);
+      const mist = "#F3F4F6";
+      // Boutons pleins de l'accent tel quel (maquette : champagne sur blanc comme sur bleu nuit) ; le texte et les liens
+      // d'accent restent lisibles par la nuance « encre » calculée dans le thème (contraste 4,5:1 sur le fond).
+      const own = (sc: ReturnType<typeof k.scheme>) => ({ ...sc, accent: k.p.accent, accent_text: k.scheme(k.p.accent, navy, navy).text });
+      return [own(k.scheme("#FFFFFF", navy, k.p.accent)), own(k.scheme(navy, "#FFFFFF", k.p.accent, 0.08)), own(k.scheme(mist, navy, k.p.accent)), k.filled(k.p.accent)];
     },
-    // Accueil : la montre au crépuscule sous un grand titre, le cadran raconté en bleu nuit, les repères sur la montre, une
-    // bannière en plein cadre, une scène portée, l'achat encadré, les questions et l'inscription illustrée.
+    // Accueil de la maquette : ouverture plein écran, réassurance, cadeau en coffret, triptyque des occasions, gros plan avec
+    // liens de détail, présentation et achat, aide au choix, questions, rappel final.
     home: (k) => [
-      k.lib("ed-opening", 1, { layout: "journal", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", padding_top: 24, padding_bottom: 72 }),
-      k.lib("ed-statement", 2, { image_asset: k.im.detail1 ?? "", padding_top: 96, padding_bottom: 96 }),
-      k.lib("fs-lookbook", 1, { layout: "markers", image_asset: k.im.packshot ?? k.im.cutout, align: "left" }),
-      k.lib("fs-campaign", 2, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", offer_title: "", offer_text: "", period_text: "", conditions: "" }, { hide: !(k.im.banner ?? k.im.scene1) }),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene2 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene2 ?? k.im.scene1) }),
-      k.lib("featured-purchase", 4, { purchase_style: "compact", image_fit: "contain" }),
-      k.v2.faq("center", 1),
-      ...k.either(k.lib("newsletter-media", 2, { layout: "right", image_asset: k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !k.im.lifestyle2 }), k.newsletter(2)),
+      k.lib("ed-opening", 2, { layout: "banner", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, mobile_image_asset: k.im.portrait ?? "", copy_surface: false, padding_top: 0, padding_bottom: 0 }),
+      k.lib("fs-commitments", 1, { layout: "strip", align: "center", padding_top: 20, padding_bottom: 20 }, { blocks: [{ type: "item", settings: { icon: "box", title: k.t("Livraison", "Delivery") } }, { type: "item", settings: { icon: "return", title: k.t("Retours", "Returns") } }, { type: "item", settings: { icon: "headset", title: k.t("Assistance", "Support") } }] }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "left", band_height: "tall", image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      ((uses) => k.lib("ed-diptych", 2, { layout: "triptych", padding_top: 0, padding_bottom: 0 }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.detail1 ?? k.im.detail2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.detail1 ?? k.im.detail2) }),
+      k.lib("featured-purchase", 1, { layout: "duo", image_fit: "cover", padding_top: 24, padding_bottom: 24 }),
+      k.lib("fs-commitments", 2, { layout: "aside", align: "left", padding_top: 64, padding_bottom: 64 }),
+      k.lib("v2-faq", 1, { layout: "side" }),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "right", band_height: "medium", button_style: "link", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
     ],
-    // Fiche : galerie en grille et achat, deux scènes côte à côte, questions à côté du titre.
+    // Fiche de la maquette : galerie et achat, gros plan, la montre de près (repères et détails), coffret, scène d'usage, questions.
     product: (k) => [
-      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 72, padding_bottom: 72 }, { blocks: [k.im.scene1, k.im.lifestyle2 ?? k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "landscape", title: "" } })) }),
-      k.v2.faq("side", 3),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.detail1 ?? k.im.detail2 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.detail1 ?? k.im.detail2) }),
+      k.lib("fs-lookbook", 1, { layout: "detail", image_asset: k.im.packshot ?? k.im.cutout ?? "", align: "left" }),
+      k.lib("ed-scene", 1, { layout: "band", text_side: "right", band_height: "medium", image_asset: k.im.lifestyle2 ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle2 ?? k.im.lifestyle) }),
+      k.lib("ed-scene", 2, { layout: "band", text_side: "left", band_height: "medium", image_asset: k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !k.im.scene1 }),
+      k.lib("v2-faq", 1, { layout: "side" }),
     ],
     // Site de services (repli) : promesse dans la scène, déclaration, prestations en liste, usages en index, méthode en frise,
     // questions et prise de contact.
@@ -534,54 +549,57 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "museau-club",
     name: "Museau Club",
-    tagline: "Cobalt et balades",
-    description: "Boutique spécialisée pour une collection coordonnée de quelques produits : ouverture sur la collection en scène avec un repère par produit et le lien vers chaque fiche, grille des produits, bannière de balade, produit porté, achat en douceur, bandeau d'appel, questions en lignes et inscription illustrée. Crème et bleu cobalt, titres épais, sur-titres en pastille, coins arrondis, menu sur deux rangées avec la collection en image et pied de page en colonnes.",
+    tagline: "Cobalt, crème et jaune doux, titres ronds épais",
+    description: "Boutique spécialisée pour une collection de quelques produits assortis, d'après les maquettes enrichies du 23 octobre : grandes photographies, fonds crème et bleu poudré, pied bleu cobalt, boutons jaune doux et bleu, titres ronds très épais. Ouverture plein cadre, quatre cartes produit, scène en panneau arrondi, gros plan aux détails numérotés, ensemble assorti, petites aventures en pastilles, guide des tailles illustré, présentation de la marque, derniers articles, questions avec photo et inscription finale.",
     bestFor: ["boutique spécialisée", "animalerie", "accessoires", "collection coordonnée", "quelques produits assortis"],
-    en: { tagline: "Cobalt and walks", description: "Specialty store for a coordinated collection of a few products: an opening scene of the collection with one marker per product linking to its page, a product grid, a walk banner, the product worn, a soft purchase block, a call-to-action band, line questions and an illustrated sign-up. Cream and cobalt blue, bold headings, pill eyebrows, rounded corners, a two-row menu with the collection pictured and a column footer.", bestFor: ["specialty store", "pet supplies", "accessories", "coordinated collection", "a few matching products"] },
-    fonts: { heading: "archivo_n8", body: "karla_n4" },
-    previewFonts: { heading: "Archivo", body: "Karla" },
-    motion: "expressive",
+    en: { tagline: "Cobalt, cream and soft yellow, thick rounded headings", description: "Specialty store for a collection of a few matching products, from the enriched 23 October mock-ups: large photographs, cream and powder-blue backgrounds, cobalt footer, soft-yellow and blue buttons, very bold rounded headings. Full-bleed opening, four product cards, scene in a rounded panel, close-up with numbered details, matching set, small adventures as pills, illustrated size guide, brand story, latest articles, questions with a photo and closing sign-up.", bestFor: ["specialty store", "pet supplies", "accessories", "coordinated collection", "a few matching products"] },
+    fonts: { heading: "nunito_n9", body: "dm_sans_n4" },
+    previewFonts: { heading: "Nunito", body: "DM Sans" },
+    motion: "subtle",
     photoMood: "elan",
     kinds: ["specialty"],
-    // En-tête « Deux rangées avec offre » (le logo centré en tête, le menu dessous, la collection en image dans le
-    // sous-menu : la disposition d'origine de MUSEAU CLUB) et pied « Colonnes d'aide et d'informations ».
-    look: look({ headerLayout: "two-rows", shape: "bar", menu: "cards", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 22 }, headingScale: 106, tracking: -2, pageWidth: 1320, gallery: "stack", density: "balanced", buttonUppercase: false }),
-    settings: { conversion_profile: "club", editorial_profile: "none", motion_intensity: "expressive" },
-    headerSettings: { layout: "two-rows", mega_menu: "columns-promo", mobile_menu: "cards", mobile_promo: "top", show_cart: true },
-    // Galerie empilée, cadre carré (chaque vue montre le produit entier), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "stack", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Maquettes MUSEAU CLUB du 23 octobre (docs/design/museau-club-reference-20261023) : logo à gauche, menu à côté,
+    // recherche, compte et panier à droite ; pied bleu cobalt, marque à gauche, colonnes et inscription.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "boxed", button: "solid", radius: { button: 999, card: 22 }, headingCase: "none", tracking: -1, headingScale: 100, pageWidth: 1320, gallery: "carousel", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "club", editorial_profile: "none", motion_intensity: "subtle", card_arrow: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: true, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-1" },
+    // Fiche : grande photo, vignettes dessous, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Crème (fonds), bleu cobalt plein (pied, boutons d'achat), bleu poudré (panneaux), jaune doux plein (boutons d'appel) :
+    // couleurs tirées de la marque (primaire, accent, clair) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const cream = k.light("#FBF7EE");
-      const powder = k.mix(cream, "#BFDDF7", 0.55);
-      const navy = k.night(0.2, 0.75);
-      return [k.scheme(cream, navy, k.onLight(cream)), k.filled(k.p.primary), k.scheme(powder, navy, k.onLight(powder)), k.scheme(navy, cream, k.onDark(navy), 0.08)];
+      const cream = k.light("#FCFAF0");
+      const ink = k.p.dark;
+      const powder = k.mix(cream, "#BFDCF8", 0.72);
+      return [k.scheme(cream, ink, k.onLight(cream)), k.filled(k.p.primary), k.scheme(powder, ink, k.onLight(powder)), k.filled(k.p.accent)];
     },
-    // Accueil : la collection en scène (un repère par produit, la liste des pièces), tous les produits, la balade en
-    // bannière, le produit porté, l'achat d'une pièce, un bandeau d'appel, les questions et l'inscription illustrée.
-    home: (k) => {
-      // Sans repères renseignés (projet d'un client qui n'a pas encore situé ses produits sur une scène), l'ouverture
-      // devient une bannière avec le titre de la page : jamais une page d'accueil sans ouverture ni titre. La bannière de
-      // balade est alors retirée, pour ne pas répéter la même bannière deux fois.
-      const opening = k.either(
-        k.lib("cv-hotspots", 1, { layout: "side", ratio: "wide", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? k.im.packshot, animation: "fade", padding_top: 24, padding_bottom: 64 }),
-        k.lib("cv-banner", 1, { layout: "image-right", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, animation: "fade", price_text: "", price_note: "", padding_top: 24, padding_bottom: 64 }),
-      );
-      const fallback = opening[0]?.[0] === "cv-banner";
-      return [
-        ...opening,
-        k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", padding_top: 64, padding_bottom: 72 }),
-        k.lib("cv-banner", 1, { layout: "background", image_asset: k.im.banner ?? k.im.scene1 ?? "", price_text: "", price_note: "" }, { hide: fallback || !(k.im.banner ?? k.im.scene1) }),
-        k.lib("image-with-text", 1, { layout: "image-left", ratio: "square", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
-        k.lib("featured-purchase", 3, { purchase_style: "soft", image_fit: "contain" }),
-        k.lib("cta-banner", 2, { image_asset: k.im.scene3 ?? "", style: "left" }, { hide: !k.im.scene3 }),
-        k.faqSec(1, 5, "lines"),
-        ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
-      ];
-    },
-    // Fiche : galerie empilée et achat, le produit en situation à côté de son texte, questions en cartes.
+    // Accueil enrichi : ouverture, quatre cartes, scène en panneau arrondi, gros plan aux détails numérotés, ensemble
+    // assorti à côté d'une photo, trois petites aventures, guide des tailles illustré, la marque, derniers articles,
+    // questions avec photo, inscription sur photo.
+    home: (k) => [
+      k.lib("cv-banner", 1, { layout: "spotlight", band_height: "hero", veil: "light", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.packshot, image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", heading: "", text: "", padding_top: 0, padding_bottom: 24 }),
+      k.lib("cv-banner", 3, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle2 ?? k.im.scene1) }),
+      ((details) => k.lib("cv-feature", 1, { layout: "numbered", detail_shape: "circle", detail_numbers: true, image_asset: k.im.packshot ?? k.im.cutout ?? "", button_arrow: true, padding_top: 40, padding_bottom: 40 }, { blocks: details.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      k.lib("fs-products", 3, { layout: "media", source: "collection", collection: "all", ratio: "square", limit: 3, align: "left", image_asset: k.im.scene1 ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "pills", padding_top: 40, padding_bottom: 40 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene2, k.im.scene3, k.im.banner].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 3, { layout: "illustration", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.lib("cv-banner", 1, { layout: "panel-right", button_arrow: true, image_asset: k.im.portrait ?? k.im.lifestyle ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.portrait ?? k.im.lifestyle) }),
+      k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 32 }),
+      k.lib("faq", 1, { style: "lines", layout: "side", open_first: true, image_asset: k.im.lifestyle2 ?? k.im.scene1 ?? "", padding_top: 32, padding_bottom: 32 }),
+      k.lib("newsletter-media", 2, { layout: "background", image_asset: k.im.banner ?? k.im.lifestyle ?? "", legal: k.privacy, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.banner ?? k.im.lifestyle) }),
+    ],
+    // Fiche enrichie : galerie et achat (détails en médaillons sous la galerie), scène en panneau arrondi, détails pensés,
+    // trois photos en situation, guide des tailles, accordéons, produits assortis, questions, appel final avec le produit.
     product: (k) => [
-      ((scene) => k.lib("cv-alternating", 3, { layout: "image-left", ratio: "landscape", padding_top: 72, padding_bottom: 72 }, { hide: !scene, blocks: scene ? [{ type: "row", settings: { image_asset: scene } }] : [] }))(k.im.scene1 ?? k.im.lifestyle2),
-      k.faqSec(1, 5, "cards"),
+      k.lib("cv-banner", 3, { layout: "panel-right", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
+      k.lib("cv-banner", 3, { layout: "panel-right", image_asset: k.im.detail1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "", button_label: "" }, { hide: !k.im.detail1 }),
+      ((shots) => k.lib("cv-cards", 1, { layout: "columns", numbered: true, padding_top: 32, padding_bottom: 32 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.detail2, k.im.lifestyle2].filter((f): f is string => !!f)),
+      k.lib("cv-banner", 3, { layout: "illustration", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+      k.faqSec(1, 3, "lines"),
+      k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 3, limit: 4, align: "left", padding_top: 32, padding_bottom: 32 }),
+      k.faqSec(1, 4, "cards"),
+      k.lib("cv-banner", 2, { layout: "background", band_height: "medium", veil: "left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.hero ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
     ],
     // Site de services (repli) : scène et liste en ouverture, prestations en cartes illustrées, une photo et son texte,
     // méthode en étapes, questions en lignes et prise de contact.
@@ -597,80 +615,120 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "souple",
     name: "Souple",
-    tagline: "Rose poudré, prune et liège",
-    description: "Boutique de collection de la famille E-commerce pour quelques produits qui vont ensemble : une scène plein écran en ouverture (titre et bouton posés sur l'image), la collection en mosaïque (chaque produit relié à sa fiche), une phrase qui se dévoile, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, questions en lignes et inscription sur photo. Rose poudré, prune et liège, serif fine et texte géométrique, logo en tête et menu dessous avec les produits en cartes illustrées, tuiles sur téléphone et pied de vitrine signé.",
+    tagline: "Ivoire chaud, prune et rose poudré",
+    description: "Boutique de la famille E-commerce pour quelques produits qui vont ensemble, d'après les six maquettes du 23 octobre : grande photo d'ouverture au titre centré, quatre cartes produit avec ajout au panier, panneaux photo et texte, gros plan d'un produit à acheter avec ses vignettes, univers en cartes, bandeau de marque prune, journal, questions et inscription. Serif fine à fort contraste, texte sobre, courbes douces, pied prune (clair sur les fiches).",
     bestFor: ["e-commerce", "collection", "bien-être", "quelques produits assortis", "maison"],
-    en: { tagline: "Powder pink, plum and cork", description: "Collection store from the E-commerce family for a few products that belong together: a full-screen scene as the opening (heading and button over the image), the collection as a mosaic (each product linking to its page), a sentence that reveals itself, the product list, a panorama, a scene with its text, one product to buy, line questions and a sign-up over a photo. Powder pink, plum and cork, a fine serif with geometric text, the logo on top and the menu below with products as illustrated cards, tiles on phone and a signed storefront footer.", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
+    en: { tagline: "Warm ivory, plum and powder pink", description: "E-commerce store for a few matching products, from the six 23 October mock-ups: large opening photo with a centred heading, four product cards with add to cart, photo and text panels, close-up of a product to buy with its thumbnails, worlds as cards, plum brand band, journal, questions and sign-up. High-contrast fine serif, plain text, soft curves, plum footer (light on product pages).", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
     fonts: { heading: "playfair_display_n4", body: "jost_n4" },
     previewFonts: { heading: "Playfair Display", body: "Jost" },
     motion: "subtle",
     photoMood: "galerie",
     kinds: ["catalog"],
-    // En-tête « Collections en cartes » de la famille E-commerce (logo en tête, menu dessous, les produits en cartes
-    // illustrées dans le sous-menu, tuiles sur téléphone) et pied « Boutique éditoriale » (grande signature, liens) : deux
-    // dispositions de la famille qu'ORBE, ONDE, HEUREN et ALCÔVE n'utilisent pas.
-    look: look({ headerLayout: "two-rows", shape: "bar", menu: "cards", footer: "reference-shop", ann: "static", card: "boxed", button: "solid", radius: { button: 10, card: 18 }, headingScale: 108, tracking: -1, pageWidth: 1320, gallery: "carousel", ds: "maison", density: "airy" }),
-    settings: { editorial_profile: "poudre", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { layout: "two-rows", mega_menu: "cards", mobile_menu: "cards", mobile_submenu: "open", show_cart: true },
-    // Galerie en carrousel, cadre carré : chaque vue montre le produit entier, une vue à la fois sur téléphone.
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Maquettes SOUPLE du 23 octobre (docs/theme-briefs/souple) : logo à gauche, menu centré, recherche, compte et panier à
+    // droite ; pied prune (marque à gauche, colonnes, inscription), clair sur les fiches produit.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 999, card: 14 }, headingCase: "none", tracking: -1, headingScale: 104, pageWidth: 1320, gallery: "carousel", ds: "maison", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "souple", editorial_profile: "none", motion_intensity: "subtle", card_arrow: false, card_price_note: "", price_trim_zeros: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: true, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-1" },
+    // Fiche : grande photo, vignettes à gauche, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "thumbs-left", gallery_ratio: "landscape", enable_zoom: true, sticky_bar: true, show_breadcrumb: true, color_scheme: "scheme-1" },
+    // Ivoire chaud (fonds), prune plein (pied, bandeau de marque), rose poudré (panneaux), ivoire rosé (cartes et
+    // inscription) : tirés de la marque (clair, primaire, secondaire) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const ivory = k.light("#FBF3F0");
-      const powder = k.mix(ivory, "#D9A9A9", 0.38);
-      const cork = k.mix(ivory, "#C98A55", 0.26);
-      const plum = k.night(0.18, 0.45);
-      return [k.scheme(ivory, plum, k.onLight(ivory)), k.scheme(powder, plum, k.onLight(powder)), k.scheme(plum, ivory, k.onDark(plum), 0.06), k.scheme(cork, plum, k.onLight(cork))];
+      const ivory = k.light("#FDF8F1");
+      const ink = k.p.dark;
+      const powder = k.mix(ivory, "#E2C6C6", 0.6);
+      const blush = k.mix(ivory, "#EFE1DD", 0.7);
+      return [k.scheme(ivory, ink, k.onLight(ivory)), k.filled(k.p.primary), k.scheme(powder, ink, k.onLight(powder)), k.scheme(blush, ink, k.onLight(blush))];
     },
-    // Accueil (consigne du 21 octobre, 18 h 31) : une vraie ouverture plein écran (la scène bord à bord, titre et bouton
-    // posés sur l'image), puis la collection en mosaïque (une vue d'ensemble et chaque produit, relié à sa fiche), une
-    // phrase, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, les questions et
-    // l'inscription sur photo.
+    // Accueil (planche 01) : ouverture au titre centré, quatre cartes, panneau « espace », gros plan d'un produit à
+    // acheter, panneau « collection », univers, bandeau de marque, journal, questions, inscription.
     home: (k) => {
-      // Mosaïque : la vue d'ensemble puis chaque produit de la boutique avec sa première photo (au moins deux produits
-      // photographiés). Sans photo d'ambiance, elle devient l'ouverture, avec le titre de la page.
-      const shelf = k.shelf.filter((x) => x.image).slice(0, 4);
-      const overview = k.im.lifestyle ?? k.im.hero ?? k.im.scene1;
-      const tiles = overview && shelf.length >= 2 ? [{ type: "collection", settings: { title: k.t("Toute la collection", "The whole collection"), text: "", link: "/collections/all", image_asset: overview } }, ...shelf.map((x) => ({ type: "collection", settings: { title: x.title, text: "", link: `/products/${x.handle}`, image_asset: x.image } }))] : [];
-      const mosaic = (tag: "h1" | "h2", extra: Record<string, unknown> = {}) => k.lib("fs-collections", 1, { layout: "asym", heading_tag: tag, align: "left", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", effect: "rise", stagger: true, hover: true, padding_top: 72, padding_bottom: 72, ...extra }, { hide: !tiles.length, blocks: tiles });
-      const opening = k.either(
-        k.lib("ed-opening", 1, { layout: "fullscreen", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: shelf.length >= 2 || !k.shelf[0] ? "/collections/all" : `/products/${k.shelf[0].handle}`, image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.banner ?? "", mobile_image_asset: k.im.portrait ?? "", copy_surface: true, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle ?? k.im.hero ?? k.im.banner) }),
-        mosaic("h1", { eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", padding_top: 32 }),
-        // Aucune photo : le titre de la page reste en tête (panorama sans image).
-        k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: k.shelf[0] ? `/products/${k.shelf[0].handle}` : "/collections/all", image_asset: "", padding_top: 32, padding_bottom: 64 }),
-      );
-      // Mosaïque déjà en ouverture (repli) : la seconde, identique, reste masquée.
-      const fallback = opening[0]?.[0] === "fs-collections";
-      const second = mosaic("h2");
+      const first = k.shelf[0];
+      const details = [k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f);
       return [
-        ...opening,
-        fallback ? ([second[0], second[1], second[2], { ...(second[3] ?? {}), disabled: true }] as typeof second) : second,
-        k.lib("rich-text", 2, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
-        k.lib("fs-products", 1, { layout: "list", source: "collection", collection: "all", limit: 4, ratio: "square", align: "left", effect: "fade", padding_top: 80, padding_bottom: 80 }, { hide: shelf.length < 2 }),
-        // Le panorama accompagne la collection (deux produits ou plus) ; une boutique d'un seul produit passe directement à
-        // l'image et au texte, puis à l'achat.
-        k.lib("ed-scene", 1, { layout: "panorama", image_asset: k.im.scene1 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 64 }, { hide: shelf.length < 2 || !(k.im.scene1 ?? k.im.banner) }),
-        k.lib("image-with-text", 4, { layout: "overlap", ratio: "portrait", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
-        k.lib("featured-purchase", 1, { purchase_style: "compact", image_fit: "contain" }),
-        k.faqSec(1, 5, "lines"),
-        ...k.either(k.lib("newsletter-media", 3, { layout: "background", overlay: 55, image_asset: k.im.scene3 ?? k.im.portrait ?? "", legal: k.privacy }, { hide: !(k.im.scene3 ?? k.im.portrait) }), k.newsletter(2)),
+        k.lib("cv-banner", 1, { layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.banner ?? "", image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+        k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", quick_add: "icon", padding_top: 40, padding_bottom: 24 }),
+        // Panneau « espace » : titre neutre (la signature de la marque est déjà dans l'ouverture, jamais répétée).
+        k.lib("cv-banner", 1, { layout: "panel-left", heading: k.t("Notre univers", "Our world"), button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+        k.lib("cv-feature", 1, { layout: "product", buy_product: first?.handle ?? "", image_asset: k.im.detail1 ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !first, blocks: details.slice(1).map((f) => ({ type: "detail", settings: { image_asset: f } })) }),
+        // Panneau « collection » : photo à droite et texte sur fond poudré (section photo et texte, mise en forme SOUPLE).
+        k.lib("image-with-text", 3, { layout: "image-right", ratio: "landscape", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+        // « Nos univers » : les collections de la boutique cliente (la démonstration garde ses trois cartes rédigées).
+        k.lib("fs-collections", 1, { layout: "grid", align: "left", show_count: false, padding_top: 32, padding_bottom: 32 }),
+        // Bandeau de marque : le logo clair du projet (sinon le logo) ; sans logo, le bandeau reste masqué.
+        k.lib("cv-banner", 2, { layout: "brand", heading: k.t("Notre histoire", "Our story"), image_asset: k.im.logoLight ?? k.im.logo ?? "", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.logoLight ?? k.im.logo) }),
+        k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 16 }),
+        ...k.v2.faq("side", 1),
+        k.newsletter(4),
       ];
     },
-    // Fiche : galerie en carrousel et achat, la scène du produit en fermeture, le reste de la collection, questions.
+    // Fiche (planche 02) : galerie à vignettes et achat, panneau « votre espace », gros plans légendés et encadré,
+    // « À votre rythme », informations et produits associés, barre d'achat.
     product: (k) => [
-      k.lib("ed-scene", 2, { layout: "closing", image_asset: k.im.scene1 ?? k.im.lifestyle2 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene1 ?? k.im.lifestyle2) }),
-      k.lib("product-recommendations", 1, { intent: "complementary", fallback_collection: "all", limit: 3, card_ratio: "square" }, { hide: k.shelf.length < 2 }),
-      k.faqSec(1, 5, "lines"),
+      k.lib("cv-banner", 1, { layout: "panel-left", button_style: "outline", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      ((shots) => k.lib("cv-feature", 1, { layout: "details-points", image_asset: "", padding_top: 16, padding_bottom: 16 }, { hide: shots.length < 1, blocks: shots.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      ((shots) => k.lib("cv-cards", 1, { layout: "pills", padding_top: 16, padding_bottom: 16 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.lifestyle2].filter((f): f is string => !!f)),
+      k.lib("cv-infos", 1, { quick_add: "icon", padding_top: 16, padding_bottom: 16 }, { blocks: [...["Dimensions", "Matériaux", "Entretien", "Livraison et retours"].map((title) => ({ type: "spec", settings: { title: k.t(title, { Dimensions: "Dimensions", Matériaux: "Materials", Entretien: "Care", "Livraison et retours": "Delivery and returns" }[title]!), value: k.t("À confirmer", "To be confirmed") } })), ...k.shelf.slice(0, 4).map((x) => ({ type: "product", settings: { product: x.handle } }))] }),
+      k.lib("cv-banner", 1, { layout: "buybar", button_arrow: false, padding_top: 8, padding_bottom: 24, price_text: "", price_note: "", note: "", image_asset: "" }),
     ],
-    // Site de services (repli) : la scène et la promesse côte à côte, prestations en cartes illustrées, une phrase qui se
-    // dévoile, deux réalisations côte à côte, infos pratiques, questions en lignes et prise de contact.
+    // Site de services (repli) : photo et promesse côte à côte, prestations en cartes illustrées, photo et texte,
+    // méthode en étapes, questions avec le titre à côté et prise de contact.
     services: (k) => [
-      k.lib("ed-scene", 1, { layout: "split", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", image_asset: k.im.hero ?? k.im.lifestyle ?? "", padding_top: 32, padding_bottom: 72 }),
-      k.R.servicesList(2, "cards", { withImages: true }),
-      k.lib("rich-text", 4, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
-      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 64, padding_bottom: 64 }),
-      k.R.practical(2),
-      k.faqSec(1, 5, "lines"),
+      k.v2.hero("split", 1),
+      k.R.servicesList(3, "cards", { withImages: true }),
+      ...k.v2.split("media-right", 4),
+      ...k.v2.steps("line", 1),
+      ...k.v2.faq("side", 1),
       k.R.booking(3),
+    ],
+  },
+  {
+    // Issue #172 (23 octobre 2026, mission autorisée par Thomas) : agence immobilière, achat ET location, d'après les
+    // sept maquettes du dossier docs/briefs/maison-horizon. Famille Prestations de services ; les biens viennent de
+    // l'onglet « Biens » du projet (src/lib/biens.ts) et alimentent l'accueil, les listes, la carte et les fiches.
+    id: "maison-horizon",
+    name: "Maison & Horizon",
+    tagline: "Agence immobilière, vert profond, ivoire et terre cuite",
+    description: "Site d'agence immobilière d'après les sept maquettes du 23 octobre : grande photo d'ouverture et recherche Acheter / Louer, biens à la une, achat, location et carte, fiche de vente et fiche de location (galerie, visionneuse, informations financières, diagnostics, quartier, biens similaires), estimation en trois étapes, vendre et mettre en location, agence, conseils, contact, favoris, alertes et espace client. Les biens se saisissent une fois dans l'onglet « Biens ».",
+    bestFor: ["agence immobilière", "achat et location", "gestion locative", "estimation", "prestations de services"],
+    en: { tagline: "Estate agency, deep green, ivory and terracotta", description: "Estate agency website based on the seven 23 October mockups: large opening photograph with a Buy / Rent search, featured properties, buy, rent and map pages, sale and rental property pages (gallery, viewer, financial details, energy ratings, neighbourhood, similar properties), three-step valuation, sell and let pages, agency, advice, contact, favourites, alerts and client area. Properties are entered once in the “Properties” tab.", bestFor: ["estate agency", "buying and renting", "letting management", "valuation", "professional services"] },
+    fonts: { heading: "lora_n4", body: "dm_sans_n4" },
+    previewFonts: { heading: "Lora", body: "DM Sans" },
+    motion: "subtle",
+    photoMood: "terroir",
+    kinds: ["services"],
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer-right", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 2, card: 2 }, headingScale: 104, tracking: -1, pageWidth: 1320, ds: "craft", density: "airy", buttonUppercase: false }),
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer-right", mobile_submenu: "accordion", show_search: false, show_cart: false, color_scheme: "scheme-1" },
+    settings: { editorial_profile: "horizon", conversion_profile: "none", motion_intensity: "subtle" },
+    mainProduct: { gallery_layout: "stack", sticky_bar: false, color_scheme: "scheme-1" },
+    // Ivoire (fond), vert profond (textes, bandeaux, pied), terre cuite (boutons d'action) ; une bande ivoire plus
+    // soutenue et un aplat vert. Un client garde ses couleurs, lisibles sur ivoire et en aplat.
+    palette: (k) => {
+      const ivory = k.light("#F7F2EA");
+      const band = k.mix(ivory, "#D9C9AE", 0.32);
+      // Vert profond de la marque (sa teinte, assombrie au besoin) : #163A2C pour la démonstration.
+      const green = k.tint(k.p.primary, 0.18);
+      return [k.scheme(ivory, green, k.accentOn(ivory)), k.scheme(band, green, k.accentOn(band)), k.scheme(green, ivory, k.onDark(green), 0.06), k.scheme("#FFFFFF", green, k.accentOn("#FFFFFF"))];
+    },
+    // Composition « boutique » de repli (le thème sert les agences, catégorie Prestations de services) : sections communes.
+    home: (k) => [
+      k.lib("image-with-text", 1, { layout: "image-left", image_asset: k.im.lifestyle ?? k.im.hero ?? "" }),
+      k.lib("featured-purchase", 1),
+      k.feat(3, "plain", 2),
+      k.lib("media-gallery", 2),
+      k.faqSec(1, 4, "lines"),
+      k.cta(3),
+    ],
+    product: (k) => [k.faqSec(1, 4, "lines")],
+    // Accueil de la planche 01 : ouverture et recherche, biens à la une, puis les sections de l'agence.
+    services: (k) => [
+      k.lib("re-hero", 1, { layout: "home", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? "", buy_url: "/pages/acheter", rent_url: "/pages/louer" }),
+      k.lib("re-listings", 1, { mode: "featured", layout: "home", limit: 4, link: "/pages/acheter", note: "" }),
+      tune(k.R.servicesList(1, "cards", { withImages: false }), { layout: "thumbs", action_style: "arrow", eyebrow: "", padding_top: 48, padding_bottom: 48 }),
+      tune(k.faqSec(1, 3, "lines"), { layout: "side", style: "lines", padding_top: 40, padding_bottom: 64 }),
+      // Coordonnées réelles du client (adresse, téléphone, horaires) : la bande de contact de la planche 01.
+      k.R.practical(1),
+      k.lib("cta-banner", 3, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
     ],
   },
 ];

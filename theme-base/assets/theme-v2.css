@@ -535,3 +535,14 @@
 
 /* Bloc d'achat (sites V2) : le produit est toujours montré en entier, jamais recadré. */
 .es-fp .es-fp__slide .es-fp__img { object-fit: contain; background: var(--c-surface); }
+/* ─── Questions en colonnes (« v2-faq », disposition « columns ») : une colonne par thème (photo, titre, texte), ses
+   questions dépliables dessous. Maquette HEUREN du 22 octobre (« Conseils & FAQ »). */
+.v2-faq--columns .v2-faq__grid{display:block}
+.v2-faq--columns .v2-faq__head{text-align:center;max-width:46rem;margin:0 auto clamp(32px,5vw,56px)}
+.v2-faq__cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(16px,2.4vw,32px);align-items:start}
+.v2-faq__col-media{aspect-ratio:16/10;overflow:hidden;margin-bottom:18px}
+.v2-faq__col-media .ed-media{height:100%;aspect-ratio:auto;max-width:none;margin:0}
+.v2-faq__col-title{font-size:clamp(20px,1.7vw,24px);font-weight:400;line-height:1.2;margin:0 0 8px}
+.v2-faq__col-text{font-size:14px;opacity:.72;margin:0 0 16px}
+.v2-faq__col .v2-faq__item summary{font-size:14px}
+@media (max-width: 749px){ .v2-faq__cols{grid-template-columns:minmax(0,1fr);gap:40px} }

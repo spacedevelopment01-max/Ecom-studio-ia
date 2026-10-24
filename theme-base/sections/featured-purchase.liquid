@@ -23,8 +23,28 @@
   assign first_media = current_variant.featured_media | default: fp_product.featured_media
 -%}
 <section class="ed-section fp fp--{{ s.image_fit }} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" data-featured-purchase style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
-<div class="ed-shell fp__grid">
-{%- if fp_product != blank -%}
+<div class="ed-shell fp__grid{% if s.layout == 'duo' %} fp__grid--duo{% endif %}">
+{%- if fp_product != blank and s.layout == 'duo' -%}
+  {%- comment -%} Deux photos du produit côte à côte, puis nom, prix et deux actions (voir la fiche, ajouter au panier). {%- endcomment -%}
+  <div class="fp-duo__media">
+    {%- for media in fp_product.media limit: 2 -%}
+      <figure class="fp-duo__frame">{{ media | image_url: width: 1100 | image_tag: loading: 'lazy', sizes: '(min-width: 990px) 30vw, 50vw', widths: '400, 700, 1100', alt: media.alt, class: 'fp-duo__img' }}</figure>
+    {%- else -%}
+      <figure class="fp-duo__frame">{% if s.media_role != blank %}{% render 'ed-media', role_label: s.media_role %}{% else %}{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{% endif %}</figure>
+    {%- endfor -%}
+  </div>
+  <div class="fp-duo__body">
+    {%- if s.label != blank -%}<p class="ed-kicker">{{ s.label | escape }}</p>{%- endif -%}
+    <h2 class="ed-title fp__title">{% if s.heading != blank %}{{ s.heading | escape }}{% else %}{{ fp_product.title | escape }}{% endif %}</h2>
+    <div class="fp__price" data-fp-price>{% render 'price', product: fp_product, use_variant: true %}{% if s.purchase_unit_label != blank %}<span class="fp__price-note">{{ s.purchase_unit_label | escape }}</span>{% endif %}</div>
+    {%- if s.note != blank -%}<p class="fp-duo__note">{{ s.note | escape }}</p>{%- endif -%}
+    {%- if s.text != blank -%}<div class="ed-prose fp__text">{{ s.text }}</div>{%- endif -%}
+    <div class="fp-duo__actions">
+      {%- if s.link_label != blank -%}<a class="ed-button ed-button--outline fp-duo__see" href="{{ fp_product.url }}" data-fp-link>{{ s.link_label | escape }}</a>{%- endif -%}
+      <div class="fp__buy fp-duo__buy" id="FeaturedBuy-{{ section.id }}">{% render 'product-buy', product: fp_product, section_id: section.id, show_quantity: false, show_dynamic_checkout: false %}</div>
+    </div>
+  </div>
+{%- elsif fp_product != blank -%}
   <header class="fp__head">
     <p class="ed-kicker">{{ s.label | escape }}</p>
     <h2 class="ed-title fp__title">{% if s.heading != blank %}{{ s.heading | escape }}{% else %}{{ fp_product.title | escape }}{% endif %}</h2>
@@ -144,6 +164,28 @@
       "id": "product_target",
       "label": "Identité du produit",
       "info": "Identité stable du catalogue, jamais son nom. Vide : produit de la page."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "options": [
+        {
+          "value": "gallery",
+          "label": "Grande photo, galerie et achat"
+        },
+        {
+          "value": "duo",
+          "label": "Deux photos, nom, prix et deux boutons"
+        }
+      ],
+      "default": "gallery"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Mention sous le prix",
+      "info": "Disposition « Deux photos » : ex. « Modèle fictif »."
     },
     {
       "type": "text",
