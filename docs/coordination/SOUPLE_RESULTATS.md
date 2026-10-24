@@ -9,6 +9,8 @@ partagés »).
 fonctions marchent ; ils ne prouvent pas que le rendu est bon. Aucune image n'a été générée, aucun appel d'IA payant,
 aucune fusion, aucun déploiement.
 
+Code vérifié : branche `claude/themes-differenciation`, démo, vignettes et comparaisons faites sur le commit
+`07167014` (rapport et vignettes dans les commits suivants).
 Preuves : [`docs/theme-briefs/souple/resultats/`](../theme-briefs/souple/resultats/) (comparaisons, parcours des
 fonctions, preuve du studio, version client).
 
@@ -147,6 +149,19 @@ Calculée sur les pages réellement produites (démo statique du commit indiqué
   Écart connu : sans article de blog, le bloc « Le journal » affiche « Visuel à importer » (comportement commun aux
   thèmes).
 
+## Écarts restants (à regarder en priorité)
+
+1. Deux visuels non reçus (21, 22) : variantes en place, à remplacer dès réception.
+2. « Notre approche » : titre d'ouverture plus petit que sur la planche 05.
+3. Article : corps sur une colonne (deux colonnes sur la planche 05).
+4. Contact : « Autres moyens d'assistance » sous le formulaire au lieu de la colonne de droite.
+5. Accueil : une mention « Prix de démonstration » sous chaque carte au lieu d'une seule sous la grille.
+6. Recherche de la démo statique : un résultat préparé ; sur Shopify, c'est la vraie recherche.
+7. Version client : bloc « Le journal » avec « Visuel à importer » tant que le client n'a pas d'article.
+8. Toutes les informations inconnues (dimensions, matières, entretien, délais, retours, mentions légales) restent
+   « À confirmer » / « à compléter ».
+Aucun rendu n'est « au pixel près » : les comparaisons montrent la composition, pas une copie exacte.
+
 ## Corrections faites pendant la recette
 
 - Ajout au panier depuis une carte, le gros plan et la barre d'achat : le formulaire partait vers une page (correct
@@ -163,7 +178,17 @@ Calculée sur les pages réellement produites (démo statique du commit indiqué
 
 ## Tests, types, Theme Check
 
-TESTS_RESULT
+- `npx tsc --noEmit` : aucune erreur.
+- Suite complète `npx vitest run` : 2 945 tests réussis, 2 ignorés, 1 échec (test de la vignette qui lisait l'ancien
+  fichier de démonstration de SOUPLE) corrigé puis relancé : 9/9. `tests/souple.test.ts` réécrit pour les six
+  maquettes : 21 tests (famille, galerie, profil, ordre de l'accueil, compositions des fiches, prix, galerie propre à
+  chaque fiche, ajouts au panier réels, 57 visuels, SEO, honnêteté, panier 78 €, commande, compte, cookies, boutique,
+  pages, liens internes, version client, exports Shopify / WooCommerce / PrestaShop).
+- Theme Check de Shopify : complet (11 directions, FR / EN, multi, niche, services, ZIP client) **tout est valide**,
+  puis rapide après les dernières retouches : valide.
+- Parcours des fonctions (`resultats/fonctions-interactions.json`) : 45/45. Preuve du studio : 17/17.
+- Non-régression : démos MUSEAU CLUB, NOCTIL et TRAVERSE reconstruites et capturées : ouvertures identiques à leurs
+  captures suivies.
 
 ## Fichiers partagés modifiés (coordination)
 
