@@ -34,6 +34,10 @@ export const FONT_FILES: Record<string, { family: string; files: Record<number, 
   karla: { family: "Karla", files: { 400: "Karla-400.ttf", 600: "Karla-600.ttf", 700: "Karla-600.ttf" }, fallback: "sans-serif" },
   libre_baskerville: { family: "Libre Baskerville", files: { 400: "LibreBaskerville-400.ttf", 700: "LibreBaskerville-700.ttf" }, fallback: "serif" },
   playfair_display: { family: "Playfair Display", files: { 400: "PlayfairDisplay-400.ttf", 600: "PlayfairDisplay-600.ttf", 700: "PlayfairDisplay-700.ttf" }, fallback: "serif" },
+  // SILLON V2 : grands titres condensés, étiquettes à chasse fixe, signature fine (OFL, bibliothèque de polices Shopify).
+  anton: { family: "Anton", files: { 400: "Anton-400.ttf" }, fallback: "sans-serif" },
+  space_mono: { family: "Space Mono", files: { 400: "SpaceMono-400.ttf", 700: "SpaceMono-700.ttf" }, fallback: "monospace" },
+  oswald: { family: "Oswald", files: { 200: "Oswald-200.ttf", 300: "Oswald-300.ttf", 500: "Oswald-500.ttf", 700: "Oswald-700.ttf" }, fallback: "sans-serif" },
 };
 
 export const FONT_HANDLES = Object.keys(FONT_FILES).flatMap((k) => [
@@ -565,6 +569,8 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
   f("money", (c: unknown) => money(c, lang));
+  // Comme Shopify : « 129 € » pour un montant rond, « 12,50 € » sinon.
+  f("money_without_trailing_zeros", (c: unknown) => money(c, lang).replace(/[.,]00(?=\D*$)/, ""));
   f("money_with_currency", (c: unknown) => (c === null || c === undefined ? priceToSet(lang) : `${money(c, lang)} EUR`));
   f("money_without_currency", (c: unknown) => (c === null || c === undefined ? "" : lang === "en" ? (Number(c) / 100).toFixed(2) : (Number(c) / 100).toFixed(2).replace(".", ",")));
   f("t", (key: string, ...args: any[]) => translate(locale, key, Object.fromEntries(args.filter(Array.isArray))));

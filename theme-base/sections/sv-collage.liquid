@@ -1,0 +1,55 @@
+{%- comment -%}
+  SILLON V2 : bloc sombre « SILLON » (planche 01, accueil) — très grand nom en contour, deux photos superposées en
+  décalé, chemin cuivre et points d'étape, étiquettes « 01 La route » / « 02 La halte », phrases à chasse fixe,
+  courbes de niveau. Blocs : « Photo » (deux au plus).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-collage">
+  <div class="sv-c">
+    <div class="sv-collage__inner">
+      <span class="sv-topo sv-topo--field sv-collage__topo" aria-hidden="true"></span>
+      <p class="sv-collage__word" aria-hidden="true">{{ s.word | default: shop.name }}</p>
+      {%- if s.text_left != blank -%}<p class="sv-mono sv-collage__left">{{ s.text_left | escape | newline_to_br }}</p>{%- endif -%}
+      {% render 'sv-route', d: 'M0 70C20 50 40 30 70 30S120 20 150 4', vb: '0 0 150 80', dots: '70,30', class: 'sv-collage__route1' %}
+      {%- if s.label_1 != blank -%}<p class="sv-collage__label sv-collage__label--1"><b>{{ s.label_1_number }}</b> {{ s.label_1 }}</p>{%- endif -%}
+      {%- for block in section.blocks limit: 2 -%}
+        <div class="sv-collage__photo sv-collage__photo--{{ forloop.index }}" {{ block.shopify_attributes }}>
+          {% render 'sv-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, zoom: block.settings.image_zoom %}
+        </div>
+      {%- endfor -%}
+      {% render 'sv-route', d: 'M0 30C40 0 90 0 120 40S170 90 210 74 250 20 300 30', vb: '0 0 300 100', dots: '210,74 268,26', dot: 'mixed', class: 'sv-collage__route2' %}
+      {%- if s.label_2 != blank -%}<p class="sv-collage__label sv-collage__label--2"><b>{{ s.label_2_number }}</b> {{ s.label_2 }}</p>{%- endif -%}
+      {%- if s.text_right != blank -%}<p class="sv-mono sv-collage__right">{{ s.text_right | escape | newline_to_br }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collage sombre",
+  "class": "sv-collage-section",
+  "max_blocks": 2,
+  "settings": [
+    { "type": "text", "id": "word", "label": "Grand mot en contour", "info": "Vide : le nom de la boutique." },
+    { "type": "textarea", "id": "text_left", "label": "Phrase de gauche", "default": "Le café\ndessine\nd'autres\nhorizons." },
+    { "type": "text", "id": "label_1_number", "label": "Numéro de la première étape", "default": "01" },
+    { "type": "text", "id": "label_1", "label": "Première étape", "default": "La route" },
+    { "type": "text", "id": "label_2_number", "label": "Numéro de la seconde étape", "default": "02" },
+    { "type": "text", "id": "label_2", "label": "Seconde étape", "default": "La halte" },
+    { "type": "textarea", "id": "text_right", "label": "Phrase de droite", "default": "Même café.\nAutre paysage." }
+  ],
+  "blocks": [
+    {
+      "type": "photo", "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Collage sombre", "blocks": [{ "type": "photo" }, { "type": "photo" }] }]
+}
+{% endschema %}

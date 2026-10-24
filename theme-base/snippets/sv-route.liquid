@@ -1,0 +1,25 @@
+{%- comment -%}
+  SILLON V2 : chemin sinueux cuivre et points d'étape (planches 01 à 03), en SVG éditable.
+  Paramètres : d (tracé), vb (viewBox, « 0 0 L H »), dots (« x,y x,y … » dans le repère du viewBox), dot (ring | solid |
+  mixed), dashed (true : pointillés), width (épaisseur en px), class. Les points restent ronds quelle que soit la taille
+  (ils sont placés en pourcentage au-dessus du tracé). Décor : ne capte jamais les clics.
+{%- endcomment -%}
+{%- liquid
+  assign route_vb = vb | default: '0 0 400 120'
+  assign vbp = route_vb | split: ' '
+  assign vw = vbp[2] | plus: 0.0
+  assign vh = vbp[3] | plus: 0.0
+  assign route_dots = dots | split: ' '
+-%}
+<div class="sv-route {{ class }}" aria-hidden="true">
+  <svg viewBox="{{ route_vb }}" preserveAspectRatio="none" focusable="false"><path d="{{ d }}" fill="none" stroke="currentColor" stroke-width="{{ width | default: 2 }}" stroke-linecap="round"{% if dashed %} stroke-dasharray="7 7"{% endif %} vector-effect="non-scaling-stroke"/></svg>
+  {%- for p in route_dots -%}
+    {%- assign xy = p | split: ',' -%}
+    {%- if xy.size == 2 -%}
+      {%- assign solid = false -%}
+      {%- if dot == 'solid' -%}{%- assign solid = true -%}{%- elsif dot == 'mixed' -%}{%- assign rr = forloop.index | modulo: 2 -%}{%- if rr == 0 -%}{%- assign solid = true -%}{%- endif -%}{%- endif -%}
+      {%- assign px = xy[0] | times: 100.0 | divided_by: vw -%}{%- assign py = xy[1] | times: 100.0 | divided_by: vh -%}
+      <span class="sv-route__dot{% if solid %} is-solid{% endif %}" style="left: {{ px }}%; top: {{ py }}%;"></span>
+    {%- endif -%}
+  {%- endfor -%}
+</div>

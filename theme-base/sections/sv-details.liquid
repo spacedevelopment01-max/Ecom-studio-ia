@@ -1,0 +1,51 @@
+{%- comment -%}
+  SILLON V2 : « 02 Le sens du détail » (planche 01, fiche) — très grand numéro, titre, liste numérotée à chasse fixe,
+  deux gros plans arrondis et une petite vue entière du produit sur fond clair.
+  Blocs : « Point » (liste) et « Photo » (trois).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-details">
+  <div class="sv-c">
+    <div class="sv-details__inner">
+      <p class="sv-display sv-details__num" aria-hidden="true">{{ s.number }}</p>
+      <h2 class="sv-display sv-details__title">{{ s.heading | escape | newline_to_br }}</h2>
+      <ol class="sv-details__list" role="list">
+        {%- assign n = 0 -%}
+        {%- for block in section.blocks -%}{%- if block.type == 'point' -%}{%- assign n = n | plus: 1 -%}<li class="sv-mono" {{ block.shopify_attributes }}><span>{% if n < 10 %}0{% endif %}{{ n }}</span>{{ block.settings.text }}</li>{%- endif -%}{%- endfor -%}
+      </ol>
+      {%- assign k = 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'photo' -%}
+          {%- assign k = k | plus: 1 -%}
+          <div class="sv-details__photo sv-details__photo--{{ k }}" {{ block.shopify_attributes }}>{% render 'sv-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, zoom: block.settings.image_zoom %}</div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Le sens du détail",
+  "class": "sv-details-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "number", "label": "Grand numéro", "default": "02" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le sens\ndu détail" }
+  ],
+  "blocks": [
+    { "type": "point", "name": "Point", "settings": [{ "type": "text", "id": "text", "label": "Texte", "default": "Un design épuré" }] },
+    {
+      "type": "photo", "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Le sens du détail", "blocks": [{ "type": "point" }, { "type": "point", "settings": { "text": "Des matériaux soignés" } }, { "type": "point", "settings": { "text": "Toujours avec vous" } }, { "type": "photo" }, { "type": "photo" }, { "type": "photo" }] }]
+}
+{% endschema %}

@@ -1,0 +1,86 @@
+{%- comment -%}
+  SILLON V2 : article du carnet (planche 02, « Le café en van ») — fil d'Ariane à chasse fixe, très grand titre, chapeau,
+  photo de couverture à droite ; sommaire à ancres sur une route verticale, texte, citation cuivre, photo verticale ;
+  trois conseils numérotés en colonnes ; bandeau produit (photo détourée, nom, phrase, prix du produit, bouton).
+  Blocs : « Partie » (sommaire, ancre et conseil numéroté, trois).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = s.product | default: collections.all.products.first
+-%}
+<article class="sv sv-article">
+  <div class="sv-c">
+    <div class="sv-article__inner">
+      {%- if s.crumb != blank -%}<p class="sv-mono sv-article__crumb">{%- if s.crumb_link != blank -%}<a href="{{ s.crumb_link }}">{{ s.crumb }}</a>{%- else -%}{{ s.crumb }}{%- endif -%}</p>{%- endif -%}
+      <h1 class="sv-display sv-article__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if s.lead != blank -%}<p class="sv-mono sv-article__lead">{{ s.lead | escape | newline_to_br }}</p>{%- endif -%}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-article__cover', loading: 'eager' %}
+      <nav class="sv-article__toc" aria-label="{{ s.toc_label | escape | strip_newlines }}">
+        <p class="sv-display sv-article__toc-title">{{ s.toc_label | escape | newline_to_br }}</p>
+        <span class="sv-article__toc-line" aria-hidden="true"></span>
+        <ol role="list">
+          {%- for block in section.blocks limit: 3 -%}<li><a href="#sv-part-{{ section.id }}-{{ forloop.index }}"><span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{{ block.settings.title }}</a></li>{%- endfor -%}
+        </ol>
+      </nav>
+      <span class="sv-article__rule" aria-hidden="true"></span>
+      <div class="sv-article__body">{{ s.body }}</div>
+      {%- if s.quote != blank -%}<blockquote class="sv-display sv-article__quote">{{ s.quote | escape | newline_to_br }}</blockquote>{%- endif -%}
+      {% render 'sv-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, class: 'sv-article__side' %}
+      <ol class="sv-article__parts" role="list">
+        {%- for block in section.blocks limit: 3 -%}
+          <li id="sv-part-{{ section.id }}-{{ forloop.index }}" class="sv-article__part" tabindex="-1" {{ block.shopify_attributes }}>
+            <span class="sv-display sv-article__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+            <h2 class="sv-display sv-article__part-title">{{ block.settings.title }}</h2>
+            <div class="sv-article__part-text">{{ block.settings.text }}</div>
+          </li>
+        {%- endfor -%}
+      </ol>
+      {%- if s.show_product and p != blank -%}
+        <div class="sv-article__product">
+          {% render 'sv-img', image: s.product_image, asset: s.product_image_asset, alt: '', class: 'sv-article__machine sv-cut' %}
+          <p class="sv-display sv-article__pname">{{ s.product_label | default: p.title }}</p>
+          {%- if s.product_text != blank -%}<p class="sv-mono sv-article__ptext">{{ s.product_text | escape | newline_to_br }}</p>{%- endif -%}
+          <span class="sv-article__prule" aria-hidden="true"></span>
+          <p class="sv-display sv-article__price">{{ p.price | money_without_trailing_zeros }}</p>
+          <a class="sv-btn sv-btn--dark sv-article__cta" href="{{ p.url }}">{{ s.product_button }}<span class="sv-article__cta-circle">{% render 'sv-icon', name: 'arrow' %}</span></a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Article du carnet",
+  "class": "sv-article-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "crumb", "label": "Fil d'Ariane", "default": "Carnet / Sur la route" },
+    { "type": "url", "id": "crumb_link", "label": "Lien du fil d'Ariane" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le café\nen van." },
+    { "type": "textarea", "id": "lead", "label": "Chapeau à chasse fixe" },
+    { "type": "image_picker", "id": "image", "label": "Photo de couverture" },
+    { "type": "text", "id": "image_asset", "label": "Photo de couverture (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "textarea", "id": "toc_label", "label": "Titre du sommaire", "default": "Dans\ncet article" },
+    { "type": "richtext", "id": "body", "label": "Texte" },
+    { "type": "textarea", "id": "quote", "label": "Citation" },
+    { "type": "image_picker", "id": "image_2", "label": "Photo verticale" },
+    { "type": "text", "id": "image_2_asset", "label": "Photo verticale (fichier du thème)" },
+    { "type": "text", "id": "image_2_alt", "label": "Description de la photo verticale" },
+    { "type": "text", "id": "image_2_position", "label": "Cadrage de la photo verticale", "default": "50% 50%" },
+    { "type": "header", "content": "Bandeau produit" },
+    { "type": "checkbox", "id": "show_product", "label": "Afficher le bandeau produit", "default": true },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "image_picker", "id": "product_image", "label": "Produit détouré" },
+    { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
+    { "type": "text", "id": "product_label", "label": "Nom affiché", "info": "Vide : le nom du produit." },
+    { "type": "textarea", "id": "product_text", "label": "Phrase à chasse fixe" },
+    { "type": "text", "id": "product_button", "label": "Bouton", "default": "Découvrir la machine" }
+  ],
+  "blocks": [{ "type": "part", "name": "Partie", "settings": [{ "type": "text", "id": "title", "label": "Titre", "default": "Choisir sa halte" }, { "type": "richtext", "id": "text", "label": "Texte" }] }],
+  "presets": [{ "name": "Article du carnet" }]
+}
+{% endschema %}

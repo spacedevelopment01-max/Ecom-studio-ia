@@ -1,0 +1,36 @@
+{%- comment -%}
+  SILLON V2 : bandeau photo arrondi (planche 01, fiche) —
+  - gauche : voile sombre à gauche, titre ivoire en deux lignes et flèche en cercle dessous (« Faites de la place… ») ;
+  - centre : titre ivoire au centre et flèche en cercle à droite (« Prêt pour votre prochaine pause ? »).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-banner sv-banner--{{ s.layout }}" style="--h: {{ s.height }};">
+  <div class="sv-c">
+    <div class="sv-banner__frame">
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-banner__img' %}
+      <span class="sv-banner__shade" aria-hidden="true"></span>
+      <h2 class="sv-display sv-banner__title">{{ s.heading | escape | newline_to_br }}</h2>
+      {%- if s.link != blank -%}<a class="sv-circle sv-circle--light sv-banner__arrow" href="{{ s.link }}" aria-label="{{ s.link_label | escape }}">{% render 'sv-icon', name: 'arrow-ne' %}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau photo",
+  "class": "sv-banner-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "left", "options": [{ "value": "left", "label": "Titre à gauche, voile sombre" }, { "value": "center", "label": "Titre au centre, flèche à droite" }] },
+    { "type": "textarea", "id": "heading", "label": "Titre (un retour à la ligne par ligne)", "default": "Faites de la place\naux bonnes pauses." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "url", "id": "link", "label": "Lien de la flèche" },
+    { "type": "text", "id": "link_label", "label": "Nom de la flèche (lecteurs d'écran)", "default": "Découvrir" },
+    { "type": "range", "id": "height", "label": "Hauteur (repère 1440 px)", "min": 120, "max": 600, "step": 2, "unit": "px", "default": 250 }
+  ],
+  "presets": [{ "name": "Bandeau photo" }]
+}
+{% endschema %}

@@ -1,0 +1,35 @@
+{%- comment -%}
+  SILLON V2 : « Questions fréquentes » de la fiche (planche 01) — titre et phrase à gauche, trois catégories avec très
+  grands numéros en contour, intitulé et flèche, séparées par un filet, chacune vers sa catégorie de la page FAQ.
+  Blocs : « Catégorie ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-faqlinks">
+  <div class="sv-c">
+    <div class="sv-faqlinks__inner">
+      <div class="sv-faqlinks__head">
+        <h2 class="sv-display sv-faqlinks__title">{{ s.heading }}</h2>
+        {%- if s.text != blank -%}<p class="sv-faqlinks__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+      <ul class="sv-faqlinks__list" role="list">
+        {%- for block in section.blocks limit: 3 -%}
+          <li {{ block.shopify_attributes }}><a href="{{ block.settings.link }}"><span class="sv-display sv-faqlinks__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span><span class="sv-faqlinks__label">{{ block.settings.label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions en catégories",
+  "class": "sv-faqlinks-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
+    { "type": "textarea", "id": "text", "label": "Phrase", "default": "Tout ce qu'il faut savoir\navant de partir." }
+  ],
+  "blocks": [{ "type": "category", "name": "Catégorie", "settings": [{ "type": "text", "id": "label", "label": "Intitulé", "default": "Utilisation" }, { "type": "url", "id": "link", "label": "Lien" }] }],
+  "presets": [{ "name": "Questions en catégories" }]
+}
+{% endschema %}

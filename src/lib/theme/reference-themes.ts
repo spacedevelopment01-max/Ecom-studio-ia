@@ -19,6 +19,7 @@
 import type { CatalogTheme, ThemeLook } from "./theme-catalog";
 import { ATELIER_NUANCE_THEME } from "./atelier-nuance";
 import { PARENTHESE_THEME } from "./parenthese";
+import { SILLON_V2_THEME } from "./sillon-v2";
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -242,69 +243,8 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.contactForm(1, "Et si l'on commençait par votre projet ?"),
     ],
   },
-  {
-    id: "sillon",
-    name: "Sillon",
-    tagline: "Objet nomade, lumière chaude",
-    description: "Boutique spécialisée pour un objet que l'on emporte : ouverture sombre où le produit reste entier à côté du titre, déclaration de marque, gros plan et bénéfices, repères interactifs sur le produit, mosaïque des lieux d'usage, achat compact et FAQ à côté du titre. Serif fine sur ivoire, accent cuivré en dégradé, filets fins et bouton d'achat permanent dans l'en-tête.",
-    bestFor: ["boutique spécialisée", "objet nomade", "café et thé", "petit électroménager", "produit de voyage"],
-    en: { tagline: "Nomadic object, warm light", description: "Specialty store for an object you take along: dark opening where the product stays whole beside the headline, brand statement, close-up and benefits, interactive markers on the product, mosaic of places of use, compact purchase and FAQ beside its title. Fine serif on ivory, copper gradient accent, hairlines and a permanent buy button in the header.", bestFor: ["specialty store", "nomadic object", "coffee and tea", "small appliances", "travel product"] },
-    fonts: { heading: "libre_baskerville_n4", body: "jost_n4" },
-    previewFonts: { heading: "Libre Baskerville", body: "Jost" },
-    motion: "subtle",
-    photoMood: "terroir",
-    kinds: ["specialty"],
-    // En-tête « Bouton d'achat visible » (logo à gauche, menu à droite, bouton vers la fiche) et grand nom de marque en pied :
-    // ni le logo centré de FRAISE / ONDE, ni leurs pieds en colonnes ou marque à gauche.
-    look: look({ headerLayout: "menu-right", shape: "bar", menu: "sheet", footer: "wordmark", ann: "static", card: "minimal", button: "solid", radius: { button: 40, card: 6 }, headingCase: "none", tracking: -1, headingScale: 106, pageWidth: 1360, density: "airy", buttonUppercase: false }),
-    settings: { conversion_profile: "nomade", editorial_profile: "none", motion_intensity: "subtle" },
-    headerCta: { fr: "Commander", en: "Order now", icon: "arrow" },
-    // Galerie en grille de deux colonnes, cadre carré (les vues produit sont carrées : rien de coupé), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
-    palette: (k) => {
-      const ivory = k.light("#F4EDE3");
-      const espresso = k.night(0.13, 0.3);
-      const sand = k.mix(ivory, k.p.accent, 0.14);
-      return [k.scheme(ivory, espresso, k.onLight(ivory)), k.scheme(espresso, ivory, k.onDark(espresso), 0.06), k.filled(k.p.accent), k.scheme(sand, espresso, k.onLight(sand))];
-    },
-    // Accueil : chaque visuel n'apparaît qu'une fois. Ouverture sombre (le produit entier à gauche, jamais sous le texte),
-    // déclaration sans image, gros plan et bénéfices, repères sur la vue produit, mosaïque des lieux d'usage, achat
-    // compact, questions, inscription avec une dernière scène. Toute section sans contenu réel reste masquée.
-    home: (k) => [
-      k.lib("cv-hero", 2, { image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, image_ratio: "wide", layout: "image-left", heading_tag: "h1", animation: "fade" }),
-      k.lib("rich-text", 1, { style: "statement", align: "center", padding_top: 88, padding_bottom: 72 }),
-      k.lib("cv-feature", 1, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "image-left" }),
-      k.lib("cv-hotspots", 4, { image_asset: k.im.packshot ?? k.im.cutout, layout: "side", ratio: "square" }),
-      // Mosaïque des lieux d'usage : seulement avec au moins deux vraies photos (jamais une galerie vide).
-      ((places) => k.lib("cv-gallery", 1, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f)),
-      k.lib("featured-purchase", 2, { purchase_style: "compact", image_fit: "contain" }),
-      ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),
-      // Inscription avec une dernière scène ; sans photo disponible, l'inscription simple (pas de cadre d'image vide).
-      ...k.either(k.lib("newsletter-media", 4, { layout: "right", image_asset: k.im.banner ?? k.im.detail2 ?? "", legal: k.privacy }, { hide: !(k.im.banner ?? k.im.detail2) }), k.newsletter(4)),
-    ],
-    // Fiche : galerie et achat, puis repères sur une autre vue, caractéristiques à côté du titre, mode d'emploi en ligne,
-    // deux situations, engagements en liste et questions. Rien d'affirmé sans donnée du marchand.
-    product: (k) => [
-      k.lib("cv-hotspots", 1, { image_asset: k.im.detail2 ?? k.im.packshot, layout: "stacked", ratio: "square" }),
-      k.lib("cv-specs", 4, { layout: "side" }),
-      k.lib("cv-steps", 1, { layout: "timeline" }),
-      k.lib("cv-alternating", 1, { layout: "image-left", ratio: "square" }, { blocks: [k.im.scene1, k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "row", settings: { image_asset: f } })) }),
-      k.lib("fs-commitments", 2, { layout: "list" }),
-      k.faqSec(1, 5, "lines"),
-    ],
-    // Site de services (repli) : bannière sombre visuel à gauche, déclaration, prestations en liste, mosaïque d'images,
-    // méthode en frise, témoignages, questions et prise de contact — pas l'enchaînement de FRAISE.
-    services: (k) => [
-      k.lib("cv-banner", 2, { image_asset: k.im.lifestyle ?? k.im.hero, layout: "image-left", heading_tag: "h1" }),
-      k.lib("rich-text", 1, { style: "statement", align: "center" }),
-      k.R.servicesList(1, "list"),
-      ((places) => k.lib("cv-gallery", 4, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.detail1, k.im.lifestyle2].filter((f): f is string => !!f)),
-      k.R.method(1, "timeline"),
-      k.R.testimonials(1),
-      ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),
-      k.R.booking(2),
-    ],
-  },
+  // SILLON V2 (planches validées du 24 octobre 2026, PR #182) : remplace le rendu de la première version.
+  SILLON_V2_THEME,
   {
     id: "noctil",
     name: "Noctil",

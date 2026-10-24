@@ -1,0 +1,86 @@
+{%- comment -%}
+  SILLON V2 : ouvertures des planches.
+  - photo (accueil 01, SILLON 04) : grande photo bord à bord sous l'en-tête flottant, sur-titre à chasse fixe, très grand
+    titre condensé, cartouche sombre en bas à gauche (titre, texte, lien, flèche en cercle) et chemin cuivre ; ou phrase
+    à chasse fixe sous le titre ;
+  - sombre (rituel 03) : fond espresso et courbes de niveau, titre, phrase, produit détouré devant un cercle cuivre,
+    limite ondulée claire en bas.
+  Téléphone : photo propre au téléphone (facultative), texte court et flèche cuivre en cercle (planche 03, mobile).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-hero sv-hero--{{ s.layout }}" style="--h: {{ s.height }}; --h-m: {{ s.height_mobile }}; --ts: {{ s.title_size }}; --tl: {{ s.title_line }}; --tx: {{ s.text_left }}; --ty: {{ s.text_top }};">
+  <div class="sv-c">
+    <div class="sv-hero__frame">
+      {%- if s.layout == 'photo' -%}
+        {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-hero__photo', loading: 'eager' %}
+        {%- if s.image_mobile_asset != blank or s.image_mobile != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, class: 'sv-hero__photo sv-hero__photo--m', loading: 'eager' %}{%- endif -%}
+        <span class="sv-hero__shade" aria-hidden="true"></span>
+      {%- else -%}
+        <span class="sv-topo sv-topo--field sv-hero__topo" aria-hidden="true"></span>
+        <span class="sv-hero__circle" aria-hidden="true"></span>
+        {% render 'sv-img', image: s.product_image, asset: s.product_image_asset, alt: s.image_alt, pos: '50% 50%', class: 'sv-hero__product sv-cut', loading: 'eager' %}
+      {%- endif -%}
+      <div class="sv-hero__text">
+        {%- if s.eyebrow != blank -%}<p class="sv-eyebrow sv-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        <h1 class="sv-display sv-hero__title">{{ s.heading | escape | newline_to_br }}</h1>
+        {%- if s.subtitle != blank -%}<p class="sv-mono sv-hero__sub">{{ s.subtitle | escape | newline_to_br }}</p>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<p class="sv-hero__mtext">{{ s.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+      {%- if s.card_title != blank -%}
+        <div class="sv-hero__card">
+          <p class="sv-mono sv-hero__card-title">{{ s.card_title }}</p>
+          {%- if s.card_text != blank -%}<p class="sv-hero__card-text">{{ s.card_text | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if s.card_link_label != blank -%}<a class="sv-link sv-hero__card-link" href="{{ s.card_link | default: routes.root_url }}">{{ s.card_link_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>{%- endif -%}
+          <a class="sv-circle sv-circle--light sv-hero__card-arrow" href="{{ s.card_link | default: routes.root_url }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow-ne' %}</a>
+        </div>
+      {%- endif -%}
+      {%- if s.show_route -%}
+        {%- if s.layout == 'photo' -%}
+          {% render 'sv-route', d: 'M0 60C30 30 50 75 80 70S120 0 160 18 210 105 260 72 300 -5 340 0', vb: '0 0 340 110', dots: '58,52 92,68 168,20 244,82', dot: 'mixed', class: 'sv-hero__route' %}
+        {%- else -%}
+          <svg class="sv-hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 65H400C520 65 560 118 720 120L0 120Z" fill="var(--sv-cream)"/></svg>
+        {%- endif -%}
+      {%- endif -%}
+      {%- if s.mobile_link != blank -%}<a class="sv-circle sv-circle--copper sv-hero__mlink" href="{{ s.mobile_link }}" aria-label="{{ s.mobile_link_label | escape }}">{% render 'sv-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture SILLON",
+  "class": "sv-hero-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "photo", "options": [{ "value": "photo", "label": "Grande photo" }, { "value": "dark", "label": "Fond sombre et produit" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "01 / Départ" },
+    { "type": "textarea", "id": "heading", "label": "Titre (un retour à la ligne par ligne)", "default": "Prenez\nla tangente." },
+    { "type": "textarea", "id": "subtitle", "label": "Phrase à chasse fixe" },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte court (téléphone)" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_mobile", "label": "Photo du téléphone" },
+    { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_mobile_position", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "image_picker", "id": "product_image", "label": "Produit détouré (fond sombre)" },
+    { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
+    { "type": "header", "content": "Cartouche sombre" },
+    { "type": "text", "id": "card_title", "label": "Titre à chasse fixe" },
+    { "type": "textarea", "id": "card_text", "label": "Texte" },
+    { "type": "text", "id": "card_link_label", "label": "Lien" },
+    { "type": "url", "id": "card_link", "label": "Adresse du lien" },
+    { "type": "checkbox", "id": "show_route", "label": "Chemin cuivre (ou limite ondulée sur fond sombre)", "default": true },
+    { "type": "url", "id": "mobile_link", "label": "Flèche cuivre du téléphone" },
+    { "type": "text", "id": "mobile_link_label", "label": "Nom de la flèche (lecteurs d'écran)", "default": "Découvrir" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 60, "max": 240, "step": 1, "unit": "px", "default": 142 },
+    { "type": "range", "id": "title_line", "label": "Interligne du titre (repère 1440 px)", "min": 60, "max": 240, "step": 1, "unit": "px", "default": 134 },
+    { "type": "range", "id": "text_left", "label": "Position du texte depuis la gauche", "min": 0, "max": 400, "step": 1, "unit": "px", "default": 53 },
+    { "type": "range", "id": "text_top", "label": "Position du texte depuis le haut", "min": 60, "max": 500, "step": 1, "unit": "px", "default": 190 },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur (repère 1440 px)", "min": 400, "max": 1100, "step": 2, "unit": "px", "default": 688 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 300, "max": 900, "step": 2, "unit": "px", "default": 640 }
+  ],
+  "presets": [{ "name": "Ouverture SILLON" }]
+}
+{% endschema %}

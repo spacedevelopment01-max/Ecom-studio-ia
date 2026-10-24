@@ -1,0 +1,94 @@
+{%- comment -%}
+  SILLON V2 : panier (planche 03, « 07 Panier ») — très grand titre, courbes de niveau et chemin cuivre, morceau de
+  paysage ; ligne produit sur carte claire (photo entière, nom, prix, quantité − / + et suppression) ; récapitulatif
+  sombre (sous-total, livraison « calculée à l'étape suivante », montant final non annoncé tant qu'il n'est pas connu),
+  bouton cuivre ; « Continuer la découverte » ; paysage en bas. Panier vide dans la même identité.
+  Quantités : liens /cart/change (le panier de la boutique recalcule et se recharge) ; aucun prix écrit en dur.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-cart" data-sv-cart>
+  <div class="sv-c">
+    <div class="sv-cart__inner{% if cart.item_count == 0 %} is-empty{% endif %}">
+      <span class="sv-topo sv-topo--tall sv-cart__topo" aria-hidden="true"></span>
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, class: 'sv-cart__land' %}
+      {% render 'sv-img', image: s.image_top, asset: s.image_top_asset, alt: '', pos: s.image_top_position, class: 'sv-cart__peak' %}
+      {% render 'sv-route', d: 'M0 450C120 380 260 290 400 300S700 380 800 362 900 300 940 220 1080 40 1130 0', vb: '0 0 1130 450', dots: '753,382 946,212', class: 'sv-cart__route' %}
+      <h1 class="sv-display sv-cart__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if cart.item_count == 0 -%}
+        <div class="sv-cart__empty">
+          <p class="sv-cart__empty-text">{{ s.empty_text }}</p>
+          <a class="sv-btn sv-btn--copper sv-cart__empty-btn" href="{{ s.continue_link | default: routes.all_products_collection_url }}">{{ s.empty_button }}{% render 'sv-icon', name: 'arrow-ne' %}</a>
+        </div>
+      {%- else -%}
+        <ul class="sv-cart__lines" role="list">
+          {%- for item in cart.items -%}
+            <li class="sv-cart__line">
+              <a class="sv-cart__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                {%- if s.line_image_asset != blank -%}<img src="{{ s.line_image_asset | asset_url }}" alt="" loading="lazy" width="467" height="1284">{%- elsif item.image -%}{{ item.image | image_url: width: 400 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}
+              </a>
+              <h2 class="sv-display sv-cart__name"><a href="{{ item.url }}">{% if item.variant.title != blank and item.variant.title != 'Default Title' %}{{ item.variant.title | escape }}{% else %}{{ item.product.title | escape }}{% endif %}</a></h2>
+              <p class="sv-display sv-cart__price">{{ item.final_line_price | money_without_trailing_zeros }}</p>
+              <div class="sv-qty sv-cart__qty">
+                {%- assign less = item.quantity | minus: 1 -%}{%- assign more = item.quantity | plus: 1 -%}
+                <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ less }}" aria-label="{{ s.less_label | escape }} — {{ item.product.title | escape }}" rel="nofollow">{% render 'sv-icon', name: 'minus' %}</a>
+                <span aria-label="{{ s.qty_label | escape }}">{{ item.quantity }}</span>
+                <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ more }}" aria-label="{{ s.more_label | escape }} — {{ item.product.title | escape }}" rel="nofollow">{% render 'sv-icon', name: 'plus' %}</a>
+              </div>
+              <a class="sv-cart__remove" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity=0" aria-label="{{ s.remove_label | escape }} — {{ item.product.title | escape }}" rel="nofollow">{% render 'sv-icon', name: 'trash' %}</a>
+            </li>
+          {%- endfor -%}
+        </ul>
+        <div class="sv-cart__summary">
+          <p class="sv-mono sv-cart__sum-title">{{ s.summary_title }}</p>
+          <dl class="sv-cart__rows">
+            <div><dt>{{ s.subtotal_label }}</dt><dd data-sv-subtotal>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
+            <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value | escape | newline_to_br }}</dd></div>
+          </dl>
+          <div class="sv-cart__total"><span>{{ s.total_label }}</span><span class="sv-cart__total-v">{{ s.total_value | escape | newline_to_br }}</span></div>
+          {%- if s.checkout_page != blank -%}
+            <a class="sv-btn sv-btn--copper sv-cart__checkout" href="{{ s.checkout_page }}">{{ s.checkout_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>
+          {%- else -%}
+            <form action="{{ routes.cart_url }}" method="post" class="sv-cart__form"><button type="submit" name="checkout" class="sv-btn sv-btn--copper sv-cart__checkout">{{ s.checkout_label }}{% render 'sv-icon', name: 'arrow-ne' %}</button></form>
+          {%- endif -%}
+          {%- if s.note != blank -%}<p class="sv-cart__note">{{ s.note }}</p>{%- endif -%}
+        </div>
+      {%- endif -%}
+      <a class="sv-cart__back" href="{{ s.continue_link | default: routes.root_url }}"><span class="sv-circle sv-cart__back-circle">{% render 'sv-icon', name: 'arrow-left' %}</span><span>{{ s.continue_label | escape | newline_to_br }}</span></a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Panier SILLON",
+  "class": "sv-cart-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Prêt pour\nle départ ?" },
+    { "type": "image_picker", "id": "image", "label": "Paysage du bas" },
+    { "type": "text", "id": "image_asset", "label": "Paysage du bas (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Cadrage du paysage", "default": "50% 70%" },
+    { "type": "image_picker", "id": "image_top", "label": "Morceau de paysage à gauche" },
+    { "type": "text", "id": "image_top_asset", "label": "Morceau de paysage (fichier du thème)" },
+    { "type": "text", "id": "image_top_position", "label": "Cadrage du morceau de paysage", "default": "20% 40%" },
+    { "type": "text", "id": "line_image_asset", "label": "Photo détourée des lignes (fichier du thème)", "info": "Vide : la photo du produit." },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif", "default": "Récapitulatif" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "textarea", "id": "shipping_value", "label": "Montant de la livraison", "default": "Calculée à\nl'étape suivante" },
+    { "type": "text", "id": "total_label", "label": "Total", "default": "Total" },
+    { "type": "textarea", "id": "total_value", "label": "Montant final", "default": "Calculé à\nl'étape suivante", "info": "Le montant final dépend de la livraison : il n'est jamais annoncé avant d'être connu." },
+    { "type": "text", "id": "checkout_label", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "url", "id": "checkout_page", "label": "Page de commande de démonstration", "info": "Vide : paiement Shopify." },
+    { "type": "text", "id": "note", "label": "Mention" },
+    { "type": "textarea", "id": "continue_label", "label": "Lien de retour", "default": "Continuer\nla découverte" },
+    { "type": "url", "id": "continue_link", "label": "Adresse du lien de retour" },
+    { "type": "text", "id": "empty_text", "label": "Panier vide", "default": "Votre panier est vide pour le moment." },
+    { "type": "text", "id": "empty_button", "label": "Bouton du panier vide", "default": "Découvrir la machine" },
+    { "type": "text", "id": "qty_label", "label": "Quantité (lecteurs d'écran)", "default": "Quantité" },
+    { "type": "text", "id": "less_label", "label": "Moins (lecteurs d'écran)", "default": "Retirer un exemplaire" },
+    { "type": "text", "id": "more_label", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un exemplaire" },
+    { "type": "text", "id": "remove_label", "label": "Supprimer (lecteurs d'écran)", "default": "Supprimer" }
+  ],
+  "presets": [{ "name": "Panier SILLON" }]
+}
+{% endschema %}

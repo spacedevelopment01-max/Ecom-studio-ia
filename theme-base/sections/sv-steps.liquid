@@ -1,0 +1,50 @@
+{%- comment -%}
+  SILLON V2 : trois étapes en escalier (planche 02, « Le rituel ») — grands chiffres cuivre, verbe condensé, phrase à
+  chasse fixe, photo arrondie (encoche autour du texte pour la 1re et la 3e), route cuivre en pointillés et points.
+  Blocs : « Étape » (trois).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-steps">
+  <div class="sv-c">
+    <div class="sv-steps__inner">
+      {% render 'sv-route', d: 'M138 22C220 0 330 20 380 82S430 230 424 278', vb: '0 0 440 290', dots: '138,22 380,82', dot: 'solid', dashed: true, width: 3, class: 'sv-steps__route sv-steps__route--1' %}
+      {% render 'sv-route', d: 'M0 26C110 2 250 30 290 150S300 290 297 330', vb: '0 0 310 330', dots: '62,10 297,298', dot: 'solid', dashed: true, width: 3, class: 'sv-steps__route sv-steps__route--2' %}
+      <ol class="sv-steps__list" role="list">
+        {%- for block in section.blocks limit: 3 -%}
+          {%- assign b = block.settings -%}
+          <li class="sv-steps__step sv-steps__step--{{ forloop.index }}" {{ block.shopify_attributes }}>
+            <span class="sv-display sv-steps__num">{{ b.number }}</span>
+            <h2 class="sv-display sv-steps__title">{{ b.title }}</h2>
+            {%- if b.text != blank -%}<p class="sv-mono sv-steps__text">{{ b.text | escape | newline_to_br }}</p>{%- endif -%}
+            <div class="sv-steps__photo">{% render 'sv-img', image: b.image, asset: b.image_asset, alt: b.image_alt, pos: b.image_position, zoom: b.image_zoom %}</div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Étapes en escalier",
+  "class": "sv-steps-section",
+  "max_blocks": 3,
+  "settings": [],
+  "blocks": [
+    {
+      "type": "step", "name": "Étape",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+        { "type": "text", "id": "title", "label": "Verbe", "default": "Préparez" },
+        { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe" },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Étapes en escalier", "blocks": [{ "type": "step" }, { "type": "step", "settings": { "number": "02", "title": "Lancez" } }, { "type": "step", "settings": { "number": "03", "title": "Savourez" } }] }]
+}
+{% endschema %}

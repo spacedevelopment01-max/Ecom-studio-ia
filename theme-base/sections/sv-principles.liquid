@@ -1,0 +1,58 @@
+{%- comment -%}
+  SILLON V2 : trois principes numérotés (planche 02, « SILLON ») — chiffres cuivre, titres condensés, textes à chasse
+  fixe séparés par des filets ; grande photo verticale arrondie, deux petites photos et une phrase à chasse fixe.
+  Blocs : « Principe » (trois) et « Photo » (trois : la grande puis les deux petites).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-principles">
+  <div class="sv-c">
+    <div class="sv-principles__inner">
+      <ol class="sv-principles__list" role="list">
+        {%- assign n = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'principle' -%}
+            {%- assign n = n | plus: 1 -%}
+            <li class="sv-principles__item sv-principles__item--{{ n }}" {{ block.shopify_attributes }}>
+              <span class="sv-display sv-principles__num">{% if n < 10 %}0{% endif %}{{ n }}</span>
+              <h2 class="sv-display sv-principles__title">{{ block.settings.title | escape | newline_to_br }}</h2>
+              <p class="sv-mono sv-principles__text">{{ block.settings.text | escape | newline_to_br }}</p>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ol>
+      {%- assign k = 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'photo' -%}
+          {%- assign k = k | plus: 1 -%}
+          <div class="sv-principles__photo sv-principles__photo--{{ k }}" {{ block.shopify_attributes }}>{% render 'sv-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, zoom: block.settings.image_zoom %}</div>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if s.text != blank -%}<p class="sv-mono sv-principles__phrase">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Trois principes",
+  "class": "sv-principles-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe", "default": "Le café\ns'invite\npartout." }
+  ],
+  "blocks": [
+    { "type": "principle", "name": "Principe", "settings": [{ "type": "textarea", "id": "title", "label": "Titre", "default": "Plus de horizons\ndans le quotidien." }, { "type": "textarea", "id": "text", "label": "Texte" }] },
+    {
+      "type": "photo", "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Trois principes" }]
+}
+{% endschema %}

@@ -1,0 +1,139 @@
+{%- comment -%}
+  SILLON V2 : ouverture de la fiche (planche 01, « 02 La machine ») — fond photo clair, sur-titre, très grand titre,
+  texte et galerie de trois miniatures à gauche ; produit au centre (photo choisie, zoom au clic) ; carte d'achat sombre à
+  droite : nom, prix (celui du produit), coloris en pastilles (une pastille « indisponible » s'annonce comme telle),
+  quantité, « Ajouter au panier » cuivre, phrase, liens Livraison / Aide / Retours.
+  L'ajout passe par le panier de la boutique (/cart/add) ; prix et variante viennent toujours du produit.
+  Blocs : « Lien d'aide » (trois), « Pastille indisponible ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = product | default: s.product | default: collections.all.products.first
+  assign v = p.selected_or_first_available_variant
+  assign gallery = p.media
+-%}
+<section class="sv sv-product" data-sv-product data-product-url="{{ p.url }}" style="--bx: {{ s.image_left }}; --by: {{ s.image_top }}; --bw: {{ s.image_width }}; --bg: {{ s.background }};">
+  <div class="sv-c">
+    <div class="sv-product__frame">
+      {%- if s.image != blank -%}
+        <div class="sv-product__bg">{{ s.image | image_url: width: 2000 | image_tag: loading: 'eager', alt: '', fetchpriority: 'high' }}</div>
+      {%- elsif s.image_asset != blank -%}
+        <div class="sv-product__bg"><img src="{{ s.image_asset | asset_url }}" alt="" loading="eager" fetchpriority="high" width="1536" height="1024"></div>
+      {%- endif -%}
+      <div class="sv-product__text">
+        {%- if s.eyebrow != blank -%}<p class="sv-eyebrow sv-product__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        <h1 class="sv-display sv-product__title">{{ s.heading | default: p.title | escape | newline_to_br }}</h1>
+        {%- if s.text != blank -%}<p class="sv-product__lead">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+      <div class="sv-product__thumbs" role="list" aria-label="{{ s.gallery_label | escape }}">
+        {%- for m in gallery limit: 3 -%}
+          <button type="button" role="listitem" class="sv-product__thumb{% if forloop.first %} is-active{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="{{ s.view_label | escape }} {{ forloop.index }}" data-sv-thumb="{{ forloop.index0 }}">
+            {{ m | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="sv-product__stage">
+        {%- for m in gallery limit: 3 -%}
+          <button type="button" class="sv-product__view{% if forloop.first %} is-active sv-product__view--bg{% endif %}" data-sv-view="{{ forloop.index0 }}" data-sv-zoom-src="{{ m | image_url: width: 2400 }}" aria-label="{{ s.zoom_label | escape }}"{% unless forloop.first %} hidden{% endunless %}>
+            {%- unless forloop.first -%}{{ m | image_url: width: 1600 | image_tag: loading: 'lazy', alt: m.alt | default: p.title, sizes: '50vw', widths: '600, 1000, 1600' }}{%- else -%}<span class="visually-hidden">{{ m.alt | default: p.title }}</span>{%- endunless -%}
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="sv-product__card">
+        <p class="sv-mono sv-product__name">{{ p.title }}</p>
+        <p class="sv-display sv-product__price" data-sv-price>{{ v.price | money_without_trailing_zeros }}</p>
+        {%- if s.price_note != blank -%}<p class="sv-product__note">{{ s.price_note }}</p>{%- endif -%}
+        {%- form 'product', p, class: 'sv-product__form', data-sv-add: '' -%}
+          <input type="hidden" name="id" value="{{ v.id }}" data-sv-variant>
+          {%- unless p.has_only_default_variant -%}
+            <fieldset class="sv-product__swatches">
+              <legend class="sv-product__variant" data-sv-variant-name>{{ v.title }}</legend>
+              {%- for variant in p.variants -%}
+                <label class="sv-swatch" style="--sw: {{ s.swatch_1 }};" title="{{ variant.title | escape }}">
+                  <input type="radio" class="visually-hidden" name="sv-variant" value="{{ variant.id }}" data-title="{{ variant.title | escape }}" data-price="{{ variant.price }}"{% if variant.id == v.id %} checked{% endif %}{% unless variant.available %} disabled{% endunless %}>
+                  <span class="visually-hidden">{{ variant.title }}</span>
+                </label>
+              {%- endfor -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'swatch' -%}
+                  <span class="sv-swatch sv-swatch--off" style="--sw: {{ block.settings.color }};" role="img" aria-label="{{ block.settings.label | escape }}" title="{{ block.settings.label | escape }}" {{ block.shopify_attributes }}></span>
+                {%- endif -%}
+              {%- endfor -%}
+            </fieldset>
+          {%- else -%}
+            <p class="sv-product__variant">{{ s.variant_label }}</p>
+          {%- endunless -%}
+          <div class="sv-qty sv-product__qty">
+            <button type="button" data-sv-qty="-1" aria-label="{{ s.less_label | escape }}">{% render 'sv-icon', name: 'minus' %}</button>
+            <input type="number" name="quantity" value="1" min="1" max="12" inputmode="numeric" aria-label="{{ s.qty_label | escape }}" data-sv-qty-input>
+            <button type="button" data-sv-qty="1" aria-label="{{ s.more_label | escape }}">{% render 'sv-icon', name: 'plus' %}</button>
+          </div>
+          <button type="submit" class="sv-btn sv-btn--copper sv-product__add"{% unless p.available %} disabled{% endunless %} data-sv-add-btn>{% if p.available %}{{ s.add_label }}{% else %}{{ s.soldout_label }}{% endif %}{% render 'sv-icon', name: 'arrow-ne' %}</button>
+          <p class="sv-product__status" role="status" data-sv-status></p>
+        {%- endform -%}
+        {%- if s.card_text != blank -%}<p class="sv-product__phrase">{{ s.card_text | escape | newline_to_br }}</p>{%- endif -%}
+        <ul class="sv-product__links" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'link' -%}
+              <li {{ block.shopify_attributes }}><a href="{{ block.settings.link }}">{% render 'sv-icon', name: block.settings.icon %}<span>{{ block.settings.label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="sv-lightbox" role="dialog" aria-modal="true" aria-label="{{ s.zoom_label | escape }}" hidden data-sv-lightbox>
+    <button type="button" class="sv-lightbox__close" data-sv-lightbox-close><span class="visually-hidden">{{ s.close_label }}</span>{% render 'sv-icon', name: 'close' %}</button>
+    <img alt="" data-sv-lightbox-img>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Fiche : ouverture et achat",
+  "class": "sv-product-section",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Équipement / 001" },
+    { "type": "textarea", "id": "heading", "label": "Titre (un retour à la ligne par ligne)", "info": "Vide : le nom du produit." },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Photo de fond" },
+    { "type": "text", "id": "image_asset", "label": "Photo de fond (fichier du thème)" },
+    { "type": "range", "id": "image_width", "label": "Largeur de la photo (repère 1440 px)", "min": 600, "max": 2400, "step": 2, "unit": "px", "default": 922 },
+    { "type": "range", "id": "image_left", "label": "Position horizontale de la photo", "min": -600, "max": 600, "step": 2, "unit": "px", "default": 60 },
+    { "type": "range", "id": "image_top", "label": "Position verticale de la photo", "min": -400, "max": 300, "step": 2, "unit": "px", "default": 46 },
+    { "type": "color", "id": "background", "label": "Fond autour de la photo", "default": "#E9DBC7" },
+    { "type": "text", "id": "price_note", "label": "Mention sous le prix", "info": "Ex. « Prix illustratif de démonstration »." },
+    { "type": "color", "id": "swatch_1", "label": "Couleur de la pastille du coloris vendu", "default": "#4A2E22" },
+    { "type": "text", "id": "variant_label", "label": "Coloris (produit sans variante)" },
+    { "type": "textarea", "id": "card_text", "label": "Phrase de la carte" },
+    { "type": "text", "id": "add_label", "label": "Bouton d'ajout", "default": "Ajouter au panier" },
+    { "type": "text", "id": "soldout_label", "label": "Bouton indisponible", "default": "Indisponible" },
+    { "type": "text", "id": "qty_label", "label": "Quantité (lecteurs d'écran)", "default": "Quantité" },
+    { "type": "text", "id": "less_label", "label": "Moins (lecteurs d'écran)", "default": "Retirer un" },
+    { "type": "text", "id": "more_label", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un" },
+    { "type": "text", "id": "gallery_label", "label": "Galerie (lecteurs d'écran)", "default": "Vues du produit" },
+    { "type": "text", "id": "view_label", "label": "Vue (lecteurs d'écran)", "default": "Vue" },
+    { "type": "text", "id": "zoom_label", "label": "Agrandir (lecteurs d'écran)", "default": "Agrandir la photo" },
+    { "type": "text", "id": "close_label", "label": "Fermer (lecteurs d'écran)", "default": "Fermer" }
+  ],
+  "blocks": [
+    {
+      "type": "link", "name": "Lien d'aide",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Pictogramme", "default": "truck", "options": [{ "value": "truck", "label": "Livraison" }, { "value": "question", "label": "Aide" }, { "value": "return", "label": "Retours" }, { "value": "mail", "label": "Contact" }] },
+        { "type": "text", "id": "label", "label": "Texte", "default": "Livraison" },
+        { "type": "url", "id": "link", "label": "Lien" }
+      ]
+    },
+    {
+      "type": "swatch", "name": "Pastille indisponible",
+      "settings": [
+        { "type": "color", "id": "color", "label": "Couleur", "default": "#7F8573" },
+        { "type": "text", "id": "label", "label": "Nom (annoncé indisponible)", "default": "Sauge — indisponible" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Fiche : ouverture et achat" }]
+}
+{% endschema %}
