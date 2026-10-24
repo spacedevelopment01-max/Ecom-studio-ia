@@ -70,9 +70,9 @@ describe("SOUPLE : thème actif de la famille E-commerce (quatre produits)", () 
     for (const type of ["cv-banner", "cv-feature", "cv-cards", "cv-infos"]) expect(FAMILY_LIBRARY.catalog.filter((e) => e.dispositions.some((d) => d.type === type)).length, type).toBe(1);
     for (const t of ["demo-order", "demo-account"]) { expect(LIBRARY.has(t), t).toBe(false); expect(isStructuralType(t), t).toBe(true); }
     // ORBE (même famille, profil éditorial) ne se voit jamais proposer les sections de SOUPLE.
-    const orbe = { direction: "orbe", settings: catalogTheme("orbe")!.settings ?? {}, imported: false };
+    const orbe = { direction: "orbe", settings: catalogTheme("orbe")!.settings ?? {} };
     for (const type of ["cv-banner", "cv-infos"]) expect(sectionIncompatibility(orbe, type, "catalog"), type).not.toBe("");
-    const souple = { direction: ID, settings: catalogTheme(ID)!.settings ?? {}, imported: false };
+    const souple = { direction: ID, settings: catalogTheme(ID)!.settings ?? {} };
     for (const type of ["cv-banner", "cv-feature", "cv-cards", "cv-infos", "fs-products", "fs-journal", "faq"]) expect(sectionIncompatibility(souple, type, "catalog"), type).toBe("");
   });
 
