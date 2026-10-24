@@ -136,6 +136,8 @@
         {{ cards_before }}{{ cards_after }}
         {%- if s.overview_label != blank -%}</div></div>{%- endif -%}
       {%- else -%}
+        {%- comment -%} Tableau de bord : bandeau photo facultatif au-dessus du titre (SOUPLE, planche 06). {%- endcomment -%}
+        {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__banner">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
         <header class="es-acct__head">
           <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
           {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}

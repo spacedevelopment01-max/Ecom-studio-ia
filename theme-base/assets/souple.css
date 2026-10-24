@@ -624,3 +624,7 @@ body[data-conversion="souple"] .es-footer .es-inline-field{flex-direction:row!im
 body[data-conversion="souple"] .cv-feature--image-right .cv-points,body[data-conversion="souple"] .cv-feature--image-left .cv-points{background:none;border:0;padding:0}
 body[data-conversion="souple"] .cv-feature--image-right .cv-point,body[data-conversion="souple"] .cv-feature--image-left .cv-point{background:none;border:0}
 body[data-conversion="souple"] .cv-guarantee-line{display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;padding:12px 16px;border-radius:8px;background:var(--sp-powder);font:400 .8rem/1.45 var(--sp-sans);color:var(--sp-ink)}
+/* Tableau de bord du compte : bandeau photo arrondi au-dessus du titre (planche 06). */
+body[data-conversion="souple"][data-ds] .es-acct__banner{position:relative;height:clamp(150px,16vw,230px);border-radius:var(--sp-radius,18px);overflow:hidden;margin:0 0 28px}
+body[data-conversion="souple"][data-ds] .es-acct__banner .ed-media{position:absolute;inset:0;margin:0}
+@media (max-width:749px){body[data-conversion="souple"][data-ds] .es-acct__banner{height:140px;margin-bottom:20px}}

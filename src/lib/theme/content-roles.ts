@@ -51,7 +51,7 @@ export const CONTENT_ROLES: Record<ContentRoleId, ContentRole> = {
 const ROLE_TYPES: Record<Exclude<ContentRoleId, "structural">, string[]> = {
   hook: ["cv-hero", "ed-opening", "fs-campaign", "re-hero"],
   idea: ["ed-statement", "rich-text"],
-  facts: ["features-grid", "cv-feature", "ed-finishes", "cv-hotspots", "cv-specs", "cv-ingredients", "content-tabs", "stats", "marquee", "fs-dimensions", "fs-care", "fs-making", "fs-equipment", "ed-study"],
+  facts: ["features-grid", "cv-feature", "ed-finishes", "cv-hotspots", "cv-specs", "cv-infos", "cv-ingredients", "content-tabs", "stats", "marquee", "fs-dimensions", "fs-care", "fs-making", "fs-equipment", "ed-study"],
   usage: ["ed-scene", "ed-diptych", "cv-stories", "cv-gallery", "cv-alternating", "cv-cards", "fs-lookbook", "image-with-text", "ref-narrative", "portfolio", "fs-video", "fs-needs", "fs-case", "re-feature"],
   choice: ["featured-purchase", "purchase-offers", "comparison-table", "fs-products", "fs-collections", "product-recommendations", "services-list", "pricing", "cv-banner", "cv-rise", "re-tiles", "re-listings"],
   method: ["timeline", "how-to", "cv-steps", "booking", "booking-calendar", "fs-service"],

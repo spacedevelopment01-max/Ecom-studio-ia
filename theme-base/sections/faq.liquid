@@ -58,7 +58,7 @@
       {%- assign prev_topic = '' -%}
       {%- for block in section.blocks -%}
         {%- assign bt = block.settings.topic | handleize -%}
-        {%- if section.settings.topic_titles and section.settings.topics != true and block.settings.topic != blank and block.settings.topic != prev_topic -%}<h3 class="es-heading es-faq__topic" id="faq-{{ section.id }}-{{ bt }}" tabindex="-1">{{ block.settings.topic | escape }}</h3>{%- endif -%}
+        {%- if section.settings.topic_titles and section.settings.topics != true and block.settings.topic != blank and block.settings.topic != prev_topic -%}<h3 class="es-heading es-faq__topic"{% if section.settings.topic_nav %} id="faq-{{ section.id }}-{{ bt }}" tabindex="-1"{% endif %}>{{ block.settings.topic | escape }}</h3>{%- endif -%}
         {%- assign prev_topic = block.settings.topic -%}
         <details class="es-accordion es-faq__item" data-reveal="up" style="--i: {{ forloop.index0 }}" data-faq-item{% if section.settings.topics %} data-chip-item="{{ bt }}"{% if first_topic != blank and bt != first_topic %} hidden{% endif %}{% endif %}{% if forloop.first and section.settings.open_first %} open{% endif %} {{ block.shopify_attributes }}>
           <summary>

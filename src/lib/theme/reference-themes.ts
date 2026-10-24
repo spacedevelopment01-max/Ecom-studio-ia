@@ -647,17 +647,18 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     home: (k) => {
       const first = k.shelf[0];
       const details = [k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f);
-      const worlds = [k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f);
       return [
-        k.lib("cv-banner", 1, { layout: "background", band_height: "hero", veil: "none", copy_align: "center", copy_valign: "top", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.banner ?? "", image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+        k.lib("cv-banner", 1, { layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.banner ?? "", image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
         k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", quick_add: "icon", padding_top: 40, padding_bottom: 24 }),
         k.lib("cv-banner", 1, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
         k.lib("cv-feature", 1, { layout: "product", buy_product: first?.handle ?? "", image_asset: k.im.detail1 ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !first, blocks: details.slice(1).map((f) => ({ type: "detail", settings: { image_asset: f } })) }),
-        k.lib("cv-banner", 1, { layout: "panel-left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
-        k.lib("cv-cards", 1, { layout: "columns", padding_top: 32, padding_bottom: 32 }, { hide: worlds.length < 2, blocks: worlds.map((f) => ({ type: "card", settings: { image_asset: f } })) }),
+        // Panneau « collection » : photo à droite et texte sur fond poudré (section photo et texte, mise en forme SOUPLE).
+        k.lib("image-with-text", 3, { layout: "image-right", ratio: "landscape", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+        // « Nos univers » : les collections de la boutique cliente (la démonstration garde ses trois cartes rédigées).
+        k.lib("fs-collections", 1, { layout: "grid", align: "left", show_count: false, padding_top: 32, padding_bottom: 32 }),
         k.lib("cv-banner", 2, { layout: "brand", image_asset: "", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
         k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 16 }),
-        k.lib("faq", 1, { style: "lines", layout: "side", open_first: false, padding_top: 16, padding_bottom: 16 }),
+        ...k.v2.faq("side", 1),
         k.newsletter(4),
       ];
     },
@@ -670,14 +671,14 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("cv-infos", 1, { quick_add: "icon", padding_top: 16, padding_bottom: 16 }, { blocks: [...["Dimensions", "Matériaux", "Entretien", "Livraison et retours"].map((title) => ({ type: "spec", settings: { title: k.t(title, { Dimensions: "Dimensions", Matériaux: "Materials", Entretien: "Care", "Livraison et retours": "Delivery and returns" }[title]!), value: k.t("À confirmer", "To be confirmed") } })), ...k.shelf.slice(0, 4).map((x) => ({ type: "product", settings: { product: x.handle } }))] }),
       k.lib("cv-banner", 1, { layout: "buybar", button_arrow: false, padding_top: 8, padding_bottom: 24, price_text: "", price_note: "", note: "", image_asset: "" }),
     ],
-    // Site de services (repli) : scène et liste en ouverture, prestations en cartes illustrées, une photo et son texte,
-    // méthode en étapes, questions en lignes et prise de contact.
+    // Site de services (repli) : photo et promesse côte à côte, prestations en cartes illustrées, photo et texte,
+    // méthode en étapes, questions avec le titre à côté et prise de contact.
     services: (k) => [
-      k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, align: "left" }),
+      k.v2.hero("split", 1),
       k.R.servicesList(3, "cards", { withImages: true }),
-      k.lib("image-with-text", 1, { layout: "image-right", ratio: "square", image_asset: k.im.scene1 ?? "", reveal: "up" }, { hide: !k.im.scene1 }),
-      k.R.method(2, "timeline"),
-      k.faqSec(1, 5, "lines"),
+      ...k.v2.split("media-right", 4),
+      ...k.v2.steps("line", 1),
+      ...k.v2.faq("side", 1),
       k.R.booking(3),
     ],
   },

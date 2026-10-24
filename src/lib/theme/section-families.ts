@@ -243,6 +243,13 @@ const CATALOG: FamilyEntry[] = [
     d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
     // HEUREN (maquette du 22 octobre) : la photo pleine largeur sur une hauteur de bandeau, promesse à gauche.
     d("banner", "Bandeau photo, texte à gauche", "Photo band, text on the left", "ed-opening", "background", { layout: "banner" }),
+    // SOUPLE (maquettes du 23 octobre) : titre centré en haut de la photo, panneaux arrondis à courbe douce, bandeau de
+    // marque et barre d'achat finale. Sections « cv-banner », proposées seulement aux thèmes qui savent les rendre.
+    d("scene", "Grande scène, titre centré en haut", "Large scene, heading centred at the top", "cv-banner", "background", { layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top" }),
+    d("soft-panel", "Panneau à courbe douce, photo à droite", "Softly curved panel, photo on the right", "cv-banner", "split-right", { layout: "panel-left", curve: true }),
+    d("soft-panel-right", "Photo à gauche, panneau arrondi", "Photo on the left, rounded panel", "cv-banner", "split-left", { layout: "panel-right" }),
+    d("brand-band", "Bandeau de marque, logo et texte", "Brand band, logo and text", "cv-banner", "band", { layout: "brand" }),
+    d("buy-bar", "Barre d'achat finale du produit", "Final product purchase bar", "cv-banner", "band", { layout: "buybar" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -255,12 +262,20 @@ const CATALOG: FamilyEntry[] = [
     d("carousel", "Carrousel", "Carousel", "fs-products", "carousel", { layout: "carousel" }),
     d("editorial", "Liste éditoriale", "Editorial list", "fs-products", "list", { layout: "list" }),
     d("recommended", "Recommandations (fiche produit)", "Recommendations (product page)", "product-recommendations", "grid-4", { intent: "related" }),
+    // SOUPLE (planche 02) : caractéristiques en accordéons, produits associés à ajouter au panier et questions, côte à côte.
+    d("infos", "Infos, produits associés et questions", "Details, related products and questions", "cv-infos", "grid-3"),
   ]),
   e("catalog", 4, "featured", { fr: "Produit à la une", en: "Featured product" }, { fr: "Présentation approfondie d'une référence avec informations et achat.", en: "In-depth presentation of one item with details and purchase." }, "produit à la une achat référence", [
     d("offers", "Galerie et achat", "Gallery and purchase", "featured-purchase", "product", { purchase_style: "outlined" }),
     d("compact", "Achat compact", "Compact purchase", "featured-purchase", "product", { purchase_style: "compact" }),
     d("duo", "Deux photos, prix et deux boutons", "Two photos, price and two buttons", "featured-purchase", "product", { layout: "duo" }),
     d("product-offers", "Offres sur la fiche produit", "Offers on the product page", "purchase-offers", "pricing"),
+    // SOUPLE (planches 01 à 03) : gros plan d'un produit à acheter et ses vignettes, gros plans légendés et encadré,
+    // repères à icônes, photo et points pratiques.
+    d("close-up", "Gros plan du produit, vignettes et achat", "Product close-up, thumbnails and purchase", "cv-feature", "split-left", { layout: "product" }),
+    d("details-box", "Gros plans légendés et encadré", "Captioned close-ups and a box", "cv-feature", "grid-3", { layout: "details-points" }),
+    d("essentials", "Repères à icônes", "Icon highlights", "cv-feature", "split-left", { layout: "essentials" }),
+    d("visual-right", "Photo à droite et points pratiques", "Photo on the right and practical points", "cv-feature", "split-right", { layout: "image-right" }),
   ]),
   e("catalog", 5, "lookbook", { fr: "Ambiance et lookbook", en: "Mood and lookbook" }, { fr: "Scènes de plusieurs produits avec repères permettant de les identifier.", en: "Scenes with several products and markers to identify them." }, "ambiance lookbook scène repères produits", [
     d("markers", "Scène et repères produits", "Scene and product markers", "fs-lookbook", "hotspots", { layout: "markers" }),
@@ -285,6 +300,11 @@ const CATALOG: FamilyEntry[] = [
     d("pair", "Diptyque décalé", "Offset diptych", "ed-diptych", "grid-2", { layout: "pair" }),
     d("index", "Index d'usages", "Index of uses", "ed-diptych", "asym", { layout: "index" }),
     d("triptych", "Triptyque plein cadre", "Full-bleed triptych", "ed-diptych", "grid-3", { layout: "triptych" }, [{ type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }]),
+    // SOUPLE : univers en colonnes, photos à pastilles, cartes sur photo et lignes d'aide (sections « cv-cards »).
+    d("worlds", "Univers en colonnes", "Worlds in columns", "cv-cards", "grid-3", { layout: "columns" }),
+    d("pills", "Photos à pastilles, titre à gauche", "Photos with pill labels, title on the left", "cv-cards", "grid-3", { layout: "pills" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("photo-cards", "Cartes sur photo", "Cards on photos", "cv-cards", "grid-3", { layout: "overlay" }),
+    d("rows", "Cartes en lignes", "Cards in rows", "cv-cards", "cards-rows", { layout: "rows" }),
   ]),
   e("catalog", 9, "care", { fr: "Entretien et durabilité", en: "Care and durability" }, { fr: "Conseils pour entretenir et prolonger la vie des produits.", en: "Advice to care for products and make them last." }, "entretien durabilité conseils réparation", [
     d("list", "Conseils en liste", "Advice list", "fs-care", "list", { layout: "list" }),

@@ -153,7 +153,7 @@ export const SOUPLE_ARTICLES: Article[] = [
     excerpt: "Des repères simples pour garder une place au mouvement quand les journées sont pleines.",
     intro: "Quand les journées sont pleines, la pratique passe souvent après le reste. Quelques repères simples aident à lui garder une place.",
     body: [["De petits moments", "Une séance n'a pas besoin d'être longue : quelques minutes comptent aussi.", "19-journal-tasse.webp"], ["Un endroit prêt", "Un coin où le tapis attend évite d'avoir à tout installer à chaque fois."], ["Un rendez-vous noté", "Inscrire la séance dans son agenda, comme un rendez-vous, aide à s'y tenir."], ["De la douceur", "Une journée sans pratique n'efface rien : reprenez le lendemain, à votre rythme."]] },
-  { handle: "les-essentiels-pour-votre-pratique", title: "Les essentiels pour votre pratique", tag: "Matériel", image: "brique-04.webp",
+  { handle: "les-essentiels-pour-votre-pratique", title: "Les essentiels pour votre pratique", tag: "Matériel", image: "ambiance-10.webp",
     excerpt: "Le rôle de chaque accessoire de la collection.",
     intro: "Tapis, brique, sangle, anneau : quatre accessoires courants du yoga et du Pilates. Voici à quoi chacun sert, simplement.",
     body: [["Le tapis", "La surface de votre pratique au sol, du yoga au Pilates.", "tapis-01.webp"], ["La brique", "Un appui que l'on place sous la main, sous l'assise ou entre les mains, selon la posture.", "brique-01.webp"], ["La sangle", "Elle fait le lien quand les mains n'atteignent pas encore les pieds, tenue à deux mains ou bouclée par ses anneaux.", "sangle-01.webp"], ["L'anneau Pilates", "On le tient par ses deux poignées, entre les paumes ou entre les genoux.", "anneau-01.webp"]] },
@@ -208,7 +208,7 @@ const FICHES: Record<SoupleKey, Fiche> = {
     space: { eyebrow: "Votre espace", heading: "Votre espace\ncommence ici", text: "Un tapis pour créer un espace à vous. Une surface agréable, une présence discrète, des couleurs douces.", image: "11-tapis-pouf.webp", fx: 55 },
     details: { items: [["tapis-04.webp", "Une surface texturée", "Le dessus rose poudré et son grain fin, le dessous prune."], ["tapis-03.webp", "Un design signature", "Le logo SOUPLE en prune, pour une esthétique soignée jusque dans les détails."]], box: "Pour une pratique qui vous ressemble",
       points: [["home", "Un espace bien à vous", "Créez votre rituel, où que vous soyez."], ["sparkle", "Un design intemporel", "Des couleurs douces et naturelles."], ["heart", "Un compagnon du quotidien", "Du yoga au Pilates, et au-delà."]] },
-    rhythm: { text: "Des instants pour vous, dans un espace apaisant. Le tapis SOUPLE s'intègre naturellement dans tous vos moments de pratique.", images: ["ambiance-02.webp", "12-tapis-roule-plaid.webp", "ambiance-07.webp"] },
+    rhythm: { text: "Des instants pour vous, dans un espace apaisant. Le tapis SOUPLE s'intègre naturellement dans tous vos moments de pratique.", images: ["ambiance-02.webp", "12-tapis-roule-plaid.webp", "ambiance-06.webp"] },
     faq: [["Le tapis convient-il au yoga et au Pilates ?", "Il est pensé pour la pratique au sol, du yoga au Pilates. Dimensions et épaisseur : à confirmer."], ["Comment l'entretenir ?", "Conseils d'entretien : à confirmer par la marque."], ["Quelle est la différence avec d'autres tapis ?", "Ses caractéristiques (épaisseur, matière, adhérence) sont à confirmer : nous ne les comparons pas sans données vérifiées."], ["La livraison et les retours ?", SHIP]],
   },
   brique: {
@@ -239,7 +239,7 @@ const FICHES: Record<SoupleKey, Fiche> = {
     crumb: ["Accessoires", "/collections/all"],
     accordions: [["Détails du produit", "Un cercle prune strié et deux poignées rose mauve marquées SOUPLE, placées face à face."], ["Dimensions", `Diamètre et épaisseur : ${CONFIRM.toLowerCase()}.`], ["Entretien", `Conseils d'entretien : ${CONFIRM.toLowerCase()}.`], ["Livraison et retours", SHIP]],
     curve: { heading: "Le mouvement\nprend forme", text: "L'anneau Pilates SOUPLE vous invite à explorer de nouveaux mouvements, avec fluidité. Un design épuré et des couleurs douces, pour s'intégrer naturellement à votre routine.", image: "08-anneau-mouvement.webp", fx: 58 },
-    tiles: [["anneau-02.webp", "Deux poignées rose mauve, face à face."], ["09-anneau-rainures.webp", "Une forme circulaire, striée."], ["anneau-03.webp", "Le détail SOUPLE, signature de la collection."]],
+    tiles: [["ambiance-04.webp", "Deux poignées rose mauve, face à face."], ["09-anneau-rainures.webp", "Une forme circulaire, striée."], ["ambiance-09.webp", "Il s'accorde avec la brique en liège."]],
     faq: [],
   },
 };
@@ -296,7 +296,7 @@ function curateSouple(k: Kit) {
 
   // ─── Accueil (planche 01), dans l'ordre de la maquette. ─────────────────────────────────────────────────────────
   const homeRows: SectionInstance[] = [
-    banner({ ...img("01-accueil-collection.webp"), layout: "background", band_height: "hero", veil: "none", copy_align: "center", copy_valign: "top", mobile_valign: "top", image_loading: "eager", focus_x: 50, focus_y: 82, mobile_focus_x: 72, mobile_focus_y: 50, heading: "Du mouvement.\nÀ votre rythme.", heading_tag: "h1", text: p("Des accessoires de yoga et Pilates pensés pour vous accompagner, jour après jour."), button_label: "Trouver mes essentiels", button_link: "/collections/all" }),
+    banner({ ...img("01-accueil-collection.webp"), layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top", image_loading: "eager", focus_x: 50, focus_y: 82, mobile_focus_x: 72, mobile_focus_y: 50, heading: "Du mouvement.\nÀ votre rythme.", heading_tag: "h1", text: p("Des accessoires de yoga et Pilates pensés pour vous accompagner, jour après jour."), button_label: "Trouver mes essentiels", button_link: "/collections/all" }),
     section("fs-products", { layout: "grid", source: "manual", eyebrow: "", heading: "Nos essentiels", heading_accent: "", text: "", button_label: "Voir toute la boutique", button_link: "/collections/all", ratio: "square", columns: 4, limit: 4, align: "left", show_secondary: false, quick_add: "icon", effect: "fade", color_scheme: "scheme-1", padding_top: 40, padding_bottom: 24 }, productBlocks(["tapis", "brique", "sangle", "anneau"])),
     banner({ ...img("02-accueil-espace.webp"), layout: "panel-left", focus_x: 50, focus_y: 60, heading: "Un espace\npour revenir à soi.", text: p("Des accessoires essentiels aux couleurs douces, pensés pour faire de chaque pratique un moment à vous."), button_label: "Découvrir notre approche", button_link: SOUPLE_PAGES.approche }),
     section("cv-feature", { ...img("tapis-03.webp"), layout: "product", detail_shape: "square", detail_numbers: false, focus_x: 40, focus_y: 50, image_zoom: 100, eyebrow: "Notre tapis de yoga", heading: "Le soutien\nde chaque mouvement.", heading_accent: "", text: p("Une surface texturée, agréable sous la main, pour vous accompagner du quotidien aux séances les plus engagées."), buy_product: items[0].handle, price_note: NOTE, button_label: "Ajouter au panier", button_link: "", button_arrow: false, guarantee_text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }, [
@@ -405,7 +405,7 @@ function curateSouple(k: Kit) {
   spec.templates.cart.sections.reperes = section("cv-feature", { layout: "essentials", cart_visibility: "empty", detail_shape: "square", detail_numbers: false, image_asset: "", image_alt: "", eyebrow: "", heading: "", heading_accent: "", text: "", button_label: "", button_link: "", guarantee_text: "", animation: "fade", color_scheme: "scheme-1", padding_top: 16, padding_bottom: 48 }, [
     { type: "point", settings: { icon: "sparkle", title: "Des essentiels\nbien pensés", text: "" } },
     { type: "point", settings: { icon: "leaf", title: "Une pratique\nau quotidien", text: "" } },
-    { type: "point", settings: { icon: "waves", title: "Pour un esprit\nplus apaisé", text: "" } },
+    { type: "point", settings: { icon: "waves", title: "Un moment\nrien qu'à vous", text: "" } },
   ]);
   spec.templates.cart.order.push("more", "reperes");
   spec.settings = { ...spec.settings, cart_discount_code: false, cart_checkout_label: "Passer commande", cart_reassurance: "" };
@@ -473,7 +473,7 @@ function pagesSouple(k: Kit) {
 
   // ─── Guide (planche 05) : les quatre produits, leur rôle, un comparatif et des boutons vers chaque fiche. ──────
   page("guide", "Guide", seo("Quels essentiels pour votre pratique ?", "Le rôle du tapis, de la brique, de la sangle et de l'anneau Pilates SOUPLE, et un comparatif simple pour choisir."), [
-    ["hero", hero("01-accueil-collection.webp", "Guide", "Quels essentiels\npour votre pratique ?", "Quatre accessoires complémentaires pour vous accompagner dans votre pratique de yoga et de Pilates. Découvrez leur rôle et trouvez ceux qui correspondent à vos besoins.", { focus_x: 64, focus_y: 60 })],
+    ["hero", hero("ambiance-05.webp", "Guide", "Quels essentiels\npour votre pratique ?", "Quatre accessoires complémentaires pour vous accompagner dans votre pratique de yoga et de Pilates. Découvrez leur rôle et trouvez ceux qui correspondent à vos besoins.", { focus_x: 64, focus_y: 60 })],
     ["produits", S("fs-products", { layout: "grid", source: "manual", eyebrow: "", heading: "", heading_accent: "", text: "", button_label: "", button_link: "", ratio: "square", columns: 4, limit: 4, align: "left", show_secondary: false, quick_add: "none", card_button_label: "Voir la fiche", effect: "fade", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 16 }, [
       { type: "product", settings: { product: SOUPLE_PRODUCTS[0].handle, note: "La surface de votre pratique au sol, du yoga au Pilates." } },
       { type: "product", settings: { product: SOUPLE_PRODUCTS[1].handle, note: "Un appui sous la main, sous l'assise ou entre les mains." } },
@@ -530,7 +530,7 @@ function pagesSouple(k: Kit) {
   account("connexion", "Connexion", { ...k.img("ambiance-08.webp"), focus_x: 50, focus_y: 60, layout: "auth", heading: "Heureux\nde vous\nretrouver", text: p("Connectez-vous à votre compte pour retrouver vos commandes, vos adresses et bien plus encore."), login_title: "Se connecter", register_title: "Créer un compte", button_label: "Se connecter", secondary_label: "Créer mon compte", demo_hint: "Compte de démonstration :", unknown_login_text: "Ces identifiants ne correspondent pas au compte de démonstration.", sent_text: "Démonstration : aucun compte n'est créé et aucun e-mail n'est envoyé." });
   account("mot-de-passe-oublie", "Réinitialiser mon mot de passe", { ...k.img("23-colis-ouvert.webp"), focus_x: 40, focus_y: 50, layout: "recover", heading: "Réinitialiser\nmon mot de passe", text: p("Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation."), button_label: "Envoyer le lien", button_link: "", secondary_label: "Retour à la connexion", secondary_link: SOUPLE_PAGES.connexion, sent_text: "Démonstration : aucun e-mail n'est envoyé. Sur une boutique en ligne, la plateforme envoie le lien." });
   account("mon-compte", "Mon compte", { ...k.img("ambiance-07.webp"), layout: "account", heading: "Mon compte", text: p("Bienvenue ! Retrouvez ici vos commandes, vos adresses et vos informations personnelles."), order_title: "Commande SOUPLE-0001 (exemple)", pill: "Statut de démonstration", empty_text: "" }, lines);
-  account("commande-souple-0001", "Commande SOUPLE-0001", { layout: "order", heading: "Commande SOUPLE-0001", pill: "Statut de démonstration", text: p("Commande d'exemple : aucune commande ni aucun envoi réel."), notice_title: "Exemple.", back_label: "Mon compte", lines_title: "Récapitulatif", payment_title: "Paiement", tracking_title: "Exemple de suivi de livraison" }, [
+  account("commande-souple-0001", "Commande SOUPLE-0001", { layout: "order", subtotal_label: "Sous-total", heading: "Commande SOUPLE-0001", pill: "Statut de démonstration", text: p("Commande d'exemple : aucune commande ni aucun envoi réel."), notice_title: "Exemple.", back_label: "Mon compte", lines_title: "Récapitulatif", payment_title: "Paiement", tracking_title: "Exemple de suivi de livraison" }, [
     ...lines,
     { type: "track", settings: { label: "Commande confirmée", date_text: "Exemple", done: true } },
     { type: "track", settings: { label: "Préparation de votre colis", date_text: "Exemple", done: true } },
