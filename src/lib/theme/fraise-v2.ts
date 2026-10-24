@@ -78,7 +78,7 @@ export function fgTemplate(rows: Row[]): TemplateJson {
 export const pageRow = (look: FgPageLook): Row => ["fg-page", { ...look }];
 
 /** Réglages de l'en-tête (couleurs et polices des planches ; boutique réelle : paiement Shopify). */
-export function headerSettings(lang: Lang, o: { demo: boolean; checkoutPage?: string; cookiesLink: string; logo?: string; bandBrand?: string; bandText?: string; copyright?: string; lineBrand?: string }): Record<string, unknown> {
+export function headerSettings(lang: Lang, o: { demo: boolean; checkoutPage?: string; cookiesLink: string; logo?: string; bandBrand?: string; bandText?: string; copyright?: string; lineBrand?: string; units?: string }): Record<string, unknown> {
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return {
     logo_asset: o.logo ?? "", wordmark: "", menu: "main-menu", split: 3, nav_label: t("Navigation principale", "Main navigation"), cart_label: t("Panier", "Cart"),
@@ -90,10 +90,9 @@ export function headerSettings(lang: Lang, o: { demo: boolean; checkoutPage?: st
     drawer_title: t("Mon panier", "My cart"), drawer_close_label: t("Fermer le panier", "Close the cart"), drawer_subtotal: t("Sous-total", "Subtotal"), drawer_shipping: t("Livraison", "Shipping"),
     drawer_shipping_value: t("Calculée à l’étape suivante", "Calculated at the next step"), drawer_checkout: t("Passer commande", "Check out"), drawer_view: t("Voir mon panier", "View my cart"),
     drawer_less: t("Retirer un lot", "Remove one pack"), drawer_more: t("Ajouter un lot", "Add one pack"), drawer_remove: t("Supprimer", "Remove"),
-    drawer_units: t("[n] flacons au total", "[n] jars in total"), drawer_packs: t("[q] lot(s)", "[q] pack(s)"), drawer_brand: o.lineBrand ?? "",
+    drawer_units: o.units ?? t("[n] unités au total", "[n] units in total"), drawer_packs: t("[q] lot(s)", "[q] pack(s)"), drawer_brand: o.lineBrand ?? "",
     qty_label: t("Quantité : [q]", "Quantity: [q]"), fix_label: t("Vérifiez les champs signalés.", "Please check the highlighted fields."),
     color_cream: "#FCF6EE", color_blush: "#FBE3DB", color_pink: "#F7C9BF", color_red: "#E3363E", color_deep: "#C8282F", color_crimson: "#970824", color_ink: "#230605", color_text: "#5A4C4A", color_yellow: "#FFD84D",
-    title_font: "poppins_n7", accent_font: "playfair_display_i8", serif_font: "playfair_display_n7",
     demo_mode: o.demo, checkout_mode: o.demo ? "demo" : "shopify", checkout_page: o.checkoutPage ?? "",
     added_label: t("Ajouté au panier.", "Added to cart."), removed_label: t("Article retiré du panier.", "Item removed from cart."), error_label: t("Une erreur est survenue. Réessayez.", "Something went wrong. Please try again."),
     show_cookies: true, cookies_title: t("Vos préférences de cookies", "Your cookie preferences"),
@@ -141,6 +140,7 @@ function servicesHome(k: Kit): (Row | Row[])[] {
     k.R.practical(1),
     k.faqSec(1, 5, "lines"),
     k.R.contactForm(1, k.t("Une question ?", "A question?")),
+    k.newsletter(1),
   ];
 }
 
@@ -160,6 +160,10 @@ export function finishFraise(spec: ThemeSpec, ctx: FinishCtx) {
     header.sections["fg-header"] = { type: "fg-header", settings: headerSettings(lang, { demo: false, cookiesLink: fgUrl("cookies", lang) }) };
     header.order.push("fg-header");
   }
+  // Le tiroir de panier est celui de l'en-tête FRAISE : celui du thème de base n'est pas rendu (pas de doublon).
+  if (spec.settings.cart_type === "drawer") spec.settings.cart_type = "page";
+  // Polices, feuille et script du thème chargés par la mise en page (exportés avec le thème vers les autres plateformes).
+  spec.settings.theme_kit = "fraise";
   const footer = spec.groups.footer;
   for (const id of footer.order) if (footer.sections[id]?.type === "footer") footer.sections[id].disabled = true;
   if (!footer.order.some((id) => footer.sections[id]?.type === "fg-footer")) {
@@ -188,17 +192,17 @@ export function finishFraise(spec: ThemeSpec, ctx: FinishCtx) {
 }
 
 /** Réglages du panier (textes des planches 03 et 07 ; une seule source pour le panier rempli, vide et ses lignes). */
-export function cartSettings(lang: Lang, o: { checkoutPage: string; shopLink: string; emptyImage?: string; footImage?: string }): Record<string, unknown> {
+export function cartSettings(lang: Lang, o: { checkoutPage: string; shopLink: string; emptyImage?: string; footImage?: string; units?: string; emptyTitle?: string; emptyButton?: string }): Record<string, unknown> {
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return {
     col_product: t("Produit", "Product"), col_price: t("Prix", "Price"), col_qty: t("Quantité", "Quantity"), col_total: t("Total", "Total"),
     subtotal_label: t("Sous-total", "Subtotal"), shipping_label: t("Livraison", "Shipping"), shipping_value: t("Calculée à l’étape suivante", "Calculated at the next step"),
     total_label: t("Total des produits", "Products total"), total_note: t("Hors livraison", "Excluding shipping"),
     checkout_label: t("Passer commande", "Check out"), checkout_page: o.checkoutPage, continue_label: t("Continuer mes achats", "Continue shopping"), continue_link: o.shopLink,
-    units_label: t("[n] flacons au total", "[n] jars in total"), packs_label: t("Lots", "Packs"),
+    units_label: o.units ?? t("[n] unités au total", "[n] units in total"), packs_label: t("Lots", "Packs"),
     less_label: t("Retirer un lot", "Remove one pack"), more_label: t("Ajouter un lot", "Add one pack"), remove_label: t("Supprimer", "Remove"),
-    empty_title: t("Un peu de place\npour [s]FRAISE[/s] ?", "A little room\nfor [s]FRAISE[/s]?"), empty_text: t("Votre panier est vide.", "Your cart is empty."), empty_sub: "",
-    empty_button: t("Découvrir les gummies", "Discover the gummies"), empty_link: o.shopLink, empty_image_asset: o.emptyImage ?? "", foot_image_asset: o.footImage ?? "",
+    empty_title: o.emptyTitle ?? t("Votre panier\nvous attend.", "Your cart\nis waiting."), empty_text: t("Votre panier est vide.", "Your cart is empty."), empty_sub: "",
+    empty_button: o.emptyButton ?? t("Découvrir la boutique", "Visit the shop"), empty_link: o.shopLink, empty_image_asset: o.emptyImage ?? "", foot_image_asset: o.footImage ?? "",
   };
 }
 
@@ -214,9 +218,11 @@ export const FRAISE_V2_THEME: CatalogTheme = {
   motion: "subtle",
   photoMood: "pop",
   kinds: ["specialty"],
-  look: { headerLayout: "logo-center", shape: "bar", icons: "plain", menu: "drawer", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 26, card: 14 }, headingCase: "none", tracking: -1, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "grid", pageWidth: 1440, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false },
-  settings: { conversion_profile: "none", editorial_profile: "none", motion_intensity: "subtle" },
-  headerSettings: { layout: "logo-center", show_search: true, mobile_menu: "drawer" },
+  look: { headerLayout: "logo-center", shape: "bar", icons: "plain", menu: "fullscreen", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 26, card: 14 }, headingCase: "none", tracking: -1, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "grid", pageWidth: 1440, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false },
+  // Polices : titres Poppins (graisses 500 à 800) et italique d'accent Playfair Display 800 ; capitales à empattements = Playfair
+  // Display 700 (dérivée par la mise en page, habillage « fraise »).
+  settings: { conversion_profile: "none", editorial_profile: "none", motion_intensity: "subtle", theme_kit: "fraise", type_accent_font: "playfair_display_i8" },
+  headerSettings: { layout: "logo-center", show_search: true, mobile_menu: "fullscreen" },
   mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
   palette: (k) => {
     const cream = k.light("#FCF6EE");

@@ -1,7 +1,8 @@
 /**
- * Garde-fou (retour de Thomas du 19 octobre, 15 h 07, commentaire 6270476740) : la démonstration FRAISE GUMMIES du studio
- * est TOUJOURS la composition complète de la référence Lumora (lot 2C), jamais une version réduite par le parcours
- * « thème du catalogue » (qui masque toute section sans contenu).
+ * Garde-fou : la démonstration FRAISE GUMMIES du studio est la reprise COMPLÈTE des sept planches corrigées du 24 octobre
+ * (consigne écrite de Thomas, docs/theme-briefs/fraise-gummies/, fixture tests/fraise-fixtures.ts), qui remplace la
+ * composition Lumora du lot 2C (toujours constructible par conversionProject pour les anciens contrôles) ; jamais une
+ * version réduite par le parcours « thème du catalogue » (qui masque toute section sans contenu).
  *
  * ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en thème E-commerce (issue #158, décision du
  * 21 octobre, 12 h 58). Sa nouvelle composition est figée ici de la même façon (liste ordonnée, aucune section masquée,
@@ -29,13 +30,14 @@ const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
 
 /** Composition attendue (inventaire des références : docs/coordination/LOT_2C_FRAISE_ONDE_INVENTAIRE.md). */
 const EXPECTED = {
+  // Sept planches corrigées (24 octobre) : accueil et fiche des planches 01 et 04 ; « fg-page » porte le dessin de la page.
   fraise: {
-    profile: "pop",
-    index: ["cv-hero", "marquee", "cv-reviews", "cv-feature", "features-grid", "cv-feature", "faq", "comparison-table", "stats", "cv-guarantee", "cv-stories", "faq", "newsletter", "marquee"],
-    product: ["main-product", "content-tabs", "cv-stories", "cv-feature", "features-grid", "cv-reviews", "cv-feature", "stats", "timeline", "comparison-table", "cv-guarantee", "faq", "newsletter", "marquee"],
-    pages: ["a-propos", "listicle", "advertorial", "sections", "contact", "faq", "livraison-retours", "mentions-legales", "confidentialite", "conditions-generales"],
-    headings: ["Les avis de vos clients", "Un flacon,", "En quelques", "Questions fréquentes"],
-    offers: 3,
+    profile: "none",
+    index: ["fg-hero", "fg-taste", "fg-details", "fg-offers", "fg-everyday", "fg-duo", "fg-faqteaser", "fg-news", "fg-page"],
+    product: ["fg-product", "fg-tabs", "fg-texture", "fg-uses", "fg-info", "fg-faqteaser", "fg-cta", "fg-page"],
+    pages: ["la-recette", "notre-histoire", "journal", "commande", "faq", "contact", "livraison-et-retours", "suivi-de-commande", "mentions-legales", "conditions-de-vente", "confidentialite", "cookies"],
+    headings: ["FRAISE GUMMIES", "Vos questions"],
+    offers: 0,
   },
   // Refonte E-commerce (issue #158) : campagne, achat, détail, usages, bandeau d'appel, questions, inscription.
   onde: {
@@ -48,7 +50,7 @@ const EXPECTED = {
   },
 } as const;
 
-describe("FRAISE (Lumora) et ONDE (refonte E-commerce) : composition figée, jamais réduite", async () => {
+describe("FRAISE (sept planches) et ONDE (refonte E-commerce) : composition figée, jamais réduite", async () => {
   const user = await createUser("compo-fo@example.invalid", "isolated-test-only", "Composition");
   for (const id of ["fraise", "onde"] as const) {
     it(`${id} : sections attendues, ordonnées, aucune masquée ; bon thème ; pages de référence ; rendu par la route d'aperçu`, async () => {
@@ -57,8 +59,10 @@ describe("FRAISE (Lumora) et ONDE (refonte E-commerce) : composition figée, jam
       expect(spec.direction).toBe(id);
       const attr = id === "onde" ? "editorial" : "conversion";
       expect(spec.settings[`${attr}_profile`]).toBe(exp.profile);
-      const types = (t: string) => spec.templates[t].order.map((k) => spec.templates[t].sections[k].type);
-      const hidden = (t: string) => spec.templates[t].order.filter((k) => spec.templates[t].sections[k].disabled);
+      // FRAISE : le bloc d'achat de base reste dans la fiche, désactivé (remplacé par « fg-product », la fiche des planches).
+      const kept = (t: string) => spec.templates[t].order.filter((k) => !(id === "fraise" && spec.templates[t].sections[k].type === "main-product"));
+      const types = (t: string) => kept(t).map((k) => spec.templates[t].sections[k].type);
+      const hidden = (t: string) => kept(t).filter((k) => spec.templates[t].sections[k].disabled);
       expect(types("index"), `${id} accueil`).toEqual(exp.index);
       const productKey = spec.store.product.template_suffix && spec.templates[`product.${spec.store.product.template_suffix}`] ? `product.${spec.store.product.template_suffix}` : "product";
       expect(types(productKey), `${id} fiche`).toEqual(exp.product);
@@ -66,14 +70,18 @@ describe("FRAISE (Lumora) et ONDE (refonte E-commerce) : composition figée, jam
       expect(hidden(productKey), `${id} fiche : sections masquées`).toEqual([]);
       for (const h of exp.pages) expect(spec.store.pages.map((p) => p.handle), `${id} page ${h}`).toContain(h);
       // En-tête : bandeau(x) d'annonce identifiés comme exemples + en-tête ; pied de page en colonnes.
-      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["announcement-bar", "announcement-bar", "header"] : ["header"]);
-      // Offres FRAISE (1 / 2+1 / 3+2) : dans le bloc d'achat de la fiche.
-      const main = Object.values(spec.templates[productKey].sections).find((s) => s.type === "main-product")!;
-      expect(Object.values(main.blocks ?? {}).filter((b) => b.type === "quantity_offer")).toHaveLength(exp.offers);
+      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["fg-header"] : ["header"]);
+      if (id === "fraise") {
+        // Offres FRAISE : trois formats vendus (1, 2, 3 flacons), prix de lot calculés par le thème (aucun bloc d'offre).
+        expect(spec.store.product.variants.map((v) => v.price)).toEqual([1660, 2490, 3320]);
+      } else {
+        const main = Object.values(spec.templates[productKey].sections).find((s) => s.type === "main-product")!;
+        expect(Object.values(main.blocks ?? {}).filter((b) => b.type === "quantity_offer")).toHaveLength(exp.offers);
+      }
       // Même version dans le studio et dans l'aperçu : la version enregistrée se relit à l'identique (ordre des sections).
       const version = saveThemeVersion(f.pid, spec, "Test composition", "user");
       const reloaded = themeVersion(f.pid, version.id)!.spec;
-      expect(reloaded.templates.index.order.map((k: string) => reloaded.templates.index.sections[k].type)).toEqual(exp.index);
+      expect(reloaded.templates.index.order.map((k: string) => reloaded.templates.index.sections[k].type)).toEqual([...exp.index]);
       // Rendu réel : accueil et fiche contiennent les titres des sections de référence, rien de « masqué ».
       const files = compileTheme(spec);
       for (const route of ["/", `/products/${spec.store.product.handle}`]) {

@@ -3,12 +3,12 @@
   "demos": [
     {
       "id": "fraise",
-      "brand": "Fraise Gummies",
+      "brand": "FRAISE GUMMIES",
       "product": "Strawberry gummies",
       "sector": "Confectionery",
       "category": "specialty",
       "direction": "fraise",
-      "palette": ["#E4473F", "#850212", "#E4473F", "#FBF7F2", "#141414"],
+      "palette": ["#E3363E", "#970824", "#E3363E", "#FCF6EE", "#230605"],
       "photo": "/demo/fraise/01-hero.webp",
       "logo": "/demo/fraise/logo-proposition.png",
       "shopDesktop": "/demo/fraise/boutique-bureau.jpg",

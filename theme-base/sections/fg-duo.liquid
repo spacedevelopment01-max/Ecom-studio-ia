@@ -19,7 +19,8 @@
     <div class="fg-duo__journal">
       <div class="fg-duo__jhead">
         {% render 'fg-title', text: s.journal_heading, tag: 'h2', class: 'fg-duo__jtitle fg-only-d' %}
-        {% render 'fg-title', text: s.journal_heading_mobile | default: s.journal_heading, tag: 'p', class: 'fg-duo__jtitle fg-only-m' %}
+        {%- assign mjh = s.journal_heading_mobile | default: s.journal_heading -%}
+        {% render 'fg-title', text: mjh, tag: 'p', class: 'fg-duo__jtitle fg-only-m' %}
         {%- if s.journal_text != blank -%}<p class="fg-duo__jtext fg-only-d">{{ s.journal_text }}</p>{%- endif -%}
         {%- if s.journal_text_mobile != blank or s.journal_text != blank -%}<p class="fg-duo__jtext fg-only-m">{{ s.journal_text_mobile | default: s.journal_text | escape | newline_to_br }}</p>{%- endif -%}
         {%- if s.journal_link_label != blank -%}<a class="fg-duo__all" href="{{ s.journal_link | default: routes.root_url }}">{{ s.journal_link_label }}{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}
@@ -64,7 +65,7 @@
     { "type": "number", "id": "image_mplace_x", "label": "Position horizontale posée (téléphone)", "default": 0 },
     { "type": "number", "id": "image_mplace_y", "label": "Position verticale posée (téléphone)", "default": 0 },
     { "type": "header", "content": "Journal" },
-    { "type": "textarea", "id": "journal_heading", "label": "Titre du journal", "default": "[i]Le journal[/i] FRAISE" },
+    { "type": "textarea", "id": "journal_heading", "label": "Titre du journal", "default": "[i]Le[/i] journal" },
     { "type": "text", "id": "journal_text", "label": "Texte du journal" },
     { "type": "textarea", "id": "journal_heading_mobile", "label": "Titre du journal au téléphone" },
     { "type": "textarea", "id": "journal_text_mobile", "label": "Texte du journal au téléphone" },

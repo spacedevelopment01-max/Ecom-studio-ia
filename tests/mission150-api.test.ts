@@ -24,7 +24,7 @@ it.each(['creer','vendre','dominer'] as const)('%s : galerie native de la famill
  const rejected=await fr(()=>sections(post({type:'fam:specialty.press',template:'index'}),ctx(d.pid)));expect(rejected.status).toBe(plan==='dominer'?200:402);
  if(plan!=='dominer')expect(currentTheme(d.pid)!.version.number).toBe(before);
  const accepted=await fr(()=>sections(post({type:'fam:specialty.faq',template:'index'}),ctx(d.pid)));expect(accepted.status).toBe(200);
- const spec=currentTheme(d.pid)!.spec;const sid=spec.templates.index.order.find(x=>spec.templates.index.sections[x].type==='cv-hero')!;
+ const spec=currentTheme(d.pid)!.spec;const sid=spec.templates.index.order.find(x=>spec.templates.index.sections[x].type==='fg-hero')!;
  const edited=await fr(()=>ops(post({ops:[{op:'set_setting',template:'index',section:sid,key:'heading',value:'Texte conservé de mon projet'}]}),ctx(d.pid)));expect(edited.status).toBe(200);expect(currentTheme(d.pid)!.spec.templates.index.sections[sid].settings.heading).toBe('Texte conservé de mon projet');
 });
 it('devis publicitaire et appel disponibles : refus avant fournisseur et isolation des comptes',async()=>{
@@ -36,7 +36,7 @@ it('devis publicitaire et appel disponibles : refus avant fournisseur et isolati
 it.each(['creer','vendre','dominer'] as const)('%s : niveaux IA et création de pages appliqués sans modèle IA réel',async plan=>{
  user=await createUser(`api150-edition-${id()}@example.test`,'test-password-150','Édition isolée');const d=await fr(()=>demoProject(user.id,'fraise'));grantProjectPlan(d.pid,plan);if(!currentTheme(d.pid))saveThemeVersion(d.pid,d.spec,'Fixture native','user');
  const {assertThemeOperations}=await import('@/lib/theme/plan-access');const {assertPageModels}=await import('@/lib/plan-gates');const spec=currentTheme(d.pid)!.spec;
- const sid=spec.templates.index.order.find(x=>spec.templates.index.sections[x].type==='cv-hero')!;
+ const sid=spec.templates.index.order.find(x=>spec.templates.index.sections[x].type==='fg-hero')!;
  expect(()=>assertThemeOperations(d.pid,spec,[{op:'set_setting',template:'index',section:sid,key:'heading',value:'Ma demande exacte'}],true)).not.toThrow();
  const structural=()=>assertThemeOperations(d.pid,spec,[{op:'duplicate_section',template:'index',section:sid}],true);
  const custom=()=>assertThemeOperations(d.pid,spec,[{op:'custom_section',type:'es-custom-test',name:'Test',liquid:'test'}],true);

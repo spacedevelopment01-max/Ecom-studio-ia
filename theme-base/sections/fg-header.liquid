@@ -16,21 +16,9 @@
   assign menu_m = linklists[s.menu_mobile]
   assign menu_legal = linklists[s.menu_legal]
   assign search_menu = linklists[s.search_menu]
-  assign accent_font = s.accent_font
-  assign serif_font = s.serif_font
-  assign title_font = s.title_font
   assign brand = s.wordmark | default: shop.name
 -%}
-{%- assign title_800 = title_font | font_modify: 'weight', '800' -%}
-{%- assign title_600 = title_font | font_modify: 'weight', '600' -%}
-{%- assign title_500 = title_font | font_modify: 'weight', '500' -%}
 <style>
-  {{ title_font | font_face: font_display: 'swap' }}
-  {%- if title_800 -%}{{ title_800 | font_face: font_display: 'swap' }}{%- endif -%}
-  {%- if title_600 -%}{{ title_600 | font_face: font_display: 'swap' }}{%- endif -%}
-  {%- if title_500 -%}{{ title_500 | font_face: font_display: 'swap' }}{%- endif -%}
-  {{ accent_font | font_face: font_display: 'swap' }}
-  {{ serif_font | font_face: font_display: 'swap' }}
   body.dir-fraise, .fg, .fg-header, .fg-footer, .fg-menu, .fg-cookies, .fg-drawer, .fg-search, .fg-lightbox, .fg-buybar {
     --fg-cream: {{ s.color_cream }};
     --fg-blush: {{ s.color_blush }};
@@ -41,14 +29,13 @@
     --fg-ink: {{ s.color_ink }};
     --fg-text: {{ s.color_text }};
     --fg-yellow: {{ s.color_yellow }};
-    --fg-title: {{ title_font.family }}, {{ title_font.fallback_families }};
-    --fg-accent: {{ accent_font.family }}, {{ accent_font.fallback_families }};
-    --fg-serif: {{ serif_font.family }}, {{ serif_font.fallback_families }};
+    --fg-title: var(--font-heading);
+    --fg-accent: var(--font-accent);
+    --fg-serif: var(--fg-kit-serif, var(--font-accent));
   }
 </style>
 {{ 'fraise-fonts.css' | asset_url | stylesheet_tag }}
 {{ 'fraise.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'fraise.js' | asset_url }}" defer="defer"></script>
 <script type="application/json" id="fg-config">
   {
     "checkout": {{ s.checkout_mode | json }},
@@ -236,8 +223,8 @@
     { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
     { "type": "text", "id": "cart_label", "label": "Nom du panier (lecteurs d'écran)", "default": "Panier" },
     { "type": "header", "content": "Bandeau rouge" },
-    { "type": "text", "id": "band_brand", "label": "Nom du bandeau", "default": "FRAISE GUMMIES" },
-    { "type": "text", "id": "band_text", "label": "Phrase du bandeau", "default": "Le goût fraise au quotidien", "info": "Vide : aucun bandeau." },
+    { "type": "text", "id": "band_brand", "label": "Nom du bandeau", "info": "Vide : le nom de la boutique." },
+    { "type": "text", "id": "band_text", "label": "Phrase du bandeau", "info": "Vide : aucun bandeau." },
     { "type": "header", "content": "Recherche" },
     { "type": "checkbox", "id": "show_search", "label": "Recherche", "default": true },
     { "type": "text", "id": "search_label", "label": "Nom de la recherche", "default": "Rechercher" },
@@ -266,7 +253,7 @@
     { "type": "text", "id": "drawer_less", "label": "Moins (lecteurs d'écran)", "default": "Retirer un lot" },
     { "type": "text", "id": "drawer_more", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un lot" },
     { "type": "text", "id": "drawer_remove", "label": "Supprimer (lecteurs d'écran)", "default": "Supprimer" },
-    { "type": "text", "id": "drawer_units", "label": "Nombre d'unités d'une ligne", "default": "[n] flacons au total", "info": "[n] : unités de la ligne (lots × unités par lot)." },
+    { "type": "text", "id": "drawer_units", "label": "Nombre d'unités d'une ligne", "default": "[n] unités au total", "info": "[n] : unités de la ligne (lots × unités par lot)." },
     { "type": "text", "id": "drawer_packs", "label": "Nombre de lots d'une ligne", "default": "[q] lot(s)" },
     { "type": "text", "id": "drawer_brand", "label": "Marque affichée sur les lignes", "info": "Vide : le nom du produit seul." },
     { "type": "text", "id": "qty_label", "label": "Quantité d'une ligne (récapitulatif)", "default": "Quantité : [q]" },
@@ -282,9 +269,7 @@
     { "type": "color", "id": "color_text", "label": "Gris des textes", "default": "#5A4C4A" },
     { "type": "color", "id": "color_yellow", "label": "Jaune du badge", "default": "#FFD84D" },
     { "type": "header", "content": "Polices" },
-    { "type": "font_picker", "id": "title_font", "label": "Titres ronds et gras", "default": "poppins_n7" },
-    { "type": "font_picker", "id": "accent_font", "label": "Italique d'accent", "default": "playfair_display_i8" },
-    { "type": "font_picker", "id": "serif_font", "label": "Capitales à empattements (« FRAISE. »)", "default": "playfair_display_n7" },
+    { "type": "paragraph", "content": "Les polices se règlent dans Réglages du thème › Typographie : police des titres et police d'accent (italique). Les capitales à empattements reprennent la police d'accent en romain." },
     { "type": "header", "content": "Commande" },
     { "type": "checkbox", "id": "demo_mode", "label": "Boutique de démonstration", "default": false, "info": "Commande, suivi et formulaires simulés et annoncés comme tels ; aucun paiement ni envoi." },
     { "type": "select", "id": "checkout_mode", "label": "Bouton « Passer commande »", "default": "shopify", "options": [{ "value": "shopify", "label": "Paiement Shopify" }, { "value": "demo", "label": "Page de commande de démonstration" }] },

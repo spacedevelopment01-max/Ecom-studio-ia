@@ -16,6 +16,8 @@
   assign m_legal = linklists[s.menu_legal]
   assign m_short = linklists[s.menu_short]
   assign m_legal_help = linklists[s.menu_legal_help]
+  assign m_help_j = linklists[s.menu_help_journal]
+  assign m_legal_j = linklists[s.menu_legal_journal]
   assign brand = s.wordmark | default: shop.name
   assign year = 'now' | date: '%Y'
 -%}
@@ -27,6 +29,12 @@
 {%- capture fg_cols -%}
   {%- if m_shop.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--shop"><p class="fg-footer__h">{{ s.shop_title }}</p><ul role="list">{%- for link in m_shop.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
   {%- if m_help.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--help"><p class="fg-footer__h">{{ s.help_title }}</p><ul role="list">{%- for link in m_help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_cols_j -%}
+  {%- if m_help_j.links.size > 0 -%}
+    {%- if m_shop.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--shop"><p class="fg-footer__h">{{ s.shop_title }}</p><ul role="list">{%- for link in m_shop.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
+    <div class="fg-footer__col fg-footer__col--help"><p class="fg-footer__h">{{ s.help_title }}</p><ul role="list">{%- for link in m_help_j.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>
+  {%- else -%}{{ fg_cols }}{%- endif -%}
 {%- endcapture -%}
 {%- capture fg_social -%}
   <ul class="fg-footer__social" role="list">
@@ -64,6 +72,9 @@
   {%- if m_legal.links.size > 0 -%}<ul class="fg-footer__legal" role="list">{%- for link in m_legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
   {%- if m_legal_help.links.size > 0 -%}<ul class="fg-footer__legal fg-footer__legal--help" role="list">{%- for link in m_legal_help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
 {%- endcapture -%}
+{%- capture fg_legal_j -%}
+  {%- if m_legal_j.links.size > 0 -%}<ul class="fg-footer__legal" role="list">{%- for link in m_legal_j.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- else -%}{{ fg_legal }}{%- endif -%}
+{%- endcapture -%}
 {%- capture fg_copy -%}<p class="fg-footer__copy">© {{ year }} {{ s.copyright | default: brand }}</p>{%- endcapture -%}
 {%- capture fg_news_form -%}
   {%- form 'customer', class: 'fg-footer__news', data-fg-news: '' -%}
@@ -77,6 +88,7 @@
 {%- endcapture -%}
 <footer class="fg fg-footer" data-fg-footer data-demo-text="{{ s.news_demo | escape }}">
   <svg class="fg-wave fg-footer__wave" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40H0z" fill="currentColor"/></svg>
+  <svg class="fg-footer__scallop" viewBox="0 0 1440 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 12Q21.82 0 43.64 12T87.27 12T130.91 12T174.55 12T218.18 12T261.82 12T305.45 12T349.09 12T392.73 12T436.36 12T480.00 12T523.64 12T567.27 12T610.91 12T654.55 12T698.18 12T741.82 12T785.45 12T829.09 12T872.73 12T916.36 12T960.00 12T1003.64 12T1047.27 12T1090.91 12T1134.55 12T1178.18 12T1221.82 12T1265.45 12T1309.09 12T1352.73 12T1396.36 12T1440.00 12V24H0z" fill="currentColor"/><path d="M0 12Q21.82 0 43.64 12T87.27 12T130.91 12T174.55 12T218.18 12T261.82 12T305.45 12T349.09 12T392.73 12T436.36 12T480.00 12T523.64 12T567.27 12T610.91 12T654.55 12T698.18 12T741.82 12T785.45 12T829.09 12T872.73 12T916.36 12T960.00 12T1003.64 12T1047.27 12T1090.91 12T1134.55 12T1178.18 12T1221.82 12T1265.45 12T1309.09 12T1352.73 12T1396.36 12T1440.00 12" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>
   <div class="fg-footer__body">
     <div class="fg-footer__v fg-footer__v--home">
       {{ fg_logo }}
@@ -86,9 +98,9 @@
     </div>
     <div class="fg-footer__v fg-footer__v--journal">
       {{ fg_logo }}
-      <div class="fg-footer__cols">{{ fg_cols }}</div>
+      <div class="fg-footer__cols">{{ fg_cols_j }}</div>
       <div class="fg-footer__nl"><p class="fg-footer__nl-title">{{ s.journal_title }}</p>{{ fg_news_form | replace: '[[k]]', 'j' }}</div>
-      <div class="fg-footer__bottom">{{ fg_copy }}{{ fg_legal }}</div>
+      <div class="fg-footer__bottom">{{ fg_copy }}{{ fg_legal_j }}</div>
     </div>
     <div class="fg-footer__v fg-footer__v--contact">
       {{ fg_logo }}
@@ -154,6 +166,8 @@
     { "type": "link_list", "id": "menu_info", "label": "Informations (téléphone)" },
     { "type": "link_list", "id": "menu_legal", "label": "Liens légaux" },
     { "type": "link_list", "id": "menu_legal_help", "label": "Liens légaux (pied « aide » du téléphone)" },
+    { "type": "link_list", "id": "menu_help_journal", "label": "Liens d'aide (pied « journal »)", "info": "Vide : les liens d'aide ci-dessus." },
+    { "type": "link_list", "id": "menu_legal_journal", "label": "Liens légaux (pied « journal »)", "info": "Vide : les liens légaux ci-dessus." },
     { "type": "link_list", "id": "menu_short", "label": "Liens du pied réduit" },
     { "type": "text", "id": "bottom_text", "label": "Phrase de la ligne du bas (accueil)" },
     { "type": "text", "id": "copyright", "label": "Mention des droits (après l'année)", "info": "Vide : le nom de la boutique." },
@@ -162,7 +176,7 @@
     { "type": "text", "id": "contact_title", "label": "Titre (pied « contact »)", "default": "Restons en contact" },
     { "type": "text", "id": "mobile_news_title", "label": "Titre (téléphone)", "default": "Restons en contact !" },
     { "type": "text", "id": "mobile_news_text", "label": "Texte (téléphone)" },
-    { "type": "text", "id": "journal_mobile_title", "label": "Titre de l'inscription (pied « colonnes » au téléphone)", "default": "Restez dans l'univers FRAISE" },
+    { "type": "text", "id": "journal_mobile_title", "label": "Titre de l'inscription (pied « colonnes » au téléphone)", "default": "Restez informé" },
     { "type": "text", "id": "news_placeholder", "label": "Texte du champ", "default": "Votre adresse e-mail" },
     { "type": "text", "id": "news_button", "label": "Bouton (téléphone)", "default": "S'inscrire" },
     { "type": "text", "id": "news_done", "label": "Message d'inscription réussie", "default": "Merci, votre inscription est enregistrée." },

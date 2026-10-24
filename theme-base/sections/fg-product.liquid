@@ -30,7 +30,7 @@
     assign vref = unit_price | times: vn
   endif
 -%}
-<section class="fg fg-product" data-fg-product id="le-produit">
+<section class="fg fg-product" data-fg-product id="produit">
   <div class="fg-c">
     <div class="fg-product__gallery">
       <div class="fg-product__thumbs" role="list" aria-label="{{ s.gallery_label | escape }}">
@@ -120,7 +120,7 @@
     </div>
   </div>
   <div class="fg-lightbox" role="dialog" aria-modal="true" aria-label="{{ s.zoom_label | escape }}" hidden data-fg-lightbox>
-    <img src="" alt="" data-fg-lightbox-img>
+    <img src="" alt="" width="1200" height="1200" data-fg-lightbox-img>
     <button type="button" class="fg-lightbox__close" data-fg-lightbox-close><span class="visually-hidden">{{ s.close_label }}</span>{% render 'fg-icon', name: 'close' %}</button>
   </div>
 </section>

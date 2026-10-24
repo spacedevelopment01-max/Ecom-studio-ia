@@ -48,7 +48,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club**, **souple**, **atelier-nuance** et **parenthese** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
   sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
   silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
-- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
+- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée ; reprise des sept planches corrigées du 24 octobre, sections `fg-*`, voir `docs/LISEZMOI-fraise.md`),
   **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
   21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
   `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
@@ -121,7 +121,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
-- La démonstration FRAISE GUMMIES est la composition complète de la référence Lumora (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais la recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni la simplifier sans consigne écrite de Thomas.
+- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit privé `public/demo/fraise/v2/` (hors dépôt) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
 - ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en E-commerce (issue #158, 21 octobre, 12 h 58) ; sa nouvelle composition (`tests/onde-fixtures.ts`) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 

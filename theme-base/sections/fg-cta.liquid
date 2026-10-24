@@ -18,7 +18,8 @@
   <div class="fg-cta__body">
     <div class="fg-c">
       <p class="fg-cta__title fg-only-d">{{ s.heading }}</p>
-      {% render 'fg-title', text: s.heading_mobile | default: s.heading, tag: 'p', class: 'fg-cta__title fg-cta__title--m fg-only-m' %}
+      {%- assign mh = s.heading_mobile | default: s.heading -%}
+      {% render 'fg-title', text: mh, tag: 'p', class: 'fg-cta__title fg-cta__title--m fg-only-m' %}
       <span class="fg-cta__mart" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'half' %}</span>
       {% render 'fg-img', image: s.image, asset: s.image_asset, alt: '', class: 'fg-cut fg-cta__img' %}
       <span class="fg-cta__deco" aria-hidden="true">{% render 'fg-art', name: 'berry-ghost' %}</span>
@@ -38,7 +39,7 @@
   "name": "Bandeau d'achat",
   "class": "fg-cta-section",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Phrase", "default": "Votre rituel, côté fraise." },
+    { "type": "text", "id": "heading", "label": "Phrase", "default": "Un plaisir à portée de main." },
     { "type": "textarea", "id": "heading_mobile", "label": "Phrase au téléphone", "info": "Une ligne par retour à la ligne ; [i]italique[/i]." },
     { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
     { "type": "range", "id": "format", "label": "Format ajouté (rang, 0 = le premier)", "min": 0, "max": 6, "step": 1, "default": 0 },

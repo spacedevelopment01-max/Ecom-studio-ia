@@ -14,7 +14,7 @@
     <div class="fg-ship__cols">
       {%- for block in section.blocks -%}
         <div class="fg-ship__col{% if forloop.first %} is-active{% endif %}" id="fg-ship-{{ block.id }}" role="tabpanel" aria-labelledby="fg-ship-tab-{{ block.id }}" {{ block.shopify_attributes }}>
-          <span class="fg-ship__ico" id="{{ block.settings.anchor }}">{% render 'fg-icon', name: block.settings.icon, class: 'fg-only-d' %}{% render 'fg-icon', name: block.settings.icon_mobile | default: block.settings.icon, class: 'fg-only-m' %}</span>
+          <span class="fg-ship__ico" id="{{ block.settings.anchor }}">{% render 'fg-icon', name: block.settings.icon, class: 'fg-only-d' %}{%- assign mico = block.settings.icon_mobile | default: block.settings.icon -%}{% render 'fg-icon', name: mico, class: 'fg-only-m' %}</span>
           <h2 class="fg-ship__title"><span class="fg-only-d">{{ block.settings.title }}</span><span class="fg-only-m">{{ block.settings.title_mobile | default: block.settings.title }}</span></h2>
           <div class="fg-ship__text{% if block.settings.text_mobile != blank %} fg-only-d{% endif %}">{{ block.settings.text }}</div>
           {%- if block.settings.text_mobile != blank -%}<div class="fg-ship__text fg-only-m">{{ block.settings.text_mobile }}</div>{%- endif -%}

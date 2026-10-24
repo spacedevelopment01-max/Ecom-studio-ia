@@ -28,7 +28,7 @@
     <ul class="fg-texture__cards" role="list">
       {%- for block in section.blocks -%}
         <li class="fg-texture__card" style="--om: {{ block.settings.order_mobile | default: forloop.index }};" {{ block.shopify_attributes }}>
-          <span class="fg-texture__ico">{% render 'fg-icon', name: block.settings.icon, class: 'fg-only-d' %}{% render 'fg-icon', name: block.settings.icon_mobile | default: block.settings.icon, class: 'fg-only-m' %}</span>
+          <span class="fg-texture__ico">{% render 'fg-icon', name: block.settings.icon, class: 'fg-only-d' %}{%- assign mico = block.settings.icon_mobile | default: block.settings.icon -%}{% render 'fg-icon', name: mico, class: 'fg-only-m' %}</span>
           <h3 class="fg-texture__ctitle"><span class="fg-only-d">{{ block.settings.title }}</span><span class="fg-only-m">{{ block.settings.title_mobile | default: block.settings.title }}</span></h3>
           <p class="fg-texture__ctext">{{ block.settings.text | escape | newline_to_br }}</p>
           {%- if block.settings.text_mobile != blank -%}<p class="fg-texture__ctext fg-texture__ctext--m">{{ block.settings.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
@@ -47,7 +47,7 @@
   "settings": [
     { "type": "select", "id": "layout", "label": "Disposition au téléphone", "default": "photos", "options": [{ "value": "photos", "label": "Titre et photos" }, { "value": "cards", "label": "Quatre cartes" }] },
     { "type": "text", "id": "anchor", "label": "Ancre", "default": "la-texture" },
-    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le goût fraise.\n[i]La texture en détail.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Les détails\n[i]qui comptent.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone" },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone" },

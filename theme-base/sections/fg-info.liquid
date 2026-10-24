@@ -36,7 +36,7 @@
                   assign img_a = s.format_3_asset
               endcase
             -%}
-            <a class="fg-info__cell" href="{{ s.offers_link | default: '#le-produit' }}">{% render 'fg-offer', product: p, variant: variant, mode: 'mini', image_asset: img_a, alt: '', show_compare: true, show_last: true, show_per: 'all', show_save: true, index: forloop.index %}</a>
+            <a class="fg-info__cell" href="{{ s.offers_link | default: '#produit' }}">{% render 'fg-offer', product: p, variant: variant, mode: 'mini', image_asset: img_a, alt: '', show_compare: true, show_last: true, show_per: 'all', show_save: true, index: forloop.index %}</a>
           {%- endfor -%}
         </div>
       </div>
@@ -51,11 +51,11 @@
   "max_blocks": 8,
   "settings": [
     { "type": "text", "id": "anchor", "label": "Ancre", "default": "informations" },
-    { "type": "text", "id": "heading", "label": "Titre", "default": "Tout savoir sur le flacon." },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Tout savoir sur le produit." },
     { "type": "checkbox", "id": "show_offers", "label": "Formats à droite (ordinateur)", "default": true },
     { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
     { "type": "text", "id": "offers_heading", "label": "Titre des formats", "default": "Choisissez votre format." },
-    { "type": "text", "id": "offers_link", "label": "Lien des formats", "default": "#le-produit" },
+    { "type": "text", "id": "offers_link", "label": "Lien des formats", "default": "#produit" },
     { "type": "text", "id": "format_1_asset", "label": "Photo du format 1 (fichier du thème)" },
     { "type": "text", "id": "format_2_asset", "label": "Photo du format 2 (fichier du thème)" },
     { "type": "text", "id": "format_3_asset", "label": "Photo du format 3 (fichier du thème)" }

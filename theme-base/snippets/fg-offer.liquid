@@ -54,7 +54,7 @@
       assign paid = n | minus: free
       assign msg = settings.offer_free_text | default: '[paid] achetés + [free] offert' | replace: '[paid]', paid | replace: '[free]', free
     elsif eco < unit_price
-      assign pct = eco | times: 100 | divided_by: unit_price
+      assign pct = eco | times: 100.0 | divided_by: unit_price | round
       assign msg = settings.offer_pct_text | default: '−[pct] % sur le [n]ᵉ' | replace: '[pct]', pct | replace: '[n]', n
       assign last_price = unit_price | minus: eco | money
       assign last = settings.offer_last_text | default: 'Le [n]ᵉ à [price]' | replace: '[n]', n | replace: '[price]', last_price

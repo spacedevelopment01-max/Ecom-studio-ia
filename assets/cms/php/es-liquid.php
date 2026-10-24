@@ -83,11 +83,11 @@ class TagForm extends \Liquid\AbstractBlock {
 	private $vars = [];
 	public function __construct($markup, array &$tokens, ?\Liquid\FileSystem $fileSystem = null) {
 		if (preg_match('/^\s*[\'"]([\w-]+)[\'"]/', $markup, $t)) $this->formType = $t[1];
-		if (preg_match_all('/(\w+)\s*:\s*(\'[^\']*\'|"[^"]*")/', $markup, $m, PREG_SET_ORDER)) {
+		if (preg_match_all('/([\w-]+)\s*:\s*(\'[^\']*\'|"[^"]*")/', $markup, $m, PREG_SET_ORDER)) {
 			foreach ($m as $x) $this->attrs[$x[1]] = substr($x[2], 1, -1);
 		}
 		// Valeur venant d'une variable (« id: form_id ») : lue au rendu, comme Shopify.
-		if (preg_match_all('/(\w+)\s*:\s*([A-Za-z_][\w.]*)\s*(?:,|$)/', $markup, $v, PREG_SET_ORDER)) {
+		if (preg_match_all('/([\w-]+)\s*:\s*([A-Za-z_][\w.]*)\s*(?:,|$)/', $markup, $v, PREG_SET_ORDER)) {
 			foreach ($v as $x) if (!isset($this->attrs[$x[1]])) $this->vars[$x[1]] = $x[2];
 		}
 		parent::__construct($markup, $tokens, $fileSystem);
@@ -97,6 +97,12 @@ class TagForm extends \Liquid\AbstractBlock {
 		foreach (['id', 'class'] as $k) {
 			$val = $this->attrs[$k] ?? (isset($this->vars[$k]) ? (string) $context->get($this->vars[$k]) : '');
 			if ($val !== '') $a .= ' ' . $k . '="' . htmlspecialchars($val, ENT_QUOTES) . '"';
+		}
+		// Autres attributs (« data-… : '' » ou variable) : rendus comme Shopify, même vides.
+		foreach (array_unique(array_merge(array_keys($this->attrs), array_keys($this->vars))) as $k) {
+			if (in_array($k, ['id', 'class', 'return_to'], true)) continue;
+			$val = $this->attrs[$k] ?? (string) $context->get($this->vars[$k]);
+			$a .= ' ' . $k . '="' . htmlspecialchars($val, ENT_QUOTES) . '"';
 		}
 		$context->push();
 		$context->set('form', ['posted_successfully?' => false, 'errors' => null]);
@@ -128,6 +134,8 @@ class EsFilters {
 	public static function placeholder_svg_tag($input, $class = '') { return '<svg class="' . htmlspecialchars((string)$class, ENT_QUOTES) . '" viewBox="0 0 100 100" aria-hidden="true"></svg>'; }
 	public static function payment_type_svg_tag($input) { return ''; }
 	public static function default_errors($input) { return ''; }
+	/** Comme l'aperçu du studio (JSON.stringify) : caractères accentués et barres obliques tels quels. */
+	public static function json($input) { return json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); }
 	public static function money($input) { return is_numeric($input) ? number_format($input / 100, 2, ',', ' ') . ' €' : (string)$input; }
 	public static function t($input) {
 		$v = self::$strings[(string)$input] ?? null;

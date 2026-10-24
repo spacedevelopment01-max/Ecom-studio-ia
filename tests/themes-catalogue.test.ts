@@ -142,6 +142,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     // SILLON V2 (PR #182) : sections sv-* composées par sa démonstration (douze pages des planches, panier, commande).
     const { sillonProject } = await import("./sillon-fixtures");
     add((await runWithLang({ content: "fr", ui: "fr" }, () => sillonProject(user.id))).spec);
+    // FRAISE GUMMIES (sept planches corrigées) : sections fg-* composées par sa démonstration.
+    const { fraiseProject } = await import("./fraise-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => fraiseProject(user.id))).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.

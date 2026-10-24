@@ -131,6 +131,17 @@
         "info": "Utilisée pour les mots mis en valeur dans les titres."
       },
       {
+        "type": "select",
+        "id": "theme_kit",
+        "label": "Habillage propre au thème",
+        "default": "none",
+        "options": [
+          { "value": "none", "label": "Aucun" },
+          { "value": "fraise", "label": "FRAISE (polices, feuille et script du thème)" }
+        ],
+        "info": "FRAISE : titres dans la police des titres (graisses 500 à 800), italique d'accent dans la police d'accent, capitales à empattements dérivées de la police d'accent."
+      },
+      {
         "type": "range",
         "id": "heading_scale",
         "min": 80,
@@ -915,7 +926,7 @@
         "type": "text",
         "id": "offer_note",
         "label": "Note sous les offres",
-        "default": "Prix barrés : mêmes flacons achetés à l’unité. « Meilleure offre » : prix par flacon le plus bas."
+        "default": "Prix barrés : même quantité achetée à l’unité. « Meilleure offre » : prix par unité le plus bas."
       }
     ]
   },
