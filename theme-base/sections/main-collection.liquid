@@ -47,20 +47,33 @@
         {%- assign chip_list = chip_types | split: '|' -%}
         {%- if chip_list.size > 1 -%}
         <div class="es-collection__chips" role="group" aria-label="{{ collection.title | escape }}" data-chip-filters>
-          <button type="button" class="fs-chip-filter is-active" aria-pressed="true" data-chip-filter="">{{ section.settings.chips_all_label | default: 'Tous' | escape }}</button>
-          {%- for t in chip_list -%}{%- if t != blank -%}<button type="button" class="fs-chip-filter" aria-pressed="false" data-chip-filter="{{ t | handleize }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+          <button type="button" class="fs-chip-filter is-active" aria-pressed="true" data-chip-filter="">{{ section.settings.chips_all_label | default: 'Tous' | escape }}{% if section.settings.chip_counts %} <span class="fs-chip-filter__count">({{ collection.products.size }})</span>{% endif %}</button>
+          {%- for t in chip_list -%}{%- if t != blank -%}{%- assign chip_n = collection.products | where: 'type', t | size -%}<button type="button" class="fs-chip-filter" aria-pressed="false" data-chip-filter="{{ t | handleize }}">{{ t | escape }}{% if section.settings.chip_counts %} <span class="fs-chip-filter__count">({{ chip_n }})</span>{% endif %}</button>{%- endif -%}{%- endfor -%}
         </div>
         {%- endif -%}
       {%- endif -%}
-      <div class="es-product-grid" style="--cols: {{ section.settings.columns }}">
+      {%- if section.settings.client_sort -%}
+        {%- comment -%} Tri dans la page (SOUPLE) : réordonne les cartes sans recharger ; marche aussi dans l'aperçu statique. {%- endcomment -%}
+        <label class="es-sort es-collection__sort">{{ section.settings.sort_label | default: 'Trier par' | escape }}
+          <select class="es-select" data-client-sort aria-controls="CollectionGrid-{{ section.id }}">
+            <option value="">{{ section.settings.sort_default_label | default: 'Nos choix' | escape }}</option>
+            <option value="price-asc">{{ section.settings.sort_price_asc_label | default: 'Prix croissant' | escape }}</option>
+            <option value="price-desc">{{ section.settings.sort_price_desc_label | default: 'Prix décroissant' | escape }}</option>
+            <option value="title">{{ section.settings.sort_title_label | default: 'Nom, de A à Z' | escape }}</option>
+          </select>
+        </label>
+      {%- endif -%}
+      {%- assign wrap_items = false -%}{%- if section.settings.type_chips or section.settings.client_sort -%}{%- assign wrap_items = true -%}{%- endif -%}
+      <div class="es-product-grid" id="CollectionGrid-{{ section.id }}" style="--cols: {{ section.settings.columns }}" data-sort-list>
         {%- for product in collection.products -%}
-          {%- if section.settings.type_chips -%}<div class="es-collection__item" data-chip-item="{{ product.type | handleize }}">{%- endif -%}
-          {% render 'product-card', product_card: product, show_secondary: true, ratio: section.settings.card_ratio, show_vendor: section.settings.card_vendor, button_label: section.settings.card_button_label %}
-          {%- if section.settings.type_chips -%}</div>{%- endif -%}
+          {%- if wrap_items -%}<div class="es-collection__item"{% if section.settings.type_chips %} data-chip-item="{{ product.type | handleize }}"{% endif %} data-sort-item data-sort-index="{{ forloop.index }}" data-sort-price="{{ product.price | default: 0 }}" data-sort-title="{{ product.title | escape }}">{%- endif -%}
+          {% render 'product-card', product_card: product, show_secondary: true, ratio: section.settings.card_ratio, show_vendor: section.settings.card_vendor, button_label: section.settings.card_button_label, quick_add: section.settings.quick_add %}
+          {%- if wrap_items -%}</div>{%- endif -%}
         {%- else -%}
           <p class="es-empty">{{ 'collections.empty' | t }}</p>
         {%- endfor -%}
       </div>
+      {%- if section.settings.type_chips -%}<div class="es-collection__none" data-chip-empty hidden><p>{{ section.settings.no_result_text | default: 'Aucun produit ne correspond à ce filtre.' | escape }}</p><button type="button" class="es-button es-button--secondary" data-chip-filter="">{{ section.settings.no_result_button | default: 'Voir tous les produits' | escape }}</button></div>{%- endif -%}
       {% render 'pagination', paginate: paginate %}
     {%- endpaginate -%}
   </div>
@@ -115,6 +128,62 @@
     },
     {
       "type": "checkbox",
+      "id": "chip_counts",
+      "label": "Nombre de produits dans chaque pastille",
+      "info": "Calculé à partir des produits de la collection : « Tous (4) », « Tapis (1) »…",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "no_result_text",
+      "label": "Message quand aucun produit ne correspond",
+      "default": "Aucun produit ne correspond à ce filtre."
+    },
+    {
+      "type": "text",
+      "id": "no_result_button",
+      "label": "Bouton pour tout afficher",
+      "default": "Voir tous les produits"
+    },
+    {
+      "type": "checkbox",
+      "id": "client_sort",
+      "label": "Tri dans la page (sans rechargement)",
+      "info": "Nos choix, prix croissant ou décroissant, nom. Indépendant du tri de la plateforme.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "sort_label",
+      "label": "Libellé du tri",
+      "default": "Trier par"
+    },
+    {
+      "type": "text",
+      "id": "sort_default_label",
+      "label": "Ordre de la collection",
+      "default": "Nos choix"
+    },
+    {
+      "type": "text",
+      "id": "sort_price_asc_label",
+      "label": "Prix croissant",
+      "default": "Prix croissant"
+    },
+    {
+      "type": "text",
+      "id": "sort_price_desc_label",
+      "label": "Prix décroissant",
+      "default": "Prix décroissant"
+    },
+    {
+      "type": "text",
+      "id": "sort_title_label",
+      "label": "Nom",
+      "default": "Nom, de A à Z"
+    },
+    {
+      "type": "checkbox",
       "id": "show_header",
       "label": "Titre et description de la collection",
       "info": "Décochez quand un bandeau au-dessus porte déjà le titre de la page (H1).",
@@ -153,6 +222,19 @@
       "id": "card_button_label",
       "label": "Bouton sous chaque carte",
       "info": "Ex. « Voir le produit ». Vide : pas de bouton."
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Ajout au panier depuis la carte",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "Aucun (lien vers la fiche)" },
+        { "value": "icon", "label": "Bouton rond « panier »" },
+        { "value": "plus", "label": "Bouton rond « + »" },
+        { "value": "button", "label": "Bouton texte (libellé du bouton de carte)" }
+      ],
+      "info": "Ajoute vraiment le produit quand il n'a qu'une variante ; sinon le bouton mène à sa fiche pour choisir."
     },
     {
       "type": "color_scheme",

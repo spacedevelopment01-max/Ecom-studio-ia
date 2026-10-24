@@ -10,7 +10,16 @@
   assign pills = section.blocks | where: 'type', 'pill'
   assign points = section.blocks | where: 'type', 'point'
   assign details = section.blocks | where: 'type', 'detail'
+  assign buy = s.buy_product
+  assign cart_rule = s.cart_visibility | default: 'always'
+  assign hidden_by_cart = false
+  if cart_rule == 'empty' and cart.item_count > 0
+    assign hidden_by_cart = true
+  elsif cart_rule == 'filled' and cart.item_count == 0
+    assign hidden_by_cart = true
+  endif
 -%}
+{%- unless hidden_by_cart -%}
 <section class="es-section cv-anim cv-anim--{{ section.settings.animation_speed | default: 'normal' }} cv-feature cv-feature--{{ s.layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
   <div class="es-container cv-feature__inner">
     {%- if s.heading != blank and s.layout == 'stacked' -%}
@@ -43,7 +52,17 @@
           {%- endfor -%}
         </ul>
       {%- endif -%}
-      {%- if s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+      {%- if buy != blank -%}
+        {%- comment -%} SOUPLE : prix réel du produit, mention (« Prix de démonstration ») et vrai ajout au panier. {%- endcomment -%}
+        <div class="cv-feature__buy"{% render 'cv-reveal', animation: section.settings.animation %}>
+          <p class="cv-feature__price">{% render 'price', product: buy %}{% if s.price_note != blank %}<span class="cv-feature__price-note">{{ s.price_note | escape }}</span>{% endif %}</p>
+          {%- if buy.has_only_default_variant -%}
+            {%- form 'product', buy, class: 'cv-feature__form', data-product-form: '' -%}<input type="hidden" name="id" value="{{ buy.selected_or_first_available_variant.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" name="add" class="es-button cv-button" data-add-button{% unless buy.available %} disabled{% endunless %}>{% render 'icon', name: 'cart' %}<span>{{ s.button_label | default: 'products.product.add_to_cart' | t | escape }}</span></button>{%- endform -%}
+          {%- else -%}
+            <a class="es-button cv-button" href="{{ buy.url }}#acheter">{{ s.button_label | default: 'purchase.choose_options' | t | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>
+          {%- endif -%}
+        </div>
+      {%- elsif s.button_label != blank -%}<a class="es-button es-button--full cv-button" href="{{ s.button_link | default: routes.all_products_collection_url }}"{% render 'cv-reveal', animation: section.settings.animation %}>{{ s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
       {%- if s.guarantee_text != blank -%}<p class="cv-guarantee-line"{% render 'cv-reveal', animation: section.settings.animation %}>{% render 'icon', name: 'shield' %}<span>{{ s.guarantee_text | escape }}</span></p>{%- endif -%}
     </div>
     {%- if details.size > 0 -%}
@@ -53,12 +72,14 @@
             {%- if s.detail_numbers -%}<span class="cv-feature__num" aria-hidden="true">{{ forloop.index }}</span>{%- endif -%}
             {% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}
             {%- if block.settings.caption != blank -%}<p class="cv-feature__caption">{{ block.settings.caption | escape }}</p>{%- endif -%}
+            {%- if block.settings.text != blank -%}<p class="cv-feature__detail-text">{{ block.settings.text | escape }}</p>{%- endif -%}
           </li>
         {%- endfor -%}
       </ul>
     {%- endif -%}
   </div>
 </section>
+{%- endunless -%}
 
 {% schema %}
 {
@@ -136,6 +157,14 @@
           "label": "Titre, visuel, puis points"
         },
         {
+          "value": "product",
+          "label": "Grand gros plan, produit à acheter et vignettes"
+        },
+        {
+          "value": "details-points",
+          "label": "Gros plans légendés et encadré de points"
+        },
+{
           "value": "essentials",
           "label": "Produit, texte et icônes, gros plans à droite"
         },
@@ -143,6 +172,29 @@
           "value": "numbered",
           "label": "Gros plan et détails numérotés"
         }
+      ]
+    },
+    {
+      "type": "product",
+      "id": "buy_product",
+      "label": "Produit à acheter",
+      "info": "Affiche son prix réel et un bouton qui l'ajoute au panier (un produit à plusieurs variantes mène à sa fiche)."
+    },
+    {
+      "type": "text",
+      "id": "price_note",
+      "label": "Mention à côté du prix",
+      "info": "Ex. « Prix de démonstration »."
+    },
+    {
+      "type": "select",
+      "id": "cart_visibility",
+      "label": "Affichage selon le panier",
+      "default": "always",
+      "options": [
+        { "value": "always", "label": "Toujours" },
+        { "value": "empty", "label": "Seulement quand le panier est vide" },
+        { "value": "filled", "label": "Seulement quand le panier contient un article" }
       ]
     },
     {
@@ -445,6 +497,11 @@
           "type": "text",
           "id": "caption",
           "label": "Légende"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Texte sous la légende"
         }
       ]
     }

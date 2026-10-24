@@ -44,12 +44,13 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
 -%}
     {%- capture items -%}
       {%- if src == 'manual' -%}
-        {%- for block in section.blocks -%}{%- if block.settings.product != blank -%}{%- assign p = all_products[block.settings.product] | default: block.settings.product -%}{%- if s.exclude_current and product != blank and p.handle == product.handle -%}{%- continue -%}{%- endif -%}{%- assign p_key = '|' | append: p.handle | append: '|' -%}{%- if s.exclude_cart_items and cart_handles contains p_key -%}{%- continue -%}{%- endif -%}{%- if p.title != blank -%}<li class="fs-products__item" data-fs-slide {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label %}{%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}</li>{%- endif -%}{%- endif -%}{%- endfor -%}
+        {%- assign shown = 0 -%}
+        {%- for block in section.blocks -%}{%- if s.layout == 'over-photo' and shown >= limit -%}{%- break -%}{%- endif -%}{%- if block.settings.product != blank -%}{%- assign p = all_products[block.settings.product] | default: block.settings.product -%}{%- if s.exclude_current and product != blank and p.handle == product.handle -%}{%- continue -%}{%- endif -%}{%- assign p_key = '|' | append: p.handle | append: '|' -%}{%- if s.exclude_cart_items and cart_handles contains p_key -%}{%- continue -%}{%- endif -%}{%- if p.title != blank -%}{%- assign shown = shown | plus: 1 -%}<li class="fs-products__item" data-fs-slide {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}{%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}</li>{%- endif -%}{%- endif -%}{%- endfor -%}
       {%- elsif src == 'newest' -%}
         {%- assign list = collections.all.products | sort: 'created_at' | reverse -%}
-        {%- for p in list limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label %}</li>{%- endfor -%}
+        {%- for p in list limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}</li>{%- endfor -%}
       {%- else -%}
-        {%- for p in coll.products limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label %}</li>{%- endfor -%}
+        {%- for p in coll.products limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}</li>{%- endfor -%}
       {%- endif -%}
     {%- endcapture -%}
     {%- if items != blank -%}
@@ -232,6 +233,19 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
       "id": "card_button_label",
       "label": "Bouton sous chaque produit",
       "info": "Vide : pas de bouton (la carte mène à la fiche)."
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Ajout au panier depuis la carte",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "Aucun (lien vers la fiche)" },
+        { "value": "icon", "label": "Bouton rond « panier »" },
+        { "value": "plus", "label": "Bouton rond « + »" },
+        { "value": "button", "label": "Bouton texte (libellé du bouton de carte)" }
+      ],
+      "info": "Ajoute vraiment le produit quand il n'a qu'une variante ; sinon le bouton mène à sa fiche pour choisir."
     },
     {
       "type": "select",

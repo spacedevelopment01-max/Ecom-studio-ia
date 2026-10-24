@@ -107,6 +107,8 @@
     if (form.hasAttribute('data-product-form') || form.closest('[data-purchase]')) return; /* gérés par le thème */
     /* Maison & Horizon : recherche de biens (page filtrée), filtres et formulaires vérifiés par assets/horizon.js. */
     if (form.hasAttribute('data-re-search') || form.hasAttribute('data-re-filters') || form.closest('[data-re-bien], .re-form-section, [data-re-account]')) return;
+    /* SOUPLE : commande d'exemple en étapes et espace client de démonstration, vérifiés par assets/family.js. */
+    if (form.hasAttribute('data-order-form') || form.hasAttribute('data-acct-form')) return;
     if (form.id === 'CartForm') {
       e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { var demo = document.querySelector('[data-demo-checkout]'); if (demo && demo.getAttribute('href')) { location.href = demo.getAttribute('href'); return; } note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
       var inputs = form.querySelectorAll('input[name="updates[]"]'), st = state(stateKey()), items = st && st.cart ? st.cart.items : [];

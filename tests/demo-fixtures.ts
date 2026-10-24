@@ -28,8 +28,9 @@ import { noctilProject } from "./noctil-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { traverseProject, TRAVERSE_MEDIA } from "./traverse-fixtures";
 import { ondeProject } from "./onde-fixtures";
-import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
+import { MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import { museauProject } from "./museau-fixtures";
+import { soupleProject, SOUPLE_MEDIA } from "./souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 
 export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "maison-horizon";
@@ -93,7 +94,7 @@ const IDENTITY: Record<Exclude<DemoId, "maison-horizon">, { tagline: string; sum
   // SOUPLE (issue #158, e-commerce de quatre produits) : identité utilisée seulement pour la preuve d'adaptation.
   souple: {
     tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.", price: null,
-    media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+    media: Object.fromEntries(SOUPLE_MEDIA.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
   },
   rive: {
     tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -169,7 +170,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   // MUSEAU CLUB : refait d'après les maquettes enrichies du 23 octobre (tests/museau-fixtures.ts), quatre produits, kit
   // suivi dans public/theme-assets/museau-club/. SOUPLE (issue #158) : même parcours, famille E-commerce.
   if ((id === "museau-club" || id === "souple") && !options.direction) {
-    const c = id === "museau-club" ? await museauProject(userId) : await multiKitProject(userId, id);
+    const c = id === "museau-club" ? await museauProject(userId) : await soupleProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   // Atelier Rive (dossier du 23 octobre) : projet de services rédigé d'après les maquettes, médias suivis dans

@@ -1,4 +1,4 @@
-{%- comment -%} Carte produit. Paramètres : product_card, show_secondary, ratio, show_vendor (marque au-dessus du nom), button_label (bouton vers la fiche). Réglages du thème : mention sous le nom (ex. « Prix de démonstration ») et flèche ronde vers la fiche (MUSEAU CLUB). {%- endcomment -%}
+{%- comment -%} Carte produit. Paramètres : product_card, show_secondary, ratio, show_vendor (marque au-dessus du nom), button_label (bouton vers la fiche), quick_add (SOUPLE : « icon » panier rond, « plus » ou « button » texte ; ajoute vraiment CE produit au panier quand il n'a qu'une variante, sinon mène à sa fiche). Réglages du thème : mention sous le nom (ex. « Prix de démonstration ») et flèche ronde vers la fiche (MUSEAU CLUB). {%- endcomment -%}
 {%- liquid
   assign card_ratio = ratio | default: 'portrait'
 -%}
@@ -26,6 +26,14 @@
     {%- if settings.card_price_note != blank -%}<p class="es-card__note">{{ settings.card_price_note | escape }}</p>{%- endif -%}
     {% render 'price', product: product_card, use_variant: false %}
     {%- if settings.card_arrow -%}<a class="es-card__arrow" href="{{ product_card.url | default: '#' }}" tabindex="-1" aria-hidden="true">{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
-    {%- if button_label != blank -%}<a class="es-button es-card__button" href="{{ product_card.url | default: '#' }}" tabindex="-1" aria-hidden="true">{{ button_label | escape }}</a>{%- endif -%}
+    {%- if quick_add != blank and quick_add != 'none' and product_card.title != blank -%}
+      {%- capture qa_label -%}{%- if quick_add == 'button' and button_label != blank -%}{{ button_label }}{%- else -%}{{ 'products.product.add_to_cart' | t }}{%- endif -%}{%- endcapture -%}
+      {%- if product_card.has_only_default_variant and product_card.available -%}
+        {%- assign qa_class = 'es-card__quick es-card__quick--' | append: quick_add -%}
+        {%- form 'product', product_card, class: qa_class, data-product-form: '' -%}<input type="hidden" name="id" value="{{ product_card.selected_or_first_available_variant.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" name="add" class="es-card__add es-card__add--{{ quick_add }}{% if quick_add == 'button' %} es-button es-button--secondary{% endif %}" data-add-button aria-label="{{ qa_label | strip | escape }} : {{ product_card.title | escape }}">{%- if quick_add == 'icon' -%}{% render 'icon', name: 'cart' %}{%- elsif quick_add == 'plus' -%}{% render 'icon', name: 'plus' %}{%- else -%}<span>{{ qa_label | strip | escape }}</span>{% render 'icon', name: 'arrow' %}{%- endif -%}</button>{%- endform -%}
+      {%- else -%}
+        <a class="es-card__add es-card__add--{{ quick_add }}{% if quick_add == 'button' %} es-button es-button--secondary{% endif %}" href="{{ product_card.url | default: '#' }}" aria-label="{{ 'purchase.choose_options' | t | escape }} : {{ product_card.title | escape }}">{%- if quick_add == 'icon' -%}{% render 'icon', name: 'cart' %}{%- elsif quick_add == 'plus' -%}{% render 'icon', name: 'plus' %}{%- else -%}<span>{{ 'purchase.choose_options' | t | escape }}</span>{% render 'icon', name: 'arrow' %}{%- endif -%}</a>
+      {%- endif -%}
+    {%- elsif button_label != blank -%}<a class="es-button es-card__button" href="{{ product_card.url | default: '#' }}" tabindex="-1" aria-hidden="true">{{ button_label | escape }}</a>{%- endif -%}
   </div>
 </article>

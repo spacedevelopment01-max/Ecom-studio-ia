@@ -6,6 +6,10 @@
   thème pour les comptes classiques ; les nouveaux comptes clients sont des pages de Shopify, hors thème).
   NOCTIL (planche 06 du 23 octobre) : entrée « Aperçu » dans le menu (avec un pictogramme par entrée, menu aussi sur le
   détail de commande) et cartes libres (blocs « Carte ») : mise en avant, facture d'exemple, aide.
+  SOUPLE (planche 06 du 23 octobre) : écran « Connexion et inscription » (deux cartes posées sur la photo), formulaires
+  testables avec un compte fictif affiché (aucune vraie inscription, aucun e-mail : chaque envoi le dit), et suivi
+  d'exemple sur le détail de commande (blocs « Étape de suivi »). L'accès reste une démonstration : rien ne protège une
+  vraie donnée, et localStorage n'est jamais une authentification.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -53,19 +57,21 @@
           <div class="es-acct__auth-copy">
             <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
             {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
-            <form class="es-acct__card" action="#" onsubmit="return false" aria-describedby="AcctDemo-{{ section.id }}">
+            <form class="es-acct__card" action="#" novalidate aria-describedby="AcctDemo-{{ section.id }}"{% if s.interactive %} data-acct-form="{{ layout }}" data-demo-email="{{ s.demo_email | escape }}" data-demo-password="{{ s.demo_password | escape }}" data-success="{{ s.button_link | escape }}" data-msg-unknown="{{ s.unknown_login_text | escape }}" data-msg-sent="{{ s.sent_text | escape }}"{% else %} onsubmit="return false"{% endif %}>
               <p class="es-acct__demo" id="AcctDemo-{{ section.id }}">{{ s.demo_note | escape }}</p>
-              <fieldset class="es-acct__fields" disabled>
+              <fieldset class="es-acct__fields"{% unless s.interactive %} disabled{% endunless %}>
                 <legend class="visually-hidden">{{ s.heading | escape }}</legend>
                 {%- if layout == 'register' -%}
                   <label class="es-acct__field"><span>{{ 'customer.register.first_name' | t }}</span><input type="text" autocomplete="off"></label>
                   <label class="es-acct__field"><span>{{ 'customer.register.last_name' | t }}</span><input type="text" autocomplete="off"></label>
                 {%- endif -%}
-                <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"></label>
-                {%- unless layout == 'recover' -%}<label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><input type="password" autocomplete="off"></label>{%- endunless -%}
+                <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}"{% if s.interactive %} required{% endif %}><small class="es-acct__error" data-error hidden></small></label>
+                {%- unless layout == 'recover' -%}<label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off"{% if s.interactive %} required minlength="4"{% endif %}><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>{%- endunless -%}
               </fieldset>
+              {%- if s.interactive and s.demo_email != blank and layout == 'login' -%}<p class="es-acct__hint">{{ s.demo_hint | escape }} <code>{{ s.demo_email | escape }}</code> / <code>{{ s.demo_password | escape }}</code></p>{%- endif -%}
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
               {%- if layout == 'login' and s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
-              {%- if s.button_label != blank -%}<a class="es-button es-acct__primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}</a>{%- endif -%}
+              {%- if s.button_label != blank -%}{%- if s.interactive -%}<button type="submit" class="es-button es-acct__primary">{{ s.button_label | escape }}</button>{%- else -%}<a class="es-button es-acct__primary" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}</a>{%- endif -%}{%- endif -%}
               {%- if s.secondary_label != blank -%}
                 {%- if layout == 'login' -%}<p class="es-acct__or"><span>{{ 'customer.login.or' | t }}</span></p>{%- endif -%}
                 <a class="es-button es-button--secondary es-acct__secondary" href="{{ s.secondary_link | default: '#' }}">{{ s.secondary_label | escape }}</a>
@@ -73,6 +79,33 @@
             </form>
           </div>
           {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__photo">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div>{%- endif -%}
+        </div>
+      {%- when 'auth' -%}
+        {%- comment -%} Connexion et inscription côte à côte, sur la photo (SOUPLE). {%- endcomment -%}
+        <div class="es-acct__duo-auth">
+          {%- if s.image != blank or s.image_asset != blank -%}<div class="es-acct__bg">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'eager' %}</div>{%- endif -%}
+          <div class="es-acct__duo-copy">
+            <h1 class="es-heading es-acct__title">{{ s.heading | escape | newline_to_br }}</h1>
+            {%- if s.text != blank -%}<div class="es-rte es-acct__text">{{ s.text }}</div>{%- endif -%}
+          </div>
+          <div class="es-acct__duo-cards">
+            <form class="es-acct__card" action="#" novalidate data-acct-form="login" data-demo-email="{{ s.demo_email | escape }}" data-demo-password="{{ s.demo_password | escape }}" data-success="{{ s.account_link | escape }}" data-msg-unknown="{{ s.unknown_login_text | escape }}">
+              <h2 class="es-acct__card-title">{{ s.login_title | escape }}</h2>
+              <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}" required><small class="es-acct__error" data-error hidden></small></label>
+              <label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off" required minlength="4"><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>
+              {%- if s.recover_link != blank -%}<p class="es-acct__aside"><a href="{{ s.recover_link }}">{{ 'customer.login.forgot' | t }}</a></p>{%- endif -%}
+              <button type="submit" class="es-button es-acct__primary">{{ s.button_label | default: 'customer.login.submit' | t | escape }}</button>
+              {%- if s.demo_email != blank -%}<p class="es-acct__hint">{{ s.demo_hint | escape }} <code>{{ s.demo_email | escape }}</code> / <code>{{ s.demo_password | escape }}</code></p>{%- endif -%}
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
+            </form>
+            <form class="es-acct__card" action="#" novalidate data-acct-form="register" data-msg-sent="{{ s.sent_text | escape }}">
+              <h2 class="es-acct__card-title">{{ s.register_title | escape }}</h2>
+              <label class="es-acct__field"><span>{{ s.email_label | escape }}</span><input type="email" name="email" autocomplete="off" placeholder="{{ s.email_placeholder | escape }}" required><small class="es-acct__error" data-error hidden></small></label>
+              <label class="es-acct__field"><span>{{ 'customer.login.password' | t }}</span><span class="es-acct__pw"><input type="password" name="password" autocomplete="off" required minlength="8"><button type="button" class="es-acct__eye" data-pw-toggle aria-label="{{ s.show_password_label | default: 'Afficher le mot de passe' | escape }}" aria-pressed="false">{% render 'icon', name: 'eye' %}</button></span><small class="es-acct__error" data-error hidden></small></label>
+              <button type="submit" class="es-button es-acct__primary">{{ s.secondary_label | escape }}</button>
+              <p class="es-acct__status" role="status" aria-live="polite" data-acct-status></p>
+            </form>
+          </div>
         </div>
       {%- when 'order' -%}
         {%- if s.overview_label != blank -%}<div class="es-acct__grid">{% render 'demo-account-menu', s: s, layout: layout %}<div class="es-acct__main">{%- endif -%}
@@ -91,6 +124,15 @@
           <div class="es-acct__card"><h2 class="es-acct__card-title">{{ 'customer.orders.shipping' | t }}</h2><p>{{ s.unknown_value | escape }}</p></div>
           <div class="es-acct__card"><h2 class="es-acct__card-title">{{ s.payment_title | escape }}</h2><p>{{ s.unknown_value | escape }}</p></div>
         </div>
+        {%- assign tracks = section.blocks | where: 'type', 'track' -%}
+        {%- if tracks.size > 0 -%}
+          <div class="es-acct__card es-acct__track">
+            <h2 class="es-acct__card-title">{{ s.tracking_title | escape }}</h2>
+            <ol class="es-acct__steps" role="list">
+              {%- for block in tracks -%}<li class="es-acct__step{% if block.settings.done %} is-done{% endif %}" {{ block.shopify_attributes }}><span class="es-acct__dot" aria-hidden="true"></span><span class="es-acct__step-label">{{ block.settings.label | escape }}</span>{%- if block.settings.date_text != blank -%}<span class="es-acct__step-date">{{ block.settings.date_text | escape }}</span>{%- endif -%}<span class="visually-hidden">{% if block.settings.done %}{{ s.done_label | escape }}{% else %}{{ s.todo_label | escape }}{% endif %}</span></li>{%- endfor -%}
+            </ol>
+          </div>
+        {%- endif -%}
         {{ cards_before }}{{ cards_after }}
         {%- if s.overview_label != blank -%}</div></div>{%- endif -%}
       {%- else -%}
@@ -159,6 +201,10 @@
         {
           "value": "login",
           "label": "Connexion"
+        },
+        {
+          "value": "auth",
+          "label": "Connexion et inscription côte à côte"
         },
         {
           "value": "register",
@@ -376,6 +422,19 @@
       "type": "header",
       "content": "Photo (connexion, création de compte)"
     },
+    { "type": "header", "content": "Formulaires testables (démonstration)" },
+    { "type": "checkbox", "id": "interactive", "label": "Formulaires testables avec un compte fictif", "info": "Les champs sont vérifiés ; rien n'est envoyé ni enregistré. Sur une vraie boutique, utilisez les comptes clients de la plateforme.", "default": false },
+    { "type": "text", "id": "demo_email", "label": "E-mail du compte fictif", "default": "demo@souple.example" },
+    { "type": "text", "id": "demo_password", "label": "Mot de passe du compte fictif", "default": "demo" },
+    { "type": "text", "id": "demo_hint", "label": "Phrase avant les identifiants fictifs", "default": "Compte de démonstration :" },
+    { "type": "text", "id": "unknown_login_text", "label": "Message : identifiants inconnus", "default": "Ces identifiants ne correspondent pas au compte de démonstration." },
+    { "type": "text", "id": "sent_text", "label": "Message après envoi simulé", "default": "Démonstration : aucun compte n'est créé et aucun e-mail n'est envoyé." },
+    { "type": "text", "id": "login_title", "label": "Titre de la carte de connexion", "default": "Se connecter" },
+    { "type": "text", "id": "register_title", "label": "Titre de la carte d'inscription", "default": "Créer un compte" },
+    { "type": "text", "id": "show_password_label", "label": "Bouton « Afficher le mot de passe »", "default": "Afficher le mot de passe" },
+    { "type": "text", "id": "tracking_title", "label": "Titre du suivi", "default": "Exemple de suivi de livraison" },
+    { "type": "text", "id": "done_label", "label": "Étape franchie (lecteurs d'écran)", "default": "étape franchie" },
+    { "type": "text", "id": "todo_label", "label": "Étape à venir (lecteurs d'écran)", "default": "étape à venir" },
     {
       "type": "image_picker",
       "id": "image",
@@ -439,6 +498,15 @@
     }
   ],
   "blocks": [
+    {
+      "type": "track",
+      "name": "Étape de suivi",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Étape", "default": "Commande confirmée" },
+        { "type": "text", "id": "date_text", "label": "Date ou mention" },
+        { "type": "checkbox", "id": "done", "label": "Étape franchie", "default": false }
+      ]
+    },
     {
       "type": "line",
       "name": "Article de la commande",

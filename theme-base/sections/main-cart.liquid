@@ -80,7 +80,8 @@
   {%- if section.settings.demo_checkout_link != blank -%}<a hidden aria-hidden="true" tabindex="-1" data-demo-checkout href="{{ section.settings.demo_checkout_link }}"></a>{%- endif -%}
   <div class="es-container">
     {%- unless has_hero -%}
-    <h1 class="es-heading es-h1 es-cart__title">{{ cart_title }}{% if settings.cart_show_count and cart.item_count > 0 %} <span class="es-drawer__count" aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% endif %}</h1>
+    {%- if section.settings.count_line and cart.item_count > 0 -%}<p class="es-cart__head-meta"><span>{{ cart.item_count }} {% if cart.item_count > 1 %}{{ section.settings.items_word | default: 'articles' | escape }}{% else %}{{ section.settings.item_word | default: 'article' | escape }}{% endif %}</span>{% if section.settings.summary_note != blank %}<small>{{ section.settings.summary_note | escape }}</small>{% endif %}</p>{%- endif -%}
+    <h1 class="es-heading es-h1 es-cart__title">{{ section.settings.hero_heading | default: cart_title | escape }}{% if settings.cart_show_count and cart.item_count > 0 %} <span class="es-drawer__count" aria-label="{{ 'cart.items_badge' | t: count: cart.item_count }}">{{ cart.item_count }}</span>{% endif %}</h1>
     {%- endunless -%}
     {%- if section.settings.intro != blank and cart.item_count > 0 -%}<p class="es-cart__intro es-muted">{{ section.settings.intro | escape }}</p>{%- endif -%}
     {%- if cart.item_count == 0 -%}
@@ -354,6 +355,9 @@
       "label": "Titre sur le bandeau",
       "info": "Vide : le titre du panier."
     },
+    { "type": "checkbox", "id": "count_line", "label": "Nombre d'articles à côté du titre (sans bandeau photo)", "default": false },
+    { "type": "text", "id": "item_word", "label": "Mot « article »", "default": "article" },
+    { "type": "text", "id": "items_word", "label": "Mot « articles »", "default": "articles" },
     {
       "type": "textarea",
       "id": "hero_text",

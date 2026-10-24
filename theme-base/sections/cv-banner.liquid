@@ -6,6 +6,8 @@
   MUSEAU CLUB (maquettes enrichies du 23 octobre) : panneau arrondi à côté de la photo, illustration du guide des tailles
   (chien dessiné, repères « tour de cou » et « tour de poitrail » modifiables), voile clair, ajout au panier d'un produit
   choisi (un produit à tailles mène à sa fiche, pour choisir la taille).
+  SOUPLE (maquettes du 23 octobre) : texte centré en haut de la photo, courbe douce entre texte et photo, bandeau de
+  marque (symbole du logo, titre, texte et lien) et barre d'achat (photo du produit, nom, prix et bouton).
   NOCTIL (maquettes du 23 octobre) : ouverture de nuit (texte clair, bas de photo réservé au produit en surplomb de la
   section suivante) et dégradé sombre à droite pour les bandeaux au texte placé à droite.
 {%- endcomment -%}
@@ -13,18 +15,26 @@
   assign s = section.settings
   assign speed = s.animation_speed | default: 'normal'
   assign buy = s.buy_product
+  # Barre d'achat posée sur le modèle de fiche commun : sans produit choisi, celui de la fiche.
+  if s.layout == 'buybar' and buy == blank and product != blank
+    assign buy = product
+  endif
   # « spotlight » (ouverture MUSEAU CLUB) : rendu « visuel en fond » avec sa propre classe, voile clair conseillé.
   # « night » (ouverture NOCTIL) : rendu « visuel en fond », texte clair, bas de photo laissé libre pour la section
   # « Produit en surplomb » qui suit (le produit y remonte sans couvrir le bouton).
 -%}
 {%- if s.hide_when_cart_empty and cart.item_count == 0 -%}{%- else -%}
-<section class="es-section cv-banner cv-banner--{% if s.layout == 'spotlight' %}background cv-banner--spotlight{% elsif s.layout == 'night' %}background cv-banner--night{% else %}{{ s.layout }}{% endif %} cv-banner--h-{{ s.band_height | default: 'auto' }} cv-banner--mv-{{ s.mobile_valign | default: 'center' }} cv-banner--veil-{{ s.veil | default: 'none' }}{% if s.title_rule %} cv-banner--rule{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;{% if s.image_zoom > 100 %}--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }};{% endif %}">
+<section class="es-section cv-banner cv-banner--{% if s.layout == 'spotlight' %}background cv-banner--spotlight{% elsif s.layout == 'night' %}background cv-banner--night{% else %}{{ s.layout }}{% endif %} cv-banner--h-{{ s.band_height | default: 'auto' }} cv-banner--mv-{{ s.mobile_valign | default: 'center' }} cv-banner--veil-{{ s.veil | default: 'none' }}{% if s.title_rule %} cv-banner--rule{% endif %}{% if s.copy_align == 'center' %} cv-banner--align-center{% endif %}{% if s.copy_valign == 'top' %} cv-banner--dv-top{% endif %}{% if s.curve %} cv-banner--curve{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;{% if s.image_zoom > 100 %}--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }};{% endif %}">
   <div class="es-container">
     <div class="cv-banner__inner"{% render 'cv-reveal', animation: s.animation %}>
       {%- if s.layout == 'illustration' -%}
       <div class="cv-banner__illus" aria-hidden="true">{% render 'dog-measure' %}{%- if s.illus_label_1 != blank -%}<span class="cv-banner__mark cv-banner__mark--1">{{ s.illus_label_1 | escape }}</span>{%- endif -%}{%- if s.illus_label_2 != blank -%}<span class="cv-banner__mark cv-banner__mark--2">{{ s.illus_label_2 | escape }}</span>{%- endif -%}{%- if s.illus_note != blank -%}<span class="cv-banner__bubble">{{ s.illus_note | escape }}</span>{%- endif -%}</div>
       {%- else -%}
+      {%- if s.layout == 'buybar' and s.image == blank and s.image_asset == blank and buy != blank -%}
+      <div class="cv-banner__media">{%- if buy.featured_media -%}{{ buy.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', alt: buy.featured_media.alt, class: 'cv-banner__buy-img' }}{%- endif -%}</div>
+      {%- else -%}
       <div class="cv-banner__media cv-zoomable">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, loading: s.image_loading %}</div>
+      {%- endif -%}
       {%- endif -%}
       <div class="cv-banner__copy">
         {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
@@ -62,7 +72,10 @@
     { "type": "range", "id": "mobile_focus_y", "label": "Point focal vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement du visuel", "info": "Au-delà de 100 %, la photo est agrandie autour du point focal (pour cadrer un paysage sans le produit, par exemple).", "min": 100, "max": 250, "step": 5, "unit": "%", "default": 100 },
     { "type": "select", "id": "image_loading", "label": "Chargement du visuel", "default": "lazy", "options": [ { "value": "lazy", "label": "Différé" }, { "value": "eager", "label": "Immédiat (haut de page)" } ] },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" }, { "value": "spotlight", "label": "Ouverture lumineuse : grande photo, texte sur voile clair" }, { "value": "night", "label": "Ouverture de nuit : grande photo, texte clair, place pour un produit en surplomb" }, { "value": "panel-left", "label": "Panneau arrondi à gauche, photo à droite" }, { "value": "panel-right", "label": "Photo à gauche, panneau arrondi à droite" }, { "value": "illustration", "label": "Illustration du guide des tailles" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" }, { "value": "spotlight", "label": "Ouverture lumineuse : grande photo, texte sur voile clair" }, { "value": "night", "label": "Ouverture de nuit : grande photo, texte clair, place pour un produit en surplomb" }, { "value": "panel-left", "label": "Panneau arrondi à gauche, photo à droite" }, { "value": "panel-right", "label": "Photo à gauche, panneau arrondi à droite" }, { "value": "illustration", "label": "Illustration du guide des tailles" }, { "value": "brand", "label": "Bandeau de marque : symbole, titre, texte et lien" }, { "value": "buybar", "label": "Barre d'achat : produit, prix et bouton" } ] },
+    { "type": "select", "id": "copy_align", "label": "Alignement du texte", "default": "left", "options": [ { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Centré" } ] },
+    { "type": "select", "id": "copy_valign", "label": "Place du texte sur ordinateur (visuel en fond)", "default": "center", "options": [ { "value": "center", "label": "Au centre" }, { "value": "top", "label": "En haut" } ] },
+    { "type": "checkbox", "id": "curve", "label": "Courbe douce entre le texte et la photo", "default": false },
     { "type": "text", "id": "illus_label_1", "label": "Illustration : premier repère", "default": "Tour de cou" },
     { "type": "text", "id": "illus_label_2", "label": "Illustration : second repère", "default": "Tour de poitrail" },
     { "type": "text", "id": "illus_note", "label": "Illustration : bulle", "info": "Facultatif, ex. « Mesurez le tour de cou à l'endroit indiqué »." },

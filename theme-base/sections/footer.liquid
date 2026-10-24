@@ -2,7 +2,14 @@
   assign style = section.settings.style
   assign news_block = section.blocks | where: 'type', 'newsletter' | first
 -%}
-<footer class="es-footer es-footer--{{ style }} es-ambient color-{{ section.settings.color_scheme }}">
+{%- liquid
+  # SOUPLE (planches 02 et 03) : pied clair sur les fiches produit, prune ailleurs (réglage facultatif).
+  assign footer_scheme = section.settings.color_scheme
+  if template.name == 'product' and section.settings.product_color_scheme != blank and section.settings.product_color_scheme != 'same'
+    assign footer_scheme = section.settings.product_color_scheme
+  endif
+-%}
+<footer class="es-footer es-footer--{{ style }} es-ambient color-{{ footer_scheme }}{% if footer_scheme != section.settings.color_scheme %} es-footer--alt{% endif %}">
   <div class="es-container">
     {%- if style == 'reference-shop' or style == 'reference-studio' -%}
       {%- if section.settings.show_wordmark -%}<p class="ref-footer__signature" translate="no">{{ shop.name | escape }}</p>{%- endif -%}
@@ -246,7 +253,8 @@
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },
     { "type": "text", "id": "bottom_text", "label": "Mention après le copyright", "info": "Ex. « Tous droits réservés. »" },
     { "type": "link_list", "id": "bottom_menu", "label": "Liens du bas de page", "info": "Ex. mentions légales, CGV, confidentialité." },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" },
+    { "type": "select", "id": "product_color_scheme", "label": "Couleurs du pied sur les fiches produit", "default": "same", "options": [ { "value": "same", "label": "Les mêmes que les autres pages" }, { "value": "scheme-1", "label": "Jeu 1" }, { "value": "scheme-2", "label": "Jeu 2" }, { "value": "scheme-3", "label": "Jeu 3" }, { "value": "scheme-4", "label": "Jeu 4" } ] }
   ],
   "blocks": [
     { "type": "text", "name": "Texte", "settings": [

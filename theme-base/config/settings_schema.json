@@ -1044,6 +1044,10 @@
           {
             "value": "club",
             "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
+          },
+          {
+            "value": "souple",
+            "label": "Souple : ivoire chaud et prune, serif fine, courbes douces et photos lumineuses"
           }
         ]
       }

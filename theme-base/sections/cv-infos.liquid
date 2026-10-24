@@ -1,0 +1,89 @@
+{%- comment -%}
+  Informations, produits associés et questions (SOUPLE, planche 02 du 23 octobre) : sous les fiches du tapis et de la
+  brique, trois colonnes côte à côte sur ordinateur, empilées sur téléphone :
+  1. caractéristiques en accordéons (une valeur courte, « À confirmer » tant qu'elle n'est pas connue, et un texte) ;
+  2. produits associés, chacun avec son prix et un vrai bouton d'ajout au panier (le produit de la fiche est exclu) ;
+  3. questions fréquentes en accordéons.
+  Accordéons natifs <details> : clavier et toucher sans script.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign specs = section.blocks | where: 'type', 'spec'
+  assign picks = section.blocks | where: 'type', 'product'
+  assign questions = section.blocks | where: 'type', 'question'
+-%}
+<section class="es-section cv-infos color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  <div class="es-container cv-infos__grid">
+    {%- if specs.size > 0 -%}
+      <div class="cv-infos__col cv-infos__col--specs">
+        {%- if s.specs_heading != blank -%}<h2 class="cv-infos__title">{{ s.specs_heading | escape }}</h2>{%- endif -%}
+        <div class="cv-infos__list">
+          {%- for block in specs -%}
+            <details class="cv-infos__item" {{ block.shopify_attributes }}>
+              <summary><span class="cv-infos__label">{{ block.settings.title | escape }}</span>{%- if block.settings.value != blank -%}<span class="cv-infos__value">{{ block.settings.value | escape }}</span>{%- endif -%}<span class="cv-infos__toggle" aria-hidden="true">{% render 'icon', name: 'plus' %}</span></summary>
+              {%- if block.settings.text != blank -%}<div class="es-rte cv-infos__text">{{ block.settings.text }}</div>{%- endif -%}
+            </details>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+    {%- if picks.size > 0 -%}
+      <div class="cv-infos__col cv-infos__col--products">
+        {%- if s.products_heading != blank -%}<h2 class="cv-infos__title">{{ s.products_heading | escape }}</h2>{%- endif -%}
+        <ul class="cv-infos__products" role="list">
+          {%- for block in picks -%}
+            {%- assign p = all_products[block.settings.product] | default: block.settings.product -%}
+            {%- if p.title == blank -%}{%- continue -%}{%- endif -%}
+            {%- if product != blank and p.handle == product.handle -%}{%- continue -%}{%- endif -%}
+            <li class="cv-infos__product" {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: false, ratio: 'square', quick_add: s.quick_add %}</li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+    {%- if questions.size > 0 -%}
+      <div class="cv-infos__col cv-infos__col--faq">
+        {%- if s.faq_heading != blank -%}<h2 class="cv-infos__title">{{ s.faq_heading | escape }}</h2>{%- endif -%}
+        <div class="cv-infos__list">
+          {%- for block in questions -%}
+            <details class="cv-infos__item" {{ block.shopify_attributes }}>
+              <summary><span class="cv-infos__label">{{ block.settings.question | escape }}</span><span class="cv-infos__toggle" aria-hidden="true">{% render 'icon', name: 'plus' %}</span></summary>
+              {%- if block.settings.answer != blank -%}<div class="es-rte cv-infos__text">{{ block.settings.answer }}</div>{%- endif -%}
+            </details>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Infos, produits associés et questions",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "specs_heading", "label": "Titre des caractéristiques", "info": "Facultatif." },
+    { "type": "text", "id": "products_heading", "label": "Titre des produits associés", "default": "Ils s'accordent parfaitement" },
+    { "type": "select", "id": "quick_add", "label": "Ajout au panier depuis les produits associés", "default": "icon", "options": [ { "value": "none", "label": "Aucun (lien vers la fiche)" }, { "value": "icon", "label": "Bouton rond « panier »" }, { "value": "plus", "label": "Bouton rond « + »" } ] },
+    { "type": "text", "id": "faq_heading", "label": "Titre des questions", "default": "Questions fréquentes" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 32 }
+  ],
+  "blocks": [
+    { "type": "spec", "name": "Caractéristique", "settings": [
+      { "type": "text", "id": "title", "label": "Intitulé", "default": "Dimensions" },
+      { "type": "text", "id": "value", "label": "Valeur courte", "default": "À confirmer", "info": "Gardez « À confirmer » tant que l'information n'est pas vérifiée." },
+      { "type": "richtext", "id": "text", "label": "Détail" }
+    ] },
+    { "type": "product", "name": "Produit associé", "settings": [
+      { "type": "product", "id": "product", "label": "Produit" }
+    ] },
+    { "type": "question", "name": "Question", "settings": [
+      { "type": "text", "id": "question", "label": "Question", "default": "Une question fréquente ?" },
+      { "type": "richtext", "id": "answer", "label": "Réponse" }
+    ] }
+  ],
+  "presets": [ { "name": "Infos, produits associés et questions" } ]
+}
+{% endschema %}

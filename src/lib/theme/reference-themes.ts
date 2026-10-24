@@ -617,78 +617,66 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "souple",
     name: "Souple",
-    tagline: "Rose poudré, prune et liège",
-    description: "Boutique de collection de la famille E-commerce pour quelques produits qui vont ensemble : une scène plein écran en ouverture (titre et bouton posés sur l'image), la collection en mosaïque (chaque produit relié à sa fiche), une phrase qui se dévoile, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, questions en lignes et inscription sur photo. Rose poudré, prune et liège, serif fine et texte géométrique, logo en tête et menu dessous avec les produits en cartes illustrées, tuiles sur téléphone et pied de vitrine signé.",
+    tagline: "Ivoire chaud, prune et rose poudré",
+    description: "Boutique de la famille E-commerce pour quelques produits qui vont ensemble, d'après les six maquettes du 23 octobre : grande photo d'ouverture au titre centré, quatre cartes produit avec ajout au panier, panneaux photo et texte, gros plan d'un produit à acheter avec ses vignettes, univers en cartes, bandeau de marque prune, journal, questions et inscription. Serif fine à fort contraste, texte sobre, courbes douces, pied prune (clair sur les fiches).",
     bestFor: ["e-commerce", "collection", "bien-être", "quelques produits assortis", "maison"],
-    en: { tagline: "Powder pink, plum and cork", description: "Collection store from the E-commerce family for a few products that belong together: a full-screen scene as the opening (heading and button over the image), the collection as a mosaic (each product linking to its page), a sentence that reveals itself, the product list, a panorama, a scene with its text, one product to buy, line questions and a sign-up over a photo. Powder pink, plum and cork, a fine serif with geometric text, the logo on top and the menu below with products as illustrated cards, tiles on phone and a signed storefront footer.", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
+    en: { tagline: "Warm ivory, plum and powder pink", description: "E-commerce store for a few matching products, from the six 23 October mock-ups: large opening photo with a centred heading, four product cards with add to cart, photo and text panels, close-up of a product to buy with its thumbnails, worlds as cards, plum brand band, journal, questions and sign-up. High-contrast fine serif, plain text, soft curves, plum footer (light on product pages).", bestFor: ["e-commerce", "collection", "wellness", "a few matching products", "home"] },
     fonts: { heading: "playfair_display_n4", body: "jost_n4" },
     previewFonts: { heading: "Playfair Display", body: "Jost" },
     motion: "subtle",
     photoMood: "galerie",
     kinds: ["catalog"],
-    // En-tête « Collections en cartes » de la famille E-commerce (logo en tête, menu dessous, les produits en cartes
-    // illustrées dans le sous-menu, tuiles sur téléphone) et pied « Boutique éditoriale » (grande signature, liens) : deux
-    // dispositions de la famille qu'ORBE, ONDE, HEUREN et ALCÔVE n'utilisent pas.
-    look: look({ headerLayout: "two-rows", shape: "bar", menu: "cards", footer: "reference-shop", ann: "static", card: "boxed", button: "solid", radius: { button: 10, card: 18 }, headingScale: 108, tracking: -1, pageWidth: 1320, gallery: "carousel", ds: "maison", density: "airy" }),
-    settings: { editorial_profile: "poudre", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { layout: "two-rows", mega_menu: "cards", mobile_menu: "cards", mobile_submenu: "open", show_cart: true },
-    // Galerie en carrousel, cadre carré : chaque vue montre le produit entier, une vue à la fois sur téléphone.
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Maquettes SOUPLE du 23 octobre (docs/theme-briefs/souple) : logo à gauche, menu centré, recherche, compte et panier à
+    // droite ; pied prune (marque à gauche, colonnes, inscription), clair sur les fiches produit.
+    look: look({ headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "brand-left", ann: "static", card: "minimal", button: "solid", radius: { button: 999, card: 14 }, headingCase: "none", tracking: -1, headingScale: 104, pageWidth: 1320, gallery: "carousel", ds: "maison", density: "balanced", buttonUppercase: false }),
+    settings: { conversion_profile: "souple", editorial_profile: "none", motion_intensity: "subtle", card_arrow: false, card_price_note: "", price_trim_zeros: true },
+    headerSettings: { mega_menu: "none", mobile_menu: "drawer", mobile_submenu: "accordion", show_search: true, show_cart: true, transparent_on_home: false, color_scheme: "scheme-1", mobile_menu_scheme: "scheme-1" },
+    // Fiche : grande photo, vignettes à gauche, zoom, barre d'achat sur téléphone.
+    mainProduct: { gallery_layout: "thumbs-left", gallery_ratio: "landscape", enable_zoom: true, sticky_bar: true, show_breadcrumb: true, color_scheme: "scheme-1" },
+    // Ivoire chaud (fonds), prune plein (pied, bandeau de marque), rose poudré (panneaux), ivoire rosé (cartes et
+    // inscription) : tirés de la marque (clair, primaire, secondaire) ; titres dans le sombre de la marque.
     palette: (k) => {
-      const ivory = k.light("#FBF3F0");
-      const powder = k.mix(ivory, "#D9A9A9", 0.38);
-      const cork = k.mix(ivory, "#C98A55", 0.26);
-      const plum = k.night(0.18, 0.45);
-      return [k.scheme(ivory, plum, k.onLight(ivory)), k.scheme(powder, plum, k.onLight(powder)), k.scheme(plum, ivory, k.onDark(plum), 0.06), k.scheme(cork, plum, k.onLight(cork))];
+      const ivory = k.light("#FDF8F1");
+      const ink = k.p.dark;
+      const powder = k.mix(ivory, "#E2C6C6", 0.6);
+      const blush = k.mix(ivory, "#EFE1DD", 0.7);
+      return [k.scheme(ivory, ink, k.onLight(ivory)), k.filled(k.p.primary), k.scheme(powder, ink, k.onLight(powder)), k.scheme(blush, ink, k.onLight(blush))];
     },
-    // Accueil (consigne du 21 octobre, 18 h 31) : une vraie ouverture plein écran (la scène bord à bord, titre et bouton
-    // posés sur l'image), puis la collection en mosaïque (une vue d'ensemble et chaque produit, relié à sa fiche), une
-    // phrase, la liste des produits, un panorama, une scène et son texte, l'achat d'un produit, les questions et
-    // l'inscription sur photo.
+    // Accueil (planche 01) : ouverture au titre centré, quatre cartes, panneau « espace », gros plan d'un produit à
+    // acheter, panneau « collection », univers, bandeau de marque, journal, questions, inscription.
     home: (k) => {
-      // Mosaïque : la vue d'ensemble puis chaque produit de la boutique avec sa première photo (au moins deux produits
-      // photographiés). Sans photo d'ambiance, elle devient l'ouverture, avec le titre de la page.
-      const shelf = k.shelf.filter((x) => x.image).slice(0, 4);
-      const overview = k.im.lifestyle ?? k.im.hero ?? k.im.scene1;
-      const tiles = overview && shelf.length >= 2 ? [{ type: "collection", settings: { title: k.t("Toute la collection", "The whole collection"), text: "", link: "/collections/all", image_asset: overview } }, ...shelf.map((x) => ({ type: "collection", settings: { title: x.title, text: "", link: `/products/${x.handle}`, image_asset: x.image } }))] : [];
-      const mosaic = (tag: "h1" | "h2", extra: Record<string, unknown> = {}) => k.lib("fs-collections", 1, { layout: "asym", heading_tag: tag, align: "left", button_label: k.t("Voir toute la collection", "See the whole collection"), button_link: "/collections/all", effect: "rise", stagger: true, hover: true, padding_top: 72, padding_bottom: 72, ...extra }, { hide: !tiles.length, blocks: tiles });
-      const opening = k.either(
-        k.lib("ed-opening", 1, { layout: "fullscreen", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: shelf.length >= 2 || !k.shelf[0] ? "/collections/all" : `/products/${k.shelf[0].handle}`, image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.banner ?? "", mobile_image_asset: k.im.portrait ?? "", copy_surface: true, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.lifestyle ?? k.im.hero ?? k.im.banner) }),
-        mosaic("h1", { eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", padding_top: 32 }),
-        // Aucune photo : le titre de la page reste en tête (panorama sans image).
-        k.lib("ed-scene", 1, { layout: "panorama", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", button_label: k.hero.cta || k.t("Découvrir", "Discover"), button_link: k.shelf[0] ? `/products/${k.shelf[0].handle}` : "/collections/all", image_asset: "", padding_top: 32, padding_bottom: 64 }),
-      );
-      // Mosaïque déjà en ouverture (repli) : la seconde, identique, reste masquée.
-      const fallback = opening[0]?.[0] === "fs-collections";
-      const second = mosaic("h2");
+      const first = k.shelf[0];
+      const details = [k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f);
+      const worlds = [k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f);
       return [
-        ...opening,
-        fallback ? ([second[0], second[1], second[2], { ...(second[3] ?? {}), disabled: true }] as typeof second) : second,
-        k.lib("rich-text", 2, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
-        k.lib("fs-products", 1, { layout: "list", source: "collection", collection: "all", limit: 4, ratio: "square", align: "left", effect: "fade", padding_top: 80, padding_bottom: 80 }, { hide: shelf.length < 2 }),
-        // Le panorama accompagne la collection (deux produits ou plus) ; une boutique d'un seul produit passe directement à
-        // l'image et au texte, puis à l'achat.
-        k.lib("ed-scene", 1, { layout: "panorama", image_asset: k.im.scene1 ?? k.im.banner ?? "", padding_top: 0, padding_bottom: 64 }, { hide: shelf.length < 2 || !(k.im.scene1 ?? k.im.banner) }),
-        k.lib("image-with-text", 4, { layout: "overlap", ratio: "portrait", image_asset: k.im.scene2 ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.scene2 ?? k.im.lifestyle2) }),
-        k.lib("featured-purchase", 1, { purchase_style: "compact", image_fit: "contain" }),
-        k.faqSec(1, 5, "lines"),
-        ...k.either(k.lib("newsletter-media", 3, { layout: "background", overlay: 55, image_asset: k.im.scene3 ?? k.im.portrait ?? "", legal: k.privacy }, { hide: !(k.im.scene3 ?? k.im.portrait) }), k.newsletter(2)),
+        k.lib("cv-banner", 1, { layout: "background", band_height: "hero", veil: "none", copy_align: "center", copy_valign: "top", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.banner ?? "", image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+        k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", quick_add: "icon", padding_top: 40, padding_bottom: 24 }),
+        k.lib("cv-banner", 1, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+        k.lib("cv-feature", 1, { layout: "product", buy_product: first?.handle ?? "", image_asset: k.im.detail1 ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !first, blocks: details.slice(1).map((f) => ({ type: "detail", settings: { image_asset: f } })) }),
+        k.lib("cv-banner", 1, { layout: "panel-left", button_style: "outline", button_arrow: true, image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
+        k.lib("cv-cards", 1, { layout: "columns", padding_top: 32, padding_bottom: 32 }, { hide: worlds.length < 2, blocks: worlds.map((f) => ({ type: "card", settings: { image_asset: f } })) }),
+        k.lib("cv-banner", 2, { layout: "brand", image_asset: "", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+        k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 16 }),
+        k.lib("faq", 1, { style: "lines", layout: "side", open_first: false, padding_top: 16, padding_bottom: 16 }),
+        k.newsletter(4),
       ];
     },
-    // Fiche : galerie en carrousel et achat, la scène du produit en fermeture, le reste de la collection, questions.
+    // Fiche (planche 02) : galerie à vignettes et achat, panneau « votre espace », gros plans légendés et encadré,
+    // « À votre rythme », informations et produits associés, barre d'achat.
     product: (k) => [
-      k.lib("ed-scene", 2, { layout: "closing", image_asset: k.im.scene1 ?? k.im.lifestyle2 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene1 ?? k.im.lifestyle2) }),
-      k.lib("product-recommendations", 1, { intent: "complementary", fallback_collection: "all", limit: 3, card_ratio: "square" }, { hide: k.shelf.length < 2 }),
-      k.faqSec(1, 5, "lines"),
+      k.lib("cv-banner", 1, { layout: "panel-left", button_style: "outline", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+      ((shots) => k.lib("cv-feature", 1, { layout: "details-points", image_asset: "", padding_top: 16, padding_bottom: 16 }, { hide: shots.length < 1, blocks: shots.map((f) => ({ type: "detail", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2].filter((f): f is string => !!f)),
+      ((shots) => k.lib("cv-cards", 1, { layout: "pills", padding_top: 16, padding_bottom: 16 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.lifestyle2].filter((f): f is string => !!f)),
+      k.lib("cv-infos", 1, { quick_add: "icon", padding_top: 16, padding_bottom: 16 }, { blocks: [...["Dimensions", "Matériaux", "Entretien", "Livraison et retours"].map((title) => ({ type: "spec", settings: { title: k.t(title, { Dimensions: "Dimensions", Matériaux: "Materials", Entretien: "Care", "Livraison et retours": "Delivery and returns" }[title]!), value: k.t("À confirmer", "To be confirmed") } })), ...k.shelf.slice(0, 4).map((x) => ({ type: "product", settings: { product: x.handle } }))] }),
+      k.lib("cv-banner", 1, { layout: "buybar", button_arrow: false, padding_top: 8, padding_bottom: 24, price_text: "", price_note: "", note: "", image_asset: "" }),
     ],
-    // Site de services (repli) : la scène et la promesse côte à côte, prestations en cartes illustrées, une phrase qui se
-    // dévoile, deux réalisations côte à côte, infos pratiques, questions en lignes et prise de contact.
+    // Site de services (repli) : scène et liste en ouverture, prestations en cartes illustrées, une photo et son texte,
+    // méthode en étapes, questions en lignes et prise de contact.
     services: (k) => [
-      k.lib("ed-scene", 1, { layout: "split", heading_tag: "h1", label: k.hero.eyebrow, heading: k.hero.heading, text: k.hero.text ? `<p>${k.hero.text}</p>` : "", image_asset: k.im.hero ?? k.im.lifestyle ?? "", padding_top: 32, padding_bottom: 72 }),
-      k.R.servicesList(2, "cards", { withImages: true }),
-      k.lib("rich-text", 4, { style: "reveal", align: "left", padding_top: 80, padding_bottom: 80 }),
-      k.lib("ed-diptych", 1, { layout: "pair", padding_top: 64, padding_bottom: 64 }),
-      k.R.practical(2),
+      k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle, align: "left" }),
+      k.R.servicesList(3, "cards", { withImages: true }),
+      k.lib("image-with-text", 1, { layout: "image-right", ratio: "square", image_asset: k.im.scene1 ?? "", reveal: "up" }, { hide: !k.im.scene1 }),
+      k.R.method(2, "timeline"),
       k.faqSec(1, 5, "lines"),
       k.R.booking(3),
     ],

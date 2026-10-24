@@ -1,15 +1,29 @@
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
   assign media_count = product.media.size
+  # SOUPLE : vue montrée en premier sur la fiche (la première image reste celle des cartes produit).
+  assign gfirst = section.settings.gallery_first | default: 1 | minus: 1
+  if gfirst < 0 or gfirst >= media_count
+    assign gfirst = 0
+  endif
+  assign media_order = gfirst | append: ''
+  for media in product.media
+    if forloop.index0 != gfirst
+      assign media_order = media_order | append: ',' | append: forloop.index0
+    endif
+  endfor
+  assign media_order = media_order | split: ','
 -%}
 <section data-gallery-ratio="{{ section.settings.gallery_ratio | default: 'portrait' }}" class="es-section es-product es-product--{{ section.settings.gallery_layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-main-product>
   {%- if section.settings.show_breadcrumb -%}
-  <nav class="es-container es-product__crumbs" aria-label="{{ 'conversion.breadcrumb' | t }}"><a href="{{ routes.root_url }}">{{ 'conversion.home' | t }}</a><span aria-hidden="true">›</span><span aria-current="page">{{ product.title | escape }}</span></nav>
+  <nav class="es-container es-product__crumbs" aria-label="{{ 'conversion.breadcrumb' | t }}"><a href="{{ routes.root_url }}">{{ 'conversion.home' | t }}</a><span aria-hidden="true">›</span>{%- if section.settings.crumb_label != blank -%}<a href="{{ section.settings.crumb_link | default: routes.all_products_collection_url }}">{{ section.settings.crumb_label | escape }}</a><span aria-hidden="true">›</span>{%- endif -%}<span aria-current="page">{{ section.settings.display_heading | default: product.title | escape }}</span></nav>
   {%- endif -%}
   <div class="es-container es-product__grid" id="acheter">
     <div class="es-product__gallery" data-gallery>
       <div class="es-product__track" data-gallery-track tabindex="0" aria-label="{{ 'products.product.media' | t }}">
-        {%- for media in product.media -%}
+        {%- for media_i in media_order -%}
+          {%- assign media_n = media_i | plus: 0 -%}{%- assign media = product.media[media_n] -%}
+          {%- if media == blank -%}{%- continue -%}{%- endif -%}
           <figure class="es-product__slide es-media-frame" data-media-id="{{ media.id }}">
             {%- case media.media_type -%}
               {%- when 'image' -%}
@@ -26,13 +40,15 @@
                 {{ media | media_tag: class: 'es-product__img' }}
             {%- endcase -%}
           </figure>
-        {%- else -%}
-          <figure class="es-product__slide es-media-frame">{% if section.settings.media_role != blank %}{% render 'ed-media', role_label: section.settings.media_role %}{% else %}{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{% endif %}</figure>
         {%- endfor -%}
+        {%- if media_count == 0 -%}
+          <figure class="es-product__slide es-media-frame">{% if section.settings.media_role != blank %}{% render 'ed-media', role_label: section.settings.media_role %}{% else %}{{ 'product-1' | placeholder_svg_tag: 'es-placeholder__svg' }}{% endif %}</figure>
+        {%- endif -%}
       </div>
       {%- if media_count > 1 -%}
         <div class="es-product__thumbs" role="list">
-          {%- for media in product.media -%}
+          {%- for media_i in media_order -%}
+            {%- assign media_n = media_i | plus: 0 -%}{%- assign media = product.media[media_n] -%}
             <button type="button" class="es-product__thumb{% if forloop.first %} is-active{% endif %}" data-gallery-go="{{ forloop.index0 }}" aria-label="{{ 'products.product.media_n' | t: n: forloop.index }}">
               {{ media.preview_image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}
             </button>
@@ -271,9 +287,13 @@
       { "value": "stack", "label": "Images empilées" },
       { "value": "carousel", "label": "Carrousel avec miniatures" },
       { "value": "grid", "label": "Grille deux colonnes" },
-      { "value": "thumbs-below", "label": "Grande photo, miniatures dessous" }
+      { "value": "thumbs-below", "label": "Grande photo, miniatures dessous" },
+      { "value": "thumbs-left", "label": "Grande photo, miniatures à gauche" }
     ] },
+    { "type": "range", "id": "gallery_first", "label": "Vue montrée en premier", "info": "Numéro de l'image du produit affichée en premier sur la fiche ; la première image reste celle des cartes.", "min": 1, "max": 10, "step": 1, "default": 1 },
     { "type": "checkbox", "id": "show_breadcrumb", "label": "Fil d'Ariane au-dessus de la fiche", "default": false },
+    { "type": "text", "id": "crumb_label", "label": "Étape intermédiaire du fil d'Ariane", "info": "Ex. « Accessoires ». Vide : Accueil › produit." },
+    { "type": "url", "id": "crumb_link", "label": "Lien de l'étape intermédiaire" },
     { "type": "checkbox", "id": "tiles_under_gallery", "label": "Vignettes légendées sous la galerie", "info": "Sinon, sous l'achat.", "default": false },
     { "type": "select", "id": "gallery_ratio", "label": "Cadre des visuels", "default": "portrait", "info": "Carré pour des visuels carrés : aucune bande au-dessus ni en dessous. Le produit n'est jamais étiré ni coupé.", "options": [ { "value": "natural", "label": "Naturel (hauteur de l'image)" }, { "value": "square", "label": "Carré" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "landscape", "label": "Paysage 4:3" } ] },
     { "type": "checkbox", "id": "sticky_bar", "label": "Barre d'achat qui suit le défilement", "default": true },

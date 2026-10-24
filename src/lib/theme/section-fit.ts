@@ -26,7 +26,7 @@ export type SectionFit = {
 };
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
-const CONVERSION_THEMES = ["fraise", "sillon", "noctil", "traverse", "museau-club"];
+const CONVERSION_THEMES = ["fraise", "sillon", "noctil", "traverse", "museau-club", "souple"];
 const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove", "onde", "souple"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
@@ -50,6 +50,8 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "cv-stories": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-ingredients": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-quote": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
+  // SOUPLE (maquettes du 23 octobre) : caractéristiques, produits associés et questions en trois colonnes sous la fiche.
+  "cv-infos": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   // Compositions éditoriales (ORBE, Atelier Rive).
   "ed-opening": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-statement": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
