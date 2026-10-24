@@ -1,0 +1,50 @@
+{%- comment -%}
+  PARENTHÈSE : repères à pictogrammes.
+  - plain : trois colonnes centrées séparées d'un filet, grands pictogrammes abricot (Se recentrer…, 01) ;
+  - circles : pictogrammes dans des ronds abricot clair, alignés à gauche (« Quel matériel est nécessaire ? », 01) ;
+  - cards : cartes claires centrées (« Offrir une parenthèse… », entreprises, 03).
+  Blocs : « Repère ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="pa-section pa-features pa-features--{{ s.layout }}">
+  <div class="pa-wrap">
+    {%- if s.heading != blank -%}<h2 class="pa-title pa-title--{% if s.layout == 'circles' %}sm{% else %}md{% endif %}">{{ s.heading }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="pa-features__lead">{{ s.text }}</div>{%- endif -%}
+    <ul class="pa-features__list" role="list" style="--cols: {{ section.blocks.size }};">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="pa-feature" {{ block.shopify_attributes }}>
+          <span class="pa-feature__ico">{% render 'pa-icon', name: b.icon %}</span>
+          {%- if b.title != blank -%}<h3 class="pa-feature__title">{{ b.title | escape | newline_to_br }}</h3>{%- endif -%}
+          {%- if b.text != blank -%}<p class="pa-feature__text">{{ b.text | escape | newline_to_br }}</p>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Repères à pictogrammes",
+  "class": "pa-features-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "plain", "options": [{ "value": "plain", "label": "Colonnes centrées" }, { "value": "circles", "label": "Pictogrammes ronds" }, { "value": "cards", "label": "Cartes" }] },
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "richtext", "id": "text", "label": "Texte" }
+  ],
+  "blocks": [
+    {
+      "type": "feature", "name": "Repère",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icône", "default": "leaf", "options": [{ "value": "leaf", "label": "Feuille" }, { "value": "sun", "label": "Soleil" }, { "value": "lotus", "label": "Lotus" }, { "value": "headset", "label": "Casque" }, { "value": "timer", "label": "Minuteur" }, { "value": "pin", "label": "Lieu" }, { "value": "monitor", "label": "Écran" }, { "value": "wifi", "label": "Connexion" }, { "value": "camera", "label": "Caméra" }, { "value": "heart", "label": "Cœur" }, { "value": "people", "label": "Groupe" }, { "value": "lock", "label": "Cadenas" }] },
+        { "type": "textarea", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Repères à pictogrammes" }]
+}
+{% endschema %}

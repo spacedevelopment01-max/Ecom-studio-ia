@@ -1,0 +1,72 @@
+{%- comment -%}
+  PARENTHÈSE : pied de page de la planche d'accueil 02 (identité commune retenue pour toutes les pages) : signe et nom du
+  cabinet avec sa signature, liens de navigation (menu choisi), coordonnées (« [À renseigner] » tant qu'elles manquent),
+  réseaux sociaux (seulement ceux renseignés), puis « © {année} … » et liens légaux.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+-%}
+<footer class="pa-section pa-footer pa-footer--{{ s.style }}">
+  <div class="pa-wrap">
+    <div class="pa-footer__top">
+      <a class="pa-footer__brand" href="{{ routes.root_url }}">{% render 'pa-ornament', name: 'mark' %}<span><span class="pa-footer__name">{{ shop.name }}</span>{%- if s.tagline != blank -%}<span class="pa-footer__tagline">{{ s.tagline }}</span>{%- endif -%}</span></a>
+      {%- if menu.links.size > 0 -%}
+        <nav class="pa-footer__nav" aria-label="{{ s.nav_label | escape }}">
+          <ul role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>
+        </nav>
+      {%- endif -%}
+      <ul class="pa-footer__contact" role="list">
+        <li>{% render 'pa-icon', name: 'pin' %}<span>{% if s.address != blank %}{{ s.address }}{% else %}{{ s.todo_label }}{% endif %}</span></li>
+        <li>{% render 'pa-icon', name: 'mail' %}<span>{% if s.email != blank %}<a href="mailto:{{ s.email }}">{{ s.email }}</a>{% else %}{{ s.todo_label }}{% endif %}</span></li>
+        <li>{% render 'pa-icon', name: 'phone' %}<span>{% if s.phone != blank %}<a href="tel:{{ s.phone | remove: ' ' }}">{{ s.phone }}</a>{% else %}{{ s.todo_label }}{% endif %}</span></li>
+      </ul>
+      {%- if s.instagram != blank or s.linkedin != blank or s.facebook != blank -%}
+        <ul class="pa-footer__social" role="list">
+          {%- if s.instagram != blank -%}<li><a href="{{ s.instagram }}" aria-label="Instagram">{% render 'pa-icon', name: 'instagram' %}</a></li>{%- endif -%}
+          {%- if s.linkedin != blank -%}<li><a href="{{ s.linkedin }}" aria-label="LinkedIn">{% render 'pa-icon', name: 'linkedin' %}</a></li>{%- endif -%}
+          {%- if s.facebook != blank -%}<li><a href="{{ s.facebook }}" aria-label="Facebook">{% render 'pa-icon', name: 'facebook' %}</a></li>{%- endif -%}
+        </ul>
+      {%- endif -%}
+    </div>
+    <div class="pa-footer__bottom">
+      <p>© {{ 'now' | date: '%Y' }} {{ shop.name }}{% if s.note != blank %} – {{ s.note }}{% endif %}</p>
+      <ul role="list" class="pa-footer__legal">
+        {%- if s.link1_label != blank -%}<li><a href="{{ s.link1 }}">{{ s.link1_label }}</a></li>{%- endif -%}
+        {%- if s.link2_label != blank -%}<li><a href="{{ s.link2 }}">{{ s.link2_label }}</a></li>{%- endif -%}
+        {%- if s.link3_label != blank -%}<li><a href="{{ s.link3 }}">{{ s.link3_label }}</a></li>{%- endif -%}
+        {%- if s.link4_label != blank -%}<li><a href="{{ s.link4 }}">{{ s.link4_label }}</a></li>{%- endif -%}
+      </ul>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page Parenthèse",
+  "class": "pa-footer-section",
+  "settings": [
+    { "type": "select", "id": "style", "label": "Style", "default": "light", "options": [{ "value": "light", "label": "Ivoire (planche d'accueil)" }, { "value": "forest", "label": "Vert forêt" }] },
+    { "type": "text", "id": "tagline", "label": "Signature", "info": "Facultatif. Ex. : votre spécialité." },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation du pied de page" },
+    { "type": "text", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "todo_label", "label": "Mention d'une information manquante", "default": "[À renseigner]" },
+    { "type": "url", "id": "instagram", "label": "Instagram" },
+    { "type": "url", "id": "linkedin", "label": "LinkedIn" },
+    { "type": "url", "id": "facebook", "label": "Facebook" },
+    { "type": "text", "id": "note", "label": "Mention après le nom", "default": "Cabinet de démonstration. Tous droits réservés." },
+    { "type": "text", "id": "link1_label", "label": "Lien légal 1", "default": "Mentions légales" },
+    { "type": "url", "id": "link1", "label": "Adresse du lien légal 1" },
+    { "type": "text", "id": "link2_label", "label": "Lien légal 2", "default": "Politique de confidentialité" },
+    { "type": "url", "id": "link2", "label": "Adresse du lien légal 2" },
+    { "type": "text", "id": "link3_label", "label": "Lien légal 3", "default": "Conditions de réservation" },
+    { "type": "url", "id": "link3", "label": "Adresse du lien légal 3" },
+    { "type": "text", "id": "link4_label", "label": "Lien légal 4", "default": "Cookies" },
+    { "type": "url", "id": "link4", "label": "Adresse du lien légal 4" }
+  ],
+  "presets": [{ "name": "Pied de page Parenthèse" }]
+}
+{% endschema %}

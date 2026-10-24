@@ -33,13 +33,13 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 41 thèmes (30 anciens, lisibles seulement, + 11 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158) et n'en propose que 11 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(42);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(42);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(42);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance"]);
+  it("définit 43 thèmes (30 anciens, lisibles seulement, + 13 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, ATELIER NUANCE #177 et PARENTHÈSE) et n'en propose que 13 (catalogue actif), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(43);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(43);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(43);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance", "parenthese"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -136,6 +136,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const { atelierNuanceProject } = await import("./atelier-nuance-fixtures");
     const { runWithLang } = await import("@/lib/i18n-server");
     add((await runWithLang({ content: "fr", ui: "fr" }, () => atelierNuanceProject(user.id))).spec);
+    // PARENTHÈSE : séances, ateliers, réservation, gestion du rendez-vous, cabinet et journal composés par sa démonstration.
+    const { parentheseProject } = await import("./parenthese-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => parentheseProject(user.id))).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.

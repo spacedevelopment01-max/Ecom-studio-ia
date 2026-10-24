@@ -1,0 +1,43 @@
+{%- comment -%}
+  PARENTHÈSE : « La sophrologie, simplement. » (accueil, planche 02) : titre, texte et bouton avec un rameau au trait ;
+  à droite une photo prolongée d'un panneau sauge (deux paragraphes séparés d'un filet, courbe claire).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-intro">
+  <div class="pa-wrap pa-intro__grid">
+    <div class="pa-intro__text">
+      <h2 class="pa-title pa-title--lg">{{ s.heading | escape | newline_to_br }}</h2>
+      {%- if s.text != blank -%}<div class="pa-intro__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--forest" href="{{ s.button_link | default: '/pages/mon-approche' }}">{{ s.button_label }}</a>{%- endif -%}
+      {% render 'pa-ornament', name: 'sprig', class: 'pa-intro__sprig' %}
+    </div>
+    <div class="pa-intro__card">
+      {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'pa-intro__img' %}
+      <div class="pa-intro__panel">
+        {%- if s.panel_text != blank -%}<p class="pa-intro__panel-lead">{{ s.panel_text | escape | newline_to_br }}</p>{%- endif -%}
+        {%- if s.panel_note != blank -%}<p class="pa-intro__panel-note">{{ s.panel_note | escape | newline_to_br }}</p>{%- endif -%}
+        <svg class="pa-intro__arc" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><path d="M118 2C100 70 60 108 2 118" fill="none" stroke="#fff" stroke-width="1.6"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Présentation et panneau",
+  "class": "pa-intro-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "La sophrologie,\nsimplement." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "En savoir plus sur mon approche" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "textarea", "id": "panel_text", "label": "Panneau : texte principal" },
+    { "type": "textarea", "id": "panel_note", "label": "Panneau : note" }
+  ],
+  "presets": [{ "name": "Présentation et panneau" }]
+}
+{% endschema %}

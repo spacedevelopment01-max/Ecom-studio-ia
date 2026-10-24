@@ -39,6 +39,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   souple: { kind: "catalog", profile: { editorial_profile: "poudre" }, family: /^(ed-|fs-)/ },
   // ATELIER NUANCE (issue #177) : vérifiée par tests/atelier-nuance-theme.test.ts (sections an-*, aucun profil global).
   "atelier-nuance": { kind: "services", profile: {}, family: /^an-/ },
+  // PARENTHÈSE : vérifiée par tests/parenthese-theme.test.ts (sections pa-*, aucun profil global).
+  parenthese: { kind: "services", profile: {}, family: /^pa-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

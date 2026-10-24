@@ -1,0 +1,59 @@
+{%- comment -%}
+  PARENTHÈSE : « Séance individuelle » et « Atelier en groupe » (accueil, planche 02) : photo, titre, texte, durée et
+  tarif suivis des « Réglages du cabinet » (identifiant de séance ou d'atelier), bouton abricot.
+  Blocs : « Offre ».
+{%- endcomment -%}
+{%- if section.blocks.size > 0 -%}
+<section class="pa-section pa-offers">
+  <div class="pa-wrap pa-offers__grid">
+    {%- for block in section.blocks -%}
+      {%- assign b = block.settings -%}
+      <article class="pa-offer" {{ block.shopify_attributes }} {% if b.kind == 'atelier' %}data-pa-atelier="{{ b.ref_id | escape }}"{% else %}data-pa-svc="{{ b.ref_id | escape }}"{% endif %}>
+        {% render 'pa-img', image: b.image, asset: b.image_asset, alt: b.image_alt, pos: b.image_position, class: 'pa-offer__img' %}
+        <div class="pa-offer__body">
+          <h2 class="pa-offer__title">{{ b.title }}</h2>
+          {%- if b.text != blank -%}<p class="pa-offer__text">{{ b.text | escape | newline_to_br }}</p>{%- endif -%}
+          <p class="pa-offer__meta">
+            <span class="pa-offer__dur">{% if b.kind == 'atelier' %}{% render 'pa-icon', name: 'people' %}{% else %}{% render 'pa-icon', name: 'clock' %}{% endif %}<span data-pa-f="duration-short">{{ b.duration }}</span></span>
+            <span class="pa-offer__price" data-pa-f="price">{{ b.price }}</span>
+          </p>
+          {%- if b.button_label != blank -%}<a class="pa-btn pa-btn--apricot" href="{{ b.button_link | default: '/pages/prendre-rendez-vous' }}"{% if b.book_kind != blank %} data-pa-book="{{ b.book_kind }}"{% endif %}>{{ b.button_label }}</a>{%- endif -%}
+        </div>
+      </article>
+    {%- endfor -%}
+  </div>
+  {%- if section.settings.demo_note != blank -%}<p class="pa-wrap pa-note pa-offers__note" data-pa-demo-note>{{ section.settings.demo_note }}</p>{%- endif -%}
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Séance et atelier",
+  "class": "pa-offers-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "demo_note", "label": "Mention des tarifs d'exemple", "info": "Ex. « Tarifs de démonstration ». Vide : aucune mention. Masquée quand le service réel est activé." }
+  ],
+  "blocks": [
+    {
+      "type": "offer", "name": "Offre",
+      "settings": [
+        { "type": "select", "id": "kind", "label": "Type", "default": "seance", "options": [{ "value": "seance", "label": "Séance" }, { "value": "atelier", "label": "Atelier" }] },
+        { "type": "text", "id": "ref_id", "label": "Identifiant de la séance ou de l'atelier", "info": "La durée et le tarif suivent alors les « Réglages du cabinet »." },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+        { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "title", "label": "Titre", "default": "Séance individuelle" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "text", "id": "duration", "label": "Durée affichée sans script" },
+        { "type": "text", "id": "price", "label": "Tarif affiché sans script" },
+        { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Prendre rendez-vous" },
+        { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+        { "type": "text", "id": "book_kind", "label": "Réservation préparée", "info": "Ex. « seance:premiere » ; vide pour une liste." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Séance et atelier" }]
+}
+{% endschema %}

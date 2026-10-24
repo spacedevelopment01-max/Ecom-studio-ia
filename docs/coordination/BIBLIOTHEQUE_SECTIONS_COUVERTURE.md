@@ -2,7 +2,7 @@
 
 Généré par `scripts/sections-inventory.ts` le 2026-10-19 ; contrôlé par `tests/section-library-coverage.test.ts` (une section ajoutée sans entrée de bibliothèque ou absente de cet inventaire fait échouer la CI).
 
-**184 sections** dans `theme-base/sections/` (dont les 27 sections `an-*` d'ATELIER NUANCE, issue #177, ajoutées à la main ci-dessous) : **170 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 184/184 (FR et EN). Sections avec réglages d'animation : 17.
+**213 sections** dans `theme-base/sections/` (dont les 27 sections `an-*` d'ATELIER NUANCE, issue #177, et les 29 sections `pa-*` de PARENTHÈSE, ajoutées à la main ci-dessous) : **199 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 213/213 (FR et EN). Sections avec réglages d'animation : 17.
 
 Toute section de page est **ajoutable, duplicable, déplaçable, masquable, supprimable et sauvegardée** (menu « … » et poignée de la structure ; chaque action crée une version restaurable). Les réglages de chaque section s'éditent **manuellement** (panneau « Modifier les réglages » : textes, visuels, liens, boutons, couleurs, formats, dispositions, blocs et leur ordre, animations) et **par l'IA** (discussion) : mêmes opérations `/theme/ops`, même source de données.
 
@@ -224,3 +224,39 @@ Lignes produites par `scripts/sections-inventory.ts` le 2026-10-23 et ajoutées 
 | `an-state` | État du salon | Avancé | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 10 (text ×5, url ×2, select ×1, image_picker ×1, richtext ×1) | — | ajoutable | — | oui |
 | `an-steps` | Étapes numérotées | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | style (2) | 4 (select ×1, textarea ×1, text ×1, url ×1) | Étape · max 5 | ajoutable | — | — |
 | `an-team` | Équipe à initiales | Textes | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | style (2) | 4 (text ×3, select ×1) | Membre de l'équipe · max 8 | ajoutable | — | — |
+
+## PARENTHÈSE (mission du 24 octobre, PR #179) — sections du thème cabinet de sophrologie
+
+Lignes produites par `scripts/sections-inventory.ts` le 2026-10-24 et ajoutées seules (le reste de l'inventaire n'est pas régénéré, pour ne pas toucher aux lignes des autres travaux en cours).
+
+| Section | Nom (bibliothèque) | Catégorie | Famille d'origine | Utilisée par | Variantes | Réglages | Blocs | Bibliothèque | A | F |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `pa-approach` | Approche et engagements | Textes | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | — | 9 (text ×6, richtext ×1, url ×1, image_picker ×1) | Engagement · max 6 | ajoutable | — | oui |
+| `pa-article` | Article du journal Parenthèse | Textes | Base du studio (11 directions) | parenthese-fixtures.ts | — | 16 (text ×9, url ×2, textarea ×2, richtext ×2, image_picker ×1) | Conseil numéroté · max 6 | ajoutable | — | oui |
+| `pa-atelier` | Fiche d'atelier : informations | Services | Base du studio (11 directions) | parenthese-fixtures.ts | — | 17 (text ×16, url ×1) | Question, Atelier similaire · max 12 | ajoutable | — | oui |
+| `pa-band` | Photo et panneau de couleur | Images et vidéos | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | style (2) | 14 (text ×5, select ×3, checkbox ×1, range ×1, image_picker ×1, textarea ×1, richtext ×1, url ×1) | — | ajoutable | — | oui |
+| `pa-booking` | Prise de rendez-vous Parenthèse | Services | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | — | 85 (text ×73, image_picker ×5, textarea ×5, url ×2) | Choix de prestation · max 6 | ajoutable | — | oui |
+| `pa-cabinet` | Réglages du cabinet | Services | Base du studio (11 directions) | parenthese.ts, parenthese-theme.test.ts, parenthese-fixtures.ts, parenthese-booking.test.ts | — | 46 (text ×23, url ×8, color ×4, textarea ×4, range ×4, checkbox ×2, select ×1) | Séance, Atelier · max 50 | ajoutable | — | oui |
+| `pa-cards` | Cartes des séances | Services | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | layout (2) | 4 (text ×2, select ×1, textarea ×1) | Carte · max 4 | ajoutable | — | oui |
+| `pa-contact` | Contact Parenthèse | Conversion | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | — | 28 (text ×22, textarea ×4, richtext ×1, image_picker ×1) | — | ajoutable | — | oui |
+| `pa-cta` | Appel à prendre rendez-vous | Conversion | Base du studio (11 directions) | parenthese.ts, parenthese-theme.test.ts, parenthese-fixtures.ts | layout (5) | 13 (text ×5, select ×2, checkbox ×2, image_picker ×1, textarea ×1, richtext ×1, url ×1) | — | ajoutable | — | oui |
+| `pa-faq` | Questions fréquentes Parenthèse | Textes | Base du studio (11 directions) | parenthese.ts, parenthese-theme.test.ts, parenthese-fixtures.ts | layout (4) | 12 (text ×8, url ×2, select ×1, checkbox ×1) | Catégorie, Question · max 40 | ajoutable | — | — |
+| `pa-features` | Repères à pictogrammes | Textes | Base du studio (11 directions) | parenthese-fixtures.ts | layout (3) | 3 (select ×1, text ×1, richtext ×1) | Repère · max 6 | ajoutable | — | — |
+| `pa-footer` | Pied de page Parenthèse | Avancé | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | style (2) | 20 (text ×11, url ×7, select ×1, link_list ×1) | — | ajoutable | — | — |
+| `pa-gallery` | Galerie du cabinet | Images et vidéos | Base du studio (11 directions) | parenthese-fixtures.ts | layout (2) | 8 (text ×6, select ×1, richtext ×1) | Photo · max 8 | ajoutable | — | oui |
+| `pa-hero` | Ouverture apaisée | Ouverture | Base du studio (11 directions) | parenthese.ts, parenthese-theme.test.ts, parenthese-fixtures.ts | layout (3) | 35 (text ×17, select ×4, url ×4, range ×3, textarea ×3, checkbox ×2, image_picker ×1, richtext ×1) | Repère, Étiquette · max 8 | ajoutable | — | oui |
+| `pa-intro` | Présentation avec panneau sauge | Textes | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | — | 10 (text ×4, textarea ×3, richtext ×1, url ×1, image_picker ×1) | — | ajoutable | — | oui |
+| `pa-legal` | Page légale Parenthèse | Textes | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | — | 13 (text ×7, url ×4, range ×1, richtext ×1) | — | ajoutable | — | — |
+| `pa-lookup` | Retrouver un rendez-vous | Services | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | — | 17 (text ×12, textarea ×3, richtext ×1, image_picker ×1) | — | ajoutable | — | oui |
+| `pa-manage` | Gestion d'un rendez-vous | Services | Base du studio (11 directions) | parenthese.ts, parenthese-fixtures.ts | — | 39 (text ×35, textarea ×2, image_picker ×1, url ×1) | — | ajoutable | — | oui |
+| `pa-needs` | Besoins en cartes | Services | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | — | 1 (text ×1) | Besoin · max 6 | ajoutable | — | oui |
+| `pa-newsletter` | Inscription aux articles | Conversion | Base du studio (11 directions) | parenthese-fixtures.ts | — | 6 (text ×6) | — | ajoutable | — | — |
+| `pa-notice` | Encadré d'information | Textes | Base du studio (11 directions) | parenthese-fixtures.ts | layout (3) | 6 (select ×2, text ×2, richtext ×1, textarea ×1) | — | ajoutable | — | — |
+| `pa-offers` | Séance et atelier en cartes | Services | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | — | 1 (text ×1) | Offre · max 4 | ajoutable | — | oui |
+| `pa-place` | Accès au cabinet | Services | Base du studio (11 directions) | parenthese-fixtures.ts | — | 22 (text ×17, textarea ×2, richtext ×1, image_picker ×1, url ×1) | — | ajoutable | — | oui |
+| `pa-posts` | Articles du journal | Textes | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | layout (3) | 13 (text ×12, select ×1) | Article · max 16 | ajoutable | — | oui |
+| `pa-practical` | Informations pratiques | Services | Base du studio (11 directions) | parenthese-fixtures.ts | — | 4 (text ×3, richtext ×1) | Repère · max 6 | ajoutable | — | — |
+| `pa-request` | Demande d'information (entreprises) | Conversion | Base du studio (11 directions) | parenthese-fixtures.ts | — | 14 (text ×14) | — | ajoutable | — | — |
+| `pa-split` | Photo et texte | Textes | Base du studio (11 directions) | parenthese-fixtures.ts | style (4) | 20 (text ×7, select ×3, textarea ×3, checkbox ×3, range ×1, image_picker ×1, richtext ×1, url ×1) | — | ajoutable | — | oui |
+| `pa-steps` | Étapes numérotées | Textes | Base du studio (11 directions) | parenthese-theme.test.ts, parenthese-fixtures.ts | layout (4) | 7 (text ×4, select ×1, textarea ×1, image_picker ×1) | Étape · max 6 | ajoutable | — | oui |
+| `pa-workshops` | Liste des ateliers | Services | Base du studio (11 directions) | parenthese-fixtures.ts | — | 9 (text ×9) | Atelier · max 24 | ajoutable | — | oui |
