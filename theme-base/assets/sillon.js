@@ -333,15 +333,25 @@
   function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
   function initFaq(root) {
     var input = $('[data-sv-faq-search]', root), pills = $$('[data-sv-faq-filter]', root), items = $$('.sv-faq__item', root), empty = $('[data-sv-faq-empty]', root), cat = '';
+    var mq = window.matchMedia('(max-width: 749px)');
+    /* Question réservée à l'ordinateur ou au téléphone (réglage « Affichage ») : comptée seulement là où elle se voit. */
+    function forDevice(it) { return it.classList.contains('sv-vis--mobile') ? mq.matches : it.classList.contains('sv-vis--desktop') ? !mq.matches : true; }
+    /* Sans filtre choisi, la pastille du thème de la question ouverte est mise en avant (planches FAQ). */
+    function topic() {
+      var open = items.filter(function (it) { return it.open && !it.hidden && forDevice(it); })[0], c = !cat && open ? open.getAttribute('data-cat') : '';
+      pills.forEach(function (x) { x.classList.toggle('is-topic', !!c && x.getAttribute('data-sv-faq-filter') === c); });
+    }
     function apply() {
       var q = norm(input ? input.value : '').trim(), shown = 0;
       items.forEach(function (it) {
         var on = (!cat || it.getAttribute('data-cat') === cat) && (!q || norm(it.textContent).indexOf(q) !== -1);
         it.hidden = !on;
-        if (on) { shown++; var n = $('[data-sv-faq-num]', it); if (n) n.textContent = (shown < 10 ? '0' : '') + shown; if (q && shown === 1) it.open = true; }
+        if (on && forDevice(it)) { shown++; var n = $('[data-sv-faq-num]', it); if (n) n.textContent = (shown < 10 ? '0' : '') + shown; if (q && shown === 1) it.open = true; }
       });
       if (empty) empty.hidden = shown > 0;
+      topic();
     }
+    function placeholder() { if (input && input.hasAttribute('data-ph-mobile')) input.placeholder = input.getAttribute(mq.matches ? 'data-ph-mobile' : 'data-ph'); }
     pills.forEach(function (b) {
       b.addEventListener('click', function () {
         var c = b.getAttribute('data-sv-faq-filter'); cat = cat === c ? '' : c;
@@ -349,10 +359,13 @@
         apply();
       });
     });
+    items.forEach(function (it) { it.addEventListener('toggle', topic); });
     if (input) input.addEventListener('input', apply);
+    if (mq.addEventListener) mq.addEventListener('change', function () { apply(); placeholder(); });
+    placeholder(); apply();
     /* Lien vers une catégorie (« …/faq#machine ») : la pastille correspondante est activée. */
     var h = decodeURIComponent((location.hash || '').slice(1));
-    pills.forEach(function (b) { if (h && b.getAttribute('data-sv-faq-filter') === h) b.click(); });
+    pills.forEach(function (b) { if (h && b.getAttribute('data-sv-faq-filter') === h && !b.classList.contains('is-active') && b.offsetParent !== null) b.click(); });
   }
 
   /* ---------------------------------------------------------------- Contact : erreurs par champ ; envoi simulé annoncé */

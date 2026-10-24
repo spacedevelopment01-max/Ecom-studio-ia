@@ -6,9 +6,12 @@
   Blocs : « Question » (catégorie, question, réponse). Les catégories des pastilles sont celles du réglage « Filtres » ; une pastille
   active filtre la liste, un second clic la relâche (toutes les questions).
   Sans script : toutes les questions restent lisibles (details / summary).
+  Les planches ordinateur et téléphone n'ont pas le même contenu : chaque question peut être réservée à l'un des deux,
+  les pastilles du téléphone ont leur propre réglage ; la pastille du thème de la question ouverte est mise en avant.
 {%- endcomment -%}
 {%- assign s = section.settings -%}
 {%- assign cats = s.filters | split: ',' -%}
+{%- assign cats_m = s.filters_mobile | default: s.filters | split: ',' -%}
 <section class="sv sv-faq{% if s.product_image != blank or s.product_image_asset != blank %} sv-faq--overhang{% endif %}" data-sv-faq>
   <div class="sv-c">
     <div class="sv-faq__inner">
@@ -21,21 +24,33 @@
       <div class="sv-faq__search">
         <label class="visually-hidden" for="sv-faq-q-{{ section.id }}">{{ s.search_label }}</label>
         {% render 'sv-icon', name: 'search' %}
-        <input id="sv-faq-q-{{ section.id }}" type="search" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off" data-sv-faq-search>
+        <input id="sv-faq-q-{{ section.id }}" type="search" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off" data-sv-faq-search{% if s.search_placeholder_mobile != blank %} data-ph="{{ s.search_placeholder | escape }}" data-ph-mobile="{{ s.search_placeholder_mobile | escape }}"{% endif %}>
       </div>
       {%- if cats.size > 0 -%}
-        <div class="sv-faq__filters" role="group" aria-label="{{ s.filters_label | escape }}">
+        <div class="sv-faq__filters{% if s.filters_mobile != blank %} sv-only-d{% endif %}" role="group" aria-label="{{ s.filters_label | escape }}">
           {%- for c in cats -%}
             {%- assign cs = c | strip -%}
             <button type="button" class="sv-pill sv-faq__pill" data-sv-faq-filter="{{ cs | handleize }}" aria-pressed="false">{{ cs }}</button>
           {%- endfor -%}
         </div>
       {%- endif -%}
+      {%- if s.filters_mobile != blank -%}
+        <div class="sv-faq__filters sv-only-m" role="group" aria-label="{{ s.filters_label | escape }}">
+          {%- for c in cats_m -%}
+            {%- assign cs = c | strip -%}
+            <button type="button" class="sv-pill sv-faq__pill" data-sv-faq-filter="{{ cs | handleize }}" aria-pressed="false">{{ cs }}</button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
       <div class="sv-faq__list" data-sv-faq-list>
+        {%- assign n_d = 0 -%}{%- assign n_m = 0 -%}
         {%- for block in section.blocks -%}
           {%- assign b = block.settings -%}
-          <details class="sv-faq__item" data-cat="{{ b.category | strip | handleize }}" {% if forloop.first %}open{% endif %} {{ block.shopify_attributes }}>
-            <summary><span class="sv-display sv-faq__num" data-sv-faq-num>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span><span class="sv-faq__q">{%- if b.question_mobile != blank -%}<span class="sv-d">{{ b.question }}</span><span class="sv-m">{{ b.question_mobile | escape | newline_to_br }}</span>{%- else -%}{{ b.question }}{%- endif -%}</span>{% render 'sv-icon', name: 'down', class: 'sv-faq__chev' %}</summary>
+          {%- assign vis = b.visibility | default: 'all' -%}
+          {%- if vis != 'mobile' -%}{%- assign n_d = n_d | plus: 1 -%}{%- endif -%}
+          {%- if vis != 'desktop' -%}{%- assign n_m = n_m | plus: 1 -%}{%- endif -%}
+          <details class="sv-faq__item sv-vis--{{ vis }}" data-cat="{{ b.category | strip | handleize }}" {% if forloop.first %}open{% endif %} {{ block.shopify_attributes }}>
+            <summary><span class="sv-display sv-faq__num" data-sv-faq-num>{%- if n_d == n_m -%}{% if n_d < 10 %}0{% endif %}{{ n_d }}{%- else -%}<span class="sv-d">{% if n_d < 10 %}0{% endif %}{{ n_d }}</span><span class="sv-m">{% if n_m < 10 %}0{% endif %}{{ n_m }}</span>{%- endif -%}</span><span class="sv-faq__q">{%- if b.question_mobile != blank -%}<span class="sv-d">{{ b.question }}</span><span class="sv-m">{{ b.question_mobile | escape | newline_to_br }}</span>{%- else -%}{{ b.question }}{%- endif -%}</span>{% render 'sv-icon', name: 'down', class: 'sv-faq__chev' %}</summary>
             <div class="sv-faq__a">{{ b.answer }}</div>
           </details>
         {%- endfor -%}
@@ -71,7 +86,9 @@
     { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "text", "id": "search_label", "label": "Recherche (lecteurs d'écran)", "default": "Rechercher une question" },
     { "type": "text", "id": "search_placeholder", "label": "Texte de la recherche", "default": "Rechercher une question…" },
+    { "type": "text", "id": "search_placeholder_mobile", "label": "Texte de la recherche au téléphone", "info": "Vide : le même texte." },
     { "type": "text", "id": "filters", "label": "Filtres (séparés par des virgules)", "default": "Machine, Utilisation, Commande", "info": "Chaque question indique l'un de ces filtres." },
+    { "type": "text", "id": "filters_mobile", "label": "Filtres au téléphone (séparés par des virgules)", "info": "Vide : les mêmes filtres." },
     { "type": "text", "id": "filters_label", "label": "Filtres (lecteurs d'écran)", "default": "Thèmes des questions" },
     { "type": "text", "id": "empty_text", "label": "Aucune question trouvée", "default": "Aucune question ne correspond à votre recherche." },
     { "type": "text", "id": "contact_label", "label": "Bouton de contact", "default": "Nous contacter" },
@@ -90,6 +107,7 @@
       "type": "question", "name": "Question",
       "settings": [
         { "type": "text", "id": "category", "label": "Filtre", "default": "Machine" },
+        { "type": "select", "id": "visibility", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "mobile", "label": "Téléphone seulement" }, { "value": "desktop", "label": "Ordinateur seulement" }] },
         { "type": "text", "id": "question", "label": "Question", "default": "Votre question ?" },
         { "type": "textarea", "id": "question_mobile", "label": "Question au téléphone (coupe des lignes)", "info": "Vide : la question ci-dessus." },
         { "type": "richtext", "id": "answer", "label": "Réponse" }

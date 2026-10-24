@@ -38,7 +38,9 @@
         {%- if s.layout == 'photo' -%}
           {% render 'sv-route', d: 'M0 60C30 30 50 75 80 70S120 0 160 18 210 105 260 72 300 -5 340 0', vb: '0 0 340 110', dots: '58,52 92,68 168,20 244,82', dot: 'mixed', class: 'sv-hero__route' %}
         {%- else -%}
-          <svg class="sv-hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 65H400C520 65 560 118 720 120L0 120Z" fill="var(--sv-cream)"/></svg>
+          {%- comment -%} Fond sombre : la vague est la fin de la bande (le dessous reste transparent) ; sinon, vague crème. {%- endcomment -%}
+          {%- if s.layout == 'dark' -%}{%- assign wave_d = 'M0 0H1440V120H832C640 120 560 53 415 53H0Z' -%}{%- assign wave_fill = 'var(--sv-night)' -%}{%- else -%}{%- assign wave_d = 'M0 65H400C520 65 560 118 720 120L0 120Z' -%}{%- assign wave_fill = 'var(--sv-cream)' -%}{%- endif -%}
+          <svg class="sv-hero__wave" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="{{ wave_d }}" fill="{{ wave_fill }}"/></svg>
         {%- endif -%}
       {%- endif -%}
       {%- if s.mobile_link != blank -%}<a class="sv-circle sv-circle--copper sv-hero__mlink" href="{{ s.mobile_link }}" aria-label="{{ s.mobile_link_label | escape }}">{% render 'sv-icon', name: 'arrow' %}</a>{%- endif -%}

@@ -290,7 +290,7 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     legalFoot,
   ] };
   const faq: [string, string, string][] = [
-    ["Utilisation", "Comment utiliser SILLON ?", p("Consultez la notice pour retrouver les conseils d'utilisation de votre machine.")],
+    ["Machine", "Comment utiliser SILLON ?", p("Consultez la notice pour retrouver les conseils d'utilisation de votre machine.")],
     ["Machine", "Où consulter la notice ?", p("La notice accompagne la machine. " + TODO("lien vers la notice officielle (PDF) — aucune notice n'est publiée dans cette démonstration"))],
     ["Machine", "Comment entretenir la machine ?", p("Rincez après chaque utilisation, laissez sécher puis rangez la machine au sec. Les gestes précis et les pièces à démonter sont décrits dans la notice.") + p(TODO("consignes d'entretien de la notice officielle"))],
     ["Machine", "Comment ranger SILLON ?", p("Une fois sèche, rangez-la à l'abri de l'humidité et des chocs, par exemple dans sa pochette de transport.")],
@@ -299,8 +299,10 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     ["Commande", "Comment vous contacter ?", p(`Par le formulaire de la page <a href="${U("contact")}">Contact</a> : nous vous répondons avec soin.`)],
   ];
   pages["faq"] = { seo: "Questions fréquentes SILLON : utilisation, notice, entretien, suivi et retours.", rows: [
-    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), image_mobile_asset: f(rock), image_mobile_position: "62% 38%", image_mobile_zoom: 136, search_placeholder: "Rechercher une réponse…", filters: "Machine, Utilisation, Commande, Livraison", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180, image_bottom_mobile_asset: f(land), image_bottom_position_mobile: "30% 80%", image_bottom_zoom_mobile: 100 },
-      faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer, question_mobile: ({ "Comment entretenir la machine ?": "Comment entretenir\nla machine ?", "Comment suivre ma commande ?": "Comment suivre ma\ncommande ?", "Comment demander un retour ?": "Comment demander\nun retour ?" } as Record<string, string>)[question] ?? "" } }))),
+    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), image_mobile_asset: f(rock), image_mobile_position: "62% 38%", image_mobile_zoom: 136, search_placeholder: "Rechercher une question…", search_placeholder_mobile: "Rechercher une réponse…", filters: "Machine, Utilisation, Commande", filters_mobile: "Machine, Utilisation, Commande, Livraison", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180, image_bottom_mobile_asset: f(land), image_bottom_position_mobile: "30% 80%", image_bottom_zoom_mobile: 100 },
+      faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer, question_mobile: ({ "Comment entretenir la machine ?": "Comment entretenir\nla machine ?", "Comment suivre ma commande ?": "Comment suivre ma\ncommande ?", "Comment demander un retour ?": "Comment demander\nun retour ?" } as Record<string, string>)[question] ?? "",
+        // La planche ordinateur montre cinq questions, la planche téléphone sept.
+        visibility: ["Comment ranger SILLON ?", "Comment vous contacter ?"].includes(question) ? "mobile" : "all" } }))),
     helpFoot,
   ] };
   pages["contact"] = { seo: "Contacter SILLON : une question, une demande ou simplement envie d'échanger.", rows: [
