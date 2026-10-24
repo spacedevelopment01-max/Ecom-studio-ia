@@ -55,6 +55,17 @@ describe("SILLON V2 : thème du catalogue", () => {
     for (const f of ["sillon-topo-corner.svg", "sillon-topo-field.svg", "sillon-topo-rings.svg", "sillon-topo-tall.svg"]) expect(fs.existsSync(path.join("theme-base", "assets", f)), f).toBe(true);
     expect(fs.readFileSync(path.join("theme-base", "snippets", "sv-route.liquid"), "utf8")).toContain("<path d=\"{{ d }}\"");
   });
+
+  it("fenêtres du groupe d'en-tête cliquables : le groupe laisse passer les clics, cookies, menu et tiroir les reçoivent", () => {
+    // Retour de Thomas (24 octobre) : les boutons du bandeau cookies ne répondaient pas (clics traversants hérités).
+    const css = fs.readFileSync(path.join("theme-base", "assets", "sillon.css"), "utf8");
+    expect(css).toMatch(/\.sv-header-section \{[^}]*pointer-events: none/);
+    const rule = css.match(/\.sv-header-section :is\(([^)]*)\) \{ pointer-events: auto; \}/);
+    expect(rule).toBeTruthy();
+    for (const c of [".sv-cookies", ".sv-menu", ".sv-drawer"]) expect(rule![1], c).toContain(c);
+    // Préférences repliées tant qu'on ne clique pas sur « Personnaliser » (l'attribut hidden n'est plus écrasé).
+    expect(css).toContain(".sv-cookies [hidden]");
+  });
 });
 
 describe("SILLON V2 : démonstration (planches 01 à 03 et planches téléphone)", async () => {

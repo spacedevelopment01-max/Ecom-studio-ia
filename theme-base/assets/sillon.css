@@ -70,6 +70,8 @@ body.dir-sillon main { overflow-x: clip; }
 /* Taille constante d'une page à l'autre (mesurée sur la planche 01 à 1440 px) : les planches 02 et 03 la dessinent à
    d'autres échelles ; chaque page y est comparée à la largeur où l'en-tête a cette taille. */
 body.dir-sillon .sv-header-section { position: absolute; top: var(--sv-top, 0px); left: 0; right: 0; z-index: 40; pointer-events: none; }
+/* Le groupe d'en-tête laisse passer les clics vers la page ; ses fenêtres (menu, tiroir, cookies) les reçoivent. */
+body.dir-sillon .sv-header-section :is(.sv-menu, .sv-drawer, .sv-cookies, .sv-header__bar, .sv-header__cart) { pointer-events: auto; }
 .sv-header { max-width: 1440px; margin: 0 auto; container-type: inline-size; --m: calc(100cqw / 390); }
 .sv-header__inner { position: relative; height: 104px; pointer-events: none; }
 .sv-header__bar { position: absolute; left: calc(50% - 338px); top: 20px; width: 709px; height: 62px; display: flex; align-items: center; padding: 0 12px 0 38px; border-radius: 999px; background: color-mix(in srgb, var(--sv-ivory) 92%, transparent); box-shadow: 0 10px 30px rgba(30, 20, 10, .14); pointer-events: auto; }
