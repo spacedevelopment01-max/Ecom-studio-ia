@@ -13,6 +13,7 @@
   assign help = linklists[s.help_menu]
   assign legal = linklists[s.legal_menu]
   assign legal_short = linklists[s.dark_legal_menu]
+  assign legal_m = linklists[s.legal_menu_mobile]
   assign menu_m = linklists[s.menu_mobile]
   assign help_m = linklists[s.help_menu_mobile]
   assign brand = s.wordmark | default: shop.name
@@ -63,6 +64,7 @@
     </div>
   </div>
   <div class="sv-footer__legal">
+    {%- if legal_m.links.size > 0 -%}<ul class="sv-footer__legal-m" role="list">{%- for link in legal_m.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
     {%- if s.copyright != blank -%}<p class="sv-footer__copy">© {{ brand }} — {{ s.copyright }}</p>{%- endif -%}
     {%- if legal.links.size > 0 -%}
       <ul class="sv-footer__legal-links" role="list">{%- for link in legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}<li><button type="button" class="sv-footer__cookies" data-sv-cookies-open>{{ s.cookies_label }}</button></li></ul>
@@ -80,6 +82,7 @@
     { "type": "link_list", "id": "menu", "label": "Menu principal", "default": "main-menu" },
     { "type": "link_list", "id": "help_menu", "label": "Menu d'aide", "default": "footer" },
     { "type": "link_list", "id": "legal_menu", "label": "Liens légaux" },
+    { "type": "link_list", "id": "legal_menu_mobile", "label": "Liens du pied clair (téléphone, achat)" },
     { "type": "link_list", "id": "menu_mobile", "label": "Menu du pied sombre (téléphone)", "info": "Vide : le menu principal." },
     { "type": "link_list", "id": "help_menu_mobile", "label": "Menu d'aide du pied sombre (téléphone)", "info": "Vide : le menu d'aide." },
     { "type": "link_list", "id": "dark_legal_menu", "label": "Liens légaux du pied sombre (téléphone)" },

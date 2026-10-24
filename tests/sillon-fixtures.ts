@@ -286,7 +286,7 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     legalFoot,
   ]);
   pages["commande"] = { seo: "Commande de démonstration SILLON : aucun paiement, aucun envoi.", rows: [
-    S("sv-checkout", { heading: "Dernière\nétape avant\nl'échappée.", image_asset: f(land), image_position: "30% 20%", image_bottom_asset: f(land), image_bottom_position: "0% 30%", image_bottom_zoom: 200, thumb_asset: f("v2-02-machine-detouree.webp"), countries: "France, Belgique, Suisse, Luxembourg", country_first: true, ship_text: `Les modes de livraison disponibles s'affichent ici dans la boutique réelle. ${TODO("transporteurs, délais et frais de livraison")}`, shipping_value: "À calculer", next1: "Continuer vers la livraison", next2: "Continuer vers le paiement", next3: "Valider le paiement", help_link: U("contact") }),
+    S("sv-checkout", { heading: "Dernière\nétape avant\nl'échappée.", image_asset: f(land), image_position: "30% 20%", image_bottom_asset: f(land), image_bottom_position: "0% 30%", image_bottom_zoom: 200, thumb_asset: f("v2-02-machine-detouree.webp"), countries: "France, Belgique, Suisse, Luxembourg", country_first: true, ship_text: `Les modes de livraison disponibles s'affichent ici dans la boutique réelle. ${TODO("transporteurs, délais et frais de livraison")}`, shipping_value: "À calculer", next1: "Continuer vers la livraison", next2: "Continuer vers le paiement", next3: "Valider le paiement", help_link: U("contact"), show_card_mock: true, final_disabled: true }),
     legalFoot,
   ] };
   const faq: [string, string, string][] = [
@@ -348,6 +348,8 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   spec.store.menus["footer-explore-m"] = { title: "Explorer (téléphone)", links: [{ title: "La machine", url: PRODUCT }, { title: "Le rituel", url: U("le-rituel") }, { title: "Le carnet", url: U("carnet") }, { title: "SILLON", url: U("sillon") }] };
   spec.store.menus["footer-help-m"] = { title: "Aide (téléphone)", links: [{ title: "Livraison", url: U("livraison-et-retours") }, { title: "Retours", url: `${U("livraison-et-retours")}#retours` }, { title: "Mentions légales", url: U("mentions-legales") }] };
   footer.sections[fid].settings.menu_mobile = "footer-explore-m";
+  spec.store.menus["legal-buy-m"] = { title: "Liens légaux (achat, téléphone)", links: [{ title: "Conditions de vente", url: U("conditions-de-vente") }, { title: "Confidentialité", url: U("confidentialite") }, { title: "Mentions légales", url: U("mentions-legales") }, { title: "Aide", url: U("faq") }] };
+  footer.sections[fid].settings.legal_menu_mobile = "legal-buy-m";
   footer.sections[fid].settings.help_menu_mobile = "footer-help-m";
   spec.store.menus.legal = { title: "Informations légales", links: [{ title: "Mentions légales", url: U("mentions-legales") }, { title: "Conditions de vente", url: U("conditions-de-vente") }, { title: "Confidentialité", url: U("confidentialite") }] };
 }

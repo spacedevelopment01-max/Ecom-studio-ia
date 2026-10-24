@@ -269,12 +269,18 @@
       $$('[data-pane]', form).forEach(function (p) { p.hidden = p.getAttribute('data-pane') !== String(n); });
       $$('.sv-checkout__step', root).forEach(function (li) { var k = Number(li.getAttribute('data-n')); li.classList.toggle('is-done', k < n); li.classList.toggle('is-current', k === n); if (k === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
       $$('[data-sv-co-address]', root).forEach(function (a) { a.innerHTML = address(); });
+      var hasAddr = !!(form.elements.address && String(form.elements.address.value).trim());
+      root.classList.toggle('is-no-address', !hasAddr);
       if (title) {
         if (n === 1) title.innerHTML = '<span class="sv-checkout__t-d">' + lines(root.getAttribute('data-t1')) + '</span><span class="sv-checkout__t-m">' + lines(root.getAttribute('data-t1m')) + '</span>';
         else title.innerHTML = lines(root.getAttribute('data-t' + n));
       }
       var lbl = cardNext && cardNext.getAttribute('data-l' + n);
-      nexts.forEach(function (b) { b.hidden = n > 3; if (lbl) b.querySelector('span').textContent = lbl; });
+      nexts.forEach(function (b) {
+        b.hidden = n > 3; if (lbl) b.querySelector('span').textContent = lbl;
+        /* Étape 2 sans adresse et paiement de maquette : bouton inactif (planches mobiles 08b et 08c). */
+        b.disabled = (n === 2 && !hasAddr) || (n === 3 && b.getAttribute('data-final') === 'off') || b.hasAttribute('data-empty-cart');
+      });
       if (backLabel) backLabel.textContent = backLabel.getAttribute('data-back-' + Math.min(n, 3)) || '';
       if (back) back.hidden = n > 3;
       if (status) status.textContent = '';
@@ -293,15 +299,17 @@
       var n = Number(root.getAttribute('data-step')) || 1;
       if (n > 1 && n <= 3) { e.preventDefault(); go(n - 1, true); } else if (cartHref) back.setAttribute('href', cartHref);
     });
+    /* Revue de la maquette : #etape-2, #etape-3 ou #confirmation-exemple ouvrent l'écran correspondant. */
+    var hash = (location.hash || '').slice(1), fromHash = { 'etape-1': 1, 'etape-2': 2, 'etape-3': 3, 'confirmation-exemple': 4 }[hash];
     var start = Number(saved._step) || 1;
     /* Une étape n'est rouverte que si les précédentes sont valides (sinon retour aux informations). */
     if (start > 1 && !$$('[data-pane="1"] [required]', form).every(function (i) { return i.checkValidity() && String(i.value).trim(); })) start = 1;
-    go(start > 3 ? 1 : start, false);
+    if (fromHash) { go(fromHash, false); } else go(start > 3 ? 1 : start, false);
     /* Récapitulatifs relus dans le panier (page en cache ou aperçu) : lignes, sous-total, boutons actifs. */
     var box = $('[data-sv-co-items]', root);
     fetch(cartBase() + '.js', { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (c) {
       if (!c || !box) return;
-      nexts.forEach(function (b) { b.disabled = !c.item_count; });
+      nexts.forEach(function (b) { if (!c.item_count) { b.setAttribute('data-empty-cart', ''); b.disabled = true; } });
       if (!c.items || !c.items.length) return;
       var thumb = box.getAttribute('data-thumb');
       var name = function (it) { return it.variant_title && it.variant_title !== 'Default Title' ? it.variant_title : it.product_title; };
