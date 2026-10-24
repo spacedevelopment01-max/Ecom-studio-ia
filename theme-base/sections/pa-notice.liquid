@@ -1,0 +1,41 @@
+{%- comment -%}
+  PARENTHÈSE : encadrés d'information.
+  - icon : pictogramme rond, titre et texte en ligne (« La confidentialité, toujours garantie », visio, planche 01) ;
+  - centered : titre et texte centrés avec un rameau au trait (« Une parenthèse pour vous », ateliers, planche 03) ;
+  - list : liste à puces à gauche et carte « Une approche responsable » à droite (entreprises, planche 03).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-notice pa-notice--{{ s.layout }}">
+  <div class="pa-wrap pa-notice__grid">
+    {%- if s.layout == 'list' -%}
+      <div class="pa-notice__list">
+        {%- if s.list_title != blank -%}<h2 class="pa-title pa-title--sm">{{ s.list_title }}</h2>{%- endif -%}
+        <ul>{%- assign items = s.list_items | newline_to_br | split: '<br />' -%}{%- for it in items -%}{%- assign t = it | strip -%}{%- if t != blank -%}<li>{{ t }}</li>{%- endif -%}{%- endfor -%}</ul>
+      </div>
+    {%- endif -%}
+    {%- if s.layout == 'centered' -%}{% render 'pa-ornament', name: 'sprig', class: 'pa-notice__sprig' %}{%- endif -%}
+    <div class="pa-notice__box">
+      {%- if s.layout != 'centered' -%}<span class="pa-notice__ico">{% render 'pa-icon', name: s.icon %}</span>{%- endif -%}
+      <div>
+        {%- if s.heading != blank -%}<h2 class="pa-notice__title">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="pa-notice__text">{{ s.text }}</div>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Encadré d'information",
+  "class": "pa-notice-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "icon", "options": [{ "value": "icon", "label": "Pictogramme et texte" }, { "value": "centered", "label": "Centré avec rameau" }, { "value": "list", "label": "Liste et carte" }] },
+    { "type": "select", "id": "icon", "label": "Icône", "default": "lock", "options": [{ "value": "lock", "label": "Cadenas" }, { "value": "lotus", "label": "Lotus" }, { "value": "leaf", "label": "Feuille" }, { "value": "info", "label": "Information" }] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "La confidentialité, toujours garantie" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "list_title", "label": "Liste : titre" },
+    { "type": "textarea", "id": "list_items", "label": "Liste : éléments (un par ligne)" }
+  ],
+  "presets": [{ "name": "Encadré d'information" }]
+}
+{% endschema %}

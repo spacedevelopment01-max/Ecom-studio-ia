@@ -27,6 +27,8 @@ export const THEME_ORDER: DirectionId[] = [
   "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple",
   // 42 — ATELIER NUANCE (issue #177), salon de coiffure de la famille Services.
   "atelier-nuance",
+  // 43 — PARENTHÈSE (PR #179), cabinet de sophrologie de la famille Services.
+  "parenthese",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

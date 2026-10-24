@@ -1,0 +1,76 @@
+{%- comment -%}
+  PARENTHÈSE : accès et informations pratiques du cabinet (planche 05) : adresse, horaires, accès, accessibilité
+  (« [À renseigner] » tant qu'ils manquent) ; « Un cadre inspirant » avec photo ; plan et « Une question ? ».
+  Le plan est ILLUSTRATIF tant qu'aucune adresse réelle n'est saisie (mention visible) ; avec une adresse, un lien
+  « Ouvrir dans OpenStreetMap » est proposé, jamais une fausse localisation.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-place">
+  <div class="pa-wrap">
+    <div class="pa-place__grid">
+      <div class="pa-place__info">
+        <h2 class="pa-title pa-title--sm">{{ s.info_title }}</h2>
+        <ul role="list">
+          <li><span class="pa-round pa-round--apricot">{% render 'pa-icon', name: 'pin' %}</span><span><strong>{{ s.address_title }}</strong>{% if s.address != blank %}{{ s.address | escape | newline_to_br }}{% else %}{{ s.todo_label }}{% endif %}</span></li>
+          <li><span class="pa-round pa-round--apricot">{% render 'pa-icon', name: 'clock' %}</span><span><strong>{{ s.hours_title }}</strong>{% if s.hours != blank %}{{ s.hours | escape | newline_to_br }}{% else %}{{ s.todo_label }}{% endif %}</span></li>
+          <li><span class="pa-round pa-round--apricot">{% render 'pa-icon', name: 'door' %}</span><span><strong>{{ s.access_title }}</strong><small>{{ s.access }}</small></span></li>
+          <li><span class="pa-round pa-round--apricot">{% render 'pa-icon', name: 'access' %}</span><span><strong>{{ s.accessibility_title }}</strong><small>{{ s.accessibility }}</small></span></li>
+        </ul>
+      </div>
+      <div class="pa-place__frame">
+        <h2 class="pa-title pa-title--sm">{{ s.frame_title }}</h2>
+        {%- if s.frame_text != blank -%}<div class="pa-place__text">{{ s.frame_text }}</div>{%- endif -%}
+        {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'pa-place__img' %}
+      </div>
+    </div>
+    <div class="pa-place__grid pa-place__grid--map">
+      <div class="pa-map{% if s.address == blank %} is-illustrative{% endif %}">
+        <svg class="pa-map__svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+          <rect width="400" height="300" fill="#ECE5DA"/>
+          <path d="M-10 60L410 190M60-10L250 310M-10 230L230 90 410 40M140-10L120 310M300-10L360 310M-10 150L400 120" stroke="#fff" stroke-width="9" fill="none"/>
+          <path d="M-10 60L410 190M60-10L250 310M-10 230L230 90 410 40" stroke="#F8F4EE" stroke-width="5" fill="none"/>
+          <path d="M260 215l120-70 30 60-120 80z" fill="#CFE2C4"/><path d="M20 30h40v30H20zM300 20h50v40h-50zM170 230h45v35h-45zM330 240h40v30h-40z" fill="#E3DACC"/>
+        </svg>
+        <span class="pa-map__pin">{% render 'pa-icon', name: 'pin' %}</span>
+        {%- if s.address == blank -%}<p class="pa-map__note">{{ s.map_note }}</p>{%- else -%}<a class="pa-map__link" href="https://www.openstreetmap.org/search?query={{ s.address | url_encode }}" target="_blank" rel="noopener">{{ s.map_link_label }}</a>{%- endif -%}
+      </div>
+      <div class="pa-place__ask">
+        <h2 class="pa-title pa-title--sm">{{ s.ask_title }}</h2>
+        {%- if s.ask_text != blank -%}<p>{{ s.ask_text }}</p>{%- endif -%}
+        {%- if s.ask_button_label != blank -%}<a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.ask_link | default: '/pages/prendre-rendez-vous' }}">{{ s.ask_button_label }}{% render 'pa-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Accès au cabinet",
+  "class": "pa-place-section",
+  "settings": [
+    { "type": "text", "id": "info_title", "label": "Titre des informations", "default": "Accès et informations pratiques" },
+    { "type": "text", "id": "address_title", "label": "Titre de l'adresse", "default": "Adresse" },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "hours_title", "label": "Titre des horaires", "default": "Horaires" },
+    { "type": "textarea", "id": "hours", "label": "Horaires" },
+    { "type": "text", "id": "access_title", "label": "Titre de l'accès", "default": "Accès" },
+    { "type": "text", "id": "access", "label": "Accès", "default": "À préciser (voiture, transports en commun, parking…)" },
+    { "type": "text", "id": "accessibility_title", "label": "Titre de l'accessibilité", "default": "Accessibilité" },
+    { "type": "text", "id": "accessibility", "label": "Accessibilité", "default": "À préciser (PMR, étage, ascenseur…)" },
+    { "type": "text", "id": "todo_label", "label": "Mention d'une information manquante", "default": "[À renseigner]" },
+    { "type": "text", "id": "frame_title", "label": "Titre du cadre", "default": "Un cadre inspirant" },
+    { "type": "richtext", "id": "frame_text", "label": "Texte du cadre" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "map_note", "label": "Mention du plan illustratif", "default": "Plan illustratif : la localisation s'affichera avec l'adresse réelle du cabinet." },
+    { "type": "text", "id": "map_link_label", "label": "Lien vers le plan", "default": "Ouvrir le plan dans OpenStreetMap" },
+    { "type": "text", "id": "ask_title", "label": "Encadré : titre", "default": "Une question ?" },
+    { "type": "text", "id": "ask_text", "label": "Encadré : texte" },
+    { "type": "text", "id": "ask_button_label", "label": "Encadré : bouton", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "ask_link", "label": "Encadré : lien" }
+  ],
+  "presets": [{ "name": "Accès au cabinet" }]
+}
+{% endschema %}

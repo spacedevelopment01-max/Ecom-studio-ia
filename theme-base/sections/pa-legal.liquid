@@ -1,0 +1,50 @@
+{%- comment -%}
+  PARENTHÈSE : informations légales (planche 06), sous l'ouverture « Transparence et confiance » : onglets Mentions
+  légales / Confidentialité / Conditions de réservation / Cookies (une page par onglet) et carte du contenu, avec
+  l'encadré « Contenu à compléter avant publication ». Aucune identité, aucun hébergeur ni aucune conformité inventés.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-legal">
+  <div class="pa-wrap">
+    <nav class="pa-legal__tabs" aria-label="{{ s.tabs_label | escape }}">
+      {%- for i in (1..4) -%}
+        {%- assign lk = 'tab' | append: i | append: '_label' -%}{%- assign ll = 'tab' | append: i | append: '_link' -%}
+        {%- if s[lk] != blank -%}<a href="{{ s[ll] }}"{% if s.current == i %} aria-current="page"{% endif %}>{{ s[lk] }}</a>{%- endif -%}
+      {%- endfor -%}
+    </nav>
+    <div class="pa-legal__card">
+      <h2 class="pa-title pa-title--md">{{ s.heading }}</h2>
+      {%- if s.notice_title != blank -%}
+        <div class="pa-legal__notice">
+          <p class="pa-legal__notice-title">{% render 'pa-icon', name: 'leaf' %}{{ s.notice_title }}</p>
+          {%- if s.body != blank -%}<div class="pa-legal__body">{{ s.body }}</div>{%- endif -%}
+        </div>
+      {%- elsif s.body != blank -%}
+        <div class="pa-legal__body">{{ s.body }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page légale Parenthèse",
+  "class": "pa-legal-section",
+  "settings": [
+    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (lecteurs d'écran)", "default": "Informations légales" },
+    { "type": "range", "id": "current", "label": "Onglet actuel", "min": 1, "max": 4, "step": 1, "default": 1 },
+    { "type": "text", "id": "tab1_label", "label": "Onglet 1", "default": "Mentions légales" },
+    { "type": "url", "id": "tab1_link", "label": "Lien de l'onglet 1" },
+    { "type": "text", "id": "tab2_label", "label": "Onglet 2", "default": "Confidentialité" },
+    { "type": "url", "id": "tab2_link", "label": "Lien de l'onglet 2" },
+    { "type": "text", "id": "tab3_label", "label": "Onglet 3", "default": "Conditions de réservation" },
+    { "type": "url", "id": "tab3_link", "label": "Lien de l'onglet 3" },
+    { "type": "text", "id": "tab4_label", "label": "Onglet 4", "default": "Cookies" },
+    { "type": "url", "id": "tab4_link", "label": "Lien de l'onglet 4" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Mentions légales" },
+    { "type": "text", "id": "notice_title", "label": "Encadré : titre", "default": "Contenu à compléter avant publication." },
+    { "type": "richtext", "id": "body", "label": "Contenu" }
+  ],
+  "presets": [{ "name": "Page légale Parenthèse" }]
+}
+{% endschema %}

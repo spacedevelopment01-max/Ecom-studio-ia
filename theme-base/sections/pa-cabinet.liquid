@@ -1,0 +1,193 @@
+{%- comment -%}
+  PARENTHÈSE : réglages du cabinet, communs à toutes les pages. Charge la feuille de style et les scripts du thème,
+  porte la SOURCE UNIQUE des séances (nom, durée, tarif, modalités) et des ateliers (date, heure, durée, tarif, capacité),
+  les horaires, fermetures et règles de rendez-vous, le mode « démonstration » ou « service réel », la signature du
+  logo, la barre fixe « Prendre rendez-vous » du téléphone et le bandeau des cookies.
+  Le service réel (API du studio) relit ces mêmes réglages dans le thème enregistré : jamais ceux du navigateur.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign live = false
+  if s.booking_mode == 'live' and s.service_url contains 'https://'
+    assign live = true
+  endif
+  assign seances = section.blocks | where: 'type', 'seance'
+  assign ateliers = section.blocks | where: 'type', 'atelier'
+-%}
+{{ 'parenthese.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'parenthese-core.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'parenthese.js' | asset_url }}" defer="defer"></script>
+<style>
+  body.dir-parenthese, .pa-section, .pa-bookbar, .pa-cookies, .pa-dialog {
+    --pa-forest: {{ s.color_forest }};
+    --pa-sage: {{ s.color_sage }};
+    --pa-apricot: {{ s.color_apricot }};
+    --pa-ivory: {{ s.color_ivory }};
+  }
+</style>
+<script type="application/json" id="pa-config">
+  {
+    "mode": {% if live %}"live"{% else %}"demo"{% endif %},
+    "api": {% if live %}{{ s.service_url | json }}{% else %}""{% endif %},
+    "name": {{ shop.name | json }},
+    "tagline": {{ s.logo_tagline | json }},
+    "address": {{ s.address | json }},
+    "demoNote": {{ s.demo_note | json }},
+    "timezone": {{ s.timezone | default: 'Europe/Paris' | json }},
+    "hours": { "0": {{ s.hours_sun | json }}, "1": {{ s.hours_mon | json }}, "2": {{ s.hours_tue | json }}, "3": {{ s.hours_wed | json }}, "4": {{ s.hours_thu | json }}, "5": {{ s.hours_fri | json }}, "6": {{ s.hours_sat | json }} },
+    "closures": {{ s.closures | json }},
+    "step": {% if s.slot_step != blank %}{{ s.slot_step | json }}{% else %}null{% endif %},
+    "horizonDays": {% if s.horizon_days != blank %}{{ s.horizon_days | json }}{% else %}null{% endif %},
+    "leadMinutes": {% if s.lead_minutes != blank %}{{ s.lead_minutes | json }}{% else %}null{% endif %},
+    "cancelHours": {% if s.cancel_hours != blank %}{{ s.cancel_hours | json }}{% else %}null{% endif %},
+    "cancelTerms": {{ s.cancel_terms | json }},
+    "seances": [
+      {%- for b in seances -%}
+        {%- assign bs = b.settings -%}
+        { "id": {{ bs.seance_id | json }}, "name": {{ bs.name | json }}, "short": {{ bs.short | json }}, "duration": {% if bs.duration != blank %}{{ bs.duration | json }}{% else %}null{% endif %}, "price": {% if bs.price != blank %}{{ bs.price | json }}{% else %}null{% endif %}, "modes": {{ bs.modes | json }}, "url": {{ bs.page | json }}, "image": {% if bs.image_asset != blank %}{{ bs.image_asset | asset_url | json }}{% else %}""{% endif %} }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ],
+    "ateliers": [
+      {%- for b in ateliers -%}
+        {%- assign bs = b.settings -%}
+        { "id": {{ bs.atelier_id | json }}, "title": {{ bs.title | json }}, "short": {{ bs.short | json }}, "tags": {{ bs.tags | json }}, "theme": {{ bs.theme | json }}, "date": {{ bs.date | json }}, "time": {{ bs.time | json }}, "duration": {% if bs.duration != blank %}{{ bs.duration | json }}{% else %}null{% endif %}, "price": {% if bs.price != blank %}{{ bs.price | json }}{% else %}null{% endif %}, "capacity": {% if bs.capacity != blank %}{{ bs.capacity | json }}{% else %}null{% endif %}, "booked": {% if bs.booked_demo != blank %}{{ bs.booked_demo | json }}{% else %}0{% endif %}, "place": {{ bs.place | json }}, "url": {{ bs.page | json }}, "image": {% if bs.image_asset != blank %}{{ bs.image_asset | asset_url | json }}{% else %}""{% endif %} }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  }
+</script>
+{%- comment -%} Adresses des pages du parcours : de vrais liens (réécrits par l'aperçu et les exports), lus par le script. {%- endcomment -%}
+<div hidden data-pa-pages>
+  <a data-page="book" href="{{ s.page_book | default: '/pages/prendre-rendez-vous' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="manage" href="{{ s.page_manage | default: '/pages/mon-rendez-vous' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="lookup" href="{{ s.page_lookup | default: '/pages/retrouver-mon-rendez-vous' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="ateliers" href="{{ s.page_ateliers | default: '/pages/ateliers' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="contact" href="{{ s.page_contact | default: '/pages/contact' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="terms" href="{{ s.page_terms | default: '/pages/conditions-de-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  {%- for b in ateliers -%}{%- if b.settings.page != blank -%}<a data-page="atelier:{{ b.settings.atelier_id }}" href="{{ b.settings.page }}" tabindex="-1" aria-hidden="true"></a>{%- endif -%}{%- endfor -%}
+</div>
+{%- if s.show_bookbar and s.booking_label != blank -%}
+  <div class="pa-bookbar" data-pa-bookbar>
+    <a href="{{ s.booking_link | default: '/pages/prendre-rendez-vous' }}">{% render 'pa-icon', name: 'calendar' %}<span>{{ s.booking_label }}</span></a>
+  </div>
+{%- endif -%}
+{%- if s.show_cookies -%}
+  <div class="pa-cookies" role="dialog" aria-modal="false" aria-labelledby="pa-cookies-title-{{ section.id }}" data-pa-cookies hidden>
+    <button type="button" class="pa-cookies__close" aria-label="{{ s.cookies_close | escape }}" data-pa-cookies-close>{% render 'pa-icon', name: 'close' %}</button>
+    <h2 id="pa-cookies-title-{{ section.id }}">{{ s.cookies_title }}</h2>
+    <p>{{ s.cookies_text }}{%- if s.cookies_link != blank %} <a href="{{ s.cookies_link }}">{{ s.cookies_link_label }}</a>{%- endif -%}</p>
+    <div class="pa-cookies__actions">
+      <button type="button" class="pa-btn pa-btn--forest pa-btn--sm" data-pa-cookies-accept>{{ s.cookies_accept }}</button>
+      <button type="button" class="pa-btn pa-btn--line pa-btn--sm" data-pa-cookies-refuse>{{ s.cookies_refuse }}</button>
+      <button type="button" class="pa-btn pa-btn--line pa-btn--sm" aria-expanded="false" aria-controls="pa-cookies-prefs-{{ section.id }}" data-pa-cookies-custom>{{ s.cookies_custom }}</button>
+    </div>
+    <div class="pa-cookies__prefs" id="pa-cookies-prefs-{{ section.id }}" hidden>
+      <label class="pa-check"><input type="checkbox" checked disabled> <span>{{ s.cookies_needed }}</span></label>
+      <label class="pa-check"><input type="checkbox" data-pa-cookies-stats> <span>{{ s.cookies_stats }}</span></label>
+      <button type="button" class="pa-btn pa-btn--forest pa-btn--sm" data-pa-cookies-save>{{ s.cookies_save }}</button>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Réglages du cabinet",
+  "class": "pa-cabinet-section",
+  "max_blocks": 50,
+  "settings": [
+    { "type": "header", "content": "Identité" },
+    { "type": "text", "id": "logo_tagline", "label": "Signature sous le nom", "info": "Facultatif. Ex. : votre spécialité." },
+    { "type": "color", "id": "color_forest", "label": "Vert forêt (boutons, aplats)", "default": "#2F4A3B" },
+    { "type": "color", "id": "color_sage", "label": "Sauge (panneaux)", "default": "#DCDFCD" },
+    { "type": "color", "id": "color_apricot", "label": "Abricot (boutons secondaires, numéros)", "default": "#F2C9A9" },
+    { "type": "color", "id": "color_ivory", "label": "Ivoire (fond)", "default": "#F8F3EB" },
+    { "type": "header", "content": "Coordonnées et rendez-vous" },
+    { "type": "textarea", "id": "address", "label": "Adresse du cabinet", "info": "Affichée sur la confirmation d'une séance au cabinet et dans le fichier d'agenda (jamais pour une visioconférence). Vide : « [Adresse du cabinet à renseigner] »." },
+    { "type": "text", "id": "booking_label", "label": "Texte du bouton de rendez-vous", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "booking_link", "label": "Page de prise de rendez-vous" },
+    { "type": "checkbox", "id": "show_bookbar", "label": "Barre « Prendre rendez-vous » fixe sur téléphone", "default": true },
+    { "type": "text", "id": "demo_note", "label": "Mention des exemples de tarifs et disponibilités", "default": "Tarifs et disponibilités de démonstration.", "info": "Videz-la quand vos tarifs et disponibilités sont réels." },
+    {
+      "type": "select", "id": "booking_mode", "label": "Fonctionnement des rendez-vous", "default": "demo",
+      "options": [
+        { "value": "demo", "label": "Démonstration (simulation, rien n'est enregistré)" },
+        { "value": "live", "label": "Service réel du studio" }
+      ],
+      "info": "Le service réel enregistre les rendez-vous sur le studio : il demande l'adresse du service ci-dessous (https)."
+    },
+    { "type": "text", "id": "service_url", "label": "Adresse du service de rendez-vous", "info": "https://<adresse du studio>/api/public/cabinet/<identifiant du projet>" },
+    { "type": "text", "id": "site_url", "label": "Adresse publique du site", "info": "Utilisée dans les liens envoyés par e-mail (https)." },
+    { "type": "text", "id": "notify_email", "label": "E-mail qui reçoit les rendez-vous et messages" },
+    { "type": "header", "content": "Horaires des séances" },
+    { "type": "paragraph", "content": "Une plage par période, ex. « 09:00-12:00, 14:00-17:00 ». Vide : pas de séance ce jour-là." },
+    { "type": "text", "id": "hours_mon", "label": "Lundi" },
+    { "type": "text", "id": "hours_tue", "label": "Mardi" },
+    { "type": "text", "id": "hours_wed", "label": "Mercredi" },
+    { "type": "text", "id": "hours_thu", "label": "Jeudi" },
+    { "type": "text", "id": "hours_fri", "label": "Vendredi" },
+    { "type": "text", "id": "hours_sat", "label": "Samedi" },
+    { "type": "text", "id": "hours_sun", "label": "Dimanche" },
+    { "type": "textarea", "id": "closures", "label": "Jours de fermeture", "info": "Dates AAAA-MM-JJ séparées par des virgules ; une période : 2026-12-24..2026-12-26." },
+    { "type": "text", "id": "timezone", "label": "Fuseau horaire du cabinet", "default": "Europe/Paris" },
+    { "type": "range", "id": "slot_step", "label": "Écart entre deux heures de début", "min": 15, "max": 120, "step": 15, "unit": "min", "default": 60 },
+    { "type": "range", "id": "horizon_days", "label": "Réservation possible jusqu'à", "min": 7, "max": 180, "step": 1, "unit": "j", "default": 90 },
+    { "type": "range", "id": "lead_minutes", "label": "Délai minimal avant un rendez-vous", "min": 0, "max": 2880, "step": 60, "unit": "min", "default": 720 },
+    { "type": "range", "id": "cancel_hours", "label": "Modification ou annulation en ligne jusqu'à", "min": 0, "max": 72, "step": 1, "unit": "h", "default": 24, "info": "Nombre d'heures avant le rendez-vous. 0 : jusqu'à l'heure du rendez-vous." },
+    { "type": "textarea", "id": "cancel_terms", "label": "Conditions d'annulation affichées", "info": "Vide : « Conditions à préciser. Les modalités d'annulation seront communiquées lors de la réservation. »" },
+    { "type": "header", "content": "Pages du parcours" },
+    { "type": "url", "id": "page_book", "label": "Prendre rendez-vous" },
+    { "type": "url", "id": "page_manage", "label": "Mon rendez-vous (gestion)" },
+    { "type": "url", "id": "page_lookup", "label": "Retrouver mon rendez-vous" },
+    { "type": "url", "id": "page_ateliers", "label": "Les ateliers" },
+    { "type": "url", "id": "page_contact", "label": "Contact" },
+    { "type": "url", "id": "page_terms", "label": "Conditions de réservation" },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "show_cookies", "label": "Bandeau de consentement aux cookies", "default": true, "info": "Les traceurs facultatifs ne sont jamais activés avant l'accord du visiteur." },
+    { "type": "text", "id": "cookies_title", "label": "Titre du bandeau", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookies_text", "label": "Texte du bandeau", "default": "Nous utilisons des cookies pour améliorer votre expérience de navigation. Vous pouvez accepter ou refuser tous les cookies, ou personnaliser vos choix." },
+    { "type": "url", "id": "cookies_link", "label": "Page « En savoir plus »" },
+    { "type": "text", "id": "cookies_link_label", "label": "Texte du lien", "default": "En savoir plus" },
+    { "type": "text", "id": "cookies_accept", "label": "Bouton accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "cookies_refuse", "label": "Bouton refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "cookies_custom", "label": "Bouton de personnalisation", "default": "Personnaliser" },
+    { "type": "text", "id": "cookies_close", "label": "Bouton fermer (lecteurs d'écran)", "default": "Fermer sans choisir" },
+    { "type": "text", "id": "cookies_needed", "label": "Catégorie nécessaire", "default": "Cookies nécessaires au fonctionnement du site" },
+    { "type": "text", "id": "cookies_stats", "label": "Catégorie facultative", "default": "Mesure d'audience (facultatif)" },
+    { "type": "text", "id": "cookies_save", "label": "Bouton d'enregistrement", "default": "Enregistrer mes choix" }
+  ],
+  "blocks": [
+    {
+      "type": "seance", "name": "Séance",
+      "settings": [
+        { "type": "text", "id": "seance_id", "label": "Identifiant", "info": "Court et sans espace (ex. premiere). Le même identifiant relie la séance à ses affichages." },
+        { "type": "text", "id": "name", "label": "Nom", "default": "Séance" },
+        { "type": "text", "id": "short", "label": "Description courte (prise de rendez-vous)" },
+        { "type": "number", "id": "duration", "label": "Durée (minutes)" },
+        { "type": "number", "id": "price", "label": "Tarif (€)" },
+        { "type": "text", "id": "modes", "label": "Modalités proposées", "default": "cabinet, visio", "info": "cabinet, visio (séparées par une virgule)." },
+        { "type": "url", "id": "page", "label": "Page de la séance" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier fourni avec le thème)" }
+      ]
+    },
+    {
+      "type": "atelier", "name": "Atelier",
+      "settings": [
+        { "type": "text", "id": "atelier_id", "label": "Identifiant", "info": "Court et sans espace (ex. pause-semaine)." },
+        { "type": "text", "id": "title", "label": "Titre", "default": "Atelier" },
+        { "type": "textarea", "id": "short", "label": "Description courte" },
+        { "type": "text", "id": "tags", "label": "Étiquettes", "info": "Séparées par des virgules (ex. Relaxation, Respiration)." },
+        { "type": "text", "id": "theme", "label": "Thème (filtre)", "info": "Ex. relaxation, respiration, lacher-prise." },
+        { "type": "text", "id": "date", "label": "Date", "info": "AAAA-MM-JJ" },
+        { "type": "text", "id": "time", "label": "Heure", "info": "HH:MM (ex. 10:00)" },
+        { "type": "number", "id": "duration", "label": "Durée (minutes)" },
+        { "type": "number", "id": "price", "label": "Tarif par personne (€)" },
+        { "type": "number", "id": "capacity", "label": "Nombre de places" },
+        { "type": "number", "id": "booked_demo", "label": "Places déjà prises (démonstration seulement)", "info": "Ignoré par le service réel : seules les réservations enregistrées comptent." },
+        { "type": "text", "id": "place", "label": "Lieu" },
+        { "type": "url", "id": "page", "label": "Page de l'atelier" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier fourni avec le thème)" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Réglages du cabinet" }]
+}
+{% endschema %}
