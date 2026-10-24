@@ -10,7 +10,7 @@
   <div class="sv-c">
     <div class="sv-cart__inner{% if cart.item_count == 0 %} is-empty{% endif %}">
       <span class="sv-topo sv-topo--tall sv-cart__topo" aria-hidden="true"></span>
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, class: 'sv-cart__land' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-cart__land' %}
       {% render 'sv-img', image: s.image_top, asset: s.image_top_asset, alt: '', pos: s.image_top_position, class: 'sv-cart__peak' %}
       {% render 'sv-route', d: 'M0 450C120 380 260 290 400 300S700 380 800 362 900 300 940 220 1080 40 1130 0', vb: '0 0 1130 450', dots: '753,382 946,212', class: 'sv-cart__route' %}
       <h1 class="sv-display sv-cart__title">{{ s.heading | escape | newline_to_br }}</h1>
@@ -67,6 +67,7 @@
     { "type": "image_picker", "id": "image", "label": "Paysage du bas" },
     { "type": "text", "id": "image_asset", "label": "Paysage du bas (fichier du thème)" },
     { "type": "text", "id": "image_position", "label": "Cadrage du paysage", "default": "50% 70%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement du paysage", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "image_picker", "id": "image_top", "label": "Morceau de paysage à gauche" },
     { "type": "text", "id": "image_top_asset", "label": "Morceau de paysage (fichier du thème)" },
     { "type": "text", "id": "image_top_position", "label": "Cadrage du morceau de paysage", "default": "20% 40%" },

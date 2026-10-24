@@ -1,0 +1,65 @@
+{%- comment -%}
+  SILLON V2 : livraison et retours (planche 03, « 11 Livraison et retours ») — très grand titre, trois parties numérotées
+  (grand chiffre cuivre, nom condensé, pictogramme au trait, texte) séparées par des filets ; bande de paysage à bord
+  organique à droite, courbes de niveau et chemin cuivre ; barre d'aide sombre (bulle, texte, flèche cuivre).
+  Les délais, frais et conditions ne sont jamais inventés : ils viennent de la boutique ou restent « [À compléter] ».
+  Blocs : « Partie » (trois ; l'identifiant sert d'ancre, ex. « retours »).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-info">
+  <div class="sv-c">
+    <div class="sv-info__inner">
+      <div class="sv-info__strip">{% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom %}</div>
+      <span class="sv-topo sv-topo--corner sv-info__topo" aria-hidden="true"></span>
+      {% render 'sv-route', d: 'M20 0C10 60 30 110 20 160S60 230 110 250 180 300 150 360', vb: '0 0 200 360', dots: '110,250', class: 'sv-info__route' %}
+      <h1 class="sv-display sv-info__title">{{ s.heading | escape | newline_to_br }}</h1>
+      <ol class="sv-info__list" role="list">
+        {%- for block in section.blocks limit: 3 -%}
+          {%- assign b = block.settings -%}
+          <li class="sv-info__item" {% if b.anchor != blank %}id="{{ b.anchor | handleize }}"{% endif %} {{ block.shopify_attributes }}>
+            <span class="sv-display sv-info__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+            <h2 class="sv-display sv-info__name">{{ b.title }}</h2>
+            {% render 'sv-icon', name: b.icon, class: 'sv-info__ico' %}
+            <div class="sv-info__text">{{ b.text }}</div>
+          </li>
+        {%- endfor -%}
+      </ol>
+      {%- if s.help_text != blank -%}
+        <a class="sv-info__help" href="{{ s.help_link | default: routes.root_url }}">
+          {% render 'sv-icon', name: 'chat', class: 'sv-info__help-ico' %}
+          <span>{{ s.help_text | escape | newline_to_br }}</span>
+          <span class="sv-circle sv-circle--copper sv-info__help-arrow" aria-hidden="true">{% render 'sv-icon', name: 'arrow' %}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Livraison et retours",
+  "class": "sv-info-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Les infos\ndu voyage." },
+    { "type": "image_picker", "id": "image", "label": "Bande de paysage" },
+    { "type": "text", "id": "image_asset", "label": "Bande de paysage (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Cadrage du paysage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement du paysage", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "textarea", "id": "help_text", "label": "Barre d'aide", "default": "Une question sur la livraison ou un retour ?\nNous sommes là pour vous aider." },
+    { "type": "url", "id": "help_link", "label": "Adresse de la barre d'aide" }
+  ],
+  "blocks": [
+    {
+      "type": "part", "name": "Partie",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Nom", "default": "Livraison" },
+        { "type": "select", "id": "icon", "label": "Pictogramme", "default": "truck", "options": [{ "value": "truck", "label": "Camion" }, { "value": "pin", "label": "Repère" }, { "value": "box", "label": "Colis" }, { "value": "return", "label": "Retour" }, { "value": "info", "label": "Information" }] },
+        { "type": "text", "id": "anchor", "label": "Ancre (adresse #…)" },
+        { "type": "richtext", "id": "text", "label": "Texte" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Livraison et retours", "blocks": [{ "type": "part" }, { "type": "part", "settings": { "title": "Suivi", "icon": "pin" } }, { "type": "part", "settings": { "title": "Retours", "icon": "box", "anchor": "retours" } }] }]
+}
+{% endschema %}

@@ -172,6 +172,125 @@
     });
   }
 
+  /* ---------------------------------------------------------------- Champs : erreurs par champ */
+  function checkField(input) {
+    var err = input.parentNode.querySelector('.sv-field__err') || (input.closest('label') || input.parentNode).querySelector('.sv-field__err');
+    var ok = input.type === 'checkbox' ? input.checked : input.checkValidity() && String(input.value).trim() !== '';
+    if (input.type !== 'checkbox' && !input.required && !input.value) ok = true;
+    input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    if (err) { err.hidden = ok; if (!err.id) err.id = 'sv-err-' + Math.random().toString(36).slice(2, 8); if (!ok) input.setAttribute('aria-describedby', err.id); else input.removeAttribute('aria-describedby'); }
+    return ok;
+  }
+  function checkAll(scope) {
+    var bad = null;
+    $$('input[required], select[required], textarea[required]', scope).forEach(function (i) { if (!checkField(i) && !bad) bad = i; });
+    if (bad) bad.focus();
+    return !bad;
+  }
+
+  /* ---------------------------------------------------------------- Commande de démonstration (aucun paiement) */
+  var CO_KEY = 'sv-checkout';
+  function initCheckout(root) {
+    var form = $('[data-sv-co-form]', root), next = $('[data-sv-co-next]', root), back = $('[data-sv-co-back]', root), status = $('[data-sv-co-status]', root);
+    if (!form || !next) return;
+    var backLabel = back && back.querySelector('[data-back-label]'), cartHref = back ? back.getAttribute('href') : '';
+    var saved = readJSON(SS, CO_KEY, {});
+    $$('input, select', form).forEach(function (i) {
+      if (saved[i.name] != null) { if (i.type === 'radio') i.checked = saved[i.name] === i.value; else i.value = saved[i.name]; }
+      i.addEventListener('change', function () { saved[i.name] = i.type === 'radio' ? (i.checked ? i.value : saved[i.name]) : i.value; writeJSON(SS, CO_KEY, saved); if (i.getAttribute('aria-invalid') === 'true') checkField(i); });
+    });
+    function address() {
+      var v = function (n) { var i = form.elements[n]; return i ? String(i.value).trim() : ''; };
+      return [v('first') + ' ' + v('last'), v('address'), v('zip') + ' ' + v('city'), v('country'), v('email')].filter(function (x) { return x.trim(); }).map(esc).join('<br>');
+    }
+    function go(n) {
+      root.setAttribute('data-step', String(n));
+      $$('[data-pane]', form).forEach(function (p) { p.hidden = p.getAttribute('data-pane') !== String(n); });
+      $$('.sv-checkout__step', root).forEach(function (li) { var k = Number(li.getAttribute('data-n')); li.classList.toggle('is-done', k < n); li.classList.toggle('is-current', k === n); if (k === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
+      $$('[data-sv-co-address]', form).forEach(function (a) { a.innerHTML = address(); });
+      next.hidden = n > 3;
+      var lbl = next.getAttribute('data-l' + n); if (lbl) next.querySelector('span').textContent = lbl;
+      if (backLabel) backLabel.textContent = n === 1 || n > 3 ? backLabel.getAttribute('data-back-cart') : backLabel.getAttribute('data-back-label');
+      if (back) back.hidden = n > 3;
+      if (status) status.textContent = '';
+      var t = $('.sv-checkout__title', root); if (t && n > 1) t.focus({ preventScroll: false });
+      saved._step = n; writeJSON(SS, CO_KEY, saved);
+    }
+    next.addEventListener('click', function () {
+      var n = Number(root.getAttribute('data-step')) || 1;
+      var pane = $('[data-pane="' + n + '"]', form);
+      if (n === 2) { var r = $('input[name="ship"]:checked', form), e = $('[data-err-ship]', form); if (e) e.hidden = !!r; if (!r) { var first = $('input[name="ship"]', form); if (first) first.focus(); return; } }
+      else if (pane && !checkAll(pane)) { if (status) status.textContent = T.fix || ''; return; }
+      go(n + 1);
+    });
+    if (back) back.addEventListener('click', function (e) {
+      var n = Number(root.getAttribute('data-step')) || 1;
+      if (n > 1 && n <= 3) { e.preventDefault(); go(n - 1); } else if (cartHref) back.setAttribute('href', cartHref);
+    });
+    var start = Number(saved._step) || 1;
+    go(start > 3 ? 1 : start);
+    /* Récapitulatif relu dans le panier (page mise en cache ou aperçu) : lignes, sous-total, bouton actif. */
+    var box = $('[data-sv-co-items]', root);
+    fetch(cartBase() + '.js', { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (c) {
+      if (!c || !box) return;
+      next.disabled = !c.item_count;
+      if (!c.items || !c.items.length) return;
+      var thumb = box.getAttribute('data-thumb');
+      box.innerHTML = c.items.map(function (it) {
+        var name = it.variant_title && it.variant_title !== 'Default Title' ? it.variant_title : it.product_title;
+        var img = thumb || it.image || '';
+        return '<div class="sv-checkout__item"><span class="sv-checkout__thumb">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '</span><span class="sv-checkout__iname">' + esc(name) + (it.quantity > 1 ? ' × ' + it.quantity : '') + '</span><span class="sv-checkout__iprice">' + esc(money(it.final_line_price)) + '</span></div>';
+      }).join('');
+      var st = $('[data-sv-co-subtotal]', root); if (st) st.textContent = money(c.total_price);
+    }).catch(function () { /* récapitulatif du rendu conservé */ });
+  }
+
+  /* ---------------------------------------------------------------- Questions : recherche, filtres, accordéons */
+  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function initFaq(root) {
+    var input = $('[data-sv-faq-search]', root), pills = $$('[data-sv-faq-filter]', root), items = $$('.sv-faq__item', root), empty = $('[data-sv-faq-empty]', root), cat = '';
+    function apply() {
+      var q = norm(input ? input.value : '').trim(), shown = 0;
+      items.forEach(function (it) {
+        var on = (!cat || it.getAttribute('data-cat') === cat) && (!q || norm(it.textContent).indexOf(q) !== -1);
+        it.hidden = !on;
+        if (on) { shown++; var n = $('[data-sv-faq-num]', it); if (n) n.textContent = (shown < 10 ? '0' : '') + shown; if (q && shown === 1) it.open = true; }
+      });
+      if (empty) empty.hidden = shown > 0;
+    }
+    pills.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var c = b.getAttribute('data-sv-faq-filter'); cat = cat === c ? '' : c;
+        pills.forEach(function (x) { var on = x.getAttribute('data-sv-faq-filter') === cat; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', String(on)); });
+        apply();
+      });
+    });
+    if (input) input.addEventListener('input', apply);
+  }
+
+  /* ---------------------------------------------------------------- Contact : erreurs par champ ; envoi simulé annoncé */
+  function initContact(form) {
+    var status = $('[data-sv-contact-status]', form);
+    $$('input, select, textarea', form).forEach(function (i) { i.addEventListener('change', function () { if (i.getAttribute('aria-invalid') === 'true') checkField(i); }); });
+    form.setAttribute('novalidate', '');
+    form.addEventListener('submit', function (e) {
+      if (!checkAll(form)) { e.preventDefault(); return; }
+      if (form.getAttribute('data-sv-contact') === 'true') {
+        e.preventDefault();
+        if (status) { status.hidden = false; status.textContent = status.getAttribute('data-text') || ''; }
+      }
+    });
+  }
+
+  /* ---------------------------------------------------------------- Suivi : espace client ; résultat d'exemple annoncé */
+  function initTrack(form) {
+    var res = $('[data-sv-track-result]', form);
+    form.addEventListener('submit', function (e) {
+      if (!checkAll(form)) { e.preventDefault(); if (res) res.hidden = true; return; }
+      if (form.getAttribute('data-sv-track') === 'demo') { e.preventDefault(); if (res) { res.hidden = false; res.setAttribute('tabindex', '-1'); res.focus(); } }
+    });
+  }
+
   function start() {
     placeHeader();
     window.addEventListener('resize', placeHeader);
@@ -180,6 +299,10 @@
     initNewsletter();
     $$('[data-sv-product]').forEach(initProduct);
     $$('[data-sv-journal]').forEach(initJournal);
+    $$('[data-sv-checkout]').forEach(initCheckout);
+    $$('[data-sv-faq]').forEach(initFaq);
+    $$('form[data-sv-contact]').forEach(initContact);
+    $$('form[data-sv-track]').forEach(initTrack);
     document.dispatchEvent(new CustomEvent('sv:ready'));
   }
   window.SV = { addToCart: addToCart, post: post, cartBase: cartBase, setCount: setCount, $: $, $$: $$, CFG: CFG, T: T, LS: LS, SS: SS, readJSON: readJSON, writeJSON: writeJSON, esc: esc, money: money, announce: announce, trap: trap };

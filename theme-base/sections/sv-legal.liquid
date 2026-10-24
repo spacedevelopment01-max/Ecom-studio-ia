@@ -1,0 +1,32 @@
+{%- comment -%}
+  SILLON V2 : pages légales (mentions, conditions de vente, confidentialité, cookies) dans l'identité des planches —
+  grand titre condensé, colonne de texte lisible, courbes de niveau. Aucune information légale n'est inventée : la
+  boutique complète chaque « [À compléter : …] ». Lien « gérer mes cookies » (rouvre le bandeau) en option.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-legal">
+  <div class="sv-c">
+    <div class="sv-legal__inner">
+      <span class="sv-topo sv-topo--corner sv-legal__topo" aria-hidden="true"></span>
+      {%- if s.eyebrow != blank -%}<p class="sv-mono sv-legal__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h1 class="sv-display sv-legal__title">{{ s.heading | escape | newline_to_br }}</h1>
+      <div class="sv-legal__body">{{ s.body }}</div>
+      {%- if s.show_cookies_button -%}<button type="button" class="sv-btn sv-btn--dark sv-legal__cookies" data-sv-cookies-open>{{ s.cookies_button }}</button>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page légale SILLON",
+  "class": "sv-legal-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Informations légales" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Mentions\nlégales." },
+    { "type": "richtext", "id": "body", "label": "Texte" },
+    { "type": "checkbox", "id": "show_cookies_button", "label": "Bouton « Gérer mes cookies »", "default": false },
+    { "type": "text", "id": "cookies_button", "label": "Libellé du bouton des cookies", "default": "Gérer mes cookies" }
+  ],
+  "presets": [{ "name": "Page légale SILLON" }]
+}
+{% endschema %}

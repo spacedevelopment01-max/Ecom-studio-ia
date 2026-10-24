@@ -1,7 +1,7 @@
 {%- comment -%}
   SILLON V2 : commande de démonstration (planche 03, « 08 Commande ») — progression 01 Informations / 02 Livraison /
   03 Paiement, très grand titre, paysage découpé et chemin cuivre ; formulaire à gauche, récapitulatif sombre à droite
-  (lu dans le panier de la boutique), retour au panier. Étapes suivantes et confirmation dans le même système :
+  (lu dans le panier de la boutique, relu par le script à l'ouverture), retour au panier. Étapes suivantes et confirmation dans le même système :
   données conservées pendant la visite, erreurs par champ, retours possibles. Aucun champ de carte, aucun débit,
   aucun e-mail : la confirmation est un EXEMPLE annoncé comme tel. Une boutique réelle passe par le paiement Shopify.
 {%- endcomment -%}
@@ -11,7 +11,7 @@
     <div class="sv-checkout__inner">
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, class: 'sv-checkout__land' %}
       {% render 'sv-route', d: 'M190 0C150 60 120 120 150 170S240 220 200 280 80 360 110 420 160 520 40 640', vb: '0 0 260 640', dots: '150,170 200,280 110,420', class: 'sv-checkout__route' %}
-      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, class: 'sv-checkout__foot' %}
+      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-checkout__foot' %}
       <ol class="sv-checkout__steps" role="list" aria-label="{{ s.steps_label | escape }}">
         <li class="sv-checkout__step" data-n="1"><span class="sv-display">01</span><i aria-hidden="true"></i><b>{{ s.step1 }}</b></li>
         <li class="sv-checkout__step" data-n="2"><span class="sv-display">02</span><i aria-hidden="true"></i><b>{{ s.step2 }}</b></li>
@@ -59,7 +59,7 @@
 
       <aside class="sv-checkout__card" aria-label="{{ s.order_title | escape }}">
         <p class="sv-mono sv-checkout__card-title">{{ s.order_title }}</p>
-        <div class="sv-checkout__items" data-sv-co-items>
+        <div class="sv-checkout__items" data-sv-co-items data-thumb="{% if s.thumb_asset != blank %}{{ s.thumb_asset | asset_url }}{% endif %}">
           {%- for item in cart.items -%}
             <div class="sv-checkout__item">
               <span class="sv-checkout__thumb">{%- if s.thumb_asset != blank -%}<img src="{{ s.thumb_asset | asset_url }}" alt="" width="467" height="1284">{%- elsif item.image -%}{{ item.image | image_url: width: 200 | image_tag: alt: '' }}{%- endif -%}</span>
@@ -71,7 +71,7 @@
           {%- endfor -%}
         </div>
         <dl class="sv-checkout__rows">
-          <div><dt>{{ s.subtotal_label }}</dt><dd>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
+          <div><dt>{{ s.subtotal_label }}</dt><dd data-sv-co-subtotal>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
           <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
         </dl>
         <button type="button" class="sv-btn sv-btn--copper sv-checkout__next" data-sv-co-next data-l1="{{ s.next1 | escape }}" data-l2="{{ s.next2 | escape }}" data-l3="{{ s.next3 | escape }}"{% if cart.item_count == 0 %} disabled{% endif %}><span>{{ s.next1 }}</span>{% render 'sv-icon', name: 'arrow-ne' %}</button>
@@ -98,6 +98,7 @@
     { "type": "image_picker", "id": "image_bottom", "label": "Paysage du bas" },
     { "type": "text", "id": "image_bottom_asset", "label": "Paysage du bas (fichier du thème)" },
     { "type": "text", "id": "image_bottom_position", "label": "Cadrage du paysage du bas", "default": "60% 40%" },
+    { "type": "range", "id": "image_bottom_zoom", "label": "Agrandissement du paysage du bas", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
     { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
     { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },

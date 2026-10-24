@@ -141,6 +141,12 @@ export function finishSillon(spec: ThemeSpec, ctx: FinishCtx) {
   };
   mark("index", "dark");
   for (const key of Object.keys(spec.templates)) if (key === "product" || key.startsWith("product.")) mark(key, "dark");
+  // Panier dans l'identité du thème ; chez un client, le bouton mène au paiement Shopify (aucune page de démonstration).
+  if (spec.templates.cart && !spec.templates.cart.order.some((id) => spec.templates.cart.sections[id]?.type === "sv-cart")) {
+    spec.templates.cart = svTemplate([
+      ["sv-cart", { heading: t("Votre\npanier.", "Your\ncart."), summary_title: t("Récapitulatif", "Summary"), subtotal_label: t("Sous-total", "Subtotal"), shipping_label: t("Livraison", "Shipping"), shipping_value: t("Calculée à\nl'étape suivante", "Calculated at\nthe next step"), total_label: "Total", total_value: t("Calculé à\nl'étape suivante", "Calculated at\nthe next step"), checkout_label: t("Passer commande", "Check out"), checkout_page: "", continue_label: t("Continuer\nmes achats", "Continue\nshopping"), continue_link: "", empty_text: t("Votre panier est vide pour le moment.", "Your cart is empty for now."), empty_button: t("Voir la boutique", "Visit the shop"), qty_label: t("Quantité", "Quantity"), less_label: t("Retirer un exemplaire", "Remove one"), more_label: t("Ajouter un exemplaire", "Add one"), remove_label: t("Supprimer", "Remove") }],
+    ]);
+  }
   if (spec.templates.cart) mark("cart", "legal");
   spec.templates["404"] = svTemplate([
     ["sv-hero", { layout: "dark", eyebrow: "404", heading: t("Hors des\nsentiers.", "Off the\nbeaten path."), subtitle: t("Cette page n'existe pas\nou a changé de route.", "This page does not exist\nor has taken another road."), product_image_asset: "", show_route: true, height: 760, height_mobile: 560 }],

@@ -1,0 +1,81 @@
+{%- comment -%}
+  SILLON V2 : contact (planche 03, « 10 Contact ») — très grand titre, phrase d'accueil, formulaire (nom, e-mail, sujet,
+  message, accord non coché), bouton cuivre ; grande photo verticale arrondie ; carte « Ou accédez directement à » (trois
+  liens numérotés cuivre) et chemin cuivre ; paysage en bas.
+  Boutique réelle : formulaire de contact Shopify. Démonstration (« Envoi simulé ») : rien n'est envoyé, un message le dit.
+  Blocs : « Accès direct » (trois).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-contact">
+  <div class="sv-c">
+    <div class="sv-contact__inner">
+      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-contact__land' %}
+      <h1 class="sv-display sv-contact__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if s.intro != blank -%}<p class="sv-contact__intro">{{ s.intro | escape | newline_to_br }}</p>{%- endif -%}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-contact__photo', loading: 'eager' %}
+      {%- form 'contact', class: 'sv-contact__form', data-sv-contact: s.simulate | append: '' -%}
+        {%- if form.posted_successfully? -%}<p class="sv-contact__status" role="status">{{ s.success_text }}</p>{%- endif -%}
+        {%- if form.errors -%}<p class="sv-contact__status sv-contact__status--err" role="alert">{{ s.error_text }}</p>{%- endif -%}
+        <label class="sv-field sv-contact__f sv-contact__f--1"><span class="visually-hidden">{{ s.name_label }}</span><input type="text" name="contact[name]" placeholder="{{ s.name_label | escape }}" autocomplete="name" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+        <label class="sv-field sv-contact__f sv-contact__f--2"><span class="visually-hidden">{{ s.email_label }}</span><input type="email" name="contact[email]" placeholder="{{ s.email_label | escape }}" autocomplete="email" required><em class="sv-field__err" hidden>{{ s.err_email }}</em></label>
+        <label class="sv-field sv-field--select sv-contact__f sv-contact__f--3"><span class="visually-hidden">{{ s.subject_label }}</span>
+          <select name="contact[subject]" required>
+            <option value="">{{ s.subject_label }}</option>
+            {%- assign subjects = s.subjects | split: ',' -%}
+            {%- for o in subjects -%}<option>{{ o | strip }}</option>{%- endfor -%}
+          </select>{% render 'sv-icon', name: 'down' %}<em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+        <label class="sv-field sv-contact__f sv-contact__f--4"><span class="visually-hidden">{{ s.message_label }}</span><textarea name="contact[body]" placeholder="{{ s.message_label | escape }}" required></textarea><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+        <label class="sv-contact__consent"><input type="checkbox" name="contact[consent]" value="oui" required><span>{{ s.consent_label }}</span><em class="sv-field__err" hidden>{{ s.err_consent }}</em></label>
+        <button type="submit" class="sv-btn sv-btn--copper sv-contact__send">{{ s.send_label }}{% render 'sv-icon', name: 'arrow-ne' %}</button>
+        <p class="sv-contact__status" role="status" data-sv-contact-status hidden data-text="{{ s.simulated_text | escape }}"></p>
+      {%- endform -%}
+      <nav class="sv-contact__card" aria-label="{{ s.card_title | escape }}">
+        <p class="sv-mono sv-contact__card-title">{{ s.card_title }}</p>
+        <ol role="list">
+          {%- for block in section.blocks limit: 3 -%}
+            <li {{ block.shopify_attributes }}><a href="{{ block.settings.link | default: routes.root_url }}"><span class="sv-display">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span><b>{{ block.settings.label }}</b>{% render 'sv-icon', name: 'arrow' %}</a></li>
+          {%- endfor -%}
+        </ol>
+      </nav>
+      {% render 'sv-route', d: 'M40 0C90 30 70 80 60 120S100 200 90 260 20 340 0 400', vb: '0 0 120 400', dots: '40,0 60,120 90,190', class: 'sv-contact__route' %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact SILLON",
+  "class": "sv-contact-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "On garde\nle contact." },
+    { "type": "textarea", "id": "intro", "label": "Phrase d'accueil" },
+    { "type": "image_picker", "id": "image", "label": "Photo verticale" },
+    { "type": "text", "id": "image_asset", "label": "Photo verticale (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_bottom", "label": "Paysage du bas" },
+    { "type": "text", "id": "image_bottom_asset", "label": "Paysage du bas (fichier du thème)" },
+    { "type": "text", "id": "image_bottom_position", "label": "Cadrage du paysage du bas", "default": "50% 60%" },
+    { "type": "range", "id": "image_bottom_zoom", "label": "Agrandissement du paysage du bas", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "subject_label", "label": "Sujet", "default": "Sujet" },
+    { "type": "text", "id": "subjects", "label": "Sujets proposés (séparés par des virgules)", "default": "La machine, Une commande, Un retour, Autre" },
+    { "type": "text", "id": "message_label", "label": "Message", "default": "Message" },
+    { "type": "textarea", "id": "consent_label", "label": "Accord", "default": "J'accepte que mes informations soient utilisées pour traiter ma demande." },
+    { "type": "text", "id": "send_label", "label": "Bouton d'envoi", "default": "Envoyer" },
+    { "type": "text", "id": "err_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "err_email", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "err_consent", "label": "Erreur : accord", "default": "Votre accord est nécessaire pour traiter la demande." },
+    { "type": "checkbox", "id": "simulate", "label": "Envoi simulé (démonstration)", "default": false, "info": "Rien n'est envoyé ; un message l'annonce." },
+    { "type": "textarea", "id": "simulated_text", "label": "Message de l'envoi simulé", "default": "Démonstration : aucun message n'a été envoyé. Dans la boutique réelle, votre demande serait transmise à l'équipe." },
+    { "type": "text", "id": "success_text", "label": "Message envoyé", "default": "Merci, votre message a bien été envoyé." },
+    { "type": "text", "id": "error_text", "label": "Erreur d'envoi", "default": "Vérifiez les champs signalés." },
+    { "type": "text", "id": "card_title", "label": "Titre de la carte", "default": "Ou accédez directement à :" }
+  ],
+  "blocks": [{ "type": "link", "name": "Accès direct", "settings": [{ "type": "text", "id": "label", "label": "Libellé", "default": "La machine" }, { "type": "url", "id": "link", "label": "Adresse" }] }],
+  "presets": [{ "name": "Contact SILLON", "blocks": [{ "type": "link" }, { "type": "link", "settings": { "label": "Une commande" } }, { "type": "link", "settings": { "label": "Un retour" } }] }]
+}
+{% endschema %}

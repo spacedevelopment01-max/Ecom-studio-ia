@@ -272,6 +272,52 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   ] };
 
   // <<pages planche 03>>
+  // Achat et aide (planche 03) : pied réduit aux liens légaux. Délais, frais, transporteurs, garantie et conditions ne
+  // sont jamais inventés : « [À compléter : …] » tant que la boutique ne les a pas donnés.
+  const legalFoot = S("sv-page", { footer: "legal" });
+  const land = "v2-12-panorama-route-alpine.webp", rock = "v2-24-mobile-machine-rocher.webp";
+  spec.templates.cart = svTemplate([
+    S("sv-cart", { heading: "Prêt pour\nle départ ?", image_asset: f(land), image_position: "0% 55%", image_zoom: 160, image_top_asset: f(land), image_top_position: "8% 40%", line_image_asset: f("v2-02-machine-detouree.webp"), summary_title: "Récapitulatif", subtotal_label: "Sous-total", shipping_label: "Livraison", shipping_value: "Calculée à\nl'étape suivante", total_label: "Total", total_value: "Calculé à\nl'étape suivante", checkout_label: "Passer commande", checkout_page: U("commande"), note: "Démonstration : prix illustratif, aucun paiement.", continue_label: "Continuer\nla découverte", continue_link: PRODUCT, empty_text: "Votre panier est vide pour le moment.", empty_button: "Découvrir la machine", qty_label: "Quantité", less_label: "Retirer un exemplaire", more_label: "Ajouter un exemplaire", remove_label: "Supprimer" }),
+    legalFoot,
+  ]);
+  pages["commande"] = { seo: "Commande de démonstration SILLON : aucun paiement, aucun envoi.", rows: [
+    S("sv-checkout", { heading: "Dernière\nétape avant\nl'échappée.", image_asset: f(land), image_position: "30% 20%", image_bottom_asset: f(land), image_bottom_position: "0% 30%", image_bottom_zoom: 200, thumb_asset: f("v2-02-machine-detouree.webp"), countries: "France, Belgique, Suisse, Luxembourg", ship_option: "Livraison (exemple)", ship_option_note: TODO("transporteurs, délais et frais de livraison"), shipping_value: "À calculer" }),
+    legalFoot,
+  ] };
+  const faq: [string, string, string][] = [
+    ["Utilisation", "Comment utiliser SILLON ?", p("SILLON est conçue pour vous accompagner partout. Remplissez le réservoir, appuyez sur le bouton et laissez l'extraction se faire. Vous obtenez un espresso où que vous soyez.")],
+    ["Machine", "Où consulter la notice ?", p("La notice accompagne la machine. " + TODO("lien vers la notice officielle (PDF) — aucune notice n'est publiée dans cette démonstration"))],
+    ["Machine", "Comment entretenir la machine ?", p("Rincez après chaque utilisation, laissez sécher puis rangez la machine au sec. Les gestes précis et les pièces à démonter sont décrits dans la notice.") + p(TODO("consignes d'entretien de la notice officielle"))],
+    ["Commande", "Comment suivre ma commande ?", p(`Rendez-vous sur la page <a href="${U("suivi-de-commande")}">Suivi de commande</a> avec votre numéro de commande et votre e-mail.`)],
+    ["Commande", "Comment demander un retour ?", p(`Écrivez-nous depuis la page <a href="${U("contact")}">Contact</a> en choisissant « Un retour ». Conditions et délais : ${TODO("politique de retour de la boutique")}.`)],
+  ];
+  pages["faq"] = { seo: "Questions fréquentes SILLON : utilisation, notice, entretien, suivi et retours.", rows: [
+    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), search_placeholder: "Rechercher une question…", filters: "Machine, Utilisation, Commande", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180 },
+      faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer } }))),
+    legalFoot,
+  ] };
+  pages["contact"] = { seo: "Contacter SILLON : une question, une demande ou simplement envie d'échanger.", rows: [
+    S("sv-contact", { heading: "On garde\nle contact.", intro: "Une question, une demande\nou simplement envie d'échanger ?\nNotre équipe vous répond avec soin.", image_asset: f("v2-23-contact-van-machine.webp"), image_alt: alt("v2-23-contact-van-machine.webp"), image_position: "50% 50%", image_bottom_asset: f(land), image_bottom_position: "0% 55%", image_bottom_zoom: 160, subjects: "La machine, Une commande, Un retour, Autre", simulate: true, card_title: "Ou accédez directement à :" },
+      [["La machine", PRODUCT], ["Une commande", U("suivi-de-commande")], ["Un retour", `${U("livraison-et-retours")}#retours`]].map(([label, link]) => ({ type: "link", settings: { label, link } }))),
+    legalFoot,
+  ] };
+  pages["livraison-et-retours"] = { seo: "Livraison, suivi et retours SILLON.", rows: [
+    S("sv-info", { heading: "Les infos\ndu voyage.", image_asset: f("v2-15-marque-route-lacets.webp"), image_position: "88% 50%", help_text: "Une question sur la livraison ou un retour ?\nNous sommes là pour vous aider.", help_link: U("contact") }, [
+      { type: "part", settings: { title: "Livraison", icon: "truck", anchor: "livraison", text: p("Nous préparons votre commande avec soin et vous la confions à nos partenaires de livraison. Les détails et frais vous sont indiqués à l'étape suivante.") } },
+      { type: "part", settings: { title: "Suivi", icon: "pin", anchor: "suivi", text: p("Une fois expédiée, vous recevrez un e-mail avec les informations pour suivre votre commande en temps réel.") } },
+      { type: "part", settings: { title: "Retours", icon: "box", anchor: "retours", text: p("Si un produit ne vous convient pas, vous pouvez demander un retour depuis votre espace ou en nous contactant. Nous vous accompagnons dans cette démarche.") } },
+    ]),
+    legalFoot,
+  ] };
+  pages["suivi-de-commande"] = { seo: "Suivre une commande SILLON (démonstration : résultat d'exemple).", rows: [
+    S("sv-track", { heading: "Où en est\nvotre SILLON ?", intro: "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande.", image_asset: f(rock), image_alt: alt(rock), image_position: "67% 89%", image_zoom: 140, title_width: 88, number_placeholder: "Ex. SLN123456", email_placeholder: "votre@email.com", simulate: true, help_link: U("contact"), note: "Conditions commerciales à compléter" }),
+    legalFoot,
+  ] };
+  const legal = (heading: string, body: string, cookies = false): { seo: string; rows: Row[] } => ({ seo: `${heading.replace(/\n/g, " ")} — SILLON.`, rows: [S("sv-legal", { heading, body, show_cookies_button: cookies }), legalFoot] });
+  pages["mentions-legales"] = legal("Mentions\nlégales.", p("Boutique de démonstration du studio : aucune vente réelle.") + p(TODO("éditeur du site, forme juridique, adresse, immatriculation, directeur de la publication, hébergeur")));
+  pages["conditions-de-vente"] = legal("Conditions\nde vente.", p("Le prix affiché (129 €) est illustratif : cette boutique est une démonstration, aucune commande n'est possible.") + p(TODO("conditions générales de vente : prix, paiement, livraison, rétractation, garanties légales, service client")));
+  pages["confidentialite"] = legal("Confiden-\ntialité.", p("Les formulaires de cette démonstration n'envoient rien ; les choix de cookies restent dans votre navigateur.") + p(TODO("politique de confidentialité : responsable du traitement, données collectées, finalités, durées, droits")));
+  pages["cookies"] = legal("Cookies.", p("Les cookies nécessaires font fonctionner le site. La mesure d'audience est facultative et ne démarre qu'avec votre accord ; vous pouvez changer d'avis à tout moment.") + p(TODO("liste des cookies et outils utilisés par la boutique")), true);
   // Pages du site (ordre de SV_PAGES) ; les anciennes pages de la composition du catalogue sont retirées.
   for (const key of Object.keys(spec.templates)) if (key.startsWith("page.")) delete spec.templates[key];
   spec.store.pages = SV_PAGES.filter((pg) => pages[pg.handle]).map((pg) => {
@@ -289,5 +335,4 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   spec.store.menus["main-menu"] = { title: "Navigation", links: [{ title: "La machine", url: PRODUCT }, { title: "Le rituel", url: U("le-rituel") }, { title: "Carnet", url: U("carnet") }, { title: "SILLON", url: U("sillon") }] };
   spec.store.menus.footer = { title: "Aide", links: [{ title: "Aide", url: U("faq") }, { title: "Livraison", url: U("livraison-et-retours") }, { title: "Retours", url: `${U("livraison-et-retours")}#retours` }, { title: "Mentions légales", url: U("mentions-legales") }] };
   spec.store.menus.legal = { title: "Informations légales", links: [{ title: "Mentions légales", url: U("mentions-legales") }, { title: "Conditions de vente", url: U("conditions-de-vente") }, { title: "Confidentialité", url: U("confidentialite") }] };
-  void TODO;
 }
