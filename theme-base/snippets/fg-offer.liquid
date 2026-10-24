@@ -1,0 +1,125 @@
+{%- comment -%}
+  FRAISE : une offre par lot (un format = une variante du même produit), calculée — jamais écrite en dur.
+  Le nombre d'unités d'un lot est le nombre en tête de l'option (« 3 flacons » → 3) ; le prix de référence est le prix
+  de la variante à une unité. Pour chaque lot : prix TOTAL du lot (montant principal), comparaison avec les mêmes unités
+  achetées une à une (prix barré annoncé comme tel), message d'offre déduit de l'économie (« 2 achetés + 1 offert »,
+  « −50 % sur le 2ᵉ »), prix de la dernière unité, prix par unité (secondaire, ≈ s'il est arrondi), économie.
+  « Meilleure offre » : le lot au prix par unité le plus bas (calcul, pas une popularité). Sans unité de référence (options
+  sans nombre, ex. des tailles) : prix seul, aucune comparaison.
+  Paramètres : product, variant, mode ('card' | 'row' | 'choice' | 'line'), image_asset, image, alt, show_compare,
+  show_last, show_per, show_save, button, button_icon, choice_name, checked, index.
+  Textes : réglages du thème « Offres par lots » (settings.offer_*).
+{%- endcomment -%}
+{%- liquid
+  assign unit_price = 0
+  assign unit_word = ''
+  for v in product.variants
+    assign vn = v.option1 | split: ' ' | first | plus: 0
+    if vn == 1 and unit_price == 0
+      assign unit_price = v.price
+      assign unit_word = v.option1 | remove_first: '1 ' | strip
+    endif
+  endfor
+  assign best_id = 0
+  assign best_per = 0
+  if unit_price > 0
+    for v in product.variants
+      assign vn = v.option1 | split: ' ' | first | plus: 0
+      if vn > 1
+        assign vper = v.price | times: 1.0 | divided_by: vn
+        if best_id == 0 or vper < best_per
+          assign best_id = v.id
+          assign best_per = vper
+        endif
+      endif
+    endfor
+  endif
+  assign n = variant.option1 | split: ' ' | first | plus: 0
+  assign packs = false
+  if unit_price > 0 and n > 0
+    assign packs = true
+  endif
+  assign ref = 0
+  assign eco = 0
+  if packs
+    assign ref = unit_price | times: n
+    assign eco = ref | minus: variant.price
+  endif
+  assign msg = ''
+  assign last = ''
+  if packs and eco > 0
+    assign free = eco | divided_by: unit_price
+    assign rest = eco | modulo: unit_price
+    if rest == 0 and free > 0 and free < n
+      assign paid = n | minus: free
+      assign msg = settings.offer_free_text | default: '[paid] achetés + [free] offert' | replace: '[paid]', paid | replace: '[free]', free
+    elsif eco < unit_price
+      assign pct = eco | times: 100 | divided_by: unit_price
+      assign msg = settings.offer_pct_text | default: '−[pct] % sur le [n]ᵉ' | replace: '[pct]', pct | replace: '[n]', n
+      assign last_price = unit_price | minus: eco | money
+      assign last = settings.offer_last_text | default: 'Le [n]ᵉ à [price]' | replace: '[n]', n | replace: '[price]', last_price
+    endif
+  endif
+  assign nn = n
+  if nn < 1
+    assign nn = 1
+  endif
+  assign per = variant.price | times: 1.0 | divided_by: nn | round
+  assign exact = variant.price | modulo: nn
+  assign is_best = false
+  if best_id != 0 and variant.id == best_id
+    assign is_best = true
+  endif
+  assign fg_mode = mode | default: 'card'
+-%}
+{%- capture fg_media -%}
+  {%- if image != blank or image_asset != blank -%}<span class="fg-offer__img">{% render 'fg-img', image: image, asset: image_asset, alt: alt, class: 'fg-cut', sizes: '(min-width: 750px) 22vw, 40vw' %}</span>{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_badges -%}
+  {%- if msg != blank -%}<span class="fg-offer__msg">{{ msg }}</span>{%- endif -%}
+  {%- if is_best and settings.offer_best_label != blank -%}<span class="fg-offer__best">{{ settings.offer_best_label }}</span>{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_prices -%}
+  <span class="fg-offer__price" data-fg-total>{{ variant.price | money }}</span>
+  {%- if packs and eco > 0 and show_compare -%}
+    <span class="fg-offer__ref"><span class="visually-hidden">{{ settings.offer_compare_label | default: 'Même quantité à l’unité :' }} </span><s>{{ ref | money }}</s></span>
+  {%- endif -%}
+  {%- if last != blank and show_last -%}<span class="fg-offer__last">{{ last }}</span>{%- endif -%}
+  {%- liquid
+    assign per_on = false
+    if packs and show_per != 'none' and show_per != false
+      assign per_on = true
+      if show_per == 'no_last' and last != blank and show_last
+        assign per_on = false
+      endif
+    endif
+  -%}
+  {%- if per_on -%}
+    <span class="fg-offer__per">{% if exact != 0 %}≈ {% endif %}{{ per | money }} / {{ unit_word }}</span>
+  {%- endif -%}
+  {%- if packs and eco > 0 and show_save -%}<span class="fg-offer__save">{{ settings.offer_save_label | default: 'Économisez' }} {{ eco | money }}</span>{%- endif -%}
+{%- endcapture -%}
+{%- case fg_mode -%}
+  {%- when 'choice' -%}
+    <label class="fg-offer fg-offer--choice{% if is_best %} is-best{% endif %}{% if msg != blank %} has-msg{% endif %}" data-fg-offer data-index="{{ index }}">
+      <input class="fg-offer__radio" type="radio" name="{{ choice_name }}" value="{{ variant.id }}"{% if checked %} checked{% endif %} data-title="{{ variant.title | escape }}" data-price="{{ variant.price }}" data-units="{{ n }}"{% unless variant.available %} disabled{% endunless %}>
+      <span class="fg-offer__badges">{{ fg_badges }}</span>
+      {{ fg_media }}
+      <span class="fg-offer__title">{{ variant.title }}</span>
+      <span class="fg-offer__prices">{{ fg_prices }}</span>
+    </label>
+  {%- else -%}
+    <div class="fg-offer fg-offer--{{ fg_mode }}{% if is_best %} is-best{% endif %}{% if msg != blank %} has-msg{% endif %}" data-fg-offer data-variant="{{ variant.id }}" data-index="{{ index }}">
+      <span class="fg-offer__badges">{{ fg_badges }}</span>
+      {{ fg_media }}
+      <span class="fg-offer__title">{{ variant.title }}</span>
+      <span class="fg-offer__prices">{{ fg_prices }}</span>
+      {%- if button != blank -%}
+        {%- form 'product', product, class: 'fg-offer__form', data-fg-quick-add: '' -%}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="fg-btn fg-btn--red fg-offer__add"{% unless variant.available %} disabled{% endunless %}>{% if button_icon %}{% render 'fg-icon', name: 'bag' %}{% endif %}<span>{{ button }}</span></button>
+        {%- endform -%}
+      {%- endif -%}
+    </div>
+{%- endcase -%}

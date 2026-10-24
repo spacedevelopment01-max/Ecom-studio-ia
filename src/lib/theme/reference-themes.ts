@@ -1,6 +1,6 @@
 /**
  * Les thèmes de référence (issue #137, SILLON : issue #148) comme vrais thèmes du studio (catalogue, galerie, composition
- * automatique) : FRAISE et ONDE (boutique spécialisée, profil « conversion » Lumora / Pawish), ORBE (e-commerce,
+ * automatique) : FRAISE (boutique spécialisée, refaite d’après les sept planches du 24 octobre, fraise-v2.ts), ONDE, ORBE (e-commerce,
  * composition éditoriale « objet et ambiances »), Atelier Rive (prestations de services, composition « journal ») et
  * SILLON (boutique spécialisée, profil « nomade » : objet que l’on emporte, serif fine, cuivre), NOCTIL (boutique
  * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
@@ -20,6 +20,7 @@ import type { CatalogTheme, ThemeLook } from "./theme-catalog";
 import { ATELIER_NUANCE_THEME } from "./atelier-nuance";
 import { PARENTHESE_THEME } from "./parenthese";
 import { SILLON_V2_THEME } from "./sillon-v2";
+import { FRAISE_V2_THEME } from "./fraise-v2";
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -27,65 +28,8 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 export const REFERENCE_CATALOG: CatalogTheme[] = [
-  {
-    id: "fraise",
-    name: "Fraise",
-    tagline: "Page de vente pop, un produit phare",
-    description: "Référence Lumora : fond crème, accent vif, titres en capitales, boutons bordés. Ouverture produit avec arguments cochés, bandeau de confiance, avis, visuel et argument, bénéfices en grille, comparatif, garantie, stories et FAQ : une page de vente dense pour une boutique spécialisée.",
-    bestFor: ["boutique spécialisée", "produit phare", "confiserie", "bien-être", "offres par quantité"],
-    en: { tagline: "Pop sales page, one hero product", description: "Lumora reference: cream background, bright accent, capital headings, outlined buttons. Product opening with checked arguments, trust band, reviews, visual and argument, benefits grid, comparison, guarantee, stories and FAQ: a dense sales page for a specialty store.", bestFor: ["specialty store", "hero product", "confectionery", "wellness", "quantity offers"] },
-    fonts: { heading: "montserrat_n8", body: "dm_sans_n4" },
-    previewFonts: { heading: "Montserrat", body: "DM Sans" },
-    motion: "normal",
-    photoMood: "pop",
-    kinds: ["specialty"],
-    // Boutons « solid » : le profil « pop » dessine lui-même la bordure noire et l'ombre portée (un style « outline » rendrait le texte illisible sur un accent sombre).
-    look: look({ headerLayout: "logo-center", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 12, card: 16 }, headingCase: "uppercase", tracking: -2, headingScale: 104, density: "compact", buttonUppercase: true }),
-    settings: { conversion_profile: "pop", editorial_profile: "none" },
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, purchase_style: "outlined" },
-    palette: (k) => {
-      const bg = k.light("#FBF7F2");
-      const ink = k.night(0.08, 0.1);
-      return [k.scheme(bg, ink, k.onLight(bg)), k.scheme(ink, "#FFFFFF", k.onDark(ink), 0.06), k.filled(k.p.accent), k.scheme("#FFFFFF", ink, k.onLight("#FFFFFF"))];
-    },
-    home: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.packshot ?? k.im.cutout ?? k.im.hero, image_ratio: "square", layout: "image-right" }),
-      k.marq(3, "small"),
-      k.lib("cv-reviews", 1),
-      k.lib("cv-feature", 4, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "stacked" }),
-      k.feat(1, "plain", 2),
-      k.lib("cv-feature", 1, { image_asset: k.im.detail2 ?? k.im.scene2, layout: "image-left" }),
-      k.lib("comparison-table", 1),
-      ...k.stats(1),
-      k.lib("cv-guarantee", 2),
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.faqSec(1, 6, "cards"),
-      k.newsletter(1),
-      k.marq(3, "small", true),
-    ],
-    product: (k) => [
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.lib("cv-feature", 4, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "stacked" }),
-      k.feat(1, "plain", 2),
-      k.lib("cv-reviews", 1),
-      k.lib("cv-specs", 1, { layout: "side" }),
-      ...k.stats(1),
-      k.lib("cv-guarantee", 2),
-      k.faqSec(1, 5, "cards"),
-    ],
-    services: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.lifestyle ?? k.im.hero, image_ratio: "landscape", layout: "image-right" }),
-      ...k.R.trust(3),
-      k.R.servicesList(1, "cards", { withImages: true }),
-      k.lib("cv-feature", 4, { image_asset: k.im.scene1 ?? k.im.detail1, layout: "image-left" }),
-      k.feat(1, "plain", 2),
-      k.R.testimonials(4),
-      k.lib("cv-guarantee", 2),
-      k.R.practical(1),
-      k.faqSec(1, 6, "cards"),
-      k.newsletter(4),
-    ],
-  },
+  // FRAISE GUMMIES : refait d’après les sept planches corrigées de Thomas (24 octobre 2026), voir fraise-v2.ts.
+  FRAISE_V2_THEME,
   {
     id: "onde",
     name: "Onde",

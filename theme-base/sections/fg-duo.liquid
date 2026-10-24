@@ -1,0 +1,83 @@
+{%- comment -%}
+  FRAISE : « La recette, en toute clarté. » et « Le journal FRAISE » côte à côte (planche 01) ; au téléphone, la recette
+  (bouton, fraise illustrée) puis le journal (« Voir tout », deux articles) — planche 04, accueil 2/2.
+  Les articles sont des blocs (photo, titre, lien) : chacun mène à son propre article.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-duo" aria-label="{{ s.label | escape }}">
+  <div class="fg-c">
+    <div class="fg-duo__recipe">
+      <div class="fg-duo__rmedia">{% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, mplace_w: s.image_mplace_w, mplace_x: s.image_mplace_x, mplace_y: s.image_mplace_y, class: 'fg-duo__img' %}</div>
+      <div class="fg-duo__rtext">
+        {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-duo__title' %}
+        {%- if s.text != blank -%}<div class="fg-duo__lead">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<div class="fg-duo__lead fg-duo__lead--m">{{ s.text_mobile }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--line fg-duo__btn" href="{{ s.button_link | default: routes.root_url }}"><span class="fg-only-d">{{ s.button_label }}</span><span class="fg-only-m">{{ s.button_label_mobile | default: s.button_label }}</span>{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+      <span class="fg-duo__half" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'leaf-branch' %}</span>
+    </div>
+    <div class="fg-duo__journal">
+      <div class="fg-duo__jhead">
+        {% render 'fg-title', text: s.journal_heading, tag: 'h2', class: 'fg-duo__jtitle' %}
+        {%- if s.journal_text != blank -%}<p class="fg-duo__jtext">{{ s.journal_text }}</p>{%- endif -%}
+        {%- if s.journal_link_label != blank -%}<a class="fg-duo__all" href="{{ s.journal_link | default: routes.root_url }}">{{ s.journal_link_label }}{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+      <ul class="fg-duo__posts" role="list">
+        {%- for block in section.blocks -%}
+          <li class="fg-duo__post" {{ block.shopify_attributes }}>
+            <a href="{{ block.settings.link | default: routes.root_url }}">
+              {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.position, class: 'fg-duo__pimg' %}
+              <span class="fg-duo__ptitle"><span class="fg-only-d">{{ block.settings.title }}</span><span class="fg-only-m">{{ block.settings.title_mobile | default: block.settings.title }}</span></span>
+              <span class="fg-duo__read">{{ s.read_label }}{% render 'fg-icon', name: 'arrow' %}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Recette et journal",
+  "class": "fg-duo-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom de la section (lecteurs d'écran)", "default": "La recette et le journal" },
+    { "type": "textarea", "id": "heading", "label": "Titre de la recette", "default": "La recette,\n[i]en toute clarté.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo de la recette" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Largeur posée (ordinateur, repère 1440 px)", "default": 0 },
+    { "type": "number", "id": "image_place_x", "label": "Position horizontale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_place_y", "label": "Position verticale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_mplace_w", "label": "Largeur posée (téléphone, repère 390 px)", "default": 0 },
+    { "type": "number", "id": "image_mplace_x", "label": "Position horizontale posée (téléphone)", "default": 0 },
+    { "type": "number", "id": "image_mplace_y", "label": "Position verticale posée (téléphone)", "default": 0 },
+    { "type": "header", "content": "Journal" },
+    { "type": "textarea", "id": "journal_heading", "label": "Titre du journal", "default": "[i]Le journal[/i] FRAISE" },
+    { "type": "text", "id": "journal_text", "label": "Texte du journal" },
+    { "type": "text", "id": "journal_link_label", "label": "Lien « tout voir »", "default": "Voir tout" },
+    { "type": "url", "id": "journal_link", "label": "Adresse du journal" },
+    { "type": "text", "id": "read_label", "label": "Lien des articles", "default": "Lire l'article" }
+  ],
+  "blocks": [
+    { "type": "post", "name": "Article", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "title_mobile", "label": "Titre au téléphone" },
+      { "type": "url", "id": "link", "label": "Lien de l'article" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" }
+    ] }
+  ],
+  "presets": [{ "name": "Recette et journal" }]
+}
+{% endschema %}

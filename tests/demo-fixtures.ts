@@ -8,7 +8,6 @@
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
 import { curateOrbe, curateRive } from "./engine-demo-copy";
-import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -19,8 +18,8 @@ import { composeShop } from "../src/lib/engine/shop";
 import { loadProject, saveBrand, saveProduct, saveServices, saveStrategy, saveSettings } from "../src/lib/projects";
 import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
-import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
+import { fraiseProject } from "./fraise-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { ondeProject } from "./onde-fixtures";
@@ -37,7 +36,7 @@ type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string
 /** Textes d'identité validés avec les démonstrations (accroche, résumé, offre) : les mêmes que les fixtures des lots 2B / 2C. */
 type MediaPlan = Record<string, { role: string; variant?: string }>;
 const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string; positioning: string; price: number | null; services?: ServiceProfile; variants?: { name: string; values: string[] }[]; facts?: { label: string; value: string }[]; media?: MediaPlan }> = {
-  fraise: { tagline: "Le goût fraise qui fait sourire.", summary: "Gummies tendres au goût fraise dans un flacon refermable.", story: "Une marque de démonstration autour d'un flacon de gummies à la fraise.", positioning: "Un flacon de gummies à la fraise, à poser sur la table de la cuisine ou à glisser dans un sac.", price: 2490 },
+  fraise: { tagline: "Votre rituel, côté fraise.", summary: "Gummies tendres au goût fraise dans un flacon refermable, en 1, 2 ou 3 flacons.", story: "Une marque de démonstration autour d’un flacon de gummies au goût fraise (confiserie).", positioning: "Un flacon de gummies au goût fraise, à emporter partout.", price: 1660 },
   onde: { tagline: "Écoutez. Posez. Repartez.", summary: "Casque graphite et noir mat, touches vertes pour repérer les commandes.", story: "Une marque de démonstration autour d'un casque graphite et vert.", positioning: "Un casque pour écouter chez soi, dans le train ou au studio, avec des commandes repérables d'un coup d'œil.", price: 14900 },
   orbe: {
     tagline: "Une lumière à vous, même en location.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une lampe à poser, sans travaux, pour se sentir chez soi dans un appartement loué.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
@@ -184,16 +183,11 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await parentheseProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
   }
+  // FRAISE GUMMIES (planches corrigées du 24 octobre 2026) : projet client composé par le moteur dans le thème « fraise »,
+  // puis rédigé d'après les sept planches (sections fg-*), photos lues dans le kit privé public/demo/fraise/v2/.
+  // La composition Lumora du lot 2C reste constructible par conversionProject(…, "fraise") pour les anciens contrôles.
   if (id === "fraise" && !options.direction) {
-    const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
-    // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
-    curateFraise(c.spec);
-    // Le projet lui-même suit la même décision (vitamines fictives) : nom, catégorie et marque cohérents avec la vitrine,
-    // pour que les sections ajoutées ensuite par le studio reprennent le bon produit.
-    { const pr = loadProject(c.pid); if (pr.product) saveProduct(c.pid, { ...pr.product, name: "Gummies vitaminés goût fraise", category: "Vitamines en gummies (produit fictif)", summary: "Vitamines C, D3, B6 et B12 en gummies goût fraise, deux par jour. Produit et composition fictifs de démonstration." });
-      if (pr.brand) saveBrand(c.pid, { ...pr.brand, tagline: "Vos vitamines ont le goût de fraise.", story: "Une marque fictive de démonstration : des vitamines en gummies goût fraise, pour une routine qu'on a envie de garder." }); }
-    run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
-    saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
+    const c = await fraiseProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   const services = d.business === "services";

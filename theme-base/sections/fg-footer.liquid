@@ -1,0 +1,168 @@
+{%- comment -%}
+  FRAISE : pied de page rouge à vague des planches, une seule source de contenu, quatre dispositions choisies page par
+  page (section « Réglages de la page ») :
+  - « accueil » (planche 01) : logo blanc, Boutique, Aide, Suivez-nous, ligne du bas avec la phrase et les liens légaux ;
+  - « journal » (planche 02) : logo, Boutique, Aide, inscription au journal, ligne des droits et liens légaux ;
+  - « contact » (planche 03) : logo, Boutique, Aide, « Restons en contact » (inscription) et réseaux, ligne du bas ;
+  - « réduit » (achat au téléphone, planche 07) : logo et liens légaux.
+  Téléphone : inscription puis logo et rubriques dépliables (planche 04).
+  Réseaux sociaux : liens seulement s'ils sont renseignés ; sinon les pictogrammes peuvent rester affichés sans lien.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign m_shop = linklists[s.menu_shop]
+  assign m_help = linklists[s.menu_help]
+  assign m_info = linklists[s.menu_info]
+  assign m_legal = linklists[s.menu_legal]
+  assign m_short = linklists[s.menu_short]
+  assign brand = s.wordmark | default: shop.name
+  assign year = 'now' | date: '%Y'
+-%}
+{%- capture fg_logo -%}
+  <a class="fg-footer__logo" href="{{ routes.root_url }}">
+    {%- if s.logo != blank -%}{{ s.logo | image_url: width: 600 | image_tag: alt: brand, widths: '300, 600', class: 'fg-logo' }}{%- elsif s.logo_asset != blank -%}<img class="fg-logo" src="{{ s.logo_asset | asset_url }}" alt="{{ brand | escape }}" width="600" height="300" loading="lazy">{%- else -%}<span class="fg-footer__word">{{ brand }}</span>{%- endif -%}
+  </a>
+{%- endcapture -%}
+{%- capture fg_cols -%}
+  {%- if m_shop.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--shop"><p class="fg-footer__h">{{ s.shop_title }}</p><ul role="list">{%- for link in m_shop.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
+  {%- if m_help.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--help"><p class="fg-footer__h">{{ s.help_title }}</p><ul role="list">{%- for link in m_help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_social -%}
+  <ul class="fg-footer__social" role="list">
+    {%- for net in (1..3) -%}
+      {%- liquid
+        case net
+          when 1
+            assign url = s.instagram_url
+            assign ico = 'instagram'
+            assign lab = 'Instagram'
+          when 2
+            assign url = s.pinterest_url
+            assign ico = 'pinterest'
+            assign lab = 'Pinterest'
+          else
+            assign url = s.facebook_url
+            assign ico = 'facebook'
+            assign lab = 'Facebook'
+        endcase
+      -%}
+      {%- if url != blank -%}<li><a href="{{ url }}" rel="noopener" target="_blank"><span class="visually-hidden">{{ lab }}</span>{% render 'fg-icon', name: ico %}</a></li>
+      {%- elsif s.social_placeholder and net < 3 -%}<li><span class="fg-footer__soc-off" title="{{ s.social_todo | escape }}">{% render 'fg-icon', name: ico %}<span class="visually-hidden">{{ lab }} — {{ s.social_todo }}</span></span></li>
+      {%- elsif s.social_placeholder -%}<li class="fg-only-m"><span class="fg-footer__soc-off" title="{{ s.social_todo | escape }}">{% render 'fg-icon', name: ico %}<span class="visually-hidden">{{ lab }} — {{ s.social_todo }}</span></span></li>{%- endif -%}
+    {%- endfor -%}
+  </ul>
+{%- endcapture -%}
+{%- capture fg_legal -%}
+  {%- if m_legal.links.size > 0 -%}<ul class="fg-footer__legal" role="list">{%- for link in m_legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_copy -%}<p class="fg-footer__copy">© {{ year }} {{ s.copyright | default: brand }}</p>{%- endcapture -%}
+{%- capture fg_news_form -%}
+  {%- form 'customer', class: 'fg-footer__news', data-fg-news: '' -%}
+    <input type="hidden" name="contact[tags]" value="newsletter">
+    <label class="visually-hidden" for="fg-news-{{ section.id }}-[[k]]">{{ s.news_placeholder }}</label>
+    <input id="fg-news-{{ section.id }}-[[k]]" type="email" name="contact[email]" placeholder="{{ s.news_placeholder | escape }}" autocomplete="email" required>
+    <button type="submit"><span class="fg-footer__news-txt">{{ s.news_button }}</span>{% render 'fg-icon', name: 'arrow' %}</button>
+    <p class="fg-footer__status" role="status" data-fg-status hidden></p>
+    {%- if form.posted_successfully? -%}<p class="fg-footer__status" role="status">{{ s.news_done }}</p>{%- endif -%}
+  {%- endform -%}
+{%- endcapture -%}
+<footer class="fg fg-footer" data-fg-footer data-demo-text="{{ s.news_demo | escape }}">
+  <svg class="fg-wave fg-footer__wave" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40H0z" fill="currentColor"/></svg>
+  <div class="fg-footer__body">
+    <div class="fg-footer__v fg-footer__v--home">
+      {{ fg_logo }}
+      <div class="fg-footer__cols">{{ fg_cols }}</div>
+      <div class="fg-footer__follow"><p class="fg-footer__h">{{ s.social_title }}</p>{{ fg_social }}</div>
+      <div class="fg-footer__bottom"><p class="fg-footer__line">{{ s.bottom_text }}</p>{{ fg_legal }}</div>
+    </div>
+    <div class="fg-footer__v fg-footer__v--journal">
+      {{ fg_logo }}
+      <div class="fg-footer__cols">{{ fg_cols }}</div>
+      <div class="fg-footer__nl"><p class="fg-footer__nl-title">{{ s.journal_title }}</p>{{ fg_news_form | replace: '[[k]]', 'j' }}</div>
+      <div class="fg-footer__bottom">{{ fg_copy }}{{ fg_legal }}</div>
+    </div>
+    <div class="fg-footer__v fg-footer__v--contact">
+      {{ fg_logo }}
+      <div class="fg-footer__cols">{{ fg_cols }}</div>
+      <div class="fg-footer__nl"><p class="fg-footer__nl-title">{{ s.contact_title }}</p>{{ fg_news_form | replace: '[[k]]', 'c' }}{{ fg_social }}</div>
+      <div class="fg-footer__bottom">{{ fg_copy }}{{ fg_legal }}</div>
+    </div>
+    <div class="fg-footer__v fg-footer__v--compact">
+      {{ fg_logo }}
+      {%- if m_short.links.size > 0 -%}<ul class="fg-footer__short" role="list">{%- for link in m_short.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+    </div>
+    <div class="fg-footer__m">
+      <div class="fg-footer__mnews">
+        <p class="fg-footer__mnews-title">{{ s.mobile_news_title }}</p>
+        {%- if s.mobile_news_text != blank -%}<p class="fg-footer__mnews-text">{{ s.mobile_news_text }}</p>{%- endif -%}
+        {{ fg_news_form | replace: '[[k]]', 'm' }}
+      </div>
+      {{ fg_logo }}
+      <div class="fg-footer__acc">
+        {%- for g in (1..3) -%}
+          {%- liquid
+            case g
+              when 1
+                assign gm = m_shop
+                assign gt = s.m_explore
+              when 2
+                assign gm = m_help
+                assign gt = s.m_help
+              else
+                assign gm = m_info
+                assign gt = s.m_info
+            endcase
+          -%}
+          {%- if gm.links.size > 0 and gt != blank -%}
+            <details class="fg-footer__det"><summary>{{ gt }}{% render 'fg-icon', name: 'plus' %}</summary><ul role="list">{%- for link in gm.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+      {{ fg_social }}
+      {{ fg_legal }}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page FRAISE",
+  "class": "fg-footer-section",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo (affiché en blanc)" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "text", "id": "wordmark", "label": "Nom affiché sans logo", "info": "Vide : le nom de la boutique." },
+    { "type": "header", "content": "Rubriques" },
+    { "type": "text", "id": "shop_title", "label": "Titre de la boutique", "default": "Boutique" },
+    { "type": "link_list", "id": "menu_shop", "label": "Liens de la boutique", "default": "main-menu" },
+    { "type": "text", "id": "help_title", "label": "Titre de l'aide", "default": "Aide" },
+    { "type": "link_list", "id": "menu_help", "label": "Liens d'aide", "default": "footer" },
+    { "type": "link_list", "id": "menu_info", "label": "Informations (téléphone)" },
+    { "type": "link_list", "id": "menu_legal", "label": "Liens légaux" },
+    { "type": "link_list", "id": "menu_short", "label": "Liens du pied réduit" },
+    { "type": "text", "id": "bottom_text", "label": "Phrase de la ligne du bas (accueil)" },
+    { "type": "text", "id": "copyright", "label": "Mention des droits (après l'année)", "info": "Vide : le nom de la boutique." },
+    { "type": "header", "content": "Inscription" },
+    { "type": "text", "id": "journal_title", "label": "Titre (pied « journal »)", "default": "Inscrivez-vous à notre journal" },
+    { "type": "text", "id": "contact_title", "label": "Titre (pied « contact »)", "default": "Restons en contact" },
+    { "type": "text", "id": "mobile_news_title", "label": "Titre (téléphone)", "default": "Restons en contact !" },
+    { "type": "text", "id": "mobile_news_text", "label": "Texte (téléphone)" },
+    { "type": "text", "id": "news_placeholder", "label": "Texte du champ", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "news_button", "label": "Bouton (téléphone)", "default": "S'inscrire" },
+    { "type": "text", "id": "news_done", "label": "Message d'inscription réussie", "default": "Merci, votre inscription est enregistrée." },
+    { "type": "text", "id": "news_demo", "label": "Message de démonstration", "default": "Démonstration : aucune inscription n'est transmise." },
+    { "type": "header", "content": "Réseaux sociaux" },
+    { "type": "text", "id": "social_title", "label": "Titre", "default": "Suivez-nous" },
+    { "type": "url", "id": "instagram_url", "label": "Instagram" },
+    { "type": "url", "id": "pinterest_url", "label": "Pinterest" },
+    { "type": "url", "id": "facebook_url", "label": "Facebook" },
+    { "type": "checkbox", "id": "social_placeholder", "label": "Pictogrammes sans lien tant que les comptes manquent", "default": false },
+    { "type": "text", "id": "social_todo", "label": "Mention des comptes à compléter", "default": "Compte à compléter" },
+    { "type": "header", "content": "Téléphone" },
+    { "type": "text", "id": "m_explore", "label": "Rubrique 1", "default": "Explorer" },
+    { "type": "text", "id": "m_help", "label": "Rubrique 2", "default": "Aide" },
+    { "type": "text", "id": "m_info", "label": "Rubrique 3", "default": "Informations" }
+  ],
+  "presets": [{ "name": "Pied de page FRAISE" }]
+}
+{% endschema %}

@@ -1,0 +1,306 @@
+{%- comment -%}
+  FRAISE : en-tête des planches 01 à 07 — liens de part et d'autre du logo centré, recherche et panier (pastille du
+  nombre d'articles), bandeau rouge « FRAISE GUMMIES — LE GOÛT FRAISE AU QUOTIDIEN » sous l'en-tête (planches 01 et 03)
+  ou au-dessus (planche 02), répété ou centré. Chaque page choisit sa variante (section « Réglages de la page »).
+  Téléphone : menu à gauche, logo, recherche et panier ; menu ouvert (planche 07) avec recherche, liens, illustration
+  et liens légaux ; tiroir du panier ; bandeau cookies (accepter, refuser, personnaliser).
+  Porte aussi les réglages communs : couleurs, polices, mention de démonstration, mode de commande.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign fg_cart = true
+  if settings.cart_type == 'none'
+    assign fg_cart = false
+  endif
+  assign menu = linklists[s.menu]
+  assign menu_m = linklists[s.menu_mobile]
+  assign menu_legal = linklists[s.menu_legal]
+  assign search_menu = linklists[s.search_menu]
+  assign accent_font = s.accent_font
+  assign title_font = s.title_font
+  assign brand = s.wordmark | default: shop.name
+-%}
+{%- assign title_800 = title_font | font_modify: 'weight', '800' -%}
+{%- assign title_600 = title_font | font_modify: 'weight', '600' -%}
+{%- assign title_500 = title_font | font_modify: 'weight', '500' -%}
+<style>
+  {{ title_font | font_face: font_display: 'swap' }}
+  {%- if title_800 -%}{{ title_800 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if title_600 -%}{{ title_600 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if title_500 -%}{{ title_500 | font_face: font_display: 'swap' }}{%- endif -%}
+  {{ accent_font | font_face: font_display: 'swap' }}
+  body.dir-fraise, .fg, .fg-header, .fg-footer, .fg-menu, .fg-cookies, .fg-drawer, .fg-search, .fg-lightbox, .fg-buybar {
+    --fg-cream: {{ s.color_cream }};
+    --fg-blush: {{ s.color_blush }};
+    --fg-pink: {{ s.color_pink }};
+    --fg-red: {{ s.color_red }};
+    --fg-deep: {{ s.color_deep }};
+    --fg-crimson: {{ s.color_crimson }};
+    --fg-ink: {{ s.color_ink }};
+    --fg-text: {{ s.color_text }};
+    --fg-yellow: {{ s.color_yellow }};
+    --fg-title: {{ title_font.family }}, {{ title_font.fallback_families }};
+    --fg-accent: {{ accent_font.family }}, {{ accent_font.fallback_families }};
+  }
+</style>
+{{ 'fraise-fonts.css' | asset_url | stylesheet_tag }}
+{{ 'fraise.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'fraise.js' | asset_url }}" defer="defer"></script>
+<script type="application/json" id="fg-config">
+  {
+    "checkout": {{ s.checkout_mode | json }},
+    "checkoutPage": {{ s.checkout_page | json }},
+    "demo": {% if s.demo_mode %}true{% else %}false{% endif %},
+    "cartUrl": {{ routes.cart_url | json }},
+    "searchUrl": {{ routes.search_url | json }},
+    "money": {{ shop.money_format | json }},
+    "lineBrand": {{ s.drawer_brand | json }},
+    "offers": {
+      "best": {{ settings.offer_best_label | json }},
+      "free": {{ settings.offer_free_text | json }},
+      "pct": {{ settings.offer_pct_text | json }},
+      "last": {{ settings.offer_last_text | json }},
+      "save": {{ settings.offer_save_label | json }}
+    },
+    "texts": {
+      "added": {{ s.added_label | json }},
+      "removed": {{ s.removed_label | json }},
+      "error": {{ s.error_label | json }},
+      "less": {{ s.drawer_less | json }},
+      "more": {{ s.drawer_more | json }},
+      "remove": {{ s.drawer_remove | json }},
+      "units": {{ s.drawer_units | json }},
+      "packs": {{ s.drawer_packs | json }},
+      "qty": {{ s.qty_label | json }},
+      "fix": {{ s.fix_label | json }}
+    }
+  }
+</script>
+
+{%- capture fg_band -%}
+  <div class="fg-band" aria-hidden="true">
+    <div class="fg-band__track">
+      {%- for i in (1..4) -%}
+        <span class="fg-band__item">{% render 'fg-art', name: 'petal' %}<b>{{ s.band_brand }}</b><span class="fg-band__dash">—</span><i>{{ s.band_text }}</i></span>
+      {%- endfor -%}
+      <span class="fg-band__item">{% render 'fg-art', name: 'petal' %}</span>
+    </div>
+    <p class="fg-band__static">{% render 'fg-art', name: 'petal' %}{% render 'fg-art', name: 'petal' %}<b>{{ s.band_brand }}</b><span class="fg-band__dash">—</span><b>{{ s.band_text }}</b>{% render 'fg-art', name: 'petal' %}{% render 'fg-art', name: 'petal' %}</p>
+  </div>
+{%- endcapture -%}
+
+<header class="fg-header" data-fg-header>
+  {%- if s.band_text != blank -%}<div class="fg-header__band fg-header__band--top">{{ fg_band }}</div>{%- endif -%}
+  <div class="fg-header__bar">
+    <button type="button" class="fg-header__burger" aria-controls="fg-menu" aria-expanded="false" data-fg-menu-open>
+      <span class="visually-hidden">{{ s.menu_open_label }}</span>{% render 'fg-icon', name: 'menu' %}
+    </button>
+    <nav class="fg-header__nav" aria-label="{{ s.nav_label | escape }}">
+      <ul role="list">
+        {%- for link in menu.links -%}
+          <li class="fg-header__li"><a href="{{ link.url }}"{% if link.active or link.current %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    <a class="fg-header__logo" href="{{ routes.root_url }}">
+      {%- if s.logo != blank -%}
+        {{ s.logo | image_url: width: 600 | image_tag: alt: brand, widths: '300, 600', class: 'fg-logo' }}
+      {%- elsif s.logo_asset != blank -%}
+        <img class="fg-logo" src="{{ s.logo_asset | asset_url }}" alt="{{ brand | escape }}" width="600" height="300">
+      {%- else -%}
+        <span class="fg-header__word">{{ brand }}</span>
+      {%- endif -%}
+    </a>
+    <div class="fg-header__tools">
+      {%- if s.show_search -%}
+        <button type="button" class="fg-header__icon" aria-controls="fg-search" aria-expanded="false" data-fg-search-open>
+          <span class="visually-hidden">{{ s.search_label }}</span>{% render 'fg-icon', name: 'search' %}
+        </button>
+      {%- endif -%}
+      {%- if fg_cart -%}
+        <a class="fg-header__icon fg-header__cart{% if cart.item_count > 0 %} has-items{% endif %}" href="{{ routes.cart_url }}" data-fg-cart-link>
+          <span class="visually-hidden">{{ s.cart_label }}</span>{% render 'fg-icon', name: 'jarbag' %}
+          <span class="fg-header__count" data-fg-count data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+  {%- if s.band_text != blank -%}<div class="fg-header__band fg-header__band--below">{{ fg_band }}</div>{%- endif -%}
+</header>
+
+{%- if s.show_search -%}
+<div class="fg-search" id="fg-search" role="dialog" aria-modal="true" aria-label="{{ s.search_label | escape }}" hidden data-fg-search>
+  <div class="fg-search__panel">
+    <form class="fg-search__form" action="{{ routes.search_url }}" method="get" role="search" data-fg-search-form>
+      {% render 'fg-icon', name: 'search' %}
+      <label class="visually-hidden" for="fg-search-q">{{ s.search_label }}</label>
+      <input id="fg-search-q" type="search" name="q" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off" data-fg-search-input>
+      <button type="button" class="fg-search__close" data-fg-search-close><span class="visually-hidden">{{ s.search_close }}</span>{% render 'fg-icon', name: 'close' %}</button>
+    </form>
+    {%- if search_menu.links.size > 0 -%}
+      <p class="fg-search__title">{{ s.search_title }}</p>
+      <ul class="fg-search__list" role="list" data-fg-search-list>
+        {%- for link in search_menu.links -%}<li><a href="{{ link.url }}"><span>{{ link.title }}</span>{% render 'fg-icon', name: 'chevron' %}</a></li>{%- endfor -%}
+      </ul>
+    {%- endif -%}
+    <p class="fg-search__empty" role="status" hidden data-fg-search-empty>{{ s.search_empty }}</p>
+  </div>
+</div>
+{%- endif -%}
+
+<div class="fg-menu" id="fg-menu" role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}" hidden data-fg-menu>
+  <div class="fg-menu__head">
+    <a class="fg-menu__logo" href="{{ routes.root_url }}">
+      {%- if s.logo != blank -%}{{ s.logo | image_url: width: 600 | image_tag: alt: brand, widths: '300, 600', class: 'fg-logo' }}{%- elsif s.logo_asset != blank -%}<img class="fg-logo" src="{{ s.logo_asset | asset_url }}" alt="{{ brand | escape }}" width="600" height="300">{%- else -%}<span class="fg-header__word">{{ brand }}</span>{%- endif -%}
+    </a>
+    <button type="button" class="fg-menu__close" data-fg-menu-close><span class="visually-hidden">{{ s.menu_close_label }}</span>{% render 'fg-icon', name: 'close' %}</button>
+  </div>
+  {%- if s.show_search -%}
+    <form class="fg-menu__search" action="{{ routes.search_url }}" method="get" role="search" data-fg-menu-search>
+      {% render 'fg-icon', name: 'search' %}
+      <label class="visually-hidden" for="fg-menu-q">{{ s.search_label }}</label>
+      <input id="fg-menu-q" type="search" name="q" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off">
+    </form>
+  {%- endif -%}
+  {%- liquid
+    assign mlinks = menu_m.links
+    if mlinks.size == 0
+      assign mlinks = menu.links
+    endif
+  -%}
+  <nav class="fg-menu__nav" aria-label="{{ s.nav_label | escape }}">
+    <ul role="list">
+      {%- for link in mlinks -%}
+        <li><a href="{{ link.url }}"><span>{{ link.title }}</span>{% if forloop.index <= s.menu_chevrons %}{% render 'fg-icon', name: 'chevron' %}{% endif %}</a></li>
+      {%- endfor -%}
+      {%- if fg_cart and s.menu_cart_label != blank -%}<li><a href="{{ routes.cart_url }}"><span>{{ s.menu_cart_label }}</span></a></li>{%- endif -%}
+    </ul>
+  </nav>
+  <span class="fg-menu__art" aria-hidden="true">{% render 'fg-art', name: 'strawberry-menu' %}</span>
+  {%- if menu_legal.links.size > 0 -%}<ul class="fg-menu__legal" role="list">{%- for link in menu_legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+  {%- if s.menu_copyright != blank -%}<p class="fg-menu__copy">© {{ 'now' | date: '%Y' }} {{ s.menu_copyright }}</p>{%- endif -%}
+</div>
+
+{%- if fg_cart -%}
+<div class="fg-drawer" role="dialog" aria-modal="true" aria-labelledby="fg-drawer-title" hidden data-fg-drawer>
+  <div class="fg-drawer__shade" data-fg-drawer-close></div>
+  <div class="fg-drawer__panel">
+    <div class="fg-drawer__head">
+      <button type="button" class="fg-drawer__close" data-fg-drawer-close><span class="visually-hidden">{{ s.drawer_close_label }}</span>{% render 'fg-icon', name: 'close' %}</button>
+      <p class="fg-drawer__title" id="fg-drawer-title">{{ s.drawer_title }} (<span data-fg-count-text>{{ cart.item_count }}</span>)</p>
+    </div>
+    <div class="fg-drawer__lines" data-fg-drawer-lines></div>
+    <div class="fg-drawer__sum">
+      <dl>
+        <div><dt>{{ s.drawer_subtotal }}</dt><dd data-fg-drawer-subtotal>{{ cart.total_price | money }}</dd></div>
+        <div><dt>{{ s.drawer_shipping }}</dt><dd>{{ s.drawer_shipping_value }}</dd></div>
+      </dl>
+      <a class="fg-btn fg-btn--red fg-drawer__checkout" href="{% if s.checkout_mode == 'demo' and s.checkout_page != blank %}{{ s.checkout_page }}{% else %}{{ routes.cart_url }}{% endif %}">{{ s.drawer_checkout }}</a>
+      <a class="fg-btn fg-btn--line fg-drawer__view" href="{{ routes.cart_url }}">{{ s.drawer_view }}</a>
+    </div>
+  </div>
+</div>
+{%- endif -%}
+
+{%- if s.show_cookies -%}
+  <div class="fg-cookies" role="dialog" aria-modal="false" aria-labelledby="fg-cookies-title-{{ section.id }}" hidden data-fg-cookies>
+    <h2 class="fg-cookies__title" id="fg-cookies-title-{{ section.id }}">{{ s.cookies_title }}</h2>
+    <p>{{ s.cookies_text }}{% if s.cookies_link != blank %} <a href="{{ s.cookies_link }}">{{ s.cookies_more }}</a>{% endif %}</p>
+    <div class="fg-cookies__prefs" hidden>
+      <label class="fg-check"><input type="checkbox" checked disabled><span>{{ s.cookies_needed }}</span></label>
+      <label class="fg-check"><input type="checkbox" data-fg-cookies-stats><span>{{ s.cookies_stats }}</span></label>
+    </div>
+    <div class="fg-cookies__actions">
+      <button type="button" class="fg-btn fg-btn--red fg-btn--sm" data-fg-cookies-accept>{{ s.cookies_accept }}</button>
+      <button type="button" class="fg-btn fg-btn--line fg-btn--sm" data-fg-cookies-refuse>{{ s.cookies_refuse }}</button>
+      <button type="button" class="fg-btn fg-btn--link fg-btn--sm" aria-expanded="false" data-fg-cookies-custom>{{ s.cookies_custom }}</button>
+      <button type="button" class="fg-btn fg-btn--red fg-btn--sm" data-fg-cookies-save hidden>{{ s.cookies_save }}</button>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "En-tête FRAISE",
+  "class": "fg-header-section",
+  "settings": [
+    { "type": "header", "content": "Logo et liens" },
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "text", "id": "wordmark", "label": "Nom affiché sans logo", "info": "Vide : le nom de la boutique." },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "range", "id": "split", "label": "Liens à gauche du logo", "min": 1, "max": 5, "step": 1, "default": 3, "info": "Chaque page peut le changer (section « Réglages de la page »)." },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
+    { "type": "text", "id": "cart_label", "label": "Nom du panier (lecteurs d'écran)", "default": "Panier" },
+    { "type": "header", "content": "Bandeau rouge" },
+    { "type": "text", "id": "band_brand", "label": "Nom du bandeau", "default": "FRAISE GUMMIES" },
+    { "type": "text", "id": "band_text", "label": "Phrase du bandeau", "default": "Le goût fraise au quotidien", "info": "Vide : aucun bandeau." },
+    { "type": "header", "content": "Recherche" },
+    { "type": "checkbox", "id": "show_search", "label": "Recherche", "default": true },
+    { "type": "text", "id": "search_label", "label": "Nom de la recherche", "default": "Rechercher" },
+    { "type": "text", "id": "search_placeholder", "label": "Texte du champ", "default": "Rechercher…" },
+    { "type": "text", "id": "search_close", "label": "Fermer (lecteurs d'écran)", "default": "Fermer la recherche" },
+    { "type": "text", "id": "search_title", "label": "Titre des destinations", "default": "Pages du site" },
+    { "type": "link_list", "id": "search_menu", "label": "Destinations proposées" },
+    { "type": "text", "id": "search_empty", "label": "Aucune page trouvée", "default": "Aucune page ne correspond. Appuyez sur Entrée pour chercher dans la boutique." },
+    { "type": "header", "content": "Menu du téléphone" },
+    { "type": "link_list", "id": "menu_mobile", "label": "Liens du menu", "info": "Vide : le menu principal." },
+    { "type": "range", "id": "menu_chevrons", "label": "Liens avec une flèche", "min": 0, "max": 6, "step": 1, "default": 3 },
+    { "type": "text", "id": "menu_label", "label": "Nom du menu", "default": "Menu" },
+    { "type": "text", "id": "menu_open_label", "label": "Bouton d'ouverture", "default": "Ouvrir le menu" },
+    { "type": "text", "id": "menu_close_label", "label": "Bouton de fermeture", "default": "Fermer le menu" },
+    { "type": "text", "id": "menu_cart_label", "label": "Lien du panier du menu", "default": "Mon panier" },
+    { "type": "link_list", "id": "menu_legal", "label": "Liens légaux du menu" },
+    { "type": "text", "id": "menu_copyright", "label": "Mention de droits (après l'année)", "default": "Tous droits réservés." },
+    { "type": "header", "content": "Tiroir du panier" },
+    { "type": "text", "id": "drawer_title", "label": "Titre", "default": "Mon panier" },
+    { "type": "text", "id": "drawer_close_label", "label": "Fermer (lecteurs d'écran)", "default": "Fermer le panier" },
+    { "type": "text", "id": "drawer_subtotal", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "drawer_shipping", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "drawer_shipping_value", "label": "Montant de la livraison", "default": "Calculée à l’étape suivante" },
+    { "type": "text", "id": "drawer_checkout", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "text", "id": "drawer_view", "label": "Bouton du panier", "default": "Voir mon panier" },
+    { "type": "text", "id": "drawer_less", "label": "Moins (lecteurs d'écran)", "default": "Retirer un lot" },
+    { "type": "text", "id": "drawer_more", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un lot" },
+    { "type": "text", "id": "drawer_remove", "label": "Supprimer (lecteurs d'écran)", "default": "Supprimer" },
+    { "type": "text", "id": "drawer_units", "label": "Nombre d'unités d'une ligne", "default": "[n] flacons au total", "info": "[n] : unités de la ligne (lots × unités par lot)." },
+    { "type": "text", "id": "drawer_packs", "label": "Nombre de lots d'une ligne", "default": "[q] lot(s)" },
+    { "type": "text", "id": "drawer_brand", "label": "Marque affichée sur les lignes", "info": "Vide : le nom du produit seul." },
+    { "type": "text", "id": "qty_label", "label": "Quantité d'une ligne (récapitulatif)", "default": "Quantité : [q]" },
+    { "type": "text", "id": "fix_label", "label": "Message « champs à corriger »", "default": "Vérifiez les champs signalés." },
+    { "type": "header", "content": "Couleurs du thème" },
+    { "type": "color", "id": "color_cream", "label": "Crème du fond", "default": "#FCF6EE" },
+    { "type": "color", "id": "color_blush", "label": "Rose pâle des bandes", "default": "#FBE3DB" },
+    { "type": "color", "id": "color_pink", "label": "Rose des vagues", "default": "#F7C9BF" },
+    { "type": "color", "id": "color_red", "label": "Rouge fraise", "default": "#E3363E" },
+    { "type": "color", "id": "color_deep", "label": "Rouge profond du pied", "default": "#C8282F" },
+    { "type": "color", "id": "color_crimson", "label": "Framboise des titres", "default": "#970824" },
+    { "type": "color", "id": "color_ink", "label": "Brun des titres", "default": "#230605" },
+    { "type": "color", "id": "color_text", "label": "Gris des textes", "default": "#5A4C4A" },
+    { "type": "color", "id": "color_yellow", "label": "Jaune du badge", "default": "#FFD84D" },
+    { "type": "header", "content": "Polices" },
+    { "type": "font_picker", "id": "title_font", "label": "Titres ronds et gras", "default": "poppins_n7" },
+    { "type": "font_picker", "id": "accent_font", "label": "Italique d'accent", "default": "playfair_display_i8" },
+    { "type": "header", "content": "Commande" },
+    { "type": "checkbox", "id": "demo_mode", "label": "Boutique de démonstration", "default": false, "info": "Commande, suivi et formulaires simulés et annoncés comme tels ; aucun paiement ni envoi." },
+    { "type": "select", "id": "checkout_mode", "label": "Bouton « Passer commande »", "default": "shopify", "options": [{ "value": "shopify", "label": "Paiement Shopify" }, { "value": "demo", "label": "Page de commande de démonstration" }] },
+    { "type": "url", "id": "checkout_page", "label": "Page de commande de démonstration" },
+    { "type": "text", "id": "added_label", "label": "Message « ajouté au panier »", "default": "Ajouté au panier." },
+    { "type": "text", "id": "removed_label", "label": "Message « retiré du panier »", "default": "Article retiré du panier." },
+    { "type": "text", "id": "error_label", "label": "Message d'erreur", "default": "Une erreur est survenue. Réessayez." },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "show_cookies", "label": "Bandeau cookies", "default": true },
+    { "type": "text", "id": "cookies_title", "label": "Titre", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookies_text", "label": "Texte", "default": "Les cookies nécessaires font fonctionner le site. La mesure d'audience est facultative et ne démarre qu'avec votre accord." },
+    { "type": "url", "id": "cookies_link", "label": "Lien « En savoir plus »" },
+    { "type": "text", "id": "cookies_more", "label": "Texte du lien", "default": "En savoir plus" },
+    { "type": "text", "id": "cookies_needed", "label": "Cookies nécessaires", "default": "Cookies nécessaires au fonctionnement" },
+    { "type": "text", "id": "cookies_stats", "label": "Cookies facultatifs", "default": "Mesure d'audience (facultatif)" },
+    { "type": "text", "id": "cookies_accept", "label": "Accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "cookies_refuse", "label": "Refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "cookies_custom", "label": "Personnaliser", "default": "Personnaliser" },
+    { "type": "text", "id": "cookies_save", "label": "Enregistrer", "default": "Enregistrer mes choix" }
+  ],
+  "presets": [{ "name": "En-tête FRAISE" }]
+}
+{% endschema %}

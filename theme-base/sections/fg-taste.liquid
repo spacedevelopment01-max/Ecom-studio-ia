@@ -1,0 +1,87 @@
+{%- comment -%}
+  FRAISE : « Le goût fraise qui fait sourire. » (planches 01 et 04) — titre, texte et bouton sur la crème, grande photo des
+  gummies fondue à droite, carte du produit (photo détourée, nom, prix du format à une unité, ajout au panier).
+  Téléphone : titre et texte, photo et mot manuscrit fléché, carte du produit.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = all_products[s.product]
+  if p == blank
+    assign p = collections.all.products.first
+  endif
+  assign v = p.selected_or_first_available_variant
+  for x in p.variants
+    assign xn = x.option1 | split: ' ' | first | plus: 0
+    if xn == 1
+      assign v = x
+      break
+    endif
+  endfor
+-%}
+<section class="fg fg-taste" aria-labelledby="fg-taste-t-{{ section.id }}">
+  <div class="fg-c">
+    <div class="fg-taste__media fg-taste__media--{{ s.image_on }}">{% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, mplace_w: s.image_mplace_w, mplace_x: s.image_mplace_x, mplace_y: s.image_mplace_y, class: 'fg-taste__img' %}</div>
+    <div class="fg-taste__text">
+      {%- assign tid = 'fg-taste-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-taste__title', id: tid %}
+      {%- if s.text != blank -%}<div class="fg-taste__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--red fg-taste__btn" href="{{ s.button_link | default: p.url }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+    {%- if s.note != blank -%}<p class="fg-hand fg-taste__note">{{ s.note | escape | newline_to_br }}{% render 'fg-art', name: 'arrow-hand' %}</p>{%- endif -%}
+    <span class="fg-taste__petals" aria-hidden="true">{% render 'fg-art', name: 'petals' %}</span>
+    {%- if p != blank and s.show_card -%}
+      <div class="fg-taste__card">
+        <span class="fg-taste__thumb">{% render 'fg-img', image: s.card_image, asset: s.card_image_asset, alt: '', class: 'fg-cut' %}</span>
+        <div class="fg-taste__info">
+          <p class="fg-taste__name">{{ s.card_title | default: p.title }}</p>
+          {%- if s.card_subtitle != blank -%}<p class="fg-taste__sub">{{ s.card_subtitle }}</p>{%- endif -%}
+          {%- if s.card_format != blank -%}<p class="fg-taste__sub fg-taste__sub--m">{{ s.card_format }}</p>{%- endif -%}
+          <p class="fg-taste__price">{{ v.price | money }}</p>
+          {%- form 'product', p, class: 'fg-taste__form', data-fg-quick-add: '' -%}
+            <input type="hidden" name="id" value="{{ v.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="fg-btn fg-btn--red fg-taste__add"{% unless v.available %} disabled{% endunless %}>{% render 'fg-icon', name: 'bag' %}<span>{{ s.card_button }}</span></button>
+          {%- endform -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Goût et produit",
+  "class": "fg-taste-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le goût fraise\n[r]qui fait [i]sourire.[/i][/r]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "textarea", "id": "note", "label": "Mot manuscrit (téléphone)" },
+    { "type": "select", "id": "image_on", "label": "Photo affichée", "default": "both", "options": [{ "value": "both", "label": "Ordinateur et téléphone" }, { "value": "mobile", "label": "Téléphone seulement (sur ordinateur, la photo de l'ouverture continue ici)" }] },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Largeur posée (ordinateur, repère 1440 px)", "default": 0 },
+    { "type": "number", "id": "image_place_x", "label": "Position horizontale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_place_y", "label": "Position verticale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_mplace_w", "label": "Largeur posée (téléphone, repère 390 px)", "default": 0 },
+    { "type": "number", "id": "image_mplace_x", "label": "Position horizontale posée (téléphone)", "default": 0 },
+    { "type": "number", "id": "image_mplace_y", "label": "Position verticale posée (téléphone)", "default": 0 },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "header", "content": "Carte du produit" },
+    { "type": "checkbox", "id": "show_card", "label": "Carte du produit", "default": true },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "image_picker", "id": "card_image", "label": "Photo détourée" },
+    { "type": "text", "id": "card_image_asset", "label": "Photo détourée (fichier du thème)" },
+    { "type": "text", "id": "card_title", "label": "Nom affiché", "info": "Vide : le nom du produit." },
+    { "type": "text", "id": "card_subtitle", "label": "Sous-titre" },
+    { "type": "text", "id": "card_format", "label": "Format (téléphone)" },
+    { "type": "text", "id": "card_button", "label": "Bouton", "default": "Ajouter au panier" }
+  ],
+  "presets": [{ "name": "Goût et produit" }]
+}
+{% endschema %}

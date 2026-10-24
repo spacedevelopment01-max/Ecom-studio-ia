@@ -1,0 +1,53 @@
+{%- comment -%}
+  FRAISE : « Des détails à savourer. » (planches 01 et 04) — bande rose à vagues, titre, texte et bouton, trois photos
+  (texture, étiquette, fraises). Téléphone : titre puis mosaïque, mots manuscrits sur les photos.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-details" aria-labelledby="fg-details-t-{{ section.id }}">
+  <svg class="fg-wave fg-wave--top" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 40V22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40z" fill="currentColor"/></svg>
+  <div class="fg-c">
+    <div class="fg-details__text">
+      {%- assign tid = 'fg-details-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-details__title', id: tid %}
+      {%- if s.text != blank -%}<div class="fg-details__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--line fg-details__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+    <span class="fg-details__petals" aria-hidden="true">{% render 'fg-art', name: 'petals' %}</span>
+    <ul class="fg-details__grid" role="list">
+      {%- for block in section.blocks -%}
+        <li class="fg-details__tile fg-details__tile--{{ forloop.index }}" {{ block.shopify_attributes }}>
+          {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-details__img' %}
+          {%- if block.settings.caption != blank -%}<p class="fg-hand fg-details__cap">{{ block.settings.caption | escape | newline_to_br }}</p>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+  <svg class="fg-wave fg-wave--bottom" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0V18c60 16 120 16 180 4s120-18 180-6 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 6V0z" fill="currentColor"/></svg>
+</section>
+
+{% schema %}
+{
+  "name": "Détails en photos",
+  "class": "fg-details-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Des détails\n[i]à savourer.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    { "type": "photo", "name": "Photo", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description" },
+      { "type": "text", "id": "caption", "label": "Mot manuscrit (téléphone)" },
+      { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+      { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+    ] }
+  ],
+  "presets": [{ "name": "Détails en photos" }]
+}
+{% endschema %}

@@ -1,0 +1,19 @@
+{%- comment -%}
+  FRAISE : réglages propres à une page (planches 01 à 07) — dessin de l'en-tête (liens à gauche du logo, place et forme
+  du bandeau rouge) et disposition du pied de page. Rien n'est affiché à cet endroit.
+{%- endcomment -%}
+<div class="fg-page-mark" data-fg-split="{{ section.settings.split }}" data-fg-band="{{ section.settings.band }}" data-fg-foot="{{ section.settings.footer }}" data-fg-foot-m="{{ section.settings.footer_mobile }}" hidden></div>
+
+{% schema %}
+{
+  "name": "Réglages de la page",
+  "class": "fg-page-section",
+  "settings": [
+    { "type": "range", "id": "split", "label": "Liens à gauche du logo", "min": 1, "max": 5, "step": 1, "default": 3 },
+    { "type": "select", "id": "band", "label": "Bandeau rouge", "default": "below", "options": [{ "value": "below", "label": "Sous l'en-tête, phrase répétée" }, { "value": "above", "label": "Au-dessus de l'en-tête" }, { "value": "center", "label": "Sous l'en-tête, phrase centrée" }, { "value": "none", "label": "Aucun" }] },
+    { "type": "select", "id": "footer", "label": "Pied de page", "default": "home", "options": [{ "value": "home", "label": "Rubriques et réseaux" }, { "value": "journal", "label": "Inscription au journal" }, { "value": "contact", "label": "Restons en contact" }, { "value": "compact", "label": "Réduit (logo et liens)" }] },
+    { "type": "select", "id": "footer_mobile", "label": "Pied de page au téléphone", "default": "full", "options": [{ "value": "full", "label": "Inscription et rubriques" }, { "value": "menu", "label": "Logo et rubriques" }, { "value": "compact", "label": "Réduit (logo et liens)" }] }
+  ],
+  "presets": [{ "name": "Réglages de la page" }]
+}
+{% endschema %}

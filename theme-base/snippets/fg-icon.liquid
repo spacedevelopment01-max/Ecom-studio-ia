@@ -1,0 +1,44 @@
+{%- comment -%}
+  FRAISE : pictogrammes au trait arrondi d'un seul style (planches 01 à 07), en SVG. Paramètres : name, class.
+{%- endcomment -%}
+<svg class="fg-ico {{ class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- case name -%}
+    {%- when 'arrow-left' -%}<path d="M19 12H5M11 6l-6 6 6 6"/>
+    {%- when 'bag' -%}<path d="M5.5 8h13l-.9 11.2a1.5 1.5 0 0 1-1.5 1.3H7.9a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 10V7a3 3 0 0 1 6 0v3"/>
+    {%- when 'jarbag' -%}<rect x="5.5" y="7.5" width="13" height="13" rx="3"/><path d="M7.5 7.5V5.2c0-.7.5-1.2 1.2-1.2h6.6c.7 0 1.2.5 1.2 1.2v2.3"/>
+    {%- when 'menu' -%}<path d="M4 7h16M4 12h16M4 17h16"/>
+    {%- when 'close' -%}<path d="M6 6l12 12M18 6 6 18"/>
+    {%- when 'search' -%}<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>
+    {%- when 'mail' -%}<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>
+    {%- when 'truck' -%}<path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3.2v2.8h-7"/><circle cx="6.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>
+    {%- when 'box' -%}<path d="M12 3 20 7v10l-8 4-8-4V7z"/><path d="m4 7 8 4 8-4M12 11v10M8 5l8 4"/>
+    {%- when 'gift' -%}<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-1.5-3-5-4-5.5-2S9 9 12 9zM12 9c1.5-3 5-4 5.5-2S15 9 12 9z"/>
+    {%- when 'question' -%}<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6M12 16.8h.01"/>
+    {%- when 'plus' -%}<path d="M12 5v14M5 12h14"/>
+    {%- when 'minus' -%}<path d="M5 12h14"/>
+    {%- when 'trash' -%}<path d="M5 7h14M10 4h4M7 7l.8 12.2a1 1 0 0 0 1 .8h6.4a1 1 0 0 0 1-.8L17 7M10.5 10.5v6M13.5 10.5v6"/>
+    {%- when 'chevron' -%}<path d="m9 6 6 6-6 6"/>
+    {%- when 'chevron-left' -%}<path d="m15 6-6 6 6 6"/>
+    {%- when 'down' -%}<path d="m6 9 6 6 6-6"/>
+    {%- when 'up' -%}<path d="m6 15 6-6 6 6"/>
+    {%- when 'check' -%}<path d="m5 12.5 4.2 4.2L19 7"/>
+    {%- when 'check-circle' -%}<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.8 2.8L16.2 9.5"/>
+    {%- when 'lock' -%}<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><path d="M12 14.5v2.5"/>
+    {%- when 'return' -%}<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H8"/>
+    {%- when 'card' -%}<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M6.5 15h4"/>
+    {%- when 'heart' -%}<path d="M12 20s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z"/>
+    {%- when 'strawberry' -%}<path d="M12 8.2c3.7-1.2 7.3.4 6.9 4.4-.4 4.2-3.6 7.9-6.9 8.9-3.3-1-6.5-4.7-6.9-8.9-.4-4 3.2-5.6 6.9-4.4z"/><path d="M12 8.2 9.2 5.4M12 8.2l2.8-2.8M12 8.2V3.6M8.8 7.6 6.6 6.8M15.2 7.6l2.2-.8"/><path d="M9.5 12h.01M14.5 12h.01M12 14.5h.01M9.8 16.5h.01M14.2 16.5h.01" stroke-width="2"/>
+    {%- when 'jar' -%}<rect x="6" y="7.5" width="12" height="13" rx="2.5"/><rect x="6.8" y="3.5" width="10.4" height="4" rx="1.2"/><path d="M6 11h12M6 17h12"/>
+    {%- when 'gummy' -%}<path d="M7.5 6.5c2-1.6 7-1.6 9 0 1.8 1.4 2.4 6 1.2 9.6-.7 2.1-2.6 3.4-5.7 3.4s-5-1.3-5.7-3.4C5.1 12.5 5.7 7.9 7.5 6.5z"/><path d="M9.5 9.5c.6-.5 1.6-.7 2.4-.6"/>
+    {%- when 'leaf' -%}<path d="M12 21V10"/><path d="M12 13c-4.2.3-6.8-2.4-7-6.6 4.2-.2 6.8 2.3 7 6.6zM12 11c.3-4.3 2.9-6.9 7-7-.2 4.2-2.8 6.8-7 7z"/>
+    {%- when 'sparkle' -%}<path d="M12 3.5c.6 4.4 2.1 5.9 6.5 6.5-4.4.6-5.9 2.1-6.5 6.5-.6-4.4-2.1-5.9-6.5-6.5 4.4-.6 5.9-2.1 6.5-6.5zM18.5 15.5c.3 1.7.8 2.2 2.5 2.5-1.7.3-2.2.8-2.5 2.5-.3-1.7-.8-2.2-2.5-2.5 1.7-.3 2.2-.8 2.5-2.5z"/>
+    {%- when 'bowl' -%}<path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M8 20h8M9 6.5c0-1 1-1.5 1-2.5M13 6.5c0-1 1-1.5 1-2.5"/>
+    {%- when 'doc' -%}<path d="M6.5 3h8l4 4v14h-12z"/><path d="M14.5 3v4h4M9.5 12h6M9.5 15.5h6"/>
+    {%- when 'chat' -%}<path d="M4 5.5h16v10H10l-4.5 3.5v-3.5H4z"/>
+    {%- when 'clock' -%}<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>
+    {%- when 'instagram' -%}<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.3 6.7h.01" stroke-width="2.4"/>
+    {%- when 'pinterest' -%}<circle cx="12" cy="12" r="9"/><path d="M11.2 8.2c2.9-.6 5 1.2 4.6 3.6-.4 2.5-2.6 3.6-4 2.6M11.6 10.5 9 20.5"/>
+    {%- when 'facebook' -%}<path d="M14 21v-8h2.7l.4-3.2H14V7.8c0-.9.3-1.6 1.6-1.6h1.6V3.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.4H8.2V13h2.6v8"/>
+    {%- else -%}<path d="M5 12h14M13 6l6 6-6 6"/>
+  {%- endcase -%}
+</svg>
