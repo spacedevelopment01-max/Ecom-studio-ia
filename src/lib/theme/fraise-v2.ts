@@ -109,7 +109,7 @@ export function footerSettings(lang: Lang, o: { logo?: string; bottom?: string; 
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return {
     logo_asset: o.logo ?? "", wordmark: "", shop_title: t("Boutique", "Shop"), menu_shop: "footer-shop", help_title: t("Aide", "Help"), menu_help: "footer",
-    menu_info: "footer-info", menu_legal: "legal", menu_legal_help: "legal-help", menu_short: "legal-short", bottom_text: o.bottom ?? "", copyright: o.copyright ?? "",
+    menu_info: "footer-info", menu_legal: "legal", menu_legal_help: "legal-help", menu_short: "legal-buy", bottom_text: o.bottom ?? "", copyright: o.copyright ?? "",
     journal_title: t("Inscrivez-vous à notre journal", "Sign up to our journal"), contact_title: t("Restons en contact", "Let's stay in touch"),
     mobile_news_title: t("Restons en contact !", "Let's stay in touch!"), mobile_news_text: o.mobileText ?? "",
     news_placeholder: t("Votre adresse e-mail", "Your email address"), news_button: t("S'inscrire", "Sign up"),

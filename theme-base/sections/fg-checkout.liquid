@@ -30,17 +30,17 @@
       <div class="fg-co__pane" data-pane="1">
         {% render 'fg-title', text: s.title_1, tag: 'h1', class: 'fg-co__title fg-co__title--d' %}
         {% render 'fg-title', text: s.title_1m, tag: 'p', class: 'fg-co__title fg-co__title--m' %}
-        <div class="fg-co__mini fg-only-m">{{ fg_summary }}</div>
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
         <div class="fg-co__card">
           <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.info_title }}</h2>
           <div class="fg-co__grid">
-            <label class="fg-field fg-field--full"><span>{{ s.email_label }} <b aria-hidden="true">*</b></span><input type="email" name="email" autocomplete="email" required placeholder="{{ s.email_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_email }}</span></label>
-            <label class="fg-field"><span>{{ s.first_label }} <b aria-hidden="true">*</b></span><input type="text" name="first" autocomplete="given-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
-            <label class="fg-field"><span>{{ s.last_label }} <b aria-hidden="true">*</b></span><input type="text" name="last" autocomplete="family-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
-            <label class="fg-field fg-field--full"><span>{{ s.address_label }} <b aria-hidden="true">*</b></span><input type="text" name="address" autocomplete="address-line1" required placeholder="{{ s.address_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
-            <label class="fg-field fg-field--full fg-only-m"><span>{{ s.address2_label }}</span><input type="text" name="address2" autocomplete="address-line2"></label>
-            <label class="fg-field"><span>{{ s.zip_label }} <b aria-hidden="true">*</b></span><input type="text" name="zip" autocomplete="postal-code" required inputmode="numeric" pattern="[0-9A-Za-z \-]{3,10}"><span class="fg-field__err" hidden>{{ s.err_zip }}</span></label>
-            <label class="fg-field"><span>{{ s.city_label }} <b aria-hidden="true">*</b></span><input type="text" name="city" autocomplete="address-level2" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full"><span>{{ s.email_label }} <b aria-hidden="true">*</b></span><input type="email" name="email" data-ph-m="{{ s.email_label }} *" autocomplete="email" required placeholder="{{ s.email_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_email }}</span></label>
+            <label class="fg-field"><span>{{ s.first_label }} <b aria-hidden="true">*</b></span><input type="text" name="first" data-ph-m="{{ s.first_label }} *" autocomplete="given-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field"><span>{{ s.last_label }} <b aria-hidden="true">*</b></span><input type="text" name="last" data-ph-m="{{ s.last_label }} *" autocomplete="family-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full"><span>{{ s.address_label }} <b aria-hidden="true">*</b></span><input type="text" name="address" data-ph-m="{{ s.address_label }} *" autocomplete="address-line1" required placeholder="{{ s.address_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full fg-only-m"><span>{{ s.address2_label }}</span><input type="text" name="address2" autocomplete="address-line2" data-ph-m="{{ s.address2_label }}"></label>
+            <label class="fg-field"><span>{{ s.zip_label }} <b aria-hidden="true">*</b></span><input type="text" name="zip" data-ph-m="{{ s.zip_label }} *" autocomplete="postal-code" required inputmode="numeric" pattern="[0-9A-Za-z \-]{3,10}"><span class="fg-field__err" hidden>{{ s.err_zip }}</span></label>
+            <label class="fg-field"><span>{{ s.city_label }} <b aria-hidden="true">*</b></span><input type="text" name="city" data-ph-m="{{ s.city_label }} *" autocomplete="address-level2" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
             <label class="fg-field fg-field--full"><span>{{ s.country_label }} <b aria-hidden="true">*</b></span><select name="country" autocomplete="country-name" required>{%- assign cs = s.countries | split: ',' -%}{%- for c in cs -%}<option>{{ c | strip }}</option>{%- endfor -%}</select><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
             <label class="fg-check fg-field--full fg-co__news"><input type="checkbox" name="newsletter"><span>{{ s.news_label }}</span></label>
           </div>
@@ -51,11 +51,11 @@
       <div class="fg-co__pane" data-pane="2" hidden>
         {% render 'fg-title', text: s.title_2, tag: 'p', class: 'fg-co__title' %}
         {%- if s.text_2 != blank -%}<p class="fg-co__lead">{{ s.text_2 }}</p>{%- endif -%}
-        <div class="fg-co__mini fg-only-m">{{ fg_summary }}</div>
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
         <div class="fg-co__card">
           <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.ship_title }}</h2>
-          <p class="fg-co__addr"><span class="fg-co__lab">{{ s.ship_to }}</span><span data-fg-co-address data-empty="{{ s.no_address | escape }}"></span></p>
-          <div class="fg-co__shipbox">{% render 'fg-icon', name: 'truck' %}<p>{{ s.ship_text }}</p></div>
+          <p class="fg-co__addr"><span class="fg-co__lab">{{ s.ship_to }}</span><span data-fg-co-address></span></p>
+          <div class="fg-co__shipbox">{% render 'fg-icon', name: 'truck' %}<p class="fg-co__ship-has">{{ s.ship_text }}</p><p class="fg-co__ship-none">{{ s.no_address }}</p></div>
           <button type="button" class="fg-btn fg-btn--line fg-co__back" data-fg-co-back>{% render 'fg-icon', name: 'arrow-left' %}{{ s.back_2 }}</button>
           <button type="button" class="fg-btn fg-btn--red fg-co__next" data-fg-co-next>{{ s.next_2 }}{% render 'fg-icon', name: 'arrow' %}</button>
         </div>
@@ -64,7 +64,7 @@
       <div class="fg-co__pane" data-pane="3" hidden>
         {% render 'fg-title', text: s.title_3, tag: 'p', class: 'fg-co__title' %}
         {%- if s.text_3 != blank -%}<p class="fg-co__lead">{{ s.text_3 }}</p>{%- endif -%}
-        <div class="fg-co__mini fg-only-m">{{ fg_summary }}</div>
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
         <div class="fg-co__card">
           <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.pay_title }}</h2>
           <div class="fg-co__mock" aria-hidden="true">
@@ -90,7 +90,7 @@
         {% render 'fg-title', text: s.title_4, tag: 'h2', class: 'fg-co__title' %}
         <p class="fg-co__lead" tabindex="-1" data-fg-co-title>{{ s.text_4 }}</p>
         {% render 'fg-img', asset: s.done_image_asset, alt: '', class: 'fg-co__doneimg' %}
-        <div class="fg-co__mini">{{ fg_summary }}</div>
+        <div class="fg-co__mini fg-co__mini--done">{{ fg_summary }}</div>
         <a class="fg-btn fg-btn--red fg-co__home" href="{{ s.done_link | default: routes.root_url }}" data-fg-co-restart>{{ s.done_button }}</a>
         <p class="fg-co__illus">{{ s.done_note }}</p>
       </div>
