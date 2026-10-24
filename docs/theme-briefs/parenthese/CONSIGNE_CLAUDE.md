@@ -2,19 +2,19 @@
 Date : 24 octobre 2026. Dépôt : spacedevelopment01-max/Ecom-studio-ia.
 Modèle conseillé par Thomas : Opus ; effort élevé pour intégration visuelle, parcours et contrôle final.
 ## Objectif et périmètre
-Créer le thème de services « Parenthèse — Sophrologie & bien-être » dans E-COM STUDIO IA, fidèle aux SIX planches jointes. Ce dossier est une consigne de réalisation, pas un thème déjà développé ou validé.
+Créer le thème de services « Parenthèse — Sophrologie & bien-être » dans E-COM STUDIO IA, fidèle aux SIX planches originales. Les six références sont à importer depuis l'archive distincte `PARENTHESE_6_MAQUETTES_ORIGINALES.zip` fournie au développeur ; leur présence dans le dépôt ne doit pas être supposée. Voir `MAQUETTES_ET_ASSETS.md`. Ce dossier est une consigne de réalisation, pas un thème déjà développé ou validé.
 Reproduire les compositions, pages, couleurs, rythme, typographies, cadrages et comportements. Pas de simple landing page ni de capture géante servant de site. Tout texte, bouton, formulaire, icône et décor doit être du vrai code éditable et accessible.
 Lire les éventuels AGENTS.md/CLAUDE.md et examiner l'architecture existante avant modification.
 Travailler sur une branche de développement dédiée à Parenthèse à partir du main à jour, et ouvrir une PR dédiée. Ne pas fusionner sans validation de Thomas. Ne pas modifier les autres thèmes ni les travaux des autres conversations. La branche brief/parenthese-20261024 contient seulement ce dossier. La PR de brief ne vaut pas validation du futur thème.
 ## Sources visuelles obligatoires
-Ouvrir réellement chaque PNG de maquettes/, au besoin les découper TEMPORAIREMENT pour l'inspection, jamais pour fabriquer les médias du site.
+Décompresser d'abord le ZIP des six références dans `maquettes/`, puis ouvrir réellement chaque PNG ; au besoin les découper TEMPORAIREMENT pour l'inspection, jamais pour fabriquer les médias du site. Si le ZIP n'est pas disponible dans la session de Claude, NE PAS lancer la reproduction visuelle et signaler précisément l'absence.
 - 01.png : accueil complet desktop et mobile.
 - 02.png : liste des séances, première séance détaillée, visioconférence, mobile fiche séance.
 - 03.png : ateliers collectifs, détail atelier, structures/entreprises, mobile atelier.
 - 04.png : réservation 4 étapes, confirmation cabinet et visio, mobiles calendrier et récapitulatif.
 - 05.png : approche, journal, article, cabinet.
 - 06.png : contact, FAQ, retrouver rendez-vous, détail/modification/annulation rendez-vous, informations légales, 404 et cookies.
-Les six PNG sont les maquettes originales retrouvées, copiées sans modification. Les 22 photos du ZIP sont des RECRÉATIONS IA produites pour cette mission : ce ne sont pas les originaux extraits des maquettes. Des différences de mobilier, végétation et cadrage existent. Ne pas annoncer une identité pixel parfaite des photographies.
+Les six PNG sont les maquettes originales retrouvées, copiées sans modification dans le ZIP de références. Le lot distinct de 22 photos HD évoqué pendant la préparation devra être transmis séparément et contrôlé effectivement : ne pas présumer sa présence ni commencer avec des miniatures extraites des planches. Les photos recréées par IA ne sont pas les originaux des maquettes : des différences de mobilier, végétation et cadrage existent. Ne pas annoncer une identité pixel parfaite des photographies.
 ## Direction visuelle et arbitrages explicites
 Référence d'identité principale : accueil 01. Fond ivoire chaud, vert forêt profond pour CTA/texte, sauge pour panneaux, pêche/abricot pour CTA secondaires et traits. Valeurs initiales APPROXIMATIVES à ajuster visuellement : ivoire #F7F4EC, forêt #20483B, sauge #869684, pêche #EDB18A, encre #192B24. Ne pas les présenter comme des couleurs source exactes.
 Grands titres serif fins, élégants, contrastés ; corps sans-serif lisible comme l'accueil. Identifier les polices disponibles et choisir la plus proche visuellement, puis comparer les retours à la ligne. Aucune police source exacte n'a été fournie.
@@ -58,7 +58,7 @@ Les maquettes indiquent « cabinet de démonstration » et « simulation – auc
 Pour contact/newsletter/entreprise : valider et enregistrer la simulation avec un message explicite. Pour un projet réel, utiliser les intégrations existantes configurées, traiter succès/erreur ; ne jamais afficher « envoyé » sans réponse positive du service. Si un connecteur manque, afficher configuration nécessaire et le documenter. Ne pas utiliser un simple toast de succès pour masquer une fonctionnalité absente.
 La sophrologie est ici présentée comme relaxation/bien-être, sans promesse de traitement ni remplacement d'un suivi médical, conformément aux encarts visibles.
 ## Médias et intégration Studio
-Thomas fournit 22 PNG dans les ZIP, accompagnés de MEDIAS.csv et PROVENANCE.json. Suivre les correspondances de EMPLACEMENTS.md, placer dans un dossier propre au thème. Pas de banque d'images, pas de remplacement par visuels d'autres thèmes, pas d'humains ajoutés.
+Le kit de 22 PNG HD est prévu comme livraison séparée par Thomas. Claude doit en confirmer la réception et vérifier le manifeste (`MEDIAS.csv`, `PROVENANCE.json`, `EMPLACEMENTS.md`) s'il est fourni ; ne pas prétendre que ces fichiers sont déjà présents sur GitHub. Placer ces médias dans un dossier propre au thème. Pas de banque d'images, pas de remplacement par visuels d'autres thèmes, pas d'humains ajoutés.
 Les réutilisations indiquées sont volontaires pour les mêmes scènes, pas l'autorisation d'utiliser une photo unique partout. Produire les formats web adaptés depuis ces sources sans les agrandir artificiellement ; garder les PNG maîtres. Cadrage responsive propre, alt descriptifs, chargement différé hors hero, dimensions explicites.
 Intégrer Parenthèse dans la famille Prestations de services / catégorie médecine douce-sophrologie selon les conventions existantes. Prévisualisation complète avec toutes les données démo AVANT choix, puis personnalisation après sélection. Textes, médias, logo, palette, prestations, prix, ateliers, FAQ, articles, coordonnées et réglages RDV éditables et sauvegardés.
 Respecter les mécanismes existants de forfaits, sections et export ; ne pas modifier les règles globales ni des familles e-commerce. Si l'export existant exclut des fonctions serveur, le signaler clairement et préserver le parcours disponible, sans prétendre livrer un backend avec un ZIP statique.
@@ -70,3 +70,6 @@ Respecter les mécanismes existants de forfaits, sections et export ; ne pas mod
 5. Exécuter build/lint/tests appropriés. Vérifier absence de régression dans les autres thèmes. Ne pas annoncer des tests non exécutés.
 6. PR dédiée : pages livrées, captures, tests réellement exécutés, connecteurs configurés/manquants, écarts visuels restants. Attendre validation avant fusion.
 Aucun travail sur l'accueil général du Studio, aucun redesign d'autre thème, aucun nettoyage global.
+
+## Condition de démarrage — fichiers visuels
+Au 24/10/2026, le dossier de brief GitHub contient la consigne et l'inventaire, pas les six fichiers PNG ni les 22 photos HD. Les maquettes originales sont dans un ZIP distinct transmis par Thomas. Pour respecter le niveau de fidélité, Claude doit **bloquer la reproduction visuelle** tant que les six maquettes ne sont pas effectivement accessibles ; ne pas créer le site de mémoire ni substituer des captures agrandies. Ne pas confondre la PR de brief avec la PR de développement du thème.
