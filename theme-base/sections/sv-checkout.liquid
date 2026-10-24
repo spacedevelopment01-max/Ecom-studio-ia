@@ -1,0 +1,201 @@
+{%- comment -%}
+  SILLON V2 : commande de démonstration (planche 03 « 08 Commande » ; planche mobile 08a à 08d) — progression
+  01 Informations / 02 Livraison / 03 Paiement, très grand titre propre à chaque étape, paysage découpé et chemin
+  cuivre ; formulaire, récapitulatif (carte sombre sur ordinateur ; récapitulatif repliable en haut puis carte sombre
+  au paiement sur téléphone), retours possibles, données conservées pendant la visite, erreurs par champ.
+  Aucun champ de carte, aucun débit, aucun e-mail : la confirmation est un EXEMPLE annoncé comme tel.
+  Une boutique réelle passe par le paiement Shopify (bouton du panier).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- capture thumb -%}{%- if s.thumb_asset != blank -%}<img src="{{ s.thumb_asset | asset_url }}" alt="" width="467" height="1284">{%- elsif cart.items.first.image -%}{{ cart.items.first.image | image_url: width: 200 | image_tag: alt: '' }}{%- endif -%}{%- endcapture -%}
+<section class="sv sv-checkout" data-sv-checkout data-step="1"
+  data-t1="{{ s.heading | escape }}" data-t1m="{{ s.heading_mobile | default: s.heading | escape }}" data-t2="{{ s.heading_2 | escape }}" data-t3="{{ s.heading_3 | escape }}" data-t4="{{ s.heading_4 | escape }}">
+  <div class="sv-c">
+    <div class="sv-checkout__inner">
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, class: 'sv-checkout__land', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {% render 'sv-route', d: 'M190 0C150 60 120 120 150 170S240 220 200 280 80 360 110 420 160 520 40 640', vb: '0 0 260 640', dots: '150,170 200,280 110,420', class: 'sv-checkout__route' %}
+      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-checkout__foot', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}
+      <span class="sv-topo sv-topo--tall sv-checkout__topo" aria-hidden="true"></span>
+      <ol class="sv-checkout__steps" role="list" aria-label="{{ s.steps_label | escape }}">
+        <li class="sv-checkout__step" data-n="1"><span class="sv-display">01</span><i aria-hidden="true"></i><b>{{ s.step1 }}</b></li>
+        <li class="sv-checkout__step" data-n="2"><span class="sv-display">02</span><i aria-hidden="true"></i><b>{{ s.step2 }}</b></li>
+        <li class="sv-checkout__step" data-n="3"><span class="sv-display">03</span><i aria-hidden="true"></i><b>{{ s.step3 }}</b></li>
+      </ol>
+      <span class="sv-checkout__check" aria-hidden="true">{% render 'sv-icon', name: 'check' %}</span>
+      <h1 class="sv-display sv-checkout__title" tabindex="-1" data-sv-co-title><span class="sv-checkout__t-d">{{ s.heading | escape | newline_to_br }}</span><span class="sv-checkout__t-m">{{ s.heading_mobile | default: s.heading | escape | newline_to_br }}</span></h1>
+      <p class="sv-checkout__demo" role="note">{{ s.demo_note }}</p>
+
+      <details class="sv-checkout__mini" data-sv-co-mini>
+        <summary><span class="sv-checkout__mini-thumb">{{ thumb }}</span><span class="sv-checkout__mini-txt" data-sv-co-mini-txt>{%- for item in cart.items limit: 1 -%}<b>{% if item.variant.title != blank and item.variant.title != 'Default Title' %}{{ item.variant.title }}{% else %}{{ item.product.title }}{% endif %}{% if cart.items.size > 1 %} …{% endif %}</b>{%- endfor -%}<span class="sv-display">{{ cart.total_price | money_without_trailing_zeros }}</span></span>{% render 'sv-icon', name: 'down' %}</summary>
+        <dl class="sv-checkout__mini-rows">
+          <div><dt>{{ s.subtotal_label }}</dt><dd data-sv-co-subtotal>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
+          <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
+        </dl>
+      </details>
+
+      <form class="sv-checkout__form" novalidate data-sv-co-form>
+        <div class="sv-checkout__pane" data-pane="1">
+          <label class="sv-field sv-field--wide"><span>{{ s.email_label }}</span><input type="email" name="email" autocomplete="email" required><em class="sv-field__err" hidden>{{ s.err_email }}</em></label>
+          <label class="sv-field sv-field--last"><span>{{ s.last_label }}</span><input type="text" name="last" autocomplete="family-name" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+          <label class="sv-field sv-field--first"><span>{{ s.first_label }}</span><input type="text" name="first" autocomplete="given-name" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+          <label class="sv-field sv-field--wide"><span>{{ s.address_label }}</span><input type="text" name="address" autocomplete="address-line1" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+          {%- if s.address2_label != blank -%}<label class="sv-field sv-field--wide sv-field--extra"><span>{{ s.address2_label }}</span><input type="text" name="address2" autocomplete="address-line2"></label>{%- endif -%}
+          <label class="sv-field"><span>{{ s.zip_label }}</span><input type="text" name="zip" autocomplete="postal-code" inputmode="numeric" required pattern="[0-9A-Za-z \-]{3,10}"><em class="sv-field__err" hidden>{{ s.err_zip }}</em></label>
+          <label class="sv-field"><span>{{ s.city_label }}</span><input type="text" name="city" autocomplete="address-level2" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+          <label class="sv-field sv-field--wide sv-field--select"><span>{{ s.country_label }}</span>
+            <select name="country" autocomplete="country-name" required>
+              {%- unless s.country_first -%}<option value=""></option>{%- endunless -%}
+              {%- assign countries = s.countries | split: ',' -%}
+              {%- for c in countries -%}<option>{{ c | strip }}</option>{%- endfor -%}
+            </select>
+            {% render 'sv-icon', name: 'down' %}<em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+        </div>
+        <div class="sv-checkout__pane" data-pane="2" hidden>
+          <div class="sv-checkout__card2" data-sv-co-ship>
+            {% render 'sv-icon', name: 'pin', class: 'sv-checkout__pin' %}
+            <p class="sv-checkout__card2-title"><span class="sv-co-full">{{ s.ship_title }}</span><span class="sv-co-empty">{{ s.ship_empty_title }}</span></p>
+            <p class="sv-checkout__recap-address sv-co-full" data-sv-co-address></p>
+            <p class="sv-checkout__card2-text"><span class="sv-co-full">{{ s.ship_text }}</span><span class="sv-co-empty">{{ s.ship_empty_text }}</span></p>
+            <a class="sv-checkout__edit" href="#" data-sv-co-goto="1">{{ s.edit_label }}{% render 'sv-icon', name: 'arrow' %}</a>
+          </div>
+        </div>
+        <div class="sv-checkout__pane" data-pane="3" hidden>
+          {%- if s.show_card_mock -%}
+            {%- comment -%} Maquette visuelle des champs de carte : aucun champ de saisie, rien n'est collecté (le paiement réel passe par Shopify). {%- endcomment -%}
+            <div class="sv-checkout__cardmock" aria-hidden="true">
+              <span class="sv-checkout__mock sv-checkout__mock--wide"><b>{{ s.mock_name_label }}</b><i></i></span>
+              <span class="sv-checkout__mock sv-checkout__mock--wide"><b>{{ s.mock_number_label }}</b><i></i></span>
+              <span class="sv-checkout__mock"><b>{{ s.mock_exp_label }}</b><i></i></span>
+              <span class="sv-checkout__mock"><b>{{ s.mock_cvc_label }}</b><i></i></span>
+            </div>
+            <p class="visually-hidden">{{ s.mock_sr_label }}</p>
+          {%- endif -%}
+          <div class="sv-checkout__card2 sv-checkout__pay">
+            {% render 'sv-icon', name: 'lock', class: 'sv-checkout__pin' %}
+            <p class="sv-checkout__card2-title">{{ s.pay_title }}</p>
+            <p class="sv-checkout__card2-text">{{ s.pay_text }}</p>
+          </div>
+        </div>
+        <div class="sv-checkout__pane sv-checkout__done" data-pane="4" hidden>
+          <p class="sv-checkout__done-text">{{ s.done_text }}</p>
+          <div class="sv-checkout__done-card">
+            <div class="sv-checkout__done-item" data-sv-co-done-item><span class="sv-checkout__mini-thumb">{{ thumb }}</span><span data-sv-co-mini-txt>{%- for item in cart.items limit: 1 -%}<b>{% if item.variant.title != blank and item.variant.title != 'Default Title' %}{{ item.variant.title }}{% else %}{{ item.product.title }}{% endif %}</b>{%- endfor -%}<span class="sv-display">{{ cart.total_price | money_without_trailing_zeros }}</span></span></div>
+            <div class="sv-checkout__done-addr">{% render 'sv-icon', name: 'pin' %}<p><b>{{ s.ship_title }}</b><span class="sv-co-full" data-sv-co-address></span><span class="sv-co-empty">{{ s.done_addr_empty }}</span></p></div>
+            <p class="sv-checkout__done-note">{{ s.done_note }}</p>
+            {%- if s.help_label != blank -%}<a class="sv-checkout__edit" href="{{ s.help_link | default: routes.root_url }}">{{ s.help_label }}{% render 'sv-icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+          <a class="sv-btn sv-btn--copper sv-checkout__home" href="{{ routes.root_url }}">{{ s.done_button }}{% render 'sv-icon', name: 'arrow' %}</a>
+          <p class="sv-checkout__done-tag">{{ s.done_tag }}</p>
+        </div>
+        <button type="button" class="sv-btn sv-btn--copper sv-checkout__mnext" data-sv-co-next{% if cart.item_count == 0 %} disabled{% endif %}><span>{{ s.next1 }}</span>{% render 'sv-icon', name: 'arrow' %}</button>
+        <div class="sv-checkout__actions">
+          <a class="sv-checkout__back" href="{{ routes.cart_url }}" data-sv-co-back><span class="sv-circle">{% render 'sv-icon', name: 'arrow-left' %}</span><span data-back-1="{{ s.back_cart_label | escape }}" data-back-2="{{ s.back_label | escape }}" data-back-3="{{ s.back_label_3 | default: s.back_label | escape }}">{{ s.back_cart_label }}</span></a>
+        </div>
+      </form>
+
+      <aside class="sv-checkout__card" aria-label="{{ s.order_title | escape }}">
+        <p class="sv-mono sv-checkout__card-title">{{ s.order_title }}</p>
+        <div class="sv-checkout__items" data-sv-co-items data-thumb="{% if s.thumb_asset != blank %}{{ s.thumb_asset | asset_url }}{% endif %}">
+          {%- for item in cart.items -%}
+            <div class="sv-checkout__item">
+              <span class="sv-checkout__thumb">{%- if s.thumb_asset != blank -%}<img src="{{ s.thumb_asset | asset_url }}" alt="" width="467" height="1284">{%- elsif item.image -%}{{ item.image | image_url: width: 200 | image_tag: alt: '' }}{%- endif -%}</span>
+              <span class="sv-checkout__iname">{% if item.variant.title != blank and item.variant.title != 'Default Title' %}{{ item.variant.title }}{% else %}{{ item.product.title }}{% endif %}{% if item.quantity > 1 %} × {{ item.quantity }}{% endif %}</span>
+              <span class="sv-checkout__iprice">{{ item.final_line_price | money_without_trailing_zeros }}</span>
+            </div>
+          {%- else -%}
+            <p class="sv-checkout__emptycart">{{ s.empty_text }} <a href="{{ routes.all_products_collection_url }}">{{ s.empty_link }}</a></p>
+          {%- endfor -%}
+        </div>
+        <dl class="sv-checkout__rows">
+          <div><dt>{{ s.subtotal_label }}</dt><dd data-sv-co-subtotal>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
+          <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
+          <div class="sv-checkout__total"><dt>{{ s.total_label }}</dt><dd>{{ s.total_value | escape | newline_to_br }}</dd></div>
+        </dl>
+        <button type="button" class="sv-btn sv-btn--copper sv-checkout__next" data-sv-co-next data-l1="{{ s.next1 | escape }}" data-l2="{{ s.next2 | escape }}" data-l3="{{ s.next3 | escape }}" data-final="{% if s.final_disabled %}off{% endif %}"{% if cart.item_count == 0 %} disabled{% endif %}><span>{{ s.next1 }}</span>{% render 'sv-icon', name: 'arrow-ne' %}</button>
+        <p class="sv-checkout__paynote">{{ s.pay_note }}</p>
+        <p class="sv-checkout__status" role="status" data-sv-co-status></p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Commande de démonstration",
+  "class": "sv-checkout-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre de l'étape 1 (ordinateur)", "default": "Dernière\nétape avant\nl'échappée." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre de l'étape 1 (téléphone)", "default": "Avant\nl'échappée." },
+    { "type": "textarea", "id": "heading_2", "label": "Titre de l'étape 2", "default": "Votre\nlivraison." },
+    { "type": "textarea", "id": "heading_3", "label": "Titre de l'étape 3", "default": "Dernière\nétape." },
+    { "type": "textarea", "id": "heading_4", "label": "Titre de l'exemple de confirmation", "default": "Cap sur votre\nprochaine\npause." },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Commande d'exemple : aucun paiement, aucun envoi, aucun e-mail." },
+    { "type": "text", "id": "steps_label", "label": "Progression (lecteurs d'écran)", "default": "Étapes de la commande" },
+    { "type": "text", "id": "step1", "label": "Étape 1", "default": "Informations" },
+    { "type": "text", "id": "step2", "label": "Étape 2", "default": "Livraison" },
+    { "type": "text", "id": "step3", "label": "Étape 3", "default": "Paiement" },
+    { "type": "image_picker", "id": "image", "label": "Paysage découpé" },
+    { "type": "text", "id": "image_asset", "label": "Paysage découpé (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Cadrage du paysage", "default": "70% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_bottom", "label": "Paysage du bas" },
+    { "type": "text", "id": "image_bottom_asset", "label": "Paysage du bas (fichier du thème)" },
+    { "type": "text", "id": "image_bottom_position", "label": "Cadrage du paysage du bas", "default": "60% 40%" },
+    { "type": "text", "id": "image_bottom_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_bottom_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_bottom_zoom", "label": "Agrandissement du paysage du bas", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "address_label", "label": "Adresse", "default": "Adresse" },
+    { "type": "text", "id": "address2_label", "label": "Complément d'adresse (téléphone)", "default": "Complément facultatif" },
+    { "type": "text", "id": "zip_label", "label": "Code postal", "default": "Code postal" },
+    { "type": "text", "id": "city_label", "label": "Ville", "default": "Ville" },
+    { "type": "text", "id": "country_label", "label": "Pays", "default": "Pays" },
+    { "type": "text", "id": "countries", "label": "Pays proposés (séparés par des virgules)", "default": "France, Belgique, Suisse, Luxembourg" },
+    { "type": "checkbox", "id": "country_first", "label": "Premier pays présélectionné", "default": true },
+    { "type": "text", "id": "err_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "err_email", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "err_zip", "label": "Erreur : code postal", "default": "Saisissez un code postal valide." },
+    { "type": "text", "id": "ship_title", "label": "Étape 2 : titre de la carte", "default": "Adresse de livraison" },
+    { "type": "textarea", "id": "ship_text", "label": "Étape 2 : texte", "default": "Les modes de livraison disponibles s'affichent ici dans la boutique réelle." },
+    { "type": "text", "id": "ship_empty_title", "label": "Étape 2 sans adresse : titre", "default": "Adresse à renseigner" },
+    { "type": "textarea", "id": "ship_empty_text", "label": "Étape 2 sans adresse : texte", "default": "Renseignez votre adresse pour consulter les modes de livraison disponibles." },
+    { "type": "checkbox", "id": "show_card_mock", "label": "Étape 3 : maquette visuelle des champs de carte", "default": false, "info": "Cadres décoratifs uniquement : aucun champ de saisie, rien n'est collecté." },
+    { "type": "text", "id": "mock_name_label", "label": "Maquette : nom sur la carte", "default": "Nom sur la carte" },
+    { "type": "text", "id": "mock_number_label", "label": "Maquette : numéro de carte", "default": "Numéro de carte" },
+    { "type": "text", "id": "mock_exp_label", "label": "Maquette : expiration", "default": "Expiration" },
+    { "type": "text", "id": "mock_cvc_label", "label": "Maquette : code de sécurité", "default": "Code de sécurité" },
+    { "type": "text", "id": "mock_sr_label", "label": "Maquette (lecteurs d'écran)", "default": "Maquette de paiement : aucune carte n'est demandée." },
+    { "type": "text", "id": "edit_label", "label": "Lien « Modifier mes informations »", "default": "Modifier mes informations" },
+    { "type": "text", "id": "pay_title", "label": "Étape 3 : titre de la carte", "default": "Paiement sécurisé" },
+    { "type": "textarea", "id": "pay_text", "label": "Étape 3 : texte", "default": "Dans la boutique réelle, les informations de carte se saisissent sur la page de paiement sécurisée de Shopify. Cette maquette ne demande aucune carte." },
+    { "type": "text", "id": "pay_note", "label": "Mention sous le bouton de paiement", "default": "Maquette de paiement — aucun débit" },
+    { "type": "textarea", "id": "done_text", "label": "Texte de l'exemple de confirmation", "default": "Exemple de confirmation : aucune commande n'a été enregistrée." },
+    { "type": "text", "id": "done_addr_empty", "label": "Exemple de confirmation : adresse absente", "default": "À renseigner" },
+    { "type": "textarea", "id": "done_note", "label": "Mention de l'exemple de confirmation", "default": "Dans la boutique réelle, un e-mail de confirmation suit la commande finalisée." },
+    { "type": "text", "id": "help_label", "label": "Lien d'aide", "default": "Besoin d'aide ?" },
+    { "type": "url", "id": "help_link", "label": "Adresse du lien d'aide" },
+    { "type": "text", "id": "done_tag", "label": "Mention sous le bouton", "default": "Écran illustratif de confirmation" },
+    { "type": "text", "id": "done_button", "label": "Bouton après la confirmation", "default": "Retour à la boutique" },
+    { "type": "text", "id": "order_title", "label": "Titre du récapitulatif", "default": "Votre commande" },
+    { "type": "text", "id": "thumb_asset", "label": "Photo détourée du récapitulatif (fichier du thème)" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Montant de la livraison", "default": "À calculer" },
+    { "type": "text", "id": "total_label", "label": "Total (paiement)", "default": "Total" },
+    { "type": "textarea", "id": "total_value", "label": "Montant total (paiement)", "default": "À confirmer\nselon la livraison" },
+    { "type": "text", "id": "next1", "label": "Bouton de l'étape 1", "default": "Continuer vers la livraison" },
+    { "type": "text", "id": "next2", "label": "Bouton de l'étape 2", "default": "Continuer vers le paiement" },
+    { "type": "checkbox", "id": "final_disabled", "label": "Bouton de paiement inactif (maquette)", "default": true, "info": "La démonstration s'arrête au paiement ; l'écran de confirmation d'exemple reste visible par l'adresse #confirmation-exemple." },
+    { "type": "text", "id": "next3", "label": "Bouton de l'étape 3", "default": "Valider le paiement (exemple)" },
+    { "type": "text", "id": "back_cart_label", "label": "Retour au panier", "default": "Retour au panier" },
+    { "type": "text", "id": "back_label", "label": "Retour à l'étape 1", "default": "Retour aux informations" },
+    { "type": "text", "id": "back_label_3", "label": "Retour à l'étape 2", "default": "Retour à la livraison" },
+    { "type": "text", "id": "empty_text", "label": "Panier vide", "default": "Votre panier est vide." },
+    { "type": "text", "id": "empty_link", "label": "Lien du panier vide", "default": "Découvrir la machine" }
+  ],
+  "presets": [{ "name": "Commande de démonstration" }]
+}
+{% endschema %}

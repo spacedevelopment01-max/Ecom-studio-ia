@@ -1,0 +1,43 @@
+{%- comment -%}
+  SILLON V2 : « Dans le coffret » (planche 01, fiche) — titre et phrase à gauche, photo arrondie au centre, liste
+  numérotée à chasse fixe à droite et mention (« Contenu illustratif » : liste et compatibilité à confirmer).
+  Blocs : « Élément du coffret ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-box">
+  <div class="sv-c">
+    <div class="sv-box__inner">
+      <div class="sv-box__head">
+        <h2 class="sv-display sv-box__title">{{ s.heading }}</h2>
+        {%- if s.text != blank -%}<p class="sv-box__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-box__img', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      <ol class="sv-box__list" role="list">
+        {%- for block in section.blocks -%}<li class="sv-mono" {{ block.shopify_attributes }}><span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{{ block.settings.text }}</li>{%- endfor -%}
+      </ol>
+      {%- if s.note != blank -%}<p class="sv-mono sv-box__note">{{ s.note }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Dans le coffret",
+  "class": "sv-box-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Dans le coffret" },
+    { "type": "textarea", "id": "text", "label": "Phrase", "default": "L'essentiel,\npour partir plus loin." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "text", "id": "note", "label": "Mention", "default": "Contenu illustratif" }
+  ],
+  "blocks": [{ "type": "item", "name": "Élément du coffret", "settings": [{ "type": "text", "id": "text", "label": "Texte", "default": "Pochette de transport" }] }],
+  "presets": [{ "name": "Dans le coffret" }]
+}
+{% endschema %}

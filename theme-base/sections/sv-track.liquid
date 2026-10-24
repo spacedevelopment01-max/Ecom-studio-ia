@@ -1,0 +1,78 @@
+{%- comment -%}
+  SILLON V2 : suivi de commande (planche 03, « 12 Suivi ») — très grand titre, phrase, numéro de commande et e-mail,
+  bouton cuivre ; carte d'aide sombre (cercle « ? », texte, lien cuivre) ; mention ; grande photo du produit sur son
+  rocher à bord organique, courbes de niveau et chemin cuivre.
+  Boutique réelle : le bouton mène à l'espace client (statut lu par Shopify). Démonstration : un résultat d'EXEMPLE,
+  annoncé comme tel, jamais un vrai statut ni une vraie date.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-track">
+  <div class="sv-c">
+    <div class="sv-track__inner">
+      <span class="sv-topo sv-topo--tall sv-track__topo" aria-hidden="true"></span>
+      {% render 'sv-route', d: 'M330 0C350 60 300 80 260 120S330 220 300 300 200 380 150 430 40 520 0 600', vb: '0 0 360 600', dots: '326,163 300,300 220,400 0,600', class: 'sv-track__route' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, place_fade: true %}
+      <h1 class="sv-display sv-track__title"{% if s.title_width != 100 %} style="--sx: {{ s.title_width | divided_by: 100.0 }}"{% endif %}>{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h1>
+      {%- if s.intro != blank -%}<p class="sv-track__intro">{% render 'sv-lines', text: s.intro, mobile: s.intro_mobile %}</p>{%- endif -%}
+      <form class="sv-track__form" action="{{ s.account_link | default: routes.account_url }}" method="get" novalidate data-sv-track="{% if s.simulate %}demo{% endif %}">
+        <label class="sv-field sv-track__f"><span>{{ s.number_label }}</span><input type="text" name="order" placeholder="{{ s.number_placeholder | escape }}" autocomplete="off" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
+        <label class="sv-field sv-track__f"><span>{{ s.email_label }}</span><input type="email" name="email" placeholder="{{ s.email_placeholder | escape }}" autocomplete="email" required><em class="sv-field__err" hidden>{{ s.err_email }}</em></label>
+        <button type="submit" class="sv-btn sv-btn--copper sv-track__btn">{{ s.button_label }}{% render 'sv-icon', name: 'arrow-ne' %}</button>
+        <div class="sv-track__result" role="status" data-sv-track-result hidden>
+          <p class="sv-mono sv-track__result-tag">{{ s.demo_tag }}</p>
+          <p class="sv-track__result-text">{{ s.demo_result }}</p>
+        </div>
+      </form>
+      {%- if s.hint_text != blank -%}<div class="sv-track__hint"><span aria-hidden="true">?</span><p>{{ s.hint_text | escape | newline_to_br }}</p></div>{%- endif -%}
+      <div class="sv-track__help">
+        <span class="sv-track__help-ico" aria-hidden="true">?</span>
+        <p class="sv-track__help-title">{{ s.help_title }}</p>
+        <p class="sv-track__help-text">{{ s.help_text | escape | newline_to_br }}</p>
+        {%- if s.help_link_label != blank -%}<a class="sv-track__help-link" href="{{ s.help_link | default: routes.root_url }}">{{ s.help_link_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>{%- endif -%}
+      </div>
+      {%- if s.note != blank -%}<p class="sv-track__note">{{ s.note }}</p>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Suivi de commande",
+  "class": "sv-track-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Où en est\nvotre commande ?" },
+    { "type": "range", "id": "title_width", "label": "Chasse du titre", "min": 80, "max": 100, "step": 1, "unit": "%", "default": 100, "info": "Resserre les lettres d'un titre long." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (coupe des lignes)", "info": "Vide : le titre ci-dessus." },
+    { "type": "textarea", "id": "intro", "label": "Phrase", "default": "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande." },
+    { "type": "textarea", "id": "intro_mobile", "label": "Phrase au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessus." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Téléphone : largeur posée de la photo (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_place_x", "label": "Téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_place_y", "label": "Téléphone : position en haut (px)" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "text", "id": "number_label", "label": "Numéro de commande", "default": "Numéro de commande" },
+    { "type": "text", "id": "number_placeholder", "label": "Exemple de numéro", "default": "Ex. 1001" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail utilisé lors de l'achat" },
+    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.com" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Retrouver ma commande" },
+    { "type": "url", "id": "account_link", "label": "Espace client", "info": "Vide : l'espace client de la boutique." },
+    { "type": "text", "id": "err_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "err_email", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "checkbox", "id": "simulate", "label": "Résultat d'exemple (démonstration)", "default": false },
+    { "type": "text", "id": "demo_tag", "label": "Étiquette du résultat d'exemple", "default": "Exemple — démonstration" },
+    { "type": "textarea", "id": "demo_result", "label": "Résultat d'exemple", "default": "Cette boutique est une démonstration : aucune commande réelle n'existe. Dans la boutique réelle, l'état de votre commande s'afficherait ici." },
+    { "type": "textarea", "id": "hint_text", "label": "Astuce sous le bouton (téléphone)", "default": "Vous ne retrouvez pas votre numéro ?\nConsultez votre e-mail de confirmation." },
+    { "type": "text", "id": "help_title", "label": "Titre de l'aide", "default": "Besoin d'aide ?" },
+    { "type": "textarea", "id": "help_text", "label": "Texte de l'aide", "default": "Une question sur votre\ncommande ? Nous sommes\nlà pour vous aider." },
+    { "type": "text", "id": "help_link_label", "label": "Lien de l'aide", "default": "Nous contacter" },
+    { "type": "url", "id": "help_link", "label": "Adresse du lien de l'aide" },
+    { "type": "text", "id": "note", "label": "Mention" }
+  ],
+  "presets": [{ "name": "Suivi de commande" }]
+}
+{% endschema %}

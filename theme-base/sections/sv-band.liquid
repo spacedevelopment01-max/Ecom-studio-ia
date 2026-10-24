@@ -1,0 +1,57 @@
+{%- comment -%}
+  SILLON V2 : bandeaux pleins (planches 01 et 02) —
+  - cuivre (accueil) : très grand titre ivoire, trois mots à chasse fixe, flèche en cercle, courbes de niveau ;
+  - sombre (SILLON) : titre cuivre, chemin en pointillés et points d'étape, phrase à chasse fixe, flèche en cercle ;
+  - newsletter (carnet) : titre, phrase, champ e-mail en capsule (inscription réelle de la boutique).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-band sv-band--{{ s.style }} sv-vis--{{ s.visibility | default: 'all' }}">
+  <div class="sv-c">
+    <div class="sv-band__inner">
+      <span class="sv-topo sv-topo--field sv-band__topo" aria-hidden="true"></span>
+      <h2 class="sv-display sv-band__title">{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h2>
+      {%- if s.style == 'dark' -%}
+        {% render 'sv-route', d: 'M0 70C60 70 80 40 120 40S170 10 220 30 300 110 380 80 440 10 520 6', vb: '0 0 520 110', dots: '120,40 220,30 516,6', dot: 'solid', dashed: true, class: 'sv-band__route' %}
+        {% render 'sv-route', d: 'M17 16C50 12 80 18 101 33S124 90 128 125', vb: '0 0 140 140', dots: '101,33', dot: 'solid', dashed: true, class: 'sv-band__mroute' %}
+      {%- endif -%}
+      {%- if s.style == 'newsletter' -%}
+        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}
+        {% render 'sv-icon', name: 'mail', class: 'sv-band__mail' %}
+        {%- form 'customer', class: 'sv-band__form', data-sv-news: '' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <label class="visually-hidden" for="sv-band-email-{{ section.id }}">{{ s.field_label }}</label>
+          <input id="sv-band-email-{{ section.id }}" type="email" name="contact[email]" placeholder="{{ s.placeholder | escape }}" autocomplete="email" required>
+          <button type="submit" aria-label="{{ s.field_label | escape }}">{% render 'sv-icon', name: 'arrow' %}</button>
+          <p class="sv-band__status" role="status" data-sv-status hidden></p>
+          {%- if form.posted_successfully? -%}<p class="sv-band__status" role="status">{{ s.done }}</p>{%- endif -%}
+        {%- endform -%}
+      {%- else -%}
+        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}
+        <a class="sv-circle sv-circle--light sv-band__arrow" href="{{ s.link | default: routes.root_url }}" aria-label="{{ s.link_label | escape }}">{% render 'sv-icon', name: s.icon %}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau plein",
+  "class": "sv-band-section",
+  "settings": [
+    { "type": "select", "id": "visibility", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "mobile", "label": "Téléphone seulement" }, { "value": "desktop", "label": "Ordinateur seulement" }] },
+    { "type": "select", "id": "style", "label": "Style", "default": "copper", "options": [{ "value": "copper", "label": "Cuivre, titre ivoire" }, { "value": "dark", "label": "Sombre, titre cuivre et chemin" }, { "value": "newsletter", "label": "Cuivre, inscription par e-mail" }] },
+    { "type": "textarea", "id": "heading", "label": "Titre (un retour à la ligne par ligne)", "default": "Le détour\nen vaut la tasse." },
+    { "type": "textarea", "id": "text_mobile", "label": "Phrase au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessous." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (coupe des lignes)", "info": "Vide : le titre ci-dessus." },
+    { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe", "default": "Plus loin\nPlus libre\nToujours un bon café." },
+    { "type": "url", "id": "link", "label": "Lien de la flèche" },
+    { "type": "text", "id": "link_label", "label": "Nom de la flèche (lecteurs d'écran)", "default": "Découvrir" },
+    { "type": "select", "id": "icon", "label": "Flèche", "default": "arrow-ne", "options": [{ "value": "arrow-ne", "label": "En diagonale" }, { "value": "arrow", "label": "Vers la droite" }] },
+    { "type": "header", "content": "Inscription" },
+    { "type": "text", "id": "field_label", "label": "Nom du champ (lecteurs d'écran)", "default": "Votre e-mail pour recevoir les prochains carnets" },
+    { "type": "text", "id": "placeholder", "label": "Exemple dans le champ", "default": "Votre e-mail" },
+    { "type": "text", "id": "done", "label": "Message après inscription", "default": "Merci, votre inscription est enregistrée." }
+  ],
+  "presets": [{ "name": "Bandeau plein" }]
+}
+{% endschema %}

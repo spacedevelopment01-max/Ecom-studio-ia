@@ -52,8 +52,10 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
   21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
   `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
-  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; médias suivis dans `public/theme-assets/sillon/`,
-  démonstration `tests/sillon-fixtures.ts`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
+  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; **V2** refaite d'après les trois planches
+  validées et les quatre planches téléphone, PR #182 : sections `sv-*`, `theme-base/assets/sillon.css`, 129 € illustratif,
+  commande simulée sans champ de carte ; médias suivis dans `public/theme-assets/sillon/`, démonstration
+  `tests/sillon-fixtures.ts`, voir `docs/LISEZMOI-sillon-v2.md`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
   boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
   volontairement hors rendu ; démonstrations `tests/noctil-traverse-fixtures.ts`), **HEUREN** (montre bleu nuit) et
   **ALCÔVE** (fauteuil terracotta) : thèmes **mono-produit de la famille E-commerce** (consigne expresse de Thomas, issue

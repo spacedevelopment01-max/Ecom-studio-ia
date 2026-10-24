@@ -30,7 +30,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   onde: { kind: "catalog", profile: { editorial_profile: "studio" }, family: /^(ed-|fs-)/ },
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
-  sillon: { kind: "specialty", profile: { conversion_profile: "nomade" }, family: /^cv-/ },
+  // SILLON V2 (PR #182) : sections sv-* propres au thème, aucun profil global (voir aussi tests/sillon-theme.test.ts).
+  sillon: { kind: "specialty", profile: { editorial_profile: "none" }, family: /^sv-/ },
   noctil: { kind: "specialty", profile: { conversion_profile: "astral" }, family: /^cv-/ },
   traverse: { kind: "specialty", profile: { conversion_profile: "itineraire" }, family: /^cv-/ },
   heuren: { kind: "catalog", profile: { editorial_profile: "cadran" }, family: /^(ed-|fs-)/ },
@@ -102,7 +103,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
     const f = await fr(() => demoProject(user.id, "fraise", { direction: "sillon" }));
     expect(f.spec.direction).toBe("sillon");
     expect(f.spec.store.shopName).toBe("Fraise Gummies");
-    expect(f.spec.settings.conversion_profile).toBe("nomade");
+    expect(f.spec.settings.conversion_profile).toBe("none"); // SILLON V2 : sections sv-*, aucun profil global
     const schemes = f.spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
     expect(Object.values(schemes).some((s) => Object.values(s.settings).some((c) => String(c).toUpperCase() === "#E4473F"))).toBe(true);
     const home = await renderPage({ spec: f.spec, base: "", files: compileTheme(f.spec), cart: [] }, "/", new URLSearchParams());

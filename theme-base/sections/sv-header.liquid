@@ -1,0 +1,224 @@
+{%- comment -%}
+  SILLON V2 : en-tête flottant en capsule ivoire (planches 01 à 03) — nom de marque, menu, petit bouton sombre
+  « Découvrir », panier cuivre séparé (nombre d'articles). Téléphone : capsule « logo + menu » et panier ; menu plein
+  écran sombre sur un paysage (nom en capsule, grands liens condensés, contact, panier, liens légaux, chemin cuivre).
+  Tiroir du panier après un ajout (planche mobile).
+  Porte aussi les réglages communs du thème : couleurs, polices des étiquettes et de la signature, mention de
+  démonstration, mode de commande (démonstration ou paiement Shopify), bandeau cookies.
+{%- endcomment -%}
+{%- comment -%} sv_cart : site sans boutique (services) → ni panier, ni tiroir, ni lien de panier. {%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign sv_cart = true
+  if settings.cart_type == 'none'
+    assign sv_cart = false
+  endif
+  assign menu = linklists[s.menu]
+  assign menu_legal = linklists[s.menu_legal]
+  assign label_font = s.label_font
+  assign thin_font = s.thin_font
+-%}
+{%- assign label_bold = label_font | font_modify: 'weight', 'bold' -%}
+{%- assign cond_500 = thin_font | font_modify: 'weight', '500' -%}
+{%- assign cond_700 = thin_font | font_modify: 'weight', '700' -%}
+<style>
+  {{ label_font | font_face: font_display: 'swap' }}
+  {%- if label_bold -%}{{ label_bold | font_face: font_display: 'swap' }}{%- endif -%}
+  {{ thin_font | font_face: font_display: 'swap' }}
+  {%- if cond_500 -%}{{ cond_500 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if cond_700 -%}{{ cond_700 | font_face: font_display: 'swap' }}{%- endif -%}
+  body.dir-sillon, .sv, .sv-header, .sv-footer, .sv-menu, .sv-cookies, .sv-lightbox, .sv-buybar {
+    --sv-cream: {{ s.color_cream }};
+    --sv-sand: {{ s.color_sand }};
+    --sv-ink: {{ s.color_ink }};
+    --sv-night: {{ s.color_night }};
+    --sv-copper: {{ s.color_copper }};
+    --sv-sage: {{ s.color_sage }};
+    --sv-ivory: {{ s.color_ivory }};
+    --sv-mono: {{ label_font.family }}, {{ label_font.fallback_families }};
+    --sv-thin: {{ thin_font.family }}, {{ thin_font.fallback_families }};
+    --sv-thin-weight: {{ thin_font.weight }};
+    --sv-cond: {{ thin_font.family }}, {{ thin_font.fallback_families }};
+  }
+</style>
+{{ 'sillon.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sillon.js' | asset_url }}" defer="defer"></script>
+<script type="application/json" id="sv-config">
+  {
+    "checkout": {{ s.checkout_mode | json }},
+    "checkoutPage": {{ s.checkout_page | json }},
+    "demo": {% if s.demo_mode %}true{% else %}false{% endif %},
+    "cartUrl": {{ routes.cart_url | json }},
+    "money": {{ shop.money_format | json }},
+    "thumb": {% if s.drawer_thumb_asset != blank %}{{ s.drawer_thumb_asset | asset_url | json }}{% else %}""{% endif %},
+    "texts": {
+      "added": {{ s.added_label | json }},
+      "removed": {{ s.removed_label | json }},
+      "error": {{ s.error_label | json }},
+      "less": {{ s.drawer_less | json }},
+      "more": {{ s.drawer_more | json }},
+      "remove": {{ s.drawer_remove | json }}
+    }
+  }
+</script>
+
+<header class="sv-header" data-sv-header>
+  <div class="sv-header__inner">
+    <div class="sv-header__bar">
+      <a class="sv-header__brand" href="{{ routes.root_url }}">{{ s.wordmark | default: shop.name }}</a>
+      {%- if menu.links.size > 0 -%}
+        <nav class="sv-header__nav" aria-label="{{ s.nav_label | escape }}">
+          <ul role="list">
+            {%- for link in menu.links -%}
+              <li><a href="{{ link.url }}"{% if link.active or link.current %} aria-current="page"{% endif %}>{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+      {%- if s.cta_label != blank -%}<a class="sv-header__cta" href="{{ s.cta_link | default: routes.all_products_collection_url }}">{{ s.cta_label }}</a>{%- endif -%}
+      <button type="button" class="sv-header__burger" aria-controls="sv-menu" aria-expanded="false" data-sv-menu-open>
+        <span class="visually-hidden">{{ s.menu_open_label }}</span>{% render 'sv-icon', name: 'menu' %}
+      </button>
+    </div>
+    {%- if sv_cart -%}
+    <a class="sv-header__cart{% if cart.item_count > 0 %} has-items{% endif %}" href="{{ routes.cart_url }}" aria-label="{{ s.cart_label | escape }}">
+      {% render 'sv-icon', name: 'cart' %}
+      <span class="sv-header__count" data-sv-count data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+    </a>
+    {%- endif -%}
+  </div>
+</header>
+
+<div class="sv-menu" id="sv-menu" role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}" hidden data-sv-menu>
+  {% render 'sv-img', image: s.menu_image, asset: s.menu_image_asset, alt: '', pos: s.menu_image_position, class: 'sv-menu__bg', loading: 'lazy' %}
+  <a class="sv-menu__brand" href="{{ routes.root_url }}">{{ s.wordmark | default: shop.name }}</a>
+  <button type="button" class="sv-menu__close" data-sv-menu-close><span class="visually-hidden">{{ s.menu_close_label }}</span>{% render 'sv-icon', name: 'close' %}</button>
+  <nav class="sv-menu__nav" aria-label="{{ s.nav_label | escape }}">
+    <ul role="list">
+      {%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+      {%- if s.menu_extra_label != blank -%}<li><a href="{{ s.menu_extra_link | default: routes.root_url }}">{{ s.menu_extra_label }}</a></li>{%- endif -%}
+    </ul>
+  </nav>
+  <span class="sv-topo sv-topo--corner sv-menu__topo" aria-hidden="true"></span>
+  {% render 'sv-route', d: 'M-4 1008C40 990 80 966 120 948S190 900 228 862 278 822 290 798 280 760 296 730 318 684 328 672 348 642 357 634 380 600 394 556', vb: '0 0 390 1170', dots: '120,948 297,783 328,672 357,634', class: 'sv-menu__route', width: 2.4 %}
+  <ul class="sv-menu__actions" role="list">
+    {%- if s.menu_contact_label != blank -%}<li><a href="{{ s.menu_contact_link | default: routes.root_url }}">{% render 'sv-icon', name: 'mail' %}<span>{{ s.menu_contact_label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>{%- endif -%}
+    {%- if sv_cart -%}<li><a href="{{ routes.cart_url }}">{% render 'sv-icon', name: 'cart' %}<span>{{ s.menu_cart_label }} (<span data-sv-count-text>{{ cart.item_count }}</span>)</span>{% render 'sv-icon', name: 'arrow' %}</a></li>{%- endif -%}
+  </ul>
+  {%- if s.menu_words != blank -%}<p class="sv-menu__words">{{ s.menu_words | escape | newline_to_br }}</p>{%- endif -%}
+  {%- if menu_legal.links.size > 0 -%}<ul class="sv-menu__legal" role="list">{%- for link in menu_legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+</div>
+
+{%- comment -%} Tiroir du panier (planche mobile « Tiroir panier ») : rempli par sillon.js depuis le panier de la boutique. {%- endcomment -%}
+{%- if sv_cart -%}
+<div class="sv-drawer" role="dialog" aria-modal="true" aria-labelledby="sv-drawer-title" hidden data-sv-drawer>
+  <div class="sv-drawer__shade" data-sv-drawer-close></div>
+  <div class="sv-drawer__panel">
+    <div class="sv-drawer__head">
+      <p class="sv-display sv-drawer__title" id="sv-drawer-title">{{ s.drawer_title }} (<span data-sv-count-text>{{ cart.item_count }}</span>)</p>
+      <button type="button" class="sv-drawer__close" data-sv-drawer-close><span class="visually-hidden">{{ s.drawer_close_label }}</span>{% render 'sv-icon', name: 'close' %}</button>
+    </div>
+    <div class="sv-drawer__lines" data-sv-drawer-lines></div>
+    <div class="sv-drawer__sum">
+      <dl>
+        <div><dt>{{ s.drawer_subtotal }}</dt><dd data-sv-drawer-subtotal>{{ cart.total_price | money_without_trailing_zeros }}</dd></div>
+        <div><dt>{{ s.drawer_shipping }}</dt><dd>{{ s.drawer_shipping_value }}</dd></div>
+      </dl>
+      <div class="sv-drawer__total"><span>{{ s.drawer_total }}</span><span data-sv-drawer-total>{{ cart.total_price | money_without_trailing_zeros }}</span></div>
+      <a class="sv-btn sv-btn--copper sv-drawer__checkout" href="{% if s.checkout_mode == 'demo' and s.checkout_page != blank %}{{ s.checkout_page }}{% else %}{{ routes.cart_url }}{% endif %}">{{ s.drawer_checkout }}{% render 'sv-icon', name: 'arrow' %}</a>
+      <a class="sv-btn sv-drawer__view" href="{{ routes.cart_url }}">{{ s.drawer_view }}{% render 'sv-icon', name: 'arrow' %}</a>
+    </div>
+  </div>
+</div>
+{%- endif -%}
+
+{%- if s.show_cookies -%}
+  <div class="sv-cookies" role="dialog" aria-modal="false" aria-labelledby="sv-cookies-title-{{ section.id }}" hidden data-sv-cookies>
+    <h2 class="sv-cookies__title" id="sv-cookies-title-{{ section.id }}">{{ s.cookies_title }}</h2>
+    <p>{{ s.cookies_text }}{% if s.cookies_link != blank %} <a href="{{ s.cookies_link }}">{{ s.cookies_more }}</a>{% endif %}</p>
+    <div class="sv-cookies__prefs" hidden>
+      <label class="sv-check"><input type="checkbox" checked disabled><span>{{ s.cookies_needed }}</span></label>
+      <label class="sv-check"><input type="checkbox" data-sv-cookies-stats><span>{{ s.cookies_stats }}</span></label>
+    </div>
+    <div class="sv-cookies__actions">
+      <button type="button" class="sv-btn sv-btn--copper sv-btn--sm" data-sv-cookies-accept>{{ s.cookies_accept }}</button>
+      <button type="button" class="sv-btn sv-btn--line sv-btn--sm" data-sv-cookies-refuse>{{ s.cookies_refuse }}</button>
+      <button type="button" class="sv-btn sv-btn--link sv-btn--sm" aria-expanded="false" data-sv-cookies-custom>{{ s.cookies_custom }}</button>
+      <button type="button" class="sv-btn sv-btn--dark sv-btn--sm" data-sv-cookies-save hidden>{{ s.cookies_save }}</button>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "En-tête SILLON",
+  "class": "sv-header-section",
+  "settings": [
+    { "type": "header", "content": "En-tête flottant" },
+    { "type": "text", "id": "wordmark", "label": "Nom affiché", "info": "Vide : le nom de la boutique." },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
+    { "type": "text", "id": "cta_label", "label": "Bouton sombre", "default": "Découvrir" },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "cart_label", "label": "Nom du panier (lecteurs d'écran)", "default": "Panier" },
+    { "type": "header", "content": "Menu du téléphone" },
+    { "type": "text", "id": "menu_label", "label": "Nom du menu plein écran", "default": "Menu" },
+    { "type": "text", "id": "menu_open_label", "label": "Bouton d'ouverture", "default": "Ouvrir le menu" },
+    { "type": "text", "id": "menu_close_label", "label": "Bouton de fermeture", "default": "Fermer le menu" },
+    { "type": "image_picker", "id": "menu_image", "label": "Photo de fond" },
+    { "type": "text", "id": "menu_image_asset", "label": "Photo de fond (fichier du thème)" },
+    { "type": "text", "id": "menu_image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "textarea", "id": "menu_words", "label": "Mots-étapes" },
+    { "type": "text", "id": "menu_extra_label", "label": "Lien supplémentaire du menu", "info": "Exemple : Assistance." },
+    { "type": "url", "id": "menu_extra_link", "label": "Adresse du lien supplémentaire" },
+    { "type": "text", "id": "menu_contact_label", "label": "Lien de contact du menu", "default": "Nous contacter" },
+    { "type": "url", "id": "menu_contact_link", "label": "Adresse du lien de contact" },
+    { "type": "text", "id": "menu_cart_label", "label": "Lien du panier du menu", "default": "Mon panier" },
+    { "type": "link_list", "id": "menu_legal", "label": "Liens légaux du menu" },
+    { "type": "header", "content": "Tiroir du panier" },
+    { "type": "text", "id": "drawer_title", "label": "Titre", "default": "Mon panier" },
+    { "type": "text", "id": "drawer_close_label", "label": "Fermer (lecteurs d'écran)", "default": "Fermer le panier" },
+    { "type": "text", "id": "drawer_subtotal", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "drawer_shipping", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "drawer_shipping_value", "label": "Montant de la livraison", "default": "Calculée à l'étape suivante" },
+    { "type": "text", "id": "drawer_total", "label": "Total des produits", "default": "Total produits" },
+    { "type": "text", "id": "drawer_checkout", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "text", "id": "drawer_view", "label": "Bouton du panier", "default": "Voir mon panier" },
+    { "type": "text", "id": "drawer_less", "label": "Moins (lecteurs d'écran)", "default": "Retirer un exemplaire" },
+    { "type": "text", "id": "drawer_more", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un exemplaire" },
+    { "type": "text", "id": "drawer_remove", "label": "Supprimer (lecteurs d'écran)", "default": "Supprimer" },
+    { "type": "text", "id": "drawer_thumb_asset", "label": "Photo détourée des lignes (fichier du thème)", "info": "Vide : la photo du produit." },
+    { "type": "header", "content": "Couleurs du thème" },
+    { "type": "color", "id": "color_cream", "label": "Crème minérale", "default": "#EEE7D9" },
+    { "type": "color", "id": "color_sand", "label": "Sable des cartes", "default": "#E2D8C7" },
+    { "type": "color", "id": "color_ink", "label": "Brun des textes", "default": "#211D15" },
+    { "type": "color", "id": "color_night", "label": "Brun espresso des blocs", "default": "#1E1913" },
+    { "type": "color", "id": "color_copper", "label": "Cuivre", "default": "#B35D30" },
+    { "type": "color", "id": "color_sage", "label": "Vert grisé", "default": "#6A6C5C" },
+    { "type": "color", "id": "color_ivory", "label": "Ivoire sur fond sombre", "default": "#F1E9DC" },
+    { "type": "header", "content": "Polices" },
+    { "type": "font_picker", "id": "label_font", "label": "Étiquettes à chasse fixe", "default": "space_mono_n4" },
+    { "type": "font_picker", "id": "thin_font", "label": "Condensée (signature fine du pied sombre, questions et libellés)", "default": "oswald_n2" },
+    { "type": "header", "content": "Commande" },
+    { "type": "checkbox", "id": "demo_mode", "label": "Boutique de démonstration", "default": false, "info": "Commande, suivi et formulaires simulés et annoncés comme tels ; aucun paiement ni envoi." },
+    { "type": "select", "id": "checkout_mode", "label": "Bouton « Passer commande »", "default": "shopify", "options": [{ "value": "shopify", "label": "Paiement Shopify" }, { "value": "demo", "label": "Page de commande de démonstration" }] },
+    { "type": "url", "id": "checkout_page", "label": "Page de commande de démonstration" },
+    { "type": "text", "id": "added_label", "label": "Message « ajouté au panier »", "default": "Ajouté au panier." },
+    { "type": "text", "id": "removed_label", "label": "Message « retiré du panier »", "default": "Article retiré du panier." },
+    { "type": "text", "id": "error_label", "label": "Message d'erreur", "default": "Une erreur est survenue. Réessayez." },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "show_cookies", "label": "Bandeau cookies", "default": true },
+    { "type": "text", "id": "cookies_title", "label": "Titre", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookies_text", "label": "Texte", "default": "Les cookies nécessaires font fonctionner le site. La mesure d'audience est facultative et ne démarre qu'avec votre accord." },
+    { "type": "url", "id": "cookies_link", "label": "Lien « En savoir plus »" },
+    { "type": "text", "id": "cookies_more", "label": "Texte du lien", "default": "En savoir plus" },
+    { "type": "text", "id": "cookies_needed", "label": "Cookies nécessaires", "default": "Cookies nécessaires au fonctionnement" },
+    { "type": "text", "id": "cookies_stats", "label": "Cookies facultatifs", "default": "Mesure d'audience (facultatif)" },
+    { "type": "text", "id": "cookies_accept", "label": "Accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "cookies_refuse", "label": "Refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "cookies_custom", "label": "Personnaliser", "default": "Personnaliser" },
+    { "type": "text", "id": "cookies_save", "label": "Enregistrer", "default": "Enregistrer mes choix" }
+  ],
+  "presets": [{ "name": "En-tête SILLON" }]
+}
+{% endschema %}

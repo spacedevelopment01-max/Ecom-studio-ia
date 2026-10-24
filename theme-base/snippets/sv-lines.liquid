@@ -1,0 +1,15 @@
+{%- comment -%}
+  SILLON V2 : texte à retours à la ligne, avec une coupe propre au téléphone (planches mobiles) quand elle est donnée.
+  Paramètres : text, mobile (facultatif), spans (facultatif : chaque ligne dans <span class="sv-ln">, pour régler la
+  taille d'une ligne sans dépendre de ::first-line).
+{%- endcomment -%}
+{%- capture sv_nl %}
+{% endcapture -%}
+{%- if spans -%}
+  {%- assign sv_t = text | split: sv_nl -%}
+  {%- capture sv_d -%}{%- for l in sv_t -%}<span class="sv-ln sv-ln--{{ forloop.index }}">{{ l | escape }}</span>{%- endfor -%}{%- endcapture -%}
+  {%- if mobile != blank and mobile != text -%}
+    {%- assign sv_mt = mobile | split: sv_nl -%}
+    <span class="sv-d">{{ sv_d }}</span><span class="sv-m">{%- for l in sv_mt -%}<span class="sv-ln sv-ln--{{ forloop.index }}">{{ l | escape }}</span>{%- endfor -%}</span>
+  {%- else -%}{{ sv_d }}{%- endif -%}
+{%- elsif mobile != blank and mobile != text -%}<span class="sv-d">{{ text | escape | newline_to_br }}</span><span class="sv-m">{{ mobile | escape | newline_to_br }}</span>{%- else -%}{{ text | escape | newline_to_br }}{%- endif -%}
