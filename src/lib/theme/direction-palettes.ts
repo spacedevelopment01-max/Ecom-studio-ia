@@ -46,7 +46,7 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   lancement: { primary: "#0A0A0F", secondary: "#B3ABD9", accent: "#7B5CFF", light: "#F1F0F7", dark: "#050508" }, // nuit, violet électrique
   // Thèmes de référence (issue #137) : couleurs de repli ; un projet garde ses propres rôles de couleur.
   fraise: { primary: "#C4312A", secondary: "#F9E1DB", accent: "#E4473F", light: "#FBF7F2", dark: "#141414" }, // rouge fraise (principal assombri : 5,1:1 sur le crème), rose pâle en fond doux, crème
-  onde: { primary: "#257A10", secondary: "#E6F6DF", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" }, // vert vif en accent, vert profond lisible en principal (5,4:1 sur blanc), vert pâle en fond doux, anthracite
+  onde: { primary: "#3A403C", secondary: "#F1F2F1", accent: "#C2F94A", light: "#FDFDFD", dark: "#0B0D0C" }, // graphite des coques, gris clair, lime et graphite profond des planches du 24 octobre (distinct du noir et citron de « brut »)
   orbe: { primary: "#9B4F36", secondary: "#D8CCB9", accent: "#9B4F36", light: "#F4F0E8", dark: "#29251F" }, // terre cuite, crème
   sillon: { primary: "#9C5A2C", secondary: "#E7D8C6", accent: "#3B1C0C", light: "#F4EDE3", dark: "#24140C" }, // cuivre (lisible sur ivoire), brun du logo, ivoire chaud
   noctil: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" }, // indigo lisible sur lavande, violet du halo, nuit profonde

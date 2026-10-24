@@ -1,0 +1,7 @@
+{%- comment -%} Bouton d'un bandeau ONDE : lien, ou ajout réel du produit au panier (formulaire de la plateforme). {%- endcomment -%}
+{%- capture label -%}{%- if s.mobile_icon_only -%}<span class="on-banner__button-label">{{ s.button_label | escape }}</span>{%- elsif s.mobile_button_label != blank -%}<span class="on-desktop-only">{{ s.button_label | escape }}</span><span class="on-mobile-only">{{ s.mobile_button_label | escape }}</span>{%- else -%}{{ s.button_label | escape }}{%- endif -%}{%- endcapture -%}
+{%- if s.button_action == 'add' and p != blank -%}
+  {%- form 'product', p, class: 'on-banner__form', data-product-form: '' -%}<input type="hidden" name="id" value="{{ p.selected_or_first_available_variant.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" name="add" class="on-button on-button--{{ s.button_style }} on-banner__button{% if s.mobile_icon_only %} on-banner__button--m-icon{% endif %}" data-add-button{% unless p.available %} disabled{% endunless %}>{{ label }}{% render 'icon', name: s.button_icon %}</button>{%- endform -%}
+{%- else -%}
+  <a class="on-button on-button--{{ s.button_style }} on-banner__button{% if s.mobile_icon_only %} on-banner__button--m-icon{% endif %}" href="{{ s.button_link | default: p.url | default: routes.all_products_collection_url }}">{{ label }}{% render 'icon', name: s.button_icon %}</a>
+{%- endif -%}

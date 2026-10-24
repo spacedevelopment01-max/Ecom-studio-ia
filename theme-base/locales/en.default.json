@@ -302,7 +302,10 @@
     "compare_price": "Price before discount",
     "payment_methods": "Payment methods",
     "close": "Close cart",
-    "preview_note": "Demo preview · checkout disabled"
+    "preview_note": "Demo preview · checkout disabled",
+    "view_cart": "View my cart",
+    "shipping": "Shipping",
+    "shipping_next_step": "Calculated at the next step"
   },
   "contact": {
     "name": "Name",

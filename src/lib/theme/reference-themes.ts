@@ -89,50 +89,48 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   {
     id: "onde",
     name: "Onde",
-    tagline: "Studio graphite, signal vert",
-    description: "Boutique mono-produit de la famille E-commerce pour un objet technique : campagne en ouverture sur une bannière sombre, achat du produit tout de suite après, un détail en gros plan, trois usages en index, un bandeau d'appel, questions en cartes et inscription. Graphite profond, vert signal, titres Chivo, menu en colonnes avec encart et pied de page en colonnes.",
+    tagline: "Graphite et lime, titres géométriques gras",
+    description: "Boutique mono-produit de la famille E-commerce, d'après les sept planches du 24 octobre : ouverture sombre au grand titre géométrique, grand mot en contour et produit débordant, bande lime, gros plans légendés, scènes en grandes photos, composition en cercles, journal, questions en bande graphite et inscription lime. Fiche à carte d'achat graphite, panier et commande d'exemple dessinés. Graphite profond, gris clair, blanc et lime ; titres Montserrat gras, textes Inter.",
     bestFor: ["e-commerce", "high-tech", "audio", "produit unique", "objet technique"],
-    en: { tagline: "Graphite studio, green signal", description: "Single-product store from the E-commerce family for a technical object: a campaign opening on a dark banner, the product purchase right after, one close-up detail, three uses as an index, a call-to-action band, card questions and a sign-up. Deep graphite, signal green, Chivo headings, a column menu with a promo and a column footer.", bestFor: ["e-commerce", "high-tech", "audio", "single product", "technical object"] },
-    fonts: { heading: "chivo_n7", body: "inter_n4" },
-    previewFonts: { heading: "Chivo", body: "Inter" },
+    en: { tagline: "Graphite and lime, bold geometric headings", description: "Single-product store from the E-commerce family, from the seven 24 October boards: dark opening with a large geometric heading, outlined wordmark with an overflowing product, lime band, captioned close-ups, large scene photos, circle composition, journal, questions in a graphite band and a lime sign-up. Product page with a graphite purchase card, designed cart and sample checkout. Deep graphite, light grey, white and lime; bold Montserrat headings, Inter text.", bestFor: ["e-commerce", "high-tech", "audio", "single product", "technical object"] },
+    fonts: { heading: "montserrat_n7", body: "inter_n4" },
+    previewFonts: { heading: "Montserrat", body: "Inter" },
     motion: "subtle",
     photoMood: "nocturne",
     kinds: ["catalog"],
-    // Refonte E-commerce (décision de Thomas du 21 octobre, issue #158) : en-tête « Méga menu en colonnes » (le produit,
-    // ses détails et ses usages, avec un encart) et pied « Plan du catalogue en colonnes », dispositions de la famille
-    // qu'ORBE, HEUREN et ALCÔVE n'utilisent pas.
-    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 6, card: 14 }, headingCase: "none", tracking: -2, headingScale: 104, pageWidth: 1360, gallery: "carousel", density: "balanced", buttonUppercase: true, dark: true }),
-    settings: { editorial_profile: "studio", conversion_profile: "none", motion_intensity: "subtle" },
-    headerSettings: { layout: "logo-left", mega_menu: "columns-promo", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
-    // Galerie en carrousel, cadre carré : le casque entier dans chaque vue, une vue à la fois sur téléphone.
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    // Planches ONDE (docs/theme-briefs/onde) : en-tête et pied propres (« on-header », « on-footer »), fiche dessinée
+    // (« on-product » ; la section Produit commune reste présente, masquée), sections « on-* » stylées par onde.css.
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 9, card: 6 }, headingCase: "none", tracking: -3, headingScale: 104, pageWidth: 1440, gallery: "carousel", density: "balanced", buttonUppercase: false, dark: true }),
+    settings: { editorial_profile: "none", conversion_profile: "onde", motion_intensity: "subtle", price_trim_zeros: true, card_price_note: "", fab_back_to_top: false },
+    headerSettings: { layout: "logo-left", mega_menu: "none", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
+    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1" },
+    ownProductBody: true,
+    headerRow: (k) => ["on-header", { logo_light_asset: k.im.logoLight ?? k.im.logo ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", mobile_menu: "main-menu", legal_menu: "footer", search: true, cart_link_label: k.t("Mon panier", "My cart"), search_label: k.t("Rechercher…", "Search…") }],
+    footerRow: (k) => ["on-footer", { logo_light_asset: k.im.logoLight ?? k.im.logo ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", second_menu: "footer", legal_menu: "footer", group1_title: k.t("Explorer", "Explore"), group1_menu: "main-menu", group2_title: k.t("Informations", "Information"), group2_menu: "footer", group3_title: "", style_default: "wordmark", style_product: "wordmark", style_collection: "lime", style_cart: "slim", show_social: true }],
     palette: (k) => {
-      const ink = k.night(0.09, 0.04);
-      const panel = k.night(0.15, 0.05);
-      const paper = k.light("#F2F3EF");
-      return [k.scheme(ink, paper, k.onDark(ink), 0.06), k.scheme(paper, ink, k.onLight(paper)), k.filled(k.p.accent), k.scheme(panel, paper, k.onDark(panel), 0.08)];
+      const ink = k.night(0.06, 0.03);
+      const paper = k.light("#F1F2F1");
+      return [k.scheme(paper, ink, k.onLight(paper)), k.scheme(ink, paper, k.onDark(ink), 0.06), k.filled(k.p.accent), k.scheme(k.night(0.1, 0.03), paper, k.onDark(ink), 0.08)];
     },
-    // Accueil : la campagne du casque en ouverture, l'achat juste après, un détail en gros plan, trois usages (salon,
-    // train, studio), un bandeau d'appel, les questions et l'inscription. Chaque visuel n'apparaît qu'une fois.
+    // Accueil (planches 01 et 05) : ouverture sombre, grand mot et produit, bande lime, détails, scènes, cercles, journal,
+    // questions, inscription. Textes et photos du projet ; une section sans photo du projet reste masquée.
     home: (k) => [
-      // La campagne attend une campagne datée du client ; sans elle, l'ouverture devient une scène et sa liste avec le
-      // titre de la page (jamais d'accueil sans ouverture ni titre).
-      ...k.either(
-        k.lib("fs-campaign", 1, { layout: "background", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", offer_title: "", offer_text: "", period_text: "", conditions: "", padding_top: 0, padding_bottom: 0 }),
-        k.lib("fs-lookbook", 1, { layout: "side", heading_tag: "h1", image_asset: k.im.banner ?? k.im.lifestyle ?? k.im.hero ?? k.im.packshot, align: "left", padding_top: 24, padding_bottom: 72 }),
-      ),
-      k.lib("featured-purchase", 2, { purchase_style: "outlined", image_fit: "contain" }),
-      k.lib("ed-finishes", 4, { image_asset: k.im.detail1 ?? "" }, { hide: !k.im.detail1 }),
-      ((uses) => k.lib("ed-diptych", 1, { layout: "index" }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "frame", settings: { image_asset: f, ratio: "portrait", title: "" } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
-      k.lib("cta-banner", 1, { image_asset: k.im.lifestyle ?? k.im.hero ?? "", style: "center", overlay: 45, parallax: false }, { hide: !(k.im.lifestyle ?? k.im.hero) }),
-      k.faqSec(1, 5, "cards"),
-      ...k.either(k.lib("newsletter-media", 4, { layout: "left", image_asset: k.im.portrait ?? k.im.lifestyle2 ?? "", legal: k.privacy }, { hide: !(k.im.portrait ?? k.im.lifestyle2) }), k.newsletter(4)),
+      k.lib("on-banner", 1, { layout: "split", tone: "dark", heading_tag: "h1", image_asset: k.im.hero ?? k.im.banner ?? k.im.lifestyle ?? "", image_side: "right", image_width: 60, button_style: "lime", wave: "bottom", min_height: 666, mobile_min_height: 690, title_size: 74, mobile_title_size: 40, mobile_order: "image-first", image_loading: "eager", padding_top: 192, padding_bottom: 0 }),
+      k.lib("on-banner", 1, { layout: "wordmark", tone: "light", wordmark: k.t("", ""), cutout_asset: k.im.cutout ?? "", show_price: true, card_link_label: k.t("Découvrir", "Discover"), button_style: "lime", min_height: 279, mobile_min_height: 600, padding_top: 0, padding_bottom: 0 }, { hide: !k.im.cutout }),
+      k.lib("on-banner", 1, { layout: "split", tone: "lime", text_beside: true, wave: "behind", min_height: 364, mobile_min_height: 0, title_size: 92, mobile_title_size: 46, text_width: 1100, padding_top: 0, padding_bottom: 0 }),
+      ((shots) => k.lib("on-cards", 1, { layout: "details", tone: "dark", button_style: "outline-light", columns: 3, card_height: 250, mobile_card_height: 150, side_width: 330, mobile_layout: "rows", card_arrow: false, padding_top: 30, padding_bottom: 26 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f)),
+      ((uses) => k.lib("on-cards", 1, { layout: "scenes", tone: "dark", title_top: true, columns: uses.length, card_height: 291, mobile_card_height: 236, gap: 0, title_size: 30, mobile_title_size: 26, mobile_layout: "carousel", padding_top: 0, padding_bottom: 0 }, { hide: uses.length < 2, blocks: uses.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3].filter((f): f is string => !!f)),
+      k.lib("on-journal", 1, { layout: "row", tone: "white", button_style: "outline", card_height: 160, padding_top: 10, padding_bottom: 36 }),
+      k.lib("on-faq", 1, { layout: "row", tone: "dark", title_size: 17, padding_top: 10, padding_bottom: 10 }),
+      k.lib("on-newsletter", 4, { layout: "row", tone: "lime", title_size: 30, padding_top: 22, padding_bottom: 22 }),
     ],
-    // Fiche : galerie en carrousel et achat, l'arceau en gros plan, une scène à côté de son texte, questions en cartes.
+    // Fiche (planches 01 et 05) : ouverture claire et carte d'achat, gros plans, une scène, questions, bandeau d'achat.
     product: (k) => [
-      k.lib("ed-finishes", 4, { image_asset: k.im.detail2 ?? k.im.detail1 ?? "" }, { hide: !(k.im.detail2 ?? k.im.detail1) }),
-      k.lib("ed-scene", 1, { layout: "split", image_asset: k.im.scene3 ?? k.im.scene1 ?? "", padding_top: 72, padding_bottom: 72 }, { hide: !(k.im.scene3 ?? k.im.scene1) }),
-      k.faqSec(1, 5, "cards"),
+      k.lib("on-product", 1, { min_height: 780, title_size: 62, mobile_title_size: 40, sticky_bar: true, quantity_label: k.t("Quantité", "Quantity"), add_label: k.t("Ajouter au panier", "Add to cart"), home_label: k.t("Accueil", "Home") }, { blocks: [{ type: "tab", settings: { label: k.t("Vue d'ensemble", "Overview"), anchor: "vue-d-ensemble" } }, { type: "tab", settings: { label: "Design", anchor: "design" } }, { type: "tab", settings: { label: k.t("Questions", "Questions"), anchor: "questions" } }] }),
+      ((shots) => k.lib("on-cards", 1, { anchor: "design", layout: "grid", tone: "white", columns: shots.length, card_height: 235, mobile_card_height: 150, gap: 22, mobile_layout: "two", card_arrow: false, padding_top: 36, padding_bottom: 36 }, { hide: shots.length < 2, blocks: shots.map((f) => ({ type: "card", settings: { image_asset: f } })) }))([k.im.detail1, k.im.detail2, k.im.packshot].filter((f): f is string => !!f)),
+      k.lib("on-banner", 1, { layout: "background", tone: "dark", image_asset: k.im.scene1 ?? k.im.lifestyle ?? "", button_style: "outline-light", min_height: 300, mobile_min_height: 620, title_size: 56, mobile_title_size: 34, padding_top: 0, padding_bottom: 0 }, { hide: !(k.im.scene1 ?? k.im.lifestyle) }),
+      k.lib("on-faq", 1, { anchor: "questions", layout: "columns", tone: "white", title_size: 17, padding_top: 6, padding_bottom: 30 }),
+      k.lib("on-banner", 3, { layout: "cta", tone: "lime", wave: "burst", button_action: "add", use_page_product: true, button_style: "dark", mobile_icon_only: true, button_icon: "arrow", min_height: 130, mobile_min_height: 200, title_size: 48, mobile_title_size: 26, padding_top: 0, padding_bottom: 0 }),
     ],
     // Site de services (repli) : repères sur la photo d'ouverture, prestations en liste, deux réalisations côte à côte,
     // infos pratiques, questions à côté du titre et prise de contact.

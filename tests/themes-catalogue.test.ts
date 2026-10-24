@@ -22,8 +22,8 @@ const opening = (spec: Spec) => {
 /** Caractère graphique : polices, en-tête, pied, boutons, cartes, arrondis, casse, fond clair ou sombre. */
 const signature = (spec: Spec) => {
   const st = spec.settings as Record<string, unknown>;
-  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header")!.settings;
-  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer")!.settings;
+  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header" || s.type === "on-header")!.settings;
+  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer" || s.type === "on-footer")!.settings;
   const bg = (st.color_schemes as Record<string, { settings: { background: string } }>)["scheme-1"].settings.background;
   return [st.type_heading_font, st.type_body_font, header.layout, header.shape, header.mobile_menu, footer.style, st.button_style, st.card_style, Number(st.button_radius) >= 20 ? "round" : Number(st.button_radius) >= 6 ? "soft" : "square", st.heading_case, bg];
 };
@@ -149,6 +149,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     // Maison & Horizon (issue #172) : informations légales à onglets et article de conseils, composés par sa démonstration
     // (tests/maison-horizon-fixtures.ts) ; un site client garde la page légale et le journal du moteur.
     for (const t of ["re-legal", "re-article"]) outside.add(t);
+    // ONDE (sept planches du 24 octobre, PR #183) : panier, commande d'exemple, pages d'aide et articles composés par sa
+    // démonstration (tests/onde-fixtures.ts) ; les autres sections « on-* » servent dans la composition du catalogue.
+    for (const t of ["on-cart", "on-checkout", "on-help", "on-article"]) outside.add(t);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });

@@ -302,7 +302,10 @@
     "compare_price": "Prix avant remise",
     "payment_methods": "Moyens de paiement",
     "close": "Fermer le panier",
-    "preview_note": "Aperçu de démonstration · paiement désactivé"
+    "preview_note": "Aperçu de démonstration · paiement désactivé",
+    "view_cart": "Voir mon panier",
+    "shipping": "Livraison",
+    "shipping_next_step": "Calculée à l'étape suivante"
   },
   "contact": {
     "name": "Nom",

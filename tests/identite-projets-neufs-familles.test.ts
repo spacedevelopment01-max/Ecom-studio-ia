@@ -61,10 +61,10 @@ describe("identité automatique sur des projets neufs : deux marques par famille
         }
         saveThemeVersion(pid, spec, "Pages de contrôle", "user");
         for (const e of FAMILY_LIBRARY[family]) for (const d of e.dispositions) {
-          // Dispositions réservées à un autre thème (immobilier Maison & Horizon, sections « cv- » de SOUPLE dans la famille
-          // E-commerce) : la route les refuse, la galerie les masque.
+          // Dispositions réservées à un autre thème (immobilier Maison & Horizon, sections « cv- » de SOUPLE et « on- » d'ONDE
+          // dans la famille E-commerce) : la route les refuse, la galerie les masque.
           const why = sectionIncompatibility(spec, d.type, family);
-          if (why) { expect(d.type, why).toMatch(/^(re-|cv-)/); continue; }
+          if (why) { expect(d.type, why).toMatch(/^(re-|cv-|on-)/); continue; }
           const r = await fr(() => addSection(post({ type: libraryId(e, d), template: `page.ctl-${e.n}` }), ctx(pid)));
           expect(r.status, `${b.name} ${e.key}~${d.id} : ${r.status === 200 ? "" : JSON.stringify(await r.clone().json())}`).toBe(200);
         }

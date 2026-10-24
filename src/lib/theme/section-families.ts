@@ -250,6 +250,12 @@ const CATALOG: FamilyEntry[] = [
     d("soft-panel-right", "Photo à gauche, panneau arrondi", "Photo on the left, rounded panel", "cv-banner", "split-left", { layout: "panel-right" }),
     d("brand-band", "Bandeau de marque, logo et texte", "Brand band, logo and text", "cv-banner", "band", { layout: "brand" }),
     d("buy-bar", "Barre d'achat finale du produit", "Final product purchase bar", "cv-banner", "band", { layout: "buybar" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-split", "Titre géométrique, grand visuel à droite", "Geometric heading, large visual on the right", "on-banner", "split-right", { layout: "split" }),
+    d("onde-wordmark", "Grand mot en contour, produit et petite carte", "Outlined wordmark, product and mini card", "on-banner", "band", { layout: "wordmark" }),
+    d("onde-background", "Photo en fond, titre et bouton", "Photo behind, heading and button", "on-banner", "background", { layout: "background" }),
+    d("onde-cta", "Bandeau d'appel sur une ligne", "One-line call band", "on-banner", "band", { layout: "cta" }),
+    d("onde-orbit", "Texte et cercles (matière, produit, onde)", "Text and circles (material, product, wave)", "on-banner", "split-right", { layout: "orbit" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -264,6 +270,8 @@ const CATALOG: FamilyEntry[] = [
     d("recommended", "Recommandations (fiche produit)", "Recommendations (product page)", "product-recommendations", "grid-4", { intent: "related" }),
     // SOUPLE (planche 02) : caractéristiques en accordéons, produits associés à ajouter au panier et questions, côte à côte.
     d("infos", "Infos, produits associés et questions", "Details, related products and questions", "cv-infos", "grid-3"),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-product", "Produit unique : galerie et carte d'achat", "Single product: gallery and purchase card", "on-product", "split-left"),
   ]),
   e("catalog", 4, "featured", { fr: "Produit à la une", en: "Featured product" }, { fr: "Présentation approfondie d'une référence avec informations et achat.", en: "In-depth presentation of one item with details and purchase." }, "produit à la une achat référence", [
     d("offers", "Galerie et achat", "Gallery and purchase", "featured-purchase", "product", { purchase_style: "outlined" }),
@@ -276,6 +284,13 @@ const CATALOG: FamilyEntry[] = [
     d("details-box", "Gros plans légendés et encadré", "Captioned close-ups and a box", "cv-feature", "grid-3", { layout: "details-points" }),
     d("essentials", "Repères à icônes", "Icon highlights", "cv-feature", "split-left", { layout: "essentials" }),
     d("visual-right", "Photo à droite et points pratiques", "Photo on the right and practical points", "cv-feature", "split-right", { layout: "image-right" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-details", "Texte et gros plans légendés", "Text and captioned close-ups", "on-cards", "grid-3", { layout: "details" }),
+    d("onde-grid", "Gros plans en grille", "Close-ups in a grid", "on-cards", "grid-4", { layout: "grid" }),
+    d("onde-thumbs", "Vignettes du produit et texte", "Product thumbnails and text", "on-cards", "grid-3", { layout: "thumbs" }),
+    d("onde-macros", "Texte et petits gros plans de matières", "Text and small material close-ups", "on-cards", "grid-3", { layout: "macros" }),
+    d("onde-scenes", "Grandes scènes à flèche ronde", "Large scenes with a round arrow", "on-cards", "grid-3", { layout: "scenes" }),
+    d("onde-numbered", "Grande photo et points numérotés", "Large photo and numbered points", "on-cards", "split-left", { layout: "numbered" }),
   ]),
   e("catalog", 5, "lookbook", { fr: "Ambiance et lookbook", en: "Mood and lookbook" }, { fr: "Scènes de plusieurs produits avec repères permettant de les identifier.", en: "Scenes with several products and markers to identify them." }, "ambiance lookbook scène repères produits", [
     d("markers", "Scène et repères produits", "Scene and product markers", "fs-lookbook", "hotspots", { layout: "markers" }),
@@ -355,6 +370,10 @@ const CATALOG: FamilyEntry[] = [
     d("editorial", "Un article à la une et une liste", "One lead article and a list", "fs-journal", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "fs-journal", "grid-3", { layout: "grid" }),
     d("list", "Liste", "List", "fs-journal", "list", { layout: "list" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-journal-row", "Texte et articles en ligne", "Text and articles in a row", "on-journal", "grid-3", { layout: "row" }),
+    d("onde-journal-page", "Page journal : filtres et article principal", "Journal page: filters and lead article", "on-journal", "cards", { layout: "page" }),
+    d("onde-article", "Article : titre, photo et paragraphes", "Article: heading, photo and paragraphs", "on-article", "stacked"),
   ]),
   e("catalog", 18, "faq", { fr: "Informations d'achat et FAQ", en: "Buying information and FAQ" }, { fr: "Livraison, retours, paiement et réponses pratiques regroupés par thème.", en: "Delivery, returns, payment and practical answers grouped by topic." }, "faq livraison retours paiement questions", [
     d("side", "Titre à côté", "Title beside", "v2-faq", "split-left", { layout: "side" }),
@@ -363,15 +382,26 @@ const CATALOG: FamilyEntry[] = [
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
     d("columns", "Thèmes en colonnes et questions", "Topics in columns with questions", "v2-faq", "grid-3", { layout: "columns" },
       ["Bien choisir", "Entretien", "Commande et livraison"].flatMap((title) => [{ type: "topic", settings: { title } }, { type: "question" }, { type: "question" }])),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-faq-row", "Questions en bande graphite", "Questions in a graphite band", "on-faq", "band", { layout: "row" }),
+    d("onde-faq-columns", "Informations pratiques et questions", "Practical information and questions", "on-faq", "accordion", { layout: "columns" }),
+    d("onde-faq-page", "Page FAQ : recherche et onglets", "FAQ page: search and tabs", "on-faq", "tabs", { layout: "page" }),
+    d("onde-checkout", "Commande d'exemple en étapes", "Step-by-step sample checkout", "on-checkout", "steps", { layout: "steps" }),
   ]),
   e("catalog", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Actualités et collections.", en: "News and collections." }, "newsletter inscription", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),
     d("visual", "Inscription avec visuel", "Sign-up with visual", "newsletter-media", "split-right"),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-newsletter", "Inscription en bande lime", "Sign-up in a lime band", "on-newsletter", "band", { layout: "row" }),
   ]),
   e("catalog", 20, "contact", { fr: "Contact et points de vente", en: "Contact and stores" }, { fr: "Coordonnées, formulaire, adresses et horaires.", en: "Contact details, form, addresses and opening hours." }, "contact points de vente boutiques adresses horaires", [
     d("form-image", "Formulaire et image", "Form and image", "ed-contact", "form-split"),
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
     d("stores", "Points de vente", "Stores", "fs-stores", "stores", { layout: "stores" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-contact", "Formulaire et accès d'aide", "Form and help options", "on-help", "split-right", { layout: "contact" }),
+    d("onde-info", "Rubriques d'information et encadré", "Information topics and box", "on-help", "list", { layout: "info" }),
+    d("onde-track", "Suivi de commande (exemple)", "Order tracking (sample)", "on-help", "split-right", { layout: "track" }),
   ]),
 ];
 
@@ -529,7 +559,7 @@ export const ALL_ENTRIES: FamilyEntry[] = [...SPECIALTY, ...CATALOG, ...SERVICES
 // (MUSEAU CLUB) ; sur une vraie boutique, ces écrans sont ceux de Shopify : jamais proposés dans la galerie.
 // « re-bien », « re-favorites », « re-account », « re-legal », « re-article » (Maison & Horizon) : fiche d'un bien,
 // favoris, espace, informations légales et article — des pages entières, pas des sections de la galerie.
-export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "re-bien", "re-favorites", "re-account", "re-legal", "re-article"]);
+export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "on-header", "on-footer", "on-cart", "re-bien", "re-favorites", "re-account", "re-legal", "re-article"]);
 export const isStructuralType = (type: string) => type.startsWith("main-") || STRUCTURAL_TYPES.has(type);
 
 /** Types de sections proposables dans une famille (union des dispositions de ses 20 entrées). */

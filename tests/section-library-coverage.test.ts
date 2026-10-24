@@ -37,7 +37,7 @@ describe("Bibliothèque de sections : couverture exhaustive", () => {
       if (structural(t)) { expect(e.category, t).toBe("Structure"); expect(addable(t), t).toBe(false); expect(e.description, `${t} : contrainte explicite`).toMatch(/unique|une fois|ne se duplique|jamais dupliqué|ne s'ajoute/i); }
       else expect(e.category, t).not.toBe("Structure");
     }
-    expect(types.filter(structural).sort()).toEqual(["announcement-bar", "cart-drawer", "footer", "header", "main-404", "main-article", "main-blog", "main-cart", "main-collection", "main-list-collections", "main-page", "main-password", "main-product", "main-search", "re-bien"]);
+    expect(types.filter(structural).sort()).toEqual(["announcement-bar", "cart-drawer", "footer", "header", "main-404", "main-article", "main-blog", "main-cart", "main-collection", "main-list-collections", "main-page", "main-password", "main-product", "main-search", "on-cart", "on-footer", "on-header", "re-bien"]);
   });
 
   it("les sections ajoutables ont un préréglage et un schéma lisible ; les choix de disposition déclarés existent dans le schéma", () => {

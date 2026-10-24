@@ -1,0 +1,176 @@
+{%- comment -%}
+  Ouvertures et bandeaux d'ONDE (maquettes du 24 octobre, docs/theme-briefs/onde) : un titre géométrique gras, un texte,
+  un bouton, et une mise en scène du produit. Dispositions :
+  - split : texte à gauche, photo (ou produit détouré) à droite ;
+  - background : photo en fond, texte posé dessus ;
+  - wordmark : grand mot en contour derrière le produit détouré, petite carte du produit à droite ;
+  - orbit : texte à gauche, composition de trois cercles (gros plan, produit, onde) à droite ;
+  - cta : une ligne — titre, texte, onde et bouton (bandeaux d'appel).
+  Tons : sombre, clair, blanc, lime. Décors (anneaux, onde sonore, ligne de pied) en CSS/SVG, aucun texte dans une image.
+  Tailles de titre et hauteurs réglables pour suivre la maquette au pixel près ; tout reste modifiable dans l'éditeur.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'split'
+  assign p = all_products[s.product] | default: s.product
+  if p == blank and s.use_page_product and product != blank
+    assign p = product
+  endif
+  assign extras = section.blocks | where: 'type', 'image'
+-%}
+<section{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} class="on-banner on-banner--{{ layout }} on-tone--{{ s.tone }} on-banner--img-{{ s.image_side }}{% if s.rings != 'none' %} on-banner--rings-{{ s.rings }}{% endif %}{% if s.mobile_order == 'image-first' %} on-banner--m-image-first{% endif %}{% if s.cutout_overflow %} on-banner--overflow{% endif %}{% if s.text_beside %} on-banner--beside{% endif %}{% if s.title_color == 'lime' %} on-banner--title-lime{% endif %}{% if s.mobile_image_asset != blank %} on-banner--m-image{% endif %}{% if s.cutout != blank or s.cutout_asset != blank %} on-banner--cutout on-banner--m-cut-{{ s.mobile_cutout_mode | default: 'absolute' }}{% endif %}{% if s.mobile_overlay %} on-banner--m-overlay{% endif %}{% if s.wave != 'none' %} on-banner--wave-{{ s.wave }}{% endif %} on-show--{{ s.show_on | default: 'all' }}" style="--on-minh:{{ s.min_height }}px;--on-minh-m:{{ s.mobile_min_height }}px;--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-textw:{{ s.text_width }}px;--on-imgw:{{ s.image_width }}%;--on-fx:{{ s.focus_x }}%;--on-fy:{{ s.focus_y }}%;--on-fxm:{{ s.mobile_focus_x }}%;--on-fym:{{ s.mobile_focus_y }}%;--on-zoom:{{ s.image_zoom | divided_by: 100.0 }};--on-zoom-m:{{ s.mobile_image_zoom | default: s.image_zoom | divided_by: 100.0 }};--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;" data-on-banner>
+  {%- if s.image != blank or s.image_asset != blank -%}
+    <div class="on-banner__media">
+      {%- if s.image != blank -%}{{ s.image | image_url: width: 2000 | image_tag: loading: s.image_loading, alt: s.image_alt, class: 'on-banner__img', sizes: '100vw' }}{%- else -%}<img width="1200" height="1200" class="on-banner__img" src="{{ s.image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="{{ s.image_loading }}" decoding="async">{%- endif -%}
+    </div>
+  {%- endif -%}
+  {%- if s.mobile_image_asset != blank -%}<div class="on-banner__media on-banner__media--m"><img width="1200" height="1200" class="on-banner__img" src="{{ s.mobile_image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="{{ s.image_loading }}" decoding="async"></div>{%- endif -%}
+  {%- if s.rings != 'none' -%}<div class="on-rings" aria-hidden="true"><span></span><span></span><span></span><span></span></div>{%- endif -%}
+  {%- if s.wordmark_asset != blank -%}<div class="on-banner__wordmark on-banner__wordmark--img" aria-hidden="true"><img width="1200" height="1200" src="{{ s.wordmark_asset | asset_url }}" alt="" loading="lazy" decoding="async"></div>{%- elsif s.wordmark != blank -%}<div class="on-banner__wordmark" aria-hidden="true">{{ s.wordmark | escape }}</div>{%- endif -%}
+  {%- if s.cutout != blank or s.cutout_asset != blank -%}
+    <div class="on-banner__cutout" style="--on-cx:{{ s.cutout_x }}%;--on-cy:{{ s.cutout_y }}%;--on-cw:{{ s.cutout_width }}%;--on-cxm:{{ s.mobile_cutout_x }}%;--on-cym:{{ s.mobile_cutout_y }}%;--on-cwm:{{ s.mobile_cutout_width }}%;">
+      {%- if s.cutout != blank -%}{{ s.cutout | image_url: width: 1400 | image_tag: loading: s.image_loading, alt: s.cutout_alt }}{%- else -%}<img width="1200" height="1200"{% if s.mobile_cutout_asset != blank %} class="on-desktop-only"{% endif %} src="{{ s.cutout_asset | asset_url }}" alt="{{ s.cutout_alt | escape }}" loading="{{ s.image_loading }}" decoding="async">{%- endif -%}
+      {%- if s.mobile_cutout_asset != blank -%}<img width="1200" height="1200" class="on-mobile-only" src="{{ s.mobile_cutout_asset | asset_url }}" alt="{{ s.cutout_alt | escape }}" loading="{{ s.image_loading }}" decoding="async">{%- endif -%}
+    </div>
+  {%- endif -%}
+  {%- if layout == 'orbit' and extras.size > 0 -%}
+    <div class="on-orbit" aria-hidden="true">
+      {%- for b in extras -%}<span class="on-orbit__item on-orbit__item--{{ forloop.index }}" {{ b.shopify_attributes }}>{%- if b.settings.image != blank -%}{{ b.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: '' }}{%- elsif b.settings.image_asset != blank -%}<img width="1200" height="1200" src="{{ b.settings.image_asset | asset_url }}" alt="" loading="lazy" decoding="async">{%- else -%}{% render 'on-wave', bars: 18, shape: 'burst' %}{%- endif -%}</span>{%- endfor -%}
+    </div>
+  {%- endif -%}
+  <div class="on-banner__inner on-container">
+    <div class="on-banner__copy">
+      {%- if s.eyebrow != blank -%}<p class="on-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="on-title on-banner__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+      {%- if s.text != blank -%}<div class="on-text on-banner__text">{{ s.text | replace: '<br>', ' <br>' }}</div>{%- endif -%}
+      {%- if p != blank and s.show_price -%}
+        <div class="on-banner__product">
+          <p class="on-banner__product-name">{{ s.product_name | default: p.title | escape }}</p>
+          {%- if s.product_note != blank -%}<p class="on-banner__product-note">{{ s.product_note | escape }}</p>{%- endif -%}
+          <p class="on-banner__price">{% if settings.price_trim_zeros %}{{ p.price | money_without_trailing_zeros }}{% else %}{{ p.price | money }}{% endif %}</p>
+        </div>
+      {%- endif -%}
+      {%- if s.button_label != blank and layout != 'cta' -%}{% render 'on-banner-button', s: s, p: p %}{%- endif -%}
+      {%- if s.meta != blank -%}<p class="on-banner__meta">{{ s.meta | escape }}</p>{%- endif -%}
+    </div>
+    {%- if layout == 'cta' and s.wave != 'none' -%}<div class="on-banner__cta-wave">{% render 'on-wave', bars: 40, shape: s.wave %}</div>{%- endif -%}
+    {%- if layout == 'cta' and s.button_label != blank -%}{% render 'on-banner-button', s: s, p: p %}{%- endif -%}
+    {%- if layout == 'wordmark' and p != blank -%}
+      <div class="on-mini">
+        <p class="on-mini__name">{{ s.product_name | default: p.title | escape }}</p>
+        <p class="on-mini__price">{% if settings.price_trim_zeros %}{{ p.price | money_without_trailing_zeros }}{% else %}{{ p.price | money }}{% endif %}</p>
+        {%- if s.card_link_label != blank -%}<a class="on-mini__link" href="{{ p.url }}">{{ s.card_link_label | escape }}{% render 'icon', name: 'arrow-up-right' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+  {%- if s.footer_line != blank or s.wave == 'bottom' -%}
+    <div class="on-banner__foot on-container">
+      {%- if s.footer_line != blank -%}<p class="on-banner__foot-line">{{ s.footer_line | escape }}</p>{%- endif -%}
+      {%- if s.wave == 'bottom' -%}{% render 'on-wave', bars: 64, shape: 'burst', class: 'on-banner__foot-wave' %}{%- endif -%}
+    </div>
+  {%- endif -%}
+  {%- if layout != 'cta' and s.wave != 'none' and s.wave != 'bottom' -%}<div class="on-banner__wave on-banner__wave--{{ s.wave }}">{% render 'on-wave', bars: 56, shape: 'burst' %}</div>{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre (lien vers cette section)" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "split", "options": [
+      { "value": "split", "label": "Texte à gauche, visuel à droite" },
+      { "value": "background", "label": "Photo en fond, texte par-dessus" },
+      { "value": "wordmark", "label": "Grand mot en contour, produit et carte" },
+      { "value": "orbit", "label": "Texte et cercles (gros plans, produit, onde)" },
+      { "value": "cta", "label": "Bandeau d'appel sur une ligne" }
+    ] },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "dark", "options": [
+      { "value": "dark", "label": "Graphite" },
+      { "value": "light", "label": "Gris clair" },
+      { "value": "white", "label": "Blanc" },
+      { "value": "lime", "label": "Lime" }
+    ] },
+    { "type": "select", "id": "show_on", "label": "Affichage", "default": "all", "options": [ { "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" } ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un titre fort.\nUne promesse claire." },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "Titre de page (H1)" }, { "value": "h2", "label": "Titre de section (H2)" } ] },
+    { "type": "select", "id": "title_color", "label": "Couleur du titre", "default": "default", "options": [ { "value": "default", "label": "Selon les couleurs" }, { "value": "lime", "label": "Lime" } ] },
+    { "type": "checkbox", "id": "text_beside", "label": "Texte à côté du titre", "default": false },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "mobile_button_label", "label": "Texte du bouton sur téléphone", "info": "Vide : le même." },
+    { "type": "checkbox", "id": "mobile_icon_only", "label": "Sur téléphone : bouton réduit à sa flèche", "default": false },
+    { "type": "select", "id": "button_action", "label": "Action du bouton", "default": "link", "options": [ { "value": "link", "label": "Ouvrir le lien" }, { "value": "add", "label": "Ajouter le produit au panier" } ] },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "lime", "options": [
+      { "value": "lime", "label": "Lime" },
+      { "value": "dark", "label": "Graphite" },
+      { "value": "outline", "label": "Contour" },
+      { "value": "outline-light", "label": "Contour clair" }
+    ] },
+    { "type": "select", "id": "button_icon", "label": "Icône du bouton", "default": "arrow-up-right", "options": [
+      { "value": "arrow-up-right", "label": "Flèche en biais" },
+      { "value": "arrow", "label": "Flèche" }
+    ] },
+    { "type": "text", "id": "meta", "label": "Mention sous le bouton", "info": "Ex. : Casque sans fil / Graphite." },
+    { "type": "text", "id": "footer_line", "label": "Ligne de pied", "info": "Ex. : 01 / Écouter autrement." },
+    { "type": "header", "content": "Produit" },
+    { "type": "product", "id": "product", "label": "Produit (nom et prix réels)" },
+    { "type": "checkbox", "id": "use_page_product", "label": "Sur une fiche : le produit de la fiche", "default": false },
+    { "type": "checkbox", "id": "show_price", "label": "Afficher le nom et le prix du produit", "default": false },
+    { "type": "text", "id": "product_name", "label": "Nom affiché (vide : nom du produit)" },
+    { "type": "text", "id": "product_note", "label": "Ligne sous le nom", "info": "Ex. : Graphite & lime." },
+    { "type": "text", "id": "card_link_label", "label": "Lien de la petite carte (grand mot)", "default": "Découvrir" },
+    { "type": "header", "content": "Visuel" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Photo sur téléphone (fichier du thème)", "info": "Remplace la photo sur téléphone ; un bandeau d'appel devient une photo en fond." },
+    { "type": "select", "id": "image_side", "label": "Place de la photo", "default": "right", "options": [ { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" }, { "value": "full", "label": "Toute la largeur" } ] },
+    { "type": "range", "id": "image_width", "label": "Largeur de la photo", "min": 30, "max": 100, "step": 1, "unit": "%", "default": 55 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "mobile_image_zoom", "label": "Agrandissement sur téléphone", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Cadrage horizontal sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Cadrage vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "image_loading", "label": "Chargement de la photo", "default": "lazy", "options": [ { "value": "eager", "label": "Immédiat (haut de page)" }, { "value": "lazy", "label": "Différé" } ] },
+    { "type": "image_picker", "id": "cutout", "label": "Produit détouré" },
+    { "type": "text", "id": "cutout_asset", "label": "Produit détouré (fichier du thème)" },
+    { "type": "text", "id": "cutout_alt", "label": "Texte alternatif du produit" },
+    { "type": "range", "id": "cutout_x", "label": "Produit : position horizontale", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 70 },
+    { "type": "range", "id": "cutout_y", "label": "Produit : position verticale", "min": 0, "max": 300, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "cutout_width", "label": "Produit : largeur", "min": 10, "max": 160, "step": 1, "unit": "%", "default": 34 },
+    { "type": "range", "id": "mobile_cutout_x", "label": "Produit sur téléphone : position horizontale", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_cutout_y", "label": "Produit sur téléphone : position verticale", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 35 },
+    { "type": "range", "id": "mobile_cutout_width", "label": "Produit sur téléphone : largeur", "min": 20, "max": 200, "step": 1, "unit": "%", "default": 80 },
+    { "type": "text", "id": "mobile_cutout_asset", "label": "Produit sur téléphone (fichier du thème)", "info": "Vide : le même que sur ordinateur." },
+    { "type": "select", "id": "mobile_cutout_mode", "label": "Produit sur téléphone", "default": "absolute", "options": [ { "value": "absolute", "label": "À la position réglée" }, { "value": "flow", "label": "Entre le texte et le prix" }, { "value": "side", "label": "À gauche du texte" } ] },
+    { "type": "checkbox", "id": "cutout_overflow", "label": "Produit débordant sur la section suivante", "default": false },
+    { "type": "header", "content": "Décors" },
+    { "type": "text", "id": "wordmark", "label": "Grand mot en contour", "info": "Ex. : ONDE. Vide : aucun." },
+    { "type": "text", "id": "wordmark_asset", "label": "Grand mot : logo en contour (fichier du thème)", "info": "Remplace le mot écrit." },
+    { "type": "select", "id": "rings", "label": "Anneaux", "default": "none", "options": [ { "value": "none", "label": "Aucun" }, { "value": "right", "label": "À droite" }, { "value": "center", "label": "Au centre" } ] },
+    { "type": "select", "id": "wave", "label": "Onde sonore", "default": "none", "options": [ { "value": "none", "label": "Aucune" }, { "value": "bottom", "label": "En pied" }, { "value": "right", "label": "À droite" }, { "value": "behind", "label": "Derrière le titre" }, { "value": "burst", "label": "Dans le bandeau d'appel" }, { "value": "line", "label": "Ligne régulière (bandeau d'appel)" } ] },
+    { "type": "header", "content": "Dimensions" },
+    { "type": "range", "id": "min_height", "label": "Hauteur sur ordinateur", "min": 80, "max": 1000, "step": 2, "unit": "px", "default": 640 },
+    { "type": "range", "id": "mobile_min_height", "label": "Hauteur sur téléphone", "min": 80, "max": 1000, "step": 2, "unit": "px", "default": 520 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 20, "max": 200, "step": 1, "unit": "px", "default": 72 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 18, "max": 80, "step": 1, "unit": "px", "default": 38 },
+    { "type": "range", "id": "text_width", "label": "Largeur du texte", "min": 240, "max": 1000, "step": 10, "unit": "px", "default": 620 },
+    { "type": "checkbox", "id": "mobile_overlay", "label": "Sur téléphone : photo en fond, texte en haut", "default": false },
+    { "type": "select", "id": "mobile_order", "label": "Ordre sur téléphone", "default": "text-first", "options": [ { "value": "text-first", "label": "Texte puis visuel" }, { "value": "image-first", "label": "Visuel puis texte" } ] },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 0 }
+  ],
+  "blocks": [
+    { "type": "image", "name": "Cercle de la composition", "limit": 3, "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)", "info": "Vide : onde sonore." }
+    ] }
+  ],
+  "presets": [ { "name": "Bandeau ONDE" } ]
+}
+{% endschema %}

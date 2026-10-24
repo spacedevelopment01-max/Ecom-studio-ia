@@ -49,18 +49,18 @@ export const CONTENT_ROLES: Record<ContentRoleId, ContentRole> = {
 };
 
 const ROLE_TYPES: Record<Exclude<ContentRoleId, "structural">, string[]> = {
-  hook: ["cv-hero", "ed-opening", "fs-campaign", "re-hero"],
+  hook: ["cv-hero", "ed-opening", "fs-campaign", "re-hero", "on-banner", "on-product"],
   idea: ["ed-statement", "rich-text"],
-  facts: ["features-grid", "cv-feature", "ed-finishes", "cv-hotspots", "cv-specs", "cv-infos", "cv-ingredients", "content-tabs", "stats", "marquee", "fs-dimensions", "fs-care", "fs-making", "fs-equipment", "ed-study"],
+  facts: ["features-grid", "cv-feature", "ed-finishes", "cv-hotspots", "cv-specs", "cv-infos", "cv-ingredients", "content-tabs", "stats", "marquee", "fs-dimensions", "fs-care", "fs-making", "fs-equipment", "ed-study", "on-cards"],
   usage: ["ed-scene", "ed-diptych", "cv-stories", "cv-gallery", "cv-alternating", "cv-cards", "fs-lookbook", "image-with-text", "ref-narrative", "portfolio", "fs-video", "fs-needs", "fs-case", "re-feature"],
   choice: ["featured-purchase", "purchase-offers", "comparison-table", "fs-products", "fs-collections", "product-recommendations", "services-list", "pricing", "cv-banner", "cv-rise", "re-tiles", "re-listings"],
   method: ["timeline", "how-to", "cv-steps", "booking", "booking-calendar", "fs-service"],
-  objections: ["faq", "v2-faq"],
+  objections: ["faq", "v2-faq", "on-faq"],
   proof: ["cv-reviews", "testimonials", "cv-quote", "fs-reviews", "fs-press", "fs-references", "fs-results", "fs-credentials", "cv-guarantee", "fs-commitments"],
   call: ["cta-banner"],
-  collect: ["newsletter", "newsletter-media", "contact-form", "ed-contact", "re-form"],
-  story: ["about", "team", "fs-journal", "cv-article"],
-  practical: ["practical-info", "fs-stores"],
+  collect: ["newsletter", "newsletter-media", "contact-form", "ed-contact", "re-form", "on-newsletter", "on-help"],
+  story: ["about", "team", "fs-journal", "cv-article", "on-journal", "on-article"],
+  practical: ["practical-info", "fs-stores", "on-checkout"],
 };
 
 /** Type de section → rôle. */

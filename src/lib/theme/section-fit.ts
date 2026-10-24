@@ -27,7 +27,7 @@ export type SectionFit = {
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
 const CONVERSION_THEMES = ["fraise", "sillon", "noctil", "traverse", "museau-club", "souple"];
-const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove", "onde", "souple"];
+const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove", "souple"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
 const REFERENCE_THEMES = ["vitrine", "jardin", "orbe", "rive"];
@@ -60,6 +60,16 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "ed-study": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-contact": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-finishes": { kinds: SHOP, themes: EDITORIAL_THEMES, profiles: ["editorial"] },
+  // ONDE (sept planches du 24 octobre, PR #183) : sections « on-* » stylées par assets/onde.css, chargé avec ce thème.
+  "on-banner": { kinds: SHOP, themes: ["onde"] },
+  "on-cards": { kinds: SHOP, themes: ["onde"] },
+  "on-journal": { kinds: SHOP, themes: ["onde"] },
+  "on-faq": { kinds: SHOP, themes: ["onde"] },
+  "on-newsletter": { kinds: SHOP, themes: ["onde"] },
+  "on-product": { kinds: SHOP, themes: ["onde"] },
+  "on-checkout": { kinds: SHOP, themes: ["onde"] },
+  "on-help": { kinds: SHOP, themes: ["onde"] },
+  "on-article": { kinds: SHOP, themes: ["onde"] },
   // Immobilier (MAISON & HORIZON, issue #172) : sections stylées par assets/horizon.css, chargé avec ce thème seulement.
   // « re-bien » (fiche d'un bien) n'y figure pas : composant structurel posé par le moteur, jamais ajouté depuis la galerie.
   "re-hero": { kinds: ["services"], themes: ["maison-horizon"] },
@@ -128,11 +138,13 @@ export type FitContext = {
   settings?: Record<string, unknown>;
 };
 
+const OWN_PROFILES = new Set(["onde"]);
 function activeProfiles(settings?: Record<string, unknown>): Set<"conversion" | "editorial"> {
   const out = new Set<"conversion" | "editorial">();
   const conv = String(settings?.conversion_profile ?? "none");
   const ed = String(settings?.editorial_profile ?? "none");
-  if (conv && conv !== "none") out.add("conversion");
+  // Profil propre à un thème (ONDE : sections « on-* » seulement) : n'ouvre pas les sections cv-* communes.
+  if (conv && conv !== "none" && !OWN_PROFILES.has(conv)) out.add("conversion");
   if (ed && ed !== "none") out.add("editorial");
   return out;
 }

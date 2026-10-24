@@ -151,6 +151,11 @@ export type CatalogTheme = {
   settings?: Record<string, unknown>;
   /** Réglages du corps de la fiche produit (galerie, barre fixe, schéma). */
   mainProduct?: Record<string, unknown>;
+  /** Le thème dessine sa propre fiche (ex. ONDE, « on-product ») : section Produit commune masquée, aucune recommandation. */
+  ownProductBody?: boolean;
+  /** En-tête et pied propres au thème (ex. ONDE : « on-header », « on-footer ») à la place des sections communes. */
+  headerRow?: (k: Kit) => Row;
+  footerRow?: (k: Kit) => Row;
   /** Bouton permanent de l'en-tête d'une boutique, vers la fiche du produit principal (libellé générique, jamais propre à une démo). */
   headerCta?: { fr: string; en: string; icon: "arrow" | "clock" | "phone" | "mail" | "chat" };
   /** Réglages de mise en forme propres à l'en-tête du thème (disposition de la famille : sous-menu, encarts, schéma). */

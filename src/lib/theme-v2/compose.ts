@@ -517,8 +517,10 @@ export function compose(intent: WebsiteIntent, art: ArtDirection, c: SiteContent
     }
     // Suite de la fiche : ambiance (photo réelle), bénéfices illustrés, caractéristiques confirmées, questions réelles.
     const extra = template(ids, [banner && banner[1].heading !== c.name ? ["v2-banner", { ...banner[1], button_label: "", padding_top: 0, padding_bottom: 0 }] : null, benefits ?? offers, specs ? ["v2-specs", { ...specs[1], image_asset: "" }, specs[2]] : null, realFaq.length ? ["v2-faq", { layout: "side", heading: t("Questions fréquentes", "Frequently asked questions"), color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, realFaq.map((f) => ({ type: "question", settings: { question: f.q, answer: f.a } }))] : null]);
-    const kept = productTemplate.order.filter((k) => productTemplate.sections[k].type === "main-product" || productTemplate.sections[k].type === "product-recommendations");
-    templates.product = { sections: { ...Object.fromEntries(kept.map((k) => [k, productTemplate.sections[k]])), ...extra.sections }, order: [...kept.filter((k) => productTemplate.sections[k].type === "main-product"), ...extra.order, ...kept.filter((k) => productTemplate.sections[k].type === "product-recommendations")] };
+    // Fiche propre au thème (ONDE : « on-product », la section Produit commune y reste masquée) : gardée à sa place.
+    const head = new Set(["main-product", "on-product"]);
+    const kept = productTemplate.order.filter((k) => head.has(productTemplate.sections[k].type) || productTemplate.sections[k].type === "product-recommendations");
+    templates.product = { sections: { ...Object.fromEntries(kept.map((k) => [k, productTemplate.sections[k]])), ...extra.sections }, order: [...kept.filter((k) => head.has(productTemplate.sections[k].type)), ...extra.order, ...kept.filter((k) => productTemplate.sections[k].type === "product-recommendations")] };
   }
 
   // Référencement de chaque page : titre (≤ 60 signes) et description (≤ 155) avec le métier, la ville et la marque.

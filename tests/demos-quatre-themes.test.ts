@@ -27,7 +27,7 @@ const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
 const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "fraise"));
 const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profile: Record<string, string>; family: RegExp }> = {
   fraise: { kind: "specialty", profile: { conversion_profile: "pop" }, family: /^cv-/ },
-  onde: { kind: "catalog", profile: { editorial_profile: "studio" }, family: /^(ed-|fs-)/ },
+  onde: { kind: "catalog", profile: { conversion_profile: "onde" }, family: /^on-/ },
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
   sillon: { kind: "specialty", profile: { conversion_profile: "nomade" }, family: /^cv-/ },
@@ -90,7 +90,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       }
       // Entête : nom de la marque ; profil graphique appliqué sur le body.
       const home = await renderPage({ spec, base: "", files, cart: [] }, "/", new URLSearchParams());
-      const attr = EXPECT[id].family.source === "^cv-" ? "data-conversion" : "data-editorial";
+      const attr = "conversion_profile" in EXPECT[id].profile ? "data-conversion" : "data-editorial";
       expect(home.html).toMatch(new RegExp(`${attr}="${Object.values(EXPECT[id].profile)[0]}"`));
     });
   }

@@ -1,0 +1,87 @@
+{%- comment -%}
+  En-tête d'ONDE (sept planches du 24 octobre) : logo dans un cadre graphite, menu dans une pastille graphite, panier dans
+  un carré lime avec son compteur ; sur téléphone, bouton menu graphite et panier lime. Deux styles : posé sur
+  l'ouverture de la page (accueil, fiche, boutique, expérience, marque, journal) ou barre graphite pleine (panier,
+  commande, aide), choisi par type de page et liste de pages.
+  Menu mobile (planche 06) : plein écran clair, logo, fermeture, recherche, grands liens à chevron, « Mon panier » et son
+  compteur, onde, liens légaux. Ouverture, fermeture (bouton, Échap), focus et retour gérés par le script du thème.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign style = 'float'
+  if template.name == 'cart' and s.bar_on_cart
+    assign style = 'bar'
+  elsif template.name == 'search' or template.name == '404'
+    assign style = 'bar'
+  elsif template.name == 'page'
+    assign bar_list = s.bar_pages | remove: ' ' | split: ','
+    if bar_list contains page.handle
+      assign style = 'bar'
+    endif
+  endif
+  assign menu = linklists[s.menu]
+  assign legal = linklists[s.legal_menu]
+-%}
+<header class="on-header on-header--{{ style }}" style="--on-logo-w:{{ s.logo_width }}px;--on-logo-wm:{{ s.mobile_logo_width }}px;" data-header>
+  <div class="on-header__inner on-container">
+    <a class="on-header__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      {%- if s.logo_light != blank -%}{{ s.logo_light | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager' }}{%- elsif s.logo_light_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_light_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- elsif settings.logo != blank -%}{{ settings.logo | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager' }}{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
+    </a>
+    {%- if menu.links.size > 0 -%}
+      <nav class="on-header__nav" aria-label="{{ s.nav_label | escape }}">
+        <ul role="list">{%- for l in menu.links -%}<li><a href="{{ l.url }}"{% if l.active or l.current %} aria-current="page"{% endif %}>{{ l.title | escape }}</a></li>{%- endfor -%}</ul>
+      </nav>
+    {%- endif -%}
+    <div class="on-header__actions">
+      <button type="button" class="on-header__burger" data-menu-open aria-controls="OnMenu" aria-expanded="false" aria-label="{{ s.menu_label | escape }}">{% render 'icon', name: 'menu' %}</button>
+      <a class="on-header__cart" href="{{ routes.cart_url }}" data-cart-open aria-label="{{ s.cart_label | escape }}">{% render 'icon', name: 'cart' %}<span class="on-header__count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span></a>
+    </div>
+  </div>
+  {%- if s.demo_checkout_link != blank -%}<a hidden aria-hidden="true" tabindex="-1" data-demo-checkout href="{{ s.demo_checkout_link }}"></a>{%- endif -%}
+  <div class="on-menu" id="OnMenu" hidden data-mobile-menu role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}">
+    <div class="on-menu__head">
+      <a class="on-menu__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{%- if s.logo_dark != blank -%}{{ s.logo_dark | image_url: width: 400 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_dark_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_dark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}</a>
+      <button type="button" class="on-menu__close" data-menu-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
+    </div>
+    {%- if s.search -%}
+      <form class="on-menu__search" action="{{ routes.search_url }}" method="get" role="search"><label class="on-search">{% render 'icon', name: 'search' %}<span class="visually-hidden">{{ s.search_label | escape }}</span><input type="search" name="q" placeholder="{{ s.search_label | escape }}"></label></form>
+    {%- endif -%}
+    <ul class="on-menu__list" role="list">
+      {%- for l in linklists[s.mobile_menu].links -%}<li><a href="{{ l.url }}"><span>{{ l.title | escape }}</span>{% render 'icon', name: 'chevron-right' %}</a></li>{%- endfor -%}
+      {%- if s.cart_link_label != blank -%}<li><a href="{{ routes.cart_url }}"><span>{{ s.cart_link_label | escape }} <span class="on-menu__count" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span></span>{% render 'icon', name: 'chevron-right' %}</a></li>{%- endif -%}
+    </ul>
+    <div class="on-menu__wave" aria-hidden="true">{% render 'on-wave', bars: 64, shape: 'burst' %}</div>
+    {%- if legal.links.size > 0 -%}<ul class="on-menu__legal" role="list">{%- for l in legal.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "En-tête ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo_light", "label": "Logo clair (cadre graphite)" },
+    { "type": "text", "id": "logo_light_asset", "label": "Logo clair (fichier du thème)" },
+    { "type": "image_picker", "id": "logo_dark", "label": "Logo foncé (menu mobile)" },
+    { "type": "text", "id": "logo_dark_asset", "label": "Logo foncé (fichier du thème)" },
+    { "type": "range", "id": "logo_width", "label": "Largeur du logo", "min": 60, "max": 240, "step": 2, "unit": "px", "default": 140 },
+    { "type": "range", "id": "mobile_logo_width", "label": "Largeur du logo sur téléphone", "min": 50, "max": 180, "step": 2, "unit": "px", "default": 84 },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
+    { "type": "text", "id": "menu_label", "label": "Bouton menu (lecteurs d'écran)", "default": "Menu" },
+    { "type": "text", "id": "cart_label", "label": "Bouton panier (lecteurs d'écran)", "default": "Panier" },
+    { "type": "header", "content": "Style" },
+    { "type": "checkbox", "id": "bar_on_cart", "label": "Barre graphite sur le panier", "default": true },
+    { "type": "text", "id": "bar_pages", "label": "Pages à barre graphite", "info": "Identifiants séparés par des virgules. Ex. : faq, contact, commande." },
+    { "type": "header", "content": "Menu mobile" },
+    { "type": "link_list", "id": "mobile_menu", "label": "Liens du menu mobile", "default": "main-menu" },
+    { "type": "checkbox", "id": "search", "label": "Recherche", "default": true },
+    { "type": "text", "id": "search_label", "label": "Texte d'aide de la recherche", "default": "Rechercher…" },
+    { "type": "text", "id": "cart_link_label", "label": "Lien du panier", "default": "Mon panier" },
+    { "type": "link_list", "id": "legal_menu", "label": "Liens légaux" },
+    { "type": "url", "id": "demo_checkout_link", "label": "Commande d'exemple (démonstration)", "info": "Boutique de démonstration seulement : page ouverte depuis le panier latéral à la place du paiement." }
+  ]
+}
+{% endschema %}

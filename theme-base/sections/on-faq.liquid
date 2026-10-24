@@ -1,0 +1,120 @@
+{%- comment -%}
+  Questions d'ONDE (maquettes du 24 octobre), accordéons natifs <details> (clavier et toucher sans script) :
+  - row : bande sombre, titre à gauche, questions sur deux colonnes (accueil) ;
+  - columns : « Informations pratiques » et « Questions fréquentes » côte à côte (fiche du casque) ;
+  - page : recherche, onglets par thème, liste et accès au contact (page FAQ). Recherche et onglets se combinent ;
+    sans résultat, un message utile et le lien de contact restent visibles.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'row'
+  assign infos = section.blocks | where: 'type', 'info'
+  assign questions = section.blocks | where: 'type', 'question'
+  assign topics = ''
+  for b in questions
+    if b.settings.topic != blank
+      unless topics contains b.settings.topic
+        assign topics = topics | append: b.settings.topic | append: '|'
+      endunless
+    endif
+  endfor
+  assign topic_list = topics | split: '|'
+-%}
+<section{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} class="on-faq on-faq--{{ layout }} on-tone--{{ s.tone }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;"{% if layout == 'page' %} data-on-faq{% endif %}>
+  <div class="on-faq__inner on-container">
+    {%- if layout == 'page' -%}
+      {%- if s.page_heading != blank -%}
+        <div class="on-faq__hero">
+          <span class="on-rings on-rings--help" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <h1 class="on-title on-faq__page-title">{{ s.page_heading | escape | newline_to_br }}</h1>
+          {%- if s.image_asset != blank -%}<div class="on-faq__visual"><img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="eager" decoding="async"></div>{%- endif -%}
+        </div>
+      {%- endif -%}
+      {%- if s.search -%}
+        <label class="on-search"><span class="visually-hidden">{{ s.search_label | escape }}</span>{% render 'icon', name: 'search' %}<input type="search" placeholder="{{ s.search_placeholder | escape }}" data-on-faq-search autocomplete="off"></label>
+      {%- endif -%}
+      {%- if topic_list.size > 0 -%}
+        <div class="on-tabs" role="tablist" aria-label="{{ s.tabs_label | escape }}">
+          {%- for t in topic_list -%}{%- if t != blank -%}<button type="button" role="tab" class="on-tab{% if forloop.first %} is-active{% endif %}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-on-faq-tab="{{ t | handleize }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+        </div>
+      {%- endif -%}
+      <div class="on-faq__list">
+        {%- for b in questions -%}
+          <details class="on-acc" data-on-topic="{{ b.settings.topic | handleize }}"{% if forloop.first and s.open_first %} open{% endif %} {{ b.shopify_attributes }}>
+            <summary><span>{{ b.settings.question | escape }}</span>{% render 'icon', name: 'chevron-down' %}</summary>
+            <div class="on-acc__body">{{ b.settings.answer }}</div>
+          </details>
+        {%- endfor -%}
+        <p class="on-faq__empty" data-on-faq-empty hidden>{{ s.empty_text | escape }}</p>
+      </div>
+      {%- if s.button_label != blank -%}<a class="on-button on-button--lime on-faq__cta" href="{{ s.button_link | default: '#' }}">{% render 'icon', name: 'chat' %}{{ s.button_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+    {%- else -%}
+      {%- if layout == 'columns' and infos.size > 0 -%}
+        <div class="on-faq__group">
+          {%- if s.info_heading != blank -%}<h2 class="on-faq__group-title">{{ s.info_heading | escape }}</h2>{%- endif -%}
+          {%- for b in infos -%}
+            <details class="on-acc" {{ b.shopify_attributes }}><summary><span>{{ b.settings.question | escape }}</span>{% render 'icon', name: 'plus' %}</summary><div class="on-acc__body">{{ b.settings.answer }}</div></details>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+      <div class="on-faq__group on-faq__group--questions">
+        {%- if s.heading != blank -%}<h2 class="on-faq__group-title on-faq__title">{{ s.heading | escape }}</h2>{%- endif -%}
+        <div class="on-faq__grid">
+          {%- for b in questions -%}
+            <details class="on-acc" {{ b.shopify_attributes }}><summary><span>{{ b.settings.question | escape }}</span>{% render 'icon', name: 'plus' %}</summary><div class="on-acc__body">{{ b.settings.answer }}</div></details>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre (lien vers cette section)" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "row", "options": [
+      { "value": "row", "label": "Bande : titre à gauche, questions en colonnes" },
+      { "value": "columns", "label": "Informations pratiques et questions côte à côte" },
+      { "value": "page", "label": "Page FAQ : recherche, onglets et liste" }
+    ] },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "dark", "options": [
+      { "value": "dark", "label": "Graphite" },
+      { "value": "light", "label": "Gris clair" },
+      { "value": "white", "label": "Blanc" }
+    ] },
+    { "type": "textarea", "id": "page_heading", "label": "Titre de la page FAQ" },
+    { "type": "text", "id": "image_asset", "label": "Visuel de la page FAQ (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif du visuel" },
+    { "type": "text", "id": "heading", "label": "Titre des questions", "default": "Questions fréquentes" },
+    { "type": "text", "id": "info_heading", "label": "Titre des informations pratiques", "default": "Informations pratiques" },
+    { "type": "checkbox", "id": "search", "label": "Recherche (page FAQ)", "default": true },
+    { "type": "text", "id": "search_label", "label": "Nom de la recherche (lecteurs d'écran)", "default": "Rechercher une question" },
+    { "type": "text", "id": "search_placeholder", "label": "Texte d'aide de la recherche", "default": "Rechercher une question…" },
+    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (lecteurs d'écran)", "default": "Thèmes des questions" },
+    { "type": "checkbox", "id": "open_first", "label": "Première question ouverte", "default": true },
+    { "type": "text", "id": "empty_text", "label": "Message sans résultat", "default": "Aucune question ne correspond. Écrivez-nous : nous vous répondrons." },
+    { "type": "text", "id": "button_label", "label": "Bouton de contact (page FAQ)" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton de contact" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 14, "max": 80, "step": 1, "unit": "px", "default": 22 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 14, "max": 60, "step": 1, "unit": "px", "default": 20 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 32 }
+  ],
+  "blocks": [
+    { "type": "question", "name": "Question", "settings": [
+      { "type": "text", "id": "topic", "label": "Thème (page FAQ)", "info": "Ex. : Casque, Utilisation, Commande, Livraison." },
+      { "type": "text", "id": "question", "label": "Question", "default": "Où trouver la notice ?" },
+      { "type": "richtext", "id": "answer", "label": "Réponse" }
+    ] },
+    { "type": "info", "name": "Information pratique", "settings": [
+      { "type": "text", "id": "question", "label": "Intitulé", "default": "Utilisation" },
+      { "type": "richtext", "id": "answer", "label": "Contenu" }
+    ] }
+  ],
+  "presets": [ { "name": "Questions ONDE", "blocks": [ { "type": "question" }, { "type": "question" } ] } ]
+}
+{% endschema %}

@@ -49,9 +49,13 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
   silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
 - **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
-  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
-  21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
-  `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
+  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce**, refait d'après les sept planches du
+  24 octobre, PR #183, `docs/theme-briefs/onde/` : profil de conversion « onde » (`assets/onde.css`, `onde.js`, règles
+  préfixées `body[data-conversion="onde"]`, aucun texte dans la feuille), sections `on-*` (en-tête, pied, fiche, panier,
+  tiroir, commande d'exemple, aide) réservées à ce thème, titres Montserrat 700, textes Inter, prix illustratif centralisé
+  `ONDE_PRICE` (149 €), démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé `public/demo/onde/`, jamais
+  copiés dans le dépôt ; cellules « ordinateur » de la planche 03 comparées à 913 px ; rapport
+  `docs/coordination/ONDE_RESULTATS.md`), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
   **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; médias suivis dans `public/theme-assets/sillon/`,
   démonstration `tests/sillon-fixtures.ts`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
   boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
@@ -124,7 +128,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
 - La démonstration FRAISE GUMMIES est la composition complète de la référence Lumora (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais la recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni la simplifier sans consigne écrite de Thomas.
-- ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en E-commerce (issue #158, 21 octobre, 12 h 58) ; sa nouvelle composition (`tests/onde-fixtures.ts`) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
+- ONDE AUDIO n'est plus la référence Pawish : refonte E-commerce (issue #158), puis reprise à l'identique des sept planches du 24 octobre (PR #183) ; sa composition (`tests/onde-fixtures.ts`, sections `on-*`, section Produit commune présente mais masquée) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 
 ## Avant chaque envoi (commit + push)

@@ -83,7 +83,7 @@ describe("HEUREN et ALCÔVE : thèmes actifs de la famille E-commerce (mono-prod
     const schema = fs.readFileSync(path.join(process.cwd(), "theme-base", "config", "settings_schema.json"), "utf8");
     for (const v of ["cadran", "arrondi", "heuren", "alcove"]) expect(schema).toContain(`"value": "${v}"`);
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base", "sections", "ed-opening.liquid"), "utf8")).toContain('"value": "arch"');
-    expect(FAMILY_LIBRARY.catalog.find((e) => e.key === "catalog.hero")!.dispositions.map((d) => d.id)).toEqual(["immersive", "journal", "arch", "fullscreen", "banner", "scene", "soft-panel", "soft-panel-right", "brand-band", "buy-bar"]);
+    expect(FAMILY_LIBRARY.catalog.find((e) => e.key === "catalog.hero")!.dispositions.map((d) => d.id)).toEqual(["immersive", "journal", "arch", "fullscreen", "banner", "scene", "soft-panel", "soft-panel-right", "brand-band", "buy-bar", "onde-split", "onde-wordmark", "onde-background", "onde-cta", "onde-orbit"]);
   });
 
   it("compositions distinctes : ni entre elles, ni avec ORBE (polices, en-têtes, pieds, ouverture)", () => {
