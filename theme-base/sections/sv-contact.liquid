@@ -9,10 +9,10 @@
 <section class="sv sv-contact">
   <div class="sv-c">
     <div class="sv-contact__inner">
-      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-contact__land' %}
+      {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-contact__land', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}
       <h1 class="sv-display sv-contact__title">{{ s.heading | escape | newline_to_br }}</h1>
       {%- if s.intro != blank -%}<p class="sv-contact__intro">{{ s.intro | escape | newline_to_br }}</p>{%- endif -%}
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-contact__photo', loading: 'eager' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-contact__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       {%- form 'contact', class: 'sv-contact__form', data-sv-contact: s.simulate | append: '' -%}
         {%- if form.posted_successfully? -%}<p class="sv-contact__status" role="status">{{ s.success_text }}</p>{%- endif -%}
         {%- if form.errors -%}<p class="sv-contact__status sv-contact__status--err" role="alert">{{ s.error_text }}</p>{%- endif -%}
@@ -54,10 +54,14 @@
     { "type": "text", "id": "image_asset", "label": "Photo verticale (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "image_picker", "id": "image_bottom", "label": "Paysage du bas" },
     { "type": "text", "id": "image_bottom_asset", "label": "Paysage du bas (fichier du thème)" },
     { "type": "text", "id": "image_bottom_position", "label": "Cadrage du paysage du bas", "default": "50% 60%" },
+    { "type": "text", "id": "image_bottom_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_bottom_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_bottom_zoom", "label": "Agrandissement du paysage du bas", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
     { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },

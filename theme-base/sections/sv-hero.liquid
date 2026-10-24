@@ -12,8 +12,8 @@
   <div class="sv-c">
     <div class="sv-hero__frame">
       {%- if s.layout == 'photo' -%}
-        {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-hero__photo', loading: 'eager' %}
-        {%- if s.image_mobile_asset != blank or s.image_mobile != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, class: 'sv-hero__photo sv-hero__photo--m', loading: 'eager' %}{%- endif -%}
+        {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-hero__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+        {%- if s.image_mobile_asset != blank or s.image_mobile != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-hero__photo sv-hero__photo--m', loading: 'eager' %}{%- endif -%}
         <span class="sv-hero__shade" aria-hidden="true"></span>
       {%- else -%}
         <span class="sv-topo sv-topo--field sv-hero__topo" aria-hidden="true"></span>
@@ -60,10 +60,13 @@
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "image_picker", "id": "image_mobile", "label": "Photo du téléphone" },
     { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
     { "type": "text", "id": "image_mobile_position", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_mobile_zoom", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "image_picker", "id": "product_image", "label": "Produit détouré (fond sombre)" },
     { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "header", "content": "Cartouche sombre" },

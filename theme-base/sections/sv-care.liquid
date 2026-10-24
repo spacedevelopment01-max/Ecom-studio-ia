@@ -30,7 +30,7 @@
         {%- endfor -%}
       </ul>
       <span class="sv-care__rule" aria-hidden="true"></span>
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-care__photo' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-care__photo', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       <a class="sv-display sv-care__cta" href="{{ s.link | default: routes.all_products_collection_url }}">{{ s.link_label | escape | newline_to_br }}</a>
       <a class="sv-circle sv-care__arrow" href="{{ s.link | default: routes.all_products_collection_url }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow' %}</a>
     </div>
@@ -50,6 +50,8 @@
     { "type": "image_picker", "id": "image", "label": "Photo ronde" },
     { "type": "text", "id": "image_asset", "label": "Photo ronde (fichier du thème)" },
     { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "textarea", "id": "link_label", "label": "Lien", "default": "Découvrir\nla machine" },
     { "type": "url", "id": "link", "label": "Adresse du lien" }

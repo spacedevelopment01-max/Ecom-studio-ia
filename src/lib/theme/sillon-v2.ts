@@ -28,10 +28,10 @@ export const SV_PAGES = [
   { handle: "carnet-ralentir-face-au-lac", handleEn: "journal-slowing-down-by-the-lake", fr: "Ralentir face au lac", en: "Slowing down by the lake", suffix: "sv-article-lac", foot: "light" },
   { handle: "carnet-une-route-un-matin", handleEn: "journal-a-road-a-morning", fr: "Une route, un matin", en: "A road, a morning", suffix: "sv-article-route", foot: "light" },
   { handle: "commande", handleEn: "checkout-demo", fr: "Commande", en: "Checkout", suffix: "sv-commande", foot: "legal" },
-  { handle: "faq", handleEn: "faq", fr: "Questions fréquentes", en: "Frequently asked questions", suffix: "sv-faq", foot: "legal" },
-  { handle: "contact", handleEn: "contact", fr: "Contact", en: "Contact", suffix: "sv-contact", foot: "legal" },
-  { handle: "livraison-et-retours", handleEn: "shipping-and-returns", fr: "Livraison et retours", en: "Shipping and returns", suffix: "sv-livraison", foot: "legal" },
-  { handle: "suivi-de-commande", handleEn: "order-tracking", fr: "Suivi de commande", en: "Order tracking", suffix: "sv-suivi", foot: "legal" },
+  { handle: "faq", handleEn: "faq", fr: "Questions fréquentes", en: "Frequently asked questions", suffix: "sv-faq", foot: "help" },
+  { handle: "contact", handleEn: "contact", fr: "Contact", en: "Contact", suffix: "sv-contact", foot: "help" },
+  { handle: "livraison-et-retours", handleEn: "shipping-and-returns", fr: "Livraison et retours", en: "Shipping and returns", suffix: "sv-livraison", foot: "help" },
+  { handle: "suivi-de-commande", handleEn: "order-tracking", fr: "Suivi de commande", en: "Order tracking", suffix: "sv-suivi", foot: "help" },
   { handle: "mentions-legales", handleEn: "legal-notice", fr: "Mentions légales", en: "Legal notice", suffix: "sv-legal-mentions", foot: "legal" },
   { handle: "conditions-de-vente", handleEn: "terms-of-sale", fr: "Conditions de vente", en: "Terms of sale", suffix: "sv-legal-cgv", foot: "legal" },
   { handle: "confidentialite", handleEn: "privacy", fr: "Confidentialité", en: "Privacy", suffix: "sv-legal-confidentialite", foot: "legal" },
@@ -62,12 +62,17 @@ export function svTemplate(rows: Row[]): TemplateJson {
 }
 
 /** Réglages de l'en-tête flottant (couleurs et polices des planches ; boutique réelle : paiement Shopify). */
-export function headerSettings(lang: Lang, o: { cta: string; ctaLink: string; demo: boolean; checkoutPage?: string; cookiesLink: string; menuImage?: string }): Record<string, unknown> {
+export function headerSettings(lang: Lang, o: { cta: string; ctaLink: string; demo: boolean; checkoutPage?: string; cookiesLink: string; menuImage?: string; contactLink?: string; extraLabel?: string; extraLink?: string; thumb?: string }): Record<string, unknown> {
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return {
     wordmark: "", menu: "main-menu", nav_label: t("Navigation principale", "Main navigation"), cta_label: o.cta, cta_link: o.ctaLink, cart_label: t("Panier", "Cart"),
     menu_label: "Menu", menu_open_label: t("Ouvrir le menu", "Open the menu"), menu_close_label: t("Fermer le menu", "Close the menu"),
-    menu_image_asset: o.menuImage ?? "", menu_image_position: "50% 50%", menu_words: o.demo ? t("Explorer\nDéguster\nS'évader", "Explore\nTaste\nGet away") : "",
+    menu_image_asset: o.menuImage ?? "", menu_image_position: "50% 50%", menu_words: "",
+    menu_extra_label: o.extraLabel ?? "", menu_extra_link: o.extraLink ?? "", menu_contact_label: o.contactLink ? t("Nous contacter", "Contact us") : "", menu_contact_link: o.contactLink ?? "",
+    menu_cart_label: t("Mon panier", "My cart"), menu_legal: "legal",
+    drawer_title: t("Mon panier", "My cart"), drawer_close_label: t("Fermer le panier", "Close the cart"), drawer_subtotal: t("Sous-total", "Subtotal"), drawer_shipping: t("Livraison", "Shipping"),
+    drawer_shipping_value: t("Calculée à l'étape suivante", "Calculated at the next step"), drawer_total: t("Total produits", "Products total"), drawer_checkout: t("Passer commande", "Check out"),
+    drawer_view: t("Voir mon panier", "View my cart"), drawer_less: t("Retirer un exemplaire", "Remove one"), drawer_more: t("Ajouter un exemplaire", "Add one"), drawer_remove: t("Supprimer", "Remove"), drawer_thumb_asset: o.thumb ?? "",
     color_cream: "#EEE7D9", color_sand: "#E2D8C7", color_ink: "#211D15", color_night: "#1E1913", color_copper: "#B35D30", color_sage: "#6A6C5C", color_ivory: "#F1E9DC",
     label_font: "space_mono_n4", thin_font: "oswald_n2",
     demo_mode: o.demo, checkout_mode: o.demo ? "demo" : "shopify", checkout_page: o.checkoutPage ?? "",
@@ -87,6 +92,7 @@ export function footerSettings(lang: Lang, o: { tagline: string; lightTagline: s
     wordmark: "", menu: "main-menu", help_menu: "footer", legal_menu: "legal", tagline: o.tagline, show_newsletter: true,
     newsletter_label: t("S'inscrire avec votre e-mail", "Sign up with your email"), newsletter_placeholder: t("Votre e-mail", "Your email"), newsletter_done: t("Merci, votre inscription est enregistrée.", "Thank you, you are signed up."),
     light_tagline: o.lightTagline, light_link: o.lightLink, light_link_label: t("Découvrir", "Discover"), cookies_label: "Cookies", note: o.note ?? "",
+    col_explore: t("Explorer", "Explore"), col_help: t("Aide", "Help"), col_info: t("Informations", "Information"), copyright: t("Tous droits réservés.", "All rights reserved."),
   };
 }
 
@@ -144,7 +150,7 @@ export function finishSillon(spec: ThemeSpec, ctx: FinishCtx) {
   // Panier dans l'identité du thème ; chez un client, le bouton mène au paiement Shopify (aucune page de démonstration).
   if (spec.templates.cart && !spec.templates.cart.order.some((id) => spec.templates.cart.sections[id]?.type === "sv-cart")) {
     spec.templates.cart = svTemplate([
-      ["sv-cart", { heading: t("Votre\npanier.", "Your\ncart."), summary_title: t("Récapitulatif", "Summary"), subtotal_label: t("Sous-total", "Subtotal"), shipping_label: t("Livraison", "Shipping"), shipping_value: t("Calculée à\nl'étape suivante", "Calculated at\nthe next step"), total_label: "Total", total_value: t("Calculé à\nl'étape suivante", "Calculated at\nthe next step"), checkout_label: t("Passer commande", "Check out"), checkout_page: "", continue_label: t("Continuer\nmes achats", "Continue\nshopping"), continue_link: "", empty_text: t("Votre panier est vide pour le moment.", "Your cart is empty for now."), empty_button: t("Voir la boutique", "Visit the shop"), qty_label: t("Quantité", "Quantity"), less_label: t("Retirer un exemplaire", "Remove one"), more_label: t("Ajouter un exemplaire", "Add one"), remove_label: t("Supprimer", "Remove") }],
+      ["sv-cart", { heading: t("Votre\npanier.", "Your\ncart."), summary_title: t("Récapitulatif", "Summary"), subtotal_label: t("Sous-total", "Subtotal"), shipping_label: t("Livraison", "Shipping"), shipping_value: t("Calculée à\nl'étape suivante", "Calculated at\nthe next step"), total_label: t("Total produits", "Products total"), total_value: "", checkout_label: t("Passer commande", "Check out"), checkout_page: "", continue_label: t("Continuer\nmes achats", "Continue\nshopping"), continue_link: "", empty_text: t("Votre panier est vide pour le moment.", "Your cart is empty for now."), empty_button: t("Voir la boutique", "Visit the shop"), qty_label: t("Quantité", "Quantity"), less_label: t("Retirer un exemplaire", "Remove one"), more_label: t("Ajouter un exemplaire", "Add one"), remove_label: t("Supprimer", "Remove") }],
     ]);
   }
   if (spec.templates.cart) mark("cart", "legal");

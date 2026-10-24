@@ -14,9 +14,10 @@
       {%- if s.crumb != blank -%}<p class="sv-mono sv-article__crumb">{%- if s.crumb_link != blank -%}<a href="{{ s.crumb_link }}">{{ s.crumb }}</a>{%- else -%}{{ s.crumb }}{%- endif -%}</p>{%- endif -%}
       <h1 class="sv-display sv-article__title">{{ s.heading | escape | newline_to_br }}</h1>
       {%- if s.lead != blank -%}<p class="sv-mono sv-article__lead">{{ s.lead | escape | newline_to_br }}</p>{%- endif -%}
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-article__cover', loading: 'eager' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-article__cover', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       <nav class="sv-article__toc" aria-label="{{ s.toc_label | escape | strip_newlines }}">
         <p class="sv-display sv-article__toc-title">{{ s.toc_label | escape | newline_to_br }}</p>
+        <button type="button" class="sv-article__toc-toggle" aria-expanded="true" data-sv-toc-toggle><span class="visually-hidden">{{ s.toc_toggle_label }}</span>{% render 'sv-icon', name: 'up' %}</button>
         <span class="sv-article__toc-line" aria-hidden="true"></span>
         <ol role="list">
           {%- for block in section.blocks limit: 3 -%}<li><a href="#sv-part-{{ section.id }}-{{ forloop.index }}"><span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{{ block.settings.title }}</a></li>{%- endfor -%}
@@ -25,7 +26,7 @@
       <span class="sv-article__rule" aria-hidden="true"></span>
       <div class="sv-article__body">{{ s.body }}</div>
       {%- if s.quote != blank -%}<blockquote class="sv-display sv-article__quote">{{ s.quote | escape | newline_to_br }}</blockquote>{%- endif -%}
-      {% render 'sv-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, class: 'sv-article__side' %}
+      {% render 'sv-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, class: 'sv-article__side', pos_mobile: s.image_2_position_mobile, zoom_mobile: s.image_2_zoom_mobile %}
       <ol class="sv-article__parts" role="list">
         {%- for block in section.blocks limit: 3 -%}
           <li id="sv-part-{{ section.id }}-{{ forloop.index }}" class="sv-article__part" tabindex="-1" {{ block.shopify_attributes }}>
@@ -63,14 +64,19 @@
     { "type": "text", "id": "image_asset", "label": "Photo de couverture (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description" },
     { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "textarea", "id": "toc_label", "label": "Titre du sommaire", "default": "Dans\ncet article" },
+    { "type": "text", "id": "toc_toggle_label", "label": "Replier le sommaire (lecteurs d'écran)", "default": "Afficher ou masquer le sommaire" },
     { "type": "richtext", "id": "body", "label": "Texte" },
     { "type": "textarea", "id": "quote", "label": "Citation" },
     { "type": "image_picker", "id": "image_2", "label": "Photo verticale" },
     { "type": "text", "id": "image_2_asset", "label": "Photo verticale (fichier du thème)" },
     { "type": "text", "id": "image_2_alt", "label": "Description de la photo verticale" },
     { "type": "text", "id": "image_2_position", "label": "Cadrage de la photo verticale", "default": "50% 50%" },
+    { "type": "text", "id": "image_2_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_2_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "header", "content": "Bandeau produit" },
     { "type": "checkbox", "id": "show_product", "label": "Afficher le bandeau produit", "default": true },
     { "type": "product", "id": "product", "label": "Produit" },

@@ -1,16 +1,17 @@
 {%- comment -%}
   SILLON V2 : photo d'un emplacement (image choisie dans l'éditeur, sinon fichier du thème), cadrée par
   object-position et un agrandissement réglable (« zoom », en %), pour caler le cadrage sur la planche.
-  Paramètres : image, asset, alt, pos, pos_mobile, zoom, loading, class, sizes. Sans photo : rien.
+  Paramètres : image, asset, alt, pos, pos_mobile, zoom, zoom_mobile (téléphone), loading, class, sizes. Sans photo : rien.
 {%- endcomment -%}
 {%- liquid
   assign img_loading = loading | default: 'lazy'
   assign img_pos = pos | default: '50% 50%'
   assign img_pos_m = pos_mobile | default: img_pos
   assign img_zoom = zoom | default: 100
+  assign img_zoom_m = zoom_mobile | default: img_zoom
 -%}
 {%- if image != blank or asset != blank -%}
-  <div class="sv-img {{ class }}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }}; --z: {{ img_zoom | divided_by: 100.0 }};">
+  <div class="sv-img {{ class }}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }}; --z: {{ img_zoom | divided_by: 100.0 }}; --z-m: {{ img_zoom_m | divided_by: 100.0 }};">
     {%- if image != blank -%}
       {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: sizes | default: '100vw', widths: '400, 750, 1100, 1600, 2400', alt: alt }}
     {%- else -%}

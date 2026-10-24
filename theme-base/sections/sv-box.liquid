@@ -11,7 +11,7 @@
         <h2 class="sv-display sv-box__title">{{ s.heading }}</h2>
         {%- if s.text != blank -%}<p class="sv-box__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
       </div>
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-box__img' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-box__img', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       <ol class="sv-box__list" role="list">
         {%- for block in section.blocks -%}<li class="sv-mono" {{ block.shopify_attributes }}><span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>{{ block.settings.text }}</li>{%- endfor -%}
       </ol>
@@ -32,6 +32,8 @@
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description" },
     { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "note", "label": "Mention", "default": "Contenu illustratif" }
   ],

@@ -1,0 +1,5 @@
+{%- comment -%}
+  SILLON V2 : texte à retours à la ligne, avec une coupe propre au téléphone (planches mobiles) quand elle est donnée.
+  Paramètres : text, mobile (facultatif).
+{%- endcomment -%}
+{%- if mobile != blank and mobile != text -%}<span class="sv-d">{{ text | escape | newline_to_br }}</span><span class="sv-m">{{ mobile | escape | newline_to_br }}</span>{%- else -%}{{ text | escape | newline_to_br }}{%- endif -%}

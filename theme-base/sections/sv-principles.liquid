@@ -24,7 +24,7 @@
       {%- for block in section.blocks -%}
         {%- if block.type == 'photo' -%}
           {%- assign k = k | plus: 1 -%}
-          <div class="sv-principles__photo sv-principles__photo--{{ k }}" {{ block.shopify_attributes }}>{% render 'sv-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, zoom: block.settings.image_zoom %}</div>
+          <div class="sv-principles__photo sv-principles__photo--{{ k }}" {{ block.shopify_attributes }}>{% render 'sv-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, pos: block.settings.image_position, zoom: block.settings.image_zoom, pos_mobile: block.settings.image_position_mobile, zoom_mobile: block.settings.image_zoom_mobile %}</div>
         {%- endif -%}
       {%- endfor -%}
       {%- if s.text != blank -%}<p class="sv-mono sv-principles__phrase">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
@@ -49,6 +49,8 @@
         { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
         { "type": "text", "id": "image_alt", "label": "Description" },
         { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+        { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
         { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 }
       ]
     }

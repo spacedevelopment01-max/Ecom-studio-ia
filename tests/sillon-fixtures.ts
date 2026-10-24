@@ -114,7 +114,7 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   spec.store.seo = { title: "SILLON V2 | L'espresso nomade", description: "Prenez la tangente : un espresso, où que la route vous mène. Machine à espresso nomade (boutique de démonstration, prix illustratif)." };
 
   // Produit principal : une seule variante vendable (espresso & cuivre) ; prix illustratif, centralisé ici.
-  const gallery = ["v2-03-machine-pierre-claire.webp", "v2-02-machine-detouree.webp", "v2-09-rituel-extraction.webp"].filter((x) => ids[x]);
+  const gallery = ["v2-03-machine-pierre-claire.webp", "v2-02-machine-detouree.webp", "v2-09-rituel-extraction.webp", "v2-06-detail-ceinture-cuivre.webp"].filter((x) => ids[x]);
   const main: StoreProduct = {
     ...spec.store.product,
     contentTarget: "product:main", handle: SILLON_HANDLE, title: "SILLON V2", vendor: "SILLON",
@@ -130,22 +130,24 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
 
   // ------------------------------------------------------------------------------------------- Accueil (planche 01)
   spec.templates.index = svTemplate([
-    S("sv-hero", { layout: "photo", eyebrow: "01 / Départ", heading: "Prenez\nla tangente.", subtitle: "", text_mobile: "Un espresso d'exception\npartout avec vous.", image_asset: f("v2-01-accueil-van-route-lac.webp"), image_alt: alt("v2-01-accueil-van-route-lac.webp"), image_position: "8% 30%", image_zoom: 106, image_mobile_asset: f("v2-24-mobile-machine-rocher.webp"), image_mobile_position: "50% 60%", card_title: "Le café suit votre route", card_text: "Routes sinueuses, haltes imprévues,\nmêmes exigences.", card_link_label: "Explorer SILLON", card_link: U("sillon"), show_route: true, mobile_link: PRODUCT, mobile_link_label: "Découvrir la machine", height: 688, height_mobile: 640 }),
+    S("sv-hero", { layout: "photo", eyebrow: "01 / Départ", heading: "Prenez\nla tangente.", subtitle: "", image_asset: f("v2-01-accueil-van-route-lac.webp"), image_alt: alt("v2-01-accueil-van-route-lac.webp"), image_position: "8% 30%", image_zoom: 106, card_title: "Le café suit votre route", card_text: "Routes sinueuses, haltes imprévues,\nmêmes exigences.", card_link_label: "Explorer SILLON", card_link: U("sillon"), show_route: true, image_mobile_asset: f("v2-01-accueil-van-route-lac.webp"), image_mobile_position: "58% 50%", image_mobile_zoom: 100, height: 688, height_mobile: 912 }),
     S("sv-format", { heading: "Petit format.", heading_accent: "Grande échappée.", text: "Un espresso d'exception,\npartout où la route vous mène.", link_label: "Découvrir la machine", link: PRODUCT, product: SILLON_HANDLE, image_asset: f("v2-02-machine-detouree.webp"), image_alt: alt("v2-02-machine-detouree.webp"), words: "Compacte\nÉlégante\nToujours partante" }),
     S("sv-collage", { word: "SILLON", text_left: "Le café\ndessine\nd'autres\nhorizons.", label_1_number: "01", label_1: "La route", label_2_number: "02", label_2: "La halte", text_right: "Même café.\nAutre paysage." }, [
       { type: "photo", settings: { image_asset: f("v2-05-machine-tasse-lac.webp"), image_alt: alt("v2-05-machine-tasse-lac.webp"), image_position: "50% 60%", image_zoom: 100 } },
       { type: "photo", settings: { image_asset: f("v2-04-van-lac-halte.webp"), image_alt: alt("v2-04-van-lac-halte.webp"), image_position: "72% 60%", image_zoom: 100 } },
     ]),
-    S("sv-band", { style: "copper", heading: "Le détour\nen vaut la tasse.", text: "Plus loin\nPlus libre\nToujours un bon café.", link: U("le-rituel"), link_label: "Découvrir le rituel", icon: "arrow-ne" }),
+    S("sv-band", { style: "copper", heading: "Le détour\nen vaut la tasse.", heading_mobile: "Le détour\nen vaut\nla tasse.", text: "Plus loin\nPlus libre\nToujours un bon café.", link: U("le-rituel"), link_label: "Découvrir le rituel", icon: "arrow-ne" }),
     S("sv-ritual", { layout: "row", heading: "Le rituel", text: "Trois gestes.\nUn grand ailleurs." }, [
-      { type: "step", settings: { number: "01", title: "Allumer", text: "Un geste, et l'aventure\ncommence.", image_asset: f("v2-14-rituel-couvercle-bouton.webp"), image_alt: alt("v2-14-rituel-couvercle-bouton.webp"), image_position: "50% 32%", image_zoom: 150 } },
-      { type: "step", settings: { number: "02", title: "Extraire", text: "Un espresso riche\net généreux.", image_asset: f("v2-09-rituel-extraction.webp"), image_alt: alt("v2-09-rituel-extraction.webp"), image_position: "50% 62%", image_zoom: 140 } },
-      { type: "step", settings: { number: "03", title: "Savourer", text: "Le temps reprend\nle bon rythme.", image_asset: f("v2-10-rituel-tasse-crema.webp"), image_alt: alt("v2-10-rituel-tasse-crema.webp"), image_position: "50% 58%", image_zoom: 130 } },
+      { type: "step", settings: { number: "01", title: "Allumer", text: "Un geste, et l'aventure\ncommence.", title_mobile: "Préparer", text_mobile: "Allumer.\nUne petite\naventure\ncommence.", image_asset: f("v2-14-rituel-couvercle-bouton.webp"), image_alt: alt("v2-14-rituel-couvercle-bouton.webp"), image_position: "50% 32%", image_zoom: 150 } },
+      { type: "step", settings: { number: "02", title: "Extraire", text: "Un espresso riche\net généreux.", title_mobile: "Lancer", text_mobile: "Un espresso\nriche et généreux.", image_asset: f("v2-09-rituel-extraction.webp"), image_alt: alt("v2-09-rituel-extraction.webp"), image_position: "50% 62%", image_zoom: 140 } },
+      { type: "step", settings: { number: "03", title: "Savourer", text: "Le temps reprend\nle bon rythme.", text_mobile: "Le temps\nreprend\nle bon rythme.", image_asset: f("v2-10-rituel-tasse-crema.webp"), image_alt: alt("v2-10-rituel-tasse-crema.webp"), image_position: "50% 58%", image_zoom: 130 } },
     ]),
     S("sv-posts", { layout: "home", heading: "Dans le carnet", read_label: "Lire l'article" }, [
-      { type: "post", settings: { image_asset: f("v2-21-article-van-table-lac.webp"), image_position: "50% 55%", image_zoom: 100, title: "Le café en van", text: "Routes, lacs et premiers rayons.\nLe café comme point de repère.", link: U("carnet-le-cafe-en-van") } },
+      { type: "post", settings: { image_asset: f("v2-21-article-van-table-lac.webp"), image_position: "50% 55%", image_zoom: 100, title: "Le café en van", text: "Routes, lacs et premiers rayons.\nLe café comme point de repère.", text_mobile: "Roadtrips, lacs et premiers rayons.\nLe café comme point de repère.", link: U("carnet-le-cafe-en-van") } },
       { type: "post", settings: { image_asset: f("v2-20-journal-lac-coucher.webp"), image_position: "50% 50%", image_zoom: 100, title: "Ralentir face au lac", text: "Moins de kilomètres.\nPlus de moments.", link: U("carnet-ralentir-face-au-lac") } },
     ]),
+    // Téléphone seulement (planche mobile « Accueil 2/2 ») : inscription cuivre avant le pied.
+    S("sv-band", { visibility: "mobile", style: "newsletter", heading: "Restons\nen chemin.", text: "L'essentiel, pour partir plus loin.", field_label: "Votre e-mail pour recevoir les prochains carnets", placeholder: "Votre e-mail", done: "Démonstration : aucune inscription n'est enregistrée." }),
     S("sv-page", { footer: "dark" }),
   ]);
 
@@ -153,13 +155,13 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   for (const key of Object.keys(spec.templates)) if (key.startsWith("product.")) delete spec.templates[key];
   main.template_suffix = undefined;
   spec.templates.product = svTemplate([
-    S("sv-product", { eyebrow: "Équipement / 001", heading: "L'espresso\nqui prend l'air.", text: "La liberté d'un grand café,\ndans un format pensé\npour vos horizons.", image_asset: f("v2-03-machine-pierre-claire.webp"), image_width: 922, image_left: 60, image_top: 46, background: "#E8D9C5", price_note: "", swatch_1: "#4A2E22", card_text: "Un espresso d'exception,\npartout où la route vous mène." }, [
+    S("sv-product", { eyebrow: "Équipement / 001", heading: "L'espresso\nqui prend l'air.", text: "La liberté d'un grand café,\ndans un format pensé\npour vos horizons.", image_asset: f("v2-03-machine-pierre-claire.webp"), image_width: 922, image_left: 60, image_top: 46, background: "#E8D9C5", image_mobile_asset: f("v2-03-machine-pierre-claire.webp"), image_mobile_position: "50% 50%", image_mobile_width: 1030, image_mobile_left: -448, image_mobile_top: 360, crumb_home: "Accueil", crumb_current: "La machine", card_name: "SILLON", card_subtitle: "L'espresso nomade", finish_label: "Finition", price_note: "", swatch_1: "#4A2E22", card_text: "Un espresso d'exception,\npartout où la route vous mène." }, [
       { type: "swatch", settings: { color: "#7F8573", label: "Sauge — coloris indisponible dans cette démonstration" } },
       { type: "link", settings: { icon: "truck", label: "Livraison", link: U("livraison-et-retours") } },
       { type: "link", settings: { icon: "question", label: "Aide", link: U("faq") } },
       { type: "link", settings: { icon: "return", label: "Retours", link: `${U("livraison-et-retours")}#retours` } },
     ]),
-    S("sv-banner", { layout: "left", heading: "Faites de la place\naux bonnes pauses.", image_asset: f("v2-21-article-van-table-lac.webp"), image_alt: alt("v2-21-article-van-table-lac.webp"), image_position: "50% 50%", image_zoom: 100, link: U("carnet-le-cafe-en-van"), link_label: "Lire « Le café en van »", height: 236 }),
+    S("sv-banner", { layout: "left", heading: "Faites de la place\naux bonnes pauses.", image_asset: f("v2-21-article-van-table-lac.webp"), image_alt: alt("v2-21-article-van-table-lac.webp"), image_position: "50% 50%", image_zoom: 100, link: U("carnet-le-cafe-en-van"), link_label: "Lire « Le café en van »", height: 236, image_position_mobile: "55% 50%" }),
     S("sv-details", { number: "02", heading: "Le sens\ndu détail" }, [
       { type: "point", settings: { text: "Un design épuré" } }, { type: "point", settings: { text: "Des matériaux soignés" } }, { type: "point", settings: { text: "Toujours avec vous" } },
       { type: "photo", settings: { image_asset: f("v2-06-detail-ceinture-cuivre.webp"), image_alt: alt("v2-06-detail-ceinture-cuivre.webp"), image_position: "50% 50%", image_zoom: 100 } },
@@ -171,11 +173,14 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
       { type: "step", settings: { number: "02", title: "Extraire", text: "Un espresso riche\net généreux.", image_asset: f("v2-09-rituel-extraction.webp"), image_alt: alt("v2-09-rituel-extraction.webp"), image_position: "50% 62%", image_zoom: 100 } },
       { type: "step", settings: { number: "03", title: "Savourer", text: "Une pause qui a du goût,\nailleurs.", image_asset: f("v2-10-rituel-tasse-crema.webp"), image_alt: alt("v2-10-rituel-tasse-crema.webp"), image_position: "50% 55%", image_zoom: 100 } },
     ]),
-    S("sv-box", { heading: "Dans le coffret", text: "L'essentiel,\npour partir plus loin.", image_asset: f("v2-11-coffret-accessoires.webp"), image_alt: alt("v2-11-coffret-accessoires.webp"), image_position: "50% 50%", image_zoom: 100, note: "Contenu illustratif — liste à confirmer" }, ["SILLON V2", "Pochette de transport", "Câble de charge", "Brosse de nettoyage", "Guide rapide"].map((text) => ({ type: "item", settings: { text } }))),
+    S("sv-box", { heading: "Dans le coffret", text: "L'essentiel,\npour partir plus loin.", image_asset: f("v2-11-coffret-accessoires.webp"), image_alt: alt("v2-11-coffret-accessoires.webp"), image_position: "50% 50%", image_zoom: 100, note: "Contenu illustratif" }, ["SILLON V2", "Pochette de transport", "Câble de charge", "Brosse de nettoyage", "Guide rapide"].map((text) => ({ type: "item", settings: { text } }))),
     S("sv-faqlinks", { heading: "Questions fréquentes", text: "Tout ce qu'il faut savoir\navant de partir." }, [
       { type: "category", settings: { label: "Utilisation", link: `${U("faq")}#utilisation` } },
       { type: "category", settings: { label: "Entretien", link: `${U("faq")}#machine` } },
-      { type: "category", settings: { label: "Livraison", link: `${U("faq")}#commande` } },
+      { type: "category", settings: { label: "Livraison", link: `${U("faq")}#livraison` } },
+      { type: "question", settings: { question: "Le produit est-il facile à utiliser ?", answer: p(`Consultez la notice pour retrouver les conseils d'utilisation de votre machine. Toutes les réponses : <a href="${U("faq")}">questions fréquentes</a>.`) } },
+      { type: "question", settings: { question: "Comment l'entretenir ?", answer: p("Rincez après chaque utilisation, laissez sécher puis rangez la machine au sec. Les gestes précis sont décrits dans la notice.") } },
+      { type: "question", settings: { question: "La livraison est-elle disponible partout ?", answer: p(`Les zones, délais et frais sont indiqués à l'étape de livraison de la commande. ${TODO("zones de livraison desservies")}`) } },
     ]),
     S("sv-banner", { layout: "center", heading: "Prêt pour\nvotre prochaine pause ?", image_asset: f("v2-12-panorama-route-alpine.webp"), image_alt: alt("v2-12-panorama-route-alpine.webp"), image_position: "50% 62%", image_zoom: 100, link: U("le-rituel"), link_label: "Découvrir le rituel", height: 150 }),
     S("sv-buybar", { label: "SILLON", add_label: "Ajouter au panier" }),
@@ -203,7 +208,7 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     lightFoot,
   ] };
   pages.sillon = { seo: "SILLON : on aime les détours. Le café comme compagnon d'exploration.", rows: [
-    S("sv-hero", { layout: "photo", eyebrow: "", heading: "On aime\nles détours.", subtitle: "Le café comme\ncompagnon\nd'exploration.", image_asset: f("v2-04-van-lac-halte.webp"), image_alt: alt("v2-04-van-lac-halte.webp"), image_position: "55% 60%", image_zoom: 100, card_title: "", show_route: false, title_size: 166, title_line: 188, text_left: 71, text_top: 176, height: 745, height_mobile: 640 }),
+    S("sv-hero", { layout: "photo", eyebrow: "", heading: "On aime\nles détours.", subtitle: "Le café comme\ncompagnon\nd'exploration.", image_asset: f("v2-04-van-lac-halte.webp"), image_alt: alt("v2-04-van-lac-halte.webp"), image_position: "55% 60%", image_zoom: 100, image_mobile_asset: f("v2-04-van-lac-halte.webp"), image_mobile_position: "94% 60%", card_title: "", show_route: false, title_size: 166, title_line: 188, text_left: 71, text_top: 176, height: 745, height_mobile: 618 }),
     S("sv-principles", { text: "Le café\ns'invite\npartout." }, [
       { type: "principle", settings: { title: "Plus de horizons\ndans le quotidien.", text: "SILLON existe pour celles et ceux\nqui prennent la route, même pour\nun simple week-end." } },
       { type: "principle", settings: { title: "Des rituels simples\net essentiels.", text: "Un bon café, partout,\npour faire une pause à sa manière." } },
@@ -274,44 +279,46 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   // <<pages planche 03>>
   // Achat et aide (planche 03) : pied réduit aux liens légaux. Délais, frais, transporteurs, garantie et conditions ne
   // sont jamais inventés : « [À compléter : …] » tant que la boutique ne les a pas donnés.
-  const legalFoot = S("sv-page", { footer: "legal" });
+  const legalFoot = S("sv-page", { footer: "legal" }), helpFoot = S("sv-page", { footer: "help" });
   const land = "v2-12-panorama-route-alpine.webp", rock = "v2-24-mobile-machine-rocher.webp";
   spec.templates.cart = svTemplate([
-    S("sv-cart", { heading: "Prêt pour\nle départ ?", image_asset: f(land), image_position: "0% 55%", image_zoom: 160, image_top_asset: f(land), image_top_position: "8% 40%", line_image_asset: f("v2-02-machine-detouree.webp"), summary_title: "Récapitulatif", subtotal_label: "Sous-total", shipping_label: "Livraison", shipping_value: "Calculée à\nl'étape suivante", total_label: "Total", total_value: "Calculé à\nl'étape suivante", checkout_label: "Passer commande", checkout_page: U("commande"), note: "Démonstration : prix illustratif, aucun paiement.", continue_label: "Continuer\nla découverte", continue_link: PRODUCT, empty_text: "Votre panier est vide pour le moment.", empty_button: "Découvrir la machine", qty_label: "Quantité", less_label: "Retirer un exemplaire", more_label: "Ajouter un exemplaire", remove_label: "Supprimer" }),
+    S("sv-cart", { heading: "Prêt pour\nle départ ?", image_asset: f(land), image_position: "0% 55%", image_zoom: 160, image_top_asset: f(land), image_top_position: "8% 40%", line_image_asset: f("v2-02-machine-detouree.webp"), summary_title: "Récapitulatif", subtotal_label: "Sous-total", shipping_label: "Livraison", shipping_value: "Calculée à\nl'étape suivante", total_label: "Total produits", total_value: "", checkout_label: "Passer commande", checkout_page: U("commande"), note: "Démonstration : prix illustratif, aucun paiement.", continue_label: "Continuer\nla découverte", continue_link: PRODUCT, empty_heading: "La route\nvous attend.", empty_text: "Votre panier est encore vide.", empty_button: "Découvrir la machine", empty_link: PRODUCT, help_title: "Besoin d'aide ?", help_text: "Une question sur notre machine,\nune commande ?\nNous sommes là pour vous aider.", help_link_label: "Nous contacter", help_link: U("contact"), qty_label: "Quantité", less_label: "Retirer un exemplaire", more_label: "Ajouter un exemplaire", remove_label: "Supprimer" }),
     legalFoot,
   ]);
   pages["commande"] = { seo: "Commande de démonstration SILLON : aucun paiement, aucun envoi.", rows: [
-    S("sv-checkout", { heading: "Dernière\nétape avant\nl'échappée.", image_asset: f(land), image_position: "30% 20%", image_bottom_asset: f(land), image_bottom_position: "0% 30%", image_bottom_zoom: 200, thumb_asset: f("v2-02-machine-detouree.webp"), countries: "France, Belgique, Suisse, Luxembourg", ship_option: "Livraison (exemple)", ship_option_note: TODO("transporteurs, délais et frais de livraison"), shipping_value: "À calculer" }),
+    S("sv-checkout", { heading: "Dernière\nétape avant\nl'échappée.", image_asset: f(land), image_position: "30% 20%", image_bottom_asset: f(land), image_bottom_position: "0% 30%", image_bottom_zoom: 200, thumb_asset: f("v2-02-machine-detouree.webp"), countries: "France, Belgique, Suisse, Luxembourg", country_first: true, ship_text: `Les modes de livraison disponibles s'affichent ici dans la boutique réelle. ${TODO("transporteurs, délais et frais de livraison")}`, shipping_value: "À calculer", next1: "Continuer vers la livraison", next2: "Continuer vers le paiement", next3: "Valider le paiement", help_link: U("contact") }),
     legalFoot,
   ] };
   const faq: [string, string, string][] = [
-    ["Utilisation", "Comment utiliser SILLON ?", p("SILLON est conçue pour vous accompagner partout. Remplissez le réservoir, appuyez sur le bouton et laissez l'extraction se faire. Vous obtenez un espresso où que vous soyez.")],
+    ["Utilisation", "Comment utiliser SILLON ?", p("Consultez la notice pour retrouver les conseils d'utilisation de votre machine.")],
     ["Machine", "Où consulter la notice ?", p("La notice accompagne la machine. " + TODO("lien vers la notice officielle (PDF) — aucune notice n'est publiée dans cette démonstration"))],
     ["Machine", "Comment entretenir la machine ?", p("Rincez après chaque utilisation, laissez sécher puis rangez la machine au sec. Les gestes précis et les pièces à démonter sont décrits dans la notice.") + p(TODO("consignes d'entretien de la notice officielle"))],
-    ["Commande", "Comment suivre ma commande ?", p(`Rendez-vous sur la page <a href="${U("suivi-de-commande")}">Suivi de commande</a> avec votre numéro de commande et votre e-mail.`)],
+    ["Machine", "Comment ranger SILLON ?", p("Une fois sèche, rangez-la à l'abri de l'humidité et des chocs, par exemple dans sa pochette de transport.")],
+    ["Livraison", "Comment suivre ma commande ?", p(`Rendez-vous sur la page <a href="${U("suivi-de-commande")}">Suivi de commande</a> avec votre numéro de commande et votre e-mail.`)],
     ["Commande", "Comment demander un retour ?", p(`Écrivez-nous depuis la page <a href="${U("contact")}">Contact</a> en choisissant « Un retour ». Conditions et délais : ${TODO("politique de retour de la boutique")}.`)],
+    ["Commande", "Comment vous contacter ?", p(`Par le formulaire de la page <a href="${U("contact")}">Contact</a> : nous vous répondons avec soin.`)],
   ];
   pages["faq"] = { seo: "Questions fréquentes SILLON : utilisation, notice, entretien, suivi et retours.", rows: [
-    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), search_placeholder: "Rechercher une question…", filters: "Machine, Utilisation, Commande", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180 },
+    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), image_mobile_asset: f(rock), image_mobile_position: "50% 62%", search_placeholder: "Rechercher une réponse…", filters: "Machine, Utilisation, Commande, Livraison", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180 },
       faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer } }))),
-    legalFoot,
+    helpFoot,
   ] };
   pages["contact"] = { seo: "Contacter SILLON : une question, une demande ou simplement envie d'échanger.", rows: [
     S("sv-contact", { heading: "On garde\nle contact.", intro: "Une question, une demande\nou simplement envie d'échanger ?\nNotre équipe vous répond avec soin.", image_asset: f("v2-23-contact-van-machine.webp"), image_alt: alt("v2-23-contact-van-machine.webp"), image_position: "50% 50%", image_bottom_asset: f(land), image_bottom_position: "0% 55%", image_bottom_zoom: 160, subjects: "La machine, Une commande, Un retour, Autre", simulate: true, card_title: "Ou accédez directement à :" },
       [["La machine", PRODUCT], ["Une commande", U("suivi-de-commande")], ["Un retour", `${U("livraison-et-retours")}#retours`]].map(([label, link]) => ({ type: "link", settings: { label, link } }))),
-    legalFoot,
+    helpFoot,
   ] };
   pages["livraison-et-retours"] = { seo: "Livraison, suivi et retours SILLON.", rows: [
-    S("sv-info", { heading: "Les infos\ndu voyage.", image_asset: f("v2-15-marque-route-lacets.webp"), image_position: "88% 50%", help_text: "Une question sur la livraison ou un retour ?\nNous sommes là pour vous aider.", help_link: U("contact") }, [
+    S("sv-info", { heading: "Les infos\ndu voyage.", image_asset: f("v2-15-marque-route-lacets.webp"), image_position: "88% 50%", help_text: "Une question sur la livraison ou un retour ?\nNous sommes là pour vous aider.", help_link: U("contact"), note: "Conditions commerciales à compléter.", image_bottom_asset: f("v2-15-marque-route-lacets.webp"), image_bottom_position: "20% 70%" }, [
       { type: "part", settings: { title: "Livraison", icon: "truck", anchor: "livraison", text: p("Nous préparons votre commande avec soin et vous la confions à nos partenaires de livraison. Les détails et frais vous sont indiqués à l'étape suivante.") } },
       { type: "part", settings: { title: "Suivi", icon: "pin", anchor: "suivi", text: p("Une fois expédiée, vous recevrez un e-mail avec les informations pour suivre votre commande en temps réel.") } },
       { type: "part", settings: { title: "Retours", icon: "box", anchor: "retours", text: p("Si un produit ne vous convient pas, vous pouvez demander un retour depuis votre espace ou en nous contactant. Nous vous accompagnons dans cette démarche.") } },
     ]),
-    legalFoot,
+    helpFoot,
   ] };
   pages["suivi-de-commande"] = { seo: "Suivre une commande SILLON (démonstration : résultat d'exemple).", rows: [
     S("sv-track", { heading: "Où en est\nvotre SILLON ?", intro: "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande.", image_asset: f(rock), image_alt: alt(rock), image_position: "67% 89%", image_zoom: 140, title_width: 88, number_placeholder: "Ex. SLN123456", email_placeholder: "votre@email.com", simulate: true, help_link: U("contact"), note: "Conditions commerciales à compléter" }),
-    legalFoot,
+    helpFoot,
   ] };
   const legal = (heading: string, body: string, cookies = false): { seo: string; rows: Row[] } => ({ seo: `${heading.replace(/\n/g, " ")} — SILLON.`, rows: [S("sv-legal", { heading, body, show_cookies_button: cookies }), legalFoot] });
   pages["mentions-legales"] = legal("Mentions\nlégales.", p("Boutique de démonstration du studio : aucune vente réelle.") + p(TODO("éditeur du site, forme juridique, adresse, immatriculation, directeur de la publication, hébergeur")));
@@ -328,11 +335,19 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   // ------------------------------------------------------------------------------------------- En-tête, pied, menus
   const header = spec.groups.header;
   const hid = header.order.find((id) => header.sections[id].type === "sv-header")!;
-  header.sections[hid].settings = headerSettings("fr", { cta: "Découvrir", ctaLink: PRODUCT, demo: true, checkoutPage: U("commande"), cookiesLink: U("cookies"), menuImage: f("v2-12-panorama-route-alpine.webp") });
+  header.sections[hid].settings = headerSettings("fr", { cta: "Découvrir", ctaLink: PRODUCT, demo: true, checkoutPage: U("commande"), cookiesLink: U("cookies"), menuImage: f("v2-12-panorama-route-alpine.webp"), contactLink: U("contact"), extraLabel: "Assistance", extraLink: U("faq"), thumb: f("v2-02-machine-detouree.webp") });
+  header.sections[hid].settings.menu_image_position = "10% 45%"; // fond montagne, sans le produit
   const footer = spec.groups.footer;
   const fid = footer.order.find((id) => footer.sections[id].type === "sv-footer")!;
   footer.sections[fid].settings = footerSettings("fr", { tagline: "Une autre façon\nde prendre la route.", lightTagline: "Le café\nvous mène\nplus loin.", lightLink: PRODUCT, note: "Boutique de démonstration — prix illustratif, aucun paiement." });
   spec.store.menus["main-menu"] = { title: "Navigation", links: [{ title: "La machine", url: PRODUCT }, { title: "Le rituel", url: U("le-rituel") }, { title: "Carnet", url: U("carnet") }, { title: "SILLON", url: U("sillon") }] };
   spec.store.menus.footer = { title: "Aide", links: [{ title: "Aide", url: U("faq") }, { title: "Livraison", url: U("livraison-et-retours") }, { title: "Retours", url: `${U("livraison-et-retours")}#retours` }, { title: "Mentions légales", url: U("mentions-legales") }] };
+  spec.store.menus["legal-short"] = { title: "Liens légaux (court)", links: [{ title: "Confidentialité", url: U("confidentialite") }, { title: "Conditions", url: U("conditions-de-vente") }] };
+  footer.sections[fid].settings.dark_legal_menu = "legal-short";
+  // Planche mobile 04 : colonnes du pied sombre propres au téléphone.
+  spec.store.menus["footer-explore-m"] = { title: "Explorer (téléphone)", links: [{ title: "La machine", url: PRODUCT }, { title: "Le rituel", url: U("le-rituel") }, { title: "Le carnet", url: U("carnet") }, { title: "SILLON", url: U("sillon") }] };
+  spec.store.menus["footer-help-m"] = { title: "Aide (téléphone)", links: [{ title: "Livraison", url: U("livraison-et-retours") }, { title: "Retours", url: `${U("livraison-et-retours")}#retours` }, { title: "Mentions légales", url: U("mentions-legales") }] };
+  footer.sections[fid].settings.menu_mobile = "footer-explore-m";
+  footer.sections[fid].settings.help_menu_mobile = "footer-help-m";
   spec.store.menus.legal = { title: "Informations légales", links: [{ title: "Mentions légales", url: U("mentions-legales") }, { title: "Conditions de vente", url: U("conditions-de-vente") }, { title: "Confidentialité", url: U("confidentialite") }] };
 }

@@ -17,6 +17,7 @@
       {%- if s.text != blank -%}<p class="sv-format__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
       <a class="sv-circle sv-circle--copper-line sv-format__arrow" href="{{ link }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow-ne' %}</a>
       {%- if s.link_label != blank -%}<a class="sv-link sv-link--dark sv-format__link" href="{{ link }}">{{ s.link_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>{%- endif -%}
+        {%- if s.show_price and p != blank -%}<p class="sv-format__price">— {{ p.price | money_without_trailing_zeros }}</p>{%- endif -%}
       <span class="sv-format__circle" aria-hidden="true"></span>
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: '50% 50%', class: 'sv-format__product sv-cut' %}
       {%- if s.words != blank -%}
@@ -37,6 +38,7 @@
     { "type": "text", "id": "link_label", "label": "Lien", "default": "Découvrir la machine" },
     { "type": "url", "id": "link", "label": "Adresse du lien", "info": "Vide : la fiche du produit." },
     { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "checkbox", "id": "show_price", "label": "Prix du produit sous le lien (téléphone)", "default": true },
     { "type": "image_picker", "id": "image", "label": "Produit détouré (fond transparent)" },
     { "type": "text", "id": "image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description du produit" },

@@ -11,7 +11,7 @@
     <div class="sv-track__inner">
       <span class="sv-topo sv-topo--tall sv-track__topo" aria-hidden="true"></span>
       {% render 'sv-route', d: 'M330 0C350 60 300 80 260 120S330 220 300 300 200 380 150 430 40 520 0 600', vb: '0 0 360 600', dots: '326,163 300,300 220,400 0,600', class: 'sv-track__route' %}
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager' %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       <h1 class="sv-display sv-track__title"{% if s.title_width != 100 %} style="--sx: {{ s.title_width | divided_by: 100.0 }}"{% endif %}>{{ s.heading | escape | newline_to_br }}</h1>
       {%- if s.intro != blank -%}<p class="sv-track__intro">{{ s.intro | escape | newline_to_br }}</p>{%- endif -%}
       <form class="sv-track__form" action="{{ s.account_link | default: routes.account_url }}" method="get" novalidate data-sv-track="{% if s.simulate %}demo{% endif %}">
@@ -23,6 +23,7 @@
           <p class="sv-track__result-text">{{ s.demo_result }}</p>
         </div>
       </form>
+      {%- if s.hint_text != blank -%}<div class="sv-track__hint"><span aria-hidden="true">?</span><p>{{ s.hint_text | escape | newline_to_br }}</p></div>{%- endif -%}
       <div class="sv-track__help">
         <span class="sv-track__help-ico" aria-hidden="true">?</span>
         <p class="sv-track__help-title">{{ s.help_title }}</p>
@@ -46,6 +47,8 @@
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "number_label", "label": "Numéro de commande", "default": "Numéro de commande" },
     { "type": "text", "id": "number_placeholder", "label": "Exemple de numéro", "default": "Ex. 1001" },
@@ -58,6 +61,7 @@
     { "type": "checkbox", "id": "simulate", "label": "Résultat d'exemple (démonstration)", "default": false },
     { "type": "text", "id": "demo_tag", "label": "Étiquette du résultat d'exemple", "default": "Exemple — démonstration" },
     { "type": "textarea", "id": "demo_result", "label": "Résultat d'exemple", "default": "Cette boutique est une démonstration : aucune commande réelle n'existe. Dans la boutique réelle, l'état de votre commande s'afficherait ici." },
+    { "type": "textarea", "id": "hint_text", "label": "Astuce sous le bouton (téléphone)", "default": "Vous ne retrouvez pas votre numéro ?\nConsultez votre e-mail de confirmation." },
     { "type": "text", "id": "help_title", "label": "Titre de l'aide", "default": "Besoin d'aide ?" },
     { "type": "textarea", "id": "help_text", "label": "Texte de l'aide", "default": "Une question sur votre\ncommande ? Nous sommes\nlà pour vous aider." },
     { "type": "text", "id": "help_link_label", "label": "Lien de l'aide", "default": "Nous contacter" },
