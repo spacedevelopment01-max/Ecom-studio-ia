@@ -6,8 +6,13 @@
   Porte aussi les réglages communs du thème : couleurs, polices des étiquettes et de la signature, mention de
   démonstration, mode de commande (démonstration ou paiement Shopify), bandeau cookies.
 {%- endcomment -%}
+{%- comment -%} sv_cart : site sans boutique (services) → ni panier, ni tiroir, ni lien de panier. {%- endcomment -%}
 {%- liquid
   assign s = section.settings
+  assign sv_cart = true
+  if settings.cart_type == 'none'
+    assign sv_cart = false
+  endif
   assign menu = linklists[s.menu]
   assign menu_legal = linklists[s.menu_legal]
   assign label_font = s.label_font
@@ -75,10 +80,12 @@
         <span class="visually-hidden">{{ s.menu_open_label }}</span>{% render 'sv-icon', name: 'menu' %}
       </button>
     </div>
+    {%- if sv_cart -%}
     <a class="sv-header__cart{% if cart.item_count > 0 %} has-items{% endif %}" href="{{ routes.cart_url }}" aria-label="{{ s.cart_label | escape }}">
       {% render 'sv-icon', name: 'cart' %}
       <span class="sv-header__count" data-sv-count data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
     </a>
+    {%- endif -%}
   </div>
 </header>
 
@@ -96,13 +103,14 @@
   {% render 'sv-route', d: 'M-4 1008C40 990 80 966 120 948S190 900 228 862 278 822 290 798 280 760 296 730 318 684 328 672 348 642 357 634 380 600 394 556', vb: '0 0 390 1170', dots: '120,948 297,783 328,672 357,634', class: 'sv-menu__route', width: 2.4 %}
   <ul class="sv-menu__actions" role="list">
     {%- if s.menu_contact_label != blank -%}<li><a href="{{ s.menu_contact_link | default: routes.root_url }}">{% render 'sv-icon', name: 'mail' %}<span>{{ s.menu_contact_label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>{%- endif -%}
-    <li><a href="{{ routes.cart_url }}">{% render 'sv-icon', name: 'cart' %}<span>{{ s.menu_cart_label }} (<span data-sv-count-text>{{ cart.item_count }}</span>)</span>{% render 'sv-icon', name: 'arrow' %}</a></li>
+    {%- if sv_cart -%}<li><a href="{{ routes.cart_url }}">{% render 'sv-icon', name: 'cart' %}<span>{{ s.menu_cart_label }} (<span data-sv-count-text>{{ cart.item_count }}</span>)</span>{% render 'sv-icon', name: 'arrow' %}</a></li>{%- endif -%}
   </ul>
   {%- if s.menu_words != blank -%}<p class="sv-menu__words">{{ s.menu_words | escape | newline_to_br }}</p>{%- endif -%}
   {%- if menu_legal.links.size > 0 -%}<ul class="sv-menu__legal" role="list">{%- for link in menu_legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
 </div>
 
 {%- comment -%} Tiroir du panier (planche mobile « Tiroir panier ») : rempli par sillon.js depuis le panier de la boutique. {%- endcomment -%}
+{%- if sv_cart -%}
 <div class="sv-drawer" role="dialog" aria-modal="true" aria-labelledby="sv-drawer-title" hidden data-sv-drawer>
   <div class="sv-drawer__shade" data-sv-drawer-close></div>
   <div class="sv-drawer__panel">
@@ -122,6 +130,7 @@
     </div>
   </div>
 </div>
+{%- endif -%}
 
 {%- if s.show_cookies -%}
   <div class="sv-cookies" role="dialog" aria-modal="false" aria-labelledby="sv-cookies-title-{{ section.id }}" hidden data-sv-cookies>

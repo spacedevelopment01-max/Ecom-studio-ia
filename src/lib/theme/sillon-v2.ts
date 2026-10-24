@@ -102,6 +102,7 @@ function shopHome(k: Kit): (Row | Row[])[] {
   return [
     k.lib("sv-hero", 1, { layout: "photo", eyebrow: k.hero.eyebrow, heading: k.hero.heading, subtitle: "", text_mobile: k.hero.text, image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.banner ?? "", image_alt: "", card_title: "", show_route: true, height: 688 }),
     k.lib("sv-format", 1, { heading: k.hero.heading, heading_accent: "", text: k.hero.text, link_label: k.hero.cta || t("Découvrir le produit", "Discover the product"), image_asset: k.im.packshot ?? "", words: "" }),
+    k.featured(1),
     k.faqSec(1, 4, "lines"),
     k.newsletter(1),
   ];
@@ -112,6 +113,8 @@ function servicesHome(k: Kit): (Row | Row[])[] {
   return [
     k.lib("sv-hero", 1, { layout: "photo", eyebrow: "", heading: k.hero.heading, text_mobile: k.hero.text, image_asset: k.im.lifestyle ?? k.im.hero ?? "", card_title: "", show_route: true, height: 688 }),
     k.R.servicesList(1, "cards", { withImages: true }),
+    k.R.practical(1),
+    k.lib("sv-band", 1, { style: "copper", heading: k.t("Parlons de\nvotre projet.", "Let's talk about\nyour project."), text: "", link: "/pages/contact", link_label: k.t("Nous contacter", "Contact us"), icon: "arrow" }),
     k.faqSec(1, 5, "lines"),
     k.R.contactForm(1, k.t("Une question ?", "A question?")),
   ];
@@ -130,7 +133,10 @@ export function finishSillon(spec: ThemeSpec, ctx: FinishCtx) {
   const header = spec.groups.header;
   for (const id of header.order) if (header.sections[id]?.type === "header" || header.sections[id]?.type === "announcement-bar") header.sections[id].disabled = true;
   if (!header.order.some((id) => header.sections[id]?.type === "sv-header")) {
-    header.sections["sv-header"] = { type: "sv-header", settings: headerSettings(lang, { cta: t("Découvrir", "Discover"), ctaLink: spec.store.product?.handle ? `/products/${spec.store.product.handle}` : "/collections/all", demo: false, cookiesLink: svUrl("cookies", lang) }) };
+    header.sections["sv-header"] = { type: "sv-header", settings: headerSettings(lang, ctx.services
+      // Site de services : le bouton mène à la prise de rendez-vous (ou au contact), jamais à une boutique.
+      ? { cta: ctx.bookingLabel || t("Nous contacter", "Contact us"), ctaLink: ctx.bookingLink || ctx.contactUrl, demo: false, cookiesLink: svUrl("cookies", lang) }
+      : { cta: t("Découvrir", "Discover"), ctaLink: spec.store.product?.handle ? `/products/${spec.store.product.handle}` : "/collections/all", demo: false, cookiesLink: svUrl("cookies", lang) }) };
     header.order.push("sv-header");
   }
   const footer = spec.groups.footer;

@@ -13,7 +13,8 @@
       <h1 class="sv-display sv-contact__title">{{ s.heading | escape | newline_to_br }}</h1>
       {%- if s.intro != blank -%}<p class="sv-contact__intro">{% render 'sv-lines', text: s.intro, mobile: s.intro_mobile %}</p>{%- endif -%}
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-contact__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
-      {%- form 'contact', class: 'sv-contact__form', data-sv-contact: s.simulate | append: '' -%}
+      {%- assign sv_simulate = 'false' -%}{%- if s.simulate -%}{%- assign sv_simulate = 'true' -%}{%- endif -%}
+      {%- form 'contact', class: 'sv-contact__form', data-sv-contact: sv_simulate -%}
         {%- if form.posted_successfully? -%}<p class="sv-contact__status" role="status">{{ s.success_text }}</p>{%- endif -%}
         {%- if form.errors -%}<p class="sv-contact__status sv-contact__status--err" role="alert">{{ s.error_text }}</p>{%- endif -%}
         <label class="sv-field sv-contact__f sv-contact__f--1"><span class="visually-hidden">{{ s.name_label }}</span><input type="text" name="contact[name]" placeholder="{{ s.name_label | escape }}" autocomplete="name" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>

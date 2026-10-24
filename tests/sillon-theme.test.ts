@@ -115,7 +115,7 @@ describe("SILLON V2 : démonstration (planches 01 à 03 et planches téléphone)
   it("commande simulée : annoncée, aucun champ de carte, paiement non validable, confirmation présentée comme un exemple", () => {
     const html = pages.get("/pages/commande")!;
     expect(visibleText(html)).toMatch(/aucun paiement/i);
-    expect(html).not.toMatch(/autocomplete="cc-|name="[^"]*card|inputmode="numeric"[^>]*placeholder="[0-9 ]{12,}/i);
+    expect(html).not.toMatch(/<input[^>]*(autocomplete="cc-|name="[^"]*card|placeholder="[0-9 ]{12,})/i);
     expect(html).toMatch(/class="sv-checkout__mock"/);
     expect(html).toMatch(/data-final="off"/);
     expect(visibleText(html)).not.toMatch(/commande a bien été enregistrée/i);
