@@ -68,7 +68,7 @@
             <fieldset class="es-order__step" data-step="1">
               <legend>{{ s.contact_info_title | default: s.contact_title | escape }}</legend>
               <label class="es-order__field es-order__field--full"><span>{{ s.email_label | escape }} *</span><input type="email" name="email" autocomplete="email" placeholder="{{ s.email_placeholder | escape }}" required data-msg="{{ s.email_error | escape }}"><small class="es-order__error" data-error hidden></small></label>
-              <label class="es-order__check"><input type="checkbox" name="newsletter"><span>{{ s.newsletter_label | escape }}</span></label>
+              <label class="es-order__optin"><input type="checkbox" name="newsletter"><span>{{ s.newsletter_label | escape }}</span></label>
             </fieldset>
             <fieldset class="es-order__step" data-step="2" hidden>
               <legend>{{ s.address_title | escape }}</legend>
