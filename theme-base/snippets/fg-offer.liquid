@@ -95,7 +95,7 @@
     endif
   -%}
   {%- if per_on -%}
-    <span class="fg-offer__per">{% if exact != 0 %}≈ {% endif %}{{ per | money }} / {{ unit_word }}</span>
+    <span class="fg-offer__per{% if last != blank and show_last %} fg-offer__per--withlast{% endif %}">{% if exact != 0 %}≈ {% endif %}{{ per | money }} / {{ unit_word }}</span>
   {%- endif -%}
   {%- if packs and eco > 0 and show_save -%}<span class="fg-offer__save">{{ settings.offer_save_label | default: 'Économisez' }} {{ eco | money }}</span>{%- endif -%}
 {%- endcapture -%}

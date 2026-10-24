@@ -21,14 +21,14 @@
 -%}
 <section class="fg fg-recipe" aria-label="{{ s.label | escape }}" id="{{ s.anchor | default: 'informations' }}">
   <div class="fg-c">
+    {%- if s.heading != blank -%}<div class="fg-recipe__mhead">{% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-recipe__mtitle' %}{%- if s.text != blank -%}<p class="fg-recipe__mtext">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}</div>{%- endif -%}
     <div class="fg-recipe__big">
       {% render 'fg-img', image: s.image_1, asset: s.image_1_asset, alt: s.image_1_alt, pos: s.image_1_position, zoom: s.image_1_zoom, class: 'fg-recipe__img' %}
       {%- if s.bubble != blank -%}<p class="fg-recipe__bubble"><span class="fg-hand">{{ s.bubble | escape | newline_to_br }}</span></p>{%- endif -%}
     </div>
-    <div class="fg-recipe__small fg-recipe__small--1">{% render 'fg-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, zoom: s.image_2_zoom, class: 'fg-recipe__img' %}</div>
-    <div class="fg-recipe__small fg-recipe__small--2">{% render 'fg-img', image: s.image_3, asset: s.image_3_asset, alt: s.image_3_alt, pos: s.image_3_position, zoom: s.image_3_zoom, class: 'fg-recipe__img' %}</div>
+    <div class="fg-recipe__small fg-recipe__small--1">{% render 'fg-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, zoom: s.image_2_zoom, pos_mobile: s.image_2_position_mobile, zoom_mobile: s.image_2_zoom_mobile, class: 'fg-recipe__img' %}</div>
+    <div class="fg-recipe__small fg-recipe__small--2">{% render 'fg-img', image: s.image_3, asset: s.image_3_asset, alt: s.image_3_alt, pos: s.image_3_position, zoom: s.image_3_zoom, pos_mobile: s.image_3_position_mobile, zoom_mobile: s.image_3_zoom_mobile, class: 'fg-recipe__img' %}</div>
     <div class="fg-recipe__side">
-      {%- if s.heading != blank -%}{% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-recipe__title' %}{%- endif -%}
       <div class="fg-recipe__list">
         {%- for block in section.blocks -%}
           <details class="fg-recipe__row" {{ block.shopify_attributes }}>
@@ -65,6 +65,7 @@
     { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "La recette en détail" },
     { "type": "text", "id": "anchor", "label": "Ancre", "default": "informations" },
     { "type": "textarea", "id": "heading", "label": "Titre (téléphone)" },
+    { "type": "textarea", "id": "text", "label": "Texte (téléphone)" },
     { "type": "textarea", "id": "bubble", "label": "Bulle manuscrite", "default": "Le plaisir\ndu détail !" },
     { "type": "image_picker", "id": "image_1", "label": "Grande photo" },
     { "type": "text", "id": "image_1_asset", "label": "Grande photo (fichier du thème)" },
@@ -76,11 +77,15 @@
     { "type": "text", "id": "image_2_alt", "label": "Description de la photo du haut" },
     { "type": "text", "id": "image_2_position", "label": "Cadrage de la photo du haut", "default": "50% 50%" },
     { "type": "range", "id": "image_2_zoom", "label": "Agrandissement de la photo du haut", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_2_position_mobile", "label": "Cadrage de la photo du haut (téléphone)" },
+    { "type": "range", "id": "image_2_zoom_mobile", "label": "Agrandissement de la photo du haut (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
     { "type": "image_picker", "id": "image_3", "label": "Photo du bas" },
     { "type": "text", "id": "image_3_asset", "label": "Photo du bas (fichier du thème)" },
     { "type": "text", "id": "image_3_alt", "label": "Description de la photo du bas" },
     { "type": "text", "id": "image_3_position", "label": "Cadrage de la photo du bas", "default": "50% 50%" },
     { "type": "range", "id": "image_3_zoom", "label": "Agrandissement de la photo du bas", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_3_position_mobile", "label": "Cadrage de la photo du bas (téléphone)" },
+    { "type": "range", "id": "image_3_zoom_mobile", "label": "Agrandissement de la photo du bas (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
     { "type": "checkbox", "id": "show_card", "label": "Carte du produit", "default": true },
     { "type": "product", "id": "product", "label": "Produit" },
     { "type": "text", "id": "card_image_asset", "label": "Photo détourée (fichier du thème)" },

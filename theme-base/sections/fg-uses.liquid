@@ -5,14 +5,19 @@
 {%- assign s = section.settings -%}
 <section class="fg fg-uses" aria-label="{{ s.label | escape }}" id="{{ s.anchor | default: 'utilisation' }}">
   <div class="fg-c">
-    <ul class="fg-uses__list" role="list" data-fg-uses>
+    <ul class="fg-uses__list" role="list" data-fg-uses tabindex="0" aria-label="{{ s.label | escape }}">
       {%- for block in section.blocks -%}
-        <li class="fg-uses__item" {{ block.shopify_attributes }}>
+        <li class="fg-uses__item{% if block.settings.mobile_only %} fg-uses__item--m{% endif %}" style="--om: {{ block.settings.order_mobile | default: forloop.index }};" {{ block.shopify_attributes }}>
           {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-uses__img' %}
           <div class="fg-uses__box"><h3 class="fg-uses__title">{{ block.settings.title }}</h3><p class="fg-uses__text">{{ block.settings.text | escape | newline_to_br }}</p></div>
         </li>
       {%- endfor -%}
     </ul>
+    {%- if section.blocks.size > 1 -%}
+      <button type="button" class="fg-uses__arrow fg-uses__arrow--prev" data-fg-uses-prev aria-label="{{ s.prev_label | escape }}">{% render 'fg-icon', name: 'chevron-left' %}</button>
+      <button type="button" class="fg-uses__arrow fg-uses__arrow--next" data-fg-uses-next aria-label="{{ s.next_label | escape }}">{% render 'fg-icon', name: 'chevron' %}</button>
+      <div class="fg-uses__dots" aria-hidden="true">{%- for block in section.blocks -%}<span{% if forloop.first %} class="is-active"{% endif %}></span>{%- endfor -%}</div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -23,10 +28,14 @@
   "max_blocks": 3,
   "settings": [
     { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Usages" },
-    { "type": "text", "id": "anchor", "label": "Ancre", "default": "utilisation" }
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "utilisation" },
+    { "type": "text", "id": "prev_label", "label": "Photo précédente (lecteurs d'écran)", "default": "Photo précédente" },
+    { "type": "text", "id": "next_label", "label": "Photo suivante (lecteurs d'écran)", "default": "Photo suivante" }
   ],
   "blocks": [
     { "type": "use", "name": "Usage", "settings": [
+      { "type": "checkbox", "id": "mobile_only", "label": "Au téléphone seulement", "default": false },
+      { "type": "range", "id": "order_mobile", "label": "Rang au téléphone (0 = même rang)", "min": 0, "max": 3, "step": 1, "default": 0 },
       { "type": "text", "id": "title", "label": "Titre" },
       { "type": "textarea", "id": "text", "label": "Texte" },
       { "type": "image_picker", "id": "image", "label": "Photo" },

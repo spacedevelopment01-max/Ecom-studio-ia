@@ -63,7 +63,7 @@
       {%- if s.crumb_home != blank -%}<nav class="fg-product__crumb" aria-label="{{ s.crumb_label | escape }}"><a href="{{ routes.root_url }}">{{ s.crumb_home }}</a>{% render 'fg-icon', name: 'chevron' %}{%- if s.crumb_middle != blank -%}<a href="{{ s.crumb_middle_link | default: routes.all_products_collection_url }}">{{ s.crumb_middle }}</a>{% render 'fg-icon', name: 'chevron', class: 'fg-only-m' %}{%- endif -%}<span aria-current="page" class="fg-only-m">{{ p.title }}</span></nav>{%- endif -%}
       <h1 class="fg-title fg-product__title">{{ p.title }}</h1>
       {%- if s.subtitle != blank -%}<p class="fg-product__sub">{{ s.subtitle }}</p>{%- endif -%}
-      {%- if s.text != blank -%}<div class="fg-product__lead fg-only-m">{{ s.text }}</div>{%- endif -%}
+      {%- if s.text != blank or s.text_mobile != blank -%}<div class="fg-product__lead fg-only-m">{{ s.text_mobile | default: s.text }}</div>{%- endif -%}
       <p class="fg-product__price">
         <span class="fg-product__amount" data-fg-sel-price>{{ v.price | money }}</span>
         <span class="fg-product__ref fg-only-m" data-fg-sel-compare{% unless vref > v.price %} hidden{% endunless %}><span class="visually-hidden">{{ settings.offer_compare_label }} </span><s>{{ vref | money }}</s></span>
@@ -113,7 +113,7 @@
       {%- endform -%}
       <ul class="fg-product__assure" role="list">
         {%- for block in section.blocks -%}
-          <li {{ block.shopify_attributes }}>{%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{%- endif -%}{% render 'fg-icon', name: block.settings.icon %}<span class="fg-only-d">{{ block.settings.label }}</span><span class="fg-only-m">{{ block.settings.label_mobile | default: block.settings.label | escape | newline_to_br }}</span>{%- if block.settings.link != blank -%}</a>{%- endif -%}</li>
+          <li style="--om: {{ block.settings.order_mobile | default: forloop.index }};" {{ block.shopify_attributes }}>{%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{%- endif -%}{% render 'fg-icon', name: block.settings.icon %}<span class="fg-only-d">{{ block.settings.label }}</span><span class="fg-only-m">{{ block.settings.label_mobile | default: block.settings.label | escape | newline_to_br }}</span>{%- if block.settings.link != blank -%}</a>{%- endif -%}</li>
         {%- endfor -%}
       </ul>
       {%- if s.show_note and settings.offer_note != blank -%}<p class="fg-product__note">{{ settings.offer_note }}</p>{%- endif -%}
@@ -160,6 +160,7 @@
     { "type": "text", "id": "crumb_label", "label": "Fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
     { "type": "text", "id": "subtitle", "label": "Sous-titre" },
     { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone" },
     { "type": "text", "id": "pack_text", "label": "Libellé d'un lot", "default": "Pack de [t]", "info": "[t] : le format choisi (ex. 3 flacons)." },
     { "type": "text", "id": "single_text", "label": "Libellé d'une unité", "default": "[t]" },
     { "type": "text", "id": "tax_note", "label": "Mention près du prix (téléphone)" },
@@ -184,6 +185,7 @@
       { "type": "select", "id": "icon", "label": "Pictogramme", "default": "lock", "options": [{ "value": "lock", "label": "Cadenas" }, { "value": "question", "label": "Question" }, { "value": "truck", "label": "Camion" }, { "value": "card", "label": "Carte" }, { "value": "return", "label": "Retour" }, { "value": "mail", "label": "Enveloppe" }] },
       { "type": "text", "id": "label", "label": "Texte" },
       { "type": "textarea", "id": "label_mobile", "label": "Texte au téléphone" },
+      { "type": "range", "id": "order_mobile", "label": "Rang au téléphone (0 = même rang)", "min": 0, "max": 4, "step": 1, "default": 0 },
       { "type": "url", "id": "link", "label": "Lien" }
     ] }
   ],

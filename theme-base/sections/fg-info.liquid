@@ -14,7 +14,7 @@
       <div class="fg-info__list">
         {%- for block in section.blocks -%}
           <details class="fg-info__row" {{ block.shopify_attributes }}>
-            <summary><span class="fg-info__label">{{ block.settings.label }}</span><span class="fg-info__short">{{ block.settings.short }}</span>{% render 'fg-icon', name: 'plus', class: 'fg-info__plus' %}{% render 'fg-icon', name: 'down', class: 'fg-info__down' %}</summary>
+            <summary><span class="fg-info__label"><span class="fg-only-d">{{ block.settings.label }}</span><span class="fg-only-m">{{ block.settings.label_mobile | default: block.settings.label }}</span></span><span class="fg-info__short"><span class="fg-only-d">{{ block.settings.short }}</span><span class="fg-only-m">{{ block.settings.short_mobile | default: block.settings.short }}</span></span>{% render 'fg-icon', name: 'plus', class: 'fg-info__plus' %}{% render 'fg-icon', name: 'down', class: 'fg-info__down' %}</summary>
             <div class="fg-info__body">{{ block.settings.body }}</div>
           </details>
         {%- endfor -%}
@@ -64,6 +64,8 @@
     { "type": "row", "name": "Ligne", "settings": [
       { "type": "text", "id": "label", "label": "Titre" },
       { "type": "text", "id": "short", "label": "Résumé" },
+      { "type": "text", "id": "label_mobile", "label": "Titre au téléphone" },
+      { "type": "text", "id": "short_mobile", "label": "Résumé au téléphone" },
       { "type": "richtext", "id": "body", "label": "Détail" }
     ] }
   ],

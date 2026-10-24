@@ -476,8 +476,27 @@
     tabs.forEach(function (t) { if (h && t.getAttribute('data-anchor') === h) select(t); });
   }
 
+  /* ---------------------------------------------------------------- Usages : défilement au téléphone (flèches, points) */
+  function initUses(list) {
+    var root = list.closest('.fg-uses'), dots = $$('.fg-uses__dots span', root), items = $$('.fg-uses__item', list);
+    function cur() { return Math.round(list.scrollLeft / Math.max(1, list.clientWidth)); }
+    function go(i) { i = Math.max(0, Math.min(items.length - 1, i)); list.scrollTo({ left: i * list.clientWidth, behavior: 'smooth' }); }
+    var p = $('[data-fg-uses-prev]', root), n = $('[data-fg-uses-next]', root);
+    if (p) p.addEventListener('click', function () { go(cur() - 1); });
+    if (n) n.addEventListener('click', function () { go(cur() + 1); });
+    var t = null;
+    list.addEventListener('scroll', function () { clearTimeout(t); t = setTimeout(function () { var i = cur(); dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); }); }, 60); }, { passive: true });
+  }
+
+  /* Exemples propres au téléphone (planches mobiles) : placeholder remplacé sous 750 px. */
+  function mobilePlaceholders() {
+    var mq = window.matchMedia('(max-width: 749px)');
+    function apply() { $$('[data-ph-m]').forEach(function (i) { if (!i.hasAttribute('data-ph-d')) i.setAttribute('data-ph-d', i.placeholder); var m = i.getAttribute('data-ph-m'); i.placeholder = mq.matches && m ? m : i.getAttribute('data-ph-d'); }); }
+    apply(); if (mq.addEventListener) mq.addEventListener('change', apply);
+  }
+
   function start() {
-    initMenu(); initSearch();
+    initMenu(); initSearch(); mobilePlaceholders();
     syncCountText(); initDrawer(); initQuickAdd();
     initCookies(); initNewsletter();
     $$('[data-fg-product]').forEach(initProduct);
@@ -487,6 +506,7 @@
     $$('form[data-fg-contact]').forEach(initContact);
     $$('form[data-fg-track]').forEach(initTrack);
     $$('[data-fg-tabs]').forEach(initTabs);
+    $$('[data-fg-uses]').forEach(initUses);
     document.dispatchEvent(new CustomEvent('fg:ready'));
   }
   window.FG = { openDrawer: openDrawer, closeDrawer: closeDrawer, addToCart: addToCart, post: post, cartBase: cartBase, setCount: setCount, money: money, unitsOf: unitsOf, CFG: CFG };

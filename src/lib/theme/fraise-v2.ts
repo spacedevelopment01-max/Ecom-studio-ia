@@ -21,10 +21,12 @@ import type { Lang } from "../i18n";
 import { pick } from "../i18n";
 
 /** Dessin de l'en-tête et du pied par planche (liens à gauche du logo, bandeau, pied ordinateur et téléphone). */
-export type FgPageLook = { split: number; band: "below" | "above" | "center" | "none"; footer: "home" | "journal" | "contact" | "compact"; footer_mobile: "full" | "menu" | "compact" };
+export type FgPageLook = { split: number; band: "below" | "above" | "center" | "none"; footer: "home" | "journal" | "contact" | "compact"; footer_mobile: "full" | "center" | "columns" | "help" | "menu" | "compact"; band_mobile?: "none" | "above" };
 export const LOOK_01: FgPageLook = { split: 3, band: "below", footer: "home", footer_mobile: "full" };
-export const LOOK_02: FgPageLook = { split: 2, band: "above", footer: "journal", footer_mobile: "full" };
-export const LOOK_03: FgPageLook = { split: 4, band: "center", footer: "contact", footer_mobile: "menu" };
+/** Fiche du produit : pied centré au téléphone (planche 04, fiche 2/2). */
+export const LOOK_PRODUCT: FgPageLook = { ...LOOK_01, footer_mobile: "center" };
+export const LOOK_02: FgPageLook = { split: 2, band: "above", footer: "journal", footer_mobile: "columns" };
+export const LOOK_03: FgPageLook = { split: 4, band: "center", footer: "contact", footer_mobile: "help", band_mobile: "above" };
 export const LOOK_BUY: FgPageLook = { split: 4, band: "center", footer: "contact", footer_mobile: "compact" };
 
 /** Pages propres au thème (adresse française et anglaise, titre, gabarit, dessin de la planche). */
@@ -107,7 +109,7 @@ export function footerSettings(lang: Lang, o: { logo?: string; bottom?: string; 
   const t = (fr: string, en: string) => pick(lang, fr, en);
   return {
     logo_asset: o.logo ?? "", wordmark: "", shop_title: t("Boutique", "Shop"), menu_shop: "footer-shop", help_title: t("Aide", "Help"), menu_help: "footer",
-    menu_info: "footer-info", menu_legal: "legal", menu_short: "legal-short", bottom_text: o.bottom ?? "", copyright: o.copyright ?? "",
+    menu_info: "footer-info", menu_legal: "legal", menu_legal_help: "legal-help", menu_short: "legal-short", bottom_text: o.bottom ?? "", copyright: o.copyright ?? "",
     journal_title: t("Inscrivez-vous à notre journal", "Sign up to our journal"), contact_title: t("Restons en contact", "Let's stay in touch"),
     mobile_news_title: t("Restons en contact !", "Let's stay in touch!"), mobile_news_text: o.mobileText ?? "",
     news_placeholder: t("Votre adresse e-mail", "Your email address"), news_button: t("S'inscrire", "Sign up"),
@@ -171,7 +173,7 @@ export function finishFraise(spec: ThemeSpec, ctx: FinishCtx) {
     tpl.order.push("fg-page");
   };
   mark("index", LOOK_01);
-  for (const key of Object.keys(spec.templates)) if (key === "product" || key.startsWith("product.")) mark(key, LOOK_01);
+  for (const key of Object.keys(spec.templates)) if (key === "product" || key.startsWith("product.")) mark(key, LOOK_PRODUCT);
   if (spec.templates.cart && !spec.templates.cart.order.some((id) => spec.templates.cart.sections[id]?.type === "fg-cart")) {
     spec.templates.cart = fgTemplate([
       ["fg-hero", { layout: "page", variant: "a", heading: t("Votre panier.", "Your cart."), text: "", image_asset: "", height: 300, height_mobile: 200 }],

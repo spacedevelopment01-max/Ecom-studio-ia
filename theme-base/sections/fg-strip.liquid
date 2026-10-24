@@ -18,6 +18,17 @@
         {%- endif -%}
       {%- endfor -%}
     </ul>
+    {%- if s.mobile_title != blank -%}
+      <div class="fg-strip__m">
+        <span class="fg-strip__mart" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'half' %}</span>
+        {% render 'fg-title', text: s.mobile_title, tag: 'h2', class: 'fg-strip__mtitle' %}
+        {%- if s.mobile_text != blank -%}<p class="fg-strip__mtext">{{ s.mobile_text | escape | newline_to_br }}</p>{%- endif -%}
+        <ul class="fg-strip__micons" role="list">
+          {%- for block in section.blocks -%}{%- if block.type == 'photo' and block.settings.icon_mobile != blank and block.settings.icon_mobile != 'none' -%}<li>{% render 'fg-icon', name: block.settings.icon_mobile %}<span>{{ block.settings.caption }}</span></li>{%- endif -%}{%- endfor -%}
+        </ul>
+      </div>
+      {%- if s.mobile_button != blank -%}<a class="fg-btn fg-btn--red fg-strip__mbtn" href="{{ s.mobile_link | default: routes.all_products_collection_url }}">{{ s.mobile_button }}</a>{%- endif -%}
+    {%- endif -%}
     <ul class="fg-strip__points" role="list">
       {%- for block in section.blocks -%}
         {%- if block.type == 'point' -%}
@@ -35,7 +46,12 @@
   "max_blocks": 12,
   "settings": [
     { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "En détail" },
-    { "type": "textarea", "id": "heading", "label": "Titre (facultatif)" }
+    { "type": "textarea", "id": "heading", "label": "Titre (facultatif)" },
+    { "type": "header", "content": "Téléphone" },
+    { "type": "textarea", "id": "mobile_title", "label": "Titre de la carte", "info": "Vide : photos et repères comme sur ordinateur." },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte de la carte" },
+    { "type": "text", "id": "mobile_button", "label": "Bouton" },
+    { "type": "url", "id": "mobile_link", "label": "Lien du bouton" }
   ],
   "blocks": [
     { "type": "photo", "name": "Photo", "settings": [
@@ -43,6 +59,7 @@
       { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
       { "type": "text", "id": "alt", "label": "Description" },
       { "type": "text", "id": "caption", "label": "Légende (téléphone)" },
+      { "type": "select", "id": "icon_mobile", "label": "Pictogramme de la légende (téléphone)", "default": "none", "options": [{ "value": "none", "label": "Aucun" }, { "value": "home", "label": "Maison" }, { "value": "person", "label": "Personne" }, { "value": "walk", "label": "Déplacement" }] },
       { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
       { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
     ] },

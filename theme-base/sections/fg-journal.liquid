@@ -11,11 +11,13 @@
       {%- if s.eyebrow != blank -%}<p class="fg-eyebrow fg-journal__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       {%- assign tid = 'fg-journal-t-' | append: section.id -%}
       {% render 'fg-title', text: s.heading, tag: 'h1', class: 'fg-journal__title', id: tid %}
-      {%- if s.text != blank -%}<p class="fg-journal__lead">{{ s.text }}</p>{%- endif -%}
+      {%- if s.text != blank -%}<p class="fg-journal__lead{% if s.text_mobile != blank %} fg-only-d{% endif %}">{{ s.text }}</p>{%- endif -%}
+      {%- if s.text_mobile != blank -%}<p class="fg-journal__lead fg-only-m">{{ s.text_mobile }}</p>{%- endif -%}
       {%- assign cats = s.filters | split: ',' -%}
+      {%- assign mcats = s.filters_mobile | split: ',' -%}
       <div class="fg-journal__filters" role="group" aria-label="{{ s.filters_label | escape }}">
         <button type="button" class="fg-pill is-active" aria-pressed="true" data-fg-filter="">{{ s.all_label }}</button>
-        {%- for c in cats -%}{%- assign cn = c | strip -%}<button type="button" class="fg-pill fg-pill--{{ forloop.index }}" aria-pressed="false" data-fg-filter="{{ cn | handleize }}">{{ cn }}</button>{%- endfor -%}
+        {%- for c in cats -%}{%- assign cn = c | strip -%}{%- assign mi = forloop.index0 -%}{%- assign mn = mcats[mi] | strip -%}<button type="button" class="fg-pill fg-pill--{{ forloop.index }}" aria-pressed="false" data-fg-filter="{{ cn | handleize }}">{%- if mn != blank -%}<span class="fg-only-d">{{ cn }}</span><span class="fg-only-m">{{ mn }}</span>{%- else -%}{{ cn }}{%- endif -%}</button>{%- endfor -%}
       </div>
       <p class="visually-hidden" role="status" data-fg-count-status></p>
     </div>
@@ -26,11 +28,13 @@
           <a href="{{ block.settings.link | default: '#' }}" class="fg-journal__card">
             {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.position, zoom: block.settings.zoom, class: 'fg-journal__img' %}
             <span class="fg-journal__body">
-              {%- if block.settings.category != blank -%}<span class="fg-journal__tag">{{ block.settings.category }}</span>{%- endif -%}
+              {%- if block.settings.category != blank -%}<span class="fg-journal__tag">{%- if block.settings.tag_mobile != blank -%}<span class="fg-only-d">{{ block.settings.category }}</span><span class="fg-only-m">{{ block.settings.tag_mobile }}</span>{%- else -%}{{ block.settings.category }}{%- endif -%}</span>{%- endif -%}
               <span class="fg-journal__ctitle">{{ block.settings.title | escape | newline_to_br }}</span>
-              {%- if block.settings.text != blank -%}<span class="fg-journal__ctext">{{ block.settings.text | escape | newline_to_br }}</span>{%- endif -%}
+              {%- if block.settings.text != blank -%}<span class="fg-journal__ctext{% if block.settings.text_mobile != blank %} fg-only-d{% endif %}">{{ block.settings.text | escape | newline_to_br }}</span>{%- endif -%}
+              {%- if block.settings.text_mobile != blank -%}<span class="fg-journal__ctext fg-only-m">{{ block.settings.text_mobile | escape | newline_to_br }}</span>{%- endif -%}
               {%- if block.settings.show_link -%}<span class="fg-journal__read">{{ s.read_label }}{% render 'fg-icon', name: 'arrow' %}</span>{%- endif -%}
             </span>
+            <span class="fg-journal__go" aria-hidden="true">{% render 'fg-icon', name: 'arrow' %}</span>
           </a>
         </li>
       {%- endfor -%}
@@ -50,6 +54,8 @@
     { "type": "text", "id": "text", "label": "Texte" },
     { "type": "text", "id": "all_label", "label": "Filtre « tout »", "default": "Tout" },
     { "type": "text", "id": "filters", "label": "Catégories (séparées par des virgules)", "default": "Le goût, Le quotidien, Les détails" },
+    { "type": "text", "id": "filters_mobile", "label": "Noms des catégories au téléphone (même ordre)" },
+    { "type": "text", "id": "text_mobile", "label": "Texte au téléphone" },
     { "type": "text", "id": "filters_label", "label": "Filtres (lecteurs d'écran)", "default": "Filtrer les articles" },
     { "type": "text", "id": "read_label", "label": "Lien des articles", "default": "Lire l'article" },
     { "type": "text", "id": "empty_text", "label": "Aucun article", "default": "Aucun article dans cette catégorie pour le moment." }
@@ -57,6 +63,8 @@
   "blocks": [
     { "type": "post", "name": "Article", "settings": [
       { "type": "text", "id": "category", "label": "Catégorie" },
+      { "type": "text", "id": "tag_mobile", "label": "Étiquette au téléphone" },
+      { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone" },
       { "type": "textarea", "id": "title", "label": "Titre" },
       { "type": "textarea", "id": "text", "label": "Texte" },
       { "type": "url", "id": "link", "label": "Lien de l'article" },

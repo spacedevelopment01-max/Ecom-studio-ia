@@ -8,26 +8,28 @@
   <div class="fg-c">
     {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, class: 'fg-contact__photo' %}
     <div class="fg-contact__main">
-      <h1 class="fg-title fg-contact__title" id="fg-contact-t-{{ section.id }}">{{ s.heading }}<span class="fg-contact__petal" aria-hidden="true">{% render 'fg-art', name: 'petal' %}</span></h1>
-      {%- if s.text != blank -%}<p class="fg-contact__lead">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      <h1 class="fg-title fg-contact__title" id="fg-contact-t-{{ section.id }}"><span class="fg-only-d">{{ s.heading }}</span>{%- if s.heading_mobile != blank -%}{%- assign hm = s.heading_mobile | escape | replace: '[i]', '<em class="fg-i">' | replace: '[/i]', '</em>' | newline_to_br -%}<span class="fg-only-m">{{ hm }}</span>{%- endif -%}<span class="fg-contact__petal" aria-hidden="true">{% render 'fg-art', name: 'petal' %}</span></h1>
+      {%- if s.text != blank -%}<p class="fg-contact__lead{% if s.text_mobile != blank %} fg-only-d{% endif %}">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.text_mobile != blank -%}<p class="fg-contact__lead fg-only-m">{{ s.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
       {%- form 'contact', class: 'fg-contact__form', data-fg-contact: s.mode -%}
         <div class="fg-co__grid">
           <label class="fg-field"><span>{{ s.name_label }} <b aria-hidden="true">*</b></span><input type="text" name="contact[name]" autocomplete="name" required placeholder="{{ s.name_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
           <label class="fg-field"><span>{{ s.email_label }} <b aria-hidden="true">*</b></span><input type="email" name="contact[email]" autocomplete="email" required placeholder="{{ s.email_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_email }}</span></label>
           <label class="fg-field fg-field--full"><span>{{ s.subject_label }} <b aria-hidden="true">*</b></span><select name="contact[subject]" required><option value="">{{ s.subject_ph }}</option>{%- assign subs = s.subjects | split: ',' -%}{%- for o in subs -%}<option>{{ o | strip }}</option>{%- endfor -%}</select><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
           <label class="fg-field fg-field--full"><span>{{ s.message_label }} <b aria-hidden="true">*</b></span><textarea name="contact[body]" rows="4" required placeholder="{{ s.message_ph | escape }}"></textarea><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
-          <label class="fg-check fg-field--full fg-contact__consent"><input type="checkbox" name="contact[consent]" required><span>{{ s.consent_label }}</span><span class="fg-field__err" hidden>{{ s.err_consent }}</span></label>
+          <label class="fg-check fg-field--full fg-contact__consent"><input type="checkbox" name="contact[consent]" required><span>{{ s.consent_label }}{%- if s.privacy_link != blank -%} <a href="{{ s.privacy_link }}">{{ s.privacy_label }}</a>{%- endif -%}</span><span class="fg-field__err" hidden>{{ s.err_consent }}</span></label>
         </div>
         <button type="submit" class="fg-btn fg-btn--red fg-contact__send">{{ s.send_label }}{% render 'fg-icon', name: 'arrow' %}</button>
         <p class="fg-contact__status" role="status" tabindex="-1" hidden data-fg-contact-status data-text="{{ s.demo_text | escape }}"></p>
         {%- if form.posted_successfully? -%}<p class="fg-contact__status" role="status">{{ s.done_text }}</p>{%- endif -%}
       {%- endform -%}
     </div>
+    {%- if s.cards_title != blank -%}<p class="fg-contact__cards-title">{{ s.cards_title }}</p>{%- endif -%}
     <ul class="fg-contact__cards" role="list">
       {%- for block in section.blocks -%}
-        <li class="fg-contact__card" {{ block.shopify_attributes }}>
+        <li class="fg-contact__card" style="--om: {{ block.settings.order_mobile | default: forloop.index }};" {{ block.shopify_attributes }}>
           <span class="fg-contact__ico">{% render 'fg-icon', name: block.settings.icon %}</span>
-          <div><p class="fg-contact__ct">{{ block.settings.title }}</p><p class="fg-contact__cx">{{ block.settings.text | escape | newline_to_br }}</p>{%- if block.settings.link_label != blank -%}<a href="{{ block.settings.link | default: routes.root_url }}">{{ block.settings.link_label }}{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}</div>
+          <div><p class="fg-contact__ct"><span class="fg-only-d">{{ block.settings.title }}</span><span class="fg-only-m">{{ block.settings.title_mobile | default: block.settings.title | escape | newline_to_br }}</span></p><p class="fg-contact__cx"><span class="fg-only-d">{{ block.settings.text | escape | newline_to_br }}</span><span class="fg-only-m">{{ block.settings.text_mobile | default: block.settings.text | escape | newline_to_br }}</span></p>{%- if block.settings.link_label != blank -%}<a href="{{ block.settings.link | default: routes.root_url }}"><span class="fg-only-d">{{ block.settings.link_label }}</span><span class="visually-hidden fg-only-m">{{ block.settings.link_label }}</span>{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}</div>
         </li>
       {%- endfor -%}
     </ul>
@@ -41,7 +43,12 @@
   "max_blocks": 3,
   "settings": [
     { "type": "text", "id": "heading", "label": "Titre", "default": "Un petit mot ?" },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone", "info": "[i]italique[/i]" },
     { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone" },
+    { "type": "text", "id": "cards_title", "label": "Titre des cartes d'aide (téléphone)" },
+    { "type": "text", "id": "privacy_label", "label": "Lien vers la confidentialité", "default": "Voir notre politique de confidentialité." },
+    { "type": "url", "id": "privacy_link", "label": "Adresse de la politique de confidentialité" },
     { "type": "select", "id": "mode", "label": "Envoi", "default": "shopify", "options": [{ "value": "shopify", "label": "Formulaire de contact Shopify" }, { "value": "demo", "label": "Démonstration (rien n'est envoyé)" }] },
     { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
     { "type": "text", "id": "name_ph", "label": "Exemple de nom", "default": "Votre nom" },
@@ -69,9 +76,14 @@
   ],
   "blocks": [
     { "type": "card", "name": "Carte d'aide", "settings": [
-      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "doc", "options": [{ "value": "doc", "label": "Document" }, { "value": "box", "label": "Colis" }, { "value": "truck", "label": "Camion" }, { "value": "question", "label": "Question" }, { "value": "jar", "label": "Flacon" }] },
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "doc", "options": [{ "value": "doc", "label": "Document" }, { "value": "search", "label": "Loupe" }, { "value": "box", "label": "Colis" }, { "value": "truck", "label": "Camion" }, { "value": "question", "label": "Question" }, { "value": "jar", "label": "Flacon" }] },
       { "type": "text", "id": "title", "label": "Titre" },
-      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone", "info": "[i]italique[/i]" },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone" },
+    { "type": "text", "id": "cards_title", "label": "Titre des cartes d'aide (téléphone)" },
+    { "type": "text", "id": "privacy_label", "label": "Lien vers la confidentialité", "default": "Voir notre politique de confidentialité." },
+    { "type": "url", "id": "privacy_link", "label": "Adresse de la politique de confidentialité" },
       { "type": "text", "id": "link_label", "label": "Lien" },
       { "type": "url", "id": "link", "label": "Adresse du lien" }
     ] }

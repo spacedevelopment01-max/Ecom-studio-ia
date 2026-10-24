@@ -10,12 +10,13 @@
       <label class="fg-faq__search">{% render 'fg-icon', name: 'search' %}<span class="visually-hidden">{{ s.search_label }}</span><input type="search" placeholder="{{ s.search_placeholder | escape }}" data-fg-faq-search></label>
       {%- assign cats = s.filters | split: ',' -%}
       <div class="fg-faq__filters" role="group" aria-label="{{ s.filters_label | escape }}">
+        {%- if s.all_label != blank -%}<button type="button" class="fg-faq__pill fg-faq__pill--all is-active" aria-pressed="true" data-fg-faq-filter="">{{ s.all_label }}</button>{%- endif -%}
         {%- for c in cats -%}{%- assign cn = c | strip -%}<button type="button" class="fg-faq__pill" aria-pressed="false" data-fg-faq-filter="{{ cn | handleize }}">{{ cn }}</button>{%- endfor -%}
       </div>
       <div class="fg-faq__list">
         {%- for block in section.blocks -%}
-          <details class="fg-faq__item" data-cat="{{ block.settings.category | handleize }}"{% if forloop.first %} open{% endif %} {{ block.shopify_attributes }}>
-            <summary><span>{{ block.settings.question }}</span>{% render 'fg-icon', name: 'down', class: 'fg-faq__chev' %}</summary>
+          <details class="fg-faq__item fg-vis--{{ block.settings.visibility | default: 'all' }}" data-cat="{{ block.settings.category | handleize }}"{% if forloop.first %} open{% endif %} {{ block.shopify_attributes }}>
+            <summary><span class="fg-only-d">{{ block.settings.question }}</span><span class="fg-only-m">{{ block.settings.question_mobile | default: block.settings.question }}</span>{% render 'fg-icon', name: 'down', class: 'fg-faq__chev' %}</summary>
             <div class="fg-faq__a">{{ block.settings.answer }}</div>
           </details>
         {%- endfor -%}
@@ -27,7 +28,8 @@
         <div class="fg-faq__photo">{% render 'fg-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'fg-faq__img' %}{%- if s.bubble != blank -%}<p class="fg-faq__bubble"><span class="fg-hand">{{ s.bubble | escape | newline_to_br }}</span></p>{%- endif -%}</div>
       {%- endif -%}
       <div class="fg-faq__help">
-        <p class="fg-faq__ht">{{ s.contact_title }}</p>
+        <span class="fg-faq__hart" aria-hidden="true">{% render 'fg-art', name: 'leaf-branch' %}{% render 'fg-art', name: 'berry-ghost' %}</span>
+        <p class="fg-faq__ht"><span class="fg-only-d">{{ s.contact_title }}</span><span class="fg-only-m">{{ s.contact_title_mobile | default: s.contact_title }}</span></p>
         <p class="fg-faq__hx">{{ s.contact_text }}</p>
         <a class="fg-btn fg-btn--red fg-faq__btn" href="{{ s.contact_link | default: routes.root_url }}">{{ s.contact_button }}{% render 'fg-icon', name: 'arrow' %}</a>
       </div>
@@ -44,6 +46,7 @@
     { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Questions fréquentes" },
     { "type": "text", "id": "search_label", "label": "Recherche (lecteurs d'écran)", "default": "Rechercher une question" },
     { "type": "text", "id": "search_placeholder", "label": "Texte du champ", "default": "Rechercher une question…" },
+    { "type": "text", "id": "all_label", "label": "Filtre « tout » (téléphone)" },
     { "type": "text", "id": "filters", "label": "Catégories (séparées par des virgules)", "default": "Produit, Utilisation, Commande" },
     { "type": "text", "id": "filters_label", "label": "Catégories (lecteurs d'écran)", "default": "Catégories de questions" },
     { "type": "text", "id": "empty_text", "label": "Aucune réponse", "default": "Aucune réponse ne correspond à votre recherche. Écrivez-nous :" },
@@ -54,6 +57,7 @@
     { "type": "textarea", "id": "bubble", "label": "Mot manuscrit" },
     { "type": "text", "id": "contact_title", "label": "Encart : titre", "default": "Une autre question ?" },
     { "type": "text", "id": "contact_text", "label": "Encart : texte", "default": "Notre équipe est là pour vous aider." },
+    { "type": "text", "id": "contact_title_mobile", "label": "Encart : titre (téléphone)" },
     { "type": "text", "id": "contact_button", "label": "Encart : bouton", "default": "Nous contacter" },
     { "type": "url", "id": "contact_link", "label": "Encart : lien" }
   ],
@@ -61,6 +65,8 @@
     { "type": "question", "name": "Question", "settings": [
       { "type": "text", "id": "category", "label": "Catégorie" },
       { "type": "text", "id": "question", "label": "Question" },
+      { "type": "text", "id": "question_mobile", "label": "Question au téléphone" },
+      { "type": "select", "id": "visibility", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
       { "type": "richtext", "id": "answer", "label": "Réponse" }
     ] }
   ],

@@ -33,7 +33,7 @@
       <div class="fg-taste__card">
         <span class="fg-taste__thumb">{% render 'fg-img', image: s.card_image, asset: s.card_image_asset, alt: '', class: 'fg-cut' %}</span>
         <div class="fg-taste__info">
-          <p class="fg-taste__name">{{ s.card_title | default: p.title }}</p>
+          <p class="fg-taste__name"><span class="fg-only-d">{{ s.card_title | default: p.title }}</span><span class="fg-only-m">{{ s.card_title_mobile | default: s.card_title | default: p.title }}</span></p>
           {%- if s.card_subtitle != blank -%}<p class="fg-taste__sub">{{ s.card_subtitle }}</p>{%- endif -%}
           {%- if s.card_format != blank -%}<p class="fg-taste__sub fg-taste__sub--m">{{ s.card_format }}</p>{%- endif -%}
           <p class="fg-taste__price">{{ v.price | money }}</p>
@@ -78,6 +78,7 @@
     { "type": "image_picker", "id": "card_image", "label": "Photo détourée" },
     { "type": "text", "id": "card_image_asset", "label": "Photo détourée (fichier du thème)" },
     { "type": "text", "id": "card_title", "label": "Nom affiché", "info": "Vide : le nom du produit." },
+    { "type": "text", "id": "card_title_mobile", "label": "Nom affiché au téléphone" },
     { "type": "text", "id": "card_subtitle", "label": "Sous-titre" },
     { "type": "text", "id": "card_format", "label": "Format (téléphone)" },
     { "type": "text", "id": "card_button", "label": "Bouton", "default": "Ajouter au panier" }

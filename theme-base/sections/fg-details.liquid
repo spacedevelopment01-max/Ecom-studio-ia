@@ -17,7 +17,7 @@
       {%- for block in section.blocks -%}
         <li class="fg-details__tile fg-details__tile--{{ forloop.index }}" {{ block.shopify_attributes }}>
           {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-details__img' %}
-          {%- if block.settings.caption != blank -%}<p class="fg-hand fg-details__cap">{{ block.settings.caption | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if block.settings.caption != blank -%}<p class="fg-hand fg-details__cap" aria-hidden="true">{{ block.settings.caption | escape | newline_to_br }}</p>{%- endif -%}
         </li>
       {%- endfor -%}
     </ul>

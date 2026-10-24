@@ -15,8 +15,8 @@
     </div>
     <div class="fg-faqt__list">
       {%- for block in section.blocks -%}
-        <details class="fg-faqt__item" {{ block.shopify_attributes }}>
-          <summary><span>{{ block.settings.question }}</span>{% render 'fg-icon', name: 'plus', class: 'fg-faqt__plus' %}{% render 'fg-icon', name: 'chevron', class: 'fg-faqt__chev' %}</summary>
+        <details class="fg-faqt__item" style="--om: {{ block.settings.order_mobile | default: forloop.index }};" {{ block.shopify_attributes }}>
+          <summary><span class="fg-only-d">{{ block.settings.question }}</span><span class="fg-only-m">{{ block.settings.question_mobile | default: block.settings.question }}</span>{% render 'fg-icon', name: 'plus', class: 'fg-faqt__plus' %}{% render 'fg-icon', name: 'chevron', class: 'fg-faqt__chev' %}</summary>
           <div class="fg-faqt__a">{{ block.settings.answer }}</div>
         </details>
       {%- endfor -%}
@@ -41,6 +41,8 @@
   "blocks": [
     { "type": "question", "name": "Question", "settings": [
       { "type": "text", "id": "question", "label": "Question" },
+      { "type": "text", "id": "question_mobile", "label": "Question au téléphone" },
+      { "type": "range", "id": "order_mobile", "label": "Rang au téléphone (0 = même rang)", "min": 0, "max": 8, "step": 1, "default": 0 },
       { "type": "richtext", "id": "answer", "label": "Réponse" }
     ] }
   ],
