@@ -2,6 +2,9 @@
   SILLON V2 : photo d'un emplacement (image choisie dans l'éditeur, sinon fichier du thème), cadrée par
   object-position et un agrandissement réglable (« zoom », en %), pour caler le cadrage sur la planche.
   Paramètres : image, asset, alt, pos, pos_mobile, zoom, zoom_mobile (téléphone), loading, class, sizes. Sans photo : rien.
+  Placement au téléphone (facultatif) : place_w (largeur de la photo, repère 390 px ; 0 = remplir le cadre), place_x,
+  place_y (position du coin haut gauche, repère 390 px) — la photo garde ses proportions ; le reste du cadre montre la
+  même photo en fond ; place_fade : bords fondus quand la photo posée ne couvre pas tout le cadre.
 {%- endcomment -%}
 {%- liquid
   assign img_loading = loading | default: 'lazy'
@@ -11,11 +14,15 @@
   assign img_zoom_m = zoom_mobile | default: img_zoom
 -%}
 {%- if image != blank or asset != blank -%}
-  <div class="sv-img {{ class }}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }}; --z: {{ img_zoom | divided_by: 100.0 }}; --z-m: {{ img_zoom_m | divided_by: 100.0 }};">
+  {%- assign img_place = place_w | default: 0 | plus: 0 -%}
+  <div class="sv-img {{ class }}{% if img_place > 0 %} has-place{% if place_fade %} has-fade{% endif %}{% endif %}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }}; --z: {{ img_zoom | divided_by: 100.0 }}; --z-m: {{ img_zoom_m | divided_by: 100.0 }};{% if img_place > 0 %} --pw: {{ img_place }}; --px: {{ place_x | default: 0 }}; --py: {{ place_y | default: 0 }};{% endif %}">
+    {%- if img_place > 0 -%}
+      {%- if image != blank -%}{{ image | image_url: width: 1600 | image_tag: loading: img_loading, class: 'sv-img__bg', alt: '', widths: '750, 1100, 1600' }}{%- else -%}<img class="sv-img__bg" src="{{ asset | asset_url }}" alt="" loading="{{ img_loading }}" decoding="async" width="1600" height="1067">{%- endif -%}
+    {%- endif -%}
     {%- if image != blank -%}
-      {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: sizes | default: '100vw', widths: '400, 750, 1100, 1600, 2400', alt: alt }}
+      {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: sizes | default: '100vw', widths: '400, 750, 1100, 1600, 2400', alt: alt, class: 'sv-img__main' }}
     {%- else -%}
-      <img src="{{ asset | asset_url }}" alt="{{ alt | escape }}" loading="{{ img_loading }}" decoding="async"{% if img_loading == 'eager' %} fetchpriority="high"{% endif %} width="1600" height="1067">
+      <img class="sv-img__main" src="{{ asset | asset_url }}" alt="{{ alt | escape }}" loading="{{ img_loading }}" decoding="async"{% if img_loading == 'eager' %} fetchpriority="high"{% endif %} width="1600" height="1067">
     {%- endif -%}
   </div>
 {%- endif -%}

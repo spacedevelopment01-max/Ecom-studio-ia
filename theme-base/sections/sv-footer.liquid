@@ -58,9 +58,9 @@
     <div class="sv-footer__help">
       <span class="sv-topo sv-topo--rings sv-footer__topo" aria-hidden="true"></span>
       <a class="sv-footer__bold" href="{{ routes.root_url }}">{{ brand }}</a>
-      {%- if menu.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_explore | default: 'Menu' }}{% render 'sv-icon', name: 'arrow' %}</summary><ul role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
-      {%- if help.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_help | default: 'Aide' }}{% render 'sv-icon', name: 'arrow' %}</summary><ul role="list">{%- for link in help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
-      {%- if s.tagline != blank or legal.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_info | default: 'Informations' }}{% render 'sv-icon', name: 'arrow' %}</summary>{%- if s.tagline != blank -%}<p>{{ s.tagline | escape | newline_to_br }}</p>{%- endif -%}{%- if s.note != blank -%}<p>{{ s.note }}</p>{%- endif -%}</details>{%- endif -%}
+      {%- if menu.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_explore | default: 'Menu' }}{% render 'sv-icon', name: 'chevron' %}</summary><ul role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
+      {%- if help.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_help | default: 'Aide' }}{% render 'sv-icon', name: 'chevron' %}</summary><ul role="list">{%- for link in help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
+      {%- if s.tagline != blank or legal.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_info | default: 'Informations' }}{% render 'sv-icon', name: 'chevron' %}</summary>{%- if s.tagline != blank -%}<p>{{ s.tagline | escape | newline_to_br }}</p>{%- endif -%}{%- if s.note != blank -%}<p>{{ s.note }}</p>{%- endif -%}</details>{%- endif -%}
     </div>
   </div>
   <div class="sv-footer__legal">

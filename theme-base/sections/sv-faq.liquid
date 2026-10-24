@@ -17,7 +17,7 @@
     <div class="sv-faq__inner">
       <span class="sv-topo sv-topo--tall sv-faq__topo" aria-hidden="true"></span>
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-faq__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
-      {%- if s.image_mobile != blank or s.image_mobile_asset != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-faq__mphoto', loading: 'eager' %}{%- endif -%}
+      {%- if s.image_mobile != blank or s.image_mobile_asset != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-faq__mphoto', loading: 'eager', place_w: s.image_mobile_place_w, place_x: s.image_mobile_place_x, place_y: s.image_mobile_place_y %}{%- endif -%}
       {%- if s.product_image != blank or s.product_image_asset != blank -%}{% render 'sv-img', image: s.product_image, asset: s.product_image_asset, alt: '', class: 'sv-faq__product sv-cut', loading: 'eager' %}{%- endif -%}
       <span class="sv-display sv-faq__mark" aria-hidden="true">?</span>
       <h1 class="sv-display sv-faq__title">{{ s.heading | escape | newline_to_br }}</h1>
@@ -59,8 +59,9 @@
       {%- if s.contact_label != blank -%}
         <a class="sv-faq__contact" href="{{ s.contact_link | default: routes.root_url }}"><span class="sv-faq__contact-ico">{% render 'sv-icon', name: 'mail' %}</span><span>{{ s.contact_label }}</span>{% render 'sv-icon', name: 'arrow-ne' %}</a>
       {%- endif -%}
-      {%- if s.image_bottom_mobile != blank or s.image_bottom_mobile_asset != blank -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land sv-only-d', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{% render 'sv-img', image: s.image_bottom_mobile, asset: s.image_bottom_mobile_asset, alt: '', pos: s.image_bottom_position_mobile, class: 'sv-faq__land sv-only-m' %}{%- else -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{%- endif -%}
+      {%- if s.image_bottom_mobile != blank or s.image_bottom_mobile_asset != blank -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land sv-only-d', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{% render 'sv-img', image: s.image_bottom_mobile, asset: s.image_bottom_mobile_asset, alt: '', pos: s.image_bottom_position_mobile, zoom: s.image_bottom_zoom_mobile, class: 'sv-faq__land sv-only-m' %}{%- else -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{%- endif -%}
       {% render 'sv-route', d: 'M0 220C60 170 110 120 180 90S300 30 380 30 520 20 560 30', vb: '0 0 560 220', dots: '300,40', class: 'sv-faq__route' %}
+      {% render 'sv-route', d: 'M-5 330C20 310 40 300 55 295S150 250 185 235 280 140 330 82 380 20 400 10', vb: '0 0 390 330', dots: '55,295 185,235 330,82', class: 'sv-faq__mroute', width: 2.4 %}
     </div>
   </div>
 </section>
@@ -82,6 +83,9 @@
     { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
     { "type": "text", "id": "image_mobile_position", "label": "Cadrage (téléphone)", "default": "50% 50%" },
     { "type": "range", "id": "image_mobile_zoom", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_mobile_place_w", "label": "Photo du téléphone : largeur posée (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_mobile_place_x", "label": "Photo du téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_mobile_place_y", "label": "Photo du téléphone : position en haut (px)" },
     { "type": "image_picker", "id": "product_image", "label": "Produit détouré en surplomb", "info": "La photo devient alors le socle (rocher, paysage) sous le produit." },
     { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "text", "id": "search_label", "label": "Recherche (lecteurs d'écran)", "default": "Rechercher une question" },

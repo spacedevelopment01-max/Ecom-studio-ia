@@ -34,6 +34,26 @@ commande en quatre écrans, menu, tiroir du panier, panier vide).
 - **Les écarts qui restent** sont listés plus bas, sans les cacher. Branche livrée ≠ fusion ≠ studio : le thème
   n'apparaîtra dans votre studio qu'après fusion puis déploiement. La validation du rendu vous revient.
 
+## Retour de Thomas du 24 octobre (version téléphone)
+
+« Sur mobile ça me convient pas, il faut refaire comme les maquettes mobile. » Corrections faites, page par page, en
+regardant côte à côte la planche et la capture (`reports/sillon-v2/comparaisons/telephone-cote/`, une bande par page) :
+
+- **Photos recadrées comme les planches** : les photos ne sont plus simplement agrandies et coupées ; un nouveau réglage
+  du studio « Téléphone : largeur posée / position » place la photo à la taille voulue (produit entier, à la même place
+  que sur la planche) : ouverture de l'accueil, rituel de l'accueil, étapes du rituel, entretien, SILLON, FAQ, suivi.
+  Les paysages qui montraient la machine là où la planche n'en a pas (bandeau de la fiche, pieds de page, panier,
+  contact, FAQ, articles liés, SILLON) sont recadrés sur le paysage seul.
+- **Chemins cuivre des planches** ajoutés au téléphone : rituel sombre de la fiche, bandeau « Suivre son sillon », FAQ,
+  livraison, panier.
+- **Poids et tailles** : prix de l'accueil en cuivre, flèches plus épaisses, grand nom des pieds de page en capitales
+  pleines, colonnes du pied en petit corps, pastilles du carnet fines, sommaire de l'article (numéros en gras sur la
+  même ligne), entretien (pictogramme « marche », libellés gras), pied clair sans menu, pied d'aide condensé à chevrons.
+- **Textes** : apostrophes et guillemets typographiques des planches (« L’espresso… », « d’échappées », “Prendre le temps
+  de s’arrêter.”), « Plus d’horizons », coupes de lignes du téléphone.
+- **Bandeau cookies** : les préférences restaient toujours dépliées (défaut corrigé) ; sur téléphone le bandeau est
+  compact (accepter, refuser, personnaliser).
+
 ## Ce qui est livré
 
 | Domaine | Contenu |

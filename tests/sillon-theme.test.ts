@@ -86,7 +86,7 @@ describe("SILLON V2 : démonstration (planches 01 à 03 et planches téléphone)
     expect(t(product)).toContain(`${SILLON_PRICE} €`);
     expect(t("/pages/le-rituel")).toMatch(/Votre pause\.\s+Votre cadence\./i);
     expect(t("/pages/sillon")).toMatch(/On aime\s+les détours\./i);
-    expect(t("/pages/carnet")).toMatch(/Carnet\s+d'échappées\./i);
+    expect(t("/pages/carnet")).toMatch(/Carnet\s+d[’']échappées\./i);
     expect(t("/pages/faq")).toMatch(/On vous\s+répond\./i);
     expect(t("/pages/contact")).toMatch(/On garde\s+le contact\./i);
     expect(t("/pages/livraison-et-retours")).toMatch(/Les infos\s+du voyage\./i);

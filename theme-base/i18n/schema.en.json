@@ -3834,5 +3834,12 @@
   "Texte de l'aide": "Help text",
   "Une question sur votre\ncommande ? Nous sommes\nlà pour vous aider.": "A question about your\norder? We are\nhere to help.",
   "Lien de l'aide": "Help link",
-  "Adresse du lien de l'aide": "Help link address"
+  "Adresse du lien de l'aide": "Help link address",
+  "Téléphone : largeur posée de la photo (px)": "Phone: placed photo width (px)",
+  "Repère : écran de 390 px. 0 : la photo remplit le cadre.": "Reference: 390 px screen. 0: the photo fills the frame.",
+  "Téléphone : position à gauche (px)": "Phone: left position (px)",
+  "Téléphone : position en haut (px)": "Phone: top position (px)",
+  "Photo du téléphone : largeur posée (px)": "Phone photo: placed width (px)",
+  "Photo du téléphone : position à gauche (px)": "Phone photo: left position (px)",
+  "Photo du téléphone : position en haut (px)": "Phone photo: top position (px)"
 }

@@ -18,6 +18,7 @@
       {%- endif -%}
       {% render 'sv-img', image: s.image_top, asset: s.image_top_asset, alt: '', pos: s.image_top_position, class: 'sv-cart__peak', pos_mobile: s.image_top_position_mobile, zoom_mobile: s.image_top_zoom_mobile %}
       {% render 'sv-route', d: 'M0 450C120 380 260 290 400 300S700 380 800 362 900 300 940 220 1080 40 1130 0', vb: '0 0 1130 450', dots: '753,382 946,212', class: 'sv-cart__route' %}
+      {%- if cart.item_count > 0 -%}{% render 'sv-route', d: 'M0 325C60 300 120 285 200 280S300 280 327 267 370 240 395 215M0 905C30 900 50 912 68 915S140 900 180 890', vb: '0 0 390 1070', dots: '267,277 327,267 362,233 68,915', class: 'sv-cart__mroute', width: 2.2 %}{%- endif -%}
       <h1 class="sv-display sv-cart__title">{%- if cart.item_count == 0 and s.empty_heading != blank -%}{{ s.empty_heading | escape | newline_to_br }}{%- else -%}{{ s.heading | escape | newline_to_br }}{%- endif -%}</h1>
       {%- if cart.item_count == 0 -%}
         <div class="sv-cart__empty">

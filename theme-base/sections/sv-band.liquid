@@ -12,6 +12,7 @@
       <h2 class="sv-display sv-band__title">{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h2>
       {%- if s.style == 'dark' -%}
         {% render 'sv-route', d: 'M0 70C60 70 80 40 120 40S170 10 220 30 300 110 380 80 440 10 520 6', vb: '0 0 520 110', dots: '120,40 220,30 516,6', dot: 'solid', dashed: true, class: 'sv-band__route' %}
+        {% render 'sv-route', d: 'M17 16C50 12 80 18 101 33S124 90 128 125', vb: '0 0 140 140', dots: '101,33', dot: 'solid', dashed: true, class: 'sv-band__mroute' %}
       {%- endif -%}
       {%- if s.style == 'newsletter' -%}
         {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}

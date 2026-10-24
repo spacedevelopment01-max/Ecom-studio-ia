@@ -11,7 +11,7 @@
     <div class="sv-track__inner">
       <span class="sv-topo sv-topo--tall sv-track__topo" aria-hidden="true"></span>
       {% render 'sv-route', d: 'M330 0C350 60 300 80 260 120S330 220 300 300 200 380 150 430 40 520 0 600', vb: '0 0 360 600', dots: '326,163 300,300 220,400 0,600', class: 'sv-track__route' %}
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, place_fade: true %}
       <h1 class="sv-display sv-track__title"{% if s.title_width != 100 %} style="--sx: {{ s.title_width | divided_by: 100.0 }}"{% endif %}>{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h1>
       {%- if s.intro != blank -%}<p class="sv-track__intro">{% render 'sv-lines', text: s.intro, mobile: s.intro_mobile %}</p>{%- endif -%}
       <form class="sv-track__form" action="{{ s.account_link | default: routes.account_url }}" method="get" novalidate data-sv-track="{% if s.simulate %}demo{% endif %}">
@@ -51,6 +51,9 @@
     { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
     { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
     { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Téléphone : largeur posée de la photo (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_place_x", "label": "Téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_place_y", "label": "Téléphone : position en haut (px)" },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "number_label", "label": "Numéro de commande", "default": "Numéro de commande" },
     { "type": "text", "id": "number_placeholder", "label": "Exemple de numéro", "default": "Ex. 1001" },

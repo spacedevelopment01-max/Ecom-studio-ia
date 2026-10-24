@@ -13,7 +13,7 @@
     <div class="sv-hero__frame">
       {%- if s.layout == 'photo' -%}
         {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-hero__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
-        {%- if s.image_mobile_asset != blank or s.image_mobile != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-hero__photo sv-hero__photo--m', loading: 'eager' %}{%- endif -%}
+        {%- if s.image_mobile_asset != blank or s.image_mobile != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-hero__photo sv-hero__photo--m', loading: 'eager', place_w: s.image_mobile_place_w, place_x: s.image_mobile_place_x, place_y: s.image_mobile_place_y, place_fade: true %}{%- endif -%}
         <span class="sv-hero__shade" aria-hidden="true"></span>
       {%- else -%}
         <span class="sv-topo sv-topo--field sv-hero__topo" aria-hidden="true"></span>
@@ -22,7 +22,7 @@
       {%- endif -%}
       <div class="sv-hero__text">
         {%- if s.eyebrow != blank -%}<p class="sv-eyebrow sv-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
-        <h1 class="sv-display sv-hero__title">{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h1>
+        <h1 class="sv-display sv-hero__title">{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile, spans: true %}</h1>
         {%- if s.subtitle != blank -%}<p class="sv-mono sv-hero__sub">{{ s.subtitle | escape | newline_to_br }}</p>{%- endif -%}
         {%- if s.text_mobile != blank -%}<p class="sv-hero__mtext">{{ s.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
       </div>
@@ -70,6 +70,9 @@
     { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
     { "type": "text", "id": "image_mobile_position", "label": "Cadrage (téléphone)", "default": "50% 50%" },
     { "type": "range", "id": "image_mobile_zoom", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_mobile_place_w", "label": "Photo du téléphone : largeur posée (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_mobile_place_x", "label": "Photo du téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_mobile_place_y", "label": "Photo du téléphone : position en haut (px)" },
     { "type": "image_picker", "id": "product_image", "label": "Produit détouré (fond sombre)" },
     { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "header", "content": "Cartouche sombre" },

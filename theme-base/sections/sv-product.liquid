@@ -65,6 +65,7 @@
         {%- endfor -%}
       </div>
       <div class="sv-product__card">
+        <span class="sv-topo sv-topo--corner sv-product__ctopo" aria-hidden="true"></span>
         <p class="sv-mono sv-product__name"><span class="sv-d">{{ p.title }}</span><span class="sv-m">{{ s.card_name | default: p.title }}</span></p>
         {%- if s.card_subtitle != blank -%}<p class="sv-product__sub">{{ s.card_subtitle }}</p>{%- endif -%}
         <p class="sv-display sv-product__price" data-sv-price>{{ v.price | money_without_trailing_zeros }}</p>
@@ -101,7 +102,7 @@
         <ul class="sv-product__links" role="list">
           {%- for block in section.blocks -%}
             {%- if block.type == 'link' -%}
-              <li {{ block.shopify_attributes }}><a href="{{ block.settings.link }}">{% render 'sv-icon', name: block.settings.icon %}<span>{{ block.settings.label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>
+              <li {{ block.shopify_attributes }}><a href="{{ block.settings.link }}">{% render 'sv-icon', name: block.settings.icon %}<span>{{ block.settings.label }}</span>{% render 'sv-icon', name: 'arrow', class: 'sv-only-d' %}{% render 'sv-icon', name: 'chevron', class: 'sv-only-m' %}</a></li>
             {%- endif -%}
           {%- endfor -%}
         </ul>

@@ -14,7 +14,7 @@
         {%- for block in section.blocks limit: 4 -%}
           {%- assign b = block.settings -%}
           <li {{ block.shopify_attributes }}>
-            {% render 'sv-icon', name: 'cycle' %}
+            {% render 'sv-icon', name: 'power' %}
             {%- if b.is_notice -%}
               {%- if s.notice_file != blank -%}
                 <a class="sv-mono" href="{{ s.notice_file }}">{{ b.text }}</a>
@@ -30,7 +30,7 @@
         {%- endfor -%}
       </ul>
       <span class="sv-care__rule" aria-hidden="true"></span>
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-care__photo', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-care__photo', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y %}
       <a class="sv-display sv-care__cta" href="{{ s.link | default: routes.all_products_collection_url }}">{{ s.link_label | escape | newline_to_br }}</a>
       <a class="sv-circle sv-care__arrow" href="{{ s.link | default: routes.all_products_collection_url }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow' %}</a>
     </div>
@@ -52,6 +52,9 @@
     { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
     { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
     { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Téléphone : largeur posée de la photo (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_place_x", "label": "Téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_place_y", "label": "Téléphone : position en haut (px)" },
     { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
     { "type": "textarea", "id": "link_label", "label": "Lien", "default": "Découvrir\nla machine" },
     { "type": "url", "id": "link", "label": "Adresse du lien" }
