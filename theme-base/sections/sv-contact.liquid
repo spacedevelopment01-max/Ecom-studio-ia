@@ -11,7 +11,7 @@
     <div class="sv-contact__inner">
       {% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-contact__land', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}
       <h1 class="sv-display sv-contact__title">{{ s.heading | escape | newline_to_br }}</h1>
-      {%- if s.intro != blank -%}<p class="sv-contact__intro">{{ s.intro | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.intro != blank -%}<p class="sv-contact__intro">{% render 'sv-lines', text: s.intro, mobile: s.intro_mobile %}</p>{%- endif -%}
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-contact__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       {%- form 'contact', class: 'sv-contact__form', data-sv-contact: s.simulate | append: '' -%}
         {%- if form.posted_successfully? -%}<p class="sv-contact__status" role="status">{{ s.success_text }}</p>{%- endif -%}
@@ -50,6 +50,7 @@
   "settings": [
     { "type": "textarea", "id": "heading", "label": "Titre", "default": "On garde\nle contact." },
     { "type": "textarea", "id": "intro", "label": "Phrase d'accueil" },
+    { "type": "textarea", "id": "intro_mobile", "label": "Phrase d'accueil au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessus." },
     { "type": "image_picker", "id": "image", "label": "Photo verticale" },
     { "type": "text", "id": "image_asset", "label": "Photo verticale (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },

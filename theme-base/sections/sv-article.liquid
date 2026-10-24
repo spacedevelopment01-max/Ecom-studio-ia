@@ -13,7 +13,7 @@
     <div class="sv-article__inner">
       {%- if s.crumb != blank -%}<p class="sv-mono sv-article__crumb">{%- if s.crumb_link != blank -%}<a href="{{ s.crumb_link }}">{{ s.crumb }}</a>{%- else -%}{{ s.crumb }}{%- endif -%}</p>{%- endif -%}
       <h1 class="sv-display sv-article__title">{{ s.heading | escape | newline_to_br }}</h1>
-      {%- if s.lead != blank -%}<p class="sv-mono sv-article__lead">{{ s.lead | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.lead != blank -%}<p class="sv-mono sv-article__lead">{% render 'sv-lines', text: s.lead, mobile: s.lead_mobile %}</p>{%- endif -%}
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-article__cover', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
       <nav class="sv-article__toc" aria-label="{{ s.toc_label | escape | strip_newlines }}">
         <p class="sv-display sv-article__toc-title">{{ s.toc_label | escape | newline_to_br }}</p>
@@ -40,7 +40,7 @@
         <div class="sv-article__product">
           {% render 'sv-img', image: s.product_image, asset: s.product_image_asset, alt: '', class: 'sv-article__machine sv-cut' %}
           <p class="sv-display sv-article__pname">{{ s.product_label | default: p.title }}</p>
-          {%- if s.product_text != blank -%}<p class="sv-mono sv-article__ptext">{{ s.product_text | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if s.product_text != blank -%}<p class="sv-mono sv-article__ptext">{% render 'sv-lines', text: s.product_text, mobile: s.product_text_mobile %}</p>{%- endif -%}
           <span class="sv-article__prule" aria-hidden="true"></span>
           <p class="sv-display sv-article__price">{{ p.price | money_without_trailing_zeros }}</p>
           <a class="sv-btn sv-btn--dark sv-article__cta" href="{{ p.url }}">{{ s.product_button }}<span class="sv-article__cta-circle">{% render 'sv-icon', name: 'arrow' %}</span></a>
@@ -60,6 +60,7 @@
     { "type": "url", "id": "crumb_link", "label": "Lien du fil d'Ariane" },
     { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le café\nen van." },
     { "type": "textarea", "id": "lead", "label": "Chapeau à chasse fixe" },
+    { "type": "textarea", "id": "lead_mobile", "label": "Chapeau au téléphone (coupe des lignes)", "info": "Vide : le chapeau ci-dessus." },
     { "type": "image_picker", "id": "image", "label": "Photo de couverture" },
     { "type": "text", "id": "image_asset", "label": "Photo de couverture (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description" },
@@ -84,6 +85,7 @@
     { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
     { "type": "text", "id": "product_label", "label": "Nom affiché", "info": "Vide : le nom du produit." },
     { "type": "textarea", "id": "product_text", "label": "Phrase à chasse fixe" },
+    { "type": "textarea", "id": "product_text_mobile", "label": "Phrase au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessus." },
     { "type": "text", "id": "product_button", "label": "Bouton", "default": "Découvrir la machine" }
   ],
   "blocks": [{ "type": "part", "name": "Partie", "settings": [{ "type": "text", "id": "title", "label": "Titre", "default": "Choisir sa halte" }, { "type": "richtext", "id": "text", "label": "Texte" }] }],

@@ -15,7 +15,7 @@
             <li class="sv-principles__item sv-principles__item--{{ n }}" {{ block.shopify_attributes }}>
               <span class="sv-display sv-principles__num">{% if n < 10 %}0{% endif %}{{ n }}</span>
               <h2 class="sv-display sv-principles__title">{{ block.settings.title | escape | newline_to_br }}</h2>
-              <p class="sv-mono sv-principles__text">{{ block.settings.text | escape | newline_to_br }}</p>
+              <p class="sv-mono sv-principles__text">{% render 'sv-lines', text: block.settings.text, mobile: block.settings.text_mobile %}</p>
             </li>
           {%- endif -%}
         {%- endfor -%}
@@ -41,7 +41,7 @@
     { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe", "default": "Le café\ns'invite\npartout." }
   ],
   "blocks": [
-    { "type": "principle", "name": "Principe", "settings": [{ "type": "textarea", "id": "title", "label": "Titre", "default": "Plus de horizons\ndans le quotidien." }, { "type": "textarea", "id": "text", "label": "Texte" }] },
+    { "type": "principle", "name": "Principe", "settings": [{ "type": "textarea", "id": "title", "label": "Titre", "default": "Plus de horizons\ndans le quotidien." }, { "type": "textarea", "id": "text", "label": "Texte" }, { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (coupe des lignes)", "info": "Vide : le texte ci-dessus." }] },
     {
       "type": "photo", "name": "Photo",
       "settings": [

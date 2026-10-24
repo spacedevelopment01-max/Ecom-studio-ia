@@ -12,8 +12,8 @@
       <span class="sv-topo sv-topo--tall sv-track__topo" aria-hidden="true"></span>
       {% render 'sv-route', d: 'M330 0C350 60 300 80 260 120S330 220 300 300 200 380 150 430 40 520 0 600', vb: '0 0 360 600', dots: '326,163 300,300 220,400 0,600', class: 'sv-track__route' %}
       {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-track__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
-      <h1 class="sv-display sv-track__title"{% if s.title_width != 100 %} style="--sx: {{ s.title_width | divided_by: 100.0 }}"{% endif %}>{{ s.heading | escape | newline_to_br }}</h1>
-      {%- if s.intro != blank -%}<p class="sv-track__intro">{{ s.intro | escape | newline_to_br }}</p>{%- endif -%}
+      <h1 class="sv-display sv-track__title"{% if s.title_width != 100 %} style="--sx: {{ s.title_width | divided_by: 100.0 }}"{% endif %}>{% render 'sv-lines', text: s.heading, mobile: s.heading_mobile %}</h1>
+      {%- if s.intro != blank -%}<p class="sv-track__intro">{% render 'sv-lines', text: s.intro, mobile: s.intro_mobile %}</p>{%- endif -%}
       <form class="sv-track__form" action="{{ s.account_link | default: routes.account_url }}" method="get" novalidate data-sv-track="{% if s.simulate %}demo{% endif %}">
         <label class="sv-field sv-track__f"><span>{{ s.number_label }}</span><input type="text" name="order" placeholder="{{ s.number_placeholder | escape }}" autocomplete="off" required><em class="sv-field__err" hidden>{{ s.err_required }}</em></label>
         <label class="sv-field sv-track__f"><span>{{ s.email_label }}</span><input type="email" name="email" placeholder="{{ s.email_placeholder | escape }}" autocomplete="email" required><em class="sv-field__err" hidden>{{ s.err_email }}</em></label>
@@ -42,7 +42,9 @@
   "settings": [
     { "type": "textarea", "id": "heading", "label": "Titre", "default": "Où en est\nvotre commande ?" },
     { "type": "range", "id": "title_width", "label": "Chasse du titre", "min": 80, "max": 100, "step": 1, "unit": "%", "default": 100, "info": "Resserre les lettres d'un titre long." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (coupe des lignes)", "info": "Vide : le titre ci-dessus." },
     { "type": "textarea", "id": "intro", "label": "Phrase", "default": "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande." },
+    { "type": "textarea", "id": "intro_mobile", "label": "Phrase au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessus." },
     { "type": "image_picker", "id": "image", "label": "Photo" },
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },

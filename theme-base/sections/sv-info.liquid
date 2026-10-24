@@ -13,6 +13,7 @@
       <span class="sv-topo sv-topo--corner sv-info__topo" aria-hidden="true"></span>
       {% render 'sv-route', d: 'M20 0C10 60 30 110 20 160S60 230 110 250 180 300 150 360', vb: '0 0 200 360', dots: '110,250', class: 'sv-info__route' %}
       <h1 class="sv-display sv-info__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {% render 'sv-route', d: 'M0 190C40 170 70 120 110 110S160 60 170 40 200 10 210 0', vb: '0 0 210 190', dots: '176,45 155,105', class: 'sv-info__mroute' %}
       {%- comment -%} Téléphone : onglets vers chaque partie (planche mobile 11) {%- endcomment -%}
       <nav class="sv-info__tabs" aria-label="{{ s.tabs_label | escape }}">
         {%- for block in section.blocks limit: 3 -%}{%- if block.settings.anchor != blank -%}<a class="sv-pill{% if forloop.first %} is-active{% endif %}" href="#{{ block.settings.anchor | handleize }}">{{ block.settings.title }}</a>{%- endif -%}{%- endfor -%}
@@ -24,7 +25,7 @@
             <span class="sv-display sv-info__num" aria-hidden="true">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
             <h2 class="sv-display sv-info__name">{{ b.title }}</h2>
             {% render 'sv-icon', name: b.icon, class: 'sv-info__ico' %}
-            <div class="sv-info__text">{{ b.text }}</div>
+            <div class="sv-info__text">{%- if b.text_mobile != blank -%}<div class="sv-only-d">{{ b.text }}</div><div class="sv-only-m">{{ b.text_mobile }}</div>{%- else -%}{{ b.text }}{%- endif -%}</div>
           </li>
         {%- endfor -%}
       </ol>
@@ -73,7 +74,8 @@
         { "type": "text", "id": "title", "label": "Nom", "default": "Livraison" },
         { "type": "select", "id": "icon", "label": "Pictogramme", "default": "truck", "options": [{ "value": "truck", "label": "Camion" }, { "value": "pin", "label": "Repère" }, { "value": "box", "label": "Colis" }, { "value": "return", "label": "Retour" }, { "value": "info", "label": "Information" }] },
         { "type": "text", "id": "anchor", "label": "Ancre (adresse #…)" },
-        { "type": "richtext", "id": "text", "label": "Texte" }
+        { "type": "richtext", "id": "text", "label": "Texte" },
+        { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone", "info": "Vide : le texte ci-dessus." }
       ]
     }
   ],

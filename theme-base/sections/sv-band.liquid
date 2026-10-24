@@ -14,7 +14,8 @@
         {% render 'sv-route', d: 'M0 70C60 70 80 40 120 40S170 10 220 30 300 110 380 80 440 10 520 6', vb: '0 0 520 110', dots: '120,40 220,30 516,6', dot: 'solid', dashed: true, class: 'sv-band__route' %}
       {%- endif -%}
       {%- if s.style == 'newsletter' -%}
-        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}
+        {% render 'sv-icon', name: 'mail', class: 'sv-band__mail' %}
         {%- form 'customer', class: 'sv-band__form', data-sv-news: '' -%}
           <input type="hidden" name="contact[tags]" value="newsletter">
           <label class="visually-hidden" for="sv-band-email-{{ section.id }}">{{ s.field_label }}</label>
@@ -24,7 +25,7 @@
           {%- if form.posted_successfully? -%}<p class="sv-band__status" role="status">{{ s.done }}</p>{%- endif -%}
         {%- endform -%}
       {%- else -%}
-        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+        {%- if s.text != blank -%}<p class="sv-mono sv-band__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}
         <a class="sv-circle sv-circle--light sv-band__arrow" href="{{ s.link | default: routes.root_url }}" aria-label="{{ s.link_label | escape }}">{% render 'sv-icon', name: s.icon %}</a>
       {%- endif -%}
     </div>
@@ -39,6 +40,7 @@
     { "type": "select", "id": "visibility", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "mobile", "label": "Téléphone seulement" }, { "value": "desktop", "label": "Ordinateur seulement" }] },
     { "type": "select", "id": "style", "label": "Style", "default": "copper", "options": [{ "value": "copper", "label": "Cuivre, titre ivoire" }, { "value": "dark", "label": "Sombre, titre cuivre et chemin" }, { "value": "newsletter", "label": "Cuivre, inscription par e-mail" }] },
     { "type": "textarea", "id": "heading", "label": "Titre (un retour à la ligne par ligne)", "default": "Le détour\nen vaut la tasse." },
+    { "type": "textarea", "id": "text_mobile", "label": "Phrase au téléphone (coupe des lignes)", "info": "Vide : la phrase ci-dessous." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (coupe des lignes)", "info": "Vide : le titre ci-dessus." },
     { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe", "default": "Plus loin\nPlus libre\nToujours un bon café." },
     { "type": "url", "id": "link", "label": "Lien de la flèche" },

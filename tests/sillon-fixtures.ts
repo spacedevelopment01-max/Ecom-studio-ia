@@ -194,10 +194,10 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
   const pages: Record<string, { seo: string; rows: Row[] }> = {};
   const lightFoot = S("sv-page", { footer: "light" });
   pages["le-rituel"] = { seo: "Le rituel SILLON : préparez, lancez, savourez. Trois gestes pour un espresso sur la route.", rows: [
-    S("sv-hero", { layout: "dark", eyebrow: "Guide de route / 001", heading: "Votre pause.\nVotre cadence.", subtitle: "Un bon café\nvous suit\nplus loin.", product_image_asset: f("v2-02-machine-detouree.webp"), image_alt: alt("v2-02-machine-detouree.webp"), card_title: "", show_route: true, title_size: 146, title_line: 150, text_left: 70, text_top: 186, height: 720, height_mobile: 640 }),
+    S("sv-hero", { layout: "dark", eyebrow: "Guide de route / 001", heading: "Votre pause.\nVotre cadence.", heading_mobile: "Votre\npause.\nVotre\ncadence.", subtitle: "Un bon café\nvous suit\nplus loin.", product_image_asset: f("v2-02-machine-detouree.webp"), image_alt: alt("v2-02-machine-detouree.webp"), card_title: "", show_route: true, title_size: 146, title_line: 150, text_left: 70, text_top: 186, height: 720, height_mobile: 640 }),
     S("sv-steps", {}, [
       { type: "step", settings: { number: "01", title: "Préparez", text: "Votre café.\nVotre manière.", image_asset: f("v2-13-rituel-cafe-moulu-dose.webp"), image_alt: alt("v2-13-rituel-cafe-moulu-dose.webp"), image_position: "50% 45%", image_zoom: 100 } },
-      { type: "step", settings: { number: "02", title: "Lancez", text: "Un geste simple.\nPartout avec vous.", image_asset: f("v2-14-rituel-couvercle-bouton.webp"), image_alt: alt("v2-14-rituel-couvercle-bouton.webp"), image_position: "50% 40%", image_zoom: 100 } },
+      { type: "step", settings: { number: "02", title: "Lancez", text: "Un geste simple.\nPartout avec vous.", image_asset: f("v2-14-rituel-couvercle-bouton.webp"), image_alt: alt("v2-14-rituel-couvercle-bouton.webp"), image_position: "50% 40%", image_zoom: 100, image_position_mobile: "62% 35%", image_zoom_mobile: 150 } },
       { type: "step", settings: { number: "03", title: "Savourez", text: "Le goût\ndu chemin.", image_asset: f("v2-09-rituel-extraction.webp"), image_alt: alt("v2-09-rituel-extraction.webp"), image_position: "50% 70%", image_zoom: 100 } },
     ]),
     S("sv-care", { heading: "Entretien\nsimple.", text: "Pour vous suivre\nlongtemps.", notice_file: "", notice_missing: "(notice à ajouter)", image_asset: f("v2-24-mobile-machine-rocher.webp"), image_position: "50% 40%", image_zoom: 120, link_label: "Découvrir\nla machine", link: PRODUCT }, [
@@ -208,16 +208,16 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     lightFoot,
   ] };
   pages.sillon = { seo: "SILLON : on aime les détours. Le café comme compagnon d'exploration.", rows: [
-    S("sv-hero", { layout: "photo", eyebrow: "", heading: "On aime\nles détours.", subtitle: "Le café comme\ncompagnon\nd'exploration.", image_asset: f("v2-04-van-lac-halte.webp"), image_alt: alt("v2-04-van-lac-halte.webp"), image_position: "55% 60%", image_zoom: 100, image_mobile_asset: f("v2-04-van-lac-halte.webp"), image_mobile_position: "94% 60%", card_title: "", show_route: false, title_size: 166, title_line: 188, text_left: 71, text_top: 176, height: 745, height_mobile: 618 }),
+    S("sv-hero", { layout: "photo", eyebrow: "", heading: "On aime\nles détours.", heading_mobile: "On aime\nles\ndétours.", subtitle: "Le café comme\ncompagnon\nd'exploration.", image_asset: f("v2-04-van-lac-halte.webp"), image_alt: alt("v2-04-van-lac-halte.webp"), image_position: "55% 60%", image_zoom: 100, image_mobile_asset: f("v2-04-van-lac-halte.webp"), image_mobile_position: "94% 60%", card_title: "", show_route: false, title_size: 166, title_line: 188, text_left: 71, text_top: 176, height: 745, height_mobile: 618 }),
     S("sv-principles", { text: "Le café\ns'invite\npartout." }, [
-      { type: "principle", settings: { title: "Plus de horizons\ndans le quotidien.", text: "SILLON existe pour celles et ceux\nqui prennent la route, même pour\nun simple week-end." } },
-      { type: "principle", settings: { title: "Des rituels simples\net essentiels.", text: "Un bon café, partout,\npour faire une pause à sa manière." } },
-      { type: "principle", settings: { title: "Un objet pensé\npour durer.", text: "Des matériaux soignés,\nun design intemporel, et le goût\ndes belles échappées." } },
+      { type: "principle", settings: { title: "Plus de horizons\ndans le quotidien.", text: "SILLON existe pour celles et ceux\nqui prennent la route, même pour\nun simple week-end.", text_mobile: "SILLON existe pour celles\net ceux qui prennent\nla route, même pour\nun simple week-end." } },
+      { type: "principle", settings: { title: "Des rituels simples\net essentiels.", text: "Un bon café, partout,\npour faire une pause à sa manière.", text_mobile: "Un bon café, partout,\npour faire une pause\nà sa manière." } },
+      { type: "principle", settings: { title: "Un objet pensé\npour durer.", text: "Des matériaux soignés,\nun design intemporel, et le goût\ndes belles échappées.", text_mobile: "Des matériaux soignés,\nun design intemporel\net le goût des belles\néchappées." } },
       { type: "photo", settings: { image_asset: f("v2-07-detail-bouton-cuivre.webp"), image_alt: alt("v2-07-detail-bouton-cuivre.webp"), image_position: "50% 50%", image_zoom: 100 } },
       { type: "photo", settings: { image_asset: f("v2-15-marque-route-lacets.webp"), image_alt: alt("v2-15-marque-route-lacets.webp"), image_position: "50% 50%", image_zoom: 100 } },
       { type: "photo", settings: { image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: alt("v2-16-marque-rochers-sentier.webp"), image_position: "50% 50%", image_zoom: 100 } },
     ]),
-    S("sv-band", { style: "dark", heading: "Suivre\nson sillon.", text: "Des routes\ndifférentes.\nToujours le même\nplaisir.", link: U("carnet"), link_label: "Lire le carnet", icon: "arrow" }),
+    S("sv-band", { style: "dark", heading: "Suivre\nson sillon.", text: "Des routes\ndifférentes.\nToujours le même\nplaisir.", text_mobile: "Des routes différentes.\nToujours le même plaisir.", link: U("carnet"), link_label: "Lire le carnet", icon: "arrow" }),
     lightFoot,
   ] };
   const ENTRIES = [
@@ -228,8 +228,8 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     { h: "carnet-ralentir-face-au-lac" as SvPageHandle, title: "Ralentir face au lac", text: "Prendre le temps,\ntout simplement.", cat: "Sur la route", img: "v2-20-journal-lac-coucher.webp", pos: "50% 50%" },
   ];
   pages.carnet = { seo: "Carnet d'échappées SILLON : des lieux, des histoires et toujours un bon café.", rows: [
-    S("sv-journal", { heading: "Carnet\nd'échappées.", text: "Des lieux,\ndes histoires,\net toujours\nun bon café.", categories: "Sur la route, Le café, Entretien", all_label: "Tout", empty_label: "Aucun article dans cette catégorie pour le moment." }, ENTRIES.map((e) => ({ type: "entry", settings: { image_asset: f(e.img), image_position: e.pos, image_zoom: 100, title: e.title, text: e.text, category: e.cat, link: U(e.h) } }))),
-    S("sv-band", { style: "newsletter", heading: "Restons\nen chemin.", text: "Recevez nos prochains carnets\nd'échappées dans votre boîte mail.", field_label: "Votre e-mail pour recevoir les prochains carnets", placeholder: "Votre e-mail", done: "Merci, votre inscription est enregistrée." }),
+    S("sv-journal", { heading: "Carnet\nd'échappées.", text: "Des lieux,\ndes histoires,\net toujours\nun bon café.", categories: "Sur la route, Le café, Entretien", all_label: "Tout", empty_label: "Aucun article dans cette catégorie pour le moment." }, ENTRIES.map((e) => ({ type: "entry", settings: { image_asset: f(e.img), image_position: e.pos, image_zoom: 100, title: e.title, title_mobile: (e as { titleM?: string }).titleM ?? "", text: e.text, category: e.cat, link: U(e.h) } }))),
+    S("sv-band", { style: "newsletter", heading: "Restons\nen chemin.", text: "Recevez nos prochains carnets\nd'échappées dans votre boîte mail.", text_mobile: "Recevez nos prochains\ncarnets d'échappées\ndans votre boîte mail.", field_label: "Votre e-mail pour recevoir les prochains carnets", placeholder: "Votre e-mail", done: "Merci, votre inscription est enregistrée." }),
     lightFoot,
   ] };
   // Articles : celui de la planche (« Le café en van ») et cinq déclinaisons cohérentes, chacune avec son propre texte.
@@ -237,8 +237,8 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     const e = ARTICLES.find((x) => x.h === h)!;
     return { type: "post", settings: { image_asset: f(e.cardImg), image_position: "50% 50%", image_zoom: 100, title: e.cardTitle, text: e.cardText, link: U(h) } };
   }));
-  const ARTICLES: { h: SvPageHandle; crumb: string; title: string; lead: string; img: string; pos: string; body: string; quote: string; side: string; parts: [string, string][]; cardImg: string; cardTitle: string; cardText: string; rel: [SvPageHandle, SvPageHandle] }[] = [
-    { h: "carnet-le-cafe-en-van", crumb: "Carnet / Sur la route", title: "Le café\nen van.", lead: "Routes, paysages\net petits rituels.\nQuand le café accompagne\nles plus belles échappées.", img: "v2-21-article-van-table-lac.webp", pos: "50% 55%",
+  const ARTICLES: { h: SvPageHandle; crumb: string; title: string; lead: string; leadM?: string; img: string; pos: string; body: string; quote: string; side: string; parts: [string, string][]; cardImg: string; cardTitle: string; cardText: string; rel: [SvPageHandle, SvPageHandle] }[] = [
+    { h: "carnet-le-cafe-en-van", crumb: "Carnet / Sur la route", title: "Le café\nen van.", lead: "Routes, paysages\net petits rituels.\nQuand le café accompagne\nles plus belles échappées.", leadM: "Routes,\npaysages\net petits rituels.\nQuand le café\naccompagne\nles plus belles\néchappées.", img: "v2-21-article-van-table-lac.webp", pos: "50% 55%",
       body: p("Le van offre une liberté rare : celle de choisir son rythme. Au bord d'un lac, sur une route de montagne ou au détour d'un village, le café devient un marqueur de ces instants simples qui font les plus beaux souvenirs."),
       quote: "« Prendre le temps\nde s'arrêter. »", side: "v2-22-article-montagnes-brume.webp",
       parts: [["Choisir sa halte", "Une vue, un coin tranquille, une lumière particulière. Le bon spot fait déjà partie du plaisir."], ["Préparer sa pause", "Quelques instants suffisent pour préparer votre café et profiter pleinement du moment."], ["Respecter les lieux", "Laisser la nature aussi belle qu'à votre arrivée, pour que d'autres puissent en profiter."]],
@@ -270,7 +270,7 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
       cardImg: "v2-15-marque-route-lacets.webp", cardTitle: "Une route,\nun matin.", cardText: "Ces instants où tout\nsemble plus simple.", rel: ["carnet-le-cafe-en-van", "carnet-le-sac-du-week-end"] },
   ];
   for (const a of ARTICLES) pages[a.h] = { seo: `${a.title.replace(/\n/g, " ")} — Carnet d'échappées SILLON.`, rows: [
-    S("sv-article", { crumb: a.crumb, crumb_link: U("carnet"), heading: a.title, lead: a.lead, image_asset: f(a.img), image_alt: alt(a.img), image_position: a.pos, image_zoom: 100, toc_label: "Dans\ncet article", body: a.body, quote: a.quote, image_2_asset: f(a.side), image_2_alt: alt(a.side), image_2_position: "50% 50%", show_product: true, product: SILLON_HANDLE, product_image_asset: f("v2-02-machine-detouree.webp"), product_label: "SILLON V2", product_text: "Votre compagnon\npour toutes vos échappées.", product_button: "Découvrir la machine" },
+    S("sv-article", { crumb: a.crumb, crumb_link: U("carnet"), heading: a.title, lead: a.lead, lead_mobile: a.leadM ?? "", image_asset: f(a.img), image_alt: alt(a.img), image_position: a.pos, image_zoom: 100, toc_label: "Dans\ncet article", body: a.body, quote: a.quote, image_2_asset: f(a.side), image_2_alt: alt(a.side), image_2_position: "50% 50%", show_product: true, product: SILLON_HANDLE, product_image_asset: f("v2-02-machine-detouree.webp"), product_label: "SILLON V2", product_text: "Votre compagnon\npour toutes vos échappées.", product_text_mobile: "Votre compagnon\npour toutes\nvos échappées.", product_button: "Découvrir la machine" },
       a.parts.map(([title, text]) => ({ type: "part", settings: { title, text: p(text) } }))),
     related(...a.rel),
     lightFoot,
@@ -299,25 +299,25 @@ export function curateSillon(spec: ThemeSpec, ids: Record<string, string>) {
     ["Commande", "Comment vous contacter ?", p(`Par le formulaire de la page <a href="${U("contact")}">Contact</a> : nous vous répondons avec soin.`)],
   ];
   pages["faq"] = { seo: "Questions fréquentes SILLON : utilisation, notice, entretien, suivi et retours.", rows: [
-    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), image_mobile_asset: f(rock), image_mobile_position: "50% 62%", search_placeholder: "Rechercher une réponse…", filters: "Machine, Utilisation, Commande, Livraison", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180 },
-      faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer } }))),
+    S("sv-faq", { heading: "On vous\nrépond.", image_asset: f("v2-16-marque-rochers-sentier.webp"), image_alt: "", image_position: "0% 100%", image_zoom: 200, product_image_asset: f("v2-02-machine-detouree.webp"), image_mobile_asset: f(rock), image_mobile_position: "62% 38%", image_mobile_zoom: 136, search_placeholder: "Rechercher une réponse…", filters: "Machine, Utilisation, Commande, Livraison", contact_label: "Nous contacter", contact_link: U("contact"), image_bottom_asset: f("v2-16-marque-rochers-sentier.webp"), image_bottom_position: "100% 100%", image_bottom_zoom: 180, image_bottom_mobile_asset: f(land), image_bottom_position_mobile: "30% 80%", image_bottom_zoom_mobile: 100 },
+      faq.map(([category, question, answer]) => ({ type: "question", settings: { category, question, answer, question_mobile: ({ "Comment entretenir la machine ?": "Comment entretenir\nla machine ?", "Comment suivre ma commande ?": "Comment suivre ma\ncommande ?", "Comment demander un retour ?": "Comment demander\nun retour ?" } as Record<string, string>)[question] ?? "" } }))),
     helpFoot,
   ] };
   pages["contact"] = { seo: "Contacter SILLON : une question, une demande ou simplement envie d'échanger.", rows: [
-    S("sv-contact", { heading: "On garde\nle contact.", intro: "Une question, une demande\nou simplement envie d'échanger ?\nNotre équipe vous répond avec soin.", image_asset: f("v2-23-contact-van-machine.webp"), image_alt: alt("v2-23-contact-van-machine.webp"), image_position: "50% 50%", image_bottom_asset: f(land), image_bottom_position: "0% 55%", image_bottom_zoom: 160, subjects: "La machine, Une commande, Un retour, Autre", simulate: true, card_title: "Ou accédez directement à :" },
+    S("sv-contact", { heading: "On garde\nle contact.", intro: "Une question, une demande\nou simplement envie d'échanger ?\nNotre équipe vous répond avec soin.", intro_mobile: "Une question, une demande\nou simplement envie d'échanger ?\nNotre équipe vous répond\navec soin.", image_asset: f("v2-23-contact-van-machine.webp"), image_alt: alt("v2-23-contact-van-machine.webp"), image_position: "50% 50%", image_bottom_asset: f(land), image_bottom_position: "0% 55%", image_bottom_zoom: 160, subjects: "La machine, Une commande, Un retour, Autre", simulate: true, card_title: "Ou accédez directement à :" },
       [["La machine", PRODUCT], ["Une commande", U("suivi-de-commande")], ["Un retour", `${U("livraison-et-retours")}#retours`]].map(([label, link]) => ({ type: "link", settings: { label, link } }))),
     helpFoot,
   ] };
   pages["livraison-et-retours"] = { seo: "Livraison, suivi et retours SILLON.", rows: [
     S("sv-info", { heading: "Les infos\ndu voyage.", image_asset: f("v2-15-marque-route-lacets.webp"), image_position: "88% 50%", help_text: "Une question sur la livraison ou un retour ?\nNous sommes là pour vous aider.", help_link: U("contact"), note: "Conditions commerciales à compléter.", image_bottom_asset: f("v2-15-marque-route-lacets.webp"), image_bottom_position: "20% 70%" }, [
-      { type: "part", settings: { title: "Livraison", icon: "truck", anchor: "livraison", text: p("Nous préparons votre commande avec soin et vous la confions à nos partenaires de livraison. Les détails et frais vous sont indiqués à l'étape suivante.") } },
+      { type: "part", settings: { title: "Livraison", icon: "truck", anchor: "livraison", text: p("Nous préparons votre commande avec soin et vous la confions à nos partenaires de livraison. Les détails et frais vous sont indiqués à l'étape suivante."), text_mobile: p("Nous préparons votre commande avec soin.") + p("Vous trouverez les conditions de livraison à l'étape suivante de votre commande.") } },
       { type: "part", settings: { title: "Suivi", icon: "pin", anchor: "suivi", text: p("Une fois expédiée, vous recevrez un e-mail avec les informations pour suivre votre commande en temps réel.") } },
       { type: "part", settings: { title: "Retours", icon: "box", anchor: "retours", text: p("Si un produit ne vous convient pas, vous pouvez demander un retour depuis votre espace ou en nous contactant. Nous vous accompagnons dans cette démarche.") } },
     ]),
     helpFoot,
   ] };
   pages["suivi-de-commande"] = { seo: "Suivre une commande SILLON (démonstration : résultat d'exemple).", rows: [
-    S("sv-track", { heading: "Où en est\nvotre SILLON ?", intro: "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande.", image_asset: f(rock), image_alt: alt(rock), image_position: "67% 89%", image_zoom: 140, title_width: 88, number_placeholder: "Ex. SLN123456", email_placeholder: "votre@email.com", simulate: true, help_link: U("contact"), note: "Conditions commerciales à compléter" }),
+    S("sv-track", { heading: "Où en est\nvotre SILLON ?", heading_mobile: "Où en est\nvotre\nSILLON ?", intro: "Renseignez les informations ci-dessous pour\nretrouver l'état de votre commande.", intro_mobile: "Renseignez les informations ci-dessous\npour retrouver l'état de votre commande.", hint_text: "Vous ne retrouvez pas votre\nnuméro ?\nConsultez votre e-mail de\nconfirmation.", image_asset: f(rock), image_alt: alt(rock), image_position: "67% 89%", image_zoom: 140, title_width: 88, number_placeholder: "Ex. SLN123456", email_placeholder: "votre@email.com", simulate: true, help_link: U("contact"), note: "Conditions commerciales à compléter" }),
     helpFoot,
   ] };
   const legal = (heading: string, body: string, cookies = false): { seo: string; rows: Row[] } => ({ seo: `${heading.replace(/\n/g, " ")} — SILLON.`, rows: [S("sv-legal", { heading, body, show_cookies_button: cookies }), legalFoot] });

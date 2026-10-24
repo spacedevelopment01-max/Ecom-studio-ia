@@ -9,6 +9,8 @@
     <div class="sv-steps__inner">
       {% render 'sv-route', d: 'M138 22C220 0 330 20 380 82S430 230 424 278', vb: '0 0 440 290', dots: '138,22 380,82', dot: 'solid', dashed: true, width: 3, class: 'sv-steps__route sv-steps__route--1' %}
       {% render 'sv-route', d: 'M0 26C110 2 250 30 290 150S300 290 297 330', vb: '0 0 310 330', dots: '62,10 297,298', dot: 'solid', dashed: true, width: 3, class: 'sv-steps__route sv-steps__route--2' %}
+      {% render 'sv-route', d: 'M113 27C170 40 220 70 250 107S318 210 322 300 318 400 300 440 260 478 240 483 180 500 147 512', vb: '0 0 390 1000', dots: '113,27 250,107 240,483 147,512', dot: 'mixed', dashed: true, width: 3, class: 'sv-steps__mroute sv-steps__mroute--1' %}
+      {% render 'sv-route', d: 'M100 650C80 690 66 740 102 795S180 812 205 820 212 850 212 870', vb: '0 0 390 1000', dots: '102,795 205,820', dashed: true, width: 3, class: 'sv-steps__mroute sv-steps__mroute--2' %}
       <ol class="sv-steps__list" role="list">
         {%- for block in section.blocks limit: 3 -%}
           {%- assign b = block.settings -%}
