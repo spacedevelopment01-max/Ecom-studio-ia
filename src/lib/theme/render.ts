@@ -926,9 +926,10 @@ export async function renderNamedSections(opts: PreviewOptions, names: string[],
   return out;
 }
 
-/** Préfixe les liens absolus du thème par l'adresse de l'aperçu. */
+/** Préfixe les liens absolus du thème par l'adresse de l'aperçu (et les destinations des formulaires d'exemple : page
+ * de confirmation de la commande, compte après connexion). */
 export function rewriteLinks(html: string, base: string): string {
-  return html.replace(/(href|action)="\/(?!\/)([^"]*)"/g, (all, attr, rest) => {
+  return html.replace(/(href|action|data-confirm|data-success)="\/(?!\/)([^"]*)"/g, (all, attr, rest) => {
     const full = `/${rest}`;
     if (full.startsWith(base + "/") || full === base) return all;
     return `${attr}="${base}${full === "/" ? "/" : full}"`;

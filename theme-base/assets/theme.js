@@ -225,6 +225,31 @@
     });
   }
 
+  /* ---------- Ajout direct hors fiche (carte produit, gros plan, barre d'achat) ---------- */
+  /* Formulaire produit placé hors du bloc d'achat de la fiche : ajout sans quitter la page et ouverture du panier
+     latéral ; sans panier latéral, le formulaire part normalement vers le panier de la plateforme. */
+  function initQuickAdd() {
+    document.addEventListener('submit', function (e) {
+      var form = e.target;
+      if (!form || !form.matches || !form.matches('form[data-product-form]') || form.closest('[data-product-buy]')) return;
+      if (settings.cartType !== 'drawer' || !drawerEl() || !routes.cart_add) return;
+      e.preventDefault();
+      var btn = $('[data-add-button]', form) || $('button[type="submit"]', form);
+      if (btn) { btn.setAttribute('aria-busy', 'true'); btn.disabled = true; }
+      var fd = new FormData(form);
+      fd.append('sections', 'cart-drawer'); fd.append('sections_url', window.location.pathname);
+      fetch(routes.cart_add, { method: 'POST', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+        .then(function (res) {
+          if (!res.ok || res.body.status) { if (btn) btn.setAttribute('title', res.body.description || res.body.message || strings.error); return; }
+          if (res.body.sections) renderDrawer(res.body.sections['cart-drawer']);
+          return fetch(routes.cart + '.js', { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (cart) { updateCount(cart.item_count); openDrawer(); });
+        })
+        .catch(function () { HTMLFormElement.prototype.submit.call(form); })
+        .finally(function () { if (btn) { btn.removeAttribute('aria-busy'); btn.disabled = false; } });
+    });
+  }
+
   /* ---------- Lots (compose ton panier) et abonnement ---------- */
   function initOffers(root) {
     $$('[data-bundles]', root).forEach(function (box) {
@@ -791,6 +816,7 @@
     initMenu();
     initCart();
     initBuy(document);
+    initQuickAdd();
     initOffers(document);
     initEta(document);
     initGallery();

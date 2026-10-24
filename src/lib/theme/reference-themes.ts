@@ -650,13 +650,15 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       return [
         k.lib("cv-banner", 1, { layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top", heading_tag: "h1", image_asset: k.im.hero ?? k.im.lifestyle ?? k.im.banner ?? "", image_loading: "eager", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
         k.lib("fs-products", 1, { layout: "grid", source: "collection", collection: "all", ratio: "square", columns: 4, limit: 4, align: "left", quick_add: "icon", padding_top: 40, padding_bottom: 24 }),
-        k.lib("cv-banner", 1, { layout: "panel-left", button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
+        // Panneau « espace » : titre neutre (la signature de la marque est déjà dans l'ouverture, jamais répétée).
+        k.lib("cv-banner", 1, { layout: "panel-left", heading: k.t("Notre univers", "Our world"), button_arrow: true, image_asset: k.im.lifestyle ?? k.im.scene1 ?? "", padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.lifestyle ?? k.im.scene1) }),
         k.lib("cv-feature", 1, { layout: "product", buy_product: first?.handle ?? "", image_asset: k.im.detail1 ?? k.im.packshot ?? "", padding_top: 0, padding_bottom: 0 }, { hide: !first, blocks: details.slice(1).map((f) => ({ type: "detail", settings: { image_asset: f } })) }),
         // Panneau « collection » : photo à droite et texte sur fond poudré (section photo et texte, mise en forme SOUPLE).
         k.lib("image-with-text", 3, { layout: "image-right", ratio: "landscape", image_asset: k.im.banner ?? k.im.lifestyle2 ?? "", reveal: "up" }, { hide: !(k.im.banner ?? k.im.lifestyle2) }),
         // « Nos univers » : les collections de la boutique cliente (la démonstration garde ses trois cartes rédigées).
         k.lib("fs-collections", 1, { layout: "grid", align: "left", show_count: false, padding_top: 32, padding_bottom: 32 }),
-        k.lib("cv-banner", 2, { layout: "brand", image_asset: "", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }),
+        // Bandeau de marque : le logo clair du projet (sinon le logo) ; sans logo, le bandeau reste masqué.
+        k.lib("cv-banner", 2, { layout: "brand", heading: k.t("Notre histoire", "Our story"), image_asset: k.im.logoLight ?? k.im.logo ?? "", button_arrow: true, padding_top: 0, padding_bottom: 0, price_text: "", price_note: "", note: "" }, { hide: !(k.im.logoLight ?? k.im.logo) }),
         k.lib("fs-journal", 1, { layout: "row", limit: 3, align: "left", padding_top: 32, padding_bottom: 16 }),
         ...k.v2.faq("side", 1),
         k.newsletter(4),

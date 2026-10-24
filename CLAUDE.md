@@ -63,9 +63,13 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **famille Produit spécifique / Boutique spécialisée, à quatre produits** (décision de Thomas du 21 octobre, 12 h 58, issue
   #158, qui remplace le premier classement E-commerce ; profil « club » de la famille), chaque produit avec sa propre fiche,
   médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts` ; **SOUPLE** (tapis de yoga,
-  brique, sangle et anneau de Pilates) : thème de la **famille E-commerce, à quatre produits** (consigne du 21 octobre,
-  16 h 02 ; profil éditorial « poudre », ouverture en mosaïque de la collection, en-tête « Collections en cartes », pied
-  « Boutique éditoriale »), médias dans `public/theme-assets/souple/`, démonstration dans le même fichier.
+  brique, sangle et anneau Pilates) : thème de la **famille E-commerce, à quatre produits**, refait d'après les six
+  maquettes du 23 octobre (PR #180, `docs/theme-briefs/souple/`) : profil de conversion « souple » (`assets/souple.css`,
+  règles toutes préfixées `body[data-conversion="souple"]`, aucun texte dans la feuille), titres Playfair Display, textes
+  Jost, sections cv- rangées dans la galerie E-commerce (refusées aux thèmes qui ne savent pas les rendre), prix de
+  démonstration centralisés (`SOUPLE_PRICES`, tapis + brique = 78 € de sous-total), commande d'exemple en 4 étapes et
+  compte fictif `demo@souple.example` / `demo` ; médias dans `public/theme-assets/souple/` (57 des 59 visuels ; 21 et 22
+  non reçus), démonstration `tests/souple-fixtures.ts`, rapport `docs/coordination/SOUPLE_RESULTATS.md`.
   **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
   (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
   sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et

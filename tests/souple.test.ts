@@ -82,6 +82,8 @@ describe("SOUPLE : thème actif de la famille E-commerce (quatre produits)", () 
     const css = fs.readFileSync(path.join(process.cwd(), "theme-base", "assets", "souple.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     const selectors = css.replace(/@media[^{]*\{/g, "").split("}").map((r) => r.split("{")[0].trim()).filter(Boolean);
     for (const sel of selectors) for (const part of sel.split(/,(?![^(]*\))/)) expect(part.trim(), part).toMatch(/^body\[data-conversion="souple"\]/);
+    // Aucun texte écrit dans la feuille de style (il resterait affiché chez un client et ne serait pas traduit).
+    expect(css).not.toMatch(/content:\s*"[^"]*[A-Za-zÀ-ÿ]/);
     const schema = JSON.parse(fs.readFileSync(path.join(process.cwd(), "theme-base", "config", "settings_schema.json"), "utf8")) as { settings?: { id?: string; options?: { value: string }[] }[] }[];
     expect(schema.flatMap((g) => g.settings ?? []).find((s) => s.id === "conversion_profile")!.options!.map((o) => o.value)).toContain("souple");
   });

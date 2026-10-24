@@ -43,6 +43,8 @@ const runs: { id: DemoId; direction: DemoId; name: string; holdout?: number }[] 
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" },
     // HEUREN (consigne du 22 octobre) : le fauteuil d'ALCÔVE, ses images et ses textes, composé dans HEUREN.
     { id: "alcove" as DemoId, direction: "heuren" as DemoId, name: "alcove-en-heuren" },
+    // SOUPLE (PR #180) : les quatre accessoires de MUSEAU CLUB, leurs photos et leurs textes, composés dans SOUPLE.
+    { id: "museau-club" as DemoId, direction: "souple" as DemoId, name: "museau-en-souple" },
     // Atelier Rive (consigne du 23 octobre) : un autre projet de services (accord de piano, jeu inédit sans photo) composé dans Rive.
     { id: "rive" as DemoId, direction: "rive" as DemoId, name: "piano-en-rive", holdout: 2 }] : []),
 ];
