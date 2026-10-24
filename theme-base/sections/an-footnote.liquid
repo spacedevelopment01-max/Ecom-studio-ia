@@ -1,0 +1,33 @@
+{%- comment -%}
+  ATELIER NUANCE : dernière ligne du pied de page, « © {année} {salon}. Tous droits réservés. » (année courante, jamais
+  figée) et liens légaux.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<div class="an-section an-footnote">
+  <div class="an-wrap an-footnote__inner">
+    <p>© {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ s.rights }}{% if s.note != blank %} <span class="an-footnote__note">{{ s.note }}</span>{% endif %}</p>
+    <ul role="list" class="an-footnote__links">
+      {%- if s.link1_label != blank -%}<li><a href="{{ s.link1 }}">{{ s.link1_label }}</a></li>{%- endif -%}
+      {%- if s.link2_label != blank -%}<li><a href="{{ s.link2 }}">{{ s.link2_label }}</a></li>{%- endif -%}
+      {%- if s.link3_label != blank -%}<li><a href="{{ s.link3 }}">{{ s.link3_label }}</a></li>{%- endif -%}
+    </ul>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Notes du pied de page",
+  "class": "an-footnote-section",
+  "settings": [
+    { "type": "text", "id": "rights", "label": "Mention de droits", "default": "Tous droits réservés." },
+    { "type": "text", "id": "note", "label": "Note (facultative)" },
+    { "type": "text", "id": "link1_label", "label": "Lien 1 : texte", "default": "Mentions légales" },
+    { "type": "url", "id": "link1", "label": "Lien 1" },
+    { "type": "text", "id": "link2_label", "label": "Lien 2 : texte", "default": "Politique de confidentialité" },
+    { "type": "url", "id": "link2", "label": "Lien 2" },
+    { "type": "text", "id": "link3_label", "label": "Lien 3 : texte" },
+    { "type": "url", "id": "link3", "label": "Lien 3" }
+  ],
+  "presets": [{ "name": "Notes du pied de page" }]
+}
+{% endschema %}

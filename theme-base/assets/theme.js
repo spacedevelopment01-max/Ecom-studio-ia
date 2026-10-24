@@ -89,10 +89,11 @@
     if (!header) return;
     var y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 40);
-    // En-tête transparent fixé : il reste sous le bandeau d'annonce tant que celui-ci est visible.
+    // En-tête transparent fixé : il reste sous le bandeau d'annonce (et sous toute barre posée au-dessus de la page,
+    // marquée data-es-top-bar, comme la mention d'un aperçu de démonstration) tant qu'ils sont visibles.
     if (header.classList.contains('es-header--transparent')) {
-      var ann = $('.es-announcement-section');
-      var annBottom = ann ? ann.getBoundingClientRect().bottom : 0;
+      var annBottom = 0;
+      Array.prototype.forEach.call(document.querySelectorAll('.es-announcement-section, [data-es-top-bar]'), function (el) { annBottom = Math.max(annBottom, el.getBoundingClientRect().bottom); });
       header.style.setProperty('--es-hoff', Math.max(0, annBottom) + 'px');
     }
     if (header.classList.contains('es-header--sticky')) header.classList.toggle('is-hidden', y > 300 && y > lastY && !document.body.classList.contains('menu-open'));

@@ -1,0 +1,47 @@
+{%- comment -%}
+  ATELIER NUANCE : « Ce qui est inclus » (coches) et « Comment bien préparer votre visite ? » (pictogrammes), côte à
+  côte sur ordinateur, repliés en accordéons sur téléphone (fiche, planche 05).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-included">
+  <div class="an-wrap an-included__grid">
+    <details class="an-included__card" data-an-collapse open>
+      <summary><h2 class="an-included__title">{{ s.included_heading }}</h2><span class="an-included__sign" aria-hidden="true">{% render 'an-icon', name: 'plus' %}</span></summary>
+      <ul role="list" class="an-included__checks">
+        {%- for block in section.blocks -%}{%- if block.type == 'item' -%}<li {{ block.shopify_attributes }}>{% render 'an-icon', name: 'check' %}<span>{{ block.settings.text }}</span></li>{%- endif -%}{%- endfor -%}
+      </ul>
+    </details>
+    <details class="an-included__card" data-an-collapse open>
+      <summary><h2 class="an-included__title">{{ s.tips_heading }}</h2><span class="an-included__sign" aria-hidden="true">{% render 'an-icon', name: 'plus' %}</span></summary>
+      <ul role="list" class="an-included__tips">
+        {%- for block in section.blocks -%}{%- if block.type == 'tip' -%}
+          <li {{ block.shopify_attributes }}>{% render 'an-icon', name: block.settings.icon %}<div><h3>{{ block.settings.title }}</h3><p>{{ block.settings.text }}</p></div></li>
+        {%- endif -%}{%- endfor -%}
+      </ul>
+    </details>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inclus et préparation",
+  "class": "an-included-section",
+  "max_blocks": 16,
+  "settings": [
+    { "type": "text", "id": "included_heading", "label": "Titre de la liste", "default": "Ce qui est inclus" },
+    { "type": "text", "id": "tips_heading", "label": "Titre des conseils", "default": "Comment bien préparer votre visite ?" }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Élément inclus", "settings": [{ "type": "text", "id": "text", "label": "Texte", "default": "Consultation personnalisée" }] },
+    {
+      "type": "tip", "name": "Conseil",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icône", "default": "image", "options": [{ "value": "image", "label": "Photo" }, { "value": "clock", "label": "Horloge" }, { "value": "chat", "label": "Bulle" }, { "value": "heart", "label": "Cœur" }, { "value": "calendar", "label": "Calendrier" }] },
+        { "type": "text", "id": "title", "label": "Titre", "default": "Conseil" },
+        { "type": "textarea", "id": "text", "label": "Texte" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Inclus et préparation" }]
+}
+{% endschema %}

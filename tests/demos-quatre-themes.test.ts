@@ -37,6 +37,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   alcove: { kind: "catalog", profile: { editorial_profile: "arrondi" }, family: /^(ed-|fs-)/ },
   "museau-club": { kind: "specialty", profile: { conversion_profile: "club" }, family: /^cv-/ },
   souple: { kind: "catalog", profile: { editorial_profile: "poudre" }, family: /^(ed-|fs-)/ },
+  // ATELIER NUANCE (issue #177) : vérifiée par tests/atelier-nuance-theme.test.ts (sections an-*, aucun profil global).
+  "atelier-nuance": { kind: "services", profile: {}, family: /^an-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

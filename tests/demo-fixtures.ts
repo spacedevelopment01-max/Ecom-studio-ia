@@ -26,8 +26,9 @@ import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
+import { atelierNuanceProject, AN_MEDIA, AN_SERVICES } from "./atelier-nuance-fixtures";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "atelier-nuance";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -89,6 +90,12 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
   souple: {
     tagline: "Toute la journée, on compte sur vous. Ce moment est à vous.", summary: "Collection de yoga et de Pilates en rose poudré, prune et liège : un tapis rose poudré au dessous prune, une brique couleur liège, une sangle prune à deux anneaux argentés et un anneau de Pilates prune à poignées rose mauve.", story: "SOUPLE est né pour celles qui passent leurs journées à répondre aux autres : quatre pièces assorties pour installer chez soi un moment qui leur appartient.", positioning: "Un coin yoga et Pilates à soi, à la maison : tapis, brique, sangle et anneau, à réunir à son rythme.", price: null,
     media: Object.fromEntries(MULTI_KIT_MEDIA.souple.filter((m) => m.role !== "logo").map((m) => [m.file, { role: m.role }])),
+  },
+  // ATELIER NUANCE (issue #177, salon de coiffure de la famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  "atelier-nuance": {
+    tagline: "Une nouvelle coupe. Une nouvelle énergie.", summary: "Salon de coiffure fictif de démonstration : coupe, couleur et soin.", story: "Un salon de coiffure contemporain, où l'expertise rencontre le bien-être.", positioning: "Salon de coiffure premium et chaleureux (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: AN_SERVICES.map((s) => ({ key: s.id, name: s.name, description: s.text })), contactMode: "booking" },
+    media: Object.fromEntries(AN_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
   },
   rive: {
     tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -158,6 +165,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await ondeProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
+  // ATELIER NUANCE (issue #177) : salon composé par le moteur dans son thème puis rédigé d'après les six planches,
+  // photos du kit converties en WebP et suivies dans public/theme-assets/atelier-nuance/.
+  if (id === "atelier-nuance" && !options.direction) {
+    const c = await atelierNuanceProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
   if (id === "fraise" && !options.direction) {
     const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
     // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
@@ -183,7 +196,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "atelier-nuance" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

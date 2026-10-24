@@ -1,0 +1,60 @@
+{%- comment -%}
+  ATELIER NUANCE : retrouver un rendez-vous (planche 06) : référence + e-mail sur une photo du salon, puis
+  « Se connecter à mon compte » / « Créer un compte ». Service réel : réponse toujours neutre, lien sécurisé envoyé par
+  e-mail (jamais d'accès par l'e-mail seul ni d'information sur un autre client), essais limités.
+  Démonstration : seul le rendez-vous fictif enregistré dans ce navigateur s'ouvre, et c'est annoncé.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-lookup" data-an-lookup>
+  {% render 'an-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, pos_mobile: s.image_position_mobile, loading: 'eager', class: 'an-lookup__bg' %}
+  <div class="an-wrap an-lookup__inner">
+    <div class="an-lookup__card">
+      <div data-an-view="form">
+        <h1 class="an-title an-title--md">{{ s.heading | escape | newline_to_br }}</h1>
+        {%- if s.text != blank -%}<p class="an-lookup__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+        <form class="an-form" novalidate data-an-lookup-form>
+          <div class="an-field"><label for="an-ref-{{ section.id }}">{{ s.ref_label }}</label><input id="an-ref-{{ section.id }}" name="reference" autocomplete="off" autocapitalize="characters" placeholder="{{ s.ref_placeholder }}" required><p class="an-field__error" data-an-err="reference" hidden>{{ s.error_ref }}</p></div>
+          <div class="an-field"><label for="an-lemail-{{ section.id }}">{{ s.email_label }}</label><input id="an-lemail-{{ section.id }}" name="email" type="email" autocomplete="email" placeholder="{{ s.email_placeholder }}" required><p class="an-field__error" data-an-err="email" hidden>{{ s.error_email }}</p></div>
+          <button type="submit" class="an-btn an-btn--dark an-btn--block">{{ s.submit_label }}</button>
+          <p class="an-form__status" role="status" aria-live="polite" data-an-status hidden></p>
+        </form>
+        <p class="an-lookup__or"><span>{{ s.or_label }}</span></p>
+        <p class="an-lookup__links">
+          <a href="{{ s.login_link | default: '/pages/mon-espace' }}" data-an-account-link="login">{{ s.login_label }}</a>
+          <a href="{{ s.register_link | default: '/pages/mon-espace' }}" data-an-account-link="register">{{ s.register_label }}</a>
+        </p>
+      </div>
+    </div>
+    {%- if s.side_title != blank -%}<p class="an-lookup__side" aria-hidden="true">{{ s.side_title | escape | newline_to_br }}{%- if s.side_text != blank -%}<span>{{ s.side_text | escape | newline_to_br }}</span>{%- endif -%}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Retrouver un rendez-vous",
+  "class": "an-lookup-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Retrouver\nmon rendez-vous" },
+    { "type": "textarea", "id": "text", "label": "Texte", "default": "Renseignez votre référence de réservation\net l'adresse e-mail utilisée lors de la prise de rendez-vous." },
+    { "type": "text", "id": "ref_label", "label": "Libellé de la référence", "default": "Référence de rendez-vous" },
+    { "type": "text", "id": "ref_placeholder", "label": "Exemple de référence", "default": "Ex. AN-2026-7KQ3D" },
+    { "type": "text", "id": "email_label", "label": "Libellé de l'e-mail", "default": "Adresse e-mail" },
+    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.fr" },
+    { "type": "text", "id": "submit_label", "label": "Texte du bouton", "default": "Accéder à mon rendez-vous" },
+    { "type": "text", "id": "or_label", "label": "Séparateur", "default": "ou" },
+    { "type": "text", "id": "login_label", "label": "Lien de connexion", "default": "Se connecter à mon compte" },
+    { "type": "url", "id": "login_link", "label": "Page de connexion" },
+    { "type": "text", "id": "register_label", "label": "Lien de création de compte", "default": "Créer un compte" },
+    { "type": "url", "id": "register_link", "label": "Page de création de compte" },
+    { "type": "text", "id": "error_ref", "label": "Erreur : référence", "default": "Indiquez la référence reçue lors de la prise de rendez-vous." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "textarea", "id": "side_title", "label": "Signature décorative à droite", "default": "ATELIER\nNUANCE" },
+    { "type": "textarea", "id": "side_text", "label": "Mots sous la signature", "default": "COIFFURE\nCOLORATION\nSOIN\nSTYLE" }
+  ],
+  "presets": [{ "name": "Retrouver un rendez-vous" }]
+}
+{% endschema %}

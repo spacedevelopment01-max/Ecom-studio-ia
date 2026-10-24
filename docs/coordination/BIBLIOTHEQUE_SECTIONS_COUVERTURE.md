@@ -2,7 +2,7 @@
 
 Généré par `scripts/sections-inventory.ts` le 2026-10-19 ; contrôlé par `tests/section-library-coverage.test.ts` (une section ajoutée sans entrée de bibliothèque ou absente de cet inventaire fait échouer la CI).
 
-**157 sections** dans `theme-base/sections/` : **143 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 157/157 (FR et EN). Sections avec réglages d'animation : 17.
+**184 sections** dans `theme-base/sections/` (dont les 27 sections `an-*` d'ATELIER NUANCE, issue #177, ajoutées à la main ci-dessous) : **170 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 184/184 (FR et EN). Sections avec réglages d'animation : 17.
 
 Toute section de page est **ajoutable, duplicable, déplaçable, masquable, supprimable et sauvegardée** (menu « … » et poignée de la structure ; chaque action crée une version restaurable). Les réglages de chaque section s'éditent **manuellement** (panneau « Modifier les réglages » : textes, visuels, liens, boutons, couleurs, formats, dispositions, blocs et leur ordre, animations) et **par l'IA** (discussion) : mêmes opérations `/theme/ops`, même source de données.
 
@@ -190,3 +190,37 @@ Colonnes : famille d'origine ; fichiers qui utilisent la section (générateurs,
 - **ORBE / Atelier Rive (éditorial, lot 2B)** : 7 sections — `ed-contact`, `ed-diptych`, `ed-finishes`, `ed-opening`, `ed-scene`, `ed-statement`, `ed-study`
 - **Thèmes de référence (lot 2A)** : 5 sections — `ref-editorial`, `ref-hero`, `ref-narrative`, `ref-notes`, `ref-offers`
 - **Moteur v2 (Codex)** : 13 sections — `v2-band`, `v2-banner`, `v2-benefits`, `v2-cards`, `v2-cta`, `v2-facts`, `v2-faq`, `v2-hero`, `v2-index`, `v2-media`, `v2-specs`, `v2-split`, `v2-steps`
+
+## ATELIER NUANCE (issue #177) — sections du thème salon de coiffure
+
+Lignes produites par `scripts/sections-inventory.ts` le 2026-10-23 et ajoutées seules (le reste de l'inventaire n'est pas régénéré, pour ne pas toucher aux lignes des autres travaux en cours).
+
+| Section | Nom (bibliothèque) | Catégorie | Famille d'origine | Utilisée par | Variantes | Réglages | Blocs | Bibliothèque | A | F |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `an-account` | Espace client du salon | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 45 (text ×37, textarea ×5, url ×2, image_picker ×1) | — | ajoutable | — | oui |
+| `an-article` | Article du journal | Textes | Base du studio (11 directions) | atelier-nuance-fixtures.ts | — | 13 (text ×6, richtext ×2, url ×2, checkbox ×1, image_picker ×1, textarea ×1) | Conseil numéroté · max 12 | ajoutable | — | oui |
+| `an-banner` | Bandeau photo du salon | Conversion | Base du studio (11 directions) | atelier-nuance-fixtures.ts | align (2) | 15 (text ×4, select ×3, range ×3, textarea ×2, image_picker ×1, url ×1, checkbox ×1) | — | ajoutable | — | oui |
+| `an-booking` | Prise de rendez-vous | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 63 (text ×51, image_picker ×6, textarea ×3, url ×3) | — | ajoutable | — | oui |
+| `an-categories` | Catégories du salon | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | — | 1 (text ×1) | Catégorie · max 4 | ajoutable | — | oui |
+| `an-contact` | Contact du salon | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 24 (text ×20, textarea ×4) | — | ajoutable | — | — |
+| `an-cta` | Bandeau de rendez-vous | Conversion | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 4 (text ×2, textarea ×1, url ×1) | — | ajoutable | — | — |
+| `an-details` | Détails du lieu | Images et vidéos | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 4 (text ×4) | Photo · max 8 | ajoutable | — | oui |
+| `an-faq` | Questions du salon | Textes | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | layout (3) | 10 (text ×5, textarea ×2, select ×1, image_picker ×1, url ×1) | Question · max 30 | ajoutable | — | oui |
+| `an-featured` | Prestations phares | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | — | 2 (text ×2) | Prestation · max 4 | ajoutable | — | — |
+| `an-footnote` | Notes du pied de page | Avancé | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 8 (text ×5, url ×3) | — | ajoutable | — | — |
+| `an-hero` | Ouverture du salon | Ouverture | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | layout (3) | 20 (text ×10, range ×3, textarea ×2, url ×2, select ×1, image_picker ×1, richtext ×1) | — | ajoutable | — | oui |
+| `an-included` | Inclus et préparation | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | — | 2 (text ×2) | Élément inclus, Conseil · max 16 | ajoutable | — | — |
+| `an-inspirations` | Inspirations du salon | Images et vidéos | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 8 (text ×7, checkbox ×1) | Catégorie, Photo · max 40 | ajoutable | — | oui |
+| `an-intro` | Présentation du salon | Textes | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 3 (textarea ×1, richtext ×1, checkbox ×1) | Carte · max 4 | ajoutable | — | oui |
+| `an-journal` | Journal du salon | Textes | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 1 (text ×1) | Article · max 13 | ajoutable | — | oui |
+| `an-legal` | Page légale du salon | Avancé | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 20 (text ×9, url ×4, range ×2, textarea ×2, richtext ×2, image_picker ×1) | — | ajoutable | — | oui |
+| `an-lengths` | Choix de la longueur | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | variant (2) | 23 (text ×18, image_picker ×3, select ×1, url ×1) | — | ajoutable | — | oui |
+| `an-lookup` | Retrouver un rendez-vous | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 20 (text ×13, textarea ×4, url ×2, image_picker ×1) | — | ajoutable | — | oui |
+| `an-map` | Plan et accès du salon | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 17 (text ×16, textarea ×1) | — | ajoutable | — | — |
+| `an-move` | Déplacer un rendez-vous | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 23 (text ×17, textarea ×3, url ×2, image_picker ×1) | — | ajoutable | — | oui |
+| `an-salon` | Réglages du salon | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 45 (text ×21, url ×9, color ×4, textarea ×4, range ×4, checkbox ×2, select ×1) | Prestation, Membre de l'équipe · max 50 | ajoutable | — | — |
+| `an-services` | Prestations et tarifs | Services | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 8 (text ×6, checkbox ×1, url ×1) | Prestation · max 30 | ajoutable | — | oui |
+| `an-split` | Texte et photo du salon | Textes | Base du studio (11 directions) | atelier-nuance-fixtures.ts | — | 13 (text ×6, select ×2, textarea ×1, richtext ×1, url ×1, image_picker ×1, range ×1) | — | ajoutable | — | oui |
+| `an-state` | État du salon | Avancé | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | — | 10 (text ×5, url ×2, select ×1, image_picker ×1, richtext ×1) | — | ajoutable | — | oui |
+| `an-steps` | Étapes numérotées | Services | Base du studio (11 directions) | atelier-nuance-fixtures.ts | style (2) | 4 (select ×1, textarea ×1, text ×1, url ×1) | Étape · max 5 | ajoutable | — | — |
+| `an-team` | Équipe à initiales | Textes | Base du studio (11 directions) | atelier-nuance.ts, atelier-nuance-fixtures.ts | style (2) | 4 (text ×3, select ×1) | Membre de l'équipe · max 8 | ajoutable | — | — |

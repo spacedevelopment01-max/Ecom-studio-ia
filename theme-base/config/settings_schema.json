@@ -450,6 +450,10 @@
           {
             "value": "souple",
             "label": "Souple — rose poudré, prune et liège (référence)"
+          },
+          {
+            "value": "atelier-nuance",
+            "label": "Atelier Nuance — salon de coiffure, ivoire, chocolat et pêche (référence)"
           }
         ]
       },

@@ -1384,3 +1384,6 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 /* SOUPLE (issue #158) : le caractère est porté par le profil éditorial « poudre ». */
 .dir-souple .es-heading { letter-spacing: -.01em; line-height: 1.08; }
 .dir-souple .es-button { border-radius: 10px; }
+/* ATELIER NUANCE (issue #177) : le caractère est porté par ses sections an-* et atelier-nuance.css (chargée par « Réglages du salon »). */
+.dir-atelier-nuance .es-heading { letter-spacing: -.005em; line-height: 1.08; }
+.dir-atelier-nuance .es-header__cta .es-icon { display: none; }

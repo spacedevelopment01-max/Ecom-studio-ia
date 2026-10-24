@@ -1,0 +1,87 @@
+{%- comment -%}
+  ATELIER NUANCE : déplacer un rendez-vous (planche 06) : rendez-vous actuel, nouveau calendrier et créneaux,
+  « Confirmer le changement », panneau « Annuler ce rendez-vous ? » à droite. En service réel, le nouveau créneau est
+  réservé dans une transaction avant que l'ancien ne soit libéré.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-move" data-an-move>
+  <div class="an-wrap an-move__grid">
+    <div class="an-move__main">
+      <nav class="an-crumbs" aria-label="{{ s.crumbs_label | escape }}"><a href="{{ s.account_link | default: '/pages/mon-espace' }}">{{ s.crumb_account }}</a>{% render 'an-icon', name: 'next' %}<span aria-current="page">{{ s.heading }}</span></nav>
+      <h1 class="an-title an-title--lg" tabindex="-1">{{ s.heading }}</h1>
+      <div data-an-move-body hidden>
+        <div class="an-move__current">
+          {% render 'an-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, class: 'an-move__thumb' %}
+          <div>
+            <p class="an-move__label">{{ s.current_label }}</p>
+            <p class="an-move__name"><span data-an-cur="service"></span> <span class="an-muted" data-an-cur="staff"></span></p>
+            <p>{% render 'an-icon', name: 'calendar' %}<span data-an-cur="when"></span></p>
+            <p>{% render 'an-icon', name: 'clock' %}<span data-an-cur="duration-price"></span></p>
+          </div>
+        </div>
+        <h2 class="an-title an-title--xs">{{ s.new_title }}</h2>
+        <div class="an-slotpick an-slotpick--move">
+          <div class="an-cal an-cal--compact" data-an-cal></div>
+          <div class="an-slotpick__right">
+            <h3 class="an-slotpick__date an-slotpick__date--sm" data-an-day-title></h3>
+            <div class="an-slots an-slots--grid" role="radiogroup" data-an-slots></div>
+            <p class="an-empty" data-an-no-slot hidden>{% render 'an-icon', name: 'calendar-x' %}<span>{{ s.no_slot_text }}</span></p>
+            <p class="an-muted an-move__facts" data-an-move-facts></p>
+          </div>
+        </div>
+        <button type="button" class="an-btn an-btn--terra an-move__confirm" data-an-move-confirm>{{ s.confirm_label }}</button>
+        <p class="an-form__status" role="alert" data-an-move-status hidden></p>
+        <div class="an-move__done" data-an-move-done hidden>
+          {% render 'an-icon', name: 'check-circle' %}
+          <div><p class="an-move__done-title">{{ s.done_title }}</p><p data-an-move-done-text></p><a class="an-link" href="{{ s.account_link | default: '/pages/mon-espace' }}">{{ s.back_account_label }}</a></div>
+        </div>
+      </div>
+      <div class="an-account__empty an-account__empty--state" data-an-move-missing hidden>{% render 'an-icon', name: 'calendar-x' %}<p class="an-title an-title--sm">{{ s.missing_title }}</p><p>{{ s.missing_text }}</p><a class="an-btn an-btn--terra an-btn--sm" href="{{ s.lookup_link | default: '/pages/retrouver-mon-rendez-vous' }}">{{ s.missing_button }}</a></div>
+    </div>
+    <aside class="an-move__cancel" data-an-move-cancel hidden>
+      {% render 'an-icon', name: 'calendar', class: 'an-cancel__ico' %}
+      <h2 class="an-title an-title--sm">{{ s.cancel_title }}</h2>
+      <p>{{ s.cancel_text }}</p>
+      <div class="an-cancel__appt" data-an-cancel-appt></div>
+      <a class="an-btn an-btn--line an-btn--block" href="{{ s.account_link | default: '/pages/mon-espace' }}">{{ s.cancel_back }}</a>
+      <button type="button" class="an-btn an-btn--terra an-btn--block" data-an-cancel-confirm>{{ s.cancel_confirm }}</button>
+      <p class="an-form__status" role="alert" data-an-cancel-status hidden></p>
+      <h3 class="an-cancel__terms-title">{{ s.terms_title }}</h3>
+      <p class="an-cancel__terms" data-an-terms>{{ s.terms_todo }}</p>
+    </aside>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Déplacer un rendez-vous",
+  "class": "an-move-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "crumbs_label", "label": "Fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "crumb_account", "label": "Lien vers les rendez-vous", "default": "Mes rendez-vous" },
+    { "type": "url", "id": "account_link", "label": "Page « Mon espace »" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Déplacer mon rendez-vous" },
+    { "type": "text", "id": "current_label", "label": "Libellé du rendez-vous actuel", "default": "Rendez-vous actuel" },
+    { "type": "text", "id": "new_title", "label": "Titre du nouveau créneau", "default": "Choisissez un nouveau créneau" },
+    { "type": "text", "id": "no_slot_text", "label": "Aucun créneau ce jour-là", "default": "Aucun créneau disponible ce jour-là. Choisissez une autre date." },
+    { "type": "text", "id": "confirm_label", "label": "Bouton de confirmation", "default": "Confirmer le changement" },
+    { "type": "text", "id": "done_title", "label": "Titre du changement confirmé", "default": "Votre rendez-vous a été déplacé" },
+    { "type": "text", "id": "back_account_label", "label": "Lien de retour", "default": "Retour à mes rendez-vous" },
+    { "type": "text", "id": "missing_title", "label": "Titre sans rendez-vous", "default": "Rendez-vous introuvable" },
+    { "type": "textarea", "id": "missing_text", "label": "Texte sans rendez-vous", "default": "Ce rendez-vous n'existe pas, a déjà été annulé ou votre lien a expiré." },
+    { "type": "text", "id": "missing_button", "label": "Bouton sans rendez-vous", "default": "Retrouver mon rendez-vous" },
+    { "type": "url", "id": "lookup_link", "label": "Page « Retrouver mon rendez-vous »" },
+    { "type": "header", "content": "Annulation" },
+    { "type": "text", "id": "cancel_title", "label": "Titre de l'annulation", "default": "Annuler ce rendez-vous ?" },
+    { "type": "textarea", "id": "cancel_text", "label": "Texte de l'annulation", "default": "Êtes-vous sûr(e) de vouloir annuler ce rendez-vous ? Cette action est irréversible." },
+    { "type": "text", "id": "cancel_back", "label": "Bouton retour", "default": "Retour" },
+    { "type": "text", "id": "cancel_confirm", "label": "Bouton de confirmation", "default": "Confirmer l'annulation" },
+    { "type": "text", "id": "terms_title", "label": "Titre des conditions", "default": "Conditions à préciser" },
+    { "type": "textarea", "id": "terms_todo", "label": "Conditions par défaut", "default": "Les conditions d'annulation et de modification sont à préciser avant publication." }
+  ],
+  "presets": [{ "name": "Déplacer un rendez-vous" }]
+}
+{% endschema %}

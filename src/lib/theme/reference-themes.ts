@@ -17,6 +17,7 @@
  * globaux (`conversion_profile`, `editorial_profile`) et les sections de sa famille.
  */
 import type { CatalogTheme, ThemeLook } from "./theme-catalog";
+import { ATELIER_NUANCE_THEME } from "./atelier-nuance";
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -673,4 +674,6 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.booking(3),
     ],
   },
+  // ATELIER NUANCE (issue #177) : salon de coiffure de la famille Services, défini dans atelier-nuance.ts.
+  ATELIER_NUANCE_THEME,
 ];

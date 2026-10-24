@@ -1,0 +1,81 @@
+{%- comment -%}
+  ATELIER NUANCE : ouvertures photographiques.
+  - home : photo pleine largeur, grand titre sur deux lignes, texte et deux boutons (pêche plein, contour clair) ;
+  - page : photo avec voile à gauche, sur-titre, titre, texte et bouton (Le salon, Prestations, Inspirations, Journal…) ;
+  - service : fiche de prestation, texte sur ivoire à gauche et photo à droite, durée, prix et bouton terracotta.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign has_img = false
+  if s.image != blank or s.image_asset != blank
+    assign has_img = true
+  endif
+-%}
+<section class="an-section an-hero an-hero--{{ s.layout }}{% unless has_img %} an-hero--noimg{% endunless %}" style="--h: {{ s.height }}px; --h-m: {{ s.height_mobile }}px; --veil: {{ s.overlay | divided_by: 100.0 }};">
+  <div class="an-hero__media">
+    {% render 'an-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile, loading: 'eager' %}
+  </div>
+  <div class="an-hero__inner an-wrap">
+    <div class="an-hero__content">
+      {%- if s.eyebrow != blank -%}<p class="an-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h1 class="an-hero__title">{{ s.heading | escape | newline_to_br }}</h1>{%- endif -%}
+      {%- if s.text != blank -%}<div class="an-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.layout == 'service' -%}
+        <ul class="an-meta" role="list"{% if s.service_id != blank %} data-an-svc="{{ s.service_id | escape }}"{% endif %}>
+          {%- if s.duration != blank -%}<li>{% render 'an-icon', name: 'clock' %}<span data-an-f="duration">{{ s.duration }}</span></li>{%- endif -%}
+          {%- if s.price != blank -%}<li>{% render 'an-icon', name: 'euro' %}<span data-an-f="price">{{ s.price }}</span></li>{%- endif -%}
+          {%- if s.note != blank -%}<li class="an-meta__note">{{ s.note | escape | newline_to_br }}</li>{%- endif -%}
+        </ul>
+      {%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+        <div class="an-btns">
+          {%- if s.button_label != blank -%}
+            <a class="an-btn {% if s.layout == 'service' %}an-btn--terra{% else %}an-btn--peach{% endif %}" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"{% if s.service_id != blank %} data-an-book="{{ s.service_id | escape }}"{% endif %}><span>{{ s.button_label }}</span>{% if s.layout == 'home' %}{% render 'an-icon', name: 'arrow' %}{% endif %}</a>
+          {%- endif -%}
+          {%- if s.button2_label != blank -%}
+            <a class="an-btn an-btn--ghost" href="{{ s.button2_link | default: '/pages/prestations' }}"><span>{{ s.button2_label }}</span><span class="an-btn__mobile-arrow">{% render 'an-icon', name: 'arrow' %}</span></a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture du salon",
+  "class": "an-hero-section",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "page",
+      "options": [
+        { "value": "home", "label": "Accueil (grand titre et deux boutons)" },
+        { "value": "page", "label": "Page (photo et titre)" },
+        { "value": "service", "label": "Fiche de prestation (texte et photo)" }
+      ]
+    },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "range", "id": "overlay", "label": "Voile sur la photo", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 45 },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Prestations\n& tarifs" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "header", "content": "Fiche de prestation" },
+    { "type": "text", "id": "service_id", "label": "Identifiant de la prestation", "info": "Le prix et la durée suivent alors les « Réglages du salon »." },
+    { "type": "text", "id": "duration", "label": "Durée affichée" },
+    { "type": "text", "id": "price", "label": "Prix affiché" },
+    { "type": "textarea", "id": "note", "label": "Mention sous le prix" },
+    { "type": "header", "content": "Boutons" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Texte du second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 260, "max": 760, "step": 10, "unit": "px", "default": 460 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 200, "max": 600, "step": 10, "unit": "px", "default": 300 }
+  ],
+  "presets": [{ "name": "Ouverture du salon" }]
+}
+{% endschema %}
