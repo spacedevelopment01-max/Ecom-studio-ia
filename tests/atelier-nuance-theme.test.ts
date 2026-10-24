@@ -238,3 +238,15 @@ describe("ATELIER NUANCE avec le service réel (vérifié dans le navigateur, AP
     expect(js).toContain("if (!CFG.demoNote || LIVE) $$('[data-an-demo-note]')");
   });
 });
+
+describe("En-tête transparent de l'accueil (retour de Thomas : il recouvrait la mention d'aperçu)", () => {
+  it("il se place sous le bandeau d'annonce et sous toute barre marquée data-es-top-bar, dont la mention d'aperçu", () => {
+    const theme = fs.readFileSync(path.join("theme-base", "assets", "theme.js"), "utf8");
+    const shim = fs.readFileSync(path.join("scripts", "lot2c-static-demo.js"), "utf8");
+    expect(theme).toContain("document.querySelectorAll('.es-announcement-section, [data-es-top-bar]')");
+    expect(theme).toMatch(/header\.style\.setProperty\('--es-hoff'/);
+    expect(shim).toContain("n.setAttribute('data-es-top-bar', '')");
+    // La position est recalculée quand la mention arrive après le chargement du thème.
+    expect(shim).toContain("window.dispatchEvent(new Event('resize'))");
+  });
+});
