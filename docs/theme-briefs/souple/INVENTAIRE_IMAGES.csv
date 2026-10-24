@@ -1,4 +1,4 @@
-fichier,usage,origine,largeur,hauteur,octets,sha256
+﻿fichier,usage,origine,largeur,hauteur,octets,sha256
 images-existantes/ambiance-01.webp,Collection en studio,Kit existant conservé sans modification,1677,938,260602,9e507fc81e8d6846899f8c94a44ff3e806c3a5922f11880adbf5e53a221cbede
 images-existantes/ambiance-02.webp,Tapis près de la fenêtre,Kit existant conservé sans modification,1024,1536,450490,fca35a5fcacb8a9dd43eb7664888a591a93212ca1b7d27023a4a7961191a09ba
 images-existantes/ambiance-03.webp,Brique et sangle sur travertin,Kit existant conservé sans modification,1254,1254,482128,1356c29d0e9828d929951225a11a16717219fc13b69c7bee2822a538df06acb5
@@ -50,7 +50,7 @@ images-complementaires/17-journal-coin-pouf.png,Journal — rituel du matin,Phot
 images-complementaires/18-journal-ombres.png,Journal et contact — ombres de feuilles,Photo complémentaire recréée depuis la maquette,1672,941,2218810,d23a58f38c6e93f5657586b48450d2a0e3a8a9f38d4202dafb5ddb0ed2663176
 images-complementaires/19-journal-tasse.png,Journal — équilibre au quotidien,Photo complémentaire recréée depuis la maquette,1254,1254,2392200,3a10589f6a08ed9ebe67b70cacd480ccd248ac1cfd5a7d876e854052d967d230
 images-complementaires/20-article-coin-pratique.png,Article — espace pour bouger chez soi,Photo complémentaire recréée depuis la maquette,1536,1024,2323183,13e13e0bea7d80f23d62a473fe7865e93f8e94451d0b0c41f6b038194457e35c
-images-complementaires/21-compte-collection-verticale.png,Compte — connexion et inscription,Photo complémentaire recréée depuis la maquette,1024,1536,2359049,f08e5344d16afe7e7f1c2cee92c2c53e91f631cc2c1abe021095e6f41d01e9e2
+images-complementaires/21-compte-collection-verticale.png,Compte — connexion et inscription,Remplacement recréé depuis la maquette après perte du fichier complet initial,1024,1536,2271371,b5385495d8f62091398d04badacbee651079b105ec5e4858e3ab8424e36ecf73
 images-complementaires/22-compte-bandeau.png,Compte — tableau de bord,Photo complémentaire recréée depuis la maquette,1672,941,2026565,cdd9e73e0b45a0681da0c32489d42a69b2b50549e213e91a51084db0d527f773
 images-complementaires/23-colis-ouvert.png,Commande — préparation du colis,Photo complémentaire recréée depuis la maquette,1536,1024,2647432,0a4f30f56532baf04e9d7da236e100d6d3f893f6c25d4bea7ccdeaa2f800e76a
 images-complementaires/24-livraison-sac-kraft.png,Livraison — collection et sac,Photo complémentaire recréée depuis la maquette,1024,1536,2656831,083817266ac432b232ccb3973b4d2e679325bf35aea3d68b4c36bdf7992ed877

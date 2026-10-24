@@ -10,7 +10,7 @@
  *  - commande d'exemple en quatre étapes, sans aucun champ de carte, inscription aux actualités décochée ;
  *  - rien d'inventé : ni avis, ni remise, ni livraison gratuite, ni délai, ni garantie, ni personne ; pages légales
  *    « à compléter » ; compte fictif annoncé comme tel ;
- *  - 57 des 59 visuels du dossier utilisés (deux non reçus, remplacés par la variante prévue) ; SEO par page ;
+ *  - les 59 visuels du dossier utilisés (21 et 22 reçus par correctif) ; SEO par page ;
  *  - un autre projet installé dans ce thème garde sa propre identité ; exports Shopify / WooCommerce / PrestaShop.
  */
 import fs from "node:fs";
@@ -148,10 +148,10 @@ describe("SOUPLE : démonstration (planches 01 à 06)", async () => {
     }
   });
 
-  it("médias : 57 des 59 visuels du dossier, et rien d'autre (aucune image de planche ni génération)", () => {
+  it("médias : les 59 visuels du dossier, et rien d'autre (aucune image de planche ni génération)", () => {
     expect(f.missing).toEqual([]);
-    expect(SOUPLE_MEDIA).toHaveLength(57);
-    expect(SOUPLE_MISSING.map((m) => m.file)).toEqual(["21-compte-collection-verticale.png", "22-compte-bandeau.png"]);
+    expect(SOUPLE_MEDIA).toHaveLength(59);
+    expect(SOUPLE_MISSING).toEqual([]);
     const used = new Set(all.concat(page404, cartEmpty).match(new RegExp(`${ID}-[a-z0-9-]+\\.webp`, "g")) ?? []);
     for (const p of products) for (const img of p.images) used.add(img);
     for (const m of SOUPLE_MEDIA) expect(used.has(`${ID}-${m.file}`), m.file).toBe(true);
@@ -240,6 +240,8 @@ describe("SOUPLE : démonstration (planches 01 à 06)", async () => {
     expect(visibleText(login)).toMatch(/demo@souple\.example/);
     expect(login).toContain(`href="${SOUPLE_PAGES.motDePasse}"`);
     for (const r of [SOUPLE_PAGES.compte, SOUPLE_PAGES.adresses, SOUPLE_PAGES.infos]) for (const to of [SOUPLE_PAGES.compte, SOUPLE_PAGES.adresses, SOUPLE_PAGES.infos]) expect(pages.get(r)!, `${r} → ${to}`).toContain(`href="${to}"`);
+    // Aucun « Total » : la livraison n'est pas connue (compte et commande).
+    for (const r of [SOUPLE_PAGES.compte, SOUPLE_PAGES.commande]) expect(visibleText(pages.get(r)!), r).not.toMatch(/(^|[^-])\bTotal\b/);
     const order = visibleText(pages.get(SOUPLE_PAGES.commande)!);
     expect(order).toMatch(/Sous-total 78 €/);
     expect(order).toMatch(/Exemple de suivi/);

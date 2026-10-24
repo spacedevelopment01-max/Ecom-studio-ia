@@ -6,10 +6,10 @@
  * Même chaîne que les autres démonstrations : un projet client (marque, produits, médias avec rôles) composé par le VRAI
  * moteur dans son thème du catalogue (composeShop), puis rédigé section par section, dans l'ordre des planches.
  *
- * Photos : les 31 médias du kit (logo, cinq vues par produit, dix ambiances) et les 26 compléments reçus du dossier
- * (public/theme-assets/souple/, convertis en WebP à leurs dimensions d'origine). Deux compléments n'ont pas été reçus
- * (21-compte-collection-verticale et 22-compte-bandeau, ZIP n°04 tronqué) : la page Compte utilise la variante prévue par
- * l'inventaire (ambiance-08) ; la matrice du rapport le dit. Aucune image générée, aucun extrait de planche.
+ * Photos : les 31 médias du kit (logo, cinq vues par produit, dix ambiances) et les 28 compléments du dossier
+ * (public/theme-assets/souple/, convertis en WebP à leurs dimensions d'origine). Les compléments 21 et 22, absents du
+ * ZIP n°04 tronqué, sont arrivés par le correctif SOUPLE_CORRIGE_IMAGES_21_22 (21 recréé depuis la maquette, 22
+ * original). Aucune image générée côté Claude, aucun extrait de planche.
  *
  * Textes : accroches et hiérarchie des maquettes ; les promesses non vérifiées (confort, résistance, durabilité,
  * bienfaits, délais, garanties) sont reformulées sur ce que montrent les photos ; les informations inconnues restent
@@ -82,6 +82,10 @@ export const SOUPLE_MEDIA: Media[] = [
   { file: "18-journal-ombres.webp", role: "scene", alt: "Ombres de feuillage sur un mur clair au-dessus du tapis SOUPLE rose, de la brique, de la sangle et de l'anneau." },
   { file: "19-journal-tasse.webp", role: "scene", alt: "Tasse posée près de la brique, de l'anneau et de la sangle SOUPLE sur le tapis rose, au soleil." },
   { file: "20-article-coin-pratique.webp", role: "scene", alt: "Coin de pratique chez soi : tapis SOUPLE rose, brique, anneau et sangle, bibliothèque et fauteuil." },
+  // 21 : remplacement recréé depuis la maquette du compte (le fichier complet initial n'a pas pu être récupéré) ;
+  // 22 : fichier original complet récupéré (correctif SOUPLE_CORRIGE_IMAGES_21_22).
+  { file: "21-compte-collection-verticale.webp", role: "scene", alt: "Tapis SOUPLE rose déroulé, brique en liège, anneau Pilates prune et sangle prune au soleil sur un parquet, rideaux clairs." },
+  { file: "22-compte-bandeau.webp", role: "scene", alt: "Tapis SOUPLE rose déroulé et roulé au bout, brique en liège posée dessus, vase et branches d'olivier, rideaux clairs." },
   { file: "23-colis-ouvert.webp", role: "scene", alt: "Carton ouvert garni de papier de soie : tapis SOUPLE roulé, brique en liège, sangle et anneau." },
   { file: "24-livraison-sac-kraft.webp", role: "scene", alt: "Sac kraft marqué du S de SOUPLE, tapis rose roulé debout, brique et sangle sur un socle clair." },
   { file: "25-404-piece.webp", role: "scene", alt: "Pièce lumineuse ouverte sur un jardin : tapis SOUPLE rose, brique, sangle et anneau au soleil." },
@@ -89,11 +93,8 @@ export const SOUPLE_MEDIA: Media[] = [
   { file: "27-panier-vide.webp", role: "scene", alt: "Tapis SOUPLE rose roulé à moitié sur un parquet au soleil, brique en liège posée au bout." },
   { file: "28-journal-feuillage.webp", role: "scene", alt: "Anneau Pilates SOUPLE, brique, sangle et tapis rose entre deux branches d'olivier, au soleil." },
 ];
-/** Médias du dossier non reçus (ZIP n°04 tronqué à 23 220 027 octets) : remplacés par la variante prévue par l'inventaire. */
-export const SOUPLE_MISSING = [
-  { file: "21-compte-collection-verticale.png", usage: "Compte : ouverture verticale", fallback: "ambiance-08.webp" },
-  { file: "22-compte-bandeau.png", usage: "Compte : bandeau du tableau de bord", fallback: "ambiance-07.webp" },
-];
+/** Médias du dossier non reçus : aucun depuis le correctif des fichiers 21 et 22. */
+export const SOUPLE_MISSING: { file: string; usage: string; fallback: string }[] = [];
 
 export type SoupleProduct = { key: SoupleKey; handle: string; title: string; heading: string; type: string; views: string[]; first: number };
 /** Quatre produits : images de la fiche (la 1re sert aux cartes, `first` = vue montrée en premier sur la fiche). */
@@ -219,7 +220,7 @@ const FICHES: Record<SoupleKey, Fiche> = {
     space: { eyebrow: "Un appui, toujours", heading: "Un appui dans\nvotre pratique", text: "Une brique en liège, simple et essentielle, pour explorer, progresser et trouver votre juste place.", image: "14-brique-tapis-tisse.webp", fx: 60 },
     details: { items: [["15-brique-texture.webp", "Une matière naturelle", "Le liège, son grain et sa teinte chaleureuse."], ["brique-04.webp", "Un design intemporel", "Le logo SOUPLE, pour une finition soignée et élégante."]], box: "Un essentiel au quotidien",
       points: [["hand", "Un appui polyvalent", "Pour accompagner toutes vos pratiques."], ["leaf", "Une matière naturelle", "Une esthétique brute et chaleureuse."], ["sparkle", "Un design élégant", "Qui s'intègre à votre espace."]] },
-    rhythm: { text: "Un accessoire pour vous accompagner dans chaque mouvement, et vous offrir un peu plus d'espace dans votre pratique.", images: ["13-brique-principale.webp", "16-briques-empilees.webp", "ambiance-03.webp"] },
+    rhythm: { text: "Un accessoire pour vous accompagner dans chaque mouvement, et vous offrir un peu plus d'espace dans votre pratique.", images: ["13-brique-principale.webp", "16-briques-empilees.webp", "ambiance-07.webp"] },
     faq: [["À quoi sert la brique en liège ?", "C'est un appui que l'on place sous la main, sous l'assise ou entre les mains, selon la posture."], ["Convient-elle au yoga et au Pilates ?", "Elle s'utilise comme les briques de yoga courantes. Dimensions et poids : à confirmer."], ["Comment l'entretenir ?", "Conseils d'entretien : à confirmer par la marque."], ["La livraison et les retours ?", SHIP]],
   },
   sangle: {
@@ -527,9 +528,9 @@ function pagesSouple(k: Kit) {
   const lines = [{ type: "line", settings: { product: SOUPLE_PRODUCTS[0].handle, quantity: 1 } }, { type: "line", settings: { product: SOUPLE_PRODUCTS[1].handle, quantity: 1 } }];
   const demo = "Démonstration : compte fictif, aucune donnée réelle.";
   const account = (handle: string, title: string, settings: Record<string, unknown>, blocks: { type: string; settings: Record<string, unknown> }[] = []) => page(handle, title, seo(title, `${title} : écran d'exemple de la boutique de démonstration.`), [["compte", S("demo-account", { ...links, demo_note: demo, interactive: true, demo_email: "demo@souple.example", demo_password: "demo", menu_label: "Mon compte", overview_label: "", orders_label: "Mes commandes", infos_label: "Mes informations personnelles", email_label: "Adresse e-mail", email_placeholder: "votre@email.com", quantity_label: "Qté :", price_note: "", subtotal_label: "Total", shipping_label: "Livraison", unknown_value: "À confirmer", color_scheme: "scheme-1", padding_top: 32, padding_bottom: 56, ...settings }, blocks)]]);
-  account("connexion", "Connexion", { ...k.img("ambiance-08.webp"), focus_x: 50, focus_y: 60, layout: "auth", heading: "Heureux\nde vous\nretrouver", text: p("Connectez-vous à votre compte pour retrouver vos commandes, vos adresses et bien plus encore."), login_title: "Se connecter", register_title: "Créer un compte", button_label: "Se connecter", secondary_label: "Créer mon compte", demo_hint: "Compte de démonstration :", unknown_login_text: "Ces identifiants ne correspondent pas au compte de démonstration.", sent_text: "Démonstration : aucun compte n'est créé et aucun e-mail n'est envoyé." });
+  account("connexion", "Connexion", { ...k.img("21-compte-collection-verticale.webp"), focus_x: 50, focus_y: 45, layout: "auth", heading: "Heureux\nde vous\nretrouver", text: p("Connectez-vous à votre compte pour retrouver vos commandes, vos adresses et bien plus encore."), login_title: "Se connecter", register_title: "Créer un compte", button_label: "Se connecter", secondary_label: "Créer mon compte", demo_hint: "Compte de démonstration :", unknown_login_text: "Ces identifiants ne correspondent pas au compte de démonstration.", sent_text: "Démonstration : aucun compte n'est créé et aucun e-mail n'est envoyé." });
   account("mot-de-passe-oublie", "Réinitialiser mon mot de passe", { ...k.img("23-colis-ouvert.webp"), focus_x: 40, focus_y: 50, layout: "recover", heading: "Réinitialiser\nmon mot de passe", text: p("Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation."), button_label: "Envoyer le lien", button_link: "", secondary_label: "Retour à la connexion", secondary_link: SOUPLE_PAGES.connexion, sent_text: "Démonstration : aucun e-mail n'est envoyé. Sur une boutique en ligne, la plateforme envoie le lien." });
-  account("mon-compte", "Mon compte", { ...k.img("ambiance-07.webp"), layout: "account", heading: "Mon compte", text: p("Bienvenue ! Retrouvez ici vos commandes, vos adresses et vos informations personnelles."), order_title: "Commande SOUPLE-0001 (exemple)", pill: "Statut de démonstration", empty_text: "" }, lines);
+  account("mon-compte", "Mon compte", { ...k.img("22-compte-bandeau.webp"), subtotal_label: "Sous-total", layout: "account", heading: "Mon compte", text: p("Bienvenue ! Retrouvez ici vos commandes, vos adresses et vos informations personnelles."), order_title: "Commande SOUPLE-0001 (exemple)", pill: "Statut de démonstration", empty_text: "" }, lines);
   account("commande-souple-0001", "Commande SOUPLE-0001", { layout: "order", subtotal_label: "Sous-total", heading: "Commande SOUPLE-0001", pill: "Statut de démonstration", text: p("Commande d'exemple : aucune commande ni aucun envoi réel."), notice_title: "Exemple.", back_label: "Mon compte", lines_title: "Récapitulatif", payment_title: "Paiement", tracking_title: "Exemple de suivi de livraison" }, [
     ...lines,
     { type: "track", settings: { label: "Commande confirmée", date_text: "Exemple", done: true } },
@@ -539,6 +540,6 @@ function pagesSouple(k: Kit) {
     { type: "track", settings: { label: "Livré", date_text: "", done: false } },
     { type: "card", settings: { style: "plain", icon: "file", title: "Facture", text: p("Sur une boutique en ligne, la facture est fournie par la plateforme. Aucun document fiscal n'est émis dans cette démonstration."), button_label: "Nous contacter", button_link: SOUPLE_PAGES.contact, image_asset: "" } },
   ]);
-  account("mes-adresses", "Mes adresses", { layout: "addresses", heading: "Mes adresses", text: "", empty_text: "Aucune adresse enregistrée dans cette démonstration." });
+  account("mes-adresses", "Mes adresses", { ...k.img("ambiance-08.webp"), focus_x: 50, focus_y: 62, layout: "addresses", heading: "Mes adresses", text: "", empty_text: "Aucune adresse enregistrée dans cette démonstration." });
   account("informations-personnelles", "Mes informations personnelles", { layout: "infos", heading: "Mes informations", text: "" });
 }

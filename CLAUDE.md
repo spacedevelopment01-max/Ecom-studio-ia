@@ -68,8 +68,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   règles toutes préfixées `body[data-conversion="souple"]`, aucun texte dans la feuille), titres Playfair Display, textes
   Jost, sections cv- rangées dans la galerie E-commerce (refusées aux thèmes qui ne savent pas les rendre), prix de
   démonstration centralisés (`SOUPLE_PRICES`, tapis + brique = 78 € de sous-total), commande d'exemple en 4 étapes et
-  compte fictif `demo@souple.example` / `demo` ; médias dans `public/theme-assets/souple/` (57 des 59 visuels ; 21 et 22
-  non reçus), démonstration `tests/souple-fixtures.ts`, rapport `docs/coordination/SOUPLE_RESULTATS.md`.
+  compte fictif `demo@souple.example` / `demo` ; médias dans `public/theme-assets/souple/` (59 visuels ; 21 et 22
+  reçus par correctif, 21 recréé), démonstration `tests/souple-fixtures.ts`, rapport `docs/coordination/SOUPLE_RESULTATS.md`.
   **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
   (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
   sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et

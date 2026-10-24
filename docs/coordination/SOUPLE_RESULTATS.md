@@ -25,9 +25,10 @@ fonctions, preuve du studio, version client).
 - **Prix de démonstration** centralisés (`SOUPLE_PRICES`) : tapis 59 €, brique 19 €, sangle 15 €, anneau 29 €, toujours
   suivis de « Prix de démonstration ». Tapis + brique = **78 € en sous-total**, livraison « Calculée à l'étape
   suivante », jamais de « Total » final, aucune remise, aucune livraison offerte.
-- **57 des 59 visuels** utilisés, tous à leur place prévue par `AFFECTATIONS.csv` ; **2 non reçus** (ZIP n°04 tronqué à
-  23 220 027 octets) : `21-compte-collection-verticale.png` et `22-compte-bandeau.png`, remplacés par les variantes
-  prévues par l'inventaire (`ambiance-08`, `ambiance-07`). **À renvoyer** pour les poser.
+- **Les 59 visuels** utilisés, à leur place prévue par `AFFECTATIONS.csv`. Les fichiers 21 et 22, absents du ZIP n°04
+  tronqué, sont arrivés par le correctif `SOUPLE_CORRIGE_IMAGES_21_22` : 22 est l'original complet (empreinte
+  identique), **21 est un remplacement recréé depuis la maquette** (le fichier complet initial n'a pas pu être
+  récupéré ; inventaire mis à jour dans `docs/theme-briefs/souple/INVENTAIRE_IMAGES.csv`).
 - **45/45 vérifications de fonctions** réussies sur la démo statique (panier, commande, filtres, tri, galerie, zoom,
   compte, cookies, 360 / 390 / 430 px sans débordement, aucune requête extérieure).
 
@@ -42,7 +43,7 @@ Comparaisons (maquette à gauche, rendu 1440 px puis 390 px à droite) : `result
 | 03 | Fiches sangle et anneau | galerie + accordéons dans la fiche, bandeau à courbe douce, 3 tuiles sur photo, « À associer avec » (liste avec +) | sangle-01→05, 04, 05, 06 ; anneau-01→05, 07, 08, 09, ambiance-04, ambiance-09 | idem fiches 02 | — |
 | 04 | Boutique, panier, commande, confirmation | ouverture courbe, pastilles **Tous (4) / Tapis (1) / Accessoires (3)**, tri (nos choix, prix croissant / décroissant, nom), état vide ; panier : lignes, quantité, supprimer, sous-total, « Complétez votre pratique » sur photo ; panier vide : grande photo et 3 repères ; commande Contact → Adresse → Livraison → Paiement + récapitulatif ; confirmation d'exemple | 01, 05-sangle-sur-tapis, 27-panier-vide, packshots | filtres et compteurs, tri, recherche (résultat / aucun résultat), quantité +, suppression, persistance après rechargement, validation de chaque étape, retour sans perte de saisie, récapitulatif exact, confirmation avec les articles saisis | la recherche statique montre un résultat préparé (la vraie recherche est celle de Shopify) ; l'ordre « Nos choix » suit la collection |
 | 05 | Notre approche, journal, article, guide, FAQ, contact | approche : ouverture, 3 principes, panneau « Quatre essentiels » (aucune histoire de fondatrice, aucune certification) ; journal : catégories filtrables, article à la une, grille ; 6 articles (modèle « Créer un coin pour bouger chez soi ») ; guide : 4 produits + comparatif ; FAQ : sommaire par thème + 15 questions + photo ; contact : nom, e-mail, sujet, n° de commande facultatif, message, accord, autres moyens d'assistance | 17→20, 28, ambiance-05/10, 14, 26 | filtres du journal, sommaire de la FAQ (ancres), accordéons, contact refusé vide (6 champs signalés) | titre d'ouverture de « Notre approche » plus petit que sur la planche ; corps d'article sur une colonne (deux sur la maquette) ; « Autres moyens d'assistance » sous le formulaire et non à sa droite |
-| 06 | Compte, livraison, légal, cookies, 404 | connexion + inscription côte à côte, mot de passe oublié, mon compte (bandeau photo), commande SOUPLE-0001 (exemple de suivi, facture fictive), adresses, informations ; livraison et retours « à confirmer » ; 4 onglets Mentions / CGV / Confidentialité / Cookies « à compléter » ; bandeau de cookies ; 404 photo dans un S | ambiance-08 / ambiance-07 (variantes des 2 non reçus), 23-colis-ouvert, 24-livraison-sac-kraft, 25-404-piece | connexion refusée avec de faux identifiants, acceptée avec le compte fictif `demo@souple.example` / `demo` → Mon compte ; afficher le mot de passe ; cookies : refuser, personnaliser, accepter, rouvrir depuis « Gérer mes cookies » | photos prévues 21 et 22 non reçues |
+| 06 | Compte, livraison, légal, cookies, 404 | connexion + inscription côte à côte, mot de passe oublié, mon compte (bandeau photo), commande SOUPLE-0001 (exemple de suivi, facture fictive), adresses, informations ; livraison et retours « à confirmer » ; 4 onglets Mentions / CGV / Confidentialité / Cookies « à compléter » ; bandeau de cookies ; 404 photo dans un S | 21-compte-collection-verticale (connexion), 22-compte-bandeau (mon compte), ambiance-08 (adresses), 23-colis-ouvert, 24-livraison-sac-kraft, 25-404-piece | connexion refusée avec de faux identifiants, acceptée avec le compte fictif `demo@souple.example` / `demo` → Mon compte ; afficher le mot de passe ; cookies : refuser, personnaliser, accepter, rouvrir depuis « Gérer mes cookies » | 21 recréé (pas l'original) |
 
 Le prénom « Camille » de la planche 06 n'est pas repris (personne inventée) ; la facture est annoncée « aucun document
 fiscal n'est émis dans cette démonstration ».
@@ -55,12 +56,12 @@ Calculée sur les pages réellement produites (démo statique du commit indiqué
 |---|---|---|---|
 | 1 | `ambiance-01.webp` | Approche · Collection alternative issue du kit conservé | Notre approche |
 | 2 | `ambiance-02.webp` | Fiche tapis · Photo de pratique verticale | Tapis de yoga |
-| 3 | `ambiance-03.webp` | Accueil · Univers accessoires<br>Fiche brique · Rituel avec sangle | Accueil, Brique de yoga, Sangle de yoga |
+| 3 | `ambiance-03.webp` | Accueil · Univers accessoires<br>Fiche brique · Rituel avec sangle | Accueil, Sangle de yoga |
 | 4 | `ambiance-04.webp` | Fiche anneau · Photo sur podium | Anneau Pilates |
 | 5 | `ambiance-05.webp` | Collection · Variante vue du dessus disponible | Guide |
 | 6 | `ambiance-06.webp` | Fiche tapis · Variante tapis roulé disponible | Tapis de yoga |
-| 7 | `ambiance-07.webp` | Fiche brique · Variante au soleil disponible | Mon compte |
-| 8 | `ambiance-08.webp` | Compte · Variante verticale disponible | Connexion |
+| 7 | `ambiance-07.webp` | Fiche brique · Variante au soleil disponible | Brique de yoga |
+| 8 | `ambiance-08.webp` | Compte · Variante verticale disponible | Mes adresses |
 | 9 | `ambiance-09.webp` | Fiche anneau · Variante sur brique disponible | Anneau Pilates |
 | 10 | `ambiance-10.webp` | Journal · Article vedette collection | Accueil, Le journal, Les essentiels pour votre pratique |
 | 11 | `anneau-01.webp` | Fiche anneau · Galerie, vue 1<br>Accueil · Carte produit anneau | Accueil, Anneau Pilates, Boutique, Brique de yoga, Guide, Les essentiels pour votre pratique (+2) |
@@ -104,8 +105,8 @@ Calculée sur les pages réellement produites (démo statique du commit indiqué
 | 49 | `18-journal-ombres.png` | Accueil · Journal ombres<br>Confirmation · Fond décoratif discret si montré | Accueil, Confirmation de commande, Le journal, Trouver l'équilibre dans un quotidien actif |
 | 50 | `19-journal-tasse.png` | Journal · Pause et tasse | Rituel du matin : 5 minutes pour soi, Trouver l'équilibre dans un quotidien actif |
 | 51 | `20-article-coin-pratique.png` | Article · Coin de pratique chez soi | Comment choisir son tapis de yoga ?, Créer un coin pour bouger chez soi, Le journal, Le mouvement au fil des saisons, Les essentiels pour votre pratique, Rituel du matin : 5 minutes pour soi (+1) |
-| 52 | `21-compte-collection-verticale.png` | Compte · Ouverture verticale | **non reçu** (ZIP n°04 tronqué) → variante prévue utilisée |
-| 53 | `22-compte-bandeau.png` | Compte · Bandeau du tableau de bord | **non reçu** (ZIP n°04 tronqué) → variante prévue utilisée |
+| 52 | `21-compte-collection-verticale.png` | Compte · Ouverture verticale | Connexion |
+| 53 | `22-compte-bandeau.png` | Compte · Bandeau du tableau de bord | Mon compte |
 | 54 | `23-colis-ouvert.png` | Commande et réinitialisation · Colis ouvert | Réinitialiser mon mot de passe |
 | 55 | `24-livraison-sac-kraft.png` | Livraison et retours · Sac kraft et accessoires | Livraison & retours |
 | 56 | `25-404-piece.png` | 404 · Photo à découper avec masque S en SVG ou CSS | Page introuvable |
@@ -151,7 +152,7 @@ Calculée sur les pages réellement produites (démo statique du commit indiqué
 
 ## Écarts restants (à regarder en priorité)
 
-1. Deux visuels non reçus (21, 22) : variantes en place, à remplacer dès réception.
+1. Visuel 21 : remplacement recréé depuis la maquette, pas la photo d'origine.
 2. « Notre approche » : titre d'ouverture plus petit que sur la planche 05.
 3. Article : corps sur une colonne (deux colonnes sur la planche 05).
 4. Contact : « Autres moyens d'assistance » sous le formulaire au lieu de la colonne de droite.
@@ -172,8 +173,8 @@ Aucun rendu n'est « au pixel près » : les comparaisons montrent la compositio
 - Titre du bandeau de marque prune sur prune → couleur du jeu de couleurs (lisible).
 - Mention « Prix de démonstration » écrite dans la feuille de style (elle serait restée chez un client) → retirée ;
   un test interdit tout texte dans `souple.css`.
-- « Total 78 € » de la page Commande du compte → « Sous-total ».
-- Photos du kit placées selon `AFFECTATIONS.csv` (ambiance-04 à 10 n'étaient pas toutes utilisées).
+- « Total 78 € » des pages Mon compte et Commande → « Sous-total ».
+- Photos du kit placées selon `AFFECTATIONS.csv` (ambiance-04 à 10 n'étaient pas toutes utilisées) ; 21 et 22 posés à leur réception (connexion, mon compte), ambiance-07 sur la fiche brique, ambiance-08 sur « Mes adresses ».
 - En-tête de la page légale aligné sur les onglets.
 
 ## Tests, types, Theme Check
@@ -182,7 +183,7 @@ Aucun rendu n'est « au pixel près » : les comparaisons montrent la compositio
 - Suite complète `npx vitest run` : 2 945 tests réussis, 2 ignorés, 1 échec (test de la vignette qui lisait l'ancien
   fichier de démonstration de SOUPLE) corrigé puis relancé : 9/9. `tests/souple.test.ts` réécrit pour les six
   maquettes : 21 tests (famille, galerie, profil, ordre de l'accueil, compositions des fiches, prix, galerie propre à
-  chaque fiche, ajouts au panier réels, 57 visuels, SEO, honnêteté, panier 78 €, commande, compte, cookies, boutique,
+  chaque fiche, ajouts au panier réels, 59 visuels, SEO, honnêteté, panier 78 €, commande, compte, cookies, boutique,
   pages, liens internes, version client, exports Shopify / WooCommerce / PrestaShop).
 - Theme Check de Shopify : complet (11 directions, FR / EN, multi, niche, services, ZIP client) **tout est valide**,
   puis rapide après les dernières retouches : valide.
@@ -212,7 +213,7 @@ ancres seulement avec lui), `product-card.liquid`, `fs-products.liquid`, `main-c
 7. Mon compte : `demo@souple.example` / `demo`.
 8. Dans le studio : ajouter une section (galerie « E-commerce »), changer son titre et sa photo, recharger.
 
-À décider ou à fournir : renvoyer les 2 visuels manquants (21 et 22) ; confirmer les dimensions, matières, entretien,
+À décider ou à fournir : confirmer les dimensions, matières, entretien,
 délais et conditions de retour pour remplacer les « À confirmer ».
 
 ## Environnement

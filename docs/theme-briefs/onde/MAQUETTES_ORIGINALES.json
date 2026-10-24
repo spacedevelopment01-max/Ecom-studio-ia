@@ -1,0 +1,72 @@
+[
+  {
+    "fichier": "maquettes/01-ordinateur-accueil-produit.png",
+    "nom_source": "ONDE AUDIO — Votre monde, votre fréquence.png",
+    "dimensions": [
+      1282,
+      1227
+    ],
+    "octets": 2133279,
+    "sha256": "57059be3bb1b1202a2a03354e2e3d55eead012238b2daee3a5436985ba505fae"
+  },
+  {
+    "fichier": "maquettes/02-ordinateur-boutique-experience-marque-journal.png",
+    "nom_source": "ONDE AUDIO : quatre écrans, une fréquence.png",
+    "dimensions": [
+      1312,
+      1199
+    ],
+    "octets": 2217856,
+    "sha256": "8145fc0bf856b86d6f42b444138399aa10ca8dc6ca15d99d6ec478ce6ef7ad1a"
+  },
+  {
+    "fichier": "maquettes/03-ordinateur-commerce-aide.png",
+    "nom_source": "ONDE AUDIO — Maquette e-commerce immersive.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 1917331,
+    "sha256": "5652cb521c861ed60a42d5fa0bc3367cd06bf376af40d8ae9880adaa9c7a8abc"
+  },
+  {
+    "fichier": "maquettes/04-mobile-boutique-experience-marque-journal.png",
+    "nom_source": "ONDE AUDIO — quatre pages mobiles.png",
+    "dimensions": [
+      1312,
+      1199
+    ],
+    "octets": 2342988,
+    "sha256": "2d62ae1aac3666f594561af08a15ff3e15d65b01db6865714336860a9cc7254c"
+  },
+  {
+    "fichier": "maquettes/05-mobile-accueil-produit.png",
+    "nom_source": "ONDE AUDIO mobile : casque Graphite & lime.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 2166587,
+    "sha256": "03f1e9584fcbcab909eb3b3976a194781573887816b3864d9d7075ff604cafb1"
+  },
+  {
+    "fichier": "maquettes/06-mobile-commerce.png",
+    "nom_source": "Parcours mobile ONDE AUDIO : panier et commande.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 1792929,
+    "sha256": "9332f1b224ba1847c2d2202206c52cfd18b0ec2404819f3b6e69213dffe9ae8e"
+  },
+  {
+    "fichier": "maquettes/07-mobile-aide.png",
+    "nom_source": "Quatre pages d’aide mobile ONDE AUDIO.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 1856654,
+    "sha256": "5fda40fdd9a27a46c3cfd3e71ab267a133d9f29a1e55789eedd541bd02c4adf8"
+  }
+]
