@@ -1,0 +1,65 @@
+[
+  {
+    "fichier": "maquettes/01_Ordinateur_Accueil_Produit.png",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "octets": 2221421,
+    "sha256": "bee327145108cf10f1b7b709733586c8294f18fc9a94c42458adebebbeb5d30c"
+  },
+  {
+    "fichier": "maquettes/02_Ordinateur_Boutique_Marque_Journal.png",
+    "dimensions": [
+      1312,
+      1199
+    ],
+    "octets": 2196063,
+    "sha256": "a6f34ef7c2e7ba49868ba698672b8b120abfc0b801b6e0a2d2cd807e1250f214"
+  },
+  {
+    "fichier": "maquettes/03_Ordinateur_Achat_Assistance.png",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "octets": 1989033,
+    "sha256": "4f8ea0c09aaf3df65eaf2557cc5b871679fed8b39e63cf3129a01eceb218850b"
+  },
+  {
+    "fichier": "maquettes/04_Mobile_Accueil_Produit.png",
+    "dimensions": [
+      1222,
+      1287
+    ],
+    "octets": 2236584,
+    "sha256": "fd527a6ab4b507b29940fc5fdce468ef36ed2fd9d574b9d9fe9706146cc5f5ec"
+  },
+  {
+    "fichier": "maquettes/05_Mobile_Boutique_Marque_Journal.png",
+    "dimensions": [
+      1242,
+      1266
+    ],
+    "octets": 2184323,
+    "sha256": "aad741485c5c450662dea46a8682483df509db38cad8cb9aeba01b2649727c6c"
+  },
+  {
+    "fichier": "maquettes/06_Mobile_Assistance.png",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "octets": 2010116,
+    "sha256": "5800dc7aef29aecded03dd725a278bdcce32c4f6f7bc6efdc932ad0b928c3000"
+  },
+  {
+    "fichier": "maquettes/07_Mobile_Achat_Menu.png",
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "octets": 1718078,
+    "sha256": "3073dc4820062dec47ded8ae9bb17fe80a4a0a2aa45be83fe503bc639363ae4e"
+  }
+]
