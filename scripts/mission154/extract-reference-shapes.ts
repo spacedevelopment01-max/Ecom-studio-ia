@@ -17,8 +17,14 @@ const MUSEAU_DEMO_ONLY = /^page\.(journal|les-petits-rituels-des-grandes-balades
 // NOCTIL (maquettes du 23 octobre) : journal et ses articles, exemple de commande, espace client et politique des cookies
 // sont des pages de la démonstration ; elles ne passent jamais chez un client.
 const NOCTIL_DEMO_ONLY = /^page\.(journal|une-chambre-mille-histoires|creer-un-rituel-du-soir|histoires-d-etoiles|decorer-une-chambre-qui-fait-rever|couleurs-et-ambiance|les-doudous-aussi-revent|a-la-decouverte-des-planetes|un-univers-qui-grandit-avec-eux|observer-la-lune|finaliser-la-commande|confirmation-de-commande|connexion|creer-un-compte|mot-de-passe-oublie|mon-compte|commande-noctil-0001|mes-informations|politique-cookies)$/;
-const DEMO_ONLY = { test: (key: string) => MUSEAU_DEMO_ONLY.test(key) || NOCTIL_DEMO_ONLY.test(key) };
-const result: any = { sourceCommit: '5dd5f63011c1e0a4ee2369fe1b2565c4e899f71e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
+// ONDE (planches du 24 octobre) : journal et ses cinq articles, commande et confirmation d'exemple, suivi au résultat
+// d'exemple et politique des cookies sont des pages de la démonstration ; elles ne passent jamais chez un client.
+const ONDE_DEMO_ONLY = /^page\.(journal|creer-son-moment-d-ecoute|le-casque-au-quotidien|les-details-qui-changent-la-ligne|prendre-soin-des-coussinets|un-bureau-une-parenthese|commande|confirmation|suivi-de-commande|cookies)$/;
+const DEMO_ONLY = { test: (key: string) => MUSEAU_DEMO_ONLY.test(key) || NOCTIL_DEMO_ONLY.test(key) || ONDE_DEMO_ONLY.test(key) };
+// ONLY=onde,souple : seuls ces thèmes sont extraits ; les autres gardent leur forme enregistrée (réglages et en-têtes compris).
+const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean);
+const saved = ONLY.length ? JSON.parse(fs.readFileSync('src/lib/theme/reference-shapes.json', 'utf8')) : null;
+const result: any = saved ?? { sourceCommit: '5dd5f63011c1e0a4ee2369fe1b2565c4e899f71e', provenance: 'Validated compositions, design settings and block order only. No demo copy, logo, image or commercial data.', themes: {} };
 // Schema types identify styling rather than content. Coordinates of hotspots are content, never design.
 // TRAVERSE : ses cartes sur photo et celles du carnet sont des paysages (rôle « situation ») ; les photos de détail du client
 // restent aux gros plans des « Essentiels ».
@@ -28,6 +34,8 @@ const visual = new Set(['select', 'range', 'checkbox', 'color_scheme']);
 const forbidden = /rating|price|discount|quantity|stock|shipping|guarantee|countdown|timer|days|hours|minutes|seconds|purchase_enabled|structured_data|^x$|^y$/;
 try {
     for (const id of ['fraise', 'onde', 'orbe', 'rive', 'sillon', 'noctil', 'traverse', 'heuren', 'alcove', 'museau-club', 'souple'] as const) {
+        if (ONLY.length && !ONLY.includes(id))
+            continue;
         const { spec } = await demoProject(user.id, id);
         currentSpec = spec;
         const templates: any = {};
@@ -57,7 +65,7 @@ try {
             }
             templates[key] = { sections, order };
         }
-        result.themes[id] = { templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor' && !DEMO_ONLY.test(`page.${p.handle}`)).map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail|tailles|demarrer/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
+        result.themes[id] = { ...(saved?.themes[id] ? { settings: saved.themes[id].settings, groups: saved.themes[id].groups } : {}), templates, pages: spec.store.pages.filter(p => !/^projet-/.test(p.handle) && p.handle !== 'deux-jours-un-autre-decor' && !DEMO_ONLY.test(`page.${p.handle}`)).map(p => ({ suffix: p.template_suffix, role: /confidential|privacy/.test(p.handle) ? 'privacy' : /condition|terms|^cgv$/.test(p.handle) ? 'terms' : p.handle === 'listicle' ? 'guide' : p.handle === 'advertorial' ? 'editorial' : p.handle === 'sections' ? 'showcase' : /contact|aide|help/.test(p.handle) ? 'contact' : /faq|questions/.test(p.handle) ? 'faq' : /livraison|shipping/.test(p.handle) ? 'shipping' : /utilisation|caracteristiques|how|detail|tailles|demarrer/.test(p.handle) ? 'details' : /usage|carnet|piece|inspiration|experience/.test(p.handle) ? 'uses' : /legal|mention/.test(p.handle) ? 'legal' : /prestation|service/.test(p.handle) ? 'services' : /projet|realisation|portfolio/.test(p.handle) ? 'portfolio' : 'story' })) };
         console.log(id, Object.keys(templates).length, 'templates', Object.values(templates).reduce((n: number, t: any) => n + t.order.length, 0), 'sections');
     }
     fs.writeFileSync('src/lib/theme/reference-shapes.json', JSON.stringify(result, null, 2) + '\n');

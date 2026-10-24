@@ -23,10 +23,11 @@
 <section{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} class="on-faq on-faq--{{ layout }} on-tone--{{ s.tone }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;"{% if layout == 'page' %} data-on-faq{% endif %}>
   <div class="on-faq__inner on-container">
     {%- if layout == 'page' -%}
-      {%- if s.page_heading != blank -%}
+      {%- assign page_heading = s.page_heading | default: page.title -%}
+      {%- if page_heading != blank -%}
         <div class="on-faq__hero">
           <span class="on-rings on-rings--help" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-          <h1 class="on-title on-faq__page-title">{{ s.page_heading | escape | newline_to_br }}</h1>
+          <h1 class="on-title on-faq__page-title">{{ page_heading | escape | newline_to_br }}</h1>
           {%- if s.image_asset != blank -%}<div class="on-faq__visual"><img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="eager" decoding="async"></div>{%- endif -%}
         </div>
       {%- endif -%}
@@ -86,7 +87,7 @@
       { "value": "light", "label": "Gris clair" },
       { "value": "white", "label": "Blanc" }
     ] },
-    { "type": "textarea", "id": "page_heading", "label": "Titre de la page FAQ" },
+    { "type": "textarea", "id": "page_heading", "label": "Titre de la page FAQ", "info": "Vide : le titre de la page." },
     { "type": "text", "id": "image_asset", "label": "Visuel de la page FAQ (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Texte alternatif du visuel" },
     { "type": "text", "id": "heading", "label": "Titre des questions", "default": "Questions fréquentes" },

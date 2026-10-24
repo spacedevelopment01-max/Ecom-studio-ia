@@ -165,9 +165,23 @@ export function bindClientCopy(spec: ThemeSpec, p: Project, copy: ShopCopy, type
     if (evidence)
         missing.push(evidence);
     // Every textual schema default is explicitly overridden. Demo/preset phrases cannot reappear at compile time.
+    // Bandeau ONDE qui ajoute le produit au panier : le bouton le dit.
+    if (type === 'on-banner' && design.button_action === 'add')
+        set('button_label', t('Ajouter au panier', 'Add to cart'));
+    // Sections ONDE : libellés d'interface (boutons, quantité, lecteurs d'écran) gardés ; leurs valeurs par défaut sont
+    // neutres (testé : ni marque, ni produit, ni prix de la démonstration). Fiche : onglets vers des sections de la démo retirés.
+    const uiLabel = (id: string) => /^on-/.test(type) && /_label$/.test(id);
+    if (type === 'on-product')
+        blocks = [];
     for (const def of schema.settings)
         if (def.id && !['select', 'color', 'color_background', 'font_picker', 'range', 'checkbox', 'number', 'color_scheme'].includes(def.type) && out[def.id] === undefined)
-            out[def.id] = '';
+            out[def.id] = uiLabel(def.id) && typeof def.default === 'string' ? def.default : '';
+    // Un champ de texte simple n'affiche jamais de balise : le paragraphe préparé pour un texte riche y devient du texte.
+    for (const def of schema.settings) {
+        const v = def.id ? out[def.id] : undefined;
+        if (def.id && (def.type === 'text' || def.type === 'textarea') && typeof v === 'string' && /<\/?p>/.test(v))
+            out[def.id] = plain(v);
+    }
     out = Object.fromEntries(Object.entries(out).filter(([k]) => schema.settings.some(x => x.id === k)));
     const safe = blocks.filter(b => schema.blocks.some(d => d.type === b.type)).map(b => {
         const defs = schema.blocks.find(d => d.type === b.type)!.settings ?? [];

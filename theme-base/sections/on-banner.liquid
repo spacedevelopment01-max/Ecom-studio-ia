@@ -12,6 +12,10 @@
 {%- liquid
   assign s = section.settings
   assign layout = s.layout | default: 'split'
+  assign wm = s.wordmark
+  if layout == 'wordmark' and wm == blank
+    assign wm = shop.name
+  endif
   assign p = all_products[s.product] | default: s.product
   if p == blank and s.use_page_product and product != blank
     assign p = product
@@ -26,7 +30,7 @@
   {%- endif -%}
   {%- if s.mobile_image_asset != blank -%}<div class="on-banner__media on-banner__media--m"><img width="1200" height="1200" class="on-banner__img" src="{{ s.mobile_image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="{{ s.image_loading }}" decoding="async"></div>{%- endif -%}
   {%- if s.rings != 'none' -%}<div class="on-rings" aria-hidden="true"><span></span><span></span><span></span><span></span></div>{%- endif -%}
-  {%- if s.wordmark_asset != blank -%}<div class="on-banner__wordmark on-banner__wordmark--img" aria-hidden="true"><img width="1200" height="1200" src="{{ s.wordmark_asset | asset_url }}" alt="" loading="lazy" decoding="async"></div>{%- elsif s.wordmark != blank -%}<div class="on-banner__wordmark" aria-hidden="true">{{ s.wordmark | escape }}</div>{%- endif -%}
+  {%- if s.wordmark_asset != blank -%}<div class="on-banner__wordmark on-banner__wordmark--img" aria-hidden="true"><img width="1200" height="1200" src="{{ s.wordmark_asset | asset_url }}" alt="" loading="lazy" decoding="async"></div>{%- elsif wm != blank -%}<div class="on-banner__wordmark" aria-hidden="true">{{ wm | escape }}</div>{%- endif -%}
   {%- if s.cutout != blank or s.cutout_asset != blank -%}
     <div class="on-banner__cutout" style="--on-cx:{{ s.cutout_x }}%;--on-cy:{{ s.cutout_y }}%;--on-cw:{{ s.cutout_width }}%;--on-cxm:{{ s.mobile_cutout_x }}%;--on-cym:{{ s.mobile_cutout_y }}%;--on-cwm:{{ s.mobile_cutout_width }}%;">
       {%- if s.cutout != blank -%}{{ s.cutout | image_url: width: 1400 | image_tag: loading: s.image_loading, alt: s.cutout_alt }}{%- else -%}<img width="1200" height="1200"{% if s.mobile_cutout_asset != blank %} class="on-desktop-only"{% endif %} src="{{ s.cutout_asset | asset_url }}" alt="{{ s.cutout_alt | escape }}" loading="{{ s.image_loading }}" decoding="async">{%- endif -%}
@@ -150,7 +154,7 @@
     { "type": "select", "id": "mobile_cutout_mode", "label": "Produit sur téléphone", "default": "absolute", "options": [ { "value": "absolute", "label": "À la position réglée" }, { "value": "flow", "label": "Entre le texte et le prix" }, { "value": "side", "label": "À gauche du texte" } ] },
     { "type": "checkbox", "id": "cutout_overflow", "label": "Produit débordant sur la section suivante", "default": false },
     { "type": "header", "content": "Décors" },
-    { "type": "text", "id": "wordmark", "label": "Grand mot en contour", "info": "Ex. : ONDE. Vide : aucun." },
+    { "type": "text", "id": "wordmark", "label": "Grand mot en contour", "info": "Ex. : ONDE. Vide : aucun (disposition « grand mot » : le nom de la boutique)." },
     { "type": "text", "id": "wordmark_asset", "label": "Grand mot : logo en contour (fichier du thème)", "info": "Remplace le mot écrit." },
     { "type": "select", "id": "rings", "label": "Anneaux", "default": "none", "options": [ { "value": "none", "label": "Aucun" }, { "value": "right", "label": "À droite" }, { "value": "center", "label": "Au centre" } ] },
     { "type": "select", "id": "wave", "label": "Onde sonore", "default": "none", "options": [ { "value": "none", "label": "Aucune" }, { "value": "bottom", "label": "En pied" }, { "value": "right", "label": "À droite" }, { "value": "behind", "label": "Derrière le titre" }, { "value": "burst", "label": "Dans le bandeau d'appel" }, { "value": "line", "label": "Ligne régulière (bandeau d'appel)" } ] },

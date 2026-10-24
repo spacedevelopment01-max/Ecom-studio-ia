@@ -176,7 +176,10 @@ try {
     await preview.goto(`${origin}/preview/${client.pid}/v/${clientTheme.version.id}/${route}`, { waitUntil: "networkidle", timeout: 240000 });
     const html = await preview.content();
     const logo = await preview.locator(".on-header__logo img").first().getAttribute("src");
-    assert.ok(logo && logo.includes(String(clientSpec.settings.logo_asset).replace(/\.[a-z]+$/, "")), `logo du client dans l'en-tête (${logo})`);
+    // En-tête ONDE (cadre graphite) : version claire du logo du client quand elle existe, sinon son logo.
+    const head = Object.values(clientSpec.groups.header.sections).find((x) => x.type === "on-header");
+    const mine: string[] = [clientSpec.settings.logo_asset, head?.settings.logo_light_asset].filter(Boolean).map((f) => String(f).replace(/\.[a-z]+$/, ""));
+    assert.ok(logo && mine.some((f) => logo.includes(f)) && !/logo-(contour|mot|fonce)|logo-proposition/.test(logo), `logo du client dans l'en-tête (${logo})`);
     assert.ok(html.includes("Théière Anse") && html.includes("Céramor"), `${name} : produit et marque du client`);
     if (name === "accueil") for (const [, title] of CLIENT_ITEMS) assert.ok(html.includes(title), `accueil : ${title} présent`);
     assert.ok(!/onde-c\d\d-|onde-0\d-|onde-logo|demo\/onde/.test(html), `${name} : aucune photo de la démonstration`);

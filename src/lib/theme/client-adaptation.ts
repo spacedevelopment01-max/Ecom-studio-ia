@@ -180,6 +180,23 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                         pageIssues(sid, 'information_required');
                 }
             }
+            // ONDE : sur la fiche, les bandeaux qui suivent la carte d'achat prennent chacun un argument différent du client
+            // (jamais le nom du produit répété) ; faute d'argument, le bandeau reste masqué. Le bandeau d'appel final garde le
+            // nom du produit et son ajout au panier.
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && template.startsWith('product') && sh.settings.layout !== 'cta') {
+                const entry = bannerEntries[n];
+                if (entry)
+                    section.settings = { ...section.settings, eyebrow: '', heading: entry.title, text: paragraph(entry.text), button_label: '', button_link: '' };
+                else
+                    pageIssues(sid, 'information_required');
+            }
+            // ONDE : les hauteurs sur téléphone des ouvertures et cercles servaient à cadrer les vues propres à la démonstration
+            // (détourages, photos verticales) ; chez un client, la hauteur suit son contenu.
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && ['split', 'orbit'].includes(String(sh.settings.layout)))
+                section.settings = { ...section.settings, mobile_min_height: 80 };
+            // Bande « grand mot » : le mot et la carte du produit seulement, sans titre (comme sur la planche).
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && sh.settings.layout === 'wordmark')
+                section.settings = { ...section.settings, heading: '', text: '' };
             const schema = sectionSchema(spec, sh.type);
             if (sh.type === 'main-product') {
                 const native = Object.values(nativeTemplates[template]?.sections ?? {}).find(s => s.type === 'main-product');
@@ -364,6 +381,9 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             const decorative = (i: { code: string; field?: string }) => i.code === 'media_missing' && sh.type === 'timeline' && i.field === 'image_asset';
             const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code) && !decorative(i));
             section.disabled = blocked && !opening && sh.type !== 'legal-page' && !legalNotes;
+            // Thème à fiche propre (ONDE : « on-product ») : la section Produit commune reste présente mais masquée.
+            if (sh.type === 'main-product' && sh.initiallyHidden && layout.order.some(x => layout.sections[x].type === 'on-product'))
+                section.disabled = true;
             sections[sid] = section;
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
@@ -372,7 +392,8 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
         const h1 = (sid: string) => sections[sid].settings.heading_tag === 'h1';
         // Une page intérieure dont le titre de page est éteint par la composition (TRAVERSE : le bandeau porte le titre)
         // garde le H1 de référence sur ce bandeau resté visible ; sinon la page n'aurait aucun titre principal.
-        const titleOff = layout.order.some(sid => sections[sid].type === 'main-page' && sections[sid].settings.show_title === false);
+        // ONDE : ses pages n'ont pas de section de titre ; le bandeau d'ouverture porte le titre principal.
+        const titleOff = layout.order.some(sid => sections[sid].type === 'main-page' && sections[sid].settings.show_title === false) || (template.startsWith('page.') && !layout.order.some(sid => sections[sid].type === 'main-page' || sections[sid].type === 'page-title'));
         if (titleOff && !layout.order.some(sid => !sections[sid].disabled && h1(sid))) {
             const carrier = layout.order.find(sid => !sections[sid].disabled && layout.sections[sid].settings.heading_tag === 'h1');
             if (carrier) sections[carrier].settings.heading_tag = 'h1';
@@ -425,6 +446,13 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             for (const k of Object.keys(section.settings))
                 if (mediaKey(k) || k === 'logo_asset')
                     section.settings[k] = k === 'logo_asset' ? groupLogo?.file ?? '' : '';
+            // En-tête et pied ONDE : version claire du logo du client pour les fonds graphite (sinon le thème éclaircit son
+            // logo), son logo pour le fond lime ; le grand logo de la démonstration n'est jamais repris.
+            for (const [k, a] of [['logo_light_asset', logoLight], ['logo_dark_asset', logo], ['logo_wordmark_asset', undefined]] as const)
+                if (k in section.settings) {
+                    section.settings[k] = a?.file ?? '';
+                    if (a) onlyFiles[a.file] = a.id;
+                }
             for (const b of Object.values(section.blocks ?? {}))
                 for (const k of Object.keys(b.settings))
                     if (mediaKey(k))

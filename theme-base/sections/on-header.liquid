@@ -1,4 +1,5 @@
 {%- comment -%}
+  Logo : version claire (cadre graphite) ; à défaut, le logo de la boutique éclairci en blanc par le thème.
   En-tête d'ONDE (sept planches du 24 octobre) : logo dans un cadre graphite, menu dans une pastille graphite, panier dans
   un carré lime avec son compteur ; sur téléphone, bouton menu graphite et panier lime. Deux styles : posé sur
   l'ouverture de la page (accueil, fiche, boutique, expérience, marque, journal) ou barre graphite pleine (panier,
@@ -25,7 +26,7 @@
 <header class="on-header on-header--{{ style }}" style="--on-logo-w:{{ s.logo_width }}px;--on-logo-wm:{{ s.mobile_logo_width }}px;" data-header>
   <div class="on-header__inner on-container">
     <a class="on-header__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
-      {%- if s.logo_light != blank -%}{{ s.logo_light | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager' }}{%- elsif s.logo_light_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_light_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- elsif settings.logo != blank -%}{{ settings.logo | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager' }}{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
+      {%- if s.logo_light != blank -%}{{ s.logo_light | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager' }}{%- elsif s.logo_light_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_light_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- elsif settings.logo != blank -%}{{ settings.logo | image_url: width: 500 | image_tag: alt: shop.name, loading: 'eager', class: 'on-logo-mono' }}{%- elsif settings.logo_asset != blank -%}<img width="1200" height="1200" class="on-logo-mono" src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
     </a>
     {%- if menu.links.size > 0 -%}
       <nav class="on-header__nav" aria-label="{{ s.nav_label | escape }}">
@@ -40,7 +41,7 @@
   {%- if s.demo_checkout_link != blank -%}<a hidden aria-hidden="true" tabindex="-1" data-demo-checkout href="{{ s.demo_checkout_link }}"></a>{%- endif -%}
   <div class="on-menu" id="OnMenu" hidden data-mobile-menu role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}">
     <div class="on-menu__head">
-      <a class="on-menu__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{%- if s.logo_dark != blank -%}{{ s.logo_dark | image_url: width: 400 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_dark_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_dark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}</a>
+      <a class="on-menu__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{%- if s.logo_dark != blank -%}{{ s.logo_dark | image_url: width: 400 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_dark_asset != blank -%}<img width="1200" height="1200" src="{{ s.logo_dark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif settings.logo_asset != blank -%}<img width="1200" height="1200" src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-header__wordmark">{{ shop.name | escape }}</span>{%- endif -%}</a>
       <button type="button" class="on-menu__close" data-menu-close aria-label="{{ 'general.close' | t }}">{% render 'icon', name: 'close' %}</button>
     </div>
     {%- if s.search -%}

@@ -86,6 +86,10 @@ Mesure : capture de la démo statique, ramenée à la largeur du panneau, côte 
 (calées sur le logo de 194 px et le menu : ces cellules sont dessinées pour un écran plus étroit), 390 px (planches 04 à
 07). Écart de hauteur et différence moyenne (0 = identique, 255 = opposé) : voir le tableau en fin de rapport.
 
+La différence moyenne reste élevée partout où la planche montre une photo que le kit ne fournit pas telle quelle (les
+compléments recréés ne sont pas les mêmes prises de vue) : elle mesure l'écart d'image, pas seulement la mise en page.
+L'écart de hauteur, lui, mesure les proportions.
+
 ## Écarts restants connus
 
 - Grand mot « ONDE » : tracé du logo en contour (fidèle), mais les proportions du casque débordant ne peuvent être
@@ -96,3 +100,55 @@ Mesure : capture de la démo statique, ramenée à la largeur du panneau, côte 
   instant. » tient sur une ligne au lieu de deux sur certains téléphones.
 - Barre d'achat : visible quand la carte d'achat sort de l'écran (la planche la montre en bas de page).
 - Paiement, confirmation, suivi, réseaux sociaux : écarts volontaires (honnêteté, ci-dessus).
+
+## Mesures (rendu de la démo statique ramené à la largeur du panneau)
+
+Écart de hauteur (positif : rendu plus haut que la planche) / différence moyenne (0 à 255).
+
+| Page | Panneau ordinateur | Ordinateur | Panneau mobile | Téléphone (390 px) |
+|---|---|---|---|---|
+| Accueil | 01 (1440) | +1,7 % / 49,8 | 05 | +3,8 % / 63,7 |
+| Le casque | 01 (1440) | +1,8 % / 50,1 | 05 | −1,3 % / 87,7 |
+| La boutique | 02 (1440) | +0,2 % / 52,0 | 04 | +18,4 % / 87,4 |
+| L'expérience | 02 (1440) | −3,1 % / 48,9 | 04 | +12,0 % / 70,3 |
+| La marque | 02 (1440) | +3,9 % / 60,6 | 04 | +14,9 % / 96,4 |
+| Journal | 02 (1440) | −6,0 % / 57,5 | 04 | +10,6 % / 74,5 |
+| Panier rempli | 03 (913) | −0,2 % / 42,6 | 06 | −6,8 % / 76,4 |
+| Panier vide | — | — | 06 | −5,5 % / 43,9 |
+| Commande (Informations) | 03 (913) | −1,7 % / 37,9 | 06 | +13,7 % / 46,3 |
+| Confirmation | — | — | 06 | +22,9 % / 67,9 |
+| FAQ | 03 (913) | −30,1 % / 59,5 | 07 | −31,7 % / 131,4 |
+| Contact | 03 (913) | −16,2 % / 56,1 | 07 | −3,7 % / 47,1 |
+| Livraison & retours | 03 (913) | −1,2 % / 38,7 | 07 | −4,5 % / 39,1 |
+| Suivi de commande | 03 (913) | +1,7 % / 50,8 | 07 | −7,9 % / 63,5 |
+
+Lecture des plus grands écarts :
+- **FAQ (−30 %)** : la planche montre sous l'onglet « Casque » des questions de commande et de livraison ; la démo filtre
+  réellement par thème, la page est donc plus courte. Recherche, onglets et état « sans résultat » fonctionnent.
+- **Confirmation mobile (+23 %)** : la mention « Exemple de confirmation » (aucune commande enregistrée, aucun e-mail) et
+  le récapitulatif ajoutent de la hauteur.
+- **Boutique, expérience, marque, journal sur téléphone (+11 à +18 %)** : textes et photos un peu plus hauts que sur la
+  planche ; les photos du kit ne sont pas les vues dessinées sur les planches mobiles.
+- **Contact ordinateur (−16 %)** : formulaire plus compact que sur la planche (mêmes champs).
+
+## Vérifications
+
+- Interactions (navigateur réel, `interactions.mjs`) : **42/42** — menu mobile (ouverture, Échap, focus), tiroir panier,
+  quantité, suppression, sous-total, panier vide, carrousels, miniatures et agrandissement de la fiche, barre d'achat,
+  FAQ (recherche + onglets + sans résultat), commande en trois étapes (champs vérifiés, retour sans perte, accord requis),
+  confirmation, contact et suivi (champs vérifiés), aucune erreur de page.
+- Débordement : **130 rendus** (toutes les pages à 360, 390, 430, 913 et 1440 px) : aucun débordement horizontal, aucun
+  bouton coupé.
+- Studio réel (`scripts/onde-studio-check.ts`, Next.js, base temporaire) : galerie E-commerce avec aperçu de neuf
+  compositions ONDE ; bandeau ajouté, titre, bouton, photo et couleurs modifiés, dupliqué, déplacé, conservé après
+  rechargement complet ; client fictif « Céramor » (théière) habillé en ONDE : son logo (éclairci sur le cadre graphite),
+  son produit, ses textes, aucune photo, aucun texte ni prix de la démonstration.
+- Adaptation client : la forme de référence ONDE (`reference-shapes.json`) a été réextraite de la nouvelle démonstration,
+  seule (les dix autres thèmes sont inchangés) ; journal et articles, commande, confirmation, suivi et cookies restent dans
+  la démonstration. La fiche ONDE montre la description du client ; un gabarit de produit secondaire n'est jamais vide.
+- Tests : `tsc` sans erreur ; suite complète vitest ; Theme Check (ONDE FR, EN, services) sans erreur.
+
+## Captures et comparaisons
+
+Envoyées dans la conversation (photos du kit privé, jamais publiées) : côte à côte, superposition à 50 % et image des
+différences pour chaque ligne du tableau, ordinateur et téléphone.

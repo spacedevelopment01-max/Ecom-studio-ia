@@ -182,8 +182,11 @@ body[data-conversion="onde"] .on-footer__brand{flex:none;display:block;width:var
 body[data-conversion="onde"] .on-footer__logo{display:block;width:100%;height:auto}
 body[data-conversion="onde"] .on-footer__wordmark{font:700 64px/1 var(--on-head);letter-spacing:-.03em}
 body[data-conversion="onde"] .on-footer__wave{width:150px;height:40px;color:var(--on-lime);flex:none}
-body[data-conversion="onde"] .on-footer__nav{margin-left:auto;display:grid;gap:14px}
-body[data-conversion="onde"] .on-footer__links,body[data-conversion="onde"] .on-footer__legal{display:flex;gap:46px;list-style:none;margin:0;padding:0}
+body[data-conversion="onde"] .on-footer__nav{margin-left:auto;display:grid;gap:14px;max-width:min(860px,64%)}
+body[data-conversion="onde"] .on-footer__links,body[data-conversion="onde"] .on-footer__legal{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:14px 46px;list-style:none;margin:0;padding:0}
+body[data-conversion="onde"] .on-footer__links a,body[data-conversion="onde"] .on-footer__legal a{white-space:nowrap}
+/* Logo de la boutique sans version claire : éclairci en blanc sur les fonds graphite. */
+body[data-conversion="onde"] .on-logo-mono{filter:brightness(0) invert(1)}
 body[data-conversion="onde"] .on-footer__links a{font:500 13px/1 var(--on-body)}
 body[data-conversion="onde"] .on-footer__links .es-icon{display:none}
 body[data-conversion="onde"] .on-footer__legal a{font:400 12px/1 var(--on-body);color:#BFC2C0}
@@ -238,7 +241,7 @@ body[data-conversion="onde"] .on-footer__bottom{font:400 12px var(--on-body);col
   body[data-conversion="onde"] .on-newsletter__form{margin-top:14px;min-width:0}
   body[data-conversion="onde"] .on-footer__inner{flex-wrap:wrap;gap:16px;min-height:0;padding-block:26px}
   body[data-conversion="onde"] .on-footer__brand{width:var(--on-logo-wm)}
-  body[data-conversion="onde"] .on-footer__nav{margin:0;width:100%}
+  body[data-conversion="onde"] .on-footer__nav{margin:0;width:100%;max-width:none}
   body[data-conversion="onde"] .on-footer--wordmark .on-footer__links{display:none}
   body[data-conversion="onde"] .on-footer--wordmark .on-footer__accordions{display:block;width:100%}
   body[data-conversion="onde"] .on-footer__acc{border-bottom:1px solid #2A2D2B}
@@ -813,7 +816,9 @@ body[data-conversion="onde"] .es-main .es-legal h1,body[data-conversion="onde"] 
   body[data-conversion="onde"] .on-product__brand,body[data-conversion="onde"] .on-product__price,body[data-conversion="onde"] .on-product__note{display:none}
   body[data-conversion="onde"] .on-product__thumbs{order:3;gap:8px;overflow-x:auto;margin:10px 0 0;padding:0 var(--on-pad-m)}
   body[data-conversion="onde"] .on-product__thumb{width:62px;height:62px;flex:none}
-  body[data-conversion="onde"] .on-buy{order:4;margin:20px 0 0;padding:0 var(--on-pad-m) 18px;background:transparent;color:var(--on-ink);box-shadow:none;border-radius:0}
+  body[data-conversion="onde"] .on-buy{order:4;margin:20px 0 0;padding:0 var(--on-pad-m) 18px;background:transparent;color:var(--on-ink);box-shadow:none;border-radius:0;align-self:stretch}
+  /* Grand mot sans produit détouré (boutique sans détourage) : bande resserrée. */
+  body[data-conversion="onde"] .on-banner--wordmark:not(.on-banner--cutout){min-height:220px}
   body[data-conversion="onde"] .on-buy__row:has(.on-buy__finish){display:grid;gap:10px}
   body[data-conversion="onde"] .on-buy__head{margin-bottom:18px}
   body[data-conversion="onde"] .on-buy__brand{font-size:24px}

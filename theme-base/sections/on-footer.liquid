@@ -33,12 +33,17 @@
   if style == 'slim' and s.slim_legal_menu != blank
     assign legal_menu = linklists[s.slim_legal_menu]
   endif
+  assign logo_mono = false
   if style == 'lime'
-    assign logo_src = s.logo_dark_asset
+    assign logo_src = s.logo_dark_asset | default: settings.logo_asset
     assign logo_img = s.logo_dark
   else
     assign logo_src = s.logo_light_asset
     assign logo_img = s.logo_light
+    if logo_img == blank and logo_src == blank and settings.logo_asset != blank
+      assign logo_src = settings.logo_asset
+      assign logo_mono = true
+    endif
   endif
 -%}
 {%- liquid
@@ -53,7 +58,7 @@
 <footer class="on-footer on-footer--{{ style }}{% if m_list %} on-footer--m-list{% endif %}" style="--on-logo-w:{{ s.logo_width }}px;--on-logo-wm:{{ s.mobile_logo_width }}px;">
   <div class="on-footer__inner on-container">
     <a class="on-footer__brand" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
-      {%- if logo_img != blank -%}{{ logo_img | image_url: width: 900 | image_tag: alt: shop.name, class: 'on-footer__logo', loading: 'lazy' }}{%- elsif style == 'wordmark' and s.logo_wordmark_asset != blank -%}<img width="1200" height="1200" class="on-footer__logo on-desktop-only" src="{{ s.logo_wordmark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async"><img width="1200" height="1200" class="on-footer__logo on-mobile-only" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif logo_src != blank -%}<img width="1200" height="1200" class="on-footer__logo" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-footer__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
+      {%- if logo_img != blank -%}{{ logo_img | image_url: width: 900 | image_tag: alt: shop.name, class: 'on-footer__logo', loading: 'lazy' }}{%- elsif style == 'wordmark' and s.logo_wordmark_asset != blank -%}<img width="1200" height="1200" class="on-footer__logo on-desktop-only" src="{{ s.logo_wordmark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async"><img width="1200" height="1200" class="on-footer__logo on-mobile-only" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif logo_src != blank -%}<img width="1200" height="1200" class="on-footer__logo{% if logo_mono %} on-logo-mono{% endif %}" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-footer__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
     </a>
     <div class="on-footer__wave" aria-hidden="true">{% render 'on-wave', bars: 34, shape: 'burst' %}</div>
     {%- if style == 'lime' -%}

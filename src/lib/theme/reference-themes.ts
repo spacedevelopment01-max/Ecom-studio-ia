@@ -105,8 +105,8 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
     headerSettings: { layout: "logo-left", mega_menu: "none", desktop_icons: true, mobile_menu: "drawer", mobile_submenu: "accordion", show_cart: true },
     mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: false, color_scheme: "scheme-1" },
     ownProductBody: true,
-    headerRow: (k) => ["on-header", { logo_light_asset: k.im.logoLight ?? k.im.logo ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", mobile_menu: "main-menu", legal_menu: "footer", search: true, cart_link_label: k.t("Mon panier", "My cart"), search_label: k.t("Rechercher…", "Search…") }],
-    footerRow: (k) => ["on-footer", { logo_light_asset: k.im.logoLight ?? k.im.logo ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", second_menu: "footer", legal_menu: "footer", group1_title: k.t("Explorer", "Explore"), group1_menu: "main-menu", group2_title: k.t("Informations", "Information"), group2_menu: "footer", group3_title: "", style_default: "wordmark", style_product: "wordmark", style_collection: "lime", style_cart: "slim", show_social: true }],
+    headerRow: (k) => ["on-header", { logo_light_asset: k.im.logoLight ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", mobile_menu: "main-menu", legal_menu: "footer", search: true, cart_link_label: k.t("Mon panier", "My cart"), search_label: k.t("Rechercher…", "Search…") }],
+    footerRow: (k) => ["on-footer", { logo_light_asset: k.im.logoLight ?? "", logo_dark_asset: k.im.logo ?? "", menu: "main-menu", second_menu: "footer", legal_menu: "footer", group1_title: k.t("Explorer", "Explore"), group1_menu: "main-menu", group2_title: k.t("Informations", "Information"), group2_menu: "footer", group3_title: "", style_default: "wordmark", style_product: "wordmark", style_collection: "lime", style_cart: "slim", show_social: true }],
     palette: (k) => {
       const ink = k.night(0.06, 0.03);
       const paper = k.light("#F1F2F1");
