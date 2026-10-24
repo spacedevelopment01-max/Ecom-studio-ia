@@ -1,0 +1,192 @@
+{%- comment -%}
+  FRAISE : fiche du produit (planches 01 et 04, « Les gummies »). Ordinateur : miniatures verticales, grande photo (zoom
+  au clic), fil d'Ariane, titre, sous-titre, prix du format choisi et « Pack de N flacons », texte, « Choisissez votre
+  format : » (trois cartes du même produit : photo de la bonne quantité, badges et prix calculés), quantité de LOTS,
+  « Ajouter le pack — total », réassurance. Téléphone : fil d'Ariane, titre, texte, carrousel (loupe, miniatures, points),
+  prix du lot choisi (comparaison barrée annoncée), formats en lignes à cocher, quantité, ajout, trois repères ; barre
+  d'achat en bas (même format, même quantité). Prix et variantes viennent toujours du produit ; rien n'est écrit en dur.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = product | default: s.product | default: collections.all.products.first
+  assign v = p.selected_or_first_available_variant
+  if s.default_format > 0
+    assign di = s.default_format | minus: 1
+    if p.variants[di]
+      assign v = p.variants[di]
+    endif
+  endif
+  assign gallery = p.media
+  assign vn = v.option1 | split: ' ' | first | plus: 0
+  assign unit_price = 0
+  for x in p.variants
+    assign xn = x.option1 | split: ' ' | first | plus: 0
+    if xn == 1 and unit_price == 0
+      assign unit_price = x.price
+    endif
+  endfor
+  assign vref = 0
+  if unit_price > 0 and vn > 0
+    assign vref = unit_price | times: vn
+  endif
+-%}
+<section class="fg fg-product" data-fg-product id="le-produit">
+  <div class="fg-c">
+    <div class="fg-product__gallery">
+      <div class="fg-product__thumbs" role="list" aria-label="{{ s.gallery_label | escape }}">
+        {%- for m in gallery limit: 6 -%}
+          <button type="button" role="listitem" class="fg-product__thumb{% if forloop.first %} is-active{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="{{ s.view_label | escape }} {{ forloop.index }}" data-fg-thumb="{{ forloop.index0 }}">
+            {{ m | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="fg-product__stage">
+        {%- for m in gallery limit: 6 -%}
+          {%- assign alt_v = m.alt | default: p.title -%}
+          <button type="button" class="fg-product__view{% if forloop.first %} is-active{% endif %}" data-fg-view="{{ forloop.index0 }}" data-fg-zoom-src="{{ m | image_url: width: 2400 }}" aria-label="{{ s.zoom_label | escape }}"{% unless forloop.first %} hidden{% endunless %}>
+            {%- if forloop.first -%}{{ m | image_url: width: 1600 | image_tag: loading: 'eager', fetchpriority: 'high', alt: alt_v, sizes: '(min-width: 750px) 34vw, 100vw', widths: '600, 1000, 1600' }}{%- else -%}{{ m | image_url: width: 1600 | image_tag: loading: 'lazy', alt: alt_v, sizes: '(min-width: 750px) 34vw, 100vw', widths: '600, 1000, 1600' }}{%- endif -%}
+          </button>
+        {%- endfor -%}
+      </div>
+      <div class="fg-product__m">
+        <div class="fg-product__track" data-fg-track tabindex="0" role="group" aria-label="{{ s.gallery_label | escape }}">
+          {%- for m in gallery limit: 6 -%}
+            {%- assign alt_s = m.alt | default: p.title -%}
+            <div class="fg-product__slide" data-fg-slide="{{ forloop.index0 }}" data-fg-zoom-src="{{ m | image_url: width: 2400 }}">{{ m | image_url: width: 1200 | image_tag: loading: 'lazy', alt: alt_s, sizes: '100vw', widths: '600, 900, 1200' }}</div>
+          {%- endfor -%}
+        </div>
+        <button type="button" class="fg-product__mzoom" data-fg-zoom aria-label="{{ s.zoom_label | escape }}">{% render 'fg-icon', name: 'search' %}</button>
+      </div>
+      {%- if gallery.size > 1 -%}<div class="fg-product__dots" aria-hidden="true">{%- for m in gallery limit: 6 -%}<span{% if forloop.first %} class="is-active"{% endif %}></span>{%- endfor -%}</div>{%- endif -%}
+    </div>
+    <div class="fg-product__info">
+      {%- if s.crumb_home != blank -%}<nav class="fg-product__crumb" aria-label="{{ s.crumb_label | escape }}"><a href="{{ routes.root_url }}">{{ s.crumb_home }}</a>{% render 'fg-icon', name: 'chevron' %}{%- if s.crumb_middle != blank -%}<a href="{{ s.crumb_middle_link | default: routes.all_products_collection_url }}">{{ s.crumb_middle }}</a>{% render 'fg-icon', name: 'chevron', class: 'fg-only-m' %}{%- endif -%}<span aria-current="page" class="fg-only-m">{{ p.title }}</span></nav>{%- endif -%}
+      <h1 class="fg-title fg-product__title">{{ p.title }}</h1>
+      {%- if s.subtitle != blank -%}<p class="fg-product__sub">{{ s.subtitle }}</p>{%- endif -%}
+      {%- if s.text != blank -%}<div class="fg-product__lead fg-only-m">{{ s.text }}</div>{%- endif -%}
+      <p class="fg-product__price">
+        <span class="fg-product__amount" data-fg-sel-price>{{ v.price | money }}</span>
+        <span class="fg-product__ref fg-only-m" data-fg-sel-compare{% unless vref > v.price %} hidden{% endunless %}><span class="visually-hidden">{{ settings.offer_compare_label }} </span><s>{{ vref | money }}</s></span>
+        {%- if s.tax_note != blank -%}<span class="fg-product__tax fg-only-m">{{ s.tax_note }}</span>{%- endif -%}
+        {%- if vn > 0 -%}<span class="fg-product__pack fg-only-d" data-fg-sel-title data-prefix="{{ s.pack_text | escape }}" data-single="{{ s.single_text | escape }}">{% if vn > 1 %}{{ s.pack_text | replace: '[t]', v.title }}{% else %}{{ s.single_text | replace: '[t]', v.title }}{% endif %}</span>{%- endif -%}
+      </p>
+      {%- if s.text != blank -%}<div class="fg-product__lead fg-only-d">{{ s.text }}</div>{%- endif -%}
+      {%- form 'product', p, class: 'fg-product__buy', data-fg-add: '' -%}
+        <input type="hidden" name="id" value="{{ v.id }}" data-fg-variant>
+        {%- unless p.has_only_default_variant -%}
+          <fieldset class="fg-product__formats">
+            <legend class="fg-product__legend">{{ s.formats_label }}</legend>
+            <div class="fg-product__choices">
+              {%- for variant in p.variants -%}
+                {%- assign chk = false -%}{%- if variant.id == v.id -%}{%- assign chk = true -%}{%- endif -%}
+                {%- liquid
+                  assign img_a = ''
+                  case forloop.index
+                    when 1
+                      assign img_a = s.format_1_asset
+                    when 2
+                      assign img_a = s.format_2_asset
+                    when 3
+                      assign img_a = s.format_3_asset
+                  endcase
+                  assign img_i = variant.featured_image
+                  if img_a != blank
+                    assign img_i = nil
+                  endif
+                -%}
+                {% render 'fg-offer', product: p, variant: variant, mode: 'choice', image: img_i, image_asset: img_a, alt: '', show_compare: true, show_last: true, show_per: 'all', show_save: true, choice_name: 'fg-format', checked: chk, index: forloop.index %}
+              {%- endfor -%}
+            </div>
+          </fieldset>
+        {%- endunless -%}
+        <div class="fg-product__row">
+          <label class="visually-hidden" for="fg-qty-{{ section.id }}">{{ s.qty_label }}</label>
+          <span class="fg-product__qlabel fg-only-m" aria-hidden="true">{{ s.qty_label }}</span>
+          <div class="fg-qty fg-product__qty">
+            <button type="button" data-fg-qty="-1" aria-label="{{ s.less_label | escape }}">{% render 'fg-icon', name: 'minus' %}</button>
+            <input id="fg-qty-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="12" inputmode="numeric" data-fg-qty-input>
+            <button type="button" data-fg-qty="1" aria-label="{{ s.more_label | escape }}">{% render 'fg-icon', name: 'plus' %}</button>
+          </div>
+          <button type="submit" class="fg-btn fg-btn--red fg-product__add" data-fg-add-btn{% unless v.available %} disabled{% endunless %}>{% render 'fg-icon', name: 'bag', class: 'fg-only-m' %}<span>{{ s.add_label }} — <span data-fg-sel-total>{{ v.price | money }}</span></span></button>
+        </div>
+        <p class="fg-product__status" role="status" data-fg-status></p>
+      {%- endform -%}
+      <ul class="fg-product__assure" role="list">
+        {%- for block in section.blocks -%}
+          <li {{ block.shopify_attributes }}>{%- if block.settings.link != blank -%}<a href="{{ block.settings.link }}">{%- endif -%}{% render 'fg-icon', name: block.settings.icon %}<span class="fg-only-d">{{ block.settings.label }}</span><span class="fg-only-m">{{ block.settings.label_mobile | default: block.settings.label | escape | newline_to_br }}</span>{%- if block.settings.link != blank -%}</a>{%- endif -%}</li>
+        {%- endfor -%}
+      </ul>
+      {%- if s.show_note and settings.offer_note != blank -%}<p class="fg-product__note">{{ settings.offer_note }}</p>{%- endif -%}
+    </div>
+  </div>
+  <div class="fg-lightbox" role="dialog" aria-modal="true" aria-label="{{ s.zoom_label | escape }}" hidden data-fg-lightbox>
+    <img src="" alt="" data-fg-lightbox-img>
+    <button type="button" class="fg-lightbox__close" data-fg-lightbox-close><span class="visually-hidden">{{ s.close_label }}</span>{% render 'fg-icon', name: 'close' %}</button>
+  </div>
+</section>
+
+{%- comment -%} Barre d'achat du téléphone (planche 04, fiche 2/2) : photo du format choisi, prix du lot, ajout. {%- endcomment -%}
+<div class="fg-buybar" hidden data-fg-buybar>
+  <span class="fg-buybar__img" data-fg-buybar-img>
+    {%- for variant in p.variants -%}
+      {%- liquid
+        assign img_a = ''
+        case forloop.index
+          when 1
+            assign img_a = s.format_1_asset
+          when 2
+            assign img_a = s.format_2_asset
+          when 3
+            assign img_a = s.format_3_asset
+        endcase
+      -%}
+      {%- if img_a != blank -%}<img src="{{ img_a | asset_url }}" alt="" data-for="{{ variant.id }}" width="120" height="120" loading="lazy"{% unless variant.id == v.id %} hidden{% endunless %}>{%- elsif variant.featured_image -%}<img src="{{ variant.featured_image | image_url: width: 160 }}" alt="" data-for="{{ variant.id }}" width="120" height="120" loading="lazy"{% unless variant.id == v.id %} hidden{% endunless %}>{%- endif -%}
+    {%- endfor -%}
+  </span>
+  <span class="fg-buybar__txt"><span class="fg-buybar__name" data-fg-sel-title data-prefix="[t]" data-single="[t]">{{ v.title }}</span><span class="fg-buybar__price" data-fg-sel-total>{{ v.price | money }}</span></span>
+  <button type="button" class="fg-btn fg-btn--red fg-buybar__add" data-fg-buybar-add>{{ s.bar_label }}{% render 'fg-icon', name: 'bag' %}</button>
+</div>
+
+{% schema %}
+{
+  "name": "Fiche FRAISE",
+  "class": "fg-product-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
+    { "type": "text", "id": "crumb_home", "label": "Fil d'Ariane : accueil", "default": "Accueil" },
+    { "type": "text", "id": "crumb_middle", "label": "Fil d'Ariane : rubrique" },
+    { "type": "url", "id": "crumb_middle_link", "label": "Lien de la rubrique" },
+    { "type": "text", "id": "crumb_label", "label": "Fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "subtitle", "label": "Sous-titre" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "pack_text", "label": "Libellé d'un lot", "default": "Pack de [t]", "info": "[t] : le format choisi (ex. 3 flacons)." },
+    { "type": "text", "id": "single_text", "label": "Libellé d'une unité", "default": "[t]" },
+    { "type": "text", "id": "tax_note", "label": "Mention près du prix (téléphone)" },
+    { "type": "range", "id": "default_format", "label": "Format choisi à l'ouverture (rang, 0 = le premier disponible)", "min": 0, "max": 6, "step": 1, "default": 0 },
+    { "type": "text", "id": "formats_label", "label": "Titre des formats", "default": "Choisissez votre format :" },
+    { "type": "text", "id": "format_1_asset", "label": "Photo du format 1 (fichier du thème)", "info": "Vide : la photo de la variante." },
+    { "type": "text", "id": "format_2_asset", "label": "Photo du format 2 (fichier du thème)" },
+    { "type": "text", "id": "format_3_asset", "label": "Photo du format 3 (fichier du thème)" },
+    { "type": "text", "id": "qty_label", "label": "Quantité", "default": "Quantité" },
+    { "type": "text", "id": "less_label", "label": "Moins (lecteurs d'écran)", "default": "Retirer un lot" },
+    { "type": "text", "id": "more_label", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un lot" },
+    { "type": "text", "id": "add_label", "label": "Bouton d'ajout", "default": "Ajouter le pack" },
+    { "type": "checkbox", "id": "show_note", "label": "Note sous les formats", "default": true },
+    { "type": "text", "id": "bar_label", "label": "Barre d'achat du téléphone", "default": "Ajouter au panier" },
+    { "type": "text", "id": "gallery_label", "label": "Galerie (lecteurs d'écran)", "default": "Photos du produit" },
+    { "type": "text", "id": "view_label", "label": "Miniature (lecteurs d'écran)", "default": "Voir la photo" },
+    { "type": "text", "id": "zoom_label", "label": "Agrandir (lecteurs d'écran)", "default": "Agrandir la photo" },
+    { "type": "text", "id": "close_label", "label": "Fermer (lecteurs d'écran)", "default": "Fermer" }
+  ],
+  "blocks": [
+    { "type": "assurance", "name": "Repère", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "lock", "options": [{ "value": "lock", "label": "Cadenas" }, { "value": "question", "label": "Question" }, { "value": "truck", "label": "Camion" }, { "value": "card", "label": "Carte" }, { "value": "return", "label": "Retour" }, { "value": "mail", "label": "Enveloppe" }] },
+      { "type": "text", "id": "label", "label": "Texte" },
+      { "type": "textarea", "id": "label_mobile", "label": "Texte au téléphone" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "presets": [{ "name": "Fiche FRAISE" }]
+}
+{% endschema %}

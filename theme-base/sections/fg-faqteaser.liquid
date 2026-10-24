@@ -4,12 +4,13 @@
   à l'étiquette et aux pages d'aide ; rien d'inventé.
 {%- endcomment -%}
 {%- assign s = section.settings -%}
-<section class="fg fg-faqt fg-faqt--{{ s.layout }}" aria-labelledby="fg-faqt-t-{{ section.id }}">
+<section class="fg fg-faqt fg-faqt--{{ s.layout }}" aria-labelledby="fg-faqt-t-{{ section.id }}" id="{{ s.anchor | default: 'questions' }}">
   {%- if s.layout == 'home' -%}<svg class="fg-wave fg-wave--top" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 40V22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40z" fill="currentColor"/></svg>{%- endif -%}
   <div class="fg-c">
     <div class="fg-faqt__head">
       {%- assign tid = 'fg-faqt-t-' | append: section.id -%}
       {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-faqt__title', id: tid %}
+      {%- if s.heading_mobile != blank -%}{% render 'fg-title', text: s.heading_mobile, tag: 'p', class: 'fg-faqt__title fg-faqt__title--m' %}{%- endif -%}
       {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--line fg-faqt__btn" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label }}</a>{%- endif -%}
     </div>
     <div class="fg-faqt__list">
@@ -32,6 +33,8 @@
   "settings": [
     { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil : titre à gauche, bande rose" }, { "value": "product", "label": "Fiche : deux colonnes" }] },
     { "type": "textarea", "id": "heading", "label": "Titre", "default": "Vos questions,\n[i]nos réponses.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone" },
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "questions" },
     { "type": "text", "id": "button_label", "label": "Bouton" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" }
   ],

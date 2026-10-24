@@ -17,6 +17,7 @@
   assign menu_legal = linklists[s.menu_legal]
   assign search_menu = linklists[s.search_menu]
   assign accent_font = s.accent_font
+  assign serif_font = s.serif_font
   assign title_font = s.title_font
   assign brand = s.wordmark | default: shop.name
 -%}
@@ -29,6 +30,7 @@
   {%- if title_600 -%}{{ title_600 | font_face: font_display: 'swap' }}{%- endif -%}
   {%- if title_500 -%}{{ title_500 | font_face: font_display: 'swap' }}{%- endif -%}
   {{ accent_font | font_face: font_display: 'swap' }}
+  {{ serif_font | font_face: font_display: 'swap' }}
   body.dir-fraise, .fg, .fg-header, .fg-footer, .fg-menu, .fg-cookies, .fg-drawer, .fg-search, .fg-lightbox, .fg-buybar {
     --fg-cream: {{ s.color_cream }};
     --fg-blush: {{ s.color_blush }};
@@ -41,6 +43,7 @@
     --fg-yellow: {{ s.color_yellow }};
     --fg-title: {{ title_font.family }}, {{ title_font.fallback_families }};
     --fg-accent: {{ accent_font.family }}, {{ accent_font.fallback_families }};
+    --fg-serif: {{ serif_font.family }}, {{ serif_font.fallback_families }};
   }
 </style>
 {{ 'fraise-fonts.css' | asset_url | stylesheet_tag }}
@@ -131,12 +134,12 @@
 {%- if s.show_search -%}
 <div class="fg-search" id="fg-search" role="dialog" aria-modal="true" aria-label="{{ s.search_label | escape }}" hidden data-fg-search>
   <div class="fg-search__panel">
-    <form class="fg-search__form" action="{{ routes.search_url }}" method="get" role="search" data-fg-search-form>
+    <div role="search"><form class="fg-search__form" action="{{ routes.search_url }}" method="get" data-fg-search-form>
       {% render 'fg-icon', name: 'search' %}
       <label class="visually-hidden" for="fg-search-q">{{ s.search_label }}</label>
       <input id="fg-search-q" type="search" name="q" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off" data-fg-search-input>
       <button type="button" class="fg-search__close" data-fg-search-close><span class="visually-hidden">{{ s.search_close }}</span>{% render 'fg-icon', name: 'close' %}</button>
-    </form>
+    </form></div>
     {%- if search_menu.links.size > 0 -%}
       <p class="fg-search__title">{{ s.search_title }}</p>
       <ul class="fg-search__list" role="list" data-fg-search-list>
@@ -156,11 +159,11 @@
     <button type="button" class="fg-menu__close" data-fg-menu-close><span class="visually-hidden">{{ s.menu_close_label }}</span>{% render 'fg-icon', name: 'close' %}</button>
   </div>
   {%- if s.show_search -%}
-    <form class="fg-menu__search" action="{{ routes.search_url }}" method="get" role="search" data-fg-menu-search>
+    <div role="search"><form class="fg-menu__search" action="{{ routes.search_url }}" method="get" data-fg-menu-search>
       {% render 'fg-icon', name: 'search' %}
       <label class="visually-hidden" for="fg-menu-q">{{ s.search_label }}</label>
       <input id="fg-menu-q" type="search" name="q" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off">
-    </form>
+    </form></div>
   {%- endif -%}
   {%- liquid
     assign mlinks = menu_m.links
@@ -281,6 +284,7 @@
     { "type": "header", "content": "Polices" },
     { "type": "font_picker", "id": "title_font", "label": "Titres ronds et gras", "default": "poppins_n7" },
     { "type": "font_picker", "id": "accent_font", "label": "Italique d'accent", "default": "playfair_display_i8" },
+    { "type": "font_picker", "id": "serif_font", "label": "Capitales à empattements (« FRAISE. »)", "default": "playfair_display_n7" },
     { "type": "header", "content": "Commande" },
     { "type": "checkbox", "id": "demo_mode", "label": "Boutique de démonstration", "default": false, "info": "Commande, suivi et formulaires simulés et annoncés comme tels ; aucun paiement ni envoi." },
     { "type": "select", "id": "checkout_mode", "label": "Bouton « Passer commande »", "default": "shopify", "options": [{ "value": "shopify", "label": "Paiement Shopify" }, { "value": "demo", "label": "Page de commande de démonstration" }] },

@@ -1,0 +1,72 @@
+{%- comment -%}
+  FRAISE : « Journal » (planches 02 et 05) — sur-titre, grand titre, texte, filtres (Tout, Le goût, Le quotidien, Les
+  détails) reliés aux catégories des articles, état « aucun article » ; article vedette (photo, étiquette, titre, texte,
+  lien) et cartes d'articles (photo, étiquette, titre, texte). Chaque carte ouvre SON article.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-journal" aria-labelledby="fg-journal-t-{{ section.id }}" data-fg-journal>
+  <div class="fg-c">
+    <span class="fg-journal__deco" aria-hidden="true">{% render 'fg-art', name: 'leaf-branch', class: 'fg-journal__branch' %}{% render 'fg-art', name: 'berry-ghost', class: 'fg-journal__ghost' %}</span>
+    <div class="fg-journal__head">
+      {%- if s.eyebrow != blank -%}<p class="fg-eyebrow fg-journal__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- assign tid = 'fg-journal-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h1', class: 'fg-journal__title', id: tid %}
+      {%- if s.text != blank -%}<p class="fg-journal__lead">{{ s.text }}</p>{%- endif -%}
+      {%- assign cats = s.filters | split: ',' -%}
+      <div class="fg-journal__filters" role="group" aria-label="{{ s.filters_label | escape }}">
+        <button type="button" class="fg-pill is-active" aria-pressed="true" data-fg-filter="">{{ s.all_label }}</button>
+        {%- for c in cats -%}{%- assign cn = c | strip -%}<button type="button" class="fg-pill fg-pill--{{ forloop.index }}" aria-pressed="false" data-fg-filter="{{ cn | handleize }}">{{ cn }}</button>{%- endfor -%}
+      </div>
+      <p class="visually-hidden" role="status" data-fg-count-status></p>
+    </div>
+    <ul class="fg-journal__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign bc = block.settings.category | handleize -%}
+        <li class="fg-journal__item{% if forloop.first %} fg-journal__item--feat{% endif %}" data-cat="{{ bc }}" {{ block.shopify_attributes }}>
+          <a href="{{ block.settings.link | default: '#' }}" class="fg-journal__card">
+            {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.position, zoom: block.settings.zoom, class: 'fg-journal__img' %}
+            <span class="fg-journal__body">
+              {%- if block.settings.category != blank -%}<span class="fg-journal__tag">{{ block.settings.category }}</span>{%- endif -%}
+              <span class="fg-journal__ctitle">{{ block.settings.title | escape | newline_to_br }}</span>
+              {%- if block.settings.text != blank -%}<span class="fg-journal__ctext">{{ block.settings.text | escape | newline_to_br }}</span>{%- endif -%}
+              {%- if block.settings.show_link -%}<span class="fg-journal__read">{{ s.read_label }}{% render 'fg-icon', name: 'arrow' %}</span>{%- endif -%}
+            </span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <p class="fg-journal__empty" hidden data-fg-empty>{{ s.empty_text }}</p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Journal",
+  "class": "fg-journal-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Journal" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Les petites\nparenthèses [s]FRAISE.[/s]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r], [s]arrondi[/s]." },
+    { "type": "text", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "all_label", "label": "Filtre « tout »", "default": "Tout" },
+    { "type": "text", "id": "filters", "label": "Catégories (séparées par des virgules)", "default": "Le goût, Le quotidien, Les détails" },
+    { "type": "text", "id": "filters_label", "label": "Filtres (lecteurs d'écran)", "default": "Filtrer les articles" },
+    { "type": "text", "id": "read_label", "label": "Lien des articles", "default": "Lire l'article" },
+    { "type": "text", "id": "empty_text", "label": "Aucun article", "default": "Aucun article dans cette catégorie pour le moment." }
+  ],
+  "blocks": [
+    { "type": "post", "name": "Article", "settings": [
+      { "type": "text", "id": "category", "label": "Catégorie" },
+      { "type": "textarea", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "url", "id": "link", "label": "Lien de l'article" },
+      { "type": "checkbox", "id": "show_link", "label": "Lien « Lire l'article » visible", "default": true },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+    ] }
+  ],
+  "presets": [{ "name": "Journal" }]
+}
+{% endschema %}

@@ -1,0 +1,43 @@
+{%- comment -%}
+  FRAISE : deux usages en photo (planche 01, fiche : « À la maison. », « En balade. ») — grande photo, encart blanc avec
+  titre rouge et texte. Téléphone : photo en carrousel (flèches et points), sans encart (planche 04).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-uses" aria-label="{{ s.label | escape }}" id="{{ s.anchor | default: 'utilisation' }}">
+  <div class="fg-c">
+    <ul class="fg-uses__list" role="list" data-fg-uses>
+      {%- for block in section.blocks -%}
+        <li class="fg-uses__item" {{ block.shopify_attributes }}>
+          {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-uses__img' %}
+          <div class="fg-uses__box"><h3 class="fg-uses__title">{{ block.settings.title }}</h3><p class="fg-uses__text">{{ block.settings.text | escape | newline_to_br }}</p></div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Usages en photos",
+  "class": "fg-uses-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Usages" },
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "utilisation" }
+  ],
+  "blocks": [
+    { "type": "use", "name": "Usage", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description de la photo" },
+      { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+    ] }
+  ],
+  "presets": [{ "name": "Usages en photos" }]
+}
+{% endschema %}

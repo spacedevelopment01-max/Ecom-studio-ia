@@ -100,6 +100,7 @@
   document.addEventListener('submit', function (e) {
     var form = e.target; if (!form || form.tagName !== 'FORM') return;
     if (form.hasAttribute('data-product-form') || form.closest('[data-purchase]')) return; /* gérés par le thème */
+    if (form.matches('[data-fg-add], [data-fg-quick-add], [data-fg-news], [data-fg-contact], [data-fg-track], [data-fg-co-form]')) return; /* FRAISE : formulaires gérés et annoncés par fraise.js */
     if (form.id === 'CartForm') {
       e.preventDefault(); if (e.submitter && e.submitter.name === 'checkout') { note('Paiement désactivé dans cet aperçu de démonstration.'); return; }
       var inputs = form.querySelectorAll('input[name="updates[]"]'), st = state(stateKey()), items = st && st.cart ? st.cart.items : [];

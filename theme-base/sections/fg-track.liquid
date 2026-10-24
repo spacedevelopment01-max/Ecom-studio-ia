@@ -1,0 +1,68 @@
+{%- comment -%}
+  FRAISE : « Où en est votre FRAISE ? » (planches 03 et 06) — titre, texte, formulaire (numéro de commande, e-mail),
+  photo du flacon à droite, pétales ; encart « Besoin d'aide ? ». Démonstration : résultat d'EXEMPLE annoncé comme tel
+  (aucun statut de transporteur inventé) ; boutique réelle : l'espace client de la boutique (aucune commande n'est
+  retrouvée par un simple numéro devinable).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-track" aria-labelledby="fg-track-t-{{ section.id }}">
+  <div class="fg-c">
+    {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, class: 'fg-track__photo' %}
+    <span class="fg-track__petals" aria-hidden="true">{% render 'fg-art', name: 'petals' %}</span>
+    <div class="fg-track__main">
+      {%- assign tid = 'fg-track-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h1', class: 'fg-track__title', id: tid %}
+      {%- if s.text != blank -%}<p class="fg-track__lead">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      <form class="fg-track__form" action="{{ s.account_link | default: routes.account_url }}" method="get" data-fg-track="{{ s.mode }}" novalidate>
+        <div class="fg-co__grid">
+          <label class="fg-field"><span>{{ s.number_label }} <b aria-hidden="true">*</b></span><input type="text" name="order" required placeholder="{{ s.number_ph | escape }}" autocomplete="off"><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+          <label class="fg-field"><span>{{ s.email_label }} <b aria-hidden="true">*</b></span><input type="email" name="email" required placeholder="{{ s.email_ph | escape }}" autocomplete="email"><span class="fg-field__err" hidden>{{ s.err_email }}</span></label>
+        </div>
+        <button type="submit" class="fg-btn fg-btn--red fg-track__btn">{{ s.button_label }}{% render 'fg-icon', name: 'arrow' %}</button>
+        <div class="fg-track__result" hidden data-fg-track-result>
+          <p class="fg-track__rt">{{ s.result_title }}</p>
+          <p>{{ s.result_text }}</p>
+        </div>
+      </form>
+    </div>
+    <div class="fg-track__help">
+      <span class="fg-track__hico">{% render 'fg-icon', name: 'box' %}</span>
+      <div><p class="fg-track__ht">{{ s.help_title }}</p><p class="fg-track__hx">{{ s.help_text }}</p></div>
+      <a class="fg-btn fg-btn--line fg-track__hbtn" href="{{ s.help_link | default: routes.root_url }}">{{ s.help_button }}{% render 'fg-icon', name: 'arrow' %}</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Suivi de commande",
+  "class": "fg-track-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Où en est\n[i]votre[/i] FRAISE ?", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "mode", "label": "Recherche", "default": "account", "options": [{ "value": "account", "label": "Espace client de la boutique" }, { "value": "demo", "label": "Démonstration (résultat d'exemple)" }] },
+    { "type": "url", "id": "account_link", "label": "Espace client", "info": "Vide : l'espace client Shopify." },
+    { "type": "text", "id": "number_label", "label": "Numéro de commande", "default": "Numéro de commande" },
+    { "type": "text", "id": "number_ph", "label": "Exemple de numéro", "default": "Ex. FG123456" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "email_ph", "label": "Exemple d'e-mail", "default": "votre@email.com" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Retrouver ma commande" },
+    { "type": "text", "id": "result_title", "label": "Résultat : titre", "default": "Exemple de résultat (démonstration)" },
+    { "type": "textarea", "id": "result_text", "label": "Résultat : texte", "default": "Aucune commande réelle n'est consultée : dans la boutique réelle, le suivi s'affiche dans l'espace client après connexion." },
+    { "type": "text", "id": "err_required", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "err_email", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "help_title", "label": "Encart : titre", "default": "Besoin d'aide ?" },
+    { "type": "text", "id": "help_text", "label": "Encart : texte" },
+    { "type": "text", "id": "help_button", "label": "Encart : bouton", "default": "Nous contacter" },
+    { "type": "url", "id": "help_link", "label": "Encart : lien" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+  ],
+  "presets": [{ "name": "Suivi de commande" }]
+}
+{% endschema %}

@@ -1,0 +1,61 @@
+{%- comment -%}
+  FRAISE : « Les infos qui vont avec. » (planches 03 et 06) — Livraison, Suivi de commande, Retours : trois colonnes sur
+  ordinateur, onglets au téléphone ; pictogrammes, texte, encadré « à compléter » (frais, zones, délais et conditions
+  restent à renseigner par la boutique : rien d'inventé) ; bandeau « Une question ? » avec lien de contact.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-ship" data-fg-tabs aria-label="{{ s.label | escape }}">
+  <div class="fg-c">
+    <div class="fg-ship__tabs" role="tablist" aria-label="{{ s.label | escape }}">
+      {%- for block in section.blocks -%}
+        <button type="button" role="tab" id="fg-ship-tab-{{ block.id }}" aria-controls="fg-ship-{{ block.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="{% if forloop.first %}0{% else %}-1{% endif %}" data-anchor="{{ block.settings.anchor }}">{{ block.settings.title }}</button>
+      {%- endfor -%}
+    </div>
+    <div class="fg-ship__cols">
+      {%- for block in section.blocks -%}
+        <div class="fg-ship__col{% if forloop.first %} is-active{% endif %}" id="fg-ship-{{ block.id }}" role="tabpanel" aria-labelledby="fg-ship-tab-{{ block.id }}" {{ block.shopify_attributes }}>
+          <span class="fg-ship__ico" id="{{ block.settings.anchor }}">{% render 'fg-icon', name: block.settings.icon %}</span>
+          <h2 class="fg-ship__title">{{ block.settings.title }}</h2>
+          <div class="fg-ship__text">{{ block.settings.text }}</div>
+          {%- if block.settings.note != blank -%}<p class="fg-ship__note">{{ block.settings.note | escape | newline_to_br }}</p>{%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+    {%- if s.help_title != blank -%}
+      <div class="fg-ship__help">
+        {% render 'fg-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'fg-ship__himg' %}
+        <div><p class="fg-ship__ht">{{ s.help_title }}</p><p class="fg-ship__hx">{{ s.help_text }}</p></div>
+        <a class="fg-btn fg-btn--red fg-ship__btn" href="{{ s.help_link | default: routes.root_url }}">{{ s.help_button }}{% render 'fg-icon', name: 'arrow' %}</a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Livraison et retours",
+  "class": "fg-shipping-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Livraison, suivi et retours" },
+    { "type": "text", "id": "help_title", "label": "Bandeau : titre", "default": "Une question ?" },
+    { "type": "text", "id": "help_text", "label": "Bandeau : texte", "default": "Notre équipe est à votre écoute." },
+    { "type": "text", "id": "help_button", "label": "Bandeau : bouton", "default": "Nous contacter" },
+    { "type": "url", "id": "help_link", "label": "Bandeau : lien" },
+    { "type": "image_picker", "id": "image", "label": "Bandeau : photo" },
+    { "type": "text", "id": "image_asset", "label": "Bandeau : photo (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Bandeau : cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Bandeau : agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+  ],
+  "blocks": [
+    { "type": "part", "name": "Rubrique", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "truck", "options": [{ "value": "truck", "label": "Camion" }, { "value": "check-circle", "label": "Suivi" }, { "value": "return", "label": "Retour" }, { "value": "box", "label": "Colis" }] },
+      { "type": "text", "id": "anchor", "label": "Ancre", "default": "livraison" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "note", "label": "Encadré" }
+    ] }
+  ],
+  "presets": [{ "name": "Livraison et retours" }]
+}
+{% endschema %}

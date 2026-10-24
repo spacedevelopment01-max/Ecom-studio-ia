@@ -102,7 +102,7 @@
 {%- case fg_mode -%}
   {%- when 'choice' -%}
     <label class="fg-offer fg-offer--choice{% if is_best %} is-best{% endif %}{% if msg != blank %} has-msg{% endif %}" data-fg-offer data-index="{{ index }}">
-      <input class="fg-offer__radio" type="radio" name="{{ choice_name }}" value="{{ variant.id }}"{% if checked %} checked{% endif %} data-title="{{ variant.title | escape }}" data-price="{{ variant.price }}" data-units="{{ n }}"{% unless variant.available %} disabled{% endunless %}>
+      <input class="fg-offer__radio" type="radio" name="{{ choice_name }}" value="{{ variant.id }}"{% if checked %} checked{% endif %} data-title="{{ variant.title | escape }}" data-price="{{ variant.price }}" data-units="{{ n }}" data-ref="{{ ref }}"{% unless variant.available %} disabled{% endunless %}>
       <span class="fg-offer__badges">{{ fg_badges }}</span>
       {{ fg_media }}
       <span class="fg-offer__title">{{ variant.title }}</span>

@@ -279,7 +279,7 @@
       var q = Math.max(1, Math.min(12, Math.round(Number(qtyInput.value) || 1)));
       var total = Number(r.getAttribute('data-price')) * q, title = r.getAttribute('data-title'), units = Number(r.getAttribute('data-units')) || 0;
       $$('[data-fg-sel-price]').forEach(function (n) { n.textContent = money(r.getAttribute('data-price')); });
-      $$('[data-fg-sel-title]').forEach(function (n) { n.textContent = n.getAttribute('data-prefix') ? n.getAttribute('data-prefix').replace('[t]', title) : title; });
+      $$('[data-fg-sel-title]').forEach(function (n) { var tpl = units > 1 ? n.getAttribute('data-prefix') : n.getAttribute('data-single'); n.textContent = (tpl || '[t]').replace('[t]', title); });
       $$('[data-fg-sel-total]').forEach(function (n) { n.textContent = money(total); });
       $$('[data-fg-sel-compare]').forEach(function (n) { var ref = Number(r.getAttribute('data-ref')) || 0; n.hidden = !(ref > Number(r.getAttribute('data-price'))); n.querySelector('s').textContent = money(ref); });
       $$('[data-fg-sel-units]').forEach(function (n) { n.textContent = fill(T.units || '[n]', { n: units * q }); n.hidden = !units; });
@@ -355,6 +355,7 @@
   function initCheckout(root) {
     var form = $('[data-fg-co-form]', root), nexts = $$('[data-fg-co-next]', root), status = $('[data-fg-co-status]', root);
     if (!form) return;
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
     var saved = readJSON(SS, CO_KEY, {});
     $$('input, select', form).forEach(function (i) {
       if (i.type === 'checkbox') { if (saved[i.name] != null) i.checked = !!saved[i.name]; }
@@ -372,6 +373,10 @@
       $$('[data-fg-co-email]', root).forEach(function (a) { a.textContent = v('email'); });
       var ship = form.querySelector('input[name="shipping"]:checked');
       $$('[data-fg-co-ship]', root).forEach(function (a) { a.textContent = ship ? ship.getAttribute('data-label') : (a.getAttribute('data-empty') || ''); });
+      var hasAddr = !!(v('address') && v('zip') && v('city'));
+      root.classList.toggle('is-no-address', !hasAddr);
+      nexts.forEach(function (b) { if (b.closest('[data-pane="2"]')) b.disabled = !hasAddr || b.hasAttribute('data-empty-cart'); });
+      $$('.fg-co__shipbox', root).forEach(function (bx) { bx.hidden = false; });
       if (status) status.textContent = '';
       var t = $('[data-pane="' + n + '"] [data-fg-co-title]', root) || $('[data-fg-co-title]', root);
       if (focus && t) t.focus({ preventScroll: false });
@@ -392,17 +397,18 @@
     if (start > 1 && !$$('[data-pane="1"] [required]', root).every(function (i) { return i.checkValidity() && String(i.value).trim(); })) start = 1;
     go(fromHash || (start > 4 ? 1 : start), false);
     /* Récapitulatif relu dans le panier : lignes (lots, unités), sous-total, boutons inactifs si le panier est vide. */
-    var box = $('[data-fg-co-items]', root);
+    var boxes = $$('[data-fg-co-items]', root), box = boxes[0];
     getCart().then(function (c) {
       if (!c || !box) return;
       nexts.forEach(function (b) { if (!c.item_count) { b.setAttribute('data-empty-cart', ''); b.disabled = true; } });
       $$('[data-fg-co-emptycart]', root).forEach(function (n) { n.hidden = !!c.item_count; });
-      if (!c.items || !c.items.length) { box.innerHTML = ''; $$('[data-fg-co-subtotal]', root).forEach(function (st) { st.textContent = money(0); }); return; }
-      box.innerHTML = c.items.map(function (it) {
+      if (!c.items || !c.items.length) { boxes.forEach(function (b) { b.innerHTML = ''; }); $$('[data-fg-co-subtotal], [data-fg-co-total]', root).forEach(function (st) { st.textContent = money(0); }); return; }
+      var html = c.items.map(function (it) {
         var info = lineInfo(it), img = it.image || '';
         return '<div class="fg-co__item"><span class="fg-co__thumb">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '</span><div class="fg-co__iname"><b>' + esc(CFG.lineBrand || it.product_title) + '</b>' + (CFG.lineBrand ? '<span>' + esc(it.product_title) + '</span>' : '') + (info.name ? '<span>' + esc(info.name) + '</span>' : '') + '<span class="fg-co__iprice">' + esc(money(it.final_line_price)) + '</span><span class="fg-co__iqty">' + esc(fill(T.qty || 'Quantité : [q]', { q: it.quantity })) + (info.per ? ' · ' + esc(fill(T.units || '[n]', { n: info.units })) : '') + '</span></div></div>';
       }).join('');
-      $$('[data-fg-co-subtotal]', root).forEach(function (st) { st.textContent = money(c.total_price); });
+      boxes.forEach(function (b) { b.innerHTML = html; });
+      $$('[data-fg-co-subtotal], [data-fg-co-total]', root).forEach(function (st) { st.textContent = money(c.total_price); });
     }).catch(function () { /* récapitulatif du rendu conservé */ });
   }
 
@@ -475,7 +481,6 @@
     syncCountText(); initDrawer(); initQuickAdd();
     initCookies(); initNewsletter();
     $$('[data-fg-product]').forEach(initProduct);
-    $$('[data-fg-cart]').forEach(initCart);
     $$('[data-fg-journal]').forEach(initJournal);
     $$('[data-fg-checkout]').forEach(initCheckout);
     $$('[data-fg-faq]').forEach(initFaq);

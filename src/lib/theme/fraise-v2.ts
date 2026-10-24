@@ -91,7 +91,7 @@ export function headerSettings(lang: Lang, o: { demo: boolean; checkoutPage?: st
     drawer_units: t("[n] flacons au total", "[n] jars in total"), drawer_packs: t("[q] lot(s)", "[q] pack(s)"), drawer_brand: o.lineBrand ?? "",
     qty_label: t("Quantité : [q]", "Quantity: [q]"), fix_label: t("Vérifiez les champs signalés.", "Please check the highlighted fields."),
     color_cream: "#FCF6EE", color_blush: "#FBE3DB", color_pink: "#F7C9BF", color_red: "#E3363E", color_deep: "#C8282F", color_crimson: "#970824", color_ink: "#230605", color_text: "#5A4C4A", color_yellow: "#FFD84D",
-    title_font: "poppins_n7", accent_font: "playfair_display_i8",
+    title_font: "poppins_n7", accent_font: "playfair_display_i8", serif_font: "playfair_display_n7",
     demo_mode: o.demo, checkout_mode: o.demo ? "demo" : "shopify", checkout_page: o.checkoutPage ?? "",
     added_label: t("Ajouté au panier.", "Added to cart."), removed_label: t("Article retiré du panier.", "Item removed from cart."), error_label: t("Une erreur est survenue. Réessayez.", "Something went wrong. Please try again."),
     show_cookies: true, cookies_title: t("Vos préférences de cookies", "Your cookie preferences"),

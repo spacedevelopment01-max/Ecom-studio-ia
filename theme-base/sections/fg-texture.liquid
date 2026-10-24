@@ -1,0 +1,78 @@
+{%- comment -%}
+  FRAISE : « Le goût fraise. La texture en détail. » (planches 01 et 04) — grande bande photographique (gummies à gauche,
+  flacon à droite) avec titre et texte au centre, puis quatre cartes (pictogramme, titre, texte, photo).
+  Téléphone : « Qu'est-ce qui rend nos gummies si spéciaux ? » en quatre cartes (pictogramme, titre, texte), photo en
+  carrousel, ou « La texture en détail » avec ses photos (disposition choisie).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-texture fg-texture--{{ s.layout }}" id="{{ s.anchor | default: 'la-texture' }}" aria-labelledby="fg-tex-t-{{ section.id }}">
+  <div class="fg-c">
+    <div class="fg-texture__band">
+      {% render 'fg-img', image: s.image_left, asset: s.image_left_asset, alt: '', pos: s.image_left_position, zoom: s.image_left_zoom, class: 'fg-texture__left' %}
+      {% render 'fg-img', image: s.image_right, asset: s.image_right_asset, alt: '', pos: s.image_right_position, zoom: s.image_right_zoom, class: 'fg-texture__right' %}
+      <div class="fg-texture__text">
+        {%- assign tid = 'fg-tex-t-' | append: section.id -%}
+        {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-texture__title', id: tid %}
+        {%- if s.heading_mobile != blank -%}{% render 'fg-title', text: s.heading_mobile, tag: 'p', class: 'fg-texture__title fg-texture__title--m' %}{%- endif -%}
+        {%- if s.text != blank -%}<div class="fg-texture__lead">{{ s.text }}</div>{%- endif -%}
+      </div>
+    </div>
+    {%- if s.cards_heading != blank -%}{% render 'fg-title', text: s.cards_heading, tag: 'h3', class: 'fg-texture__chead' %}{%- endif -%}
+    <ul class="fg-texture__cards" role="list">
+      {%- for block in section.blocks -%}
+        <li class="fg-texture__card" {{ block.shopify_attributes }}>
+          <span class="fg-texture__ico">{% render 'fg-icon', name: block.settings.icon %}</span>
+          <h3 class="fg-texture__ctitle">{{ block.settings.title }}</h3>
+          <p class="fg-texture__ctext">{{ block.settings.text | escape | newline_to_br }}</p>
+          {%- if block.settings.text_mobile != blank -%}<p class="fg-texture__ctext fg-texture__ctext--m">{{ block.settings.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
+          {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, class: 'fg-texture__cimg' %}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.mobile_images != blank -%}
+      <div class="fg-texture__mphotos">
+        {%- assign mp = s.mobile_images | split: ',' -%}
+        {%- for f in mp -%}{%- assign fn = f | strip -%}<div class="fg-texture__mph fg-texture__mph--{{ forloop.index }}"><img src="{{ fn | asset_url }}" alt="" loading="lazy" width="800" height="600"></div>{%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Texture en détail",
+  "class": "fg-texture-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition au téléphone", "default": "photos", "options": [{ "value": "photos", "label": "Titre et photos" }, { "value": "cards", "label": "Quatre cartes" }] },
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "la-texture" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Le goût fraise.\n[i]La texture en détail.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image_left", "label": "Photo de gauche" },
+    { "type": "text", "id": "image_left_asset", "label": "Photo de gauche (fichier du thème)" },
+    { "type": "text", "id": "image_left_position", "label": "Cadrage à gauche", "default": "50% 50%" },
+    { "type": "range", "id": "image_left_zoom", "label": "Agrandissement à gauche", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_right", "label": "Photo de droite" },
+    { "type": "text", "id": "image_right_asset", "label": "Photo de droite (fichier du thème)" },
+    { "type": "text", "id": "image_right_position", "label": "Cadrage à droite", "default": "50% 50%" },
+    { "type": "range", "id": "image_right_zoom", "label": "Agrandissement à droite", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "mobile_images", "label": "Photos du téléphone (fichiers du thème, séparés par des virgules)" },
+    { "type": "textarea", "id": "cards_heading", "label": "Titre des cartes (téléphone)" }
+  ],
+  "blocks": [
+    { "type": "card", "name": "Carte", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "strawberry", "options": [{ "value": "strawberry", "label": "Fraise" }, { "value": "jar", "label": "Flacon" }, { "value": "gummy", "label": "Gummy" }, { "value": "leaf", "label": "Feuilles" }, { "value": "sparkle", "label": "Éclat" }, { "value": "heart", "label": "Cœur" }] },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description de la photo" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+    ] }
+  ],
+  "presets": [{ "name": "Texture en détail" }]
+}
+{% endschema %}

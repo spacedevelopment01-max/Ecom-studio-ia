@@ -98,12 +98,16 @@ try {
       const clear = async () => { for (let guard = 0; guard < 8; guard++) { const c = await cartJson(); if (!c.items.length) return; for (const item of c.items) if (!item.properties?._es_gift) await post(`${base}/cart/change`, JSON.stringify({ id: item.key, quantity: 0 }), "application/json"); } };
       const stateKey = (c: { items: Item[] }) => c.items.map((i) => `${i.key}x${i.quantity}`).sort().join("|") || "vide";
       const mainSection = Object.values(spec.templates.product.sections).find((sec) => sec.type === "main-product")!, purchase = purchaseConfig(mainSection), vid = variantId(0, 0);
+      // Produit vendu en plusieurs formats (FRAISE : 1, 2 ou 3 flacons = trois variantes) : un lot de chaque format.
+      const formats = spec.store.product.variants?.length ?? 0;
       const adds: { action: string; body: string }[] = purchase?.offers?.length
         ? purchase.offers.map((o) => ({ action: `add:offer:${o.id}`, body: JSON.stringify({ offer: o.id, target: spec.store.product.contentTarget ?? "product:main", variants: Array(o.quantity).fill(vid) }) }))
-        : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
+        : formats > 1
+          ? spec.store.product.variants.map((_, k) => ({ action: `add:id:${variantId(0, k)}:1`, body: JSON.stringify({ id: variantId(0, k), quantity: 1 }) }))
+          : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
       const states: Record<string, { cart: unknown; drawer: string; page: string }> = {}, edges: Record<string, Record<string, string>> = {}, queue: string[] = [];
       const capture = async (key: string) => { if (states[key]) return; const c = await cartJson(); const sections = JSON.parse(await (await get(`${base}/cart?sections=cart-drawer`)).text()) as Record<string, string>; assert.ok(sections["cart-drawer"], `tiroir non rendu pour ${key}`); const page = await pageHtml("/cart"); states[key] = { cart: JSON.parse(rewrite(JSON.stringify(c))), drawer: rewrite(sections["cart-drawer"] ?? ""), page: inject(rewrite(page).replace("<html", `<html data-static-state="${key}"`)) }; queue.push(key); };
-      const MAX_ITEMS = 12, MAX_LINES = 3;
+      const MAX_ITEMS = formats > 1 ? 4 : 12, MAX_LINES = 3;
       const pathsTo: Record<string, { action: string; body: string; url: string }[]> = { vide: [] };
       await clear(); await capture("vide");
       while (queue.length) {
