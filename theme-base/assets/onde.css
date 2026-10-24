@@ -265,7 +265,7 @@ body[data-conversion="onde"] .es-main{position:relative}
 body[data-conversion="onde"] .on-title,body[data-conversion="onde"] .on-eyebrow,body[data-conversion="onde"] .on-button{text-wrap:balance}
 
 /* En-tête : logo encadré, menu en pastille, panier lime. Posé sur l'ouverture (float) ou barre graphite (bar). */
-body[data-conversion="onde"] .on-header{position:absolute;top:0;left:0;right:0;z-index:40;font-family:var(--on-body)}
+body[data-conversion="onde"] .on-header{position:absolute;top:var(--es-static-note-h,0px);left:0;right:0;z-index:40;font-family:var(--on-body)}
 body[data-conversion="onde"] .on-header--bar{position:relative;background:var(--on-black)}
 body[data-conversion="onde"] .on-header__inner{display:flex;align-items:flex-start;gap:20px;padding-top:22px;padding-bottom:22px}
 body[data-conversion="onde"] .on-header__logo{display:flex;align-items:center;justify-content:center;flex:none;width:194px;height:70px;border-radius:9px;background:var(--on-black);border:1px solid #2E3230;box-sizing:border-box;text-decoration:none}
@@ -978,6 +978,9 @@ body[data-conversion="onde"] .es-main .es-legal h1,body[data-conversion="onde"] 
 
 @media (max-width:749px){
   body[data-conversion="onde"] .on-banner--split:not(.on-banner--m-image-first) .on-banner__media:not(.on-banner__media--m){order:2}
+  /* Texte puis visuel (planche 05, « Au plus près du son ») : le texte en haut, la photo occupe la hauteur restante. */
+  body[data-conversion="onde"] .on-banner--split:not(.on-banner--m-image-first):not(.on-banner--m-image) .on-banner__inner{flex:none;padding-top:max(0px,calc(44px - var(--on-pt,0px)))}
+  body[data-conversion="onde"] .on-banner--split:not(.on-banner--m-image-first):not(.on-banner--m-image) .on-banner__media:not(.on-banner__media--m){flex:1 1 auto;height:auto;min-height:300px}
   body[data-conversion="onde"] .on-card__text br{display:none}
   body[data-conversion="onde"] .on-cards--numbered .on-card__text br{display:inline}
   body[data-conversion="onde"] .on-banner--cta .on-banner__inner{grid-template-columns:1fr auto;align-items:end}

@@ -24,6 +24,8 @@
     var n = document.createElement('div'); n.id = 'es-static-note'; n.setAttribute('role', 'note');
     n.innerHTML = '<strong>Aperçu de démonstration</strong> <span>· paiement désactivé</span>';
     document.body.insertBefore(n, document.body.firstChild);
+    /* Hauteur de la mention, lue par les en-têtes posés sur l'ouverture (ONDE) pour ne jamais la recouvrir. */
+    document.documentElement.style.setProperty('--es-static-note-h', n.offsetHeight + 'px');
     var toasts = document.createElement('div'); toasts.id = 'es-static-toasts'; document.body.appendChild(toasts);
     /* Décalage au-dessus d'une barre d'achat fixe visible (fiche produit sur téléphone). */
     function offset() { var bars = document.querySelectorAll('.es-sticky-buy.is-visible, [data-purchase-bar]:not([hidden])'); var h = 0; Array.prototype.forEach.call(bars, function (b) { var r = b.getBoundingClientRect(); if (r.height > 0 && r.bottom > innerHeight - 4 && getComputedStyle(b).visibility !== 'hidden') h = Math.max(h, r.height); }); document.documentElement.style.setProperty('--es-static-offset', h + 'px'); }
