@@ -259,19 +259,6 @@ body:has([data-sv-foot="legal"]) .sv-footer__legal { padding: 4px calc(46 * 1px)
 
 /* ----------------------------------------------------------------------------------------------- Fiche : ouverture */
 /* Planche 01, panneau « Fiche produit » : l'ouverture est dessinée 10 % plus grande que l'unité de la page. */
-@media (min-width: 750px) {
-  .sv-product__frame { --u: calc(100cqw / 1309.09); height: calc(657.3 * var(--u)); }
-  .sv-product__card { left: calc(893.6 * var(--u)); padding-top: calc(30.5 * var(--u)); }
-  .sv-product__price { font-size: calc(51.8 * var(--u)); }
-  .sv-product__form { margin-top: calc(9.5 * var(--u)); }
-  .sv-product__qty { margin-top: calc(6 * var(--u)); }
-  .sv-product__add { margin-top: calc(13 * var(--u)); }
-  .sv-product__phrase { margin-top: calc(1.6 * var(--u)); }
-  .sv-product__links { margin-top: calc(26.5 * var(--u)); }
-  .sv-product__links a { height: calc(34 * var(--u)); }
-  .sv-product__eyebrow { margin-bottom: calc(9.5 * var(--u)); }
-  .sv-product__lead { margin-top: calc(19.5 * var(--u)); }
-}
 .sv-product__frame { position: relative; height: calc(700 * var(--u)); overflow: hidden; border-radius: 0 0 calc(18 * var(--u)) calc(18 * var(--u)); background: var(--bg, var(--sv-sand)); }
 /* Photo principale posée à l'échelle de la planche, bords fondus dans le fond (aucune déformation). */
 .sv-product__bg { position: absolute; left: calc(var(--bx) * var(--u)); top: calc(var(--by) * var(--u)); width: calc(var(--bw) * var(--u)); -webkit-mask: linear-gradient(90deg, transparent, #000 9%, #000 88%, transparent), linear-gradient(180deg, transparent, #000 10%, #000 92%, transparent); -webkit-mask-composite: source-in; mask: linear-gradient(90deg, transparent, #000 9%, #000 88%, transparent) intersect, linear-gradient(180deg, transparent, #000 10%, #000 92%, transparent); }
@@ -284,7 +271,7 @@ body:has([data-sv-foot="legal"]) .sv-footer__legal { padding: 4px calc(46 * 1px)
 .sv-product__text { position: absolute; z-index: 2; left: calc(45 * var(--u)); top: calc(122 * var(--u)); }
 .sv-product__eyebrow { font-weight: 700; font-size: calc(15 * var(--u)); letter-spacing: .08em; margin-bottom: calc(22 * var(--u)); }
 .sv-product__title { font-size: calc(86 * var(--u)); line-height: calc(90 * var(--u)); }
-@media (min-width: 750px) { .sv-product__title { word-spacing: -.245em; } }
+@media (min-width: 750px) { .sv-product__title { word-spacing: -.08em; } }
 .sv-product__lead { margin-top: calc(22 * var(--u)); font-size: calc(15.5 * var(--u)); line-height: calc(20.5 * var(--u)); }
 .sv-product__thumbs { position: absolute; z-index: 2; left: calc(45 * var(--u)); top: calc(455 * var(--u)); display: flex; gap: calc(14 * var(--u)); }
 .sv-product__thumb { width: calc(103 * var(--u)); height: calc(128 * var(--u)); padding: 0; border-radius: calc(10 * var(--u)); border: 2px solid transparent; background: color-mix(in srgb, var(--sv-ivory) 70%, transparent); overflow: hidden; cursor: pointer; }
@@ -315,6 +302,19 @@ body:has([data-sv-foot="legal"]) .sv-footer__legal { padding: 4px calc(46 * 1px)
 .sv-product__links a .sv-ico { width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
 .sv-product__links a .sv-ico:last-child { margin-left: auto; width: calc(14 * var(--u)); }
 .sv-product__links a:hover span { text-decoration: underline; }
+@media (min-width: 750px) {
+  .sv-product__frame { --u: calc(100cqw / 1309.09); height: calc(657.3 * var(--u)); }
+  .sv-product__card { left: calc(893.6 * var(--u)); padding-top: calc(30.5 * var(--u)); }
+  .sv-product__price { font-size: calc(51.8 * var(--u)); }
+  .sv-product__form { margin-top: calc(9.5 * var(--u)); }
+  .sv-product__qty { margin-top: calc(6 * var(--u)); }
+  .sv-product__add { margin-top: calc(13 * var(--u)); }
+  .sv-product__phrase { margin-top: calc(1.6 * var(--u)); }
+  .sv-product__links { margin-top: calc(26.5 * var(--u)); }
+  .sv-product__links a { height: calc(34 * var(--u)); }
+  .sv-product__eyebrow { margin-bottom: calc(9.5 * var(--u)); }
+  .sv-product__lead { margin-top: calc(19.5 * var(--u)); }
+}
 .sv-lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(20, 15, 10, .92); display: flex; align-items: center; justify-content: center; padding: 40px; }
 .sv-lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; }
 .sv-lightbox__close { position: absolute; top: 18px; right: 18px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--sv-ivory); color: var(--sv-night); display: flex; align-items: center; justify-content: center; cursor: pointer; }

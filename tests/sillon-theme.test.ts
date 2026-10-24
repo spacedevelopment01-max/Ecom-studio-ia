@@ -82,7 +82,7 @@ describe("SILLON V2 : démonstration (planches 01 à 03 et planches téléphone)
     const t = (r: string) => visibleText(pages.get(r)!);
     expect(t("/")).toMatch(/Prenez\s+la tangente\./i);
     expect(t("/")).toMatch(/Petit format\./i);
-    expect(t(product)).toMatch(/L'espresso\s+qui prend l'air\./i);
+    expect(t(product)).toMatch(/L[’']espresso\s+qui prend l[’']air\./i);
     expect(t(product)).toContain(`${SILLON_PRICE} €`);
     expect(t("/pages/le-rituel")).toMatch(/Votre pause\.\s+Votre cadence\./i);
     expect(t("/pages/sillon")).toMatch(/On aime\s+les détours\./i);
