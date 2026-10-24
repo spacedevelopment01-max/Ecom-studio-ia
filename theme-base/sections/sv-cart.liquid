@@ -11,7 +11,11 @@
   <div class="sv-c">
     <div class="sv-cart__inner{% if cart.item_count == 0 %} is-empty{% endif %}">
       <span class="sv-topo sv-topo--tall sv-cart__topo" aria-hidden="true"></span>
-      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-cart__land', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {%- if cart.item_count == 0 and s.empty_image != blank or cart.item_count == 0 and s.empty_image_asset != blank -%}
+        {% render 'sv-img', image: s.empty_image, asset: s.empty_image_asset, alt: '', pos: s.empty_image_position, zoom: s.empty_image_zoom, class: 'sv-cart__land' %}
+      {%- else -%}
+        {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-cart__land', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {%- endif -%}
       {% render 'sv-img', image: s.image_top, asset: s.image_top_asset, alt: '', pos: s.image_top_position, class: 'sv-cart__peak', pos_mobile: s.image_top_position_mobile, zoom_mobile: s.image_top_zoom_mobile %}
       {% render 'sv-route', d: 'M0 450C120 380 260 290 400 300S700 380 800 362 900 300 940 220 1080 40 1130 0', vb: '0 0 1130 450', dots: '753,382 946,212', class: 'sv-cart__route' %}
       <h1 class="sv-display sv-cart__title">{%- if cart.item_count == 0 and s.empty_heading != blank -%}{{ s.empty_heading | escape | newline_to_br }}{%- else -%}{{ s.heading | escape | newline_to_br }}{%- endif -%}</h1>
@@ -19,6 +23,7 @@
         <div class="sv-cart__empty">
           {%- if s.line_image_asset != blank -%}<div class="sv-cart__empty-visual" aria-hidden="true"><span class="sv-cart__empty-circle"></span><img src="{{ s.line_image_asset | asset_url }}" alt="" loading="lazy" width="467" height="1284"></div>{%- endif -%}
           <p class="sv-cart__empty-text">{{ s.empty_text }}</p>
+          {% render 'sv-route', d: 'M87 7C120 0 170-6 210 28S262 58 297 85 330 100 347 112 365 130 372 140', vb: '0 0 390 140', dots: '87,7 210,28 297,85 347,112', class: 'sv-cart__empty-route' %}
           <a class="sv-btn sv-btn--copper sv-cart__empty-btn" href="{{ s.empty_link | default: routes.all_products_collection_url }}">{{ s.empty_button }}{% render 'sv-icon', name: 'arrow' %}</a>
           {%- if s.help_title != blank -%}
             <div class="sv-cart__help">
@@ -99,6 +104,10 @@
     { "type": "url", "id": "continue_link", "label": "Adresse du lien de retour" },
     { "type": "header", "content": "Panier vide" },
     { "type": "textarea", "id": "empty_heading", "label": "Titre du panier vide", "default": "Votre panier\nest vide." },
+    { "type": "image_picker", "id": "empty_image", "label": "Paysage du panier vide", "info": "Vide : le paysage du panier." },
+    { "type": "text", "id": "empty_image_asset", "label": "Paysage du panier vide (fichier du thème)" },
+    { "type": "text", "id": "empty_image_position", "label": "Cadrage du paysage du panier vide", "default": "50% 50%" },
+    { "type": "range", "id": "empty_image_zoom", "label": "Agrandissement du paysage du panier vide", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
     { "type": "text", "id": "empty_text", "label": "Texte du panier vide", "default": "Votre panier est vide pour le moment." },
     { "type": "text", "id": "empty_button", "label": "Bouton du panier vide", "default": "Voir la boutique" },
     { "type": "url", "id": "empty_link", "label": "Adresse du bouton du panier vide" },

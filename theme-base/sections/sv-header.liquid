@@ -77,7 +77,7 @@
     </div>
     <a class="sv-header__cart{% if cart.item_count > 0 %} has-items{% endif %}" href="{{ routes.cart_url }}" aria-label="{{ s.cart_label | escape }}">
       {% render 'sv-icon', name: 'cart' %}
-      <span class="sv-header__count" data-sv-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+      <span class="sv-header__count" data-sv-count data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
     </a>
   </div>
 </header>
@@ -92,7 +92,8 @@
       {%- if s.menu_extra_label != blank -%}<li><a href="{{ s.menu_extra_link | default: routes.root_url }}">{{ s.menu_extra_label }}</a></li>{%- endif -%}
     </ul>
   </nav>
-  {% render 'sv-route', d: 'M0 395C60 360 120 330 160 300S220 230 250 200 300 120 330 60 340 10 340 0', vb: '0 0 340 400', dots: '160,300 250,200 330,60', class: 'sv-menu__route', width: 2 %}
+  <span class="sv-topo sv-topo--corner sv-menu__topo" aria-hidden="true"></span>
+  {% render 'sv-route', d: 'M-4 1008C40 990 80 966 120 948S190 900 228 862 278 822 290 798 280 760 296 730 318 684 328 672 348 642 357 634 380 600 394 556', vb: '0 0 390 1170', dots: '120,948 297,783 328,672 357,634', class: 'sv-menu__route', width: 2.4 %}
   <ul class="sv-menu__actions" role="list">
     {%- if s.menu_contact_label != blank -%}<li><a href="{{ s.menu_contact_link | default: routes.root_url }}">{% render 'sv-icon', name: 'mail' %}<span>{{ s.menu_contact_label }}</span>{% render 'sv-icon', name: 'arrow' %}</a></li>{%- endif -%}
     <li><a href="{{ routes.cart_url }}">{% render 'sv-icon', name: 'cart' %}<span>{{ s.menu_cart_label }} (<span data-sv-count-text>{{ cart.item_count }}</span>)</span>{% render 'sv-icon', name: 'arrow' %}</a></li>

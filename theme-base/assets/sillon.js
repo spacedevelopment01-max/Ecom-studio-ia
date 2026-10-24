@@ -87,6 +87,11 @@
 
   /* ---------------------------------------------------------------- Panier : ajout, compteur, changements */
   function cartBase() { return String(CFG.cartUrl || '/cart').replace(/\/+$/, ''); }
+  /** Aperçu statique : le compteur de l'en-tête est mis à jour avant le thème ; le libellé « Mon panier (n) » le suit. */
+  function syncCountText() {
+    var b = $('[data-sv-count]'); if (!b) return;
+    var n = parseInt(b.textContent, 10) || 0; $$('[data-sv-count-text]').forEach(function (el) { el.textContent = n; });
+  }
   function setCount(n) {
     $$('[data-sv-count]').forEach(function (el) { el.textContent = n; el.hidden = !n; });
     $$('[data-sv-count-text]').forEach(function (el) { el.textContent = n; });
@@ -377,7 +382,7 @@
     placeHeader();
     window.addEventListener('resize', placeHeader);
     initMenu();
-    initDrawer();
+    syncCountText(); initDrawer();
     initCookies();
     initNewsletter();
     $$('[data-sv-product]').forEach(initProduct);
