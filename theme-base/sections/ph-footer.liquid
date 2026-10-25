@@ -1,0 +1,68 @@
+{%- comment -%}
+  PHASE : pied de page bleu nuit des planches 01 à 10 — logo, menu, coordonnées (« Coordonnées à renseigner » tant que
+  le client ne les a pas données), filet vertical, liens légaux ; mention à gauche et droits à droite. Au téléphone, la
+  disposition suit la planche de la page (section « Réglages de la page »).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+  assign legal = linklists[s.menu_legal]
+  assign brand = s.wordmark | default: shop.name
+  assign hs = section.settings
+-%}
+<footer class="ph-footer" data-ph-footer>
+  <div class="ph-footer__in">
+    <a class="ph-footer__logo" href="{{ routes.root_url }}">
+      {%- if s.logo != blank -%}
+        {{ s.logo | image_url: width: 600 | image_tag: alt: brand, widths: '300, 600', class: 'ph-logo__img' }}
+      {%- elsif s.logo_asset != blank -%}
+        <img class="ph-logo__img" src="{{ s.logo_asset | asset_url }}" alt="{{ brand | escape }}" width="600" height="150">
+      {%- else -%}
+        {% render 'ph-logo', brand: brand, tagline: s.tagline, monogram: s.monogram %}
+      {%- endif -%}
+    </a>
+    {%- if menu.links.size > 0 -%}
+      <nav class="ph-footer__menu" aria-label="{{ s.nav_label | escape }}">
+        <ul role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>
+      </nav>
+    {%- endif -%}
+    <div class="ph-footer__coords">
+      {%- if s.coords_link != blank -%}
+        <a class="ph-footer__coords-title" href="{{ s.coords_link }}"><span>{{ s.coords_title }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2 %}</a>
+      {%- else -%}
+        <p class="ph-footer__coords-title">{{ s.coords_title }}</p>
+      {%- endif -%}
+      {%- if s.coords_text != blank -%}<p class="ph-footer__coords-text">{{ s.coords_text }}</p>{%- endif -%}
+    </div>
+    {%- if legal.links.size > 0 -%}
+      <ul class="ph-footer__legal" role="list">{%- for link in legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>
+    {%- endif -%}
+    <div class="ph-footer__bottom">
+      {%- if s.bottom_left != blank -%}<p class="ph-footer__left">{{ s.bottom_left }}</p>{%- endif -%}
+      <p class="ph-footer__rights">{%- if s.brand != blank -%}<span class="ph-footer__brand">{{ s.brand }}</span><span class="ph-footer__dot" aria-hidden="true"> • </span>{%- endif -%}<span>{{ s.rights }}</span></p>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page PHASE",
+  "class": "ph-footer-section",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "text", "id": "wordmark", "label": "Nom affiché sans logo" },
+    { "type": "text", "id": "tagline", "label": "Signature sous le nom (sans logo)" },
+    { "type": "checkbox", "id": "monogram", "label": "Monogramme PHASE devant le nom (démonstration)", "default": false },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Pied de page" },
+    { "type": "text", "id": "coords_title", "label": "Coordonnées (titre)", "default": "Coordonnées à renseigner" },
+    { "type": "text", "id": "coords_text", "label": "Coordonnées (texte)", "default": "Votre ville et sa région" },
+    { "type": "url", "id": "coords_link", "label": "Lien des coordonnées (téléphone)" },
+    { "type": "link_list", "id": "menu_legal", "label": "Liens légaux", "default": "legal" },
+    { "type": "text", "id": "bottom_left", "label": "Mention à gauche" },
+    { "type": "text", "id": "brand", "label": "Nom dans la ligne des droits" },
+    { "type": "text", "id": "rights", "label": "Droits", "default": "Tous droits réservés" }
+  ]
+}
+{% endschema %}

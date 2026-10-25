@@ -29,6 +29,8 @@ export const THEME_ORDER: DirectionId[] = [
   "atelier-nuance",
   // 43 — PARENTHÈSE (PR #179), cabinet de sophrologie de la famille Services.
   "parenthese",
+  // 44 — PHASE — Électricité (PR documentaire #188), artisan électricien de la famille Services.
+  "phase",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

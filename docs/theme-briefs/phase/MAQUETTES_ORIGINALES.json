@@ -1,0 +1,122 @@
+[
+  {
+    "file": "maquettes/01_ordinateur_accueil_prestations.png",
+    "source_name": "PHASE Électricité : maquette web complète.png",
+    "pages": "01 Accueil ; 02 Prestations",
+    "size": 2001177,
+    "sha256": "4051b760fc60cf27a390e17d33b51d1b3507cfb5be8bc8914e24c29c370fed96",
+    "git_blob": "2498b2ede3ce65b8ff895ade49a96803c27f95c3",
+    "dimensions": [
+      1086,
+      1448
+    ]
+  },
+  {
+    "file": "maquettes/02_ordinateur_installation_tableau_eclairage_depannage.png",
+    "source_name": "Quatre pages du site Phase Électricité.png",
+    "pages": "03 Installation et rénovation ; 04 Tableau et sécurité ; 05 Éclairage ; 06 Dépannage",
+    "size": 2082538,
+    "sha256": "38917b0a7de25c2dc104d903185eb3577e522f9a40a67b0e2e3b03dbdf69ac23",
+    "git_blob": "a471a57df34c64877d7fd526848c2613e8779e18",
+    "dimensions": [
+      1214,
+      1295
+    ]
+  },
+  {
+    "file": "maquettes/03_ordinateur_realisations_projet_entreprise_faq.png",
+    "source_name": "Planche UI d’un site d’électricien.png",
+    "pages": "07 Réalisations ; 08 Détail projet ; 09 Entreprise ; 10 FAQ",
+    "size": 2064481,
+    "sha256": "fc10ce28dbd68aa83bac950ea001ffec558a5965d0ca1ee619436289fb98608d",
+    "git_blob": "b2eb9272c5ceafd4a5a46af4b03b248da2b4a8af",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/04_ordinateur_conseils_article_contact_devis.png",
+    "source_name": "Planche UI du site PHASE ÉLECTRICITÉ.png",
+    "pages": "11 Conseils ; 12 Article ; 13 Contact ; 14 Devis",
+    "size": 1968279,
+    "sha256": "17cf15e18061737510c9af48489ab03318eb13d4cb2b21c63fe96889c6f4c112",
+    "git_blob": "6d0438253acb855e4b8c99c3dc012dcbf875c0ce",
+    "dimensions": [
+      1214,
+      1295
+    ]
+  },
+  {
+    "file": "maquettes/05_ordinateur_confirmation_legal_donnees_404.png",
+    "source_name": "Planche UI Phase Électricité : pages essentielles.png",
+    "pages": "15 Confirmation ; 16 Mentions légales ; 17 Confidentialité et cookies ; 18 404 et états",
+    "size": 1752297,
+    "sha256": "107f9613b94970653c6819ea0e036f5a897f3ed8833fd8fe63ad9e12f57c8127",
+    "git_blob": "588c9f75f3ffab27b8d11bcf325f67e955532f3c",
+    "dimensions": [
+      1214,
+      1295
+    ]
+  },
+  {
+    "file": "maquettes/06_mobile_accueil_prestations.png",
+    "source_name": "Maquette mobile du site Phase Électricité.png",
+    "pages": "01 Accueil 1/2 et 2/2 ; 02 Prestations 1/2 et 2/2",
+    "size": 2039106,
+    "sha256": "36a84838221d5a6d983897ec6f7cf02c6a5867f8be6866dee5ad5b27a4b840d1",
+    "git_blob": "a1a396bb9056183f7df22fe9565a43e9078fe3d8",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/07_mobile_installation_tableau_eclairage_depannage.png",
+    "source_name": "Quatre pages mobiles, un univers électrique.png",
+    "pages": "03 Installation ; 04 Tableau ; 05 Éclairage ; 06 Dépannage",
+    "size": 1966696,
+    "sha256": "b1a66153e9fabe24780626d1539c53b21f047948a4893d496410dccc7655c59a",
+    "git_blob": "8c519d1e6a1dffe301a0bbef8d051c6a364209d2",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/08_mobile_realisations_projet_entreprise_faq.png",
+    "source_name": "Quatre pages mobiles pour Phase Électricité.png",
+    "pages": "07 Réalisations ; 08 Détail projet ; 09 Entreprise ; 10 FAQ",
+    "size": 2056413,
+    "sha256": "ac43008f2f3a71448986c6ba4a11f0db1a4ca8be4979a9506604d73765d8f32d",
+    "git_blob": "204c72aa520cf614a77e4237863e77b817b33816",
+    "dimensions": [
+      1278,
+      1230
+    ]
+  },
+  {
+    "file": "maquettes/09_mobile_conseils_article_contact_devis.png",
+    "source_name": "Planche mobile PHASE ÉLECTRICITÉ(1).png",
+    "pages": "11 Conseils ; 12 Article ; 13 Contact ; 14 Devis",
+    "size": 1858526,
+    "sha256": "ad138b142c52880753c28056834fbf15476ec4ee133c17a3dcec205ddde092e1",
+    "git_blob": "2309badc8c4af34ce1d27d066c0eb6f3b902e8a3",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/10_mobile_confirmation_legal_donnees_404.png",
+    "source_name": "Planche mobile Phase Électricité.png",
+    "pages": "15 Confirmation ; 16 Mentions ; 17 Données et cookies ; 18 404 et états",
+    "size": 1852555,
+    "sha256": "87d0170bdb349d806eded55423b872f25d5533a684d50a39912616db14027159",
+    "git_blob": "1d4da8ee4a7070c7871c4505da061573403b23c1",
+    "dimensions": [
+      1054,
+      1492
+    ]
+  }
+]

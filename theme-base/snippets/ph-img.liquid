@@ -1,0 +1,23 @@
+{%- comment -%}
+  PHASE : photo d'un emplacement (image choisie dans l'éditeur, sinon fichier du thème), cadrée par object-position et un
+  agrandissement réglable (« zoom », en %) pour caler le cadrage sur la planche ; réglages distincts au téléphone.
+  Paramètres : image, asset, alt, pos, zoom, pos_mobile, zoom_mobile, loading, class, sizes, caption. Sans photo : rien.
+{%- endcomment -%}
+{%- liquid
+  assign img_loading = loading | default: 'lazy'
+  assign img_pos = pos | default: '50% 50%'
+  assign img_pos_m = pos_mobile | default: img_pos
+  assign img_zoom = zoom | default: 100
+  assign img_zoom_m = zoom_mobile | default: img_zoom
+-%}
+{%- if image != blank or asset != blank -%}
+  <div class="ph-img {{ class }}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }}; --z: {{ img_zoom | divided_by: 100.0 }}; --z-m: {{ img_zoom_m | divided_by: 100.0 }};">
+    {%- if image != blank -%}
+      {%- assign img_sizes = sizes | default: '100vw' -%}
+      {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: img_sizes, widths: '400, 750, 1100, 1600, 2400', alt: alt }}
+    {%- else -%}
+      <img src="{{ asset | asset_url }}" alt="{{ alt | escape }}" loading="{{ img_loading }}" decoding="async"{% if img_loading == 'eager' %} fetchpriority="high"{% endif %} width="1600" height="1000">
+    {%- endif -%}
+    {%- if caption != blank -%}<span class="ph-img__cap">{{ caption }}</span>{%- endif -%}
+  </div>
+{%- endif -%}

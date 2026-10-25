@@ -19,6 +19,7 @@
 import type { CatalogTheme, ThemeLook } from "./theme-catalog";
 import { ATELIER_NUANCE_THEME } from "./atelier-nuance";
 import { PARENTHESE_THEME } from "./parenthese";
+import { PHASE_THEME } from "./phase";
 import { SILLON_V2_THEME } from "./sillon-v2";
 import { FRAISE_V2_THEME } from "./fraise-v2";
 
@@ -563,4 +564,6 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   ATELIER_NUANCE_THEME,
   // PARENTHÈSE (PR #179) : cabinet de sophrologie de la famille Services, défini dans parenthese.ts.
   PARENTHESE_THEME,
+  // PHASE — Électricité (25 octobre 2026, PR documentaire #188) : artisan électricien de la famille Services, phase.ts.
+  PHASE_THEME,
 ];

@@ -1,0 +1,71 @@
+{%- comment -%}
+  PHASE : pictogrammes au trait arrondi du kit de Thomas (48 icônes SVG reconstituées d'après les planches, trait 1,6 sur
+  32), dessinés en currentColor. Décoratifs : masqués aux lecteurs d'écran (le nom accessible est porté par le texte du
+  lien ou du bouton). Paramètres : name, class, stroke (épaisseur, 1,6 par défaut).
+{%- endcomment -%}
+<svg class="ph-ico {{ class }}" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="{{ stroke | default: 1.6 }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- case name -%}
+    {%- when 'installation' -%}<path d="M4 15 16 5l12 10M7 13v15h18V13M13 28v-9h6v9"/><path d="m17 7-4 8h5l-3 7"/>
+    {%- when 'outil-renovation' -%}<path d="m5 27 12-12m-3-8a7 7 0 0 0 9 9l6-6-6 1-3-3 1-6-6 6a7 7 0 0 0-1 9"/><circle cx="6" cy="26" r="2"/>
+    {%- when 'tableau-electrique' -%}<rect x="6" y="3" width="20" height="26" rx="2"/><path d="M10 8h12M10 16h12M10 24h12M12 6v4m8-4v4m-8 4v4m8-4v4m-8 4v4m8-4v4"/>
+    {%- when 'ampoule' -%}<path d="M11 22v-3a9 9 0 1 1 10 0v3M11 23h10M12 27h8M14 30h4M16 19v-7m-3 0 3 3 3-3"/>
+    {%- when 'depannage-eclair' -%}<path d="m18 2-12 17h9l-1 11 12-18h-9z"/>
+    {%- when 'prise' -%}<rect x="5" y="4" width="22" height="24" rx="3"/><circle cx="16" cy="16" r="8"/><path d="M12 14v3m8-3v3m-4 5v2"/>
+    {%- when 'interrupteur' -%}<rect x="5" y="3" width="22" height="26" rx="2"/><rect x="10" y="7" width="12" height="18" rx="1"/><path d="m10 9 12-2"/>
+    {%- when 'pilotage' -%}<path d="M4 15 16 5l12 10M7 13v15h18V13M11 16a8 8 0 0 1 10 0M13 20a5 5 0 0 1 6 0"/><circle cx="16" cy="24" r="1"/>
+    {%- when 'eclairage-exterieur' -%}<path d="M16 29V11M8 11h16L20 4h-8zM5 29h22M3 16l4 2m22-2-4 2M7 6 4 3m21 3 3-3"/>
+    {%- when 'spot-plafond' -%}<path d="M3 6h26M8 6l3 8h10l3-8M9 18l-4 7m11-7v10m7-10 4 7"/>
+    {%- when 'projet-echange' -%}<path d="M4 5h24v17H14l-7 6v-6H4zM9 11h14M9 16h10"/>
+    {%- when 'oeil-observer' -%}<path d="M2 16s5-9 14-9 14 9 14 9-5 9-14 9S2 16 2 16z"/><circle cx="16" cy="16" r="4"/>
+    {%- when 'plan-perimetre' -%}<path d="M4 4h24v24H4zM4 13h10V4m0 9h14M14 13v15M21 13v8h7"/>
+    {%- when 'devis-document' -%}<path d="M8 3h12l6 6v20H8zM20 3v7h6M12 15h10M12 20h10M12 25h6"/>
+    {%- when 'calendrier' -%}<rect x="4" y="6" width="24" height="23" rx="2"/><path d="M10 2v8m12-8v8M4 13h24M9 18h3m8 0h3M9 23h3m8 0h3"/>
+    {%- when 'validation' -%}<circle cx="16" cy="16" r="13"/><path d="m9 16 5 5 10-11"/>
+    {%- when 'bouclier' -%}<path d="M16 2 5 6v9c0 7 11 15 11 15s11-8 11-15V6zM10 16l4 4 8-9"/>
+    {%- when 'precision-cible' -%}<circle cx="16" cy="16" r="11"/><circle cx="16" cy="16" r="5"/><path d="M16 1v6m0 18v6M1 16h6m18 0h6"/>
+    {%- when 'clarte-soleil' -%}<circle cx="16" cy="16" r="6"/><path d="M16 2v4m0 20v4M2 16h4m20 0h4M6 6l3 3m14 14 3 3M6 26l3-3M23 9l3-3"/>
+    {%- when 'lieu-repere' -%}<path d="M26 13c0 8-10 17-10 17S6 21 6 13a10 10 0 0 1 20 0z"/><circle cx="16" cy="13" r="3"/>
+    {%- when 'telephone' -%}<path d="m7 3 5 7-4 4c3 5 5 7 10 10l4-4 7 5c-1 5-4 6-8 4C10 25 6 21 3 10 2 6 3 4 7 3z"/>
+    {%- when 'email' -%}<rect x="3" y="6" width="26" height="20" rx="2"/><path d="m4 8 12 10L28 8"/>
+    {%- when 'horloge' -%}<circle cx="16" cy="16" r="13"/><path d="M16 7v10l7 4"/>
+    {%- when 'appareil-photo' -%}<path d="m11 6 2-3h6l2 3h7v22H4V6z"/><circle cx="16" cy="17" r="7"/><circle cx="25" cy="10" r="1"/>
+    {%- when 'photo' -%}<rect x="3" y="4" width="26" height="24" rx="2"/><circle cx="11" cy="11" r="3"/><path d="m4 25 8-9 5 5 5-7 7 9"/>
+    {%- when 'joindre-fichier' -%}<path d="m11 22 12-12a5 5 0 0 0-7-7L3 16a8 8 0 0 0 11 11l13-13m-17 6 11-11"/>
+    {%- when 'envoi' -%}<path d="m2 14 28-12-9 28-6-13zM15 17 30 2"/>
+    {%- when 'importer' -%}<path d="M4 23v6h24v-6M16 24V3m-7 7 7-7 7 7"/>
+    {%- when 'supprimer' -%}<path d="M4 8h24M12 8V3h8v5M7 8l2 21h14l2-21M13 13v11m6-11v11"/>
+    {%- when 'erreur' -%}<circle cx="16" cy="16" r="13"/><path d="M16 7v12m0 5v1"/>
+    {%- when 'information' -%}<circle cx="16" cy="16" r="13"/><path d="M16 14v10m0-17v1"/>
+    {%- when 'recherche' -%}<circle cx="14" cy="14" r="10"/><path d="m22 22 8 8"/>
+    {%- when 'filtre' -%}<path d="M3 5h26L19 17v10l-6-3v-7z"/>
+    {%- when 'menu' -%}<path d="M4 7h24M4 16h24M4 25h24"/>
+    {%- when 'fermer' -%}<path d="m6 6 20 20M26 6 6 26"/>
+    {%- when 'plus' -%}<path d="M16 5v22M5 16h22"/>
+    {%- when 'moins' -%}<path d="M5 16h22"/>
+    {%- when 'fleche-droite' -%}<path d="M3 16h25M19 7l9 9-9 9"/>
+    {%- when 'fleche-gauche' -%}<path d="M29 16H4m9-9-9 9 9 9"/>
+    {%- when 'chevron-bas' -%}<path d="m6 11 10 10 10-10"/>
+    {%- when 'chevron-haut' -%}<path d="m6 21 10-10 10 10"/>
+    {%- when 'chevron-droite' -%}<path d="m11 6 10 10-10 10"/>
+    {%- when 'retour-haut' -%}<circle cx="16" cy="16" r="13"/><path d="M16 24V8m-6 6 6-6 6 6"/>
+    {%- when 'confidentialite' -%}<rect x="6" y="14" width="20" height="16" rx="2"/><path d="M10 14V9a6 6 0 0 1 12 0v5M16 20v5"/>
+    {%- when 'cookie' -%}<path d="M29 16a13 13 0 1 1-13-13 7 7 0 0 0 7 7 6 6 0 0 0 6 6z"/><circle cx="10" cy="11" r="1"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="23" r="1"/><circle cx="17" cy="15" r="1"/>
+    {%- when 'maison' -%}<path d="M3 15 16 4l13 11M7 12v17h18V12M13 29v-9h6v9"/>
+    {%- when 'diagnostic' -%}<rect x="7" y="3" width="18" height="25" rx="2"/><path d="M11 8h10v8H11zM13 23h6M5 23 2 30m25-7 3 7"/>
+    {%- when 'courant-circuits' -%}<path d="M3 7h8v8h10v10h8M3 25h8V15m10 0V7h8"/><circle cx="3" cy="7" r="2"/><circle cx="3" cy="25" r="2"/><circle cx="29" cy="7" r="2"/><circle cx="29" cy="25" r="2"/>
+    {%- comment -%} Pictogrammes ajoutés au kit (absents des 48 icônes fournies, dessinés au même trait d'après les planches). {%- endcomment -%}
+    {%- when 'reglages' -%}<path d="M25.41 14.09 L28.10 14.42 L28.10 17.58 L25.41 17.91 L24.00 21.30 L25.67 23.44 L23.44 25.67 L21.30 24.00 L17.91 25.41 L17.58 28.10 L14.42 28.10 L14.09 25.41 L10.70 24.00 L8.56 25.67 L6.33 23.44 L8.00 21.30 L6.59 17.91 L3.90 17.58 L3.90 14.42 L6.59 14.09 L8.00 10.70 L6.33 8.56 L8.56 6.33 L10.70 8.00 L14.09 6.59 L14.42 3.90 L17.58 3.90 L17.91 6.59 L21.30 8.00 L23.44 6.33 L25.67 8.56 L24.00 10.70Z"/><circle cx="16" cy="16" r="4"/>
+    {%- when 'liste' -%}<path d="M11 8h17M11 16h17M11 24h17"/><circle cx="5" cy="8" r="1.3"/><circle cx="5" cy="16" r="1.3"/><circle cx="5" cy="24" r="1.3"/>
+    {%- when 'feuille' -%}<path d="M26 5C14 5 6 11 6 20c0 3 1 5 2 7 2-9 7-13 13-15-5 3-9 8-10 15 9 1 15-6 15-15z"/>
+    {%- when 'graphique' -%}<path d="M6 26V18M12 26V13M18 26V9M24 26V5"/>
+    {%- when 'lecture' -%}<rect x="3" y="7" width="26" height="18" rx="2"/><path d="m13 12 7 4-7 4z"/>
+    {%- when 'alerte' -%}<path d="M16 4 2.5 27.5h27z"/><path d="M16 13v7"/><circle cx="16" cy="23.5" r=".6"/>
+    {%- when 'points' -%}<circle cx="7" cy="16" r="1.4"/><circle cx="16" cy="16" r="1.4"/><circle cx="25" cy="16" r="1.4"/>
+    {%- when 'actualiser' -%}<path d="M26 12a10.5 10.5 0 0 0-19-2M6 20a10.5 10.5 0 0 0 19 2"/><path d="M7 4v6h6M25 28v-6h-6"/>
+    {%- when 'extension' -%}<path d="M4 9V4h5M23 4h5v5M28 23v5h-5M9 28H4v-5M4 13v6M28 13v6M13 4h6M13 28h6"/><path d="M16 11v10M11 16h10"/>
+    {%- when 'cle' -%}<path d="M19.5 5.5a6.5 6.5 0 0 0-6.2 8.6L5 22.4a2.3 2.3 0 0 0 3.3 3.3l8.3-8.3a6.5 6.5 0 0 0 8.6-6.2l-4 4-3.4-.6-.6-3.4 4-4a6.5 6.5 0 0 0-1.7-.2z"/>
+    {%- when 'bulle' -%}<path d="M16 5C9.4 5 4 9.5 4 15c0 3 1.6 5.6 4.1 7.4L7 27l5.2-2.6c1.2.3 2.5.5 3.8.5 6.6 0 12-4.5 12-10S22.6 5 16 5z"/>
+    {%- when 'cadenas' -%}<rect x="7" y="14" width="18" height="14" rx="2"/><path d="M11 14V10a5 5 0 0 1 10 0v4M16 19v4"/>
+    {%- when 'carte-repere' -%}<path d="M16 29s9-8.2 9-15a9 9 0 0 0-18 0c0 6.8 9 15 9 15z"/><circle cx="16" cy="14" r="3"/>
+  {%- endcase -%}
+</svg>

@@ -1,0 +1,12 @@
+{%- comment -%}
+  PHASE : traits de circuits dessinés d'après les planches (SVG, repère de la section : 1440 px de large à l'ordinateur,
+  390 px au téléphone), pastilles et « 404 » en traits. Décoratifs, masqués aux lecteurs d'écran. Paramètre : name.
+{%- endcomment -%}
+{%- case name -%}
+  {%- when 'home' -%}
+    <svg class="ph-art ph-art--home ph-only-d" viewBox="0 0 1440 869" fill="none" aria-hidden="true" focusable="false"><path d="M0 615H85l50 47h130v122l53 85" stroke="currentColor" stroke-width="3.4"/><circle cx="71" cy="710" r="6.5" fill="currentColor"/></svg>
+  {%- when 'cta' -%}
+    <svg class="ph-art ph-art--cta ph-only-d" viewBox="0 0 1440 283" fill="none" aria-hidden="true" focusable="false"><path d="M1103 0l-66 68" stroke="currentColor" stroke-width="2.6"/><circle cx="1035" cy="70" r="6" fill="#9a9c94" stroke="none"/><path d="M1173 283l-48-41V92q0-20 20-20h115l43 43" stroke="currentColor" stroke-width="2.6"/><circle cx="1305" cy="117" r="6" fill="#fff" stroke="currentColor" stroke-width="1.4"/></svg>
+  {%- when 'n404' -%}
+    <svg class="ph-art ph-art--404" viewBox="0 0 600 200" fill="none" aria-hidden="true" focusable="false"></svg>
+{%- endcase -%}

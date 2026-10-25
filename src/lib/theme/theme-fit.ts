@@ -14,7 +14,7 @@
 import type { StoreKind } from "./store-kind";
 
 /** Thèmes de référence (issue #137) : compatibilités déclarées, jamais déduites du nom. */
-export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance", "parenthese"] as const;
+export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance", "parenthese", "phase"] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number];
 
 const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
@@ -38,6 +38,8 @@ const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   "atelier-nuance": ["services"],
   // Mission PARENTHÈSE (PR #179) : cabinet de sophrologie de la famille Services (séances, ateliers, réservation).
   parenthese: ["services"],
+  // PHASE — Électricité (25 octobre 2026, PR documentaire #188) : artisan électricien de la famille Services.
+  phase: ["services"],
 };
 
 export const isReferenceThemeId = (id: string): id is ReferenceThemeId => (REFERENCE_THEMES as readonly string[]).includes(id);

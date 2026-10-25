@@ -1,0 +1,89 @@
+{%- comment -%}
+  PHASE : méthodes et étapes des planches 01 à 10 — en-tête (sur-titre, titre, texte à droite) puis étapes numérotées
+  avec pictogramme.
+  - navy : bandeau bleu nuit, trois colonnes séparées par des filets (accueil) ; frise verticale au téléphone ;
+  - boxes : cadres côte à côte (prestations, entreprise), flèches facultatives entre les cadres ;
+  - band : bandeau bleu nuit à quatre étapes et flèches (tableau) ;
+  - list : frise verticale numérotée (téléphone : installation, tableau, entreprise).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign lay = s.layout
+-%}
+<section class="ph ph-steps ph-steps--{{ lay }} ph-steps--m-{{ s.layout_mobile }} ph-bg--{{ s.background }}{% if s.arrows %} has-arrows{% endif %}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-cols: {{ section.blocks.size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank -%}
+      <div class="ph-head">
+        <div class="ph-head__main">
+          {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+          {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
+          {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
+        </div>
+        {%- if s.text != blank -%}<div class="ph-head__text">{{ s.text }}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <ol class="ph-steps__list" role="list">
+      {%- for b in section.blocks -%}
+        {%- assign c = b.settings -%}
+        <li class="ph-step{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}" {{ b.shopify_attributes }}>
+          <div class="ph-step__top">
+            {%- if c.number != blank -%}<span class="ph-step__num">{{ c.number }}</span>{%- endif -%}
+            {%- if c.icon != blank -%}<span class="ph-step__icon" aria-hidden="true">{% render 'ph-icon', name: c.icon %}</span>{%- endif -%}
+          </div>
+          <div class="ph-step__body">
+            <h3 class="ph-step__title"><span class="ph-txt-d">{{ c.title }}</span>{%- if c.title_mobile != blank -%}<span class="ph-txt-m">{{ c.title_mobile }}</span>{%- endif -%}</h3>
+            {%- if c.text != blank -%}<p class="ph-step__text"><span class="ph-txt-d">{{ c.text | newline_to_br }}</span>{%- if c.text_mobile != blank -%}<span class="ph-txt-m">{{ c.text_mobile | newline_to_br }}</span>{%- endif -%}</p>{%- endif -%}
+          </div>
+          {%- unless forloop.last -%}<span class="ph-step__arrow" aria-hidden="true">{% render 'ph-icon', name: 'fleche-droite', stroke: 2 %}</span>{%- endunless -%}
+        </li>
+      {%- endfor -%}
+    </ol>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Étapes PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition (ordinateur)", "default": "navy", "options": [
+      { "value": "navy", "label": "Bandeau bleu nuit, colonnes et filets" },
+      { "value": "boxes", "label": "Cadres côte à côte" },
+      { "value": "band", "label": "Bandeau bleu nuit à étapes fléchées" },
+      { "value": "list", "label": "Frise verticale" }
+    ] },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "timeline", "options": [
+      { "value": "timeline", "label": "Frise verticale à pictogrammes" },
+      { "value": "circles", "label": "Frise à numéros cerclés" },
+      { "value": "tags", "label": "Frise à numéros jaunes" },
+      { "value": "stack", "label": "Cadres empilés" }
+    ] },
+    { "type": "checkbox", "id": "arrows", "label": "Flèches entre les étapes", "default": false },
+    { "type": "select", "id": "background", "label": "Fond", "default": "navy", "options": [{ "value": "navy", "label": "Bleu nuit" }, { "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
+    { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [
+      { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "", "options": [
+        { "value": "", "label": "Aucun" }, { "value": "projet-echange", "label": "Échange" }, { "value": "devis-document", "label": "Document" }, { "value": "pilotage", "label": "Roue dentée" }, { "value": "maison", "label": "Maison" }, { "value": "precision-cible", "label": "Cible" }, { "value": "oeil-observer", "label": "Œil" }, { "value": "plan-perimetre", "label": "Plan" }, { "value": "calendrier", "label": "Calendrier" }, { "value": "validation", "label": "Validation" }, { "value": "diagnostic", "label": "Diagnostic" }, { "value": "recherche", "label": "Loupe" }, { "value": "outil-renovation", "label": "Outil" }, { "value": "courant-circuits", "label": "Circuits" }
+      ] },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Étapes PHASE" }]
+}
+{% endschema %}

@@ -27,8 +27,9 @@ import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 import { atelierNuanceProject, AN_MEDIA, AN_SERVICES } from "./atelier-nuance-fixtures";
 import { parentheseProject, PA_MEDIA, PA_SEANCES } from "./parenthese-fixtures";
+import { phaseProject, PHASE_MEDIA, PHASE_SERVICES } from "./phase-fixtures";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "atelier-nuance" | "parenthese";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "atelier-nuance" | "parenthese" | "phase";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -102,6 +103,12 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     tagline: "Un temps pour souffler. Une place pour vous.", summary: "Cabinet de sophrologie fictif de démonstration : séances individuelles, ateliers collectifs, interventions en entreprise.", story: "Un cabinet de sophrologie fictif pour faire une pause, relâcher les tensions et cultiver un mieux-être au quotidien.", positioning: "Cabinet de sophrologie calme et lumineux (exemple fictif).", price: null,
     services: { ...emptyServiceProfile(), services: PA_SEANCES.map((s) => ({ key: s.id, name: s.name, description: s.short })), contactMode: "booking" },
     media: Object.fromEntries(PA_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
+  },
+  // PHASE — Électricité (artisan électricien fictif, famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  phase: {
+    tagline: "Le courant passe. La confiance aussi.", summary: "Artisan électricien fictif de démonstration : installation, rénovation, tableau, éclairage et dépannage.", story: "Des installations pensées pour votre quotidien, du premier échange aux dernières finitions.", positioning: "Artisan électricien (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: PHASE_SERVICES, contactMode: "form", contactModes: ["form"] },
+    media: Object.fromEntries(PHASE_MEDIA.map((m) => [m.file, { role: "lifestyle" }])),
   },
   rive: {
     tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -183,6 +190,12 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await parentheseProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
   }
+  // PHASE — Électricité (25 octobre 2026) : artisan composé par le moteur dans son thème puis rédigé d'après les dix
+  // planches, photos lues dans le kit privé public/demo/phase/images/ (hors dépôt).
+  if (id === "phase" && !options.direction) {
+    const c = await phaseProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
   // FRAISE GUMMIES (planches corrigées du 24 octobre 2026) : projet client composé par le moteur dans le thème « fraise »,
   // puis rédigé d'après les sept planches (sections fg-*), photos lues dans le kit privé public/demo/fraise/v2/.
   // La composition Lumora du lot 2C reste constructible par conversionProject(…, "fraise") pour les anciens contrôles.
@@ -203,7 +216,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "atelier-nuance" || id === "parenthese" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "atelier-nuance" || id === "parenthese" ? kitDir(id) : id === "phase" ? path.join(process.cwd(), "public", "demo", "phase", "images") : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

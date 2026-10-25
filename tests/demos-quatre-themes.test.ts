@@ -45,6 +45,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   "atelier-nuance": { kind: "services", profile: {}, family: /^an-/ },
   // PARENTHÈSE : vérifiée par tests/parenthese-theme.test.ts (sections pa-*, aucun profil global).
   parenthese: { kind: "services", profile: {}, family: /^pa-/ },
+  // PHASE — Électricité : vérifiée par tests/phase-theme.test.ts (sections ph-*, aucun profil global).
+  phase: { kind: "services", profile: {}, family: /^ph-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

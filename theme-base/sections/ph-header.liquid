@@ -1,0 +1,202 @@
+{%- comment -%}
+  PHASE : en-tête bleu nuit des planches 01 à 10 — logo (monogramme et mot-symbole), cinq liens et bouton jaune
+  « Demander un devis » ; au téléphone, logo et menu (tiroir ouvert de la planche 10 : liens avec flèches, sous-pages,
+  bouton d'appel, fermeture par Échap ou la croix, focus gardé dans le menu).
+  Porte aussi les réglages communs : couleurs, mode des formulaires (démonstration ou envoi réel), textes des états
+  des formulaires et préférences de cookies (nécessaires, mesure d'audience, contenus externes).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+  assign brand = s.wordmark | default: shop.name
+  assign mono = settings.type_accent_font
+  assign body_font = settings.type_body_font
+  assign body5 = body_font | font_modify: 'weight', '500'
+  assign body6 = body_font | font_modify: 'weight', '600'
+  assign body7 = body_font | font_modify: 'weight', '700'
+  assign mono7 = mono | font_modify: 'weight', '700'
+-%}
+<style>
+  {%- if body5 -%}{{ body5 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if body6 -%}{{ body6 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if body7 -%}{{ body7 | font_face: font_display: 'swap' }}{%- endif -%}
+  {%- if mono7 -%}{{ mono7 | font_face: font_display: 'swap' }}{%- endif -%}
+  body.dir-phase, .ph, .ph-header, .ph-footer, .ph-menu, .ph-cookies {
+    --ph-navy: {{ s.color_navy }};
+    --ph-yellow: {{ s.color_yellow }};
+    --ph-ink: {{ s.color_ink }};
+    --ph-text: {{ s.color_text }};
+    --ph-line: {{ s.color_line }};
+    --ph-soft: {{ s.color_soft }};
+    --ph-body: {{ body_font.family }}, "Inter", {{ body_font.fallback_families }};
+    --ph-head: var(--font-heading, "Inter"), "Inter", sans-serif;
+    --ph-mono: {{ mono.family }}, "Space Mono", monospace;
+  }
+</style>
+{{ 'phase-fonts.css' | asset_url | stylesheet_tag }}
+{{ 'phase.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'phase.js' | asset_url }}" defer="defer"></script>
+<script type="application/json" id="ph-config">
+  {
+    "mode": {{ s.form_mode | json }},
+    "quotePage": {{ s.quote_page | json }},
+    "confirmPage": {{ s.confirm_page | json }},
+    "contactUrl": {{ routes.root_url | append: 'contact#contact_form' | json }},
+    "texts": {
+      "demo": {{ s.demo_note | json }},
+      "sending": {{ s.sending_label | json }},
+      "errorTitle": {{ s.error_title | json }},
+      "fail": {{ s.fail_label | json }},
+      "blocked": {{ s.blocked_label | json }},
+      "required": {{ s.required_label | json }},
+      "email": {{ s.email_label | json }},
+      "phone": {{ s.phone_label | json }},
+      "postcode": {{ s.postcode_label | json }},
+      "consent": {{ s.consent_label | json }},
+      "choice": {{ s.choice_label | json }},
+      "fileFormat": {{ s.file_format_label | json }},
+      "fileSize": {{ s.file_size_label | json }},
+      "fileCount": {{ s.file_count_label | json }},
+      "fileRemove": {{ s.file_remove_label | json }},
+      "cookiesSaved": {{ s.cookies_saved | json }}
+    }
+  }
+</script>
+
+{%- capture ph_logo -%}
+  {%- if s.logo != blank -%}
+    {{ s.logo | image_url: width: 600 | image_tag: alt: brand, widths: '300, 600', class: 'ph-logo__img' }}
+  {%- elsif s.logo_asset != blank -%}
+    <img class="ph-logo__img" src="{{ s.logo_asset | asset_url }}" alt="{{ brand | escape }}" width="600" height="150">
+  {%- else -%}
+    {% render 'ph-logo', brand: brand, tagline: s.tagline, monogram: s.monogram %}
+  {%- endif -%}
+{%- endcapture -%}
+
+<header class="ph-header" data-ph-header>
+  <div class="ph-header__bar">
+    <a class="ph-header__logo" href="{{ routes.root_url }}">{{ ph_logo }}</a>
+    <nav class="ph-header__nav" aria-label="{{ s.nav_label | escape }}">
+      <ul role="list">
+        {%- for link in menu.links -%}
+          <li><a href="{{ link.url }}"{% if link.current %} aria-current="page"{% elsif link.child_active or link.active %} data-ph-active{% endif %}>{{ link.title }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- if s.cta_label != blank -%}
+      <a class="ph-btn ph-btn--yellow ph-header__cta" href="{{ s.cta_link | default: routes.root_url }}"><span>{{ s.cta_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>
+    {%- endif -%}
+    <button type="button" class="ph-header__burger" aria-controls="ph-menu" aria-expanded="false" data-ph-menu-open>
+      <span class="visually-hidden">{{ s.menu_open_label }}</span>{% render 'ph-icon', name: 'menu', stroke: 2.2 %}
+    </button>
+  </div>
+</header>
+
+<div class="ph-menu" id="ph-menu" role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}" hidden data-ph-menu>
+  <div class="ph-menu__panel">
+    <div class="ph-menu__top">
+      <a class="ph-header__logo" href="{{ routes.root_url }}">{{ ph_logo }}</a>
+      <button type="button" class="ph-menu__close" data-ph-menu-close><span class="visually-hidden">{{ s.menu_close_label }}</span>{% render 'ph-icon', name: 'fermer', stroke: 2 %}</button>
+    </div>
+    <nav aria-label="{{ s.nav_label | escape }}">
+      <ul class="ph-menu__list" role="list">
+        {%- for link in menu.links -%}
+          <li class="ph-menu__item">
+            {%- if link.links.size > 0 -%}
+              {%- assign sub_label = s.submenu_label | replace: '[t]', link.title -%}
+              <div class="ph-menu__row">
+                <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+                <button type="button" class="ph-menu__more" aria-expanded="false" aria-controls="ph-menu-sub-{{ forloop.index }}" data-ph-sub><span class="visually-hidden">{{ sub_label }}</span>{% render 'ph-icon', name: 'chevron-droite', stroke: 2 %}</button>
+              </div>
+              <ul class="ph-menu__sub" id="ph-menu-sub-{{ forloop.index }}" role="list" hidden>
+                {%- for child in link.links -%}<li><a href="{{ child.url }}"{% if child.current %} aria-current="page"{% endif %}>{{ child.title }}</a></li>{%- endfor -%}
+              </ul>
+            {%- else -%}
+              <a class="ph-menu__row" href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}><span>{{ link.title }}</span>{% render 'ph-icon', name: 'chevron-droite', stroke: 2 %}</a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- if s.cta_label != blank -%}
+      <a class="ph-btn ph-btn--yellow ph-menu__cta" href="{{ s.cta_link | default: routes.root_url }}"><span>{{ s.cta_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>
+    {%- endif -%}
+  </div>
+</div>
+
+{%- if s.show_cookies -%}
+<div class="ph-cookies" role="region" aria-label="{{ s.cookies_title | escape }}" hidden data-ph-cookies>
+  <p class="ph-cookies__title">{{ s.cookies_title }}</p>
+  <p class="ph-cookies__text">{{ s.cookies_text }}{% if s.cookies_link != blank %} <a href="{{ s.cookies_link }}">{{ s.cookies_more }}</a>{% endif %}</p>
+  <div class="ph-cookies__actions">
+    <button type="button" class="ph-btn ph-btn--line" data-ph-consent="refuse">{{ s.cookies_refuse }}</button>
+    {%- if s.cookies_link != blank -%}<a class="ph-btn ph-btn--line" href="{{ s.cookies_link }}#ph-cookies-prefs">{{ s.cookies_custom }}</a>{%- endif -%}
+    <button type="button" class="ph-btn ph-btn--yellow" data-ph-consent="accept">{{ s.cookies_accept }}</button>
+  </div>
+</div>
+{%- endif -%}
+<p class="visually-hidden" role="status" aria-live="polite" data-ph-live></p>
+
+{% schema %}
+{
+  "name": "En-tête PHASE",
+  "class": "ph-header-section",
+  "settings": [
+    { "type": "header", "content": "Logo et navigation" },
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "text", "id": "wordmark", "label": "Nom affiché sans logo" },
+    { "type": "text", "id": "tagline", "label": "Signature sous le nom (sans logo)" },
+    { "type": "checkbox", "id": "monogram", "label": "Monogramme PHASE devant le nom (démonstration)", "default": false },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
+    { "type": "text", "id": "cta_label", "label": "Bouton d'appel", "default": "Demander un devis" },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton d'appel" },
+    { "type": "text", "id": "menu_label", "label": "Nom du menu du téléphone", "default": "Menu" },
+    { "type": "text", "id": "menu_open_label", "label": "Bouton d'ouverture du menu", "default": "Ouvrir le menu" },
+    { "type": "text", "id": "menu_close_label", "label": "Bouton de fermeture du menu", "default": "Fermer le menu" },
+    { "type": "text", "id": "submenu_label", "label": "Bouton des sous-pages ([t] = rubrique)", "default": "Afficher les pages de « [t] »" },
+    { "type": "header", "content": "Couleurs" },
+    { "type": "color", "id": "color_navy", "label": "Bleu nuit", "default": "#141B30" },
+    { "type": "color", "id": "color_yellow", "label": "Jaune électrique", "default": "#F2F55C" },
+    { "type": "color", "id": "color_ink", "label": "Titres", "default": "#141B30" },
+    { "type": "color", "id": "color_text", "label": "Textes", "default": "#4A5263" },
+    { "type": "color", "id": "color_line", "label": "Filets", "default": "#E3E7EE" },
+    { "type": "color", "id": "color_soft", "label": "Fond gris clair", "default": "#F3F6F9" },
+    { "type": "header", "content": "Formulaires" },
+    { "type": "select", "id": "form_mode", "label": "Envoi des formulaires", "default": "platform", "options": [
+      { "value": "demo", "label": "Démonstration : rien n'est envoyé" },
+      { "value": "platform", "label": "Formulaire de contact de la boutique" },
+      { "value": "off", "label": "Non branché : afficher un blocage" }
+    ] },
+    { "type": "url", "id": "quote_page", "label": "Page de demande de devis" },
+    { "type": "url", "id": "confirm_page", "label": "Page de confirmation" },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Démonstration — demande non envoyée." },
+    { "type": "text", "id": "sending_label", "label": "Bouton pendant l'envoi", "default": "Envoi en cours…" },
+    { "type": "text", "id": "error_title", "label": "Titre du résumé des erreurs", "default": "Vérifiez les champs signalés :" },
+    { "type": "textarea", "id": "fail_label", "label": "Message d'échec de l'envoi" },
+    { "type": "textarea", "id": "blocked_label", "label": "Message si l'envoi n'est pas branché" },
+    { "type": "text", "id": "required_label", "label": "Champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "email_label", "label": "E-mail incorrect", "default": "Veuillez saisir une adresse e-mail valide." },
+    { "type": "text", "id": "phone_label", "label": "Téléphone incorrect", "default": "Veuillez saisir un numéro de téléphone valide." },
+    { "type": "text", "id": "postcode_label", "label": "Code postal incorrect", "default": "Veuillez saisir un code postal à 5 chiffres." },
+    { "type": "text", "id": "consent_label", "label": "Accord manquant", "default": "Votre accord est nécessaire pour traiter la demande." },
+    { "type": "text", "id": "choice_label", "label": "Choix manquant", "default": "Choisissez une option." },
+    { "type": "text", "id": "file_format_label", "label": "Fichier refusé (format)", "default": "Format non pris en charge." },
+    { "type": "text", "id": "file_size_label", "label": "Fichier refusé (poids)", "default": "Fichier trop lourd (10 Mo au plus)." },
+    { "type": "text", "id": "file_count_label", "label": "Trop de fichiers", "default": "5 fichiers au plus." },
+    { "type": "text", "id": "file_remove_label", "label": "Bouton de retrait d'un fichier", "default": "Retirer" },
+    { "type": "text", "id": "file_accepted", "label": "Formats acceptés", "default": "Formats acceptés : JPG, PNG, PDF (max. 10 Mo)." },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "show_cookies", "label": "Demander l'accord pour les cookies", "default": true },
+    { "type": "url", "id": "cookies_link", "label": "Page des préférences" },
+    { "type": "text", "id": "cookies_title", "label": "Titre du bandeau", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookies_text", "label": "Texte du bandeau" },
+    { "type": "text", "id": "cookies_more", "label": "Lien « en savoir plus »", "default": "En savoir plus" },
+    { "type": "text", "id": "cookies_accept", "label": "Bouton « tout accepter »", "default": "Tout accepter" },
+    { "type": "text", "id": "cookies_refuse", "label": "Bouton « tout refuser »", "default": "Tout refuser" },
+    { "type": "text", "id": "cookies_custom", "label": "Bouton « personnaliser »", "default": "Personnaliser" },
+    { "type": "text", "id": "cookies_saved", "label": "Confirmation des préférences", "default": "Vos préférences sont enregistrées." }
+  ]
+}
+{% endschema %}

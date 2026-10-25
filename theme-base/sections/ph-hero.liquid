@@ -1,0 +1,171 @@
+{%- comment -%}
+  PHASE : ouvertures des planches 01 à 10.
+  - home : accueil bleu nuit (sur-titre à chasse fixe, titre sur deux couleurs, texte, deux boutons, photo fondue à droite,
+    détail de la photo à gauche, trait de circuit et note) ;
+  - split : page de prestation (fil d'Ariane, titre, texte, boutons à gauche ; photo fondue à droite, trait et note) ;
+  - wide : page « Prestations » (titre et texte, trait et note à droite ; grande photo pleine largeur dessous) ;
+  - navy : bandeau bleu nuit et photo à droite (réalisations, entreprise, questions, conseils), pastilles de filtre ;
+  - plain : titre de page sur fond clair (fil d'Ariane, sur-titre, titre, texte, trait et note) ;
+  - notfound : page introuvable (404 dessiné en traits de circuit, titre, deux boutons).
+  Les pastilles (blocs « Filtre ») pilotent la liste filtrable de la page (réalisations, questions, conseils).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign lay = s.layout
+  assign tag = 'h1'
+-%}
+<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}" style="--ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }};" data-ph-hero>
+  <div class="ph-c">
+    {%- if s.crumb_current != blank -%}
+        <nav class="ph-crumb" aria-label="{{ s.crumb_label | escape }}">
+          <ol role="list">
+            <li><a href="{{ routes.root_url }}">{{ s.crumb_home }}</a></li>
+            {%- if s.crumb_parent != blank -%}<li><a href="{{ s.crumb_parent_link }}">{{ s.crumb_parent }}</a></li>{%- endif -%}
+            {%- if s.crumb_parent2 != blank -%}<li><a href="{{ s.crumb_parent2_link }}">{{ s.crumb_parent2 }}</a></li>{%- endif -%}
+            <li><span aria-current="page">{{ s.crumb_current }}</span></li>
+          </ol>
+        </nav>
+    {%- endif -%}
+
+    <div class="ph-hero__media" aria-hidden="{% if s.image_alt == blank %}true{% else %}false{% endif %}">
+      {%- liquid
+        assign ph_cls = 'ph-hero__photo'
+        if s.image_w > 0
+          assign ph_cls = 'ph-hero__photo is-placed'
+        endif
+      -%}
+      {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, class: ph_cls, loading: 'eager', sizes: '100vw' %}
+      {%- if s.detail_asset != blank or s.detail != blank -%}
+        {%- liquid
+          assign ph_dcls = 'ph-hero__detail'
+          if s.detail_w > 0
+            assign ph_dcls = 'ph-hero__detail is-placed'
+          endif
+        -%}
+        {% render 'ph-img', image: s.detail, asset: s.detail_asset, alt: '', pos: s.detail_position, zoom: s.detail_zoom, class: ph_dcls, loading: 'eager', sizes: '20vw' %}
+      {%- endif -%}
+      {%- if s.caption != blank -%}<span class="ph-cap ph-hero__cap">{{ s.caption }}</span>{%- endif -%}
+    </div>
+
+    {%- if lay == 'notfound' -%}
+      <div class="ph-hero__404" aria-hidden="true">{% render 'ph-art', name: 'n404' %}</div>
+    {%- endif -%}
+
+    <div class="ph-hero__copy">
+      {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.badge != blank -%}<p class="ph-hero__badge">{{ s.badge }}</p>{%- endif -%}
+      {%- if s.done_icon -%}<span class="ph-hero__done" aria-hidden="true">{% render 'ph-icon', name: 'validation', stroke: 2.2 %}</span>{%- endif -%}
+      {% render 'ph-title', text: s.heading, tag: tag, class: 'ph-hero__title' %}
+      {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-hero__title ph-hero__title--m' %}{%- endif -%}
+      {%- if s.text != blank -%}<div class="ph-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.text2 != blank -%}<div class="ph-hero__text ph-hero__text--2">{{ s.text2 }}</div>{%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+        <div class="ph-hero__actions">
+          {%- if s.button_label != blank -%}<a class="ph-btn ph-btn--yellow ph-hero__btn" href="{{ s.button_link | default: routes.root_url }}"><span>{{ s.button_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+          {%- if s.button2_label != blank -%}<a class="ph-btn {% if lay == 'home' or lay == 'navy' %}ph-btn--ghost{% else %}ph-btn--navy{% endif %} ph-hero__btn2{% unless s.button2_mobile %} ph-hide-m{% endunless %}" href="{{ s.button2_link | default: routes.root_url }}"><span>{{ s.button2_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="ph-hero__chips">
+        {%- if s.chips_label != blank -%}<p class="ph-eyebrow ph-hero__chips-label">{{ s.chips_label }}</p>{%- endif -%}
+        <div class="ph-chips" role="group" aria-label="{{ s.chips_aria | escape }}" data-ph-chips="{{ s.chips_for }}">
+          {%- for b in section.blocks -%}
+            <button type="button" class="ph-chip" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-ph-chip="{{ b.settings.value | default: 'all' }}" {{ b.shopify_attributes }}>{{ b.settings.label }}</button>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if s.note != blank or s.circuit != 'none' -%}
+      <div class="ph-hero__deco ph-hero__deco--{{ s.circuit }}" aria-hidden="true">
+        {%- if s.circuit != 'none' -%}{% render 'ph-art', name: s.circuit %}{%- endif -%}
+        {%- if s.note != blank -%}<p class="ph-note ph-hero__note">{{ s.note | newline_to_br }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "split", "options": [
+      { "value": "home", "label": "Accueil bleu nuit, photo fondue" },
+      { "value": "split", "label": "Prestation : texte à gauche, photo à droite" },
+      { "value": "wide", "label": "Titre puis grande photo" },
+      { "value": "navy", "label": "Bandeau bleu nuit et photo" },
+      { "value": "plain", "label": "Titre sur fond clair" },
+      { "value": "notfound", "label": "Page introuvable (404)" }
+    ] },
+    { "type": "header", "content": "Fil d'Ariane" },
+    { "type": "text", "id": "crumb_label", "label": "Nom du fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "crumb_home", "label": "Accueil", "default": "Accueil" },
+    { "type": "text", "id": "crumb_parent", "label": "Page parente" },
+    { "type": "url", "id": "crumb_parent_link", "label": "Lien de la page parente" },
+    { "type": "text", "id": "crumb_parent2", "label": "Deuxième page parente" },
+    { "type": "url", "id": "crumb_parent2_link", "label": "Lien de la deuxième page parente" },
+    { "type": "text", "id": "crumb_current", "label": "Page actuelle" },
+    { "type": "header", "content": "Textes" },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "text", "id": "badge", "label": "Étiquette jaune" },
+    { "type": "checkbox", "id": "done_icon", "label": "Pastille de validation", "default": false },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text2", "label": "Second texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton jaune" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton jaune" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "checkbox", "id": "button2_mobile", "label": "Second bouton au téléphone", "default": false },
+    { "type": "header", "content": "Photo" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "photo_w", "label": "Largeur de la photo (repère 1440 px)", "min": 300, "max": 1440, "step": 10, "default": 760 },
+    { "type": "number", "id": "image_w", "label": "Largeur de la photo placée (repère 1440 px, 0 = cadrage automatique)", "default": 0 },
+    { "type": "number", "id": "image_x", "label": "Position horizontale de la photo placée", "default": 0 },
+    { "type": "number", "id": "image_y", "label": "Position verticale de la photo placée", "default": 0 },
+    { "type": "range", "id": "height", "label": "Hauteur (ordinateur, repère 1440 px)", "min": 200, "max": 1000, "step": 2, "default": 500 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur de la photo (téléphone, repère 390 px)", "min": 100, "max": 500, "step": 2, "default": 230 },
+    { "type": "select", "id": "mobile_photo", "label": "Photo au téléphone", "default": "below", "options": [{ "value": "below", "label": "Sous le texte" }, { "value": "none", "label": "Masquée" }] },
+    { "type": "checkbox", "id": "mobile_navy", "label": "Fond bleu nuit au téléphone", "default": false },
+    { "type": "image_picker", "id": "detail", "label": "Détail de la photo (accueil)" },
+    { "type": "text", "id": "detail_asset", "label": "Détail (fichier du thème)" },
+    { "type": "text", "id": "detail_position", "label": "Cadrage du détail", "default": "50% 50%" },
+    { "type": "range", "id": "detail_zoom", "label": "Agrandissement du détail", "min": 100, "max": 600, "step": 5, "unit": "%", "default": 100 },
+    { "type": "number", "id": "detail_w", "label": "Largeur de la photo dans le détail (repère 1440 px, 0 = cadrage automatique)", "default": 0 },
+    { "type": "number", "id": "detail_x", "label": "Position horizontale dans le détail", "default": 0 },
+    { "type": "number", "id": "detail_y", "label": "Position verticale dans le détail", "default": 0 },
+    { "type": "text", "id": "caption", "label": "Légende sur la photo" },
+    { "type": "header", "content": "Trait de circuit et note" },
+    { "type": "select", "id": "circuit", "label": "Trait de circuit", "default": "none", "options": [
+      { "value": "none", "label": "Aucun" },
+      { "value": "home", "label": "Accueil (bas à gauche)" },
+      { "value": "corner", "label": "Coin haut droit" },
+      { "value": "long", "label": "Long trait vers le titre" },
+      { "value": "short", "label": "Court trait" }
+    ] },
+    { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
+    { "type": "header", "content": "Pastilles de filtre" },
+    { "type": "text", "id": "chips_label", "label": "Titre des pastilles (téléphone)" },
+    { "type": "text", "id": "chips_aria", "label": "Nom du groupe de pastilles", "default": "Filtrer" },
+    { "type": "select", "id": "chips_for", "label": "Liste filtrée", "default": "projects", "options": [{ "value": "projects", "label": "Réalisations" }, { "value": "faq", "label": "Questions" }, { "value": "posts", "label": "Conseils" }] }
+  ],
+  "blocks": [
+    { "type": "chip", "name": "Filtre", "settings": [
+      { "type": "text", "id": "label", "label": "Libellé", "default": "Tout" },
+      { "type": "text", "id": "value", "label": "Catégorie filtrée (vide = tout)" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Ouverture PHASE" }]
+}
+{% endschema %}
