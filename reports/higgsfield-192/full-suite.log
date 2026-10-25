@@ -1,0 +1,42 @@
+
+ RUN  v5.0.3 /tmp/ecs-higgsfield-192
+
+ ❯ tests/social-autopilot-pilote.test.ts (9 tests | 1 failed) 2856ms
+   ❯ Autopilot V2 — pilote (9)
+     × budget : sans IA disponible, visuels gratuits et recharge de 10 € proposée ; avec IA, tâche payante seulement dans le plafond de la semaine 445ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/social-autopilot-pilote.test.ts > Autopilot V2 — pilote > budget : sans IA disponible, visuels gratuits et recharge de 10 € proposée ; avec IA, tâche payante seulement dans le plafond de la semaine
+AssertionError: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ tests/social-autopilot-pilote.test.ts:160:24
+    158|     const paid = mockSocialDeps({ aiActive: true, cost: 100_000 });
+    159|     const r1 = await fr(() => ap.runAutopilot(q, paid.deps));
+    160|     expect(r1.paidJob).toBeTruthy();
+       |                        ^
+    161|     expect(paid.log.paid).toBe(0); // la dépense passe par la tâche de…
+    162|     const job = one<{ payload: string }>("SELECT payload FROM jobs WHE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 357 passed (358)
+      Tests  1 failed | 2915 passed | 22 skipped (2938)
+   Start at  19:57:12
+   Duration  777.06s (tests 75%, import 23%, transform 1%)
+
+    Isolate  358 workers spawned · ~139ms startup each (spawn + environment, per file)
+             at least ~12.30s faster with isolate: false — reuses workers across files instead of one per file
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

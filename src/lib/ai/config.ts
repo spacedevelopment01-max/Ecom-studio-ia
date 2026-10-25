@@ -3,6 +3,7 @@
  * Tout est modifiable dans l'administration ; ces valeurs sont des points de
  * départ. Les clients n'ont jamais besoin de clé : E-COM STUDIO IA fournit l'IA.
  */
+import { credentials as higgsCredentials } from "./higgsfield/http";
 import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
@@ -10,7 +11,7 @@ import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
 export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -27,6 +28,7 @@ const provider = (name: { fr: string; en: string }, role: { fr: string; en: stri
 });
 
 export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly role: string; readonly keyHelp: string; docs: string }> = {
+  higgsfield: provider({fr:"Higgsfield officiel",en:"Official Higgsfield"},{fr:"Plans vidéo produit — tarifs automatiques et approbation groupée",en:"Product video shots — automatic pricing and bulk approval"},{fr:"Identifiant et secret dans la carte dédiée",en:"Key ID and secret in the dedicated card"},"https://docs.higgsfield.ai/docs"),
   anthropic: provider(
     { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
     { fr: "Analyse visuelle, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Visual analysis, strategy, copywriting, theme code, quality control" },
@@ -249,15 +251,17 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
+  if(p === "higgsfield") return higgsCredentials()?.id ?? null;
   // Espaces ou retour à la ligne copiés avec la clé : retirés (sinon le fournisseur la refuse).
   return getSetting(`provider.${p}.apiKey`)?.trim() || providerEnvKey(p) || (gatewayProviders().includes(p) ? GATEWAY_KEY : null);
 }
 
 export function providerEnabled(p: ProviderId): boolean {
+  if(p === "higgsfield") return !!higgsCredentials() && getSetting("provider.higgsfield.disabled")==="0";
   return !!providerKey(p) && getSetting(`provider.${p}.disabled`) !== "1";
 }
 
@@ -273,7 +277,7 @@ export function activeProviderKey(p: ProviderId): string | null {
 export function aiAvailability() {
   const llm = providerEnabled("anthropic");
   const image = providerEnabled("openai") || providerEnabled("google") || providerEnabled("alibaba");
-  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba");
+  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba") || providerEnabled("higgsfield");
   // Vidéo UGC : une personne générée (images) puis animée (vidéo) ; la voix vient de Veo 3 (Google).
   const ugc = image && video;
   const ugcVoice = ugc && providerEnabled("google");

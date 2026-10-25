@@ -1,3 +1,7 @@
+import {UserFacingError} from "../jobs";
+import {higgsfieldMessage} from "./higgsfield/errors";
+import {approvedQuote} from "./higgsfield/pricing";
+import {defaultConfiguration} from "./higgsfield/catalog";
 /**
  * Estimation du coût IA d'une action, pour prévenir le client avant une action gourmande.
  * Devis au COÛT PROBABLE (choix du propriétaire, 16/10) : un seul essai et ses contrôles, sans marge de sécurité ni
@@ -42,6 +46,12 @@ function routeOf(task: TaskId, usage?: MediaUsage): { provider: string; model: s
 
 function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, usage?: MediaUsage): number {
   const r = routeOf(task, usage);
+  if(r.provider==='higgsfield') {
+    let quote:ReturnType<typeof approvedQuote>;
+    try{quote=approvedQuote(defaultConfiguration(r.model,units.seconds??5));}catch(e){throw new UserFacingError(higgsfieldMessage((e as Error).message));}
+    // This helper feeds legacy USD aggregation: cancel its global FX and retain the sourced video FX exactly.
+    return quote.usd*quote.fx.usdToEur/usdToEur();
+  }
   const p = priceFor(r.provider, r.model);
   if (!p) return 0;
   if (p.unit === "tokens") {

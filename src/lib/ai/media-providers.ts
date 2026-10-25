@@ -1,4 +1,10 @@
 import { publicDownload } from "../public-download";
+import {higgsfieldMessage} from './higgsfield/errors';
+import {defaultConfiguration,requestBody} from './higgsfield/catalog';
+import {checkedQuote} from './higgsfield/pricing';
+import {uploadImage,downloadVideo} from './higgsfield/media';
+import {submit as higgsSubmit,poll as higgsPoll,UnchargedTerminal,type Receipt as HiggsReceipt} from './higgsfield/lifecycle';
+import {HiggsfieldHttpError} from './higgsfield/http';
 import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
@@ -18,7 +24,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import sharp from "sharp";
-import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
+import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -254,7 +260,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertUnderCostCap(max);
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: t.requestHash });
-  const priced = requirePrice(provider, model);
+  const priced = provider==="higgsfield"?{unit:"video_second"}:requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
   // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
   if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
@@ -1226,7 +1232,7 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
  */
 export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
   const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
-  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
+  const run = (p: string, model?: string) => (p === "higgsfield" ? higgsfieldClip(ctx,{...input,usage,model},onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {
@@ -1317,3 +1323,33 @@ export const wanClip = traced("video_generation", wanClipImpl);
 /** Texte vers vidéo Wan (vidéo publicitaire, motion design) : prêt pour les moteurs, aucune image de départ. */
 export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; aspect?:"16:9"|"9:16";seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });
+
+/** Higgsfield uses the same reservation, access, idempotency and permanent project storage as existing media. */
+async function higgsfieldClipImpl(ctx:Ctx,input:{image?:Buffer;prompt:string;aspect?:'16:9'|'9:16';seconds?:number;people?:boolean;model?:string;usage?:MediaUsage},onWait?:(message:string)=>void):Promise<Buffer>{
+ if(input.people)throw new PermanentError(L('Higgsfield : personnages sans référence non autorisés.','Higgsfield: people without a reference are not allowed.'));
+ const trace=mediaTrace.getStore()!;
+ const model=input.model??pickModel('higgsfield','video');
+ let receipt:HiggsReceipt|null=trace.previous?.provider_receipt?JSON.parse(trace.previous.provider_receipt):null;
+ if(receipt&&receipt.model!==model)operationPending();
+ if(!receipt){
+  assertAiAllowed(ctx.userId,ctx.projectId);assertStrategyInputsCurrent(ctx.projectId);
+  const config=defaultConfiguration(model,input.seconds??5,input.aspect??'16:9');
+  // Validate approved exact pricing BEFORE upload; re-estimate the actual reference/body BEFORE reservation.
+  const {approvedQuote}=await import('./higgsfield/pricing');try{approvedQuote(config);}catch(e){throw new PermanentError(higgsfieldMessage((e as Error).message));}
+  const imageUrl=input.image?await uploadImage(await sharp(input.image).jpeg({quality:90}).toBuffer()):undefined;
+  const body=requestBody(config,`${input.prompt} Preserve the exact reference product, proportions, label, colors and logo. Do not invent people, claims, text or watermarks.`,imageUrl);
+  const quote=await checkedQuote(config,body).catch(e=>{throw new PermanentError(higgsfieldMessage((e as Error).message));});
+  gate(ctx,quote.micro,'video','higgsfield',model);
+  sent();
+  let id:string;
+  try{id=await higgsSubmit(model,body,trace.reservation!);}catch(e){if(e instanceof HiggsfieldHttpError&&e.status>=400&&e.status<500&&e.status!==408)throw refusal(new PermanentError(`HIGGSFIELD_SUBMISSION_REFUSED_${e.status}`));throw e;}
+  receipt={requestId:id,model,body,quoteMicro:quote.micro,quotedUsd:quote.currentUsd,fx:quote.fx,revision:quote.revision,seconds:config.seconds};
+  saveProviderReceipt(trace.reservation!,receipt);
+ }else gate(ctx,receipt.quoteMicro,'video','higgsfield',model);
+ let url:string;
+ try{url=await higgsPoll(receipt.requestId,status=>onWait?.(status==='queued'?L('Plan en attente chez Higgsfield.','Shot queued at Higgsfield.'):status==='completed'?L('Plan produit ; récupération en cours.','Shot generated; downloading.'):L('Plan en cours chez Higgsfield.','Shot processing at Higgsfield.')));}catch(e){if(e instanceof UnchargedTerminal){if(trace.previous?.status==='uncertain')reconcileReservation(trace.reservation!,0);throw refusal(new PermanentError(e.message));}throw new PermanentError(L('Suivi Higgsfield interrompu : reçu conservé, aucun nouveau plan envoyé.','Higgsfield tracking interrupted: receipt kept, no new shot sent.'));}
+ // Status endpoint does not provide an invoice amount: preserve estimated=true, never claim a measured cost.
+ recordMedia({userId:ctx.userId,projectId:ctx.projectId,jobId:ctx.jobId,task:'video_generation',provider:'higgsfield',model,unit:'request',quantity:1,costMicro:receipt.quoteMicro,estimated:true,idempotencyKey:ctx.usageKey});
+ return downloadVideo(url);
+}
+export const higgsfieldClip=traced('video_generation',higgsfieldClipImpl);

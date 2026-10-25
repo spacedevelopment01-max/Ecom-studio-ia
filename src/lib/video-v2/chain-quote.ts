@@ -17,7 +17,7 @@ export const GUIDED_VIDEO_POLICY={version:"guided-video-1",automaticGenerationRe
 export function sceneChainQuote(p:Project,req:ThreeScenesRequest) {
  const n=req.scenes??3,timing=sceneTiming(n,req.totalS??15);
  const ai=aiActiveFor(p.userId,p.id),review=ai&&llmConfigured();
- const route=req.generation&&req.mode!=="stock"?sceneGenerationRoute(req.generation,timing.clipS):null;
+ const route=req.generation&&req.mode!=="stock"?sceneGenerationRoute(req.generation,timing.clipS,req.aspect==="16:9"?"16:9":"9:16"):null;
  const staged=!req.generation||req.generation==="staged";
  const imageCap=staged?aiPostMaxMicro(1,true):0;
  const common=quoteScenes(p,req,{imageMaxMicro:imageCap,clipMaxMicro:route?.allowed?()=>route.unitMicro:wanClipMaxMicro,textMicro:0,videosRight:projectRights(p.id)?.videos??null,aiActive:ai});
