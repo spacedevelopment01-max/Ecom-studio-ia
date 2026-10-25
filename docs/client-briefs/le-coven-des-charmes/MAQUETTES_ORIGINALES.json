@@ -1,0 +1,74 @@
+[
+  {
+    "file": "maquettes/01_ordinateur_accueil_produit.png",
+    "source_name": "Bracelet de charms surprise au scoop.png",
+    "pages": "01 Accueil ; 02 Bracelet de charms surprise",
+    "size": 2686090,
+    "sha256": "c6dabead7d9300eea8d819ad9e3a0b423b3a19acee864ea8b143120335899284",
+    "git_blob": "27104b6164808321ae5bda4ba54480b088aeda66",
+    "dimensions": [
+      1312,
+      1199
+    ]
+  },
+  {
+    "file": "maquettes/02_ordinateur_tirage_coven_creations_faq.png",
+    "source_name": "Planche web nocturne du bracelet de charms.png",
+    "pages": "03 Tirage des charms ; 04 Le Coven ; 05 Créations ; 06 FAQ",
+    "size": 2656263,
+    "sha256": "2a6d7c0cf2e1f6a1239c2a9cf81c4ef55eb322cbc9111eb5314c9a5af50d82d3",
+    "git_blob": "de099a541d12209702bc33bdb41e90c8249d50fa",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/03_ordinateur_achat_compte_contact_informations.png",
+    "source_name": "Bracelet de charms surprise, tirage au scoop.png",
+    "pages": "07 Panier ; 08 Commande ; 09 Confirmation ; 10 Compte ; 11 Contact ; 12 Informations ; 404",
+    "size": 2422458,
+    "sha256": "d098dc8fbd63017b781cf02642d7456a3988552e2d5a3a902fe2fbf55041a62f",
+    "git_blob": "e039d41e670d5940579d034fd9271c9caf36bab2",
+    "dimensions": [
+      1312,
+      1199
+    ]
+  },
+  {
+    "file": "maquettes/04_mobile_accueil_produit.png",
+    "source_name": "Bracelet de charms surprise tiré au scoop.png",
+    "pages": "01 Accueil ; 02 Bracelet de charms surprise",
+    "size": 2569512,
+    "sha256": "80f2eba7a8f04528accf50583705633d410a752a2d18e8084e8673e3e360786d",
+    "git_blob": "4b1e042b89889f300453a0a20265f8fcb9e7372c",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/05_mobile_tirage_coven_creations_faq.png",
+    "source_name": "Bracelet de charms surprise, tiré au scoop.png",
+    "pages": "03 Tirage ; 04 Le Coven ; 05 Créations ; 06 FAQ",
+    "size": 2725774,
+    "sha256": "b68fd9038f9fe126b26bee4773013e8032c1dfbb529793a3bbd46474fb42af0f",
+    "git_blob": "8a5599e65d3c248076d8da71d4803dce1151b43e",
+    "dimensions": [
+      1391,
+      1131
+    ]
+  },
+  {
+    "file": "maquettes/06_mobile_achat_compte_contact_informations.png",
+    "source_name": "Maquette mobile du bracelet de charms surprise.png",
+    "pages": "07 Panier ; 08 Commande ; 09 Confirmation ; 10 Compte ; 11 Contact ; 12 Informations",
+    "size": 2477398,
+    "sha256": "b66acc1d2ffd274824edf0f892829304165c499b730e4567c393b8b9a5ef1619",
+    "git_blob": "495f485cec8fc7be7cf87e0c7c4644977a5fa555",
+    "dimensions": [
+      1536,
+      1024
+    ]
+  }
+]

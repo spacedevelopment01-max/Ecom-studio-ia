@@ -1,0 +1,109 @@
+{%- comment -%}
+  Le Coven des Charmes — panier. Lignes (bracelet, photo d'exemple, taille, quantité, prix, retrait), rappel du tirage
+  après la commande, récapitulatif (sous-total, livraison calculée à l'étape suivante, total), boutons, panier vide.
+  Le contenu est affiché par coven.js depuis le panier (Shopify, ou simulation du navigateur dans l'aperçu) : tant que
+  le tarif n'est pas confirmé, les montants restent « — € Tarif à renseigner » et la commande ne mène à aucun paiement.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="cvn-cart" data-cvn-cart data-sizes="{{ s.sizes | newline_to_br | split: '<br />' | join: '|' | strip_newlines | escape }}" data-size-placeholder="{{ s.size_placeholder | escape }}" data-checkout="{{ s.checkout_link }}" data-price-note="{{ s.price_note | escape }}" data-photo="{{ s.photo_asset | asset_url }}" data-photo-alt="{{ s.photo_alt | escape }}" data-size-prop="Taille" data-error="{{ s.error_text | escape }}">
+  <div class="cvn-cart__inner cvn-scale">
+    <div class="cvn-cart__card cvn-paper">
+      <h2 class="cvn-cart__title">{{ s.title }}</h2>
+      <p class="cvn-cart__loading" data-cvn-cart-loading>{{ s.loading_label }}</p>
+      <div class="cvn-cart__lines" data-cvn-cart-lines hidden></div>
+      <template data-cvn-line-tpl>
+        <div class="cvn-line" data-cvn-line>
+          <img class="cvn-line__img" src="" alt="" width="200" height="180" data-cvn-line-img>
+          <div class="cvn-line__desc">
+            <p class="cvn-line__title" data-cvn-line-title></p>
+            <p class="cvn-line__sub">{{ s.example_label }}</p>
+            <p class="cvn-line__note">{{ s.line_note | newline_to_br }}</p>
+          </div>
+          <div class="cvn-line__field cvn-line__size">
+            <label class="cvn-line__label" data-cvn-for="size">{{ s.size_label }}</label>
+            <div class="cvn-select cvn-select--light"><select data-cvn-line-size></select><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-bas"></use></svg></div>
+          </div>
+          <div class="cvn-line__field cvn-line__qty">
+            <label class="cvn-line__label" data-cvn-for="qty">{{ s.qty_label }}</label>
+            <div class="cvn-qty cvn-qty--light">
+              <button type="button" class="cvn-qty__btn" data-cvn-line-step="-1"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-moins"></use></svg><span class="cvn-sr">{{ s.qty_less }}</span></button>
+              <input type="number" min="0" max="{{ s.qty_max }}" inputmode="numeric" data-cvn-line-qty>
+              <button type="button" class="cvn-qty__btn" data-cvn-line-step="1"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-plus"></use></svg><span class="cvn-sr">{{ s.qty_more }}</span></button>
+            </div>
+          </div>
+          <div class="cvn-line__price"><span class="cvn-line__label">{{ s.price_label }}</span><strong data-cvn-line-price>— €</strong><small data-cvn-line-pricenote>{{ s.price_note }}</small></div>
+          <button type="button" class="cvn-line__remove" data-cvn-line-remove><svg class="cvn-icon" aria-hidden="true"><use href="#coven-supprimer"></use></svg><span class="cvn-sr">{{ s.remove_label }}</span></button>
+        </div>
+      </template>
+      <div class="cvn-cart__empty" data-cvn-cart-empty hidden>
+        <svg class="cvn-icon" aria-hidden="true"><use href="#coven-sac"></use></svg>
+        <p class="cvn-cart__empty-title">{{ s.empty_title }}</p>
+        <p class="cvn-cart__empty-text">{{ s.empty_text }}</p>
+        <a class="cvn-btn cvn-btn--gold" href="{{ s.empty_link }}">{{ s.empty_button }}</a>
+      </div>
+      <p class="cvn-cart__error" role="alert" data-cvn-cart-error hidden></p>
+      <div class="cvn-cart__bottom" data-cvn-cart-bottom hidden>
+        <div class="cvn-cart__info cvn-paper-note">
+          <svg class="cvn-icon" aria-hidden="true"><use href="#coven-information"></use></svg>
+          <div class="cvn-only-d">{{ s.info | newline_to_br }}</div>
+          <div class="cvn-only-m">{{ s.mobile_info | default: s.info }}</div>
+        </div>
+        <div class="cvn-cart__summary">
+          <h3 class="cvn-cart__sumtitle">{{ s.summary_title }}</h3>
+          <p class="cvn-cart__row"><span>{{ s.subtotal_label }}</span><strong data-cvn-subtotal>— €</strong></p>
+          <p class="cvn-cart__row cvn-cart__row--ship"><span>{{ s.shipping_label }}</span><em>{{ s.shipping_note }}</em></p>
+          <p class="cvn-cart__row cvn-cart__row--total"><span>{{ s.total_label }}</span><strong data-cvn-total>— €</strong></p>
+          <p class="cvn-cart__pricenote" data-cvn-total-note>{{ s.price_note }}</p>
+        </div>
+        <div class="cvn-cart__actions">
+          <a class="cvn-btn cvn-btn--dark cvn-cart__continue" href="{{ s.continue_link }}">{{ s.continue_label }}</a>
+          <a class="cvn-btn cvn-btn--gold cvn-cart__checkout" href="{{ s.checkout_link }}" data-cvn-checkout><span class="cvn-only-d">{{ s.checkout_label }}</span><span class="cvn-only-m">{{ s.mobile_checkout_label | default: s.checkout_label }}</span><svg class="cvn-icon cvn-only-m" aria-hidden="true"><use href="#coven-fleche-droite"></use></svg></a>
+        </div>
+        <p class="cvn-cart__closed" data-cvn-checkout-note hidden>{{ s.closed_note }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Coven — panier",
+  "class": "cvn-section cvn-section--cart",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Titre (téléphone)", "default": "Votre panier" },
+    { "type": "text", "id": "loading_label", "label": "Chargement", "default": "Chargement du panier…" },
+    { "type": "text", "id": "example_label", "label": "Mention sous le titre", "default": "Exemple de bracelet" },
+    { "type": "textarea", "id": "line_note", "label": "Rappel dans la ligne", "default": "Les charms seront tirés au sort au scoop\naprès votre commande, puis assemblés sur votre bracelet." },
+    { "type": "text", "id": "photo_asset", "label": "Photo d'exemple de la ligne (fichier du thème)" },
+    { "type": "text", "id": "photo_alt", "label": "Description de la photo", "default": "Exemple de bracelet de charms" },
+    { "type": "text", "id": "size_label", "label": "Taille", "default": "Taille" },
+    { "type": "textarea", "id": "sizes", "label": "Tailles proposées (une par ligne, comme sur la fiche)" },
+    { "type": "text", "id": "size_placeholder", "label": "Taille par défaut", "default": "À préciser" },
+    { "type": "text", "id": "qty_label", "label": "Quantité", "default": "Quantité" },
+    { "type": "text", "id": "qty_less", "label": "Diminuer", "default": "Diminuer la quantité" },
+    { "type": "text", "id": "qty_more", "label": "Augmenter", "default": "Augmenter la quantité" },
+    { "type": "range", "id": "qty_max", "label": "Quantité maximale", "min": 1, "max": 20, "step": 1, "default": 10 },
+    { "type": "text", "id": "price_label", "label": "Prix", "default": "Prix" },
+    { "type": "text", "id": "price_note", "label": "Mention sans tarif", "default": "Tarif à renseigner" },
+    { "type": "text", "id": "remove_label", "label": "Retirer", "default": "Retirer le bracelet du panier" },
+    { "type": "textarea", "id": "info", "label": "Rappel du tirage", "default": "Les charms sont tirés au sort au scoop\naprès votre commande, puis assemblés sur votre bracelet.\nVous recevrez un bracelet unique dont la composition\nreste une surprise." },
+    { "type": "textarea", "id": "mobile_info", "label": "Rappel du tirage sur téléphone (facultatif)" },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif (téléphone)", "default": "Récapitulatif" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_note", "label": "Livraison (précision)", "default": "calculée à l'étape suivante" },
+    { "type": "text", "id": "total_label", "label": "Total", "default": "Total" },
+    { "type": "text", "id": "continue_label", "label": "Bouton secondaire", "default": "Continuer la découverte" },
+    { "type": "url", "id": "continue_link", "label": "Lien du bouton secondaire" },
+    { "type": "text", "id": "checkout_label", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "text", "id": "mobile_checkout_label", "label": "Bouton de commande sur téléphone", "default": "Commander mon bracelet" },
+    { "type": "url", "id": "checkout_link", "label": "Page de commande (simulation de l'aperçu)" },
+    { "type": "textarea", "id": "closed_note", "label": "Message quand la commande est fermée", "default": "La commande ouvrira quand le tarif du bracelet sera renseigné." },
+    { "type": "text", "id": "error_text", "label": "Erreur de mise à jour", "default": "La mise à jour du panier n'a pas abouti. Réessayez dans un instant." },
+    { "type": "text", "id": "empty_title", "label": "Panier vide : titre", "default": "Votre panier est vide." },
+    { "type": "text", "id": "empty_text", "label": "Panier vide : texte", "default": "Votre bracelet de charms surprise vous attend dans le cabinet." },
+    { "type": "text", "id": "empty_button", "label": "Panier vide : bouton", "default": "Découvrir le bracelet" },
+    { "type": "url", "id": "empty_link", "label": "Panier vide : lien" }
+  ]
+}
+{% endschema %}
