@@ -48,14 +48,14 @@ describe("démos intégrales des thèmes", () => {
     expect(themeDemoStatuses().map((x) => x.id)).toEqual([...DEMO_THEMES]);
   });
 
-  it("démo préparée sans ses visuels (kit privé absent) : jamais servie comme prête, sans préparation en boucle", () => {
-    const orbe = path.join(dir, "orbe");
-    fs.mkdirSync(orbe, { recursive: true });
-    fs.writeFileSync(path.join(orbe, "accueil.html"), "<!doctype html><title>ORBE</title>");
-    fs.writeFileSync(path.join(orbe, "pages.json"), JSON.stringify({ title: "ORBE", missing: ["orbe-01.webp", "orbe-02.webp"], pages: [{ file: "accueil.html", label: "Accueil" }] }));
-    fs.writeFileSync(path.join(orbe, "demo.json"), JSON.stringify({ version: "v2", date: new Date(Date.now() + 60_000).toISOString() }));
-    const s = themeDemoStatus("orbe");
-    expect(s).toMatchObject({ ready: false, stale: false, missing: ["orbe-01.webp", "orbe-02.webp"] });
+  it("démo préparée sans ses visuels (kit privé absent, ex. ONDE) : jamais servie comme prête, sans préparation en boucle", () => {
+    const onde = path.join(dir, "onde");
+    fs.mkdirSync(onde, { recursive: true });
+    fs.writeFileSync(path.join(onde, "accueil.html"), "<!doctype html><title>ONDE</title>");
+    fs.writeFileSync(path.join(onde, "pages.json"), JSON.stringify({ title: "ONDE", missing: ["onde-01.webp", "onde-02.webp"], pages: [{ file: "accueil.html", label: "Accueil" }] }));
+    fs.writeFileSync(path.join(onde, "demo.json"), JSON.stringify({ version: "v2", date: new Date(Date.now() + 60_000).toISOString() }));
+    const s = themeDemoStatus("onde");
+    expect(s).toMatchObject({ ready: false, stale: false, missing: ["onde-01.webp", "onde-02.webp"] });
     // Démo périmée ou kit copié depuis : reprise ; sinon rien (le kit n'a pas bougé depuis la préparation).
     expect(themeDemoStatus("sillon").missing).toBeUndefined();
   });

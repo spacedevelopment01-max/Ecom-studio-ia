@@ -54,9 +54,9 @@ describe("NOCTIL : thème actif de la famille « Boutique spécialisée »", () 
     expect(ACTIVE_THEMES).toContain(ID);
     expect(themeKinds(ID)).toEqual(["specialty"]);
     expect(THEME_FAMILY[ID]).toBe("specialty");
-    expect(themeAllowed("creer", ID)).toBe(false);
-    expect(themeAllowed("vendre", ID)).toBe(true);
-    expect(themeAllowed("dominer", ID)).toBe(true);
+    // Droits par thème et par forfait (mission #190) : répartition encore à choisir, ouvert à tous les forfaits payants.
+    for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, ID)).toBe(true);
+    expect(themeAllowed(null, ID)).toBe(false);
     const t = catalogTheme(ID)!;
     expect(t.settings).toMatchObject({ conversion_profile: "astral", editorial_profile: "none" });
     expect(t.fonts).toEqual({ heading: "nunito_n8", body: "nunito_n4" });

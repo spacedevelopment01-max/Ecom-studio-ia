@@ -1,4 +1,5 @@
 "use client";
+import { ThemeRightsAdmin } from "./admin-theme-rights";
 import { MusicLibraryAdmin } from "./admin-music";
 import { PACKS, PACKS_FOR_SALE, PLAN_IDS, PLANS } from "@/lib/plans";
 import { useId, useState } from "react";
@@ -48,6 +49,7 @@ const SECTIONS = [
   ["bord", "Tableau de bord", "Dashboard"],
   ["clients", "Clients", "Customers"],
   ["abonnements", "Abonnements", "Subscriptions"],
+  ["themes", "Thèmes et forfaits", "Themes and plans"],
   ["rdv", "Rendez-vous", "Appointments"],
   ["compta", "Comptabilité", "Accounting"],
   ["ia", "Fournisseurs IA", "AI providers"],
@@ -135,6 +137,7 @@ export function AdminConsole() {
             {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "compta" && <AccountingView />}
             {tab === "abonnements" && <SubscriptionsAdmin />}
+            {tab === "themes" && <ThemeRightsAdmin />}
             {tab === "rdv" && <CallsAdmin />}
             {tab === "conso" && <Usage data={data} />}
             {tab === "sante" && <Health data={data} reload={reload} />}

@@ -35,13 +35,14 @@ const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.i
 const FROM_MOCKUPS = new Set(["table-saison", "atelier-nuance", "parenthese", "phase", "fraise", "sillon", "onde", "aplat", "maison-horizon"]);
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 47 thèmes (30 anciens, lisibles seulement, + 17 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, TABLE SAISON #175, ATELIER NUANCE #177, PARENTHÈSE, PHASE, MAISON & HORIZON #172 et APLAT #187) et n'en propose que 17 (catalogue actif), présentés en français et en anglais", () => {
+  it("définit 47 thèmes (30 anciens, lisibles seulement, + 17 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, TABLE SAISON #175, ATELIER NUANCE #177, PARENTHÈSE, PHASE, MAISON & HORIZON #172 et APLAT #187) et n'en propose que 15 (thèmes sur maquettes, mission #190), présentés en français et en anglais", () => {
     expect(DIRECTIONS).toHaveLength(47);
     expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(47);
     expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(47);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
+    // Mission #190 : 15 thèmes sur maquettes proposés ; ORBE et ALCÔVE (créés avant les maquettes) ne le sont plus.
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "rive", "sillon", "noctil", "traverse", "heuren", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["table-saison", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false], ["maison-horizon", false], ["aplat", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["museau-club", false], ["souple", false], ["table-saison", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false], ["maison-horizon", false], ["aplat", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -209,7 +210,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const spec = sampleSpec("atelier");
     expect(localThemeCommand(spec, "applique la direction Onde", null).direction).toBe("onde");
     expect(localThemeCommand(spec, "passe en style fraise", null).direction).toBe("fraise");
-    expect(localThemeCommand(spec, "je veux le thème Orbe", null).direction).toBe("orbe");
+    expect(localThemeCommand(spec, "je veux le thème Souple", null).direction).toBe("souple");
+    // ORBE, retiré le 25 octobre (créé avant les maquettes) : plus jamais appliqué.
+    expect(localThemeCommand(spec, "je veux le thème Orbe", null).direction).toBeUndefined();
     expect(localThemeCommand(spec, "switch to the Rive theme", null).direction).toBe("rive");
     expect(localThemeCommand(spec, "apply the Rive style", null).direction).toBe("rive");
     expect(localThemeCommand(spec, "style rive", null).direction).toBe("rive");

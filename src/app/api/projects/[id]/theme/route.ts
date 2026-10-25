@@ -1,3 +1,4 @@
+import { loadThemeRights } from "@/lib/theme/theme-rights-store";
 import { planAllowsSection } from "@/lib/plan-entitlements";
 import { planOfProject } from "@/lib/plan-gates";
 import { PLANS } from "@/lib/plans";
@@ -42,7 +43,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const kind = recommendation.category.kind;
   const plan=planOfProject(p.id);
   const entitlements=plan?{librarySections:PLANS[plan].librarySections,themeEditing:PLANS[plan].themeEditing}:null;
-  if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : []), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
+  if (!cur) return ok({ current: null, versions: listThemeVersions(p.id), messages, directions: directionCards(ui, p.brand?.direction ? [p.brand.direction] : [], loadThemeRights()), sandbox: previewSandbox(), storeKind: recommendation.category, recommendation });
   // Section de la bibliothèque, en-tête, pied de page : leurs dispositions sont celles de la famille (panneau
   // « Réglages ») ; l'ancien menu « Choisir la disposition » n'est gardé que pour les autres sections.
   const layoutOf = (s: (typeof cur.spec.templates)[string]["sections"][string]) => (!cur.spec.imported && familyPanel(cur.spec, projectKind(p), s, ui) ? undefined : layoutChoices(cur.spec, s, ui));
@@ -72,7 +73,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     messages,
     // Vignettes composées avec le contenu du projet (photos, nom, textes) plutôt que les captures d'exemple.
     // Le thème installé reste listé même s'il est retiré du catalogue (conservé, signalé, jamais proposé ailleurs).
-    directions: directionCards(ui, [cur.spec.direction]).map((d) => (p.brand ? { ...d, preview: `/api/projects/${p.id}/theme/direction-thumb?d=${d.id}` } : d)),
+    directions: directionCards(ui, [cur.spec.direction], loadThemeRights()).map((d) => (p.brand ? { ...d, preview: `/api/projects/${p.id}/theme/direction-thumb?d=${d.id}` } : d)),
     // Catégorie du projet (contrat « catégorie / thèmes éligibles / justification ») et sections devenues incompatibles
     // avec le thème installé (jamais supprimées : signalées).
     storeKind: recommendation.category,

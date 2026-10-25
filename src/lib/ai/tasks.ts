@@ -181,8 +181,8 @@ const BrandSchema = z.object({
   // Palette absente : celle des couleurs mesurées du produit est appliquée par l'appelant.
   palette: z.object({ primary: hex("#3A3F4B"), secondary: hex("#E6E2DC"), accent: hex("#B5714A"), light: hex("#F7F5F2"), dark: hex("#16181D") }).optional().catch(undefined),
   fonts: z.object({ heading: str, body: str }).catch({ heading: "", body: "" }),
-  // Catalogue actif seulement (consigne 6264783184) ; une réponse hors catalogue retombe sur ORBE, puis l'appelant corrige par catégorie.
-  direction: z.enum(ACTIVE_DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("orbe"),
+  // Catalogue proposé seulement (thèmes sur maquettes) ; une réponse hors catalogue retombe sur SOUPLE, puis l'appelant corrige par catégorie.
+  direction: z.enum(ACTIVE_DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("souple"),
   directionReason: str,
   logo: z
     .object({

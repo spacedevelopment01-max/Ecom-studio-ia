@@ -73,7 +73,8 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       // Catégorie reconnue (réglage du projet) et recommandation cohérente.
       expect(projectStoreKind(project).kind).toBe(EXPECT[id].kind);
       const r = themeRecommendation(project, "fr");
-      expect(r.eligible).toContain(id);
+      // ORBE, retiré du catalogue proposé le 25 octobre (créé avant les maquettes), reste lisible mais n'est plus proposé.
+      if (id === "orbe") expect(r.eligible).not.toContain(id); else expect(r.eligible).toContain(id);
       expect(r.category.kind).toBe(EXPECT[id].kind);
       // Galerie « Sections » : la famille du thème est proposée, les deux autres familles de référence non.
       const lib = compatibleSectionTypes(spec, EXPECT[id].kind);

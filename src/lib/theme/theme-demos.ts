@@ -13,12 +13,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { DATA_DIR } from "../db";
-import { REFERENCE_THEMES } from "./theme-fit";
+import { ACTIVE_THEMES } from "./theme-fit";
 
 export const themeDemosDir = () => process.env.THEME_DEMOS_DIR || path.join(DATA_DIR, "theme-demos");
 
 /** Chaque thème du catalogue actif est montré avec sa propre démonstration (même identifiant). */
-export const DEMO_THEMES = REFERENCE_THEMES as readonly string[];
+export const DEMO_THEMES = ACTIVE_THEMES as readonly string[];
 export const isDemoTheme = (id: string) => DEMO_THEMES.includes(id);
 
 export type ThemeDemoPage = { file: string; label: string };
@@ -32,7 +32,7 @@ export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; 
 /** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE, MAISON & HORIZON) ; les autres thèmes ont leurs médias suivis dans le
  * dépôt (Atelier Rive depuis le dossier du 23 octobre : public/theme-assets/rive/). MAISON & HORIZON (issue #172) : les 90
  * images ne sont pas publiées sur GitHub (consigne du dossier), elles restent dans public/demo/maison-horizon/. */
-export const KIT_THEMES = ["fraise", "onde", "orbe", "maison-horizon", "aplat"] as const;
+export const KIT_THEMES = ["fraise", "onde", "orbe", "maison-horizon", "aplat", "phase"] as const;
 export const kitDir = (id: string, root = process.cwd()) => path.join(root, "public", "demo", id);
 
 const LOCK = () => path.join(themeDemosDir(), ".preparation.json");

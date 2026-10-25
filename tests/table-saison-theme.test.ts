@@ -12,7 +12,7 @@ import { applyOps, validateSpec } from "@/lib/theme/ops";
 import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { ACTIVE_DIRECTIONS } from "@/lib/theme/directions";
 import { themeKinds } from "@/lib/theme/theme-fit";
-import { planForTheme } from "@/lib/theme/theme-access";
+import { plansForTheme } from "@/lib/theme/theme-access";
 import { libraryEntry } from "@/lib/theme/section-library";
 import { runWithLang } from "@/lib/i18n-server";
 import { TS_PAGES } from "@/lib/theme/table-saison";
@@ -25,10 +25,11 @@ const types = (spec: { templates: Record<string, { order: string[]; sections: Re
 const visibleText = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 describe("TABLE SAISON : thème restaurant du catalogue", () => {
-  it("est actif, de la famille Services, ouvert dès « Vendre », avec ses 23 sections dans la bibliothèque (FR et EN)", () => {
+  it("est actif, conçu pour les services, ouvert selon les droits par thème, avec ses 23 sections dans la bibliothèque (FR et EN)", () => {
     expect(ACTIVE_DIRECTIONS.map((d) => d.id)).toContain("table-saison");
     expect(themeKinds("table-saison")).toEqual(["services"]);
-    expect(planForTheme("table-saison")).toBe("vendre");
+    // Plus de familles ni de rang (mission #190) : répartition par forfait encore à choisir, le thème est ouvert à tous.
+    expect(plansForTheme("table-saison")).toEqual(["creer", "vendre", "dominer"]);
     const sections = fs.readdirSync(path.join("theme-base", "sections")).filter((f) => f.startsWith("ts-")).map((f) => f.replace(".liquid", ""));
     expect(sections).toHaveLength(23);
     for (const t of sections) { expect(libraryEntry(t, "fr")?.name, t).toBeTruthy(); expect(libraryEntry(t, "en")?.name, t).toBeTruthy(); }

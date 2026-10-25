@@ -13,7 +13,6 @@ import type { ThemeDemoStatus } from "@/lib/theme/theme-demos";
 import { useLang, useT } from "../i18n";
 import { PLANS, type PlanId } from "@/lib/plans";
 
-const RANK: Record<PlanId, number> = { creer: 1, vendre: 2, dominer: 3 };
 
 /**
  * Grille des thèmes de référence (catalogue actif depuis le 19 octobre) : aperçu réel, ambiance, combinaison
@@ -39,7 +38,7 @@ export function ThemeGrid({ directions, current, onPick, busy, projectId, sandbo
         const unfit = !on && excluded.get(d.id);
         const retired = !!d.retired;
         const preview = d.preview;
-        const locked = plan !== undefined && !on && (!plan || !d.plan || RANK[d.plan] > RANK[plan]);
+        const locked = plan !== undefined && !on && (!plan || !(d.plans ?? []).includes(plan));
         const reference = (REFERENCE_THEMES as readonly string[]).includes(d.id);
         const demo = demos?.[d.id];
         return (
@@ -144,7 +143,7 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
   const blockedFor = (d: DirectionCard): string | null => {
     if (!canApply) return t("Disponible après la préparation de votre projet", "Available after preparing your project");
     if (d.id !== current && excluded.get(d.id)) return excluded.get(d.id)!;
-    if (plan !== undefined && d.id !== current && (!plan || !d.plan || RANK[d.plan] > RANK[plan])) return d.plan ? t(`Avec le forfait ${PLANS[d.plan].name.fr}`, `With the ${PLANS[d.plan].name.en} plan`) : t("Forfait requis", "Plan required");
+    if (plan !== undefined && d.id !== current && (!plan || !(d.plans ?? []).includes(plan))) return d.plan ? t(`Avec le forfait ${PLANS[d.plan].name.fr}`, `With the ${PLANS[d.plan].name.en} plan`) : t("Forfait requis", "Plan required");
     return null;
   };
   return (
@@ -152,12 +151,12 @@ export function ThemeGallery({ open, onClose, projectId, directions, current, ca
       <p className="mb-5 text-sm text-muted">
         {services
           ? t(
-              "Quinze thèmes de référence, accessibles selon votre forfait (1, 3 ou tous par famille), chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. « Voir la démo complète » ouvre le site de démonstration du thème en entier, avec nos contenus d'exemple : votre projet ne change pas pendant la visite. « Choisir ce thème » crée ensuite une nouvelle version du site avec vos textes, prestations et images, et l'ancienne version reste restaurable.",
-              "Fifteen reference themes, available according to your plan (1, 3 or all per family), each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. “View the full demo” opens the theme's whole demo website, with our sample content: your project does not change while you browse. “Choose this theme” then creates a new version of the website with your copy, services and images, and the previous version can still be restored.",
+              "Les thèmes du catalogue, tous refaits d'après nos maquettes : chacun a sa composition, ses typographies, son en-tête, son pied de page et ses animations, et peut servir à tout type de projet (aucune famille). Ceux de votre forfait sont ouverts ; le studio signale celui qui correspond le mieux à votre activité. « Voir la démo complète » ouvre le site de démonstration entier du thème, avec nos contenus d'exemple ; votre site ne change qu'à « Choisir ce thème ».",
+              "The catalogue themes, all rebuilt from our mockups: each has its own layout, typography, header, footer and animations, and can serve any kind of project (no families). Those included in your plan are open; the studio points out the one that best matches your business. “View the full demo” opens the theme's whole demo website, with our sample content; your site only changes when you click “Choose this theme”.",
             )
           : t(
-              "Quinze thèmes de référence, accessibles selon votre forfait (1, 3 ou tous par famille), chacun conçu pour une catégorie de projet (prestations de services, e-commerce, boutique spécialisée), avec sa composition, ses typographies, son en-tête, son pied de page et ses animations. « Voir la démo complète » ouvre toute la boutique de démonstration du thème, avec nos produits et visuels d'exemple : votre projet ne change pas pendant la visite. « Choisir ce thème » crée ensuite une nouvelle version de la boutique avec vos textes, images et produit, et l'ancienne version reste restaurable. Tout reste modifiable ensuite dans l'éditeur Shopify.",
-              "Fifteen reference themes, available according to your plan (1, 3 or all per family), each designed for one project category (services, e-commerce, specialty store), with its own layout, typography, header, footer and animations. “View the full demo” opens the theme's whole demo store, with our sample products and visuals: your project does not change while you browse. “Choose this theme” then creates a new version of the store with your copy, images and product, and the previous version can still be restored. Everything stays editable afterwards in the Shopify editor.",
+              "Les thèmes du catalogue, tous refaits d'après nos maquettes : chacun a sa composition, ses typographies, son en-tête, son pied de page et ses animations, et peut servir à tout type de projet (aucune famille). Ceux de votre forfait sont ouverts ; le studio signale celui qui correspond le mieux à votre boutique. « Voir la démo complète » ouvre la boutique de démonstration entière du thème, avec nos produits d'exemple ; votre boutique ne change qu'à « Choisir ce thème ».",
+              "The catalogue themes, all rebuilt from our mockups: each has its own layout, typography, header, footer and animations, and can serve any kind of project (no families). Those included in your plan are open; the studio points out the one that best matches your store. “View the full demo” opens the theme's whole demo store, with our sample products; your store only changes when you click “Choose this theme”.",
             )}
         {!canApply && t(" Les thèmes s'appliquent une fois la boutique créée (après l'analyse du produit).", " Themes can be applied once the store has been created (after the product analysis).")}
       </p>

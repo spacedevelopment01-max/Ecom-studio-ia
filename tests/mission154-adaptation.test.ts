@@ -44,7 +44,8 @@ const fr = <T,>(f: () => T) => runWithLang({ ui: 'fr', content: 'fr' }, f);
 beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('No external fetch in mission154'); }));
 afterEach(() => vi.unstubAllGlobals());
 // Intégration #159 / #161 : les onze thèmes de référence passent par la même adaptation client.
-it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heuren', 'alcove', 'museau-club', 'souple'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
+// Mission #190 : ORBE et ALCÔVE (créés avant les maquettes) ne peuvent plus être choisis pour un projet ; les autres oui.
+it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'rive', 'heuren', 'museau-club', 'souple'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
     const f = await clientFixture({ services: direction === 'rive', catalog: ['orbe', 'onde', 'heuren', 'alcove', 'souple'].includes(direction) });
     const before = loadProject(f.pid).brand;
     const built = await fr(() => buildShop(null, f.pid, { direction, useAi: false }));

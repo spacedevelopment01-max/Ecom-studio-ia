@@ -12,7 +12,8 @@ import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
-import { planForTheme, themeRank } from "./theme-access";
+import { planForTheme, plansForTheme, themeRank } from "./theme-access";
+import { DEFAULT_THEME_RIGHTS, type ThemeRights } from "./theme-rights";
 import { isActiveThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
@@ -557,7 +558,7 @@ export function directionPreview(id: string): string {
  * Cartes des thèmes proposés : les thèmes actifs, plus (`include`) le thème déjà installé par le projet s'il est retiré
  * du catalogue — affiché comme « thème actuel, retiré », jamais proposé à un autre projet.
  */
-export function directionCards(lang: Lang = "fr", include: readonly string[] = []) {
+export function directionCards(lang: Lang = "fr", include: readonly string[] = [], rights: ThemeRights = DEFAULT_THEME_RIGHTS) {
   const cl = CHROME_LABEL[lang];
   const rank = (id: string) => themeRank(id) ?? 99;
   const list = [...ACTIVE_DIRECTIONS, ...DIRECTIONS.filter((d) => include.includes(d.id) && !isActiveThemeId(d.id))];
@@ -571,7 +572,9 @@ export function directionCards(lang: Lang = "fr", include: readonly string[] = [
     // Une seule capture par direction (les « .en.jpg » n'existent pas) : jamais d'image cassée en anglais.
     preview: directionPreview(d.id),
     chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
-    plan: planForTheme(d.id),
+    /** Forfaits qui ouvrent ce thème (droits par thème, mission #190) ; `plan` = le moins cher d'entre eux. */
+    plans: plansForTheme(d.id, rights),
+    plan: planForTheme(d.id, rights),
   }));
 }
 export type DirectionCard = ReturnType<typeof directionCards>[number];

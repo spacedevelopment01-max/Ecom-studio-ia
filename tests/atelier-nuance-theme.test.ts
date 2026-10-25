@@ -13,7 +13,7 @@ import { applyOps, validateSpec } from "@/lib/theme/ops";
 import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { ACTIVE_DIRECTIONS } from "@/lib/theme/directions";
 import { themeKinds } from "@/lib/theme/theme-fit";
-import { planForTheme } from "@/lib/theme/theme-access";
+import { plansForTheme } from "@/lib/theme/theme-access";
 import { libraryEntry } from "@/lib/theme/section-library";
 import { runWithLang } from "@/lib/i18n-server";
 import { AN_PAGES, clientServices, parseDuration, parsePrice } from "@/lib/theme/atelier-nuance";
@@ -27,10 +27,11 @@ const visibleText = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g,
 const config = (html: string) => JSON.parse(html.match(/<script type="application\/json" id="an-config">([\s\S]*?)<\/script>/)![1]);
 
 describe("ATELIER NUANCE : thème salon du catalogue", () => {
-  it("est actif, de la famille Services, ouvert dès « Vendre », avec ses 27 sections dans la bibliothèque (FR et EN)", () => {
+  it("est actif, conçu pour les services, ouvert selon les droits par thème, avec ses 27 sections dans la bibliothèque (FR et EN)", () => {
     expect(ACTIVE_DIRECTIONS.map((d) => d.id)).toContain("atelier-nuance");
     expect(themeKinds("atelier-nuance")).toEqual(["services"]);
-    expect(planForTheme("atelier-nuance")).toBe("vendre");
+    // Plus de familles ni de rang (mission #190) : répartition par forfait encore à choisir, le thème est ouvert à tous.
+    expect(plansForTheme("atelier-nuance")).toEqual(["creer", "vendre", "dominer"]);
     const sections = fs.readdirSync(path.join("theme-base", "sections")).filter((f) => f.startsWith("an-")).map((f) => f.replace(".liquid", ""));
     expect(sections).toHaveLength(27);
     for (const t of sections) { expect(libraryEntry(t, "fr")?.name, t).toBeTruthy(); expect(libraryEntry(t, "en")?.name, t).toBeTruthy(); }

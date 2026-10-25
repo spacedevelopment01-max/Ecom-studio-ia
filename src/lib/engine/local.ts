@@ -543,7 +543,7 @@ function proposeNames(sector: string, seed: string): string[] {
 export function localBrand(p: ProductProfile, providedBrand?: string, biz?: BusinessInfo | null): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
   const services = isServicesBusiness(biz);
   const sector = (p.sector ?? "maison") as SectorId;
-  const direction: DirectionId = services ? "rive" : ((biz as { storeType?: string } | null | undefined)?.storeType === "multi" ? "orbe" : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison);
+  const direction: DirectionId = services ? "rive" : ((biz as { storeType?: string } | null | undefined)?.storeType === "multi" ? "souple" : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison);
   const d = DIRECTIONS.find((x) => x.id === direction)!;
   const seed = p.visual.colors.map((c) => c.hex).join("") + (p.name ?? "");
   const proposals = services ? serviceNames(p, seed) : proposeNames(sector, seed);

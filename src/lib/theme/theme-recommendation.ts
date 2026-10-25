@@ -11,7 +11,7 @@ import { memory, type Project } from "../projects";
 import { ACTIVE_DIRECTIONS, isRetiredDirection } from "./directions";
 import { json } from "../db";
 import { storeKindOf, type StoreKind, type StoreKindVerdict } from "./store-kind";
-import { themeFits, themeFitReason, themeKinds, retiredThemeReason } from "./theme-fit";
+import { themeDesignedFor, themeFits, themeFitReason, themeKinds, retiredThemeReason } from "./theme-fit";
 
 /** Partie du contrat amont lue ici (sous-ensemble du `ReadyContract` de la PR #138 ; champs facultatifs tolérés). */
 type ContractRecommendation = {
@@ -96,9 +96,11 @@ export function themeRecommendation(p: Pick<Project, "id" | "business" | "storeT
     prepared: prepared?.kind ?? null,
   });
   const kind = category.kind;
-  // Catalogue actif seulement (consigne 6264783184) : aucun repli vers l'ancien catalogue, même si aucun thème actif ne convient.
+  // Catalogue proposé seulement (thèmes sur maquettes) ; plus de familles (mission #190) : tout thème proposé peut être
+  // choisi, l'usage prévu de chaque thème sert seulement à recommander.
   const eligible = ACTIVE_DIRECTIONS.map((d) => d.id).filter((id) => themeFits(id, kind));
   const excluded = ACTIVE_DIRECTIONS.map((d) => d.id).filter((id) => !themeFits(id, kind)).map((id) => ({ id, reason: themeFitReason(id, kind, lang) }));
+  const designed = eligible.filter((id) => themeDesignedFor(id, kind));
   const c = readyContractOf(p.id);
   const warnings: string[] = [];
   if (c?.recommendation) {
@@ -107,19 +109,19 @@ export function themeRecommendation(p: Pick<Project, "id" | "business" | "storeT
     const known = (x: string | null | undefined): x is string => !!x && ACTIVE_DIRECTIONS.some((d) => d.id === x);
     for (const x of [r.recommendedId, ...(r.alternatives ?? []).map((a) => a.id)]) if (x && isRetiredDirection(x)) warnings.push(lang === "en" ? `The preparation contract cites ${x}, withdrawn from the catalogue: ignored.` : `Le contrat amont cite ${x}, retiré du catalogue : ignoré.`);
     let recommended: string | null = null;
-    if (id && !known(id) && !isRetiredDirection(id)) warnings.push(lang === "en" ? `The preparation contract recommends an unknown theme (${id}).` : `Le contrat amont recommande un thème inconnu du studio (${id}).`);
-    else if (id && !themeFits(id, kind)) warnings.push(lang === "en" ? `The preparation contract recommends ${id}, which is not designed for a ${kind} project; it is not applied.` : `Le contrat amont recommande ${id}, qui n'est pas conçu pour un projet « ${kind} » ; il n'est pas appliqué.`);
+    // Thème inconnu : signalé ; thème retiré du catalogue (ancien ou créé avant les maquettes) : déjà signalé, jamais appliqué.
+    if (id && !known(id)) { if (!isRetiredDirection(id)) warnings.push(lang === "en" ? `The preparation contract recommends an unknown theme (${id}).` : `Le contrat amont recommande un thème inconnu du studio (${id}).`); }
     else recommended = id;
-    const alternatives = (r.alternatives ?? []).filter((a) => known(a.id) && themeFits(a.id, kind)).map((a) => ({ id: a.id, reasons: a.reasons ?? [] }));
+    const alternatives = (r.alternatives ?? []).filter((a) => known(a.id)).map((a) => ({ id: a.id, reasons: a.reasons ?? [] }));
     return { category, eligible, excluded, recommended, alternatives, reasons: r.reasons ?? [], source: "preparation", contract: { revision: c.revision ?? null, provenance: c.provenance ?? null, status: r.status ?? null }, warnings };
   }
-  // Sans contrat amont : aucun thème n'est inventé comme « recommandé » ; les thèmes de référence de la catégorie
-  // sont proposés en premier, avec le motif, et la décision reste au client.
-  const reference = eligible.filter((id) => themeKinds(id).length === 1);
+  // Sans contrat amont : les thèmes conçus d'abord pour ce type de projet sont signalés en premier, avec le motif ; tous
+  // les autres restent proposés et la décision revient au client.
+  const reference = designed;
   return {
     category, eligible, excluded,
     recommended: reference[0] ?? null,
-    alternatives: reference.slice(1).map((id) => ({ id, reasons: [lang === "en" ? "Reference theme designed for this category." : "Thème de référence conçu pour cette catégorie."] })),
+    alternatives: reference.slice(1).map((id) => ({ id, reasons: [lang === "en" ? "Theme designed first for this kind of project." : "Thème conçu d'abord pour ce type de projet."] })),
     reasons: reference.length ? [lang === "en" ? "No preparation contract yet: the reference theme of the category is proposed first; the choice remains yours." : "Aucun contrat amont pour l'instant : le thème de référence de la catégorie est proposé en premier ; le choix vous revient."] : [lang === "en" ? "No preparation contract and no reference theme for this category: all eligible themes are offered without preference." : "Aucun contrat amont ni thème de référence pour cette catégorie : tous les thèmes éligibles sont proposés sans préférence."],
     source: reference.length ? "local" : "none", contract: null, warnings,
   };

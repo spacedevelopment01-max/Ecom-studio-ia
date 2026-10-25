@@ -40,16 +40,16 @@ describe("Catégories du projet (prestations de services / e-commerce / boutique
   });
 });
 
-describe("Éligibilité des thèmes par catégorie", () => {
-  it("FRAISE → boutique spécialisée ; ORBE et ONDE (refonte de l'issue #158) → e-commerce ; Atelier Rive → prestations ; les 30 anciens thèmes retirés ne servent plus aucune catégorie", () => {
+describe("Plus de familles dans le choix des thèmes (mission #190)", () => {
+  it("l'usage prévu sert à recommander ; tout thème proposé convient à toute catégorie ; un thème retiré n'est jamais proposé", () => {
     expect(themeKinds("fraise")).toEqual(["specialty"]);
     expect(themeKinds("onde")).toEqual(["catalog"]);
-    expect(themeKinds("orbe")).toEqual(["catalog"]);
     expect(themeKinds("rive")).toEqual(["services"]);
     for (const d of DIRECTIONS) if (!(REFERENCE_THEMES as readonly string[]).includes(d.id)) expect(themeKinds(d.id)).toEqual([]);
-    expect(themeFits("fraise", "catalog")).toBe(false);
-    expect(themeFitReason("rive", "specialty", "fr")).toMatch(/prestations de services/);
+    expect(themeFits("fraise", "catalog")).toBe(true);
+    expect(themeFitReason("rive", "specialty", "fr")).toBe("");
     expect(themeFitReason("vitrine", "specialty")).toMatch(/retiré du catalogue/);
+    expect(themeFitReason("orbe", "catalog")).toMatch(/retiré du catalogue le 25 octobre/);
   });
 });
 

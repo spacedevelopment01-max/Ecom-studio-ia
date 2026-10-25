@@ -4,11 +4,12 @@
  * tableau de comparaison dépliable, cartes des packs. Tout vient de src/lib/plans.ts (aucun prix en dur).
  */
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowRight, Check, ChevronDown, Minus } from "lucide-react";
 import { cx } from "./ui";
 import { useLang, useT } from "./i18n";
 import { formatEur, Soon } from "./billing-client";
+import { themesOpenTo, undecidedPlans, type ThemeRights } from "@/lib/theme/theme-rights";
 import { monthlyEquivalent, PACKS_FOR_SALE, PACKS, PLAN_IDS, PLANS, type Billing, type PackId, type Plan, type PlanId } from "@/lib/plans";
 
 type Line = { text: ReactNode; soon?: boolean };
@@ -25,11 +26,36 @@ const LEVEL = {
   intermediate: { fr: "intermédiaires", en: "intermediate" },
 } as const;
 
+
+/** Thèmes ouverts au forfait (droits par thème et par forfait, mission #190) : jamais de famille ni de quota inventé. */
+function themesLine(plan: PlanId, t: TFn, rights: ThemeRights | null): string {
+  if (!rights) return t("Thèmes du catalogue selon votre forfait", "Catalogue themes according to your plan");
+  const count = themesOpenTo(plan, rights).length;
+  return undecidedPlans(rights).includes(plan) ? t(`Tous les thèmes du catalogue (${count})`, `All catalogue themes (${count})`) : t(`${count} thème${count > 1 ? "s" : ""} du catalogue`, `${count} catalogue theme${count > 1 ? "s" : ""}`);
+}
+
+/** Sections : celles du thème choisi, plus les fonctions de la bibliothèque selon le forfait (sans famille). */
+function sectionsLine(p: Plan, t: TFn): string {
+  return p.librarySections >= 20 ? t("Les sections de votre thème et toute la bibliothèque de sections", "Your theme's sections and the whole section library") : p.librarySections >= 12 ? t("Les sections de votre thème, les fonctions essentielles et avancées de la bibliothèque", "Your theme's sections, plus the library's essential and advanced functions") : t("Les sections de votre thème et les fonctions essentielles de la bibliothèque", "Your theme's sections and the library's essential functions");
+}
+
+/** Droits par thème publiés par le serveur (lecture seule, sans donnée privée). */
+function useThemeRights(initial?: ThemeRights | null): ThemeRights | null {
+  const [rights, setRights] = useState<ThemeRights | null>(initial ?? null);
+  useEffect(() => {
+    if (initial) return;
+    let live = true;
+    fetch("/api/public/theme-rights").then((r) => (r.ok ? r.json() : null)).then((j) => { if (live && j?.rights) setRights(j.rights as ThemeRights); }).catch(() => {});
+    return () => { live = false; };
+  }, [initial]);
+  return rights;
+}
+
 /** Les avantages affichés sur la carte d'un forfait (le détail est dans le tableau). Uniquement ce qui est configuré. */
-function planLines(p: Plan, t: TFn): Line[] {
+function planLines(p: Plan, t: TFn, rights: ThemeRights | null): Line[] {
   const lines: Line[] = [
-    { text: p.id === "dominer" ? t("Tous les thèmes disponibles par famille", "All available themes per family") : t(`${p.themes>1?"Jusqu’à ":""}${p.themes} thème${p.themes>1?"s":""} par famille`, `${p.themes>1?"Up to ":""}${p.themes} theme${p.themes>1?"s":""} per family`) },
-    { text: t(`${p.librarySections} fonctions de sections dans la bibliothèque de votre famille`, `${p.librarySections} section functions in your family library`) },
+    { text: themesLine(p.id, t, rights) },
+    { text: sectionsLine(p, t) },
     { text: p.themeEditing === "basic" ? t("Personnalisation IA basique : textes, images, couleurs", "Basic AI editing: text, images, colours") : p.themeEditing === "advanced" ? t("Personnalisation IA avancée", "Advanced AI editing") : t("Personnalisation sur mesure", "Custom personalisation") },
     { text: t("Boutique, logo et images créés par l'IA", "Store, logo and images created by AI") },
     { text: p.ads === "none" ? t("Publicité et aide aux campagnes non incluses", "Advertising and campaign assistance not included") : t("Publicité et aide aux campagnes incluses", "Advertising and campaign assistance included") },
@@ -75,6 +101,8 @@ export function BillingSwitch({ value, onChange, className }: { value: Billing; 
 }
 
 export type PricingProps = {
+  /** Droits par thème lus par le serveur (sinon demandés à /api/public/theme-rights). */
+  themeRights?: ThemeRights | null;
   /** Page d'accueil : la personne est-elle connectée (lien vers Mon compte plutôt que l'inscription) ? */
   loggedIn?: boolean;
   /** Forfait en cours (Mon compte). */
@@ -123,7 +151,8 @@ function DiscoveryCard({ loggedIn }: { loggedIn?: boolean }) {
 }
 
 /** Interrupteur + cartes des forfaits (3, ou 4 avec Découverte sur l'accueil). */
-export function PricingCards({ loggedIn, current: currentIn, initialBilling, selected, onChoose, busy, disabledReason, newSubscription, withDiscovery }: PricingProps) {
+export function PricingCards({ loggedIn, current: currentIn, initialBilling, selected, onChoose, busy, disabledReason, newSubscription, withDiscovery, themeRights }: PricingProps) {
+  const rights = useThemeRights(themeRights);
   const current = newSubscription ? undefined : currentIn;
   const t = useT();
   const { lang } = useLang();
@@ -157,7 +186,7 @@ export function PricingCards({ loggedIn, current: currentIn, initialBilling, sel
                 <PriceTag plan={p} billing={billing} />
               </div>
               <ul className="mt-6 grid gap-2.5 text-[14px] leading-snug text-ink-2">
-                {planLines(p, t).map((l, i) => (
+                {planLines(p, t, rights).map((l, i) => (
                   <li key={i} className="flex gap-2.5">
                     <Check className="mt-0.5 size-4 shrink-0 text-signal" aria-hidden />
                     <span className="min-w-0">{l.text}{l.soon && <> <Soon /></>}</span>
@@ -177,14 +206,15 @@ export function PricingCards({ loggedIn, current: currentIn, initialBilling, sel
           );
         })}
       </div>
-      <p className="mt-4 text-center text-sm text-muted">{t("Les droits s’appliquent aux thèmes disponibles de votre famille. Le catalogue cible comprend cinq thèmes par famille ; aucun thème à venir n’est annoncé comme déjà disponible. Les générations IA restent soumises au budget du projet.","Rights apply to available themes in your family. The target catalogue has five themes per family; future themes are not presented as already available. AI generation remains subject to the project budget.")}</p>
+      <p className="mt-4 text-center text-sm text-muted">{t("Les thèmes proposés sont ceux refaits d’après nos maquettes ; aucun thème à venir n’est annoncé comme déjà disponible. Les générations IA restent soumises au budget du projet.","The themes offered are those rebuilt from our mockups; future themes are not presented as already available. AI generation remains subject to the project budget.")}</p>
       {disabledReason && <p className="mt-4 text-center text-sm text-muted">{disabledReason}</p>}
     </div>
   );
 }
 
 /** Tableau de comparaison dépliable (défilement horizontal du tableau seul, 1re colonne collante). */
-export function CompareTable({ className }: { className?: string }) {
+export function CompareTable({ className, themeRights }: { className?: string; themeRights?: ThemeRights | null }) {
+  const rights = useThemeRights(themeRights);
   const t = useT();
   const { lang } = useLang();
   const yes = <Check className="mx-auto size-4 text-signal" aria-label={t("Oui", "Yes")} />;
@@ -195,8 +225,8 @@ export function CompareTable({ className }: { className?: string }) {
   const rows: [string, ReactNode, (p: Plan) => ReactNode][] = [
     [t("Projet réel par abonnement", "Real project per subscription"), "0", () => "1"],
     [t("Boutique active par projet", "Active store per project"), "0", () => "1"],
-    [t("Thèmes accessibles par famille", "Available themes per family"), t("Démo", "Demo"), (p) => p.id === "dominer" ? t("Tous les disponibles", "All available") : p.themes],
-    [t("Fonctions de sections de la bibliothèque par famille", "Library section functions per family"), t("Démo", "Demo"), (p) => p.librarySections],
+    [t("Thèmes du catalogue", "Catalogue themes"), t("Démo", "Demo"), (p) => (rights ? (undecidedPlans(rights).includes(p.id) ? t(`Tous (${themesOpenTo(p.id, rights).length})`, `All (${themesOpenTo(p.id, rights).length})`) : themesOpenTo(p.id, rights).length) : "—")],
+    [t("Sections de la bibliothèque (en plus de celles du thème)", "Library sections (on top of the theme's own)"), t("Démo", "Demo"), (p) => (p.librarySections >= 20 ? t("Toutes", "All") : p.librarySections >= 12 ? t("Essentielles et avancées", "Essential and advanced") : t("Essentielles", "Essential"))],
     [t("Personnalisation du thème par IA", "AI theme personalisation"), no, (p) => p.themeEditing === "basic" ? t("Basique", "Basic") : p.themeEditing === "advanced" ? t("Avancée", "Advanced") : t("Sur mesure", "Custom")],
     [t("Génération boutique, logo et images IA", "AI store, logo and image creation"), no, () => yes],
     [t("Publicités IA", "AI ads"), t("Démo", "Demo"), (p) => p.ads === "none" ? no : yes],

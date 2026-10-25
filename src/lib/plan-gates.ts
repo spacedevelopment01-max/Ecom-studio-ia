@@ -11,7 +11,8 @@ import { HttpError, type User } from "./auth";
 import { one } from "./db";
 import { PLANS, type Plan, type PlanId } from "./plans";
 import { projectPlan } from "./project-billing";
-import { themeAllowed, planForTheme, themeRank, themeStatus } from "./theme/theme-access";
+import { themeAllowed, plansForTheme, themeRank, themeStatus } from "./theme/theme-access";
+import { loadThemeRights } from "./theme/theme-rights-store";
 import { retiredThemeReason } from "./theme/theme-fit";
 import { L } from "./i18n-server";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
@@ -76,18 +77,20 @@ export function assertPageModels(projectId: string): PlanId {
 }
 
 /**
- * Sélection d'un thème de la bibliothèque : seuls les N premiers du forfait du projet. Le thème déjà utilisé par le
- * projet reste utilisable (changement de forfait à la baisse : rien n'est détruit).
+ * Sélection d'un thème du catalogue : thème proposé (refait d'après maquette) et ouvert au forfait du projet par les
+ * droits par thème (theme-rights.ts, réglés dans l'administration). Le thème déjà utilisé par le projet reste
+ * utilisable (changement de forfait à la baisse ou thème retiré du catalogue : rien n'est détruit).
  */
 export function assertThemeAllowed(projectId: string, directionId: string, currentDirection?: string | null) {
   if (currentDirection && currentDirection === directionId) return;
   const plan = requirePlan(null, projectId);
   if (themeRank(directionId) == null) throw new HttpError(400, L("Thème inconnu.", "Unknown theme."));
-  // Ancien catalogue (retiré le 19 octobre) : jamais pour une nouvelle sélection, même avec le forfait le plus large.
-  if (themeStatus(directionId) === "retired") throw new HttpError(400, L(retiredThemeReason("fr"), retiredThemeReason("en")));
-  if (!themeAllowed(plan, directionId)) {
-    const need = planForTheme(directionId);
-    throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)} (${PLANS[plan].themes} thèmes par famille). ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan (${PLANS[plan].themes} themes per family). ${needPlan(need)}`), "plan_upgrade");
+  // Thème retiré (ancien catalogue du 19 octobre, ou créé avant les maquettes) : jamais pour une nouvelle sélection.
+  if (themeStatus(directionId) === "retired") throw new HttpError(400, L(retiredThemeReason("fr", directionId), retiredThemeReason("en", directionId)));
+  const rights = loadThemeRights();
+  if (!themeAllowed(plan, directionId, rights)) {
+    const need = plansForTheme(directionId, rights).find((p) => p !== plan) ?? null;
+    throw new HttpError(402, L(`Ce thème n'est pas inclus dans le forfait ${name(plan)}. ${needPlan(need)}`, `This theme isn't included in the ${name(plan)} plan. ${needPlan(need)}`), "plan_upgrade");
   }
 }
 

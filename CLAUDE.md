@@ -44,10 +44,16 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158, TABLE SAISON par l'issue #175, ATELIER NUANCE par l'issue #177, PARENTHÈSE par la mission du 24 octobre, PR #179, PHASE par la mission du 25 octobre, PR #188, MAISON & HORIZON par l'issue #172, APLAT par la PR #187) :
-  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club**, **souple**, **table-saison**, **atelier-nuance**, **parenthese**, **phase**, **maison-horizon** et **aplat** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
-  sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
-  silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
+- **Catalogue de thèmes proposé** (mission #190 du 25 octobre 2026, inventaire `docs/INVENTAIRE-THEMES-190.md`) : seuls les
+  thèmes **refaits d'après les maquettes de Thomas** sont proposés (galerie, IA, commandes, recommandation, tarifs) :
+  **fraise**, **onde**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **museau-club**, **souple**,
+  **table-saison**, **atelier-nuance**, **parenthese**, **phase**, **maison-horizon** et **aplat** (`MAQUETTE_THEMES`,
+  `src/lib/theme/theme-fit.ts`). ORBE et ALCÔVE (créés avant les maquettes, aucune maquette retrouvée) et les 30 thèmes de
+  l'ancien catalogue ne sont ni sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de
+  lecture), jamais de migration silencieuse ni de suppression. **Plus de familles** pour le choix, les quotas et les
+  droits : tout thème proposé sert à tout projet ; l'usage prévu (`themeKinds`) ne sert qu'à recommander. **Droits par
+  thème et par forfait** (`src/lib/theme/theme-rights.ts`, Administration › Thèmes et forfaits) : Thomas choisira les
+  thèmes des forfaits à 49 € et 89 € ; tant qu'un forfait est « à choisir », tous les thèmes proposés lui restent ouverts.
 - **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée ; reprise des sept planches corrigées du 24 octobre, sections `fg-*`, voir `docs/LISEZMOI-fraise.md`),
   **ONDE** (casque audio : thème **mono-produit de la famille E-commerce**, refait d'après les sept planches du
   24 octobre, PR #183, `docs/theme-briefs/onde/` : profil de conversion « onde » (`assets/onde.css`, `onde.js`, règles

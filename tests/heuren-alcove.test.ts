@@ -60,14 +60,14 @@ const PLAN: Record<ShopKitId, { profile: string; fonts: { heading: string; body:
 
 describe("HEUREN et ALCÔVE : thèmes actifs de la famille E-commerce (mono-produit), jamais « boutique spécialisée »", () => {
   for (const id of ["heuren", "alcove"] as const) it(`${id} : catalogue, famille E-commerce partout, profil, polices, accès par forfait, aperçu suivi`, () => {
-    expect(ACTIVE_THEMES).toContain(id);
+    // ALCÔVE, créé avant les maquettes (aucune maquette retrouvée), n'est plus proposé depuis le 25 octobre (mission #190).
+    if (id === "alcove") expect(ACTIVE_THEMES).not.toContain(id); else expect(ACTIVE_THEMES).toContain(id);
     expect(themeKinds(id)).toEqual(["catalog"]);
     expect(THEME_FAMILY[id]).toBe("catalog");
     expect(REFERENCE_THEMES.find((t) => t.referenceId === id)?.categories).toEqual(["ecommerce"]);
-    // Droits par famille (plan-entitlements.ts) : HEUREN dès Développer, ALCÔVE avec Dominer (rangs 3 et 4 en E-commerce).
-    expect(themeAllowed("creer", id)).toBe(false);
-    expect(themeAllowed("vendre", id)).toBe(id === "heuren");
-    expect(themeAllowed("dominer", id)).toBe(true);
+    // Droits par thème et par forfait (mission #190) : répartition encore à choisir, HEUREN est ouvert à tous les forfaits
+    // payants ; ALCÔVE, retiré du catalogue proposé, à aucun (les projets qui l'utilisent le gardent).
+    for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(id === "heuren");
     expect(themeAllowed(null, id)).toBe(false);
     const t = catalogTheme(id)!;
     expect(t.kinds).toEqual(["catalog"]);
