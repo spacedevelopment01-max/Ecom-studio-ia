@@ -8,7 +8,7 @@
   <div class="fg-c">
     {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, class: 'fg-contact__photo' %}
     <div class="fg-contact__main">
-      <h1 class="fg-title fg-contact__title" id="fg-contact-t-{{ section.id }}"><span class="fg-only-d">{{ s.heading }}</span>{%- if s.heading_mobile != blank -%}{%- assign hm = s.heading_mobile | escape | replace: '[i]', '<em class="fg-i">' | replace: '[/i]', '</em>' | newline_to_br -%}<span class="fg-only-m">{{ hm }}</span>{%- endif -%}<span class="fg-contact__petal" aria-hidden="true">{% render 'fg-art', name: 'petal' %}</span></h1>
+      <h1 class="fg-title fg-contact__title" id="fg-contact-t-{{ section.id }}"><span class="fg-only-d">{{ s.heading }}</span>{%- if s.heading_mobile != blank -%}{%- assign hm = s.heading_mobile | escape | replace: '[i]', '<em class="fg-i">' | replace: '[/i]', '</em>' | newline_to_br -%}<span class="fg-only-m">{{ hm }}</span>{%- endif -%}<span class="fg-contact__petal" aria-hidden="true">{% render 'fg-art', name: 'petal', class: 'fg-only-m' %}{% render 'fg-art', name: 'leaf-solid', class: 'fg-only-d' %}</span></h1>
       {%- if s.text != blank -%}<p class="fg-contact__lead{% if s.text_mobile != blank %} fg-only-d{% endif %}">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
       {%- if s.text_mobile != blank -%}<p class="fg-contact__lead fg-only-m">{{ s.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
       {%- form 'contact', class: 'fg-contact__form', data-fg-contact: s.mode -%}
