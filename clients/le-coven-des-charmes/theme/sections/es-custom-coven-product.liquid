@@ -48,8 +48,10 @@
             <figure class="cvn-pgal__slide" data-cvn-slide{% unless forloop.first %} hidden{% endunless %}>{{ image | image_url: width: 1600 | image_tag: alt: product.title }}</figure>
           {%- endfor -%}
         {%- endif -%}
+        {%- if s.show_arrows -%}
         <button type="button" class="cvn-pgal__arrow cvn-pgal__arrow--prev" data-cvn-prev><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-droite"></use></svg><span class="cvn-sr">{{ s.prev_label }}</span></button>
         <button type="button" class="cvn-pgal__arrow cvn-pgal__arrow--next" data-cvn-next><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-droite"></use></svg><span class="cvn-sr">{{ s.next_label }}</span></button>
+        {%- endif -%}
         <p class="cvn-sr" aria-live="polite" data-cvn-gallery-status></p>
       </div>
       <div class="cvn-pgal__thumbs" role="list">
@@ -142,6 +144,7 @@
     { "type": "text", "id": "collection_label", "label": "Rubrique", "default": "Les Bracelets de charms" },
     { "type": "url", "id": "collection_link", "label": "Lien de la rubrique" },
     { "type": "header", "content": "Prix" },
+    { "type": "checkbox", "id": "show_arrows", "label": "Flèches sur la photo (téléphone)", "default": false, "info": "Sans flèches, on change de photo avec les vignettes ou en faisant glisser." },
     { "type": "checkbox", "id": "price_confirmed", "label": "Tarif confirmé par le client", "default": false, "info": "Tant que le tarif n'est pas confirmé, la fiche affiche « — € » et la commande reste fermée." },
     { "type": "text", "id": "price_note", "label": "Mention sans tarif", "default": "Tarif à renseigner" },
     { "type": "header", "content": "Textes" },
