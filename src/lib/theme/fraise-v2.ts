@@ -21,10 +21,10 @@ import type { Lang } from "../i18n";
 import { pick } from "../i18n";
 
 /** Dessin de l'en-tête et du pied par planche (liens à gauche du logo, bandeau, pied ordinateur et téléphone). */
-export type FgPageLook = { split: number; band: "below" | "above" | "center" | "none"; footer: "home" | "journal" | "contact" | "compact"; footer_mobile: "full" | "center" | "columns" | "help" | "menu" | "compact"; band_mobile?: "none" | "above" };
+export type FgPageLook = { split: number; band: "below" | "above" | "center" | "none"; footer: "home" | "product" | "journal" | "contact" | "compact"; footer_mobile: "full" | "center" | "columns" | "help" | "menu" | "compact"; band_mobile?: "none" | "above" };
 export const LOOK_01: FgPageLook = { split: 3, band: "below", footer: "home", footer_mobile: "full" };
 /** Fiche du produit : pied centré au téléphone (planche 04, fiche 2/2). */
-export const LOOK_PRODUCT: FgPageLook = { ...LOOK_01, footer_mobile: "center" };
+export const LOOK_PRODUCT: FgPageLook = { ...LOOK_01, footer: "product", footer_mobile: "center" };
 export const LOOK_02: FgPageLook = { split: 2, band: "above", footer: "journal", footer_mobile: "columns" };
 export const LOOK_03: FgPageLook = { split: 4, band: "center", footer: "contact", footer_mobile: "help", band_mobile: "above" };
 export const LOOK_BUY: FgPageLook = { split: 4, band: "center", footer: "contact", footer_mobile: "compact" };

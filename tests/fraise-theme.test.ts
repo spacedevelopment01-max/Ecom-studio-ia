@@ -174,6 +174,15 @@ describe.skipIf(!KIT)("FRAISE : démonstration (sept planches)", async () => {
     expect(visibleText(fiche)).not.toMatch(/\b100vw\b/);
   });
 
+  it("fiche : pied « fiche » de la planche (prolonge le bandeau d'achat), trois liens par rubrique ; l'accueil garde son pied", () => {
+    const fiche = pages.get(product)!;
+    expect(fiche).toContain('data-fg-foot="product"');
+    const v = fiche.match(/<div class="fg-footer__v fg-footer__v--product">[\s\S]*?<div class="fg-footer__v fg-footer__v--journal">/)![0];
+    for (const col of v.match(/<ul role="list">[\s\S]*?<\/ul>/g)!.slice(0, 2)) expect(col.match(/<li>/g)).toHaveLength(3);
+    expect(visibleText(v)).toContain("Questions fréquentes");
+    expect(pages.get("/")!).toContain('data-fg-foot="home"');
+  });
+
   it("confiserie, rien d'inventé : aucune vitamine, promesse de santé, avis, stock ou certification", () => {
     for (const [route, html] of pages) {
       // Les avertissements honnêtes (« aucune recommandation de santé ») ne comptent pas comme promesse.

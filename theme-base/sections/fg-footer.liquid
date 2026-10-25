@@ -2,6 +2,8 @@
   FRAISE : pied de page rouge à vague des planches, une seule source de contenu, quatre dispositions choisies page par
   page (section « Réglages de la page ») :
   - « accueil » (planche 01) : logo blanc, Boutique, Aide, Suivez-nous, ligne du bas avec la phrase et les liens légaux ;
+  - « fiche » (planche 01, fiche) : même contenu que « accueil », rubriques à liens propres (vides : ceux de l'accueil), le pied
+    prolonge le bandeau d'achat rouge (une vague sombre, filet avant Suivez-nous, ligne du bas plus haute) ;
   - « journal » (planche 02) : logo, Boutique, Aide, inscription au journal, ligne des droits et liens légaux ;
   - « contact » (planche 03) : logo, Boutique, Aide, « Restons en contact » (inscription) et réseaux, ligne du bas ;
   - « réduit » (achat au téléphone, planche 07) : logo et liens légaux.
@@ -18,6 +20,8 @@
   assign m_legal_help = linklists[s.menu_legal_help]
   assign m_help_j = linklists[s.menu_help_journal]
   assign m_legal_j = linklists[s.menu_legal_journal]
+  assign m_shop_p = linklists[s.menu_shop_product]
+  assign m_help_p = linklists[s.menu_help_product]
   assign brand = s.wordmark | default: shop.name
   assign year = 'now' | date: '%Y'
 -%}
@@ -34,6 +38,22 @@
   {%- if m_help_j.links.size > 0 -%}
     {%- if m_shop.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--shop"><p class="fg-footer__h">{{ s.shop_title }}</p><ul role="list">{%- for link in m_shop.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
     <div class="fg-footer__col fg-footer__col--help"><p class="fg-footer__h">{{ s.help_title }}</p><ul role="list">{%- for link in m_help_j.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>
+  {%- else -%}{{ fg_cols }}{%- endif -%}
+{%- endcapture -%}
+{%- capture fg_cols_p -%}
+  {%- if m_shop_p.links.size > 0 or m_help_p.links.size > 0 -%}
+    {%- liquid
+      assign ps = m_shop_p
+      if ps.links.size == 0
+        assign ps = m_shop
+      endif
+      assign ph = m_help_p
+      if ph.links.size == 0
+        assign ph = m_help
+      endif
+    -%}
+    {%- if ps.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--shop"><p class="fg-footer__h">{{ s.shop_title }}</p><ul role="list">{%- for link in ps.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
+    {%- if ph.links.size > 0 -%}<div class="fg-footer__col fg-footer__col--help"><p class="fg-footer__h">{{ s.help_title }}</p><ul role="list">{%- for link in ph.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></div>{%- endif -%}
   {%- else -%}{{ fg_cols }}{%- endif -%}
 {%- endcapture -%}
 {%- capture fg_social -%}
@@ -93,6 +113,12 @@
     <div class="fg-footer__v fg-footer__v--home">
       {{ fg_logo }}
       <div class="fg-footer__cols">{{ fg_cols }}</div>
+      <div class="fg-footer__follow"><p class="fg-footer__h">{{ s.social_title }}</p>{{ fg_social }}</div>
+      <div class="fg-footer__bottom"><p class="fg-footer__line">{{ s.bottom_text }}</p>{{ fg_legal }}</div>
+    </div>
+    <div class="fg-footer__v fg-footer__v--product">
+      {{ fg_logo }}
+      <div class="fg-footer__cols">{{ fg_cols_p }}</div>
       <div class="fg-footer__follow"><p class="fg-footer__h">{{ s.social_title }}</p>{{ fg_social }}</div>
       <div class="fg-footer__bottom"><p class="fg-footer__line">{{ s.bottom_text }}</p>{{ fg_legal }}</div>
     </div>
@@ -168,6 +194,8 @@
     { "type": "link_list", "id": "menu_legal_help", "label": "Liens légaux (pied « aide » du téléphone)" },
     { "type": "link_list", "id": "menu_help_journal", "label": "Liens d'aide (pied « journal »)", "info": "Vide : les liens d'aide ci-dessus." },
     { "type": "link_list", "id": "menu_legal_journal", "label": "Liens légaux (pied « journal »)", "info": "Vide : les liens légaux ci-dessus." },
+    { "type": "link_list", "id": "menu_shop_product", "label": "Liens boutique (pied « fiche »)", "info": "Vide : les liens boutique ci-dessus." },
+    { "type": "link_list", "id": "menu_help_product", "label": "Liens d'aide (pied « fiche »)", "info": "Vide : les liens d'aide ci-dessus." },
     { "type": "link_list", "id": "menu_short", "label": "Liens du pied réduit" },
     { "type": "text", "id": "bottom_text", "label": "Phrase de la ligne du bas (accueil)" },
     { "type": "text", "id": "copyright", "label": "Mention des droits (après l'année)", "info": "Vide : le nom de la boutique." },
