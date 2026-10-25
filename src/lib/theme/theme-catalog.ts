@@ -156,6 +156,8 @@ export type CatalogTheme = {
   /** En-tête et pied propres au thème (ex. ONDE : « on-header », « on-footer ») à la place des sections communes. */
   headerRow?: (k: Kit) => Row;
   footerRow?: (k: Kit) => Row;
+  /** En-tête et pied propres au thème aussi pour un site de services (APLAT : sections ap-header et ap-footer). */
+  chromeForServices?: boolean;
   /** Bouton permanent de l'en-tête d'une boutique, vers la fiche du produit principal (libellé générique, jamais propre à une démo). */
   headerCta?: { fr: string; en: string; icon: "arrow" | "clock" | "phone" | "mail" | "chat" };
   /** Réglages de mise en forme propres à l'en-tête du thème (disposition de la famille : sous-menu, encarts, schéma). */
@@ -182,7 +184,7 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 /** Identifiants des thèmes du catalogue (dans l'ordre de présentation). */
-export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon"] as const;
+export const CATALOG_IDS = ["vitrine", "manifeste", "laboratoire", "magazine", "cinema", "rituel", "horizon", "lookbook", "marche", "signal", "jardin", "reception", "cabinet", "recre", "epure", "tribu", "etabli", "velours", "lancement", "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon", "aplat"] as const;
 export type CatalogThemeId = (typeof CATALOG_IDS)[number];
 
 export const CATALOG_THEMES: (CatalogTheme & { id: CatalogThemeId })[] = [

@@ -731,4 +731,52 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.lib("cta-banner", 3, { style: "split", parallax: false, overlay: 0, padding_top: 72, padding_bottom: 72 }),
     ],
   },
+  {
+    // APLAT — Plâtrerie & Peinture (consigne de Thomas du 25 octobre 2026, dossier docs/theme-briefs/aplat) : dix planches
+    // (ordinateur et téléphone), 18 pages. Famille Prestations de services ; profil éditorial « aplat » (assets/aplat.css,
+    // aplat.js), sections ap-* (en-tête, pied, ouvertures, cartes, avant/après, questions, formulaires, pages légales).
+    id: "aplat",
+    name: "APLAT",
+    tagline: "Plâtrerie et peinture, blanc enduit et bleu pétrole",
+    description: "Site d'artisan d'après les dix planches du 25 octobre : grande photo de chantier et aplat bleu pétrole, métiers numérotés, matière d'enduit, prestations détaillées, gros plans de finitions, réalisations illustratives filtrables, simulation avant/après, méthode en étapes, questions, contact et demande de devis avec photos (deux étapes sur téléphone), conseils, pages légales et préférences de cookies.",
+    bestFor: ["plâtrerie", "peinture intérieure", "artisan du bâtiment", "rénovation", "demande de devis"],
+    en: { tagline: "Plastering and painting, plaster white and petrol blue", description: "Craftsman website based on the ten 25 October mockups: large worksite photograph with a petrol-blue panel, numbered trades, plaster texture, detailed services, close-ups of finishes, filterable illustrative projects, before/after simulation, step-by-step method, questions, contact and a quote request with photos (two steps on mobile), advice, legal pages and cookie preferences.", bestFor: ["plastering", "interior painting", "building craftsman", "renovation", "quote request"] },
+    fonts: { heading: "lato_n7", body: "lato_n4" },
+    previewFonts: { heading: "Lato", body: "Lato" },
+    motion: "subtle",
+    photoMood: "terroir",
+    kinds: ["services"],
+    look: look({ headerLayout: "logo-left", shape: "bar", menu: "fullscreen", footer: "columns", ann: "static", card: "minimal", button: "solid", radius: { button: 2, card: 0 }, headingScale: 100, tracking: -1, pageWidth: 1440, ds: "craft", density: "balanced", buttonUppercase: false }),
+    headerSettings: { mega_menu: "none", mobile_menu: "fullscreen", show_search: false, show_cart: false, color_scheme: "scheme-1" },
+    settings: { editorial_profile: "aplat", conversion_profile: "none", motion_intensity: "subtle" },
+    mainProduct: { gallery_layout: "stack", sticky_bar: false, color_scheme: "scheme-1" },
+    chromeForServices: true,
+    // En-tête et pied propres au thème (sections ap-header et ap-footer), y compris pour un site de services.
+    headerRow: (k) => ["ap-header", { logo_asset: k.im.logo ?? "", menu: "main-menu", mobile_menu: "main-menu", legal_menu: "footer", cta_label: k.t("Demander un devis", "Request a quote"), cta_link: "/pages/contact", nav_label: k.t("Navigation principale", "Main navigation"), menu_label: k.t("Menu", "Menu"), close_label: k.t("Fermer le menu", "Close menu"), bar_project_label: "", bar_contact_label: "" }],
+    footerRow: (k) => ["ap-footer", { logo_asset: k.im.logo ?? "", logo_light_asset: k.im.logoLight ?? "", menu: "main-menu", legal_menu: "footer", cta_label: k.t("Demander un devis", "Request a quote"), cta_link: "/pages/contact", style_home: "dark", style_default: "bar", style_404: "bar", top_label: k.t("Retour en haut de la page", "Back to top"), cookie_title: k.t("Vos préférences de navigation", "Your browsing preferences"), cookie_more_label: k.t("En savoir plus :", "Learn more:"), cookie_privacy_label: k.t("Confidentialité", "Privacy"), cookie_policy_label: k.t("Cookies", "Cookies"), cookie_close_label: k.t("Fermer", "Close"), consent_essential_title: k.t("Cookies essentiels", "Essential cookies"), consent_essential_text: k.t("Nécessaires au bon fonctionnement du site.", "Needed for the site to work."), consent_badge: k.t("Toujours activés", "Always on"), consent_audience_title: k.t("Mesure d'audience", "Audience measurement"), consent_audience_text: k.t("À préciser selon le fonctionnement réel du site.", "To be specified according to how the site actually works."), consent_external_title: k.t("Contenus externes", "External content"), consent_external_text: k.t("À préciser selon le fonctionnement réel du site.", "To be specified according to how the site actually works."), consent_refuse_label: k.t("Tout refuser", "Refuse all"), consent_accept_label: k.t("Tout accepter", "Accept all"), consent_save_label: k.t("Enregistrer mes choix", "Save my choices"), consent_saved_label: k.t("Vos choix sont enregistrés.", "Your choices have been saved."), consent_none_label: k.t("Aucun outil de mesure ni contenu externe n'est installé pour l'instant : vos choix seront appliqués dès qu'un outil le sera.", "No measurement tool or external content is installed yet: your choices will apply as soon as one is.") }, [{ type: "column", settings: { title: k.t("Navigation", "Navigation"), menu: "main-menu", styles: "dark,columns,plaster", show_on: "all" } }, { type: "column", settings: { title: k.t("Informations", "Information"), menu: "footer", styles: "dark,columns,plaster", show_on: "all" } }]],
+    // Blanc (fond), bleu nuit (titres), bleu pétrole (boutons, aplats) ; bleu très clair des panneaux et bleu des
+    // numéros ; charbon des pieds. Un client garde ses couleurs : sa principale devient le bleu pétrole, lisible sur blanc.
+    palette: (k) => {
+      const petrol = k.onLight("#FFFFFF");
+      const navy = k.night(0.14, 0.62);
+      // Bleu très clair des panneaux : teinte légère du bleu pétrole éclairci (#E2EEF6 pour la démonstration).
+      const sky = k.mix("#FFFFFF", k.mix(petrol, "#4FA9F5", 0.6), 0.14);
+      return [k.scheme("#FFFFFF", navy, petrol), k.scheme(sky, navy, k.accentOn(sky)), k.scheme("#232A32", "#FFFFFF", "#9CCBE4"), k.filled(petrol)];
+    },
+    // Composition « boutique » de repli (APLAT sert les prestations) : sections communes.
+    home: (k) => [
+      k.lib("image-with-text", 1, { layout: "image-right", image_asset: k.im.lifestyle ?? k.im.hero ?? "" }),
+      k.lib("ed-diptych", 1, { layout: "side" }),
+      k.lib("ed-scene", 2, { layout: "band" }),
+      k.lib("ed-study", 1),
+      k.faqSec(1, 4, "lines"),
+      k.cta(4),
+    ],
+    product: (k) => [k.faqSec(1, 4, "lines")],
+    // Site de services : l'accueil et les pages APLAT sont posés par src/lib/theme/aplat-site.ts avec les données du
+    // client (prestations, méthode, questions, coordonnées) ; ici, l'ouverture qui reprend l'accroche du projet.
+    services: (k) => [
+      k.lib("ap-hero", 1, { layout: "home", mobile_layout: "stack", heading_tag: "h1", image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.scene1 ?? "", heading: k.hero.heading, text: k.hero.text, button_label: k.hero.cta, button_link: "/pages/contact", padding_top: 0, padding_bottom: 0 }),
+    ],
+  },
 ];

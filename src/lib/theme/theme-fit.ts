@@ -14,7 +14,7 @@
 import type { StoreKind } from "./store-kind";
 
 /** Thèmes de référence (issue #137) : compatibilités déclarées, jamais déduites du nom. */
-export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon"] as const;
+export const REFERENCE_THEMES = ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon", "aplat"] as const;
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number];
 
 const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
@@ -35,6 +35,8 @@ const REFERENCE_FIT: Record<ReferenceThemeId, StoreKind[]> = {
   // Issue #158 : collection de quatre produits (tapis, brique, sangle, anneau), famille E-commerce.
   souple: ["catalog"],
   "maison-horizon": ["services"],
+  // APLAT (dix maquettes du 25 octobre, PR #187) : plâtrerie et peinture intérieure, famille Prestations de services.
+  aplat: ["services"],
 };
 
 export const isReferenceThemeId = (id: string): id is ReferenceThemeId => (REFERENCE_THEMES as readonly string[]).includes(id);

@@ -1,0 +1,159 @@
+{%- comment -%}
+  Article conseil d'APLAT (planches 04 et 09) : fil d'Ariane, titre, chapeau, grande photo fondue, sommaire à ancres
+  (repliable sur téléphone) et citation, parties numérotées avec une ou deux photos, bande d'appel avec bouton, articles
+  liés (défilement par flèches). Parties et articles liés : blocs modifiables.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign parts = section.blocks | where: 'type', 'part'
+  assign related = section.blocks | where: 'type', 'related'
+  assign crumbs = section.blocks | where: 'type', 'crumb'
+-%}
+<article class="ap-s ap-article" aria-labelledby="ApAr-{{ section.id }}">
+  <header class="ap-article__head ap-wrap">
+    {%- if crumbs.size > 0 -%}
+      <nav class="ap-crumbs ap-crumbs--chev" aria-label="{{ s.crumbs_label | escape }}">
+        <ol role="list">{%- for b in crumbs -%}<li {{ b.shopify_attributes }}>{%- if b.settings.link != blank and forloop.last == false -%}<a href="{{ b.settings.link }}">{{ b.settings.label | escape }}</a>{%- else -%}<span{% if forloop.last %} aria-current="page"{% endif %}>{{ b.settings.label | escape }}</span>{%- endif -%}</li>{%- endfor -%}</ol>
+      </nav>
+    {%- endif -%}
+    <div class="ap-article__intro">
+      <h1 class="ap-article__title" id="ApAr-{{ section.id }}">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if s.text != blank -%}<p class="ap-article__lead">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+    </div>
+    {%- if s.image != blank or s.image_asset != blank -%}<div class="ap-article__hero">{%- render 'ap-img', img: s.image, asset: s.image_asset, alt: s.image_alt, fx: s.focus_x, fy: s.focus_y, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, cls: 'ap-article__hero-img', eager: true, width: 1600 -%}</div>{%- endif -%}
+  </header>
+  <div class="ap-article__body ap-wrap">
+    <aside class="ap-article__aside">
+      <details class="ap-toc" data-ap-toc open>
+        <summary class="ap-toc__title"><span class="ap-only-d">{{ s.toc_title | escape }}</span><span class="ap-only-m">{{ s.mobile_toc_title | default: s.toc_title | escape }}</span>{% render 'ap-icon', name: 'chevron-down' %}</summary>
+        <ol class="ap-toc__list" role="list">
+          {%- for b in parts -%}<li><a href="#{{ b.settings.anchor | default: b.id | handle }}"><span>{{ b.settings.number | escape }}</span>{{ b.settings.toc_label | default: b.settings.title | escape }}</a></li>{%- endfor -%}
+        </ol>
+      </details>
+      {%- if s.quote != blank -%}<blockquote class="ap-article__quote">{% render 'ap-icon', name: 'quote' %}<p>{{ s.quote | escape | newline_to_br }}</p></blockquote>{%- endif -%}
+    </aside>
+    <div class="ap-article__parts">
+      {%- for b in parts -%}
+        {%- assign bs = b.settings -%}
+        <section class="ap-part{% if bs.image2 != blank or bs.image2_asset != blank %} ap-part--two{% endif %}" id="{{ bs.anchor | default: b.id | handle }}" aria-labelledby="ApPt-{{ b.id }}" {{ b.shopify_attributes }}>
+          <div class="ap-part__copy">
+            <p class="ap-part__num">{{ bs.number | escape }}</p>
+            <h2 class="ap-part__title" id="ApPt-{{ b.id }}">{%- render 'ap-dm', d: bs.title, m: bs.mobile_title -%}</h2>
+            {%- if bs.text != blank -%}<div class="ap-part__text">{%- render 'ap-dm', d: bs.text, m: bs.mobile_text -%}</div>{%- endif -%}
+          </div>
+          <div class="ap-part__media">
+            {%- render 'ap-img', img: bs.image, asset: bs.image_asset, alt: bs.image_alt, fx: bs.focus_x, fy: bs.focus_y, cls: 'ap-part__img', width: 1000 -%}
+            {%- if bs.image2 != blank or bs.image2_asset != blank -%}{%- render 'ap-img', img: bs.image2, asset: bs.image2_asset, alt: bs.image2_alt, fx: bs.focus2_x, fy: bs.focus2_y, cls: 'ap-part__img ap-part__img--2', width: 1000 -%}{%- endif -%}
+          </div>
+        </section>
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- if s.band_title != blank -%}
+    <div class="ap-article__band ap-wrap">
+      <div class="ap-article__band-copy ap-only-d"><p class="ap-article__band-title">{{ s.band_title | escape }}</p>{%- if s.band_text != blank -%}<p>{{ s.band_text | escape }}</p>{%- endif -%}</div>
+      {%- if s.band_button_label != blank -%}<a class="ap-btn ap-btn--petrol" href="{{ s.band_button_link | default: routes.root_url }}">{%- render 'ap-dm', d: s.band_button_label, m: s.band_title -%}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+      {%- if s.band_image != blank or s.band_image_asset != blank -%}<div class="ap-article__band-media ap-only-d">{%- render 'ap-img', img: s.band_image, asset: s.band_image_asset, alt: '', cls: 'ap-article__band-img', width: 600 -%}<span class="ap-article__band-icon" aria-hidden="true">{% render 'ap-icon', name: 'camera' %}</span></div>{%- endif -%}
+    </div>
+  {%- endif -%}
+  {%- if related.size > 0 -%}
+    <section class="ap-related ap-wrap" aria-labelledby="ApRl-{{ section.id }}">
+      <div class="ap-related__head">
+        <h2 class="ap-related__title" id="ApRl-{{ section.id }}">{%- render 'ap-dm', d: s.related_title, m: s.mobile_related_title -%}</h2>
+        <div class="ap-related__nav ap-only-d"><button type="button" data-ap-scroll="-1" aria-controls="ApRlL-{{ section.id }}" aria-label="{{ s.prev_label | escape }}">{% render 'ap-icon', name: 'arrow-left' %}</button><button type="button" data-ap-scroll="1" aria-controls="ApRlL-{{ section.id }}" aria-label="{{ s.next_label | escape }}">{% render 'ap-icon', name: 'arrow' %}</button></div>
+      </div>
+      <ul class="ap-related__list" id="ApRlL-{{ section.id }}" role="list">
+        {%- for b in related -%}
+          <li class="ap-related__item{% if b.settings.show_on != 'all' and b.settings.show_on != blank %} ap-only-{{ b.settings.show_on | slice: 0 }}{% endif %}" {{ b.shopify_attributes }}>
+            {%- render 'ap-img', img: b.settings.image, asset: b.settings.image_asset, alt: '', fx: b.settings.focus_x, fy: b.settings.focus_y, cls: 'ap-related__img', width: 500 -%}
+            <div class="ap-related__body">
+              {%- if b.settings.kicker != blank -%}<p class="ap-related__kicker ap-only-d">{{ b.settings.kicker | escape }}</p>{%- endif -%}
+              <h3 class="ap-related__name"><a href="{{ b.settings.link | default: routes.root_url }}">{{ b.settings.title | escape }}</a></h3>
+              {%- if b.settings.link_label != blank -%}<span class="ap-link ap-only-d" aria-hidden="true">{{ b.settings.link_label | escape }}{% render 'ap-icon', name: 'arrow' %}</span>{%- endif -%}
+            </div>
+            <span class="ap-related__arrow ap-only-m" aria-hidden="true">{% render 'ap-icon', name: 'arrow' %}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "Article APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "crumbs_label", "label": "Fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "textarea", "id": "text", "label": "Chapeau" },
+    { "type": "textarea", "id": "mobile_text", "label": "Chapeau sur téléphone" },
+    { "type": "image_picker", "id": "image", "label": "Grande photo" },
+    { "type": "text", "id": "image_asset", "label": "Grande photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "toc_title", "label": "Sommaire : titre", "default": "Sommaire" },
+    { "type": "text", "id": "mobile_toc_title", "label": "Sommaire : titre sur téléphone", "default": "Dans cet article" },
+    { "type": "textarea", "id": "quote", "label": "Citation sous le sommaire" },
+    { "type": "header", "content": "Bande d'appel" },
+    { "type": "text", "id": "band_title", "label": "Titre" },
+    { "type": "text", "id": "band_text", "label": "Texte" },
+    { "type": "text", "id": "band_button_label", "label": "Bouton" },
+    { "type": "url", "id": "band_button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "band_image", "label": "Photo" },
+    { "type": "text", "id": "band_image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "header", "content": "Articles liés" },
+    { "type": "text", "id": "related_title", "label": "Titre", "default": "Articles liés" },
+    { "type": "text", "id": "mobile_related_title", "label": "Titre sur téléphone" },
+    { "type": "text", "id": "prev_label", "label": "Flèche précédente (lecteurs d'écran)", "default": "Articles précédents" },
+    { "type": "text", "id": "next_label", "label": "Flèche suivante (lecteurs d'écran)", "default": "Articles suivants" }
+  ],
+  "blocks": [
+    { "type": "crumb", "name": "Fil d'Ariane", "settings": [ { "type": "text", "id": "label", "label": "Libellé" }, { "type": "url", "id": "link", "label": "Lien" } ] },
+    {
+      "type": "part", "name": "Partie",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Numéro" },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "text", "id": "mobile_title", "label": "Titre sur téléphone" },
+        { "type": "text", "id": "toc_label", "label": "Libellé dans le sommaire" },
+        { "type": "text", "id": "anchor", "label": "Ancre" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+        { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "image_picker", "id": "image2", "label": "Seconde photo" },
+        { "type": "text", "id": "image2_asset", "label": "Seconde photo (fichier du thème)" },
+        { "type": "text", "id": "image2_alt", "label": "Seconde photo : texte alternatif" },
+        { "type": "range", "id": "focus2_x", "label": "Seconde photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus2_y", "label": "Seconde photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
+      ]
+    },
+    {
+      "type": "related", "name": "Article lié",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "text", "id": "kicker", "label": "Catégorie" },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "text", "id": "link_label", "label": "Texte du lien", "default": "Lire l'article" },
+        { "type": "url", "id": "link", "label": "Lien" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [ { "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" } ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Article APLAT" } ]
+}
+{% endschema %}

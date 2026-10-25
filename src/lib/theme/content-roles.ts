@@ -49,17 +49,17 @@ export const CONTENT_ROLES: Record<ContentRoleId, ContentRole> = {
 };
 
 const ROLE_TYPES: Record<Exclude<ContentRoleId, "structural">, string[]> = {
-  hook: ["cv-hero", "ed-opening", "fs-campaign", "re-hero", "on-banner", "on-product"],
-  idea: ["ed-statement", "rich-text"],
+  hook: ["cv-hero", "ed-opening", "fs-campaign", "re-hero", "on-banner", "on-product", "ap-hero"],
+  idea: ["ed-statement", "rich-text", "ap-split"],
   facts: ["features-grid", "cv-feature", "ed-finishes", "cv-hotspots", "cv-specs", "cv-infos", "cv-ingredients", "content-tabs", "stats", "marquee", "fs-dimensions", "fs-care", "fs-making", "fs-equipment", "ed-study", "on-cards"],
-  usage: ["ed-scene", "ed-diptych", "cv-stories", "cv-gallery", "cv-alternating", "cv-cards", "fs-lookbook", "image-with-text", "ref-narrative", "portfolio", "fs-video", "fs-needs", "fs-case", "re-feature"],
-  choice: ["featured-purchase", "purchase-offers", "comparison-table", "fs-products", "fs-collections", "product-recommendations", "services-list", "pricing", "cv-banner", "cv-rise", "re-tiles", "re-listings"],
+  usage: ["ed-scene", "ed-diptych", "cv-stories", "cv-gallery", "cv-alternating", "cv-cards", "fs-lookbook", "image-with-text", "ref-narrative", "portfolio", "fs-video", "fs-needs", "fs-case", "re-feature", "ap-compare"],
+  choice: ["featured-purchase", "purchase-offers", "comparison-table", "fs-products", "fs-collections", "product-recommendations", "services-list", "pricing", "cv-banner", "cv-rise", "re-tiles", "re-listings", "ap-cards", "ap-strip"],
   method: ["timeline", "how-to", "cv-steps", "booking", "booking-calendar", "fs-service"],
-  objections: ["faq", "v2-faq", "on-faq"],
+  objections: ["faq", "v2-faq", "on-faq", "ap-faq"],
   proof: ["cv-reviews", "testimonials", "cv-quote", "fs-reviews", "fs-press", "fs-references", "fs-results", "fs-credentials", "cv-guarantee", "fs-commitments"],
-  call: ["cta-banner"],
-  collect: ["newsletter", "newsletter-media", "contact-form", "ed-contact", "re-form", "on-newsletter", "on-help"],
-  story: ["about", "team", "fs-journal", "cv-article", "on-journal", "on-article"],
+  call: ["cta-banner", "ap-cta"],
+  collect: ["newsletter", "newsletter-media", "contact-form", "ed-contact", "re-form", "on-newsletter", "on-help", "ap-form"],
+  story: ["about", "team", "fs-journal", "cv-article", "on-journal", "on-article", "ap-article"],
   practical: ["practical-info", "fs-stores", "on-checkout"],
 };
 

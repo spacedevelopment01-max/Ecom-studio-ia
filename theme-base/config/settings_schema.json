@@ -461,6 +461,10 @@
           {
             "value": "maison-horizon",
             "label": "Maison & Horizon — ivoire, vert profond et terre cuite (référence)"
+          },
+          {
+            "value": "aplat",
+            "label": "APLAT — blanc enduit, bleu pétrole et bleu nuit (référence)"
           }
         ]
       },
@@ -1007,6 +1011,10 @@
           {
             "value": "horizon",
             "label": "Horizon : ivoire, vert profond et terre cuite, titres serif, grandes photos (agence immobilière)"
+          },
+          {
+            "value": "aplat",
+            "label": "Aplat : blanc enduit, bleu pétrole et bleu nuit, titres sans empattement, photos de chantier (plâtrerie et peinture)"
           }
         ]
       },

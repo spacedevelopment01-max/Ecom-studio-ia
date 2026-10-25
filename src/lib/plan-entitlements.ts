@@ -8,7 +8,8 @@ export const PLAN_THEME_ORDER: Record<PlanFamily, readonly (string | null)[]> = 
   specialty: ['fraise','sillon','noctil','traverse','museau-club'],
   catalog: ['orbe','onde','heuren','alcove','souple'],
   // MAISON & HORIZON (issue #172) : deuxième thème de la famille, ouvert à partir du forfait Vendre (à confirmer par Thomas).
-  services: ['rive','maison-horizon',null,null,null],
+  // APLAT (PR #187) : troisième thème de la famille, ouvert à partir du forfait Vendre comme MAISON & HORIZON (à confirmer).
+  services: ['rive','maison-horizon','aplat',null,null],
 };
 export const BASE_SECTIONS: Record<PlanFamily, readonly string[]> = {
   specialty: ['hero','benefits','details','specs','howto','purchase','faq','contact'],

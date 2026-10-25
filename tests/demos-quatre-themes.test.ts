@@ -38,6 +38,7 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   "museau-club": { kind: "specialty", profile: { conversion_profile: "club" }, family: /^cv-/ },
   souple: { kind: "catalog", profile: { editorial_profile: "poudre" }, family: /^(ed-|fs-)/ },
   "maison-horizon": { kind: "services", profile: { editorial_profile: "horizon" }, family: /^re-/ },
+  aplat: { kind: "services", profile: { editorial_profile: "aplat" }, family: /^ap-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */

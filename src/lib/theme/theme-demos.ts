@@ -32,7 +32,7 @@ export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; 
 /** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE, MAISON & HORIZON) ; les autres thèmes ont leurs médias suivis dans le
  * dépôt (Atelier Rive depuis le dossier du 23 octobre : public/theme-assets/rive/). MAISON & HORIZON (issue #172) : les 90
  * images ne sont pas publiées sur GitHub (consigne du dossier), elles restent dans public/demo/maison-horizon/. */
-export const KIT_THEMES = ["fraise", "onde", "orbe", "maison-horizon"] as const;
+export const KIT_THEMES = ["fraise", "onde", "orbe", "maison-horizon", "aplat"] as const;
 export const kitDir = (id: string, root = process.cwd()) => path.join(root, "public", "demo", id);
 
 const LOCK = () => path.join(themeDemosDir(), ".preparation.json");

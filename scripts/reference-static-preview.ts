@@ -24,7 +24,7 @@ const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/refer
 const { demoProject } = await import("../tests/demo-fixtures");
 // Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
 const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
-type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "maison-horizon";
+type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "maison-horizon" | "aplat";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -39,14 +39,16 @@ async function post(pathname: string, body: string, contentType: string) { const
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string; holdout?: number }[] = [
-  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" }, { id: "maison-horizon", direction: "maison-horizon", name: "maison-horizon" },
+  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" }, { id: "maison-horizon", direction: "maison-horizon", name: "maison-horizon" }, { id: "aplat", direction: "aplat", name: "aplat" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" },
     // HEUREN (consigne du 22 octobre) : le fauteuil d'ALCÔVE, ses images et ses textes, composé dans HEUREN.
     { id: "alcove" as DemoId, direction: "heuren" as DemoId, name: "alcove-en-heuren" },
     // SOUPLE (PR #180) : les quatre accessoires de MUSEAU CLUB, leurs photos et leurs textes, composés dans SOUPLE.
     { id: "museau-club" as DemoId, direction: "souple" as DemoId, name: "museau-en-souple" },
     // Atelier Rive (consigne du 23 octobre) : un autre projet de services (accord de piano, jeu inédit sans photo) composé dans Rive.
-    { id: "rive" as DemoId, direction: "rive" as DemoId, name: "piano-en-rive", holdout: 2 }] : []),
+    { id: "rive" as DemoId, direction: "rive" as DemoId, name: "piano-en-rive", holdout: 2 },
+    // APLAT (PR #187) : le même projet de services, sans photo, composé dans APLAT (« Choisir ce thème »).
+    { id: "aplat" as DemoId, direction: "aplat" as DemoId, name: "piano-en-aplat", holdout: 2 }] : []),
 ];
 /** Projet de services du jeu inédit (aucune photo, aucun texte de démonstration) composé dans le thème donné. */
 async function holdoutIn(index: number, direction: DemoId) {

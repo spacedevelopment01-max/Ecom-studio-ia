@@ -81,6 +81,18 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "re-account": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-legal": { kinds: ["services"], themes: ["maison-horizon"] },
   "re-article": { kinds: ["services"], themes: ["maison-horizon"] },
+  // APLAT (dix planches du 25 octobre, docs/theme-briefs/aplat) : sections « ap-* » stylées par assets/aplat.css,
+  // chargé avec ce thème seulement. En-tête, pied et confirmation : composants posés par le moteur.
+  "ap-hero": { kinds: ["services"], themes: ["aplat"] },
+  "ap-strip": { kinds: ["services"], themes: ["aplat"] },
+  "ap-split": { kinds: ["services"], themes: ["aplat"] },
+  "ap-cards": { kinds: ["services"], themes: ["aplat"] },
+  "ap-compare": { kinds: ["services"], themes: ["aplat"] },
+  "ap-faq": { kinds: ["services"], themes: ["aplat"] },
+  "ap-cta": { kinds: ["services"], themes: ["aplat"] },
+  "ap-form": { kinds: ["services"], themes: ["aplat"] },
+  "ap-article": { kinds: ["services"], themes: ["aplat"] },
+  "ap-legal": { kinds: ["services"], themes: ["aplat"] },
   // Compositions de référence (Vitrine, Jardin) et leurs dérivées.
   "ref-hero": { themes: REFERENCE_THEMES },
   "ref-editorial": { themes: REFERENCE_THEMES },

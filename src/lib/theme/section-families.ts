@@ -417,6 +417,10 @@ const SERVICES: FamilyEntry[] = [
     // Maison & Horizon (issue #172) : agence immobilière.
     d("re-search", "Grande photo et recherche Acheter / Louer", "Large photo and Buy / Rent search", "re-hero", "background", { layout: "home", height: "tall" }),
     d("re-page", "Photo, titre et boutons (pages intérieures)", "Photo, title and buttons (inner pages)", "re-hero", "background", { layout: "page", height: "medium" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-home", "Photo de chantier et aplat bleu pétrole", "Worksite photo and petrol-blue panel", "ap-hero", "background", { layout: "home", mobile_layout: "stack" }),
+    d("ap-fade", "Enduit fondu dans la photo", "Plaster fading into the photo", "ap-hero", "split-right", { layout: "fade", mobile_layout: "overlay", show_rule: true }),
+    d("ap-box", "Photo et panneau bleu à gauche", "Photo and blue panel on the left", "ap-hero", "background", { layout: "box", mobile_layout: "stack", show_rule: true }),
   ]),
   e("services", 2, "offers", { fr: "Prestations proposées", en: "Services offered" }, { fr: "Catalogue de services en cartes, liste ou panneaux.", en: "Service catalogue as cards, a list or panels." }, "prestations services catalogue", [
     d("list", "Liste", "List", "services-list", "list", { layout: "list" }),
@@ -429,6 +433,10 @@ const SERVICES: FamilyEntry[] = [
     d("re-paths", "Deux chemins : texte et deux photos", "Two paths: text and two photos", "re-tiles", "split-right", { layout: "split" }, [{ type: "tile" }, { type: "tile" }]),
     d("re-sectors", "Secteurs en photos légendées", "Areas as captioned photos", "re-tiles", "grid-4", { layout: "sectors" }, [{ type: "tile" }, { type: "tile" }, { type: "tile" }, { type: "tile" }]),
     d("re-cards", "Cartes avec photo et onglets de filtre", "Photo cards with filter tabs", "re-tiles", "grid-3", { layout: "cards", filter_tabs: true }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-trades", "Métiers numérotés en bande", "Numbered trades in a band", "ap-strip", "stats", { style: "trades" }, [{ type: "item" }, { type: "item" }, { type: "item" }]),
+    d("ap-services", "Trois prestations, filet et lien", "Three services, rule and link", "ap-cards", "grid-3", { layout: "services" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("ap-servicerows", "Prestations détaillées et listes cochées", "Detailed services and checklists", "ap-cards", "cards-rows", { layout: "servicerows", cta_style: "button" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
   ]),
   e("services", 3, "detail", { fr: "Détail d'une prestation", en: "Service detail" }, { fr: "Périmètre, contenu et livrables d'un service.", en: "Scope, content and deliverables of a service." }, "détail prestation périmètre livrables", [
     d("split", "Résumé fixe et détail", "Fixed summary and detail", "fs-service", "sticky", { layout: "split" }),
@@ -451,6 +459,7 @@ const SERVICES: FamilyEntry[] = [
     d("re-featured", "Biens à la une en rangée", "Featured properties in a row", "re-listings", "grid-4", { mode: "featured", layout: "home", limit: 4 }),
     d("re-search-grid", "Biens avec filtres, tri et pages", "Properties with filters, sort and pages", "re-listings", "grid-3", { mode: "vente", layout: "grid", show_filters: true, show_count: true, show_sort: true, per_page: 6, limit: 0 }),
     d("re-map", "Carte illustrative et liste", "Illustrative map and list", "re-listings", "split-left", { mode: "vente", layout: "map", show_filters: true, show_count: true, show_sort: true, tabs: "view", limit: 0 }),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 6, "case", { fr: "Étude de cas", en: "Case study" }, { fr: "Demande, contraintes, réponse et résultat d'un projet.", en: "Request, constraints, answer and result of a project." }, "étude de cas projet demande contraintes résultat", [
     d("sticky", "Image fixe pendant le récit", "Image fixed during the story", "fs-case", "sticky", { layout: "sticky" }),
@@ -463,6 +472,8 @@ const SERVICES: FamilyEntry[] = [
   e("services", 7, "before-after", { fr: "Avant / après", en: "Before / after" }, { fr: "Transformation réelle, curseur ou vues juxtaposées.", en: "Real transformation, slider or side-by-side views." }, "avant après transformation curseur comparaison", [
     d("slider", "Curseur", "Slider", "ed-study", "beforeafter", { aligned: true }),
     d("side", "Vues juxtaposées", "Side-by-side views", "ed-study", "grid-2", { aligned: false }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-compare", "Simulation avant/après à curseur", "Before/after simulation with a slider", "ap-compare", "beforeafter", { layout: "side" }),
   ]),
   e("services", 8, "method", { fr: "Méthode de travail", en: "Working method" }, { fr: "Étapes de l'accompagnement.", en: "Steps of the support." }, "méthode étapes accompagnement processus", [
     d("timeline", "Frise", "Timeline", "timeline", "timeline"),
@@ -471,6 +482,7 @@ const SERVICES: FamilyEntry[] = [
     // Atelier Rive (maquettes du 23 octobre).
     d("columns", "Étapes en colonnes et photo", "Steps in columns and a photo", "timeline", "split-left", { layout: "columns" }),
     d("chapters", "Chapitres illustrés", "Illustrated chapters", "ref-narrative", "sticky"),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 9, "commitments", { fr: "Engagements de service", en: "Service commitments" }, { fr: "Suivi, qualité, délais et communication.", en: "Follow-up, quality, timing and communication." }, "engagements service suivi qualité délais", [
     d("grid", "Grille", "Grid", "fs-commitments", "grid-4", { layout: "grid" }),
@@ -528,11 +540,16 @@ const SERVICES: FamilyEntry[] = [
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards" }),
     d("side", "Titre à côté", "Title beside", "faq", "split-left", { style: "lines", layout: "side" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-faq-row", "Titre à gauche, questions à droite", "Title left, questions right", "ap-faq", "accordion", { layout: "row" }),
+    d("ap-faq-page", "Recherche, catégories et aide", "Search, categories and help", "ap-faq", "accordion", { layout: "page", search_placeholder: "Rechercher une question…" }),
+    d("ap-faq-band", "Questions sur bande bleu pétrole", "Questions on a petrol-blue band", "ap-faq", "band", { layout: "band" }),
   ]),
   e("services", 19, "news", { fr: "Conseils et actualités", en: "Advice and news" }, { fr: "Articles professionnels et nouvelles de l'entreprise.", en: "Professional articles and company news." }, "conseils actualités articles blog", [
     d("editorial", "Un article à la une et une liste", "One lead article and a list", "fs-journal", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "fs-journal", "grid-3", { layout: "grid" }),
     d("list", "Liste", "List", "fs-journal", "list", { layout: "list" }),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 20, "contact", { fr: "Contact et prise de rendez-vous", en: "Contact and booking" }, { fr: "Formulaire ou accès au calendrier existant selon l'activité.", en: "Form or access to the existing calendar depending on the business." }, "contact rendez-vous réservation formulaire calendrier", [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
@@ -548,6 +565,10 @@ const SERVICES: FamilyEntry[] = [
     d("re-callback", "Demande de rappel", "Call-back request", "re-form", "form-split", { kind: "callback" }),
     d("re-estimate", "Demande d'estimation en trois étapes", "Three-step valuation request", "re-form", "form", { kind: "estimate" }),
     d("re-alert", "Alerte de recherche", "Search alert", "re-form", "form-split", { kind: "alert" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-cta", "Bande bleu pétrole et photo", "Petrol-blue band and photo", "ap-cta", "band", { layout: "band" }),
+    d("ap-contact", "Formulaire de contact APLAT", "APLAT contact form", "ap-form", "form-split", { kind: "contact" }),
+    d("ap-quote", "Demande de devis avec photos", "Quote request with photos", "ap-form", "form", { kind: "quote" }),
   ]),
 ];
 
@@ -559,7 +580,7 @@ export const ALL_ENTRIES: FamilyEntry[] = [...SPECIALTY, ...CATALOG, ...SERVICES
 // (MUSEAU CLUB) ; sur une vraie boutique, ces écrans sont ceux de Shopify : jamais proposés dans la galerie.
 // « re-bien », « re-favorites », « re-account », « re-legal », « re-article » (Maison & Horizon) : fiche d'un bien,
 // favoris, espace, informations légales et article — des pages entières, pas des sections de la galerie.
-export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "on-header", "on-footer", "on-cart", "re-bien", "re-favorites", "re-account", "re-legal", "re-article"]);
+export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "on-header", "on-footer", "on-cart", "re-bien", "re-favorites", "re-account", "re-legal", "re-article", "ap-header", "ap-footer", "ap-legal", "ap-article", "ap-confirm"]);
 export const isStructuralType = (type: string) => type.startsWith("main-") || STRUCTURAL_TYPES.has(type);
 
 /** Types de sections proposables dans une famille (union des dispositions de ses 20 entrées). */
@@ -568,7 +589,7 @@ export function familyTypes(family: FamilyId): Set<string> {
 }
 
 /** Famille d'un thème de référence (repli quand la catégorie du projet n'est pas connue). */
-export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog", "maison-horizon": "services" };
+export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog", "maison-horizon": "services", aplat: "services" };
 export const familyOf = (kind: StoreKind | null | undefined, theme?: string): FamilyId | null => kind ?? (theme ? THEME_FAMILY[theme] ?? null : null);
 
 export const entryByKey = (key: string): FamilyEntry | undefined => ALL_ENTRIES.find((x) => x.key === key);

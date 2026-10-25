@@ -56,6 +56,7 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
   "maison-horizon": { primary: "#163A2C", secondary: "#E7DCC8", accent: "#AC4E2A", light: "#F7F2EA", dark: "#16241C" }, // vert profond, ivoire et terre cuite (maquettes du 23 octobre)
   alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
+  aplat: { primary: "#04567B", secondary: "#E0EEF5", accent: "#0A3F8F", light: "#FFFFFF", dark: "#0E1B3D" }, // bleu pétrole des aplats, bleu clair des encarts, bleu des légendes, blanc enduit, bleu nuit des titres (planches du 25 octobre)
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 

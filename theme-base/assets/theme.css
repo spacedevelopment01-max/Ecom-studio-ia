@@ -1392,6 +1392,9 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 /* MAISON & HORIZON (issue #172) : le caractère est porté par le profil éditorial « horizon » (assets/horizon.css). */
 .dir-maison-horizon .es-heading { letter-spacing: -.01em; line-height: 1.08; }
 .dir-maison-horizon .es-button { border-radius: 2px; }
+/* APLAT (PR #187) : le caractère est porté par le profil éditorial « aplat » (assets/aplat.css). */
+.dir-aplat .es-heading { letter-spacing: -.01em; line-height: 1.1; }
+.dir-aplat .es-button { border-radius: 0; }
 
 /* Page dont le titre est porté par la première section : la section de page ne garde que le fil d'Ariane. */
 .es-page--untitled { padding: 0 !important; }

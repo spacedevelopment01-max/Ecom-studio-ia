@@ -17,6 +17,7 @@ import { isActiveThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 import { addRealEstateSite } from "./real-estate-site";
+import { addAplatSite } from "./aplat-site";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
 export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -1182,14 +1183,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ...((!svc && cat?.headerRow ? [cat.headerRow(kit)] : [["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }]]) as Row[]),
+      ...(((!svc || cat?.chromeForServices) && cat?.headerRow ? [cat.headerRow(kit)] : [["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }]]) as Row[]),
     ]),
   };
   const footer: GroupJson = {
     type: "footer",
     name: t("Groupe pied de page", "Footer group"),
     ...tpl(ids, [
-      ...((!svc && cat?.footerRow ? [cat.footerRow(kit)] : [["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: !svc, show_payment: !svc, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, svc
+      ...(((!svc || cat?.chromeForServices) && cat?.footerRow ? [cat.footerRow(kit)] : [["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: !svc, show_payment: !svc, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, svc
         ? [
             { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
             { type: "links", settings: { heading: t("Le site", "Site"), menu: "main-menu" } },
@@ -1334,5 +1335,12 @@ export function buildSpec(input: BuildInput): ThemeSpec {
   }
   // Maison & Horizon (issue #172) : pages de recherche, fiche d'un bien et favoris pour les biens de l'onglet « Biens ».
   if (d.id === "maison-horizon" && svc) addRealEstateSite(result, lang);
+  // APLAT (PR #187) : accueil et pages des planches, remplis avec les prestations, la méthode, les questions et les
+  // photos du projet ; aucune photo ni coordonnée de démonstration.
+  if (d.id === "aplat" && svc && input.services) {
+    const hero = im.lifestyle ?? im.hero ?? im.scene1 ?? "";
+    const photos = [im.scene1, im.scene2, im.scene3, im.lifestyle2, im.detail1, im.detail2, im.hero].filter((x, i, a): x is string => !!x && a.indexOf(x) === i);
+    addAplatSite(result, { lang, shopName: input.shopName, profile: input.services, copy: c, plan: svc, images: { hero, photos, byService: im.byService } });
+  }
   return result;
 }

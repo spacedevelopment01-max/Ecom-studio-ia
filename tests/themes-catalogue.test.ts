@@ -22,8 +22,8 @@ const opening = (spec: Spec) => {
 /** Caractère graphique : polices, en-tête, pied, boutons, cartes, arrondis, casse, fond clair ou sombre. */
 const signature = (spec: Spec) => {
   const st = spec.settings as Record<string, unknown>;
-  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header" || s.type === "on-header")!.settings;
-  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer" || s.type === "on-footer")!.settings;
+  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header" || s.type === "on-header" || s.type === "ap-header")!.settings;
+  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer" || s.type === "on-footer" || s.type === "ap-footer")!.settings;
   const bg = (st.color_schemes as Record<string, { settings: { background: string } }>)["scheme-1"].settings.background;
   return [st.type_heading_font, st.type_body_font, header.layout, header.shape, header.mobile_menu, footer.style, st.button_style, st.card_style, Number(st.button_radius) >= 20 ? "round" : Number(st.button_radius) >= 6 ? "soft" : "square", st.heading_case, bg];
 };
@@ -34,12 +34,12 @@ const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.i
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
   it("définit 41 thèmes (30 anciens, lisibles seulement, + 11 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158) et n'en propose que 11 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(42);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(42);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(42);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon"]);
+    expect(DIRECTIONS).toHaveLength(43);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(43);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(43);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "maison-horizon", "aplat"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["maison-horizon", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["maison-horizon", false], ["aplat", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -152,6 +152,10 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     // ONDE (sept planches du 24 octobre, PR #183) : panier, commande d'exemple, pages d'aide et articles composés par sa
     // démonstration (tests/onde-fixtures.ts) ; les autres sections « on-* » servent dans la composition du catalogue.
     for (const t of ["on-cart", "on-checkout", "on-help", "on-article"]) outside.add(t);
+    // APLAT (dix planches du 25 octobre, PR #187) : matière d'enduit, avant/après et article composés par sa démonstration
+    // (tests/aplat-fixtures.ts) ; un site client n'en a pas tant qu'il n'a pas de vraies photos de chantier (aucune photo
+    // de démonstration reprise). La confirmation n'existe que pour un client qui accepte les demandes de devis.
+    for (const t of ["ap-split", "ap-compare", "ap-article", "ap-confirm"]) outside.add(t);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });

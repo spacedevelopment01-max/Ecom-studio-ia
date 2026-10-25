@@ -156,6 +156,8 @@
     {{ 'purchase-offers.css' | asset_url | stylesheet_tag }}
     {%- comment -%} Maison & Horizon : chargé en dernier (ses règles priment sur la couche commune). {%- endcomment -%}
     {%- if settings.editorial_profile == 'horizon' -%}{{ 'horizon.css' | asset_url | stylesheet_tag }}<meta name="mh-shop" content="{{ shop.name | handleize }}">{%- endif -%}
+    {%- comment -%} APLAT (dix maquettes du 25 octobre, docs/theme-briefs/aplat) : profil éditorial « aplat », sections ap-*. {%- endcomment -%}
+    {%- if settings.editorial_profile == 'aplat' -%}{{ 'aplat.css' | asset_url | stylesheet_tag }}{%- endif -%}
     {%- comment -%} SOUPLE (maquettes du 23 octobre, docs/theme-briefs/souple) : chargé en dernier, comme horizon.css. {%- endcomment -%}
     {%- if settings.conversion_profile == 'souple' -%}{{ 'souple.css' | asset_url | stylesheet_tag }}{%- endif -%}
     {%- if settings.conversion_profile == 'onde' -%}{{ 'onde.css' | asset_url | stylesheet_tag }}{%- endif -%}
@@ -165,6 +167,7 @@
   <script src="{{ 'conversion.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'family.js' | asset_url }}" defer="defer"></script>
   {%- if settings.editorial_profile == 'horizon' -%}<script src="{{ 'horizon.js' | asset_url }}" defer="defer"></script>{%- endif -%}
+  {%- if settings.editorial_profile == 'aplat' -%}<script src="{{ 'aplat.js' | asset_url }}" defer="defer"></script>{%- endif -%}
   {%- if settings.conversion_profile == 'souple' -%}<script src="{{ 'souple.js' | asset_url }}" defer="defer"></script>{%- endif -%}
   {%- if settings.conversion_profile == 'onde' -%}<script src="{{ 'onde.js' | asset_url }}" defer="defer"></script>{%- endif -%}
 </head>
