@@ -16,7 +16,7 @@
     endif
   endfor
 -%}
-<section class="cvn-product" id="CvnProduct-{{ section.id }}" data-cvn-product data-price="{{ current.price }}" data-price-confirmed="{% if s.price_confirmed and current.price > 0 %}true{% else %}false{% endif %}" data-title="{{ product.title | escape }}" data-image="{{ product.featured_image | image_url: width: 400 }}" data-size-prop="{{ s.size_property | escape }}" data-adding="{{ s.adding_label | escape }}" data-added="{{ s.added_label | escape }}" data-see-cart="{{ s.see_cart_label | escape }}" data-cart-url="{{ routes.cart_url }}" data-error="{{ s.error_label | escape }}">
+<section class="cvn-product" style="--mmt: {{ s.mobile_media_top }}px;" id="CvnProduct-{{ section.id }}" data-cvn-product data-price="{{ current.price }}" data-price-confirmed="{% if s.price_confirmed and current.price > 0 %}true{% else %}false{% endif %}" data-title="{{ product.title | escape }}" data-image="{{ product.featured_image | image_url: width: 400 }}" data-size-prop="{{ s.size_property | escape }}" data-adding="{{ s.adding_label | escape }}" data-added="{{ s.added_label | escape }}" data-see-cart="{{ s.see_cart_label | escape }}" data-cart-url="{{ routes.cart_url }}" data-error="{{ s.error_label | escape }}">
   <div class="cvn-product__inner cvn-scale">
     {%- if s.show_breadcrumb -%}
       <nav class="cvn-crumbs" aria-label="{{ s.breadcrumb_label }}">
@@ -175,6 +175,7 @@
     { "type": "textarea", "id": "reassure_3", "label": "Repère 3", "default": "Tirage après\ncommande" },
     { "type": "select", "id": "reassure_3_icon", "label": "Icône 3", "default": "scoop", "options": [{ "value": "bracelet", "label": "Bracelet" }, { "value": "assemblage", "label": "Assemblage" }, { "value": "scoop", "label": "Scoop" }, { "value": "mysteres-lune", "label": "Lune" }, { "value": "symboles-tires", "label": "Symboles" }] },
     { "type": "header", "content": "Galerie" },
+    { "type": "range", "id": "mobile_media_top", "label": "Galerie sous l'en-tête (téléphone)", "min": 0, "max": 120, "step": 1, "unit": "px", "default": 0 },
     { "type": "text", "id": "prev_label", "label": "Photo précédente", "default": "Photo précédente" },
     { "type": "text", "id": "next_label", "label": "Photo suivante", "default": "Photo suivante" },
     { "type": "text", "id": "thumb_label", "label": "Vignette", "default": "Voir la photo" }
