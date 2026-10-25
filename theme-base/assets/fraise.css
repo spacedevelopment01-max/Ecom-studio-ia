@@ -115,21 +115,21 @@ body:has([data-fg-band="center"]) .fg-band__static { display: flex; }
 /* Planche 02 : bandeau de 35 px au-dessus, trois groupes fixes (celui du milieu en gras), en-tête de 91 px aux liens
    en graisse moyenne gris ardoise, pictogrammes plus fins. */
 .fg-band__trio { display: none; }
-body:has([data-fg-band="above"]) .fg-band { height: calc(35 * var(--u)); }
 @media (min-width: 750px) {
+  body:has([data-fg-band="above"]) .fg-band { height: calc(35 * var(--u)); }
   body:has([data-fg-band="above"]) .fg-band__track, body:has([data-fg-band="above"]) .fg-band__static { display: none; }
   body:has([data-fg-band="above"]) .fg-band__trio { display: flex; }
+  body:has([data-fg-band="above"]) .fg-band__trio { height: 100%; align-items: center; justify-content: space-between; padding: 0 calc(49 * var(--u)) 0 calc(37 * var(--u)); font: 500 calc(11.8 * var(--u))/1 var(--fg-title); letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; }
+  body:has([data-fg-band="above"]) .fg-band__trio > span { opacity: .78; }
+  body:has([data-fg-band="above"]) .fg-band__trio .fg-band__main { opacity: 1; font-weight: 700; letter-spacing: .14em; }
+  body:has([data-fg-band="above"]) { --fg-tools-gap: 105; }
+  body:has([data-fg-band="above"]) .fg-header__tools { gap: calc(28 * var(--u)); }
+  body:has([data-fg-band="above"]) .fg-header__bar { height: calc(91 * var(--u)); padding: 0 calc(48 * var(--u)) 0 calc(227 * var(--u)); border-bottom: 1px solid color-mix(in srgb, var(--fg-red) 14%, transparent); }
+  body:has([data-fg-band="above"]) .fg-header__li a { font: 500 calc(16.5 * var(--u))/1.2 var(--font-body-family, "DM Sans"), sans-serif; letter-spacing: -.01em; color: #4A4D57; margin-right: calc(31 * var(--u)); }
+  body:has([data-fg-band="above"]) .fg-header__li:last-child a { margin-right: 0; }
+  body:has([data-fg-band="above"]) .fg-header__icon .fg-ico { width: calc(22 * var(--u)); height: calc(22 * var(--u)); stroke-width: 2.4; }
+  body:has([data-fg-band="above"]) .fg-header__cart .fg-ico { width: calc(28 * var(--u)); height: calc(30 * var(--u)); }
 }
-body:has([data-fg-band="above"]) .fg-band__trio { height: 100%; align-items: center; justify-content: space-between; padding: 0 calc(49 * var(--u)) 0 calc(37 * var(--u)); font: 500 calc(11.8 * var(--u))/1 var(--fg-title); letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; }
-body:has([data-fg-band="above"]) .fg-band__trio > span { opacity: .78; }
-body:has([data-fg-band="above"]) .fg-band__trio .fg-band__main { opacity: 1; font-weight: 700; letter-spacing: .14em; }
-body:has([data-fg-band="above"]) { --fg-tools-gap: 105; }
-body:has([data-fg-band="above"]) .fg-header__tools { gap: calc(28 * var(--u)); }
-body:has([data-fg-band="above"]) .fg-header__bar { height: calc(91 * var(--u)); padding: 0 calc(48 * var(--u)) 0 calc(227 * var(--u)); border-bottom: 1px solid color-mix(in srgb, var(--fg-red) 14%, transparent); }
-body:has([data-fg-band="above"]) .fg-header__li a { font: 500 calc(16.5 * var(--u))/1.2 var(--font-body-family, "DM Sans"), sans-serif; letter-spacing: -.01em; color: #4A4D57; margin-right: calc(31 * var(--u)); }
-body:has([data-fg-band="above"]) .fg-header__li:last-child a { margin-right: 0; }
-body:has([data-fg-band="above"]) .fg-header__icon .fg-ico { width: calc(22 * var(--u)); height: calc(22 * var(--u)); stroke-width: 2.4; }
-body:has([data-fg-band="above"]) .fg-header__cart .fg-ico { width: calc(28 * var(--u)); height: calc(30 * var(--u)); }
 
 /* Planche 03 (achat et assistance) : en-tête dessiné 1,45 fois plus grand qu'aux planches 01-02 au même repère 1440 :
    barre de 118 px, liens de 20,5 px en graisse normale, logo de 217 px, bandeau centré de 38 px. */
@@ -802,15 +802,17 @@ body:has([data-fg-foot="product"]) .fg-footer__v--product { display: grid; }
 .fg-hero--v-b { --tx: 105; --ty: 34; --tw: 560; --fs: 100; --lh: .69; --lt: 17; --lx: 50; --ls: 23; }
 /* Planche 02 (boutique) : titre en graisse 700, dessin plus étroit que le Poppins d'origine (mesuré : 395 px pour
    « À chacun » à 73 px de hauteur) ; resserré horizontalement, la ligne à empattements garde sa largeur. */
-.fg-hero--v-b .fg-hero__title { font-weight: 700; letter-spacing: -.02em; }
-.fg-hero--v-b .fg-hero__title .fg-ln { width: max-content; }
-.fg-hero--v-b .fg-hero__title .fg-ln:not(.fg-ln--3) { transform: scaleX(.86); transform-origin: 0 0; }
-.fg-hero--v-b .fg-hero__title .fg-ln--3 { transform: scaleX(.95); transform-origin: 0 0; }
-.fg-hero--v-b .fg-hero__lead { line-height: calc(30.5 * var(--u)); color: #555B69; }
-.fg-hero--v-b .fg-hero__title .fg-ln--1 { margin: calc(9 * var(--u)) 0 0 calc(20 * var(--u)); }
-.fg-hero--v-b .fg-hero__title .fg-ln--2 { margin: calc(-9 * var(--u)) 0 0 calc(38 * var(--u)); }
-.fg-hero--v-b .fg-hero__title .fg-ln--3 { margin-top: calc(24 * var(--u)); margin-left: calc(50 * var(--u)); }
-.fg-hero--v-b .fg-hero__title .fg-s { font-size: 1em; }
+@media (min-width: 750px) {
+  .fg-hero--v-b .fg-hero__title { font-weight: 700; letter-spacing: -.02em; }
+  .fg-hero--v-b .fg-hero__title .fg-ln { width: max-content; }
+  .fg-hero--v-b .fg-hero__title .fg-ln:not(.fg-ln--3) { transform: scaleX(.86); transform-origin: 0 0; }
+  .fg-hero--v-b .fg-hero__title .fg-ln--3 { transform: scaleX(.95); transform-origin: 0 0; }
+  .fg-hero--v-b .fg-hero__lead { line-height: calc(30.5 * var(--u)); color: #555B69; }
+  .fg-hero--v-b .fg-hero__title .fg-ln--1 { margin: calc(9 * var(--u)) 0 0 calc(20 * var(--u)); }
+  .fg-hero--v-b .fg-hero__title .fg-ln--2 { margin: calc(-9 * var(--u)) 0 0 calc(38 * var(--u)); }
+  .fg-hero--v-b .fg-hero__title .fg-ln--3 { margin-top: calc(24 * var(--u)); margin-left: calc(50 * var(--u)); }
+  .fg-hero--v-b .fg-hero__title .fg-s { font-size: 1em; }
+}
 /* C : la recette (planche 02) */
 .fg-hero--v-c { --tx: 100; --ty: 42; --tw: 720; --fs: 88; --lh: .86; --lt: 20; --lx: 18; --ls: 19.5; }
 @media (min-width: 750px) {
@@ -850,7 +852,6 @@ body:has([data-fg-foot="product"]) .fg-footer__v--product { display: grid; }
 .fg-offers--shop .is-best .fg-offer__price { font-size: calc(49 * var(--u)); }
 .fg-offers--shop .fg-offer__per { margin-top: calc(13 * var(--u)); font-size: calc(24.5 * var(--u)); color: #6D5D5B; }
 .fg-offers--shop .fg-offer__save { font-size: calc(21 * var(--u)); color: var(--fg-red); font-weight: 600; }
-.fg-offers--shop .is-best .fg-offer__save { font-size: calc(24 * var(--u)); }
 .fg-offers--shop .fg-offer__add { width: 100%; height: calc(58 * var(--u)); border-radius: calc(9 * var(--u)); font-size: calc(22.4 * var(--u)); font-weight: 500; }
 .fg-offers--shop .fg-offer__msg { position: absolute; z-index: 2; top: calc(185 * var(--u)); left: 50%; transform: translateX(-50%); height: calc(60 * var(--u)); padding: 0 calc(34 * var(--u)); border-radius: 999px; background: var(--fg-red); color: #fff; font: 600 calc(35 * var(--u))/1 var(--fg-title); white-space: nowrap; box-shadow: 0 calc(6 * var(--u)) calc(16 * var(--u)) calc(-6 * var(--u)) rgba(150, 20, 30, .5); }
 .fg-offers--shop .is-best .fg-offer__msg { top: 0; height: calc(47 * var(--u)); padding: 0 calc(28 * var(--u)); border-radius: 999px; font-size: calc(31.4 * var(--u)); text-transform: uppercase; }
@@ -862,6 +863,7 @@ body:has([data-fg-foot="product"]) .fg-footer__v--product { display: grid; }
   .fg-offers--shop .fg-offers__cell--2 .fg-offer__title { margin-top: calc(46 * var(--u)); }
   .fg-offers--shop .fg-offers__cell--2 .fg-offer__price { font-size: calc(41.6 * var(--u)); }
   .fg-offers--shop .fg-offers__cell--1 .fg-offer__per { font-size: calc(25.3 * var(--u)); }
+  .fg-offers--shop .is-best .fg-offer__save { font-size: calc(24 * var(--u)); }
   .fg-offers--shop .fg-offers__cell--2 .fg-offer__per { margin-top: 0; }
   .fg-offers--shop .fg-offers__cell--3 .fg-offer__per { margin-top: calc(-8 * var(--u)); }
   .fg-offers--shop .fg-offers__cell--2 .fg-offer__form { margin-bottom: calc(-5 * var(--u)); }
@@ -1383,6 +1385,11 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
 /* =============================================================================================== Téléphone : accueil */
 @media (max-width: 749px) {
   .fg-c { --u: var(--m); }
+  /* Au téléphone, l'unité se mesure sur la largeur de la section, pas sur la boîte de contenu de .fg-c (ses marges
+     intérieures réduisaient tout de 2 à 17 %). La fiche garde .fg-c comme repère (sa visionneuse est fixe) et n'a
+     plus de marge latérale. */
+  .fg:not(.fg-product):not(.fg-footer) { container-type: inline-size; }
+  .fg:not(.fg-product):not(.fg-footer) .fg-c { container-type: normal; }
   /* Ouverture (planche 04, accueil 1/2) */
   .fg-hero--home .fg-c { height: calc(var(--hm) * var(--m)); }
   .fg-hero--home .fg-hero__img { display: none; }
@@ -1457,7 +1464,7 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-offers--home .fg-offer__price { font-size: calc(30 * var(--m)); line-height: 1.15; }
   .fg-offers--home .is-best .fg-offer__price { font-size: calc(32 * var(--m)); }
   .fg-offers--home .fg-offer__ref { display: none; }
-  .fg-offers--home .is-best .fg-offer__ref { display: block; position: absolute; right: calc(12 * var(--m)); top: calc(126 * var(--m)); font-size: calc(14 * var(--m)); }
+  .fg-offers--home .is-best .fg-offer__ref { display: block; position: absolute; right: calc(12 * var(--m)); top: calc(97 * var(--m)); font-size: calc(14 * var(--m)); }
   .fg-offers--home .fg-offer__last { font-size: calc(16 * var(--m)); line-height: 1.5; }
   .fg-offers--home .fg-offer__per, .fg-offers--home .fg-offer__per--withlast { display: block; font-size: calc(14 * var(--m)); line-height: 1.6; color: #3D2F2D; }
   .fg-offers--home .fg-offer__save { font-size: calc(14 * var(--m)); line-height: 1.6; color: var(--fg-red); font-weight: 500; }
@@ -1468,6 +1475,22 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-offers--home .is-best { border-width: calc(2 * var(--m)); padding: calc(26 * var(--m)) calc(8 * var(--m)) calc(10 * var(--m)) calc(6 * var(--m)); background: transparent; margin: 0; }
   .fg-offers--home .is-best .fg-offer__msg { top: calc(52 * var(--m)); right: calc(8 * var(--m)); width: calc(108 * var(--m)); height: auto; padding: calc(4 * var(--m)) calc(6 * var(--m)); white-space: normal; text-align: center; font-size: calc(15 * var(--m)); line-height: 1.15; border-radius: calc(6 * var(--m)); }
   .fg-offers--home .fg-offer__best { top: calc(-2 * var(--m)); left: auto; right: calc(-2 * var(--m)); transform: none; height: calc(24 * var(--m)); padding: 0 calc(12 * var(--m)); border-radius: 0 calc(8 * var(--m)) 0 calc(8 * var(--m)); background: var(--fg-red); color: #fff; font-size: calc(11.5 * var(--m)); }
+  /* Planche 04 (accueil 2/2) : chaque format sur une carte blanche bordée, bouton avec sac, « Économisez » en gras. */
+  .fg-offers--home .fg-offer:not(.is-best) { border: 1px solid #EFE2DC; background: #fff; box-shadow: 0 calc(2 * var(--m)) calc(8 * var(--m)) rgba(120, 50, 40, .05); padding: calc(10 * var(--m)) calc(10 * var(--m)) calc(10 * var(--m)) 0; }
+  .fg-offers--home .fg-offer__title { font-size: calc(15 * var(--m)); }
+  .fg-offers--home .fg-offer__price { font-size: calc(31 * var(--m)); line-height: 1.1; }
+  .fg-offers--home .fg-offer__save { font-weight: 700; color: var(--fg-crimson); }
+  .fg-offers--home .fg-offer__last { font-weight: 700; color: var(--fg-crimson); }
+  .fg-offers--home .fg-offer__add, .fg-offers--home .fg-offers__cell--2 .fg-offer__add, .fg-offers--home .fg-offers__cell--3 .fg-offer__add { gap: calc(16 * var(--m)); height: calc(38 * var(--m)); }
+  .fg-offers--home .fg-offer__add .fg-ico { width: calc(20 * var(--m)); height: calc(20 * var(--m)); }
+  .fg-offers--home .is-best { background: #FFF4F2; }
+  /* Les réglages carte par carte de l'ordinateur ne s'appliquent pas au téléphone. */
+  .fg-offers--home .fg-offers__cell .fg-offer__title { margin: 0; font-size: calc(15 * var(--m)); }
+  .fg-offers--home .fg-offers__cell .fg-offer__prices { margin: 0; }
+  .fg-offers--home .fg-offers__cell .fg-offer__price { margin: 0; font-size: calc(31 * var(--m)); }
+  .fg-offers--home .fg-offers__cell .fg-offer__per { margin: 0; font-size: calc(14 * var(--m)); }
+  .fg-offers--home .fg-offers__cell .fg-offer__save, .fg-offers--home .fg-offers__cell .fg-offer__last { margin: 0; font-size: calc(15 * var(--m)); color: var(--fg-red); }
+  .fg-offers--home .fg-offers__cell--3 .fg-offer__ref { margin: 0; font-size: calc(14 * var(--m)); }
   .fg-offers__note { position: static; margin: calc(8 * var(--m)) calc(8 * var(--m)) 0; font-size: calc(11 * var(--m)); text-align: left; }
   /* Une place au quotidien : la scène et son mot manuscrit */
   .fg-everyday .fg-c { height: calc(250 * var(--m)); }
@@ -1494,7 +1517,7 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-duo__half .fg-art--branch { position: absolute; right: calc(10 * var(--m)); top: 0; width: calc(70 * var(--m)); transform: scaleX(-1) rotate(-30deg); }
   .fg-duo__journal { position: relative; left: auto; top: auto; width: auto; padding: calc(10 * var(--m)) calc(25 * var(--m)) 0 calc(28 * var(--m)); }
   .fg-duo__jhead { display: block; position: relative; }
-  .fg-duo__jtitle { font-size: calc(28 * var(--m)); color: var(--fg-crimson); }
+  .fg-duo__jtitle { font-size: calc(30 * var(--m)); color: var(--fg-red); }
   .fg-duo__jtitle .fg-i { font-family: var(--fg-title); font-style: normal; font-weight: 800; color: inherit; }
   .fg-duo__jtitle .fg-ln { display: inline; }
   .fg-duo__jtext { margin-top: calc(4 * var(--m)); max-width: calc(250 * var(--m)); font-size: calc(14 * var(--m)); color: #3D2F2D; }
@@ -1504,20 +1527,28 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-duo__pimg { height: calc(84 * var(--m)); border-radius: calc(8 * var(--m)); }
   .fg-duo__ptitle { font-size: calc(12.5 * var(--m)); margin-top: calc(6 * var(--m)); }
   .fg-duo__read { font-size: calc(12 * var(--m)); }
+  /* Planche 04 : recette, journal et questions sur fond rose (#FCE7E0 mesuré), articles sur cartes blanches. */
+  .fg-duo { background: #FCE7E0 !important; }
+  .fg-duo__recipe { background: transparent; }
+  .fg-duo__post { padding: calc(4 * var(--m)) calc(4 * var(--m)) calc(10 * var(--m)); border-radius: calc(10 * var(--m)); background: #FFFBF8; }
+  .fg-duo__post .fg-duo__ptitle, .fg-duo__post .fg-duo__read { margin-left: calc(6 * var(--m)); }
   /* Questions en bref */
-  .fg-faqt--home { background: var(--fg-cream); }
+  .fg-faqt--home { background: #FCE7E0; }
   .fg-faqt--home .fg-wave { display: none; }
   .fg-faqt--home .fg-c, .fg-faqt--product .fg-c { display: block; padding: calc(14 * var(--m)) calc(28 * var(--m)) calc(26 * var(--m)); min-height: 0; }
   .fg-faqt--home .fg-faqt__head { padding: 0; }
   .fg-faqt__title { display: none; }
   .fg-faqt__title--m { display: block; font-size: calc(20 * var(--m)); }
-  .fg-faqt--home .fg-faqt__title:not(.fg-faqt__title--m) { display: block; font-size: calc(20 * var(--m)); }
+  .fg-faqt--home .fg-faqt__title:not(.fg-faqt__title--m) { display: block; font-size: calc(21.5 * var(--m)); }
   .fg-faqt--home .fg-faqt__title .fg-ln { display: inline; }
   .fg-faqt--home .fg-faqt__title .fg-ln--1 { color: var(--fg-red); font-family: var(--fg-accent); font-style: italic; font-weight: 800; }
   .fg-faqt__btn { display: none; }
   .fg-faqt__item { order: var(--om); }
   .fg-faqt__list, .fg-faqt--product .fg-faqt__list { display: grid; grid-template-columns: 1fr; gap: calc(4 * var(--m)); margin-top: calc(8 * var(--m)); }
-  .fg-faqt__item, .fg-faqt--product .fg-faqt__item { border: 0; border-radius: calc(4 * var(--m)); background: #fff; }
+  .fg-faqt__item, .fg-faqt--product .fg-faqt__item { border: 0; border-radius: calc(7 * var(--m)); background: #fff; }
+  .fg-faqt--home .fg-faqt__list { gap: calc(5 * var(--m)); margin-top: calc(10 * var(--m)); }
+  .fg-faqt--home .fg-faqt__item summary { min-height: calc(23 * var(--m)); padding: 0 calc(12 * var(--m)) 0 calc(12 * var(--m)); font-size: calc(12 * var(--m)); color: #3A2A28; }
+  .fg-faqt--home .fg-faqt__chev { stroke-width: 2.6; color: #2A1A18; }
   .fg-faqt__item summary, .fg-faqt--product .fg-faqt__item summary { min-height: calc(25 * var(--m)); padding: 0 calc(8 * var(--m)) 0 calc(10 * var(--m)); font-size: calc(11.5 * var(--m)); font-weight: 500; }
   .fg-faqt__plus { display: none; }
   .fg-faqt__chev { display: block; width: calc(14 * var(--m)); height: calc(14 * var(--m)); transition: transform .2s; }
@@ -1549,6 +1580,7 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-footer__m .fg-footer__social .fg-ico { width: calc(18 * var(--m)); height: calc(18 * var(--m)); }
   .fg-footer__m .fg-footer__legal { grid-column: 1 / -1; grid-auto-flow: row; display: flex; flex-wrap: wrap; justify-content: center; gap: calc(4 * var(--m)) calc(12 * var(--m)); margin-top: calc(10 * var(--m)); }
   .fg-footer__m .fg-footer__legal a { font-size: calc(11 * var(--m)); }
+  body:not(:has([data-fg-foot-m="help"])) .fg-footer__m .fg-footer__legal--help { display: none; }
   body:has([data-fg-foot-m="menu"]) .fg-footer__mnews, body:has([data-fg-foot-m="compact"]) .fg-footer__mnews { display: none; }
   body:has([data-fg-foot-m="compact"]) .fg-footer__m { display: none; }
   body:has([data-fg-foot-m="compact"]) .fg-footer__v--compact { display: grid !important; grid-template-columns: auto 1fr; padding: calc(8 * var(--m)) calc(16 * var(--m)) calc(12 * var(--m)); }
@@ -1560,7 +1592,8 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
 
 /* =============================================================================================== Téléphone : fiche */
 @media (max-width: 749px) {
-  .fg-product .fg-c { min-height: 0; padding: calc(14 * var(--m)) calc(10 * var(--m)) calc(20 * var(--m)); display: flex; flex-direction: column; }
+  .fg-product .fg-c { min-height: 0; padding: calc(14 * var(--m)) 0 calc(20 * var(--m)); display: flex; flex-direction: column; }
+  .fg-product .fg-c > *, .fg-product__info > * { margin-left: calc(10 * var(--m)) !important; margin-right: calc(10 * var(--m)) !important; }
   .fg-product__gallery { order: 2; position: relative; margin-top: calc(12 * var(--m)); }
   .fg-product__info { display: contents; }
   .fg-product__crumb { order: 0; padding-left: calc(9 * var(--m)); font-size: calc(11 * var(--m)); color: #8B7A78; gap: calc(6 * var(--m)); }
@@ -1793,7 +1826,7 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-offers--shop .fg-offers__cell--3 .fg-offer__form { grid-column: 1 / -1; padding-left: calc(10 * var(--m)); }
   .fg-offers--shop .fg-offer__add { height: calc(34 * var(--m)); border-radius: 999px; font-size: calc(14 * var(--m)); }
   .fg-offers--shop .fg-offer__msg { left: auto; right: calc(10 * var(--m)); top: calc(10 * var(--m)); transform: none; width: calc(78 * var(--m)); height: auto; padding: calc(4 * var(--m)) calc(6 * var(--m)); border-radius: calc(6 * var(--m)); white-space: normal; text-align: center; font-size: calc(14 * var(--m)); line-height: 1.15; box-shadow: none; }
-  .fg-offers--shop .is-best .fg-offer__msg { top: calc(40 * var(--m)); width: calc(100 * var(--m)); height: auto; padding: calc(4 * var(--m)) calc(6 * var(--m)); border-radius: calc(6 * var(--m)); font-size: calc(14 * var(--m)); background: #B71C2A; }
+  .fg-offers--shop .is-best .fg-offer__msg { top: calc(40 * var(--m)); width: calc(92 * var(--m)); height: auto; padding: calc(4 * var(--m)) calc(6 * var(--m)); border-radius: calc(6 * var(--m)); font-size: calc(14 * var(--m)); background: #B71C2A; }
   .fg-offers--shop .fg-offer__best { top: calc(8 * var(--m)); left: auto; right: calc(10 * var(--m)); transform: none; height: calc(22 * var(--m)); padding: 0 calc(10 * var(--m)); border-radius: calc(4 * var(--m)); background: var(--fg-red); color: #fff; font-size: calc(11 * var(--m)); }
   .fg-offers--shop .fg-offers__note { position: static; margin-top: calc(8 * var(--m)); }
   /* Boutique : « Une gourmandise à emporter partout. » */
@@ -1906,6 +1939,13 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
 /* =============================================================================================== Téléphone : planche 06 */
 @media (max-width: 749px) {
   body:has([data-fg-band-m="above"]) .fg-header__band--top { display: block !important; }
+  /* Planche 05 : bandeau sous l'en-tête, texte centré entre deux fraises. */
+  body:has([data-fg-band-m="below"]) .fg-header__band--below { display: block !important; }
+  body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-band { height: calc(26 * var(--m)); }
+  body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-band__track, body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-band__trio { display: none; }
+  body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-band__static { display: flex; gap: calc(6 * var(--m)); font-size: calc(10 * var(--m)); letter-spacing: .05em; }
+  body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-art--petal { width: calc(9 * var(--m)); height: calc(13 * var(--m)); margin: 0 calc(10 * var(--m)) !important; }
+  body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-art--petal:nth-of-type(2), body:has([data-fg-band-m="below"]) .fg-header__band--below .fg-art--petal:nth-of-type(3) { display: none; }
   body:has([data-fg-band-m="above"]) .fg-header__band--top .fg-band { height: calc(28 * var(--m)); }
   body:has([data-fg-band-m="above"]) .fg-header__band--top .fg-band__track { display: none; }
   body:has([data-fg-band-m="above"]) .fg-header__band--top .fg-band__static { display: flex; gap: calc(8 * var(--m)); font-size: calc(10.5 * var(--m)); letter-spacing: .06em; }

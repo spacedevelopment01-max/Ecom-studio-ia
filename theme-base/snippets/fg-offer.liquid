@@ -87,16 +87,19 @@
   {%- if last != blank and show_last -%}<span class="fg-offer__last">{{ last }}</span>{%- endif -%}
   {%- liquid
     assign per_on = false
+    assign per_m = false
     if packs and show_per != 'none' and show_per != false
       assign per_on = true
       if show_per == 'no_last' and last != blank and show_last
         assign per_on = false
+        assign per_m = true
       endif
     endif
   -%}
   {%- if per_on -%}
     <span class="fg-offer__per{% if last != blank and show_last %} fg-offer__per--withlast{% endif %}">{% if exact != 0 %}≈ {% endif %}{{ per | money }} / {{ unit_word }}</span>
   {%- endif -%}
+  {%- if per_m -%}<span class="fg-offer__per fg-offer__per--withlast fg-only-m">{% if exact != 0 %}≈ {% endif %}{{ per | money }} / {{ unit_word }}</span>{%- endif -%}
   {%- if packs and eco > 0 and show_save -%}<span class="fg-offer__save">{{ settings.offer_save_label | default: 'Économisez' }} {{ eco | money }}</span>{%- endif -%}
 {%- endcapture -%}
 {%- case fg_mode -%}
@@ -118,7 +121,7 @@
         {%- form 'product', product, class: 'fg-offer__form', data-fg-quick-add: '' -%}
           <input type="hidden" name="id" value="{{ variant.id }}">
           <input type="hidden" name="quantity" value="1">
-          <button type="submit" class="fg-btn fg-btn--red fg-offer__add"{% unless variant.available %} disabled{% endunless %}>{% if button_icon %}{% render 'fg-icon', name: 'bag' %}{% endif %}<span>{{ button }}</span></button>
+          <button type="submit" class="fg-btn fg-btn--red fg-offer__add"{% unless variant.available %} disabled{% endunless %}>{% if button_icon %}{% render 'fg-icon', name: 'bag' %}{% else %}{% render 'fg-icon', name: 'bag', class: 'fg-only-m' %}{% endif %}<span>{{ button }}</span></button>
         {%- endform -%}
       {%- endif -%}
     </div>
