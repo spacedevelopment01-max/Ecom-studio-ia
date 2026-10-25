@@ -1,0 +1,73 @@
+{%- comment -%}
+  FRAISE : bande de photos et de repères (planche 02, bas de la boutique) — cinq photos arrondies côte à côte et une liste
+  de quatre repères à pictogrammes (même goût, format pratique, contenu du flacon, à emporter). Téléphone : les repères
+  en liste sous les photos (planche 05).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-strip" aria-label="{{ s.label | escape }}">
+  <svg class="fg-wave fg-wave--top" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 40V22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40z" fill="currentColor"/></svg>
+  <div class="fg-c">
+    {%- if s.heading != blank -%}{% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-strip__title' %}{%- endif -%}
+    <ul class="fg-strip__photos" role="list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'photo' -%}
+          <li class="fg-strip__ph fg-strip__ph--{{ forloop.index }}" {{ block.shopify_attributes }}>
+            {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, class: 'fg-strip__img' %}
+            {%- if block.settings.caption != blank -%}<p class="fg-strip__cap">{{ block.settings.caption }}</p>{%- endif -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    {%- if s.mobile_title != blank -%}
+      <div class="fg-strip__m">
+        <span class="fg-strip__mart" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'half' %}</span>
+        {% render 'fg-title', text: s.mobile_title, tag: 'h2', class: 'fg-strip__mtitle' %}
+        {%- if s.mobile_text != blank -%}<p class="fg-strip__mtext">{{ s.mobile_text | escape | newline_to_br }}</p>{%- endif -%}
+        <ul class="fg-strip__micons" role="list">
+          {%- for block in section.blocks -%}{%- if block.type == 'photo' and block.settings.icon_mobile != blank and block.settings.icon_mobile != 'none' -%}<li>{% render 'fg-icon', name: block.settings.icon_mobile %}<span>{{ block.settings.caption }}</span></li>{%- endif -%}{%- endfor -%}
+        </ul>
+      </div>
+      {%- if s.mobile_button != blank -%}<a class="fg-btn fg-btn--red fg-strip__mbtn" href="{{ s.mobile_link | default: routes.all_products_collection_url }}">{{ s.mobile_button }}</a>{%- endif -%}
+    {%- endif -%}
+    <ul class="fg-strip__points" role="list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'point' -%}
+          <li {{ block.shopify_attributes }}>{% render 'fg-icon', name: block.settings.icon %}<span>{{ block.settings.text | escape | newline_to_br }}</span></li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Photos et repères",
+  "class": "fg-strip-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "En détail" },
+    { "type": "textarea", "id": "heading", "label": "Titre (facultatif)" },
+    { "type": "header", "content": "Téléphone" },
+    { "type": "textarea", "id": "mobile_title", "label": "Titre de la carte", "info": "Vide : photos et repères comme sur ordinateur." },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte de la carte" },
+    { "type": "text", "id": "mobile_button", "label": "Bouton" },
+    { "type": "url", "id": "mobile_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    { "type": "photo", "name": "Photo", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description" },
+      { "type": "text", "id": "caption", "label": "Légende (téléphone)" },
+      { "type": "select", "id": "icon_mobile", "label": "Pictogramme de la légende (téléphone)", "default": "none", "options": [{ "value": "none", "label": "Aucun" }, { "value": "home", "label": "Maison" }, { "value": "person", "label": "Personne" }, { "value": "walk", "label": "Déplacement" }] },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
+    ] },
+    { "type": "point", "name": "Repère", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "heart", "options": [{ "value": "heart", "label": "Cœur" }, { "value": "jar", "label": "Flacon" }, { "value": "gummy", "label": "Gummy" }, { "value": "bag", "label": "Sac" }, { "value": "strawberry", "label": "Fraise" }, { "value": "leaf", "label": "Feuilles" }] },
+      { "type": "textarea", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "presets": [{ "name": "Photos et repères" }]
+}
+{% endschema %}

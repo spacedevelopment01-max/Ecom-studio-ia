@@ -1,0 +1,64 @@
+{%- comment -%}
+  ATELIER NUANCE : « Nous trouver » (planche 03). Plan : carte réelle de l'adresse configurée quand latitude et
+  longitude sont réglées (chargée au clic, aucun traceur avant), sinon plan vectoriel signalé « Plan illustratif ».
+  Accès en transport, en voiture, à pied et parking lus dans la configuration.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-map">
+  <div class="an-wrap">
+    {%- if s.heading != blank -%}<h2 class="an-title an-title--lg">{{ s.heading }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<p class="an-map__intro">{{ s.text }}</p>{%- endif -%}
+    <div class="an-map__grid">
+      <div class="an-map__plan">
+        {%- if s.latitude != blank and s.longitude != blank -%}
+          <button type="button" class="an-map__load" data-an-map data-lat="{{ s.latitude | escape }}" data-lng="{{ s.longitude | escape }}">{% render 'an-icon', name: 'pin' %}<span>{{ s.load_label }}</span></button>
+        {%- else -%}
+          <svg class="an-map__svg" viewBox="0 0 640 360" role="img" aria-label="{{ s.illustrative_label | escape }}">
+            <rect width="640" height="360" fill="#EEE9E2"/>
+            <g fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round"><path d="M-10 250 L660 180"/><path d="M120 -10 L240 380"/><path d="M420 -10 L380 380"/><path d="M-10 80 L660 120"/></g>
+            <g fill="none" stroke="#FFFFFF" stroke-width="7"><path d="M-10 320 L300 260 L660 300"/><path d="M40 -10 L90 380"/><path d="M540 -10 L600 380"/><path d="M180 140 L520 60"/><path d="M260 380 L330 150 L560 230"/></g>
+            <g fill="#E4DCD1"><rect x="150" y="160" width="70" height="50" rx="4"/><rect x="450" y="200" width="60" height="70" rx="4"/><rect x="300" y="40" width="80" height="40" rx="4"/></g>
+            <path d="M318 132c0-14 11-24 24-24s24 10 24 24c0 18-24 40-24 40s-24-22-24-40Z" fill="#6E2A1F"/><circle cx="342" cy="132" r="8" fill="#F8F3ED"/>
+          </svg>
+          <p class="an-map__badge">{{ s.illustrative_label }}</p>
+        {%- endif -%}
+      </div>
+      <div class="an-map__access">
+        <h3 class="an-map__access-title">{{ s.access_heading }}</h3>
+        <ul role="list">
+          <li>{% render 'an-icon', name: 'train' %}<div><strong>{{ s.transit_label }}</strong><span>{{ s.transit | default: s.todo_label }}</span></div></li>
+          <li>{% render 'an-icon', name: 'car' %}<div><strong>{{ s.car_label }}</strong><span>{{ s.car | default: s.todo_label }}</span></div></li>
+          <li>{% render 'an-icon', name: 'walk' %}<div><strong>{{ s.walk_label }}</strong><span>{{ s.walk | default: s.todo_label }}</span></div></li>
+          <li>{% render 'an-icon', name: 'parking' %}<div><strong>{{ s.parking_label }}</strong><span>{{ s.parking | default: s.todo_label }}</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Plan et accès du salon",
+  "class": "an-map-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Nous trouver" },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Un accès facile au cœur de la ville." },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "latitude", "label": "Latitude", "info": "Avec la longitude : carte réelle chargée à la demande. Vide : plan illustratif signalé." },
+    { "type": "text", "id": "longitude", "label": "Longitude" },
+    { "type": "text", "id": "load_label", "label": "Bouton d'affichage de la carte", "default": "Afficher la carte" },
+    { "type": "text", "id": "illustrative_label", "label": "Mention du plan illustratif", "default": "Plan illustratif" },
+    { "type": "text", "id": "access_heading", "label": "Titre des accès", "default": "Accès" },
+    { "type": "text", "id": "todo_label", "label": "Mention d'une information manquante", "default": "[À renseigner]" },
+    { "type": "text", "id": "transit_label", "label": "Transport : libellé", "default": "En transport" },
+    { "type": "text", "id": "transit", "label": "Transport : détail" },
+    { "type": "text", "id": "car_label", "label": "Voiture : libellé", "default": "En voiture" },
+    { "type": "text", "id": "car", "label": "Voiture : détail" },
+    { "type": "text", "id": "walk_label", "label": "À pied : libellé", "default": "À pied" },
+    { "type": "text", "id": "walk", "label": "À pied : détail" },
+    { "type": "text", "id": "parking_label", "label": "Parking : libellé", "default": "Parking" },
+    { "type": "text", "id": "parking", "label": "Parking : détail" }
+  ],
+  "presets": [{ "name": "Plan et accès du salon" }]
+}
+{% endschema %}

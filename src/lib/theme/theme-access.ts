@@ -27,6 +27,12 @@ export const THEME_ORDER: DirectionId[] = [
   "fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple",
   // 42 — TABLE SAISON (issue #175), restaurant de la famille Services.
   "table-saison",
+  // 43 — ATELIER NUANCE (issue #177), salon de coiffure de la famille Services.
+  "atelier-nuance",
+  // 44 — PARENTHÈSE (PR #179), cabinet de sophrologie de la famille Services.
+  "parenthese",
+  // 45 — PHASE — Électricité (PR documentaire #188), artisan électricien de la famille Services.
+  "phase",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

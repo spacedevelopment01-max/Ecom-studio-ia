@@ -1,0 +1,47 @@
+{%- comment -%}
+  FRAISE : « Un petit format. Une place dans votre quotidien. » (planche 01) — titre, texte et bouton à gauche, grande
+  scène de table fondue vers la gauche. Téléphone (planche 04, accueil 2/2) : la scène et son mot manuscrit fléché.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-everyday" aria-labelledby="fg-every-t-{{ section.id }}">
+  <div class="fg-c">
+    <div class="fg-everyday__media">{% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, mplace_w: s.image_mplace_w, mplace_x: s.image_mplace_x, mplace_y: s.image_mplace_y, class: 'fg-everyday__img' %}{%- if s.image_mobile != blank or s.image_mobile_asset != blank -%}{% render 'fg-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_position_mobile, zoom: s.image_zoom_mobile, class: 'fg-everyday__mimg' %}{%- endif -%}</div>
+    <div class="fg-everyday__text">
+      {%- assign tid = 'fg-every-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-everyday__title', id: tid %}
+      {%- if s.text != blank -%}<div class="fg-everyday__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--red fg-everyday__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+    {%- if s.note != blank -%}<p class="fg-hand fg-everyday__note">{{ s.note | escape | newline_to_br }}{% render 'fg-art', name: 'arrow-hand' %}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Une place au quotidien",
+  "class": "fg-everyday-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un petit format.\nUne place [r]dans[/r]\n[i]votre quotidien.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "textarea", "id": "note", "label": "Mot manuscrit (téléphone)" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Largeur posée (ordinateur, repère 1440 px)", "default": 0 },
+    { "type": "number", "id": "image_place_x", "label": "Position horizontale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_place_y", "label": "Position verticale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_mplace_w", "label": "Largeur posée (téléphone, repère 390 px)", "default": 0 },
+    { "type": "number", "id": "image_mplace_x", "label": "Position horizontale posée (téléphone)", "default": 0 },
+    { "type": "number", "id": "image_mplace_y", "label": "Position verticale posée (téléphone)", "default": 0 },
+    { "type": "image_picker", "id": "image_mobile", "label": "Photo du téléphone", "info": "Vide : la photo ci-dessus." },
+    { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
+  ],
+  "presets": [{ "name": "Une place au quotidien" }]
+}
+{% endschema %}

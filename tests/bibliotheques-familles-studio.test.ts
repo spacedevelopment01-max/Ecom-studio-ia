@@ -16,6 +16,7 @@ vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => (jar.token ?
 vi.mock("@/lib/ai/llm", async (original) => ({ ...await original<object>(), llmConfigured: () => false }));
 import { createUser } from "@/lib/auth";
 import { demoProject } from "./demo-fixtures";
+import { conversionProject } from "./lot2c-fixtures";
 import { runWithLang } from "@/lib/i18n-server";
 import { currentTheme, saveThemeVersion } from "@/lib/projects";
 import { renderPage } from "@/lib/theme/render";
@@ -33,7 +34,9 @@ async function login(userId: string) {
 }
 const json = async (r: Response) => (await r.json()) as any;
 /** Démonstration enregistrée comme version courante du thème (comme après la composition dans le studio). */
-const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive" | "sillon") => { const d = await fr(() => demoProject(userId, id)); grantProjectPlan(d.pid,"dominer"); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
+// « fraise » : composition de conversion (sections cv-*, profil « conversion ») gardée constructible par conversionProject pour
+// ces contrôles de bibliothèque ; la démonstration FRAISE GUMMIES des sept planches (sections fg-*) a ses propres tests.
+const demo = async (userId: string, id: "fraise" | "onde" | "orbe" | "rive" | "sillon") => { const d = await fr(() => (id === "fraise" ? conversionProject(userId, "fraise") : demoProject(userId, id))); grantProjectPlan(d.pid,"dominer"); if (!currentTheme(d.pid)) saveThemeVersion(d.pid, d.spec, "Démonstration", "user"); return d; };
 
 describe("bibliothèques par famille dans le studio", () => {
   it("galerie : 20 fonctions de la famille du projet (+ structure), ajout, refus des autres familles, disposition, en-tête et pied de page", async () => {

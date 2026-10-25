@@ -1,0 +1,91 @@
+{%- comment -%}
+  FRAISE : ouverture des pages (planches 01 à 07).
+  - « accueil » : grande photographie pleine largeur (flacon et fraises), titre sur deux écritures, texte, bouton,
+    tampon manuscrit, pétales ; vague crème en bas. Téléphone : titre centré, photo du flacon, bouton, bandeau rouge.
+  - « page » : sur-titre, grand titre, texte et boutons à gauche ; photographie à droite fondue dans la crème, mots
+    manuscrits fléchés, tampon, décor de fraises (boutique, recette, histoire, journal, panier, commande, aide).
+  Les textes du titre acceptent [i]italique[/i], [r]rouge[/r], [s]arrondi[/s] (une ligne par retour à la ligne).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign hid = 'fg-hero-t-' | append: section.id
+  assign heading_tag = 'h1'
+  if s.heading_tag != blank
+    assign heading_tag = s.heading_tag
+  endif
+-%}
+<section class="fg fg-hero fg-hero--{{ s.layout }} fg-hero--v-{{ s.variant }} fg-hero--m-{{ s.layout_mobile | default: 'stack' }}" aria-labelledby="fg-hero-t-{{ section.id }}" style="--h: {{ s.height }}; --hm: {{ s.height_mobile }};">
+  <div class="fg-c">
+    <div class="fg-hero__media">
+      {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y, mplace_w: s.image_mplace_w, mplace_x: s.image_mplace_x, mplace_y: s.image_mplace_y, class: 'fg-hero__img', loading: 'eager', sizes: '100vw' %}
+      {%- if s.image_mobile != blank or s.image_mobile_asset != blank -%}
+        {% render 'fg-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_position_mobile, zoom: s.image_zoom_mobile, class: 'fg-hero__mimg', loading: 'eager', sizes: '100vw' %}
+      {%- endif -%}
+    </div>
+    <span class="fg-hero__deco" aria-hidden="true">{% render 'fg-art', name: 'berry-ghost', class: 'fg-hero__ghost' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-hero__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-hero__petals' %}{% render 'fg-art', name: 'berry-ghost', class: 'fg-hero__ghost2' %}</span>
+    <div class="fg-hero__text">
+      {%- if s.eyebrow != blank -%}<p class="fg-eyebrow fg-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading_mobile != blank -%}
+        {% render 'fg-title', text: s.heading, tag: heading_tag, class: 'fg-hero__title fg-only-d', id: hid %}
+        {% render 'fg-title', text: s.heading_mobile, tag: 'p', class: 'fg-hero__title fg-hero__title--m fg-only-m' %}
+      {%- else -%}
+        {% render 'fg-title', text: s.heading, tag: heading_tag, class: 'fg-hero__title', id: hid %}
+      {%- endif -%}
+      {%- if s.text != blank -%}<div class="fg-hero__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.text_mobile != blank -%}<div class="fg-hero__lead fg-hero__lead--m">{{ s.text_mobile }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--red fg-hero__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}"><span>{{ s.button_label }}</span>{% if s.button_arrow %}{% render 'fg-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+    </div>
+    {%- if s.stamp != blank -%}<p class="fg-stamp fg-hero__stamp{% if s.stamp_mobile != blank %} fg-only-d{% endif %}">{{ s.stamp | escape | newline_to_br }}{% if s.stamp_heart %}{% render 'fg-art', name: 'heart' %}{% endif %}</p>{%- endif -%}
+    {%- if s.stamp_mobile != blank -%}<p class="fg-stamp fg-hero__stamp fg-hero__stamp--m fg-only-m">{{ s.stamp_mobile | escape | newline_to_br }}{% render 'fg-icon', name: 'strawberry' %}</p>{%- endif -%}
+    {%- if s.note_1 != blank -%}<p class="fg-hand fg-hero__note fg-hero__note--1">{{ s.note_1 | escape | newline_to_br }}{% render 'fg-art', name: 'arrow-hand' %}</p>{%- endif -%}
+    {%- if s.note_2 != blank -%}<p class="fg-hand fg-hero__note fg-hero__note--2">{{ s.note_2 | escape | newline_to_br }}{% render 'fg-art', name: 'arrow-hand' %}</p>{%- endif -%}
+    {%- if s.band_text != blank -%}<p class="fg-hero__band">{% render 'fg-icon', name: 'strawberry' %}<span>{{ s.band_text }}</span>{% render 'fg-icon', name: 'strawberry' %}</p>{%- endif -%}
+    {%- if s.layout == 'home' -%}<svg class="fg-wave fg-hero__wave" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 60V30C70 6 150 2 230 18s150 30 230 14 150-30 230-16 140 22 200 16V60z" fill="currentColor"/></svg>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture FRAISE",
+  "class": "fg-hero-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil : grande photo pleine largeur" }, { "value": "page", "label": "Page : texte à gauche, photo à droite" }] },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition au téléphone", "default": "stack", "options": [{ "value": "stack", "label": "Titre centré, photo dessous" }, { "value": "side", "label": "Titre à gauche, photo en haut à droite" }, { "value": "text", "label": "Titre seul (sans photo)" }] },
+    { "type": "select", "id": "variant", "label": "Cadrage de la page", "default": "a", "options": [{ "value": "a", "label": "A" }, { "value": "b", "label": "B" }, { "value": "c", "label": "C" }, { "value": "d", "label": "D" }, { "value": "e", "label": "E" }, { "value": "f", "label": "F" }, { "value": "g", "label": "G" }, { "value": "h", "label": "H" }], "info": "Places du titre et de la photo relevées sur chaque planche." },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1", "options": [{ "value": "h1", "label": "Titre principal (h1)" }, { "value": "h2", "label": "Titre de section (h2)" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Votre produit,\n[i]à votre façon.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r], [s]arrondi[/s]." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone", "info": "Vide : le texte ci-dessus." },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false },
+    { "type": "textarea", "id": "stamp", "label": "Tampon manuscrit" },
+    { "type": "checkbox", "id": "stamp_heart", "label": "Cœur sous le tampon", "default": false },
+    { "type": "textarea", "id": "stamp_mobile", "label": "Tampon au téléphone" },
+    { "type": "textarea", "id": "note_1", "label": "Mot manuscrit 1" },
+    { "type": "textarea", "id": "note_2", "label": "Mot manuscrit 2" },
+    { "type": "text", "id": "band_text", "label": "Bandeau rouge sous la photo (téléphone)" },
+    { "type": "header", "content": "Photo" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Largeur posée (ordinateur, repère 1440 px)", "default": 0 },
+    { "type": "number", "id": "image_place_x", "label": "Position horizontale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_place_y", "label": "Position verticale posée (ordinateur)", "default": 0 },
+    { "type": "number", "id": "image_mplace_w", "label": "Largeur posée (téléphone, repère 390 px)", "default": 0 },
+    { "type": "number", "id": "image_mplace_x", "label": "Position horizontale posée (téléphone)", "default": 0 },
+    { "type": "number", "id": "image_mplace_y", "label": "Position verticale posée (téléphone)", "default": 0 },
+    { "type": "image_picker", "id": "image_mobile", "label": "Photo du téléphone", "info": "Vide : la photo ci-dessus." },
+    { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "height", "label": "Hauteur (ordinateur, repère 1440 px)", "min": 300, "max": 900, "step": 2, "unit": "px", "default": 400 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur (téléphone, repère 390 px)", "min": 200, "max": 900, "step": 2, "unit": "px", "default": 640 }
+  ],
+  "presets": [{ "name": "Ouverture FRAISE" }]
+}
+{% endschema %}

@@ -24,13 +24,17 @@ import { runWithLang } from "@/lib/i18n-server";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
-const installed = fs.existsSync(path.join(process.cwd(), "public", "demo", "fraise"));
+// Kit privé de la démonstration (hors dépôt) : FRAISE dans public/demo/fraise/v2/, les autres dans public/demo/<id>/.
+const installed = (id: string) => fs.existsSync(path.join(process.cwd(), "public", "demo", id));
 const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profile: Record<string, string>; family: RegExp }> = {
-  fraise: { kind: "specialty", profile: { conversion_profile: "pop" }, family: /^cv-/ },
+  // FRAISE GUMMIES (sept planches) : sections fg-* propres au thème (voir tests/fraise-theme.test.ts), aucun profil global ;
+  // la galerie propose la bibliothèque de la famille Boutique spécialisée (cv-, fs-).
+  fraise: { kind: "specialty", profile: { conversion_profile: "none" }, family: /^cv-/ },
   onde: { kind: "catalog", profile: { editorial_profile: "studio" }, family: /^(ed-|fs-)/ },
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
-  sillon: { kind: "specialty", profile: { conversion_profile: "nomade" }, family: /^cv-/ },
+  // SILLON V2 (PR #182) : sections sv-* propres au thème, aucun profil global (voir aussi tests/sillon-theme.test.ts).
+  sillon: { kind: "specialty", profile: { editorial_profile: "none" }, family: /^sv-/ },
   noctil: { kind: "specialty", profile: { conversion_profile: "astral" }, family: /^cv-/ },
   traverse: { kind: "specialty", profile: { conversion_profile: "itineraire" }, family: /^cv-/ },
   heuren: { kind: "catalog", profile: { editorial_profile: "cadran" }, family: /^(ed-|fs-)/ },
@@ -39,6 +43,12 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   souple: { kind: "catalog", profile: { editorial_profile: "poudre" }, family: /^(ed-|fs-)/ },
   // TABLE SAISON (issue #175) : vérifiée par tests/table-saison-theme.test.ts (sections ts-*, aucun profil global).
   "table-saison": { kind: "services", profile: {}, family: /^ts-/ },
+  // ATELIER NUANCE (issue #177) : vérifiée par tests/atelier-nuance-theme.test.ts (sections an-*, aucun profil global).
+  "atelier-nuance": { kind: "services", profile: {}, family: /^an-/ },
+  // PARENTHÈSE : vérifiée par tests/parenthese-theme.test.ts (sections pa-*, aucun profil global).
+  parenthese: { kind: "services", profile: {}, family: /^pa-/ },
+  // PHASE — Électricité : vérifiée par tests/phase-theme.test.ts (sections ph-*, aucun profil global).
+  phase: { kind: "services", profile: {}, family: /^ph-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */
@@ -52,8 +62,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       const { spec, project } = f;
       expect(spec.direction).toBe(id);
       expect(validateSpec(spec)).toEqual([]);
-      // FRAISE : composition du lot 2C, nom court en en-tête (« Fraise ») ; le nom complet est dans le pied de page.
-      expect(id === "fraise" ? "Fraise" : f.demo.brand).toBe(spec.store.shopName);
+      expect(f.demo.brand).toBe(spec.store.shopName);
       for (const [k, v] of Object.entries(EXPECT[id].profile)) expect(spec.settings[k], k).toBe(v);
       // Palette : les schémas dérivent des rôles de couleur de la démonstration (accent de marque dans un schéma plein).
       const schemes = spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
@@ -71,7 +80,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       if (EXPECT[id].kind === "services") for (const t of ["featured-purchase", "featured-collection"]) expect(lib).not.toContain(t);
       else expect(lib).toContain("faq");
       // Visuels du kit : placés si installés (sinon sections masquées, jamais un cadre vide visible).
-      if (installed) expect(Object.keys(spec.files).length).toBeGreaterThanOrEqual(5);
+      if (installed(id)) expect(Object.keys(spec.files).length).toBeGreaterThanOrEqual(5);
       // Pages rendues par le vrai moteur : accueil, fiche ou prestation, pages ; aucun « [À compléter » visible.
       const files = compileTheme(spec);
       const routes = ["/", ...(f.services ? [] : [`/products/${spec.store.product.handle}`, "/collections/all"]), ...spec.store.pages.map((p) => `/pages/${p.handle}`)];
@@ -99,12 +108,12 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
   it("adaptation : l'identité FRAISE composée dans le thème SILLON (même catégorie) se rend avec ses couleurs et son nom", async () => {
     const f = await fr(() => demoProject(user.id, "fraise", { direction: "sillon" }));
     expect(f.spec.direction).toBe("sillon");
-    expect(f.spec.store.shopName).toBe("Fraise Gummies");
-    expect(f.spec.settings.conversion_profile).toBe("nomade");
+    expect(f.spec.store.shopName).toBe("FRAISE GUMMIES");
+    expect(f.spec.settings.conversion_profile).toBe("none"); // SILLON V2 : sections sv-*, aucun profil global
     const schemes = f.spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>;
-    expect(Object.values(schemes).some((s) => Object.values(s.settings).some((c) => String(c).toUpperCase() === "#E4473F"))).toBe(true);
+    expect(Object.values(schemes).some((s) => Object.values(s.settings).some((c) => String(c).toUpperCase() === "#E3363E"))).toBe(true);
     const home = await renderPage({ spec: f.spec, base: "", files: compileTheme(f.spec), cart: [] }, "/", new URLSearchParams());
     expect(home.status).toBe(200);
-    expect(home.html).toContain("Fraise Gummies");
+    expect(home.html).toContain("FRAISE GUMMIES");
   });
 });

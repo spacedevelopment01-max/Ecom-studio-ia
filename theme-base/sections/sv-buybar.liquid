@@ -1,0 +1,33 @@
+{%- comment -%}
+  SILLON V2 : barre d'achat flottante (planche 01, fiche ; planche 03, mobile produit) — miniature, nom, prix, bouton
+  cuivre. Elle apparaît quand la carte d'achat sort de l'écran, reprend la variante et la quantité choisies et ajoute
+  au panier de la boutique ; elle s'efface au-dessus du pied de page et des champs en cours de saisie.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = product | default: s.product | default: collections.all.products.first
+  assign v = p.selected_or_first_available_variant
+-%}
+{%- if p != blank -%}
+<div class="sv-buybar" data-sv-buybar hidden>
+  <div class="sv-buybar__inner">
+    {%- if p.featured_media -%}<span class="sv-buybar__thumb">{{ p.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}</span>{%- endif -%}
+    <span class="sv-buybar__name">{{ s.label | default: p.title }}</span>
+    <span class="sv-display sv-buybar__price" data-sv-price>{{ v.price | money_without_trailing_zeros }}</span>
+    <button type="button" class="sv-btn sv-btn--copper sv-buybar__add" data-sv-buybar-add{% unless p.available %} disabled{% endunless %} data-variant="{{ v.id }}">{{ s.add_label }}{% render 'sv-icon', name: 'arrow-ne' %}</button>
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Barre d'achat flottante",
+  "class": "sv-buybar-section",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
+    { "type": "text", "id": "label", "label": "Nom affiché", "info": "Vide : le nom du produit." },
+    { "type": "text", "id": "add_label", "label": "Bouton", "default": "Ajouter au panier" }
+  ],
+  "presets": [{ "name": "Barre d'achat flottante" }]
+}
+{% endschema %}

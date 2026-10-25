@@ -44,16 +44,18 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158, TABLE SAISON par l'issue #175) :
-  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club**, **souple** et **table-saison** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
+- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158, TABLE SAISON par l'issue #175, ATELIER NUANCE par l'issue #177, PARENTHÈSE par la mission du 24 octobre, PR #179, PHASE par la mission du 25 octobre, PR #188) :
+  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club**, **souple**, **atelier-nuance**, **parenthese** et **phase** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
   sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
   silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
-- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
+- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée ; reprise des sept planches corrigées du 24 octobre, sections `fg-*`, voir `docs/LISEZMOI-fraise.md`),
   **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
   21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
   `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
-  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; médias suivis dans `public/theme-assets/sillon/`,
-  démonstration `tests/sillon-fixtures.ts`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
+  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; **V2** refaite d'après les trois planches
+  validées et les quatre planches téléphone, PR #182 : sections `sv-*`, `theme-base/assets/sillon.css`, 129 € illustratif,
+  commande simulée sans champ de carte ; médias suivis dans `public/theme-assets/sillon/`, démonstration
+  `tests/sillon-fixtures.ts`, voir `docs/LISEZMOI-sillon-v2.md`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
   boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
   volontairement hors rendu ; démonstrations `tests/noctil-traverse-fixtures.ts`), **HEUREN** (montre bleu nuit) et
   **ALCÔVE** (fauteuil terracotta) : thèmes **mono-produit de la famille E-commerce** (consigne expresse de Thomas, issue
@@ -68,6 +70,21 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   **TABLE SAISON** (restaurant, famille **Services**, issue #175) : démonstration complète d'après les cinq planches de
   Thomas (`tests/table-saison-fixtures.ts`, médias WebP dans `public/theme-assets/table-saison/`), réservation simulée en
   démonstration et service réel du studio (`src/lib/restaurant/booking.ts`) ; voir `docs/LISEZMOI-table-saison-175.md`.
+  **ATELIER NUANCE** (salon de coiffure, famille **Services**, issue #177) : reproduction des six planches de Thomas (la 05
+  prime sur la 01 pour les prestations et la fiche ; prix et durées d'une seule source, la section « Réglages du salon »),
+  démonstration `tests/atelier-nuance-fixtures.ts`, médias WebP dans `public/theme-assets/atelier-nuance/`, rendez-vous
+  simulés en démonstration (« Simulation — aucun rendez-vous réel ») et service réel du studio (`src/lib/salon/booking.ts`) ;
+  voir `docs/LISEZMOI-atelier-nuance-177.md`.
+  **PARENTHÈSE** (cabinet de sophrologie, famille **Services**, mission du 24 octobre, PR #179) : reproduction des six
+  planches (`docs/theme-briefs/parenthese/`), séances, ateliers à places, réservation en quatre étapes (cabinet / visio),
+  gestion du rendez-vous ; séances, ateliers, tarifs et horaires d'une seule source (section « Réglages du cabinet »),
+  valeurs d'exemple annoncées ; démonstration `tests/parenthese-fixtures.ts`, médias WebP dans
+  `public/theme-assets/parenthese/`, service réel du studio (`src/lib/cabinet/booking.ts`) ; voir `docs/LISEZMOI-parenthese.md`.
+  **PHASE** (électricien, famille **Services**, mission du 25 octobre, planches de la PR #188) : reproduction des dix planches
+  (`docs/theme-briefs/phase/`), 18 pages ordinateur et téléphone (sections `ph-*`, `theme-base/assets/phase.css` /
+  `phase.js`), formulaires de contact et de devis sans envoi réel en démonstration (récapitulatif lu dans le navigateur),
+  filtres, questions, cookies ; démonstration `tests/phase-fixtures.ts`, photos du kit privé `public/demo/phase/images/`
+  (hors dépôt) ; voir `docs/LISEZMOI-phase.md`.
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
   **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
@@ -112,7 +129,7 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
-- La démonstration FRAISE GUMMIES est la composition complète de la référence Lumora (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais la recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni la simplifier sans consigne écrite de Thomas.
+- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit privé `public/demo/fraise/v2/` (hors dépôt) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
 - ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en E-commerce (issue #158, 21 octobre, 12 h 58) ; sa nouvelle composition (`tests/onde-fixtures.ts`) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 

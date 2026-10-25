@@ -33,13 +33,13 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 41 thèmes (30 anciens, lisibles seulement, + 11 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158) et n'en propose que 11 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(42);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(42);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(42);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison"]);
+  it("définit 45 thèmes (30 anciens, lisibles seulement, + 15 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, TABLE SAISON #175, ATELIER NUANCE #177, PARENTHÈSE et PHASE) et n'en propose que 15 (catalogue actif), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(45);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(45);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(45);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["table-saison", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -132,6 +132,22 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     // Les deux thèmes fidèles aux références Lumora / Pawish (issue #137) composent les sections « conversion ».
     const { conversionProject } = await import("./lot2c-fixtures");
     for (const kind of ["fraise", "onde"] as const) add((await conversionProject(user.id, kind)).spec);
+    // ATELIER NUANCE (issue #177) : fiches détaillées, bandeaux et articles du journal composés par sa démonstration.
+    const { atelierNuanceProject } = await import("./atelier-nuance-fixtures");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => atelierNuanceProject(user.id))).spec);
+    // PARENTHÈSE : séances, ateliers, réservation, gestion du rendez-vous, cabinet et journal composés par sa démonstration.
+    const { parentheseProject } = await import("./parenthese-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => parentheseProject(user.id))).spec);
+    // PHASE : sections ph-* composées par sa démonstration (dix planches, ordinateur et téléphone).
+    const { phaseProject } = await import("./phase-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => phaseProject(user.id))).spec);
+    // SILLON V2 (PR #182) : sections sv-* composées par sa démonstration (douze pages des planches, panier, commande).
+    const { sillonProject } = await import("./sillon-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => sillonProject(user.id))).spec);
+    // FRAISE GUMMIES (sept planches corrigées) : sections fg-* composées par sa démonstration.
+    const { fraiseProject } = await import("./fraise-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => fraiseProject(user.id))).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.

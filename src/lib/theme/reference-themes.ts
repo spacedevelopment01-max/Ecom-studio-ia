@@ -1,6 +1,6 @@
 /**
  * Les thèmes de référence (issue #137, SILLON : issue #148) comme vrais thèmes du studio (catalogue, galerie, composition
- * automatique) : FRAISE et ONDE (boutique spécialisée, profil « conversion » Lumora / Pawish), ORBE (e-commerce,
+ * automatique) : FRAISE (boutique spécialisée, refaite d’après les sept planches du 24 octobre, fraise-v2.ts), ONDE, ORBE (e-commerce,
  * composition éditoriale « objet et ambiances »), Atelier Rive (prestations de services, composition « journal ») et
  * SILLON (boutique spécialisée, profil « nomade » : objet que l’on emporte, serif fine, cuivre), NOCTIL (boutique
  * spécialisée, profil « astral » : nuit immersive, indigo et lavande) et TRAVERSE (boutique spécialisée, profil
@@ -18,6 +18,11 @@
  */
 import type { CatalogTheme, ThemeLook } from "./theme-catalog";
 import { TABLE_SAISON_THEME } from "./table-saison";
+import { ATELIER_NUANCE_THEME } from "./atelier-nuance";
+import { PARENTHESE_THEME } from "./parenthese";
+import { PHASE_THEME } from "./phase";
+import { SILLON_V2_THEME } from "./sillon-v2";
+import { FRAISE_V2_THEME } from "./fraise-v2";
 
 const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" | "menu" | "footer" | "ann" | "card" | "button" | "radius">): ThemeLook => ({
   icons: "plain", headingCase: "none", tracking: 0, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "carousel", pageWidth: 1320, spacing: 100, ds: "product", density: "balanced", buttonUppercase: false,
@@ -25,65 +30,8 @@ const look = (l: Partial<ThemeLook> & Pick<ThemeLook, "headerLayout" | "shape" |
 });
 
 export const REFERENCE_CATALOG: CatalogTheme[] = [
-  {
-    id: "fraise",
-    name: "Fraise",
-    tagline: "Page de vente pop, un produit phare",
-    description: "Référence Lumora : fond crème, accent vif, titres en capitales, boutons bordés. Ouverture produit avec arguments cochés, bandeau de confiance, avis, visuel et argument, bénéfices en grille, comparatif, garantie, stories et FAQ : une page de vente dense pour une boutique spécialisée.",
-    bestFor: ["boutique spécialisée", "produit phare", "confiserie", "bien-être", "offres par quantité"],
-    en: { tagline: "Pop sales page, one hero product", description: "Lumora reference: cream background, bright accent, capital headings, outlined buttons. Product opening with checked arguments, trust band, reviews, visual and argument, benefits grid, comparison, guarantee, stories and FAQ: a dense sales page for a specialty store.", bestFor: ["specialty store", "hero product", "confectionery", "wellness", "quantity offers"] },
-    fonts: { heading: "montserrat_n8", body: "dm_sans_n4" },
-    previewFonts: { heading: "Montserrat", body: "DM Sans" },
-    motion: "normal",
-    photoMood: "pop",
-    kinds: ["specialty"],
-    // Boutons « solid » : le profil « pop » dessine lui-même la bordure noire et l'ombre portée (un style « outline » rendrait le texte illisible sur un accent sombre).
-    look: look({ headerLayout: "logo-center", shape: "bar", menu: "drawer", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 12, card: 16 }, headingCase: "uppercase", tracking: -2, headingScale: 104, density: "compact", buttonUppercase: true }),
-    settings: { conversion_profile: "pop", editorial_profile: "none" },
-    mainProduct: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, purchase_style: "outlined" },
-    palette: (k) => {
-      const bg = k.light("#FBF7F2");
-      const ink = k.night(0.08, 0.1);
-      return [k.scheme(bg, ink, k.onLight(bg)), k.scheme(ink, "#FFFFFF", k.onDark(ink), 0.06), k.filled(k.p.accent), k.scheme("#FFFFFF", ink, k.onLight("#FFFFFF"))];
-    },
-    home: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.packshot ?? k.im.cutout ?? k.im.hero, image_ratio: "square", layout: "image-right" }),
-      k.marq(3, "small"),
-      k.lib("cv-reviews", 1),
-      k.lib("cv-feature", 4, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "stacked" }),
-      k.feat(1, "plain", 2),
-      k.lib("cv-feature", 1, { image_asset: k.im.detail2 ?? k.im.scene2, layout: "image-left" }),
-      k.lib("comparison-table", 1),
-      ...k.stats(1),
-      k.lib("cv-guarantee", 2),
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.faqSec(1, 6, "cards"),
-      k.newsletter(1),
-      k.marq(3, "small", true),
-    ],
-    product: (k) => [
-      k.lib("cv-stories", 1, { ratio: "portrait", size: "medium" }),
-      k.lib("cv-feature", 4, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "stacked" }),
-      k.feat(1, "plain", 2),
-      k.lib("cv-reviews", 1),
-      k.lib("cv-specs", 1, { layout: "side" }),
-      ...k.stats(1),
-      k.lib("cv-guarantee", 2),
-      k.faqSec(1, 5, "cards"),
-    ],
-    services: (k) => [
-      k.lib("cv-hero", 1, { image_asset: k.im.lifestyle ?? k.im.hero, image_ratio: "landscape", layout: "image-right" }),
-      ...k.R.trust(3),
-      k.R.servicesList(1, "cards", { withImages: true }),
-      k.lib("cv-feature", 4, { image_asset: k.im.scene1 ?? k.im.detail1, layout: "image-left" }),
-      k.feat(1, "plain", 2),
-      k.R.testimonials(4),
-      k.lib("cv-guarantee", 2),
-      k.R.practical(1),
-      k.faqSec(1, 6, "cards"),
-      k.newsletter(4),
-    ],
-  },
+  // FRAISE GUMMIES : refait d’après les sept planches corrigées de Thomas (24 octobre 2026), voir fraise-v2.ts.
+  FRAISE_V2_THEME,
   {
     id: "onde",
     name: "Onde",
@@ -241,69 +189,8 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
       k.R.contactForm(1, "Et si l'on commençait par votre projet ?"),
     ],
   },
-  {
-    id: "sillon",
-    name: "Sillon",
-    tagline: "Objet nomade, lumière chaude",
-    description: "Boutique spécialisée pour un objet que l'on emporte : ouverture sombre où le produit reste entier à côté du titre, déclaration de marque, gros plan et bénéfices, repères interactifs sur le produit, mosaïque des lieux d'usage, achat compact et FAQ à côté du titre. Serif fine sur ivoire, accent cuivré en dégradé, filets fins et bouton d'achat permanent dans l'en-tête.",
-    bestFor: ["boutique spécialisée", "objet nomade", "café et thé", "petit électroménager", "produit de voyage"],
-    en: { tagline: "Nomadic object, warm light", description: "Specialty store for an object you take along: dark opening where the product stays whole beside the headline, brand statement, close-up and benefits, interactive markers on the product, mosaic of places of use, compact purchase and FAQ beside its title. Fine serif on ivory, copper gradient accent, hairlines and a permanent buy button in the header.", bestFor: ["specialty store", "nomadic object", "coffee and tea", "small appliances", "travel product"] },
-    fonts: { heading: "libre_baskerville_n4", body: "jost_n4" },
-    previewFonts: { heading: "Libre Baskerville", body: "Jost" },
-    motion: "subtle",
-    photoMood: "terroir",
-    kinds: ["specialty"],
-    // En-tête « Bouton d'achat visible » (logo à gauche, menu à droite, bouton vers la fiche) et grand nom de marque en pied :
-    // ni le logo centré de FRAISE / ONDE, ni leurs pieds en colonnes ou marque à gauche.
-    look: look({ headerLayout: "menu-right", shape: "bar", menu: "sheet", footer: "wordmark", ann: "static", card: "minimal", button: "solid", radius: { button: 40, card: 6 }, headingCase: "none", tracking: -1, headingScale: 106, pageWidth: 1360, density: "airy", buttonUppercase: false }),
-    settings: { conversion_profile: "nomade", editorial_profile: "none", motion_intensity: "subtle" },
-    headerCta: { fr: "Commander", en: "Order now", icon: "arrow" },
-    // Galerie en grille de deux colonnes, cadre carré (les vues produit sont carrées : rien de coupé), zoom, barre d'achat.
-    mainProduct: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
-    palette: (k) => {
-      const ivory = k.light("#F4EDE3");
-      const espresso = k.night(0.13, 0.3);
-      const sand = k.mix(ivory, k.p.accent, 0.14);
-      return [k.scheme(ivory, espresso, k.onLight(ivory)), k.scheme(espresso, ivory, k.onDark(espresso), 0.06), k.filled(k.p.accent), k.scheme(sand, espresso, k.onLight(sand))];
-    },
-    // Accueil : chaque visuel n'apparaît qu'une fois. Ouverture sombre (le produit entier à gauche, jamais sous le texte),
-    // déclaration sans image, gros plan et bénéfices, repères sur la vue produit, mosaïque des lieux d'usage, achat
-    // compact, questions, inscription avec une dernière scène. Toute section sans contenu réel reste masquée.
-    home: (k) => [
-      k.lib("cv-hero", 2, { image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot, image_ratio: "wide", layout: "image-left", heading_tag: "h1", animation: "fade" }),
-      k.lib("rich-text", 1, { style: "statement", align: "center", padding_top: 88, padding_bottom: 72 }),
-      k.lib("cv-feature", 1, { image_asset: k.im.detail1 ?? k.im.scene1, layout: "image-left" }),
-      k.lib("cv-hotspots", 4, { image_asset: k.im.packshot ?? k.im.cutout, layout: "side", ratio: "square" }),
-      // Mosaïque des lieux d'usage : seulement avec au moins deux vraies photos (jamais une galerie vide).
-      ((places) => k.lib("cv-gallery", 1, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.lifestyle2, k.im.portrait].filter((f): f is string => !!f)),
-      k.lib("featured-purchase", 2, { purchase_style: "compact", image_fit: "contain" }),
-      ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),
-      // Inscription avec une dernière scène ; sans photo disponible, l'inscription simple (pas de cadre d'image vide).
-      ...k.either(k.lib("newsletter-media", 4, { layout: "right", image_asset: k.im.banner ?? k.im.detail2 ?? "", legal: k.privacy }, { hide: !(k.im.banner ?? k.im.detail2) }), k.newsletter(4)),
-    ],
-    // Fiche : galerie et achat, puis repères sur une autre vue, caractéristiques à côté du titre, mode d'emploi en ligne,
-    // deux situations, engagements en liste et questions. Rien d'affirmé sans donnée du marchand.
-    product: (k) => [
-      k.lib("cv-hotspots", 1, { image_asset: k.im.detail2 ?? k.im.packshot, layout: "stacked", ratio: "square" }),
-      k.lib("cv-specs", 4, { layout: "side" }),
-      k.lib("cv-steps", 1, { layout: "timeline" }),
-      k.lib("cv-alternating", 1, { layout: "image-left", ratio: "square" }, { blocks: [k.im.scene1, k.im.scene2].filter((f): f is string => !!f).map((f) => ({ type: "row", settings: { image_asset: f } })) }),
-      k.lib("fs-commitments", 2, { layout: "list" }),
-      k.faqSec(1, 5, "lines"),
-    ],
-    // Site de services (repli) : bannière sombre visuel à gauche, déclaration, prestations en liste, mosaïque d'images,
-    // méthode en frise, témoignages, questions et prise de contact — pas l'enchaînement de FRAISE.
-    services: (k) => [
-      k.lib("cv-banner", 2, { image_asset: k.im.lifestyle ?? k.im.hero, layout: "image-left", heading_tag: "h1" }),
-      k.lib("rich-text", 1, { style: "statement", align: "center" }),
-      k.R.servicesList(1, "list"),
-      ((places) => k.lib("cv-gallery", 4, { layout: "mosaic", ratio: "square" }, { hide: places.length < 2, blocks: places.map((f) => ({ type: "image", settings: { image_asset: f } })) }))([k.im.scene1, k.im.scene2, k.im.scene3, k.im.detail1, k.im.lifestyle2].filter((f): f is string => !!f)),
-      k.R.method(1, "timeline"),
-      k.R.testimonials(1),
-      ((r) => [r[0], { ...r[1], layout: "side" }, r[2], r[3]] as typeof r)(k.faqSec(1, 5, "lines")),
-      k.R.booking(2),
-    ],
-  },
+  // SILLON V2 (planches validées du 24 octobre 2026, PR #182) : remplace le rendu de la première version.
+  SILLON_V2_THEME,
   {
     id: "noctil",
     name: "Noctil",
@@ -676,4 +563,10 @@ export const REFERENCE_CATALOG: CatalogTheme[] = [
   },
   // TABLE SAISON (issue #175) : restaurant de la famille Services, défini dans table-saison.ts.
   TABLE_SAISON_THEME,
+  // ATELIER NUANCE (issue #177) : salon de coiffure de la famille Services, défini dans atelier-nuance.ts.
+  ATELIER_NUANCE_THEME,
+  // PARENTHÈSE (PR #179) : cabinet de sophrologie de la famille Services, défini dans parenthese.ts.
+  PARENTHESE_THEME,
+  // PHASE — Électricité (25 octobre 2026, PR documentaire #188) : artisan électricien de la famille Services, phase.ts.
+  PHASE_THEME,
 ];

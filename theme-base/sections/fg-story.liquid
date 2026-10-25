@@ -1,0 +1,40 @@
+{%- comment -%}
+  FRAISE : principes de « Notre histoire » (planches 02 et 05) — trois cartes : photo arrondie, titre rouge, texte.
+  Texte de marque illustratif : aucun fondateur, atelier, date, fabrication ou preuve inventés.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-story" aria-label="{{ s.label | escape }}">
+  <div class="fg-c">
+    <ul class="fg-story__list" role="list">
+      {%- for block in section.blocks -%}
+        <li class="fg-story__item" {{ block.shopify_attributes }}>
+          {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.position, zoom: block.settings.zoom, class: 'fg-story__img' %}
+          <div><h2 class="fg-story__title">{{ block.settings.title }}</h2><p class="fg-story__text">{{ block.settings.text | escape | newline_to_br }}</p></div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Principes",
+  "class": "fg-story-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Nos principes" }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Principe", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
+    ] }
+  ],
+  "presets": [{ "name": "Principes" }]
+}
+{% endschema %}

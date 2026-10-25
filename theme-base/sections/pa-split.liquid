@@ -1,0 +1,58 @@
+{%- comment -%}
+  PARENTHÈSE : photo et texte côte à côte (« Qu'est-ce que la sophrologie ? », « Chacun avance à son rythme »,
+  « Une pratique au service de votre bien-être », « Mon approche », « Un atelier pour souffler »…).
+  Options : bouton, phrase en abricot avec plume, liste de mots dans une forme sauge, « Lire la suite » repliable sur
+  téléphone, vague claire sur la photo.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-split pa-split--{{ s.image_side }} pa-split--{{ s.style }}" style="--ratio: {{ s.image_width }}%;">
+  <div class="pa-wrap pa-split__grid">
+    {%- if s.style == 'words' -%}
+      <div class="pa-split__blob">
+        <ul role="list">{%- assign words = s.words | newline_to_br | split: '<br />' -%}{%- for w in words -%}{%- assign t = w | strip -%}{%- if t != blank -%}<li>{{ t }}</li>{%- endif -%}{%- endfor -%}</ul>
+        {% render 'pa-ornament', name: 'sprig', class: 'pa-split__sprig' %}
+      </div>
+    {%- else -%}
+      {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile, class: 'pa-split__img' %}
+    {%- endif -%}
+    <div class="pa-split__text">
+      {%- if s.eyebrow != blank -%}<p class="pa-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2 class="pa-title pa-title--{{ s.title_size }}">{{ s.heading | escape | newline_to_br }}</h2>
+      {%- if s.text != blank -%}<div class="pa-split__body{% if s.collapse_mobile %} pa-collapse{% endif %}" {% if s.collapse_mobile %}data-pa-collapse{% endif %}>{{ s.text }}</div>{%- endif -%}
+      {%- if s.collapse_mobile -%}<button type="button" class="pa-more" aria-expanded="false" data-pa-more>{% render 'pa-icon', name: 'plus' %}<span>{{ s.more_label }}</span></button>{%- endif -%}
+      {%- if s.accent != blank -%}<p class="pa-split__accent">{% render 'pa-ornament', name: 'quill', class: 'pa-split__quill' %}<span>{{ s.accent | escape | newline_to_br }}</span></p>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.button_link }}">{{ s.button_label }}{% if s.button_arrow %}{% render 'pa-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+      {%- if s.quill -%}{% render 'pa-ornament', name: 'quill', class: 'pa-split__mark' %}{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Photo et texte",
+  "class": "pa-split-section",
+  "settings": [
+    { "type": "select", "id": "image_side", "label": "Côté de la photo", "default": "left", "options": [{ "value": "left", "label": "Gauche" }, { "value": "right", "label": "Droite" }] },
+    { "type": "select", "id": "style", "label": "Style", "default": "plain", "options": [{ "value": "plain", "label": "Simple" }, { "value": "fade", "label": "Photo fondue dans le fond" }, { "value": "wave", "label": "Photo à bord ondulé" }, { "value": "words", "label": "Liste de mots dans une forme sauge" }] },
+    { "type": "range", "id": "image_width", "label": "Part de la photo", "min": 30, "max": 60, "step": 1, "unit": "%", "default": 46 },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "textarea", "id": "words", "label": "Mots (un par ligne)" },
+    { "type": "text", "id": "eyebrow", "label": "Petit titre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Qu'est-ce que la sophrologie ?" },
+    { "type": "select", "id": "title_size", "label": "Taille du titre", "default": "md", "options": [{ "value": "sm", "label": "Petite" }, { "value": "md", "label": "Moyenne" }, { "value": "lg", "label": "Grande" }] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "collapse_mobile", "label": "Texte repliable sur téléphone", "default": false },
+    { "type": "text", "id": "more_label", "label": "Lien « lire la suite »", "default": "Lire la suite" },
+    { "type": "textarea", "id": "accent", "label": "Phrase en abricot" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false },
+    { "type": "checkbox", "id": "quill", "label": "Plume abricot sous le texte", "default": false }
+  ],
+  "presets": [{ "name": "Photo et texte" }]
+}
+{% endschema %}

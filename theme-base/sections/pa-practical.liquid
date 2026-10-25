@@ -1,0 +1,54 @@
+{%- comment -%}
+  PARENTHÈSE : « Informations pratiques » de la première séance (planche 01) : repères en ligne (durée et tarif suivis des
+  « Réglages du cabinet », lieu, comment réserver) et encadré « La sophrologie ne remplace pas un suivi médical ».
+  Blocs : « Repère ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-practical"{% if s.seance_id != blank %} data-pa-svc="{{ s.seance_id | escape }}"{% endif %}>
+  <div class="pa-wrap">
+    <div class="pa-practical__box">
+      {%- if s.heading != blank -%}<h2 class="pa-title pa-title--sm">{{ s.heading }}</h2>{%- endif -%}
+      {%- if section.blocks.size > 0 -%}
+        <ul class="pa-practical__list" role="list">
+          {%- for block in section.blocks -%}
+            {%- assign b = block.settings -%}
+            <li {{ block.shopify_attributes }}><span class="pa-round pa-round--apricot">{% render 'pa-icon', name: b.icon %}</span><span><strong>{{ b.label }}</strong><span{% if b.field != blank and b.field != 'none' %} data-pa-f="{{ b.field }}"{% endif %}>{{ b.value }}</span>{%- if b.note != blank -%} <small>{{ b.note }}</small>{%- endif -%}</span></li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+    {%- if s.notice_title != blank -%}
+      <div class="pa-notice-box">
+        <span class="pa-notice-box__ico">{% render 'pa-icon', name: 'leaf' %}</span>
+        <div><p class="pa-notice-box__title">{{ s.notice_title }}</p>{%- if s.notice_text != blank -%}<div class="pa-notice-box__text">{{ s.notice_text }}</div>{%- endif -%}</div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Informations pratiques",
+  "class": "pa-practical-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Informations pratiques" },
+    { "type": "text", "id": "seance_id", "label": "Identifiant de la séance (durée et tarif)" },
+    { "type": "text", "id": "notice_title", "label": "Encadré : titre", "default": "La sophrologie ne remplace pas un suivi médical" },
+    { "type": "richtext", "id": "notice_text", "label": "Encadré : texte" }
+  ],
+  "blocks": [
+    {
+      "type": "item", "name": "Repère",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icône", "default": "clock", "options": [{ "value": "clock", "label": "Durée" }, { "value": "euro", "label": "Tarif" }, { "value": "pin", "label": "Lieu" }, { "value": "calendar", "label": "Réservation" }] },
+        { "type": "text", "id": "label", "label": "Libellé", "default": "Durée" },
+        { "type": "text", "id": "value", "label": "Valeur", "default": "60 minutes" },
+        { "type": "text", "id": "note", "label": "Mention" },
+        { "type": "select", "id": "field", "label": "Valeur suivie des réglages", "default": "none", "options": [{ "value": "none", "label": "Aucune (texte libre)" }, { "value": "price", "label": "Tarif de la séance" }, { "value": "duration-long", "label": "Durée de la séance" }] }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Informations pratiques" }]
+}
+{% endschema %}

@@ -1,0 +1,177 @@
+{%- comment -%}
+  PHASE : cartes des planches 01 à 10 (une seule section, plusieurs dispositions) — en-tête (sur-titre, titre, texte ou
+  note à droite) puis cartes : photo, numéro, pictogramme, titre, texte et lien.
+  - strip : repères numérotés en ligne séparés par des filets (accueil) ; liste à pictogrammes au téléphone ;
+  - services : trois cartes photo et « Découvrir » (accueil) ;
+  - domains : deux colonnes, numéro sur la photo et étiquette jaune (prestations) ;
+  - photos : trois cartes photo, titre, texte, lien souligné (installation, éclairage) ; liste à pictogrammes au téléphone ;
+  - numbered : photo, numéro jaune à côté du titre (tableau) ;
+  - icons : cartes à pictogramme (dépannage, valeurs de l'entreprise) ;
+  - projects : réalisations illustratives (photo, titre, texte, flèche) ;
+  - shortcuts : raccourcis vers les prestations (page introuvable).
+  Chaque carte peut être réservée à l'ordinateur ou au téléphone ; titres et textes peuvent avoir une version courte.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign lay = s.layout
+-%}
+<section class="ph ph-cards ph-cards--{{ lay }} ph-cards--m-{{ s.layout_mobile | default: 'auto' }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.image_height > 0 %} --ph-mh: {{ s.image_height }};{% endif %}">
+  <div class="ph-c">
+    {%- if s.eyebrow != blank or s.eyebrow_mobile != blank or s.heading != blank or s.text != blank or s.note != blank -%}
+      <div class="ph-head">
+        <div class="ph-head__main">
+          {%- if s.eyebrow != blank or s.eyebrow_mobile != blank -%}<p class="ph-eyebrow{% if s.eyebrow == blank %} ph-only-m{% endif %}"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
+          {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
+          {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
+        </div>
+        {%- if s.text != blank -%}<div class="ph-head__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<div class="ph-head__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
+        {%- if s.note != blank -%}<p class="ph-head__note">{{ s.note }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="ph-cards__body{% if s.box_title != blank %} has-box{% endif %}">
+    <ul class="ph-cards__grid" role="list"{% if lay == 'gallery' %} data-ph-list="projects" data-ph-per="{{ s.per_page }}"{% elsif lay == 'posts' %} data-ph-list="posts" data-ph-per="{{ s.per_page }}" data-ph-per-m="{{ s.per_page_mobile }}" data-ph-pager="pages"{% endif %}>
+      {%- for b in section.blocks -%}
+        {%- assign c = b.settings -%}
+        {%- capture ph_cats -%}{%- assign ph_cl = c.category | split: ',' -%}{%- for x in ph_cl -%}{{ x | strip | handleize }} {% endfor -%}{%- endcapture -%}
+        <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-o-m="{{ c.order_mobile | default: forloop.index }}" data-ph-cat="{{ ph_cats | strip }}" {{ b.shopify_attributes }}>
+          {%- if c.image != blank or c.image_asset != blank -%}
+            <div class="ph-card__media">
+              {%- capture ph_cls -%}ph-card__img{% if c.image_mobile_asset != blank or c.image_mobile != blank %} ph-only-d{% endif %}{%- endcapture -%}
+              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, zoom: c.zoom, pos_mobile: c.position_mobile, zoom_mobile: c.zoom_mobile, class: ph_cls, sizes: '(min-width: 750px) 33vw, 100vw' %}
+              {%- if c.image_mobile_asset != blank or c.image_mobile != blank -%}{% render 'ph-img', image: c.image_mobile, asset: c.image_mobile_asset, alt: c.alt, pos: c.position_mobile, class: 'ph-card__img ph-only-m', sizes: '100vw' %}{%- endif -%}
+              {%- if c.number != blank and lay == 'domains' -%}<span class="ph-card__badge" aria-hidden="true">{{ c.number }}</span>{%- endif -%}
+              {%- if c.tag != blank -%}<span class="ph-card__tag">{{ c.tag }}</span>{%- endif -%}
+              {%- if c.link != blank and lay == 'gallery' -%}<span class="ph-card__go" aria-hidden="true">{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>{%- endif -%}
+            </div>
+          {%- endif -%}
+          <div class="ph-card__body">
+            {%- if c.icon != blank -%}<span class="ph-card__icon" aria-hidden="true">{%- if c.icon_mobile != blank -%}{% render 'ph-icon', name: c.icon, class: 'ph-only-d' %}{% render 'ph-icon', name: c.icon_mobile, class: 'ph-only-m' %}{%- else -%}{% render 'ph-icon', name: c.icon %}{%- endif -%}</span>{%- endif -%}
+            {%- if c.number != blank -%}<span class="ph-card__num">{{ c.number }}</span>{%- endif -%}
+            {%- if c.label != blank and lay == 'gallery' or c.label != blank and lay == 'related' or c.label != blank and lay == 'posts' -%}<p class="ph-card__kicker"><span{% if c.label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ c.label }}</span>{%- if c.label_mobile != blank -%}<span class="ph-txt-m">{{ c.label_mobile }}</span>{%- endif -%}</p>{%- endif -%}
+            <h3 class="ph-card__title">
+              {%- if c.link != blank -%}<a href="{{ c.link }}">{%- endif -%}
+              <span class="ph-txt-d">{{ c.title }}</span>{%- if c.title_mobile != blank -%}<span class="ph-txt-m">{{ c.title_mobile | newline_to_br }}</span>{%- endif -%}
+              {%- if c.link != blank -%}</a>{%- endif -%}
+            </h3>
+            {%- if c.text != blank -%}<p class="ph-card__text"><span class="ph-txt-d">{{ c.text | newline_to_br }}</span>{%- if c.text_mobile != blank -%}<span class="ph-txt-m">{{ c.text_mobile | newline_to_br }}</span>{%- endif -%}</p>{%- endif -%}
+            {%- if c.label != blank and lay != 'gallery' and lay != 'related' and lay != 'posts' -%}<p class="ph-card__label">{{ c.label }}</p>{%- endif -%}
+            {%- if c.link != blank -%}
+              <span class="ph-card__more" aria-hidden="true">{%- if c.link_label != blank -%}<span>{{ c.link_label }}</span>{%- endif -%}{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if lay == 'posts' -%}
+      <p class="ph-cards__empty" role="status" hidden data-ph-empty>{{ s.empty_label }}</p>
+      <nav class="ph-pager" aria-label="{{ s.pager_label | escape }}" hidden data-ph-pager-nav data-ph-prev="{{ s.prev_label | escape }}" data-ph-next="{{ s.next_label | escape }}" data-ph-page="{{ s.page_label | escape }}"></nav>
+      <p class="visually-hidden" role="status" aria-live="polite" data-ph-count data-ph-count-text="{{ s.count_label | escape }}"></p>
+    {%- endif -%}
+    {%- if lay == 'gallery' -%}
+      <p class="ph-cards__empty" role="status" hidden data-ph-empty>{{ s.empty_label }}</p>
+      <div class="ph-cards__more" hidden data-ph-more-wrap><button type="button" class="ph-btn ph-btn--line" data-ph-more>{{ s.more_label }}</button></div>
+      <p class="visually-hidden" role="status" aria-live="polite" data-ph-count data-ph-count-text="{{ s.count_label | escape }}"></p>
+    {%- endif -%}
+    {%- if s.box_title != blank -%}
+      <aside class="ph-faq__box ph-cards__box">
+        {% render 'ph-title', text: s.box_title, tag: 'h3', class: 'ph-faq__box-title' %}
+        {%- if s.box_text != blank -%}<p class="ph-faq__box-text">{{ s.box_text | newline_to_br }}</p>{%- endif -%}
+        {%- if s.box_button != blank -%}<a class="ph-btn ph-btn--navy ph-faq__box-btn" href="{{ s.box_link | default: routes.root_url }}"><span>{{ s.box_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+        {% render 'ph-art', name: 'box-low' %}
+      </aside>
+    {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cartes PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "services", "options": [
+      { "value": "strip", "label": "Repères numérotés en ligne" },
+      { "value": "services", "label": "Trois cartes photo « Découvrir »" },
+      { "value": "domains", "label": "Domaines numérotés sur deux colonnes" },
+      { "value": "photos", "label": "Cartes photo et lien souligné" },
+      { "value": "numbered", "label": "Photo et numéro jaune" },
+      { "value": "icons", "label": "Cartes à pictogramme" },
+      { "value": "values", "label": "Valeurs (grand pictogramme et titre)" },
+      { "value": "mini", "label": "Petits repères à pictogramme et encadré jaune" },
+      { "value": "projects", "label": "Réalisations illustratives" },
+      { "value": "gallery", "label": "Réalisations filtrables (pastilles de l'ouverture)" },
+      { "value": "related", "label": "Autres inspirations (photo et flèche)" },
+      { "value": "posts", "label": "Conseils filtrables et paginés" },
+      { "value": "shortcuts", "label": "Raccourcis vers les prestations" }
+    ] },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "auto", "options": [
+      { "value": "auto", "label": "Selon la disposition" },
+      { "value": "list", "label": "Cadres à pictogramme et flèche" },
+      { "value": "photo", "label": "Cadres photo, texte et flèche" }
+    ] },
+    { "type": "range", "id": "columns", "label": "Colonnes (ordinateur)", "min": 1, "max": 4, "step": 1, "default": 3 },
+    { "type": "select", "id": "background", "label": "Fond", "default": "white", "options": [{ "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
+    { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone (facultatif)" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 0.5, "default": 28 },
+    { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+    { "type": "text", "id": "note", "label": "Note à droite du titre" },
+    { "type": "header", "content": "Réalisations filtrables" },
+    { "type": "range", "id": "per_page", "label": "Réalisations affichées avant « Voir plus »", "min": 3, "max": 12, "step": 1, "default": 6 },
+    { "type": "text", "id": "more_label", "label": "Bouton « Voir plus »", "default": "Voir plus de réalisations" },
+    { "type": "text", "id": "count_label", "label": "Annonce du nombre ([n] = nombre)", "default": "[n] réalisation(s) affichée(s)" },
+    { "type": "text", "id": "empty_label", "label": "Message si aucune réalisation", "default": "Aucune réalisation dans cette catégorie pour le moment." },
+    { "type": "range", "id": "per_page_mobile", "label": "Conseils par page au téléphone", "min": 2, "max": 12, "step": 1, "default": 4 },
+    { "type": "text", "id": "pager_label", "label": "Nom de la pagination", "default": "Pagination des conseils" },
+    { "type": "text", "id": "prev_label", "label": "Page précédente", "default": "Page précédente" },
+    { "type": "text", "id": "next_label", "label": "Page suivante", "default": "Page suivante" },
+    { "type": "text", "id": "page_label", "label": "Page ([n] = numéro)", "default": "Page [n]" },
+    { "type": "header", "content": "Encadré jaune (à droite des cartes)" },
+    { "type": "textarea", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "textarea", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "box_button", "label": "Bouton de l'encadré" },
+    { "type": "url", "id": "box_link", "label": "Lien du bouton" },
+    { "type": "number", "id": "image_height", "label": "Hauteur des photos (repère 1440 px, 0 = selon la disposition)", "default": 0 },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 }
+  ],
+  "blocks": [
+    { "type": "card", "name": "Carte", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Texte alternatif" },
+      { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+ { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
+      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "image_picker", "id": "image_mobile", "label": "Autre photo au téléphone (facultatif)" },
+      { "type": "text", "id": "image_mobile_asset", "label": "Autre photo au téléphone (fichier du thème)" },
+      { "type": "text", "id": "tag", "label": "Étiquette sur la photo" },
+      { "type": "text", "id": "category", "label": "Catégories (filtre des réalisations, séparées par des virgules)" },
+      { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
+      { "type": "text", "id": "icon_mobile", "label": "Pictogramme au téléphone (facultatif)" },
+      { "type": "text", "id": "number", "label": "Numéro" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "title_mobile", "label": "Titre au téléphone (facultatif, un retour à la ligne par ligne)" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+      { "type": "text", "id": "label", "label": "Mention (ou catégorie affichée)" },
+      { "type": "text", "id": "label_mobile", "label": "Mention au téléphone (facultatif)" },
+      { "type": "text", "id": "link_label", "label": "Libellé du lien" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+      { "type": "range", "id": "order_mobile", "label": "Ordre au téléphone", "min": 1, "max": 12, "step": 1, "default": 1 }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Cartes PHASE" }]
+}
+{% endschema %}

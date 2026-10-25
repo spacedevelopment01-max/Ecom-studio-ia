@@ -1,0 +1,96 @@
+{%- comment -%}
+  ATELIER NUANCE : contact (planche 03). « Nos coordonnées » (adresse, téléphone, e-mail) et « Horaires d'ouverture »
+  lus dans la configuration (sinon « [À renseigner] » / « [À confirmer] », jamais une adresse d'exemple), puis
+  « Nous écrire » : sujet, nom, e-mail, message, avec états valide / invalide / envoi / succès / erreur. Aucun message
+  n'est déclaré envoyé sans service qui le reçoit : la démonstration le dit.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-contact">
+  <div class="an-wrap">
+    <div class="an-contact__top">
+      <div class="an-contact__coords">
+        <h2 class="an-title an-title--sm">{{ s.coords_heading }}</h2>
+        <ul role="list" class="an-contact__list">
+          <li>{% render 'an-icon', name: 'pin' %}<div><strong>{{ s.address_label }}</strong><span>{% if s.address != blank %}{{ s.address | escape | newline_to_br }}{% else %}{{ s.todo_label }}{% endif %}</span></div></li>
+          <li>{% render 'an-icon', name: 'phone' %}<div><strong>{{ s.phone_label }}</strong><span>{% if s.phone != blank %}<a href="tel:{{ s.phone | remove: ' ' | remove: '.' }}">{{ s.phone }}</a>{% else %}{{ s.todo_label }}{% endif %}</span></div></li>
+          <li>{% render 'an-icon', name: 'mail' %}<div><strong>{{ s.email_label }}</strong><span>{% if s.email != blank %}<a href="mailto:{{ s.email | strip }}">{{ s.email }}</a>{% else %}{{ s.todo_label }}{% endif %}</span></div></li>
+        </ul>
+      </div>
+      <div class="an-contact__hours">
+        <h2 class="an-title an-title--sm">{{ s.hours_heading }}</h2>
+        <p class="an-contact__hours-line">{% render 'an-icon', name: 'clock' %}<span>{% if s.hours != blank %}{{ s.hours | escape | newline_to_br }}{% else %}{{ s.hours_todo }}{% endif %}</span></p>
+      </div>
+    </div>
+    <div class="an-contact__write" data-an-request="contact">
+      <h2 class="an-title an-title--sm">{{ s.form_heading }}</h2>
+      {%- if s.form_text != blank -%}<p class="an-contact__intro">{{ s.form_text | escape | newline_to_br }}</p>{%- endif -%}
+      {%- form 'contact', id: 'AnContact', class: 'an-form', novalidate: 'novalidate' -%}
+        <div class="an-form__row an-form__row--3">
+          <div class="an-field">
+            <label for="AnContactSubject">{{ s.subject_label }}</label>
+            <select id="AnContactSubject" name="contact[subject]" required>
+              <option value="">{{ s.subject_placeholder }}</option>
+              {%- assign subjects = s.subjects | newline_to_br | split: '<br />' -%}
+              {%- for o in subjects -%}{%- assign o2 = o | strip -%}{%- if o2 != blank -%}<option>{{ o2 }}</option>{%- endif -%}{%- endfor -%}
+            </select>
+            <p class="an-field__error" hidden>{{ s.error_required }}</p>
+          </div>
+          <div class="an-field">
+            <label for="AnContactName">{{ s.name_label }}</label>
+            <input id="AnContactName" type="text" name="contact[name]" autocomplete="name" required placeholder="{{ s.name_label }}">
+            <p class="an-field__error" hidden>{{ s.error_required }}</p>
+          </div>
+          <div class="an-field">
+            <label for="AnContactEmail">{{ s.email_field_label }}</label>
+            <input id="AnContactEmail" type="email" name="contact[email]" autocomplete="email" required placeholder="{{ s.email_field_label }}">
+            <p class="an-field__error" hidden>{{ s.error_email }}</p>
+          </div>
+        </div>
+        <div class="an-field">
+          <label for="AnContactMessage">{{ s.message_label }}</label>
+          <textarea id="AnContactMessage" name="contact[body]" rows="5" required placeholder="{{ s.message_placeholder }}"></textarea>
+          <p class="an-field__error" hidden>{{ s.error_required }}</p>
+        </div>
+        <div class="an-form__foot">
+          <button type="submit" class="an-btn an-btn--peach"><span>{{ s.submit_label }}</span>{% render 'an-icon', name: 'arrow' %}</button>
+        </div>
+        <p class="an-form__status" role="status" aria-live="polite" data-an-status>{%- if form.posted_successfully? -%}{{ s.success_text }}{%- endif -%}</p>
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact du salon",
+  "class": "an-contact-section",
+  "settings": [
+    { "type": "text", "id": "coords_heading", "label": "Titre des coordonnées", "default": "Nos coordonnées" },
+    { "type": "text", "id": "address_label", "label": "Libellé de l'adresse", "default": "Adresse" },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "phone_label", "label": "Libellé du téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "email_label", "label": "Libellé de l'e-mail", "default": "Email" },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "text", "id": "todo_label", "label": "Mention d'une information manquante", "default": "[À renseigner]" },
+    { "type": "text", "id": "hours_heading", "label": "Titre des horaires", "default": "Horaires d'ouverture" },
+    { "type": "textarea", "id": "hours", "label": "Horaires" },
+    { "type": "text", "id": "hours_todo", "label": "Mention d'horaires manquants", "default": "[À confirmer]" },
+    { "type": "header", "content": "Formulaire" },
+    { "type": "text", "id": "form_heading", "label": "Titre du formulaire", "default": "Nous écrire" },
+    { "type": "textarea", "id": "form_text", "label": "Texte du formulaire", "default": "Une question, une demande particulière ?\nNotre équipe vous répond dans les plus brefs délais." },
+    { "type": "text", "id": "subject_label", "label": "Libellé du sujet", "default": "Sujet de votre message" },
+    { "type": "text", "id": "subject_placeholder", "label": "Choix du sujet", "default": "Sélectionnez un sujet" },
+    { "type": "textarea", "id": "subjects", "label": "Sujets proposés", "default": "Une question sur une prestation\nUn rendez-vous\nUne autre demande", "info": "Un sujet par ligne." },
+    { "type": "text", "id": "name_label", "label": "Libellé du nom", "default": "Votre nom" },
+    { "type": "text", "id": "email_field_label", "label": "Libellé de l'e-mail du visiteur", "default": "Votre email" },
+    { "type": "text", "id": "message_label", "label": "Libellé du message", "default": "Votre message" },
+    { "type": "text", "id": "message_placeholder", "label": "Aide du message", "default": "Votre message…" },
+    { "type": "text", "id": "submit_label", "label": "Texte du bouton", "default": "Envoyer le message" },
+    { "type": "text", "id": "error_required", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "success_text", "label": "Message de réussite", "default": "Merci, votre message a bien été envoyé." }
+  ],
+  "presets": [{ "name": "Contact du salon" }]
+}
+{% endschema %}

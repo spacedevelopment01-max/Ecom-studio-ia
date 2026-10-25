@@ -1,0 +1,78 @@
+{%- comment -%}
+  ATELIER NUANCE : « Choisissez votre longueur » (fiche, planche 05) : trois choix avec pictogrammes dessinés en SVG
+  (photos de la planche 01 en variante facultative) et bloc « Tarif confirmé » dont la durée et le prix suivent le
+  choix, lus dans la source unique des « Réglages du salon ». Sans supplément défini, le prix ne change pas, et le dit.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-lengths" data-an-lengths data-an-svc="{{ s.service_id | escape }}">
+  <div class="an-wrap an-lengths__grid">
+    <fieldset class="an-lengths__pick">
+      <legend><span class="an-title an-title--sm">{{ s.heading }}</span>{%- if s.text != blank -%}<span class="an-lengths__sub">{{ s.text }}</span>{%- endif -%}</legend>
+      <div class="an-lengths__options">
+        {%- assign keys = 'short|mid|long' | split: '|' -%}
+        {%- for k in keys -%}
+          {%- case k -%}
+            {%- when 'short' -%}{%- assign label = s.short_label -%}{%- assign img = s.short_image -%}{%- assign asset = s.short_image_asset -%}
+            {%- when 'mid' -%}{%- assign label = s.mid_label -%}{%- assign img = s.mid_image -%}{%- assign asset = s.mid_image_asset -%}
+            {%- else -%}{%- assign label = s.long_label -%}{%- assign img = s.long_image -%}{%- assign asset = s.long_image_asset -%}
+          {%- endcase -%}
+          <label class="an-lengths__opt">
+            <span class="an-lengths__art">
+              {%- if s.variant == 'photos' and img != blank or s.variant == 'photos' and asset != blank -%}
+                {% render 'an-img', image: img, asset: asset, alt: '', pos: '50% 35%' %}
+              {%- else -%}
+                {% render 'an-hair', length: k %}
+              {%- endif -%}
+            </span>
+            <span class="an-lengths__label">{{ label }}</span>
+            <input type="radio" name="an-length-{{ section.id }}" value="{{ k }}" class="an-radio"{% if forloop.first %} checked{% endif %}>
+          </label>
+        {%- endfor -%}
+      </div>
+    </fieldset>
+    <div class="an-lengths__box" aria-live="polite">
+      <p class="an-lengths__box-title">{{ s.box_title }}</p>
+      {%- if s.box_subtitle != blank -%}<p class="an-lengths__box-sub">{{ s.box_subtitle }}</p>{%- endif -%}
+      <dl class="an-lengths__rows">
+        <div><dt>{{ s.duration_label }}</dt><dd data-an-f="duration">{{ s.duration }}</dd></div>
+        <div><dt>{{ s.price_label }}</dt><dd><strong data-an-f="price">{{ s.price }}</strong>{%- if s.note != blank -%}<small data-an-demo-note>{{ s.note }}</small>{%- endif -%}</dd></div>
+      </dl>
+      <p class="an-lengths__same" data-an-same hidden>{{ s.same_price_label }}</p>
+      {%- if s.button_label != blank -%}<a class="an-btn an-btn--terra" href="{{ s.book_link | default: '/pages/prendre-rendez-vous' }}" data-an-book="{{ s.service_id | escape }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Choix de la longueur",
+  "class": "an-lengths-section",
+  "settings": [
+    { "type": "text", "id": "service_id", "label": "Identifiant de la prestation", "info": "La durée et le prix suivent les « Réglages du salon »." },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Choisissez votre longueur" },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Le tarif est confirmé selon la prestation choisie." },
+    { "type": "select", "id": "variant", "label": "Illustrations", "default": "pictos", "options": [{ "value": "pictos", "label": "Pictogrammes dessinés" }, { "value": "photos", "label": "Photos (si fournies)" }] },
+    { "type": "text", "id": "short_label", "label": "Cheveux courts : texte", "default": "Cheveux courts" },
+    { "type": "image_picker", "id": "short_image", "label": "Cheveux courts : photo" },
+    { "type": "text", "id": "short_image_asset", "label": "Cheveux courts : image fournie avec le thème" },
+    { "type": "text", "id": "mid_label", "label": "Cheveux mi-longs : texte", "default": "Cheveux mi-longs" },
+    { "type": "image_picker", "id": "mid_image", "label": "Cheveux mi-longs : photo" },
+    { "type": "text", "id": "mid_image_asset", "label": "Cheveux mi-longs : image fournie avec le thème" },
+    { "type": "text", "id": "long_label", "label": "Cheveux longs : texte", "default": "Cheveux longs" },
+    { "type": "image_picker", "id": "long_image", "label": "Cheveux longs : photo" },
+    { "type": "text", "id": "long_image_asset", "label": "Cheveux longs : image fournie avec le thème" },
+    { "type": "header", "content": "Tarif" },
+    { "type": "text", "id": "box_title", "label": "Titre du bloc tarif", "default": "Tarif confirmé" },
+    { "type": "text", "id": "box_subtitle", "label": "Sous-titre du bloc tarif", "default": "selon la prestation choisie" },
+    { "type": "text", "id": "duration_label", "label": "Libellé de la durée", "default": "Durée estimée" },
+    { "type": "text", "id": "duration", "label": "Durée affichée" },
+    { "type": "text", "id": "price_label", "label": "Libellé du prix", "default": "Tarif" },
+    { "type": "text", "id": "price", "label": "Prix affiché" },
+    { "type": "text", "id": "note", "label": "Mention sous le prix", "default": "Tarifs de démonstration" },
+    { "type": "text", "id": "same_price_label", "label": "Mention sans supplément", "default": "Même tarif quelle que soit la longueur." },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "book_link", "label": "Page de prise de rendez-vous" }
+  ],
+  "presets": [{ "name": "Choix de la longueur" }]
+}
+{% endschema %}

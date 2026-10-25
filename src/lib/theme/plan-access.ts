@@ -9,7 +9,7 @@ import { FAMILY_LIBRARY, parseLibraryId } from './section-families';
 import { sectionSchema, settingsSchema, containerOf, type ThemeSpec } from './spec';
 import type { ThemeOp } from './ops';
 import { L } from '../i18n-server';
-export function assertLibrarySelection(projectId:string,type:string,existingType?:string) {
+export function assertLibrarySelection(projectId:string,type:string,existingType?:string,installed=false) {
  const plan=requirePlan(null,projectId),family=projectKind(loadProject(projectId));
  const parsed=parseLibraryId(type);
  if(parsed){if(parsed.entry.family!==family)throw new HttpError(400,L('Section hors de la bibliothèque de la famille de ce projet.','Section outside this project’s family library.'),'section_library_mismatch');if(planAllowsSection(plan,family,parsed.entry.key))return;}
@@ -17,6 +17,8 @@ export function assertLibrarySelection(projectId:string,type:string,existingType
   if(type===existingType||['header','footer','announcement-bar'].includes(type))return;
   const entries=FAMILY_LIBRARY[family].filter(e=>e.dispositions.some(d=>d.type===type));
   if(entries.some(e=>planAllowsSection(plan,family,e.key)))return;
+  // Section propre au thème déjà installée (fg-*, sv-*, pa-*…) : hors bibliothèque de famille, sa copie reste permise.
+  if(!entries.length&&installed&&!type.startsWith('es-custom-'))return;
   if(!entries.length&&!type.startsWith('es-custom-'))throw new HttpError(400,L('Section inconnue ou hors de la bibliothèque de cette famille.','Unknown section or outside this family library.'),'section_library_mismatch');
   if(type.startsWith('es-custom-')){assertAiSections(projectId);return;}
  }
@@ -35,7 +37,7 @@ export function assertThemeOperations(projectId:string,spec:ThemeSpec,ops:ThemeO
   }
   if(op.op==='custom_section')assertAiSections(projectId);
   if(!spec.imported&&(op.op==='add_section'||op.op==='replace_section'))assertLibrarySelection(projectId,op.type,op.op==='replace_section'?containerOf(spec,op.template)?.sections[op.section]?.type:undefined);
-  if(!spec.imported&&op.op==='duplicate_section')assertLibrarySelection(projectId,containerOf(spec,op.template)?.sections[op.section]?.type??'');
+  if(!spec.imported&&op.op==='duplicate_section')assertLibrarySelection(projectId,containerOf(spec,op.template)?.sections[op.section]?.type??'',undefined,!!containerOf(spec,op.template)?.sections[op.section]);
  }
 }
 /** Let the bounded native repair path report bad family proposals; never skip another operation's plan check. */

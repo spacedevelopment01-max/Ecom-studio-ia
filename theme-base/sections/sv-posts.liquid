@@ -1,0 +1,67 @@
+{%- comment -%}
+  SILLON V2 : articles du carnet —
+  - accueil (planche 01) : « Dans le carnet » et son filet à gauche, un grand article (photo large) et un second ;
+  - autres articles (planche 02, article) : sur-titre à chasse fixe, deux cartes sur fond sable (photo, titre condensé,
+    texte, flèche en cercle).
+  Blocs : « Article » (photo, titre, texte, lien).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-posts sv-posts--{{ s.layout }}">
+  <div class="sv-c">
+    <div class="sv-posts__inner">
+      {%- if s.layout == 'home' -%}
+        <div class="sv-posts__head"><h2 class="sv-display sv-posts__title">{{ s.heading }}</h2><span class="sv-posts__rule" aria-hidden="true"></span></div>
+      {%- elsif s.heading != blank -%}
+        <h2 class="sv-eyebrow sv-posts__eyebrow">{{ s.heading }}</h2>
+      {%- endif -%}
+      <ul class="sv-posts__list" role="list">
+        {%- for block in section.blocks limit: 4 -%}
+          {%- assign b = block.settings -%}
+          <li class="sv-post sv-post--{{ forloop.index }}" {{ block.shopify_attributes }}>
+            <a class="sv-post__media" href="{{ b.link | default: '#' }}" tabindex="-1" aria-hidden="true">{% render 'sv-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position, zoom: b.image_zoom, pos_mobile: b.image_position_mobile, zoom_mobile: b.image_zoom_mobile %}</a>
+            <div class="sv-post__body">
+              <h3 class="sv-post__title"><a href="{{ b.link | default: '#' }}">{{ b.title | escape | newline_to_br }}</a></h3>
+              {%- if b.text != blank -%}<p class="sv-post__text">{% render 'sv-lines', text: b.text, mobile: b.text_mobile %}</p>{%- endif -%}
+              {%- if s.layout == 'home' -%}
+                <a class="sv-link sv-link--dark sv-post__more" href="{{ b.link | default: '#' }}" aria-hidden="true" tabindex="-1">{{ s.read_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>
+              {%- else -%}
+                <a class="sv-circle sv-circle--dark-line sv-post__arrow" href="{{ b.link | default: '#' }}" aria-hidden="true" tabindex="-1">{% render 'sv-icon', name: 'arrow' %}</a>
+              {%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Articles du carnet",
+  "class": "sv-posts-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil : titre à gauche, grand article" }, { "value": "related", "label": "Autres articles en cartes" }] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Dans le carnet" },
+    { "type": "text", "id": "read_label", "label": "Lien de lecture", "default": "Lire l'article" }
+  ],
+  "blocks": [
+    {
+      "type": "post", "name": "Article",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+        { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+        { "type": "textarea", "id": "title", "label": "Titre", "default": "Le café en van" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone", "info": "Vide : le texte ci-dessus." },
+        { "type": "url", "id": "link", "label": "Page de l'article" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Articles du carnet", "blocks": [{ "type": "post" }, { "type": "post" }] }]
+}
+{% endschema %}

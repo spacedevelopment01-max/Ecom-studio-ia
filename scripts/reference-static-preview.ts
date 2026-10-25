@@ -24,7 +24,7 @@ const out = path.resolve(args.find((a) => !a.startsWith("--")) ?? "reports/refer
 const { demoProject } = await import("../tests/demo-fixtures");
 // Stories FRAISE / ONDE : un clip de test (mire générée, jamais une vraie vidéo produit) prouve le lecteur, comme au lot 2C.
 const testVideo = path.join(out, "clip-test.webm"); try { execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc=size=540x960:rate=24", "-t", "8", "-c:v", "libvpx-vp9", "-b:v", "400k", "-an", testVideo], { stdio: "ignore" }); } catch { console.warn("ffmpeg absent : stories sans clip de test"); }
-type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "table-saison";
+type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "table-saison" | "atelier-nuance" | "parenthese" | "phase";
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion } = await import("../src/lib/projects"); const { previewSegment } = await import("../src/lib/theme/preview-access");
 const { GET, POST } = await import("../src/app/preview/[id]/v/[vid]/[[...path]]/route");
@@ -39,7 +39,7 @@ async function post(pathname: string, body: string, contentType: string) { const
 
 const SHIM = fs.readFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lot2c-static-demo.js"), "utf8");
 const runs: { id: DemoId; direction: DemoId; name: string }[] = [
-  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" }, { id: "table-saison", direction: "table-saison", name: "table-saison" },
+  { id: "fraise", direction: "fraise", name: "fraise" }, { id: "onde", direction: "onde", name: "onde" }, { id: "orbe", direction: "orbe", name: "orbe" }, { id: "rive", direction: "rive", name: "rive" }, { id: "sillon", direction: "sillon", name: "sillon" }, { id: "noctil", direction: "noctil", name: "noctil" }, { id: "traverse", direction: "traverse", name: "traverse" }, { id: "heuren", direction: "heuren", name: "heuren" }, { id: "alcove", direction: "alcove", name: "alcove" }, { id: "museau-club", direction: "museau-club", name: "museau-club" }, { id: "souple", direction: "souple", name: "souple" }, { id: "atelier-nuance", direction: "atelier-nuance", name: "atelier-nuance" }, { id: "parenthese", direction: "parenthese", name: "parenthese" }, { id: "phase", direction: "phase", name: "phase" },
   ...(cross ? [{ id: "fraise" as DemoId, direction: "onde" as DemoId, name: "fraise-en-onde" }, { id: "onde" as DemoId, direction: "fraise" as DemoId, name: "onde-en-fraise" }] : []),
 ];
 const summary: Record<string, unknown>[] = [];
@@ -98,12 +98,16 @@ try {
       const clear = async () => { for (let guard = 0; guard < 8; guard++) { const c = await cartJson(); if (!c.items.length) return; for (const item of c.items) if (!item.properties?._es_gift) await post(`${base}/cart/change`, JSON.stringify({ id: item.key, quantity: 0 }), "application/json"); } };
       const stateKey = (c: { items: Item[] }) => c.items.map((i) => `${i.key}x${i.quantity}`).sort().join("|") || "vide";
       const mainSection = Object.values(spec.templates.product.sections).find((sec) => sec.type === "main-product")!, purchase = purchaseConfig(mainSection), vid = variantId(0, 0);
+      // Produit vendu en plusieurs formats (FRAISE : 1, 2 ou 3 flacons = trois variantes) : un lot de chaque format.
+      const formats = spec.store.product.variants?.length ?? 0;
       const adds: { action: string; body: string }[] = purchase?.offers?.length
         ? purchase.offers.map((o) => ({ action: `add:offer:${o.id}`, body: JSON.stringify({ offer: o.id, target: spec.store.product.contentTarget ?? "product:main", variants: Array(o.quantity).fill(vid) }) }))
-        : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
+        : formats > 1
+          ? spec.store.product.variants.map((_, k) => ({ action: `add:id:${variantId(0, k)}:1`, body: JSON.stringify({ id: variantId(0, k), quantity: 1 }) }))
+          : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
       const states: Record<string, { cart: unknown; drawer: string; page: string }> = {}, edges: Record<string, Record<string, string>> = {}, queue: string[] = [];
       const capture = async (key: string) => { if (states[key]) return; const c = await cartJson(); const sections = JSON.parse(await (await get(`${base}/cart?sections=cart-drawer`)).text()) as Record<string, string>; assert.ok(sections["cart-drawer"], `tiroir non rendu pour ${key}`); const page = await pageHtml("/cart"); states[key] = { cart: JSON.parse(rewrite(JSON.stringify(c))), drawer: rewrite(sections["cart-drawer"] ?? ""), page: inject(rewrite(page).replace("<html", `<html data-static-state="${key}"`)) }; queue.push(key); };
-      const MAX_ITEMS = 12, MAX_LINES = 3;
+      const MAX_ITEMS = formats > 1 ? 4 : 12, MAX_LINES = 3;
       const pathsTo: Record<string, { action: string; body: string; url: string }[]> = { vide: [] };
       await clear(); await capture("vide");
       while (queue.length) {

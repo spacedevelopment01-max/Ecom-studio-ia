@@ -131,6 +131,17 @@
         "info": "Utilisée pour les mots mis en valeur dans les titres."
       },
       {
+        "type": "select",
+        "id": "theme_kit",
+        "label": "Habillage propre au thème",
+        "default": "none",
+        "options": [
+          { "value": "none", "label": "Aucun" },
+          { "value": "fraise", "label": "FRAISE (polices, feuille et script du thème)" }
+        ],
+        "info": "FRAISE : titres dans la police des titres (graisses 500 à 800), italique d'accent dans la police d'accent, capitales à empattements dérivées de la police d'accent."
+      },
+      {
         "type": "range",
         "id": "heading_scale",
         "min": 80,
@@ -454,6 +465,18 @@
           {
             "value": "table-saison",
             "label": "Table Saison — bistrot de saison, ivoire et bordeaux (référence)"
+          },
+          {
+            "value": "atelier-nuance",
+            "label": "Atelier Nuance — salon de coiffure, ivoire, chocolat et pêche (référence)"
+          },
+          {
+            "value": "parenthese",
+            "label": "Parenthèse — cabinet de sophrologie, ivoire, sauge, vert forêt et abricot (référence)"
+          },
+          {
+            "value": "phase",
+            "label": "Phase — électricien, bleu nuit, jaune électrique et traits de circuits (référence)"
           }
         ]
       },
@@ -858,6 +881,60 @@
         "type": "image_picker",
         "id": "share_image",
         "label": "Image de partage par défaut"
+      }
+    ]
+  },
+  {
+    "name": "Offres par lots",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Formats vendus par lots (option « 1 flacon », « 2 flacons », « 3 flacons »…) : le nombre en tête de l'option donne le nombre d'unités ; les économies, messages et prix par unité sont calculés à partir des prix des variantes."
+      },
+      {
+        "type": "text",
+        "id": "offer_best_label",
+        "label": "Badge du lot le moins cher par unité",
+        "default": "Meilleure offre",
+        "info": "Vide : aucun badge."
+      },
+      {
+        "type": "text",
+        "id": "offer_free_text",
+        "label": "Message « unités offertes »",
+        "default": "[paid] achetés + [free] offert",
+        "info": "[paid] : unités payées ; [free] : unités offertes."
+      },
+      {
+        "type": "text",
+        "id": "offer_pct_text",
+        "label": "Message « remise sur une unité »",
+        "default": "−[pct] % sur le [n]ᵉ",
+        "info": "[pct] : remise en % ; [n] : rang de l'unité."
+      },
+      {
+        "type": "text",
+        "id": "offer_last_text",
+        "label": "Prix de la dernière unité",
+        "default": "Le [n]ᵉ à [price]"
+      },
+      {
+        "type": "text",
+        "id": "offer_save_label",
+        "label": "Libellé de l'économie",
+        "default": "Économisez"
+      },
+      {
+        "type": "text",
+        "id": "offer_compare_label",
+        "label": "Annonce du prix barré (lecteurs d'écran)",
+        "default": "Même quantité à l’unité :"
+      },
+      {
+        "type": "text",
+        "id": "offer_note",
+        "label": "Note sous les offres",
+        "default": "Prix barrés : même quantité achetée à l’unité. « Meilleure offre » : prix par unité le plus bas."
       }
     ]
   },

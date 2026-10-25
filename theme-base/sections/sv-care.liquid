@@ -1,0 +1,74 @@
+{%- comment -%}
+  SILLON V2 : « Entretien simple. » (planche 02, « Le rituel ») — titre et phrase à chasse fixe, liste de gestes à
+  pictogrammes (le premier mène à la notice : un vrai document si le marchand en a déposé un, sinon « Notice à
+  ajouter », jamais un faux PDF), filet vertical, photo ronde, « Découvrir la machine » et flèche en cercle.
+  Blocs : « Geste ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-care">
+  <div class="sv-c">
+    <div class="sv-care__inner">
+      <h2 class="sv-display sv-care__title">{{ s.heading | escape | newline_to_br }}</h2>
+      {%- if s.text != blank -%}<p class="sv-mono sv-care__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      <ul class="sv-care__list" role="list">
+        {%- for block in section.blocks limit: 4 -%}
+          {%- assign b = block.settings -%}
+          <li {{ block.shopify_attributes }}>
+            {% render 'sv-icon', name: 'power' %}
+            {%- if b.is_notice -%}
+              {%- if s.notice_file != blank -%}
+                <a class="sv-mono" href="{{ s.notice_file }}">{{ b.text }}</a>
+              {%- else -%}
+                <span class="sv-mono">{{ b.text }} <em class="sv-care__todo">{{ s.notice_missing }}</em></span>
+              {%- endif -%}
+            {%- elsif b.link != blank -%}
+              <a class="sv-mono" href="{{ b.link }}">{{ b.text }}</a>
+            {%- else -%}
+              <span class="sv-mono">{{ b.text }}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+      <span class="sv-care__rule" aria-hidden="true"></span>
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'sv-care__photo', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, place_w: s.image_place_w, place_x: s.image_place_x, place_y: s.image_place_y %}
+      <a class="sv-display sv-care__cta" href="{{ s.link | default: routes.all_products_collection_url }}">{{ s.link_label | escape | newline_to_br }}</a>
+      <a class="sv-circle sv-care__arrow" href="{{ s.link | default: routes.all_products_collection_url }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow' %}</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Entretien simple",
+  "class": "sv-care-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Entretien\nsimple." },
+    { "type": "textarea", "id": "text", "label": "Phrase à chasse fixe", "default": "Pour vous suivre\nlongtemps." },
+    { "type": "url", "id": "notice_file", "label": "Notice (document déposé dans Contenu › Fichiers)", "info": "Vide : le geste « notice » affiche « Notice à ajouter »." },
+    { "type": "text", "id": "notice_missing", "label": "Mention sans notice", "default": "(notice à ajouter)" },
+    { "type": "image_picker", "id": "image", "label": "Photo ronde" },
+    { "type": "text", "id": "image_asset", "label": "Photo ronde (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_place_w", "label": "Téléphone : largeur posée de la photo (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_place_x", "label": "Téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_place_y", "label": "Téléphone : position en haut (px)" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "textarea", "id": "link_label", "label": "Lien", "default": "Découvrir\nla machine" },
+    { "type": "url", "id": "link", "label": "Adresse du lien" }
+  ],
+  "blocks": [
+    {
+      "type": "gesture", "name": "Geste",
+      "settings": [
+        { "type": "text", "id": "text", "label": "Texte", "default": "Nettoyer après usage" },
+        { "type": "url", "id": "link", "label": "Lien (facultatif)" },
+        { "type": "checkbox", "id": "is_notice", "label": "Mène à la notice", "default": false }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Entretien simple" }]
+}
+{% endschema %}

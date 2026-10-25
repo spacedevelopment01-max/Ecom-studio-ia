@@ -1,0 +1,80 @@
+{%- comment -%}
+  PHASE : données personnelles et cookies (planches 05 et 10) — rubriques d'information (pictogramme, titre, texte) puis
+  « Gestion des cookies » : nécessaires (toujours actifs), mesure d'audience et contenus externes désactivés par défaut,
+  préférences enregistrées dans le navigateur et réellement appliquées (aucune mesure ni contenu externe chargé sans
+  accord) ; ce bloc sert aussi à rouvrir ses choix (lien « Cookies » du pied de page).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign infos = section.blocks | where: 'type', 'info'
+  assign prefs = section.blocks | where: 'type', 'pref'
+-%}
+<section class="ph ph-privacy ph-pad" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <ul class="ph-privacy__infos" role="list">
+      {%- for b in infos -%}
+        <li class="ph-privacy__info" {{ b.shopify_attributes }}>{% render 'ph-icon', name: b.settings.icon %}<div><h2 class="ph-privacy__info-title">{{ b.settings.title }}</h2><p class="ph-privacy__info-text"><span{% if b.settings.text_mobile != blank %} class="ph-txt-d"{% endif %}>{{ b.settings.text }}</span>{%- if b.settings.text_mobile != blank -%}<span class="ph-txt-m">{{ b.settings.text_mobile }}</span>{%- endif -%}</p></div></li>
+      {%- endfor -%}
+    </ul>
+    <form class="ph-privacy__prefs" id="ph-cookies-prefs" data-ph-prefs aria-labelledby="ph-prefs-t-{{ section.id }}">
+      <h2 class="ph-privacy__title" id="ph-prefs-t-{{ section.id }}">{{ s.prefs_title }}</h2>
+      {%- if s.prefs_text != blank -%}<div class="ph-privacy__text{% if s.prefs_text_mobile != blank %} ph-txt-d{% endif %}">{{ s.prefs_text }}</div>{%- endif -%}
+      {%- if s.prefs_text_mobile != blank -%}<div class="ph-privacy__text ph-txt-m">{{ s.prefs_text_mobile }}</div>{%- endif -%}
+      <ul class="ph-privacy__list" role="list">
+        {%- for b in prefs -%}
+          {%- assign key = b.settings.key -%}
+          <li class="ph-privacy__pref" {{ b.shopify_attributes }}>
+            {% render 'ph-icon', name: b.settings.icon %}
+            <div class="ph-privacy__pref-copy"><label class="ph-privacy__pref-title" for="ph-pref-{{ key }}-{{ section.id }}"><span{% if b.settings.title_mobile != blank %} class="ph-txt-d"{% endif %}>{{ b.settings.title }}</span>{%- if b.settings.title_mobile != blank -%}<span class="ph-txt-m">{{ b.settings.title_mobile }}</span>{%- endif -%}</label><p class="ph-privacy__pref-text" id="ph-pref-{{ key }}-d-{{ section.id }}"><span{% if b.settings.text_mobile != blank %} class="ph-txt-d"{% endif %}>{{ b.settings.text }}</span>{%- if b.settings.text_mobile != blank -%}<span class="ph-txt-m">{{ b.settings.text_mobile }}</span>{%- endif -%}</p></div>
+            {%- if key == 'necessary' -%}<span class="ph-privacy__always">{{ s.always_label }}</span>{%- endif -%}
+            <span class="ph-switch"><input type="checkbox" role="switch" id="ph-pref-{{ key }}-{{ section.id }}" data-ph-pref="{{ key }}" aria-describedby="ph-pref-{{ key }}-d-{{ section.id }}"{% if key == 'necessary' %} checked disabled{% endif %}><span aria-hidden="true"></span></span>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="ph-privacy__actions">
+        <button type="button" class="ph-btn ph-btn--line" data-ph-prefs-refuse>{{ s.refuse_label }}</button>
+        <button type="submit" class="ph-btn ph-btn--line">{{ s.save_label }}</button>
+        <button type="button" class="ph-btn ph-btn--yellow" data-ph-consent="accept">{{ s.accept_label }}</button>
+      </div>
+      <p class="ph-privacy__status" role="status" hidden data-ph-prefs-status></p>
+    </form>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Données et cookies PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "prefs_title", "label": "Titre de la gestion des cookies", "default": "Gestion des cookies" },
+    { "type": "richtext", "id": "prefs_text", "label": "Texte de la gestion des cookies" },
+    { "type": "richtext", "id": "prefs_text_mobile", "label": "Texte au téléphone (facultatif)" },
+    { "type": "text", "id": "always_label", "label": "Mention « toujours actifs »", "default": "Toujours actifs" },
+    { "type": "text", "id": "refuse_label", "label": "Bouton « tout refuser »", "default": "Tout refuser" },
+    { "type": "text", "id": "save_label", "label": "Bouton d'enregistrement des choix", "default": "Personnaliser" },
+    { "type": "text", "id": "accept_label", "label": "Bouton « tout accepter »", "default": "Tout accepter" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 20 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "blocks": [
+    { "type": "info", "name": "Rubrique d'information", "settings": [
+      { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "devis-document" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" }
+    ] },
+    { "type": "pref", "name": "Préférence de cookies", "settings": [
+      { "type": "select", "id": "key", "label": "Catégorie", "default": "audience", "options": [{ "value": "necessary", "label": "Nécessaires (toujours actifs)" }, { "value": "audience", "label": "Mesure d'audience" }, { "value": "external", "label": "Contenus externes" }] },
+      { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "graphique" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },
+      { "type": "text", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" }
+    ] }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "Données et cookies PHASE" }]
+}
+{% endschema %}

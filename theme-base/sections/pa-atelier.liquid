@@ -1,0 +1,120 @@
+{%- comment -%}
+  PARENTHÈSE : fiche d'un atelier, suite de l'ouverture (planche 03) :
+  - « Informations pratiques » (date, durée, tarif par personne, lieu, tenue) et « Disponibilités » : places restantes
+    sur la capacité, jauge, « Réserver ma place » — tout est lu dans les « Réglages du cabinet » (identifiant) ; une
+    disponibilité d'exemple est annoncée comme une démonstration ;
+  - « Questions fréquentes » en cartes et « Ateliers similaires » (données de chaque atelier) ;
+  - téléphone : barre fixe avec le tarif, la durée et « Réserver ma place ».
+  Blocs : « Question », « Atelier similaire ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign questions = section.blocks | where: 'type', 'question'
+  assign related = section.blocks | where: 'type', 'related'
+-%}
+<section class="pa-section pa-atelier" data-pa-atelier="{{ s.atelier_id | escape }}">
+  <div class="pa-wrap">
+    <div class="pa-atelier__grid">
+      <div class="pa-atelier__info">
+        <h2 class="pa-title pa-title--sm">{{ s.info_title }}</h2>
+        <ul class="pa-meta pa-meta--stack" role="list">
+          <li>{% render 'pa-icon', name: 'calendar' %}<span data-pa-f="when-full">{{ s.when }}</span></li>
+          <li>{% render 'pa-icon', name: 'clock' %}<span data-pa-f="duration">{{ s.duration }}</span></li>
+          <li>{% render 'pa-icon', name: 'tag' %}<span><span data-pa-f="price">{{ s.price }}</span> {{ s.price_suffix }}</span></li>
+          <li>{% render 'pa-icon', name: 'pin' %}<span><strong>{{ s.place_title }}</strong><small data-pa-f="place">{{ s.place }}</small></span></li>
+          {%- if s.outfit_title != blank -%}<li>{% render 'pa-icon', name: 'mat' %}<span><strong>{{ s.outfit_title }}</strong><small>{{ s.outfit_text }}</small></span></li>{%- endif -%}
+        </ul>
+      </div>
+      <div class="pa-atelier__seats">
+        <h2 class="pa-title pa-title--sm">{{ s.seats_title }}</h2>
+        <p class="pa-atelier__count">{% render 'pa-icon', name: 'people' %}<span data-pa-f="seats">{{ s.seats_fallback }}</span></p>
+        <div class="pa-gauge" role="presentation"><span data-pa-f="gauge" style="width: 0%"></span></div>
+        <p class="pa-atelier__state" data-pa-f="state" hidden></p>
+        <a class="pa-btn pa-btn--forest pa-btn--block" href="{{ s.book_link | default: '/pages/prendre-rendez-vous' }}" data-pa-book="atelier:{{ s.atelier_id | escape }}" data-pa-f="book">{{ s.book_label }}</a>
+      </div>
+    </div>
+    <div class="pa-atelier__grid pa-atelier__grid--more">
+      {%- if questions.size > 0 -%}
+        <div class="pa-faq pa-faq--cards" data-pa-faq>
+          <h2 class="pa-title pa-title--sm">{{ s.faq_title }}</h2>
+          <div class="pa-acc">
+            {%- for block in questions -%}
+              <div class="pa-acc__item" {{ block.shopify_attributes }}>
+                <h3 class="pa-acc__q"><button type="button" aria-expanded="false" aria-controls="pa-acc-{{ block.id }}" data-pa-acc>{{ block.settings.question }}{% render 'pa-icon', name: 'down', class: 'pa-acc__ico' %}</button></h3>
+                <div class="pa-acc__a" id="pa-acc-{{ block.id }}" hidden>{{ block.settings.answer }}</div>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+      {%- if related.size > 0 -%}
+        <div class="pa-atelier__related">
+          <h2 class="pa-title pa-title--sm">{{ s.related_title }}</h2>
+          <ul role="list">
+            {%- for block in related -%}
+              {%- assign b = block.settings -%}
+              <li class="pa-mini" data-pa-atelier="{{ b.atelier_id | escape }}" {{ block.shopify_attributes }}>
+                {% render 'pa-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position, class: 'pa-mini__img' %}
+                <div>
+                  <h3 class="pa-mini__title">{{ b.title }}</h3>
+                  <p class="pa-mini__meta">{% render 'pa-icon', name: 'calendar' %}<span data-pa-f="when-abbr">{{ b.when }}</span></p>
+                  <p class="pa-mini__meta">{% render 'pa-icon', name: 'clock' %}<span><span data-pa-f="price">{{ b.price }}</span> – <span data-pa-f="duration-compact">{{ b.duration }}</span></span></p>
+                  <a class="pa-link pa-link--plain" href="{{ b.link }}">{{ s.related_link }}{% render 'pa-icon', name: 'arrow' %}<span class="visually-hidden"> : {{ b.title }}</span></a>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+  <div class="pa-mbar" data-pa-mbar>
+    <p>{% render 'pa-icon', name: 'people' %}<span><strong data-pa-f="price">{{ s.price }}</strong><small data-pa-f="duration">{{ s.duration }}</small></span></p>
+    <a class="pa-btn pa-btn--forest" href="{{ s.book_link | default: '/pages/prendre-rendez-vous' }}" data-pa-book="atelier:{{ s.atelier_id | escape }}" data-pa-f="book">{{ s.book_label }}</a>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Infos de l'atelier",
+  "class": "pa-atelier-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "text", "id": "atelier_id", "label": "Identifiant de l'atelier", "info": "Date, durée, tarif, lieu et places suivent les « Réglages du cabinet »." },
+    { "type": "text", "id": "info_title", "label": "Titre des informations", "default": "Informations pratiques" },
+    { "type": "text", "id": "when", "label": "Date affichée sans script" },
+    { "type": "text", "id": "duration", "label": "Durée affichée sans script" },
+    { "type": "text", "id": "price", "label": "Tarif affiché sans script" },
+    { "type": "text", "id": "price_suffix", "label": "Mention du tarif", "default": "par personne" },
+    { "type": "text", "id": "place_title", "label": "Lieu : titre", "default": "Au cabinet" },
+    { "type": "text", "id": "place", "label": "Lieu : détail affiché sans script" },
+    { "type": "text", "id": "outfit_title", "label": "Conseil : titre", "default": "Tenue confortable recommandée" },
+    { "type": "text", "id": "outfit_text", "label": "Conseil : texte" },
+    { "type": "text", "id": "seats_title", "label": "Titre des disponibilités", "default": "Disponibilités" },
+    { "type": "text", "id": "seats_fallback", "label": "Places affichées sans script" },
+    { "type": "text", "id": "book_label", "label": "Bouton de réservation", "default": "Réserver ma place" },
+    { "type": "url", "id": "book_link", "label": "Page de réservation" },
+    { "type": "text", "id": "faq_title", "label": "Titre des questions", "default": "Questions fréquentes" },
+    { "type": "text", "id": "related_title", "label": "Titre des ateliers similaires", "default": "Ateliers similaires" },
+    { "type": "text", "id": "related_link", "label": "Lien des ateliers similaires", "default": "Voir l'atelier" }
+  ],
+  "blocks": [
+    { "type": "question", "name": "Question", "settings": [{ "type": "text", "id": "question", "label": "Question", "default": "Faut-il une expérience préalable ?" }, { "type": "richtext", "id": "answer", "label": "Réponse" }] },
+    {
+      "type": "related", "name": "Atelier similaire",
+      "settings": [
+        { "type": "text", "id": "atelier_id", "label": "Identifiant de l'atelier" },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "title", "label": "Titre", "default": "Découvrir la relaxation" },
+        { "type": "text", "id": "when", "label": "Date affichée sans script" },
+        { "type": "text", "id": "duration", "label": "Durée affichée sans script" },
+        { "type": "text", "id": "price", "label": "Tarif affiché sans script" },
+        { "type": "url", "id": "link", "label": "Page de l'atelier" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Infos de l'atelier" }]
+}
+{% endschema %}

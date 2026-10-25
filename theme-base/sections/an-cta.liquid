@@ -1,0 +1,27 @@
+{%- comment -%}
+  ATELIER NUANCE : bandeau pêche final « Prête pour un moment rien qu'à vous ? » et bouton chocolat (planche 04).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-cta">
+  <div class="an-wrap an-cta__inner">
+    <div>
+      <h2 class="an-title an-title--md">{{ s.heading | escape | newline_to_br }}</h2>
+      {%- if s.text != blank -%}<p class="an-cta__text">{{ s.text }}</p>{%- endif -%}
+    </div>
+    {%- if s.button_label != blank -%}<a class="an-btn an-btn--dark" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"><span>{{ s.button_label }}</span>{% render 'an-icon', name: 'arrow' %}</a>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau de rendez-vous",
+  "class": "an-cta-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Prête pour un moment rien qu'à vous ?" },
+    { "type": "text", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Réserver mon rendez-vous" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+  ],
+  "presets": [{ "name": "Bandeau de rendez-vous" }]
+}
+{% endschema %}

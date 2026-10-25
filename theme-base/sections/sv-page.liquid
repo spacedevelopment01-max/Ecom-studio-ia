@@ -1,0 +1,18 @@
+{%- comment -%}
+  SILLON V2 : réglages propres à une page (planches 01 à 03) : variante du pied de page (sombre pour l'accueil et la
+  fiche, clair pour le rituel, la marque, le carnet et l'article, liens légaux seuls pour l'achat et l'aide ;
+  « aide » : liens légaux sur ordinateur, pied sombre à rubriques au téléphone).
+  Rien n'est affiché à cet endroit.
+{%- endcomment -%}
+<div class="sv-page-mark" data-sv-foot="{{ section.settings.footer }}" hidden></div>
+
+{% schema %}
+{
+  "name": "Réglages de la page",
+  "class": "sv-page-section",
+  "settings": [
+    { "type": "select", "id": "footer", "label": "Pied de page de cette page", "default": "dark", "options": [{ "value": "dark", "label": "Sombre (signature fine)" }, { "value": "light", "label": "Clair (grand nom)" }, { "value": "legal", "label": "Liens légaux seuls" }, { "value": "help", "label": "Aide (liens légaux ; pied sombre à rubriques au téléphone)" }] }
+  ],
+  "presets": [{ "name": "Réglages de la page" }]
+}
+{% endschema %}

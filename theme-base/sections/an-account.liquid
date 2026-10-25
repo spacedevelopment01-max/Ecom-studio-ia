@@ -1,0 +1,143 @@
+{%- comment -%}
+  ATELIER NUANCE : espace client (planche 06) : Mes rendez-vous (à venir, précédents), Mes informations, Mes
+  préférences, Se déconnecter. Rempli par atelier-nuance.js : en service réel, avec le lien sécurisé du client (jeton,
+  jamais par l'e-mail seul) ; en démonstration, avec des données fictives étiquetées « Données de démonstration ».
+  Sans accès : formulaire de connexion par lien e-mail (réponse neutre) ou état « lien expiré ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-account" data-an-account>
+  <h1 class="visually-hidden">{{ s.nav_title }}</h1>
+  <div class="an-wrap an-account__grid">
+    <nav class="an-account__nav" aria-label="{{ s.nav_title | escape }}" data-an-account-nav hidden>
+      <p class="an-account__nav-title">{{ s.nav_title }}</p>
+      <button type="button" aria-current="page" data-an-tab="appointments">{{ s.tab_appointments }}</button>
+      <button type="button" data-an-tab="info">{{ s.tab_info }}</button>
+      <button type="button" data-an-tab="prefs">{{ s.tab_prefs }}</button>
+      <button type="button" data-an-logout>{{ s.tab_logout }}</button>
+    </nav>
+    <div class="an-account__main">
+      <div data-an-acc-view="appointments" hidden>
+        <div class="an-account__head"><h2 class="an-title an-title--lg" tabindex="-1">{{ s.heading }}</h2><p class="an-note" data-an-acc-demo hidden>{{ s.demo_label }}</p></div>
+        <h2 class="an-account__sub">{{ s.upcoming_title }}</h2>
+        <div data-an-upcoming></div>
+        <h2 class="an-account__sub an-account__sub--rule">{{ s.past_title }}</h2>
+        <div data-an-past></div>
+        <template data-an-tpl="empty-past"><div class="an-account__empty">{% render 'an-icon', name: 'calendar' %}<p>{{ s.past_empty }}</p><p class="an-muted">{{ s.past_empty_text }}</p></div></template>
+        <template data-an-tpl="empty-upcoming"><div class="an-account__empty">{% render 'an-icon', name: 'calendar' %}<p>{{ s.upcoming_empty }}</p><a class="an-btn an-btn--peach an-btn--sm" href="{{ s.book_link | default: '/pages/prendre-rendez-vous' }}">{{ s.book_label }}</a></div></template>
+        <template data-an-tpl="photo">{% render 'an-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position %}</template>
+      </div>
+      <div data-an-acc-view="info" hidden>
+        <h2 class="an-title an-title--lg" tabindex="-1">{{ s.tab_info }}</h2>
+        <form class="an-form an-account__form" novalidate data-an-info-form>
+          <div class="an-form__row an-form__row--2">
+            <div class="an-field"><label for="an-ai-first-{{ section.id }}">{{ s.first_label }}</label><input id="an-ai-first-{{ section.id }}" name="firstName" autocomplete="given-name" required></div>
+            <div class="an-field"><label for="an-ai-last-{{ section.id }}">{{ s.last_label }}</label><input id="an-ai-last-{{ section.id }}" name="lastName" autocomplete="family-name" required></div>
+          </div>
+          <div class="an-field"><label for="an-ai-email-{{ section.id }}">{{ s.email_label }}</label><input id="an-ai-email-{{ section.id }}" name="email" type="email" readonly aria-describedby="an-ai-email-help-{{ section.id }}"><p class="an-muted" id="an-ai-email-help-{{ section.id }}">{{ s.email_help }}</p></div>
+          <div class="an-field"><label for="an-ai-phone-{{ section.id }}">{{ s.phone_label }}</label><input id="an-ai-phone-{{ section.id }}" name="phone" type="tel" autocomplete="tel" required></div>
+          <button type="submit" class="an-btn an-btn--terra">{{ s.save_label }}</button>
+          <p class="an-form__status" role="status" aria-live="polite" data-an-status hidden></p>
+        </form>
+      </div>
+      <div data-an-acc-view="prefs" hidden>
+        <h2 class="an-title an-title--lg" tabindex="-1">{{ s.tab_prefs }}</h2>
+        <form class="an-form an-account__form" novalidate data-an-prefs-form>
+          <div class="an-field"><label for="an-ap-staff-{{ section.id }}">{{ s.pref_staff_label }}</label><select id="an-ap-staff-{{ section.id }}" name="staff" data-an-pref-staff></select></div>
+          <div class="an-field"><label for="an-ap-note-{{ section.id }}">{{ s.pref_note_label }}</label><textarea id="an-ap-note-{{ section.id }}" name="note" rows="3" maxlength="600"></textarea></div>
+          <label class="an-check"><input type="checkbox" name="newsletter"> <span>{{ s.pref_newsletter_label }}</span></label>
+          <label class="an-check"><input type="checkbox" name="reminders"> <span>{{ s.pref_reminder_label }}</span></label>
+          <button type="submit" class="an-btn an-btn--terra">{{ s.save_label }}</button>
+          <p class="an-form__status" role="status" aria-live="polite" data-an-status hidden></p>
+        </form>
+      </div>
+      <div data-an-acc-view="login" hidden>
+        <h2 class="an-title an-title--lg" tabindex="-1" data-an-login-title>{{ s.login_title }}</h2>
+        <p class="an-account__lead" data-an-login-text>{{ s.login_text }}</p>
+        <form class="an-form an-account__form" novalidate data-an-login-form>
+          <div class="an-field" data-an-register-only hidden><label for="an-al-first-{{ section.id }}">{{ s.first_label }}</label><input id="an-al-first-{{ section.id }}" name="firstName" autocomplete="given-name"></div>
+          <div class="an-field"><label for="an-al-email-{{ section.id }}">{{ s.email_label }}</label><input id="an-al-email-{{ section.id }}" name="email" type="email" autocomplete="email" required><p class="an-field__error" data-an-err="email" hidden>{{ s.error_email }}</p></div>
+          <button type="submit" class="an-btn an-btn--dark">{{ s.login_submit }}</button>
+          <p class="an-form__status" role="status" aria-live="polite" data-an-status hidden></p>
+        </form>
+        <p class="an-account__switch"><button type="button" class="an-link" data-an-switch>{{ s.register_switch }}</button></p>
+      </div>
+      <div data-an-acc-view="expired" hidden>
+        <div class="an-account__empty an-account__empty--state">{% render 'an-icon', name: 'lock' %}<h2 class="an-title an-title--md" tabindex="-1">{{ s.expired_title }}</h2><p>{{ s.expired_text }}</p><a class="an-btn an-btn--terra an-btn--sm" href="{{ s.lookup_link | default: '/pages/retrouver-mon-rendez-vous' }}">{{ s.expired_button }}</a></div>
+      </div>
+      <div data-an-acc-view="error" hidden>
+        <div class="an-account__empty an-account__empty--state">{% render 'an-icon', name: 'wifi-off' %}<h2 class="an-title an-title--md" tabindex="-1">{{ s.network_title }}</h2><p>{{ s.network_text }}</p><button type="button" class="an-btn an-btn--terra an-btn--sm" data-an-retry>{{ s.retry_label }}</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="an-dialog" role="dialog" aria-modal="true" aria-labelledby="an-cancel-title-{{ section.id }}" data-an-cancel-dialog hidden>
+    <div class="an-dialog__panel an-cancel">
+      {% render 'an-icon', name: 'calendar', class: 'an-cancel__ico' %}
+      <h2 class="an-title an-title--sm" id="an-cancel-title-{{ section.id }}">{{ s.cancel_title }}</h2>
+      <p>{{ s.cancel_text }}</p>
+      <div class="an-cancel__appt" data-an-cancel-appt></div>
+      <button type="button" class="an-btn an-btn--line an-btn--block" data-an-cancel-back>{{ s.cancel_back }}</button>
+      <button type="button" class="an-btn an-btn--terra an-btn--block" data-an-cancel-confirm>{{ s.cancel_confirm }}</button>
+      <p class="an-form__status" role="alert" data-an-cancel-status hidden></p>
+      <h3 class="an-cancel__terms-title">{{ s.terms_title }}</h3>
+      <p class="an-cancel__terms" data-an-terms>{{ s.terms_todo }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Espace client du salon",
+  "class": "an-account-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Photo des rendez-vous" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "nav_title", "label": "Titre du menu", "default": "Mon espace" },
+    { "type": "text", "id": "tab_appointments", "label": "Onglet rendez-vous", "default": "Mes rendez-vous" },
+    { "type": "text", "id": "tab_info", "label": "Onglet informations", "default": "Mes informations" },
+    { "type": "text", "id": "tab_prefs", "label": "Onglet préférences", "default": "Mes préférences" },
+    { "type": "text", "id": "tab_logout", "label": "Déconnexion", "default": "Se déconnecter" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Mes rendez-vous" },
+    { "type": "text", "id": "demo_label", "label": "Mention de démonstration", "default": "Données de démonstration" },
+    { "type": "text", "id": "upcoming_title", "label": "Titre des rendez-vous à venir", "default": "À venir" },
+    { "type": "text", "id": "upcoming_empty", "label": "Aucun rendez-vous à venir", "default": "Aucun rendez-vous à venir." },
+    { "type": "text", "id": "book_label", "label": "Bouton de prise de rendez-vous", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "book_link", "label": "Page de prise de rendez-vous" },
+    { "type": "text", "id": "past_title", "label": "Titre des rendez-vous précédents", "default": "Rendez-vous précédents" },
+    { "type": "text", "id": "past_empty", "label": "Aucun rendez-vous précédent", "default": "Aucun rendez-vous précédent." },
+    { "type": "text", "id": "past_empty_text", "label": "Texte sans rendez-vous précédent", "default": "Vos rendez-vous passés apparaîtront ici." },
+    { "type": "header", "content": "Informations et préférences" },
+    { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "email_label", "label": "Adresse e-mail", "default": "Adresse e-mail" },
+    { "type": "text", "id": "email_help", "label": "Aide de l'e-mail", "default": "Pour changer d'adresse e-mail, contactez le salon." },
+    { "type": "text", "id": "phone_label", "label": "Téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "pref_staff_label", "label": "Professionnel préféré", "default": "Professionnel préféré" },
+    { "type": "text", "id": "pref_note_label", "label": "Note pour l'équipe", "default": "Ce que l'équipe doit savoir (facultatif)" },
+    { "type": "text", "id": "pref_newsletter_label", "label": "Lettre d'information", "default": "Recevoir la newsletter (nouveautés, inspirations, conseils)" },
+    { "type": "text", "id": "pref_reminder_label", "label": "Rappels", "default": "Recevoir un rappel par e-mail avant mes rendez-vous" },
+    { "type": "text", "id": "save_label", "label": "Bouton d'enregistrement", "default": "Enregistrer" },
+    { "type": "header", "content": "Connexion" },
+    { "type": "text", "id": "login_title", "label": "Titre de connexion", "default": "Se connecter à mon compte" },
+    { "type": "textarea", "id": "login_text", "label": "Texte de connexion", "default": "Indiquez votre adresse e-mail : si un compte lui correspond, vous recevez un lien de connexion sécurisé." },
+    { "type": "text", "id": "login_submit", "label": "Bouton de connexion", "default": "Recevoir mon lien de connexion" },
+    { "type": "text", "id": "register_switch", "label": "Lien vers la création de compte", "default": "Pas encore de compte ? Créer un compte" },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "expired_title", "label": "Titre du lien expiré", "default": "Ce lien a expiré" },
+    { "type": "textarea", "id": "expired_text", "label": "Texte du lien expiré", "default": "Pour protéger vos rendez-vous, les liens d'accès ont une durée limitée. Demandez un nouveau lien." },
+    { "type": "text", "id": "expired_button", "label": "Bouton du lien expiré", "default": "Retrouver mon rendez-vous" },
+    { "type": "url", "id": "lookup_link", "label": "Page « Retrouver mon rendez-vous »" },
+    { "type": "text", "id": "network_title", "label": "Titre de l'erreur réseau", "default": "Connexion impossible" },
+    { "type": "textarea", "id": "network_text", "label": "Texte de l'erreur réseau", "default": "Le service de rendez-vous ne répond pas. Vérifiez votre connexion puis réessayez." },
+    { "type": "text", "id": "retry_label", "label": "Bouton réessayer", "default": "Réessayer" },
+    { "type": "header", "content": "Annulation" },
+    { "type": "text", "id": "cancel_title", "label": "Titre de l'annulation", "default": "Annuler ce rendez-vous ?" },
+    { "type": "textarea", "id": "cancel_text", "label": "Texte de l'annulation", "default": "Êtes-vous sûr(e) de vouloir annuler ce rendez-vous ? Cette action est irréversible." },
+    { "type": "text", "id": "cancel_back", "label": "Bouton retour", "default": "Retour" },
+    { "type": "text", "id": "cancel_confirm", "label": "Bouton de confirmation", "default": "Confirmer l'annulation" },
+    { "type": "text", "id": "terms_title", "label": "Titre des conditions", "default": "Conditions à préciser" },
+    { "type": "textarea", "id": "terms_todo", "label": "Conditions par défaut", "default": "Les conditions d'annulation et de modification sont à préciser avant publication." }
+  ],
+  "presets": [{ "name": "Espace client du salon" }]
+}
+{% endschema %}

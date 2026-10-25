@@ -8,7 +8,6 @@
  * Sert aux preuves de la mission E (aperçus statiques, captures, tests) ; jamais exposé au client comme une démo.
  */
 import { curateOrbe, curateRive } from "./engine-demo-copy";
-import { curateFraise } from "./fraise-demo-copy";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -19,16 +18,19 @@ import { composeShop } from "../src/lib/engine/shop";
 import { loadProject, saveBrand, saveProduct, saveServices, saveStrategy, saveSettings } from "../src/lib/projects";
 import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
-import { conversionProject } from "./lot2c-fixtures";
 import { sillonProject, SILLON_DIR, SILLON_MEDIA } from "./sillon-fixtures";
+import { fraiseProject } from "./fraise-fixtures";
 import { kitProject, kitDir, KIT_MEDIA } from "./noctil-traverse-fixtures";
 import { shopKitProject, SHOP_KIT_MEDIA } from "./heuren-alcove-fixtures";
 import { ondeProject } from "./onde-fixtures";
 import { multiKitProject, MULTI_KIT_MEDIA } from "./museau-souple-fixtures";
 import type { DirectionId } from "../src/lib/theme/directions";
 import { tableSaisonProject, TS_MEDIA } from "./table-saison-fixtures";
+import { atelierNuanceProject, AN_MEDIA, AN_SERVICES } from "./atelier-nuance-fixtures";
+import { parentheseProject, PA_MEDIA, PA_SEANCES } from "./parenthese-fixtures";
+import { phaseProject, PHASE_MEDIA, PHASE_SERVICES } from "./phase-fixtures";
 
-export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "table-saison";
+export type DemoId = "fraise" | "onde" | "orbe" | "rive" | "sillon" | "noctil" | "traverse" | "heuren" | "alcove" | "museau-club" | "souple" | "table-saison" | "atelier-nuance" | "parenthese" | "phase";
 export const DEMO_PROVENANCE = "Issue #137 (19 octobre 2026) — démonstration du studio, identité du manifeste, visuels IA du kit privé sans personne, aucun paiement";
 
 type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string; category: string; direction: DirectionId; palette: string[]; photo: string; logo: string; images: { src: string; label: string }[]; business?: "products" | "services"; storeType?: "mono" | "multi" | "niche" };
@@ -36,7 +38,7 @@ type ManifestDemo = { id: DemoId; brand: string; product: string; sector: string
 /** Textes d'identité validés avec les démonstrations (accroche, résumé, offre) : les mêmes que les fixtures des lots 2B / 2C. */
 type MediaPlan = Record<string, { role: string; variant?: string }>;
 const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string; positioning: string; price: number | null; services?: ServiceProfile; variants?: { name: string; values: string[] }[]; facts?: { label: string; value: string }[]; media?: MediaPlan }> = {
-  fraise: { tagline: "Le goût fraise qui fait sourire.", summary: "Gummies tendres au goût fraise dans un flacon refermable.", story: "Une marque de démonstration autour d'un flacon de gummies à la fraise.", positioning: "Un flacon de gummies à la fraise, à poser sur la table de la cuisine ou à glisser dans un sac.", price: 2490 },
+  fraise: { tagline: "Votre rituel, côté fraise.", summary: "Gummies tendres au goût fraise dans un flacon refermable, en 1, 2 ou 3 flacons.", story: "Une marque de démonstration autour d’un flacon de gummies au goût fraise (confiserie).", positioning: "Un flacon de gummies au goût fraise, à emporter partout.", price: 1660 },
   onde: { tagline: "Écoutez. Posez. Repartez.", summary: "Casque graphite et noir mat, touches vertes pour repérer les commandes.", story: "Une marque de démonstration autour d'un casque graphite et vert.", positioning: "Un casque pour écouter chez soi, dans le train ou au studio, avec des commandes repérables d'un coup d'œil.", price: 14900 },
   orbe: {
     tagline: "Une lumière à vous, même en location.", summary: "Lampe nomade à silhouette arrondie. Trois finitions : Dune, Argile et Charbon.", story: "Une lampe à poser, sans travaux, pour se sentir chez soi dans un appartement loué.", positioning: "Une lampe à poser sur la table du dîner, le bureau ou la table de nuit : elle déplace l'ambiance avec elle.", price: 7900,
@@ -96,6 +98,24 @@ const IDENTITY: Record<DemoId, { tagline: string; summary: string; story: string
     tagline: "Le goût des bonnes choses. Le plaisir d'être ensemble.", summary: "Restaurant fictif de démonstration : cuisine de saison et esprit bistrot.", story: "Une cuisine de saison et une table qui rassemble, dans un lieu chaleureux à l'esprit bistrot.", positioning: "Restaurant de cuisine de saison (exemple fictif).", price: null,
     services: { ...emptyServiceProfile(), services: [{ key: "dejeuner", name: "Déjeuner", description: "Une carte de saison au déjeuner." }, { key: "diner", name: "Dîner", description: "Une atmosphère plus intime le soir." }, { key: "groupes", name: "Grandes tablées", description: "Repas de groupe et événements privés." }], contactMode: "form" },
     media: Object.fromEntries(TS_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
+  },
+  // ATELIER NUANCE (issue #177, salon de coiffure de la famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  "atelier-nuance": {
+    tagline: "Une nouvelle coupe. Une nouvelle énergie.", summary: "Salon de coiffure fictif de démonstration : coupe, couleur et soin.", story: "Un salon de coiffure contemporain, où l'expertise rencontre le bien-être.", positioning: "Salon de coiffure premium et chaleureux (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: AN_SERVICES.map((s) => ({ key: s.id, name: s.name, description: s.text })), contactMode: "booking" },
+    media: Object.fromEntries(AN_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
+  },
+  // PARENTHÈSE (cabinet de sophrologie fictif, famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  parenthese: {
+    tagline: "Un temps pour souffler. Une place pour vous.", summary: "Cabinet de sophrologie fictif de démonstration : séances individuelles, ateliers collectifs, interventions en entreprise.", story: "Un cabinet de sophrologie fictif pour faire une pause, relâcher les tensions et cultiver un mieux-être au quotidien.", positioning: "Cabinet de sophrologie calme et lumineux (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: PA_SEANCES.map((s) => ({ key: s.id, name: s.name, description: s.short })), contactMode: "booking" },
+    media: Object.fromEntries(PA_MEDIA.map((m) => [`${m.file}.webp`, { role: "lifestyle" }])),
+  },
+  // PHASE — Électricité (artisan électricien fictif, famille Services) : identité utilisée seulement pour la preuve d'adaptation.
+  phase: {
+    tagline: "Le courant passe. La confiance aussi.", summary: "Artisan électricien fictif de démonstration : installation, rénovation, tableau, éclairage et dépannage.", story: "Des installations pensées pour votre quotidien, du premier échange aux dernières finitions.", positioning: "Artisan électricien (exemple fictif).", price: null,
+    services: { ...emptyServiceProfile(), services: PHASE_SERVICES, contactMode: "form", contactModes: ["form"] },
+    media: Object.fromEntries(PHASE_MEDIA.map((m) => [m.file, { role: "lifestyle" }])),
   },
   rive: {
     tagline: "Un intérieur à votre façon de vivre.", summary: "Aménagement et décoration intérieure : intentions, usages, lumière et matières.", story: "Une étude d'intention à partir de vos usages, de la lumière et des matières.", positioning: "Des intérieurs pensés pièce par pièce à partir de vos usages, de la lumière et des matières, pour la maison comme pour un petit espace professionnel.", price: null,
@@ -171,16 +191,29 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
     const c = await tableSaisonProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
   }
+  // ATELIER NUANCE (issue #177) : salon composé par le moteur dans son thème puis rédigé d'après les six planches,
+  // photos du kit converties en WebP et suivies dans public/theme-assets/atelier-nuance/.
+  if (id === "atelier-nuance" && !options.direction) {
+    const c = await atelierNuanceProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
+  // PARENTHÈSE : cabinet composé par le moteur dans son thème puis rédigé d'après les six planches du brief,
+  // photos du kit converties en WebP et suivies dans public/theme-assets/parenthese/.
+  if (id === "parenthese" && !options.direction) {
+    const c = await parentheseProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
+  // PHASE — Électricité (25 octobre 2026) : artisan composé par le moteur dans son thème puis rédigé d'après les dix
+  // planches, photos lues dans le kit privé public/demo/phase/images/ (hors dépôt).
+  if (id === "phase" && !options.direction) {
+    const c = await phaseProject(userId);
+    return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: true };
+  }
+  // FRAISE GUMMIES (planches corrigées du 24 octobre 2026) : projet client composé par le moteur dans le thème « fraise »,
+  // puis rédigé d'après les sept planches (sections fg-*), photos lues dans le kit privé public/demo/fraise/v2/.
+  // La composition Lumora du lot 2C reste constructible par conversionProject(…, "fraise") pour les anciens contrôles.
   if (id === "fraise" && !options.direction) {
-    const c = await conversionProject(userId, id, path.join(process.cwd(), "public", "demo"), { testVideo: options.testVideo });
-    // Rédaction (consigne du 21 octobre, 19 h 50) : mêmes sections, textes vrais (ni avis, ni remise, ni garantie inventés).
-    curateFraise(c.spec);
-    // Le projet lui-même suit la même décision (vitamines fictives) : nom, catégorie et marque cohérents avec la vitrine,
-    // pour que les sections ajoutées ensuite par le studio reprennent le bon produit.
-    { const pr = loadProject(c.pid); if (pr.product) saveProduct(c.pid, { ...pr.product, name: "Gummies vitaminés goût fraise", category: "Vitamines en gummies (produit fictif)", summary: "Vitamines C, D3, B6 et B12 en gummies goût fraise, deux par jour. Produit et composition fictifs de démonstration." });
-      if (pr.brand) saveBrand(c.pid, { ...pr.brand, tagline: "Vos vitamines ont le goût de fraise.", story: "Une marque fictive de démonstration : des vitamines en gummies goût fraise, pour une routine qu'on a envie de garder." }); }
-    run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", "products", now(), c.pid);
-    saveSettings(c.pid, { ...loadProject(c.pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
+    const c = await fraiseProject(userId);
     return { pid: c.pid, spec: c.spec, demo: d, missing: c.missing, project: loadProject(c.pid), services: false };
   }
   const services = d.business === "services";
@@ -196,7 +229,7 @@ export async function demoProject(userId: string, id: DemoId, options: { directi
   run("UPDATE projects SET store_type = ?, business_type = ?, updated_at = ? WHERE id = ?", d.storeType ?? "mono", services ? "services" : "products", now(), pid);
   saveSettings(pid, { ...loadProject(pid).settings, storeKind: d.category as "services" | "catalog" | "specialty" });
   // Visuels : ceux du manifeste d'abord (rôle d'après l'étiquette), puis les autres images du dossier (scènes).
-  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "table-saison" ? kitDir(id) : path.join(process.cwd(), "public", "demo", id);
+  const dir = id === "sillon" ? SILLON_DIR : id === "noctil" || id === "traverse" || id === "heuren" || id === "alcove" || id === "museau-club" || id === "souple" || id === "table-saison" || id === "atelier-nuance" || id === "parenthese" ? kitDir(id) : id === "phase" ? path.join(process.cwd(), "public", "demo", "phase", "images") : path.join(process.cwd(), "public", "demo", id);
   const missing: string[] = [];
   const imported = new Set<string>();
   const put = async (file: string, role: string, extra: Record<string, unknown> = {}) => {

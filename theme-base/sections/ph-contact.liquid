@@ -1,0 +1,129 @@
+{%- comment -%}
+  PHASE : page Contact (planches 04 et 09) — sur-titre, titre, texte, coordonnées (« à renseigner » tant que le client
+  ne les a pas données ; un numéro ou une adresse renseignés deviennent des liens), photo, formulaire (nom, e-mail,
+  téléphone facultatif, objet, message, accord) avec erreurs près des champs et résumé, bouton occupé pendant l'envoi.
+  Démonstration : rien n'est envoyé. Boutique : formulaire de contact de la plateforme (aucun succès fabriqué).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign subjects = s.subjects | split: ','
+-%}
+<section class="ph ph-contact ph-pad" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-contact__intro">
+      <div class="ph-contact__head">
+        {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {% render 'ph-title', text: s.heading, tag: 'h1', class: 'ph-contact__title' %}
+        {%- if s.text != blank -%}<div class="ph-contact__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<div class="ph-contact__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
+      </div>
+      <ul class="ph-contact__coords" role="list">
+        <li>{% render 'ph-icon', name: 'telephone' %}{%- if s.phone_link != blank -%}<a href="tel:{{ s.phone_link }}">{{ s.phone }}</a>{%- else -%}<span>{{ s.phone }}</span>{%- endif -%}</li>
+        <li>{% render 'ph-icon', name: 'email' %}{%- if s.email_link != blank -%}<a href="mailto:{{ s.email_link }}">{{ s.email }}</a>{%- else -%}<span>{{ s.email }}</span>{%- endif -%}</li>
+        <li>{% render 'ph-icon', name: 'lieu-repere' %}<span>{{ s.area }}</span></li>
+        <li>{% render 'ph-icon', name: 'horloge' %}<span>{{ s.hours }}</span></li>
+      </ul>
+      {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'ph-contact__img', sizes: '(min-width: 1080px) 30vw, 100vw', caption: s.caption %}
+    </div>
+    {%- if s.circuit -%}<div class="ph-contact__deco" aria-hidden="true">{% render 'ph-art', name: 'contact' %}{%- if s.note != blank -%}<p class="ph-note ph-contact__note">{{ s.note | newline_to_br }}</p>{%- endif -%}</div>{%- endif -%}
+    <div class="ph-contact__card">
+      <h2 class="ph-contact__form-title">{{ s.form_title }}</h2>
+      {%- if s.form_text_mobile != blank -%}<p class="ph-contact__form-text ph-only-m">{{ s.form_text_mobile }}</p>{%- endif -%}
+      {%- form 'contact', id: 'ph-contact-form', class: 'ph-form', novalidate: 'novalidate', data-ph-form: 'contact' -%}
+        <input type="hidden" name="contact[form]" value="{{ s.form_title | escape }}">
+        <div class="ph-form__summary" role="alert" tabindex="-1" hidden data-ph-summary></div>
+        <div class="ph-form__grid">
+          <div class="ph-field ph-field--full" data-ph-field="name">
+            <label for="ph-c-name-{{ section.id }}">{{ s.name_label }} <span aria-hidden="true">*</span></label>
+            <input id="ph-c-name-{{ section.id }}" type="text" name="contact[name]" autocomplete="name" required placeholder="{{ s.name_ph | escape }}" aria-describedby="ph-c-name-err-{{ section.id }}">
+            <p class="ph-field__err" id="ph-c-name-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+          <div class="ph-field" data-ph-field="email">
+            <label for="ph-c-email-{{ section.id }}">{{ s.email_label }} <span aria-hidden="true">*</span></label>
+            <input id="ph-c-email-{{ section.id }}" type="email" name="contact[email]" autocomplete="email" required placeholder="{{ s.email_ph | escape }}" aria-describedby="ph-c-email-err-{{ section.id }}">
+            <p class="ph-field__err" id="ph-c-email-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+          <div class="ph-field" data-ph-field="phone">
+            <label for="ph-c-phone-{{ section.id }}">{{ s.phone_label }} <span class="ph-field__opt">{{ s.optional_label }}</span></label>
+            <input id="ph-c-phone-{{ section.id }}" type="tel" name="contact[phone]" autocomplete="tel" placeholder="{{ s.phone_ph | escape }}" data-ph-check="phone" aria-describedby="ph-c-phone-err-{{ section.id }}">
+            <p class="ph-field__err" id="ph-c-phone-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+          <div class="ph-field ph-field--full" data-ph-field="subject">
+            <label for="ph-c-subject-{{ section.id }}">{{ s.subject_label }} <span aria-hidden="true">*</span></label>
+            <span class="ph-select"><select id="ph-c-subject-{{ section.id }}" name="contact[subject]" required aria-describedby="ph-c-subject-err-{{ section.id }}"><option value="">{{ s.subject_ph }}</option>{%- for o in subjects -%}<option>{{ o | strip }}</option>{%- endfor -%}</select>{% render 'ph-icon', name: 'chevron-bas', stroke: 2 %}</span>
+            <p class="ph-field__err" id="ph-c-subject-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+          <div class="ph-field ph-field--full" data-ph-field="body">
+            <label for="ph-c-body-{{ section.id }}">{{ s.message_label }} <span aria-hidden="true">*</span></label>
+            <textarea id="ph-c-body-{{ section.id }}" name="contact[body]" rows="4" required placeholder="{{ s.message_ph | escape }}" aria-describedby="ph-c-body-err-{{ section.id }}"></textarea>
+            <p class="ph-field__err" id="ph-c-body-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+          <div class="ph-field ph-field--full ph-field--check" data-ph-field="consent">
+            <label class="ph-check"><input type="checkbox" name="contact[consent]" value="oui" required aria-describedby="ph-c-consent-err-{{ section.id }}"><span><span{% if s.consent_label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.consent_label }}</span>{%- if s.consent_label_mobile != blank -%}<span class="ph-txt-m">{{ s.consent_label_mobile }}</span>{%- endif -%}{%- if s.privacy_link != blank -%} <a href="{{ s.privacy_link }}">{{ s.privacy_label }}</a>{%- endif -%}</span></label>
+            <p class="ph-field__err" id="ph-c-consent-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+          </div>
+        </div>
+        <button type="submit" class="ph-btn ph-btn--yellow ph-form__send" data-ph-send><span data-ph-send-label>{{ s.send_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</button>
+        <p class="ph-form__status" role="status" tabindex="-1" hidden data-ph-status></p>
+        {%- if form.posted_successfully? -%}<p class="ph-form__status is-ok" role="status">{% render 'ph-icon', name: 'validation', stroke: 2 %}<span>{{ s.done_label }}</span></p>{%- endif -%}
+        {%- if form.errors -%}<p class="ph-form__status is-error" role="alert">{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span>{{ s.server_error_label }}</span></p>{%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Contact" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Parlons de\n[y]votre projet.[/y]" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 80 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 0.5, "default": 50 },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+    { "type": "header", "content": "Coordonnées" },
+    { "type": "text", "id": "phone", "label": "Téléphone affiché", "default": "Téléphone à renseigner" },
+    { "type": "text", "id": "phone_link", "label": "Numéro à composer (lien)" },
+    { "type": "text", "id": "email", "label": "E-mail affiché", "default": "E-mail à renseigner" },
+    { "type": "text", "id": "email_link", "label": "Adresse e-mail (lien)" },
+    { "type": "text", "id": "area", "label": "Zone d'intervention", "default": "Zone d'intervention à préciser" },
+    { "type": "text", "id": "hours", "label": "Horaires", "default": "Horaires à renseigner" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "caption", "label": "Légende sur la photo" },
+    { "type": "checkbox", "id": "circuit", "label": "Trait de circuit", "default": true },
+    { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
+    { "type": "header", "content": "Formulaire" },
+    { "type": "text", "id": "form_title", "label": "Titre du formulaire", "default": "Envoyez-nous un message" },
+    { "type": "text", "id": "form_text_mobile", "label": "Texte sous le titre du formulaire (téléphone)" },
+    { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "name_ph", "label": "Exemple de nom", "default": "Votre nom" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "email_ph", "label": "Exemple d'e-mail", "default": "votre@email.fr" },
+    { "type": "text", "id": "phone_label", "label": "Téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone_ph", "label": "Exemple de téléphone", "default": "Votre numéro" },
+    { "type": "text", "id": "optional_label", "label": "Mention « facultatif »", "default": "(facultatif)" },
+    { "type": "text", "id": "subject_label", "label": "Objet", "default": "Objet" },
+    { "type": "text", "id": "subject_ph", "label": "Objet : invitation", "default": "Sélectionnez un sujet" },
+    { "type": "text", "id": "subjects", "label": "Objets (séparés par des virgules)", "default": "Une question, Un projet d'installation ou de rénovation, Un dépannage, Autre demande" },
+    { "type": "text", "id": "message_label", "label": "Message", "default": "Message" },
+    { "type": "text", "id": "message_ph", "label": "Exemple de message", "default": "Votre message..." },
+    { "type": "text", "id": "consent_label", "label": "Accord", "default": "J'accepte que mes données soient utilisées pour traiter ma demande conformément à notre" },
+    { "type": "text", "id": "consent_label_mobile", "label": "Accord au téléphone (facultatif)" },
+    { "type": "text", "id": "privacy_label", "label": "Lien vers la politique de confidentialité", "default": "politique de confidentialité." },
+    { "type": "url", "id": "privacy_link", "label": "Adresse de la politique de confidentialité" },
+    { "type": "text", "id": "send_label", "label": "Bouton d'envoi", "default": "Envoyer mon message" },
+    { "type": "text", "id": "done_label", "label": "Message envoyé (boutique)", "default": "Merci, votre message a bien été transmis." },
+    { "type": "text", "id": "server_error_label", "label": "Erreur renvoyée par la plateforme", "default": "Le message n'a pas pu être transmis. Vérifiez les champs et réessayez." },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 18 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "presets": [{ "name": "Contact PHASE" }]
+}
+{% endschema %}

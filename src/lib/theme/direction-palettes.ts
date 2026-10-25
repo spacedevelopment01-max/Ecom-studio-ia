@@ -56,6 +56,9 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
   alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
   "table-saison": { primary: "#6E1F2D", secondary: "#E8DFCF", accent: "#6E1F2D", light: "#F6F0E5", dark: "#2A2421" }, // bordeaux des boutons et du pied, lin, ivoire, encre chaude (issue #175)
+  "atelier-nuance": { primary: "#985A42", secondary: "#EADFD2", accent: "#F3C6AC", light: "#F8F3ED", dark: "#2E211C" }, // terracotta des boutons (assombri pour la lisibilité des liens), travertin, pêche des appels, ivoire, chocolat du pied (issue #177)
+  parenthese: { primary: "#22362B", secondary: "#DCDFCD", accent: "#F2C9A9", light: "#F8F3EB", dark: "#1A241D" }, // vert forêt des boutons, sauge des panneaux, abricot des appels, ivoire chaud
+  phase: { primary: "#17244E", secondary: "#F4F6F9", accent: "#F2F55C", light: "#FFFFFF", dark: "#141B30" }, // bleu nuit (un ton plus bleu que le fond de l'en-tête, pour rester distinct de Brut) de l'en-tête et des boutons, gris clair des cadres, jaune électrique des appels, blanc
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 

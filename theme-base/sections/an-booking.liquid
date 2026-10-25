@@ -1,0 +1,275 @@
+{%- comment -%}
+  ATELIER NUANCE : prise de rendez-vous en cinq étapes (planche 02) : Prestations → Avec qui ? → Créneau → Coordonnées
+  → Confirmation, plus l'écran « Ce créneau vient d'être réservé » (planche 06). Les listes, le calendrier et les
+  créneaux sont calculés par atelier-nuance-core.js à partir des « Réglages du salon » (source unique) ; en service
+  réel, chaque créneau est revérifié et réservé par le studio dans une transaction.
+  Démonstration : simulation annoncée « Simulation — aucun rendez-vous réel », rien n'est envoyé.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-booking" data-an-booking data-step="1">
+  <div class="an-wrap">
+    <h1 class="visually-hidden">{{ s.page_title }}</h1>
+    <ol class="an-progress" role="list" aria-label="{{ s.progress_label | escape }}">
+      {%- assign steps = s.step_labels | split: ',' -%}
+      {%- for st in steps -%}
+        <li class="an-progress__step" data-an-progress="{{ forloop.index }}"><span class="an-progress__dot" aria-hidden="true">{{ forloop.index }}</span><span class="an-progress__label">{{ st | strip }}</span></li>
+      {%- endfor -%}
+    </ol>
+    <p class="visually-hidden" aria-live="polite" data-an-live></p>
+
+    {%- comment -%} Étape 1 : prestation {%- endcomment -%}
+    <div class="an-pane an-pane--1" data-an-pane="1">
+      <div class="an-pane__main">
+        <div class="an-pane__head">
+          <h2 class="an-step-title" tabindex="-1">{{ s.title1 | escape | newline_to_br }}</h2>
+          <p class="an-note an-note--side" data-an-demo-note>{{ s.note }}</p>
+        </div>
+        <div class="an-choices" role="radiogroup" aria-label="{{ s.title1 | escape }}" data-an-services></div>
+        <p class="an-error" data-an-err="service" hidden>{{ s.error_service }}</p>
+        <div class="an-pane__nav">
+          <a class="an-btn an-btn--back" href="{{ s.back_link | default: '/pages/prestations' }}" data-an-back-link>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></a>
+          <button type="button" class="an-btn an-btn--peach" data-an-next><span>{{ s.continue_label }}</span>{% render 'an-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+      <div class="an-pane__aside an-pane__aside--photo">{% render 'an-img', image: s.image_step1, asset: s.image_step1_asset, alt: '', pos: s.image_step1_position %}</div>
+    </div>
+
+    {%- comment -%} Étape 2 : professionnel {%- endcomment -%}
+    <div class="an-pane an-pane--2" data-an-pane="2" hidden>
+      <div class="an-pane__main an-pane__main--full">
+        <div class="an-pane__head">
+          <h2 class="an-step-title" tabindex="-1">{{ s.title2 }}</h2>
+          <p class="an-note an-note--side" data-an-demo-note>{{ s.note }}</p>
+        </div>
+        <div class="an-staff" role="radiogroup" aria-label="{{ s.title2 | escape }}" data-an-staff></div>
+        <div class="an-recap-line">
+          <h2 class="an-recap-line__title">{{ s.recap2_title }}</h2>
+          <div class="an-recap-line__body">
+            {% render 'an-img', image: s.image_summary, asset: s.image_summary_asset, alt: '', pos: s.image_summary_position, class: 'an-recap-line__img' %}
+            <div><p class="an-recap-line__name" data-an-sum="service"></p><p class="an-recap-line__dur" data-an-sum="duration"></p></div>
+            <p class="an-recap-line__price" data-an-sum="price"></p>
+          </div>
+        </div>
+        <div class="an-pane__nav">
+          <button type="button" class="an-btn an-btn--back" data-an-prev>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></button>
+          <button type="button" class="an-btn an-btn--peach" data-an-next><span>{{ s.continue_label }}</span>{% render 'an-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Étape 3 : créneau {%- endcomment -%}
+    <div class="an-pane an-pane--3" data-an-pane="3" hidden>
+      <div class="an-pane__main an-pane__main--full">
+        <button type="button" class="an-mback" data-an-prev>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></button>
+        <div class="an-pane__head">
+          <h2 class="an-step-title" tabindex="-1">{{ s.title3 }}</h2>
+          <p class="an-note an-note--side" data-an-demo-note>{{ s.note }}</p>
+        </div>
+        <div class="an-slotpick">
+          <div class="an-cal" data-an-cal></div>
+          <div class="an-slotpick__right">
+            <h2 class="an-slotpick__date" data-an-day-title></h2>
+            <div class="an-slots" role="radiogroup" data-an-slots></div>
+            <p class="an-empty" data-an-no-slot hidden>{% render 'an-icon', name: 'calendar-x' %}<span>{{ s.no_slot_text }}</span></p>
+            <p class="an-error" data-an-err="time" hidden>{{ s.error_time }}</p>
+            <div class="an-summary an-summary--box" data-an-summary-box>
+              <h2 class="an-summary__title">{{ s.summary_title }}</h2>
+              <ul role="list" class="an-summary__list">
+                <li>{% render 'an-icon', name: 'calendar' %}<span data-an-sum="when"></span></li>
+                <li>{% render 'an-icon', name: 'scissors' %}<span data-an-sum="service-line"></span></li>
+                <li>{% render 'an-icon', name: 'user' %}<span data-an-sum="staff"></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="an-pane__nav">
+          <button type="button" class="an-btn an-btn--back" data-an-prev>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></button>
+          <button type="button" class="an-btn an-btn--peach" data-an-next><span>{{ s.continue_label }}</span>{% render 'an-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Étape 4 : coordonnées {%- endcomment -%}
+    <div class="an-pane an-pane--4" data-an-pane="4" hidden>
+      <div class="an-pane__main an-pane__main--full">
+        <button type="button" class="an-mback" data-an-prev>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></button>
+        <div class="an-pane__head">
+          <h2 class="an-step-title" tabindex="-1"><span class="an-step4-form">{{ s.title4 }}</span><span class="an-step4-review">{{ s.title4_mobile }}</span></h2>
+          <p class="an-note an-note--side" data-an-demo-note>{{ s.note }}</p>
+        </div>
+        <form class="an-details-form" novalidate data-an-form>
+          <div class="an-details-form__fields">
+            <div class="an-form__row an-form__row--2">
+              <div class="an-field"><label for="an-first-{{ section.id }}">{{ s.first_label }} <span aria-hidden="true">*</span></label><input id="an-first-{{ section.id }}" name="firstName" autocomplete="given-name" required><p class="an-field__error" data-an-err="firstName" hidden>{{ s.error_required }}</p></div>
+              <div class="an-field"><label for="an-last-{{ section.id }}">{{ s.last_label }} <span aria-hidden="true">*</span></label><input id="an-last-{{ section.id }}" name="lastName" autocomplete="family-name" required><p class="an-field__error" data-an-err="lastName" hidden>{{ s.error_required }}</p></div>
+            </div>
+            <div class="an-field"><label for="an-email-{{ section.id }}">{{ s.email_label }} <span aria-hidden="true">*</span></label><input id="an-email-{{ section.id }}" name="email" type="email" autocomplete="email" required><p class="an-field__error" data-an-err="email" hidden>{{ s.error_email }}</p></div>
+            <div class="an-field"><label for="an-phone-{{ section.id }}">{{ s.phone_label }} <span aria-hidden="true">*</span></label><input id="an-phone-{{ section.id }}" name="phone" type="tel" autocomplete="tel" inputmode="tel" required><p class="an-field__error" data-an-err="phone" hidden>{{ s.error_phone }}</p></div>
+            <div class="an-field"><label for="an-note-{{ section.id }}">{{ s.note_label }}</label><textarea id="an-note-{{ section.id }}" name="note" rows="3" maxlength="600" placeholder="{{ s.note_placeholder }}"></textarea></div>
+            <label class="an-check"><input type="checkbox" name="newsletter"> <span>{{ s.newsletter_label }}</span></label>
+            <label class="an-check"><input type="checkbox" name="terms" required> <span>{{ s.terms_before }} <a href="{{ s.terms_link | default: '/pages/conditions-de-reservation' }}" target="_blank" rel="noopener">{{ s.terms_link_label }}</a>. <span aria-hidden="true">*</span></span></label>
+            <p class="an-field__error" data-an-err="terms" hidden>{{ s.error_terms }}</p>
+            <button type="button" class="an-btn an-btn--peach an-btn--lg an-details-form__next" data-an-mnext><span>{{ s.continue_label }}</span>{% render 'an-icon', name: 'arrow' %}</button>
+          </div>
+          <div class="an-recap">
+            <h2 class="an-recap__title an-dk">{{ s.recap4_title }}</h2>
+            <div class="an-recap__card">
+              {% render 'an-img', image: s.image_recap, asset: s.image_recap_asset, alt: '', pos: s.image_recap_position, class: 'an-recap__img' %}
+              <ul role="list" class="an-summary__list">
+                <li>{% render 'an-icon', name: 'calendar' %}<span data-an-sum="when"></span></li>
+                <li>{% render 'an-icon', name: 'scissors' %}<span><span data-an-sum="service"></span><br><span class="an-muted" data-an-sum="duration"></span></span></li>
+                <li>{% render 'an-icon', name: 'user' %}<span data-an-sum="staff"></span></li>
+                <li>{% render 'an-icon', name: 'tag' %}<span data-an-sum="price"></span></li>
+              </ul>
+              <button type="button" class="an-btn an-btn--line an-btn--sm an-recap__edit" data-an-goto="1">{% render 'an-icon', name: 'edit' %}<span>{{ s.edit_label }}</span></button>
+            </div>
+            <div class="an-mreview">
+              <h2 class="an-mreview__title">{{ s.contact_title }}</h2>
+              <ul role="list" class="an-summary__list">
+                <li>{% render 'an-icon', name: 'user' %}<span data-an-sum="contact-name"></span></li>
+                <li>{% render 'an-icon', name: 'mail' %}<span data-an-sum="contact-email"></span></li>
+                <li>{% render 'an-icon', name: 'phone' %}<span data-an-sum="contact-phone"></span></li>
+              </ul>
+            </div>
+            <button type="submit" class="an-btn an-btn--peach an-btn--lg an-recap__submit" data-an-submit><span>{{ s.confirm_label }}</span></button>
+            <p class="an-form__status" role="alert" data-an-submit-status hidden></p>
+            <p class="an-sim" data-an-sim>{{ s.simulation_label }}</p>
+          </div>
+        </form>
+        <div class="an-pane__nav an-pane__nav--left">
+          <button type="button" class="an-btn an-btn--back" data-an-prev>{% render 'an-icon', name: 'arrow-left' %}<span>{{ s.back_label }}</span></button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Créneau pris entre-temps (course entre deux clients) {%- endcomment -%}
+    <div class="an-pane an-pane--conflict" data-an-pane="conflict" hidden>
+      <div class="an-overlay-card">
+        {% render 'an-img', image: s.image_conflict, asset: s.image_conflict_asset, alt: '', pos: s.image_conflict_position, class: 'an-overlay-card__bg' %}
+        <div class="an-overlay-card__card">
+          {% render 'an-icon', name: 'calendar', class: 'an-overlay-card__ico' %}
+          <h2 class="an-title an-title--md" tabindex="-1">{{ s.conflict_title }}</h2>
+          <p class="an-overlay-card__text" data-an-conflict-text></p>
+          <p class="an-overlay-card__sub" data-an-conflict-sub></p>
+          <div class="an-chips" data-an-alternatives></div>
+          <button type="button" class="an-btn an-btn--terra" data-an-goto="3">{{ s.conflict_more_label }}</button>
+          <a class="an-link" href="{{ s.account_link | default: '/pages/mon-espace' }}">{{ s.conflict_back_label }}</a>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Étape 5 : confirmation {%- endcomment -%}
+    <div class="an-pane an-pane--5" data-an-pane="5" hidden>
+      <div class="an-confirm">
+        <span class="an-confirm__check" aria-hidden="true">{% render 'an-icon', name: 'check' %}</span>
+        <h2 class="an-title an-title--lg" tabindex="-1">{{ s.confirm_title | escape | newline_to_br }}</h2>
+        <p class="an-confirm__text">{{ s.confirm_text | escape | newline_to_br }}</p>
+        <p class="an-confirm__state" data-an-confirm-state></p>
+        <div class="an-confirm__card">
+          {% render 'an-img', image: s.image_confirm, asset: s.image_confirm_asset, alt: '', pos: s.image_confirm_position, class: 'an-confirm__img' %}
+          <div class="an-confirm__body">
+            <p class="an-confirm__ref-label" data-an-ref-label>{{ s.ref_label }}</p>
+            <p class="an-confirm__ref" data-an-sum="number"></p>
+            <ul role="list" class="an-summary__list">
+              <li>{% render 'an-icon', name: 'calendar' %}<span data-an-sum="when"></span></li>
+              <li>{% render 'an-icon', name: 'scissors' %}<span data-an-sum="service-line"></span></li>
+              <li>{% render 'an-icon', name: 'user' %}<span data-an-sum="staff"></span></li>
+              <li>{% render 'an-icon', name: 'tag' %}<span data-an-sum="price"></span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="an-confirm__btns">
+          <button type="button" class="an-btn an-btn--line" data-an-ics>{% render 'an-icon', name: 'calendar' %}<span>{{ s.calendar_label }}</span></button>
+          <a class="an-btn an-btn--peach" href="{{ s.account_link | default: '/pages/mon-espace' }}" data-an-manage>{% render 'an-icon', name: 'mail' %}<span>{{ s.manage_label }}</span></a>
+        </div>
+        <div class="an-confirm__address">
+          <div class="an-confirm__address-text">
+            {% render 'an-icon', name: 'pin' %}
+            <div><p class="an-confirm__salon">{{ shop.name }}</p><p data-an-address>{{ s.address_todo }}</p></div>
+          </div>
+          {% render 'an-img', image: s.image_address, asset: s.image_address_asset, alt: '', pos: s.image_address_position, class: 'an-confirm__address-img' %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Prise de rendez-vous",
+  "class": "an-booking-section",
+  "settings": [
+    { "type": "header", "content": "Photos" },
+    { "type": "image_picker", "id": "image_step1", "label": "Photo verticale de l'étape 1" },
+    { "type": "text", "id": "image_step1_asset", "label": "Étape 1 : image fournie avec le thème" },
+    { "type": "text", "id": "image_step1_position", "label": "Étape 1 : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_summary", "label": "Photo du récapitulatif (étape 2)" },
+    { "type": "text", "id": "image_summary_asset", "label": "Récapitulatif (étape 2) : image fournie avec le thème" },
+    { "type": "text", "id": "image_summary_position", "label": "Récapitulatif (étape 2) : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_recap", "label": "Photo du récapitulatif des coordonnées" },
+    { "type": "text", "id": "image_recap_asset", "label": "Récapitulatif des coordonnées : image fournie avec le thème" },
+    { "type": "text", "id": "image_recap_position", "label": "Récapitulatif des coordonnées : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_confirm", "label": "Photo de la confirmation" },
+    { "type": "text", "id": "image_confirm_asset", "label": "Confirmation : image fournie avec le thème" },
+    { "type": "text", "id": "image_confirm_position", "label": "Confirmation : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_address", "label": "Photo du bandeau d'adresse" },
+    { "type": "text", "id": "image_address_asset", "label": "Bandeau d'adresse : image fournie avec le thème" },
+    { "type": "text", "id": "image_address_position", "label": "Bandeau d'adresse : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_conflict", "label": "Photo du créneau indisponible" },
+    { "type": "text", "id": "image_conflict_asset", "label": "Créneau indisponible : image fournie avec le thème" },
+    { "type": "text", "id": "image_conflict_position", "label": "Créneau indisponible : cadrage", "default": "50% 50%" },
+    { "type": "header", "content": "Étapes" },
+    { "type": "text", "id": "page_title", "label": "Titre de la page (lecteurs d'écran)", "default": "Prendre rendez-vous" },
+    { "type": "text", "id": "progress_label", "label": "Nom de la progression (lecteurs d'écran)", "default": "Étapes de la prise de rendez-vous" },
+    { "type": "text", "id": "step_labels", "label": "Noms des étapes", "default": "Prestations, Avec qui ?, Créneau, Coordonnées, Confirmation", "info": "Cinq noms séparés par des virgules." },
+    { "type": "textarea", "id": "title1", "label": "Titre de l'étape 1", "default": "1. Choisissez\nvotre prestation" },
+    { "type": "text", "id": "title2", "label": "Titre de l'étape 2", "default": "2. Avec qui souhaitez-vous venir ?" },
+    { "type": "text", "id": "title3", "label": "Titre de l'étape 3", "default": "3. Choisissez votre créneau" },
+    { "type": "text", "id": "title4", "label": "Titre de l'étape 4", "default": "4. Vos coordonnées" },
+    { "type": "text", "id": "title4_mobile", "label": "Titre de l'étape 4 sur téléphone", "default": "4. Récapitulatif de votre rendez-vous" },
+    { "type": "text", "id": "note", "label": "Mention de démonstration", "default": "Tarifs et disponibilités de démonstration" },
+    { "type": "text", "id": "recap2_title", "label": "Titre du récapitulatif (étape 2)", "default": "Récapitulatif de votre choix" },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif (étape 3)", "default": "Votre rendez-vous" },
+    { "type": "text", "id": "recap4_title", "label": "Titre du récapitulatif (étape 4)", "default": "Récapitulatif de votre rendez-vous" },
+    { "type": "text", "id": "no_slot_text", "label": "Aucun créneau ce jour-là", "default": "Aucun créneau disponible ce jour-là. Choisissez une autre date." },
+    { "type": "header", "content": "Coordonnées" },
+    { "type": "text", "id": "contact_title", "label": "Titre des coordonnées (téléphone)", "default": "Vos coordonnées" },
+    { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "email_label", "label": "Adresse e-mail", "default": "Adresse e-mail" },
+    { "type": "text", "id": "phone_label", "label": "Téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "note_label", "label": "Note", "default": "Une note (facultatif)" },
+    { "type": "text", "id": "note_placeholder", "label": "Aide de la note", "default": "Ex. : je souhaite un effet naturel." },
+    { "type": "text", "id": "newsletter_label", "label": "Case de la lettre d'information", "default": "Je souhaite recevoir la newsletter (nouveautés, inspirations, conseils)." },
+    { "type": "text", "id": "terms_before", "label": "Case des conditions : texte", "default": "J'accepte les" },
+    { "type": "text", "id": "terms_link_label", "label": "Case des conditions : lien", "default": "conditions générales de réservation" },
+    { "type": "url", "id": "terms_link", "label": "Page des conditions de réservation" },
+    { "type": "text", "id": "edit_label", "label": "Bouton modifier (téléphone)", "default": "Modifier" },
+    { "type": "text", "id": "confirm_label", "label": "Bouton de confirmation", "default": "Confirmer mon rendez-vous" },
+    { "type": "text", "id": "simulation_label", "label": "Mention de simulation", "default": "Simulation — aucun rendez-vous réel" },
+    { "type": "header", "content": "Erreurs" },
+    { "type": "text", "id": "error_service", "label": "Erreur : prestation", "default": "Choisissez une prestation pour continuer." },
+    { "type": "text", "id": "error_time", "label": "Erreur : créneau", "default": "Choisissez une date et un horaire pour continuer." },
+    { "type": "text", "id": "error_required", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "error_phone", "label": "Erreur : téléphone", "default": "Indiquez un numéro de téléphone valide." },
+    { "type": "text", "id": "error_terms", "label": "Erreur : conditions", "default": "Merci d'accepter les conditions de réservation." },
+    { "type": "header", "content": "Créneau indisponible et confirmation" },
+    { "type": "text", "id": "conflict_title", "label": "Titre du créneau indisponible", "default": "Ce créneau vient d'être réservé" },
+    { "type": "text", "id": "conflict_more_label", "label": "Bouton d'autres créneaux", "default": "Voir d'autres créneaux" },
+    { "type": "text", "id": "conflict_back_label", "label": "Lien de retour aux rendez-vous", "default": "Retour à mes rendez-vous" },
+    { "type": "textarea", "id": "confirm_title", "label": "Titre de la confirmation", "default": "Votre rendez-vous\nest confirmé" },
+    { "type": "textarea", "id": "confirm_text", "label": "Texte de la confirmation", "default": "Merci de votre confiance. Nous avons hâte de vous accueillir." },
+    { "type": "text", "id": "ref_label", "label": "Libellé de la référence", "default": "Référence" },
+    { "type": "text", "id": "calendar_label", "label": "Bouton d'agenda", "default": "Ajouter à mon calendrier" },
+    { "type": "text", "id": "manage_label", "label": "Bouton de gestion", "default": "Gérer mon rendez-vous" },
+    { "type": "url", "id": "account_link", "label": "Page « Mon espace »" },
+    { "type": "text", "id": "address_todo", "label": "Adresse manquante", "default": "[À renseigner]" },
+    { "type": "header", "content": "Navigation" },
+    { "type": "text", "id": "back_label", "label": "Bouton retour", "default": "Retour" },
+    { "type": "url", "id": "back_link", "label": "Retour depuis l'étape 1" },
+    { "type": "text", "id": "continue_label", "label": "Bouton continuer", "default": "Continuer" }
+  ],
+  "presets": [{ "name": "Prise de rendez-vous" }]
+}
+{% endschema %}

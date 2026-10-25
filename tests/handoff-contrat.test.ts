@@ -99,6 +99,7 @@ describe("Contrat amont → thème", async () => {
     const packFile = files.find(([, id]) => id === pack.id)![0];
     expect(json).toContain(packFile);
     expect(spec.direction).toBe("fraise");
-    expect(spec.settings.conversion_profile).toBe("pop");
+    // FRAISE (sept planches) : habillage propre au thème, aucun profil global.
+    expect(spec.settings.theme_kit).toBe("fraise");
   });
 });
