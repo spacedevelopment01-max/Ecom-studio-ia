@@ -19,7 +19,8 @@
           {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
           {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
         </div>
-        {%- if s.text != blank -%}<div class="ph-head__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text != blank -%}<div class="ph-head__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<div class="ph-head__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
       </div>
     {%- endif -%}
     <ol class="ph-steps__list" role="list">
@@ -69,6 +70,7 @@
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
     { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 },

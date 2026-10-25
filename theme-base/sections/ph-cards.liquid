@@ -24,7 +24,8 @@
           {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
           {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
         </div>
-        {%- if s.text != blank -%}<div class="ph-head__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text != blank -%}<div class="ph-head__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+        {%- if s.text_mobile != blank -%}<div class="ph-head__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
         {%- if s.note != blank -%}<p class="ph-head__note">{{ s.note }}</p>{%- endif -%}
       </div>
     {%- endif -%}
@@ -35,7 +36,9 @@
         <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-o-m="{{ c.order_mobile | default: forloop.index }}" data-ph-cat="{{ c.category | handleize }}" {{ b.shopify_attributes }}>
           {%- if c.image != blank or c.image_asset != blank -%}
             <div class="ph-card__media">
-              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, zoom: c.zoom, pos_mobile: c.position_mobile, zoom_mobile: c.zoom_mobile, class: 'ph-card__img', sizes: '(min-width: 750px) 33vw, 100vw' %}
+              {%- capture ph_cls -%}ph-card__img{% if c.image_mobile_asset != blank or c.image_mobile != blank %} ph-only-d{% endif %}{%- endcapture -%}
+              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, zoom: c.zoom, pos_mobile: c.position_mobile, zoom_mobile: c.zoom_mobile, class: ph_cls, sizes: '(min-width: 750px) 33vw, 100vw' %}
+              {%- if c.image_mobile_asset != blank or c.image_mobile != blank -%}{% render 'ph-img', image: c.image_mobile, asset: c.image_mobile_asset, alt: c.alt, pos: c.position_mobile, class: 'ph-card__img ph-only-m', sizes: '100vw' %}{%- endif -%}
               {%- if c.number != blank and lay == 'domains' -%}<span class="ph-card__badge" aria-hidden="true">{{ c.number }}</span>{%- endif -%}
               {%- if c.tag != blank -%}<span class="ph-card__tag">{{ c.tag }}</span>{%- endif -%}
               {%- if c.link != blank and lay == 'gallery' -%}<span class="ph-card__go" aria-hidden="true">{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>{%- endif -%}
@@ -110,6 +113,7 @@
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
     { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
     { "type": "text", "id": "note", "label": "Note à droite du titre" },
     { "type": "header", "content": "Réalisations filtrables" },
     { "type": "range", "id": "per_page", "label": "Réalisations affichées avant « Voir plus »", "min": 3, "max": 12, "step": 1, "default": 6 },
@@ -139,8 +143,10 @@
       { "type": "text", "id": "alt", "label": "Texte alternatif" },
       { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
       { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
-      { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
+ { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
       { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "image_picker", "id": "image_mobile", "label": "Autre photo au téléphone (facultatif)" },
+      { "type": "text", "id": "image_mobile_asset", "label": "Autre photo au téléphone (fichier du thème)" },
       { "type": "text", "id": "tag", "label": "Étiquette sur la photo" },
       { "type": "text", "id": "category", "label": "Catégorie (filtre des réalisations)" },
       { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
