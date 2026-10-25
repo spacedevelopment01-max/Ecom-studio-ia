@@ -18,7 +18,7 @@
     assign mimg = s.mobile_image_asset | asset_url
   endif
 -%}
-<section class="cvn-hero cvn-hero--{{ s.layout }} cvn-hero--m-{{ s.mobile_layout }} cvn-hero--ma-{{ s.mobile_align }}{% if s.frame %} cvn-hero--framed{% endif %}{% if s.extend_height > 0 %} cvn-hero--extend{% endif %}{% if s.mobile_extend_height > 0 %} cvn-hero--m-extend{% endif %}" style="--mmt: {{ s.mobile_media_top }}px; --eh: {{ s.extend_height }}px; --meh: {{ s.mobile_extend_height }}px; --h: {{ s.height }}px; --mh: {{ s.mobile_height }}px; --fx: {{ s.focus_x }}%; --fy: {{ s.focus_y }}%; --z: {{ s.zoom | divided_by: 100.0 }}; --mfx: {{ s.mobile_focus_x }}%; --mfy: {{ s.mobile_focus_y }}%; --mz: {{ s.mobile_zoom | divided_by: 100.0 }}; --media-l: {{ s.media_left }}%; --shade: {{ s.shade | divided_by: 100.0 }}; --tone: {{ s.brightness | divided_by: 100.0 }}; --warm: {{ s.warmth | divided_by: 100.0 }}; --tw: {{ s.text_width }}px; --ts: {{ s.title_size }}px; --txs: {{ s.text_size }}px; --mts: {{ s.mobile_title_size }}px; --tx: {{ s.text_x }}px; --ty: {{ s.text_y }}px; --mty: {{ s.mobile_text_y }}px;">
+<section class="cvn-hero cvn-hero--{{ s.layout }} cvn-hero--m-{{ s.mobile_layout }} cvn-hero--ma-{{ s.mobile_align }}{% if s.frame %} cvn-hero--framed{% endif %}{% if s.media_left > 0 and s.layout != 'home' %} cvn-hero--inset{% endif %}{% if s.extend_height > 0 %} cvn-hero--extend{% endif %}{% if s.mobile_extend_height > 0 %} cvn-hero--m-extend{% endif %}" style="--mmt: {{ s.mobile_media_top }}px; --eh: {{ s.extend_height }}px; --meh: {{ s.mobile_extend_height }}px; --h: {{ s.height }}px; --mh: {{ s.mobile_height }}px; --fx: {{ s.focus_x }}%; --fy: {{ s.focus_y }}%; --z: {{ s.zoom | divided_by: 100.0 }}; --mfx: {{ s.mobile_focus_x }}%; --mfy: {{ s.mobile_focus_y }}%; --mz: {{ s.mobile_zoom | divided_by: 100.0 }}; --media-l: {{ s.media_left }}%; --shade: {{ s.shade | divided_by: 100.0 }}; --tone: {{ s.brightness | divided_by: 100.0 }}; --warm: {{ s.warmth | divided_by: 100.0 }}; --tw: {{ s.text_width }}px; --ts: {{ s.title_size }}px; --txs: {{ s.text_size }}px; --mts: {{ s.mobile_title_size }}px; --tx: {{ s.text_x }}px; --ty: {{ s.text_y }}px; --mty: {{ s.mobile_text_y }}px;">
   <div class="cvn-hero__inner cvn-scale">
     {%- if img != blank -%}
       <picture class="cvn-hero__media">
@@ -81,7 +81,7 @@
     { "type": "image_picker", "id": "image", "label": "Photo" },
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
-    { "type": "range", "id": "media_left", "label": "Début de la photo (accueil)", "min": 0, "max": 70, "step": 1, "unit": "%", "default": 0 },
+    { "type": "range", "id": "media_left", "label": "Début de la photo sur ordinateur (fondu à gauche)", "min": 0, "max": 70, "step": 1, "unit": "%", "default": 0 },
     { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "zoom", "label": "Zoom", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },

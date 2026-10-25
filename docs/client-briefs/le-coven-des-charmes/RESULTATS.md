@@ -104,17 +104,14 @@ restants sont listés ci-dessous. Les images (qui contiennent les médias privé
 
 ## Écarts restants (connus)
 
-1. **Photos absentes des sources du client** : coupelle, scoop, symboles, velours violet, tiroirs ouverts, bougies,
-   exemples de bracelets sur velours, scènes des pages achat/compte/contact/informations. Le client a fourni quatre
-   photos (cabinet, tableau de correspondance, bracelet au poignet, bracelet sur toile) et son logo. Dans l'aperçu
-   client, ces scènes sont des visuels **découpés dans les maquettes** (basse définition, textes effacés), signalés
-   comme provisoires : à remplacer par de vraies photos. Les planches dessinent plusieurs pages sur une seule image
-   (une vignette d'étape fait environ 110 × 90 pixels) : affichées en grand, ces vignettes restent floues. Pour
-   l'aperçu, les textes et le logo des maquettes sont effacés par retouche FSR (OpenCV « contrib », moins de voile que
-   la retouche par diffusion), puis les visuels sont agrandis quatre fois par un modèle libre exécuté sur la machine
-   (ESRGAN « thick » d'UpscalerJS, licence MIT, aucun service payant). Le gain est réel mais limité : un agrandissement
-   ne recrée pas les détails absents de la planche. **Aperçu publié : aucun visuel découpé dans les planches** (à la demande du client, aucune
-   image floue) : chaque emplacement sans photo du client affiche un fond sombre légendé « Photo à fournir · … ».
+1. **Images du site : les images HD du client** (5 archives « LE_COVEN_DES_CHARMES_IMAGES_0x_SUR_05 », 58 images et
+   le logo, identique à l'original). Ce sont les scènes d'origine des planches : chaque emplacement reçoit la sienne
+   (`CROP_HD` dans `coven-spec.ts`, association vérifiée à l'œil et par comparaison de points caractéristiques),
+   converties en JPEG pour le web (2000 px au plus), sans retouche, rangées dans la bibliothèque du projet. Plus aucun
+   visuel découpé dans les planches ni photo de téléphone dans l'aperçu client (test). Seul manque : la carte
+   « Le Coven des Charmes » de l'étape 1 du tirage (page Le tirage), remplacée par la photo du bracelet.
+   Dossier privé passé par `--images` à `apercu.ts` et `rattacher.ts`, jamais dans le dépôt. Sans ce dossier, le site
+   retombe sur les quatre photos du client et des emplacements « Photo à fournir ».
 2. **Police** : EB Garamond (libre) au lieu de la police des planches (non identifiée, plus étroite) ; les titres sont
    alignés en taille, les largeurs diffèrent de quelques pour cent.
 3. **Échelles différentes entre planches** : chaque planche dessine les pages à une échelle propre (ex. téléphone :

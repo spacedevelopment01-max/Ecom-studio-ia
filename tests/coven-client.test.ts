@@ -22,7 +22,7 @@ import { DIRECTIONS } from "@/lib/theme/directions";
 import { SECTION_LIBRARY } from "@/lib/theme/section-library";
 import { baseSectionTypes, type ThemeSpec } from "@/lib/theme/spec";
 import { runWithLang } from "@/lib/i18n-server";
-import { applyCoven, covenMedia, covenSections, COVEN_KEY, COVEN_NAME } from "../clients/le-coven-des-charmes/coven-spec";
+import { applyCoven, covenMedia, covenSections, covenHdFile, COVEN_HD_MEDIA, CROP_HD, COVEN_KEY, COVEN_NAME } from "../clients/le-coven-des-charmes/coven-spec";
 import { COVEN_PAGES, PRODUCT_HANDLE } from "../clients/le-coven-des-charmes/coven-pages";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
@@ -150,5 +150,31 @@ describe("Le Coven des Charmes : concept et données réelles", () => {
     const footer = covenSections()["es-custom-coven-footer"].liquid;
     expect(footer).toMatch(/data-cvn-consent="audience"/);
     expect(footer).not.toMatch(/data-cvn-consent="audience"[^>]*checked/);
+  });
+});
+
+describe("Le Coven des Charmes : images HD du client", () => {
+  it("avec les images HD, chaque emplacement reçoit sa scène d'origine : aucun visuel découpé ni photo de téléphone", async () => {
+    const { spec } = await covenProject("client");
+    const json = JSON.stringify({ t: spec.templates, g: spec.groups, s: spec.store });
+    expect(json).not.toMatch(/coven-mq-|coven-photo-/);
+    const used = new Set(json.match(/coven-hd-\d\d\.jpg/g));
+    expect(used.size).toBeGreaterThanOrEqual(55);
+    for (const n of Object.values(CROP_HD)) expect(COVEN_HD_MEDIA.some((m) => m.file === covenHdFile(n)), n).toBe(true);
+    expect(json).toContain("coven-logo.jpg");
+  });
+
+  it("sans les images HD, repli sur les photos du client et les visuels provisoires (rien de cassé)", async () => {
+    const user = await createUser(`coven-sans-hd-${Date.now()}@example.invalid`, "isolated-test-only", "Test Coven");
+    const product = { ...emptyProduct(), name: "Bracelet de charms surprise", nameStatus: "provided" as const };
+    const { brand, strategy } = localBrand(product, COVEN_NAME, { business: "products" });
+    const pid = id();
+    run("INSERT INTO projects (id,user_id,name,status,platform,product_json,brand_json,strategy_json,settings_json,sources_json,business_type,business_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      pid, user.id, COVEN_NAME, "draft", "shopify", JSON.stringify(product), JSON.stringify({ ...brand, name: COVEN_NAME, generatedBy: "local" }), JSON.stringify(strategy), "{}", "[]", "products", "null", now(), now());
+    const built = await fr(() => composeShop(pid, "orbe" as never, null, false));
+    const ids = Object.fromEntries(covenMedia().filter((m) => m.origin !== "hd").map((m, i) => [m.file, `asset-${i}`]));
+    const json = JSON.stringify(applyCoven(built.spec, ids, { preview: true, mode: "client" }).templates);
+    expect(json).not.toMatch(/coven-hd-/);
+    expect(json).toContain("coven-photo-cabinet.jpg");
   });
 });

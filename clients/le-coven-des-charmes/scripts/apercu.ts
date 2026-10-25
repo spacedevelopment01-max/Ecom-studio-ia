@@ -2,6 +2,7 @@
  * Le Coven des Charmes — aperçu de développement ISOLÉ (aucun projet réel, aucune base existante, aucun réseau).
  *
  *   npx tsx clients/le-coven-des-charmes/scripts/apercu.ts --kit <dossier COVEN_CLIENT> --out <dossier de sortie>
+ *     [--images <dossier LE_COVEN_DES_CHARMES des images HD du client>]
  *
  * Une base temporaire reçoit un compte de test et un projet « Le Coven des Charmes » ; les médias du kit privé sont
  * rangés dans la bibliothèque de CE projet ; le site est posé dans son thème (applyCoven), puis chaque page est rendue
@@ -24,6 +25,8 @@ const arg = (name: string) => { const i = process.argv.indexOf(`--${name}`); ret
 const kit = path.resolve(arg("kit") ?? "");
 const out = path.resolve(arg("out") ?? "reports/coven-apercu");
 const visuels = path.resolve(arg("visuels") ?? path.join(out, "..", "visuels"));
+// Images HD du thème fournies par le client (dossier LE_COVEN_DES_CHARMES extrait des 5 archives), facultatif.
+const images = arg("images") ? path.resolve(arg("images")!) : null;
 const mode = (arg("mode") ?? "client") as "client" | "controle";
 if (!fs.existsSync(path.join(kit, "VERIFIER_COVEN.py"))) throw new Error("Indiquez le dossier COVEN_CLIENT extrait : --kit <chemin>/COVEN_CLIENT");
 
@@ -61,13 +64,15 @@ try {
     // Médias dans la bibliothèque du projet (photos du client converties pour le web, sans retouche des pixels).
     const ids: Record<string, string> = {}; const missing: string[] = [];
     for (const m of COVEN_MEDIA) {
-      const src = m.origin === "police" ? path.join(COVEN_DIR, "theme", m.source) : m.origin === "maquette" ? path.join(visuels, m.source) : path.join(kit, m.source);
+      if (m.origin === "hd" && !images) continue;
+      const src = m.origin === "police" ? path.join(COVEN_DIR, "theme", m.source) : m.origin === "maquette" ? path.join(visuels, m.source) : m.origin === "hd" ? path.join(images!, m.source) : path.join(kit, m.source);
       if (!fs.existsSync(src)) { missing.push(m.file); continue; }
       let data = fs.readFileSync(src); let mime = "image/png";
-      if (m.file.endsWith(".jpg")) { data = await sharp(data).jpeg({ quality: 90, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
+      if (m.origin === "hd") { data = await sharp(data).resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
+      else if (m.file.endsWith(".jpg")) { data = await sharp(data).jpeg({ quality: 90, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
       else if (m.file.endsWith(".svg")) { data = Buffer.from(covenSprite(data.toString("utf8"))); mime = "image/svg+xml"; }
       else if (m.file.endsWith(".ttf")) mime = "font/ttf";
-      const a = await saveAsset({ projectId: pid, userId: user.id, data, mime, name: m.file, origin: "upload", role: m.origin === "client" ? "scene" : "detail", status: "approved", meta: { alt: m.alt, provenance: m.origin === "maquette" ? "Extrait de maquette aux pixels natifs (visuel provisoire)" : m.origin === "client" ? "Fichier du client" : m.origin } as never });
+      const a = await saveAsset({ projectId: pid, userId: user.id, data, mime, name: m.file, origin: "upload", role: m.origin === "client" || m.origin === "hd" ? "scene" : "detail", status: "approved", meta: { alt: m.alt, provenance: m.origin === "maquette" ? "Extrait de maquette aux pixels natifs (visuel provisoire)" : m.origin === "client" || m.origin === "hd" ? "Fichier du client" : m.origin } as never });
       ids[m.file] = a.id;
     }
     const built = await composeShop(pid, "orbe" as never, null, false);
