@@ -13,7 +13,7 @@ import { tmpDir,storagePath } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
-import { aiClip,wanTextClip } from "../ai/media-providers";
+import { aiClip,wanTextClip,higgsfieldClip } from "../ai/media-providers";
 import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
 import { all, json,run } from "../db";
 import type { JobContext } from "../jobs";
@@ -134,8 +134,8 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
-      if(!req.image){if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
-      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      if(!req.image){if(req.provider==='higgsfield'&&!req.people)return higgsfieldClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:'text_video'});if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
+      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba" || req.provider === "higgsfield") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à

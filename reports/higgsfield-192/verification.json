@@ -1,0 +1,82 @@
+{
+  "issue": 192,
+  "baseCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "capturedAt": "2026-10-25T20:11:46.510006+00:00",
+  "realProviderCalls": 0,
+  "paidProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "accountVerified": false,
+  "typecheck": {
+    "exitCode": 0
+  },
+  "productionBuild": {
+    "exitCode": 0,
+    "localOnly": true,
+    "builtFromUncommittedSource": true
+  },
+  "targeted": {
+    "files": 5,
+    "passed": 105,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "fullSuite": {
+    "files": 358,
+    "passed": 2915,
+    "skipped": 22,
+    "failed": 1,
+    "exitCode": 1,
+    "failure": "tests/social-autopilot-pilote.test.ts:160",
+    "baselineReproduced": true
+  },
+  "baseline": {
+    "commit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+    "applicationDiff": [],
+    "testInfrastructureOnly": "same per-file isolated database setup",
+    "passed": 8,
+    "failed": 1,
+    "exitCode": 1
+  },
+  "reruns": {
+    "nativeVideoEngine": {
+      "passed": 12,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "videoCapabilities": {
+      "passed": 12,
+      "failed": 0,
+      "exitCode": 0
+    }
+  },
+  "browser": {
+    "method": "Native browser, API and database; mocked upstream via separate process preload",
+    "paidCalls": 0,
+    "realProviderCalls": 0,
+    "routeInterception": false,
+    "desktop": [
+      1440,
+      1080
+    ],
+    "mobile": [
+      390,
+      844
+    ],
+    "approvedModels": 2,
+    "errors": [],
+    "captures": 5,
+    "productionBuild": true,
+    "nativePrimarySelectionVerified": true,
+    "configurationPriceNotFalselyMissing": true,
+    "anonymousAccessRejected": true,
+    "secretsAndCredentialFingerprintsNotReturned": true,
+    "mobilePageHorizontalOverflow": false,
+    "captureMethod": "Card screenshots at desktop/mobile widths; viewport height expanded for complete readable panels."
+  },
+  "limitations": [
+    "No configured real Higgsfield account; direct public-source requests denied by executor proxy CONNECT 403.",
+    "All prices and FX shown in browser evidence are simulated.",
+    "A pre-existing Autopilot budget test also fails on the original main application; no Autopilot production code or limits changed.",
+    "No paid generation, merge, deployment, or update of the usual studio."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "method": "Native browser, API and database; mocked upstream via separate process preload",
+  "paidCalls": 0,
+  "realProviderCalls": 0,
+  "routeInterception": false,
+  "desktop": [
+    1440,
+    1080
+  ],
+  "mobile": [
+    390,
+    844
+  ],
+  "approvedModels": 2,
+  "errors": [],
+  "captures": 5,
+  "productionBuild": true,
+  "nativePrimarySelectionVerified": true,
+  "configurationPriceNotFalselyMissing": true,
+  "anonymousAccessRejected": true,
+  "secretsAndCredentialFingerprintsNotReturned": true,
+  "mobilePageHorizontalOverflow": false,
+  "captureMethod": "Card screenshots at desktop/mobile widths; viewport height expanded for complete readable panels."
+}

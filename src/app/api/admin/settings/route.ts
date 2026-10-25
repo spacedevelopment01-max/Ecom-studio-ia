@@ -29,7 +29,7 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       pinTask: z.object({ task: z.string(), pinned: z.boolean() }).optional(),

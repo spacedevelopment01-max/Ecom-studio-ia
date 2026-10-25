@@ -497,7 +497,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       break;
     }
     o.ctx?.progress(0.3, `Tournage du plan ${s.id}`);
-    const buf = await videoReceipt(p.id,`${o.ctx?.job.id??"video2"}:video2:${key}:${attempt}`,()=>withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`)));
+    const buf = await videoReceipt(p.id,`${o.ctx?.job.id??"video2"}:video2:${key}:${attempt}`,()=>withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`)),{readOnlyRecovery:provider==="higgsfield"});
     o.budget.spentMicro += est;
     spent += est;
     stats.generated++;

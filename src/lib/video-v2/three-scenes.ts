@@ -141,7 +141,7 @@ export type ThreeScenesDeps = {
   writePlan?: (p: Project, s: SubjectOption | null, req: ThreeScenesRequest, key: string, ctx?: PlanContext) => Promise<ScenePlan | null>;
   keyframe: (prompt: string, aspect: SceneAspect, reference: Buffer | null, key: string) => Promise<Buffer>;
   directClip?: (image:Buffer|null,prompt:string,aspect:SceneAspect,seconds:number,key:string,generation:SceneGeneration)=>Promise<Buffer>;
-  clip: (image: Buffer, prompt: string, aspect: SceneAspect, seconds: number, key: string) => Promise<Buffer>;
+  clip: (image: Buffer, prompt: string, aspect: SceneAspect, seconds: number, key: string,generation?:SceneGeneration) => Promise<Buffer>;
   stock: (p: Project, index: number, topic: string, aspect: SceneAspect, seconds: number, exclude: Set<string>, key: string, step?: { queries: string[]; must: string[] }) => Promise<{ assetId: string; durationS: number } | null>;
   spentMicro: (keyPrefix: string) => number;
   /** Les plans libres sont-ils regardés par l'IA (contrôle visuel) ? Faux : seuls leurs mots-clés sont connus. */
@@ -481,7 +481,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
           const prior=savedScene(k,"clip");if(prior&&isAutoUsable(prior)&&assetMeta<any>(prior).gate?.checked)return prior.id;
           preserveClientVersion();ctx?.progress(.1+k*.65/n,`Scène ${k+1} : clip IA, sans image intermédiaire`);
           const text=[scene.still,scene.motion,`Illustration imaginée pour ${p.brand?.name}. Ne pas présenter comme réalisation du client.`,"Aucune personne, main, visage, silhouette ni corps. Aucun texte, logo ni marque généré ; ils seront ajoutés au montage.",reference?"Conserver fidèlement la forme, les couleurs, les matières et le point de vue documenté de la référence ; aucune partie cachée inventée.":"Ne pas inventer de caractéristique commerciale."].join("\n");
-          const mp4=prior?assetData(prior):await videoReceipt(projectId,`${assetKey(k,"clip")}:direct:${k}`,()=>deps.directClip!(reference,text,aspect,timing.clipS,`${assetKey(k,"clip")}:direct:${k}`,req.generation!));
+          const mp4=prior?assetData(prior):await videoReceipt(projectId,`${assetKey(k,"clip")}:direct:${k}`,()=>deps.directClip!(reference,text,aspect,timing.clipS,`${assetKey(k,"clip")}:direct:${k}`,req.generation!),{readOnlyRecovery:true});
           const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey,origin:"generated",status:"review",sourceAssetId:photo?.id??(reference?refId:null),meta:{scenes:{key:assetKey(k,"clip"),rootKey:key,index:k,as:req.as,generation:req.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
           const duration=await(deps.duration??sceneClipDuration)(mp4);
           if(duration+.05<timing.showS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
@@ -533,7 +533,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
         const savedClipId = await step(`${key}:clip-asset-${k}`, async()=>{
         const prior=savedScene(k,"clip");if(prior) return prior.id;
         preserveClientVersion();ctx?.progress(.1+k*.65/n);
-        const mp4 = await videoReceipt(projectId,`${assetKey(k,"clip")}:clip:${k}`,()=>deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${assetKey(k,"clip")}:clip:${k}`));
+        const mp4 = await videoReceipt(projectId,`${assetKey(k,"clip")}:clip:${k}`,()=>deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${assetKey(k,"clip")}:clip:${k}`,req.generation),{readOnlyRecovery:true});
         const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey, origin: "generated", status: "review", sourceAssetId: stillAsset.id, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Plan à contrôler",provisional:{use:"manual"}}, scenes: { key:assetKey(k,"clip"),rootKey:key, index: k, as: req.as, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
         return a.id;
         });
@@ -700,16 +700,17 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       return realVideoDeps(ctx,loadProject(base.projectId),true).reviewShot(frames,{product:reference.length?reference:null,character:null},text,key);
     } : undefined,
     async directClip(image,prompt,aspect,seconds,key,generation){
-      const route=sceneGenerationRoute(generation,seconds);if(!route.allowed)throw new UserFacingError(route.reason);
-      const {wanTextClip,aiClip}=await import("../ai/media-providers");
+      const route=sceneGenerationRoute(generation,seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);
+      const {wanTextClip,aiClip,higgsfieldClip}=await import("../ai/media-providers");
       const context={...base,jobId,usageKey:key};
-      return image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):wanTextClip(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
+      return image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):(route.provider==='higgsfield'?higgsfieldClip:wanTextClip)(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
     },
     async keyframe(prompt, aspect, reference, key) {
       const { aiPostImage } = await import("../ai/media-providers");
       return aiPostImage({ ...base, jobId, usageKey: key }, { prompt, aspect, reference, logo: null,photoOnly:true });
     },
-    async clip(image, prompt, aspect, seconds, key) {
+    async clip(image, prompt, aspect, seconds, key, generation) {
+      if(generation==="staged"){const route=sceneGenerationRoute("staged",seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);{const {aiClip}=await import("../ai/media-providers");return aiClip(route.provider,{...base,jobId,usageKey:key},{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false},m=>ctx?.progress(.5,m));}}
       const { aiClip } = await import("../ai/media-providers");
       // Wan suit les proportions de l'image de départ (carré et 4:5 compris) ; ce paramètre ne sert qu'aux autres modèles.
       return aiClip("alibaba", { ...base, jobId, usageKey: key }, { image, prompt, aspect: aspect === "16:9" ? "16:9" : "9:16", seconds, model: SCENE_VIDEO_MODEL, usage: "product_video" }, (m) => ctx?.progress(0.5, m));
