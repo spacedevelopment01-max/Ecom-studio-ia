@@ -28,6 +28,7 @@
         {%- if s.note != blank -%}<p class="ph-head__note">{{ s.note }}</p>{%- endif -%}
       </div>
     {%- endif -%}
+    <div class="ph-cards__body{% if s.box_title != blank %} has-box{% endif %}">
     <ul class="ph-cards__grid" role="list">
       {%- for b in section.blocks -%}
         {%- assign c = b.settings -%}
@@ -56,6 +57,15 @@
         </li>
       {%- endfor -%}
     </ul>
+    {%- if s.box_title != blank -%}
+      <aside class="ph-faq__box ph-cards__box">
+        {% render 'ph-title', text: s.box_title, tag: 'h3', class: 'ph-faq__box-title' %}
+        {%- if s.box_text != blank -%}<p class="ph-faq__box-text">{{ s.box_text | newline_to_br }}</p>{%- endif -%}
+        {%- if s.box_button != blank -%}<a class="ph-btn ph-btn--navy ph-faq__box-btn" href="{{ s.box_link | default: routes.root_url }}"><span>{{ s.box_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+        {% render 'ph-art', name: 'box-low' %}
+      </aside>
+    {%- endif -%}
+    </div>
   </div>
 </section>
 
@@ -71,6 +81,7 @@
       { "value": "photos", "label": "Cartes photo et lien souligné" },
       { "value": "numbered", "label": "Photo et numéro jaune" },
       { "value": "icons", "label": "Cartes à pictogramme" },
+      { "value": "mini", "label": "Petits repères à pictogramme et encadré jaune" },
       { "value": "projects", "label": "Réalisations illustratives" },
       { "value": "shortcuts", "label": "Raccourcis vers les prestations" }
     ] },
@@ -84,6 +95,11 @@
     { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
     { "type": "text", "id": "note", "label": "Note à droite du titre" },
+    { "type": "header", "content": "Encadré jaune (à droite des cartes)" },
+    { "type": "textarea", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "textarea", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "box_button", "label": "Bouton de l'encadré" },
+    { "type": "url", "id": "box_link", "label": "Lien du bouton" },
     { "type": "number", "id": "image_height", "label": "Hauteur des photos (repère 1440 px, 0 = selon la disposition)", "default": 0 },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },

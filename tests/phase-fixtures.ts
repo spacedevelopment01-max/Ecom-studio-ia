@@ -236,6 +236,45 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
     ]),
   ]);
 
+  // ------------------------------------------------------------------------------------------- Éclairage (planches 02 et 07)
+  page("eclairage", [
+    S("ph-hero", { layout: "split", title_size: 80, crumb_parent: "Prestations", crumb_parent_link: U("prestations"), crumb_current: "Éclairage", heading: "La lumière\n[y]change tout.[/y]", text: p("Des solutions d'éclairage pour sublimer vos espaces<br>et créer des ambiances adaptées à chaque usage."), button_label: "Décrire mon projet", button_link: QUOTE, button2_label: "Nos réalisations", button2_link: U("realisations"), image_asset: f("04_eclairage_interieur"), image_alt: alt("04_eclairage_interieur"), image_position: "50% 50%", photo_w: 1060, height: 388, caption: "Visuel de démonstration", circuit: "p05", note: "Des ambiances\npour tous\nvos moments.", note_x: 1572, note_y: 30 }),
+    S("ph-cards", { layout: "photos", columns: 3, image_height: 134, eyebrow: "Nos domaines d'éclairage", pad_top: 10, pad_bottom: 14 }, [
+      { type: "card", settings: { image_asset: f("07_cuisine_contemporaine"), alt: alt("07_cuisine_contemporaine"), icon: "ampoule", title: "Intérieur", text: "Un éclairage confortable et fonctionnel\npour vos pièces de vie.", link_label: "Découvrir", link: "/pages/conseil-bien-penser-l-eclairage-de-votre-interieur" } },
+      { type: "card", settings: { image_asset: f("10_eclairage_exterieur"), alt: alt("10_eclairage_exterieur"), position: "50% 55%", icon: "eclairage-exterieur", title: "Extérieur", text: "Un éclairage adapté pour valoriser\nvos extérieurs et sécuriser vos accès.", link_label: "Découvrir", link: "/pages/conseil-eclairage-exterieur" } },
+      { type: "card", settings: { image_asset: f("11_chambre_eclairage"), alt: alt("11_chambre_eclairage"), position: "50% 40%", icon: "spot-plafond", title: "Ambiances & usages", text: "Des solutions sur mesure selon vos activités :\ntravail, détente, réception…", link_label: "Découvrir", link: "/pages/conseil-creer-une-ambiance-lumineuse" } },
+    ]),
+    S("ph-steps", { layout: "features", background: "navy", title_size: 42, eyebrow: "De la fonction à l'atmosphère", heading: "Un éclairage\n[y]au service de votre quotidien.[/y]", text: p("Bien plus qu'une question de luminosité,<br>l'éclairage participe au confort, à l'esthétique<br>et à l'usage de vos espaces."), pad_top: 20, pad_bottom: 12, show: "desktop" }, [
+      { type: "step", settings: { number: "", icon: "clarte-soleil", title: "Confort visuel", text: "Une lumière adaptée\nà chaque pièce et activité." } },
+      { type: "step", settings: { number: "", icon: "goutte", title: "Mise en valeur", text: "Des espaces sublimés\npar une lumière bien pensée." } },
+      { type: "step", settings: { number: "", icon: "ampoule", title: "Économies d'énergie", text: "Des solutions performantes\net durables." } },
+      { type: "step", settings: { number: "", icon: "feuille", title: "Ambiances variées", text: "Du quotidien aux moments\nd'exception." } },
+    ]),
+    S("ph-cards", { layout: "mini", columns: 4, eyebrow: "Vos besoins de projet", box_title: "Vous avez un projet d'éclairage ?", box_text: "Décrivez vos besoins pour trouver\nles solutions adaptées à votre espace.", box_button: "Décrire mon projet", box_link: QUOTE, pad_top: 14, pad_bottom: 14, show: "desktop" }, [
+      { type: "card", settings: { icon: "clarte-soleil", title: "Plus de lumière", text: "Des espaces plus lumineux\net agréables à vivre.", link_label: "En savoir plus", link: "/pages/conseil-bien-penser-l-eclairage-de-votre-interieur" } },
+      { type: "card", settings: { icon: "ampoule", title: "Une ambiance spécifique", text: "Une atmosphère adaptée\nà chaque pièce.", link_label: "En savoir plus", link: "/pages/conseil-creer-une-ambiance-lumineuse" } },
+      { type: "card", settings: { icon: "maison", title: "Un éclairage extérieur", text: "Valoriser et sécuriser\nvos extérieurs.", link_label: "En savoir plus", link: "/pages/conseil-eclairage-exterieur" } },
+      { type: "card", settings: { icon: "feuille", title: "Des solutions économiques", text: "Des équipements plus\nperformants.", link_label: "En savoir plus", link: QUOTE } },
+    ]),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Dépannage (planches 02 et 07)
+  page("depannage", [
+    S("ph-hero", { layout: "split", title_size: 76, crumb_parent: "Prestations", crumb_parent_link: U("prestations"), crumb_current: "Dépannage", heading: "Un problème électrique ?\n[y]Faisons le point.[/y]", text: p("Une analyse claire de votre situation pour identifier<br>la meilleure solution."), button_label: "Décrire le problème", button_link: QUOTE, image_asset: f("05_depannage"), image_alt: alt("05_depannage"), image_position: "50% 60%", photo_w: 1000, height: 474, caption: "Visuel de démonstration", circuit: "p05", note: "Un diagnostic\nclair pour\navancer sereinement.", note_x: 1572, note_y: 28 }),
+    S("ph-cards", { layout: "icons", columns: 4, eyebrow: "Situations fréquentes", pad_top: 18, pad_bottom: 18 }, [
+      { type: "card", settings: { icon: "alimentation", title: "Coupures", text: "Coupures partielles ou totales,\nrécurrentes ou ponctuelles.", link_label: "En savoir plus", link: QUOTE } },
+      { type: "card", settings: { icon: "prise", title: "Prises & interrupteurs", text: "Une prise qui ne fonctionne plus,\nun interrupteur défectueux.", link_label: "En savoir plus", link: QUOTE } },
+      { type: "card", settings: { icon: "ampoule", title: "Éclairage", text: "Un éclairage qui ne s'allume plus\nou un fonctionnement anormal.", link_label: "En savoir plus", link: QUOTE } },
+      { type: "card", settings: { icon: "tableau-electrique", title: "Tableau électrique", text: "Un disjoncteur qui saute\nou un comportement inhabituel.", link_label: "En savoir plus", link: U("tableau-et-securite") } },
+    ]),
+    S("ph-prepare", { eyebrow: "Préparer votre demande", box_icon: "bulle", box_title: "Nous sommes à votre écoute", box_text: "Notre équipe est disponible pour échanger\nsur votre situation.", box_note: "Disponibilités à confirmer", box_button: "Décrire le problème", box_link: QUOTE, pad_top: 10, pad_bottom: 36 }, [
+      { type: "item", settings: { icon: "lieu-repere", title: "Localisation", text: "Indiquez le type de logement et la pièce concernée." } },
+      { type: "item", settings: { icon: "devis-document", title: "Symptômes", text: "Décrivez ce que vous constatez (quand, comment, fréquence…)." } },
+      { type: "item", settings: { icon: "maison", title: "Contexte", text: "Précisez les éventuels travaux récents ou changements d'usage." } },
+      { type: "item", settings: { icon: "calendrier", title: "Disponibilités", text: "Indiquez vos disponibilités pour organiser une intervention." } },
+    ]),
+  ]);
+
   // ------------------------------------------------------------------------------------------- En-tête, pied, menus
   const header = spec.groups.header;
   for (const id of header.order) if (header.sections[id]?.type === "header" || header.sections[id]?.type === "announcement-bar") header.sections[id].disabled = true;
