@@ -45,7 +45,6 @@ export const FONT_FILES: Record<string, { family: string; files: Record<number, 
   // FRAISE : titres ronds et gras, italique d'accent (Playfair Display 800 italique) — OFL, bibliothèque de polices Shopify.
   poppins: { family: "Poppins", files: { 400: "Poppins-400.ttf", 500: "Poppins-500.ttf", 600: "Poppins-600.ttf", 700: "Poppins-700.ttf", 800: "Poppins-800.ttf" }, fallback: "sans-serif" },
   // SILLON V2 : grands titres condensés, étiquettes à chasse fixe, signature fine (OFL, bibliothèque de polices Shopify).
-  anton: { family: "Anton", files: { 400: "Anton-400.ttf" }, fallback: "sans-serif" },
   space_mono: { family: "Space Mono", files: { 400: "SpaceMono-400.ttf", 700: "SpaceMono-700.ttf" }, fallback: "monospace" },
   oswald: { family: "Oswald", files: { 200: "Oswald-200.ttf", 300: "Oswald-300.ttf", 500: "Oswald-500.ttf", 700: "Oswald-700.ttf" }, fallback: "sans-serif" },
 };

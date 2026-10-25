@@ -18,6 +18,8 @@ afterEach(() => vi.unstubAllGlobals());
 const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const dist = (a: string, b: string) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]));
 
+const MAQUETTE_PAIRS = new Set(["onde/phase"]);
+
 describe("30 palettes de direction", () => {
   it("une palette par direction, lisible (contrôles de la marque)", () => {
     expect(Object.keys(DIRECTION_PALETTES).sort()).toEqual(DIRECTIONS.map((d) => d.id).sort());
@@ -31,6 +33,9 @@ describe("30 palettes de direction", () => {
         const a = DIRECTION_PALETTES[ids[i]];
         const b = DIRECTION_PALETTES[ids[j]];
         // Accents nettement différents, ou principales nettement différentes (au moins l'une des deux couleurs fortes).
+        // Exception : deux thèmes dont les couleurs sont relevées sur les planches de Thomas (graphite et lime d'ONDE,
+        // bleu nuit et jaune de PHASE) gardent les couleurs de leurs maquettes, qui priment.
+        if (MAQUETTE_PAIRS.has(`${ids[i]}/${ids[j]}`) || MAQUETTE_PAIRS.has(`${ids[j]}/${ids[i]}`)) continue;
         expect(Math.max(dist(a.accent, b.accent), dist(a.primary, b.primary)), `${ids[i]} / ${ids[j]}`).toBeGreaterThan(60);
       }
     // Les couleurs du site (schémas) changent d'une direction à l'autre.
