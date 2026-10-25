@@ -1,3 +1,4 @@
+import {OPENAI_VOICE_MODEL} from "./openai-voice";
 import {siteVideoRequest,serviceSiteScope,strategySelection} from '../strategy-consumption';
 import {activeStrategy,communicationStrategy} from '../marketing-strategy';
 /** Scenario approval is scoped to project context, references, request, voice and routing; no new engine. */
@@ -19,7 +20,7 @@ export function videoScope(p:Project,request:unknown) {
  const selected=p.business==='services'&&(serviceSiteScope(p.id)||siteVideoRequest(p.id,request))?null:p.business==='services'&&r?.angleId?communicationStrategy(p.id,{angleId:r.angleId}):strategySelection(p.id)??(p.business==='services'?activeStrategy(p.id):null);
  const marketing=selected?{angleId:selected.angleId,inputDigest:selected.inputDigest}:null;const prep=r?.purpose==="site"?stateOf(p.id):null;const slot=prep?.stages.media?.data.slots.find(s=>s.key===r.initialSlot);
  const initialContext=prep?{upstream:inputHash(prep,"media"),placement:slot?{key:slot.key,page:slot.pageKey,section:slot.sectionKey,purpose:slot.purpose}:null}:undefined;
- return crypto.createHash("sha256").update(JSON.stringify({...marketing?{marketing}:{},...initialContext?{initialContext}:{},...(request&&typeof request==="object"&&"generation" in request?{wording:loadWordingRules(p.id)}:{}),selectedRefs,request,project:p.id,business:p.business,product:p.product,services:p.services,brand:p.brand,strategy:p.strategy,settings:p.settings,refs,voice:loadCreativeMemory(p.id,p).preferences,routes:[routeFor("copywriting"),routeFor("quality_control"),usagePrimary("social_image"),usagePrimary("product_video"),...(request&&typeof request==="object"&&"generation" in request?[usagePrimary("text_video")]:[])]})).digest("hex");
+ return crypto.createHash("sha256").update(JSON.stringify({...marketing?{marketing}:{},...initialContext?{initialContext}:{},...(request&&typeof request==="object"&&"generation" in request?{wording:loadWordingRules(p.id)}:{}),selectedRefs,request,project:p.id,business:p.business,product:p.product,services:p.services,brand:p.brand,strategy:p.strategy,settings:p.settings,refs,voiceModel:OPENAI_VOICE_MODEL,voice:loadCreativeMemory(p.id,p).preferences,routes:[routeFor("copywriting"),routeFor("quality_control"),usagePrimary("social_image"),usagePrimary("product_video"),...(request&&typeof request==="object"&&"generation" in request?[usagePrimary("text_video")]:[])]})).digest("hex");
 }
 export type VideoApproval<T=unknown>={projectId:string;scope:string;scenario:T;capMicro:number;quoteTotalMicro?:number;retakeMicro?:number;scenarioJobId?:string;expires:number};
 const signature=(payload:string)=>crypto.createHmac("sha256",derivedKey("video-scenario")).update(payload).digest("base64url");

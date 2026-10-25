@@ -14,7 +14,7 @@ export type CreativeMemory = {
   productReferences: { assetId: string; reconstructed: boolean }[];
   palette: Record<string, string> | null;
   fonts: { heading: string; body: string } | null;
-  preferences: { family?: PaletteFamily; animation?: string; voice?: "on" | "off"; voiceId?:"ff_siwis"|"am_michael"; voiceConsent?:"synthetic"; music?: "on" | "off" };
+  preferences: { family?: PaletteFamily; animation?: string; voice?: "on" | "off"; voiceId?:"ff_siwis"|"am_michael"|`openai:${import("./openai-voice").OpenAIVoice}`; voiceConsent?:"synthetic"; music?: "on" | "off" };
   media: { assetId: string; source: string; ref: string; license: string; role: string }[];
   validated: string[];
   corrections: string[];

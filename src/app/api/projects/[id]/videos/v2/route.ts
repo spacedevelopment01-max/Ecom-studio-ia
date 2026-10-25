@@ -81,8 +81,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (b.action === "plan") {
     const r = await runVideoEngineV2(null, p.id, { ask: b.ask, offer: b.offer, planOnly: true, maxCostEur: b.maxCostEur });
-    const chain=v2ChainQuote(r);
-    const maximumMicro=chain.shotsMicro*(POLICIES.video_shot_v2.maxRetries+1)+r.shots.filter(s=>s.source.kind==="generate").length*chain.clipReviews*(POLICIES.video_shot_v2.maxRetries+1)+chain.conditionalStartImages*chain.imageUnitMicro*3+chain.finalReview*(POLICIES.video_v2.maxRetries+1);
+    const chain=v2ChainQuote(r,p);
+    const maximumMicro=chain.voiceMicro+chain.shotsMicro*(POLICIES.video_shot_v2.maxRetries+1)+r.shots.filter(s=>s.source.kind==="generate").length*chain.clipReviews*(POLICIES.video_shot_v2.maxRetries+1)+chain.conditionalStartImages*chain.imageUnitMicro*3+chain.finalReview*(POLICIES.video_v2.maxRetries+1);
     const approved=approveVideoScenario(p,{ask:b.ask,offer:b.offer??null},r.script,Math.min(Math.round((b.maxCostEur??6)*1e6),maximumMicro));
     return ok({ approvalToken:approved.token,chain:{...chain,maximumMicro}, intent: r.intent, strategy: r.strategy, script: r.script, shots: r.shots.map((s) => ({ id: s.id, part: s.part, durationS: s.durationS, subject: s.subject, method: s.method, why: s.why, paid: s.source.kind === "generate", estimateMicro: s.source.estimateMicro ?? 0 })), estimateMicro: chain.firstMicro, notes: r.notes });
   }

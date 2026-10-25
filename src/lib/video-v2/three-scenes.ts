@@ -41,6 +41,9 @@ import { buildCreativeBrief, type CreativeBrief } from "./creative-brief";
 import { buildStoryboard, usable, type Storyboard } from "./ad-storyboard";
 import { allowedBrands, brandIssuesInTexts } from "./brand-guard";
 import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia } from "./creative-memory";
+import { execTool } from "../exec-tool";
+import { requireCreationPlan } from "../plan-gates";
+import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice } from "./voice";
 import { brainView } from "../brain/facade";
 import { storagePath, tmpDir } from "../storage";
@@ -455,7 +458,8 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   if (plan.voiceEnd && !usable(plan.voiceEnd)) plan.voiceEnd = "";
 
   if(req.purpose!=="site"&&projectVoice(memory.preferences)) {const max=Math.floor((timing.showS-.3)*2.4);const long=plan.scenes.findIndex((s,k)=>countWords(`${s.voice??""} ${k===n-1?plan.voiceEnd??"":""}`)>max);if(long>=0) throw new UserFacingError(`Voix de la scène ${long+1} trop longue : adaptez le scénario ou la durée avant les médias. Aucun texte supprimé.`);}
-  if(req.purpose!=="site"&&projectVoice(memory.preferences) && !voiceAvailable()) throw new UserFacingError("La voix du projet n’est pas installée : aucun média payant lancé.");
+  if(req.purpose!=="site"&&isOpenAIVoice(projectVoice(memory.preferences)??"")){requireCreationPlan(null,projectId,"videos");if(!req.approval)throw new UserFacingError("Voix payante : scénario et devis à valider avant lancement.");}
+  if(req.purpose!=="site"&&memory.preferences.voice==="on"&&(!projectVoice(memory.preferences)||!voiceAvailable(projectVoice(memory.preferences)))) throw new UserFacingError("La voix du projet est indisponible : aucun média payant lancé.");
   const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
   // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
   const kept: number[] = [];
@@ -600,7 +604,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = req.purpose==="site"?null:projectVoice(memory.preferences);
   if(chosenVoice) {
-    if(!voiceAvailable()) throw new UserFacingError("La voix choisie n'est pas installée : vidéo incomplète, médias conservés. Activez la voix sur le serveur ou choisissez explicitement sans voix.");
+    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie est indisponible : vidéo incomplète, médias conservés. Vérifiez sa configuration ou choisissez explicitement sans voix.");
     brief.voice.kokoroVoice=chosenVoice;
     await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s);
     notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
@@ -642,7 +646,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
 
 /** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
 export async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number], synth = synthLine) {
-  const lang = C("fr","en") === "en" ? "en" : "fr";
+  const lang: "fr" | "en" = C("fr","en") === "en" ? "en" : "fr";
   const lines = doc.clips.map((clip,k)=>({clip,text:[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim()}));
   const dir=tmpDir("voice");
   const pending:VideoDocument["audio"]["voice"]=[];
@@ -651,13 +655,16 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
     for(const [k,l] of lines.entries()) {
       if(!l.text) continue;
       const wav=path.join(dir,`v-${k}.wav`);
-      const durationS=await synth(l.text,wav,{voice:brief.voice.kokoroVoice,speed:brief.voice.speed,lang});
+      const options={voice:brief.voice.kokoroVoice,speed:brief.voice.speed,lang};
+      const acquired=synth===synthLine&&isOpenAIVoice(options.voice)?await acquiredVoice({projectId,userId},l.text,options):null;
+      if(acquired)fs.writeFileSync(wav,assetData(acquired));
+      const durationS=acquired?Number((await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",wav])).stdout.trim()):await synth(l.text,wav,options);
       if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
-      const a=await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
+      const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
       cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
     }
-    doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
+    doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=isOpenAIVoice(brief.voice.kokoroVoice)?brief.voice.kokoroVoice:`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 }
 

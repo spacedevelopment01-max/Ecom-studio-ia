@@ -135,13 +135,16 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
     const { geminiPlate } = await import("@/lib/ai/media-providers");
     // Décor vide demandé au modèle choisi pour « Images produit » (ici Gemini, réglé dans l'administration).
     // (remis à zéro en fin de test : la base est partagée avec les autres fichiers de tests)
-    (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
-    onTestFinished(async () => (await import("@/lib/settings")).setJsonSetting("ai.media.usage", {}));
+    const settings=await import("@/lib/settings");
+    const previousUsage=settings.getJsonSetting("ai.media.usage",{});
+    // Ce contrôle simule seulement Gemini : ne pas hériter du mode automatique et de ses statistiques globales.
+    settings.setJsonSetting("ai.media.usage", {product_image:{mode:"manual",primary:"google:gemini-2.5-flash-image",backup:null}});
+    onTestFinished(()=>settings.setJsonSetting("ai.media.usage",previousUsage));
     const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
     fetchImpl = async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: png } }] } }] }), { status: 200 });
     await fr(() => geminiPlate({ userId: u.id, projectId: p.id, usageKey: `img-ok-${Date.now()}`, brain }, { prompt: "set", aspect: "1:1" }));
-    const ok = one<any>("SELECT status, brain_scope, brain_hash, brain_version FROM ai_calls WHERE project_id = ? AND task = 'image_generation' ORDER BY created_at DESC, rowid DESC LIMIT 1", p.id);
-    expect(ok).toEqual({ status: "ok", brain_scope: "image", brain_hash: v.hash, brain_version: BRAIN_VERSION });
+    const ok = one<any>("SELECT status, provider, brain_scope, brain_hash, brain_version FROM ai_calls WHERE project_id = ? AND task = 'image_generation' ORDER BY created_at DESC, rowid DESC LIMIT 1", p.id);
+    expect(ok).toEqual({ status: "ok", provider:"google", brain_scope: "image", brain_hash: v.hash, brain_version: BRAIN_VERSION });
     fetchImpl = async () => new Response("panne", { status: 500 });
     await expect(fr(() => geminiPlate({ userId: u.id, projectId: p.id, usageKey: `img-ko-${Date.now()}`, brain }, { prompt: "set", aspect: "1:1" }))).rejects.toThrow();
     const ko = one<any>("SELECT status, brain_scope FROM ai_calls WHERE project_id = ? AND task = 'image_generation' ORDER BY created_at DESC, rowid DESC LIMIT 1", p.id);
