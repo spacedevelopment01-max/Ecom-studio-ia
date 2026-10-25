@@ -97,7 +97,7 @@ try {
     const handles = (COVEN_PAGES as { handle: string }[]).map((x) => x.handle);
     const fileFor = (p: string): string => {
       const [pathname] = p.split("?");
-      if (pathname === "" || pathname === "/") return "accueil.html";
+      if (pathname === "" || pathname === "/") return "index.html";
       if (pathname.startsWith("/assets/")) return pathname.slice(1);
       if (pathname.startsWith("/__fonts/")) return "fonts/" + pathname.slice(9);
       if (pathname === `/products/${PRODUCT_HANDLE}` || pathname.startsWith("/collections")) return "produit.html";
@@ -118,7 +118,7 @@ try {
     const spriteFile = COVEN_MEDIA.find((m) => m.file === "coven-icones.svg")!;
     const sprite = fs.existsSync(path.join(kit, spriteFile.source)) ? covenSprite(fs.readFileSync(path.join(kit, spriteFile.source), "utf8")) : "";
     const inject = (html: string) => html.replace("</head>", () => `<script>window.__covenSprite=${JSON.stringify(sprite).replace(/</g, "\\u003c")};</script></head>`);
-    const routes: [string, string, number][] = [["accueil.html", "/", 200], ["produit.html", `/products/${PRODUCT_HANDLE}`, 200], ["panier.html", "/cart", 200], ["404.html", "/page-introuvable", 404], ...handles.map((h) => [`page-${h}.html`, `/pages/${h}`, 200] as [string, string, number])];
+    const routes: [string, string, number][] = [["index.html", "/", 200], ["produit.html", `/products/${PRODUCT_HANDLE}`, 200], ["panier.html", "/cart", 200], ["404.html", "/page-introuvable", 404], ...handles.map((h) => [`page-${h}.html`, `/pages/${h}`, 200] as [string, string, number])];
     for (const [file, route, status] of routes) {
       const r = await get(`${base}${route}?es_raw=1`); assert.equal(r.status, status, `${route} → ${r.status}`);
       fs.writeFileSync(path.join(out, file), inject(rewrite(await r.text())));

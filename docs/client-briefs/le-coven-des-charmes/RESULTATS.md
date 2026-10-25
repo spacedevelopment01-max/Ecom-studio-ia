@@ -72,8 +72,9 @@ Pied de page : le même sur tout le site (ordinateur : colonnes autour du logo ;
 liens centrés). Une autre composition des planches peut être choisie page par page dans les réglages du pied.
 
 En-tête : liens, logo original du client dans son médaillon, compte, panier, « Commander » ; version courte avec étoile
-pour les pages des planches 02-03 ; téléphone : menu à gauche, logo au centre (taille par page), panier à droite, menu
-plein écran (Échap, focus gardé). Pied : colonnes autour du logo (planches 01, 03), logo et liens en ligne (planche 02),
+pour les pages des planches 02-03 ; téléphone : menu à gauche, logo au centre, panier à droite, menu plein écran
+(Échap, focus gardé). Sur téléphone, le logo et la barre de la page d'accueil (78 px, barre de 34 px) valent pour
+tout le site (réglables, et page par page si besoin). Pied : colonnes autour du logo (planches 01, 03), logo et liens en ligne (planche 02),
 téléphone : colonnes (accueil, produit), logo entre deux lunes (planche 05), grande lune (planche 06).
 
 ## Vérifications
