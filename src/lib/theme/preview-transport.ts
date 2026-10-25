@@ -62,7 +62,9 @@ export async function portablePreview(html: string, spec: ThemeSpec, base: strin
     return url;
   }
   async function replace(text: string, stack: string[] = []) {
-    const re = new RegExp(`${escape(base)}/(assets|__fonts)/([\\w%./-]+)(?:\\?[^\\s"'<>)]*)?`, "g");
+    // La requête s'arrête aussi à « \\ » : dans une réponse JSON (fragment), le guillemet qui suit est échappé (\\") et
+    // la barre ne doit pas être avalée, sinon le JSON renvoyé (sections du panier) devient illisible.
+    const re = new RegExp(`${escape(base)}/(assets|__fonts)/([\\w%./-]+)(?:\\?[^\\s"'<>)\\\\]*)?`, "g");
     const replacements=new Map<string,string>();
     for (const m of [...text.matchAll(re)]) {
       const asset = await resource(m[1], decodeURIComponent(m[2]), stack);
