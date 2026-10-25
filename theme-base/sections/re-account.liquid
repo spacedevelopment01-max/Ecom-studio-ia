@@ -1,0 +1,126 @@
+{%- comment -%}
+  Mon espace (Maison & Horizon, planche 07), deux dispositions :
+  - « Connexion » : se connecter ou créer un compte. Les comptes dépendent de la plateforme de la boutique ; quand les
+    comptes clients Shopify sont activés, les vrais formulaires de Shopify sont utilisés. Sinon (et dans une
+    démonstration), la page le dit et rien n'est envoyé : aucune fausse connexion.
+  - « Tableau de bord » : favoris et recherches récentes gardés dans CE navigateur (assets/horizon.js), visites à
+    confirmer par l'agence. Ce n'est pas un compte : aucune donnée n'est partagée entre appareils, ce que la page dit.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign layout = s.layout | default: 'login' -%}
+<section class="es-section re-account re-account--{{ layout }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;" data-re-account>
+  <div class="es-container re-account__grid">
+    <div class="re-account__main">
+      <h1 class="re-title">{{ s.heading | escape }}</h1>
+      {%- if s.text != blank -%}<p class="re-muted re-account__lede">{{ s.text | escape }}</p>{%- endif -%}
+      <p class="re-notice">{% render 'mh-icon', name: 'info' %}<span>{%- if layout == 'login' -%}{%- if shop.es_demo -%}Démonstration : aucune connexion n'est possible ici et rien n'est envoyé.{%- elsif shop.customer_accounts_enabled -%}Connexion avec les comptes clients de la boutique.{%- else -%}Les comptes clients ne sont pas encore activés sur ce site : la connexion n'est pas disponible.{%- endif -%}{%- else -%}{{ s.notice | default: "Cet espace garde vos favoris et vos recherches récentes dans ce navigateur, sans compte : ils ne suivent pas d'un appareil à l'autre." | escape }}{%- endif -%}</span></p>
+
+      {%- if layout == 'login' -%}
+      <div class="re-account__card">
+        <div class="re-tabs re-tabs--line" role="tablist" aria-label="Connexion ou création de compte">
+          <button type="button" role="tab" id="TabLogin-{{ section.id }}" class="re-tab is-active" aria-selected="true" aria-controls="PanelLogin-{{ section.id }}" data-re-tab-panel>Se connecter</button>
+          <button type="button" role="tab" id="TabRegister-{{ section.id }}" class="re-tab" aria-selected="false" aria-controls="PanelRegister-{{ section.id }}" tabindex="-1" data-re-tab-panel>Créer un compte</button>
+        </div>
+        <div role="tabpanel" id="PanelLogin-{{ section.id }}" aria-labelledby="TabLogin-{{ section.id }}">
+          {%- if shop.customer_accounts_enabled and shop.es_demo != true -%}
+            {%- form 'customer_login', class: 're-form re-form--plain' -%}
+              <label class="re-field"><span>Adresse e-mail *</span><input type="email" name="customer[email]" autocomplete="email" required></label>
+              <label class="re-field"><span>Mot de passe *</span><input type="password" name="customer[password]" autocomplete="current-password" required></label>
+              {%- if form.errors -%}<div class="re-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+              <button type="submit" class="re-btn re-btn--green re-btn--block">Se connecter {% render 'mh-icon', name: 'arrow' %}</button>
+            {%- endform -%}
+          {%- else -%}
+            <form class="re-form re-form--plain" data-re-account-form action="#" method="post">
+              <label class="re-field"><span>Adresse e-mail *</span><input type="email" name="email" autocomplete="email" placeholder="votre@email.fr" required></label>
+              <label class="re-field"><span>Mot de passe *</span><span class="re-password"><input type="password" name="password" autocomplete="current-password" required><button type="button" class="re-password__toggle" data-re-password aria-pressed="false" aria-label="Afficher le mot de passe">{% render 'mh-icon', name: 'eye' %}</button></span></label>
+              <div class="re-account__line"><label class="re-check"><input type="checkbox" name="remember"> Se souvenir de moi</label><span class="re-muted">Mot de passe oublié : à gérer par la plateforme</span></div>
+              <button type="submit" class="re-btn re-btn--green re-btn--block">Se connecter {% render 'mh-icon', name: 'arrow' %}</button>
+              <p class="re-form__status" role="status" aria-live="polite" data-re-account-status></p>
+            </form>
+          {%- endif -%}
+        </div>
+        <div role="tabpanel" id="PanelRegister-{{ section.id }}" aria-labelledby="TabRegister-{{ section.id }}" hidden>
+          {%- if shop.customer_accounts_enabled and shop.es_demo != true -%}
+            {%- form 'create_customer', class: 're-form re-form--plain' -%}
+              <label class="re-field"><span>Nom *</span><input name="customer[last_name]" autocomplete="family-name" required></label>
+              <label class="re-field"><span>Adresse e-mail *</span><input type="email" name="customer[email]" autocomplete="email" required></label>
+              <label class="re-field"><span>Mot de passe *</span><input type="password" name="customer[password]" autocomplete="new-password" required></label>
+              {%- if form.errors -%}<div class="re-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+              <button type="submit" class="re-btn re-btn--green re-btn--block">Créer mon compte {% render 'mh-icon', name: 'arrow' %}</button>
+            {%- endform -%}
+          {%- else -%}
+            <form class="re-form re-form--plain" data-re-account-form action="#" method="post">
+              <label class="re-field"><span>Nom *</span><input name="name" autocomplete="name" required></label>
+              <label class="re-field"><span>Adresse e-mail *</span><input type="email" name="email" autocomplete="email" required></label>
+              <label class="re-field"><span>Mot de passe *</span><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+              <button type="submit" class="re-btn re-btn--green re-btn--block">Créer mon compte {% render 'mh-icon', name: 'arrow' %}</button>
+              <p class="re-form__status" role="status" aria-live="polite" data-re-account-status></p>
+            </form>
+          {%- endif -%}
+        </div>
+      </div>
+      {%- else -%}
+      <ul class="re-stats" role="list">
+        <li><span class="re-stats__icon">{% render 'mh-icon', name: 'heart' %}</span><span><strong data-re-fav-total>0</strong><small>Biens favoris</small>{%- if s.favorites_url != blank -%}<a class="re-link" href="{{ s.favorites_url }}">Voir mes favoris {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}</span></li>
+        <li><span class="re-stats__icon">{% render 'mh-icon', name: 'search' %}</span><span><strong data-re-searches-total>0</strong><small>Recherches récentes</small>{%- if s.alert_url != blank -%}<a class="re-link" href="{{ s.alert_url }}">Créer une alerte {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}</span></li>
+        <li><span class="re-stats__icon">{% render 'mh-icon', name: 'calendar' %}</span><span><strong>—</strong><small>Visites : confirmées par l'agence</small>{%- if s.contact_url != blank -%}<a class="re-link" href="{{ s.contact_url }}">Demander une visite {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}</span></li>
+      </ul>
+      <div class="re-dash">
+        <div class="re-dash__panel">
+          <h2 class="re-dash__title">Ma prochaine visite <span class="re-chip re-chip--soft">À confirmer</span></h2>
+          <div class="re-dash__visit">
+            {%- if s.visit_image != blank or s.visit_image_asset != blank -%}<div class="re-dash__media">{% render 'ed-media', image: s.visit_image, asset: s.visit_image_asset, alt: s.visit_image_alt, loading: 'lazy' %}</div>{%- endif -%}
+            <p class="re-muted">Aucune visite n'est enregistrée dans cet espace. Après votre demande depuis la fiche d'un bien, l'agence vous confirme le rendez-vous par e-mail ou par téléphone.</p>
+          </div>
+        </div>
+        <div class="re-dash__side">
+          <div class="re-dash__panel">
+            <h2 class="re-dash__title">Mes recherches récentes</h2>
+            <ul class="re-searches" role="list" data-re-searches></ul>
+            <p class="re-muted" data-re-searches-empty>Aucune recherche récente dans ce navigateur. Vos recherches sur les pages Acheter, Louer et Carte s'afficheront ici.</p>
+          </div>
+          <div class="re-dash__panel">
+            <h2 class="re-dash__title">Accès rapides</h2>
+            <ul class="re-quick" role="list">
+              {%- if s.favorites_url != blank -%}<li><a href="{{ s.favorites_url }}">{% render 'mh-icon', name: 'heart' %}Mes favoris</a></li>{%- endif -%}
+              {%- if s.alert_url != blank -%}<li><a href="{{ s.alert_url }}">{% render 'mh-icon', name: 'bell' %}Créer une alerte</a></li>{%- endif -%}
+              {%- if s.contact_url != blank -%}<li><a href="{{ s.contact_url }}">{% render 'mh-icon', name: 'mail' %}Contacter l'agence</a></li>{%- endif -%}
+              <li><button type="button" data-re-forget>{% render 'mh-icon', name: 'trash' %}Effacer les données de ce navigateur</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {%- endif -%}
+    </div>
+    {%- if s.image != blank or s.image_asset != blank -%}
+    <div class="re-account__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, loading: 'lazy' %}</div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Espace client",
+  "tag": "div",
+  "class": "section-re-account",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "login", "options": [ { "value": "login", "label": "Connexion / création de compte" }, { "value": "dashboard", "label": "Tableau de bord (favoris et recherches de ce navigateur)" } ] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Mon espace" },
+    { "type": "text", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "notice", "label": "Mention (tableau de bord)" },
+    { "type": "url", "id": "favorites_url", "label": "Page des favoris" },
+    { "type": "url", "id": "alert_url", "label": "Page « Créer une alerte »" },
+    { "type": "url", "id": "contact_url", "label": "Page de contact" },
+    { "type": "image_picker", "id": "image", "label": "Photo à droite" },
+    { "type": "text", "id": "image_asset", "label": "Photo à droite (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "image_picker", "id": "visit_image", "label": "Illustration « prochaine visite »" },
+    { "type": "text", "id": "visit_image_asset", "label": "Illustration « prochaine visite » (fichier du thème)" },
+    { "type": "text", "id": "visit_image_alt", "label": "Description de l'illustration" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 48 }
+  ],
+  "presets": [ { "name": "Espace client" } ]
+}
+{% endschema %}

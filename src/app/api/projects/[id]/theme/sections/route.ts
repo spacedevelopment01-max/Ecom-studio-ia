@@ -36,7 +36,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const kind = projectKind(p);
   const why = sectionIncompatibility(cur.spec, b.type, kind, uiLang());
   if (why) throw new HttpError(400, L(`Section incompatible avec ce thème ou cette catégorie : ${why}`, `Section incompatible with this theme or category: ${why}`));
-  const filled = withProjectMedia(cur.spec, b.type, { ...lib.settings }, undefined, sectionContentContext(p, cur.spec, false, b.template));
+  const filled = withProjectMedia(cur.spec, b.type, { ...lib.settings }, lib.blocks, sectionContentContext(p, cur.spec, false, b.template));
   if (b.replace) {
     const prev = cur.spec.templates[b.template]?.sections[b.replace];
     if (!prev) throw new HttpError(404, L("Section introuvable.", "Section not found."));

@@ -1,0 +1,103 @@
+{%- comment -%}
+  Le Coven des Charmes — familles de symboles (catégories explicatives, jamais une garantie de contenu ni un achat
+  par catégorie). Compositions : rangée de tiroirs (accueil), cartes à étiquette (tirage), liste de tiroirs sur deux
+  colonnes et boutons à icônes (téléphone).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="cvn-fam cvn-fam--label-{{ s.label_style }} cvn-fam--{{ s.layout }} cvn-fam--m-{{ s.mobile_layout }}{% if s.framed %} cvn-fam--framed{% endif %}" style="--pad-t: {{ s.padding_top }}px; --pad-b: {{ s.padding_bottom }}px;">
+  <div class="cvn-fam__inner cvn-scale">
+    {%- if s.bg_image != blank or s.bg_asset != blank -%}
+      <div class="cvn-fam__bg" aria-hidden="true"><img src="{% if s.bg_image != blank %}{{ s.bg_image | image_url: width: 2000 }}{% else %}{{ s.bg_asset | asset_url }}{% endif %}" alt="" loading="lazy" width="1600" height="600" style="object-position: {{ s.bg_focus_x }}% {{ s.bg_focus_y }}%"></div>
+    {%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="cvn-fam__heading{% if s.heading_style == 'caps' %} cvn-fam__heading--caps{% endif %}">{%- if s.heading_style == 'caps' -%}<svg class="cvn-star4" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0l1.6 10.4L24 12l-10.4 1.6L12 24l-1.6-10.4L0 12l10.4-1.6z"/></svg>{%- endif -%}{{ s.heading }}{%- if s.heading_style == 'caps' -%}<svg class="cvn-star4" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0l1.6 10.4L24 12l-10.4 1.6L12 24l-1.6-10.4L0 12l10.4-1.6z"/></svg>{%- endif -%}</h2>{%- endif -%}
+    {%- if s.mobile_heading != blank -%}<p class="cvn-fam__heading cvn-fam__heading--m" aria-hidden="true">{{ s.mobile_heading }}</p>{%- endif -%}
+    {%- if s.subheading != blank -%}<p class="cvn-fam__sub{% if s.mobile_subheading != blank %} cvn-only-d{% endif %}">{{ s.subheading }}</p>{%- endif -%}
+    {%- if s.mobile_subheading != blank -%}<p class="cvn-fam__sub cvn-only-m">{{ s.mobile_subheading }}</p>{%- endif -%}
+    <ul class="cvn-fam__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign b = block.settings
+          assign src = ''
+          if b.image != blank
+            assign src = b.image | image_url: width: 700
+          elsif b.image_asset != blank
+            assign src = b.image_asset | asset_url
+          endif
+        -%}
+        <li class="cvn-fam__item{% if b.desktop_hidden %} cvn-only-m{% endif %}{% if b.mobile_hidden %} cvn-only-d{% endif %}" {{ block.shopify_attributes }} style="--mo: {{ b.mobile_order | default: forloop.index }}; --fx: {{ b.focus_x }}%; --fy: {{ b.focus_y }}%; --z: {{ b.zoom | divided_by: 100.0 }};">
+          {%- if src != blank -%}<span class="cvn-fam__media"><img src="{{ src }}" alt="{{ b.image_alt | escape }}" loading="lazy" width="500" height="400"></span>{%- endif -%}
+          {%- if b.icon != 'none' -%}<span class="cvn-fam__icon"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-{{ b.icon }}"></use></svg></span>{%- endif -%}
+          <span class="cvn-fam__label">{{ b.title | newline_to_br }}</span>
+          {%- if b.mobile_title != blank -%}<span class="cvn-fam__label cvn-fam__label--m" aria-hidden="true">{{ b.mobile_title | newline_to_br }}</span>{%- endif -%}
+          {%- if b.text != blank -%}<span class="cvn-fam__text">{{ b.text | newline_to_br }}</span>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.note != blank -%}<p class="cvn-fam__note cvn-note"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-information"></use></svg><span>{{ s.note | newline_to_br }}</span></p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Coven — familles",
+  "class": "cvn-section cvn-section--families",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition sur ordinateur", "default": "drawers", "options": [
+      { "value": "drawers", "label": "Rangée de tiroirs photographiés (accueil)" },
+      { "value": "cards", "label": "Cartes à étiquette (tirage)" },
+      { "value": "list", "label": "Liste de tiroirs sur deux colonnes" },
+      { "value": "chips", "label": "Boutons à icônes" }
+    ] },
+    { "type": "select", "id": "mobile_layout", "label": "Composition sur téléphone", "default": "list", "options": [
+      { "value": "list", "label": "Liste de tiroirs sur deux colonnes (accueil)" },
+      { "value": "chips", "label": "Boutons à icônes (tirage)" },
+      { "value": "cards", "label": "Cartes" }
+    ] },
+    { "type": "checkbox", "id": "framed", "label": "Cadre doré", "default": false },
+    { "type": "text", "id": "heading", "label": "Titre" },
+    { "type": "text", "id": "mobile_heading", "label": "Titre sur téléphone (facultatif)" },
+    { "type": "select", "id": "heading_style", "label": "Style du titre", "default": "title", "options": [
+      { "value": "title", "label": "Titre" }, { "value": "caps", "label": "Capitales espacées entre étoiles" }
+    ] },
+    { "type": "text", "id": "subheading", "label": "Sous-titre" },
+    { "type": "text", "id": "mobile_subheading", "label": "Sous-titre sur téléphone (facultatif)" },
+    { "type": "select", "id": "label_style", "label": "Noms des familles (rangée de tiroirs)", "default": "plaque", "options": [
+      { "value": "plaque", "label": "Plaque dorée sous chaque tiroir" },
+      { "value": "photo", "label": "Écrits sur les tiroirs de la photo (nom lu par les lecteurs d'écran)" }
+    ] },
+    { "type": "textarea", "id": "note", "label": "Note (encadré)" },
+    { "type": "image_picker", "id": "bg_image", "label": "Décor de fond" },
+    { "type": "text", "id": "bg_asset", "label": "Décor de fond (fichier du thème)" },
+    { "type": "range", "id": "bg_focus_x", "label": "Cadrage horizontal du décor", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "bg_focus_y", "label": "Cadrage vertical du décor", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 20 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 2, "unit": "px", "default": 20 }
+  ],
+  "blocks": [
+    { "type": "family", "name": "Famille", "settings": [
+      { "type": "textarea", "id": "title", "label": "Nom" },
+      { "type": "textarea", "id": "mobile_title", "label": "Nom sur téléphone (facultatif)" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+      { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "zoom", "label": "Zoom", "min": 100, "max": 600, "step": 5, "unit": "%", "default": 100 },
+      { "type": "select", "id": "icon", "label": "Icône", "default": "none", "options": [
+        { "value": "none", "label": "Aucune" }, { "value": "familiers-chat", "label": "Familiers" }, { "value": "divination-cartes", "label": "Divination" },
+        { "value": "mysteres-lune", "label": "Mystères" }, { "value": "rituel-bougie", "label": "Rituels" }, { "value": "cristal", "label": "Pierres" },
+        { "value": "arbre-vie", "label": "Arbres de vie" }, { "value": "astre", "label": "Astres" }, { "value": "nature-feuille", "label": "Nature" },
+        { "value": "protection", "label": "Protection" }, { "value": "elements", "label": "Éléments" }, { "value": "accessoires-cle", "label": "Accessoires" },
+        { "value": "charms-etoile", "label": "Symboles" },
+        { "value": "chat", "label": "Chat (maquette)" }, { "value": "chapeau", "label": "Chapeau (maquette)" }, { "value": "botte", "label": "Botte (maquette)" },
+        { "value": "crane", "label": "Crâne (maquette)" }, { "value": "os", "label": "Os (maquette)" }, { "value": "rameau", "label": "Rameau (maquette)" }
+      ] },
+      { "type": "range", "id": "mobile_order", "label": "Position sur téléphone", "min": 1, "max": 12, "step": 1, "default": 1 },
+      { "type": "checkbox", "id": "desktop_hidden", "label": "Masquer sur ordinateur", "default": false },
+      { "type": "checkbox", "id": "mobile_hidden", "label": "Masquer sur téléphone", "default": false }
+    ] }
+  ],
+  "presets": [{ "name": "Coven — familles" }]
+}
+{% endschema %}

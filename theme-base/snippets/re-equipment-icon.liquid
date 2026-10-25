@@ -1,0 +1,22 @@
+{%- comment -%} Icône d'un équipement d'après son libellé (saisi dans l'onglet Biens) ; une coche s'il n'est pas reconnu. {%- endcomment -%}
+{%- assign t = label | downcase -%}
+{%- assign icon = 'check' -%}
+{%- if t contains 'jardin' -%}{%- assign icon = 'garden' -%}
+{%- elsif t contains 'terrasse' -%}{%- assign icon = 'terrace' -%}
+{%- elsif t contains 'balcon' or t contains 'loggia' -%}{%- assign icon = 'balcony' -%}
+{%- elsif t contains 'cuisine' -%}{%- assign icon = 'kitchen' -%}
+{%- elsif t contains 'chemin' -%}{%- assign icon = 'fireplace' -%}
+{%- elsif t contains 'vitrage' or t contains 'fenêtre' -%}{%- assign icon = 'window' -%}
+{%- elsif t contains 'rangement' or t contains 'placard' or t contains 'dressing' -%}{%- assign icon = 'storage' -%}
+{%- elsif t contains 'stationnement' or t contains 'parking' or t contains 'garage' -%}{%- assign icon = 'parking' -%}
+{%- elsif t contains 'cave' -%}{%- assign icon = 'cellar' -%}
+{%- elsif t contains 'meublé' or t contains 'meuble' -%}{%- assign icon = 'sofa' -%}
+{%- elsif t contains 'lave-linge' or t contains 'lave linge' -%}{%- assign icon = 'washer' -%}
+{%- elsif t contains 'vaisselle' -%}{%- assign icon = 'dishwasher' -%}
+{%- elsif t contains 'chauffage' -%}{%- assign icon = 'heating' -%}
+{%- elsif t contains 'fibre' or t contains 'internet' or t contains 'wifi' -%}{%- assign icon = 'wifi' -%}
+{%- elsif t contains 'interphone' or t contains 'digicode' -%}{%- assign icon = 'intercom' -%}
+{%- elsif t contains 'ascenseur' -%}{%- assign icon = 'elevator' -%}
+{%- elsif t contains 'piscine' -%}{%- assign icon = 'pool' -%}
+{%- endif -%}
+{%- render 'mh-icon', name: icon -%}

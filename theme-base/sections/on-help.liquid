@@ -1,0 +1,168 @@
+{%- comment -%}
+  Pages d'aide d'ONDE (planches 03 et 07 du 24 octobre) :
+  - contact : grand titre, casque à droite, texte, formulaire (nom, e-mail, sujet, message, accord non coché), autres
+    accès d'aide à côté (sous le formulaire sur téléphone, en cartes) ; champs vérifiés, envoi réel par la plateforme,
+    message de démonstration dans l'aperçu (jamais de faux « envoyé ») ;
+  - info : bandeau graphite sur un gros plan, raccourcis vers les rubriques, rubriques avec icône (livraison, suivi,
+    retours), encadré « conditions à compléter » et accès au contact ;
+  - track : titre avec onde, texte, numéro de commande et e-mail, bouton ; le résultat est un EXEMPLE annoncé comme tel
+    (aucune commande consultée, aucun statut inventé), photo et encadré d'aide.
+  Blocs « rubrique » : icône, titre, texte, lien (accès d'aide du contact, rubriques de la livraison, aides du suivi).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'contact'
+  assign items = section.blocks | where: 'type', 'item'
+-%}
+<section class="on-help on-help--{{ layout }} on-tone--{{ s.tone }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;--on-fx:{{ s.focus_x }}%;--on-fy:{{ s.focus_y }}%;--on-fxm:{{ s.mobile_focus_x }}%;--on-fym:{{ s.mobile_focus_y }}%;--on-head-h:{{ s.head_height }}px;--on-head-hm:{{ s.mobile_head_height }}px;">
+  <div class="on-help__head{% if s.mobile_dark_head %} on-help__head--m-dark{% endif %}">
+    {%- if s.image_asset != blank -%}<div class="on-help__visual{% if s.mobile_image_asset != blank %} on-desktop-only{% endif %}"><img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="eager" decoding="async"></div>{%- endif -%}
+    {%- if s.mobile_image_asset != blank -%}<div class="on-help__visual on-help__visual--m on-mobile-only"><img width="1200" height="1200" src="{{ s.mobile_image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="eager" decoding="async"></div>{%- endif -%}
+    {%- if s.rings -%}<span class="on-rings on-rings--help" aria-hidden="true"><span></span><span></span><span></span><span></span></span>{%- endif -%}
+    <div class="on-help__copy on-container">
+      <h1 class="on-title on-help__title">{%- if layout == 'track' and s.title_wave -%}{%- assign words = s.heading | split: ' ' -%}<span>{{ words.first | escape }}</span><span class="on-help__title-wave" aria-hidden="true">{% render 'on-wave', bars: 40, shape: 'burst' %}</span> {{ s.heading | remove_first: words.first | strip | escape | newline_to_br }}{%- else -%}{{ s.heading | escape | newline_to_br }}{%- endif -%}</h1>
+      {%- if s.text != blank -%}<p class="on-help__text{% if s.text_mobile_below %} on-desktop-only{% endif %}">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+    </div>
+  </div>
+  <div class="on-help__body on-container">
+    {%- if s.text != blank and s.text_mobile_below -%}<p class="on-help__text on-mobile-only">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+    {%- if layout == 'contact' -%}
+      <div class="on-help__grid" data-ed-contact data-msg-required="{{ 'contact.errors.required' | t | escape }}" data-msg-email="{{ 'contact.errors.email' | t | escape }}" data-msg-choice="{{ 'contact.errors.choice' | t | escape }}" data-msg-consent="{{ 'contact.errors.consent' | t | escape }}" data-msg-sending="{{ 'contact.sending' | t | escape }}" data-msg-failed="{{ 'contact.failed' | t | escape }}" data-msg-success="{{ 'contact.success' | t | escape }}"{% if request.host == 'apercu' and shop.es_demo_contact %} data-preview-test="true"{% endif %}>
+        {%- form 'contact', id: 'OnContact', class: 'on-form' -%}
+          {%- if form.posted_successfully? -%}<p class="on-form__ok" role="status">{{ 'contact.success' | t }}</p>{%- endif -%}
+          {%- if form.errors -%}<div class="on-form__error" role="alert">{{ form.errors | default_errors }}</div>{%- endif -%}
+          <label class="on-field on-field--full"><span>{{ s.name_label | escape }} *</span><input type="text" name="contact[name]" autocomplete="name" required value="{{ form.name }}"></label>
+          <label class="on-field on-field--full"><span>{{ s.email_label | escape }} *</span><input type="email" name="contact[email]" autocomplete="email" required value="{{ form.email }}"></label>
+          {%- assign subjects = s.subjects | newline_to_br | split: '<br />' -%}
+          <label class="on-field on-field--full on-field--select"><span>{{ s.subject_label | escape }} *</span><select name="contact[subject]" required><option value="">{{ s.subject_placeholder | escape }}</option>{%- for o in subjects -%}{%- assign o = o | strip -%}{%- if o != blank -%}<option value="{{ o | escape }}">{{ o | escape }}</option>{%- endif -%}{%- endfor -%}</select>{% render 'icon', name: 'chevron-down' %}</label>
+          <label class="on-field on-field--full"><span>{{ s.message_label | escape }} *</span><textarea name="contact[body]" rows="5" required>{{ form.body }}</textarea></label>
+          {%- if s.consent_text != blank -%}<label class="on-consent"><input type="checkbox" name="contact[consent]" value="oui" required><span>{{ s.consent_text | escape }}</span></label>{%- endif -%}
+          <button type="submit" class="on-button on-button--lime on-form__submit">{{ s.submit_label | escape }}{% render 'icon', name: 'arrow' %}</button>
+          <p class="on-form__status" data-contact-status aria-live="polite"></p>
+          {%- if s.form_note != blank -%}<p class="on-form__note">{{ s.form_note | escape }}</p>{%- endif -%}
+        {%- endform -%}
+        {%- if items.size > 0 -%}
+          <div class="on-help__aside">
+            {%- if s.aside_title != blank -%}<h2 class="on-help__aside-title">{{ s.aside_title | escape }}</h2>{%- endif -%}
+            <ul class="on-links" role="list">
+              {%- for b in items -%}<li {{ b.shopify_attributes }}><a href="{{ b.settings.link | default: '#' }}"><span class="on-links__icon">{% render 'icon', name: b.settings.icon %}</span><span class="on-links__copy"><strong>{{ b.settings.title | escape }}</strong>{%- if b.settings.text != blank -%}<span>{{ b.settings.text | escape }}</span>{%- endif -%}</span>{% render 'icon', name: 'chevron-right' %}</a></li>{%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- elsif layout == 'info' -%}
+      {%- if s.shortcuts -%}
+        <ul class="on-shortcuts" role="list">
+          {%- for b in items -%}{%- if b.settings.anchor != blank -%}<li><a href="#{{ b.settings.anchor | handleize }}"><span class="on-links__icon">{% render 'icon', name: b.settings.icon %}</span><span>{{ b.settings.title | escape }}</span>{% render 'icon', name: 'chevron-right' %}</a></li>{%- endif -%}{%- endfor -%}
+        </ul>
+      {%- endif -%}
+      <div class="on-rows">
+        {%- for b in items -%}
+          <article class="on-row" id="{{ b.settings.anchor | default: b.settings.title | handleize }}" {{ b.shopify_attributes }}>
+            <span class="on-row__icon">{% render 'icon', name: b.settings.icon %}</span>
+            <div><h2 class="on-row__title">{{ b.settings.title | escape }}</h2>{%- if b.settings.text != blank -%}<p class="on-row__text">{{ b.settings.text | escape | newline_to_br }}</p>{%- endif -%}{%- if b.settings.link != blank and b.settings.link_label != blank -%}<a class="on-row__link" href="{{ b.settings.link }}">{{ b.settings.link_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}</div>
+          </article>
+        {%- endfor -%}
+      </div>
+      {%- if s.box_title != blank -%}
+        <div class="on-box"><span class="on-box__icon">{% render 'icon', name: s.box_icon %}</span><div><p class="on-box__title">{{ s.box_title | escape }}</p>{%- if s.box_text != blank -%}<p class="on-box__text">{{ s.box_text | escape }}</p>{%- endif -%}{%- if s.box_link_label != blank -%}<a class="on-box__link" href="{{ s.box_link | default: '#' }}">{{ s.box_link_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}</div></div>
+      {%- endif -%}
+      {%- if s.button_label != blank -%}<a class="on-button on-button--lime on-help__button" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+    {%- else -%}
+      <form class="on-form on-track" action="#" novalidate data-on-track>
+        <label class="on-field on-field--full"><span>{{ s.order_label | escape }} *</span><input type="text" name="order" autocomplete="off" required data-msg="{{ s.required_error | escape }}"><small data-error hidden></small></label>
+        <label class="on-field on-field--full"><span>{{ s.email_label | escape }} *</span><input type="email" name="email" autocomplete="email" required data-msg="{{ s.email_error | escape }}"><small data-error hidden></small></label>
+        <button type="submit" class="on-button on-button--lime on-form__submit">{{ s.submit_label | escape }}{% render 'icon', name: 'arrow' %}</button>
+        <div class="on-track__result" data-on-track-result hidden tabindex="-1" role="status">
+          <p class="on-track__badge">{{ s.result_badge | escape }}</p>
+          <p class="on-track__title">{{ s.result_title | escape }} <span data-on-track-number></span></p>
+          <p class="on-track__text">{{ s.result_text | escape }}</p>
+        </div>
+      </form>
+      {%- for b in items -%}
+        {%- if forloop.first -%}<div class="on-box on-box--track" {{ b.shopify_attributes }}><span class="on-box__icon">{% render 'icon', name: b.settings.icon %}</span><div><p class="on-box__title">{{ b.settings.title | escape }}</p>{%- if b.settings.text != blank -%}<p class="on-box__text">{{ b.settings.text | escape }}</p>{%- endif -%}</div></div>{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+  {%- if layout == 'track' and s.photo_asset != blank -%}
+    <div class="on-help__photo">
+      <img width="1200" height="1200" src="{{ s.photo_asset | asset_url }}" alt="{{ s.photo_alt | escape }}" loading="lazy" decoding="async" style="object-position:{{ s.photo_focus_x }}% {{ s.photo_focus_y }}%;">
+      {%- if s.box_title != blank -%}
+        <div class="on-help__photo-box"><span class="on-box__icon">{% render 'icon', name: s.box_icon %}</span><div><p class="on-box__title">{{ s.box_title | escape }}</p>{%- if s.box_text != blank -%}<p class="on-box__text">{{ s.box_text | escape }}</p>{%- endif -%}{%- if s.box_link_label != blank -%}<a class="on-box__link" href="{{ s.box_link | default: '#' }}">{{ s.box_link_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}</div></div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Aide ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Page", "default": "contact", "options": [ { "value": "contact", "label": "Contact : formulaire et accès d'aide" }, { "value": "info", "label": "Informations : rubriques et encadré" }, { "value": "track", "label": "Suivi de commande (exemple)" } ] },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "light", "options": [ { "value": "light", "label": "Gris clair" }, { "value": "white", "label": "Blanc" }, { "value": "dark", "label": "Graphite" } ] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "On vous écoute." },
+    { "type": "checkbox", "id": "title_wave", "label": "Onde après le premier mot (suivi)", "default": true },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "text_mobile_below", "label": "Sur téléphone : texte sous l'en-tête", "default": false },
+    { "type": "text", "id": "image_asset", "label": "Visuel de l'en-tête (fichier du thème)" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Visuel de l'en-tête sur téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif du visuel" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Cadrage horizontal sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Cadrage vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "checkbox", "id": "mobile_dark_head", "label": "Sur téléphone : en-tête graphite", "default": false },
+    { "type": "checkbox", "id": "rings", "label": "Anneaux lime derrière le visuel", "default": false },
+    { "type": "range", "id": "head_height", "label": "Hauteur de l'en-tête", "min": 0, "max": 1000, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "mobile_head_height", "label": "Hauteur de l'en-tête sur téléphone", "min": 0, "max": 900, "step": 2, "unit": "px", "default": 0 },
+    { "type": "header", "content": "Formulaire" },
+    { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "subject_label", "label": "Sujet", "default": "Sujet" },
+    { "type": "text", "id": "subject_placeholder", "label": "Sujet : choix vide", "default": "Sélectionner un sujet" },
+    { "type": "textarea", "id": "subjects", "label": "Sujets proposés (un par ligne)", "default": "Un produit\nUne commande\nLivraison et retours\nAutre question" },
+    { "type": "text", "id": "message_label", "label": "Message", "default": "Message" },
+    { "type": "text", "id": "consent_text", "label": "Accord (case non cochée)", "default": "J'accepte que mes données soient utilisées pour traiter ma demande." },
+    { "type": "text", "id": "submit_label", "label": "Bouton", "default": "Envoyer mon message" },
+    { "type": "text", "id": "form_note", "label": "Mention sous le formulaire" },
+    { "type": "text", "id": "aside_title", "label": "Titre des accès d'aide" },
+    { "type": "header", "content": "Suivi" },
+    { "type": "text", "id": "order_label", "label": "Numéro de commande", "default": "Numéro de commande" },
+    { "type": "text", "id": "required_error", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "email_error", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "result_badge", "label": "Résultat : étiquette", "default": "Exemple de résultat" },
+    { "type": "text", "id": "result_title", "label": "Résultat : titre", "default": "Commande" },
+    { "type": "text", "id": "result_text", "label": "Résultat : texte" },
+    { "type": "text", "id": "photo_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "photo_alt", "label": "Texte alternatif de la photo" },
+    { "type": "range", "id": "photo_focus_x", "label": "Photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "photo_focus_y", "label": "Photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "header", "content": "Encadré et bouton" },
+    { "type": "checkbox", "id": "shortcuts", "label": "Raccourcis vers les rubriques", "default": true },
+    { "type": "select", "id": "box_icon", "label": "Encadré : icône", "default": "help", "options": [ { "value": "help", "label": "Point d'interrogation" }, { "value": "file", "label": "Document" }, { "value": "headphones", "label": "Casque" }, { "value": "chat", "label": "Bulle" } ] },
+    { "type": "text", "id": "box_title", "label": "Encadré : titre" },
+    { "type": "text", "id": "box_text", "label": "Encadré : texte" },
+    { "type": "text", "id": "box_link_label", "label": "Encadré : lien" },
+    { "type": "url", "id": "box_link", "label": "Encadré : adresse du lien" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 24, "max": 200, "step": 1, "unit": "px", "default": 110 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 20, "max": 80, "step": 1, "unit": "px", "default": 44 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 300, "step": 2, "unit": "px", "default": 140 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 56 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Rubrique", "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "help", "options": [ { "value": "box", "label": "Colis" }, { "value": "truck", "label": "Camion" }, { "value": "refresh", "label": "Retour" }, { "value": "chat", "label": "Bulle" }, { "value": "file", "label": "Document" }, { "value": "help", "label": "Point d'interrogation" }, { "value": "headphones", "label": "Casque" }, { "value": "mail", "label": "Enveloppe" } ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Livraison" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "anchor", "label": "Ancre (raccourci)" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "text", "id": "link_label", "label": "Texte du lien" }
+    ] }
+  ],
+  "presets": [ { "name": "Aide ONDE", "blocks": [ { "type": "item" } ] } ]
+}
+{% endschema %}

@@ -1,0 +1,907 @@
+[
+ {
+  "name": "cookies : bandeau affiché à la première visite",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : « Personnaliser » montre les deux choix et « Enregistrer »",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : choix enregistré (mesure d'audience oui, publicité non) et bandeau fermé",
+  "ok": true,
+  "detail": "{\"analytics\":true,\"marketing\":false}"
+ },
+ {
+  "name": "cookies : bandeau non réaffiché après le choix",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : lien « Cookies » du pied rouvre le bandeau",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : « Tout refuser »",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : navigation de l'en-tête",
+  "ok": true,
+  "detail": "Boutique, Le club, Journal, Aide"
+ },
+ {
+  "name": "ordinateur : focus clavier visible",
+  "ok": true,
+  "detail": "A"
+ },
+ {
+  "name": "ordinateur : liens de l'accueil vers des pages existantes (22)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : mouvement réduit, aucun contenu laissé invisible",
+  "ok": true,
+  "detail": "0 masqué(s)"
+ },
+ {
+  "name": "ordinateur : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : contrastes ≥ 4,5:1 (bouton jaune, texte, pied, cartes)",
+  "ok": true,
+  "detail": "{\"boutonJaune\":14.98,\"texte\":11.21,\"pied\":9.1,\"carte\":11.75}"
+ },
+ {
+  "name": "ordinateur : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : taille M choisie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : 2 harnais M ajoutés, tiroir ouvert, 98 €",
+  "ok": true,
+  "detail": "98 €, pastille 2"
+ },
+ {
+  "name": "ordinateur : panier : 2 harnais, sous-total 98 €",
+  "ok": true,
+  "detail": "98 €"
+ },
+ {
+  "name": "ordinateur : « + » : 147 €",
+  "ok": true,
+  "detail": "147 €"
+ },
+ {
+  "name": "ordinateur : « − » : 98 €",
+  "ok": true,
+  "detail": "98 €"
+ },
+ {
+  "name": "ordinateur : « Supprimer » : panier vide (La prochaine balade commence ici.)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : harnais M + laisse = sous-total 78 €, livraison à l'étape suivante, pas de « Total »",
+  "ok": true,
+  "detail": "Code de réduction Appliquer Aperçu du studio : les codes s'appliquent au paiement, aucun code n'est actif dans la démonstration. LivraisonCalculée à l'étape sui"
+ },
+ {
+  "name": "ordinateur : « Passer commande » → exemple de commande (aucun paiement)",
+  "ok": true,
+  "detail": "page-finaliser-ma-commande.html"
+ },
+ {
+  "name": "ordinateur : boutique filtrée « Colliers »",
+  "ok": true,
+  "detail": "Collier"
+ },
+ {
+  "name": "ordinateur : boutique « Tous » : 4 produits",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : journal filtré « Conseils » (2 articles)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : FAQ thème « Livraison » (3 questions)",
+  "ok": true,
+  "detail": "Quels sont les délais de livra | Combien coûte la livraison ?\n  | Comment retourner un article ?"
+ },
+ {
+  "name": "ordinateur : FAQ recherche « pochette »",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "ordinateur : contact vide : erreurs affichées",
+  "ok": true,
+  "detail": "3 messages"
+ },
+ {
+  "name": "ordinateur : e-mail incomplet signalé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : succès affiché après la réponse simulée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : accueil.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit-laisse-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit-collier-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit-pochette-sacs-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : boutique.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-finaliser-ma-commande.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-le-club.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-journal.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-les-petits-rituels-des-grandes-balades.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-preparer-son-sac-pour-la-balade.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-choisir-la-taille-de-son-harnais.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-des-idees-pour-changer-de-chemin.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-le-quotidien-en-bonne-compagnie.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-guide-des-tailles.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-faq.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-contact.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-livraison-retours.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mentions-legales.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-confidentialite.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-cgv.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-connexion.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mon-compte.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-commande-1001.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mes-adresses.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-informations-personnelles.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : panier.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu ouvert avec les quatre entrées",
+  "ok": true,
+  "detail": "Boutique | Le club | Journal | Aide"
+ },
+ {
+  "name": "telephone : menu fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : liens de l'accueil vers des pages existantes (22)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : mouvement réduit, aucun contenu laissé invisible",
+  "ok": true,
+  "detail": "0 masqué(s)"
+ },
+ {
+  "name": "telephone : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : contrastes ≥ 4,5:1 (bouton jaune, texte, pied, cartes)",
+  "ok": true,
+  "detail": "{\"boutonJaune\":14.98,\"texte\":11.21,\"pied\":9.1,\"carte\":11.75}"
+ },
+ {
+  "name": "telephone : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : taille M choisie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : barre d'achat : Harnais, 49 €, taille M",
+  "ok": true,
+  "detail": "{\"shown\":true,\"title\":\"Harnais\",\"total\":\"49 €\",\"size\":\"M\",\"h\":61}"
+ },
+ {
+  "name": "telephone : taille L choisie dans la barre = formulaire principal",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : barre masquée au pied de page (ne cache pas les liens)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : 2 harnais M ajoutés, tiroir ouvert, 98 €",
+  "ok": true,
+  "detail": "98 €, pastille 2"
+ },
+ {
+  "name": "telephone : panier : 2 harnais, sous-total 98 €",
+  "ok": true,
+  "detail": "98 €"
+ },
+ {
+  "name": "telephone : « + » : 147 €",
+  "ok": true,
+  "detail": "147 €"
+ },
+ {
+  "name": "telephone : « − » : 98 €",
+  "ok": true,
+  "detail": "98 €"
+ },
+ {
+  "name": "telephone : « Supprimer » : panier vide (La prochaine balade commence ici.)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : harnais M + laisse = sous-total 78 €, livraison à l'étape suivante, pas de « Total »",
+  "ok": true,
+  "detail": "Code de réduction Appliquer Aperçu du studio : les codes s'appliquent au paiement, aucun code n'est actif dans la démonstration. LivraisonCalculée à l'étape sui"
+ },
+ {
+  "name": "telephone : « Passer commande » → exemple de commande (aucun paiement)",
+  "ok": true,
+  "detail": "page-finaliser-ma-commande.html"
+ },
+ {
+  "name": "telephone : boutique filtrée « Colliers »",
+  "ok": true,
+  "detail": "Collier"
+ },
+ {
+  "name": "telephone : boutique « Tous » : 4 produits",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : journal filtré « Conseils » (2 articles)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : FAQ thème « Livraison » (3 questions)",
+  "ok": true,
+  "detail": "Quels sont les délais de livra | Combien coûte la livraison ?\n  | Comment retourner un article ?"
+ },
+ {
+  "name": "telephone : FAQ recherche « pochette »",
+  "ok": true,
+  "detail": "1"
+ },
+ {
+  "name": "telephone : contact vide : erreurs affichées",
+  "ok": true,
+  "detail": "3 messages"
+ },
+ {
+  "name": "telephone : e-mail incomplet signalé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : succès affiché après la réponse simulée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : accueil.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit-laisse-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit-collier-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit-pochette-sacs-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : boutique.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-finaliser-ma-commande.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-le-club.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-journal.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-les-petits-rituels-des-grandes-balades.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-preparer-son-sac-pour-la-balade.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-choisir-la-taille-de-son-harnais.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-des-idees-pour-changer-de-chemin.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-le-quotidien-en-bonne-compagnie.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-guide-des-tailles.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-faq.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-contact.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-livraison-retours.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mentions-legales.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-confidentialite.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-cgv.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-connexion.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mon-compte.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-commande-1001.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mes-adresses.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-informations-personnelles.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : panier.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "360 px : accueil.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit-laisse-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit-collier-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit-pochette-sacs-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : boutique.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-finaliser-ma-commande.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-le-club.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-journal.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-les-petits-rituels-des-grandes-balades.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-preparer-son-sac-pour-la-balade.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-choisir-la-taille-de-son-harnais.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-des-idees-pour-changer-de-chemin.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-le-quotidien-en-bonne-compagnie.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-guide-des-tailles.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-faq.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-contact.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-cgv.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-connexion.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mon-compte.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-commande-1001.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mes-adresses.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-informations-personnelles.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : panier.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : accueil.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit-laisse-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit-collier-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit-pochette-sacs-museau-club-cobalt.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : boutique.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-finaliser-ma-commande.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-le-club.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-journal.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-les-petits-rituels-des-grandes-balades.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-preparer-son-sac-pour-la-balade.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-choisir-la-taille-de-son-harnais.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-des-idees-pour-changer-de-chemin.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-le-quotidien-en-bonne-compagnie.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-guide-des-tailles.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-faq.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-contact.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-cgv.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-connexion.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mon-compte.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-commande-1001.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mes-adresses.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-informations-personnelles.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : panier.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ }
+]

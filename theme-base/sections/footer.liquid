@@ -2,7 +2,14 @@
   assign style = section.settings.style
   assign news_block = section.blocks | where: 'type', 'newsletter' | first
 -%}
-<footer class="es-footer es-footer--{{ style }} es-ambient color-{{ section.settings.color_scheme }}">
+{%- liquid
+  # SOUPLE (planches 02 et 03) : pied clair sur les fiches produit, prune ailleurs (réglage facultatif).
+  assign footer_scheme = section.settings.color_scheme
+  if template.name == 'product' and section.settings.product_color_scheme != blank and section.settings.product_color_scheme != 'same'
+    assign footer_scheme = section.settings.product_color_scheme
+  endif
+-%}
+<footer class="es-footer es-footer--{{ style }} es-ambient color-{{ footer_scheme }}{% if footer_scheme != section.settings.color_scheme %} es-footer--alt{% endif %}">
   <div class="es-container">
     {%- if style == 'reference-shop' or style == 'reference-studio' -%}
       {%- if section.settings.show_wordmark -%}<p class="ref-footer__signature" translate="no">{{ shop.name | escape }}</p>{%- endif -%}
@@ -125,9 +132,9 @@
                 {%- if block.settings.heading != blank -%}<h2 class="es-footer__heading">{{ block.settings.heading }}</h2>{%- endif -%}
                 <div class="es-rte">{{ block.settings.text }}</div>
               {%- when 'links' -%}
-                <h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>
-                <ul role="list" class="es-footer__links">
-                  {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+                {%- if block.settings.hide_heading -%}<h2 class="visually-hidden">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>{%- else -%}<h2 class="es-footer__heading">{{ block.settings.heading | default: linklists[block.settings.menu].title }}</h2>{%- endif -%}
+                <ul role="list" class="es-footer__links{% if block.settings.icon != blank and block.settings.icon != 'none' %} es-footer__links--icon{% endif %}">
+                  {%- for link in linklists[block.settings.menu].links -%}<li><a href="{{ link.url }}">{% if block.settings.icon != blank and block.settings.icon != 'none' %}{% render 'icon', name: block.settings.icon %}{% endif %}{{ link.title }}</a></li>{%- endfor -%}
                 </ul>
               {%- when 'newsletter' -%}
                 <h2 class="es-footer__heading">{{ block.settings.heading }}</h2>
@@ -165,7 +172,12 @@
     {%- endif -%}
 
     <div class="es-footer__bottom">
-      <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+      <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}{% if section.settings.bottom_text != blank %}. {{ section.settings.bottom_text | escape }}{% endif %}</p>
+      {%- if section.settings.bottom_menu != blank and linklists[section.settings.bottom_menu].links.size > 0 -%}
+        <ul role="list" class="es-footer__policies es-footer__legal">
+          {%- for link in linklists[section.settings.bottom_menu].links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}
+        </ul>
+      {%- endif -%}
       {%- if section.settings.show_policies -%}
         <ul role="list" class="es-footer__policies">
           {%- for policy in shop.policies -%}
@@ -239,7 +251,10 @@
     { "type": "checkbox", "id": "show_wordmark", "label": "Grand nom de marque", "default": true },
     { "type": "checkbox", "id": "show_policies", "label": "Liens vers les politiques", "default": true },
     { "type": "checkbox", "id": "show_payment", "label": "Moyens de paiement", "default": true },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" }
+    { "type": "text", "id": "bottom_text", "label": "Mention après le copyright", "info": "Ex. « Tous droits réservés. »" },
+    { "type": "link_list", "id": "bottom_menu", "label": "Liens du bas de page", "info": "Ex. mentions légales, CGV, confidentialité." },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" },
+    { "type": "select", "id": "product_color_scheme", "label": "Couleurs du pied sur les fiches produit", "default": "same", "options": [ { "value": "same", "label": "Les mêmes que les autres pages" }, { "value": "scheme-1", "label": "Jeu 1" }, { "value": "scheme-2", "label": "Jeu 2" }, { "value": "scheme-3", "label": "Jeu 3" }, { "value": "scheme-4", "label": "Jeu 4" } ] }
   ],
   "blocks": [
     { "type": "text", "name": "Texte", "settings": [
@@ -248,7 +263,9 @@
     ] },
     { "type": "links", "name": "Liens", "settings": [
       { "type": "text", "id": "heading", "label": "Titre" },
-      { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" }
+      { "type": "link_list", "id": "menu", "label": "Menu", "default": "footer" },
+      { "type": "checkbox", "id": "hide_heading", "label": "Masquer le titre (lu par les lecteurs d'écran)", "default": false },
+      { "type": "select", "id": "icon", "label": "Icône devant chaque lien", "default": "none", "options": [ { "value": "none", "label": "Aucune" }, { "value": "parcel", "label": "Colis" }, { "value": "truck", "label": "Livraison" }, { "value": "return", "label": "Retour" }, { "value": "mail", "label": "E-mail" }, { "value": "chat", "label": "Message" } ] }
     ] },
     { "type": "newsletter", "name": "Lettre d'information", "limit": 1, "settings": [
       { "type": "text", "id": "heading", "label": "Titre", "default": "Restons en contact" },

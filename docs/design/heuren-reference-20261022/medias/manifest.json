@@ -1,0 +1,106 @@
+[
+  {
+    "file": "hero-desktop.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 299064,
+    "sha256": "15c7a5868cb8306660f9c59f45e05048de998fedfb19820c183957e1528fe4d1",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "hero-mobile.webp",
+    "width": 1122,
+    "height": 1402,
+    "bytes": 345208,
+    "sha256": "60d9d24ee18b9c9c801bea2f8ddaead1743fd6baa421af441d3247a195accbd1",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "montre-face.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 168412,
+    "sha256": "11ae534db22a5cd2f5e20861a016487f5c283f090f73351c5d676e3238bf8316",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "montre-profil.webp",
+    "width": 2172,
+    "height": 724,
+    "bytes": 144708,
+    "sha256": "ea2a3ee1a3a0550e8234dffa393dcb95f72a0ac4ee1ee1161e61721627dc157e",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "cadran-macro.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 327712,
+    "sha256": "20aa86adbdfcd2079f7ceb8caac564f25ed3406cd93022e22e0cfddcd1832e80",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "bracelet.webp",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 260352,
+    "sha256": "f64c9b784e3275a1a6033480563b167ac5890bb80e541dd99b54f700e92d17c9",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "coffret-ouvert.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 222614,
+    "sha256": "4ab6bb48e02fb6e10d3a28fdc3362cc6a4789c2353e23625cf0de6f27c0e4488",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "coffret-ferme.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 291412,
+    "sha256": "f0bb248219f8a33b50f2b207f9a07142738a1f6b9171cbefcd9840c56fdc919c",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "cadeau-ruban.webp",
+    "width": 1122,
+    "height": 1402,
+    "bytes": 385536,
+    "sha256": "cea0f9650a4d4ba278666c600aa6749fdd6a0ec47add5bd860d81ee9147a8fa5",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "bureau-dessus.webp",
+    "width": 1122,
+    "height": 1402,
+    "bytes": 332074,
+    "sha256": "78a7b250c368aa8e32e168a019803f432992761ce329ccc88f975d8e15f90f0a",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "tissu.webp",
+    "width": 1122,
+    "height": 1402,
+    "bytes": 273256,
+    "sha256": "72616dfe76ec97741b205fcfe9e2327bab5528a87cf774a73f86917e5ce023e9",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "bandeau-final.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 260732,
+    "sha256": "e6d6ae8cce3dbcc83fc980557dc4738ebb6200a6e034e450b8d6bc0f32016829",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  },
+  {
+    "file": "bureau-corrige.webp",
+    "width": 1672,
+    "height": 941,
+    "bytes": 262458,
+    "sha256": "fefbac80e6ebaade2390ecbd3f544acdbe48e5ec37df68fab270cb4a07c9d03a",
+    "status": "proposition approuvée pour transmission, fidélité exacte non validée"
+  }
+]

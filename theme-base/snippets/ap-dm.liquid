@@ -1,0 +1,10 @@
+{%- comment -%}
+  Texte d'APLAT qui change sur téléphone : d (ordinateur), m (téléphone, facultatif), title (true : astérisques en bleu
+  pétrole, voir ap-title). Sans texte de téléphone, le même texte sert partout.
+{%- endcomment -%}
+{%- if m == blank or m == d -%}
+  {%- if title -%}{%- render 'ap-title', text: d -%}{%- else -%}{{ d | escape | newline_to_br }}{%- endif -%}
+{%- else -%}
+  {%- if d != blank -%}<span class="ap-only-d">{%- if title -%}{%- render 'ap-title', text: d -%}{%- else -%}{{ d | escape | newline_to_br }}{%- endif -%}</span>{%- endif -%}
+  <span class="ap-only-m">{%- if title -%}{%- render 'ap-title', text: m -%}{%- else -%}{{ m | escape | newline_to_br }}{%- endif -%}</span>
+{%- endif -%}

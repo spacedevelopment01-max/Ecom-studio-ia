@@ -199,11 +199,12 @@ personne). Code : `tests/noctil-traverse-fixtures.ts`. Preuves : `docs/preuves/c
 | Exclusions | aucune contenance, compatibilité ni équipement inventés |
 
 Pages : accueil (« Du bureau au week-end, *sans repasser par chez soi* » → « Une journée de travail, *puis le départ* »
-(au bureau, à la sortie, à destination) → « Du café du matin *au départ du soir* » → « Organisé pour le trajet, *poche par
+(au bureau, à la sortie, à destination) → « Parti sans repasser *par chez soi* » (titre « Le café avant le bureau » remplacé
+le 22 octobre : un sac présenté par le café se lisait comme la machine à espresso de SILLON) → « Organisé pour le trajet, *poche par
 poche* » (repères : la poche frontale pour le trajet, le compartiment pour le week-end) → finitions → « La veille au
 soir » → achat → « Avant le premier départ »), fiche (« Sac à dos · du bureau au week-end », « Préparer le départ du
-bureau »), carnet de route, aide, pied, SEO. **Visuels** : le kit ne contient pas de scène de bureau ; le café du matin
-et le hall de gare portent le passage du travail au départ. Code : `tests/noctil-traverse-fixtures.ts`. Preuves :
+bureau »), carnet de route, aide, pied, SEO. **Visuels** : le kit ne contient pas de scène de bureau ; la banquette en
+ville et le hall de gare portent le passage du travail au départ. Code : `tests/noctil-traverse-fixtures.ts`. Preuves :
 `docs/preuves/copywriting/traverse/`.
 
 ### SILLON — Spécialisée — **réécrit (consigne 21 h 45)** : en van ou en camping-car

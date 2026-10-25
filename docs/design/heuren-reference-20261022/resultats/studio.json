@@ -1,0 +1,112 @@
+{
+  "demo": "heuren",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "forfait « vendre » : fonctions proposées",
+      "ok": true,
+      "offered": [
+        "Présentation principale",
+        "Produit à la une",
+        "Matières et finitions",
+        "Dimensions et proportions",
+        "Entretien et durabilité",
+        "Engagements de la marque",
+        "Ambiance et lookbook",
+        "Usages et installation",
+        "Collections et catégories",
+        "Sélection de produits",
+        "Informations d'achat et FAQ",
+        "Contact et points de vente",
+        "Article (corps)",
+        "Bandeau d'annonce",
+        "Blog (corps)",
+        "Boutique (corps)",
+        "Boutique fermée (corps)",
+        "En-tête",
+        "Fiche produit (corps)",
+        "Liste des collections (corps)",
+        "Page de contenu (corps)",
+        "Page introuvable (corps)",
+        "Page panier (corps)",
+        "Panier latéral",
+        "Pied de page",
+        "Recherche (corps)"
+      ]
+    },
+    {
+      "step": "galerie : « Présentation principale › banner » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Engagements de la marque › strip » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Ambiance et lookbook › band » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Usages et installation › triptych » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Produit à la une › duo » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Engagements de la marque › aside » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Informations d'achat et FAQ › columns » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Ambiance et lookbook › detail » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Contact et points de vente › form-image » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "ajout du bandeau photo depuis la galerie",
+      "ok": true,
+      "section": "ed_scene_1"
+    },
+    {
+      "step": "titre, bouton, côté du texte et schéma de couleurs modifiés dans le panneau",
+      "ok": true
+    },
+    {
+      "step": "section dupliquée (copie modifiable)",
+      "ok": true,
+      "copy": "ed_scene_2"
+    },
+    {
+      "step": "section déplacée",
+      "ok": true,
+      "from": 9,
+      "to": 8
+    },
+    {
+      "step": "rechargement : ajout, réglages, copie et ordre conservés",
+      "ok": true,
+      "structure": [
+        "ed-opening",
+        "fs-commitments",
+        "ed-scene",
+        "ed-diptych",
+        "ed-scene",
+        "featured-purchase",
+        "fs-commitments",
+        "v2-faq",
+        "ed-scene",
+        "ed-scene",
+        "ed-scene"
+      ]
+    }
+  ],
+  "date": "2026-10-22T21:03:44.307Z"
+}

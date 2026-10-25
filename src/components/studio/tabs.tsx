@@ -15,6 +15,7 @@ const MAP: Record<string, React.ComponentType> = {
   strategie: dynamic(() => import("./tab-strategie"), { loading }),
   marque: dynamic(() => import("./tab-marque"), { loading }),
   boutique: dynamic(() => import("./tab-boutique"), { loading }),
+  biens: dynamic(() => import("./tab-biens"), { loading }),
   images: dynamic(() => import("./tab-images"), { loading }),
   videos: dynamic(() => import("./tab-videos"), { loading }),
   prompts: dynamic(() => import("./tab-prompts"), { loading }),

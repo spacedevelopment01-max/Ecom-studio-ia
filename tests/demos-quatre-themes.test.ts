@@ -30,7 +30,7 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   // FRAISE GUMMIES (sept planches) : sections fg-* propres au thème (voir tests/fraise-theme.test.ts), aucun profil global ;
   // la galerie propose la bibliothèque de la famille Boutique spécialisée (cv-, fs-).
   fraise: { kind: "specialty", profile: { conversion_profile: "none" }, family: /^cv-/ },
-  onde: { kind: "catalog", profile: { editorial_profile: "studio" }, family: /^(ed-|fs-)/ },
+  onde: { kind: "catalog", profile: { conversion_profile: "onde" }, family: /^on-/ },
   orbe: { kind: "catalog", profile: { editorial_profile: "object" }, family: /^ed-/ },
   rive: { kind: "services", profile: { editorial_profile: "journal" }, family: /^ed-/ },
   // SILLON V2 (PR #182) : sections sv-* propres au thème, aucun profil global (voir aussi tests/sillon-theme.test.ts).
@@ -49,6 +49,8 @@ const EXPECT: Record<DemoId, { kind: "services" | "catalog" | "specialty"; profi
   parenthese: { kind: "services", profile: {}, family: /^pa-/ },
   // PHASE — Électricité : vérifiée par tests/phase-theme.test.ts (sections ph-*, aucun profil global).
   phase: { kind: "services", profile: {}, family: /^ph-/ },
+  "maison-horizon": { kind: "services", profile: { editorial_profile: "horizon" }, family: /^re-/ },
+  aplat: { kind: "services", profile: { editorial_profile: "aplat" }, family: /^ap-/ },
 };
 
 /** Informations que seul le client peut fournir : la mention « à compléter » est voulue (rien d'inventé), jamais un titre ni une accroche. */
@@ -100,7 +102,7 @@ describe("Les quatre démonstrations dans leur thème de référence", async () 
       }
       // Entête : nom de la marque ; profil graphique appliqué sur le body.
       const home = await renderPage({ spec, base: "", files, cart: [] }, "/", new URLSearchParams());
-      const attr = EXPECT[id].family.source === "^cv-" ? "data-conversion" : "data-editorial";
+      const attr = "conversion_profile" in EXPECT[id].profile ? "data-conversion" : "data-editorial";
       expect(home.html).toMatch(new RegExp(`${attr}="${Object.values(EXPECT[id].profile)[0]}"`));
     });
   }

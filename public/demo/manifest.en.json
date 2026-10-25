@@ -37,8 +37,8 @@
       "sector": "Audio",
       "category": "catalog",
       "direction": "onde",
-      "palette": ["#4ECD01", "#1F1F1F", "#4ECD01", "#FFFFFF", "#1F1F1F"],
-      "photo": "/demo/onde/01-hero.webp",
+      "palette": ["#C2F94A", "#121413", "#C2F94A", "#F1F2F1", "#0B0D0C"],
+      "photo": "/demo/onde/c04-accueil-grande-ouverture.webp",
       "logo": "/demo/onde/logo-proposition.png",
       "shopDesktop": "/demo/onde/boutique-bureau.jpg",
       "shopMobile": "/demo/onde/boutique-mobile.jpg",
@@ -47,11 +47,11 @@
       "storeType": "mono",
       "products": 1,
       "images": [
-        { "src": "/demo/onde/02-fond-clair.webp", "label": "Packshot" },
-        { "src": "/demo/onde/04-detail-coussinet.webp", "label": "Detail" },
-        { "src": "/demo/onde/07-scene-salon.webp", "label": "Scene" },
-        { "src": "/demo/onde/08-scene-train.webp", "label": "Scene" },
-        { "src": "/demo/onde/06-banniere.webp", "label": "Banner" }
+        { "src": "/demo/onde/c03-produit-fond-clair.webp", "label": "Packshot" },
+        { "src": "/demo/onde/c05-detail-coussinet.webp", "label": "Detail" },
+        { "src": "/demo/onde/c09-scene-maison.webp", "label": "Scene" },
+        { "src": "/demo/onde/c10-scene-deplacement-train.webp", "label": "Scene" },
+        { "src": "/demo/onde/c14-experience-entrez-dans-votre-bulle.webp", "label": "Banner" }
       ],
       "video": "",
       "videoPoster": "",

@@ -1,0 +1,25 @@
+{%- comment -%}
+  Bandeau de préférences de cookies (réglages du thème › Cookies ; maquette MUSEAU CLUB du 23 octobre) : refuser,
+  personnaliser (mesure d'audience, publicité) ou accepter. Le choix est gardé dans le navigateur et transmis à
+  l'API de confidentialité des clients de Shopify quand elle est chargée ; un lien vers « #cookies » rouvre le bandeau.
+{%- endcomment -%}
+<div class="es-cookies" data-cookie-banner role="dialog" aria-modal="false" aria-labelledby="CookieTitle" hidden>
+  <div class="es-cookies__inner">
+    <span class="es-cookies__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3-3 3 3 0 0 1-3-3 3 3 0 0 1-3-3Z"/><circle cx="8.5" cy="11" r="1"/><circle cx="12" cy="16" r="1"/><circle cx="15.5" cy="13" r="1"/></svg></span>
+    <div class="es-cookies__copy">
+      <p class="es-cookies__title" id="CookieTitle">{{ settings.cookie_title | escape }}</p>
+      <p class="es-cookies__text">{{ settings.cookie_text | escape }}{% if settings.cookie_policy_link != blank %} <a href="{{ settings.cookie_policy_link }}">{{ settings.cookie_policy_label | escape }}</a>{% endif %}</p>
+      <form class="es-cookies__prefs" data-cookie-prefs hidden>
+        <label class="es-check"><input type="checkbox" name="analytics"> {{ settings.cookie_analytics | escape }}</label>
+        <label class="es-check"><input type="checkbox" name="marketing"> {{ settings.cookie_marketing | escape }}</label>
+        <p class="es-cookies__needed">{{ settings.cookie_needed | escape }}</p>
+      </form>
+    </div>
+    <div class="es-cookies__actions">
+      <button type="button" class="es-button es-button--secondary es-cookies__btn" data-cookie-choice="refuse">{{ settings.cookie_refuse | escape }}</button>
+      <button type="button" class="es-button es-button--secondary es-cookies__btn" data-cookie-customize aria-expanded="false">{{ settings.cookie_customize | escape }}</button>
+      <button type="button" class="es-button es-cookies__btn es-cookies__btn--save" data-cookie-choice="save" hidden>{{ settings.cookie_save | escape }}</button>
+      <button type="button" class="es-button es-cookies__btn es-cookies__btn--accept" data-cookie-choice="accept">{{ settings.cookie_accept | escape }}</button>
+    </div>
+  </div>
+</div>

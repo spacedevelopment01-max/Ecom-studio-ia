@@ -22,8 +22,8 @@ const opening = (spec: Spec) => {
 /** Caractère graphique : polices, en-tête, pied, boutons, cartes, arrondis, casse, fond clair ou sombre. */
 const signature = (spec: Spec) => {
   const st = spec.settings as Record<string, unknown>;
-  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header")!.settings;
-  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer")!.settings;
+  const header = spec.groups.header.order.map((id) => spec.groups.header.sections[id]).find((s) => s.type === "header" || s.type === "on-header" || s.type === "ap-header")!.settings;
+  const footer = spec.groups.footer.order.map((id) => spec.groups.footer.sections[id]).find((s) => s.type === "footer" || s.type === "on-footer" || s.type === "ap-footer")!.settings;
   const bg = (st.color_schemes as Record<string, { settings: { background: string } }>)["scheme-1"].settings.background;
   return [st.type_heading_font, st.type_body_font, header.layout, header.shape, header.mobile_menu, footer.style, st.button_style, st.card_style, Number(st.button_radius) >= 20 ? "round" : Number(st.button_radius) >= 6 ? "soft" : "square", st.heading_case, bg];
 };
@@ -33,13 +33,13 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 45 thèmes (30 anciens, lisibles seulement, + 15 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, TABLE SAISON #175, ATELIER NUANCE #177, PARENTHÈSE et PHASE) et n'en propose que 15 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(45);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(45);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(45);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase"]);
+  it("définit 47 thèmes (30 anciens, lisibles seulement, + 17 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, TABLE SAISON #175, ATELIER NUANCE #177, PARENTHÈSE, PHASE, MAISON & HORIZON #172 et APLAT #187) et n'en propose que 17 (catalogue actif), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(47);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(47);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(47);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false], ["maison-horizon", false], ["aplat", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -86,6 +86,10 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     const alike: string[] = [];
     for (const a of CATALOG_IDS) for (const d of DIRECTIONS) {
       if (a === d.id || (NEW.has(d.id) && d.id < a)) continue;
+      // Deux thèmes qui ne servent jamais le même type de projet (HEUREN : boutiques ; Atelier Rive : services, maquettes
+      // du 23 octobre) ne sont jamais proposés au même client : leur ressemblance n'est pas comparée.
+      const kindsA = CATALOG_THEMES.find((t) => t.id === a)?.kinds, kindsD = CATALOG_THEMES.find((t) => t.id === d.id)?.kinds;
+      if (kindsA && kindsD && !kindsA.some((k) => kindsD.includes(k))) continue;
       const n = diff(signature(products[a]), signature(products[d.id]));
       if (n < 4) alike.push(`${a} ~ ${d.id} (${n} différences)`);
     }
@@ -150,11 +154,24 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     add((await runWithLang({ content: "fr", ui: "fr" }, () => fraiseProject(user.id))).spec);
     // Conteneurs vides par nature : code Liquid du marchand et blocs d'applications (rien à composer sans lui).
     const outside = new Set(["custom-liquid", "apps"]);
+    // Écrans d'exemple (commande, espace client) des boutiques de démonstration : composés par la démonstration MUSEAU CLUB
+    // (tests/museau-fixtures.ts), jamais par le moteur ni proposés dans une galerie (sur une vraie boutique : Shopify).
+    for (const t of ["demo-order", "demo-account"]) outside.add(t);
     // Panier latéral : rendu par le gabarit général (layout/theme.liquid) sur toutes les pages, pas une instance de gabarit.
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base/layout/theme.liquid"), "utf8")).toMatch(/section ['"]cart-drawer['"]/); outside.add("cart-drawer");
     // Sections créées pour les bibliothèques par famille (issue #141) : elles servent par la galerie de leur famille.
     const { ALL_ENTRIES } = await import("@/lib/theme/section-families");
-    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-")) used.add(d.type);
+    for (const e of ALL_ENTRIES) for (const d of e.dispositions) if (d.type.startsWith("fs-") || d.type.startsWith("re-")) used.add(d.type);
+    // Maison & Horizon (issue #172) : informations légales à onglets et article de conseils, composés par sa démonstration
+    // (tests/maison-horizon-fixtures.ts) ; un site client garde la page légale et le journal du moteur.
+    for (const t of ["re-legal", "re-article"]) outside.add(t);
+    // ONDE (sept planches du 24 octobre, PR #183) : panier, commande d'exemple, pages d'aide et articles composés par sa
+    // démonstration (tests/onde-fixtures.ts) ; les autres sections « on-* » servent dans la composition du catalogue.
+    for (const t of ["on-cart", "on-checkout", "on-help", "on-article"]) outside.add(t);
+    // APLAT (dix planches du 25 octobre, PR #187) : matière d'enduit, avant/après et article composés par sa démonstration
+    // (tests/aplat-fixtures.ts) ; un site client n'en a pas tant qu'il n'a pas de vraies photos de chantier (aucune photo
+    // de démonstration reprise). La confirmation n'existe que pour un client qui accepte les demandes de devis.
+    for (const t of ["ap-split", "ap-compare", "ap-article", "ap-confirm"]) outside.add(t);
     const missing = SECTION_LIBRARY.map((e) => e.type).filter((t) => !outside.has(t) && !used.has(t));
     expect(missing).toEqual([]);
   });

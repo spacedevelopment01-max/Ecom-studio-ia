@@ -33,6 +33,8 @@ export const THEME_ORDER: DirectionId[] = [
   "parenthese",
   // 45 — PHASE — Électricité (PR documentaire #188), artisan électricien de la famille Services.
   "phase",
+  // 46 et 47 — MAISON & HORIZON (issue #172) et APLAT (PR #187), famille Services.
+  "maison-horizon", "aplat",
 ];
 
 /** Rang du thème (1 à 30), ou null s'il n'existe pas. */

@@ -1,0 +1,99 @@
+{%- comment -%}
+  Texte et photos d'APLAT (planches du 25 octobre) :
+  - matter : titre, filet et texte sur blanc, matière d'enduit qui se fond à gauche, photo d'outil à bord perdu (accueil) ;
+    téléphone : texte puis matière avec photo en médaillon et légende ;
+  - overlay : grande photo et aplat bleu pétrole qui porte titre et texte (plâtrerie « Des supports impeccables ») ;
+  - media : texte et bouton à gauche, photo à droite sur fond clair (peinture « Une finition commence par le support ») ;
+  - note : bande claire, titre, texte et bouton, photo fondue à droite (conseils « D'autres questions ? »).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ap-s ap-split ap-split--{{ s.layout }}{% if s.desktop_span != blank and s.desktop_span != '12' %} ap-span ap-span-{{ s.desktop_span }}{% endif %}{% if s.mobile_order > 0 %} ap-mo ap-mo-{{ s.mobile_order }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}" aria-labelledby="ApS-{{ section.id }}">
+  <div class="ap-split__inner ap-wrap">
+    <div class="ap-split__copy">
+      {%- if s.eyebrow != blank or s.mobile_eyebrow != blank -%}<p class="ap-eyebrow{% if s.eyebrow == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.eyebrow, m: s.mobile_eyebrow -%}</p>{%- endif -%}
+      <h2 class="ap-split__title" id="ApS-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</h2>
+      {%- if s.show_rule -%}<span class="ap-rule" aria-hidden="true"></span>{%- endif -%}
+      {%- if s.text != blank or s.mobile_text != blank -%}<p class="ap-split__text{% if s.text == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="ap-btn ap-btn--petrol ap-split__btn" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+    {%- if s.image != blank or s.image_asset != blank -%}
+      <div class="ap-split__media">{%- render 'ap-img', img: s.image, asset: s.image_asset, alt: s.image_alt, fx: s.focus_x, fy: s.focus_y, zoom: s.zoom, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, cls: 'ap-split__img', width: 1600 -%}</div>
+    {%- endif -%}
+    {%- if s.image2 != blank or s.image2_asset != blank or s.mobile_image2 != blank or s.mobile_image2_asset != blank -%}
+      <figure class="ap-split__figure">
+        {%- render 'ap-img', img: s.image2, asset: s.image2_asset, alt: s.image2_alt, fx: s.focus2_x, fy: s.focus2_y, mimg: s.mobile_image2, masset: s.mobile_image2_asset, mfx: s.mobile_focus2_x, mfy: s.mobile_focus2_y, cls: 'ap-split__img2', width: 1200 -%}
+        {%- if s.caption != blank or s.mobile_caption != blank -%}<figcaption class="ap-split__caption{% if s.caption == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.caption, m: s.mobile_caption -%}</figcaption>{%- endif -%}
+      </figure>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Texte et photos APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "matter",
+      "options": [
+        { "value": "matter", "label": "Matière d'enduit et photo d'outil" },
+        { "value": "overlay", "label": "Photo et aplat bleu pétrole" },
+        { "value": "media", "label": "Texte et photo sur fond clair" },
+        { "value": "note", "label": "Bande claire et photo fondue" },
+        { "value": "zoom", "label": "Zoom sur une technique (texte et petite photo)" }
+      ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    {
+      "type": "select", "id": "desktop_span", "label": "Largeur sur ordinateur", "default": "12",
+      "options": [
+        { "value": "12", "label": "Pleine largeur" },
+        { "value": "8", "label": "Deux tiers" },
+        { "value": "7", "label": "Un peu plus de la moitié" },
+        { "value": "6", "label": "Moitié" },
+        { "value": "6r2", "label": "Moitié, sur deux rangées" },
+        { "value": "5", "label": "Un peu moins de la moitié" },
+        { "value": "4", "label": "Un tiers" }
+      ]
+    },
+    { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 5, "step": 1, "default": 0 },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "mobile_eyebrow", "label": "Surtitre sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Du support\nà la finition." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": true },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo principale (ou matière)" },
+    { "type": "text", "id": "image_asset", "label": "Photo principale (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "image_picker", "id": "image2", "label": "Seconde photo" },
+    { "type": "text", "id": "image2_asset", "label": "Seconde photo (fichier du thème)" },
+    { "type": "text", "id": "image2_alt", "label": "Seconde photo : texte alternatif" },
+    { "type": "range", "id": "focus2_x", "label": "Seconde photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus2_y", "label": "Seconde photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "image_picker", "id": "mobile_image2", "label": "Seconde photo sur téléphone" },
+    { "type": "text", "id": "mobile_image2_asset", "label": "Seconde photo sur téléphone (fichier du thème)" },
+    { "type": "range", "id": "mobile_focus2_x", "label": "Téléphone : cadrage horizontal (seconde photo)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus2_y", "label": "Téléphone : cadrage vertical (seconde photo)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "textarea", "id": "caption", "label": "Légende" },
+    { "type": "textarea", "id": "mobile_caption", "label": "Légende sur téléphone" }
+  ],
+  "presets": [ { "name": "Texte et photos APLAT" } ]
+}
+{% endschema %}

@@ -39,14 +39,16 @@ const EXPECTED = {
     headings: ["FRAISE GUMMIES", "Vos questions"],
     offers: 0,
   },
-  // Refonte E-commerce (issue #158) : campagne, achat, détail, usages, bandeau d'appel, questions, inscription.
+  // Sept planches du 24 octobre (PR #183) : profil de conversion « onde », sections « on-* ». Fiche : la section Produit
+  // commune reste présente (validation, outils du studio, exports), masquée ; « on-product » dessine la fiche.
   onde: {
-    profile: "studio",
-    index: ["fs-campaign", "featured-purchase", "ed-finishes", "ed-diptych", "cta-banner", "faq", "newsletter"],
-    product: ["main-product", "ed-finishes", "ed-scene", "faq"],
-    pages: ["usages", "aide"],
-    headings: ["Casque ONDE Audio", "Questions"],
+    profile: "onde",
+    index: ["on-banner", "on-banner", "on-banner", "on-cards", "on-cards", "on-banner", "on-journal", "on-faq", "on-newsletter"],
+    product: ["main-product", "on-product", "on-banner", "on-cards", "on-banner", "on-cards", "on-faq", "on-banner"],
+    pages: ["l-experience", "la-marque", "journal", "faq", "contact", "livraison-retours", "suivi-de-commande", "commande", "confirmation"],
+    headings: ["Le casque ONDE", "Questions fréquentes"],
     offers: 0,
+    hiddenProduct: ["main-product"],
   },
 } as const;
 
@@ -57,7 +59,7 @@ describe("FRAISE (sept planches) et ONDE (refonte E-commerce) : composition fig�
       const f = await fr(() => demoProject(user.id, id));
       const { spec } = f, exp = EXPECTED[id];
       expect(spec.direction).toBe(id);
-      const attr = id === "onde" ? "editorial" : "conversion";
+      const attr = "conversion";
       expect(spec.settings[`${attr}_profile`]).toBe(exp.profile);
       // FRAISE : le bloc d'achat de base reste dans la fiche, désactivé (remplacé par « fg-product », la fiche des planches).
       const kept = (t: string) => spec.templates[t].order.filter((k) => !(id === "fraise" && spec.templates[t].sections[k].type === "main-product"));
@@ -67,10 +69,10 @@ describe("FRAISE (sept planches) et ONDE (refonte E-commerce) : composition fig�
       const productKey = spec.store.product.template_suffix && spec.templates[`product.${spec.store.product.template_suffix}`] ? `product.${spec.store.product.template_suffix}` : "product";
       expect(types(productKey), `${id} fiche`).toEqual(exp.product);
       expect(hidden("index"), `${id} accueil : sections masquées`).toEqual([]);
-      expect(hidden(productKey), `${id} fiche : sections masquées`).toEqual([]);
+      expect(hidden(productKey).map((k) => spec.templates[productKey].sections[k].type), `${id} fiche : sections masquées`).toEqual("hiddenProduct" in exp ? exp.hiddenProduct : []);
       for (const h of exp.pages) expect(spec.store.pages.map((p) => p.handle), `${id} page ${h}`).toContain(h);
       // En-tête : bandeau(x) d'annonce identifiés comme exemples + en-tête ; pied de page en colonnes.
-      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["fg-header"] : ["header"]);
+      expect(Object.values(spec.groups.header.sections).filter((s) => !s.disabled).map((s) => s.type)).toEqual(id === "fraise" ? ["fg-header"] : ["on-header"]);
       if (id === "fraise") {
         // Offres FRAISE : trois formats vendus (1, 2, 3 flacons), prix de lot calculés par le thème (aucun bloc d'offre).
         expect(spec.store.product.variants.map((v) => v.price)).toEqual([1660, 2490, 3320]);

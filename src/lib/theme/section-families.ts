@@ -28,7 +28,9 @@ export type Thumb =
   | "stories" | "table" | "cards" | "stats" | "beforeafter" | "quote" | "quote-split" | "band" | "logos" | "sticky" | "drawing"
   | "form" | "form-split" | "map" | "pricing" | "featured" | "index" | "product" | "newsletter" | "stores" | "asym" | "statement";
 
-export type Disposition = { id: string; label: T; type: string; settings?: Record<string, unknown>; thumb: Thumb };
+/** `blocks` : blocs de départ d'une disposition qui n'existe pas sans eux (triptyque à trois photos, FAQ en thèmes),
+ * posés à l'ajout depuis la galerie et dans son aperçu ; textes et photos sont ensuite ceux du projet. */
+export type Disposition = { id: string; label: T; type: string; settings?: Record<string, unknown>; blocks?: { type: string; settings?: Record<string, unknown> }[]; thumb: Thumb };
 export type FamilyEntry = { key: string; family: FamilyId; n: number; name: T; description: T; keywords: string; dispositions: Disposition[] };
 
 export const FAMILY_LABEL: Record<FamilyId, T> = {
@@ -37,7 +39,7 @@ export const FAMILY_LABEL: Record<FamilyId, T> = {
   services: { fr: "Prestations de services", en: "Services" },
 };
 
-const d = (id: string, fr: string, en: string, type: string, thumb: Thumb, settings?: Record<string, unknown>): Disposition => ({ id, label: { fr, en }, type, thumb, ...(settings ? { settings } : {}) });
+const d = (id: string, fr: string, en: string, type: string, thumb: Thumb, settings?: Record<string, unknown>, blocks?: Disposition["blocks"]): Disposition => ({ id, label: { fr, en }, type, thumb, ...(settings ? { settings } : {}), ...(blocks ? { blocks } : {}) });
 const e = (family: FamilyId, n: number, slug: string, name: T, description: T, keywords: string, dispositions: Disposition[]): FamilyEntry => ({ key: `${family}.${slug}`, family, n, name, description, keywords, dispositions });
 
 // ─── Boutique spécialisée — FRAISE / ONDE ──────────────────────────────────────────────────────────────────────────────
@@ -48,6 +50,22 @@ const SPECIALTY: FamilyEntry[] = [
     d("stacked", "Visuel au-dessus", "Visual on top", "cv-hero", "stacked", { layout: "stacked" }),
     d("background", "Visuel en fond", "Background visual", "cv-banner", "background", { layout: "background" }),
     d("banner", "Bannière visuel et prix", "Visual and price banner", "cv-banner", "split-left", { layout: "image-left" }),
+    // TRAVERSE (dossier du 23 octobre).
+    d("photo-band", "Grande photo, titre et bouton", "Large photo, title and button", "cv-banner", "background", { layout: "background", band_height: "hero", veil: "left", mobile_valign: "top", button_arrow: true }),
+    d("band", "Bandeau photo et bouton en contour", "Photo band and outlined button", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "left", button_style: "outline", button_arrow: true }),
+    d("product-card", "Carte produit, prix et liste cochée", "Product card, price and checklist", "cv-hero", "split-left", { layout: "card", button_arrow: true },
+      [{ type: "check" }, { type: "check" }, { type: "check" }]),
+    // MUSEAU CLUB (maquettes du 23 octobre) : grande photo sur voile clair, panneaux arrondis, guide des tailles
+    // illustré, appel final avec le produit et son prix.
+    d("light-veil", "Ouverture lumineuse, voile clair", "Bright opening, light veil", "cv-banner", "background", { layout: "spotlight", band_height: "hero", veil: "light", button_arrow: true }),
+    d("panel-left", "Panneau arrondi à gauche, photo à droite", "Rounded panel on the left, photo on the right", "cv-banner", "split-right", { layout: "panel-left", button_arrow: true }),
+    d("panel-right", "Photo à gauche, panneau arrondi à droite", "Photo on the left, rounded panel on the right", "cv-banner", "split-left", { layout: "panel-right", button_arrow: true }),
+    d("size-guide", "Guide des tailles illustré", "Illustrated size guide", "cv-banner", "drawing", { layout: "illustration", illus_label_1: "Tour de cou", illus_label_2: "Tour de poitrail", button_arrow: true }),
+    d("buy-band", "Appel final avec le produit et son prix", "Final call with the product and its price", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "light", button_arrow: true }),
+    // NOCTIL (maquettes du 23 octobre) : ouverture de nuit (bas de photo laissé au produit en surplomb), bandeau sombre au
+    // texte à droite.
+    d("night", "Ouverture de nuit, texte clair", "Night opening, light text", "cv-banner", "background", { layout: "night", band_height: "hero", veil: "left", mobile_valign: "top", button_arrow: true }),
+    d("dark-right", "Bandeau sombre, texte à droite", "Dark band, text on the right", "cv-banner", "band", { layout: "background", band_height: "medium", veil: "right", button_arrow: true }),
   ]),
   e("specialty", 2, "benefits", { fr: "Bénéfices du produit", en: "Product benefits" }, { fr: "Avantages clients avec icônes, illustrations ou photos.", en: "Customer benefits with icons, illustrations or photos." }, "bénéfices avantages atouts icônes", [
     d("grid", "Grille", "Grid", "features-grid", "grid-4", { layout: "grid", columns: 4, columns_mobile: "2", style: "plain" }),
@@ -56,11 +74,27 @@ const SPECIALTY: FamilyEntry[] = [
     d("carousel", "Carrousel", "Carousel", "features-grid", "carousel", { layout: "carousel", columns: 4, columns_mobile: "1", style: "cards" }),
     d("visual", "Autour d'un visuel", "Around a visual", "cv-feature", "stacked", { layout: "stacked" }),
     d("visual-left", "Visuel à gauche", "Visual on the left", "cv-feature", "split-left", { layout: "image-left" }),
+    // TRAVERSE : produit, titre, bouton et rangée d'icônes, gros plans légendés à droite.
+    d("essentials", "Essentiels : produit, icônes et gros plans", "Essentials: product, icons and close-ups", "cv-feature", "split-left", { layout: "essentials", button_arrow: true },
+      [{ type: "point", settings: { icon: "zip" } }, { type: "point", settings: { icon: "buckle" } }, { type: "point", settings: { icon: "handle" } }, { type: "point", settings: { icon: "parcel" } }, { type: "detail" }, { type: "detail" }, { type: "detail" }]),
+    // MUSEAU CLUB : produit en grand et trois gros plans ronds numérotés.
+    d("numbered", "Produit et gros plans numérotés", "Product and numbered close-ups", "cv-feature", "split-right", { layout: "numbered", detail_shape: "circle", detail_numbers: true, button_arrow: true },
+      [{ type: "detail" }, { type: "detail" }, { type: "detail" }]),
+    // NOCTIL : trois atouts en rangée, pictogramme rond à gauche du texte.
+    d("row", "Rangée d'atouts à pictogramme", "Row of benefits with icons", "features-grid", "list", { layout: "row", columns: 3, columns_mobile: "1", style: "plain" },
+      [{ type: "feature", settings: { icon: "moon" } }, { type: "feature", settings: { icon: "star" } }, { type: "feature", settings: { icon: "planet" } }]),
     d("marquee", "Bandeau défilant", "Scrolling band", "marquee", "marquee", { size: "small" }),
   ]),
   e("specialty", 3, "details", { fr: "Détails du produit", en: "Product details" }, { fr: "Gros plans légendés ou repères interactifs sur le produit.", en: "Captioned close-ups or interactive markers on the product." }, "détails gros plan repères points interactifs", [
     d("rows", "Gros plans en lignes", "Close-ups in rows", "cv-cards", "cards-rows", { layout: "rows" }),
     d("columns", "Gros plans en colonnes", "Close-ups in columns", "cv-cards", "grid-3", { layout: "columns" }),
+    // TRAVERSE : trois photos, titre et phrase posés dessus.
+    d("photo-cards", "Cartes sur photo", "Cards on photos", "cv-cards", "grid-3", { layout: "overlay" }),
+    // MUSEAU CLUB : photos à pastilles (lieu, moment) et photos numérotées.
+    d("pills", "Photos à pastilles, titre à gauche", "Photos with pill labels, title on the left", "cv-cards", "grid-3", { layout: "pills" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("numbered", "Photos numérotées", "Numbered photos", "cv-cards", "grid-3", { layout: "columns", numbered: true }),
+    // NOCTIL : cartes en colonnes qui défilent une à une sur téléphone.
+    d("columns-carousel", "Cartes, carrousel sur téléphone", "Cards, carousel on phone", "cv-cards", "carousel", { layout: "columns", mobile_carousel: true }),
     d("hotspots", "Repères interactifs", "Interactive markers", "cv-hotspots", "hotspots", { layout: "side" }),
     d("hotspots-stacked", "Repères, liste dessous", "Markers, list below", "cv-hotspots", "hotspots", { layout: "stacked" }),
   ]),
@@ -72,6 +106,11 @@ const SPECIALTY: FamilyEntry[] = [
   e("specialty", 5, "specs", { fr: "Caractéristiques", en: "Specifications" }, { fr: "Informations précises en tableau, liste ou accordéons.", en: "Precise information as a table, list or accordions." }, "caractéristiques fiche technique dimensions accordéons onglets", [
     d("side", "Titre à côté, accordéons", "Title beside, accordions", "cv-specs", "accordion", { layout: "side" }),
     d("stacked", "Accordéons empilés", "Stacked accordions", "cv-specs", "accordion", { layout: "stacked" }),
+    // MUSEAU CLUB : tableau des tailles (valeurs « À renseigner ») et cartes ouvertes à pictogramme (livraison, retours).
+    d("table", "Tableau (guide des tailles)", "Table (size guide)", "cv-specs", "table", { layout: "table" },
+      [{ type: "group", settings: { title: "S", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }, { type: "group", settings: { title: "M", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }, { type: "group", settings: { title: "L", rows: "Tour de cou : À renseigner\nTour de poitrail : À renseigner" } }]),
+    d("cards-open", "Cartes ouvertes à pictogramme", "Open cards with icons", "cv-specs", "cards-rows", { layout: "cards" },
+      [{ type: "group", settings: { icon: "truck", title: "Livraison", rows: "Délais : À renseigner\nFrais : À renseigner" } }, { type: "group", settings: { icon: "return", title: "Retours", rows: "Procédure : À renseigner" } }]),
     d("tabs", "Onglets", "Tabs", "content-tabs", "tabs", { tab_style: "underline" }),
     d("tabs-pills", "Onglets en pastilles", "Pill tabs", "content-tabs", "tabs", { tab_style: "pills" }),
   ]),
@@ -86,6 +125,8 @@ const SPECIALTY: FamilyEntry[] = [
     d("mosaic", "Mosaïque", "Mosaic", "cv-gallery", "mosaic", { layout: "mosaic" }),
     d("grid", "Galerie en grille", "Grid gallery", "cv-gallery", "grid-3", { layout: "grid" }),
     d("carousel", "Galerie en carrousel", "Carousel gallery", "cv-gallery", "carousel", { layout: "carousel" }),
+    // NOCTIL : grille sur ordinateur, une image à la fois sur téléphone.
+    d("grid-carousel", "Grille, carrousel sur téléphone", "Grid, carousel on phone", "cv-gallery", "grid-3", { layout: "grid", mobile_carousel: true }),
   ]),
   e("specialty", 8, "video", { fr: "Démonstration vidéo", en: "Video demonstration" }, { fr: "Média dédié montrant le fonctionnement ou l'utilisation.", en: "Dedicated media showing how the product works or is used." }, "vidéo démonstration fonctionnement stories", [
     d("wide", "Grand lecteur", "Large player", "fs-video", "video", { layout: "wide" }),
@@ -120,6 +161,12 @@ const SPECIALTY: FamilyEntry[] = [
     d("statement", "Grande déclaration", "Large statement", "rich-text", "statement", { style: "statement" }),
     d("image-left", "Image et texte", "Image and text", "image-with-text", "split-left", { layout: "image-left" }),
     d("overlap", "Image et texte superposés", "Overlapping image and text", "image-with-text", "split-right", { layout: "overlap" }),
+    // MUSEAU CLUB : le journal de la marque (rangée de petites cartes ; grille à pastilles par catégorie).
+    d("journal-row", "Articles du journal en rangée", "Journal articles in a row", "fs-journal", "cards-rows", { layout: "row" }),
+    d("journal-grid", "Journal à pastilles", "Journal with filter pills", "fs-journal", "grid-2", { layout: "grid", filters: true, tag_on_image: true, show_excerpt: true }),
+    // NOCTIL : journal à filtres et pages, deux articles en cartes larges.
+    d("journal-pages", "Journal à filtres et pages", "Journal with filters and pages", "fs-journal", "grid-3", { layout: "grid", filters: true, per_page: 6, show_excerpt: true }),
+    d("journal-list", "Deux articles en cartes larges", "Two articles in wide cards", "fs-journal", "cards-rows", { layout: "list", limit: 2, show_excerpt: true }),
   ]),
   e("specialty", 14, "making", { fr: "Fabrication et savoir-faire", en: "Making and know-how" }, { fr: "Conception, fabrication et contrôles qualité.", en: "Design, making and quality checks." }, "fabrication savoir-faire conception contrôle qualité", [
     d("steps", "Étapes illustrées", "Illustrated steps", "fs-making", "steps", { layout: "steps" }),
@@ -132,29 +179,55 @@ const SPECIALTY: FamilyEntry[] = [
     d("compact", "Achat compact", "Compact purchase", "featured-purchase", "product", { purchase_style: "compact" }),
     d("product-offers", "Offres sur la fiche produit", "Offers on the product page", "purchase-offers", "pricing"),
     d("band", "Bandeau d'appel à l'achat", "Purchase call-to-action band", "cta-banner", "band", { style: "center" }),
+    // NOCTIL : le produit détouré remonte sur la grande photo du dessus, avec son prix et l'ajout au panier ; appel final
+    // avec le produit détouré, sans débordement.
+    d("rise", "Produit en surplomb, prix et panier", "Overlapping product, price and cart", "cv-rise", "split-left", { layout: "media-left", overlap: "auto", decor: true }),
+    d("rise-final", "Appel final avec le produit détouré", "Final call with the cut-out product", "cv-rise", "split-right", { layout: "media-right", overlap: "none", rise: 0, media_width: 30 }),
   ]),
   e("specialty", 16, "addons", { fr: "Produits complémentaires", en: "Complementary products" }, { fr: "Accessoires et références qui complètent l'utilisation.", en: "Accessories and items that complete the use." }, "complémentaires accessoires recommandations", [
     d("recommended", "Recommandations automatiques", "Automatic recommendations", "product-recommendations", "grid-4", { intent: "complementary" }),
     d("grid", "Sélection manuelle en grille", "Manual selection grid", "fs-products", "grid-3", { layout: "grid", source: "manual" }),
     d("carousel", "Sélection en carrousel", "Selection carousel", "fs-products", "carousel", { layout: "carousel", source: "manual" }),
+    // MUSEAU CLUB : photo et produits côte à côte, produits posés sur une photo, ensemble assorti relié par des « + ».
+    d("media", "Photo et produits", "Photo and products", "fs-products", "split-left", { layout: "media", source: "manual" }),
+    d("over-photo", "Produits posés sur une photo", "Products over a photo", "fs-products", "background", { layout: "over-photo", source: "manual", exclude_current: true }),
+    d("plus", "Ensemble assorti (+)", "Matching set (+)", "fs-products", "grid-4", { layout: "plus", source: "manual" }),
   ]),
   e("specialty", 17, "guarantees", { fr: "Garanties et livraison", en: "Guarantees and delivery" }, { fr: "Expédition, retours, garantie et assistance.", en: "Shipping, returns, warranty and support." }, "garantie livraison expédition retours assistance", [
     d("shield", "Garantie mise en avant", "Highlighted guarantee", "cv-guarantee", "featured"),
     d("grid", "Engagements en grille", "Commitments grid", "fs-commitments", "grid-4", { layout: "grid" }),
     d("list", "Liste détaillée", "Detailed list", "fs-commitments", "list", { layout: "list" }),
+    // TRAVERSE : rubriques et encadrés « À compléter » (livraison, retours, pages légales).
+    d("notes", "Notes à compléter", "Notes to complete", "fs-commitments", "list", { layout: "notes", columns: "2" },
+      [{ type: "item", settings: { icon: "truck", box_title: "À compléter" } }, { type: "item", settings: { icon: "box", box_title: "À compléter" } }]),
   ]),
-  e("specialty", 18, "faq", { fr: "Questions fréquentes", en: "Frequently asked questions" }, { fr: "Questions / réponses organisées par sujet.", en: "Questions and answers organised by topic." }, "faq questions réponses", [
+  e("specialty", 18
+, "faq", { fr: "Questions fréquentes", en: "Frequently asked questions" }, { fr: "Questions / réponses organisées par sujet.", en: "Questions and answers organised by topic." }, "faq questions réponses", [
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards", layout: "stacked" }),
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines", layout: "stacked" }),
     d("side", "Titre à côté", "Title beside", "faq", "split-left", { style: "lines", layout: "side" }),
     d("numbered", "Numérotées", "Numbered", "faq", "list", { style: "numbered", layout: "stacked" }),
+    // MUSEAU CLUB : recherche et thèmes en pastilles ; photo avec le titre posé dessus.
+    d("topics", "Recherche et thèmes", "Search and topics", "faq", "tabs", { style: "cards", layout: "stacked", search: true, topics: true }),
+    d("photo", "Photo et questions", "Photo and questions", "faq", "split-left", { style: "lines", layout: "side" }),
+    // NOCTIL : deux FAQ côte à côte (mentions « À confirmer ») ; recherche et thèmes en intertitres.
+    d("pair", "Deux FAQ côte à côte", "Two FAQs side by side", "faq", "grid-2", { style: "lines", layout: "stacked", pair: true },
+      [{ type: "question", settings: { badge: "À confirmer" } }, { type: "question", settings: { badge: "À confirmer" } }]),
+    d("topic-titles", "Recherche et thèmes en intertitres", "Search and topic headings", "faq", "accordion", { style: "lines", layout: "stacked", search: true, topic_titles: true },
+      [{ type: "question", settings: { topic: "Le produit" } }, { type: "question", settings: { topic: "Livraison" } }]),
   ]),
   e("specialty", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Invitation à recevoir les actualités.", en: "Invitation to receive news." }, "newsletter inscription e-mail", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),
     d("visual", "Inscription avec visuel", "Sign-up with visual", "newsletter-media", "split-right"),
+    // MUSEAU CLUB : bandeau photo, texte et champ côte à côte.
+    d("background", "Inscription sur photo", "Sign-up over a photo", "newsletter-media", "background", { layout: "background" }),
   ]),
   e("specialty", 20, "contact", { fr: "Contact", en: "Contact" }, { fr: "Coordonnées et formulaire de questions.", en: "Contact details and question form." }, "contact formulaire coordonnées", [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
+    // TRAVERSE : formulaire vérifié dans la page, photo à droite.
+    d("form-photo", "Formulaire et photo", "Form and photo", "contact-form", "split-left", { inline_states: true, show_phone: false, require_name: true }),
+    // NOCTIL : sujet à choisir, numéro de commande facultatif, case d'accord.
+    d("form-subject", "Formulaire avec sujet et accord", "Form with subject and consent", "contact-form", "form", { inline_states: true, show_phone: false, require_name: true, require_message: true, order_field: true, subjects: "Ma commande\nLe produit\nLivraison et retours\nAutre demande", consent_text: "J'accepte que mes informations soient utilisées uniquement pour répondre à ma demande." }),
     d("channels", "Moyens de contact", "Ways to reach us", "fs-stores", "cards", { layout: "channels" }),
   ]),
 ];
@@ -168,6 +241,21 @@ const CATALOG: FamilyEntry[] = [
     d("arch", "Arche et promesse", "Arch and promise", "ed-opening", "split-right", { layout: "arch" }),
     // Issue #158 (SOUPLE) : la scène bord à bord occupe tout le premier écran, titre et bouton posés sur l'image.
     d("fullscreen", "Plein écran", "Full screen", "ed-opening", "background", { layout: "fullscreen" }),
+    // HEUREN (maquette du 22 octobre) : la photo pleine largeur sur une hauteur de bandeau, promesse à gauche.
+    d("banner", "Bandeau photo, texte à gauche", "Photo band, text on the left", "ed-opening", "background", { layout: "banner" }),
+    // SOUPLE (maquettes du 23 octobre) : titre centré en haut de la photo, panneaux arrondis à courbe douce, bandeau de
+    // marque et barre d'achat finale. Sections « cv-banner », proposées seulement aux thèmes qui savent les rendre.
+    d("scene", "Grande scène, titre centré en haut", "Large scene, heading centred at the top", "cv-banner", "background", { layout: "scene", band_height: "hero", veil: "none", mobile_valign: "top" }),
+    d("soft-panel", "Panneau à courbe douce, photo à droite", "Softly curved panel, photo on the right", "cv-banner", "split-right", { layout: "panel-left", curve: true }),
+    d("soft-panel-right", "Photo à gauche, panneau arrondi", "Photo on the left, rounded panel", "cv-banner", "split-left", { layout: "panel-right" }),
+    d("brand-band", "Bandeau de marque, logo et texte", "Brand band, logo and text", "cv-banner", "band", { layout: "brand" }),
+    d("buy-bar", "Barre d'achat finale du produit", "Final product purchase bar", "cv-banner", "band", { layout: "buybar" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-split", "Titre géométrique, grand visuel à droite", "Geometric heading, large visual on the right", "on-banner", "split-right", { layout: "split" }),
+    d("onde-wordmark", "Grand mot en contour, produit et petite carte", "Outlined wordmark, product and mini card", "on-banner", "band", { layout: "wordmark" }),
+    d("onde-background", "Photo en fond, titre et bouton", "Photo behind, heading and button", "on-banner", "background", { layout: "background" }),
+    d("onde-cta", "Bandeau d'appel sur une ligne", "One-line call band", "on-banner", "band", { layout: "cta" }),
+    d("onde-orbit", "Texte et cercles (matière, produit, onde)", "Text and circles (material, product, wave)", "on-banner", "split-right", { layout: "orbit" }),
   ]),
   e("catalog", 2, "collections", { fr: "Collections et catégories", en: "Collections and categories" }, { fr: "Accès visuels aux familles de produits.", en: "Visual access to product families." }, "collections catégories familles", [
     d("grid", "Grille", "Grid", "fs-collections", "grid-3", { layout: "grid" }),
@@ -180,17 +268,38 @@ const CATALOG: FamilyEntry[] = [
     d("carousel", "Carrousel", "Carousel", "fs-products", "carousel", { layout: "carousel" }),
     d("editorial", "Liste éditoriale", "Editorial list", "fs-products", "list", { layout: "list" }),
     d("recommended", "Recommandations (fiche produit)", "Recommendations (product page)", "product-recommendations", "grid-4", { intent: "related" }),
+    // SOUPLE (planche 02) : caractéristiques en accordéons, produits associés à ajouter au panier et questions, côte à côte.
+    d("infos", "Infos, produits associés et questions", "Details, related products and questions", "cv-infos", "grid-3"),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-product", "Produit unique : galerie et carte d'achat", "Single product: gallery and purchase card", "on-product", "split-left"),
   ]),
   e("catalog", 4, "featured", { fr: "Produit à la une", en: "Featured product" }, { fr: "Présentation approfondie d'une référence avec informations et achat.", en: "In-depth presentation of one item with details and purchase." }, "produit à la une achat référence", [
     d("offers", "Galerie et achat", "Gallery and purchase", "featured-purchase", "product", { purchase_style: "outlined" }),
     d("compact", "Achat compact", "Compact purchase", "featured-purchase", "product", { purchase_style: "compact" }),
+    d("duo", "Deux photos, prix et deux boutons", "Two photos, price and two buttons", "featured-purchase", "product", { layout: "duo" }),
     d("product-offers", "Offres sur la fiche produit", "Offers on the product page", "purchase-offers", "pricing"),
+    // SOUPLE (planches 01 à 03) : gros plan d'un produit à acheter et ses vignettes, gros plans légendés et encadré,
+    // repères à icônes, photo et points pratiques.
+    d("close-up", "Gros plan du produit, vignettes et achat", "Product close-up, thumbnails and purchase", "cv-feature", "split-left", { layout: "product" }),
+    d("details-box", "Gros plans légendés et encadré", "Captioned close-ups and a box", "cv-feature", "grid-3", { layout: "details-points" }),
+    d("essentials", "Repères à icônes", "Icon highlights", "cv-feature", "split-left", { layout: "essentials" }),
+    d("visual-right", "Photo à droite et points pratiques", "Photo on the right and practical points", "cv-feature", "split-right", { layout: "image-right" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-details", "Texte et gros plans légendés", "Text and captioned close-ups", "on-cards", "grid-3", { layout: "details" }),
+    d("onde-grid", "Gros plans en grille", "Close-ups in a grid", "on-cards", "grid-4", { layout: "grid" }),
+    d("onde-thumbs", "Vignettes du produit et texte", "Product thumbnails and text", "on-cards", "grid-3", { layout: "thumbs" }),
+    d("onde-macros", "Texte et petits gros plans de matières", "Text and small material close-ups", "on-cards", "grid-3", { layout: "macros" }),
+    d("onde-scenes", "Grandes scènes à flèche ronde", "Large scenes with a round arrow", "on-cards", "grid-3", { layout: "scenes" }),
+    d("onde-numbered", "Grande photo et points numérotés", "Large photo and numbered points", "on-cards", "split-left", { layout: "numbered" }),
   ]),
   e("catalog", 5, "lookbook", { fr: "Ambiance et lookbook", en: "Mood and lookbook" }, { fr: "Scènes de plusieurs produits avec repères permettant de les identifier.", en: "Scenes with several products and markers to identify them." }, "ambiance lookbook scène repères produits", [
     d("markers", "Scène et repères produits", "Scene and product markers", "fs-lookbook", "hotspots", { layout: "markers" }),
     d("side", "Scène et liste des produits", "Scene and product list", "fs-lookbook", "split-left", { layout: "side" }),
     d("split", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
     d("panorama", "Panorama", "Panorama", "ed-scene", "background", { layout: "panorama" }),
+    // HEUREN (maquette du 22 octobre) : photo pleine largeur, texte posé à gauche ou à droite, liens de détail.
+    d("band", "Bandeau photo pleine largeur", "Full-width photo band", "ed-scene", "background", { layout: "band" }),
+    d("detail", "Repères numérotés et détails dépliables", "Numbered markers and expandable details", "fs-lookbook", "hotspots", { layout: "detail" }),
   ]),
   e("catalog", 6, "finishes", { fr: "Matières et finitions", en: "Materials and finishes" }, { fr: "Textures, échantillons visuels et explications.", en: "Textures, visual samples and explanations." }, "matières finitions textures échantillons coloris", [
     d("strip", "Bande des finitions", "Finish strip", "ed-finishes", "grid-3", { image_asset: "" }),
@@ -205,6 +314,12 @@ const CATALOG: FamilyEntry[] = [
     d("side", "Deux usages côte à côte", "Two uses side by side", "ed-diptych", "grid-2", { layout: "side" }),
     d("pair", "Diptyque décalé", "Offset diptych", "ed-diptych", "grid-2", { layout: "pair" }),
     d("index", "Index d'usages", "Index of uses", "ed-diptych", "asym", { layout: "index" }),
+    d("triptych", "Triptyque plein cadre", "Full-bleed triptych", "ed-diptych", "grid-3", { layout: "triptych" }, [{ type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }, { type: "frame", settings: { ratio: "portrait" } }]),
+    // SOUPLE : univers en colonnes, photos à pastilles, cartes sur photo et lignes d'aide (sections « cv-cards »).
+    d("worlds", "Univers en colonnes", "Worlds in columns", "cv-cards", "grid-3", { layout: "columns" }),
+    d("pills", "Photos à pastilles, titre à gauche", "Photos with pill labels, title on the left", "cv-cards", "grid-3", { layout: "pills" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("photo-cards", "Cartes sur photo", "Cards on photos", "cv-cards", "grid-3", { layout: "overlay" }),
+    d("rows", "Cartes en lignes", "Cards in rows", "cv-cards", "cards-rows", { layout: "rows" }),
   ]),
   e("catalog", 9, "care", { fr: "Entretien et durabilité", en: "Care and durability" }, { fr: "Conseils pour entretenir et prolonger la vie des produits.", en: "Advice to care for products and make them last." }, "entretien durabilité conseils réparation", [
     d("list", "Conseils en liste", "Advice list", "fs-care", "list", { layout: "list" }),
@@ -237,6 +352,8 @@ const CATALOG: FamilyEntry[] = [
     d("list", "Liste numérotée", "Numbered list", "fs-commitments", "list", { layout: "list" }),
     d("split", "Image et engagements", "Image and commitments", "fs-commitments", "split-left", { layout: "split" }),
     d("glow", "Grille d'atouts", "Highlights grid", "features-grid", "grid-2", { style: "glow", columns: 2 }),
+    d("strip", "Bandeau de réassurance", "Reassurance strip", "fs-commitments", "list", { layout: "strip" }),
+    d("aside", "Aide au choix : titre et liens", "Help to choose: title and links", "fs-commitments", "split-left", { layout: "aside" }),
   ]),
   e("catalog", 15, "reviews", { fr: "Avis clients", en: "Customer reviews" }, { fr: "Retours sur les produits et l'expérience d'achat.", en: "Feedback on the products and the buying experience." }, "avis clients notes témoignages", [
     d("grid", "Mur d'avis", "Review wall", "fs-reviews", "grid-3", { layout: "grid" }),
@@ -253,21 +370,38 @@ const CATALOG: FamilyEntry[] = [
     d("editorial", "Un article à la une et une liste", "One lead article and a list", "fs-journal", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "fs-journal", "grid-3", { layout: "grid" }),
     d("list", "Liste", "List", "fs-journal", "list", { layout: "list" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-journal-row", "Texte et articles en ligne", "Text and articles in a row", "on-journal", "grid-3", { layout: "row" }),
+    d("onde-journal-page", "Page journal : filtres et article principal", "Journal page: filters and lead article", "on-journal", "cards", { layout: "page" }),
+    d("onde-article", "Article : titre, photo et paragraphes", "Article: heading, photo and paragraphs", "on-article", "stacked"),
   ]),
   e("catalog", 18, "faq", { fr: "Informations d'achat et FAQ", en: "Buying information and FAQ" }, { fr: "Livraison, retours, paiement et réponses pratiques regroupés par thème.", en: "Delivery, returns, payment and practical answers grouped by topic." }, "faq livraison retours paiement questions", [
     d("side", "Titre à côté", "Title beside", "v2-faq", "split-left", { layout: "side" }),
     d("center", "Centré", "Centred", "v2-faq", "accordion", { layout: "center" }),
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards" }),
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
+    d("columns", "Thèmes en colonnes et questions", "Topics in columns with questions", "v2-faq", "grid-3", { layout: "columns" },
+      ["Bien choisir", "Entretien", "Commande et livraison"].flatMap((title) => [{ type: "topic", settings: { title } }, { type: "question" }, { type: "question" }])),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-faq-row", "Questions en bande graphite", "Questions in a graphite band", "on-faq", "band", { layout: "row" }),
+    d("onde-faq-columns", "Informations pratiques et questions", "Practical information and questions", "on-faq", "accordion", { layout: "columns" }),
+    d("onde-faq-page", "Page FAQ : recherche et onglets", "FAQ page: search and tabs", "on-faq", "tabs", { layout: "page" }),
+    d("onde-checkout", "Commande d'exemple en étapes", "Step-by-step sample checkout", "on-checkout", "steps", { layout: "steps" }),
   ]),
   e("catalog", 19, "newsletter", { fr: "Newsletter", en: "Newsletter" }, { fr: "Actualités et collections.", en: "News and collections." }, "newsletter inscription", [
     d("simple", "Inscription simple", "Simple sign-up", "newsletter", "newsletter"),
     d("visual", "Inscription avec visuel", "Sign-up with visual", "newsletter-media", "split-right"),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-newsletter", "Inscription en bande lime", "Sign-up in a lime band", "on-newsletter", "band", { layout: "row" }),
   ]),
   e("catalog", 20, "contact", { fr: "Contact et points de vente", en: "Contact and stores" }, { fr: "Coordonnées, formulaire, adresses et horaires.", en: "Contact details, form, addresses and opening hours." }, "contact points de vente boutiques adresses horaires", [
     d("form-image", "Formulaire et image", "Form and image", "ed-contact", "form-split"),
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
     d("stores", "Points de vente", "Stores", "fs-stores", "stores", { layout: "stores" }),
+    // ONDE (planches du 24 octobre) : sections « on-* », proposées seulement au thème qui sait les rendre.
+    d("onde-contact", "Formulaire et accès d'aide", "Form and help options", "on-help", "split-right", { layout: "contact" }),
+    d("onde-info", "Rubriques d'information et encadré", "Information topics and box", "on-help", "list", { layout: "info" }),
+    d("onde-track", "Suivi de commande (exemple)", "Order tracking (sample)", "on-help", "split-right", { layout: "track" }),
   ]),
 ];
 
@@ -276,10 +410,33 @@ const SERVICES: FamilyEntry[] = [
   e("services", 1, "hero", { fr: "Présentation de l'activité", en: "Business presentation" }, { fr: "Métier, promesse, grand visuel et action principale.", en: "Trade, promise, large visual and main action." }, "ouverture activité métier promesse", [
     d("journal", "Titre puis paysage", "Title then landscape", "ed-opening", "stacked", { layout: "journal" }),
     d("immersive", "Promesse dans la scène", "Promise within the scene", "ed-opening", "background", { layout: "immersive" }),
+    // Différenciation du 22 octobre (Atelier Rive) : la pièce en pleine largeur, le titre dans un cartouche posé dessus.
+    d("cartouche", "Photo pleine largeur et cartouche", "Full-width photo and title card", "ed-opening", "background", { layout: "cartouche" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("banner", "Bandeau photo, titre blanc et deux boutons", "Photo band, white title and two buttons", "ed-opening", "background", { layout: "banner" }),
+    // Maison & Horizon (issue #172) : agence immobilière.
+    d("re-search", "Grande photo et recherche Acheter / Louer", "Large photo and Buy / Rent search", "re-hero", "background", { layout: "home", height: "tall" }),
+    d("re-page", "Photo, titre et boutons (pages intérieures)", "Photo, title and buttons (inner pages)", "re-hero", "background", { layout: "page", height: "medium" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-home", "Photo de chantier et aplat bleu pétrole", "Worksite photo and petrol-blue panel", "ap-hero", "background", { layout: "home", mobile_layout: "stack" }),
+    d("ap-fade", "Enduit fondu dans la photo", "Plaster fading into the photo", "ap-hero", "split-right", { layout: "fade", mobile_layout: "overlay", show_rule: true }),
+    d("ap-box", "Photo et panneau bleu à gauche", "Photo and blue panel on the left", "ap-hero", "background", { layout: "box", mobile_layout: "stack", show_rule: true }),
   ]),
   e("services", 2, "offers", { fr: "Prestations proposées", en: "Services offered" }, { fr: "Catalogue de services en cartes, liste ou panneaux.", en: "Service catalogue as cards, a list or panels." }, "prestations services catalogue", [
     d("list", "Liste", "List", "services-list", "list", { layout: "list" }),
     d("cards", "Cartes", "Cards", "services-list", "grid-3", { layout: "cards" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("thumbs", "Miniatures en ligne", "Thumbnails in a row", "services-list", "cards-rows", { layout: "thumbs", action_style: "arrow" }),
+    d("illustrated", "Colonnes illustrées, listes et boutons", "Illustrated columns, lists and buttons", "services-list", "grid-3", { layout: "cards", action_style: "button" }),
+    // Maison & Horizon (issue #172).
+    d("re-services", "Services en ligne, icônes au trait", "Services in a row, line icons", "re-tiles", "grid-3", { layout: "services" }),
+    d("re-paths", "Deux chemins : texte et deux photos", "Two paths: text and two photos", "re-tiles", "split-right", { layout: "split" }, [{ type: "tile" }, { type: "tile" }]),
+    d("re-sectors", "Secteurs en photos légendées", "Areas as captioned photos", "re-tiles", "grid-4", { layout: "sectors" }, [{ type: "tile" }, { type: "tile" }, { type: "tile" }, { type: "tile" }]),
+    d("re-cards", "Cartes avec photo et onglets de filtre", "Photo cards with filter tabs", "re-tiles", "grid-3", { layout: "cards", filter_tabs: true }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-trades", "Métiers numérotés en bande", "Numbered trades in a band", "ap-strip", "stats", { style: "trades" }, [{ type: "item" }, { type: "item" }, { type: "item" }]),
+    d("ap-services", "Trois prestations, filet et lien", "Three services, rule and link", "ap-cards", "grid-3", { layout: "services" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
+    d("ap-servicerows", "Prestations détaillées et listes cochées", "Detailed services and checklists", "ap-cards", "cards-rows", { layout: "servicerows", cta_style: "button" }, [{ type: "card" }, { type: "card" }, { type: "card" }]),
   ]),
   e("services", 3, "detail", { fr: "Détail d'une prestation", en: "Service detail" }, { fr: "Périmètre, contenu et livrables d'un service.", en: "Scope, content and deliverables of a service." }, "détail prestation périmètre livrables", [
     d("split", "Résumé fixe et détail", "Fixed summary and detail", "fs-service", "sticky", { layout: "split" }),
@@ -290,26 +447,42 @@ const SERVICES: FamilyEntry[] = [
     d("cards", "Cartes", "Cards", "fs-needs", "grid-3", { layout: "cards" }),
     d("list", "Liste", "List", "fs-needs", "list", { layout: "list" }),
     d("accordion", "Accordéons", "Accordions", "fs-needs", "accordion", { layout: "accordion" }),
-    d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("row", "Titre, texte et besoins en ligne", "Title, text and needs in a row", "fs-needs", "grid-3", { layout: "row", align: "left" }),
   ]),
   e("services", 5, "portfolio", { fr: "Réalisations", en: "Projects" }, { fr: "Portfolio avec visuels, légendes et liens.", en: "Portfolio with visuals, captions and links." }, "réalisations portfolio projets", [
     d("editorial", "Éditorial", "Editorial", "portfolio", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "portfolio", "grid-3", { layout: "grid" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("asym", "Galerie asymétrique filtrable", "Asymmetric filterable gallery", "portfolio", "mosaic", { layout: "asym" }),
+    // Maison & Horizon (issue #172) : les biens de l'onglet « Biens », jamais saisis dans la section.
+    d("re-featured", "Biens à la une en rangée", "Featured properties in a row", "re-listings", "grid-4", { mode: "featured", layout: "home", limit: 4 }),
+    d("re-search-grid", "Biens avec filtres, tri et pages", "Properties with filters, sort and pages", "re-listings", "grid-3", { mode: "vente", layout: "grid", show_filters: true, show_count: true, show_sort: true, per_page: 6, limit: 0 }),
+    d("re-map", "Carte illustrative et liste", "Illustrative map and list", "re-listings", "split-left", { mode: "vente", layout: "map", show_filters: true, show_count: true, show_sort: true, tabs: "view", limit: 0 }),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 6, "case", { fr: "Étude de cas", en: "Case study" }, { fr: "Demande, contraintes, réponse et résultat d'un projet.", en: "Request, constraints, answer and result of a project." }, "étude de cas projet demande contraintes résultat", [
     d("sticky", "Image fixe pendant le récit", "Image fixed during the story", "fs-case", "sticky", { layout: "sticky" }),
     d("columns", "Quatre colonnes", "Four columns", "fs-case", "grid-4", { layout: "columns" }),
     d("stacked", "Récit empilé", "Stacked story", "fs-case", "stacked", { layout: "stacked" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("detail", "Besoin, réponse, galerie et projets voisins", "Need, answer, gallery and neighbouring projects", "fs-case", "split-left", { layout: "detail", align: "left" },
+      [{ type: "part", settings: { kind: "request" } }, { type: "part", settings: { kind: "answer" } }, { type: "photo" }, { type: "photo" }, { type: "photo" }]),
   ]),
   e("services", 7, "before-after", { fr: "Avant / après", en: "Before / after" }, { fr: "Transformation réelle, curseur ou vues juxtaposées.", en: "Real transformation, slider or side-by-side views." }, "avant après transformation curseur comparaison", [
     d("slider", "Curseur", "Slider", "ed-study", "beforeafter", { aligned: true }),
     d("side", "Vues juxtaposées", "Side-by-side views", "ed-study", "grid-2", { aligned: false }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-compare", "Simulation avant/après à curseur", "Before/after simulation with a slider", "ap-compare", "beforeafter", { layout: "side" }),
   ]),
   e("services", 8, "method", { fr: "Méthode de travail", en: "Working method" }, { fr: "Étapes de l'accompagnement.", en: "Steps of the support." }, "méthode étapes accompagnement processus", [
     d("timeline", "Frise", "Timeline", "timeline", "timeline"),
     d("horizontal", "Étapes horizontales", "Horizontal steps", "how-to", "steps", { layout: "horizontal" }),
     d("vertical", "Étapes verticales", "Vertical steps", "how-to", "list", { layout: "vertical" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("columns", "Étapes en colonnes et photo", "Steps in columns and a photo", "timeline", "split-left", { layout: "columns" }),
     d("chapters", "Chapitres illustrés", "Illustrated chapters", "ref-narrative", "sticky"),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 9, "commitments", { fr: "Engagements de service", en: "Service commitments" }, { fr: "Suivi, qualité, délais et communication.", en: "Follow-up, quality, timing and communication." }, "engagements service suivi qualité délais", [
     d("grid", "Grille", "Grid", "fs-commitments", "grid-4", { layout: "grid" }),
@@ -325,6 +498,16 @@ const SERVICES: FamilyEntry[] = [
     d("about", "Récit et valeurs", "Story and values", "about", "split-left"),
     d("statement", "Phrase et repères", "Statement and markers", "ed-statement", "statement"),
     d("text", "Grande déclaration", "Large statement", "rich-text", "statement", { style: "statement" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("band", "Bandeau photo et phrase", "Photo band and statement", "ed-scene", "band", { layout: "band", text_side: "left", band_height: "medium" }),
+    d("stacked", "Photo, présentation et valeurs illustrées", "Photo, introduction and illustrated values", "about", "stacked", { layout: "stacked" }),
+    // « Scène et texte » rejoint le bandeau photo : une même section ne sert qu'une seule fonction de la famille.
+    d("scene", "Scène et texte", "Scene and text", "ed-scene", "split-left", { layout: "split" }),
+    // Maison & Horizon (issue #172).
+    d("re-exception", "Bien d'exception : panneau vert et grande photo", "Exceptional property: green panel and large photo", "re-feature", "split-right", { layout: "bien" }),
+    d("re-story", "Texte et photo", "Text and photo", "re-feature", "split-right", { layout: "story" }),
+    d("re-overlay", "Grande photo et encart", "Large photo and text card", "re-feature", "background", { layout: "overlay" }),
+    d("re-band", "Bandeau photo et bouton", "Photo band and button", "re-feature", "band", { layout: "band" }),
   ]),
   e("services", 12, "credentials", { fr: "Qualifications et assurances", en: "Qualifications and insurance" }, { fr: "Diplômes, certifications et assurances réels.", en: "Real diplomas, certifications and insurance." }, "qualifications certifications assurances diplômes", [
     d("list", "Liste détaillée", "Detailed list", "fs-credentials", "list", { layout: "list" }),
@@ -357,11 +540,16 @@ const SERVICES: FamilyEntry[] = [
     d("lines", "Accordéons en lignes", "Line accordions", "faq", "accordion", { style: "lines" }),
     d("cards", "Accordéons en cartes", "Card accordions", "faq", "accordion", { style: "cards" }),
     d("side", "Titre à côté", "Title beside", "faq", "split-left", { style: "lines", layout: "side" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-faq-row", "Titre à gauche, questions à droite", "Title left, questions right", "ap-faq", "accordion", { layout: "row" }),
+    d("ap-faq-page", "Recherche, catégories et aide", "Search, categories and help", "ap-faq", "accordion", { layout: "page", search_placeholder: "Rechercher une question…" }),
+    d("ap-faq-band", "Questions sur bande bleu pétrole", "Questions on a petrol-blue band", "ap-faq", "band", { layout: "band" }),
   ]),
   e("services", 19, "news", { fr: "Conseils et actualités", en: "Advice and news" }, { fr: "Articles professionnels et nouvelles de l'entreprise.", en: "Professional articles and company news." }, "conseils actualités articles blog", [
     d("editorial", "Un article à la une et une liste", "One lead article and a list", "fs-journal", "asym", { layout: "editorial" }),
     d("grid", "Grille", "Grid", "fs-journal", "grid-3", { layout: "grid" }),
     d("list", "Liste", "List", "fs-journal", "list", { layout: "list" }),
+    // APLAT (dix planches du 25 octobre).
   ]),
   e("services", 20, "contact", { fr: "Contact et prise de rendez-vous", en: "Contact and booking" }, { fr: "Formulaire ou accès au calendrier existant selon l'activité.", en: "Form or access to the existing calendar depending on the business." }, "contact rendez-vous réservation formulaire calendrier", [
     d("form", "Formulaire et coordonnées", "Form and details", "contact-form", "form"),
@@ -369,6 +557,18 @@ const SERVICES: FamilyEntry[] = [
     d("calendar", "Calendrier de réservation", "Booking calendar", "booking-calendar", "table"),
     d("form-image", "Formulaire et image", "Form and image", "ed-contact", "form-split"),
     d("band", "Bandeau d'appel", "Call-to-action band", "cta-banner", "band", { style: "center" }),
+    // Atelier Rive (maquettes du 23 octobre).
+    d("band-split", "Bandeau d'appel, titre à gauche", "Call-to-action band, title on the left", "cta-banner", "band", { style: "split", parallax: false, overlay: 0, color_scheme: "scheme-2" }),
+    d("card", "Carte d'appel avec petite photo", "Call-to-action card with a small photo", "cta-banner", "cards-rows", { style: "card", parallax: false }),
+    // Maison & Horizon (issue #172) : formulaires vérifiés, rien de promis qui ne soit tenu.
+    d("re-contact", "Motif en tuiles et coordonnées", "Topic tiles and contact details", "re-form", "form-split", { kind: "contact", aside_style: "info" }),
+    d("re-callback", "Demande de rappel", "Call-back request", "re-form", "form-split", { kind: "callback" }),
+    d("re-estimate", "Demande d'estimation en trois étapes", "Three-step valuation request", "re-form", "form", { kind: "estimate" }),
+    d("re-alert", "Alerte de recherche", "Search alert", "re-form", "form-split", { kind: "alert" }),
+    // APLAT (dix planches du 25 octobre).
+    d("ap-cta", "Bande bleu pétrole et photo", "Petrol-blue band and photo", "ap-cta", "band", { layout: "band" }),
+    d("ap-contact", "Formulaire de contact APLAT", "APLAT contact form", "ap-form", "form-split", { kind: "contact" }),
+    d("ap-quote", "Demande de devis avec photos", "Quote request with photos", "ap-form", "form", { kind: "quote" }),
   ]),
 ];
 
@@ -376,7 +576,11 @@ export const FAMILY_LIBRARY: Record<FamilyId, FamilyEntry[]> = { specialty: SPEC
 export const ALL_ENTRIES: FamilyEntry[] = [...SPECIALTY, ...CATALOG, ...SERVICES];
 
 /** Composants hors des 20 sections : structure des pages, modèles techniques, pages légales et articles. */
-export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps"]);
+// « demo-order » et « demo-account » : écrans d'exemple de commande et d'espace client des boutiques de démonstration
+// (MUSEAU CLUB) ; sur une vraie boutique, ces écrans sont ceux de Shopify : jamais proposés dans la galerie.
+// « re-bien », « re-favorites », « re-account », « re-legal », « re-article » (Maison & Horizon) : fiche d'un bien,
+// favoris, espace, informations légales et article — des pages entières, pas des sections de la galerie.
+export const STRUCTURAL_TYPES = new Set(["header", "footer", "announcement-bar", "cart-drawer", "legal-page", "cv-article", "apps", "demo-order", "demo-account", "on-header", "on-footer", "on-cart", "re-bien", "re-favorites", "re-account", "re-legal", "re-article", "ap-header", "ap-footer", "ap-legal", "ap-article", "ap-confirm"]);
 export const isStructuralType = (type: string) => type.startsWith("main-") || STRUCTURAL_TYPES.has(type);
 
 /** Types de sections proposables dans une famille (union des dispositions de ses 20 entrées). */
@@ -385,7 +589,7 @@ export function familyTypes(family: FamilyId): Set<string> {
 }
 
 /** Famille d'un thème de référence (repli quand la catégorie du projet n'est pas connue). */
-export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog", "table-saison": "services", "atelier-nuance": "services", parenthese: "services", phase: "services" };
+export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog", "table-saison": "services", "atelier-nuance": "services", parenthese: "services", phase: "services", "maison-horizon": "services", aplat: "services" };
 export const familyOf = (kind: StoreKind | null | undefined, theme?: string): FamilyId | null => kind ?? (theme ? THEME_FAMILY[theme] ?? null : null);
 
 export const entryByKey = (key: string): FamilyEntry | undefined => ALL_ENTRIES.find((x) => x.key === key);

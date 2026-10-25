@@ -7,7 +7,9 @@ export const PLAN_THEME_ORDER: Record<PlanFamily, readonly (string | null)[]> = 
   // MUSEAU CLUB est une boutique spécialisée (décision du 21 octobre, 12 h 58).
   specialty: ['fraise','sillon','noctil','traverse','museau-club'],
   catalog: ['orbe','onde','heuren','alcove','souple'],
-  services: ['rive','table-saison','atelier-nuance','parenthese','phase',null],
+  // MAISON & HORIZON (issue #172) : deuxième thème de la famille, ouvert à partir du forfait Vendre (à confirmer par Thomas).
+  // APLAT (PR #187) : troisième thème de la famille, ouvert à partir du forfait Vendre comme MAISON & HORIZON (à confirmer).
+  services: ['rive','maison-horizon','aplat','table-saison','atelier-nuance','parenthese','phase'],
 };
 export const BASE_SECTIONS: Record<PlanFamily, readonly string[]> = {
   specialty: ['hero','benefits','details','specs','howto','purchase','faq','contact'],

@@ -1,0 +1,105 @@
+planche,page,emplacement,fichier,consigne
+Toutes,Toutes,En-tête et pieds de page,images-existantes/logo.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,"Galerie, vue 1",images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,"Galerie, vue 2",images-existantes/tapis-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,"Galerie, vue 3",images-existantes/tapis-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,"Galerie, vue 4",images-existantes/tapis-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,"Galerie, vue 5",images-existantes/tapis-05.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Carte produit tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Boutique,Carte catalogue tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Guide,Produit comparé tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier / commande,Miniature correspondante tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Produit associé tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Produit associé tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Produit associé tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Galerie, vue 1",images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Galerie, vue 2",images-existantes/brique-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Galerie, vue 3",images-existantes/brique-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Galerie, vue 4",images-existantes/brique-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Galerie, vue 5",images-existantes/brique-05.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Carte produit brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Boutique,Carte catalogue brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Guide,Produit comparé brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier / commande,Miniature correspondante brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Produit associé brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Produit associé brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Produit associé brique,images-existantes/brique-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,"Galerie, vue 1",images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,"Galerie, vue 2",images-existantes/sangle-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,"Galerie, vue 3",images-existantes/sangle-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,"Galerie, vue 4",images-existantes/sangle-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,"Galerie, vue 5",images-existantes/sangle-05.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Carte produit sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Boutique,Carte catalogue sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Guide,Produit comparé sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier / commande,Miniature correspondante sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Produit associé sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Produit associé sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Produit associé sangle,images-existantes/sangle-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,"Galerie, vue 1",images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,"Galerie, vue 2",images-existantes/anneau-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,"Galerie, vue 3",images-existantes/anneau-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,"Galerie, vue 4",images-existantes/anneau-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,"Galerie, vue 5",images-existantes/anneau-05.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Carte produit anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Boutique,Carte catalogue anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Guide,Produit comparé anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier / commande,Miniature correspondante anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Produit associé anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Produit associé anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Produit associé anneau,images-existantes/anneau-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Grande ouverture collection,images-complementaires/01-accueil-collection.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Espace pour revenir à soi,images-complementaires/02-accueil-espace.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Matière et signature tapis,images-existantes/tapis-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Détail sous-face tapis,images-existantes/tapis-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Détail tapis roulé,images-existantes/tapis-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Bandeau collection,images-complementaires/03-collection-tapis-roule.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Univers tapis,images-existantes/tapis-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Univers accessoires,images-existantes/ambiance-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Univers Pilates,images-existantes/anneau-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Journal rituel,images-complementaires/17-journal-coin-pouf.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Journal ombres,images-complementaires/18-journal-ombres.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Accueil,Journal matière,images-existantes/brique-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Photo principale dans la pièce,images-complementaires/10-tapis-piece.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Récit et pratique avec pouf,images-complementaires/11-tapis-pouf.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Mise en scène tapis roulé et plaid,images-complementaires/12-tapis-roule-plaid.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Photo principale,images-complementaires/13-brique-principale.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Brique sur tapis tissé,images-complementaires/14-brique-tapis-tisse.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Macro liège,images-complementaires/15-brique-texture.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,"Briques empilées — mise en scène, pas un lot commercial",images-complementaires/16-briques-empilees.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Photo principale,images-complementaires/04-sangle-principale.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Scène de pratique sur tapis,images-complementaires/05-sangle-sur-tapis.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Macro tissu,images-complementaires/06-sangle-texture.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Photo principale,images-complementaires/07-anneau-principal.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Scène sur tapis,images-complementaires/08-anneau-mouvement.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Macro rainures,images-complementaires/09-anneau-rainures.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier vide,Grande photo,images-complementaires/27-panier-vide.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Boutique,Ouverture collection,images-complementaires/01-accueil-collection.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Panier,Recommandation sangle,images-complementaires/04-sangle-principale.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+4,Confirmation,Fond décoratif discret si montré,images-complementaires/18-journal-ombres.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Approche,Photo de collection,images-complementaires/01-accueil-collection.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal,Rituel du matin,images-complementaires/17-journal-coin-pouf.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal et contact,Ombres sur le mur,images-complementaires/18-journal-ombres.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal,Pause et tasse,images-complementaires/19-journal-tasse.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal et contact,Feuillage,images-complementaires/28-journal-feuillage.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Article,Coin de pratique chez soi,images-complementaires/20-article-coin-pratique.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Guide,Photo de collection,images-complementaires/01-accueil-collection.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Contact,Bandeau inférieur accessoires,images-complementaires/26-contact-collection.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,Compte,Ouverture verticale,images-complementaires/21-compte-collection-verticale.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,Compte,Bandeau du tableau de bord,images-complementaires/22-compte-bandeau.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,Commande et réinitialisation,Colis ouvert,images-complementaires/23-colis-ouvert.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,Livraison et retours,Sac kraft et accessoires,images-complementaires/24-livraison-sac-kraft.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,404,Photo à découper avec masque S en SVG ou CSS,images-complementaires/25-404-piece.png,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Photo de pratique verticale,images-existantes/ambiance-02.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Rituel avec sangle,images-existantes/ambiance-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche sangle,Rituel avec brique,images-existantes/ambiance-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Photo sur podium,images-existantes/ambiance-04.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Approche,Collection alternative issue du kit conservé,images-existantes/ambiance-01.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal,Article vedette collection,images-existantes/ambiance-10.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,FAQ,Photo accessoires,images-existantes/ambiance-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+5,Journal,Photo texture tapis,images-existantes/tapis-03.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+1,Collection,Variante vue du dessus disponible,images-existantes/ambiance-05.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche tapis,Variante tapis roulé disponible,images-existantes/ambiance-06.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+2,Fiche brique,Variante au soleil disponible,images-existantes/ambiance-07.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+6,Compte,Variante verticale disponible,images-existantes/ambiance-08.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.
+3,Fiche anneau,Variante sur brique disponible,images-existantes/ambiance-09.webp,Recadrage adapté au bloc ; conserver le produit entier dans les vues principales.

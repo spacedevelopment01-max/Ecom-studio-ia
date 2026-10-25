@@ -1,0 +1,52 @@
+{%- comment -%}
+  Bande des métiers d'APLAT (accueil, planche 01) et bande d'étapes (enduits, planche 04) : numéro bleu, filet vertical,
+  intitulé et précision, colonnes séparées par un filet bleu clair. Chaque colonne peut mener à une page ou une ancre.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ap-s ap-strip ap-strip--{{ s.style }}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}"{% if s.heading != blank %} aria-label="{{ s.heading | escape }}"{% endif %}>
+  <ol class="ap-strip__list ap-wrap" role="list">
+    {%- for b in section.blocks -%}
+      <li class="ap-strip__item" {{ b.shopify_attributes }}>
+        {%- if b.settings.link != blank -%}<a class="ap-strip__link" href="{{ b.settings.link }}">{%- endif -%}
+        <span class="ap-strip__num">{{ b.settings.number | escape }}</span>
+        <span class="ap-strip__label"><strong>{{ b.settings.title | escape }}</strong>{%- if b.settings.text != blank -%}<span>{{ b.settings.text | escape | newline_to_br }}</span>{%- endif -%}</span>
+        {%- if b.settings.link != blank -%}</a>{%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ol>
+</section>
+
+{% schema %}
+{
+  "name": "Bande numérotée APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Nom de la bande (lecteurs d'écran)" },
+    {
+      "type": "select", "id": "style", "label": "Style", "default": "trades",
+      "options": [ { "value": "trades", "label": "Métiers (grands numéros)" }, { "value": "steps", "label": "Étapes (sous une ouverture)" } ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item", "name": "Colonne",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+        { "type": "text", "id": "title", "label": "Intitulé" },
+        { "type": "textarea", "id": "text", "label": "Précision" },
+        { "type": "url", "id": "link", "label": "Lien" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Bande numérotée APLAT" } ]
+}
+{% endschema %}

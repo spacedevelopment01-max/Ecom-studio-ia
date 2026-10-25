@@ -2,6 +2,8 @@
 Sélection de produits (e-commerce) et produits complémentaires (boutique spécialisée) : une seule section, plusieurs
   modes d'alimentation (sélection manuelle, nouveautés, une collection — ex. meilleures ventes) et dispositions
   (grille, carrousel, liste éditoriale). Cartes produit du thème : prix, photo secondaire au survol, lien vers la fiche.
+  MUSEAU CLUB (maquettes du 23 octobre) : photo à côté du titre et des cartes, cartes posées sur une photo, produits
+  reliés par des « + » (un ensemble assorti). La sélection manuelle peut exclure le produit de la fiche consultée.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -14,8 +16,26 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
   assign fx = s.effect
   assign cards = 'fs-card'
 -%}
+{%- liquid
+  assign cart_rule = s.cart_visibility | default: 'always'
+  assign hidden_by_cart = false
+  if cart_rule == 'empty' and cart.item_count > 0
+    assign hidden_by_cart = true
+  elsif cart_rule == 'filled' and cart.item_count == 0
+    assign hidden_by_cart = true
+  endif
+  assign cart_handles = '|'
+  if s.exclude_cart_items
+    for line in cart.items
+      assign cart_handles = cart_handles | append: line.product.handle | append: '|'
+    endfor
+  endif
+-%}
+{%- unless hidden_by_cart -%}
+{%- assign with_photo = false -%}{%- if s.layout == 'media' or s.layout == 'over-photo' -%}{%- assign with_photo = true -%}{%- endif -%}
 <section id="fs-{{ section.id }}" class="fs fs-products fs-products--{{ s.layout | default: 'base' }} fs--{{ prof }}{% if prof == 'ed' %} ed-section{% else %} es-section{% endif %}{% if s.background != blank and s.background != 'scheme' %} fs--{{ s.background }}{% endif %}{% if s.hover %} fs--hover{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;--fs-angle:{{ s.gradient_angle | default: 165 }}deg;"{% if fx == 'none' %} data-ed-motion="none"{% endif %} >
   <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
+    {%- if with_photo -%}<div class="fs-products__photo cv-zoom-box"{% if s.image_zoom > 100 %} style="--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }}"{% endif %}>{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y %}</div><div class="fs-products__panel">{%- endif -%}
     {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
 {%- liquid
   assign limit = s.limit | default: 4
@@ -24,12 +44,13 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
 -%}
     {%- capture items -%}
       {%- if src == 'manual' -%}
-        {%- for block in section.blocks -%}{%- if block.settings.product != blank -%}{%- assign p = all_products[block.settings.product] | default: block.settings.product -%}{%- if p.title != blank -%}<li class="fs-products__item" data-fs-slide {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}{%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}</li>{%- endif -%}{%- endif -%}{%- endfor -%}
+        {%- assign shown = 0 -%}
+        {%- for block in section.blocks -%}{%- if s.layout == 'over-photo' and shown >= limit -%}{%- break -%}{%- endif -%}{%- if block.settings.product != blank -%}{%- assign p = all_products[block.settings.product] | default: block.settings.product -%}{%- if s.exclude_current and product != blank and p.handle == product.handle -%}{%- continue -%}{%- endif -%}{%- assign p_key = '|' | append: p.handle | append: '|' -%}{%- if s.exclude_cart_items and cart_handles contains p_key -%}{%- continue -%}{%- endif -%}{%- if p.title != blank -%}{%- assign shown = shown | plus: 1 -%}<li class="fs-products__item" data-fs-slide {{ block.shopify_attributes }}>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}{%- if block.settings.note != blank -%}<p class="fs-meta">{{ block.settings.note | escape }}</p>{%- endif -%}</li>{%- endif -%}{%- endif -%}{%- endfor -%}
       {%- elsif src == 'newest' -%}
         {%- assign list = collections.all.products | sort: 'created_at' | reverse -%}
-        {%- for p in list limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}</li>{%- endfor -%}
+        {%- for p in list limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}</li>{%- endfor -%}
       {%- else -%}
-        {%- for p in coll.products limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio %}</li>{%- endfor -%}
+        {%- for p in coll.products limit: limit -%}<li class="fs-products__item" data-fs-slide>{% render 'product-card', product_card: p, show_secondary: s.show_secondary, ratio: s.ratio, button_label: s.card_button_label, quick_add: s.quick_add %}</li>{%- endfor -%}
       {%- endif -%}
     {%- endcapture -%}
     {%- if items != blank -%}
@@ -41,8 +62,10 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
     {%- elsif request.host == 'apercu' -%}
       <div class="ed-media ed-media--pending fs-pending"><p>{{ 'editorial.pending_media' | t }}<span>{{ 'collections.view_all' | t }}</span></p></div>
     {%- endif -%}
+    {%- if with_photo -%}</div>{%- endif -%}
   </div>
 </section>
+{%- endunless -%}
 
 {% schema %}
 {
@@ -110,9 +133,119 @@ Sélection de produits (e-commerce) et produits complémentaires (boutique spéc
         {
           "value": "list",
           "label": "Liste éditoriale"
+        },
+        {
+          "value": "media",
+          "label": "Photo à côté du titre et des cartes"
+        },
+        {
+          "value": "over-photo",
+          "label": "Cartes posées sur une photo"
+        },
+        {
+          "value": "plus",
+          "label": "Ensemble relié par des « + »"
         }
       ],
       "default": "grid"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Photo (dispositions avec photo)"
+    },
+    {
+      "type": "text",
+      "id": "image_asset",
+      "label": "Fichier photo fourni avec le thème"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Description de la photo"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Point focal horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Point focal vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "image_zoom",
+      "label": "Agrandissement de la photo",
+      "min": 100,
+      "max": 250,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "checkbox",
+      "id": "exclude_current",
+      "label": "Masquer le produit de la fiche consultée",
+      "info": "Sur une fiche produit, la sélection manuelle ne propose pas le produit déjà affiché.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "exclude_cart_items",
+      "label": "Masquer les produits déjà dans le panier",
+      "info": "Pour une rangée « Complétez… » placée sur la page panier.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "cart_visibility",
+      "label": "Affichage selon le panier",
+      "default": "always",
+      "options": [
+        {
+          "value": "always",
+          "label": "Toujours"
+        },
+        {
+          "value": "empty",
+          "label": "Seulement quand le panier est vide"
+        },
+        {
+          "value": "filled",
+          "label": "Seulement quand le panier contient des articles"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "card_button_label",
+      "label": "Bouton sous chaque produit",
+      "info": "Vide : pas de bouton (la carte mène à la fiche)."
+    },
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Ajout au panier depuis la carte",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "Aucun (lien vers la fiche)" },
+        { "value": "icon", "label": "Bouton rond « panier »" },
+        { "value": "plus", "label": "Bouton rond « + »" },
+        { "value": "button", "label": "Bouton texte (libellé du bouton de carte)" }
+      ],
+      "info": "Ajoute vraiment le produit quand il n'a qu'une variante ; sinon le bouton mène à sa fiche pour choisir."
     },
     {
       "type": "select",

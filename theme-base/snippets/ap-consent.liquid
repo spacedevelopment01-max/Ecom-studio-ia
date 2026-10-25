@@ -1,0 +1,61 @@
+{%- comment -%}
+  Choix de cookies d'APLAT (panneau du pied et page Cookies) : essentiels toujours actifs, mesure d'audience et
+  contenus externes désactivés par défaut, « Tout refuser », « Tout accepter », « Enregistrer mes choix ».
+  Les choix sont gardés dans le navigateur et appliqués par assets/aplat.js aux éléments marqués
+  data-ap-consent-category (aucun n'est chargé avant accord). Paramètres : s (réglages de la section), id, page
+  (true : version de la page Cookies, avec icônes, états et prestataires).
+{%- endcomment -%}
+<form class="ap-consent{% if page %} ap-consent--page{% endif %}" data-ap-consent-form novalidate>
+  {%- assign rows = 'e,a,x' | split: ',' -%}
+  {%- for r in rows -%}
+    {%- liquid
+      case r
+        when 'e'
+          assign t = s.consent_essential_title
+          assign d = s.consent_essential_text
+          assign dm = s.consent_essential_mobile_text
+          assign ic = 'gear'
+        when 'a'
+          assign t = s.consent_audience_title
+          assign d = s.consent_audience_text
+          assign dm = s.consent_audience_mobile_text
+          assign ic = 'chart'
+        else
+          assign t = s.consent_external_title
+          assign d = s.consent_external_text
+          assign dm = s.consent_external_mobile_text
+          assign ic = 'play'
+      endcase
+    -%}
+    <div class="ap-consent__row"{% if page and r == 'a' %} id="types"{% endif %}>
+      {%- if page -%}<span class="ap-consent__icon" aria-hidden="true">{% render 'ap-icon', name: ic %}</span>{%- endif -%}
+      <div class="ap-consent__label">
+        <p class="ap-consent__title" id="ApC-{{ id }}-{{ r }}">{{ t | escape }}{%- if r == 'e' and s.consent_badge != blank -%} <span class="ap-consent__badge{% if page %} ap-only-m{% endif %}">{{ s.consent_badge | escape }}</span>{%- endif -%}</p>
+        {%- if d != blank -%}<p class="ap-consent__text">{%- render 'ap-dm', d: d, m: dm -%}</p>{%- endif -%}
+      </div>
+      <span class="ap-switch-wrap">
+        <span class="ap-switch">{%- if r == 'e' -%}<input type="checkbox" checked disabled aria-labelledby="ApC-{{ id }}-{{ r }}">{%- elsif r == 'a' -%}<input type="checkbox" name="audience" data-ap-consent="audience" aria-labelledby="ApC-{{ id }}-{{ r }}">{%- else -%}<input type="checkbox" name="external" data-ap-consent="external" aria-labelledby="ApC-{{ id }}-{{ r }}">{%- endif -%}<span class="ap-switch__ui" aria-hidden="true"></span></span>
+        {%- if page -%}<span class="ap-switch__state ap-only-d" aria-hidden="true">{%- if r == 'e' -%}{{ s.consent_always_label | escape }}{%- else -%}<span class="on">{{ s.consent_on_label | escape }}</span><span class="off">{{ s.consent_off_label | escape }}</span>{%- endif -%}</span>{%- endif -%}
+      </span>
+    </div>
+  {%- endfor -%}
+  {%- if page and s.consent_info_title != blank -%}
+    <div class="ap-consent__info" id="{{ s.consent_info_anchor | handle }}">
+      <span class="ap-only-m">{% render 'ap-icon', name: 'info' %}</span>
+      <div>
+        <p class="ap-consent__info-title">{{ s.consent_info_title | escape }}</p>
+        {%- if s.consent_info_text != blank -%}<p>{{ s.consent_info_text | escape }}</p>{%- endif -%}
+        {%- if s.consent_info_list != blank -%}
+          <div class="ap-consent__list ap-only-d"><p>{{ s.consent_info_list_title | default: 'À renseigner :' | escape }}</p><ul>{%- assign lines = s.consent_info_list | newline_to_br | split: '<br />' -%}{%- for l in lines -%}{%- assign lv = l | strip -%}{%- if lv != blank -%}<li>{{ lv | escape }}</li>{%- endif -%}{%- endfor -%}</ul></div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+  {%- if s.consent_none_label != blank -%}<p class="ap-consent__none" data-ap-consent-none hidden>{{ s.consent_none_label | escape }}</p>{%- endif -%}
+  <div class="ap-consent__actions">
+    <button type="button" class="ap-btn ap-btn--outline ap-consent__refuse" data-ap-consent-all="0">{{ s.consent_refuse_label | escape }}</button>
+    <button type="submit" class="ap-btn ap-btn--outline ap-consent__save">{{ s.consent_save_label | escape }}</button>
+    <button type="button" class="ap-btn ap-btn--petrol ap-consent__accept" data-ap-consent-all="1">{{ s.consent_accept_label | escape }}</button>
+  </div>
+  <p class="ap-consent__status" role="status" aria-live="polite" data-ap-consent-status data-saved="{{ s.consent_saved_label | escape }}"></p>
+</form>

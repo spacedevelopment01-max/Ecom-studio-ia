@@ -1,0 +1,172 @@
+{%- comment -%}
+  Fiche d'ONDE (planches 01 et 05 du 24 octobre) : ouverture claire avec fil d'Ariane, grand titre, mention et prix à
+  gauche, vue principale au centre (miniatures cliquables en dessous, agrandissement), carte d'achat graphite à droite
+  (nom, prix, finition, quantité, ajout au panier, texte, deux liens d'aide), puis barre d'onglets vers les sections de la
+  page. Barre d'achat fixée en bas de l'écran (miniature, nom, prix, ajout). Le formulaire est celui de la plateforme :
+  l'ajout passe par le panier réel (tiroir ouvert), la quantité est celle choisie. Sur téléphone : titre, vue, miniatures,
+  carte claire, onglets (planche 05). La description du produit (réglage, activé par défaut) suit les onglets : un
+  client garde son texte ; la démonstration la masque (la planche n'en montre pas).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = all_products[s.product] | default: s.product
+  if p == blank
+    assign p = product
+  endif
+  assign v = p.selected_or_first_available_variant
+  assign form_id = 'OnProduct-' | append: section.id
+  assign media_list = p.media
+  assign first = s.first_media | minus: 1
+  if first >= media_list.size or first < 0
+    assign first = 0
+  endif
+-%}
+{%- capture price -%}{%- if p.price != blank -%}{% if settings.price_trim_zeros %}{{ v.price | money_without_trailing_zeros }}{% else %}{{ v.price | money }}{% endif %}{%- endif -%}{%- endcapture -%}
+<section class="on-product" id="{{ s.anchor | default: 'vue-d-ensemble' | handleize }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-minh:{{ s.min_height }}px;--on-stage-x:{{ s.stage_x }}%;--on-stage-w:{{ s.stage_width }}%;" data-on-product>
+  <div class="on-product__hero">
+    <div class="on-product__stage" data-on-stage>
+      {%- for m in media_list -%}
+        {%- assign idx = forloop.index0 -%}
+        <figure class="on-product__view{% if idx == first %} is-active{% endif %}" data-on-view="{{ idx }}"{% unless idx == first %} hidden{% endunless %}>
+          <a class="on-product__zoom" href="{{ m.preview_image | image_url: width: 2400 }}" data-on-zoom aria-label="{{ s.zoom_label | escape }} : {{ m.alt | default: p.title | escape }}">
+            {{ m.preview_image | image_url: width: 1600 | image_tag: loading: 'eager', alt: m.alt | default: p.title, sizes: '(min-width: 750px) 60vw, 100vw' }}
+          </a>
+        </figure>
+      {%- endfor -%}
+      <span class="on-product__zoom-hint" aria-hidden="true">{% render 'icon', name: 'search' %}</span>
+    </div>
+    <div class="on-product__inner on-container">
+      <div class="on-product__copy">
+        {%- if s.home_label != blank -%}
+          <nav class="on-crumb" aria-label="{{ s.crumb_label | escape }}"><a href="{{ routes.root_url }}">{{ s.home_label | escape }}</a><span aria-hidden="true">/</span><span aria-current="page">{{ s.current_label | default: p.title | escape }}</span></nav>
+        {%- endif -%}
+        <h1 class="on-title on-product__title">{{ s.heading | default: p.title | escape | newline_to_br }}</h1>
+        {%- if s.brand_line != blank -%}<p class="on-product__brand">{{ s.brand_line | escape }}</p>{%- endif -%}
+        {%- if price != blank -%}<p class="on-product__price">{{ price }}</p>{%- endif -%}
+        {%- if s.price_note != blank -%}<p class="on-product__note">{{ s.price_note | escape }}</p>{%- endif -%}
+      </div>
+      {%- if media_list.size > 1 -%}
+        <ul class="on-product__thumbs" role="list" aria-label="{{ s.thumbs_label | escape }}">
+          {%- for m in media_list limit: s.thumbs_count -%}
+            <li><button type="button" class="on-product__thumb{% if forloop.index0 == first %} is-active{% endif %}" data-on-thumb="{{ forloop.index0 }}" aria-label="{{ s.thumb_label | escape }} {{ forloop.index }}" aria-pressed="{% if forloop.index0 == first %}true{% else %}false{% endif %}">{{ m.preview_image | image_url: width: 320 | image_tag: loading: 'lazy', alt: '' }}</button></li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+      <div class="on-buy">
+        <div class="on-buy__head">
+          <div>
+            {%- if s.card_brand != blank -%}<p class="on-buy__brand">{{ s.card_brand | escape }}</p>{%- endif -%}
+            <p class="on-buy__name">{{ s.card_name | default: p.title | escape }}</p>
+          </div>
+          {%- if price != blank -%}<p class="on-buy__price">{{ price }}</p>{%- endif -%}
+        </div>
+        {%- form 'product', p, id: form_id, class: 'on-buy__form', data-product-form: '' -%}
+          <input type="hidden" name="id" value="{{ v.id }}">
+          {%- if s.finish_value != blank -%}
+            <div class="on-buy__row"><span class="on-buy__label">{%- if s.mobile_finish_label != blank -%}<span class="on-desktop-only">{{ s.finish_label | escape }}</span><span class="on-mobile-only">{{ s.mobile_finish_label | escape }}</span>{%- else -%}{{ s.finish_label | escape }}{%- endif -%}</span><span class="on-buy__finish"><span class="on-swatch" style="--on-sw1:{{ s.swatch_main }};--on-sw2:{{ s.swatch_accent }};" aria-hidden="true"></span>{{ s.finish_value | escape }}</span></div>
+          {%- endif -%}
+          <div class="on-buy__row">
+            <label class="on-buy__label" for="Qty-{{ section.id }}">{{ s.quantity_label | escape }}</label>
+            <span class="on-qty" data-on-qty>
+              <button type="button" data-on-step="-1" aria-label="{{ s.minus_label | escape }}">{% render 'icon', name: 'minus' %}</button>
+              <input id="Qty-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="{{ s.max_quantity }}" inputmode="numeric">
+              <button type="button" data-on-step="1" aria-label="{{ s.plus_label | escape }}">{% render 'icon', name: 'plus' %}</button>
+            </span>
+          </div>
+          <button type="submit" name="add" class="on-button on-button--lime on-buy__add" data-add-button{% unless v.available %} disabled{% endunless %}>{{ s.add_label | escape }}{% render 'icon', name: 'arrow-up-right' %}</button>
+        {%- endform -%}
+        {%- if s.text != blank -%}<div class="on-buy__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.help1_label != blank or s.help2_label != blank -%}
+          <ul class="on-buy__help" role="list">
+            {%- if s.help1_label != blank -%}<li><a href="{{ s.help1_link | default: '#' }}">{% render 'icon', name: s.help1_icon %}<span>{{ s.help1_label | escape }}</span></a></li>{%- endif -%}
+            {%- if s.help2_label != blank -%}<li><a href="{{ s.help2_link | default: '#' }}">{% render 'icon', name: s.help2_icon %}<span>{{ s.help2_label | escape }}</span></a></li>{%- endif -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+  {%- if section.blocks.size > 0 -%}
+    <nav class="on-tabsbar" aria-label="{{ s.tabs_label | escape }}">
+      <ul role="list">
+        {%- for b in section.blocks -%}<li {{ b.shopify_attributes }}><a href="#{{ b.settings.anchor | handleize }}"{% if forloop.first %} class="is-active" aria-current="true"{% endif %} data-on-tab-link>{{ b.settings.label | escape }}</a></li>{%- endfor -%}
+      </ul>
+    </nav>
+  {%- endif -%}
+  {%- if s.show_description and p.description != blank -%}
+    <div class="on-product__description"><div class="on-container"><div class="on-product__rte">{{ p.description }}</div></div></div>
+  {%- endif -%}
+  {%- if s.sticky_bar -%}
+    <div class="on-stickybar" data-on-sticky>
+      <div class="on-stickybar__inner on-container">
+        <span class="on-stickybar__thumb">{%- if s.bar_image_asset != blank -%}<img width="1200" height="1200" src="{{ s.bar_image_asset | asset_url }}" alt="" loading="lazy" decoding="async">{%- elsif p.featured_media -%}{{ p.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</span>
+        <span class="on-stickybar__name"><strong>{{ s.bar_name | default: p.title | escape }}</strong>{%- if s.bar_note != blank -%}<span>{{ s.bar_note | escape }}</span>{%- endif -%}</span>
+        {%- if price != blank -%}<span class="on-stickybar__price">{{ price }}</span>{%- endif -%}
+        <button type="submit" form="{{ form_id }}" class="on-button on-button--lime on-stickybar__add"{% unless v.available %} disabled{% endunless %}>{% render 'icon', name: 'cart' %}<span>{{ s.add_label | escape }}</span>{% render 'icon', name: 'arrow-up-right' %}</button>
+      </div>
+    </div>
+  {%- endif -%}
+  <dialog class="on-lightbox" data-on-lightbox aria-label="{{ s.zoom_label | escape }}"><button type="button" class="on-lightbox__close" data-on-lightbox-close aria-label="{{ s.close_label | escape }}">{% render 'icon', name: 'close' %}</button><img width="1200" height="1200" alt="" data-on-lightbox-img></dialog>
+</section>
+
+{% schema %}
+{
+  "name": "Fiche ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Produit (vide : celui de la fiche)" },
+    { "type": "text", "id": "anchor", "label": "Ancre de l'ouverture", "default": "vue-d-ensemble" },
+    { "type": "text", "id": "home_label", "label": "Fil d'Ariane : accueil", "default": "Accueil" },
+    { "type": "text", "id": "current_label", "label": "Fil d'Ariane : page" },
+    { "type": "text", "id": "crumb_label", "label": "Nom du fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Vide : le nom du produit." },
+    { "type": "text", "id": "brand_line", "label": "Mention sous le titre" },
+    { "type": "text", "id": "price_note", "label": "Mention du prix", "info": "Ex. : Prix de démonstration." },
+    { "type": "range", "id": "first_media", "label": "Vue montrée en premier", "min": 1, "max": 8, "step": 1, "default": 1 },
+    { "type": "range", "id": "thumbs_count", "label": "Nombre de miniatures", "min": 2, "max": 8, "step": 1, "default": 5 },
+    { "type": "text", "id": "thumbs_label", "label": "Nom des miniatures (lecteurs d'écran)", "default": "Vues du produit" },
+    { "type": "text", "id": "thumb_label", "label": "Nom d'une miniature (lecteurs d'écran)", "default": "Vue" },
+    { "type": "text", "id": "zoom_label", "label": "Nom de l'agrandissement (lecteurs d'écran)", "default": "Agrandir la vue" },
+    { "type": "text", "id": "close_label", "label": "Nom du bouton fermer (lecteurs d'écran)", "default": "Fermer" },
+    { "type": "range", "id": "stage_x", "label": "Position de la vue (horizontale)", "min": 20, "max": 80, "step": 1, "unit": "%", "default": 46 },
+    { "type": "range", "id": "stage_width", "label": "Largeur de la vue", "min": 30, "max": 100, "step": 1, "unit": "%", "default": 54 },
+    { "type": "header", "content": "Carte d'achat" },
+    { "type": "text", "id": "card_brand", "label": "Marque" },
+    { "type": "text", "id": "card_name", "label": "Nom (vide : nom du produit)" },
+    { "type": "text", "id": "finish_label", "label": "Intitulé de la finition", "default": "Couleur" },
+    { "type": "text", "id": "mobile_finish_label", "label": "Intitulé de la finition sur téléphone" },
+    { "type": "text", "id": "finish_value", "label": "Finition" },
+    { "type": "color", "id": "swatch_main", "label": "Pastille : couleur principale", "default": "#1A1C1B" },
+    { "type": "color", "id": "swatch_accent", "label": "Pastille : couleur du liseré", "default": "#C2F94A" },
+    { "type": "text", "id": "quantity_label", "label": "Intitulé de la quantité", "default": "Quantité" },
+    { "type": "text", "id": "minus_label", "label": "Bouton moins (lecteurs d'écran)", "default": "Retirer un" },
+    { "type": "text", "id": "plus_label", "label": "Bouton plus (lecteurs d'écran)", "default": "Ajouter un" },
+    { "type": "range", "id": "max_quantity", "label": "Quantité maximale", "min": 1, "max": 20, "step": 1, "default": 10 },
+    { "type": "text", "id": "add_label", "label": "Bouton d'ajout", "default": "Ajouter au panier" },
+    { "type": "richtext", "id": "text", "label": "Texte de la carte" },
+    { "type": "checkbox", "id": "show_description", "label": "Description du produit sous la fiche", "default": true },
+    { "type": "text", "id": "help1_label", "label": "Lien d'aide 1" },
+    { "type": "url", "id": "help1_link", "label": "Lien d'aide 1 : adresse" },
+    { "type": "select", "id": "help1_icon", "label": "Lien d'aide 1 : icône", "default": "truck", "options": [ { "value": "truck", "label": "Camion" }, { "value": "help", "label": "Point d'interrogation" }, { "value": "chat", "label": "Bulle" } ] },
+    { "type": "text", "id": "help2_label", "label": "Lien d'aide 2" },
+    { "type": "url", "id": "help2_link", "label": "Lien d'aide 2 : adresse" },
+    { "type": "select", "id": "help2_icon", "label": "Lien d'aide 2 : icône", "default": "help", "options": [ { "value": "truck", "label": "Camion" }, { "value": "help", "label": "Point d'interrogation" }, { "value": "chat", "label": "Bulle" } ] },
+    { "type": "header", "content": "Barre d'achat" },
+    { "type": "checkbox", "id": "sticky_bar", "label": "Barre d'achat en bas de l'écran", "default": true },
+    { "type": "text", "id": "bar_image_asset", "label": "Miniature de la barre (fichier du thème)" },
+    { "type": "text", "id": "bar_name", "label": "Nom dans la barre" },
+    { "type": "text", "id": "bar_note", "label": "Ligne sous le nom" },
+    { "type": "text", "id": "tabs_label", "label": "Nom des onglets (lecteurs d'écran)", "default": "Sections de la fiche" },
+    { "type": "range", "id": "min_height", "label": "Hauteur de l'ouverture", "min": 400, "max": 1000, "step": 2, "unit": "px", "default": 780 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 24, "max": 120, "step": 1, "unit": "px", "default": 64 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 20, "max": 72, "step": 1, "unit": "px", "default": 42 }
+  ],
+  "blocks": [
+    { "type": "tab", "name": "Onglet", "settings": [
+      { "type": "text", "id": "label", "label": "Intitulé", "default": "Design" },
+      { "type": "text", "id": "anchor", "label": "Ancre de la section visée", "default": "design" }
+    ] }
+  ],
+  "presets": [ { "name": "Fiche ONDE", "blocks": [ { "type": "tab" } ] } ]
+}
+{% endschema %}

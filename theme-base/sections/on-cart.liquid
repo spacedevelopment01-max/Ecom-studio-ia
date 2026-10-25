@@ -1,0 +1,117 @@
+{%- comment -%}
+  Panier d'ONDE (planches 03 et 06 du 24 octobre) :
+  - rempli : bandeau graphite (anneaux lime), grand titre, carte blanche par ligne (miniature, nom, finition, quantité −/+,
+    suppression, prix), encadré graphite (sous-total, livraison « calculée à l'étape suivante », total des produits sur
+    téléphone, bouton de commande), lien de retour, puis deux accès d'aide ;
+  - vide : titre, texte, visuel, bouton vers le produit et accès d'aide ; aucune quantité ni total résiduel.
+  Les quantités passent par le panier de la plateforme (liens /cart/change) : sous-total recalculé, compteur à jour,
+  conservé au rechargement. La livraison n'est jamais comptée dans un total final.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign has_items = false
+  if cart.item_count > 0
+    assign has_items = true
+  endif
+-%}
+{%- capture help -%}
+  {%- if section.blocks.size > 0 -%}
+    <ul class="on-cart__help" role="list">
+      {%- for b in section.blocks -%}
+        <li {{ b.shopify_attributes }}><a href="{{ b.settings.link | default: '#' }}"><span class="on-cart__help-icon">{% render 'icon', name: b.settings.icon %}</span><span><strong>{{ b.settings.title | escape }}</strong>{%- if b.settings.text != blank -%}<span>{{ b.settings.text | escape }}</span>{%- endif -%}</span></a></li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+{%- endcapture -%}
+<section class="on-cart{% if has_items %} on-cart--full{% else %} on-cart--empty{% endif %} on-tone--dark" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;" data-on-cart>
+  <div class="on-cart__deco" aria-hidden="true"><span class="on-rings on-rings--corner"><span></span><span></span><span></span><span></span></span>{% render 'on-wave', bars: 72, shape: 'burst', class: 'on-cart__wave' %}</div>
+  <div class="on-cart__inner on-container">
+    {%- if has_items -%}
+      <h1 class="on-title on-cart__title">{{ s.heading | escape | newline_to_br }}</h1>
+      <ul class="on-cart__lines" role="list">
+        {%- for item in cart.items -%}
+          <li class="on-line" data-key="{{ item.key }}">
+            <a class="on-line__media" href="{{ item.url }}" tabindex="-1" aria-hidden="true">{%- if s.line_image_asset != blank -%}<img width="1200" height="1200" src="{{ s.line_image_asset | asset_url }}" alt="" loading="lazy" decoding="async">{%- elsif item.image -%}{{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</a>
+            <div class="on-line__info">
+              <a class="on-line__title" href="{{ item.url }}">{{ item.product.title | escape }}</a>
+              {%- if item.product.has_only_default_variant -%}{%- if s.line_note != blank -%}<p class="on-line__note">{{ s.line_note | escape }}</p>{%- endif -%}{%- else -%}<p class="on-line__note">{{ item.variant.title | escape }}</p>{%- endif -%}
+              <div class="on-line__controls">
+                <span class="on-qty on-qty--small">
+                  <a href="{{ routes.cart_change_url }}?id={{ item.key }}&amp;quantity={{ item.quantity | minus: 1 }}" aria-label="{{ s.minus_label | escape }} : {{ item.product.title | escape }}">{% render 'icon', name: 'minus' %}</a>
+                  <span class="on-qty__value" aria-label="{{ s.quantity_label | escape }}">{{ item.quantity }}</span>
+                  <a href="{{ routes.cart_change_url }}?id={{ item.key }}&amp;quantity={{ item.quantity | plus: 1 }}" aria-label="{{ s.plus_label | escape }} : {{ item.product.title | escape }}">{% render 'icon', name: 'plus' %}</a>
+                </span>
+                <a class="on-line__remove" href="{{ routes.cart_change_url }}?id={{ item.key }}&amp;quantity=0" aria-label="{{ s.remove_label | escape }} : {{ item.product.title | escape }}">{% render 'icon', name: 'trash' %}</a>
+              </div>
+            </div>
+            <p class="on-line__price">{% if settings.price_trim_zeros %}{{ item.final_line_price | money_without_trailing_zeros }}{% else %}{{ item.final_line_price | money }}{% endif %}</p>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="on-summary">
+        <dl class="on-summary__rows">
+          <div class="on-summary__sub"><dt>{{ s.subtotal_label | escape }}</dt><dd>{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</dd></div>
+          {%- if s.shipping_label != blank -%}<div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.shipping_value | escape }}</dd></div>{%- endif -%}
+          {%- if s.total_label != blank -%}<div class="on-summary__total{% if s.total_mobile_only %} on-mobile-only{% endif %}"><dt>{{ s.total_label | escape }}</dt><dd>{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</dd></div>{%- endif -%}
+        </dl>
+        {%- if s.checkout_link != blank -%}<a hidden aria-hidden="true" tabindex="-1" data-demo-checkout href="{{ s.checkout_link }}"></a>{%- endif -%}
+        <form action="{{ routes.cart_url }}" method="post"><button type="submit" name="checkout" class="on-button on-button--lime on-summary__button">{{ s.checkout_label | escape }}{% render 'icon', name: 'arrow' %}</button></form>
+        {%- if s.note != blank -%}<p class="on-summary__note">{{ s.note | escape }}</p>{%- endif -%}
+      </div>
+      {%- if s.back_label != blank -%}<a class="on-back" href="{{ s.back_link | default: routes.all_products_collection_url }}">{% render 'icon', name: 'arrow-left' %}<span>{{ s.back_label | escape }}</span></a>{%- endif -%}
+    {%- else -%}
+      <h1 class="on-title on-cart__title">{{ s.empty_heading | escape | newline_to_br }}</h1>
+      {%- if s.empty_text != blank -%}<p class="on-cart__text">{{ s.empty_text | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.empty_image_asset != blank -%}<div class="on-cart__visual" style="--on-fx:{{ s.empty_focus_x }}%;--on-fy:{{ s.empty_focus_y }}%;"><img width="1200" height="1200" src="{{ s.empty_image_asset | asset_url }}" alt="" loading="eager" decoding="async"></div>{%- endif -%}
+      {%- if s.empty_button_label != blank -%}<a class="on-button on-button--lime on-cart__empty-button" href="{{ s.empty_button_link | default: routes.all_products_collection_url }}">{{ s.empty_button_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+    {%- endif -%}
+  </div>
+  {%- if help != blank -%}<div class="on-cart__after{% unless has_items %} on-cart__after--dark{% endunless %}"><div class="on-container">{{ help }}</div></div>{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Panier ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre du panier", "default": "Votre panier." },
+    { "type": "text", "id": "line_note", "label": "Ligne sous le nom (produit sans variante)" },
+    { "type": "text", "id": "line_image_asset", "label": "Miniature des lignes (fichier du thème, vide : photo du produit)" },
+    { "type": "text", "id": "quantity_label", "label": "Intitulé de la quantité (lecteurs d'écran)", "default": "Quantité" },
+    { "type": "text", "id": "minus_label", "label": "Bouton moins (lecteurs d'écran)", "default": "Retirer un" },
+    { "type": "text", "id": "plus_label", "label": "Bouton plus (lecteurs d'écran)", "default": "Ajouter un" },
+    { "type": "text", "id": "remove_label", "label": "Bouton supprimer (lecteurs d'écran)", "default": "Supprimer" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Livraison : valeur", "default": "Calculée à l'étape suivante" },
+    { "type": "text", "id": "total_label", "label": "Total des produits", "default": "Total produits" },
+    { "type": "checkbox", "id": "total_mobile_only", "label": "Total des produits sur téléphone seulement", "default": true },
+    { "type": "text", "id": "checkout_label", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "url", "id": "checkout_link", "label": "Commande d'exemple (démonstration)", "info": "Boutique de démonstration seulement : page ouverte à la place du paiement de la plateforme." },
+    { "type": "text", "id": "note", "label": "Mention sous le bouton" },
+    { "type": "text", "id": "back_label", "label": "Lien de retour", "default": "Continuer mes découvertes" },
+    { "type": "url", "id": "back_link", "label": "Lien de retour : adresse" },
+    { "type": "header", "content": "Panier vide" },
+    { "type": "textarea", "id": "empty_heading", "label": "Titre", "default": "Votre panier est vide." },
+    { "type": "textarea", "id": "empty_text", "label": "Texte" },
+    { "type": "text", "id": "empty_image_asset", "label": "Visuel (fichier du thème)" },
+    { "type": "range", "id": "empty_focus_x", "label": "Cadrage horizontal du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "empty_focus_y", "label": "Cadrage vertical du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "empty_button_label", "label": "Bouton", "default": "Découvrir la boutique" },
+    { "type": "url", "id": "empty_button_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 24, "max": 200, "step": 1, "unit": "px", "default": 120 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 20, "max": 80, "step": 1, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 300, "step": 2, "unit": "px", "default": 150 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 60 }
+  ],
+  "blocks": [
+    { "type": "help", "name": "Accès d'aide", "limit": 4, "settings": [
+      { "type": "select", "id": "icon", "label": "Icône", "default": "help", "options": [ { "value": "help", "label": "Point d'interrogation" }, { "value": "truck", "label": "Camion" }, { "value": "chat", "label": "Bulle" }, { "value": "mail", "label": "Enveloppe" } ] },
+      { "type": "text", "id": "title", "label": "Titre", "default": "Besoin d'aide ?" },
+      { "type": "text", "id": "text", "label": "Texte", "default": "Consultez notre FAQ." },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ]
+}
+{% endschema %}

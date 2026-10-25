@@ -1,0 +1,270 @@
+{%- comment -%}
+  Cartes d'APLAT : une seule section, plusieurs dispositions dessinées sur les planches du 25 octobre.
+  - services : trois prestations, photo, filet vertical bleu, titre bleu, texte et lien (accueil) ;
+  - list : liste à miniatures et flèches (accueil, téléphone) ; rows : photo et carte côte à côte (téléphone) ;
+  - details : bande bleu pétrole, titre, filet, texte et trois gros plans légendés (accueil) ;
+  - projects : réalisations illustratives à étiquette, titre et flèche (accueil, prestations, liées) ;
+  - steps : méthode numérotée en colonnes (frise verticale sur téléphone) ;
+  - approach : bande claire à icônes (prestations) ; tiles : tuiles à icône (téléphone) ;
+  - servicerows : prestation détaillée, photo et liste cochée (prestations) ; mosaic : grille de photos (téléphone) ;
+  - plus les dispositions des pages intérieures (voir le réglage « Disposition »).
+  Chaque carte peut être filtrée (catégorie) et la section peut afficher des filtres et un « charger plus » réel.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign cards = section.blocks | where: 'type', 'card'
+  assign filters = s.filters | split: ','
+  assign filterable = false
+  if s.filters != blank or s.step > 0
+    assign filterable = true
+  endif
+  assign head = false
+  if s.heading != blank or s.mobile_heading != blank or s.eyebrow != blank or s.mobile_eyebrow != blank
+    assign head = true
+  endif
+-%}
+<section{% if s.anchor != blank %} id="{{ s.anchor | handle }}"{% endif %} class="ap-s ap-cards ap-cards--{{ s.layout }}{% if s.desktop_span != blank and s.desktop_span != '12' %} ap-span ap-span-{{ s.desktop_span }}{% endif %}{% if s.mobile_order > 0 %} ap-mo ap-mo-{{ s.mobile_order }}{% endif %}{% if s.mobile_layout != 'same' %} ap-cards--m-{{ s.mobile_layout }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}{% if s.band %} ap-cards--band{% endif %}{% if s.mobile_hide_heading %} ap-cards--m-nohead{% endif %}{% if s.head_style == 'stack' %} ap-cards--head-stack{% endif %}{% if s.columns > 0 %} ap-cards--cols-{{ s.columns }}{% endif %}"{% if head %} aria-labelledby="ApC-{{ section.id }}"{% endif %}{% if filterable %} data-ap-filterable data-ap-step="{{ s.step }}"{% endif %}>
+  {%- if s.background != blank or s.background_asset != blank -%}{%- render 'ap-img', img: s.background, asset: s.background_asset, alt: '', cls: 'ap-cards__bg', width: 1600 -%}{%- endif -%}
+  <div class="ap-cards__inner ap-wrap">
+    {%- if head or s.text != blank or s.mobile_text != blank or s.link_label != blank -%}
+      <header class="ap-cards__head">
+        {%- if s.eyebrow != blank or s.mobile_eyebrow != blank -%}<p class="ap-eyebrow{% if s.eyebrow == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.eyebrow, m: s.mobile_eyebrow -%}</p>{%- endif -%}
+        {%- if s.heading != blank or s.mobile_heading != blank -%}<h2 class="ap-cards__title{% if s.heading == blank %} ap-only-m{% endif %}" id="ApC-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</h2>{%- endif -%}
+        {%- if s.show_rule -%}<span class="ap-rule" aria-hidden="true"></span>{%- endif -%}
+        {%- if s.text != blank or s.mobile_text != blank -%}<p class="ap-cards__text{% if s.text == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+        {%- if s.link_label != blank -%}<a class="ap-link ap-cards__more" href="{{ s.link | default: routes.root_url }}">{{ s.link_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+      </header>
+    {%- endif -%}
+    {%- if s.filters != blank -%}
+      <div class="ap-filters" role="group" aria-label="{{ s.filters_label | escape }}">
+        {%- for f in filters -%}{%- assign kv = f | split: '|' -%}<button type="button" class="ap-filters__btn" data-ap-filter="{{ kv[1] | default: 'all' | strip }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">{%- assign fd = kv[0] | strip -%}{%- assign fm = kv[2] | strip -%}{%- render 'ap-dm', d: fd, m: fm -%}</button>{%- endfor -%}
+      </div>
+    {%- endif -%}
+    <ul class="ap-cards__list" role="list">
+      {%- for b in cards -%}
+        {%- liquid
+          assign bs = b.settings
+          assign has_media = false
+          if bs.image != blank or bs.image_asset != blank
+            assign has_media = true
+          endif
+          assign whole = false
+          if bs.link != blank and bs.link_label == blank
+            assign whole = true
+          endif
+        -%}
+        <li class="ap-card{% if bs.show_on != 'all' %} ap-only-{{ bs.show_on | slice: 0 }}{% endif %}{% if has_media == false %} ap-card--nomedia{% endif %}{% if whole %} ap-card--link{% endif %}"{% if bs.mobile_media_height > 0 %} style="--ap-mh:{{ bs.mobile_media_height }}px;"{% endif %}{% if filterable %} data-ap-item="{{ bs.category | remove: ' ' | default: 'all' }}"{% endif %} {{ b.shopify_attributes }}>
+          {%- if bs.swatch != blank -%}<span class="ap-card__swatch" style="--ap-swatch: {{ bs.swatch }};" aria-hidden="true"></span>{%- endif -%}
+          {%- if has_media -%}
+            <div class="ap-card__media">
+              {%- render 'ap-img', img: bs.image, asset: bs.image_asset, alt: bs.image_alt, fx: bs.focus_x, fy: bs.focus_y, zoom: bs.zoom, mimg: bs.mobile_image, masset: bs.mobile_image_asset, mfx: bs.mobile_focus_x, mfy: bs.mobile_focus_y, cls: 'ap-card__img', width: 1200 -%}
+              {%- if bs.image2 != blank or bs.image2_asset != blank -%}{%- render 'ap-img', img: bs.image2, asset: bs.image2_asset, alt: bs.image2_alt, fx: bs.focus2_x, fy: bs.focus2_y, cls: 'ap-card__img ap-card__img--2', width: 1200 -%}{%- endif -%}
+              {%- if bs.badge != blank or bs.mobile_badge != blank -%}<span class="ap-badge ap-card__badge">{%- render 'ap-dm', d: bs.badge, m: bs.mobile_badge -%}</span>{%- endif -%}
+            </div>
+          {%- endif -%}
+          <div class="ap-card__body">
+            {%- if bs.number != blank -%}<p class="ap-card__num">{%- render 'ap-dm', d: bs.number, m: bs.mobile_number -%}</p>{%- endif -%}
+            {%- if bs.icon != 'none' -%}<span class="ap-card__icon">{% render 'ap-icon', name: bs.icon %}</span>{%- endif -%}
+            {%- if bs.kicker != blank or bs.mobile_kicker != blank -%}<p class="ap-card__kicker{% if bs.kicker == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: bs.kicker, m: bs.mobile_kicker -%}</p>{%- endif -%}
+            <h3 class="ap-card__title">{%- if whole -%}<a class="ap-card__link" href="{{ bs.link }}">{%- render 'ap-dm', d: bs.title, m: bs.mobile_title -%}</a>{%- else -%}{%- render 'ap-dm', d: bs.title, m: bs.mobile_title -%}{%- endif -%}</h3>
+            {%- if bs.subtitle != blank or bs.mobile_subtitle != blank -%}<p class="ap-card__sub{% if bs.subtitle == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: bs.subtitle, m: bs.mobile_subtitle -%}</p>{%- endif -%}
+            {%- if bs.text != blank or bs.mobile_text != blank -%}<p class="ap-card__text{% if bs.text == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: bs.text, m: bs.mobile_text -%}</p>{%- endif -%}
+            {%- if bs.items != blank -%}
+              <ul class="ap-card__items" role="list">
+                {%- assign lines = bs.items | newline_to_br | split: '<br />' -%}
+                {%- for line in lines -%}{%- assign l = line | strip -%}{%- if l != blank -%}<li>{% render 'ap-icon', name: 'check' %}<span>{{ l | escape }}</span></li>{%- endif -%}{%- endfor -%}
+              </ul>
+            {%- endif -%}
+            {%- if bs.caption != blank or bs.mobile_caption != blank -%}<p class="ap-card__caption{% if bs.caption == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: bs.caption, m: bs.mobile_caption -%}</p>{%- endif -%}
+            {%- if bs.link == blank and bs.badge != blank and s.layout == 'articles' -%}<span class="ap-card__soon">{{ bs.badge | escape }}</span>{%- endif -%}
+            {%- if bs.link_label != blank -%}
+              <a class="{% if s.cta_style == 'button' %}ap-btn ap-btn--petrol ap-btn--sm{% else %}ap-link{% endif %} ap-card__cta" href="{{ bs.link | default: routes.root_url }}">{%- render 'ap-dm', d: bs.link_label, m: bs.mobile_link_label -%}{% render 'ap-icon', name: 'arrow' %}</a>
+            {%- elsif whole -%}
+              {%- if bs.mobile_link_label != blank -%}<span class="ap-link ap-card__cta ap-only-m" aria-hidden="true">{{ bs.mobile_link_label | escape }}{% render 'ap-icon', name: 'arrow' %}</span>{%- endif -%}
+              <span class="ap-card__arrow{% if bs.mobile_link_label != blank %} ap-only-d{% endif %}" aria-hidden="true">{% render 'ap-icon', name: 'arrow' %}</span>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.filters != blank -%}<p class="ap-sr" role="status" aria-live="polite" data-ap-filter-status data-template="{{ s.filter_status | escape }}"></p>{%- endif -%}
+    {%- if s.step > 0 and s.more_label != blank -%}<div class="ap-cards__more-wrap"><button type="button" class="ap-btn ap-btn--outline ap-cards__load" data-ap-more>{{ s.more_label | escape }}{% render 'ap-icon', name: 'arrow-down' %}</button></div>{%- endif -%}
+    {%- if s.button_label != blank -%}<div class="ap-cards__foot">{%- if s.foot_text != blank -%}<p>{{ s.foot_text | escape | newline_to_br }}</p>{%- endif -%}<a class="ap-btn ap-btn--petrol" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a></div>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cartes APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "services",
+      "options": [
+        { "value": "services", "label": "Trois prestations (photo, filet, lien)" },
+        { "value": "gridside", "label": "Présentation à gauche, quatre photos à droite" },
+        { "value": "tiles4", "label": "Étapes en tuiles" },
+        { "value": "features4", "label": "Quatre cartes photo et flèche" },
+        { "value": "method4", "label": "Méthode illustrée en quatre colonnes" },
+        { "value": "list", "label": "Liste à miniatures et flèches" },
+        { "value": "rows", "label": "Photo et carte côte à côte" },
+        { "value": "details", "label": "Bande bleue et gros plans légendés" },
+        { "value": "projects", "label": "Réalisations à étiquette" },
+        { "value": "steps", "label": "Méthode numérotée" },
+        { "value": "approach", "label": "Bande claire à icônes" },
+        { "value": "tiles", "label": "Tuiles à icône" },
+        { "value": "servicerows", "label": "Prestations détaillées et listes cochées" },
+        { "value": "mosaic", "label": "Grille de photos" },
+        { "value": "gallery", "label": "Grille de photos légendées et liens" },
+        { "value": "links", "label": "Liens avec flèche" },
+        { "value": "articles", "label": "Articles (photo, catégorie, titre, texte)" },
+        { "value": "feature", "label": "Article à la une" },
+        { "value": "timeline", "label": "Étapes illustrées (photo et texte alternés)" },
+        { "value": "colors", "label": "Teintes (nuancier)" },
+        { "value": "alternate", "label": "Étapes alternées (texte et photos)" },
+        { "value": "complements", "label": "Prestations complémentaires (photo et lien)" },
+        { "value": "shortcuts", "label": "Raccourcis à icône" }
+      ]
+    },
+    {
+      "type": "select", "id": "mobile_layout", "label": "Disposition sur téléphone", "default": "same",
+      "options": [
+        { "value": "same", "label": "Comme sur ordinateur" },
+        { "value": "list", "label": "Liste à miniatures et flèches" },
+        { "value": "rows", "label": "Photo et carte côte à côte" },
+        { "value": "stack", "label": "Cartes empilées" },
+        { "value": "timeline", "label": "Frise verticale" },
+        { "value": "numbers", "label": "Liste numérotée" },
+        { "value": "tiles", "label": "Tuiles à icône" },
+        { "value": "mosaic", "label": "Grille de photos" },
+        { "value": "scroll", "label": "Défilement horizontal" }
+      ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    {
+      "type": "select", "id": "desktop_span", "label": "Largeur sur ordinateur", "default": "12",
+      "options": [
+        { "value": "12", "label": "Pleine largeur" },
+        { "value": "8", "label": "Deux tiers" },
+        { "value": "7", "label": "Un peu plus de la moitié" },
+        { "value": "6", "label": "Moitié" },
+        { "value": "6r2", "label": "Moitié, sur deux rangées" },
+        { "value": "5", "label": "Un peu moins de la moitié" },
+        { "value": "4", "label": "Un tiers" }
+      ]
+    },
+    { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 5, "step": 1, "default": 0 },
+    {
+      "type": "select", "id": "head_style", "label": "En-tête", "default": "overlap",
+      "options": [ { "value": "overlap", "label": "Titre qui chevauche la première photo" }, { "value": "stack", "label": "Titre et texte empilés, lien à droite" } ]
+    },
+    { "type": "range", "id": "columns", "label": "Colonnes sur ordinateur (0 : selon la disposition)", "min": 0, "max": 4, "step": 1, "default": 0 },
+    { "type": "checkbox", "id": "band", "label": "Fond bleu très clair", "default": false },
+    { "type": "text", "id": "anchor", "label": "Ancre (lien direct vers la section)" },
+    { "type": "image_picker", "id": "background", "label": "Matière de fond" },
+    { "type": "text", "id": "background_asset", "label": "Matière de fond (fichier du thème)" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "mobile_eyebrow", "label": "Surtitre sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Les mots entre astérisques sont en bleu pétrole." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    { "type": "checkbox", "id": "mobile_hide_heading", "label": "Masquer le titre sur téléphone (surtitre seul)", "default": false },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": false },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+    { "type": "text", "id": "link_label", "label": "Lien de la section" },
+    { "type": "url", "id": "link", "label": "Adresse du lien" },
+    {
+      "type": "select", "id": "cta_style", "label": "Lien des cartes", "default": "link",
+      "options": [ { "value": "link", "label": "Lien souligné" }, { "value": "button", "label": "Bouton bleu pétrole" } ]
+    },
+    { "type": "text", "id": "filters", "label": "Filtres", "info": "Libellé|catégorie|libellé sur téléphone (facultatif), séparés par des virgules. Ex. : Tout|all,Plâtrerie|platrerie" },
+    { "type": "text", "id": "filters_label", "label": "Filtres (lecteurs d'écran)", "default": "Filtrer" },
+    { "type": "text", "id": "filter_status", "label": "Annonce du nombre affiché", "default": "[n] exemples affichés" },
+    { "type": "range", "id": "step", "label": "Cartes affichées avant « charger plus » (0 : toutes)", "min": 0, "max": 12, "step": 1, "default": 0 },
+    { "type": "text", "id": "more_label", "label": "Bouton « charger plus »" },
+    { "type": "textarea", "id": "foot_text", "label": "Texte au pied" },
+    { "type": "text", "id": "button_label", "label": "Bouton au pied" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton au pied" }
+  ],
+  "blocks": [
+    {
+      "type": "card", "name": "Carte",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Numéro" },
+        { "type": "text", "id": "mobile_number", "label": "Numéro sur téléphone" },
+        {
+          "type": "select", "id": "icon", "label": "Icône", "default": "none",
+          "options": [
+            { "value": "none", "label": "Aucune" },
+            { "value": "roller", "label": "Rouleau" },
+            { "value": "paint", "label": "Rouleau (plein)" },
+            { "value": "shield", "label": "Protection" },
+            { "value": "brush", "label": "Pinceau" },
+            { "value": "check", "label": "Coche" },
+            { "value": "image", "label": "Photo" },
+            { "value": "users", "label": "Échange" },
+            { "value": "doc", "label": "Document" },
+            { "value": "chats", "label": "Question" },
+            { "value": "search", "label": "Loupe" },
+            { "value": "bucket", "label": "Seau" },
+            { "value": "pin", "label": "Lieu" },
+            { "value": "camera", "label": "Appareil photo" },
+            { "value": "mail", "label": "E-mail" }
+          ]
+        },
+        { "type": "color", "id": "swatch", "label": "Teinte (nuancier)" },
+        { "type": "text", "id": "kicker", "label": "Catégorie au-dessus du titre" },
+        { "type": "text", "id": "mobile_kicker", "label": "Catégorie au-dessus du titre (téléphone)" },
+        { "type": "textarea", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "mobile_title", "label": "Titre sur téléphone" },
+        { "type": "textarea", "id": "subtitle", "label": "Sous-titre" },
+        { "type": "textarea", "id": "mobile_subtitle", "label": "Sous-titre sur téléphone" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+        { "type": "textarea", "id": "items", "label": "Liste cochée", "info": "Une ligne par point." },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+        { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+        { "type": "range", "id": "mobile_media_height", "label": "Hauteur de la photo sur téléphone (0 : selon la disposition)", "min": 0, "max": 600, "step": 2, "unit": "px", "default": 0 },
+        { "type": "image_picker", "id": "mobile_image", "label": "Photo sur téléphone (facultative)" },
+        { "type": "text", "id": "mobile_image_asset", "label": "Photo sur téléphone (fichier du thème)" },
+        { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "image_picker", "id": "image2", "label": "Seconde photo" },
+        { "type": "text", "id": "image2_asset", "label": "Seconde photo (fichier du thème)" },
+        { "type": "text", "id": "image2_alt", "label": "Seconde photo : texte alternatif" },
+        { "type": "range", "id": "focus2_x", "label": "Seconde photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus2_y", "label": "Seconde photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "text", "id": "badge", "label": "Étiquette sur la photo" },
+        { "type": "text", "id": "mobile_badge", "label": "Étiquette sur téléphone" },
+        { "type": "textarea", "id": "caption", "label": "Légende" },
+        { "type": "textarea", "id": "mobile_caption", "label": "Légende sur téléphone" },
+        { "type": "text", "id": "link_label", "label": "Texte du lien", "info": "Vide : toute la carte mène au lien." },
+        { "type": "text", "id": "mobile_link_label", "label": "Texte du lien sur téléphone" },
+        { "type": "url", "id": "link", "label": "Lien" },
+        { "type": "text", "id": "category", "label": "Catégories (filtres)", "info": "Séparées par des virgules. Ex. : platrerie,preparation" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Cartes APLAT" } ]
+}
+{% endschema %}

@@ -48,17 +48,23 @@ describe("site d'entreprise de services", () => {
       const home = (await renderPage({ spec, base: "/p", files, cart: [] }, "/", new URLSearchParams())).html;
       if (CATALOG.has(dir)) {
         // Thèmes du catalogue : chacun sa composition, mais toujours l'offre et un moyen de joindre l'entreprise.
-        expect(["services-list", "v2-index", "v2-hero", "ref-offers"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} offre`).toBe(true);
-        expect(["practical-info", "v2-facts", "booking", "booking-calendar", "contact-form"].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} contact`).toBe(true);
+        expect(["services-list", "v2-index", "v2-hero", "ref-offers", ...(dir === "aplat" ? ["ap-cards"] : [])].some((t) => home.includes(`data-es-type="${t}"`)), `${dir} offre`).toBe(true);
+        // Atelier Rive (maquettes du 23 octobre, approuvées par Thomas) : l'accueil se termine par un bandeau d'appel vers la
+        // page Contact, sans bloc de coordonnées ; le téléphone reste sur l'accueil (vérifié plus bas).
+        // APLAT (planches du 25 octobre) : l'accueil se termine aussi par un bandeau d'appel ; coordonnées et téléphone sur
+        // la page Contact (vérifiés plus bas).
+        const contactTypes = ["practical-info", "v2-facts", "booking", "booking-calendar", "contact-form", ...(dir === "rive" ? ["cta-banner"] : []), ...(dir === "aplat" ? ["ap-cta"] : [])];
+        expect(contactTypes.some((t) => home.includes(`data-es-type="${t}"`)), `${dir} contact`).toBe(true);
       } else for (const type of ["services-list", "practical-info", "portfolio", "testimonials", "faq", "cta-banner"]) expect(home, `${dir} ${type}`).toContain(`data-es-type="${type}"`);
       // Pas d'« Équipe » à compléter sur l'accueil : elle reste sur la page À propos.
       expect(home, `${dir} team`).not.toContain('data-es-type="team"');
       const about = (await renderPage({ spec, base: "/p", files, cart: [] }, pages[2], new URLSearchParams())).html;
-      expect(about, `${dir} about team`).toContain('data-es-type="team"');
+      // APLAT : la page « Notre approche » des planches n'a pas d'équipe (aucune équipe inventée).
+      if (dir !== "aplat") expect(about, `${dir} about team`).toContain('data-es-type="team"');
       expect(visible(home)).toContain(lang === "fr" ? "Prendre rendez-vous" : "Book an appointment");
       expect(visible(home)).toContain(serviceProfile.services[0].name);
-      expect(home).toContain(`tel:${serviceProfile.phone.replace(/\s/g, "")}`);
       const contact = (await renderPage({ spec, base: "/p", files, cart: [] }, "/pages/contact", new URLSearchParams())).html;
+      expect(dir === "aplat" ? contact : home).toContain(`tel:${serviceProfile.phone.replace(/\s/g, "")}`);
       expect(contact).toContain('data-es-type="booking"');
       expect(contact).toContain("calendly.com/cabinet-ondine");
     }

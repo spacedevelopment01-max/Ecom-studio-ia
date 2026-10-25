@@ -7,6 +7,7 @@
 import { unzipSync, zipSync, strToU8 } from "fflate";
 import type { AssetLoader } from "../theme/compile";
 import { renderPage } from "../theme/render";
+import { biensExportFiles } from "../theme/biens-export";
 import type { ThemeSpec } from "../theme/spec";
 import { guardPurchaseExport, purchaseExportManifest } from "../theme/purchase-offers";
 import { exportKit } from "../theme/platforms";
@@ -66,6 +67,12 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
   const configurationFile = platform === "woocommerce" ? `${prefix}inc/configuration-studio.json` : platform === "prestashop" ? "config/es-studio.json" : platform === "shopify" ? "assets/es-studio.json" : "configuration-studio.json";
   entries[configurationFile] = configuration;
   if (spec.meta?.adaptation) entries[`${prefix}adaptation-client.json`] = strToU8(JSON.stringify({status:spec.meta.adaptation.status,pages:spec.meta.adaptation.pages,slots:spec.meta.adaptation.slots,issues:spec.meta.adaptation.issues},null,2));
+  // Biens immobiliers (Maison & Horizon) : données jointes et marche à suivre ; jamais créés en silence sur la plateforme.
+  const listings = biensExportFiles(spec, platform);
+  if (listings) {
+    for (const [file, bytes] of Object.entries(listings)) entries[`${prefix}${file}`] = bytes;
+    exp.issues.push({ code: "listings_require_import", severity: "warning", detail: platform === "shopify" ? `${spec.store.biens!.length} bien(s) joints (biens/shopify-metaobjets.json) : à créer comme métaobjets « bien » dans Shopify (API Admin), sinon les listes restent vides. / Listings attached: create them as “bien” metaobjects in Shopify.` : `${spec.store.biens!.length} bien(s) joints (biens/biens.json) : listes, filtres et fiches dynamiques demandent un module serveur sur cette plateforme (V2). / Listings attached as data: dynamic listings need a server module on this platform.` });
+  }
   if (platform === "wix" || platform === "squarespace") {
     const guide = new TextDecoder().decode(entries["GUIDE.md"]);
     entries["GUIDE.md"] = strToU8(guide + "\n\n## Catalogue, pages et navigation / Catalog, pages and navigation\n\n`catalogue.json` conserve les axes, combinaisons, SKU, prix, associations d’images, pages et menus. `configuration-studio.json` conserve les réglages et tous les contenus des sections. Ces JSON et le CSV sont des données de reprise : aucun n’est annoncé comme un import natif validé. Reportez les colonnes dans le modèle actuel de la plateforme et affectez les fichiers de `medias/`. Aucune publication automatique.\n\n`catalogue.json` retains axes, combinations, SKUs, prices, image associations, pages and menus. `configuration-studio.json` retains section settings and complete contents. These JSON files and the CSV are rebuild data, not a verified native importer. Map columns to the platform’s current template and assign the files in `medias/`. No automatic publication.\n");

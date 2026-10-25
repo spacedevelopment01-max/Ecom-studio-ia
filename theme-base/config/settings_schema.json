@@ -32,6 +32,13 @@
         "default": 140
       },
       {
+        "type": "checkbox",
+        "id": "logo_light_on_dark",
+        "label": "Logo éclairci sur fond sombre",
+        "info": "Pour un logo foncé : sur l'en-tête transparent, le pied et les menus sombres, il s'affiche en version claire (couleurs inversées).",
+        "default": false
+      },
+      {
         "type": "image_picker",
         "id": "favicon",
         "label": "Favicon"
@@ -477,6 +484,14 @@
           {
             "value": "phase",
             "label": "Phase — électricien, bleu nuit, jaune électrique et traits de circuits (référence)"
+          },
+          {
+            "value": "maison-horizon",
+            "label": "Maison & Horizon — ivoire, vert profond et terre cuite (référence)"
+          },
+          {
+            "value": "aplat",
+            "label": "APLAT — blanc enduit, bleu pétrole et bleu nuit (référence)"
           }
         ]
       },
@@ -727,6 +742,25 @@
         "info": "N'indiquez que des engagements réels (livraison, retours)."
       },
       {
+        "type": "checkbox",
+        "id": "price_trim_zeros",
+        "label": "Prix ronds sans « ,00 »",
+        "info": "Ex. « 129 € » au lieu de « 129,00 € » (les centimes restent affichés quand il y en a).",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "card_price_note",
+        "label": "Mention sous le nom des cartes produit",
+        "info": "Ex. « Prix de démonstration » dans une boutique d'exemple. Vide : aucune mention."
+      },
+      {
+        "type": "checkbox",
+        "id": "card_arrow",
+        "label": "Flèche ronde vers la fiche sur les cartes produit",
+        "default": false
+      },
+      {
         "type": "header",
         "content": "Présentation du panier"
       },
@@ -841,6 +875,86 @@
         "id": "cart_empty_title",
         "label": "Titre du panier vide",
         "info": "Vide : « Votre panier est vide. »"
+      }
+    ]
+  },
+  {
+    "name": "Cookies",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Bandeau de préférences de cookies du thème. À activer seulement si le bandeau de Shopify (Paramètres › Confidentialité des clients) n'est pas utilisé : le choix est transmis à Shopify (API de confidentialité des clients) quand elle est disponible."
+      },
+      {
+        "type": "checkbox",
+        "id": "cookie_banner",
+        "label": "Afficher le bandeau de préférences de cookies",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "cookie_title",
+        "label": "Titre",
+        "default": "Vos préférences de cookies"
+      },
+      {
+        "type": "textarea",
+        "id": "cookie_text",
+        "label": "Texte",
+        "default": "Nous utilisons des cookies pour mesurer l'audience et personnaliser le contenu. Vous pouvez choisir vos préférences à tout moment."
+      },
+      {
+        "type": "url",
+        "id": "cookie_policy_link",
+        "label": "Lien de la politique de confidentialité"
+      },
+      {
+        "type": "text",
+        "id": "cookie_policy_label",
+        "label": "Libellé du lien",
+        "default": "Politique de confidentialité"
+      },
+      {
+        "type": "text",
+        "id": "cookie_refuse",
+        "label": "Bouton « refuser »",
+        "default": "Tout refuser"
+      },
+      {
+        "type": "text",
+        "id": "cookie_customize",
+        "label": "Bouton « personnaliser »",
+        "default": "Personnaliser"
+      },
+      {
+        "type": "text",
+        "id": "cookie_accept",
+        "label": "Bouton « accepter »",
+        "default": "Tout accepter"
+      },
+      {
+        "type": "text",
+        "id": "cookie_save",
+        "label": "Bouton « enregistrer »",
+        "default": "Enregistrer mes choix"
+      },
+      {
+        "type": "text",
+        "id": "cookie_analytics",
+        "label": "Choix « mesure d'audience »",
+        "default": "Mesure d'audience"
+      },
+      {
+        "type": "text",
+        "id": "cookie_marketing",
+        "label": "Choix « publicité »",
+        "default": "Publicité et personnalisation"
+      },
+      {
+        "type": "text",
+        "id": "cookie_needed",
+        "label": "Mention « cookies nécessaires »",
+        "default": "Les cookies nécessaires au fonctionnement de la boutique (panier, connexion) restent actifs."
       }
     ]
   },
@@ -974,6 +1088,14 @@
           {
             "value": "poudre",
             "label": "Poudre : rose poudré, prune et liège, serif fine, mosaïque et cadres doux"
+          },
+          {
+            "value": "horizon",
+            "label": "Horizon : ivoire, vert profond et terre cuite, titres serif, grandes photos (agence immobilière)"
+          },
+          {
+            "value": "aplat",
+            "label": "Aplat : blanc enduit, bleu pétrole et bleu nuit, titres sans empattement, photos de chantier (plâtrerie et peinture)"
           }
         ]
       },
@@ -1011,6 +1133,14 @@
           {
             "value": "club",
             "label": "Club : crème et bleu cobalt, titres épais, pastilles et cartes arrondies"
+          },
+          {
+            "value": "souple",
+            "label": "Souple : ivoire chaud et prune, serif fine, courbes douces et photos lumineuses"
+          },
+          {
+            "value": "onde",
+            "label": "Onde : graphite et lime, titres géométriques gras, ondes et grands visuels produit"
           }
         ]
       }
