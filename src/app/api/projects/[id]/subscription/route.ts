@@ -16,6 +16,7 @@ const view = (projectId: string, s: ProjectSubscription | null) =>
     ? {
         plan: s.plan ?? "creer",
         billing: s.billing ?? "month",
+        priceCents: s.price_cents,
         status: s.status,
         periodEnd: s.current_period_end,
         cancelAtPeriodEnd: !!s.cancel_at_period_end,

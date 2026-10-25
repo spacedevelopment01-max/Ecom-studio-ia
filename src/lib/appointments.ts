@@ -146,6 +146,10 @@ export function confirmPaidCall(bookingId: string, paymentIntent: string | null)
   const b = one<CallBooking>("SELECT * FROM call_bookings WHERE id = ?", bookingId);
   if (!b) return "lost";
   if (b.status === "confirmed" || b.status === "done") return "already";
+  const slot=one<CallSlot>('SELECT * FROM call_slots WHERE id=?',b.slot_id);
+  if(!slot||slot.status!=='open'||slot.starts_at<=now()){
+    run("UPDATE call_bookings SET status='canceled',payment_intent=?,updated_at=? WHERE id=?",paymentIntent,now(),b.id);return 'lost';
+  }
   if (b.status === "pending_payment") {
     run("UPDATE call_bookings SET status = 'confirmed', payment_intent = ?, updated_at = ? WHERE id = ? AND status = 'pending_payment'", paymentIntent, now(), bookingId);
     return "confirmed";
@@ -199,15 +203,15 @@ export function rescheduleBooking(userId: string, bookingId: string, slotId: str
   return one<CallBooking>("SELECT * FROM call_bookings WHERE id = ?", b.id)!;
 }
 
-export type BookingView = { id: string; projectId: string; projectName: string; startsAt: number; endsAt: number; status: CallBooking["status"]; free: boolean; priceEur: number; changeable: boolean; topic: string | null };
+export type BookingView = { id: string; projectId: string; projectName: string; startsAt: number; endsAt: number; status: CallBooking["status"]; refundState:'review'|'refunded'|null; free: boolean; priceEur: number; changeable: boolean; topic: string | null };
 
 /** Rendez-vous du client (à venir et passés). */
 export function bookingsOf(userId: string): BookingView[] {
   releaseExpiredHolds();
   return all<CallBooking & { starts_at: number; ends_at: number; name: string }>(
-    "SELECT b.*, s.starts_at, s.ends_at, p.name FROM call_bookings b JOIN call_slots s ON s.id = b.slot_id JOIN projects p ON p.id = b.project_id WHERE b.user_id = ? AND b.status != 'canceled' ORDER BY s.starts_at DESC LIMIT 50",
+    "SELECT b.*, s.starts_at, s.ends_at, p.name FROM call_bookings b JOIN call_slots s ON s.id = b.slot_id JOIN projects p ON p.id = b.project_id WHERE b.user_id = ? AND (b.status != 'canceled' OR (b.payment_intent IS NOT NULL AND b.price_cents>0)) ORDER BY s.starts_at DESC LIMIT 50",
     userId,
-  ).map((b) => ({ id: b.id, projectId: b.project_id, projectName: b.name, startsAt: b.starts_at, endsAt: b.ends_at, status: b.status, free: !!b.free, priceEur: b.price_cents / 100, changeable: (b.status === "confirmed" || b.status === "pending_payment") && b.starts_at - now() >= CHANGE_LIMIT_MS, topic: b.topic }));
+  ).map((b) => ({ id: b.id, projectId: b.project_id, projectName: b.name, startsAt: b.starts_at, endsAt: b.ends_at, status: b.status, refundState:b.status==='canceled'&&b.payment_intent&&b.price_cents>0?(b.refunded?'refunded':'review'):null, free: !!b.free, priceEur: b.price_cents / 100, changeable: (b.status === "confirmed" || b.status === "pending_payment") && b.starts_at - now() >= CHANGE_LIMIT_MS, topic: b.topic }));
 }
 
 // ------------------------------------------------------------------ administration

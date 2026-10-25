@@ -15,7 +15,7 @@ import { PLANS, type PlanId } from "@/lib/plans";
 type Data = {
   projects: { id: string; name: string; plan: PlanId; free: boolean; priceEur: number | null; state:"available"|"reserved"|"used"; reason: string | null }[];
   slots: { id: string; startsAt: number; endsAt: number }[];
-  bookings: { id: string; projectName: string; startsAt: number; status: string; free: boolean; priceEur: number; changeable: boolean }[];
+  bookings: { id: string; projectName: string; startsAt: number; status: string; free: boolean; priceEur: number; refundState?: "review"|"refunded"|null; changeable: boolean }[];
   freeHourUsed: boolean;
 };
 
@@ -36,7 +36,7 @@ export function CallsPage() {
   useEffect(() => {
     const p = new URL(window.location.href).searchParams.get("paiement");
     if (!p) return;
-    toast(p === "ok" ? "ok" : "bad", p === "ok" ? t("Paiement reçu : votre rendez-vous est confirmé dès la confirmation du paiement (quelques secondes).", "Payment received: your appointment is confirmed as soon as the payment is confirmed (a few seconds).") : t("Paiement annulé : vérifiez ci-dessous l’état de votre réservation.", "Payment canceled: check your booking status below."));
+    toast("info", p === "ok" ? t("Retour du paiement : seul le statut « Confirmé » ci-dessous prouve que votre rendez-vous est confirmé.", "Back from payment: only the Confirmed status below proves your appointment is confirmed.") : t("Paiement annulé : vérifiez ci-dessous l’état de votre réservation.", "Payment canceled: check your booking status below."));
     window.history.replaceState(null, "", "/studio/rendez-vous");
     const timer = setTimeout(() => reload(), 4000);
     return () => clearTimeout(timer);
@@ -57,6 +57,7 @@ export function CallsPage() {
     } catch (e) {
       toast("bad", (e as Error).message);
     } finally {
+      reload();
       setBusy(null);
     }
   };
@@ -68,6 +69,7 @@ export function CallsPage() {
         window.location.href = r.url;
         return;
       }
+      if(!r.confirmed)throw new Error(t("La réservation attend encore sa confirmation. Vérifiez son état avant de recommencer.","The booking is still awaiting confirmation. Check its status before trying again."));
       toast("ok", t("Rendez-vous confirmé.", "Appointment confirmed."));
       setSlotId(null);
       reload();
@@ -83,7 +85,7 @@ export function CallsPage() {
     run(`cancel-${bookingId}`, async () => {
       if (!confirm(t("Annuler ce rendez-vous ?", "Cancel this appointment?"))) return;
       const r = await api<{ refund: string | null }>(`/api/calls/${bookingId}`, { body: { action: "cancel" } });
-      toast("ok", r.refund === "done" ? t("Rendez-vous annulé et remboursé.", "Appointment canceled and refunded.") : r.refund === "manual" ? t("Rendez-vous annulé : l'équipe effectue le remboursement.", "Appointment canceled: the team will process the refund.") : t("Rendez-vous annulé.", "Appointment canceled."));
+      toast("ok", r.refund === "pending" ? t("Rendez-vous annulé : remboursement demandé, confirmation encore en attente.", "Appointment canceled: refund requested, confirmation still pending.") : r.refund === "done" ? t("Rendez-vous annulé et remboursé.", "Appointment canceled and refunded.") : r.refund === "manual" ? t("Rendez-vous annulé : remboursement à vérifier avec l’équipe.", "Appointment canceled: check the refund with the team.") : t("Rendez-vous annulé.", "Appointment canceled."));
       reload();
     });
   const pickSlot = (id: string) => (moving ? move(moving, id) : setSlotId(id));
@@ -116,7 +118,7 @@ export function CallsPage() {
                         <p className="text-sm text-ink-2">{b.projectName} · {b.free ? t("heure offerte", "free hour") : formatEur(b.priceEur, lang)}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={b.status === "confirmed" ? "ok" : "warn"} dot>{b.status === "done" ? t("Utilisé", "Used") : b.status === "confirmed" ? t("Confirmé", "Confirmed") : t("En attente de paiement", "Awaiting payment")}</Badge>
+                        <Badge tone={b.status === "confirmed" ? "ok" : "warn"} dot>{b.status === "canceled" ? (b.refundState==="refunded"?t("Annulé · remboursé","Canceled · refunded"):t("Annulé · remboursement à vérifier","Canceled · check refund")) : b.status === "done" ? t("Utilisé", "Used") : b.status === "confirmed" ? t("Confirmé", "Confirmed") : t("En attente de paiement", "Awaiting payment")}</Badge>
                         {b.status === "pending_payment" && <Button size="sm" variant="signal" loading={busy === `pay-${b.id}`} onClick={() => run(`pay-${b.id}`, async () => { window.location.href = (await api<{ url: string }>(`/api/calls/${b.id}`, { body: { action: "pay" } })).url; })}>{t("Payer", "Pay")}</Button>}
                         {b.changeable && b.status === "confirmed" && <Button size="sm" variant="secondary" onClick={() => setMoving(moving === b.id ? null : b.id)}>{moving === b.id ? t("Choisissez un créneau ci-dessous", "Pick a slot below") : t("Reporter", "Move")}</Button>}
                         {b.changeable && <Button size="sm" variant="ghost" loading={busy === `cancel-${b.id}`} onClick={() => cancel(b.id)}>{t("Annuler", "Cancel")}</Button>}

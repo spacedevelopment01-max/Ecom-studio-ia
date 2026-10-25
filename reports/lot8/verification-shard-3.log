@@ -1,0 +1,7 @@
+ RUN  v5.0.3 /tmp/ecs-lot8-169
+
+
+ Test Files  119 passed (119)
+      Tests  924 passed | 11 skipped (935)
+   Start at  08:51:28
+   Duration  259.38s (tests 73%, import 25%, transform 2%)

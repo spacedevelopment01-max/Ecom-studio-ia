@@ -2,7 +2,7 @@ import { all } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { requireUser } from "@/lib/auth";
 import { currentPeriod, getSubscription, planOf } from "@/lib/billing";
-import { paymentsLive } from "@/lib/payments";
+import { paymentsLive, paymentMode } from "@/lib/payments";
 import { PACK_IDS, PACKS, PLANS, packPrice, type BillingView, type PackId, type PlanId } from "@/lib/plans";
 import { languagesOf, launchPackBought, quotasView } from "@/lib/quotas";
 import { L } from "@/lib/i18n-server";
@@ -39,6 +39,7 @@ export const GET = handle(async () => {
     packPrices: Object.fromEntries(PACK_IDS.map((id) => [id, packPrice(id, plan)])) as BillingView["packPrices"],
     launchPackBought: launchPackBought(user.id),
     paymentsLive: paymentsLive(),
+    paymentMode: paymentMode(),
     ai: aiUsage(user.id),
     history: payments.map((p) => ({ kind: p.kind as BillingView["history"][number]["kind"], label: label(p), amountEur: p.amount_cents / 100, at: p.created_at })),
   };

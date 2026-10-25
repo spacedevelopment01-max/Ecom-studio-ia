@@ -9,6 +9,7 @@ export function assertAdvertising(projectId:string) {
   if(!planAllowsAds(projectPlan(projectId)))throw new HttpError(402,L('La publicité et l’aide aux campagnes sont disponibles avec le forfait Dominer (129 € par mois). Vos créations existantes restent conservées.','Advertising and campaign assistance are available with the Dominate plan (€129 per month). Your existing creations are kept.'),'plan_upgrade');
 }
 export function assertJobEntitlements(type:string,projectId:string|null|undefined,payload:any={}) {
+  if(type==='video.bank.stock'&&(!projectId||!projectPlan(projectId)))throw new HttpError(402,L('Un forfait actif est nécessaire pour compléter cette banque.','An active plan is required to add to this bank.'),'plan_required');
   const request=payload.request??payload;
   if(request.themePlacement){if(!projectId)throw new HttpError(404,"Project required");placementRequest(projectId,request.themePlacement);}
   const advertising=(type==='image.v2'&&(request.kind==='ad_image'||request.support==='ad'))||/^(ads\.|ad\.|campaign\.)/.test(type)||(type==='image.ai_post'&&(payload.request?.as==='ad'||payload.request?.kind==='ad'||String(payload.request?.entryPoint??'').startsWith('ads-')))||(type.startsWith('video.')&&(request.as==='ad'||request.ask?.purpose==='ad'||(request.ask?.kind==='video_ad'&&request.ask?.purpose!=='organic')));

@@ -1,0 +1,17 @@
+{
+  "schema": "lot8-migration-1",
+  "baseCommit": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "testedCodeCommit": "33ee10f9609456b773ae56c69993b7264f542af3",
+  "isolatedData": true,
+  "oldTablesUnchanged": 63,
+  "additiveTables": [
+    "checkout_intents",
+    "stripe_event_claims",
+    "billing_mutations",
+    "support_tickets",
+    "support_messages"
+  ],
+  "restarts": 2,
+  "projectTextBrandVersionAngleHistoryPreserved": true,
+  "mediaPreserved": true
+}

@@ -9,5 +9,5 @@ process.on("exit", () => fs.rmSync(dataDir, { recursive: true, force: true }));
 
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
-  test: { globalSetup:["tests/database-global-setup.ts"], include: ["tests/**/*.test.ts"], env: { DATA_DIR: dataDir, STOCK_OFFLINE: "1", AI_PRICES_CHECKEDAT: String(Date.now()) }, pool: "forks", testTimeout: 60_000 },
+  test: { globalSetup:["tests/database-global-setup.ts"], setupFiles:["tests/database-file-setup.ts"], include: ["tests/**/*.test.ts"], env: { DATA_DIR: dataDir, STOCK_OFFLINE: "1", AI_PRICES_CHECKEDAT: String(Date.now()) }, pool: "forks", testTimeout: 60_000 },
 });
