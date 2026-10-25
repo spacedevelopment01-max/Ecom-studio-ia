@@ -22,6 +22,17 @@ REPO = os.path.dirname(os.path.dirname(CLIENT))
 MAQUETTES = os.path.join(REPO, "docs", "client-briefs", "le-coven-des-charmes", "maquettes")
 
 
+def retouche(img: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Efface les zones du masque. Avec OpenCV « contrib » (module xphoto), la retouche FSR reconstitue la texture du
+    décor ; sinon, retouche par diffusion (plus floue)."""
+    if hasattr(cv2, "xphoto") and hasattr(cv2.xphoto, "inpaint"):
+        bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        dst = np.zeros_like(bgr)
+        cv2.xphoto.inpaint(bgr, 255 - mask, dst, cv2.xphoto.INPAINT_FSR_FAST)
+        return cv2.cvtColor(dst, cv2.COLOR_BGR2RGB)
+    return cv2.inpaint(img, mask, 6, cv2.INPAINT_TELEA)
+
+
 def main(out_dir: str) -> None:
     spec = json.load(open(os.path.join(CLIENT, "planches.json"), encoding="utf-8"))
     os.makedirs(out_dir, exist_ok=True)
@@ -53,7 +64,7 @@ def main(out_dir: str) -> None:
                 diff = np.abs(gray[ey0:ey1, ex0:ex1].astype(int) - bg[ey0:ey1, ex0:ex1].astype(int))
                 mask[ey0:ey1, ex0:ex1] = np.where(diff > c.get("threshold", 28), 255, 0).astype(np.uint8)
             mask = cv2.dilate(mask, np.ones((3, 3), np.uint8), iterations=2)
-            img = cv2.inpaint(img, mask, 6, cv2.INPAINT_TELEA)
+            img = retouche(img, mask)
             # Zones « 2 » : cartes et formulaires dessinés, remplacés par un flou sombre du décor (le site pose
             # ses propres cartes par-dessus ; aucun texte ni champ de la maquette ne reste visible).
             for e in c["erase"]:

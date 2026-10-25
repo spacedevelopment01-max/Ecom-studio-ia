@@ -102,7 +102,12 @@ restants sont listés ci-dessous. Les images (qui contiennent les médias privé
    exemples de bracelets sur velours, scènes des pages achat/compte/contact/informations. Le client a fourni quatre
    photos (cabinet, tableau de correspondance, bracelet au poignet, bracelet sur toile) et son logo. Dans l'aperçu
    client, ces scènes sont des visuels **découpés dans les maquettes** (basse définition, textes effacés), signalés
-   comme provisoires : à remplacer par de vraies photos.
+   comme provisoires : à remplacer par de vraies photos. Les planches dessinent plusieurs pages sur une seule image
+   (une vignette d'étape fait environ 110 × 90 pixels) : affichées en grand, ces vignettes restent floues. Pour
+   l'aperçu, les textes et le logo des maquettes sont effacés par retouche FSR (OpenCV « contrib », moins de voile que
+   la retouche par diffusion), puis les visuels sont agrandis quatre fois par un modèle libre exécuté sur la machine
+   (ESRGAN « thick » d'UpscalerJS, licence MIT, aucun service payant). Le gain est réel mais limité : un agrandissement
+   ne recrée pas les détails absents de la planche.
 2. **Police** : EB Garamond (libre) au lieu de la police des planches (non identifiée, plus étroite) ; les titres sont
    alignés en taille, les largeurs diffèrent de quelques pour cent.
 3. **Échelles différentes entre planches** : chaque planche dessine les pages à une échelle propre (ex. téléphone :

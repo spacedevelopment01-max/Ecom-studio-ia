@@ -55,15 +55,15 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-header__bar { position: relative; height: 82px; display: flex; align-items: center; max-width: 1440px; margin: 0 auto; padding: 0 30px 0 30px; border-bottom: 2px solid #6e5330; box-shadow: 0 1px 0 #2a1f10; }
 .cvn-header__nav { display: flex; align-items: center; height: 100%; }
 .cvn-header__nav--left { gap: 23px; }
-.cvn-header__nav--right { gap: 0; margin-left: auto; }
-.cvn-header__nav--right .cvn-header__link { margin-left: 45px; }
+.cvn-header__nav--right { gap: 0; position: absolute; left: calc(50% + 113px); top: 0; }
+.cvn-header__nav--right .cvn-header__link { margin-left: 36px; }
 .cvn-header__nav--right .cvn-header__link:first-child { margin-left: 0; }
 .cvn-header__link { font: 500 20px/1 "Coven Garamond", serif; color: #dccaa3; letter-spacing: 0; white-space: nowrap; position: relative; padding: 6px 0; transition: color .2s; }
 .cvn-header__link:hover, .cvn-header__link.is-active { color: #f1cf86; }
 .cvn-header__logo { position: absolute; left: 50%; top: -3px; width: 210px; height: 210px; margin-left: -105px; border-radius: 50%; overflow: hidden; background: #000; box-shadow: 0 0 0 2px #8f6b37, 0 0 0 4px #000, 0 0 0 5px #5a4325, 0 8px 24px rgba(0, 0, 0, .6); z-index: 5; }
 .cvn-header__logo img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--cvn-logo-zoom, 1.18)); }
 .cvn-header__logo-text { display: grid; place-items: center; height: 100%; padding: 30px; text-align: center; color: var(--cvn-cream); font-size: 28px; }
-.cvn-header__tools { display: flex; align-items: center; margin-left: 52px; }
+.cvn-header__tools { display: flex; align-items: center; margin-left: auto; }
 .cvn-header__tool { position: relative; display: inline-flex; color: #e2cfa6; padding: 6px; margin-right: 14px; }
 .cvn-header__tool .cvn-icon { width: 25px; height: 25px; stroke-width: 1.5; }
 .cvn-header__tool--account { margin-right: 10px; }
@@ -213,6 +213,7 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-footer--colonnes .cvn-footer__deco--l { right: calc(50% + 112px); top: 80px; }
 .cvn-footer--colonnes .cvn-footer__deco--r { left: calc(50% + 112px); top: 80px; }
 .cvn-footer--colonnes .cvn-footer__deco--r .cvn-moon { transform: scaleX(-1); }
+.cvn-footer--colonnes .cvn-footer__deco--r .cvn-star { display: none; }
 /* Logo à gauche, liens en ligne (planche 02). */
 .cvn-footer--ligne .cvn-footer__inner { height: 250px; }
 .cvn-footer--ligne .cvn-footer__col, .cvn-footer--ligne .cvn-footer__deco { display: none; }
@@ -726,7 +727,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 @media (max-width: 1023px) {
   .cvn-hero--extend .cvn-hero__media, .cvn-hero--extend .cvn-hero__shade { height: auto; bottom: 0; }
   .cvn-hero--m-extend .cvn-hero__media, .cvn-hero--m-extend .cvn-hero__shade { bottom: auto; height: var(--meh); }
-  .cvn-hero__caption { font-size: 14px; }
+  .cvn-hero__caption { display: none; }
   .cvn-hero__medallion { display: none; }
 }
 .cvn-hero--left .cvn-hero__text p, .cvn-hero--center .cvn-hero__text p { margin: 0; }
@@ -822,9 +823,9 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 .cvn-band--photos .cvn-band__item-title { display: none; }
 .cvn-band--photos .cvn-band__items:has(.cvn-band__item:nth-child(5)) { grid-template-columns: 366px 261px; }
 /* Engagements à icônes (Le Coven) */
-.cvn-band--features .cvn-band__inner { height: var(--h); border-top: 1px solid rgba(140, 106, 58, .5); border-bottom: 1px solid rgba(140, 106, 58, .5); background: radial-gradient(60% 100% at 50% 50%, #120c14, #08070a); }
+.cvn-band--features .cvn-band__inner { min-height: var(--h); border-top: 1px solid rgba(140, 106, 58, .5); border-bottom: 1px solid rgba(140, 106, 58, .5); background: radial-gradient(60% 100% at 50% 50%, #120c14, #08070a); }
 .cvn-band--features .cvn-band__copy { display: none; }
-.cvn-band--features .cvn-band__items { display: grid; grid-template-columns: repeat(3, 1fr); padding: 58px 90px 0; text-align: center; }
+.cvn-band--features .cvn-band__items { display: grid; grid-template-columns: repeat(3, 1fr); padding: 44px 90px 40px; text-align: center; }
 .cvn-band--features .cvn-band__item { display: flex; flex-direction: column; align-items: center; position: relative; }
 .cvn-band--features .cvn-band__item + .cvn-band__item::before { content: ""; position: absolute; left: -10px; top: 40px; width: 40px; height: 90px; background: #d9ad5f; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 60'%3E%3Cpath d='M12 0l1.4 18L24 20l-10.6 2L12 40l-1.4-18L0 20l10.6-2zM12 44l.7 6.5L18 52l-5.3 1.5L12 60l-.7-6.5L6 52l5.3-1.5z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 60'%3E%3Cpath d='M12 0l1.4 18L24 20l-10.6 2L12 40l-1.4-18L0 20l10.6-2zM12 44l.7 6.5L18 52l-5.3 1.5L12 60l-.7-6.5L6 52l5.3-1.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
 .cvn-band--features .cvn-band__item-icon .cvn-icon { width: 78px; height: 78px; stroke-width: 1; }
@@ -1353,6 +1354,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
   .cvn-hero .cvn-hero__media { top: var(--mmt, 0px); }
   .cvn-hero--m-extend .cvn-hero__media { top: var(--mmt, 0px); }
   .cvn-product .cvn-pgal__stage { margin-top: var(--mmt, 0px); height: calc(365px - var(--mmt, 0px)); }
+  .cvn-product .cvn-product__inner { display: flow-root; }
 }
 
 /* Téléphone : liens du pied de page plus lisibles et plus faciles à toucher (retour de Thomas). */
@@ -1367,4 +1369,11 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 @media (max-width: 370px) {
   .cvn-footer.cvn-footer--m-colonnes .cvn-footer__col a { font-size: 14.5px; }
   .cvn-footer .cvn-footer__line a { font-size: 15px; padding: 0 8px; }
+}
+
+/* Téléphone : barre noire unie à la hauteur dessinée sur chaque planche, filet doré au ras de la photo. */
+@media (max-width: 1023px) {
+  .cvn-header .cvn-header__bar, .cvn-header--compact .cvn-header__bar { height: var(--cvn-mbar, 46px); background: #050407; border-bottom: 1px solid #b4884a; box-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
+  .cvn-header--m-overlay { background: none; }
+  .cvn-header__logo, .cvn-header--compact .cvn-header__logo { top: 3px; }
 }
