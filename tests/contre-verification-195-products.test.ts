@@ -1,0 +1,260 @@
+/**
+ * Contre-épreuves de Codex (#195, commentaire 6403952034 de #194), reprises telles quelles, et leurs compléments.
+ * Données fictives, boutiques en mémoire ou faux transports uniquement ; aucun appel réseau externe.
+ *
+ * Une seule adaptation, expliquée : la vente simultanée PENDANT l'écriture ne peut être préservée que par une
+ * plateforme qui ajuste le stock de façon relative (Shopify). La boutique en mémoire de ce cas offre donc cet
+ * ajustement ; le cas d'une plateforme à quantité absolue (WooCommerce, PrestaShop) est vérifié à part : vente
+ * préservée jusqu'à la relecture, limite restante annoncée dans le rapport.
+ */
+import { beforeAll, afterAll, describe, expect, it, vi } from "vitest";
+import http from "node:http";
+import type { AddressInfo } from "node:net";
+import { createUser } from "@/lib/auth";
+import { run } from "@/lib/db";
+import { seedHoldout } from "./lot1-holdout-fixtures";
+import { createProduct, getProduct, setVariantStock, updateProduct } from "@/lib/products/catalog";
+import { connectStore, listStores, syncProducts } from "@/lib/products/sync";
+import { shopifyConnector } from "@/lib/products/connectors/shopify";
+import { wooConnector } from "@/lib/products/connectors/woocommerce";
+import { prestaConnector } from "@/lib/products/connectors/prestashop";
+import { storeFetch } from "@/lib/products/connectors/transport";
+import type { PushProduct, RemoteProduct, StoreConnector } from "@/lib/products/connectors/types";
+
+let uid = "";
+beforeAll(async () => {
+  vi.stubGlobal("fetch", async () => { throw new Error("EXTERNAL_IO_FORBIDDEN_BY_COUNTERCHECK_195"); });
+  uid = (await createUser(`countercheck195-${Date.now()}@example.invalid`, "countercheck-isolated-only", "Contre-épreuve")).id;
+});
+afterAll(() => vi.unstubAllGlobals());
+function fixture() {
+  const pid = seedHoldout(uid, 0, "Contre-épreuve synthétique");
+  const product = createProduct(pid, { title: "Cartouche de filtration", price: 1200, variants: [{ options: [], sku: "FICTIF-195", stock: 10 }] });
+  return { pid, product };
+}
+/** Boutique en mémoire de Codex ; `atomic` : elle accepte en plus l'ajustement relatif du stock (comme Shopify). */
+function memoryStore(o: { atomic?: boolean } = {}) {
+  const products = new Map<string, RemoteProduct>();
+  let seq = 0;
+  let beforeUpdate: (() => void) | null = null;
+  let failAfterUpdate = false;
+  const writes: string[] = [];
+  const apply = (rid: string, p: PushProduct, old?: RemoteProduct) => {
+    const variants = p.variants.map((v, index) => {
+      const prev = old?.variants.find((x) => x.id === v.remoteId);
+      return { id: prev?.id ?? `${rid}-v${index}`, sku: v.sku, options: v.options, price: v.price, stock: v.stock === undefined ? (prev?.stock ?? null) : v.stock };
+    });
+    products.set(rid, { id: rid, handle: p.handle, title: p.title, description_html: p.description_html, status: p.status, price: p.price, compareAt: p.compareAt, categories: p.categories, tags: p.tags, images: [], options: p.options, variants, simple: !p.options.length });
+    return { id: rid, variants: p.variants.map((v, index) => ({ localId: v.localId, id: variants[index].id })), warnings: [] };
+  };
+  const conn: StoreConnector = {
+    platform: "woocommerce", store: "memory.example.invalid",
+    async list() { return [...products.values()].map((p) => structuredClone(p)); },
+    async get(rid) { const p = products.get(rid); return p ? structuredClone(p) : null; },
+    async create(p) { writes.push("create"); return apply(String(++seq), p); },
+    async update(rid, p) {
+      writes.push("update");
+      const hook = beforeUpdate; beforeUpdate = null; hook?.();
+      const result = apply(rid, p, products.get(rid));
+      if (failAfterUpdate) { failAfterUpdate = false; throw new Error("SIMULATED_RESPONSE_LOST_AFTER_REMOTE_COMMIT"); }
+      return result;
+    },
+  };
+  if (o.atomic) {
+    conn.platform = "shopify";
+    conn.adjustStock = async (rid, vid, delta) => {
+      writes.push(`adjust ${delta}`);
+      const hook = beforeUpdate; beforeUpdate = null; hook?.();
+      const v = products.get(rid)!.variants.find((x) => x.id === vid)!;
+      v.stock = (v.stock ?? 0) + delta;
+      if (failAfterUpdate) { failAfterUpdate = false; throw new Error("SIMULATED_RESPONSE_LOST_AFTER_REMOTE_COMMIT"); }
+      return v.stock;
+    };
+  }
+  return { conn, products, writes, onNextUpdate(fn: () => void) { beforeUpdate = fn; }, loseNextUpdateResponse() { failAfterUpdate = true; } };
+}
+
+describe("#195 — invariants attendus, aucun fournisseur réel", () => {
+  it("contrôle positif : synchronisation séquentielle inchangée sans doublon", async () => {
+    const { pid } = fixture(); const m = memoryStore();
+    expect((await syncProducts(pid, m.conn)).counts.created).toBe(1);
+    expect((await syncProducts(pid, m.conn)).counts.unchanged).toBe(1);
+    expect(m.products.size).toBe(1);
+  });
+
+  it("P1 : une vente survenue entre lecture et écriture doit rester déduite du réassort (ajustement relatif)", async () => {
+    const { pid, product } = fixture(); const m = memoryStore({ atomic: true });
+    const initial = await syncProducts(pid, m.conn); const rid = initial.lines[0].remoteId!;
+    setVariantStock(pid, product.variants[0].id, 12);
+    m.onNextUpdate(() => { m.products.get(rid)!.variants[0].stock!--; });
+    const report = await syncProducts(pid, m.conn);
+    expect(report.counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock, "10 + réassort 2 − vente concurrente 1 = 11").toBe(11);
+    expect(getProduct(pid, product.id).variants[0].stock).toBe(11);
+    expect(m.writes).toEqual(["create", "adjust 2"]);
+  });
+
+  it("P1 (quantité absolue) : la vente faite pendant l'envoi de la fiche reste déduite ; la limite restante est annoncée", async () => {
+    const { pid, product } = fixture(); const m = memoryStore();
+    const initial = await syncProducts(pid, m.conn); const rid = initial.lines[0].remoteId!;
+    // Réassort de 2 ET changement de fiche : la vente arrive pendant l'envoi de la fiche, avant la relecture du stock.
+    updateProduct(pid, product.id, { title: "Cartouche de filtration (nouvelle fiche)" });
+    setVariantStock(pid, product.variants[0].id, 12);
+    m.onNextUpdate(() => { m.products.get(rid)!.variants[0].stock!--; });
+    const report = await syncProducts(pid, m.conn);
+    expect(report.counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock).toBe(11);
+    expect(getProduct(pid, product.id).variants[0].stock).toBe(11);
+    expect(report.lines[0].warnings.join(" ")).toMatch(/n'accepte pas d'ajustement relatif du stock/);
+  });
+
+  it("P1 : deux synchronisations concurrentes ne doivent créer qu'un produit distant", async () => {
+    const { pid } = fixture(); const m = memoryStore();
+    const results = await Promise.all([syncProducts(pid, m.conn), syncProducts(pid, m.conn)]);
+    expect(results.reduce((n, r) => n + r.counts.error, 0)).toBe(0);
+    expect(m.products.size).toBe(1);
+  });
+
+  it("P1 : synchronisation déjà en cours dans un autre processus : refus explicite, rien n'est créé", async () => {
+    const { pid } = fixture(); const m = memoryStore();
+    listStores(pid); // crée les tables ; bail tenu par un autre processus :
+    run("INSERT OR REPLACE INTO platform_sync_locks (project_id, platform, store, owner, expires_at) VALUES (?,?,?,?,?)", pid, m.conn.platform, m.conn.store, "autre-processus", Date.now() + 60_000);
+    await expect(syncProducts(pid, m.conn)).rejects.toThrow(/déjà en cours/);
+    expect(m.products.size).toBe(0);
+    // Bail expiré (processus arrêté) : la synchronisation reprend normalement.
+    run("UPDATE platform_sync_locks SET expires_at = ? WHERE project_id = ?", Date.now() - 1, pid);
+    expect((await syncProducts(pid, m.conn)).counts.created).toBe(1);
+  });
+
+  it("P1 : réponse perdue après réassort appliqué, reprise sans appliquer deux fois le même réassort", async () => {
+    const { pid, product } = fixture(); const m = memoryStore();
+    const first = await syncProducts(pid, m.conn); const rid = first.lines[0].remoteId!;
+    setVariantStock(pid, product.variants[0].id, 12);
+    m.loseNextUpdateResponse();
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(1);
+    expect(m.products.get(rid)!.variants[0].stock).toBe(12);
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock, "même réassort de 2 déjà appliqué : stock final 12").toBe(12);
+  });
+
+  it("P1 : réponse perdue puis vente avant la reprise : réassort jamais rejoué, stock de la boutique repris et signalé", async () => {
+    for (const atomic of [false, true]) {
+      const { pid, product } = fixture(); const m = memoryStore({ atomic });
+      const first = await syncProducts(pid, m.conn); const rid = first.lines[0].remoteId!;
+      setVariantStock(pid, product.variants[0].id, 12);
+      m.loseNextUpdateResponse();
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(1);
+      m.products.get(rid)!.variants[0].stock!--; // vente dans la boutique : 11
+      const retry = await syncProducts(pid, m.conn);
+      expect(retry.counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(11);
+      expect(getProduct(pid, product.id).variants[0].stock).toBe(11);
+      expect(retry.lines[0].warnings.join(" ")).toMatch(/sans réponse sûre.*réassort de 2/);
+      // Un changement fait au studio APRÈS la reprise part normalement.
+      setVariantStock(pid, product.variants[0].id, 14);
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(14);
+    }
+  });
+
+  it("P2 : une boutique qui répond 503 ne doit pas être enregistrée active", async () => {
+    const { pid } = fixture();
+    const upstream503 = (async () => new Response(JSON.stringify({ message: "SIMULATED_UNAVAILABLE" }), { status: 503 })) as typeof fetch;
+    await expect(connectStore(pid, uid, { platform: "woocommerce", url: "https://93.184.216.34", key: "FICTITIOUS_KEY_195", secret: "FICTITIOUS_SECRET_195" }, upstream503)).rejects.toThrow();
+    expect(listStores(pid)).toEqual([]);
+  });
+
+  it("P2 : erreur réseau, Shopify 5xx ou PrestaShop 500 : aucune boutique enregistrée ; essai réussi : enregistrée", async () => {
+    const { pid } = fixture();
+    const down = (async () => { throw new Error("SIMULATED_NETWORK_DOWN"); }) as typeof fetch;
+    const s500 = (async () => new Response("{}", { status: 500 })) as typeof fetch;
+    await expect(connectStore(pid, uid, { platform: "woocommerce", url: "https://93.184.216.34", key: "k", secret: "s" }, down)).rejects.toThrow();
+    await expect(connectStore(pid, uid, { platform: "shopify", url: "essai-195.myshopify.com", token: "t" }, s500)).rejects.toThrow();
+    await expect(connectStore(pid, uid, { platform: "prestashop", url: "https://93.184.216.34", key: "k" }, s500)).rejects.toThrow();
+    expect(listStores(pid)).toEqual([]);
+    const ok = (async () => new Response("[]", { status: 200, headers: { "content-type": "application/json" } })) as typeof fetch;
+    expect((await connectStore(pid, uid, { platform: "woocommerce", url: "https://93.184.216.34", key: "k", secret: "s" }, ok)).status).toBe("active");
+  });
+});
+
+describe("#195 — connecteurs natifs : écriture du stock seul", () => {
+  const capture = () => {
+    const calls: { url: string; method: string; body: string }[] = [];
+    const fetcher = (async (url: string, init: RequestInit = {}) => {
+      calls.push({ url: String(url), method: init.method ?? "GET", body: typeof init.body === "string" ? init.body : "" });
+      expect(init.redirect).toBe("error");
+      const body = String(init.body ?? "");
+      if (body.includes("productVariant(id")) return Response.json({ data: { productVariant: { inventoryItem: { id: "gid://shopify/InventoryItem/7" } } } });
+      if (body.includes("locations(first")) return Response.json({ data: { locations: { nodes: [{ id: "gid://shopify/Location/1" }] } } });
+      if (body.includes("inventoryAdjustQuantities")) return Response.json({ data: { inventoryAdjustQuantities: { inventoryAdjustmentGroup: { changes: [{ name: "available", quantityAfterChange: 11 }] }, userErrors: [] } } });
+      if (String(url).includes("stock_availables?")) return Response.json({ stock_availables: [{ id: 33, quantity: 10 }] });
+      return Response.json({});
+    }) as unknown as typeof fetch;
+    return { calls, fetcher };
+  };
+  const wrap = (f: typeof fetch): typeof fetch => (input, init) => f(input, { ...init, redirect: "error" });
+
+  it("Shopify : ajustement relatif inventoryAdjustQuantities (delta, pas de quantité absolue), quantité après ajustement reprise", async () => {
+    const { calls, fetcher } = capture();
+    const c = shopifyConnector({ shop: "essai.myshopify.com", token: "jeton-de-test" }, wrap(fetcher));
+    expect(await c.adjustStock!("gid://shopify/Product/1", "gid://shopify/ProductVariant/2", 2)).toBe(11);
+    const m = JSON.parse(calls.find((x) => x.body.includes("inventoryAdjustQuantities"))!.body);
+    expect(m.variables.input).toEqual({ reason: "correction", name: "available", changes: [{ delta: 2, inventoryItemId: "gid://shopify/InventoryItem/7", locationId: "gid://shopify/Location/1" }] });
+    expect(calls.some((x) => x.body.includes("productSet"))).toBe(false);
+  });
+
+  it("WooCommerce et PrestaShop : seule la quantité est écrite (produit simple, déclinaison)", async () => {
+    const w = capture();
+    const woo = wooConnector({ url: "https://boutique.example", key: "ck", secret: "cs" }, wrap(w.fetcher));
+    await woo.setStock!("10", "10", 12);
+    await woo.setStock!("10", "11", 4);
+    expect(w.calls.map((x) => [x.method, x.url.replace("https://boutique.example/wp-json/wc/v3", ""), x.body])).toEqual([
+      ["PUT", "/products/10", JSON.stringify({ manage_stock: true, stock_quantity: 12 })],
+      ["PUT", "/products/10/variations/11", JSON.stringify({ manage_stock: true, stock_quantity: 4 })],
+    ]);
+    const p = capture();
+    const presta = prestaConnector({ url: "https://presta.example", key: "k" }, wrap(p.fetcher));
+    await presta.setStock!("5", "5", 12);
+    const patch = p.calls.find((x) => x.method === "PATCH")!;
+    expect(patch.url).toContain("/api/stock_availables/33");
+    expect(patch.body).toContain("<quantity>12</quantity>");
+    expect(patch.body).not.toMatch(/<product|<price|<name/);
+    expect(p.calls[0].url).toContain("filter[id_product_attribute]=[0]");
+  });
+});
+
+describe("#195 — transport des connecteurs (protections du lot 9)", () => {
+  async function server(handler: http.RequestListener) {
+    const s = http.createServer(handler);
+    await new Promise<void>((r) => s.listen(0, "127.0.0.1", r));
+    return { url: `http://127.0.0.1:${(s.address() as AddressInfo).port}`, close: () => new Promise((r) => s.close(r)) };
+  }
+
+  it("adresse privée refusée au moment de la connexion, http refusé, sauf boutique de test locale explicitement permise", async () => {
+    await expect(storeFetch()("https://localhost:9/wp-json/wc/v3/products")).rejects.toThrow(/boutique publique/);
+    await expect(storeFetch()("http://93.184.216.34/api/products")).rejects.toThrow(/https/);
+  });
+
+  it("redirection jamais suivie, réponse trop volumineuse refusée, réponse normale transmise", async () => {
+    vi.stubEnv("STORE_CONNECT_ALLOW_LOCAL", "1");
+    const hits: string[] = [];
+    const s = await server((req, res) => {
+      hits.push(req.url!);
+      if (req.url === "/redirige") { res.writeHead(302, { location: "http://127.0.0.1:1/vole-les-acces" }); return res.end(); }
+      if (req.url === "/enorme") { res.writeHead(200); return res.end(Buffer.alloc(4096, 65)); }
+      let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => { res.writeHead(201, { "content-type": "application/json" }); res.end(JSON.stringify({ recu: b, auth: req.headers.authorization })); });
+    });
+    try {
+      const f = storeFetch({ maxBytes: 1024, timeoutMs: 5000 });
+      await expect(f(`${s.url}/redirige`, { headers: { Authorization: "Basic secret" } })).rejects.toThrow(/redirection/);
+      expect(hits).toEqual(["/redirige"]);
+      await expect(f(`${s.url}/enorme`)).rejects.toThrow(/trop volumineuse/);
+      const r = await f(`${s.url}/ok`, { method: "PUT", headers: { Authorization: "Basic essai" }, body: JSON.stringify({ stock_quantity: 3 }) });
+      expect(r.status).toBe(201);
+      expect(await r.json()).toEqual({ recu: JSON.stringify({ stock_quantity: 3 }), auth: "Basic essai" });
+    } finally {
+      await s.close();
+      vi.unstubAllEnvs();
+    }
+  });
+});

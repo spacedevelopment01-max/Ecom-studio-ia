@@ -40,6 +40,16 @@ export interface StoreConnector {
   update(id: string, p: PushProduct): Promise<PushResult>;
   /** Lecture d'une photo de la boutique qui exige ses accès (PrestaShop) ; sinon lecture publique. */
   readImage?(url: string): Promise<{ data: Buffer; mime: string } | null>;
+  /** Essai des accès avant l'enregistrement : toute erreur (accès refusé, réseau, 5xx…) refuse la connexion. */
+  probe?(): Promise<void>;
+  /**
+   * Ajustement RELATIF du stock d'une variante, appliqué par la plateforme sur sa quantité du moment (une vente faite
+   * pendant la synchronisation n'est jamais écrasée). Renvoie la quantité après ajustement si la plateforme la donne.
+   * Absent : la plateforme n'accepte qu'une quantité absolue.
+   */
+  adjustStock?(productId: string, variantId: string, delta: number): Promise<number | null>;
+  /** Écriture de la seule quantité d'une variante (plateformes sans ajustement relatif). */
+  setStock?(productId: string, variantId: string, quantity: number): Promise<void>;
 }
 
 export class StoreApiError extends Error {

@@ -21,6 +21,7 @@ export function shopifyConnector(c: ShopifyCredentials, fetcher: typeof fetch = 
   async function gql(query: string, variables: Record<string, unknown> = {}) {
     const r = await fetcher(`https://${shop}/admin/api/${c.apiVersion || "2025-07"}/graphql.json`, { method: "POST", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": c.token }, body: JSON.stringify({ query, variables }) });
     if (r.status === 401 || r.status === 403) throw new StoreApiError("shopify", r.status, L("Shopify refuse l'accès (droits produits et stock requis).", "Shopify denied access (product and inventory permissions required)."));
+    if (!r.ok) throw new StoreApiError("shopify", r.status, L(`Shopify ne répond pas correctement (erreur ${r.status}).`, `Shopify did not answer correctly (error ${r.status}).`));
     const j: any = await r.json();
     if (j.errors) throw new StoreApiError("shopify", r.status, L(`Shopify : ${JSON.stringify(j.errors).slice(0, 300)}`, `Shopify: ${JSON.stringify(j.errors).slice(0, 300)}`));
     return j.data;
@@ -87,5 +88,20 @@ export function shopifyConnector(c: ShopifyCredentials, fetcher: typeof fetch = 
     },
     create: (p) => set(p),
     update: (id, p) => set(p, id),
+    async probe() {
+      await gql(`{ shop{ id } }`);
+    },
+    // Ajustement relatif (`inventoryAdjustQuantities`) : Shopify l'applique sur sa quantité du moment, une vente
+    // simultanée reste déduite. Même emplacement que l'envoi des quantités (le premier de la boutique).
+    async adjustStock(_productId, variantId, delta) {
+      const loc = await locationId();
+      const item = (await gql(`query($id: ID!){ productVariant(id: $id){ inventoryItem{ id } } }`, { id: variantId }))?.productVariant?.inventoryItem?.id;
+      if (!loc || !item) throw new StoreApiError("shopify", 422, L("Shopify : emplacement de stock ou article introuvable.", "Shopify: inventory location or item not found."));
+      const d = await gql(`mutation($input: InventoryAdjustQuantitiesInput!){ inventoryAdjustQuantities(input: $input){ inventoryAdjustmentGroup{ changes{ name quantityAfterChange } } userErrors{ field message } } }`, { input: { reason: "correction", name: "available", changes: [{ delta, inventoryItemId: item, locationId: loc }] } });
+      const errs = d?.inventoryAdjustQuantities?.userErrors ?? [];
+      if (errs.length) throw new StoreApiError("shopify", 422, L(`Shopify : ${errs.map((e: any) => e.message).join(" ; ")}`, `Shopify: ${errs.map((e: any) => e.message).join("; ")}`));
+      const after = (d?.inventoryAdjustQuantities?.inventoryAdjustmentGroup?.changes ?? []).find((c: any) => c.name === "available")?.quantityAfterChange;
+      return typeof after === "number" ? after : null;
+    },
   };
 }

@@ -116,6 +116,13 @@ export function wooConnector(c: WooCredentials, fetcher: typeof fetch = fetch): 
       await api("PUT", `/products/${id}`, await body(p, warnings));
       return { id, variants: await syncVariations(id, p), warnings };
     },
+    async probe() {
+      await api("GET", "/products?per_page=1");
+    },
+    // L'API REST de WooCommerce n'accepte qu'une quantité absolue : seule la quantité est écrite, juste après relecture.
+    async setStock(productId, variantId, quantity) {
+      await api("PUT", variantId === productId ? `/products/${productId}` : `/products/${productId}/variations/${variantId}`, { manage_stock: true, stock_quantity: quantity });
+    },
   };
 }
 

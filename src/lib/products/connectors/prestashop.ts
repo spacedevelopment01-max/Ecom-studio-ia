@@ -166,6 +166,15 @@ export function prestaConnector(c: PrestaCredentials, fetcher: typeof fetch = fe
       try { return await toRemote((await call("GET", `products/${id}`)).product); }
       catch (e) { if (e instanceof StoreApiError && e.status === 404) return null; throw e; }
     },
+    async probe() {
+      await call("GET", "products?display=[id]&limit=1");
+    },
+    // Le webservice n'accepte qu'une quantité absolue : seule la quantité est écrite, juste après relecture.
+    async setStock(productId, variantId, quantity) {
+      const row = await stockRow(productId, variantId === productId ? "0" : variantId);
+      if (!row) throw new StoreApiError("prestashop", 404, L("PrestaShop : ligne de stock introuvable.", "PrestaShop: stock row not found."));
+      await call("PATCH", `stock_availables/${row.id}`, xml("stock_available", `<id>${row.id}</id><quantity>${quantity}</quantity>`));
+    },
     async readImage(url) {
       if (!url.startsWith(`${base}/api/images/`)) return null;
       const r = await fetcher(url, { headers: { Authorization: auth } });
