@@ -157,7 +157,8 @@ describe("Le Coven des Charmes : images HD du client", () => {
   it("avec les images HD, chaque emplacement reçoit sa scène d'origine : aucun visuel découpé ni photo de téléphone", async () => {
     const { spec } = await covenProject("client");
     const json = JSON.stringify({ t: spec.templates, g: spec.groups, s: spec.store });
-    expect(json).not.toMatch(/coven-mq-|coven-photo-/);
+    // Seule exception : le bouton « Voir le tableau en détail » ouvre la photo du vrai tableau de correspondance.
+    expect(json.replace(/"zoom_asset":"coven-photo-tableau\.jpg"/g, "")).not.toMatch(/coven-mq-|coven-photo-/);
     const used = new Set(json.match(/coven-hd-\d\d\.jpg/g));
     expect(used.size).toBeGreaterThanOrEqual(55);
     for (const n of Object.values(CROP_HD)) expect(COVEN_HD_MEDIA.some((m) => m.file === covenHdFile(n)), n).toBe(true);
