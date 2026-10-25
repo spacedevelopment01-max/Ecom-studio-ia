@@ -562,7 +562,7 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
     Q("Faut-il se déplacer pour un devis ?", "Une visite permet souvent de préciser le projet ; elle est convenue avec vous selon la nature des travaux.", ""),
     Q("Quels éléments préparer avant notre échange ?", "Le type de logement, les pièces concernées, quelques photos et vos disponibilités suffisent pour bien démarrer.", ""),
     Q("Intervenez-vous dans ma région ?", "[À compléter : zone d'intervention de l'entreprise]", ""),
-  ].map((q) => ({ ...q, settings: { ...q.settings, show: "desktop" } })).concat([
+  ].map((q): B => ({ ...q, settings: { ...q.settings, show: "desktop" } })).concat([
     Q("Intervenez-vous en rénovation ?", "Oui : les prestations concernent aussi bien un logement existant à rénover qu'une construction neuve.", "", { show: "mobile" }),
     Q("Quels types de projets prenez-vous en charge ?", "Installation et rénovation, tableau et sécurité, éclairage intérieur et extérieur, dépannage, prises et équipements, pilotage et confort.", "", { show: "mobile" }),
     Q("Comment se déroule un projet ?", "Un premier échange, une visite si nécessaire, une proposition détaillée, puis la réalisation et les vérifications finales.", "", { show: "mobile" }),
