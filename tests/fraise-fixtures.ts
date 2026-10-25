@@ -299,7 +299,7 @@ export function curateFraise(spec: ThemeSpec, ids: Record<string, string>) {
   // « [À compléter : …] » tant que la boutique ne les a pas donnés.
   spec.templates.cart = fgTemplate([
     S("fg-hero", { layout: "page", layout_mobile: "text", variant: "e", heading: "Votre panier,\n[i]côté fraise.[/i]", text: p("Vérifiez votre sélection avant de passer commande."), image_asset: f("24-fraises-detail-saveur.webp"), image_alt: "", image_place_w: 646, image_place_x: 767, image_place_y: -40, height: 470, height_mobile: 150 }),
-    S("fg-cart", { ...cartSettings("fr", { checkoutPage: U("commande"), shopLink: SHOP, emptyImage: f("05-fiche-flacon-principal.webp"), footImage: f("24-fraises-detail-saveur.webp"), units: "[n] flacons au total", emptyButton: "Découvrir les gummies" }), line_brand: "FRAISE GUMMIES", empty_sub: "Partez à la découverte de nos gummies goût fraise.", empty_title: "Un peu de place\npour FRAISE ?" }),
+    S("fg-cart", { ...cartSettings("fr", { checkoutPage: U("commande"), shopLink: SHOP, emptyImage: f("05-fiche-flacon-principal.webp"), footImage: f("12-scene-cuisine.webp"), units: "[n] flacons au total", emptyButton: "Découvrir les gummies" }), foot_image_position: "100% 70%", foot_image_zoom: 300, line_brand: "FRAISE GUMMIES", empty_sub: "Partez à la découverte de nos gummies goût fraise.", empty_title: "Un peu de place\npour FRAISE ?" }),
     lookBuy,
   ]);
   pages["commande"] = { seo: "Commande de démonstration FRAISE GUMMIES : aucun paiement, aucun envoi.", rows: [

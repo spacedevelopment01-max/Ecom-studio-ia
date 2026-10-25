@@ -1736,7 +1736,6 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   .fg-cart__sum { order: 2; }
   .fg-cart__continue { order: 3; }
   .fg-cart__foot { display: block; height: calc(150 * var(--m)); margin-top: calc(8 * var(--m)); -webkit-mask: linear-gradient(180deg, transparent, #000 40%); mask: linear-gradient(180deg, transparent, #000 40%); }
-  .fg-cart__foot img { object-position: 6% 66% !important; transform: scale(2.2) !important; transform-origin: 6% 66% !important; }
   .fg-cart__empty { padding: calc(30 * var(--m)) calc(16 * var(--m)) calc(26 * var(--m)); position: relative; }
   .fg-cart__etitle { font-size: calc(30 * var(--m)); line-height: 1.08; }
   .fg-cart__etitle .fg-s { font-family: var(--fg-title); }

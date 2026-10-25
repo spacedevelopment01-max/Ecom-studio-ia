@@ -166,6 +166,14 @@ describe.skipIf(!KIT)("FRAISE : démonstration (sept planches)", async () => {
     expect(fiche).toMatch(/data-fg-buybar/);
   });
 
+  it("fiche : chaque carte de format montre sa photo (aucun texte technique à la place)", () => {
+    const fiche = pages.get(product)!;
+    const cards = [...fiche.matchAll(/<label class="fg-offer fg-offer--choice[\s\S]*?<\/label>/g)].map((m) => m[0]);
+    expect(cards).toHaveLength(3);
+    for (const c of cards) expect(c).toMatch(/<img [^>]*class="fg-img__main"/);
+    expect(visibleText(fiche)).not.toMatch(/\b100vw\b/);
+  });
+
   it("confiserie, rien d'inventé : aucune vitamine, promesse de santé, avis, stock ou certification", () => {
     for (const [route, html] of pages) {
       // Les avertissements honnêtes (« aucune recommandation de santé ») ne comptent pas comme promesse.

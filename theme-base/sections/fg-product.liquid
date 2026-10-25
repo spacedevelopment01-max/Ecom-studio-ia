@@ -91,7 +91,7 @@
                   endcase
                   assign img_i = variant.featured_image
                   if img_a != blank
-                    assign img_i = nil
+                    assign img_i = ''
                   endif
                 -%}
                 {% render 'fg-offer', product: p, variant: variant, mode: 'choice', image: img_i, image_asset: img_a, alt: '', show_compare: true, show_last: true, show_per: 'all', show_save: true, choice_name: 'fg-format', checked: chk, index: forloop.index %}

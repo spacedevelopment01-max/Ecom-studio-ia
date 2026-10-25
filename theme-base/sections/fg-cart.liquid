@@ -67,7 +67,7 @@
       </div>
     {%- endif -%}
   </div>
-  {%- if cart.item_count > 0 -%}{% render 'fg-img', asset: s.foot_image_asset, alt: '', class: 'fg-cart__foot' %}{%- endif -%}
+  {%- if cart.item_count > 0 -%}{% render 'fg-img', asset: s.foot_image_asset, alt: '', pos: s.foot_image_position, zoom: s.foot_image_zoom, pos_mobile: s.foot_image_position, zoom_mobile: s.foot_image_zoom, class: 'fg-cart__foot' %}{%- endif -%}
 </section>
 
 {% schema %}
@@ -101,7 +101,9 @@
     { "type": "text", "id": "empty_sub", "label": "Panier vide : phrase" },
     { "type": "text", "id": "empty_button", "label": "Panier vide : bouton", "default": "Découvrir la boutique" },
     { "type": "url", "id": "empty_link", "label": "Panier vide : lien du bouton" },
-    { "type": "text", "id": "foot_image_asset", "label": "Photo du bas (téléphone, fichier du thème)" }
+    { "type": "text", "id": "foot_image_asset", "label": "Photo du bas (téléphone, fichier du thème)" },
+    { "type": "text", "id": "foot_image_position", "label": "Cadrage de la photo du bas", "default": "50% 50%" },
+    { "type": "range", "id": "foot_image_zoom", "label": "Agrandissement de la photo du bas", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
   ],
   "presets": [{ "name": "Panier FRAISE" }]
 }

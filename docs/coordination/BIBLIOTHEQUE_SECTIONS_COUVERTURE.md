@@ -1,6 +1,6 @@
 # Bibliothèque de sections — inventaire et couverture
 
-Généré par `scripts/sections-inventory.ts` le 2026-10-24 ; contrôlé par `tests/section-library-coverage.test.ts` (une section ajoutée sans entrée de bibliothèque ou absente de cet inventaire fait échouer la CI).
+Généré par `scripts/sections-inventory.ts` le 2026-10-25 ; contrôlé par `tests/section-library-coverage.test.ts` (une section ajoutée sans entrée de bibliothèque ou absente de cet inventaire fait échouer la CI).
 
 **270 sections** dans `theme-base/sections/` : **256 ajoutables** depuis Studio → Boutique → « Ajouter une section » (Thème → Sections) et **14 composants structurels** (en-tête, bandeau, pied de page, panier latéral, corps de gabarits) rangés dans la catégorie « Structure » : retrouvables et réglables depuis la bibliothèque et le menu « Modifier les réglages », jamais ajoutés ni dupliqués (un seul en-tête, un seul panier). Couverture bibliothèque : 270/270 (FR et EN). Sections avec réglages d'animation : 17.
 
@@ -109,7 +109,7 @@ Colonnes : famille d'origine ; fichiers qui utilisent la section (générateurs,
 | `features-grid` | Bénéfices | Produit | Base du studio (11 directions) | section-copy-product.ts, platforms.ts, content-roles.ts, tidy.ts (+13) | layout (3), columns_mobile (2), heading_align (2), style (4) | 15 (select ×6, text ×4, range ×3, url ×1, color_scheme ×1) | Atout · max 8 | ajoutable | oui | oui |
 | `fg-article` | Article du journal | Textes | Base du studio (11 directions) | fraise-fixtures.ts | — | 15 (text ×9, richtext ×2, url ×1, textarea ×1, image_picker ×1, range ×1) | Autre article · max 3 | ajoutable | — | oui |
 | `fg-band` | Bandeau rouge | Conversion | Base du studio (11 directions) | fraise-fixtures.ts | — | 11 (text ×5, textarea ×2, range ×2, url ×1, image_picker ×1) | — | ajoutable | — | oui |
-| `fg-cart` | Panier FRAISE | Produit | Base du studio (11 directions) | fraise-v2.ts, fraise-fixtures.ts | — | 27 (text ×23, url ×3, textarea ×1) | — | ajoutable | — | oui |
+| `fg-cart` | Panier FRAISE | Produit | Base du studio (11 directions) | fraise-v2.ts, fraise-fixtures.ts | — | 29 (text ×24, url ×3, textarea ×1, range ×1) | — | ajoutable | — | oui |
 | `fg-checkout` | Commande (démo) | Conversion | Base du studio (11 directions) | fraise-fixtures.ts | — | 68 (text ×59, textarea ×6, image_picker ×1, range ×1, url ×1) | — | ajoutable | — | oui |
 | `fg-contact` | Contact FRAISE | Conversion | Base du studio (11 directions) | fraise-v2.ts, fraise-fixtures.ts | — | 31 (text ×23, textarea ×3, range ×2, url ×1, select ×1, image_picker ×1) | Carte d'aide · max 3 | ajoutable | — | oui |
 | `fg-cta` | Bandeau d'achat | Conversion | Base du studio (11 directions) | fraise-fixtures.ts, demos-fraise-onde-composition.test.ts | — | 8 (text ×4, textarea ×1, product ×1, range ×1, image_picker ×1) | — | ajoutable | — | oui |
