@@ -12,7 +12,7 @@
       {%- if s.text != blank -%}<div class="fg-details__lead">{{ s.text }}</div>{%- endif -%}
       {%- if s.button_label != blank -%}<a class="fg-btn fg-btn--line fg-details__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label }}</a>{%- endif -%}
     </div>
-    <span class="fg-details__petals" aria-hidden="true">{% render 'fg-art', name: 'petals' %}</span>
+    <span class="fg-details__petals" aria-hidden="true">{% render 'fg-art', name: 'petal-duo' %}</span>
     <ul class="fg-details__grid" role="list">
       {%- for block in section.blocks -%}
         <li class="fg-details__tile fg-details__tile--{{ forloop.index }}" {{ block.shopify_attributes }}>
@@ -22,7 +22,7 @@
       {%- endfor -%}
     </ul>
   </div>
-  <svg class="fg-wave fg-wave--bottom" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0V18c60 16 120 16 180 4s120-18 180-6 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 6V0z" fill="currentColor"/></svg>
+  <svg class="fg-wave fg-wave--bottom" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0V18c60 16 120 16 180 4s120-18 180-6 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 6 120-18 180-6V0z" fill="currentColor"/></svg>
 </section>
 
 {% schema %}
@@ -43,9 +43,9 @@
       { "type": "text", "id": "alt", "label": "Description" },
       { "type": "text", "id": "caption", "label": "Mot manuscrit (téléphone)" },
       { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
-      { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+      { "type": "range", "id": "zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
       { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
-      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
     ] }
   ],
   "presets": [{ "name": "Détails en photos" }]

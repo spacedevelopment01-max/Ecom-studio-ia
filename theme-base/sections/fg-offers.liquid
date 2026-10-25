@@ -14,7 +14,7 @@
 -%}
 <section class="fg fg-offers fg-offers--{{ s.layout }}" aria-labelledby="fg-offers-t-{{ section.id }}" id="formats">
   <div class="fg-c">
-    <span class="fg-offers__deco" aria-hidden="true">{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-offers__petals' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch2' %}</span>
+    <span class="fg-offers__deco" aria-hidden="true">{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-offers__petals' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch2' %}{% render 'fg-art', name: 'sprigs', class: 'fg-offers__sprigs' %}</span>
     <div class="fg-offers__head">
       {%- assign tid = 'fg-offers-t-' | append: section.id -%}
       {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-offers__title', id: tid %}

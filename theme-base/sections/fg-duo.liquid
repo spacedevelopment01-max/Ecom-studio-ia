@@ -29,7 +29,7 @@
         {%- for block in section.blocks -%}
           <li class="fg-duo__post" {{ block.shopify_attributes }}>
             <a href="{{ block.settings.link | default: routes.root_url }}">
-              {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.position, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-duo__pimg' %}
+              {% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.position, zoom: block.settings.zoom, pos_mobile: block.settings.position_mobile, zoom_mobile: block.settings.zoom_mobile, class: 'fg-duo__pimg' %}
               <span class="fg-duo__ptitle"><span class="fg-only-d">{{ block.settings.title }}</span><span class="fg-only-m">{{ block.settings.title_mobile | default: block.settings.title }}</span></span>
               <span class="fg-duo__read">{{ s.read_label }}{% render 'fg-icon', name: 'arrow' %}</span>
             </a>
@@ -57,7 +57,7 @@
     { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
     { "type": "text", "id": "image_alt", "label": "Description de la photo" },
     { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
-    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
     { "type": "number", "id": "image_place_w", "label": "Largeur posée (ordinateur, repère 1440 px)", "default": 0 },
     { "type": "number", "id": "image_place_x", "label": "Position horizontale posée (ordinateur)", "default": 0 },
     { "type": "number", "id": "image_place_y", "label": "Position verticale posée (ordinateur)", "default": 0 },
@@ -81,8 +81,9 @@
       { "type": "image_picker", "id": "image", "label": "Photo" },
       { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
       { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
       { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
-      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 }
+      { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
     ] }
   ],
   "presets": [{ "name": "Recette et journal" }]
