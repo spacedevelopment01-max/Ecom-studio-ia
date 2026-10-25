@@ -1709,7 +1709,18 @@ body[data-editorial="aplat"] .ap-s :is(h1, h2, h3, h4) { font-family: var(--ap-t
 .ap-cards--shortcuts .ap-card__title { margin-top: 26px; color: var(--ap-blue); font-size: 24px; }
 .ap-cards--shortcuts .ap-card__text { margin-top: 8px; font-size: 17px; line-height: 25px; }
 .ap-cards--shortcuts .ap-card__arrow { position: absolute; right: 24px; bottom: 22px; }
-@media (max-width: 1023px) { .ap-cards--shortcuts { display: none; } }
+@media (max-width: 1023px) {
+  .ap-cards--shortcuts .ap-cards__inner { padding: 22px 18px 24px; }
+  .ap-cards--shortcuts .ap-cards__title { font-size: 21px; }
+  .ap-cards--shortcuts .ap-cards__list { grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+  .ap-cards--shortcuts .ap-card { position: relative; }
+  .ap-cards--shortcuts .ap-card__body { display: grid; grid-template-columns: 40px 1fr; column-gap: 14px; min-height: 0; padding: 14px 44px 14px 14px; }
+  .ap-cards--shortcuts .ap-card__icon { grid-row: 1 / span 2; }
+  .ap-cards--shortcuts .ap-card__icon .ap-icon { width: 34px; height: 34px; }
+  .ap-cards--shortcuts .ap-card__title { margin: 0; font-size: 17px; }
+  .ap-cards--shortcuts .ap-card__text { margin-top: 2px; font-size: 14px; line-height: 19px; }
+  .ap-cards--shortcuts .ap-card__arrow { right: 14px; top: 50%; bottom: auto; transform: translateY(-50%); }
+}
 
 /* ── Pages légales ─────────────────────────────────────────────────────────────────────────────────────────── */
 .ap-legal__inner { display: grid; grid-template-columns: 400px 1fr; column-gap: 50px; padding: 44px 60px 50px 60px; max-width: none; }
@@ -1945,4 +1956,17 @@ body[data-editorial="aplat"] .ap-s :is(h1, h2, h3, h4) { font-family: var(--ap-t
 @media (max-width: 1023px) {
   .ap-footer__m-top .ap-footer__logo { width: min(168px, 40vw); }
   .ap-footer__grid { gap: 10px 10px; }
+}
+
+/* ── Téléphone : photo puis aplat qui la chevauche, placé par la grille (la photo s'arrête toujours sous l'aplat,
+      quelle que soit la hauteur du titre selon l'appareil et la police). ─────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .ap-hero--m-stack:not(.ap-hero--box) { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__body, .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__copy { display: contents; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__media { grid-row: 1 / span 2; grid-column: 1; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__title { position: relative; z-index: 1; grid-row: 2; grid-column: 1; align-self: end; width: auto; margin: 0 26px 0 18px; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__copy > :not(.ap-hero__title) { grid-column: 1; margin-left: 18px; margin-right: 18px; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__text { margin-top: 12px; font-size: min(20.5px, 5.3vw); }
+  .ap-hero--m-stack:not(.ap-hero--box):not(.ap-hero--m-notext) .ap-hero__title { font-size: min(var(--ap-tsm, 39.5px), 10.2vw); line-height: 1.07; }
+  .ap-hero--m-stack:not(.ap-hero--box) .ap-hero__copy > :last-child { margin-bottom: 18px; }
 }

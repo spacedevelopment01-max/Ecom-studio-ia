@@ -509,7 +509,7 @@ export function curateAplat(spec: ThemeSpec, ids: Record<string, string>) {
   // ── 18 Page introuvable (planches 05 et 10) ─────────────────────────────────────────────────────────────────────
   spec.templates["404"] = template([
     ["hero", section("ap-hero", { layout: "notfound", mobile_layout: "card", height: 855, mobile_height: 1220, ...{ texture_asset: asset("07_texture_enduit.webp") }, ...img("02_piece_avant.webp"), focus_x: 75, focus_y: 50, mobile_image_asset: asset("16_seau_bac_rouleau.webp"), mobile_focus_x: 40, mobile_focus_y: 70, notfound_text: "404", heading: "Cette page est *introuvable.*", mobile_heading: "Cette page est\nintrouvable.", text: "La page que vous recherchez n'existe plus\nou a peut-être été déplacée.", mobile_text: "La page que vous recherchez\nn'existe pas ou a été déplacée.", button_label: "Retour à l'accueil", button_link: "/", button2_label: "Voir les prestations", button2_link: PRESTATIONS })],
-    ["links", section("ap-cards", { layout: "shortcuts", heading: "Besoin d'un autre point de repère ?" }, [
+    ["links", section("ap-cards", { layout: "shortcuts", show_on: "desktop", heading: "Besoin d'un autre point de repère ?" }, [
       card({ icon: "paint", title: "Nos prestations", text: "Plâtrerie, enduits,\npeinture intérieure.", link: PRESTATIONS }),
       card({ icon: "image", title: "Nos réalisations", text: "Des exemples\npour vous inspirer.", link: REALISATIONS }),
       card({ icon: "users", title: "Notre approche", text: "Une méthode simple\net un suivi clair.", link: APPROCHE }),
