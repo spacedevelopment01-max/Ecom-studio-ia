@@ -68,6 +68,9 @@ version du thème du projet, conservée au rechargement et reprise par l'export 
 | 03 / 06 | Informations (onglets #mentions, #cgv, #confidentialite, #cookies, #livraison ; préférences de cookies) | `/pages/informations` |
 | 03 | Page introuvable « Vous vous êtes égaré dans le Coven. » | toute adresse inconnue |
 
+Pied de page : le même sur tout le site (ordinateur : colonnes autour du logo ; téléphone : logo entre deux lunes,
+liens centrés). Une autre composition des planches peut être choisie page par page dans les réglages du pied.
+
 En-tête : liens, logo original du client dans son médaillon, compte, panier, « Commander » ; version courte avec étoile
 pour les pages des planches 02-03 ; téléphone : menu à gauche, logo au centre (taille par page), panier à droite, menu
 plein écran (Échap, focus gardé). Pied : colonnes autour du logo (planches 01, 03), logo et liens en ligne (planche 02),
@@ -75,6 +78,8 @@ téléphone : colonnes (accueil, produit), logo entre deux lunes (planche 05), g
 
 ## Vérifications
 
+- Aperçu intégré dans un cadre isolé (stockage du navigateur interdit) : le panier, la commande simulée et les choix
+  de cookies suivent la visite d'une page à l'autre (mémoire de l'onglet) ; chaque page s'ouvre en haut.
 - Interactions (`interactions.cjs`, aperçu exporté) : **60/60** (cookies sans accord par défaut, menu, galerie,
   quantité plafonnée, panier, commande et refus simulés, confirmation, compte, contact, FAQ, informations, 404, aucun
   défilement horizontal à 360, 390, 430, 768, 1024 et 1440 px, aucune erreur JavaScript).
@@ -107,7 +112,8 @@ restants sont listés ci-dessous. Les images (qui contiennent les médias privé
    l'aperçu, les textes et le logo des maquettes sont effacés par retouche FSR (OpenCV « contrib », moins de voile que
    la retouche par diffusion), puis les visuels sont agrandis quatre fois par un modèle libre exécuté sur la machine
    (ESRGAN « thick » d'UpscalerJS, licence MIT, aucun service payant). Le gain est réel mais limité : un agrandissement
-   ne recrée pas les détails absents de la planche.
+   ne recrée pas les détails absents de la planche. **Aperçu publié : aucun visuel découpé dans les planches** (à la demande du client, aucune
+   image floue) : chaque emplacement sans photo du client affiche un fond sombre légendé « Photo à fournir · … ».
 2. **Police** : EB Garamond (libre) au lieu de la police des planches (non identifiée, plus étroite) ; les titres sont
    alignés en taille, les largeurs diffèrent de quelques pour cent.
 3. **Échelles différentes entre planches** : chaque planche dessine les pages à une échelle propre (ex. téléphone :

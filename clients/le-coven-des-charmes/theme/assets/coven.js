@@ -9,13 +9,29 @@
   var doc = document, root = doc.documentElement;
   var $ = function (sel, el) { return (el || doc).querySelector(sel); };
   var $$ = function (sel, el) { return Array.prototype.slice.call((el || doc).querySelectorAll(sel)); };
+  // Stockage du navigateur ; quand un aperçu isolé l'interdit, mémoire de l'onglet (window.name), conservée d'une
+  // page à l'autre pour que panier, commande simulée et choix de cookies suivent la visite.
+  var area = function (n) { try { var s = window[n], t = "__cvn"; s.setItem(t, "1"); s.removeItem(t); return s; } catch (e) { return null; } };
+  var LS = area("localStorage"), SS = area("sessionStorage");
+  var memo = function () { try { return window.name.indexOf("cvn:") === 0 ? JSON.parse(window.name.slice(4)) : {}; } catch (e) { return {}; } };
+  var memoSet = function (k, v) { var m = memo(); m[k] = v; try { window.name = "cvn:" + JSON.stringify(m); } catch (e) { /* mémoire indisponible */ } };
+  var read = function (s, k) { if (!s) { var v = memo()[k]; return v === undefined ? null : v; } try { return JSON.parse(s.getItem(k)); } catch (e) { return null; } };
+  var write = function (s, k, v) { if (!s) { memoSet(k, v); return; } try { s.setItem(k, JSON.stringify(v)); } catch (e) { memoSet(k, v); } };
   var store = {
-    get: function (k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } },
-    set: function (k, v) { try { window.localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } },
-    sget: function (k) { try { return JSON.parse(window.sessionStorage.getItem(k)); } catch (e) { return null; } },
-    sset: function (k, v) { try { window.sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
+    get: function (k) { return read(LS, k); },
+    set: function (k, v) { write(LS, k, v); },
+    sget: function (k) { return read(SS, SS ? k : "s:" + k); },
+    sset: function (k, v) { write(SS, SS ? k : "s:" + k, v); }
   };
   doc.body.classList.add("cvn-body");
+
+  /* ------------------------------------------------ ouverture d'une page : en haut (sauf lien vers une ancre) */
+  // Certains aperçus intégrés gardent la position de la page précédente : on remonte la page et son cadre.
+  if (!location.hash) {
+    try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) { /* sans effet */ }
+    window.scrollTo(0, 0);
+    if (window.top !== window && !(window.Shopify && window.Shopify.designMode)) { try { root.scrollIntoView({ block: "start" }); } catch (e) { /* cadre fermé */ } }
+  }
 
   /* ------------------------------------------------ icônes (sprite du projet, inséré une fois) */
   var flag = $("[data-cvn-icons]");
