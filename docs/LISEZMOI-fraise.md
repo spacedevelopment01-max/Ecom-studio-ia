@@ -105,15 +105,37 @@ est dans `echelles.csv` du rapport.
   `04-detail-gummies`, `05-detail-packaging`, `06-banniere`, `07-scene-cuisine`, `08-scene-jardin`, `09-scene-fete`) :
   les compléments reprennent plus fidèlement les cadrages des planches ; les maquettes restent la référence.
 
-## Écarts qui restent (à valider par Thomas)
+## Reprise au pixel (retour de Thomas du 25 octobre : « c'est au pixel près »)
+
+Mesures relevées sur chaque planche au repère 1440 (ordinateur) et 390 (téléphone), puis corrigées élément par élément :
+
+- **Unité de mesure** : plusieurs zones avaient une marge intérieure qui réduisait toute leur mise en page (questions de
+  la fiche −9 %, panier −10 %, commande −10 %, FAQ −8 %, livraison −7 % ; au téléphone −2 à −17 %). L'unité se mesure
+  désormais sur toute la largeur ; les marges sont portées par les colonnes.
+- **Découpage des planches 02 et 03** : les références étaient découpées avec 2 à 5 px de bord gris ; découpage refait au
+  bord exact du panneau (les comparaisons sont recalculées).
+- **Fiche** : formats (cartes de 206 et 219 px), « Tout savoir sur le flacon », questions en deux colonnes, bandeau
+  « Votre rituel, côté fraise. » et nouveau pied de page « fiche » qui le prolonge (liens propres, réglables).
+- **Planche 02** : en-tête propre (bandeau de 35 px à trois groupes, barre de 91 px), boutique (titre resserré, trois
+  cartes de 418 / 439 / 495 px), recette (photo d'ouverture selon le dossier, mots manuscrits), histoire (cartes, bandeau
+  incliné fondu dans le pied), journal (carte vedette, cartes, cadrages).
+- **Planche 03** : en-tête dessiné plus grand (barre de 122 px, logo de 236 px, sac au trait), panier (récapitulatif sur
+  carte rose), commande (colonnes, champs, récapitulatif), FAQ, contact, livraison, suivi.
+- **Téléphone** : formats de l'accueil sur cartes blanches avec sac, fond rose de la recette au pied, liens légaux du pied
+  affichés une seule fois (ils apparaissaient deux fois), bandeau sous l'en-tête des pages de la planche 05, fondu des
+  photos d'ouverture (FAQ, livraison).
+
 
 - **Photos** : les photos complémentaires ne sont pas les images exactes des planches (cadrages, éclairage, nombre de
   fraises et de gummies, flacon parfois plus grand) ; elles sont recadrées au plus près, mais la superposition montre ces
   différences sur chaque page.
 - **Typographie** : polices libres les plus proches (Poppins, Playfair Display, Caveat, Fraunces) ; quelques corps et
   coupes de lignes diffèrent d'un ou deux pixels selon les pages.
-- **Hauteurs** : certaines pages sont un peu plus hautes ou plus basses que la planche (voir `echelles.csv`) ; la
-  différence vient surtout des photos et des textes de démonstration plus longs ou plus courts.
+- **Hauteurs** : à l'ordinateur, les pages tiennent à ±3 % de la planche sauf la boutique (+5 %) et le panier (−7 %) ;
+  au téléphone, les pages de la planche 06 (FAQ, contact, livraison, suivi) restent 8 à 16 % plus hautes (textes de
+  démonstration plus longs, encadrés « [À compléter : …] », pied de page plus haut) : à reprendre si Thomas le demande.
+- **Mentions « [À compléter : …] »** : gardées (composition, frais de livraison, délai de retour) car l'information
+  réelle n'est pas fournie ; elles ajoutent une ou deux lignes que la planche n'a pas.
 - **Corrections d'honnêteté voulues** : panier « Total des produits (hors livraison) » au lieu de « Total » ; écran de
   confirmation « Exemple d'écran : aucune commande n'a été enregistrée » ; étape de paiement sans aucun champ ; légende
   « Le goût fraise » au lieu de « De vraies fraises » ; réseaux sociaux en pictogrammes sans lien « compte à compléter » ;
@@ -123,8 +145,8 @@ est dans `echelles.csv` du rapport.
 
 ## Vérifications
 
-- `npx tsc --noEmit`, `npx vitest run` (toute la suite), `tests/fraise-theme.test.ts` (17 tests : offres, calculs,
+- `npx tsc --noEmit`, `npx vitest run` (toute la suite), `tests/fraise-theme.test.ts` (19 tests : offres, calculs,
   panier, ajouts, honnêteté, commande simulée, journal, téléphone, édition, adaptation à un autre client).
 - `scripts/verify-theme.sh` (Theme Check de Shopify, comme la CI).
-- Captures Chromium 1440 / 390 / 360 / 430 de 17 pages : débordement horizontal 0 partout.
+- Captures Chromium 1440 / 390 / 360 / 430 des 26 pages de l'export : débordement horizontal 0 partout (104 captures).
 - Non vérifié : installation dans une vraie boutique Shopify, paiement réel, rendu dans WordPress / PrestaShop installés.

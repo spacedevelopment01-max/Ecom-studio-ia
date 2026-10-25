@@ -1981,11 +1981,12 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
   /* Ouvertures « titre à gauche, photo en haut à droite » (planche 06) */
   .fg-hero--m-side .fg-c { display: block; position: relative; min-height: calc(var(--hm) * var(--m)); padding: calc(26 * var(--m)) 0 0; }
   .fg-hero--m-side .fg-hero__text { position: relative; z-index: 2; width: calc(230 * var(--m)); padding: 0 0 0 calc(26 * var(--m)); text-align: left; }
-  .fg-hero--m-side .fg-hero__title { font-size: calc(32 * var(--m)); line-height: 1.04; color: var(--fg-crimson); }
+  .fg-hero--m-side .fg-hero__title { font-size: calc(30 * var(--m)); line-height: 1.08; color: var(--fg-crimson); }
   .fg-hero--m-side .fg-hero__title .fg-i { color: var(--fg-red); }
   .fg-hero--m-side .fg-hero__lead--m { margin-top: calc(10 * var(--m)); font-size: calc(13 * var(--m)); color: #3D2F2D; }
-  .fg-hero--m-side .fg-hero__media { position: absolute; left: auto; right: 0; top: 0; width: calc(190 * var(--m)); height: calc(190 * var(--m)); margin: 0; }
-  .fg-hero--m-side .fg-hero__mimg img { -webkit-mask: radial-gradient(90% 90% at 75% 40%, #000 55%, transparent 80%); mask: radial-gradient(90% 90% at 75% 40%, #000 55%, transparent 80%); }
+  .fg-hero--m-side .fg-hero__media { position: absolute; left: auto; right: 0; top: 0; width: calc(230 * var(--m)); height: calc(212 * var(--m)); margin: 0; }
+  .fg-hero--m-side .fg-hero__mimg { -webkit-mask: linear-gradient(90deg, transparent 0, #000 38%), linear-gradient(180deg, #000 78%, transparent 100%); -webkit-mask-composite: source-in; mask: linear-gradient(90deg, transparent 0, #000 38%), linear-gradient(180deg, #000 78%, transparent 100%); mask-composite: intersect; }
+  .fg-hero--m-side .fg-hero__media img { -webkit-mask: none; mask: none; }
   .fg-hero--m-side .fg-hero__deco { display: none; }
 
   /* Questions fréquentes (téléphone) */
