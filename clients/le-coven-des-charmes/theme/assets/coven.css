@@ -6,6 +6,7 @@
  */
 
 /* ---------------------------------------------------------------- socle */
+html, body { background-color: #0a090d; color-scheme: dark; }
 body.cvn-body { background: var(--cvn-bg, #0a090d); color: var(--cvn-text, #ece4d6); margin: 0; overflow-x: clip; }
 .cvn-section--footer { overflow: hidden; }
 body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond", Garamond, Georgia, serif; }
@@ -589,6 +590,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
   .cvn-crumbs { position: absolute; z-index: 3; left: 16px; top: 88px; height: auto; font-size: 11px; gap: 7px; color: #f0e4cc; text-shadow: 0 1px 4px #000; }
   .cvn-crumbs a, .cvn-crumbs > a:first-child { color: #f0e4cc; }
   .cvn-crumbs .cvn-icon { width: 9px; height: 9px; }
+  .cvn-crumbs.cvn-crumbs--d { display: none; }
   .cvn-pgal__stage { height: 365px; border: 0; border-bottom: 1px solid #5c4526; }
   .cvn-pgal__arrow { display: grid; place-items: center; position: absolute; z-index: 3; top: 205px; width: 30px; height: 30px; border-radius: 50%; border: 1px solid #c99a52; background: rgba(8, 7, 10, .55); color: #f0dfbd; cursor: pointer; }
   .cvn-pgal__arrow .cvn-icon { width: 13px; height: 13px; }

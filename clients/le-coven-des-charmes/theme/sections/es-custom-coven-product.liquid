@@ -19,7 +19,7 @@
 <section class="cvn-product" style="--mmt: {{ s.mobile_media_top }}px;" id="CvnProduct-{{ section.id }}" data-cvn-product data-price="{{ current.price }}" data-price-confirmed="{% if s.price_confirmed and current.price > 0 %}true{% else %}false{% endif %}" data-title="{{ product.title | escape }}" data-image="{{ product.featured_image | image_url: width: 400 }}" data-size-prop="{{ s.size_property | escape }}" data-adding="{{ s.adding_label | escape }}" data-added="{{ s.added_label | escape }}" data-see-cart="{{ s.see_cart_label | escape }}" data-cart-url="{{ routes.cart_url }}" data-error="{{ s.error_label | escape }}">
   <div class="cvn-product__inner cvn-scale">
     {%- if s.show_breadcrumb -%}
-      <nav class="cvn-crumbs" aria-label="{{ s.breadcrumb_label }}">
+      <nav class="cvn-crumbs{% unless s.mobile_breadcrumb %} cvn-crumbs--d{% endunless %}" aria-label="{{ s.breadcrumb_label }}">
         <a href="{{ routes.root_url }}">{{ s.home_label }}</a><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-droite"></use></svg>
         {%- if s.collection_label != blank -%}<a href="{{ s.collection_link | default: routes.all_products_collection_url }}" class="cvn-only-d">{{ s.collection_label }}</a><svg class="cvn-icon cvn-only-d" aria-hidden="true"><use href="#coven-chevron-droite"></use></svg>{%- endif -%}
         <span aria-current="page">{{ product.title }}</span>
@@ -139,6 +139,7 @@
   "class": "cvn-section cvn-section--product",
   "settings": [
     { "type": "checkbox", "id": "show_breadcrumb", "label": "Fil d'Ariane", "default": true },
+    { "type": "checkbox", "id": "mobile_breadcrumb", "label": "Fil d'Ariane sur la photo (téléphone)", "default": false },
     { "type": "text", "id": "breadcrumb_label", "label": "Nom du fil d'Ariane", "default": "Fil d'Ariane" },
     { "type": "text", "id": "home_label", "label": "Accueil", "default": "Accueil" },
     { "type": "text", "id": "collection_label", "label": "Rubrique", "default": "Les Bracelets de charms" },

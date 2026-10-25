@@ -27,10 +27,21 @@
 
   /* ------------------------------------------------ ouverture d'une page : en haut (sauf lien vers une ancre) */
   // Certains aperçus intégrés gardent la position de la page précédente : on remonte la page et son cadre.
-  if (!location.hash) {
+  // Remise en haut répétée jusqu'au premier geste du visiteur (un aperçu peut rétablir l'ancienne position après coup).
+  if (!location.hash && !(window.Shopify && window.Shopify.designMode)) {
     try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) { /* sans effet */ }
-    window.scrollTo(0, 0);
-    if (window.top !== window && !(window.Shopify && window.Shopify.designMode)) { try { root.scrollIntoView({ block: "start" }); } catch (e) { /* cadre fermé */ } }
+    var moved = false, framed = window.top !== window;
+    ["wheel", "touchstart", "keydown", "mousedown"].forEach(function (t) { window.addEventListener(t, function () { moved = true; }, { passive: true, once: true }); });
+    var toTop = function (frame) {
+      if (moved) return;
+      if (window.scrollY || root.scrollTop || doc.body.scrollTop) { window.scrollTo(0, 0); root.scrollTop = 0; doc.body.scrollTop = 0; }
+      if (frame && framed) { try { root.scrollIntoView({ block: "start" }); } catch (e) { /* cadre fermé */ } }
+    };
+    toTop(true);
+    doc.addEventListener("DOMContentLoaded", function () { toTop(false); });
+    window.addEventListener("load", function () { toTop(true); });
+    window.addEventListener("pageshow", function () { toTop(false); });
+    [50, 150, 350, 700, 1200, 2000].forEach(function (ms) { setTimeout(function () { toTop(false); }, ms); });
   }
 
   /* ------------------------------------------------ icônes (sprite du projet, inséré une fois) */
