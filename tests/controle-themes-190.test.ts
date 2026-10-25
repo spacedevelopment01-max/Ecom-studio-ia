@@ -2,6 +2,9 @@
  * Mission #190, point 3 — défauts trouvés par le contrôle des liens des démonstrations (scripts/crawl-demos-190.ts) :
  * APLAT, page « Enduits et préparation » : les liens d'étapes (#observer, #reprendre…) visent la carte de l'étape
  * correspondante (identifiant tiré de sa catégorie), sans identifiant en double pour les cartes réservées au téléphone.
+ * MAISON & HORIZON (formulaires) : les cases cachées des choix restent dans leur libellé (PrestaShop élargit les champs :
+ * la page « Créer une alerte » dépassait de 444 px).
+ * ONDE, page « Aide » : les anneaux décoratifs de l'ouverture restent dans l'écran (138 px de trop au téléphone).
  * Panier (page) sur téléphone : trois colonnes au plus, le lien « Supprimer » passe sous la ligne (HEUREN débordait de
  * 9 px, lien coupé ; vérifié à 390 et 360 px sur la démonstration).
  * Export WordPress : le script propre au thème appelé par une section (phase.js, *-core.js des réservations) existe à
@@ -44,6 +47,15 @@ describe("contrôle des liens des thèmes (mission #190)", () => {
       expect(html).toContain(`href="#${id}"`);
       expect(html.match(new RegExp(`id="${id}"`, "g"))?.length, id).toBe(1);
     }
+  });
+
+  it("MAISON & HORIZON : case cachée d'un choix posée dans son libellé", () => {
+    const css = fs.readFileSync("theme-base/assets/horizon.css", "utf8");
+    for (const c of ["re-seg", "re-pill"]) expect(css, c).toContain(`.${c} input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }`);
+  });
+
+  it("ONDE : la page « Aide » coupe ses anneaux décoratifs au bord de l'écran", () => {
+    expect(fs.readFileSync("theme-base/assets/onde.css", "utf8")).toContain('body[data-conversion="onde"] .on-faq--page{overflow-x:clip}');
   });
 
   it("panier sur téléphone : la ligne d'article tient dans l'écran (lien « Supprimer » sous la ligne)", () => {

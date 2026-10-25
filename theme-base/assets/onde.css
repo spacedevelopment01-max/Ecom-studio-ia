@@ -418,6 +418,8 @@ body[data-conversion="onde"] .on-faq__page-title{font-size:var(--on-title);line-
 body[data-conversion="onde"] .on-faq__visual{display:none}
 body[data-conversion="onde"] .on-rings--help{position:absolute;right:-120px;top:-150px;width:520px;aspect-ratio:1;z-index:0}
 body[data-conversion="onde"] .on-rings--help span{border-color:rgba(155,226,58,.45)}
+/* Page « Aide » : les anneaux décoratifs de l'ouverture ne dépassent pas de l'écran (téléphone : 138 px de trop, mission #190). */
+body[data-conversion="onde"] .on-faq--page{overflow-x:clip}
 body[data-conversion="onde"] .on-faq--page .on-search{background:#ECEEED;margin-bottom:18px}
 body[data-conversion="onde"] .on-tabs{display:flex;gap:0;border-bottom:1px solid #D9DCDA;margin-bottom:18px}
 body[data-conversion="onde"] .on-tab{flex:1;border:0;background:none;padding:12px 6px;font:500 14px var(--on-body);color:#4D504E;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px}

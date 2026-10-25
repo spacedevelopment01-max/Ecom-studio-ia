@@ -544,7 +544,7 @@ body[data-editorial="horizon"] .es-footer__wordmark { font-family: var(--font-he
 .re-tilechoice:has(input:focus-visible), .re-pill:has(input:focus-visible) { outline: 2px solid var(--c-accent); outline-offset: 2px; }
 .re-choice__pills { display: flex; flex-wrap: wrap; gap: 10px; }
 .re-pill { position: relative; cursor: pointer; }
-.re-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.re-pill input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
 .re-pill span { display: inline-flex; align-items: center; min-height: 38px; padding: 0 22px; border: 1px solid var(--mh-line); background: #fff; font-size: .84rem; }
 .re-pill input:checked + span { border-color: var(--c-accent); color: var(--c-accent); background: color-mix(in srgb, var(--c-accent) 7%, #fff); }
 .re-btn--block { width: 100%; }
@@ -728,7 +728,8 @@ body[data-editorial="horizon"] .es-footer__wordmark { font-family: var(--font-he
 /* Choix « Achat / Location » de l'alerte. */
 .re-choice__seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--mh-line); }
 .re-seg { position: relative; cursor: pointer; }
-.re-seg input { position: absolute; opacity: 0; pointer-events: none; }
+/* Case cachée posée DANS son libellé (une plateforme qui élargit les champs, ex. PrestaShop, la faisait dépasser de l'écran). */
+.re-seg input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
 .re-seg span { display: grid; place-items: center; min-height: 42px; font-size: .86rem; background: #fff; }
 .re-seg input:checked + span { background: var(--mh-green); color: #fff; }
 .re-seg:has(input:focus-visible) { outline: 2px solid var(--c-accent); outline-offset: 2px; }
