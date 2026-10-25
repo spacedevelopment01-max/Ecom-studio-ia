@@ -191,6 +191,9 @@ npx vitest run
   `ops.ts` (opérations de retouche validées), `preview-tools.ts` (sélection d'un élément dans l'aperçu).
 - `theme-base/` — sections, snippets, `assets/theme.css`, `assets/theme.js` du thème Shopify.
 - `src/lib/engine` — pipeline et moteur local ; `src/lib/ai` — fournisseurs, prompts, tâches IA.
+- `src/lib/products` — onglet « Catalogue » (fiches produits du studio, variantes, stock) et connecteurs WooCommerce,
+  PrestaShop, Shopify (correspondances, stock à trois points, import) ; `src/lib/rendez-vous.ts` — rubrique « Rendez-vous ».
+  Exports et boutiques de test : `docs/EXPORTS-PLATEFORMES-190.md`, `docs/VALIDATION-190.md` (mission #190).
 - Tutoriels vidéo : textes dans `src/lib/tutorials/`, vidéos dans `public/tutorials/`, voix off par
   `scripts/narrate-tutorials.ts` (voix Kokoro, voir l'en-tête du script ; le tutoriel « publicites » a pour fichier
   `campagnes`).
