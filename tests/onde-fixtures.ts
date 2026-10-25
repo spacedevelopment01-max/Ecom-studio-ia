@@ -56,7 +56,8 @@ export const ONDE_MEDIA: Media[] = [
   { file: "c14-experience-entrez-dans-votre-bulle.webp", role: "banner", alt: "Casque ONDE de face sur fond noir, entouré d'anneaux et d'une onde sonore verts." },
   { file: "c15-experience-contact-matiere.webp", role: "detail", alt: "Gros plan des coussinets noirs en tissu et de l'arceau du casque ONDE." },
   { file: "c16-marque-propre-frequence.webp", role: "lifestyle", alt: "Casque ONDE sur fond gris clair, traversé de lignes d'onde vertes." },
-  { file: "c17-journal-moment-ecoute.webp", role: "scene", alt: "Casque ONDE sur une table en bois près d'un carnet et d'une tasse, lampe chaude en arrière-plan." },
+  // c17 (« moment d'écoute ») écarté le 25 octobre : casque déformé (un seul écouteur, arceau replié en bloc), signalé par
+  // Thomas ; remplacé par c13, casque debout aux deux écouteurs.
   { file: "c18-journal-details-ligne.webp", role: "detail", alt: "Gros plan de l'arceau et des écouteurs graphite cerclés de lime." },
   { file: "c19-journal-entretien-coussinets.webp", role: "scene", alt: "Casque ONDE posé sur une table en bois à côté d'un chiffon gris." },
   { file: "c20-journal-casque-quotidien.webp", role: "scene", alt: "Casque ONDE à plat sur une table en marbre noir, dans un salon." },
@@ -123,7 +124,7 @@ export const ONDE_PAGES = {
  * aucune donnée technique ni promesse de durée. */
 type Article = { handle: string; title: string; tag: string; image: string; excerpt: string; intro: string; parts: [string, string][] };
 export const ONDE_ARTICLES: Article[] = [
-  { handle: "creer-son-moment-d-ecoute", title: "Créer son moment d'écoute", tag: "Écoute", image: "c17-journal-moment-ecoute.webp",
+  { handle: "creer-son-moment-d-ecoute", title: "Créer son moment d'écoute", tag: "Écoute", image: "c13-boutique-sous-tous-les-angles.webp",
     excerpt: "Des espaces, des rituels et des idées pour faire plus de place à la musique dans votre quotidien.",
     intro: "Un moment d'écoute ne demande ni grande pièce ni matériel en plus : un endroit, un horaire, et l'envie d'y revenir.",
     parts: [
@@ -337,7 +338,7 @@ function curateOnde(k: Kit) {
       { type: "card", settings: { number: "02", title: "Le goût des lignes simples", text: "Un design intemporel, pensé pour s'intégrer\ndans tous les moments de vie." } },
       { type: "card", settings: { number: "03", title: "Le plaisir du quotidien", text: "Une écoute plus présente,\nplus libre, plus à vous." } },
     ]),
-    banner({ layout: "cta", tone: "white", mobile_image_asset: a("c17-journal-moment-ecoute.webp"), mobile_focus_x: 55, mobile_focus_y: 50, heading: "À votre rythme.", text_beside: true, text: p("Toujours plus d'espace pour ce qui compte :<br>votre musique, votre quotidien, votre rythme."), wave: "none", button_label: "Découvrir le casque", button_link: P.casque, button_style: "lime", button_icon: "arrow", min_height: 110, mobile_min_height: 245, title_size: 44, mobile_title_size: 26, padding_top: 0, padding_bottom: 0 }),
+    banner({ layout: "cta", tone: "white", mobile_image_asset: a("c13-boutique-sous-tous-les-angles.webp"), mobile_focus_x: 30, mobile_focus_y: 50, heading: "À votre rythme.", text_beside: true, text: p("Toujours plus d'espace pour ce qui compte :<br>votre musique, votre quotidien, votre rythme."), wave: "none", button_label: "Découvrir le casque", button_link: P.casque, button_style: "lime", button_icon: "arrow", min_height: 110, mobile_min_height: 245, title_size: 44, mobile_title_size: 26, padding_top: 0, padding_bottom: 0 }),
   ]);
   page("journal", "Journal", "Des idées, des inspirations et des conseils pour profiter pleinement de votre écoute, au quotidien.", [
     S("on-journal", { layout: "page", tone: "light", ...img("c18-journal-details-ligne.webp"), focus_x: 50, focus_y: 40, wave: true, heading: "Sur la même\nfréquence.", heading_tag: "h1", text: p("Des idées, des inspirations et des conseils pour<br>profiter pleinement de votre écoute, au quotidien."), filters: true, all_label: "Tout", featured_label: "Article principal", featured_in_grid: false, empty_text: "Aucun article dans ce thème pour l'instant.", head_height: 410, mobile_head_height: 560, card_height: 255, mobile_card_height: 230, title_size: 56, mobile_title_size: 30, padding_top: 96, padding_bottom: 0 },

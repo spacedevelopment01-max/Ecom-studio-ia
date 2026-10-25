@@ -55,11 +55,13 @@ conversation, jamais publiées dans le dépôt (même règle que MAISON & HORIZO
 
 ## Médias
 
-- Utilisés (kit privé `public/demo/onde/`, lus sur place) : les 20 compléments c01–c20 sauf c13, et deux originaux du kit
+- Utilisés (kit privé `public/demo/onde/`, lus sur place) : les 20 compléments c01–c20 sauf c17, et deux originaux du kit
   (`04-detail-coussinet`, `05-detail-arceau`) pour les gros plans **sombres** que les planches montrent (« Au plus près
   du son », détails de l'accueil, « La bonne information », cercle matière) : aucun complément n'existe sur fond sombre.
-- Non utilisés : c13 (scène sur marbre ; la planche « Sous tous les angles » montre des vues produit, rendues avec c03,
-  c02 et c01) ; originaux 01, 02, 03, 06, 07, 08, 09 (réserve : ancienne direction).
+- Non utilisé : **c17** (« moment d'écoute ») : casque déformé (un seul écouteur, arceau replié en bloc), signalé par
+  Thomas le 25 octobre ; remplacé par c13 (casque debout aux deux écouteurs) dans l'article « Créer son moment
+  d'écoute », sa carte du journal (accueil, page Journal) et le bandeau mobile « À votre rythme » de la marque.
+- Originaux non utilisés : 01, 02, 03, 06, 07, 08, 09 (réserve : ancienne direction).
 - Logo : celui des planches = `logo-proposition.png` (O ouvert et éclair, « AUDIO » espacé), vectorisé en versions claire,
   foncée, « ONDE » seul (grand pied graphite) et en contour (grand mot de l'accueil et de la marque).
 
