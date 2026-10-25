@@ -10,7 +10,7 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ch: {{ s.height }}; --ph-cw: {{ s.copy_width }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ch: {{ s.height }}; --ph-cw: {{ s.copy_width }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.button_width_mobile > 0 %} --ph-bw-m: {{ s.button_width_mobile }};{% endif %}{% if s.button_height_mobile > 0 %} --ph-bh-m: {{ s.button_height_mobile }};{% endif %}">
   <div class="ph-c">
     <div class="ph-cta__box">
       <div class="ph-cta__copy">
@@ -60,6 +60,8 @@
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Demander un devis" },
     { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone (facultatif)" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "button_width_mobile", "label": "Largeur du bouton au téléphone (0 = selon la disposition)", "min": 0, "max": 360, "step": 5, "default": 0 },
+    { "type": "range", "id": "button_height_mobile", "label": "Hauteur du bouton au téléphone (0 = selon la disposition)", "min": 0, "max": 70, "step": 1, "default": 0 },
     { "type": "text", "id": "button_icon", "label": "Pictogramme du bouton (nom, facultatif)" },
     { "type": "select", "id": "circuit", "label": "Trait de circuit", "default": "cta", "options": [
       { "value": "none", "label": "Aucun" },

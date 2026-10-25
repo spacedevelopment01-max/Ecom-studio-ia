@@ -14,14 +14,15 @@
 <section class="ph ph-faq ph-faq--{{ lay }}{% if s.hide_text_mobile %} m-no-text{% endif %} ph-faq--m-{{ s.layout_mobile }} ph-bg--{{ s.background }} ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }}; --ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }};{% if s.box_width > 0 %} --ph-bw: {{ s.box_width }};{% endif %}" data-ph-faq{% if s.open_first %} data-ph-open-first{% endif %}>
   <div class="ph-c">
     {%- capture ph_head -%}
-    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank -%}
+    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.text_mobile != blank -%}
         <div class="ph-head">
           <div class="ph-head__main">
             {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
             {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
             {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
           </div>
-          {%- if s.text != blank -%}<div class="ph-head__text">{{ s.text }}</div>{%- endif -%}
+          {%- if s.text != blank -%}<div class="ph-head__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+          {%- if s.text_mobile != blank -%}<div class="ph-head__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
         </div>
       {%- endif -%}
     {%- endcapture -%}
@@ -85,6 +86,7 @@
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 100, "step": 1, "default": 44 },
     { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 48, "step": 0.5, "default": 24 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
     { "type": "checkbox", "id": "hide_text_mobile", "label": "Masquer le texte au téléphone", "default": false },
     { "type": "checkbox", "id": "numbered", "label": "Questions numérotées", "default": false },
     { "type": "checkbox", "id": "open_first", "label": "Première question ouverte", "default": false },

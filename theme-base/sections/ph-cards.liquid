@@ -51,7 +51,7 @@
             {%- if c.label != blank and lay == 'gallery' or c.label != blank and lay == 'related' or c.label != blank and lay == 'posts' -%}<p class="ph-card__kicker"><span{% if c.label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ c.label }}</span>{%- if c.label_mobile != blank -%}<span class="ph-txt-m">{{ c.label_mobile }}</span>{%- endif -%}</p>{%- endif -%}
             <h3 class="ph-card__title">
               {%- if c.link != blank -%}<a href="{{ c.link }}">{%- endif -%}
-              <span class="ph-txt-d">{{ c.title }}</span>{%- if c.title_mobile != blank -%}<span class="ph-txt-m">{{ c.title_mobile }}</span>{%- endif -%}
+              <span class="ph-txt-d">{{ c.title }}</span>{%- if c.title_mobile != blank -%}<span class="ph-txt-m">{{ c.title_mobile | newline_to_br }}</span>{%- endif -%}
               {%- if c.link != blank -%}</a>{%- endif -%}
             </h3>
             {%- if c.text != blank -%}<p class="ph-card__text"><span class="ph-txt-d">{{ c.text | newline_to_br }}</span>{%- if c.text_mobile != blank -%}<span class="ph-txt-m">{{ c.text_mobile | newline_to_br }}</span>{%- endif -%}</p>{%- endif -%}
@@ -160,7 +160,7 @@
       { "type": "text", "id": "icon_mobile", "label": "Pictogramme au téléphone (facultatif)" },
       { "type": "text", "id": "number", "label": "Numéro" },
       { "type": "text", "id": "title", "label": "Titre" },
-      { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },
+      { "type": "textarea", "id": "title_mobile", "label": "Titre au téléphone (facultatif, un retour à la ligne par ligne)" },
       { "type": "textarea", "id": "text", "label": "Texte" },
       { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
       { "type": "text", "id": "label", "label": "Mention (ou catégorie affichée)" },

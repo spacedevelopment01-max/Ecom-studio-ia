@@ -199,6 +199,17 @@
     let busy = false;
     let files = [];
     const field = (key) => $(`[data-ph-field="${key}"]`, form);
+    // Indicateur « 1 Votre projet → 2 Vos coordonnées » (téléphone) : suit la partie du formulaire en cours de saisie.
+    const progress = $("[data-ph-progress]", form);
+    if (progress) {
+      const steps = $$("li:not(.ph-quote__progress-arrow)", progress);
+      form.addEventListener("focusin", (e) => {
+        const set = e.target.closest("[data-ph-step]");
+        if (!set) return;
+        const n = Number(set.dataset.phStep) - 1;
+        steps.forEach((li, i) => { li.classList.toggle("is-current", i === n); li.classList.toggle("is-done", i < n); if (i === n) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
+      });
+    }
     // Réponses du questionnaire de dépannage (commune, symptômes) reprises dans la demande, jamais envoyées seules.
     if (kind === "quote") {
       const q = new URLSearchParams(location.search);
