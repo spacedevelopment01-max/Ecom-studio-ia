@@ -11,7 +11,7 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-faq ph-faq--{{ lay }}{% if s.hide_text_mobile %} m-no-text{% endif %} ph-faq--m-{{ s.layout_mobile }} ph-bg--{{ s.background }} ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }}; --ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }};{% if s.box_width > 0 %} --ph-bw: {{ s.box_width }};{% endif %}" data-ph-faq>
+<section class="ph ph-faq ph-faq--{{ lay }}{% if s.hide_text_mobile %} m-no-text{% endif %} ph-faq--m-{{ s.layout_mobile }} ph-bg--{{ s.background }} ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }}; --ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }};{% if s.box_width > 0 %} --ph-bw: {{ s.box_width }};{% endif %}" data-ph-faq{% if s.open_first %} data-ph-open-first{% endif %}>
   <div class="ph-c">
     {%- capture ph_head -%}
     {%- if s.eyebrow != blank or s.heading != blank or s.text != blank -%}
@@ -31,7 +31,8 @@
         {%- if lay == 'aside' -%}{{ ph_head }}{%- endif -%}
         {%- for b in section.blocks -%}
           {%- assign q = b.settings -%}
-          <details class="ph-faq__item{% if q.show == 'desktop' %} ph-only-d{% elsif q.show == 'mobile' %} ph-only-m{% endif %}" data-ph-cat="{{ q.category | handleize }}"{% if forloop.first and s.open_first %} open{% endif %} {{ b.shopify_attributes }}>
+          {%- capture ph_cats -%}{%- assign ph_cl = q.category | split: ',' -%}{%- for x in ph_cl -%}{{ x | strip | handleize }} {% endfor -%}{%- endcapture -%}
+          <details class="ph-faq__item{% if q.show == 'desktop' %} ph-only-d{% elsif q.show == 'mobile' %} ph-only-m{% endif %}" data-ph-cat="{{ ph_cats | strip }}"{% if forloop.first and s.open_first %} open{% endif %} {{ b.shopify_attributes }}>
             <summary class="ph-faq__q">
               {%- if s.numbered -%}<span class="ph-faq__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>{%- endif -%}
               <span class="ph-faq__text"><span class="ph-txt-d">{{ q.question }}</span>{%- if q.question_mobile != blank -%}<span class="ph-txt-m">{{ q.question_mobile }}</span>{%- endif -%}</span>
@@ -114,7 +115,7 @@
       { "type": "text", "id": "question", "label": "Question" },
       { "type": "text", "id": "question_mobile", "label": "Question au téléphone (facultatif)" },
       { "type": "richtext", "id": "answer", "label": "Réponse" },
-      { "type": "text", "id": "category", "label": "Catégorie (filtre)" },
+      { "type": "text", "id": "category", "label": "Catégories (filtre, séparées par des virgules)" },
       { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
     ] }
   ],

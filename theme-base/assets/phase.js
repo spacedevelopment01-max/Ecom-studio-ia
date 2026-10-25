@@ -73,6 +73,12 @@
   });
   window.matchMedia("(min-width: 1080px)").addEventListener?.("change", (m) => { if (m.matches) closeMenu(); });
 
+  /* ------------------------------------------------------------------ Questions : la première question visible est ouverte */
+  $$("[data-ph-faq][data-ph-open-first]").forEach((sec) => {
+    const vis = $$("details.ph-faq__item", sec).filter((d) => getComputedStyle(d).display !== "none");
+    if (vis[0] && !vis.some((d) => d.open)) vis[0].open = true;
+  });
+
   /* ------------------------------------------------------------------ Filtres (réalisations, questions, conseils) */
   const lists = {};
   $$("[data-ph-list]").forEach((l) => { (lists[l.dataset.phList] ||= []).push(l); });

@@ -17,10 +17,10 @@
 -%}
 <section class="ph ph-cards ph-cards--{{ lay }} ph-cards--m-{{ s.layout_mobile | default: 'auto' }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.image_height > 0 %} --ph-mh: {{ s.image_height }};{% endif %}">
   <div class="ph-c">
-    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.note != blank -%}
+    {%- if s.eyebrow != blank or s.eyebrow_mobile != blank or s.heading != blank or s.text != blank or s.note != blank -%}
       <div class="ph-head">
         <div class="ph-head__main">
-          {%- if s.eyebrow != blank -%}<p class="ph-eyebrow"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
+          {%- if s.eyebrow != blank or s.eyebrow_mobile != blank -%}<p class="ph-eyebrow{% if s.eyebrow == blank %} ph-only-m{% endif %}"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
           {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
           {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
         </div>
@@ -33,7 +33,8 @@
     <ul class="ph-cards__grid" role="list"{% if lay == 'gallery' %} data-ph-list="projects" data-ph-per="{{ s.per_page }}"{% elsif lay == 'posts' %} data-ph-list="posts" data-ph-per="{{ s.per_page }}" data-ph-per-m="{{ s.per_page_mobile }}" data-ph-pager="pages"{% endif %}>
       {%- for b in section.blocks -%}
         {%- assign c = b.settings -%}
-        <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-o-m="{{ c.order_mobile | default: forloop.index }}" data-ph-cat="{{ c.category | handleize }}" {{ b.shopify_attributes }}>
+        {%- capture ph_cats -%}{%- assign ph_cl = c.category | split: ',' -%}{%- for x in ph_cl -%}{{ x | strip | handleize }} {% endfor -%}{%- endcapture -%}
+        <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-o-m="{{ c.order_mobile | default: forloop.index }}" data-ph-cat="{{ ph_cats | strip }}" {{ b.shopify_attributes }}>
           {%- if c.image != blank or c.image_asset != blank -%}
             <div class="ph-card__media">
               {%- capture ph_cls -%}ph-card__img{% if c.image_mobile_asset != blank or c.image_mobile != blank %} ph-only-d{% endif %}{%- endcapture -%}
@@ -154,7 +155,7 @@
       { "type": "image_picker", "id": "image_mobile", "label": "Autre photo au téléphone (facultatif)" },
       { "type": "text", "id": "image_mobile_asset", "label": "Autre photo au téléphone (fichier du thème)" },
       { "type": "text", "id": "tag", "label": "Étiquette sur la photo" },
-      { "type": "text", "id": "category", "label": "Catégorie (filtre des réalisations)" },
+      { "type": "text", "id": "category", "label": "Catégories (filtre des réalisations, séparées par des virgules)" },
       { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
       { "type": "text", "id": "icon_mobile", "label": "Pictogramme au téléphone (facultatif)" },
       { "type": "text", "id": "number", "label": "Numéro" },

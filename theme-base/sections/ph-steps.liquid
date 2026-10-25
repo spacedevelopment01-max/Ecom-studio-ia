@@ -12,10 +12,10 @@
 -%}
 <section class="ph ph-steps ph-steps--{{ lay }} ph-steps--m-{{ s.layout_mobile }} ph-bg--{{ s.background }}{% if s.arrows %} has-arrows{% endif %}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ section.blocks.size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
   <div class="ph-c">
-    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank -%}
+    {%- if s.eyebrow != blank or s.eyebrow_mobile != blank or s.heading != blank or s.text != blank -%}
       <div class="ph-head">
         <div class="ph-head__main">
-          {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+          {%- if s.eyebrow != blank or s.eyebrow_mobile != blank -%}<p class="ph-eyebrow{% if s.eyebrow == blank %} ph-only-m{% endif %}"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
           {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
           {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
         </div>
@@ -66,6 +66,7 @@
     { "type": "select", "id": "background", "label": "Fond", "default": "navy", "options": [{ "value": "navy", "label": "Bleu nuit" }, { "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
     { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone (facultatif)" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },

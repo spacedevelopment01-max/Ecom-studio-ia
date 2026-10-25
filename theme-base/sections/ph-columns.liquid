@@ -5,7 +5,7 @@
 {%- liquid
   assign s = section.settings
 -%}
-<section class="ph ph-columns ph-pad ph-bg--{{ s.background }}" style="--ph-cols: {{ section.blocks.size | at_least: 1 }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-columns ph-pad ph-bg--{{ s.background }}{% if s.compact_mobile %} m-compact{% endif %}" style="--ph-cols: {{ section.blocks.size | at_least: 1 }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
   <div class="ph-c">
     <div class="ph-columns__grid">
       {%- for b in section.blocks -%}
@@ -15,7 +15,8 @@
           <div class="ph-columns__copy">
             {%- if c.eyebrow != blank -%}<p class="ph-columns__eyebrow">{{ c.eyebrow }}</p>{%- endif -%}
             {% render 'ph-title', text: c.title, tag: 'h2', class: 'ph-columns__title' %}
-            {%- if c.text != blank -%}<div class="ph-columns__text">{{ c.text }}</div>{%- endif -%}
+            {%- if c.text != blank -%}<div class="ph-columns__text{% if c.text_mobile != blank %} ph-txt-d{% endif %}">{{ c.text }}</div>{%- endif -%}
+            {%- if c.text_mobile != blank -%}<div class="ph-columns__text ph-txt-m">{{ c.text_mobile }}</div>{%- endif -%}
           </div>
         </article>
       {%- endfor -%}
@@ -28,6 +29,7 @@
   "name": "Textes en colonnes numérotées",
   "class": "ph-section",
   "settings": [
+    { "type": "checkbox", "id": "compact_mobile", "label": "Au téléphone : sur-titre et texte seulement (sans numéro ni titre)", "default": false },
     { "type": "select", "id": "background", "label": "Fond", "default": "white", "options": [{ "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
@@ -39,7 +41,8 @@
       { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
       { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
       { "type": "textarea", "id": "title", "label": "Titre" },
-      { "type": "richtext", "id": "text", "label": "Texte" }
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" }
     ] }
   ],
   "max_blocks": 3,

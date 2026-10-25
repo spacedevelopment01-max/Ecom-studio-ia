@@ -14,10 +14,10 @@
   assign lay = s.layout
   assign tag = 'h1'
 -%}
-<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}{% if s.chips_below and section.blocks.size > 0 %} chips-below{% endif %}{% unless s.actions_mobile %} m-no-actions{% endunless %}{% unless s.note_mobile %} m-no-note{% endunless %}{% if s.crumb_upper_mobile %} m-crumb-upper{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }}; --ph-nx: {{ s.note_x }}; --ph-ny: {{ s.note_y }}; --ph-cy: {{ s.copy_y }}; --ph-ny-m: {{ s.note_y_mobile }};" data-ph-hero>
+<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}{% if s.chips_below and section.blocks.size > 0 %} chips-below{% endif %}{% unless s.actions_mobile %} m-no-actions{% endunless %}{% unless s.note_mobile %} m-no-note{% endunless %}{% if s.crumb_upper_mobile %} m-crumb-upper{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }}; --ph-nx: {{ s.note_x }}; --ph-ny: {{ s.note_y }}; --ph-cy: {{ s.copy_y }}; --ph-ny-m: {{ s.note_y_mobile }}; --ph-tx-m: {{ s.text_size_mobile }};" data-ph-hero>
   <div class="ph-c">
     {%- if s.crumb_current != blank -%}
-        <nav class="ph-crumb" aria-label="{{ s.crumb_label | escape }}">
+        <nav class="ph-crumb{% if s.crumb_show == 'desktop' %} ph-only-d{% elsif s.crumb_show == 'mobile' %} ph-only-m{% endif %}" aria-label="{{ s.crumb_label | escape }}">
           <ol role="list">
             <li><a href="{{ routes.root_url }}">{{ s.crumb_home }}</a></li>
             {%- if s.crumb_parent != blank -%}<li><a href="{{ s.crumb_parent_link }}">{{ s.crumb_parent }}</a></li>{%- endif -%}
@@ -56,7 +56,7 @@
     {%- endif -%}
 
     <div class="ph-hero__copy">
-      {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-hero__eyebrow{% unless s.eyebrow_mobile %} ph-only-d{% endunless %}">{{ s.eyebrow }}</p>{%- endif -%}
       {%- if s.badge != blank -%}<p class="ph-hero__badge">{{ s.badge }}</p>{%- endif -%}
       {%- if s.done_icon -%}<span class="ph-hero__done" aria-hidden="true">{% render 'ph-icon', name: 'validation', stroke: 2.2 %}</span>{%- endif -%}
       {% render 'ph-title', text: s.heading, tag: tag, class: 'ph-hero__title' %}
@@ -77,7 +77,7 @@
         {%- if s.chips_label != blank -%}<p class="ph-eyebrow ph-hero__chips-label">{{ s.chips_label }}</p>{%- endif -%}
         <div class="ph-chips" role="group" aria-label="{{ s.chips_aria | escape }}" data-ph-chips="{{ s.chips_for }}">
           {%- for b in section.blocks -%}
-            <button type="button" class="ph-chip{% if b.settings.show == 'desktop' %} ph-only-d{% elsif b.settings.show == 'mobile' %} ph-only-m{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-ph-chip="{{ b.settings.value | default: 'all' }}" {{ b.shopify_attributes }}>{{ b.settings.label }}</button>
+            <button type="button" class="ph-chip{% if b.settings.show == 'desktop' %} ph-only-d{% elsif b.settings.show == 'mobile' %} ph-only-m{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-ph-chip="{{ b.settings.value | default: 'all' | handleize }}" {{ b.shopify_attributes }}>{{ b.settings.label }}</button>
           {%- endfor -%}
         </div>
       </div>
@@ -155,6 +155,9 @@
     { "type": "number", "id": "detail_w", "label": "Largeur de la photo dans le détail (repère 1440 px, 0 = cadrage automatique)", "default": 0 },
     { "type": "number", "id": "detail_x", "label": "Position horizontale dans le détail", "default": 0 },
     { "type": "number", "id": "detail_y", "label": "Position verticale dans le détail", "default": 0 },
+    { "type": "select", "id": "crumb_show", "label": "Affichage du fil d'Ariane", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "checkbox", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone", "default": true },
+    { "type": "range", "id": "text_size_mobile", "label": "Taille du texte au téléphone (repère 390 px)", "min": 11, "max": 22, "step": 0.5, "default": 15 },
     { "type": "checkbox", "id": "actions_mobile", "label": "Boutons au téléphone", "default": true },
     { "type": "checkbox", "id": "note_mobile", "label": "Note et trait de circuit au téléphone", "default": true },
     { "type": "checkbox", "id": "crumb_upper_mobile", "label": "Fil d'Ariane en capitales au téléphone", "default": false },

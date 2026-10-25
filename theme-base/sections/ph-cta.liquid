@@ -14,13 +14,13 @@
   <div class="ph-c">
     <div class="ph-cta__box">
       <div class="ph-cta__copy">
-        {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-cta__eyebrow"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
+        {%- if s.eyebrow != blank or s.eyebrow_mobile != blank -%}<p class="ph-eyebrow ph-cta__eyebrow{% if s.eyebrow == blank %} ph-only-m{% endif %}"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
         {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-cta__title' %}
         {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-cta__title ph-cta__title--m' %}{%- endif -%}
         {%- if s.text != blank -%}<div class="ph-cta__text">{{ s.text }}</div>{%- endif -%}
       </div>
       {%- if s.button_label != blank -%}
-        <a class="ph-btn {% if lay == 'soft' %}ph-btn--yellow{% else %}ph-btn--navy{% endif %} ph-cta__btn" href="{{ s.button_link | default: routes.root_url }}"><span class="ph-txt-d">{{ s.button_label }}</span>{%- if s.button_label_mobile != blank -%}<span class="ph-txt-m">{{ s.button_label_mobile }}</span>{%- endif -%}{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>
+        <a class="ph-btn {% if lay == 'soft' %}ph-btn--yellow{% else %}ph-btn--navy{% endif %} ph-cta__btn" href="{{ s.button_link | default: routes.root_url }}">{%- if s.button_icon != blank -%}{% render 'ph-icon', name: s.button_icon, class: 'ph-cta__btn-ico', stroke: 1.8 %}{%- endif -%}<span class="ph-txt-d">{{ s.button_label }}</span>{%- if s.button_label_mobile != blank -%}<span class="ph-txt-m">{{ s.button_label_mobile }}</span>{%- endif -%}{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>
       {%- endif -%}
       {%- if s.circuit != 'none' or s.note != blank -%}
         <div class="ph-cta__deco ph-cta__deco--{{ s.circuit }}" aria-hidden="true">
@@ -60,6 +60,7 @@
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Demander un devis" },
     { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone (facultatif)" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button_icon", "label": "Pictogramme du bouton (nom, facultatif)" },
     { "type": "select", "id": "circuit", "label": "Trait de circuit", "default": "cta", "options": [
       { "value": "none", "label": "Aucun" },
       { "value": "cta", "label": "Deux traits et pastilles" },

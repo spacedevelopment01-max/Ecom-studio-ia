@@ -10,13 +10,16 @@
   <div class="ph-c">
     <div class="ph-project__body">
       <div class="ph-project__media">
-        {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, class: 'ph-project__img', sizes: '(min-width: 1080px) 70vw, 100vw', caption: s.caption %}
+        {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, class: 'ph-project__img', sizes: '(min-width: 1080px) 70vw, 100vw' %}
+        {%- if s.caption != blank -%}<span class="ph-cap ph-project__cap{% if s.caption_mobile != blank %} ph-only-d{% endif %}">{{ s.caption }}</span>{%- endif -%}
+        {%- if s.caption_mobile != blank -%}<span class="ph-cap ph-project__cap ph-only-m">{{ s.caption_mobile }}</span>{%- endif -%}
       </div>
       <aside class="ph-project__facts" aria-label="{{ s.eyebrow | escape }}">
-        {%- if s.eyebrow != blank -%}<p class="ph-project__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.eyebrow != blank -%}<p class="ph-project__eyebrow{% if s.eyebrow_mobile != blank %} ph-only-d{% endif %}">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.eyebrow_mobile != blank -%}<p class="ph-project__eyebrow ph-only-m">{{ s.eyebrow_mobile }}</p>{%- endif -%}
         <dl class="ph-project__list">
           {%- for b in section.blocks -%}
-            <div class="ph-project__fact" {{ b.shopify_attributes }}>
+            <div class="ph-project__fact{% if b.settings.show == 'desktop' %} ph-only-d{% elsif b.settings.show == 'mobile' %} ph-only-m{% endif %}" {{ b.shopify_attributes }}>
               {%- if b.settings.icon != blank -%}<span class="ph-project__icon" aria-hidden="true">{% render 'ph-icon', name: b.settings.icon %}</span>{%- endif -%}
               <dt>{{ b.settings.label }}</dt>
               <dd>{{ b.settings.value }}</dd>
@@ -40,7 +43,9 @@
     { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
     { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)" },
     { "type": "text", "id": "caption", "label": "Légende sur la photo", "default": "Visuel de démonstration" },
+    { "type": "text", "id": "caption_mobile", "label": "Légende au téléphone (facultatif)" },
     { "type": "text", "id": "eyebrow", "label": "Titre des repères", "default": "Projet illustratif" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Titre des repères au téléphone (facultatif)" },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
     { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
@@ -50,7 +55,8 @@
     { "type": "fact", "name": "Repère", "settings": [
       { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "maison" },
       { "type": "text", "id": "label", "label": "Intitulé", "default": "Type" },
-      { "type": "text", "id": "value", "label": "Valeur" }
+      { "type": "text", "id": "value", "label": "Valeur" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
     ] }
   ],
   "max_blocks": 6,
