@@ -9,6 +9,8 @@
  * Exports WordPress et PrestaShop : la feuille de style propre au thème qu'une section appelle (sillon.css, phase.css,
  * table-saison.css, atelier-nuance.css, parenthese.css) est livrée et chargée : sans elle, ces cinq thèmes s'affichaient
  * sans mise en forme une fois installés (constaté sur les boutiques de test, mission #190).
+ * Moteur PHP de l'export WordPress : les réglages « police » sont des objets (famille, graisse) ; PHASE perdait sa police
+ * de texte (variable CSS vide) et son pied de page dépassait l'écran du téléphone.
  */
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -18,6 +20,10 @@ import { renderPage } from "@/lib/theme/render";
 import { runWithLang } from "@/lib/i18n-server";
 import { unzipSync, strFromU8 } from "fflate";
 import { cmsExport } from "@/lib/cms-v2/export";
+import { phpAvailable } from "@/lib/cms-v2/checks";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
 import { libraryLoader } from "@/lib/theme/loader";
 
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
@@ -81,4 +87,21 @@ describe("contrôle des liens des thèmes (mission #190)", () => {
       expect(ps[`assets/es/${sheet}`], `${id} PrestaShop (adresse appelée par la section)`).toBeDefined();
     }
   }, 300_000);
+
+  it.skipIf(!phpAvailable())("export WordPress : la police du thème est rendue par le moteur PHP (PHASE)", async () => {
+    const spec = fr(() => serviceSpec("phase" as never));
+    const files = unzipSync(new Uint8Array((await fr(() => cmsExport("woocommerce", spec, libraryLoader))).zip));
+    const runtime = Object.keys(files).find((p) => p.endsWith("/inc/php/es-liquid.php"))!;
+    const root = runtime.slice(0, -"php/es-liquid.php".length);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "controle-190-"));
+    try {
+      for (const [file, content] of Object.entries(files)) if (file.startsWith(root)) { const dest = path.join(dir, file.slice(root.length)); fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, content); }
+      const site = JSON.parse(strFromU8(files[`${root}site.json`]));
+      expect(site.settings.type_body_font).toMatchObject({ family: expect.stringContaining("Inter"), weight: 400 });
+      const code = 'require $argv[1]; echo es_liquid_render_section($argv[2], "ph-header", ["settings" => []], ["settings" => json_decode(stream_get_contents(STDIN), true)]);';
+      const out = execFileSync("php", ["-r", code, path.join(dir, "php/es-liquid.php"), dir], { input: JSON.stringify(site.settings) }).toString();
+      expect(out).toMatch(/--ph-body: "Inter", "Inter", sans-serif;/);
+      expect(out.slice(0, out.indexOf("body.dir-phase"))).not.toMatch(/inter_n\d|Array/);
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  }, 120_000);
 });

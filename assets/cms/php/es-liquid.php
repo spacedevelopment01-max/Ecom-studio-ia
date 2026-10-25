@@ -134,6 +134,15 @@ class EsFilters {
 	public static function placeholder_svg_tag($input, $class = '') { return '<svg class="' . htmlspecialchars((string)$class, ENT_QUOTES) . '" viewBox="0 0 100 100" aria-hidden="true"></svg>'; }
 	public static function payment_type_svg_tag($input) { return ''; }
 	public static function default_errors($input) { return ''; }
+	/** Polices (réglages « police » exportés en objets) : graisse ou style modifiés ; les @font-face sont dans la feuille du design. */
+	public static function font_modify($input, $prop = '', $value = '') {
+		if (!is_array($input)) return $input;
+		if ($prop === 'weight') $input['weight'] = $value === 'bold' ? 700 : ($value === 'bolder' ? min(900, (int)($input['weight'] ?? 400) + 300) : (int)$value);
+		if ($prop === 'style') $input['style'] = $value === 'italic' ? 'italic' : 'normal';
+		return $input;
+	}
+	public static function font_face($input) { return ''; }
+	public static function font_url($input) { return ''; }
 	/** Comme l'aperçu du studio (JSON.stringify) : caractères accentués et barres obliques tels quels. */
 	public static function json($input) { return json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); }
 	public static function money($input) { return is_numeric($input) ? number_format($input / 100, 2, ',', ' ') . ' €' : (string)$input; }

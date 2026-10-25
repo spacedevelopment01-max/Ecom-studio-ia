@@ -17,7 +17,7 @@ import { themeLang, type SectionInstance, type ThemeSpec } from "../../theme/spe
 import { pick } from "../../i18n";
 import { wooProductsCsv } from "../../theme/catalog-export";
 import { designLayer, exportStylesheet } from "../design";
-import { flatStrings, normalizedSection, phpTemplates, sectionJavascript, sectionSchemaOf, specSectionTypes, themeSettings, type SectionSchema } from "../liquid";
+import { flatStrings, fontSettingsAsObjects, normalizedSection, phpTemplates, sectionJavascript, sectionSchemaOf, specSectionTypes, themeSettings, type SectionSchema } from "../liquid";
 import type { ExportIssue, PlatformExport } from "../types";
 import { exportProductHandle } from "../catalog";
 
@@ -219,7 +219,7 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
     shopName: spec.store.shopName,
     lang,
     business: services ? "services" : "products",
-    settings: themeSettings(files, spec.settings),
+    settings: fontSettingsAsObjects(files, themeSettings(files, spec.settings)),
     body: design.body,
     stylesheets: design.stylesheets,
     menus: spec.store.menus,

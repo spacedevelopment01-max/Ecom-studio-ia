@@ -56,7 +56,8 @@ async function check(page: Page, theme: string, file: string, width: number): Pr
       if (/^(mailto|tel|sms):/.test(raw)) continue;
       if (raw.startsWith("#")) {
         const id = raw.slice(1);
-        const controls = a.hasAttribute("aria-controls") || [...a.attributes].some((x) => x.name.startsWith("data-")) || a.getAttribute("role") === "button";
+        // « #cookies » : rouvre le bandeau des cookies (écouteur global du thème) ; aria-controls / data-* : piloté par le thème.
+        const controls = raw === "#cookies" || a.hasAttribute("aria-controls") || [...a.attributes].some((x) => x.name.startsWith("data-")) || a.getAttribute("role") === "button";
         if (id && !document.getElementById(id) && !controls) anchors.push(raw);
         if (!id && !controls) anchors.push(`${raw} « ${(a.textContent ?? "").trim().slice(0, 40)} »`);
         continue;
