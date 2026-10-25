@@ -10,7 +10,7 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-steps ph-steps--{{ lay }} ph-steps--m-{{ s.layout_mobile }} ph-bg--{{ s.background }}{% if s.arrows %} has-arrows{% endif %}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-cols: {{ section.blocks.size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-steps ph-steps--{{ lay }} ph-steps--m-{{ s.layout_mobile }} ph-bg--{{ s.background }}{% if s.arrows %} has-arrows{% endif %}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ section.blocks.size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
   <div class="ph-c">
     {%- if s.eyebrow != blank or s.heading != blank or s.text != blank -%}
       <div class="ph-head">
@@ -49,6 +49,8 @@
     { "type": "select", "id": "layout", "label": "Disposition (ordinateur)", "default": "navy", "options": [
       { "value": "navy", "label": "Bandeau bleu nuit, colonnes et filets" },
       { "value": "boxes", "label": "Cadres côte à côte" },
+      { "value": "cards", "label": "Cartes blanches fléchées" },
+      { "value": "features", "label": "Bandeau bleu nuit à pictogrammes" },
       { "value": "band", "label": "Bandeau bleu nuit à étapes fléchées" },
       { "value": "list", "label": "Frise verticale" }
     ] },
@@ -64,6 +66,8 @@
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
@@ -73,9 +77,7 @@
   "blocks": [
     { "type": "step", "name": "Étape", "settings": [
       { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
-      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "", "options": [
-        { "value": "", "label": "Aucun" }, { "value": "projet-echange", "label": "Échange" }, { "value": "devis-document", "label": "Document" }, { "value": "pilotage", "label": "Roue dentée" }, { "value": "maison", "label": "Maison" }, { "value": "precision-cible", "label": "Cible" }, { "value": "oeil-observer", "label": "Œil" }, { "value": "plan-perimetre", "label": "Plan" }, { "value": "calendrier", "label": "Calendrier" }, { "value": "validation", "label": "Validation" }, { "value": "diagnostic", "label": "Diagnostic" }, { "value": "recherche", "label": "Loupe" }, { "value": "outil-renovation", "label": "Outil" }, { "value": "courant-circuits", "label": "Circuits" }
-      ] },
+      { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
       { "type": "text", "id": "title", "label": "Titre" },
       { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },
       { "type": "textarea", "id": "text", "label": "Texte" },

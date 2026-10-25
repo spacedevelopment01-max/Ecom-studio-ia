@@ -15,7 +15,7 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-cards ph-cards--{{ lay }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-cards ph-cards--{{ lay }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.image_height > 0 %} --ph-mh: {{ s.image_height }};{% endif %}">
   <div class="ph-c">
     {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.note != blank -%}
       <div class="ph-head">
@@ -80,8 +80,11 @@
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
     { "type": "text", "id": "note", "label": "Note à droite du titre" },
+    { "type": "number", "id": "image_height", "label": "Hauteur des photos (repère 1440 px, 0 = selon la disposition)", "default": 0 },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 80 },
     { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 32 },
@@ -97,9 +100,7 @@
       { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
       { "type": "range", "id": "zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
       { "type": "text", "id": "tag", "label": "Étiquette sur la photo" },
-      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "", "options": [
-        { "value": "", "label": "Aucun" }, { "value": "installation", "label": "Installation" }, { "value": "outil-renovation", "label": "Outil (rénovation)" }, { "value": "tableau-electrique", "label": "Tableau électrique" }, { "value": "ampoule", "label": "Ampoule" }, { "value": "depannage-eclair", "label": "Éclair (dépannage)" }, { "value": "prise", "label": "Prise" }, { "value": "interrupteur", "label": "Interrupteur" }, { "value": "pilotage", "label": "Pilotage" }, { "value": "eclairage-exterieur", "label": "Éclairage extérieur" }, { "value": "spot-plafond", "label": "Spot au plafond" }, { "value": "projet-echange", "label": "Échange" }, { "value": "oeil-observer", "label": "Œil" }, { "value": "plan-perimetre", "label": "Plan" }, { "value": "devis-document", "label": "Document" }, { "value": "calendrier", "label": "Calendrier" }, { "value": "validation", "label": "Validation" }, { "value": "bouclier", "label": "Bouclier" }, { "value": "precision-cible", "label": "Cible" }, { "value": "clarte-soleil", "label": "Soleil" }, { "value": "lieu-repere", "label": "Repère de lieu" }, { "value": "maison", "label": "Maison" }, { "value": "diagnostic", "label": "Diagnostic" }, { "value": "courant-circuits", "label": "Circuits" }, { "value": "information", "label": "Information" }
-      ] },
+      { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
       { "type": "text", "id": "number", "label": "Numéro" },
       { "type": "text", "id": "title", "label": "Titre" },
       { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },

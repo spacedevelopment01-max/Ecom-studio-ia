@@ -14,7 +14,7 @@
   assign lay = s.layout
   assign tag = 'h1'
 -%}
-<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}" style="--ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }};" data-ph-hero>
+<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }}; --ph-nx: {{ s.note_x }}; --ph-ny: {{ s.note_y }};" data-ph-hero>
   <div class="ph-c">
     {%- if s.crumb_current != blank -%}
         <nav class="ph-crumb" aria-label="{{ s.crumb_label | escape }}">
@@ -114,6 +114,8 @@
     { "type": "checkbox", "id": "done_icon", "label": "Pastille de validation", "default": false },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 90 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 38 },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "richtext", "id": "text2", "label": "Second texte" },
     { "type": "text", "id": "button_label", "label": "Bouton jaune" },
@@ -149,11 +151,16 @@
     { "type": "select", "id": "circuit", "label": "Trait de circuit", "default": "none", "options": [
       { "value": "none", "label": "Aucun" },
       { "value": "home", "label": "Accueil (bas à gauche)" },
+      { "value": "p02", "label": "Prestations (vers le texte)" },
+      { "value": "p03", "label": "Prestation (coin haut droit, court)" },
+      { "value": "p04", "label": "Prestation (coin haut droit, plus bas)" },
       { "value": "corner", "label": "Coin haut droit" },
       { "value": "long", "label": "Long trait vers le titre" },
       { "value": "short", "label": "Court trait" }
     ] },
     { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
+    { "type": "number", "id": "note_x", "label": "Position horizontale de la note (repère 1440 px)", "default": 1218 },
+    { "type": "number", "id": "note_y", "label": "Position verticale de la note (repère 1440 px)", "default": 84 },
     { "type": "header", "content": "Pastilles de filtre" },
     { "type": "text", "id": "chips_label", "label": "Titre des pastilles (téléphone)" },
     { "type": "text", "id": "chips_aria", "label": "Nom du groupe de pastilles", "default": "Filtrer" },

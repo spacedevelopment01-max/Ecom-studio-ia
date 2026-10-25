@@ -9,7 +9,7 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
   <div class="ph-c">
     <div class="ph-cta__box">
       <div class="ph-cta__copy">
@@ -50,6 +50,8 @@
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 62 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 30 },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Demander un devis" },
     { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone (facultatif)" },

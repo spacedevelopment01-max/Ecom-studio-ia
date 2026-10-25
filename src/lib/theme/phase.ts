@@ -21,12 +21,13 @@ import { pick } from "../i18n";
 
 /** Disposition du pied de page au téléphone, propre à chaque planche (06 à 10). */
 export type PhFootMobile = "cols" | "grid" | "pair" | "split" | "stack";
-export type PhPageLook = { footer_mobile: PhFootMobile; footer_line?: boolean };
-export const LOOK_06: PhPageLook = { footer_mobile: "cols" };
-export const LOOK_07: PhPageLook = { footer_mobile: "grid" };
-export const LOOK_08: PhPageLook = { footer_mobile: "pair" };
-export const LOOK_09: PhPageLook = { footer_mobile: "split" };
-export const LOOK_10: PhPageLook = { footer_mobile: "stack" };
+export type PhPageLook = { footer_mobile: PhFootMobile; scale?: number };
+/** Planches téléphone 06 à 10 ; l'échelle ordinateur suit la planche ordinateur de la page (01 et 03 : 100 %, 02 et 04 : 82 %, 05 : 94 %). */
+export const LOOK_06: PhPageLook = { footer_mobile: "cols", scale: 100 };
+export const LOOK_07: PhPageLook = { footer_mobile: "grid", scale: 82 };
+export const LOOK_08: PhPageLook = { footer_mobile: "pair", scale: 100 };
+export const LOOK_09: PhPageLook = { footer_mobile: "split", scale: 82 };
+export const LOOK_10: PhPageLook = { footer_mobile: "stack", scale: 94 };
 
 /** Pages propres au thème (adresse française et anglaise, titre, gabarit, dessin de la planche téléphone). */
 export const PH_PAGES = [
@@ -138,7 +139,8 @@ function clientPages(ctx: FinishCtx): { pages: StorePage[]; templates: Record<st
   const t = (fr: string, en: string) => pick(lang, fr, en);
   const todo = t("À renseigner", "To be completed");
   const page = (h: PhPageHandle, draft: boolean): StorePage => { const p = PH_PAGES.find((x) => x.handle === h)!; return { handle: phHandle(h, lang), title: t(p.fr, p.en), template_suffix: p.suffix, body_html: "", ...(draft ? { status: "draft" as const } : {}) }; };
-  const look = (h: PhPageHandle) => pageRow(PH_PAGES.find((x) => x.handle === h)!.look);
+  // Chez un client : même échelle sur toutes les pages (100 %), seule la disposition du pied au téléphone suit la planche.
+  const look = (h: PhPageHandle) => pageRow({ ...PH_PAGES.find((x) => x.handle === h)!.look, scale: 100 });
   const photo = k.im.lifestyle ?? k.im.hero ?? "";
   const templates: Record<string, TemplateJson> = {
     "page.ph-contact": phTemplate([
