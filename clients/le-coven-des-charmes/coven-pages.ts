@@ -184,9 +184,9 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   "page.coven-tirage": [
     ["hero", "es-custom-coven-hero", {
       layout: "left", mobile_layout: "top", mobile_align: "left", height: 558, mobile_media_top: 68, mobile_height: 350, image_asset: ctx.img("coven-mq-tirage-scene.jpg"), mobile_image_asset: ctx.img("coven-mq-m-tirage-scene.jpg"), image_alt: "Coupelle de symboles et scoop", shade: 0,
-      title: "Comment les charms\nsont-ils tirés au sort ?", text_size: 31, mobile_title: "Le tirage des\ncharms au scoop.", title_size: 70, mobile_title_size: 33, text_x: 88, text_y: 92, text_width: 760,
+      title: "Comment les charms\nsont-ils tirés au sort ?", text_size: 31, mobile_title: "Le tirage des\ncharms au scoop.", title_size: 70, mobile_title_size: 33, text_x: 88, text_y: 102, text_width: 760,
       text: p("Vous commandez un bracelet.<br>Après votre achat, nous réalisons<br>un tirage au scoop, puis assemblons<br>les charms désignés sur votre bracelet."),
-      mobile_text: p("Des charms tirés au sort,<br>puis assemblés sur votre bracelet."), mobile_text_y: 0,
+      mobile_text: p("Des charms tirés au sort,<br>puis assemblés sur votre bracelet."), mobile_text_y: 28,
     }],
     ["intro", "es-custom-coven-band", { layout: "note", hide_desktop: true, mobile_layout: "stack", text: p("Les charms sont tirés au sort au scoop après votre commande, puis assemblés sur votre bracelet. Chaque bracelet est une création unique réalisée avec soin dans notre atelier.") }],
     ["steps", "es-custom-coven-steps", { layout: "cards", mobile_layout: "icons", framed: false, heading: "Les 4 étapes du tirage au scoop", heading_style: "caps", hide_heading_mobile: true, footnote: "Vous recevez le bracelet assemblé\navec les charms désignés par le tirage.", padding_top: 8, padding_bottom: 0 }, [
@@ -213,7 +213,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   ],
   "page.coven-coven": [
     ["hero", "es-custom-coven-hero", {
-      layout: "left", mobile_layout: "center", height: 1188, mobile_media_top: 69, mobile_height: 632, image_asset: ctx.v("coven-photo-cabinet.jpg", "coven-scene"), mobile_image_asset: ctx.v("coven-photo-cabinet.jpg", "m-coven-scene"), image_alt: "Le cabinet de curiosités du Coven",
+      layout: "left", mobile_layout: "center", mobile_text_y: 28, height: 1188, mobile_media_top: 69, mobile_height: 632, image_asset: ctx.v("coven-photo-cabinet.jpg", "coven-scene"), mobile_image_asset: ctx.v("coven-photo-cabinet.jpg", "m-coven-scene"), image_alt: "Le cabinet de curiosités du Coven",
       ...(client ? { focus_x: 70, focus_y: 60, shade: 30, brightness: 60, warmth: 35, mobile_focus_x: 30, medallion: true } : { shade: 0 }),
       title: "Entrez dans notre\ncabinet de curiosités.", text_size: 25, mobile_title: "Le Coven", title_size: 74, mobile_title_size: 40, text_x: 45, text_y: 150, text_width: 680,
       text: p("Le Coven des Charmes est un univers inspiré de symboles,<br>de pierres, de curiosités et de rituels. Chaque symbole<br>tiré au scoop correspond à un charm de notre cabinet,<br>que nous assemblons ensuite sur votre bracelet."),
@@ -233,7 +233,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
       { type: "photo", settings: { ...(client ? { image_asset: ctx.img("coven-photo-bracelet.jpg"), focus_y: 55, zoom: 160 } : { image_asset: ctx.img("coven-mq-coven-photo-4.jpg") }), title: "Des finitions soignées", image_alt: "Maillons d'un bracelet", desktop_order: 4 } },
       { type: "photo", settings: { ...(client ? { image_asset: ctx.img("coven-photo-cabinet.jpg"), focus_x: 12, focus_y: 30, zoom: 260 } : { image_asset: ctx.img("coven-mq-m-coven-photo-6.jpg") }), title: "Un univers authentique", image_alt: "Plume posée sur le cabinet", desktop_hidden: true, desktop_order: 6 } },
     ]],
-    ["features", "es-custom-coven-band", { layout: "features", hide_mobile: true, height: 300 }, [
+    ["features", "es-custom-coven-band", { layout: "features", hide_mobile: true, height: 348 }, [
       { type: "feature", settings: { icon: "mysteres-lune", title: "Des symboles\ninspirants.", text: "Un univers poétique\net mystérieux." } },
       { type: "feature", settings: { icon: "cabinet-tiroirs", title: "Un cabinet\nde curiosités.", text: "Des symboles, des pierres\net des objets thématiques." } },
       { type: "feature", settings: { icon: "cristal", title: "Des bracelets\nuniques.", text: "Des charms tirés au sort au scoop\net assemblés avec soin." } },
@@ -242,8 +242,8 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   ],
   "page.coven-creations": [
     ["hero", "es-custom-coven-hero", {
-      layout: "center", mobile_layout: "top", height: 760, extend_height: 1515, mobile_media_top: 68, mobile_height: 282, image_asset: ctx.v("coven-photo-bracelet.jpg", "creations-scene"), mobile_image_asset: ctx.img("coven-mq-m-creations-scene.jpg"), image_alt: "Exemple de bracelet de charms",
-      ...(client ? { focus_y: 55, shade: 35 } : { shade: 0 }), title: "Des bracelets nés du tirage des charms.", text_size: 27, mobile_title: "Des exemples\nde bracelets réalisés.", title_size: 66, mobile_title_size: 32, text_y: 68, text_width: 1100,
+      layout: "center", mobile_layout: "top", mobile_text_y: 28, height: 760, extend_height: 1515, mobile_media_top: 68, mobile_height: 282, image_asset: ctx.v("coven-photo-bracelet.jpg", "creations-scene"), mobile_image_asset: ctx.img("coven-mq-m-creations-scene.jpg"), image_alt: "Exemple de bracelet de charms",
+      ...(client ? { focus_y: 55, shade: 35 } : { shade: 0 }), title: "Des bracelets nés du tirage des charms.", text_size: 27, mobile_title: "Des exemples\nde bracelets réalisés.", title_size: 66, mobile_title_size: 32, text_y: 116, text_width: 1100,
       text: p("Les charms de votre bracelet seront déterminés<br>par le tirage au scoop réalisé après votre commande."),
       mobile_text: p("Chaque bracelet est assemblé à partir de charms tirés au sort au scoop après votre commande. Voici quelques exemples de créations pour vous plonger dans l'univers du Coven."),
       caption: "Exemple de bracelet\n— les charms dépendent du tirage.",
@@ -259,8 +259,8 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   ],
   "page.coven-faq": [
     ["hero", "es-custom-coven-hero", {
-      layout: "center", mobile_layout: "top", height: 415, mobile_media_top: 68, mobile_height: 305, image_asset: ctx.img("coven-mq-faq-scene.jpg"), mobile_image_asset: ctx.img("coven-mq-m-faq-scene.jpg"), image_alt: "", shade: 0,
-      title: "Tout savoir sur les bracelets de charms surprise.", text_size: 23, mobile_title: "Vos questions sur\nles bracelets de charms surprise.", title_size: 50, mobile_title_size: 25, text_y: 66, text_width: 1100, show_rule: true,
+      layout: "center", mobile_layout: "top", mobile_text_y: 28, height: 415, mobile_media_top: 68, mobile_height: 305, image_asset: ctx.img("coven-mq-faq-scene.jpg"), mobile_image_asset: ctx.img("coven-mq-m-faq-scene.jpg"), image_alt: "", shade: 0,
+      title: "Tout savoir sur les bracelets de charms surprise.", text_size: 23, mobile_title: "Vos questions sur\nles bracelets de charms surprise.", title_size: 50, mobile_title_size: 25, text_y: 146, text_width: 1100, show_rule: true,
       text: p("Retrouvez ici les réponses aux questions les plus fréquentes<br>sur le fonctionnement et la commande."), mobile_text: p("Retrouvez ici les réponses aux questions<br>les plus fréquentes."),
     }],
     ["faq", "es-custom-coven-faq", { more_link: URL.contact, more_image_asset: ctx.img("coven-mq-faq-livres.jpg") }, [
@@ -350,8 +350,8 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   ],
   "404": [
     ["hero", "es-custom-coven-hero", {
-      layout: "band", mobile_layout: "center", height: 420, mobile_height: 460, image_asset: ctx.img("coven-mq-404-scene.jpg"), image_alt: "", shade: 0, show_rule: true,
-      title: "Vous vous êtes égaré\ndans le Coven.", text_size: 22, title_size: 54, mobile_title_size: 30, text_y: 60, text_width: 900,
+      layout: "band", mobile_layout: "center", mobile_text_y: 28, height: 420, mobile_height: 460, image_asset: ctx.img("coven-mq-404-scene.jpg"), image_alt: "", shade: 0, show_rule: true,
+      title: "Vous vous êtes égaré\ndans le Coven.", text_size: 22, title_size: 54, mobile_title_size: 30, text_y: 114, text_width: 900,
       text: p("Cette page n'existe pas, mais la magie continue."), button_label: "Retour à l'accueil", button_link: URL.home,
     }],
   ],

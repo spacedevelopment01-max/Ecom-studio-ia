@@ -33,6 +33,17 @@
       endif
     endif
   endfor
+  assign mbar = s.mobile_bar
+  assign bar_lines = s.mobile_bar_heights | newline_to_br | split: '<br />'
+  for l in bar_lines
+    assign pair = l | strip | split: ':'
+    assign key = pair[0] | strip
+    if key != '' and pair[1] != blank
+      if here == key or template.name == key
+        assign mbar = pair[1] | strip | plus: 0
+      endif
+    endif
+  endfor
   assign left_menu = s.menu_left
   if compact and s.menu_left_compact != blank
     assign left_menu = s.menu_left_compact
@@ -54,7 +65,7 @@
   }
 {% endstyle %}
 <div class="cvn-site-flag" hidden data-cvn-mode="{% if s.commerce_mode == 'shopify' and request.host != 'apercu' %}shopify{% else %}simulation{% endif %}" data-cvn-icons="{{ s.icons_asset | default: 'coven-icones.svg' | asset_url }}"></div>
-<header class="cvn-header{% if s.mobile_overlay %} cvn-header--m-overlay{% endif %}{% if compact %} cvn-header--compact{% endif %}" data-cvn-header style="--cvn-mlogo: {{ mlogo }}px;">
+<header class="cvn-header{% if s.mobile_overlay %} cvn-header--m-overlay{% endif %}{% if compact %} cvn-header--compact{% endif %}" data-cvn-header style="--cvn-mlogo: {{ mlogo }}px; --cvn-mbar: {{ mbar }}px;">
   <div class="cvn-header__bar cvn-scale">
     <button class="cvn-header__burger" type="button" aria-expanded="false" aria-controls="CvMenu" data-cvn-menu-open>
       <svg class="cvn-icon" aria-hidden="true"><use href="#coven-menu"></use></svg><span class="cvn-sr">{{ s.menu_label }}</span>
@@ -130,7 +141,9 @@
     { "type": "link_list", "id": "menu_right", "label": "Liens à droite du logo", "default": "coven-droite" },
     { "type": "link_list", "id": "menu_mobile", "label": "Menu sur téléphone", "default": "coven-mobile" },
     { "type": "range", "id": "mobile_logo", "label": "Taille du logo sur téléphone", "min": 60, "max": 200, "step": 2, "unit": "px", "default": 84 },
-    { "type": "textarea", "id": "mobile_logo_sizes", "label": "Taille du logo sur téléphone selon la page (page:taille)", "default": "le-tirage:122\nle-coven:122\ncreations:122\nfaq:122\ncart:150\ncommande:150\nconfirmation:150\ncompte:150\ncontact:150\ninformations:150" },
+    { "type": "textarea", "id": "mobile_logo_sizes", "label": "Taille du logo sur téléphone selon la page (page:taille)", "default": "index:78\nproduct:84\nle-tirage:132\nle-coven:132\ncreations:132\nfaq:132\ncart:166\ncommande:166\nconfirmation:166\ncompte:166\ncontact:166\ninformations:166\n404:132" },
+    { "type": "range", "id": "mobile_bar", "label": "Hauteur de la barre sur téléphone", "min": 30, "max": 100, "step": 1, "unit": "px", "default": 46 },
+    { "type": "textarea", "id": "mobile_bar_heights", "label": "Hauteur de la barre sur téléphone selon la page (page:hauteur)", "default": "index:34\nproduct:40\nle-tirage:67\nle-coven:68\ncreations:67\nfaq:67\ncart:79\ncommande:78\nconfirmation:79\ncompte:78\ncontact:79\ninformations:79\n404:67" },
     { "type": "checkbox", "id": "show_account", "label": "Afficher le lien Compte", "default": true },
     { "type": "url", "id": "account_link", "label": "Lien du compte (facultatif)" },
     { "type": "text", "id": "cta_label", "label": "Bouton", "default": "Commander" },
