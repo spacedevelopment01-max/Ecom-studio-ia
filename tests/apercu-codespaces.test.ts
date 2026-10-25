@@ -19,21 +19,21 @@ describe("aperçu de boutique et hébergement", () => {
     expect(previewCsp("allow-scripts")).toBe("sandbox allow-scripts; frame-ancestors 'self'");
   });
 
-  it("Codespaces : l'aperçu garde son origine (sinon CSS et images refusés par le proxy de GitHub)", () => {
+  it("Codespaces : origine opaque, ressources embarquées et pont de transport séparé", () => {
     process.env.CODESPACES = "true";
     delete process.env.PREVIEW_ISOLATION;
-    expect(previewIsolated()).toBe(false);
-    expect(previewSandbox()).toContain("allow-same-origin");
-    expect(previewCsp()).toMatch(/^sandbox allow-scripts .*allow-same-origin; frame-ancestors 'self'$/);
-    expect(previewCsp("allow-scripts")).toBe("sandbox allow-scripts allow-same-origin; frame-ancestors 'self'");
+    expect(previewIsolated()).toBe(true);
+    expect(previewSandbox()).not.toContain("allow-same-origin");
+    expect(previewCsp()).not.toContain("allow-same-origin");
+    expect(previewCsp("allow-scripts")).toBe("sandbox allow-scripts; frame-ancestors 'self'");
   });
 
-  it("réglage explicite PREVIEW_ISOLATION prioritaire", () => {
+  it("un ancien réglage off ne peut plus retirer le cloisonnement", () => {
     process.env.CODESPACES = "true";
     process.env.PREVIEW_ISOLATION = "on";
     expect(previewIsolated()).toBe(true);
     delete process.env.CODESPACES;
     process.env.PREVIEW_ISOLATION = "off";
-    expect(previewIsolated()).toBe(false);
+    expect(previewIsolated()).toBe(true);
   });
 });

@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Routage multimédia PAR USAGE (logos, images produit, retouches produit, publicités visuelles, décors et ambiances,
  * vidéos produit, vidéos UGC) — fournisseurs SIMULÉS, aucun appel payant :
@@ -76,10 +77,11 @@ async function fakeFetch(url: string, init?: RequestInit): Promise<Response> {
   const json = (j: unknown, status = 200) => new Response(JSON.stringify(j), { status });
   if (url.includes(":generateContent")) return json({ candidates: [{ content: { parts: [{ inlineData: { data: net.image } }] } }] });
   if (url.includes(":predictLongRunning")) return json({ name: "operations/op1" });
-  if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://video.test/clip.mp4" } }] } } });
+  if (url.includes("/operations/op1")) return json({ done: true, response: { generateVideoResponse: { generatedSamples: [{ video: { uri: "https://generativelanguage.googleapis.com/v1beta/files/fixture-video:download" } }] } } });
   if (url.startsWith("https://queue.fal.run/") && init?.method === "POST") return json({ status_url: "https://queue.fal.run/x/requests/1/status", response_url: "https://queue.fal.run/x/requests/1" });
   if (url.endsWith("/status")) return json({ status: "COMPLETED" });
   if (url === "https://queue.fal.run/x/requests/1") return json({ video: { url: "https://video.test/fal.mp4" }, images: [{ url: "https://img.test/fal.png" }] });
+  if (url.includes("/files/fixture-video:download")) return new Response(mp4);
   if (url.startsWith("https://video.test/")) return new Response(mp4);
   if (url.startsWith("https://img.test/")) return new Response(Buffer.from(PNG, "base64"));
   return json({}, 404);

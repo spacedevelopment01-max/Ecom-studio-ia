@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Image d'ambiance ratée : refaite une fois avec les défauts relevés dans la consigne ; le raté n'est pas livré.
  * Consignes sans mains ni personnes (premier défaut des IA d'images).

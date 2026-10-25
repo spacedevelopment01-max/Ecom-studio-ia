@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 <checkout-isole>
+
+
+ Test Files  363 passed (363)
+      Tests  2993 passed | 22 skipped (3015)
+   Start at  16:45:50
+   Duration  870.06s (tests 77%, import 22%, transform 1%)
+
+    Isolate  363 workers spawned · ~171ms startup each (spawn + environment, per file)
+             at least ~15.31s faster with isolate: false — reuses workers across files instead of one per file

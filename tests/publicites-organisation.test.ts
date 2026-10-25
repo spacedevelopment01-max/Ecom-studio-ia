@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 /**
  * Onglet Publicités organisé comme Publications (sous-menu à gauche : Piloter / Créer / Gérer) et séparation stricte
  * des visuels PUBLICITAIRES (créations « ad », publicités vidéo, UGC) et des visuels ORGANIQUES : une publication
@@ -35,7 +36,7 @@ describe("Publicités séparées de l'organique", async () => {
     grantProjectPlan(pid, "vendre");
     const p = loadProject(pid);
     const tiny = await sharp({ create: { width: 64, height: 64, channels: 3, background: "#222" } }).png().toBuffer();
-    await saveAsset({ projectId: pid, userId: u.id, data: tiny, name: "pub.mp4", mime: "video/mp4", kind: "video", role: "video", folderKey: "videos.ads", origin: "generated", status: "approved", meta: { videoV2: { intent: "video_ad" } } });
+    await saveAsset({ projectId: pid, userId: u.id, data: videoByteFixture(), name: "pub.mp4", mime: "video/mp4", kind: "video", role: "video", folderKey: "videos.ads", origin: "generated", status: "approved", meta: { videoV2: { intent: "video_ad" } } });
     const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
     const one = fr(() => createOnePost(p, { kind: "video", date: tomorrow, time: "18:30", timezone: "Europe/Paris", platforms: [{ platform: "tiktok" }], lang: "fr" }));
     const est = estimateProduction(p, one.ids, { estimate: () => 0, aiActive: false }, { allowPaid: false });

@@ -1,3 +1,5 @@
+import {assertSafeThemeContent} from "./content-security";
+import {assertImportedExportAccess} from "./import-export-access";
 /**
  * Kits de reprise pour les plateformes qui n'acceptent pas de thème importé (Wix, Squarespace) : médias, charte,
  * textes, CSV produit, guide. Les thèmes WooCommerce et PrestaShop sont produits par le CMS Engine V2
@@ -99,6 +101,8 @@ async function collectMedia(spec: ThemeSpec, load: AssetLoader) {
 // ---------------------------------------------------------------- Wix / Squarespace (kits)
 
 export async function exportKit(spec: ThemeSpec, load: AssetLoader, platform: "wix" | "squarespace") {
+  assertSafeThemeContent(spec);
+  assertImportedExportAccess(spec);
   const sc = schemes(spec);
   const hf = fontFamily(spec.settings.type_heading_font), bf = fontFamily(spec.settings.type_body_font);
   const media = await collectMedia(spec, load);

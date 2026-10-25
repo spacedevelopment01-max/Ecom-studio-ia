@@ -24,6 +24,7 @@ import {
   type ThemeSpec,
 } from "./spec";
 import { L, uiLang } from "../i18n-server";
+import { unsafeContentReason } from "./content-security";
 
 const Position = z.object({ after: z.string().optional(), before: z.string().optional(), index: z.number().int().optional() }).optional();
 const Value = z.union([z.string(), z.number(), z.boolean(), z.null()]);
@@ -157,6 +158,8 @@ export function validateCustomSection(liquid: string): string | null {
   if (typeof schema === "string") return schema;
   if (!schema.name || schema.name.length > 25) return L("le nom du schéma doit faire 25 caractères au plus", "the schema name must be 25 characters or fewer");
   if (hasExternalScript(liquid)) return L("les scripts externes ne sont pas autorisés dans les sections générées", "external scripts aren't allowed in generated sections");
+  const active=unsafeContentReason(liquid,true);
+  if(active)return active;
   // Plages littérales démesurées ((1..100000), boucles imbriquées) : refusées avant même l'aperçu.
   for (const m of liquid.matchAll(/\(\s*(-?\d+)\s*\.\.\s*(-?\d+)\s*\)/g)) {
     if (Math.abs(Number(m[2]) - Number(m[1])) > MAX_LITERAL_RANGE) return L(`plage de boucle trop grande (${m[0]}) : ${MAX_LITERAL_RANGE} éléments au plus`, `loop range too large (${m[0]}): ${MAX_LITERAL_RANGE} items at most`);

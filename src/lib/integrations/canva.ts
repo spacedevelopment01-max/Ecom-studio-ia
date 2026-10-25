@@ -1,3 +1,4 @@
+import { publicDownload } from "../public-download";
 /**
  * Canva Connect (API officielle) : envoi d'un média du studio, création d'un
  * design modifiable, puis récupération de l'export dans le projet comme
@@ -75,7 +76,7 @@ export async function importFromCanva(userId: string, asset: Asset, format: "png
   const mime = { png: "image/png", jpg: "image/jpeg", pdf: "application/pdf", mp4: "video/mp4" }[format];
   const saved: string[] = [];
   for (const [i, u] of urls.entries()) {
-    const r = await fetch(u);
+    const r = await publicDownload(u, {maxBytes:200_000_000,timeoutMs:90000});
     if (!r.ok) continue;
     const a = await saveAsset({
       projectId: asset.project_id,

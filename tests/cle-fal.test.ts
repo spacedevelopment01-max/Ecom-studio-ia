@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** Test d'une clé fal.ai dans l'administration : la raison d'un refus est dite en clair. */
 import { describe, expect, it } from "vitest";
 import { falKeyShapeProblem, falRefusal } from "@/lib/ai/media-providers";

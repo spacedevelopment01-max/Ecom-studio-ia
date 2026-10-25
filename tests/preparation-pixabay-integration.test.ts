@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** API, téléchargements et verdicts simulés ; décodage/rangement/poster réels dans DATA_DIR isolé. */
 import fs from "node:fs";
 import path from "node:path";

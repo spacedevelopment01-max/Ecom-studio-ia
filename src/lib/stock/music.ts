@@ -1,3 +1,4 @@
+import { publicDownload } from "../public-download";
 /**
  * Banque de musiques libres de droits pour les vidéos : Openverse (catalogue ouvert de la fondation WordPress, sans
  * clé), qui réunit Jamendo, Freesound, ccMixter et Wikimedia. Seules les licences qui autorisent l'usage COMMERCIAL
@@ -119,7 +120,7 @@ export async function searchStockMusic(mood: MusicMood, minS: number, exclude = 
 
 /** Télécharge une piste (audio, 25 Mo au plus). */
 export async function downloadStockMusic(t: StockTrack): Promise<{ data: Buffer; mime: string }> {
-  const r = await fetch(t.url, { headers: { "User-Agent": "E-COM-STUDIO-IA" }, signal: AbortSignal.timeout(60_000) });
+  const r = await publicDownload(t.url, {maxBytes:25_000_000,accept:"audio/*",timeoutMs:60000});
   if (!r.ok) throw new Error(`${t.provider} ${r.status}`);
   const mime = (r.headers.get("content-type") ?? "").split(";")[0].trim() || "audio/mpeg";
   if (!/^audio\/|application\/ogg|octet-stream/.test(mime)) throw new Error(L("ce n'est pas un fichier audio", "not an audio file"));

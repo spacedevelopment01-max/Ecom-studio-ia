@@ -36,8 +36,8 @@ jobs:
       - name: Vérification des types
         run: npm run typecheck
 
-      - name: Tests
-        run: npm test
+      - name: Tests (réseau fournisseur interdit)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm test
 
       - name: "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
         run: JOBS=4 scripts/verify-theme.sh

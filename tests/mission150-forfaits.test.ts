@@ -33,7 +33,7 @@ it('insertion directe de fonction verrouillée refusée, fonction permise accept
 it.each(['creer','vendre'] as const)('%s : devis, tâche directe et worker publicitaire refusés avant toute dépense',async plan=>{
  const f=await fixture(plan);expect(()=>assertAdvertising(f.pid)).toThrow(/129/);expect(()=>enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{request:{as:'ad'}}})).toThrow(/129/);
  expect(one<{n:number}>('SELECT COUNT(*) n FROM jobs WHERE project_id=?',f.pid)?.n).toBe(0);
- const {handlers}=await import('../worker/handlers');await expect(handlers['ads.v2']({job:{project_id:f.pid},payload:{}} as any)).rejects.toThrow(/129/);
+ const {handlers}=await import('../worker/handlers');await expect(handlers['ads.v2']({job:{user_id:f.user.id,project_id:f.pid,depends_on:'[]'},payload:{}} as any)).rejects.toThrow(/129/);
  expect(one<{n:number}>('SELECT COUNT(*) n FROM usage_events WHERE project_id=?',f.pid)?.n).toBe(0);expect(initialCreativeCount(f.pid)).toBe(10);
 });
 it('Dominer : publicités permises ; tâche déjà en file revérifiée après baisse de forfait',async()=>{
