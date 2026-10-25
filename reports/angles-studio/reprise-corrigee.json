@@ -1,0 +1,20 @@
+{
+  "schema": "angles-studio-link-reproduction-1",
+  "codeCommit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+  "productionBuild": true,
+  "nativeLogin": true,
+  "nativeProjectOwnership": true,
+  "nativeResumeAction": true,
+  "finalPath": "/studio/PROJECT/pilote",
+  "httpStatus": 200,
+  "preparationVisible": 1,
+  "sourceWorkingTree": false,
+  "served": {
+    "commit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+    "source": "compiled-build"
+  },
+  "realProviderCalls": 0,
+  "simulatedDataOnly": true,
+  "browserErrors": [],
+  "scope": "Actual authenticated Next production server; not a component harness"
+}

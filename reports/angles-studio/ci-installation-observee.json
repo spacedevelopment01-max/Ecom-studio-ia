@@ -1,0 +1,179 @@
+{
+  "schema": "angles-studio-ci-observation-1",
+  "observedAt": "2026-10-22 20:47:45 UTC",
+  "headCommit": "b1b2cc858637f6bb949d1b5807247d6841c23d09",
+  "runId": 39849290106,
+  "jobs": [
+    {
+      "id": 120070835209,
+      "name": "Typecheck, tests, Theme Check, build",
+      "headCommit": "b1b2cc858637f6bb949d1b5807247d6841c23d09",
+      "status": "in_progress",
+      "conclusion": null,
+      "startedAt": "2026-10-22T20:29:29Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-22T20:29:30Z",
+          "completed_at": "2026-10-22T20:29:31Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-22T20:29:31Z",
+          "completed_at": "2026-10-22T20:30:16Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-22T20:30:16Z",
+          "completed_at": "2026-10-22T20:30:22Z"
+        },
+        {
+          "name": "Installation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-22T20:30:22Z",
+          "completed_at": "2026-10-22T20:30:49Z"
+        },
+        {
+          "name": "ffmpeg",
+          "status": "in_progress",
+          "conclusion": null,
+          "number": 5,
+          "started_at": "2026-10-22T20:30:49Z",
+          "completed_at": null
+        },
+        {
+          "name": "Vérification des types",
+          "status": "pending",
+          "conclusion": null,
+          "number": 6,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Tests",
+          "status": "pending",
+          "conclusion": null,
+          "number": 7,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+          "status": "pending",
+          "conclusion": null,
+          "number": 8,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Build de production",
+          "status": "pending",
+          "conclusion": null,
+          "number": 9,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "pending",
+          "conclusion": null,
+          "number": 17,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "pending",
+          "conclusion": null,
+          "number": 18,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    },
+    {
+      "id": 120070835518,
+      "name": "Image Docker (construction et démarrage)",
+      "headCommit": "b1b2cc858637f6bb949d1b5807247d6841c23d09",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-22T20:29:29Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-22T20:29:30Z",
+          "completed_at": "2026-10-22T20:29:31Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-22T20:29:31Z",
+          "completed_at": "2026-10-22T20:30:11Z"
+        },
+        {
+          "name": "Construction de l'image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-22T20:30:11Z",
+          "completed_at": "2026-10-22T20:35:05Z"
+        },
+        {
+          "name": "Démarrage et vérifications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-22T20:35:05Z",
+          "completed_at": "2026-10-22T20:35:11Z"
+        },
+        {
+          "name": "Journaux du conteneur",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-22T20:35:11Z",
+          "completed_at": "2026-10-22T20:35:11Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-22T20:35:11Z",
+          "completed_at": "2026-10-22T20:35:12Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-22T20:35:12Z",
+          "completed_at": "2026-10-22T20:35:12Z"
+        }
+      ]
+    }
+  ],
+  "dockerChecks": {
+    "worker": "actif",
+    "homeStatus": 200,
+    "registrationStatus": 200
+  },
+  "mainJob": "Waiting at ffmpeg installation since 20:30:49 UTC; application checks not started. No detailed failure cause claimed; active job log unavailable (404 BlobNotFound).",
+  "action": "Publish this observation and rerun CI through the normal PR synchronize event. The previous cancelled run is not validation. Exact final head and conclusive result will be recorded in PR #168."
+}

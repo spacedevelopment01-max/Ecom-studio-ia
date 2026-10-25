@@ -82,6 +82,7 @@ type AssetView = {
   url: string;
 };
 type View = {
+  selectedMarketingAngleId?:string|null;
   state: State;
   job: JobView | null;
   recoverable?: boolean;
@@ -246,7 +247,7 @@ export default function TabPreparation() {
       action: "approve",
       step,
       choiceId:
-        choice ||
+        (state?.stages.research?.data.formatVersion===3?(state.stages.brief?.data.input.business==='services'?'generalist':data?.selectedMarketingAngleId):null)||choice ||
         state?.stages.research?.data.selectedId ||
         state?.stages.research?.data.recommendedId,
       logoId: logo,
@@ -304,7 +305,7 @@ export default function TabPreparation() {
     <div className="grid gap-5" data-preparation>
       <InitialCreatives onChange={reload}/>
       <InitialAuthorization/>
-      {approved("research") && <MarketingStrategy projectId={id} onChange={reload}/> }
+      {approved("brief") && <MarketingStrategy projectId={id} onChange={reload}/> }
       {(active === 'content' || active === 'media') && <PreparationHandoff onChange={reload}/>}
       <Card className="p-5 sm:p-7">
         <p className="text-sm text-muted">
@@ -764,7 +765,7 @@ export default function TabPreparation() {
           {state.stages.research && (
             <>
               <ul className="grid gap-3">
-                {state.stages.research.data.coverage && <p role="status">{state.stages.research.data.coverage.consulted}/10 {t("sources pertinentes consultées — cible indicative de 8 à 12.", "relevant sources read — indicative target of 8–12.")} {state.stages.research.data.coverage.status === "partial" && t("Couverture partielle.", "Partial coverage.")} {state.stages.research.data.coverage.limits.join(" ")}</p>}
+                {state.stages.research.data.coverage && <p role="status">{state.stages.research.data.coverage.consulted}/10 {t("sources pertinentes consultées — cible indicative, sans quota de remplissage.", "relevant sources read — indicative target, no filler quota.")} {state.stages.research.data.coverage.status === "partial" && t("Couverture partielle.", "Partial coverage.")} {state.stages.research.data.coverage.limits.join(" ")}</p>}
                 {state.stages.research.data.sources.map((source) => (
                   <li
                     key={source.id}
@@ -809,8 +810,9 @@ export default function TabPreparation() {
                 <Button disabled={!enabled || busy || working || referencesDirty} onClick={() => prepare("research")} data-upgrade-research>{t("Préparer cinq angles", "Prepare five angles")}</Button>
               </div>}
               <p>{t(`${state.stages.research.data.angles.length} angles disponibles : des hypothèses à comparer, pas des résultats de marché certifiés.`, `${state.stages.research.data.angles.length} available angles: hypotheses to compare, not certified market findings.`)}</p>
-              <p>{state.stages.research.data.recommendation}</p>
-              {state.stages.research.data.angles.map((angle) => (
+              {state.stages.research.data.formatVersion===3?<p>{t('Comparez et préparez votre choix dans le comparateur ci-dessus. La validation ci-dessous reprend ce choix, sans consommer une nouvelle place. Pour les services, elle valide le site présentant toute l’activité.','Compare and prepare your choice above. Approval below reuses that choice without consuming another place. For services it approves the website presenting the whole business.')}</p>:<p>{state.stages.research.data.recommendation}</p>}
+              {state.stages.research.data.formatVersion!==3&&<p data-legacy-research>{t('Ancienne proposition — non validée selon le nouveau contrat de recherche. Vos versions et votre choix sont conservés.','Previous proposal — not validated under the new research contract. Your versions and choice are preserved.')}</p>}
+              {state.stages.research.data.angles.filter(angle=>state.stages.research?.data.formatVersion!==3||state.stages.brief?.data.input.business==='services'&&angle.id==='generalist').map((angle) => (
                 <label
                   key={angle.id}
                   className="block rounded-2xl border border-line p-4"

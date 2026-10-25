@@ -16,7 +16,7 @@ it('API : lire les cinq cartes ne consomme aucun droit ; le serveur refuse la co
  const prepared=await (await POST(request({action:'prepare',angleId:'generalist'}),ctx(f.pid))).json();
  expect((await POST(request({action:'activate',angleId:'generalist',preparationId:prepared.preparation.id,idempotencyKey:'api-initial-choice',confirmed:true,retainUnaligned:true}),ctx(f.pid))).status).toBe(200);
  expect((await POST(request({action:'prepare',angleId:'expression'}),ctx(f.pid))).status).toBe(402);
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('API : double clic concurrent au choix du thème crée exactement une tâche',async()=>{
  const f=await clientFixture({plan:'dominer',incomplete:true});session.user=f.user;

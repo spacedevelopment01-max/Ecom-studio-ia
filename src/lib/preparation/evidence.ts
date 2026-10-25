@@ -18,6 +18,4 @@ export function apiEvidence(projectId: string, usageKey: string, vision = false)
   if (!row) throw new Error("Résultat API sans trace de succès : étape en attente, données conservées.");
   return { provider: row.provider, model: row.model, usageKey: row.usage_key, vision, at: row.created_at };
 }
-export function analyzed(b: Brief) {
-  return b.provenance === "simulation" || (b.provenance === "provider" && !!b.execution?.provider && !!b.execution.model && (!b.input.photoIds.length || b.execution.vision));
-}
+export {analyzed} from "./understanding";

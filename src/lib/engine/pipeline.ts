@@ -1,4 +1,4 @@
-import { activeStrategy, proposeStrategies } from "../marketing-strategy";
+import { activeStrategy, getStrategyState } from "../marketing-strategy";
 import { planAllowsAds } from "../plan-entitlements";
 import { projectPlan } from "../project-billing";
 /**
@@ -129,10 +129,10 @@ export async function runPipeline(ctx: JobContext) {
         continue;
       }
       if(step.id === "copy" && loadProject(projectId).business!=="services" && !activeStrategy(projectId)){
-        proposeStrategies(projectId);
+        getStrategyState(projectId);
         run("UPDATE jobs SET payload=? WHERE id=?",JSON.stringify({...ctx.payload,strategyAwaitingChoice:true}),ctx.job.id);
         pauseJob(ctx.job.id);
-        throw new JobPaused(L("Choisissez votre angle marketing dans Marque avant la rédaction et la construction. Les étapes déjà acquises sont conservées.","Choose your marketing angle in Brand before copywriting and construction. Acquired steps are kept."));
+        throw new JobPaused(L("Choisissez votre angle marketing dans Stratégie après une recherche sourcée, avant la rédaction et la construction. Les étapes déjà acquises sont conservées.","Choose your marketing angle in Brand before copywriting and construction. Acquired steps are kept."));
       }
       const since = orch.since(step.id);
       markStep(ctx, step.id, "running");
