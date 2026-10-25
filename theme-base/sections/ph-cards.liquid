@@ -29,10 +29,10 @@
       </div>
     {%- endif -%}
     <div class="ph-cards__body{% if s.box_title != blank %} has-box{% endif %}">
-    <ul class="ph-cards__grid" role="list"{% if lay == 'gallery' %} data-ph-list="projects" data-ph-per="{{ s.per_page }}"{% endif %}>
+    <ul class="ph-cards__grid" role="list"{% if lay == 'gallery' %} data-ph-list="projects" data-ph-per="{{ s.per_page }}"{% elsif lay == 'posts' %} data-ph-list="posts" data-ph-per="{{ s.per_page }}" data-ph-per-m="{{ s.per_page_mobile }}" data-ph-pager="pages"{% endif %}>
       {%- for b in section.blocks -%}
         {%- assign c = b.settings -%}
-        <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-cat="{{ c.category | handleize }}" {{ b.shopify_attributes }}>
+        <li class="ph-card{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{% if c.link != blank %} has-link{% endif %}" style="--o-m: {{ c.order_mobile | default: forloop.index }};" data-ph-o-m="{{ c.order_mobile | default: forloop.index }}" data-ph-cat="{{ c.category | handleize }}" {{ b.shopify_attributes }}>
           {%- if c.image != blank or c.image_asset != blank -%}
             <div class="ph-card__media">
               {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, zoom: c.zoom, pos_mobile: c.position_mobile, zoom_mobile: c.zoom_mobile, class: 'ph-card__img', sizes: '(min-width: 750px) 33vw, 100vw' %}
@@ -44,14 +44,14 @@
           <div class="ph-card__body">
             {%- if c.icon != blank -%}<span class="ph-card__icon" aria-hidden="true">{% render 'ph-icon', name: c.icon %}</span>{%- endif -%}
             {%- if c.number != blank -%}<span class="ph-card__num">{{ c.number }}</span>{%- endif -%}
-            {%- if c.label != blank and lay == 'gallery' or c.label != blank and lay == 'related' -%}<p class="ph-card__kicker">{{ c.label }}</p>{%- endif -%}
+            {%- if c.label != blank and lay == 'gallery' or c.label != blank and lay == 'related' or c.label != blank and lay == 'posts' -%}<p class="ph-card__kicker"><span{% if c.label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ c.label }}</span>{%- if c.label_mobile != blank -%}<span class="ph-txt-m">{{ c.label_mobile }}</span>{%- endif -%}</p>{%- endif -%}
             <h3 class="ph-card__title">
               {%- if c.link != blank -%}<a href="{{ c.link }}">{%- endif -%}
               <span class="ph-txt-d">{{ c.title }}</span>{%- if c.title_mobile != blank -%}<span class="ph-txt-m">{{ c.title_mobile }}</span>{%- endif -%}
               {%- if c.link != blank -%}</a>{%- endif -%}
             </h3>
             {%- if c.text != blank -%}<p class="ph-card__text"><span class="ph-txt-d">{{ c.text | newline_to_br }}</span>{%- if c.text_mobile != blank -%}<span class="ph-txt-m">{{ c.text_mobile | newline_to_br }}</span>{%- endif -%}</p>{%- endif -%}
-            {%- if c.label != blank and lay != 'gallery' and lay != 'related' -%}<p class="ph-card__label">{{ c.label }}</p>{%- endif -%}
+            {%- if c.label != blank and lay != 'gallery' and lay != 'related' and lay != 'posts' -%}<p class="ph-card__label">{{ c.label }}</p>{%- endif -%}
             {%- if c.link != blank -%}
               <span class="ph-card__more" aria-hidden="true">{%- if c.link_label != blank -%}<span>{{ c.link_label }}</span>{%- endif -%}{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>
             {%- endif -%}
@@ -59,6 +59,11 @@
         </li>
       {%- endfor -%}
     </ul>
+    {%- if lay == 'posts' -%}
+      <p class="ph-cards__empty" role="status" hidden data-ph-empty>{{ s.empty_label }}</p>
+      <nav class="ph-pager" aria-label="{{ s.pager_label | escape }}" hidden data-ph-pager-nav data-ph-prev="{{ s.prev_label | escape }}" data-ph-next="{{ s.next_label | escape }}" data-ph-page="{{ s.page_label | escape }}"></nav>
+      <p class="visually-hidden" role="status" aria-live="polite" data-ph-count data-ph-count-text="{{ s.count_label | escape }}"></p>
+    {%- endif -%}
     {%- if lay == 'gallery' -%}
       <p class="ph-cards__empty" role="status" hidden data-ph-empty>{{ s.empty_label }}</p>
       <div class="ph-cards__more" hidden data-ph-more-wrap><button type="button" class="ph-btn ph-btn--line" data-ph-more>{{ s.more_label }}</button></div>
@@ -93,6 +98,7 @@
       { "value": "projects", "label": "Réalisations illustratives" },
       { "value": "gallery", "label": "Réalisations filtrables (pastilles de l'ouverture)" },
       { "value": "related", "label": "Autres inspirations (photo et flèche)" },
+      { "value": "posts", "label": "Conseils filtrables et paginés" },
       { "value": "shortcuts", "label": "Raccourcis vers les prestations" }
     ] },
     { "type": "range", "id": "columns", "label": "Colonnes (ordinateur)", "min": 1, "max": 4, "step": 1, "default": 3 },
@@ -110,6 +116,11 @@
     { "type": "text", "id": "more_label", "label": "Bouton « Voir plus »", "default": "Voir plus de réalisations" },
     { "type": "text", "id": "count_label", "label": "Annonce du nombre ([n] = nombre)", "default": "[n] réalisation(s) affichée(s)" },
     { "type": "text", "id": "empty_label", "label": "Message si aucune réalisation", "default": "Aucune réalisation dans cette catégorie pour le moment." },
+    { "type": "range", "id": "per_page_mobile", "label": "Conseils par page au téléphone", "min": 2, "max": 12, "step": 1, "default": 4 },
+    { "type": "text", "id": "pager_label", "label": "Nom de la pagination", "default": "Pagination des conseils" },
+    { "type": "text", "id": "prev_label", "label": "Page précédente", "default": "Page précédente" },
+    { "type": "text", "id": "next_label", "label": "Page suivante", "default": "Page suivante" },
+    { "type": "text", "id": "page_label", "label": "Page ([n] = numéro)", "default": "Page [n]" },
     { "type": "header", "content": "Encadré jaune (à droite des cartes)" },
     { "type": "textarea", "id": "box_title", "label": "Titre de l'encadré" },
     { "type": "textarea", "id": "box_text", "label": "Texte de l'encadré" },
@@ -138,7 +149,8 @@
       { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },
       { "type": "textarea", "id": "text", "label": "Texte" },
       { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
-      { "type": "text", "id": "label", "label": "Mention sous le texte" },
+      { "type": "text", "id": "label", "label": "Mention (ou catégorie affichée)" },
+      { "type": "text", "id": "label_mobile", "label": "Mention au téléphone (facultatif)" },
       { "type": "text", "id": "link_label", "label": "Libellé du lien" },
       { "type": "url", "id": "link", "label": "Lien" },
       { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },

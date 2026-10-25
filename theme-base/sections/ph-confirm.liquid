@@ -1,0 +1,89 @@
+{%- comment -%}
+  PHASE : confirmation d'une demande (planches 05 et 10) — fil d'Ariane, titre, texte, pastille de validation, puis
+  récapitulatif construit à partir de la saisie RÉELLE du visiteur (gardée le temps de la visite dans le navigateur) :
+  projet, lieu, pièces jointes. Statut honnête : « Démonstration — demande non envoyée » en démonstration ; « Demande
+  transmise » seulement après un envoi accepté par la plateforme. Sans saisie (page ouverte directement), le
+  récapitulatif dit qu'aucune demande n'a été faite. Liens de retour, photo et encadré « Une question ? ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-confirm ph-pad" style="--ph-ts: {{ s.title_size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};" data-ph-confirm>
+  <div class="ph-c">
+    <div class="ph-confirm__box">
+      <p class="ph-confirm__status" data-ph-confirm-status data-demo="{{ s.status_demo | escape }}" data-sent="{{ s.status_sent | escape }}" data-none="{{ s.status_none | escape }}">{% render 'ph-icon', name: 'information', stroke: 2 %}<span>{{ s.status_none }}</span></p>
+      <p class="ph-confirm__eyebrow">{{ s.eyebrow }}</p>
+      <h2 class="ph-confirm__title">{{ s.heading }}</h2>
+      <dl class="ph-confirm__grid">
+        <div class="ph-confirm__item">
+          {% render 'ph-icon', name: 'devis-document' %}
+          <dt>{{ s.project_label }}</dt>
+          <dd><span class="ph-confirm__value" data-ph-recap="type" data-empty="{{ s.empty_value | escape }}">{{ s.empty_value }}</span><span class="ph-confirm__sub" data-ph-recap="body" data-max="110"></span></dd>
+        </div>
+        <div class="ph-confirm__item">
+          {% render 'ph-icon', name: 'lieu-repere' %}
+          <dt>{{ s.place_label }}</dt>
+          <dd><span class="ph-confirm__value" data-ph-recap="place" data-empty="{{ s.place_empty | escape }}">{{ s.place_empty }}</span><span class="ph-confirm__sub">{{ s.place_note }}</span></dd>
+        </div>
+        <div class="ph-confirm__item">
+          {% render 'ph-icon', name: 'joindre-fichier' %}
+          <dt>{{ s.files_label }}</dt>
+          <dd><span class="ph-confirm__value" data-ph-recap="files-count" data-zero="{{ s.files_zero | escape }}" data-one="{{ s.files_one | escape }}" data-many="{{ s.files_many | escape }}">{{ s.files_zero }}</span><span class="ph-confirm__sub" data-ph-recap="files"></span></dd>
+        </div>
+      </dl>
+      <div class="ph-confirm__actions">
+        {%- if s.back_label != blank -%}<a class="ph-btn ph-btn--line" href="{{ s.back_link | default: routes.root_url }}">{{ s.back_label }}</a>{%- endif -%}
+        {%- if s.next_label != blank -%}<a class="ph-btn ph-btn--navy" href="{{ s.next_link | default: routes.root_url }}"><span>{{ s.next_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+      </div>
+    </div>
+    <div class="ph-confirm__help">
+      {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'ph-confirm__img', sizes: '(min-width: 1080px) 60vw, 100vw' %}
+      <div class="ph-confirm__help-copy">
+        <h2 class="ph-confirm__help-title">{{ s.help_title }}</h2>
+        {%- if s.help_text != blank -%}<p class="ph-confirm__help-text">{{ s.help_text }}</p>{%- endif -%}
+        {%- if s.help_button != blank -%}<a class="ph-btn ph-btn--yellow" href="{{ s.help_link | default: routes.root_url }}"><span>{{ s.help_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Confirmation de demande",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre du récapitulatif", "default": "Votre demande" },
+    { "type": "text", "id": "heading", "label": "Titre du récapitulatif", "default": "Récapitulatif de votre demande" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 80 },
+    { "type": "text", "id": "status_demo", "label": "Statut en démonstration", "default": "Démonstration — demande non envoyée. Rien n'a été transmis." },
+    { "type": "text", "id": "status_sent", "label": "Statut après un envoi accepté", "default": "Demande transmise." },
+    { "type": "text", "id": "status_none", "label": "Statut sans demande", "default": "Aucune demande n'a été faite depuis ce navigateur." },
+    { "type": "text", "id": "project_label", "label": "Projet", "default": "Projet" },
+    { "type": "text", "id": "empty_value", "label": "Valeur absente", "default": "Non précisé" },
+    { "type": "text", "id": "place_label", "label": "Lieu", "default": "Lieu" },
+    { "type": "text", "id": "place_empty", "label": "Lieu absent", "default": "Lieu à préciser" },
+    { "type": "text", "id": "place_note", "label": "Note sous le lieu", "default": "L'adresse sera confirmée lors de notre échange." },
+    { "type": "text", "id": "files_label", "label": "Pièces jointes", "default": "Pièces jointes" },
+    { "type": "text", "id": "files_zero", "label": "Aucune pièce jointe", "default": "Aucun fichier" },
+    { "type": "text", "id": "files_one", "label": "Une pièce jointe", "default": "1 fichier" },
+    { "type": "text", "id": "files_many", "label": "Plusieurs pièces jointes ([n])", "default": "[n] fichiers" },
+    { "type": "text", "id": "back_label", "label": "Bouton de retour", "default": "Retour à l'accueil" },
+    { "type": "url", "id": "back_link", "label": "Lien du bouton de retour" },
+    { "type": "text", "id": "next_label", "label": "Second bouton", "default": "Voir les conseils" },
+    { "type": "url", "id": "next_link", "label": "Lien du second bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "help_title", "label": "Titre de l'aide", "default": "Une question ?" },
+    { "type": "text", "id": "help_text", "label": "Texte de l'aide" },
+    { "type": "text", "id": "help_button", "label": "Bouton de l'aide", "default": "Nous contacter" },
+    { "type": "url", "id": "help_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 0 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 0 }
+  ],
+  "presets": [{ "name": "Confirmation de demande" }]
+}
+{% endschema %}

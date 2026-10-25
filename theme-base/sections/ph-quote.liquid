@@ -1,0 +1,201 @@
+{%- comment -%}
+  PHASE : demande de devis (planches 04 et 09) — sur-titre, titre, texte ; formulaire « Votre projet » (type de projet,
+  type de lieu, commune, code postal, délai souhaité, description, photos facultatives JPG/PNG/PDF) puis « Vos
+  coordonnées » (nom, e-mail, téléphone facultatif, accord) ; à droite « Après votre demande » (étapes), photo et
+  encadré d'aide. Erreurs près des champs et résumé ; valeurs conservées ; bouton occupé pendant l'envoi ; un seul
+  envoi à la fois. Démonstration : rien n'est envoyé, la page de confirmation reprend la saisie du visiteur.
+  Boutique : formulaire de contact de la plateforme, qui ne transmet pas de fichier (les photos jointes bloquent l'envoi
+  avec un message clair, jamais en silence).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign types = s.project_types | split: ','
+  assign places = s.place_types | split: ','
+  assign delays = s.delays | split: ','
+-%}
+<section class="ph ph-quote ph-pad" style="--ph-ts: {{ s.title_size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-quote__intro">
+      {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {% render 'ph-title', text: s.heading, tag: 'h1', class: 'ph-quote__title' %}
+      {%- if s.text != blank -%}<div class="ph-quote__text">{{ s.text }}</div>{%- endif -%}
+    </div>
+    {%- if s.circuit -%}<div class="ph-quote__deco" aria-hidden="true">{% render 'ph-art', name: 'quote' %}{%- if s.note != blank -%}<p class="ph-note ph-quote__note">{{ s.note | newline_to_br }}</p>{%- endif -%}</div>{%- endif -%}
+    <div class="ph-quote__body">
+      <div class="ph-quote__card">
+        {%- form 'contact', id: 'ph-quote-form', class: 'ph-form ph-form--quote', novalidate: 'novalidate', data-ph-form: 'quote' -%}
+          <input type="hidden" name="contact[form]" value="{{ s.eyebrow | escape }}">
+          <div class="ph-form__summary" role="alert" tabindex="-1" hidden data-ph-summary></div>
+          <fieldset class="ph-form__set">
+            <legend class="ph-form__legend">{{ s.project_title }}</legend>
+            <div class="ph-field ph-field--full" data-ph-field="type" role="radiogroup" aria-labelledby="ph-q-type-l-{{ section.id }}" aria-describedby="ph-q-type-err-{{ section.id }}">
+              <p class="ph-field__label" id="ph-q-type-l-{{ section.id }}">{{ s.type_label }} <span aria-hidden="true">*</span></p>
+              <div class="ph-radios">
+                {%- for t in types -%}{%- assign tv = t | strip -%}<label class="ph-radio"><input type="radio" name="contact[type]" value="{{ tv | escape }}" required><span>{{ tv }}</span></label>{%- endfor -%}
+              </div>
+              <p class="ph-field__err" id="ph-q-type-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+            </div>
+            <div class="ph-form__row ph-form__row--place">
+              <div class="ph-field" data-ph-field="place">
+                <label for="ph-q-place-{{ section.id }}">{{ s.place_label }} <span aria-hidden="true">*</span></label>
+                <span class="ph-select"><select id="ph-q-place-{{ section.id }}" name="contact[lieu]" required aria-describedby="ph-q-place-err-{{ section.id }}"><option value="">{{ s.place_ph }}</option>{%- for o in places -%}<option>{{ o | strip }}</option>{%- endfor -%}</select>{% render 'ph-icon', name: 'chevron-bas', stroke: 2 %}</span>
+                <p class="ph-field__err" id="ph-q-place-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+              <div class="ph-field" data-ph-field="city">
+                <label for="ph-q-city-{{ section.id }}">{{ s.city_label }} <span aria-hidden="true">*</span></label>
+                <input id="ph-q-city-{{ section.id }}" type="text" name="contact[commune]" autocomplete="address-level2" required placeholder="{{ s.city_ph | escape }}" aria-describedby="ph-q-city-err-{{ section.id }}">
+                <p class="ph-field__err" id="ph-q-city-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+              <div class="ph-field ph-field--zip" data-ph-field="zip">
+                <label for="ph-q-zip-{{ section.id }}">{{ s.zip_label }} <span aria-hidden="true">*</span></label>
+                <input id="ph-q-zip-{{ section.id }}" type="text" name="contact[code_postal]" inputmode="numeric" autocomplete="postal-code" maxlength="5" required placeholder="{{ s.zip_ph | escape }}" data-ph-check="postcode" aria-describedby="ph-q-zip-err-{{ section.id }}">
+                <p class="ph-field__err" id="ph-q-zip-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+            </div>
+            <div class="ph-field ph-field--half" data-ph-field="delay">
+              <label for="ph-q-delay-{{ section.id }}">{{ s.delay_label }}</label>
+              <span class="ph-select"><select id="ph-q-delay-{{ section.id }}" name="contact[delai]"><option value="">{{ s.delay_ph }}</option>{%- for o in delays -%}<option>{{ o | strip }}</option>{%- endfor -%}</select>{% render 'ph-icon', name: 'chevron-bas', stroke: 2 %}</span>
+            </div>
+            <div class="ph-field ph-field--full" data-ph-field="body">
+              <label for="ph-q-body-{{ section.id }}">{{ s.description_label }} <span aria-hidden="true">*</span></label>
+              <textarea id="ph-q-body-{{ section.id }}" name="contact[body]" rows="3" required placeholder="{{ s.description_ph | escape }}" aria-describedby="ph-q-body-err-{{ section.id }}"></textarea>
+              <p class="ph-field__err" id="ph-q-body-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+            </div>
+            <div class="ph-field ph-field--full" data-ph-field="files">
+              <p class="ph-field__label" id="ph-q-files-l-{{ section.id }}">{{ s.files_label }} <span class="ph-field__opt">{{ s.optional_label }}</span></p>
+              <label class="ph-drop" for="ph-q-files-{{ section.id }}">
+                {% render 'ph-icon', name: 'importer', stroke: 1.8 %}
+                <span><span class="ph-drop__title">{{ s.files_cta }}</span><span class="ph-drop__hint" id="ph-q-files-h-{{ section.id }}">{{ s.files_hint }}</span></span>
+              </label>
+              <input class="ph-drop__input" id="ph-q-files-{{ section.id }}" type="file" multiple accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-ph-files data-ph-max="{{ s.files_max }}" data-ph-max-mb="{{ s.files_max_mb }}" aria-describedby="ph-q-files-h-{{ section.id }} ph-q-files-err-{{ section.id }}">
+              <ul class="ph-files" role="list" data-ph-file-list></ul>
+              <p class="ph-field__err" id="ph-q-files-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+            </div>
+          </fieldset>
+          <fieldset class="ph-form__set">
+            <legend class="ph-form__legend">{{ s.contact_title }}</legend>
+            <div class="ph-form__row ph-form__row--contact">
+              <div class="ph-field" data-ph-field="name">
+                <label for="ph-q-name-{{ section.id }}">{{ s.name_label }} <span aria-hidden="true">*</span></label>
+                <input id="ph-q-name-{{ section.id }}" type="text" name="contact[name]" autocomplete="name" required placeholder="{{ s.name_ph | escape }}" aria-describedby="ph-q-name-err-{{ section.id }}">
+                <p class="ph-field__err" id="ph-q-name-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+              <div class="ph-field" data-ph-field="email">
+                <label for="ph-q-email-{{ section.id }}">{{ s.email_label }} <span aria-hidden="true">*</span></label>
+                <input id="ph-q-email-{{ section.id }}" type="email" name="contact[email]" autocomplete="email" required placeholder="{{ s.email_ph | escape }}" aria-describedby="ph-q-email-err-{{ section.id }}">
+                <p class="ph-field__err" id="ph-q-email-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+              <div class="ph-field" data-ph-field="phone">
+                <label for="ph-q-phone-{{ section.id }}">{{ s.phone_label }} <span class="ph-field__opt">{{ s.optional_label }}</span></label>
+                <input id="ph-q-phone-{{ section.id }}" type="tel" name="contact[phone]" autocomplete="tel" placeholder="{{ s.phone_ph | escape }}" data-ph-check="phone" aria-describedby="ph-q-phone-err-{{ section.id }}">
+                <p class="ph-field__err" id="ph-q-phone-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+              </div>
+            </div>
+            <div class="ph-field ph-field--full ph-field--check" data-ph-field="consent">
+              <label class="ph-check"><input type="checkbox" name="contact[consent]" value="oui" required aria-describedby="ph-q-consent-err-{{ section.id }}"><span>{{ s.consent_label }}{%- if s.privacy_link != blank -%} <a href="{{ s.privacy_link }}">{{ s.privacy_label }}</a>{%- endif -%}</span></label>
+              <p class="ph-field__err" id="ph-q-consent-err-{{ section.id }}" hidden>{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span></span></p>
+            </div>
+          </fieldset>
+          <button type="submit" class="ph-btn ph-btn--yellow ph-form__send" data-ph-send><span data-ph-send-label>{{ s.send_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</button>
+          <p class="ph-form__status" role="status" tabindex="-1" hidden data-ph-status></p>
+          {%- if form.posted_successfully? -%}<p class="ph-form__status is-ok" role="status">{% render 'ph-icon', name: 'validation', stroke: 2 %}<span>{{ s.done_label }}</span></p>{%- endif -%}
+          {%- if form.errors -%}<p class="ph-form__status is-error" role="alert">{% render 'ph-icon', name: 'erreur', stroke: 2 %}<span>{{ s.server_error_label }}</span></p>{%- endif -%}
+        {%- endform -%}
+      </div>
+      <aside class="ph-quote__aside">
+        <div class="ph-quote__steps">
+          <h2 class="ph-quote__steps-title">{{ s.steps_title }}</h2>
+          <ol role="list">
+            {%- for b in section.blocks -%}
+              <li {{ b.shopify_attributes }}><span class="ph-quote__step-num">{{ b.settings.number }}</span>{%- if b.settings.icon != blank -%}<span class="ph-quote__step-ico" aria-hidden="true">{% render 'ph-icon', name: b.settings.icon %}</span>{%- endif -%}<span class="ph-quote__step-copy"><span class="ph-quote__step-title">{{ b.settings.title }}</span><span class="ph-quote__step-text">{{ b.settings.text }}</span></span></li>
+            {%- endfor -%}
+          </ol>
+        </div>
+        {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'ph-quote__img', sizes: '(min-width: 1080px) 25vw, 100vw', caption: s.caption %}
+        {%- if s.help_title != blank -%}
+          <div class="ph-quote__help">
+            <p class="ph-quote__help-title">{{ s.help_title }}</p>
+            {%- if s.help_text != blank -%}<p class="ph-quote__help-text">{{ s.help_text }}</p>{%- endif -%}
+            {%- if s.help_button != blank -%}<a class="ph-btn ph-btn--yellow ph-quote__help-btn" href="{{ s.help_link | default: routes.root_url }}"><span>{{ s.help_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+          </div>
+        {%- endif -%}
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Demande de devis",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Demande de devis" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Votre projet\n[y]commence ici.[/y]" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 80 },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "circuit", "label": "Trait de circuit", "default": true },
+    { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
+    { "type": "header", "content": "Votre projet" },
+    { "type": "text", "id": "project_title", "label": "Titre de la partie", "default": "Votre projet" },
+    { "type": "text", "id": "type_label", "label": "Type de projet", "default": "Type de projet" },
+    { "type": "text", "id": "project_types", "label": "Types de projet (séparés par des virgules)", "default": "Installation, Rénovation, Tableau, Éclairage, Dépannage, Autre" },
+    { "type": "text", "id": "place_label", "label": "Type de lieu", "default": "Type de lieu" },
+    { "type": "text", "id": "place_ph", "label": "Type de lieu : invitation", "default": "Sélectionnez un type de lieu" },
+    { "type": "text", "id": "place_types", "label": "Types de lieu (séparés par des virgules)", "default": "Maison, Appartement, Local professionnel, Autre" },
+    { "type": "text", "id": "city_label", "label": "Commune", "default": "Commune" },
+    { "type": "text", "id": "city_ph", "label": "Exemple de commune", "default": "Votre commune" },
+    { "type": "text", "id": "zip_label", "label": "Code postal", "default": "Code postal" },
+    { "type": "text", "id": "zip_ph", "label": "Exemple de code postal", "default": "Code postal" },
+    { "type": "text", "id": "delay_label", "label": "Délai souhaité", "default": "Délai souhaité" },
+    { "type": "text", "id": "delay_ph", "label": "Délai : invitation", "default": "Sélectionnez un délai" },
+    { "type": "text", "id": "delays", "label": "Délais proposés (séparés par des virgules)", "default": "Dès que possible, Dans les 3 mois, Dans les 6 mois, Pas de délai précis" },
+    { "type": "text", "id": "description_label", "label": "Description", "default": "Description de votre projet" },
+    { "type": "text", "id": "description_ph", "label": "Exemple de description", "default": "Décrivez votre projet, vos besoins et toute information utile..." },
+    { "type": "text", "id": "files_label", "label": "Photos", "default": "Ajouter des photos" },
+    { "type": "text", "id": "files_cta", "label": "Zone de dépôt", "default": "Ajouter des photos" },
+    { "type": "text", "id": "files_hint", "label": "Formats indiqués", "default": "Formats acceptés : JPG, PNG, PDF" },
+    { "type": "range", "id": "files_max", "label": "Nombre de fichiers au plus", "min": 1, "max": 10, "step": 1, "default": 5 },
+    { "type": "range", "id": "files_max_mb", "label": "Poids d'un fichier au plus (Mo)", "min": 1, "max": 20, "step": 1, "unit": "Mo", "default": 10 },
+    { "type": "header", "content": "Vos coordonnées" },
+    { "type": "text", "id": "contact_title", "label": "Titre de la partie", "default": "Vos coordonnées" },
+    { "type": "text", "id": "name_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "name_ph", "label": "Exemple de nom", "default": "Votre nom" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "email_ph", "label": "Exemple d'e-mail", "default": "votre@email.fr" },
+    { "type": "text", "id": "phone_label", "label": "Téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone_ph", "label": "Exemple de téléphone", "default": "Votre numéro" },
+    { "type": "text", "id": "optional_label", "label": "Mention « facultatif »", "default": "(facultatif)" },
+    { "type": "text", "id": "consent_label", "label": "Accord", "default": "J'accepte que mes données soient utilisées pour traiter ma demande conformément à notre" },
+    { "type": "text", "id": "privacy_label", "label": "Lien vers la politique de confidentialité", "default": "politique de confidentialité." },
+    { "type": "url", "id": "privacy_link", "label": "Adresse de la politique de confidentialité" },
+    { "type": "text", "id": "send_label", "label": "Bouton d'envoi", "default": "Envoyer ma demande" },
+    { "type": "text", "id": "done_label", "label": "Demande transmise (boutique)", "default": "Merci, votre demande a bien été transmise." },
+    { "type": "text", "id": "server_error_label", "label": "Erreur renvoyée par la plateforme", "default": "La demande n'a pas pu être transmise. Vérifiez les champs et réessayez." },
+    { "type": "header", "content": "Colonne de droite" },
+    { "type": "text", "id": "steps_title", "label": "Titre des étapes", "default": "Après votre demande" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "caption", "label": "Légende sur la photo" },
+    { "type": "text", "id": "help_title", "label": "Titre de l'aide", "default": "Une question avant de vous lancer ?" },
+    { "type": "text", "id": "help_text", "label": "Texte de l'aide" },
+    { "type": "text", "id": "help_button", "label": "Bouton de l'aide", "default": "Nous contacter" },
+    { "type": "url", "id": "help_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 18 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape après la demande", "settings": [
+      { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+      { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "bulle" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "max_blocks": 5,
+  "presets": [{ "name": "Demande de devis" }]
+}
+{% endschema %}

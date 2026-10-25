@@ -151,7 +151,9 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
   };
 
   // ------------------------------------------------------------------------------------------- Prestations (planches 01 et 06)
-  const look = (h: PhPageHandle) => pageRow(PH_PAGES.find((x) => x.handle === h)!.look);
+  // Échelle propre à chaque panneau (les planches ne sont pas dessinées au même zoom : mesurée sur le monogramme du logo).
+  const SCALE: Partial<Record<PhPageHandle, number>> = { prestations: 102, "installation-et-renovation": 80, "tableau-et-securite": 80, eclairage: 78, depannage: 78, realisations: 103, "l-entreprise": 98, faq: 97, conseils: 83, contact: 83, "demande-de-devis": 77, "demande-envoyee": 92, "mentions-legales": 92, "donnees-et-cookies": 90 };
+  const look = (h: PhPageHandle) => pageRow({ ...PH_PAGES.find((x) => x.handle === h)!.look, ...(SCALE[h] ? { scale: SCALE[h] } : {}) });
   const page = (h: PhPageHandle, rows: Row[]) => {
     const def = PH_PAGES.find((x) => x.handle === h)!;
     spec.templates[`page.${def.suffix}`] = phTemplate([...rows, look(h)]);
@@ -240,7 +242,7 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
   page("eclairage", [
     S("ph-hero", { layout: "split", title_size: 80, crumb_parent: "Prestations", crumb_parent_link: U("prestations"), crumb_current: "Éclairage", heading: "La lumière\n[y]change tout.[/y]", text: p("Des solutions d'éclairage pour sublimer vos espaces<br>et créer des ambiances adaptées à chaque usage."), button_label: "Décrire mon projet", button_link: QUOTE, button2_label: "Nos réalisations", button2_link: U("realisations"), image_asset: f("04_eclairage_interieur"), image_alt: alt("04_eclairage_interieur"), image_position: "50% 50%", photo_w: 1060, height: 388, caption: "Visuel de démonstration", circuit: "p05", note: "Des ambiances\npour tous\nvos moments.", note_x: 1572, note_y: 30 }),
     S("ph-cards", { layout: "photos", columns: 3, image_height: 134, eyebrow: "Nos domaines d'éclairage", pad_top: 10, pad_bottom: 14 }, [
-      { type: "card", settings: { image_asset: f("07_cuisine_contemporaine"), alt: alt("07_cuisine_contemporaine"), icon: "ampoule", title: "Intérieur", text: "Un éclairage confortable et fonctionnel\npour vos pièces de vie.", link_label: "Découvrir", link: "/pages/conseil-bien-penser-l-eclairage-de-votre-interieur" } },
+      { type: "card", settings: { image_asset: f("07_cuisine_contemporaine"), alt: alt("07_cuisine_contemporaine"), icon: "ampoule", title: "Intérieur", text: "Un éclairage confortable et fonctionnel\npour vos pièces de vie.", link_label: "Découvrir", link: "/pages/conseil-bien-preparer-son-projet-d-eclairage" } },
       { type: "card", settings: { image_asset: f("10_eclairage_exterieur"), alt: alt("10_eclairage_exterieur"), position: "50% 55%", icon: "eclairage-exterieur", title: "Extérieur", text: "Un éclairage adapté pour valoriser\nvos extérieurs et sécuriser vos accès.", link_label: "Découvrir", link: "/pages/conseil-eclairage-exterieur" } },
       { type: "card", settings: { image_asset: f("11_chambre_eclairage"), alt: alt("11_chambre_eclairage"), position: "50% 40%", icon: "spot-plafond", title: "Ambiances & usages", text: "Des solutions sur mesure selon vos activités :\ntravail, détente, réception…", link_label: "Découvrir", link: "/pages/conseil-creer-une-ambiance-lumineuse" } },
     ]),
@@ -251,7 +253,7 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
       { type: "step", settings: { number: "", icon: "feuille", title: "Ambiances variées", text: "Du quotidien aux moments\nd'exception." } },
     ]),
     S("ph-cards", { layout: "mini", columns: 4, eyebrow: "Vos besoins de projet", box_title: "Vous avez un projet d'éclairage ?", box_text: "Décrivez vos besoins pour trouver\nles solutions adaptées à votre espace.", box_button: "Décrire mon projet", box_link: QUOTE, pad_top: 14, pad_bottom: 14, show: "desktop" }, [
-      { type: "card", settings: { icon: "clarte-soleil", title: "Plus de lumière", text: "Des espaces plus lumineux\net agréables à vivre.", link_label: "En savoir plus", link: "/pages/conseil-bien-penser-l-eclairage-de-votre-interieur" } },
+      { type: "card", settings: { icon: "clarte-soleil", title: "Plus de lumière", text: "Des espaces plus lumineux\net agréables à vivre.", link_label: "En savoir plus", link: "/pages/conseil-bien-preparer-son-projet-d-eclairage" } },
       { type: "card", settings: { icon: "ampoule", title: "Une ambiance spécifique", text: "Une atmosphère adaptée\nà chaque pièce.", link_label: "En savoir plus", link: "/pages/conseil-creer-une-ambiance-lumineuse" } },
       { type: "card", settings: { icon: "maison", title: "Un éclairage extérieur", text: "Valoriser et sécuriser\nvos extérieurs.", link_label: "En savoir plus", link: "/pages/conseil-eclairage-exterieur" } },
       { type: "card", settings: { icon: "feuille", title: "Des solutions économiques", text: "Des équipements plus\nperformants.", link_label: "En savoir plus", link: QUOTE } },
@@ -338,7 +340,7 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
       S("ph-gallery", { image_height: 292, pad_top: 10, pad_bottom: 26 }, x.photos.map(([img, cap, pos]) => ({ type: "photo", settings: { image_asset: f(img), alt: alt(img), position: pos ?? "50% 50%", caption: cap } }))),
       S("ph-cards", { layout: "related", columns: 2, eyebrow: "Autres inspirations", pad_top: 20, pad_bottom: 30 }, others.map((o, i) => ({ type: "card", settings: { image_asset: f(o.image), alt: alt(o.image), number: `0${i + 1}`, label: "Projet illustratif", title: o.title.replace(/\n/g, " "), link: PROJ(o.slug) } }))),
       S("ph-cta", { layout: "slim", layout_mobile: "inline", title_size: 55, eyebrow: "Envie d'un projet similaire ?", heading: "Discutons de votre projet.", button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des solutions\nadaptées\nà vos espaces.", height: 160, copy_width: 780 }),
-      pageRow(LOOK_08),
+      pageRow({ ...LOOK_08, scale: 102 }),
     ]);
     spec.store.pages = spec.store.pages.filter((y) => y.handle !== `realisation-${x.slug}`);
     spec.store.pages.push({ handle: `realisation-${x.slug}`, title: x.title.replace(/\n/g, " "), template_suffix: `ph-projet-${x.slug}`, body_html: "" });
@@ -386,6 +388,158 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
       Q("Comment demander un devis ?", "Par le formulaire « Demande de devis » : type de projet, lieu, délai souhaité, description et, si vous le souhaitez, des photos.", "devis"),
     ]),
     S("ph-cta", { layout: "slim", layout_mobile: "soft", title_size: 40, heading: "Besoin d'un complément d'information ?", text: p("Échangeons sur votre projet pour trouver ensemble la solution la plus adaptée."), button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des réponses\nclaires pour avancer\nen toute sérénité.", height: 170, copy_width: 790 }),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Conseils et articles (planches 04 et 09)
+  // Conseils généraux, sans promesse ni chiffre : chaque carte ouvre sa page. Deux catégories d'affichage : celles de
+  // l'ordinateur (Préparer, Rénover, Éclairer) et celles du téléphone (Préparer, Éclairage, Rénovation, Équipements).
+  const ART = (slug: string) => `/pages/conseil-${slug}`;
+  type Art = { slug: string; title: string; card: string; text: string; cat: string; catM: string; cats: string; image: string; pos?: string; oM: number; heading: string; intro: string;
+    parts: [string, string, string][]; checks: string; related: [string, string] };
+  const ARTICLES: Art[] = [
+    { slug: "bien-preparer-votre-renovation-electrique", title: "Bien préparer votre rénovation électrique", card: "Bien préparer votre\nrénovation électrique.", text: "Les étapes clés pour un projet serein\net bien accompagné.", cat: "Préparer", catM: "Préparer", cats: "preparer", image: "26_renovation_conseil", oM: 5,
+      heading: "Bien préparer\nvotre [y]rénovation électrique.[/y]", intro: "Quelques repères pour aborder une rénovation sereinement, du premier échange aux finitions.",
+      parts: [["Faire le point sur l'existant", "Un état des lieux partagé.", "Avant de choisir, il est utile de connaître l'installation en place : son âge apparent, les pièces concernées et les usages qui ont changé depuis."], ["Lister vos usages", "Ce qui compte au quotidien.", "Pièces de vie, télétravail, équipements à venir : vos usages guident l'emplacement des prises, des points lumineux et des commandes."]],
+      checks: "Noter les pièces concernées\nRepérer les équipements à prévoir\nPréparer quelques photos de l'existant", related: ["comprendre-le-contenu-d-un-devis-electrique", "moderniser-son-tableau-electrique"] },
+    { slug: "choisir-son-eclairage-selon-les-usages", title: "Choisir son éclairage selon les usages", card: "Choisir son éclairage\nselon les usages.", text: "Pièces de vie, travail, détente :\ndes ambiances adaptées à chaque\nespace.", cat: "Éclairer", catM: "Éclairage", cats: "eclairer", image: "24_article_eclairage", pos: "50% 40%", oM: 6,
+      heading: "Choisir son éclairage\n[y]selon les usages.[/y]", intro: "Chaque pièce a ses besoins : une lumière fonctionnelle pour travailler, plus douce pour se détendre.",
+      parts: [["Partir des activités", "Une lumière pour chaque moment.", "Cuisiner, lire, recevoir : on identifie d'abord ce qui se passe dans la pièce, puis on choisit le type d'éclairage adapté."], ["Combiner les sources", "Ensemble, appoint et ambiance.", "Un éclairage d'ensemble, des points d'appoint et quelques lumières d'ambiance offrent de la souplesse au quotidien."]],
+      checks: "Identifier les activités de chaque espace\nPrévoir un éclairage d'ensemble et des appoints\nPenser aux commandes et aux variateurs", related: ["bien-preparer-son-projet-d-eclairage", "creer-une-ambiance-lumineuse"] },
+    { slug: "penser-ses-prises-au-quotidien", title: "Penser ses prises au quotidien", card: "Penser ses prises\nau quotidien.", text: "Des emplacements bien choisis\npour plus de confort et de praticité.", cat: "Rénover", catM: "Rénovation", cats: "renover", image: "21_prise_interrupteur", pos: "50% 45%", oM: 7,
+      heading: "Penser ses prises\n[y]au quotidien.[/y]", intro: "Des prises au bon endroit évitent les rallonges et rendent chaque pièce plus pratique.",
+      parts: [["Observer vos habitudes", "Là où vous branchez vraiment.", "Bureau, plan de travail, chevets, entrée : listez les appareils utilisés dans chaque pièce et leur emplacement."], ["Anticiper", "Les besoins de demain.", "Un nouvel équipement ou un aménagement à venir se prévoit plus simplement au moment des travaux."]],
+      checks: "Lister les appareils par pièce\nPrévoir les prises du plan de travail\nPenser aux besoins à venir", related: ["bien-preparer-votre-renovation-electrique", "moderniser-son-tableau-electrique"] },
+    { slug: "comprendre-le-contenu-d-un-devis-electrique", title: "Comprendre le contenu d'un devis électrique", card: "Comprendre le contenu\nd'un devis électrique.", text: "Les éléments essentiels pour bien\ncomparer et faire le bon choix.", cat: "Préparer", catM: "Préparer", cats: "preparer", image: "25_besoins_plans", oM: 8,
+      heading: "Comprendre le contenu\n[y]d'un devis électrique.[/y]", intro: "Quelques repères pour lire un devis et poser les bonnes questions.",
+      parts: [["Le périmètre", "Ce qui est inclus.", "Un devis détaille les pièces concernées, les équipements prévus et les travaux à réaliser : vérifiez qu'il correspond bien à votre demande."], ["Les étapes", "Comment le chantier s'organise.", "Les étapes de réalisation et l'organisation des travaux vous aident à anticiper la vie dans le logement pendant le chantier."]],
+      checks: "Vérifier les pièces et équipements listés\nRepérer ce qui est optionnel\nDemander des précisions si besoin", related: ["bien-preparer-votre-renovation-electrique", "definir-ses-besoins-et-son-mode-de-vie"] },
+    { slug: "creer-une-ambiance-lumineuse", title: "Créer une ambiance lumineuse harmonieuse", card: "Créer une ambiance\nlumineuse harmonieuse.", text: "Températures de couleur, intensités,\nmise en valeur des espaces.", cat: "Éclairer", catM: "Éclairage", cats: "eclairer", image: "04_eclairage_interieur", oM: 9,
+      heading: "Créer une ambiance\n[y]lumineuse harmonieuse.[/y]", intro: "Couleur de lumière, intensité et emplacement : trois repères pour une ambiance cohérente.",
+      parts: [["La couleur de la lumière", "Chaude ou plus neutre.", "Une lumière chaude apporte une atmosphère douce ; une lumière plus neutre convient mieux aux espaces de travail."], ["L'intensité", "Varier selon les moments.", "Des variateurs ou plusieurs circuits permettent d'adapter l'ambiance du matin au soir."]],
+      checks: "Choisir une couleur de lumière cohérente\nPrévoir plusieurs niveaux d'éclairage\nMettre en valeur un mur ou un objet", related: ["bien-preparer-son-projet-d-eclairage", "bien-choisir-ses-luminaires"] },
+    { slug: "moderniser-son-tableau-electrique", title: "Moderniser son tableau électrique", card: "Moderniser son tableau\nélectrique.", text: "Un point clé pour la sécurité,\nle confort et l'évolutivité de votre\ninstallation.", cat: "Rénover", catM: "Rénovation", cats: "renover", image: "09_tableau_renove", pos: "50% 30%", oM: 10,
+      heading: "Moderniser son\n[y]tableau électrique.[/y]", intro: "Le tableau organise toute l'installation : quelques repères pour savoir quand en parler à un professionnel.",
+      parts: [["Les signes à observer", "Quand se poser la question.", "Un tableau ancien, sans place pour de nouveaux circuits ou difficile à lire mérite d'être examiné par un professionnel."], ["Un tableau lisible", "Des circuits repérés.", "Un repérage clair de chaque circuit facilite l'usage au quotidien et les interventions futures."]],
+      checks: "Noter l'âge apparent du tableau\nRepérer les circuits non identifiés\nLister les équipements à ajouter", related: ["anticiper-la-mise-aux-normes-electriques", "bien-preparer-votre-renovation-electrique"] },
+    { slug: "definir-ses-besoins-et-son-mode-de-vie", title: "Définir ses besoins et son mode de vie", card: "Définir ses besoins\net son mode de vie.", text: "Les bonnes questions à se poser\navant de démarrer votre projet.", cat: "Préparer", catM: "Préparer", cats: "preparer", image: "12_sejour_renove", oM: 1,
+      heading: "Définir ses besoins\n[y]et son mode de vie.[/y]", intro: "Les bonnes questions à se poser avant de démarrer un projet électrique.",
+      parts: [["Qui vit dans le logement ?", "Des besoins qui évoluent.", "Le nombre d'occupants, le télétravail ou l'arrivée d'un nouvel équipement changent la façon d'utiliser chaque pièce."], ["Ce qui vous gêne aujourd'hui", "Le point de départ.", "Une prise qui manque, une pièce trop sombre : ces petits irritants sont de bons points de départ."]],
+      checks: "Lister les occupants et leurs usages\nNoter ce qui manque aujourd'hui\nImaginer les besoins à venir", related: ["comprendre-le-contenu-d-un-devis-electrique", "penser-ses-prises-au-quotidien"] },
+    { slug: "bien-choisir-ses-luminaires", title: "Bien choisir ses luminaires", card: "Bien choisir\nses luminaires.", text: "Des repères simples pour une\nambiance adaptée à chaque pièce.", cat: "Éclairer", catM: "Éclairage", cats: "eclairer", image: "20_spots_plafond", oM: 2,
+      heading: "Bien choisir\n[y]ses luminaires.[/y]", intro: "Des repères simples pour une ambiance adaptée à chaque pièce.",
+      parts: [["Suspensions, spots, appliques", "À chaque type son rôle.", "Une suspension structure une table, des spots éclairent uniformément, une applique apporte une lumière d'ambiance."], ["La bonne hauteur", "Confort et équilibre.", "La hauteur et l'emplacement des luminaires se pensent avec le mobilier pour éviter l'éblouissement."]],
+      checks: "Associer un type de luminaire à chaque usage\nVérifier les hauteurs avec le mobilier\nPrévoir les commandes adaptées", related: ["creer-une-ambiance-lumineuse", "bien-preparer-son-projet-d-eclairage"] },
+    { slug: "anticiper-la-mise-aux-normes-electriques", title: "Anticiper la mise aux normes électriques", card: "Anticiper la mise\naux normes électriques.", text: "Les points essentiels pour un\nlogement plus sûr et plus confortable.", cat: "Rénover", catM: "Rénovation", cats: "renover", image: "03_tableau_electrique", oM: 3,
+      heading: "Anticiper la mise\n[y]aux normes électriques.[/y]", intro: "Une installation ancienne se vérifie sur place : voici les questions à aborder avec un professionnel.",
+      parts: [["Faire vérifier l'existant", "Un examen sur place.", "Seule une observation de l'installation par un professionnel permet de savoir ce qui doit être revu ; aucune conclusion ne se tire d'une photo."], ["Prioriser", "Avancer par étapes.", "Selon ce qui est observé, les travaux peuvent être organisés par priorité et par pièce."]],
+      checks: "Rassembler les informations sur le logement\nNoter les anomalies constatées\nPrévoir un échange avec un professionnel", related: ["moderniser-son-tableau-electrique", "bien-preparer-votre-renovation-electrique"] },
+    { slug: "eclairage-exterieur", title: "Éclairage extérieur : allier confort et sécurité", card: "Éclairage extérieur :\nallier confort et sécurité.", text: "Des solutions adaptées pour vos\naccès, terrasses et jardins.", cat: "Éclairer", catM: "Équipements", cats: "eclairer equipements", image: "10_eclairage_exterieur", oM: 4,
+      heading: "Éclairage extérieur :\n[y]confort et sécurité.[/y]", intro: "Des solutions adaptées pour vos accès, terrasses et jardins.",
+      parts: [["Éclairer les accès", "Se repérer le soir.", "Allées, marches et entrée gagnent à être éclairées pour circuler confortablement à la nuit tombée."], ["Mettre en valeur", "Façade et végétation.", "Quelques points lumineux bien placés valorisent la façade et le jardin sans éblouir."]],
+      checks: "Repérer les zones de passage\nChoisir des équipements adaptés à l'extérieur\nPrévoir des commandes pratiques", related: ["bien-choisir-ses-luminaires", "creer-une-ambiance-lumineuse"] },
+  ];
+  const FULL: { slug: string; title: string; card: string; text: string; cat: string; catM: string; cats: string; image: string; pos?: string; oM: number } = { slug: "bien-preparer-son-projet-d-eclairage", title: "Bien préparer son projet d'éclairage", card: "Bien préparer son\nprojet d'éclairage.", text: "Usages, ambiances et points à prévoir\npour un éclairage réussi.", cat: "Éclairer", catM: "Éclairage", cats: "eclairer preparer", image: "24_article_eclairage", oM: 11 };
+  const catOf = (slug: string) => [...ARTICLES, FULL].find((x) => x.slug === slug)!;
+  page("conseils", [
+    S("ph-hero", { layout: "navy", title_size: 80, copy_y: 72, eyebrow: "Conseils", heading: "Les bons repères,\n[y]avant de se lancer.[/y]", text: p("Des conseils concrets pour bien préparer votre projet<br>et faire les bons choix, en toute sérénité."), text_mobile: p("Des conseils concrets pour bien préparer<br>votre projet et faire les bons choix."), image_asset: f("23_conseils_hero"), image_alt: alt("23_conseils_hero"), image_position: "60% 50%", photo_w: 970, height: 527, caption: "Visuels de démonstration", circuit: "home", chips_below: true, chips_aria: "Catégories de conseils", chips_for: "posts" }, [
+      { type: "chip", settings: { label: "Tous les conseils", value: "all", show: "desktop" } }, { type: "chip", settings: { label: "Tous", value: "all", show: "mobile" } },
+      { type: "chip", settings: { label: "Préparer", value: "preparer" } },
+      { type: "chip", settings: { label: "Rénover", value: "renover", show: "desktop" } }, { type: "chip", settings: { label: "Éclairer", value: "eclairer", show: "desktop" } },
+      { type: "chip", settings: { label: "Éclairage", value: "eclairer", show: "mobile" } }, { type: "chip", settings: { label: "Rénovation", value: "renover", show: "mobile" } }, { type: "chip", settings: { label: "Équipements", value: "equipements", show: "mobile" } },
+    ]),
+    S("ph-cards", { layout: "posts", columns: 3, per_page: 6, per_page_mobile: 4, pad_top: 0, pad_bottom: 50 }, [...ARTICLES, FULL].map((x) => ({ type: "card", settings: { image_asset: f(x.image), alt: alt(x.image), position: x.pos ?? "50% 50%", category: x.cats, label: x.cat, label_mobile: x.catM, title: x.card.replace(/\n/g, " "), text: x.text, link: ART(x.slug), link_label: "Lire l'article", order_mobile: x.oM } }))),
+  ]);
+  const articlePage = (slug: string, title: string, rows: Row[]) => {
+    spec.templates[`page.ph-conseil-${slug}`] = phTemplate([...rows, pageRow({ footer_mobile: "split", scale: 78 })]);
+    spec.store.pages = spec.store.pages.filter((y) => y.handle !== `conseil-${slug}`);
+    spec.store.pages.push({ handle: `conseil-${slug}`, title, template_suffix: `ph-conseil-${slug}`, body_html: "" });
+  };
+  const rel = (slug: string, mobileOnly = false) => { const r = catOf(slug); return { type: "related", settings: { image_asset: f(r.image), position: r.pos ?? "50% 50%", kicker: mobileOnly ? r.catM : "", title: r.card.replace(/\n/g, " "), link_label: mobileOnly ? "" : "Lire l'article", link: ART(r.slug), show: mobileOnly ? "mobile" : "desktop" } }; };
+  for (const a of ARTICLES) {
+    articlePage(a.slug, a.title, [
+      S("ph-hero", { layout: "plain", title_size: 80, crumb_parent: "Conseils", crumb_parent_link: U("conseils"), crumb_current: a.title, eyebrow: `${a.cat} • Guide pratique`, heading: a.heading, text: p(a.intro), circuit: "p02", note: "Des espaces\nplus confortables\nau quotidien.", note_x: 1218, note_y: 30, height: 330 }),
+      S("ph-article", { toc_title: "Dans cet article", box_image_asset: f(a.image), box_title: "Un projet ?", box_text: "Parlons de vos idées.", box_button: "Demander un devis", box_link: QUOTE }, [
+        { type: "image", settings: { image_asset: f(a.image), alt: alt(a.image), position: a.pos ?? "50% 50%", caption: "Visuel de démonstration" } },
+        ...a.parts.map(([t, sub, txt], i) => ({ type: "part", settings: { number: `0${i + 1}`, title: t, subtitle: sub, text: p(txt) } })),
+        { type: "checklist", settings: { items: a.checks, boxed: true } },
+        { type: "callout", settings: { style: "navy", title: "Une question sur votre projet ?", text: "Échangeons sur vos besoins et vos idées.", button: "Parlons de vos idées", link: QUOTE, show: "desktop" } },
+        { type: "callout", settings: { style: "yellow", title: "Besoin d'un accompagnement ?", text: "Un projet bien préparé est plus simple à réaliser.", button: "Demander un devis", link: QUOTE, show: "mobile" } },
+        { type: "related_title", settings: { title: "Articles liés", show: "desktop" } }, { type: "related_title", settings: { title: "Articles liés", show: "mobile" } },
+        ...a.related.flatMap((r) => [rel(r), rel(r, true)]),
+      ]),
+    ]);
+  }
+  // Article complet de la planche 04 (ordinateur) et 09 (téléphone).
+  articlePage(FULL.slug, FULL.title, [
+    S("ph-hero", { layout: "plain", title_size: 80, crumb_parent: "Conseils", crumb_parent_link: U("conseils"), crumb_current: "Bien préparer son projet d'éclairage", eyebrow: "Éclairage • Guide pratique", badge: "Guide pratique", heading: "Bien préparer son\nprojet [y]d'éclairage.[/y]", heading_mobile: "Bien préparer\nson projet\n[y]d'éclairage.[/y]", text: p("Des repères simples pour créer un éclairage adapté à vos espaces,<br>à vos usages et à vos envies, dans le cadre d'une rénovation<br>ou d'une installation neuve."), text_mobile: p("Des repères simples pour faire les bons choix et créer une ambiance adaptée à chaque espace."), circuit: "p02", note: "Des espaces\nplus confortables\nau quotidien.", note_x: 1218, note_y: 30, height: 360 }),
+    S("ph-article", { toc_title: "Dans cet article", box_image_asset: f("10_eclairage_exterieur"), box_image_position: "90% 25%", box_title: "Un projet d'éclairage ?", box_text: "Parlons de vos idées.", box_button: "Demander un devis", box_link: QUOTE }, [
+      { type: "image", settings: { image_asset: f("24_article_eclairage"), alt: alt("24_article_eclairage"), position: "50% 55%", caption: "Visuel de démonstration" } },
+      { type: "part", settings: { number: "01", title: "Les usages", subtitle: "Un éclairage adapté à chaque moment.", text: p("Chaque pièce a ses besoins : un éclairage fonctionnel pour cuisiner, plus doux pour se détendre, et précis pour travailler. L'objectif est d'assurer un bon confort visuel tout en valorisant vos espaces."), text_mobile: p("L'éclairage doit s'adapter à vos activités du quotidien. Chaque pièce a ses besoins : circulation, travail, détente ou réception.") } },
+      { type: "checklist", settings: { items: "Identifier les activités de chaque espace\nAdapter l'intensité de l'éclairage\nPrévoir un éclairage fonctionnel et un éclairage d'ambiance", boxed: true, show: "mobile" } },
+      { type: "photos", settings: { image1_asset: f("07_cuisine_contemporaine"), position1: "50% 20%", caption1: "Cuisine\nUn éclairage fonctionnel et homogène pour plus de confort.", image2_asset: f("12_sejour_renove"), position2: "50% 55%", caption2: "Salon\nUne ambiance chaleureuse et modulable selon vos envies.", image3_asset: f("20_spots_plafond"), position3: "80% 30%", caption3: "Bureau\nUn éclairage plus ciblé pour favoriser la concentration.", show: "desktop" } },
+      { type: "part", settings: { number: "02", title: "Les ambiances", subtitle: "Des atmosphères qui vous ressemblent.", text: p("La température de couleur, l'intensité et le choix des luminaires influencent l'ambiance de votre intérieur. Un éclairage bien pensé met en valeur les volumes et les matériaux, tout en créant une atmosphère agréable au quotidien."), text_mobile: p("La température et l'intensité de la lumière influencent le confort. Une lumière chaude apporte une atmosphère douce, tandis qu'une lumière plus neutre est idéale pour les espaces de travail.") } },
+      { type: "figure", settings: { image_asset: f("11_chambre_eclairage"), alt: alt("11_chambre_eclairage"), position: "50% 45%", caption: "Projet illustratif", show: "desktop" } },
+      { type: "figure", settings: { image_asset: f("11_chambre_eclairage"), alt: alt("11_chambre_eclairage"), position: "50% 45%", caption: "Projet illustratif", show: "mobile" } },
+      { type: "part", settings: { number: "03", title: "Les points à prévoir", subtitle: "Les éléments essentiels pour un projet réussi.", text_mobile: p("Pensez à l'emplacement des interrupteurs, aux types de luminaires et aux possibilités de variation. L'éclairage extérieur, les circulations et les rangements méritent aussi une attention particulière.") } },
+      { type: "checklist", settings: { items: "Définir les usages de chaque pièce\nChoisir des luminaires adaptés et bien positionnés\nAnticiper les commandes (interrupteurs, variateurs, etc.)", show: "desktop" } },
+      { type: "checklist", settings: { items: "Emplacements des points lumineux\nType de luminaires et ampoules\nSolutions de variation (volets, détecteurs…)\nCohérence avec la décoration\nÉclairage extérieur et circulations", boxed: true, show: "mobile" } },
+      { type: "callout", settings: { style: "navy", title: "Une question sur votre projet ?", text: "Échangeons sur vos besoins et vos idées.", button: "Parlons de vos idées", link: QUOTE, show: "desktop" } },
+      { type: "callout", settings: { style: "yellow", title: "Besoin d'un accompagnement ?", text: "Un projet bien préparé est plus simple à réaliser.", button: "Demander un devis", link: QUOTE, show: "mobile" } },
+      { type: "related_title", settings: { title: "Articles liés", show: "desktop" } }, { type: "related_title", settings: { title: "Articles liés", show: "mobile" } },
+      rel("choisir-son-eclairage-selon-les-usages"), rel("creer-une-ambiance-lumineuse"), rel("penser-ses-prises-au-quotidien"),
+      rel("definir-ses-besoins-et-son-mode-de-vie", true), rel("anticiper-la-mise-aux-normes-electriques", true),
+    ]),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Contact et demande de devis (planches 04 et 09)
+  const CONTACT_FAQ = [
+    Q("Comment se déroule un premier échange ?", "Nous échangeons sur votre besoin, par téléphone ou par message, puis convenons ensemble de la suite (visite, demande de devis).", ""),
+    Q("Faut-il se déplacer pour un devis ?", "Une visite permet souvent de préciser le projet ; elle est convenue avec vous selon la nature des travaux.", ""),
+    Q("Quels éléments préparer avant notre échange ?", "Le type de logement, les pièces concernées, quelques photos et vos disponibilités suffisent pour bien démarrer.", ""),
+    Q("Intervenez-vous dans ma région ?", "[À compléter : zone d'intervention de l'entreprise]", ""),
+  ];
+  page("contact", [
+    S("ph-contact", { eyebrow: "Contact", heading: "Parlons de\n[y]votre projet.[/y]", title_size: 80, text: p("Une question, un projet, une envie ?<br>Échangeons sur vos besoins, nous sommes à votre écoute."), phone: "Téléphone à renseigner", email: "E-mail à renseigner", area: "Zone d'intervention à préciser", hours: "Horaires à renseigner", image_asset: f("14_maison_installation"), image_alt: alt("14_maison_installation"), image_position: "60% 50%", caption: "Visuels de démonstration", circuit: true, note: "Des échanges\nclairs et simples.", privacy_link: U("donnees-et-cookies"), pad_top: 22, pad_bottom: 20 }),
+    S("ph-faq", { layout: "split", title_size: 33, heading: "Questions fréquentes", text: p("Des réponses aux questions les plus courantes,<br>pour vous aider à y voir plus clair."), more_label: "", pad_top: 20, pad_bottom: 26 }, CONTACT_FAQ),
+  ]);
+  page("demande-de-devis", [
+    S("ph-quote", { eyebrow: "Demande de devis", heading: "Votre projet\n[y]commence ici.[/y]", title_size: 74, text: p("Décrivez-nous votre projet et vos besoins, nous reviendrons vers vous<br>pour en échanger et vous proposer une solution adaptée."), circuit: true, note: "Un accompagnement\nsur mesure\npour votre projet.", privacy_link: U("donnees-et-cookies"), image_asset: f("25_besoins_plans"), image_alt: alt("25_besoins_plans"), caption: "Visuels de démonstration", help_title: "Une question avant de vous lancer ?", help_text: "Notre équipe est à votre écoute pour échanger sur votre projet.", help_button: "Nous contacter", help_link: U("contact"), pad_top: 22, pad_bottom: 18 }, [
+      { type: "step", settings: { number: "01", icon: "bulle", title: "Étude du besoin", text: "Nous prenons connaissance de votre projet et de vos besoins." } },
+      { type: "step", settings: { number: "02", icon: "projet-echange", title: "Échange", text: "Un échange pour préciser les détails et répondre à vos questions." } },
+      { type: "step", settings: { number: "03", icon: "devis-document", title: "Proposition adaptée", text: "Une solution claire et adaptée à votre projet." } },
+    ]),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Confirmation, mentions, données, 404 (planches 05 et 10)
+  page("demande-envoyee", [
+    S("ph-hero", { layout: "plain", title_size: 82, crumb_current: "Confirmation", heading: "Votre demande\nest bien [y]enregistrée.[/y]", text: p("Un échange permettra de préciser votre besoin<br>et les prochaines étapes."), done_icon: true, circuit: "p02", note: "Merci\npour votre\nconfiance.", note_x: 1225, note_y: 30, height: 340 }),
+    S("ph-confirm", { eyebrow: "Votre demande", heading: "Récapitulatif de votre demande", back_label: "Retour à l'accueil", back_link: "/", next_label: "Voir les conseils", next_link: U("conseils"), image_asset: f("06_renovation_appartement"), image_alt: alt("06_renovation_appartement"), image_position: "40% 50%", help_title: "Une question ?", help_text: "Notre équipe est à votre écoute pour échanger sur votre projet et vous accompagner dans les prochaines étapes.", help_button: "Nous contacter", help_link: U("contact") }),
+  ]);
+  page("mentions-legales", [
+    S("ph-hero", { layout: "plain", title_size: 82, crumb_current: "Mentions légales", heading: "Mentions [y]légales[/y]", text: p("Structure de démonstration — informations à compléter."), circuit: "p02", note: "Un cadre clair\npour une relation\nde confiance.", note_x: 1225, note_y: 30, height: 240 }),
+    S("ph-legal", { image_asset: f("13_couloir_eclaire"), image_alt: alt("13_couloir_eclaire"), caption: "Visuel de démonstration", credits_title: "Crédits et propriété intellectuelle", credits_text: p("Visuels de démonstration à remplacer par vos réalisations.<br>Tous les contenus du site (textes, visuels, graphismes) sont la propriété de PHASE ÉLECTRICITÉ<br>ou de leurs auteurs respectifs.") }, ["Éditeur", "Statut juridique", "SIRET", "Siège social", "Responsable de publication", "Hébergement"].map((label) => ({ type: "row", settings: { label, value: "À renseigner" } }))),
+  ]);
+  page("donnees-et-cookies", [
+    S("ph-hero", { layout: "plain", title_size: 82, crumb_current: "Confidentialité & cookies", heading: "Vos données,\nen [y]toute clarté.[/y]", text: p("Structure à compléter selon les outils utilisés."), circuit: "p02", note: "Des données\ntraitées avec\ntransparence.", note_x: 1225, note_y: 30, height: 330 }),
+    S("ph-privacy", { prefs_title: "Gestion des cookies", prefs_text: p("Vous pouvez personnaliser ci-dessous vos préférences en matière de cookies.<br>Cette configuration est un exemple et pourra être adaptée selon les outils utilisés."), save_label: "Personnaliser" }, [
+      { type: "info", settings: { icon: "devis-document", title: "Données du formulaire", text: "Les informations transmises via nos formulaires sont utilisées uniquement pour répondre à vos demandes." } },
+      { type: "info", settings: { icon: "cible-ronde", title: "Finalité des demandes", text: "Vos données nous permettent d'analyser votre besoin et de revenir vers vous avec des informations adaptées." } },
+      { type: "info", settings: { icon: "horloge", title: "Conservation des données", text: "La durée de conservation est à définir en fonction des outils et des obligations légales applicables." } },
+      { type: "info", settings: { icon: "cadenas", title: "Vos droits", text: "Conformément à la réglementation applicable, vous pouvez demander l'accès, la rectification ou la suppression de vos données." } },
+      { type: "pref", settings: { key: "necessary", icon: "cadenas", title: "Nécessaires", text: "Cookies indispensables au bon fonctionnement du site." } },
+      { type: "pref", settings: { key: "audience", icon: "graphique", title: "Mesure d'audience", text: "Nous aide à améliorer nos contenus en analysant la fréquentation du site. Aucun outil n'est branché sur ce site de démonstration." } },
+      { type: "pref", settings: { key: "external", icon: "lecture", title: "Contenus externes", text: "Permet l'affichage de contenus tiers (cartes, vidéos, réseaux sociaux…). Aucun contenu externe sur ce site de démonstration." } },
+    ]),
+  ]);
+  spec.templates["404"] = phTemplate([
+    S("ph-hero", { layout: "notfound", title_size: 74, crumb_current: "404", heading: "On a perdu le contact.", text: p("Cette page n'est pas disponible."), button_label: "Retour à l'accueil", button_link: "/", button2_label: "Voir les prestations", button2_link: U("prestations"), button2_mobile: true, circuit: "n404-note", note: "Certaines pages\nprennent parfois\nun autre chemin.", note_x: 1194, note_y: 84, height: 600 }),
+    S("ph-cards", { layout: "shortcuts", columns: 4, eyebrow: "Découvrir nos services", pad_top: 0, pad_bottom: 30 }, [
+      { type: "card", settings: { image_asset: f("16_projet_ambiance"), alt: alt("16_projet_ambiance"), title: "Éclairage", link_label: "En savoir plus", link: U("eclairage") } },
+      { type: "card", settings: { image_asset: f("21_prise_interrupteur"), alt: alt("21_prise_interrupteur"), position: "70% 50%", title: "Prises & équipements", link_label: "En savoir plus", link: U("installation-et-renovation") } },
+      { type: "card", settings: { image_asset: f("03_tableau_electrique"), alt: alt("03_tableau_electrique"), title: "Tableaux & sécurité", link_label: "En savoir plus", link: U("tableau-et-securite") } },
+      { type: "card", settings: { image_asset: f("10_eclairage_exterieur"), alt: alt("10_eclairage_exterieur"), position: "85% 30%", title: "Dépannage électrique", link_label: "En savoir plus", link: U("depannage") } },
+    ]),
+    pageRow({ footer_mobile: "stack", scale: 90 }),
   ]);
 
   // ------------------------------------------------------------------------------------------- En-tête, pied, menus

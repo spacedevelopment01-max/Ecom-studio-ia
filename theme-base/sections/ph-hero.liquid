@@ -14,7 +14,7 @@
   assign lay = s.layout
   assign tag = 'h1'
 -%}
-<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }}; --ph-nx: {{ s.note_x }}; --ph-ny: {{ s.note_y }}; --ph-cy: {{ s.copy_y }};" data-ph-hero>
+<section class="ph ph-hero ph-hero--{{ lay }}{% if s.image_asset == blank and s.image == blank %} no-img{% endif %}{% if s.mobile_photo == 'below' %} m-photo-below{% elsif s.mobile_photo == 'none' %} m-photo-none{% endif %}{% if s.mobile_navy %} m-navy{% endif %}{% if s.chips_below and section.blocks.size > 0 %} chips-below{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-iw: {{ s.image_w }}; --ph-ix: {{ s.image_x }}; --ph-iy: {{ s.image_y }}; --ph-dw: {{ s.detail_w }}; --ph-dx: {{ s.detail_x }}; --ph-dy: {{ s.detail_y }}; --ph-ih: {{ s.height }}; --ph-ih-m: {{ s.height_mobile }}; --ph-pw: {{ s.photo_w }}; --ph-nx: {{ s.note_x }}; --ph-ny: {{ s.note_y }}; --ph-cy: {{ s.copy_y }};" data-ph-hero>
   <div class="ph-c">
     {%- if s.crumb_current != blank -%}
         <nav class="ph-crumb" aria-label="{{ s.crumb_label | escape }}">
@@ -69,11 +69,11 @@
     </div>
 
     {%- if section.blocks.size > 0 -%}
-      <div class="ph-hero__chips">
+      <div class="ph-hero__chips{% if s.chips_below %} is-below{% endif %}">
         {%- if s.chips_label != blank -%}<p class="ph-eyebrow ph-hero__chips-label">{{ s.chips_label }}</p>{%- endif -%}
         <div class="ph-chips" role="group" aria-label="{{ s.chips_aria | escape }}" data-ph-chips="{{ s.chips_for }}">
           {%- for b in section.blocks -%}
-            <button type="button" class="ph-chip" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-ph-chip="{{ b.settings.value | default: 'all' }}" {{ b.shopify_attributes }}>{{ b.settings.label }}</button>
+            <button type="button" class="ph-chip{% if b.settings.show == 'desktop' %} ph-only-d{% elsif b.settings.show == 'mobile' %} ph-only-m{% endif %}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}" data-ph-chip="{{ b.settings.value | default: 'all' }}" {{ b.shopify_attributes }}>{{ b.settings.label }}</button>
           {%- endfor -%}
         </div>
       </div>
@@ -160,23 +160,26 @@
       { "value": "p05", "label": "Prestation (coin haut droit, diagonale)" },
       { "value": "corner", "label": "Coin haut droit" },
       { "value": "long", "label": "Long trait vers le titre" },
-      { "value": "short", "label": "Court trait" }
+      { "value": "short", "label": "Court trait" },
+      { "value": "n404-note", "label": "Page introuvable (vers la note)" }
     ] },
     { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
     { "type": "number", "id": "note_x", "label": "Position horizontale de la note (repère 1440 px)", "default": 1218 },
     { "type": "number", "id": "note_y", "label": "Position verticale de la note (repère 1440 px)", "default": 84 },
     { "type": "header", "content": "Pastilles de filtre" },
     { "type": "text", "id": "chips_label", "label": "Titre des pastilles (téléphone)" },
+    { "type": "checkbox", "id": "chips_below", "label": "Pastilles sous l'ouverture, sur fond clair", "default": false },
     { "type": "text", "id": "chips_aria", "label": "Nom du groupe de pastilles", "default": "Filtrer" },
     { "type": "select", "id": "chips_for", "label": "Liste filtrée", "default": "projects", "options": [{ "value": "projects", "label": "Réalisations" }, { "value": "faq", "label": "Questions" }, { "value": "posts", "label": "Conseils" }] }
   ],
   "blocks": [
     { "type": "chip", "name": "Filtre", "settings": [
       { "type": "text", "id": "label", "label": "Libellé", "default": "Tout" },
-      { "type": "text", "id": "value", "label": "Catégorie filtrée (vide = tout)" }
+      { "type": "text", "id": "value", "label": "Catégorie filtrée (vide = tout)" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
     ] }
   ],
-  "max_blocks": 6,
+  "max_blocks": 10,
   "presets": [{ "name": "Ouverture PHASE" }]
 }
 {% endschema %}
