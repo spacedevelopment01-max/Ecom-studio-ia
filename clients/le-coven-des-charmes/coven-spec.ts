@@ -210,6 +210,9 @@ export function applyCoven(spec: ThemeSpec, assetIds: Record<string, string>, op
     color_background: "#0a090d", color_foreground: "#ece4d6", color_accent: "#e2b765", color_button: "#e2b765", color_button_text: "#24170a",
   });
   for (const k of Object.keys(spec.settings)) if (/^(floating_|whatsapp_|sticky_)/.test(k) && typeof spec.settings[k] === "boolean") spec.settings[k] = false;
+  // Palettes du thème en sombre : la page est noire dès le premier affichage (sans flash crème avant le script).
+  const schemes = (spec.settings.color_schemes ?? {}) as Record<string, { settings: Record<string, string> }>;
+  for (const sc of Object.values(schemes)) Object.assign(sc.settings, { background: "#0a090d", surface: "#141018", text: "#ece4d6", muted: "#b8ab95", accent: "#e2b765", accent_text: "#24170a", border: "#3a2c1c" });
   // Image HD du client, sinon photo du client si elle convient (aperçu client), sinon visuel découpé dans la planche.
   const v = (clientFile: string | null, crop: string) => (!hd && mode === "client" && clientFile && has(clientFile) ? clientFile : img(`coven-mq-${crop}.jpg`));
   const hdFile = (n: string) => (has(covenHdFile(n)) ? covenHdFile(n) : "");
