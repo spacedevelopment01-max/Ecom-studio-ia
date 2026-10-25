@@ -207,6 +207,10 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   // Mêmes scripts que la mise en page Shopify (dont family.js et conversion.js), dans le même ordre, puis ceux des sections.
   const js = [...design.scripts.map((name) => files.get(`assets/${name}`)), sectionJavascript(files, specSectionTypes(spec))].filter(Boolean).join("\n;\n");
   if (js) put("assets/js/es-theme.js", js);
+  // Scripts et feuilles qu'une section appelle elle-même (adresse réécrite vers assets/es/) : contenu déjà livré
+  // (assets/js/es-theme.js, assets/css/es-*.css) ; un fichier neutre évite la page 404 sans double exécution (mission #190).
+  for (const name of design.scripts) put(`assets/es/${name}`, `/* ${name.replace(/\*\//g, "")} : inclus dans assets/js/es-theme.js */\n`);
+  for (const name of design.stylesheets) put(`assets/es/${name}`, `/* ${name.replace(/\*\//g, "")} : chargée par le thème (assets/css/es-${name.replace(/\*\//g, "")}) */\n`);
   put("assets/js/es-ps.js", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.js")));
   for (const f of design.fonts) {
     const p = path.join(ROOT, "assets/fonts", f);

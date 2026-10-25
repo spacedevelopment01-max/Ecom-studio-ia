@@ -185,6 +185,12 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   // Mêmes scripts que la mise en page Shopify (dont family.js et conversion.js), dans le même ordre, puis ceux des sections.
   const js = [...design.scripts.map((name) => files.get(`assets/${name}`)), sectionJavascript(files, specSectionTypes(spec))].filter(Boolean).join("\n;\n");
   if (js) put("assets/js/theme.js", js);
+  // Scripts et feuilles propres au thème qu'une section appelle elle-même (ex. phase.js, sillon.css, *-core.js des
+  // réservations) : leur contenu est déjà livré (assets/js/theme.js, assets/css/). Un fichier neutre à l'adresse attendue
+  // évite la page 404 (lue comme du JavaScript : « Unexpected token '<' », constaté à l'installation, mission #190), sans
+  // double exécution.
+  for (const name of design.scripts) put(`assets/es/${name}`, `/* ${commentSafe(name)} : inclus dans assets/js/theme.js */\n`);
+  for (const name of design.stylesheets) put(`assets/es/${name}`, `/* ${commentSafe(name)} : chargée par le thème (assets/css/${commentSafe(name)}) */\n`);
   put("assets/js/es-editor.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-editor.js")));
   for (const f of design.fonts) {
     const p = path.join(ROOT, "assets/fonts", f);

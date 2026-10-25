@@ -458,6 +458,8 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 .es-line-item__title { font-weight: var(--font-body-weight-bold); text-decoration: none; }
 .es-line-item__info p { margin: 4px 0; }
 .es-line-items--page .es-line-item { grid-template-columns: 110px 1fr auto auto; padding-bottom: 18px; border-bottom: 1px solid var(--c-border); }
+/* Téléphone : quatre colonnes ne tiennent pas (nom du produit écrasé, « Supprimer » coupé, panier plus large que l'écran) ; le lien passe sous la ligne. */
+@media (max-width: 749px) { .es-line-items--page .es-line-item { grid-template-columns: 84px minmax(0, 1fr) auto; } .es-line-items--page .es-line-item > .es-line-item__remove, .es-line-items--page .es-line-item > .es-small:last-child { grid-column: 2 / -1; justify-self: start; } }
 .es-qty-input { width: 72px; min-height: 40px; padding: 0 10px; border: 1px solid var(--c-border); border-radius: var(--radius-button); background: var(--c-bg); }
 .es-cart__step { width: 34px; height: 36px; display: grid; place-items: center; color: inherit; }
 .es-cart__step .es-icon { width: 14px; }
