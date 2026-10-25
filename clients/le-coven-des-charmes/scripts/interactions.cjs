@@ -28,7 +28,7 @@ const check = (name, ok, detail = "") => { results.push({ name, ok: !!ok, detail
 
   // ---------------------------------------------------------------- cookies : aucun accord facultatif avant choix
   {
-    const c = await ctx(1440); const p = await open(c, "accueil.html");
+    const c = await ctx(1440); const p = await open(c, "index.html");
     check("Bandeau de cookies visible au premier passage", await p.isVisible("[data-cvn-cookies]"));
     check("Mesure d'audience désactivée par défaut", (await p.evaluate(() => localStorage.getItem("cvn-consent"))) === null);
     await p.click("[data-cvn-consent-custom]");
@@ -164,7 +164,7 @@ const check = (name, ok, detail = "") => { results.push({ name, ok: !!ok, detail
     const c = await ctx(1440); const p = await open(c, "404.html");
     check("404 : « Vous vous êtes égaré dans le Coven. »", (await p.textContent("h1")).replace(/\s+/g, " ").includes("Vous vous êtes égaré dans le Coven."));
     await c.close();
-    const files = ["accueil.html", "produit.html", "panier.html", "404.html", ...["le-tirage", "le-coven", "creations", "faq", "contact", "informations", "commande", "confirmation", "compte"].map((h) => `page-${h}.html`)];
+    const files = ["index.html", "produit.html", "panier.html", "404.html", ...["le-tirage", "le-coven", "creations", "faq", "contact", "informations", "commande", "confirmation", "compte"].map((h) => `page-${h}.html`)];
     for (const w of [360, 390, 430, 768, 1024, 1440]) {
       const cc = await ctx(w, 800); const bad = [];
       for (const f of files) { const pg = await open(cc, f); const sw = await pg.evaluate(() => document.documentElement.scrollWidth); if (sw > w) bad.push(`${f} ${sw}`); await pg.close(); }
