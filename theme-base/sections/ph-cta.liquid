@@ -3,7 +3,8 @@
   - band : grand bandeau jaune (sur-titre, titre, bouton bleu nuit, traits de circuit et note) — accueil ;
   - slim : bandeau jaune sur une ligne (titre, bouton, note) — réalisations, projet, entreprise, questions ;
   - soft : cadre gris clair et bouton jaune (« Un doute ? ») — prestations ;
-  - box : encadré (jaune ou gris clair) à pictogramme, au téléphone (« Bien préparer », « Disponibilités »).
+  - au téléphone : bandeau, bouton à droite, cadre gris, bloc jaune compact ou lien jaune (« Votre projet / Décrire mon
+    projet → », toute la surface est cliquable).
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -44,7 +45,9 @@
     { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "band", "options": [
       { "value": "band", "label": "Bandeau jaune, bouton pleine largeur" },
       { "value": "inline", "label": "Bandeau jaune, bouton à droite du titre" },
-      { "value": "soft", "label": "Cadre gris clair" }
+      { "value": "soft", "label": "Cadre gris clair" },
+      { "value": "box", "label": "Bloc jaune compact" },
+      { "value": "link", "label": "Lien jaune (sur-titre et bouton en grand)" }
     ] },
     { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
@@ -52,7 +55,7 @@
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 62 },
-    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 30 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 0.5, "default": 30 },
     { "type": "richtext", "id": "text", "label": "Texte" },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Demander un devis" },
     { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone (facultatif)" },

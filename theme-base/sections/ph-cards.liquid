@@ -15,12 +15,12 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-cards ph-cards--{{ lay }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.image_height > 0 %} --ph-mh: {{ s.image_height }};{% endif %}">
+<section class="ph ph-cards ph-cards--{{ lay }} ph-cards--m-{{ s.layout_mobile | default: 'auto' }} ph-bg--{{ s.background }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-cols: {{ s.columns }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};{% if s.image_height > 0 %} --ph-mh: {{ s.image_height }};{% endif %}">
   <div class="ph-c">
     {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.note != blank -%}
       <div class="ph-head">
         <div class="ph-head__main">
-          {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+          {%- if s.eyebrow != blank -%}<p class="ph-eyebrow"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
           {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
           {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
         </div>
@@ -45,7 +45,7 @@
             </div>
           {%- endif -%}
           <div class="ph-card__body">
-            {%- if c.icon != blank -%}<span class="ph-card__icon" aria-hidden="true">{% render 'ph-icon', name: c.icon %}</span>{%- endif -%}
+            {%- if c.icon != blank -%}<span class="ph-card__icon" aria-hidden="true">{%- if c.icon_mobile != blank -%}{% render 'ph-icon', name: c.icon, class: 'ph-only-d' %}{% render 'ph-icon', name: c.icon_mobile, class: 'ph-only-m' %}{%- else -%}{% render 'ph-icon', name: c.icon %}{%- endif -%}</span>{%- endif -%}
             {%- if c.number != blank -%}<span class="ph-card__num">{{ c.number }}</span>{%- endif -%}
             {%- if c.label != blank and lay == 'gallery' or c.label != blank and lay == 'related' or c.label != blank and lay == 'posts' -%}<p class="ph-card__kicker"><span{% if c.label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ c.label }}</span>{%- if c.label_mobile != blank -%}<span class="ph-txt-m">{{ c.label_mobile }}</span>{%- endif -%}</p>{%- endif -%}
             <h3 class="ph-card__title">
@@ -104,14 +104,20 @@
       { "value": "posts", "label": "Conseils filtrables et paginés" },
       { "value": "shortcuts", "label": "Raccourcis vers les prestations" }
     ] },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "auto", "options": [
+      { "value": "auto", "label": "Selon la disposition" },
+      { "value": "list", "label": "Cadres à pictogramme et flèche" },
+      { "value": "photo", "label": "Cadres photo, texte et flèche" }
+    ] },
     { "type": "range", "id": "columns", "label": "Colonnes (ordinateur)", "min": 1, "max": 4, "step": 1, "default": 3 },
     { "type": "select", "id": "background", "label": "Fond", "default": "white", "options": [{ "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
     { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone (facultatif)" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [y]mots[/y] en jaune." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 54 },
-    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 1, "default": 28 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 60, "step": 0.5, "default": 28 },
     { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
     { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
     { "type": "text", "id": "note", "label": "Note à droite du titre" },
@@ -150,6 +156,7 @@
       { "type": "text", "id": "tag", "label": "Étiquette sur la photo" },
       { "type": "text", "id": "category", "label": "Catégorie (filtre des réalisations)" },
       { "type": "text", "id": "icon", "label": "Pictogramme", "info": "Nom d'un pictogramme du thème : installation, outil-renovation, cle, tableau-electrique, ampoule, depannage-eclair, prise, interrupteur, pilotage, eclairage-exterieur, spot-plafond, projet-echange, bulle, oeil-observer, plan-perimetre, devis-document, calendrier, validation, bouclier, precision-cible, cible-ronde, clarte-soleil, lieu-repere, telephone, email, horloge, maison, diagnostic, courant-circuits, information, reglages, liste, feuille, actualiser, extension, alerte, points, recherche." },
+      { "type": "text", "id": "icon_mobile", "label": "Pictogramme au téléphone (facultatif)" },
       { "type": "text", "id": "number", "label": "Numéro" },
       { "type": "text", "id": "title", "label": "Titre" },
       { "type": "text", "id": "title_mobile", "label": "Titre au téléphone (facultatif)" },

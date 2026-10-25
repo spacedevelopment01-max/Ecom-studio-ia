@@ -193,6 +193,16 @@
     let busy = false;
     let files = [];
     const field = (key) => $(`[data-ph-field="${key}"]`, form);
+    // Réponses du questionnaire de dépannage (commune, symptômes) reprises dans la demande, jamais envoyées seules.
+    if (kind === "quote") {
+      const q = new URLSearchParams(location.search);
+      const town = (q.get("commune") || "").trim().slice(0, 80);
+      const sym = q.getAll("symptome").map((v) => v.trim().slice(0, 120)).filter(Boolean);
+      const city = form.elements["contact[commune]"];
+      const body = form.elements["contact[body]"];
+      if (town && city && !city.value) city.value = town;
+      if (sym.length && body && !body.value) body.value = `${(q.get("motif") || "").trim().slice(0, 60) || "Symptômes"} : ${sym.join(", ")}.`;
+    }
     const setErr = (key, msg) => {
       const f = field(key);
       if (!f) return;
