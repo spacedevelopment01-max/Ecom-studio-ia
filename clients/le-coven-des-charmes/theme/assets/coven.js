@@ -214,6 +214,7 @@
   if (cartEl) {
     var sizes = (cartEl.getAttribute("data-sizes") || "").split("|").map(function (x) { return x.trim(); }).filter(Boolean);
     var ph = cartEl.getAttribute("data-size-placeholder") || "À préciser", note = cartEl.getAttribute("data-price-note") || "";
+    var goLink = $("[data-cvn-checkout]", cartEl), goHref = goLink ? goLink.href : cartEl.getAttribute("data-checkout");
     var tpl = $("template[data-cvn-line-tpl]", cartEl), linesEl = $("[data-cvn-cart-lines]", cartEl), errEl = $("[data-cvn-cart-error]", cartEl);
     var busy = false;
     var paint = function (c) {
@@ -244,7 +245,7 @@
       $$("[data-cvn-subtotal], [data-cvn-total]", cartEl).forEach(function (el) { el.textContent = known ? fmt(total) : "— €"; });
       $("[data-cvn-total-note]", cartEl).hidden = known;
       var go = $("[data-cvn-checkout]", cartEl), closed = $("[data-cvn-checkout-note]", cartEl);
-      if (SIM) { go.href = cartEl.getAttribute("data-checkout"); closed.hidden = true; go.removeAttribute("aria-disabled"); }
+      if (SIM) { go.href = goHref; closed.hidden = true; go.removeAttribute("aria-disabled"); }
       else if (!known) { go.removeAttribute("href"); go.setAttribute("aria-disabled", "true"); go.setAttribute("role", "link"); closed.hidden = false; }
       else { go.href = root + "checkout"; closed.hidden = true; }
     };
@@ -337,7 +338,7 @@
         var data = {}; $$("input, select", form).forEach(function (f) { if (f.name && f.type !== "checkbox") data[f.name] = f.value.trim(); });
         var ref = "APERCU-" + Math.random().toString(36).slice(2, 7).toUpperCase();
         store.sset(ORDER_KEY, { ref: ref, at: Date.now(), items: current.items, contact: { first_name: data.first_name, city: data.city, country: data.country } });
-        cart.save({ items: [] }).then(function () { location.href = co.getAttribute("data-confirm"); });
+        cart.save({ items: [] }).then(function () { var l = $("[data-cvn-confirm-link]", co); location.href = l ? l.href : co.getAttribute("data-confirm"); });
       }, 900);
     });
   }
