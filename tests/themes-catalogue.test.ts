@@ -33,13 +33,13 @@ const products = Object.fromEntries(DIRECTIONS.map((d) => [d.id, sampleSpec(d.id
 const services = Object.fromEntries(DIRECTIONS.map((d) => [d.id, serviceSpec(d.id, "fr", undefined, { rich: true })])) as Record<DirectionId, Spec>;
 
 describe("Catalogue de thèmes : trente choix réellement différents", () => {
-  it("définit 43 thèmes (30 anciens, lisibles seulement, + 13 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, ATELIER NUANCE #177 et PARENTHÈSE) et n'en propose que 13 (catalogue actif), présentés en français et en anglais", () => {
-    expect(DIRECTIONS).toHaveLength(43);
-    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(43);
-    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(43);
-    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance", "parenthese"]);
+  it("définit 44 thèmes (30 anciens, lisibles seulement, + 14 de référence dont SILLON #148, NOCTIL et TRAVERSE #152, HEUREN et ALCÔVE #155, MUSEAU CLUB et SOUPLE #158, ATELIER NUANCE #177, PARENTHÈSE et PHASE) et n'en propose que 14 (catalogue actif), présentés en français et en anglais", () => {
+    expect(DIRECTIONS).toHaveLength(44);
+    expect(new Set(DIRECTIONS.map((d) => d.id)).size).toBe(44);
+    expect(new Set(DIRECTIONS.map((d) => d.name)).size).toBe(44);
+    expect(directionCards("fr").map((c) => c.id)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "atelier-nuance", "parenthese", "phase"]);
     // Le thème installé d'un projet existant, s'il est retiré, reste listé pour ce projet seulement, signalé « retiré ».
-    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false]]);
+    expect(directionCards("fr", ["vitrine"]).map((c) => [c.id, c.retired])).toEqual([["vitrine", true], ["fraise", false], ["onde", false], ["orbe", false], ["rive", false], ["sillon", false], ["noctil", false], ["traverse", false], ["heuren", false], ["alcove", false], ["museau-club", false], ["souple", false], ["atelier-nuance", false], ["parenthese", false], ["phase", false]]);
     for (const lang of ["fr", "en"] as const) for (const c of directionCards(lang, DIRECTIONS.map((d) => d.id))) {
       expect(c.tagline, c.id).toBeTruthy();
       expect(c.description.length, c.id).toBeGreaterThan(80);
@@ -139,6 +139,9 @@ describe("Catalogue de thèmes : trente choix réellement différents", () => {
     // PARENTHÈSE : séances, ateliers, réservation, gestion du rendez-vous, cabinet et journal composés par sa démonstration.
     const { parentheseProject } = await import("./parenthese-fixtures");
     add((await runWithLang({ content: "fr", ui: "fr" }, () => parentheseProject(user.id))).spec);
+    // PHASE : sections ph-* composées par sa démonstration (dix planches, ordinateur et téléphone).
+    const { phaseProject } = await import("./phase-fixtures");
+    add((await runWithLang({ content: "fr", ui: "fr" }, () => phaseProject(user.id))).spec);
     // SILLON V2 (PR #182) : sections sv-* composées par sa démonstration (douze pages des planches, panier, commande).
     const { sillonProject } = await import("./sillon-fixtures");
     add((await runWithLang({ content: "fr", ui: "fr" }, () => sillonProject(user.id))).spec);

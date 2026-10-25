@@ -83,7 +83,7 @@ export function headerSettings(lang: Lang, o: { demo: boolean; ctaLink: string; 
     color_navy: "#141B30", color_yellow: "#F2F55C", color_ink: "#141B30", color_text: "#4A5263", color_line: "#E3E7EE", color_soft: "#F3F6F9",
     form_mode: o.demo ? "demo" : "platform", quote_page: o.quotePage, confirm_page: o.confirmPage,
     demo_note: t("Démonstration — demande non envoyée.", "Demonstration — request not sent."),
-    sending_label: t("Envoi en cours…", "Sending…"), error_title: t("Vérifiez les champs signalés :", "Please check the highlighted fields:"),
+    sending_label: t("Envoi en cours…", "Sending…"), error_title: t("Vérifiez les champs signalés :", "Please check the highlighted fields:"), consent_name: t("Accord", "Consent"),
     fail_label: t("L'envoi n'a pas abouti. Votre saisie est conservée : réessayez dans un instant ou contactez-nous directement.", "Sending failed. What you typed is kept: try again in a moment or contact us directly."),
     blocked_label: t("L'envoi en ligne n'est pas encore branché sur ce site. Votre saisie est conservée ; contactez-nous directement.", "Online sending is not connected on this site yet. What you typed is kept; please contact us directly."),
     required_label: t("Ce champ est obligatoire.", "This field is required."), email_label: t("Veuillez saisir une adresse e-mail valide.", "Please enter a valid email address."),
@@ -116,6 +116,7 @@ function servicesHome(k: Kit): (Row | Row[])[] {
   return [
     k.lib("ph-hero", 1, { layout: "home", eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: html(k.hero.text), image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.banner ?? "", button_label: k.hero.cta || t("Parlons de votre projet", "Let's talk about your project"), button_link: phUrl("demande-de-devis", lang), button2_label: t("Voir les prestations", "See our services"), button2_link: phUrl("prestations", lang), note: "", caption: "" }),
     k.R.servicesList(1, "cards", { withImages: true }),
+    k.R.practical(2),
     k.faqSec(1, 5, "lines"),
     k.lib("ph-cta", 1, { layout: "band", eyebrow: t("Votre projet", "Your project"), heading: t("Parlons de votre projet.", "Let's talk about your project."), button_label: t("Demander un devis", "Request a quote"), button_link: phUrl("demande-de-devis", lang), note: "" }),
   ];
@@ -126,7 +127,9 @@ function shopHome(k: Kit): (Row | Row[])[] {
   return [
     k.lib("ph-hero", 1, { layout: "home", eyebrow: k.hero.eyebrow, heading: k.hero.heading, text: html(k.hero.text), image_asset: k.im.lifestyle ?? k.im.hero ?? k.im.packshot ?? "", button_label: k.hero.cta, button_link: "/collections/all", button2_label: "", note: "", caption: "" }),
     k.featured(1),
+    k.iwt(1, "image-left", k.im.scene1 ?? k.im.detail1, "up"),
     k.faqSec(1, 4, "lines"),
+    k.lib("ph-cta", 1, { layout: "band", eyebrow: "", heading: k.hero.heading, button_label: k.hero.cta, button_link: "/collections/all", note: "" }),
     k.newsletter(1),
   ];
 }
@@ -202,12 +205,12 @@ export const PHASE_THEME: CatalogTheme = {
   description: "Site d'artisan électricien de la famille Services : ouverture bleu nuit au titre sur deux couleurs, repères des prestations, cartes photo, méthode en étapes, réalisations illustratives filtrables, appel jaune « sous tension » ; pages prestations, installation, tableau, éclairage et dépannage, réalisations et projet, entreprise, questions par catégories, conseils et article, contact et demande de devis en deux étapes (photos jointes), confirmation, mentions, données et cookies, page introuvable. Bleu nuit, jaune électrique, gris clairs ; titres très gras, notes à chasse fixe et traits de circuits.",
   bestFor: ["électricien", "artisan du bâtiment", "installation électrique", "rénovation", "dépannage", "demande de devis"],
   en: { tagline: "Electrician: midnight blue, electric yellow and circuit lines", description: "Electrician website from the Services family: midnight-blue opening with a two-colour headline, service markers, photo cards, step-by-step method, filterable illustrative projects, yellow “switched on” call to action; services, installation, consumer unit, lighting and troubleshooting pages, projects and project page, company, questions by category, advice and article, contact and two-step quote request (attached photos), confirmation, legal notice, data and cookies, page not found. Midnight blue, electric yellow, light greys; extra-bold headings, monospaced notes and circuit lines.", bestFor: ["electrician", "building trades", "electrical installation", "renovation", "troubleshooting", "quote request"] },
-  fonts: { heading: "inter_n7", body: "inter_n4" },
+  fonts: { heading: "inter_n8", body: "inter_n4" },
   previewFonts: { heading: "Inter", body: "Inter" },
   motion: "subtle",
   photoMood: "atelier",
   kinds: ["services"],
-  look: { headerLayout: "logo-left", shape: "bar", icons: "plain", menu: "drawer", footer: "columns", ann: "static", card: "boxed", button: "solid", radius: { button: 0, card: 0 }, headingCase: "none", tracking: -1, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "grid", pageWidth: 1440, spacing: 100, ds: "maison", density: "balanced", buttonUppercase: false },
+  look: { headerLayout: "logo-left", shape: "boxed", icons: "plain", menu: "drawer", footer: "split", ann: "static", card: "minimal", button: "solid", radius: { button: 0, card: 0 }, headingCase: "none", tracking: -1, headingScale: 100, glow: 0, shine: false, dark: false, gallery: "grid", pageWidth: 1440, spacing: 100, ds: "maison", density: "balanced", buttonUppercase: false },
   settings: { editorial_profile: "none", conversion_profile: "none", motion_intensity: "subtle", type_accent_font: "space_mono_n4" },
   headerSettings: { layout: "logo-left", show_search: false, mobile_menu: "drawer" },
   mainProduct: { gallery_layout: "grid", sticky_bar: false, color_scheme: "scheme-1" },

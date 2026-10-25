@@ -46,6 +46,7 @@
       "demo": {{ s.demo_note | json }},
       "sending": {{ s.sending_label | json }},
       "errorTitle": {{ s.error_title | json }},
+      "consentName": {{ s.consent_name | json }},
       "fail": {{ s.fail_label | json }},
       "blocked": {{ s.blocked_label | json }},
       "required": {{ s.required_label | json }},
@@ -174,6 +175,7 @@
     { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Démonstration — demande non envoyée." },
     { "type": "text", "id": "sending_label", "label": "Bouton pendant l'envoi", "default": "Envoi en cours…" },
     { "type": "text", "id": "error_title", "label": "Titre du résumé des erreurs", "default": "Vérifiez les champs signalés :" },
+    { "type": "text", "id": "consent_name", "label": "Nom de la case d'accord dans le résumé des erreurs", "default": "Accord" },
     { "type": "textarea", "id": "fail_label", "label": "Message d'échec de l'envoi" },
     { "type": "textarea", "id": "blocked_label", "label": "Message si l'envoi n'est pas branché" },
     { "type": "text", "id": "required_label", "label": "Champ obligatoire", "default": "Ce champ est obligatoire." },
@@ -197,6 +199,7 @@
     { "type": "text", "id": "cookies_refuse", "label": "Bouton « tout refuser »", "default": "Tout refuser" },
     { "type": "text", "id": "cookies_custom", "label": "Bouton « personnaliser »", "default": "Personnaliser" },
     { "type": "text", "id": "cookies_saved", "label": "Confirmation des préférences", "default": "Vos préférences sont enregistrées." }
-  ]
+  ],
+  "presets": [{ "name": "En-tête PHASE" }]
 }
 {% endschema %}

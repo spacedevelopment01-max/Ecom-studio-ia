@@ -1389,3 +1389,4 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 .dir-atelier-nuance .es-header__cta .es-icon { display: none; }
 /* PARENTHÈSE : le caractère est porté par ses sections pa-* et parenthese.css (chargée par « Réglages du cabinet »). */
 .dir-parenthese .es-heading { letter-spacing: -.01em; line-height: 1.1; }
+.dir-phase .es-heading { letter-spacing: -.025em; line-height: 1.05; }

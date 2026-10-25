@@ -309,7 +309,11 @@
             const lab = $("label, .ph-field__label", field(k));
             const target = $("input:not([type=hidden]), select, textarea", field(k));
             a.href = `#${target?.id || ""}`;
-            a.textContent = `${(lab?.textContent || k).replace(/\*|\(facultatif\)|\(optional\)/g, "").trim()} : ${m}`;
+            // Nom du champ tel qu'il est affiché (libellé de l'écran en cours ; « Accord » pour la case de consentement).
+            let name = k;
+            if (k === "consent") name = T.consentName || k;
+            else if (lab) { const c = lab.cloneNode(true); $$(mobile() ? ".ph-txt-d" : ".ph-txt-m", c).forEach((n) => n.remove()); name = c.textContent; }
+            a.textContent = `${name.replace(/\*|\(facultatif\)|\(optional\)/g, "").replace(/\s+/g, " ").trim()} : ${m}`;
             a.addEventListener("click", (ev) => { ev.preventDefault(); target?.focus(); });
             li.appendChild(a);
             $("ul", summary).appendChild(li);
