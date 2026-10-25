@@ -103,13 +103,13 @@ export const COVEN_HD_MEDIA: CovenMedia[] = HD.map(([n, source, alt]) => ({ file
 
 /** Emplacement des planches (nom du visuel découpé) → image HD du client qui en est la source. */
 export const CROP_HD: Record<string, string> = {
-  "accueil-scene": "01", "m-accueil-scene": "23", "accueil-coupelle": "03", "accueil-exemple-1": "06", "accueil-exemple-2": "07", "accueil-exemple-3": "08",
-  "accueil-livre": "43", "accueil-bougies": "44", "m-accueil-etape-1": "02", "m-accueil-etape-2": "03", "m-accueil-etape-3": "37", "m-accueil-etape-4": "05", "m-accueil-coupelle": "45",
+  "accueil-scene": "01", "m-accueil-scene": "23", "accueil-coupelle": "25", "accueil-exemple-1": "06", "accueil-exemple-2": "07", "accueil-exemple-3": "08",
+  "accueil-livre": "43", "accueil-bougies": "44", "m-accueil-etape-1": "02", "m-accueil-etape-2": "03", "m-accueil-etape-3": "37", "m-accueil-etape-4": "13", "m-accueil-coupelle": "45",
   "produit-photo": "02", "m-produit-photo": "24", "produit-vignette-1": "02", "produit-vignette-2": "05", "produit-vignette-3": "13", "produit-vignette-4": "14", "produit-vignette-5": "43", "produit-vignette-6": "08",
   "m-produit-vignette-1": "24", "m-produit-vignette-2": "03", "m-produit-vignette-3": "10", "m-produit-vignette-4": "43",
   "produit-etape-1": "03", "produit-etape-2": "04", "produit-etape-3": "05", "m-produit-etape-2": "03", "m-produit-etape-3": "37", "m-produit-etape-4": "05",
   "produit-exemple-1": "06", "produit-exemple-2": "07", "produit-exemple-3": "08", "produit-exemple-4": "20", "m-produit-exemple-1": "19", "m-produit-exemple-2": "17", "produit-bougies": "45",
-  "tirage-scene": "09", "m-tirage-scene": "25", "tirage-etape-1": "02", "tirage-etape-2": "09", "tirage-etape-3": "37", "tirage-etape-4": "05",
+  "tirage-scene": "09", "m-tirage-scene": "25", "tirage-etape-1": "02", "tirage-etape-2": "09", "tirage-etape-3": "37", "tirage-etape-4": "13",
   "tirage-famille-1": "31", "tirage-famille-2": "32", "tirage-famille-3": "33", "tirage-famille-4": "34", "tirage-famille-5": "35", "tirage-famille-6": "36", "tirage-tableau": "21", "tirage-questions": "44",
   "coven-scene": "10", "m-coven-scene": "26", "coven-bougie": "44", "coven-photo-1": "11", "coven-photo-2": "12", "coven-photo-3": "13", "coven-photo-4": "14", "m-coven-photo-3": "43", "m-coven-photo-6": "14",
   "creations-scene": "16", "m-creations-scene": "44", "creations-1": "15", "creations-2": "16", "creations-3": "17", "creations-4": "18", "creations-5": "19", "creations-6": "20",

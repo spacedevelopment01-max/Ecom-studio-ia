@@ -55,12 +55,12 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-header__bar { position: relative; height: 82px; display: flex; align-items: center; max-width: 1440px; margin: 0 auto; padding: 0 30px 0 30px; border-bottom: 2px solid #6e5330; box-shadow: 0 1px 0 #2a1f10; }
 .cvn-header__nav { display: flex; align-items: center; height: 100%; }
 .cvn-header__nav--left { gap: 23px; }
-.cvn-header__nav--right { gap: 0; position: absolute; left: calc(50% + 113px); top: 0; }
+.cvn-header__nav--right { gap: 0; position: absolute; left: calc(50% + 100px); top: 0; }
 .cvn-header__nav--right .cvn-header__link { margin-left: 36px; }
 .cvn-header__nav--right .cvn-header__link:first-child { margin-left: 0; }
 .cvn-header__link { font: 500 20px/1 "Coven Garamond", serif; color: #dccaa3; letter-spacing: 0; white-space: nowrap; position: relative; padding: 6px 0; transition: color .2s; }
 .cvn-header__link:hover, .cvn-header__link.is-active { color: #f1cf86; }
-.cvn-header__logo { position: absolute; left: 50%; top: -3px; width: 210px; height: 210px; margin-left: -105px; border-radius: 50%; overflow: hidden; background: #000; box-shadow: 0 0 0 2px #8f6b37, 0 0 0 4px #000, 0 0 0 5px #5a4325, 0 8px 24px rgba(0, 0, 0, .6); z-index: 5; }
+.cvn-header__logo { position: absolute; left: 50%; top: -3px; width: 160px; height: 160px; margin-left: -80px; border-radius: 50%; overflow: hidden; background: #000; box-shadow: 0 0 0 2px #8f6b37, 0 0 0 4px #000, 0 0 0 5px #5a4325, 0 8px 24px rgba(0, 0, 0, .6); z-index: 5; }
 .cvn-header__logo img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--cvn-logo-zoom, 1.18)); }
 .cvn-header__logo-text { display: grid; place-items: center; height: 100%; padding: 30px; text-align: center; color: var(--cvn-cream); font-size: 28px; }
 .cvn-header__tools { display: flex; align-items: center; margin-left: auto; }
@@ -74,7 +74,7 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-header--compact .cvn-header__star { display: block; }
 .cvn-header--compact .cvn-header__nav--left { gap: 40px; }
 .cvn-header--compact .cvn-header__bar { height: 92px; }
-.cvn-header--compact .cvn-header__logo { width: 200px; height: 200px; margin-left: -100px; }
+.cvn-header--compact .cvn-header__logo { width: 156px; height: 156px; margin-left: -78px; }
 .cvn-menu { display: none; }
 
 @media (max-width: 1023px) {
@@ -314,8 +314,8 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-steps__foot { position: relative; z-index: 2; text-align: center; color: #ece4d6; }
 
 /* Accueil : bandeau à quatre étapes et photo de la coupelle. */
-.cvn-steps--band .cvn-steps__inner { height: 360px; width: calc(100% - 16px); margin: 0 8px; }
-.cvn-steps--band .cvn-steps__aside { left: 692px; right: 0; top: 0; bottom: 0; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%); mask-image: linear-gradient(90deg, transparent 0, #000 16%); }
+.cvn-steps--band .cvn-steps__inner { height: 360px; width: calc(min(100%, 1440px) - 16px); margin: 0 auto; }
+.cvn-steps--band .cvn-steps__aside { left: var(--aside-l, 692px); right: 0; top: 0; bottom: 0; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%); mask-image: linear-gradient(90deg, transparent 0, #000 16%); }
 .cvn-steps--band .cvn-steps__heading { position: absolute; left: 117px; top: 16px; }
 .cvn-steps--band .cvn-step { position: absolute; top: 83px; width: 270px; display: grid; grid-template-columns: 60px 1fr; column-gap: 20px; }
 .cvn-steps--band .cvn-step:nth-child(1) { left: 42px; } .cvn-steps--band .cvn-step:nth-child(2) { left: 316px; } .cvn-steps--band .cvn-step:nth-child(3) { left: 590px; }
@@ -352,10 +352,10 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
   .cvn-steps--band .cvn-step:nth-child(4) .cvn-step__title { background: none; padding: 0; }
   /* Liste numérotée avec photos (accueil). */
   .cvn-steps--m-photos .cvn-steps__list { margin-top: 10px; }
-  .cvn-steps--m-photos .cvn-step { display: grid; grid-template-columns: 30px 150px 1fr; column-gap: 12px; align-items: start; padding: 0 0 12px; }
-  .cvn-steps--m-photos .cvn-step__num { grid-column: 1; margin-top: 16px; }
+  .cvn-steps--m-photos .cvn-step { display: grid; grid-template-columns: 30px 118px 1fr; column-gap: 12px; align-items: start; padding: 0 0 12px; }
+  .cvn-steps--m-photos .cvn-step__num { grid-column: 1; margin-top: 32px; }
   .cvn-steps--m-photos .cvn-step:not(:last-child)::before { content: ""; position: absolute; left: 12px; top: 46px; bottom: -14px; border-left: 1px dashed #a07a40; }
-  .cvn-steps--m-photos .cvn-step__media { display: block; grid-column: 2; height: 52px; border-radius: 3px; }
+  .cvn-steps--m-photos .cvn-step__media { display: block; grid-column: 2; height: 92px; border-radius: 3px; border: 1px solid #8c6a3a; }
   .cvn-steps--m-photos .cvn-step__body { grid-column: 3; }
   .cvn-steps--m-photos .cvn-step + .cvn-step .cvn-step__body { border-top: 1px solid rgba(140, 106, 58, .35); padding-top: 6px; }
   .cvn-steps--m-photos .cvn-step:last-child .cvn-step__body { grid-column: 3; }
@@ -380,7 +380,7 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-fam__text { display: block; color: #e3dbcd; }
 .cvn-fam__note { position: relative; z-index: 2; }
 /* Accueil : rangée de six tiroirs. */
-.cvn-fam--drawers .cvn-fam__inner { height: 415px; width: calc(100% - 16px); margin: 0 8px; border-left: 1px solid #8c6a3a; border-right: 1px solid #8c6a3a; overflow: hidden; }
+.cvn-fam--drawers .cvn-fam__inner { height: 415px; width: calc(min(100%, 1440px) - 16px); margin: 0 auto; border-left: 1px solid #8c6a3a; border-right: 1px solid #8c6a3a; overflow: hidden; }
 .cvn-fam--drawers .cvn-fam__heading { padding-top: 14px; font-size: 44px; text-shadow: 0 2px 14px #000; }
 .cvn-fam--drawers .cvn-fam__sub { margin-top: 4px; text-shadow: 0 1px 10px #000; }
 .cvn-fam--drawers .cvn-fam__list { position: absolute; left: 28px; right: 28px; top: 120px; bottom: 16px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
@@ -404,8 +404,8 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
   .cvn-fam__item:has(.cvn-fam__label--m) > .cvn-fam__label:not(.cvn-fam__label--m) { display: none; }
   /* Liste de tiroirs sur deux colonnes. */
   .cvn-fam--m-list .cvn-fam__list, .cvn-fam--m-list.cvn-fam--drawers .cvn-fam__list { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .cvn-fam--m-list .cvn-fam__item, .cvn-fam--m-list.cvn-fam--drawers .cvn-fam__item { display: grid; grid-template-columns: 62px 1fr; grid-template-rows: auto 1fr; column-gap: 8px; align-items: start; padding: 5px; border: 1px solid #6e5330; border-radius: 3px; background: linear-gradient(180deg, #1a1218, #0c0a0e); }
-  .cvn-fam--m-list .cvn-fam__media, .cvn-fam--m-list.cvn-fam--label-photo .cvn-fam__media { display: block; grid-row: 1 / 3; height: 40px; border: 1px solid #8c6a3a; border-radius: 2px; box-shadow: none; }
+  .cvn-fam--m-list .cvn-fam__item, .cvn-fam--m-list.cvn-fam--drawers .cvn-fam__item { display: grid; grid-template-columns: 64px 1fr; grid-template-rows: auto 1fr; column-gap: 8px; align-items: start; padding: 5px; border: 1px solid #6e5330; border-radius: 3px; background: linear-gradient(180deg, #1a1218, #0c0a0e); }
+  .cvn-fam--m-list .cvn-fam__media, .cvn-fam--m-list.cvn-fam--label-photo .cvn-fam__media { display: block; grid-row: 1 / 3; height: 64px; border: 1px solid #8c6a3a; border-radius: 2px; box-shadow: none; }
   .cvn-fam--m-list .cvn-fam__label, .cvn-fam--m-list.cvn-fam--label-plaque .cvn-fam__label, .cvn-fam--m-list.cvn-fam--label-photo .cvn-fam__label { position: static; width: auto; height: auto; clip: auto; overflow: visible; margin: 0; padding: 0; background: none; border: 0; text-align: left; font-size: 15.5px; line-height: 1.1; color: #f3e6cb; }
   .cvn-fam--m-list .cvn-fam__text, .cvn-fam--m-list.cvn-fam--drawers .cvn-fam__text { display: block; font-size: 12.5px; line-height: 1.22; margin-top: 2px; }
 }
@@ -428,7 +428,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 .cvn-gal__actions { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .cvn-gal__price { font-size: 16px; color: #e8dfd0; }
 /* Accueil : trois arches dorées. */
-.cvn-gal--arches .cvn-gal__inner { width: calc(100% - 16px); margin: 0 8px; height: 357px; border: 1px solid #8c6a3a; border-bottom: 0; background: radial-gradient(80% 120% at 50% 0%, #120c14, #08070a 70%); }
+.cvn-gal--arches .cvn-gal__inner { width: calc(min(100%, 1440px) - 16px); margin: 0 auto; height: 357px; border: 1px solid #8c6a3a; border-bottom: 0; background: radial-gradient(80% 120% at 50% 0%, #120c14, #08070a 70%); }
 .cvn-gal--arches .cvn-gal__heading { padding-top: 14px; }
 .cvn-gal--arches .cvn-gal__list { position: absolute; left: 66px; right: 66px; top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 36px; }
 .cvn-gal--arches .cvn-gal__fig { height: 292px; padding: 14px 12px 0; border: 2px solid #c99a52; border-bottom: 0; border-radius: 70px 70px 0 0 / 40px 40px 0 0; box-shadow: inset 0 0 0 4px #08070a, inset 0 0 0 5px rgba(201, 154, 82, .5); }
@@ -451,6 +451,8 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
   .cvn-gal__fig:has(.cvn-gal__caption--m) .cvn-gal__caption--d { display: none; }
   .cvn-gal--m-three .cvn-gal__list { grid-template-columns: repeat(3, 1fr); }
   .cvn-gal--m-two .cvn-gal__list { grid-template-columns: repeat(2, 1fr); }
+  .cvn-gal.cvn-gal--m-three .cvn-gal__media { aspect-ratio: 1 / 1; }
+  .cvn-gal.cvn-gal--m-two .cvn-gal__media { aspect-ratio: 4 / 3; }
   .cvn-gal--m-stack .cvn-gal__list { grid-template-columns: 1fr; }
 }
 
@@ -479,12 +481,12 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 .cvn-band__item-text { display: block; }
 .cvn-band__item-icon { display: inline-flex; color: var(--cvn-gold); }
 /* Photo à gauche, texte à droite. */
-.cvn-band--split .cvn-band__inner { height: var(--h); width: calc(100% - 16px); margin: 0 8px; border: 1px solid #8c6a3a; background: linear-gradient(90deg, #120a14 0%, #241230 60%, #1a0e22 100%); overflow: hidden; }
+.cvn-band--split .cvn-band__inner { height: var(--h); width: calc(min(100%, 1440px) - 16px); margin: 0 auto; border: 1px solid #8c6a3a; background: linear-gradient(90deg, #120a14 0%, #241230 60%, #1a0e22 100%); overflow: hidden; }
 .cvn-band--split .cvn-band__media { right: auto; width: var(--media-w); -webkit-mask-image: linear-gradient(90deg, #000 70%, transparent); mask-image: linear-gradient(90deg, #000 70%, transparent); }
 .cvn-band--split .cvn-band__copy { position: absolute; left: var(--tx); top: 50%; transform: translateY(-50%); width: var(--tw); }
 .cvn-band--split .cvn-band__text { margin-top: 14px; }
 /* Appel à commander sur photo. */
-.cvn-band--cta .cvn-band__inner { height: var(--h); width: calc(100% - 16px); margin: 0 8px; border: 1px solid #8c6a3a; border-top: 0; overflow: hidden; }
+.cvn-band--cta .cvn-band__inner { height: var(--h); width: calc(min(100%, 1440px) - 16px); margin: 0 auto; border: 1px solid #8c6a3a; border-top: 0; overflow: hidden; }
 .cvn-band--cta .cvn-band__copy { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; width: 640px; }
 .cvn-band--cta .cvn-band__heading { text-shadow: 0 2px 14px rgba(0, 0, 0, .8); }
 .cvn-band--cta .cvn-band__actions { margin-top: 18px; }
@@ -666,7 +668,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 }
 
 /* ---------------------------------------------------------------- étapes : photos fléchées et vignettes */
-.cvn-steps--photos .cvn-steps__inner { width: calc(100% - 64px); margin: 0 32px; padding: 14px 58px 22px; }
+.cvn-steps--photos .cvn-steps__inner { width: calc(min(100%, 1440px) - 64px); margin: 0 auto; padding: 14px 58px 22px; }
 .cvn-steps--photos .cvn-steps__heading { text-align: center; font-size: 40px; }
 .cvn-steps--photos .cvn-steps__list { counter-reset: cvnstep; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 54px; margin-top: 16px; }
 .cvn-steps--photos .cvn-step:not(.cvn-only-m) { counter-increment: cvnstep; }
@@ -691,7 +693,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 }
 
 /* ---------------------------------------------------------------- exemples : cartes */
-.cvn-gal--cards .cvn-gal__inner { width: calc(100% - 16px); margin: 0 8px; padding: 12px 14px 14px; border: 1px solid #8c6a3a; box-shadow: inset 0 0 0 4px #08070a, inset 0 0 0 5px rgba(140, 106, 58, .45); }
+.cvn-gal--cards .cvn-gal__inner { width: calc(min(100%, 1440px) - 16px); margin: 0 auto; padding: 12px 14px 14px; border: 1px solid #8c6a3a; box-shadow: inset 0 0 0 4px #08070a, inset 0 0 0 5px rgba(140, 106, 58, .45); }
 .cvn-gal--cards .cvn-gal__heading { font-size: 40px; }
 .cvn-gal--cards .cvn-gal__list { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 33px; margin-top: 18px; }
 .cvn-gal--cards .cvn-gal__media { height: 235px; border: 2px solid #b88a47; }
@@ -708,7 +710,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 }
 
 /* ---------------------------------------------------------------- bandeau : appel à commander, texte à gauche */
-.cvn-band--cta_left .cvn-band__inner { height: var(--h); width: calc(100% - 16px); margin: 0 8px; border: 1px solid #8c6a3a; overflow: hidden; }
+.cvn-band--cta_left .cvn-band__inner { height: var(--h); width: calc(min(100%, 1440px) - 16px); margin: 0 auto; border: 1px solid #8c6a3a; overflow: hidden; }
 .cvn-band--cta_left .cvn-band__shade { background: linear-gradient(90deg, rgba(8, 7, 10, .55), rgba(8, 7, 10, 0) 60%); }
 .cvn-band--cta_left .cvn-band__copy { position: absolute; left: 145px; top: 40px; width: 680px; text-align: left; }
 .cvn-band--cta_left .cvn-band__heading { padding-left: 33px; }
@@ -995,7 +997,7 @@ button.cvn-gal__media:hover img { transform: scale(calc(var(--z) * 1.04)); }
 .cvn-cart__empty-text { font-size: 20px; color: #5b4632; }
 .cvn-cart__error { color: #9b2b14; font-size: 18px; margin-top: 10px; }
 .cvn-btn--dark.cvn-cart__continue { background: #2b1c30; border: 1px solid #1b1120; color: #f3e6cb !important; }
-.cvn-steps--path .cvn-steps__inner { width: calc(100% - 28px); margin: 0 14px; height: 122px; border: 2px solid #b88a47; border-radius: 4px; padding: 0 40px; display: flex; align-items: center; }
+.cvn-steps--path .cvn-steps__inner { width: calc(min(100%, 1440px) - 28px); margin: 0 auto; height: 122px; border: 2px solid #b88a47; border-radius: 4px; padding: 0 40px; display: flex; align-items: center; }
 .cvn-steps--path .cvn-steps__list { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; }
 .cvn-steps--path .cvn-step { display: grid; grid-template-columns: 74px 1fr; column-gap: 20px; align-items: center; }
 .cvn-steps--path .cvn-step__num { display: none; }

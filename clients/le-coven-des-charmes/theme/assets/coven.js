@@ -131,7 +131,8 @@
   /* ------------------------------------------------ agrandissement des exemples */
   var box = null;
   $$("[data-cvn-zoom]").forEach(function (b) {
-    b.addEventListener("click", function () {
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
       if (!box) {
         box = doc.createElement("div"); box.className = "cvn-lightbox"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
         box.innerHTML = '<button type="button" class="cvn-lightbox__close" data-cvn-lb-close><svg class="cvn-icon" aria-hidden="true"><use href="#coven-fermer"></use></svg><span class="cvn-sr">Fermer</span></button><figure class="cvn-lightbox__fig"><img alt=""><figcaption></figcaption></figure>';

@@ -46,7 +46,7 @@
       {%- endif -%}
       {%- if s.button_label != blank -%}
         <div class="cvn-band__actions">
-          <a class="cvn-btn cvn-btn--{{ s.button_style }} cvn-band__btn" href="{{ s.button_link }}">{{ s.button_label }}{%- if s.button_arrow -%}<svg class="cvn-icon" aria-hidden="true"><use href="#coven-{% if s.layout == 'cta' %}fleche-droite{% else %}chevron-droite{% endif %}"></use></svg>{%- endif -%}</a>
+          <a class="cvn-btn cvn-btn--{{ s.button_style }} cvn-band__btn" href="{{ s.button_link }}"{% if s.zoom_asset != blank %} data-cvn-zoom="{{ s.zoom_asset | asset_url }}" data-cvn-zoom-alt="{{ s.zoom_caption | escape }}" data-cvn-zoom-caption="{{ s.zoom_caption | escape }}"{% endif %}>{{ s.button_label }}{%- if s.button_arrow -%}<svg class="cvn-icon" aria-hidden="true"><use href="#coven-{% if s.layout == 'cta' %}fleche-droite{% else %}chevron-droite{% endif %}"></use></svg>{%- endif -%}</a>
           {%- if s.price_note != blank -%}<p class="cvn-band__price">{{ s.price_note }}</p>{%- endif -%}
         </div>
       {%- endif -%}
@@ -132,6 +132,8 @@
     { "type": "range", "id": "text_width", "label": "Largeur du texte (ordinateur)", "min": 200, "max": 1400, "step": 10, "unit": "px", "default": 640 },
     { "type": "text", "id": "button_label", "label": "Bouton" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "zoom_asset", "label": "Image ouverte en grand par le bouton (fichier du thème)", "info": "Facultatif : le bouton ouvre cette image au lieu de suivre son lien." },
+    { "type": "text", "id": "zoom_caption", "label": "Légende de l'image ouverte en grand" },
     { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "gold", "options": [
       { "value": "gold", "label": "Or" }, { "value": "line", "label": "Contour doré" }, { "value": "dark", "label": "Sombre" }
     ] },

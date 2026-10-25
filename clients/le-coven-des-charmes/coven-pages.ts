@@ -101,7 +101,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
     }],
     ["steps", "es-custom-coven-steps", {
       layout: "band", mobile_layout: "photos", heading: "Du tirage des charms au bracelet.", mobile_heading: "Tout commence dans une coupelle.",
-      aside_asset: ctx.img("coven-mq-accueil-coupelle.jpg"), padding_top: 0, padding_bottom: 0,
+      aside_asset: ctx.img("coven-mq-accueil-coupelle.jpg"), ...(ctx.hd ? { aside_left: 1190 } : {}), padding_top: 0, padding_bottom: 0,
     }, [
       step("Vous commandez\nle bracelet", "Vous passez votre\ncommande en ligne.", { mobile_text: "Vous choisissez la taille de votre bracelet et la quantité souhaitée.", image_asset: ctx.img("coven-mq-m-accueil-etape-1.jpg") }),
       step("Les charms sont\ntirés au sort au scoop", "Nous tirons des symboles\nau hasard avec un scoop\ndans une coupelle.", { mobile_text: "Après votre commande, nous tirons les charms au sort avec un scoop dans une coupelle.", image_asset: ctx.img("coven-mq-m-accueil-etape-2.jpg") }),
@@ -211,7 +211,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
     ["table", "es-custom-coven-band", {
       layout: "table", hide_mobile: true, image_asset: ctx.v("coven-photo-tableau.jpg", "tirage-tableau"), image_alt: "Le tableau de correspondance des symboles", media_width: 40, height: 210, ...(client ? { focus_y: 40, zoom: 130 } : {}),
       heading: "Notre tableau de correspondance", heading_style: "caps", text: p("Chaque symbole tiré au scoop correspond à un charm<br>de notre cabinet. Découvrez le tableau en détail."),
-      button_label: "Voir le tableau en détail", button_link: "#CvnTableau", button_arrow: false,
+      button_label: "Voir le tableau en détail", button_link: "#CvnTableau", button_arrow: false, zoom_asset: ctx.img("coven-photo-tableau.jpg"), zoom_caption: "Le tableau de correspondance des symboles",
     }],
     ["order", "es-custom-coven-band", { layout: "order", mobile_layout: "stack", heading: "", text: p("Les charms sont tirés au sort au scoop après votre commande,<br>puis assemblés sur votre bracelet."), mobile_text: "", button_label: "Commander mon bracelet", button_link: URL.product, button_arrow: false, price_note: "— €  Tarif à renseigner" }],
     ["faq", "es-custom-coven-band", { layout: "question", mobile_layout: "stack", image_asset: ctx.img("coven-mq-tirage-questions.jpg"), height: 150, heading: "Des questions ?", title_size: 34, text: p("Consultez notre FAQ pour en savoir plus sur le fonctionnement."), button_label: "Voir la FAQ", button_link: URL.faq, button_arrow: false }],
