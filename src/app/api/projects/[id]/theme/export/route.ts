@@ -11,6 +11,7 @@ import { exportAndRecord } from "@/lib/cms-v2/record";
 import type { CmsPlatform } from "@/lib/cms-v2/types";
 import { forbiddenMedia } from "@/lib/cms-v2/checks";
 import { withBiens } from "@/lib/biens";
+import { withStudioProducts } from "@/lib/products/catalog";
 
 export const runtime = "nodejs";
 
@@ -26,8 +27,9 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const platform = u.get("platform") ?? "shopify";
   const saved = u.get("version") ? themeVersion(p.id, u.get("version")!) : currentTheme(p.id);
   if (!saved) throw new HttpError(404, L("Aucune boutique à exporter.", "No store to export."));
-  // Biens immobiliers (onglet « Biens ») : joints à l'export avec leurs photos ; le thème enregistré reste inchangé.
-  const v = { ...saved, spec: withBiens(saved.spec, p.id) };
+  // Biens immobiliers (onglet « Biens ») et produits du Studio (onglet « Catalogue ») : joints à l'export avec leurs
+  // photos ; le thème enregistré reste inchangé.
+  const v = { ...saved, spec: withStudioProducts(withBiens(saved.spec, p.id), p.id) };
   if (platform === "shopify-csv" || platform === "woocommerce-csv") {
     const blocked = forbiddenMedia(v.spec, p.id);
     if (blocked.forbidden.size || blocked.foreign.length) throw new HttpError(422, L("Catalogue non exporté : remplacez les médias refusés ou étrangers au projet.", "Catalog not exported: replace rejected media or media belonging to another project."));

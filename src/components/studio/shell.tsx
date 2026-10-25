@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck } from "lucide-react";
+import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -21,6 +21,7 @@ export const TABS = [
   { id: "strategie", label: "Stratégie", labelEn: "Strategy", icon: Palette },
   { id: "marque", label: "Marque", labelEn: "Brand", icon: Palette },
   { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store },
+  { id: "catalogue", label: "Catalogue", labelEn: "Catalog", icon: Boxes },
   { id: "biens", label: "Biens", labelEn: "Properties", icon: KeyRound },
   { id: "rendez-vous", label: "Rendez-vous", labelEn: "Bookings", icon: CalendarCheck },
   { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },
