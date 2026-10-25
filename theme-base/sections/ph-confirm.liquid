@@ -10,6 +10,12 @@
 -%}
 <section class="ph ph-confirm ph-pad" style="--ph-ts: {{ s.title_size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};" data-ph-confirm>
   <div class="ph-c">
+    {%- if s.preview_title != blank -%}
+      <div class="ph-confirm__preview ph-only-m">
+        {% render 'ph-title', text: s.preview_title, tag: 'h2', class: 'ph-confirm__preview-title' %}
+        {%- if s.preview_text != blank -%}<p class="ph-confirm__preview-text">{{ s.preview_text }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
     <div class="ph-confirm__box">
       <p class="ph-confirm__status" data-ph-confirm-status data-demo="{{ s.status_demo | escape }}" data-sent="{{ s.status_sent | escape }}" data-none="{{ s.status_none | escape }}">{% render 'ph-icon', name: 'information', stroke: 2 %}<span>{{ s.status_none }}</span></p>
       <p class="ph-confirm__eyebrow">{{ s.eyebrow }}</p>
@@ -31,6 +37,7 @@
           <dd><span class="ph-confirm__value" data-ph-recap="files-count" data-zero="{{ s.files_zero | escape }}" data-one="{{ s.files_one | escape }}" data-many="{{ s.files_many | escape }}">{{ s.files_zero }}</span><span class="ph-confirm__sub" data-ph-recap="files"></span></dd>
         </div>
       </dl>
+      {%- if s.image_note != blank -%}<p class="ph-confirm__note ph-only-m">{{ s.image_note }}</p>{%- endif -%}
       <div class="ph-confirm__actions">
         {%- if s.back_label != blank -%}<a class="ph-btn ph-btn--line" href="{{ s.back_link | default: routes.root_url }}">{{ s.back_label }}</a>{%- endif -%}
         {%- if s.next_label != blank -%}<a class="ph-btn ph-btn--navy" href="{{ s.next_link | default: routes.root_url }}"><span>{{ s.next_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
@@ -55,6 +62,9 @@
     { "type": "text", "id": "eyebrow", "label": "Sur-titre du récapitulatif", "default": "Votre demande" },
     { "type": "text", "id": "heading", "label": "Titre du récapitulatif", "default": "Récapitulatif de votre demande" },
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 80 },
+    { "type": "text", "id": "image_note", "label": "Mention sous le récapitulatif (téléphone)", "default": "Projet illustratif" },
+    { "type": "textarea", "id": "preview_title", "label": "Encadré au téléphone : titre" },
+    { "type": "textarea", "id": "preview_text", "label": "Encadré au téléphone : texte" },
     { "type": "text", "id": "status_demo", "label": "Statut en démonstration", "default": "Démonstration — demande non envoyée. Rien n'a été transmis." },
     { "type": "text", "id": "status_sent", "label": "Statut après un envoi accepté", "default": "Demande transmise." },
     { "type": "text", "id": "status_none", "label": "Statut sans demande", "default": "Aucune demande n'a été faite depuis ce navigateur." },
