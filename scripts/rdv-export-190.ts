@@ -3,7 +3,7 @@
  * dans une boutique de test, prend un rendez-vous auprès du service du studio ; la rubrique « Rendez-vous » le voit, et
  * le même créneau est ensuite refusé (aucune double réservation).
  *
- *   STUDIO_HTTPS_PORT=8443 npx tsx scripts/rdv-export-190.ts <dossier de sortie> <script d'installation WordPress>
+ *   [PLATFORM=prestashop] STUDIO_HTTPS_PORT=8443 npx tsx scripts/rdv-export-190.ts <dossier de sortie> <script d'installation>
  *
  * Base temporaire à part. Le service du studio est servi en HTTPS local (certificat auto-signé, accepté par le
  * navigateur de test seulement) : le thème n'appelle qu'une adresse https://. L'adresse étant locale, le mode réel est
@@ -21,7 +21,10 @@ process.env.STOCK_OFFLINE = "1";
 const [outDir, installer] = process.argv.slice(2);
 fs.mkdirSync(outDir, { recursive: true });
 const PORT = Number(process.env.STUDIO_HTTPS_PORT || 8443);
-const WP = process.env.WP_URL || "http://127.0.0.1:8881";
+// Plateforme du site exporté : WordPress (par défaut) ou PrestaShop (PLATFORM=prestashop).
+const PLATFORM = process.env.PLATFORM === "prestashop" ? "prestashop" : "woocommerce";
+const WP = PLATFORM === "prestashop" ? process.env.PS_URL || "http://127.0.0.1:8882" : process.env.WP_URL || "http://127.0.0.1:8881";
+const BOOK_PATH = PLATFORM === "prestashop" ? "/pages/prendre-rendez-vous?kind=page" : "/prendre-rendez-vous/";
 
 const { createUser } = await import("../src/lib/auth");
 const { saveThemeVersion, currentTheme } = await import("../src/lib/projects");
@@ -44,8 +47,8 @@ const sec = rdvSection(spec)!;
 const target = sec.template === "group:header" ? spec.groups.header.sections[sec.id] : spec.templates[sec.template].sections[sec.id];
 Object.assign(target.settings, { booking_mode: "live", service_url: service });
 saveThemeVersion(pid, spec, "Rendez-vous : service réel (essai local)", "user");
-const exp = await runWithLang({ content: "fr", ui: "fr" }, () => cmsExport("woocommerce", currentTheme(pid)!.spec, libraryLoader, { projectId: pid }));
-const zip = path.join(outDir, "atelier-nuance-live-woocommerce.zip");
+const exp = await runWithLang({ content: "fr", ui: "fr" }, () => cmsExport(PLATFORM, currentTheme(pid)!.spec, libraryLoader, { projectId: pid }));
+const zip = path.join(outDir, `atelier-nuance-live-${PLATFORM}.zip`);
 fs.writeFileSync(zip, exp.zip);
 
 // Service du studio en HTTPS local (mêmes fonctions que la route publique du studio).
@@ -70,18 +73,27 @@ await new Promise<void>((r) => server.listen(PORT, "127.0.0.1", () => r()));
 
 // Installation dans la boutique de test WordPress.
 const inst = execFileSync(installer, [zip, "1"], { encoding: "utf8" }).trim().split("\n").pop()!;
-out.install = JSON.parse(inst).slug;
+out.platform = PLATFORM;
+out.install = (() => { const j = JSON.parse(inst.replace(/\\(?=[A-Z])/g, "\\\\")); return j.slug ?? `${j.name} ${j.enable}`; })();
 
 const browser = await chromium.launch();
-const page = await (await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } })).newPage();
 const errors: string[] = [];
-page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
+let page = await (await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } })).newPage();
 async function book(first: string, email: string, pick?: { date: string; time: string }) {
-  await page.goto(`${WP}/prendre-rendez-vous/#service=coupe-brushing`, { waitUntil: "load" });
+  // Nouvelle visiteuse : navigateur neuf (aucune réservation en cours gardée par le site).
+  page = await (await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 900 } })).newPage();
+  page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
+  await page.goto(`${WP}${BOOK_PATH}#service=coupe-brushing`, { waitUntil: "load" });
   await page.waitForTimeout(1200);
   const consent = page.getByRole("button", { name: /refuser|accepter/i }).filter({ visible: true }).first();
   if (await consent.count()) await consent.click().catch(() => undefined);
-  const next = async () => { await page.locator("[data-an-next]").filter({ visible: true }).first().click(); await page.waitForTimeout(800); };
+  let step = 0;
+  const next = async () => {
+    step++;
+    const btn = page.locator("[data-an-next], [data-an-mnext]").filter({ visible: true }).first();
+    if (!(await btn.count())) { await page.screenshot({ path: path.join(outDir, `etape-${first}-${step}.png`), fullPage: true }); throw new Error(`étape ${step} : bouton « Continuer » introuvable`); }
+    await btn.click(); await page.waitForTimeout(800);
+  };
   await next(); // prestation (choisie par le lien)
   const person = page.locator("input[name=an-staff]").first();
   if (await person.count()) await person.check({ force: true });
@@ -93,14 +105,14 @@ async function book(first: string, email: string, pick?: { date: string; time: s
     await page.waitForTimeout(1200);
     const slot = page.locator(`[data-time="${pick.time}"]`).first();
     out[`slot_${first}`] = { visible: await slot.count(), disabled: await slot.isDisabled().catch(() => null) };
-    if (!(await slot.count()) || (await slot.isDisabled().catch(() => true))) return { refused: "créneau indisponible dans le calendrier" };
+    if (!(await slot.count()) || (await slot.isDisabled().catch(() => true)) || (await slot.getAttribute("aria-disabled")) === "true") return { refused: "créneau indisponible dans le calendrier du site" };
     await slot.click();
   } else {
     for (let i = 0; i < 3 && !chosen; i++) {
-      const day = page.locator("[data-date]:not([disabled]):not(.is-disabled)").first();
+      const day = page.locator("[data-date]:not([disabled]):not([aria-disabled=true]):not(.is-off):not(.is-disabled)").first();
       if (await day.count()) {
         await day.click(); await page.waitForTimeout(1200);
-        const time = page.locator("[data-time]:not([disabled])").first();
+        const time = page.locator("[data-time]:not([disabled]):not([aria-disabled=true])").first();
         if (await time.count()) { chosen = { date: (await day.getAttribute("data-date"))!, time: (await time.getAttribute("data-time"))! }; await time.click(); break; }
       }
       await page.locator("[data-cal-next]").first().click(); await page.waitForTimeout(600);
@@ -113,7 +125,7 @@ async function book(first: string, email: string, pick?: { date: string; time: s
   await page.fill("input[name=email]", email);
   await page.fill("input[name=phone]", "06 12 34 56 78");
   await page.locator("input[name=terms]").check({ force: true });
-  await next(); // coordonnées → récapitulatif
+  // Étape 4 : coordonnées et récapitulatif sur le même écran, envoi par « Confirmer mon rendez-vous ».
   await page.locator("[data-an-submit]").filter({ visible: true }).first().click();
   await page.waitForTimeout(2500);
   await page.screenshot({ path: path.join(outDir, `rdv-${first}.png`) });
@@ -134,7 +146,7 @@ try {
 } catch (e) { out.error = (e as Error).message.slice(0, 300); }
 out.calls = calls.slice(0, 20);
 out.jsErrors = errors.slice(0, 5);
-fs.writeFileSync(path.join(outDir, "rdv-export.json"), JSON.stringify(out, null, 2) + "\n");
+fs.writeFileSync(path.join(outDir, `rdv-export-${PLATFORM}.json`), JSON.stringify(out, null, 2) + "\n");
 console.log(JSON.stringify(out));
 await browser.close();
 server.close();

@@ -12,6 +12,8 @@
  * Exports WordPress et PrestaShop : la feuille de style propre au thème qu'une section appelle (sillon.css, phase.css,
  * table-saison.css, atelier-nuance.css, parenthese.css) est livrée et chargée : sans elle, ces cinq thèmes s'affichaient
  * sans mise en forme une fois installés (constaté sur les boutiques de test, mission #190).
+ * Export WordPress : le filtrage des réglages (wp_kses_post) ne double plus l'esperluette (« Coupe &amp; brushing »).
+ * Export WordPress : la langue de la page est celle du site exporté, pas celle de l'administration de WordPress.
  * Moteur PHP de l'export WordPress : les réglages « police » sont des objets (famille, graisse) ; PHASE perdait sa police
  * de texte (variable CSS vide) et son pied de page dépassait l'écran du téléphone.
  */
@@ -116,4 +118,23 @@ describe("contrôle des liens des thèmes (mission #190)", () => {
       expect(out.slice(0, out.indexOf("body.dir-phase"))).not.toMatch(/inter_n\d|Array/);
     } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   }, 120_000);
+
+  it.skipIf(!phpAvailable())("export WordPress : « & » d'un réglage n'est pas doublé par le filtrage de sécurité", () => {
+    const src = fs.readFileSync("assets/cms/wordpress/es-theme.php", "utf8");
+    const fn = src.slice(src.indexOf("function es_clean"), src.indexOf("function es_with_defaults"));
+    // Filtrage de WordPress simulé : même normalisation de l'esperluette, balises interdites retirées.
+    const code = `function wp_kses_post($s) { $s = preg_replace('/<script[^>]*>.*?<\\/script>/is', '', $s); return preg_replace('/&(?![a-z]+;|#\\d+;)/i', '&amp;', $s); } ${fn.replace(/^/, "")} echo json_encode([es_clean("Coupe & brushing"), es_clean("&lt;b&gt; <script>alert(1)</script>ok")]);`;
+    const out = JSON.parse(execFileSync("php", ["-r", code]).toString());
+    expect(out).toEqual(["Coupe & brushing", "&lt;b&gt; ok"]);
+  });
+
+  it.skipIf(!phpAvailable())("export WordPress : la langue de la page est celle du site exporté", () => {
+    const src = fs.readFileSync("assets/cms/wordpress/es-theme.php", "utf8");
+    const start = src.indexOf("add_filter('language_attributes', function ($out) {");
+    const body = src.slice(start + "add_filter('language_attributes', ".length, src.indexOf("});", start) + 1);
+    for (const [lang, expected] of [["fr", 'lang="fr-FR"'], ["en", 'lang="en"']]) {
+      const code = `function es_site() { return ["lang" => "${lang}", "body" => ["ds" => "none"]]; } function esc_attr($s) { return $s; } $f = ${body}; echo $f('lang="en-US"');`;
+      expect(execFileSync("php", ["-r", code]).toString(), lang).toContain(expected);
+    }
+  });
 });

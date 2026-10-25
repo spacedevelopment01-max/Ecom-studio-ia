@@ -65,6 +65,13 @@ describe.skipIf(!E2E)("produits du Studio ↔ boutiques de test réelles (missio
       // 2. Panier de la boutique (page publique) : la variante « Nuit » s'ajoute.
       const nuit = remote.variants.find((v) => v.options[0] === "Nuit")!;
       if (platform === "woocommerce") {
+        // Fiche produit publique de la boutique : nom, prix et choix du coloris viennent du Studio.
+        const auth = "Basic " + Buffer.from(`${env("WOO_KEY")}:${env("WOO_SECRET")}`).toString("base64");
+        const link = (await (await fetch(`${env("WOO_URL")}/wp-json/wc/v3/products/${remoteId}`, { headers: { Authorization: auth } })).json() as { permalink: string }).permalink;
+        const html = await (await fetch(link)).text();
+        expect(html).toContain(p.data.title);
+        expect(html).toMatch(/129,00/);
+        expect(html).toContain("Nuit");
         const cart = await fetch(`${env("WOO_URL")}/wp-json/wc/store/v1/cart/add-item`, { method: "POST", headers: { "Content-Type": "application/json", Nonce: (await fetch(`${env("WOO_URL")}/wp-json/wc/store/v1/cart`)).headers.get("nonce") ?? "" }, body: JSON.stringify({ id: Number(nuit.id), quantity: 1 }) });
         const j = await cart.json() as { items?: { id: number; quantity: number }[] };
         expect(cart.status, JSON.stringify(j).slice(0, 300)).toBe(201);
