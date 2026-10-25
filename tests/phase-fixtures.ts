@@ -22,7 +22,7 @@ import { saveAsset } from "../src/lib/library";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import type { ThemeSpec } from "../src/lib/theme/spec";
 import type { Row } from "../src/lib/theme/theme-catalog";
-import { PH_PAGES, phTemplate, phUrl, headerSettings, footerSettings, pageRow, LOOK_06, type PhPageHandle } from "../src/lib/theme/phase";
+import { PH_PAGES, phTemplate, phUrl, headerSettings, footerSettings, pageRow, LOOK_06, LOOK_08, type PhPageHandle } from "../src/lib/theme/phase";
 
 export const PHASE_PROVENANCE = "PHASE — Électricité (25 octobre 2026) — photographies reconstituées d'après les maquettes, fournies par Thomas (kit privé) ; démonstration du studio, artisan fictif, aucune demande envoyée";
 export const PHASE_DIR = path.join(process.cwd(), "public", "demo", "phase", "images");
@@ -136,7 +136,7 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
     S("ph-cards", { layout: "projects", columns: 2, title_size: 55, eyebrow: "Réalisations", heading: "Des espaces qui prennent vie.", heading_mobile: "Des espaces\nqui prennent vie.", note: "Projets illustratifs", pad_top: 66, pad_bottom: 35 }, [
       { type: "card", settings: { image_asset: f("12_sejour_renove"), alt: alt("12_sejour_renove"), title: "Rénovation d'un séjour", text: "Un espace plus lumineux et fonctionnel.", label: "Projet illustratif", link: "/pages/realisation-renovation-d-un-sejour" } },
       { type: "card", settings: { image_asset: f("03_tableau_electrique"), alt: alt("03_tableau_electrique"), title: "Mise en place d'un tableau électrique", text: "Une installation propre et évolutive.", label: "Projet illustratif", link: "/pages/realisation-mise-en-place-d-un-tableau-electrique", show: "desktop" } },
-      { type: "card", settings: { image_asset: f("13_couloir_eclaire"), alt: alt("13_couloir_eclaire"), title: "Éclairage d'un couloir", text: "Une ambiance moderne et chaleureuse.", label: "Projet illustratif", link: "/pages/realisation-eclairage-d-un-couloir", show: "mobile" } },
+      { type: "card", settings: { image_asset: f("13_couloir_eclaire"), alt: alt("13_couloir_eclaire"), title: "Éclairage d'un couloir", text: "Une ambiance moderne et chaleureuse.", label: "Projet illustratif", link: `${U("realisations")}?filtre=eclairage`, show: "mobile" } },
       { type: "card", settings: { image_asset: f("14_maison_installation"), alt: alt("14_maison_installation"), title: "Installation dans une cuisine", text: "Des équipements intégrés et pratiques.", label: "Projet illustratif", link: "/pages/realisation-amenagement-d-une-cuisine-contemporaine", show: "mobile" } },
     ]),
     S("ph-cta", { layout: "band", layout_mobile: "band", title_size: 62, eyebrow: "Votre projet", heading: "On met votre projet\nsous tension ?", button_label: "Demander un devis", button_link: QUOTE, circuit: "cta", note: "Des idées\naux réalisations,\nen toute confiance." }),
@@ -273,6 +273,119 @@ export function curatePhase(spec: ThemeSpec, ids: Record<string, string>) {
       { type: "item", settings: { icon: "maison", title: "Contexte", text: "Précisez les éventuels travaux récents ou changements d'usage." } },
       { type: "item", settings: { icon: "calendrier", title: "Disponibilités", text: "Indiquez vos disponibilités pour organiser une intervention." } },
     ]),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Réalisations (planches 03 et 08)
+  // Projets ILLUSTRATIFS (photos du kit, aucun chantier réel) : chacun ouvre sa page, filtrables par catégorie.
+  const PROJ = (slug: string) => `/pages/realisation-${slug}`;
+  type Proj = { slug: string; title: string; text: string; cats: string; image: string; pos?: string; tag: string; show?: "desktop" | "mobile"; heading: string; intro: string; type: string; space: string; need: string; besoin: [string, string]; reponse: [string, string]; photos: [string, string, string?][] };
+  const PROJETS: Proj[] = [
+    { slug: "renovation-d-un-sejour", title: "Rénovation d'un séjour\nen maison", text: "Un espace plus lumineux\net confortable", cats: "renovation eclairage", image: "12_sejour_renove", tag: "Rénovation", show: "desktop", heading: "Un nouvel éclairage,\n[y]une autre atmosphère.[/y]", intro: "Ce projet illustratif de rénovation montre comment un éclairage bien pensé<br>peut transformer un espace de vie.", type: "Rénovation", space: "Séjour", need: "Éclairage",
+      besoin: ["Un espace plus chaleureux\net fonctionnel.", "Dans ce séjour, l'objectif est de créer une ambiance plus chaleureuse, tout en améliorant le confort visuel au quotidien. L'éclairage doit s'adapter aux différents usages : détente, repas et moments en famille."],
+      reponse: ["Une mise en lumière sur mesure.", "Nous avons proposé une solution d'éclairage complète et cohérente, avec des ambiances modulables selon les moments de la journée. L'implantation des luminaires et le choix des températures de couleur permettent de valoriser l'espace et de créer une atmosphère agréable."],
+      photos: [["24_article_eclairage", "Suspensions au-dessus de la table", "50% 30%"], ["21_prise_interrupteur", "Appareillage sobre et moderne", "70% 50%"], ["20_spots_plafond", "Spots encastrés pour un éclairage homogène", "50% 10%"]] },
+    { slug: "amenagement-d-une-cuisine-contemporaine", title: "Aménagement d'une\ncuisine contemporaine", text: "Éclairage et équipements\nau quotidien", cats: "eclairage", image: "07_cuisine_contemporaine", tag: "Éclairage", show: "desktop", heading: "Une cuisine\n[y]bien éclairée.[/y]", intro: "Ce projet illustratif montre comment l'éclairage et les équipements<br>accompagnent les usages d'une cuisine.", type: "Aménagement", space: "Cuisine", need: "Éclairage",
+      besoin: ["Un plan de travail\nbien éclairé.", "Dans cette cuisine, l'objectif est d'éclairer chaque zone de travail sans éblouir, et de prévoir les prises nécessaires aux équipements du quotidien."],
+      reponse: ["Un éclairage par zones.", "Une lumière d'ensemble, un éclairage dédié au plan de travail et des suspensions au-dessus de l'îlot, chacun commandé séparément."],
+      photos: [["07_cuisine_contemporaine", "Suspensions au-dessus de l'îlot", "40% 30%"], ["21_prise_interrupteur", "Prises intégrées", "50% 50%"], ["23_conseils_hero", "Éclairage d'ambiance", "50% 50%"]] },
+    { slug: "renovation-d-une-salle-de-bains", title: "Rénovation d'une salle\nde bains", text: "Un éclairage adapté\nà chaque espace", cats: "renovation", image: "08_salle_de_bain", tag: "Rénovation", show: "desktop", heading: "Une salle de bains\n[y]plus agréable.[/y]", intro: "Ce projet illustratif montre comment l'éclairage valorise<br>une petite pièce rénovée.", type: "Rénovation", space: "Salle de bains", need: "Éclairage",
+      besoin: ["Une lumière douce\net pratique.", "Dans cette salle de bains, l'objectif est d'associer une lumière confortable pour la toilette et une ambiance plus douce le soir."],
+      reponse: ["Un miroir éclairé et des points lumineux.", "Un miroir éclairé au-dessus de la vasque et un éclairage d'ensemble discret, choisis pour une pièce humide."],
+      photos: [["08_salle_de_bain", "Miroir éclairé", "70% 30%"], ["08_salle_de_bain", "Vasque et plan", "60% 80%"], ["13_couloir_eclaire", "Éclairage d'ambiance", "50% 50%"]] },
+    { slug: "mise-en-place-d-un-tableau-electrique", title: "Mise en place d'un\ntableau électrique", text: "Une installation claire\net évolutive", cats: "tableau", image: "09_tableau_renove", pos: "50% 40%", tag: "Tableau", show: "desktop", heading: "Un tableau\n[y]clair et évolutif.[/y]", intro: "Ce projet illustratif montre la mise en place d'un tableau<br>lisible, avec des circuits repérés.", type: "Tableau", space: "Entrée", need: "Sécurité et lisibilité",
+      besoin: ["Un tableau lisible\net évolutif.", "L'objectif est de disposer d'un tableau clair, avec de la place pour de futurs circuits."],
+      reponse: ["Des circuits répartis et repérés.", "Une répartition des circuits par usage et un repérage clair de chaque protection."],
+      photos: [["09_tableau_renove", "Tableau repéré", "50% 30%"], ["03_tableau_electrique", "Rangées de protections", "50% 50%"], ["05_depannage", "Vérifications finales", "60% 50%"]] },
+    { slug: "eclairage-exterieur-d-une-maison", title: "Éclairage extérieur\nd'une maison", text: "Des espaces extérieurs\nplus accueillants", cats: "eclairage", image: "10_eclairage_exterieur", tag: "Éclairage", show: "desktop", heading: "Un extérieur\n[y]mis en valeur.[/y]", intro: "Ce projet illustratif montre comment l'éclairage extérieur<br>valorise une façade et sécurise les accès.", type: "Éclairage", space: "Extérieur", need: "Mise en valeur",
+      besoin: ["Des accès éclairés\net une façade valorisée.", "L'objectif est d'éclairer l'allée et l'entrée, tout en mettant en valeur la façade et la végétation."],
+      reponse: ["Des appliques et des balises.", "Des appliques murales et des balises le long de l'allée, avec des commandes adaptées à l'usage extérieur."],
+      photos: [["10_eclairage_exterieur", "Allée éclairée", "50% 60%"], ["19_extension_habitation", "Façade le soir", "50% 50%"], ["10_eclairage_exterieur", "Appliques murales", "90% 30%"]] },
+    { slug: "une-chambre-tout-en-douceur", title: "Une chambre\ntout en douceur", text: "Une lumière apaisante\npour le soir", cats: "renovation eclairage", image: "11_chambre_eclairage", tag: "Rénovation", show: "desktop", heading: "Une chambre\n[y]tout en douceur.[/y]", intro: "Ce projet illustratif montre comment varier les lumières<br>dans une chambre.", type: "Rénovation", space: "Chambre", need: "Ambiance",
+      besoin: ["Une lumière douce\npour se détendre.", "L'objectif est de disposer d'un éclairage d'ensemble et de lumières plus douces pour le soir."],
+      reponse: ["Des lumières à plusieurs niveaux.", "Des liseuses de chaque côté du lit et un ruban lumineux indirect, commandés séparément."],
+      photos: [["11_chambre_eclairage", "Liseuses", "20% 50%"], ["11_chambre_eclairage", "Éclairage indirect", "60% 30%"], ["16_projet_ambiance", "Ambiance du soir", "50% 50%"]] },
+  ];
+  const MOBILE_PROJ = [
+    { title: "Rénovation d'un appartement", text: "Nouveaux éclairages et installation complète", cats: "renovation eclairage", image: "06_renovation_appartement", tag: "Rénovation", link: PROJ("renovation-d-un-sejour") },
+    { title: "Remplacement de tableau électrique", text: "Une installation moderne et évolutive", cats: "tableau", image: "03_tableau_electrique", tag: "Tableau", link: PROJ("mise-en-place-d-un-tableau-electrique") },
+    { title: "Éclairage extérieur", text: "Des ambiances lumineuses durables", cats: "eclairage", image: "10_eclairage_exterieur", tag: "Éclairage", link: PROJ("eclairage-exterieur-d-une-maison") },
+    { title: "Rénovation d'une maison", text: "Confort et performance électrique", cats: "renovation", image: "11_chambre_eclairage", tag: "Rénovation", link: PROJ("une-chambre-tout-en-douceur") },
+  ];
+  page("realisations", [
+    S("ph-hero", { layout: "navy", title_size: 86, copy_y: 66, eyebrow: "Réalisations", heading: "Des projets\n[y]bien connectés.[/y]", text: p("Sélection de projets illustratifs pour découvrir<br>des réalisations concrètes et variées."), text_mobile: p("Des installations soignées et durables,<br>pour des espaces plus confortables<br>au quotidien."), image_asset: f("06_renovation_appartement"), image_alt: alt("06_renovation_appartement"), image_position: "40% 50%", photo_w: 700, height: 514, caption: "Visuel de démonstration", chips_label: "Sélection de projets illustratifs", chips_aria: "Filtrer les réalisations", chips_for: "projects" }, [
+      { type: "chip", settings: { label: "Tout", value: "all" } }, { type: "chip", settings: { label: "Rénovation", value: "renovation" } },
+      { type: "chip", settings: { label: "Tableau", value: "tableau" } }, { type: "chip", settings: { label: "Éclairage", value: "eclairage" } },
+    ]),
+    S("ph-cards", { layout: "gallery", columns: 3, per_page: 6, pad_top: 27, pad_bottom: 70 }, [
+      ...PROJETS.map((x) => ({ type: "card", settings: { image_asset: f(x.image), alt: alt(x.image), position: x.pos ?? "50% 50%", category: x.cats, tag: "", label: "Projet illustratif", title: x.title, text: x.text, link: PROJ(x.slug), show: "desktop" } })),
+      ...MOBILE_PROJ.map((x) => ({ type: "card", settings: { image_asset: f(x.image), alt: alt(x.image), category: x.cats, tag: x.tag, label: "Projet illustratif", title: x.title, text: x.text, link: x.link, show: "mobile" } })),
+    ]),
+    S("ph-cta", { layout: "slim", layout_mobile: "inline", title_size: 55, eyebrow: "Un projet similaire ?", eyebrow_mobile: "Votre projet", heading: "Parlons de votre projet.", heading_mobile: "Des idées pour\nvos espaces ?", button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des solutions\nadaptées\nà vos espaces.", height: 186 }),
+  ]);
+  for (const x of PROJETS) {
+    const others = PROJETS.filter((o) => o.slug !== x.slug).slice(0, 2);
+    spec.templates[`page.ph-projet-${x.slug}`] = phTemplate([
+      S("ph-hero", { layout: "plain", title_size: 86, crumb_parent: "Réalisations", crumb_parent_link: U("realisations"), crumb_current: x.title.replace(/\n/g, " "), heading: x.heading, text: p(x.intro), circuit: "p02", note: "Des espaces\nplus confortables\nau quotidien.", note_x: 1218, note_y: 30, height: 361 }),
+      S("ph-project", { image_asset: f(x.image), image_alt: alt(x.image), image_position: x.pos ?? "50% 50%", caption: "Visuel de démonstration", eyebrow: "Projet illustratif", pad_top: 0, pad_bottom: 26 }, [
+        { type: "fact", settings: { icon: "maison", label: "Type", value: x.type } },
+        { type: "fact", settings: { icon: "maison", label: "Espace", value: x.space } },
+        { type: "fact", settings: { icon: "ampoule", label: "Besoin", value: x.need } },
+      ]),
+      S("ph-columns", { pad_top: 4, pad_bottom: 30 }, [
+        { type: "column", settings: { number: "01", eyebrow: "Le besoin", title: x.besoin[0], text: p(x.besoin[1]) } },
+        { type: "column", settings: { number: "02", eyebrow: "La réponse envisagée", title: x.reponse[0], text: p(x.reponse[1]) } },
+      ]),
+      S("ph-gallery", { image_height: 292, pad_top: 10, pad_bottom: 26 }, x.photos.map(([img, cap, pos]) => ({ type: "photo", settings: { image_asset: f(img), alt: alt(img), position: pos ?? "50% 50%", caption: cap } }))),
+      S("ph-cards", { layout: "related", columns: 2, eyebrow: "Autres inspirations", pad_top: 20, pad_bottom: 30 }, others.map((o, i) => ({ type: "card", settings: { image_asset: f(o.image), alt: alt(o.image), number: `0${i + 1}`, label: "Projet illustratif", title: o.title.replace(/\n/g, " "), link: PROJ(o.slug) } }))),
+      S("ph-cta", { layout: "slim", layout_mobile: "inline", title_size: 55, eyebrow: "Envie d'un projet similaire ?", heading: "Discutons de votre projet.", button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des solutions\nadaptées\nà vos espaces.", height: 160, copy_width: 780 }),
+      pageRow(LOOK_08),
+    ]);
+    spec.store.pages = spec.store.pages.filter((y) => y.handle !== `realisation-${x.slug}`);
+    spec.store.pages.push({ handle: `realisation-${x.slug}`, title: x.title.replace(/\n/g, " "), template_suffix: `ph-projet-${x.slug}`, body_html: "" });
+  }
+
+  // ------------------------------------------------------------------------------------------- L'entreprise (planches 03 et 08)
+  page("l-entreprise", [
+    S("ph-hero", { layout: "navy", title_size: 70, copy_y: 54, eyebrow: "L'entreprise", heading: "Un métier de précision.\n[y]Une relation simple.[/y]", heading_mobile: "Un métier\nde précision.\n[y]Une relation simple.[/y]", text: p("Des solutions électriques fiables et durables,<br>avec une approche claire et transparente."), image_asset: f("17_entreprise_hero"), image_alt: alt("17_entreprise_hero"), image_position: "50% 40%", photo_w: 760, height: 408 }),
+    S("ph-cards", { layout: "values", columns: 3, eyebrow: "Nos valeurs", pad_top: 40, pad_bottom: 24 }, [
+      { type: "card", settings: { icon: "bulle", title: "Écoute", text: "Comprendre vos besoins\net vos contraintes pour proposer\ndes solutions adaptées." } },
+      { type: "card", settings: { icon: "devis-document", title: "Clarté", text: "Des informations simples\net un suivi lisible à chaque étape\ndu projet." } },
+      { type: "card", settings: { icon: "reglages", title: "Soin", text: "Un travail précis et soigné,\npour des installations fiables\net durables." } },
+    ]),
+    S("ph-steps", { layout: "boxes", layout_mobile: "circles", arrows: true, background: "white", eyebrow: "Notre méthode", text: p("Un accompagnement structuré, de la première idée<br>jusqu'à la mise en œuvre de votre projet."), pad_top: 34, pad_bottom: 30 }, [
+      { type: "step", settings: { number: "01", icon: "bulle", title: "Parler du projet", text: "Nous échangeons sur vos\nenvies, vos besoins et les\nspécificités de votre espace." } },
+      { type: "step", settings: { number: "02", icon: "devis-document", title: "Observer l'existant", text: "Nous analysons l'environnement\net les installations en place\npour bien comprendre\nles contraintes." } },
+      { type: "step", settings: { number: "03", icon: "cible-ronde", title: "Définir le périmètre", text: "Nous proposons des solutions\nadaptées et un plan\nd'intervention clair." } },
+      { type: "step", settings: { number: "04", icon: "calendrier", title: "Planifier les travaux", text: "Nous organisons les différentes\nétapes pour un déroulement\nserein du chantier." } },
+    ]),
+    S("ph-zone", { eyebrow: "Notre zone d'intervention", heading: "Zone d'intervention\nà renseigner.", title_size: 50, text: p("Nous intervenons dans votre secteur pour des projets<br>de rénovation, d'aménagement ou d'installation électrique."), tag: "Votre ville\net sa région\nà renseigner", pad_top: 26, pad_bottom: 30 }),
+    S("ph-cta", { layout: "slim", layout_mobile: "inline", title_size: 46, heading: "Un projet ? Échangeons ensemble.", heading_mobile: "Un projet ?\nÉchangeons\nensemble.", button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des échanges\nsimples et concrets\npour avancer.", height: 196, copy_width: 780 }),
+  ]);
+
+  // ------------------------------------------------------------------------------------------- Questions fréquentes (planches 03 et 08)
+  const Q = (question: string, answer: string, category: string, extra: Record<string, unknown> = {}) => ({ type: "question", settings: { question, answer: p(answer), category, ...extra } });
+  page("faq", [
+    S("ph-hero", { layout: "navy", title_size: 76, copy_y: 54, eyebrow: "FAQ", heading: "Les réponses qui\néclairent [y]votre projet.[/y]", text: p("Des réponses claires aux questions les plus courantes<br>pour vous aider à avancer sereinement."), image_asset: f("24_article_eclairage"), image_alt: alt("24_article_eclairage"), image_position: "55% 0%", image_zoom: 170, photo_w: 760, height: 487, chips_aria: "Catégories de questions", chips_for: "faq" }, [
+      { type: "chip", settings: { label: "Avant les travaux", value: "avant-les-travaux" } }, { type: "chip", settings: { label: "Prestations", value: "prestations" } }, { type: "chip", settings: { label: "Devis", value: "devis" } },
+    ]),
+    S("ph-faq", { layout: "page", numbered: true, open_first: true, image_asset: f("21_prise_interrupteur"), image_alt: alt("21_prise_interrupteur"), image_position: "88% 45%", image_zoom: 150, box_eyebrow: "Une question\nplus spécifique ?", box_title: "Une autre\nquestion ?", box_text: "Nous sommes à votre écoute\npour échanger sur votre projet\net vous apporter des réponses\nadaptées à votre situation.", box_button: "Nous contacter", box_link: U("contact"), pad_top: 30, pad_bottom: 60 }, [
+      Q("Comment se déroule le premier échange ?", "Nous commençons par échanger sur vos besoins, vos usages et vos contraintes. Cet échange nous permet de mieux comprendre votre projet et de vous proposer des solutions adaptées à votre espace et à votre installation existante.", "avant-les-travaux"),
+      Q("Intervenez-vous en neuf et en rénovation ?", "Oui : les prestations concernent aussi bien une construction neuve qu'un logement existant à rénover.", "avant-les-travaux"),
+      Q("Faut-il fournir des plans ou des photos pour un devis ?", "Ce n'est pas obligatoire. Des photos ou un plan aident à préparer l'échange ; la demande de devis permet de les joindre (JPG, PNG ou PDF).", "avant-les-travaux"),
+      Q("Comment se passe l'accès au chantier ?", "Les conditions d'accès (horaires, clés, pièces concernées) sont convenues avec vous avant le début des travaux.", "avant-les-travaux"),
+      Q("Pouvez-vous accompagner le choix des équipements ?", "Oui : nous vous aidons à choisir l'éclairage, les prises et les commandes selon vos usages et votre budget.", "avant-les-travaux"),
+      Q("Quelles sont les étapes d'un projet ?", "Échange, visite de l'existant, proposition détaillée, planification, réalisation et vérifications finales.", "avant-les-travaux"),
+      Q("L'installation est-elle adaptée à mes usages quotidiens ?", "C'est l'objet du premier échange : l'installation est pensée à partir de vos usages actuels et de ceux que vous prévoyez.", "avant-les-travaux"),
+      Q("Proposez-vous des solutions pour un éclairage connecté ?", "Des solutions de pilotage (éclairage, volets, chauffage) peuvent être étudiées avec vous selon votre logement.", "avant-les-travaux"),
+      Q("Comment se déroule la fin de chantier ?", "Les installations sont vérifiées et les circuits repérés ; nous vous expliquons le fonctionnement de ce qui a été installé.", "avant-les-travaux"),
+      Q("Quelles prestations proposez-vous ?", "Installation et rénovation, tableau et sécurité, éclairage intérieur et extérieur, dépannage, prises et équipements, pilotage et confort.", "prestations"),
+      Q("Intervenez-vous pour un simple dépannage ?", "Oui : décrivez la situation (localisation, symptômes, contexte) dans la demande ; nous revenons vers vous pour convenir d'un rendez-vous.", "prestations"),
+      Q("Pouvez-vous moderniser un tableau existant ?", "Selon son état, une mise à niveau ou un remplacement peut être proposé après observation sur place.", "prestations"),
+      Q("Le devis est-il payant ?", "[À compléter : conditions du devis à préciser par l'entreprise]", "devis"),
+      Q("Que contient le devis ?", "Le périmètre des travaux, les équipements proposés et les étapes de réalisation, présentés de façon détaillée.", "devis"),
+      Q("Comment demander un devis ?", "Par le formulaire « Demande de devis » : type de projet, lieu, délai souhaité, description et, si vous le souhaitez, des photos.", "devis"),
+    ]),
+    S("ph-cta", { layout: "slim", layout_mobile: "soft", title_size: 40, heading: "Besoin d'un complément d'information ?", text: p("Échangeons sur votre projet pour trouver ensemble la solution la plus adaptée."), button_label: "Demander un devis", button_link: QUOTE, circuit: "cta-slim", note: "Des réponses\nclaires pour avancer\nen toute sérénité.", height: 170, copy_width: 790 }),
   ]);
 
   // ------------------------------------------------------------------------------------------- En-tête, pied, menus

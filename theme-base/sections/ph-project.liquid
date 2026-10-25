@@ -1,0 +1,59 @@
+{%- comment -%}
+  PHASE : fiche d'un projet illustratif (planches 03 et 08) — grande photo à gauche et colonne de repères à droite
+  (sur-titre « Projet illustratif », puis pictogramme, intitulé et valeur : type, espace, besoin…).
+  Les photos restent illustratives : aucune réalisation réelle n'est affirmée.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-project ph-pad" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-project__body">
+      <div class="ph-project__media">
+        {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, class: 'ph-project__img', sizes: '(min-width: 1080px) 70vw, 100vw', caption: s.caption %}
+      </div>
+      <aside class="ph-project__facts" aria-label="{{ s.eyebrow | escape }}">
+        {%- if s.eyebrow != blank -%}<p class="ph-project__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        <dl class="ph-project__list">
+          {%- for b in section.blocks -%}
+            <div class="ph-project__fact" {{ b.shopify_attributes }}>
+              {%- if b.settings.icon != blank -%}<span class="ph-project__icon" aria-hidden="true">{% render 'ph-icon', name: b.settings.icon %}</span>{%- endif -%}
+              <dt>{{ b.settings.label }}</dt>
+              <dd>{{ b.settings.value }}</dd>
+            </div>
+          {%- endfor -%}
+        </dl>
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Projet : photo et repères",
+  "class": "ph-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)" },
+    { "type": "text", "id": "caption", "label": "Légende sur la photo", "default": "Visuel de démonstration" },
+    { "type": "text", "id": "eyebrow", "label": "Titre des repères", "default": "Projet illustratif" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 }
+  ],
+  "blocks": [
+    { "type": "fact", "name": "Repère", "settings": [
+      { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "maison" },
+      { "type": "text", "id": "label", "label": "Intitulé", "default": "Type" },
+      { "type": "text", "id": "value", "label": "Valeur" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Projet : photo et repères" }]
+}
+{% endschema %}

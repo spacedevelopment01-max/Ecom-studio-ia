@@ -1,0 +1,50 @@
+{%- comment -%}
+  PHASE : photos légendées (planches 03 et 08 : détails d'un projet illustratif) — trois photos côte à côte et leur
+  légende dessous ; une colonne au téléphone (ou défilement horizontal).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-gallery ph-pad ph-gallery--m-{{ s.layout_mobile }}" style="--ph-cols: {{ section.blocks.size | at_least: 1 }}; --ph-gh: {{ s.image_height }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    {%- if s.eyebrow != blank -%}<p class="ph-gallery__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <ul class="ph-gallery__grid" role="list">
+      {%- for b in section.blocks -%}
+        <li class="ph-gallery__item" {{ b.shopify_attributes }}>
+          <figure>
+            {% render 'ph-img', image: b.settings.image, asset: b.settings.image_asset, alt: b.settings.alt, pos: b.settings.position, zoom: b.settings.zoom, class: 'ph-gallery__img', sizes: '(min-width: 1080px) 33vw, 100vw' %}
+            {%- if b.settings.caption != blank -%}<figcaption class="ph-gallery__cap">{{ b.settings.caption }}</figcaption>{%- endif -%}
+          </figure>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Photos légendées",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "range", "id": "image_height", "label": "Hauteur des photos (repère 1440 px)", "min": 120, "max": 600, "step": 2, "default": 292 },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "scroll", "options": [{ "value": "scroll", "label": "Défilement horizontal" }, { "value": "stack", "label": "Empilées" }] },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 }
+  ],
+  "blocks": [
+    { "type": "photo", "name": "Photo", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Texte alternatif" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "text", "id": "caption", "label": "Légende" }
+    ] }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "Photos légendées" }]
+}
+{% endschema %}

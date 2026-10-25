@@ -9,11 +9,11 @@
   assign s = section.settings
   assign lay = s.layout
 -%}
-<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+<section class="ph ph-cta ph-cta--{{ lay }} ph-cta--m-{{ s.layout_mobile }}{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-ts: {{ s.title_size }}; --ph-ch: {{ s.height }}; --ph-cw: {{ s.copy_width }}; --ph-ts-m: {{ s.title_size_mobile }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
   <div class="ph-c">
     <div class="ph-cta__box">
       <div class="ph-cta__copy">
-        {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-cta__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-cta__eyebrow"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
         {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-cta__title' %}
         {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-cta__title ph-cta__title--m' %}{%- endif -%}
         {%- if s.text != blank -%}<div class="ph-cta__text">{{ s.text }}</div>{%- endif -%}
@@ -48,6 +48,7 @@
     ] },
     { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
     { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone (facultatif)" },
     { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne." },
     { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
     { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 120, "step": 1, "default": 62 },
@@ -63,6 +64,8 @@
       { "value": "cta-diag", "label": "Trait en diagonale" }
     ] },
     { "type": "textarea", "id": "note", "label": "Note à chasse fixe" },
+    { "type": "number", "id": "height", "label": "Hauteur du bandeau sur une ligne (repère 1440 px)", "default": 186 },
+    { "type": "number", "id": "copy_width", "label": "Largeur du texte du bandeau sur une ligne (repère 1440 px)", "default": 700 },
     { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 0 },
     { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 0 },
     { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 0 },
