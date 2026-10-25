@@ -100,6 +100,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   ne change qu'à « Choisir ce thème » (une seule tâche même en double-clic).
   **Page d'accueil** : chaque section montre de vrais visuels (sinon rien, jamais un gabarit) et les sections tournent
   entre ces quatre démos, en alternant produits et services.
+- **Projets clients dédiés** (`clients/<clé>/`, ex. Le Coven des Charmes, PR #189) : site posé dans le thème DU projet
+  du client (sections `es-custom-<clé>-*` du projet, médias de sa bibliothèque, pages et menus du projet) ; jamais dans
+  `theme-base/`, le catalogue, les démos ni la bibliothèque de sections ; aucun média du client dans le dépôt
+  (`.gitignore`). Aperçu isolé, rattachement au vrai projet et rapport : `clients/le-coven-des-charmes/`,
+  `docs/client-briefs/le-coven-des-charmes/RESULTATS.md`.
 
 ## Travail en plusieurs conversations (choix du propriétaire)
 

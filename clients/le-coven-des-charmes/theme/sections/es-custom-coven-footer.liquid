@@ -1,0 +1,131 @@
+{%- comment -%}
+  Le Coven des Charmes — pied de page (projet client dédié). Deux compositions ordinateur dessinées sur les planches :
+  « colonnes » (accueil, produit, achat : rameaux dorés, liens en colonnes, lunes et logo au centre) et « ligne »
+  (tirage, Coven, créations, FAQ : logo à gauche, liens en ligne). Téléphone : grande lune sur les rameaux et liens
+  centrés, ou colonnes autour du logo (accueil). Préférences de cookies : aucun traceur facultatif avant accord.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout
+  assign mlayout = s.mobile_layout
+  assign ligne_list = s.ligne_on | split: ','
+  for h in ligne_list
+    assign hh = h | strip
+    if page.handle == hh
+      assign layout = 'ligne'
+    endif
+  endfor
+  assign mlogo_list = s.mobile_logo_on | split: ','
+  for t in mlogo_list
+    assign tt = t | strip
+    if page.handle == tt
+      assign mlayout = 'logo'
+    endif
+  endfor
+  assign mcol_list = s.mobile_colonnes_on | split: ','
+  for t in mcol_list
+    assign tt = t | strip
+    if template.name == tt
+      assign mlayout = 'colonnes'
+    endif
+  endfor
+  assign logo_src = ''
+  if s.logo != blank
+    assign logo_src = s.logo | image_url: width: 400
+  elsif s.logo_asset != blank
+    assign logo_src = s.logo_asset | asset_url
+  endif
+-%}
+{%- capture sprig -%}<svg class="cvn-sprig" viewBox="0 0 160 120" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 112C40 92 70 70 92 40c10-14 18-24 30-32"/><path d="M30 98c-8-10-20-12-26-8 8 8 18 10 26 8zM46 86c-4-14-16-20-24-18 4 10 14 18 24 18zM62 72c-2-14-10-22-18-22 2 10 8 18 18 22zM76 58c0-12-6-20-14-22 0 10 4 18 14 22zM90 42c2-12-2-20-8-24-2 10 0 18 8 24zM38 92c12 2 22-2 26-10-12-2-22 2-26 10zM56 78c12 0 20-6 22-14-12 0-20 6-22 14zM72 64c10-2 18-8 18-16-10 2-16 8-18 16zM104 30c10 0 18-6 20-12-10 0-16 4-20 12z"/></g><g fill="currentColor"><circle cx="120" cy="8" r="2"/><circle cx="132" cy="20" r="1.6"/></g></svg>{%- endcapture -%}
+{%- capture moon -%}<svg class="cvn-moon" viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M26 4a17 17 0 1 0 8 29A15 15 0 0 1 26 4z"/></svg>{%- endcapture -%}
+{%- capture star -%}<svg class="cvn-star" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0l1.6 10.4L24 12l-10.4 1.6L12 24l-1.6-10.4L0 12l10.4-1.6z"/></svg>{%- endcapture -%}
+<footer class="cvn-footer cvn-footer--{{ layout }} cvn-footer--m-{{ mlayout }}">
+  <div class="cvn-footer__inner cvn-scale">
+    <span class="cvn-footer__sprig cvn-footer__sprig--l">{{ sprig }}</span>
+    <span class="cvn-footer__sprig cvn-footer__sprig--r">{{ sprig }}</span>
+    <span class="cvn-footer__crescent">{{ moon }}</span>
+    <div class="cvn-footer__col cvn-footer__col--1">
+      {%- for link in linklists[s.menu_1].links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
+    </div>
+    <span class="cvn-footer__deco cvn-footer__deco--l">{{ star }}{{ moon }}</span>
+    <a class="cvn-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      {%- if logo_src != blank -%}<img src="{{ logo_src }}" alt="{{ s.logo_alt | escape }}" width="400" height="400" loading="lazy" style="--cvn-logo-zoom: {{ s.logo_zoom | divided_by: 100.0 }}">{%- else -%}{{ shop.name }}{%- endif -%}
+    </a>
+    <span class="cvn-footer__deco cvn-footer__deco--r">{{ moon }}{{ star }}</span>
+    <div class="cvn-footer__col cvn-footer__col--2">
+      {%- for link in linklists[s.menu_2].links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
+    </div>
+    <div class="cvn-footer__col cvn-footer__col--3">
+      {%- for link in linklists[s.menu_3].links -%}<a href="{{ link.url }}"{% if link.url contains 'cookies' %} data-cvn-cookies-link{% endif %}>{{ link.title }}</a>{%- endfor -%}
+    </div>
+    <nav class="cvn-footer__row" aria-label="{{ s.nav_label }}">
+      <div class="cvn-footer__line">{%- for link in linklists[s.menu_row].links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}</div>
+      <div class="cvn-footer__line cvn-footer__line--legal">{%- for link in linklists[s.menu_legal].links -%}<a href="{{ link.url }}"{% if link.url contains 'cookies' %} data-cvn-cookies-link{% endif %}>{{ link.title }}</a>{%- endfor -%}</div>
+    </nav>
+  </div>
+</footer>
+
+{%- if s.cookie_banner -%}
+<div class="cvn-cookies" role="dialog" aria-modal="false" aria-labelledby="CvCookiesTitle" hidden data-cvn-cookies data-save="{{ s.cookie_save | escape }}">
+  <div class="cvn-cookies__box">
+    <h2 class="cvn-cookies__title" id="CvCookiesTitle">{{ s.cookie_title }}</h2>
+    <p class="cvn-cookies__text">{{ s.cookie_text }}</p>
+    <div class="cvn-cookies__prefs" data-cvn-cookies-prefs hidden>
+      <label class="cvn-switch"><input type="checkbox" checked disabled><span class="cvn-switch__ui" aria-hidden="true"></span><span><strong>{{ s.cookie_essential }}</strong><small>{{ s.cookie_essential_note }}</small></span></label>
+      <label class="cvn-switch"><input type="checkbox" data-cvn-consent="audience"><span class="cvn-switch__ui" aria-hidden="true"></span><span><strong>{{ s.cookie_audience }}</strong><small>{{ s.cookie_audience_note }}</small></span></label>
+    </div>
+    <div class="cvn-cookies__actions">
+      <button type="button" class="cvn-btn cvn-btn--line" data-cvn-consent-all="false">{{ s.cookie_refuse }}</button>
+      <button type="button" class="cvn-btn cvn-btn--line" data-cvn-consent-custom>{{ s.cookie_custom }}</button>
+      <button type="button" class="cvn-btn cvn-btn--gold" data-cvn-consent-all="true">{{ s.cookie_accept }}</button>
+    </div>
+  </div>
+</div>
+{%- endif -%}
+
+{% javascript %}
+/*COVEN_JS*/
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Coven — pied de page",
+  "class": "cvn-section cvn-section--footer",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition sur ordinateur", "default": "colonnes", "options": [
+      { "value": "colonnes", "label": "Colonnes autour du logo (accueil, produit, achat)" },
+      { "value": "ligne", "label": "Logo à gauche, liens en ligne (tirage, Coven, créations, FAQ)" }
+    ] },
+    { "type": "select", "id": "mobile_layout", "label": "Composition sur téléphone", "default": "lune", "options": [
+      { "value": "lune", "label": "Grande lune et liens centrés" },
+      { "value": "colonnes", "label": "Colonnes autour du logo" }
+    ] },
+    { "type": "text", "id": "ligne_on", "label": "Pages au pied « logo à gauche, liens en ligne »", "default": "le-tirage, le-coven, creations, faq", "info": "Identifiants des pages, séparés par des virgules." },
+    { "type": "text", "id": "mobile_logo_on", "label": "Pages au pied « logo entre deux lunes » sur téléphone", "default": "le-tirage, le-coven, creations, faq" },
+    { "type": "text", "id": "mobile_colonnes_on", "label": "Gabarits au pied « colonnes » sur téléphone", "default": "index, product", "info": "Exemple : index (accueil), product (fiche produit)." },
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)", "default": "coven-logo.jpg" },
+    { "type": "text", "id": "logo_alt", "label": "Texte alternatif du logo", "default": "Le Coven des Charmes" },
+    { "type": "range", "id": "logo_zoom", "label": "Cadrage du logo dans le médaillon", "min": 100, "max": 140, "step": 1, "unit": "%", "default": 118 },
+    { "type": "link_list", "id": "menu_1", "label": "Colonne 1", "default": "coven-pied-1" },
+    { "type": "link_list", "id": "menu_2", "label": "Colonne 2", "default": "coven-pied-2" },
+    { "type": "link_list", "id": "menu_3", "label": "Colonne 3", "default": "coven-pied-3" },
+    { "type": "link_list", "id": "menu_row", "label": "Liens en ligne", "default": "coven-pied-ligne" },
+    { "type": "link_list", "id": "menu_legal", "label": "Liens légaux", "default": "coven-pied-legal" },
+    { "type": "text", "id": "nav_label", "label": "Nom de la navigation du pied", "default": "Liens du pied de page" },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "cookie_banner", "label": "Demander l'accord pour les cookies facultatifs", "default": true, "info": "Les cookies facultatifs restent désactivés tant que le visiteur n'a pas accepté." },
+    { "type": "text", "id": "cookie_title", "label": "Titre", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookie_text", "label": "Texte", "default": "Nous utilisons des cookies essentiels au fonctionnement du site. Les cookies de mesure d'audience ne sont déposés qu'avec votre accord." },
+    { "type": "text", "id": "cookie_essential", "label": "Cookies essentiels", "default": "Cookies essentiels" },
+    { "type": "text", "id": "cookie_essential_note", "label": "Précision (essentiels)", "default": "Requis au fonctionnement du site." },
+    { "type": "text", "id": "cookie_audience", "label": "Cookies d'audience", "default": "Cookies d'audience" },
+    { "type": "text", "id": "cookie_audience_note", "label": "Précision (audience)", "default": "Mesure d'audience (facultatif)." },
+    { "type": "text", "id": "cookie_refuse", "label": "Bouton Tout refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "cookie_custom", "label": "Bouton Personnaliser", "default": "Personnaliser" },
+    { "type": "text", "id": "cookie_save", "label": "Bouton Enregistrer", "default": "Enregistrer mes choix" },
+    { "type": "text", "id": "cookie_accept", "label": "Bouton Tout accepter", "default": "Tout accepter" }
+  ],
+  "enabled_on": { "groups": ["footer"] }
+}
+{% endschema %}

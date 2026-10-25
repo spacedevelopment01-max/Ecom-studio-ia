@@ -1,0 +1,132 @@
+{%- comment -%}
+  Le Coven des Charmes — commande (étapes, coordonnées, adresse, livraison, paiement, récapitulatif, CGV). C'est une
+  SIMULATION marquée : aucun paiement, aucun e-mail, aucune commande enregistrée. Les modes et tarifs de livraison et
+  les moyens de paiement viennent de la boutique (Shopify) et restent « à renseigner » ici. Erreurs à côté des champs
+  et résumé accessible, chargement, refus simulable, pas de double envoi.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign countries = s.countries | newline_to_br | split: '<br />'
+-%}
+<section class="cvn-checkout" data-cvn-checkout-page data-confirm="{{ s.confirm_link }}" data-photo="{{ s.photo_asset | asset_url }}" data-example="{{ s.example_label | escape }}" data-size="{{ s.size_label | escape }}" data-qty="{{ s.qty_label | escape }}" data-size-placeholder="À préciser" data-price-note="{{ s.price_note | escape }}" data-empty="{{ s.empty_text | escape }}" data-refused="{{ s.refused_text | escape }}" data-shopify="{{ s.shopify_text | escape }}">
+  <div class="cvn-checkout__inner cvn-scale">
+    <ol class="cvn-stepper" role="list" aria-label="{{ s.steps_label }}">
+      <li class="is-done"><span class="cvn-stepper__dot">1</span><span>{{ s.step_1 }}</span></li>
+      <li class="is-current" aria-current="step"><span class="cvn-stepper__dot">2</span><span>{{ s.step_2 }}</span></li>
+      <li><span class="cvn-stepper__dot">3</span><span>{{ s.step_3 }}</span></li>
+      <li><span class="cvn-stepper__dot">4</span><span>{{ s.step_4 }}</span></li>
+    </ol>
+    <p class="cvn-demo-banner" role="note"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-information"></use></svg>{{ s.demo_banner }}</p>
+    <form class="cvn-checkout__grid" novalidate data-cvn-form="checkout" aria-describedby="CvnCoErrors">
+      <div class="cvn-checkout__form cvn-paper">
+        <h2 class="cvn-paper__title">{{ s.contact_title }}</h2>
+        <div class="cvn-errors" id="CvnCoErrors" role="alert" tabindex="-1" hidden data-cvn-errors><p>{{ s.errors_title }}</p><ul></ul></div>
+        <div class="cvn-fields">
+          <div class="cvn-field cvn-field--full"><label class="cvn-field__label" for="CvnCoEmail">{{ s.email_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoEmail" name="email" type="email" autocomplete="email" placeholder="{{ s.email_placeholder }}" required data-cvn-msg="{{ s.email_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field"><label class="cvn-field__label" for="CvnCoFirst">{{ s.first_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoFirst" name="first_name" autocomplete="given-name" required data-cvn-msg="{{ s.required_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field"><label class="cvn-field__label" for="CvnCoLast">{{ s.last_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoLast" name="last_name" autocomplete="family-name" required data-cvn-msg="{{ s.required_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field cvn-field--full"><label class="cvn-field__label" for="CvnCoAddress">{{ s.address_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoAddress" name="address" autocomplete="street-address" placeholder="{{ s.address_placeholder }}" required data-cvn-msg="{{ s.required_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field"><label class="cvn-field__label" for="CvnCoZip">{{ s.zip_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoZip" name="zip" autocomplete="postal-code" inputmode="numeric" required pattern="[0-9A-Za-z \-]{3,10}" data-cvn-msg="{{ s.zip_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field"><label class="cvn-field__label" for="CvnCoCity">{{ s.city_label }} <span aria-hidden="true">*</span></label><input class="cvn-input" id="CvnCoCity" name="city" autocomplete="address-level2" required data-cvn-msg="{{ s.required_error }}"><p class="cvn-field__error" hidden></p></div>
+          <div class="cvn-field cvn-field--full"><label class="cvn-field__label" for="CvnCoCountry">{{ s.country_label }} <span aria-hidden="true">*</span></label>
+            <div class="cvn-select cvn-select--light"><select id="CvnCoCountry" name="country" autocomplete="country-name" required data-cvn-msg="{{ s.required_error }}">
+              <option value="">{{ s.country_placeholder }}</option>
+              {%- for c in countries -%}{%- assign cc = c | strip -%}{%- if cc != '' -%}<option value="{{ cc | escape }}"{% if forloop.first %} selected{% endif %}>{{ cc }}</option>{%- endif -%}{%- endfor -%}
+            </select><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-bas"></use></svg></div><p class="cvn-field__error" hidden></p></div>
+          <label class="cvn-check cvn-field--full"><input type="checkbox" name="create_account"><span>{{ s.account_label }}</span></label>
+          <label class="cvn-check cvn-field--full"><input type="checkbox" name="newsletter"><span>{{ s.newsletter_label }}</span></label>
+        </div>
+      </div>
+      <div class="cvn-checkout__aside">
+        <div class="cvn-paper cvn-sum">
+          <h2 class="cvn-paper__title">{{ s.summary_title }}</h2>
+          <div class="cvn-sum__lines" data-cvn-sum-lines></div>
+          <div class="cvn-paper-note"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-information"></use></svg><p>{{ s.summary_note }}</p></div>
+        </div>
+        <div class="cvn-paper cvn-sum__block"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-expedition"></use></svg><div><h3>{{ s.shipping_title }}</h3><p>{{ s.shipping_text }}</p></div></div>
+        <div class="cvn-paper cvn-sum__block"><svg class="cvn-icon" aria-hidden="true"><use href="#coven-confidentialite"></use></svg><div><h3>{{ s.payment_title }}</h3><p>{{ s.payment_text }}</p></div></div>
+        <div class="cvn-paper cvn-sum__total"><span>{{ s.total_label }}</span><strong data-cvn-total>— €</strong><small data-cvn-total-note>{{ s.price_note }}</small></div>
+      </div>
+      <div class="cvn-checkout__foot cvn-paper">
+        <div class="cvn-field cvn-field--check"><label class="cvn-check"><input type="checkbox" name="cgv" required data-cvn-msg="{{ s.cgv_error }}"><span>{{ s.cgv_before }} <a href="{{ s.cgv_link }}">{{ s.cgv_link_label }}</a> <span aria-hidden="true">*</span></span></label><p class="cvn-field__error" hidden></p></div>
+        <div class="cvn-checkout__buttons">
+          <button type="button" class="cvn-btn cvn-btn--dark" aria-expanded="false" aria-controls="CvnParcours" data-cvn-toggle>{{ s.journey_label }}</button>
+          <button type="submit" class="cvn-btn cvn-btn--gold" data-cvn-submit><span data-cvn-submit-label>{{ s.submit_label }}</span><span data-cvn-submit-busy hidden>{{ s.loading_label }}</span><svg class="cvn-icon cvn-only-m" aria-hidden="true"><use href="#coven-fleche-droite"></use></svg></button>
+        </div>
+        <p class="cvn-checkout__status" role="status" aria-live="polite" data-cvn-status></p>
+        <label class="cvn-check cvn-checkout__refuse"><input type="checkbox" data-cvn-simulate-refusal><span>{{ s.refusal_toggle }}</span></label>
+      </div>
+    </form>
+    <div class="cvn-journey cvn-paper" id="CvnParcours" hidden>
+      <h2 class="cvn-paper__title">{{ s.journey_title }}</h2>
+      <ol class="cvn-journey__list" role="list">
+        <li><svg class="cvn-icon" aria-hidden="true"><use href="#coven-panier"></use></svg><span>{{ s.journey_1 }}</span></li>
+        <li><svg class="cvn-icon" aria-hidden="true"><use href="#coven-scoop"></use></svg><span>{{ s.journey_2 }}</span></li>
+        <li><svg class="cvn-icon" aria-hidden="true"><use href="#coven-assemblage"></use></svg><span>{{ s.journey_3 }}</span></li>
+        <li><svg class="cvn-icon" aria-hidden="true"><use href="#coven-expedition"></use></svg><span>{{ s.journey_4 }}</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Coven — commande",
+  "class": "cvn-section cvn-section--checkout",
+  "settings": [
+    { "type": "text", "id": "photo_asset", "label": "Photo d'exemple du récapitulatif (fichier du thème)" },
+    { "type": "text", "id": "example_label", "label": "Mention de la photo", "default": "Exemple de bracelet" },
+    { "type": "text", "id": "size_label", "label": "Taille", "default": "Taille" },
+    { "type": "text", "id": "qty_label", "label": "Quantité", "default": "Quantité" },
+    { "type": "textarea", "id": "shopify_text", "label": "Message en boutique réelle", "default": "La commande et le paiement se font sur la page sécurisée de la boutique, depuis le panier." },
+    { "type": "text", "id": "steps_label", "label": "Nom des étapes", "default": "Étapes de la commande" },
+    { "type": "text", "id": "step_1", "label": "Étape 1", "default": "Panier" },
+    { "type": "text", "id": "step_2", "label": "Étape 2", "default": "Coordonnées" },
+    { "type": "text", "id": "step_3", "label": "Étape 3", "default": "Livraison" },
+    { "type": "text", "id": "step_4", "label": "Étape 4", "default": "Paiement" },
+    { "type": "textarea", "id": "demo_banner", "label": "Bandeau de simulation", "default": "Aperçu de la commande : aucun paiement, aucun e-mail, aucune commande enregistrée." },
+    { "type": "text", "id": "contact_title", "label": "Titre des coordonnées", "default": "Vos coordonnées" },
+    { "type": "text", "id": "errors_title", "label": "Résumé des erreurs", "default": "Vérifiez les champs suivants :" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "email_placeholder", "label": "Exemple d'e-mail", "default": "votre@email.com" },
+    { "type": "text", "id": "email_error", "label": "Erreur e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "required_error", "label": "Erreur champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "address_label", "label": "Adresse", "default": "Adresse" },
+    { "type": "text", "id": "address_placeholder", "label": "Exemple d'adresse", "default": "Numéro et rue" },
+    { "type": "text", "id": "zip_label", "label": "Code postal", "default": "Code postal" },
+    { "type": "text", "id": "zip_error", "label": "Erreur code postal", "default": "Indiquez un code postal valide." },
+    { "type": "text", "id": "city_label", "label": "Ville", "default": "Ville" },
+    { "type": "text", "id": "country_label", "label": "Pays", "default": "Pays" },
+    { "type": "text", "id": "country_placeholder", "label": "Pays par défaut", "default": "À préciser" },
+    { "type": "textarea", "id": "countries", "label": "Pays de livraison (un par ligne)", "default": "France", "info": "À confirmer avec les zones de livraison réelles de la boutique." },
+    { "type": "text", "id": "account_label", "label": "Créer un compte", "default": "Créer un compte avec ces informations" },
+    { "type": "text", "id": "newsletter_label", "label": "Nouvelles", "default": "S'inscrire à la newsletter (facultatif)" },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif", "default": "Récapitulatif de la commande" },
+    { "type": "textarea", "id": "summary_note", "label": "Rappel du tirage", "default": "Les charms sont tirés au sort au scoop après votre commande, puis assemblés sur votre bracelet." },
+    { "type": "text", "id": "shipping_title", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_text", "label": "Livraison (texte)", "default": "Mode et tarifs de livraison à renseigner." },
+    { "type": "text", "id": "payment_title", "label": "Paiement", "default": "Paiement" },
+    { "type": "text", "id": "payment_text", "label": "Paiement (texte)", "default": "Moyens de paiement à configurer." },
+    { "type": "text", "id": "total_label", "label": "Total", "default": "Total" },
+    { "type": "text", "id": "price_note", "label": "Mention sans tarif", "default": "Tarif à renseigner" },
+    { "type": "text", "id": "cgv_before", "label": "Accord CGV", "default": "J'ai lu et j'accepte les" },
+    { "type": "text", "id": "cgv_link_label", "label": "Lien CGV", "default": "Conditions Générales de Vente (CGV)" },
+    { "type": "url", "id": "cgv_link", "label": "Page des CGV" },
+    { "type": "text", "id": "cgv_error", "label": "Erreur CGV", "default": "Acceptez les conditions générales de vente." },
+    { "type": "text", "id": "journey_label", "label": "Bouton parcours", "default": "Aperçu du parcours" },
+    { "type": "text", "id": "submit_label", "label": "Bouton de validation", "default": "Valider ma commande" },
+    { "type": "text", "id": "loading_label", "label": "Chargement", "default": "Vérification…" },
+    { "type": "textarea", "id": "refused_text", "label": "Commande refusée", "default": "La commande n'a pas pu être validée. Aucun montant n'a été débité. Vérifiez vos informations ou contactez-nous." },
+    { "type": "textarea", "id": "empty_text", "label": "Panier vide", "default": "Votre panier est vide : ajoutez d'abord votre bracelet." },
+    { "type": "text", "id": "refusal_toggle", "label": "Case de test du refus", "default": "Aperçu : simuler un refus de commande" },
+    { "type": "url", "id": "confirm_link", "label": "Page de confirmation" },
+    { "type": "text", "id": "journey_title", "label": "Titre du parcours", "default": "Aperçu de votre parcours" },
+    { "type": "text", "id": "journey_1", "label": "Parcours 1", "default": "Commande" },
+    { "type": "text", "id": "journey_2", "label": "Parcours 2", "default": "Le tirage au scoop" },
+    { "type": "text", "id": "journey_3", "label": "Parcours 3", "default": "Assemblage" },
+    { "type": "text", "id": "journey_4", "label": "Parcours 4", "default": "Expédition" }
+  ]
+}
+{% endschema %}

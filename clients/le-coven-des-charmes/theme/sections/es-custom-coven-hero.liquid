@@ -1,0 +1,127 @@
+{%- comment -%}
+  Le Coven des Charmes — ouverture de page. Accueil : texte à gauche, photo du cabinet à droite fondue dans le noir.
+  Pages : titre posé sur la photo (à gauche ou centré), icône de confirmation facultative, bandeau 404.
+  Téléphone : photo en haut, titre et texte posés sur le bas de la photo. Photos et cadrages modifiables.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign img = ''
+  if s.image != blank
+    assign img = s.image | image_url: width: 2400
+  elsif s.image_asset != blank
+    assign img = s.image_asset | asset_url
+  endif
+  assign mimg = img
+  if s.mobile_image != blank
+    assign mimg = s.mobile_image | image_url: width: 1200
+  elsif s.mobile_image_asset != blank
+    assign mimg = s.mobile_image_asset | asset_url
+  endif
+-%}
+<section class="cvn-hero cvn-hero--{{ s.layout }} cvn-hero--m-{{ s.mobile_layout }} cvn-hero--ma-{{ s.mobile_align }}{% if s.frame %} cvn-hero--framed{% endif %}{% if s.extend_height > 0 %} cvn-hero--extend{% endif %}{% if s.mobile_extend_height > 0 %} cvn-hero--m-extend{% endif %}" style="--eh: {{ s.extend_height }}px; --meh: {{ s.mobile_extend_height }}px; --h: {{ s.height }}px; --mh: {{ s.mobile_height }}px; --fx: {{ s.focus_x }}%; --fy: {{ s.focus_y }}%; --z: {{ s.zoom | divided_by: 100.0 }}; --mfx: {{ s.mobile_focus_x }}%; --mfy: {{ s.mobile_focus_y }}%; --mz: {{ s.mobile_zoom | divided_by: 100.0 }}; --media-l: {{ s.media_left }}%; --shade: {{ s.shade | divided_by: 100.0 }}; --tone: {{ s.brightness | divided_by: 100.0 }}; --warm: {{ s.warmth | divided_by: 100.0 }}; --tw: {{ s.text_width }}px; --ts: {{ s.title_size }}px; --txs: {{ s.text_size }}px; --mts: {{ s.mobile_title_size }}px; --tx: {{ s.text_x }}px; --ty: {{ s.text_y }}px; --mty: {{ s.mobile_text_y }}px;">
+  <div class="cvn-hero__inner cvn-scale">
+    {%- if img != blank -%}
+      <picture class="cvn-hero__media">
+        {%- if mimg != img -%}<source media="(max-width: 1023px)" srcset="{{ mimg }}">{%- endif -%}
+        <img src="{{ img }}" alt="{{ s.image_alt | escape }}" {% if section.index > 2 %}loading="lazy"{% else %}fetchpriority="high"{% endif %} width="1600" height="1200">
+      </picture>
+    {%- endif -%}
+    <div class="cvn-hero__shade" aria-hidden="true"></div>
+    {%- if s.medallion and s.medallion_asset != blank -%}<img class="cvn-hero__medallion" src="{{ s.medallion_asset | asset_url }}" alt="" width="640" height="640" loading="lazy" aria-hidden="true">{%- endif -%}
+    {%- if s.caption != blank -%}<p class="cvn-hero__caption">{{ s.caption | newline_to_br }}</p>{%- endif -%}
+    <div class="cvn-hero__copy">
+      {%- if s.icon != 'none' -%}
+        <span class="cvn-hero__icon cvn-hero__icon--{{ s.icon }}" aria-hidden="true">
+          {%- if s.icon == 'moon_check' -%}<svg viewBox="0 0 120 120"><defs><radialGradient id="CvMoonG-{{ section.id }}" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#fff1c9"/><stop offset=".6" stop-color="#e2b765"/><stop offset="1" stop-color="#8d6430"/></radialGradient></defs><path fill="url(#CvMoonG-{{ section.id }})" d="M78 10a52 52 0 1 0 30 84A46 46 0 0 1 78 10z"/><path d="M48 62l12 12 26-28" fill="none" stroke="#fbe7b8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {%- else -%}<svg viewBox="0 0 40 40"><path fill="currentColor" d="M26 4a17 17 0 1 0 8 29A15 15 0 0 1 26 4z"/></svg>{%- endif -%}
+        </span>
+      {%- endif -%}
+      {%- if s.eyebrow != blank -%}<p class="cvn-hero__eyebrow cvn-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.title != blank -%}<h1 class="cvn-hero__title">{{ s.title | newline_to_br }}</h1>{%- endif -%}
+      {%- if s.mobile_title != blank -%}<p class="cvn-hero__title cvn-hero__title--m" aria-hidden="true">{{ s.mobile_title | newline_to_br }}</p>{%- endif -%}
+      {%- if s.show_rule -%}<span class="cvn-hero__rule cvn-rule" aria-hidden="true"><svg class="cvn-moon" viewBox="0 0 40 40"><path fill="currentColor" d="M26 4a17 17 0 1 0 8 29A15 15 0 0 1 26 4z"/></svg></span>{%- endif -%}
+      {%- if s.text != blank -%}<div class="cvn-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.mobile_text != blank -%}<div class="cvn-hero__text cvn-hero__text--m">{{ s.mobile_text }}</div>{%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+        <div class="cvn-hero__actions">
+          {%- if s.button_label != blank -%}<a class="cvn-btn cvn-btn--gold cvn-hero__btn" href="{{ s.button_link }}">{{ s.button_label }}<svg class="cvn-icon" aria-hidden="true"><use href="#coven-{% if s.layout == 'home' %}fleche-droite{% else %}chevron-droite{% endif %}"></use></svg></a>{%- endif -%}
+          {%- if s.button2_label != blank -%}<a class="cvn-btn cvn-btn--line cvn-hero__btn2" href="{{ s.button2_link }}">{{ s.button2_label }}</a>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- if s.discover_label != blank -%}
+      <a class="cvn-hero__discover" href="{{ s.discover_link }}"><svg class="cvn-moon" viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M26 4a17 17 0 1 0 8 29A15 15 0 0 1 26 4z"/></svg><span>{{ s.discover_label }}</span><svg class="cvn-icon" aria-hidden="true"><use href="#coven-chevron-droite"></use></svg></a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Coven — ouverture",
+  "class": "cvn-section cvn-section--hero",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Composition sur ordinateur", "default": "left", "options": [
+      { "value": "home", "label": "Accueil : texte à gauche, photo à droite" },
+      { "value": "left", "label": "Titre à gauche sur la photo" },
+      { "value": "center", "label": "Titre centré sur la photo" },
+      { "value": "band", "label": "Bandeau étroit centré (page introuvable)" }
+    ] },
+    { "type": "select", "id": "mobile_layout", "label": "Composition sur téléphone", "default": "over", "options": [
+      { "value": "over", "label": "Titre posé sur le bas de la photo" },
+      { "value": "top", "label": "Titre en haut de la photo" },
+      { "value": "center", "label": "Titre centré" }
+    ] },
+    { "type": "select", "id": "mobile_align", "label": "Alignement du texte sur téléphone", "default": "center", "options": [{ "value": "center", "label": "Centré" }, { "value": "left", "label": "À gauche" }] },
+    { "type": "checkbox", "id": "frame", "label": "Filet doré autour", "default": false },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 120, "max": 1000, "step": 2, "unit": "px", "default": 620 },
+    { "type": "range", "id": "extend_height", "label": "Photo prolongée derrière la section suivante (ordinateur)", "min": 0, "max": 1800, "step": 10, "unit": "px", "default": 0, "info": "0 : la photo s'arrête avec l'ouverture." },
+    { "type": "range", "id": "mobile_extend_height", "label": "Photo prolongée (téléphone)", "min": 0, "max": 1400, "step": 10, "unit": "px", "default": 0 },
+    { "type": "range", "id": "mobile_height", "label": "Hauteur sur téléphone", "min": 200, "max": 900, "step": 2, "unit": "px", "default": 520 },
+    { "type": "header", "content": "Photo" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "range", "id": "media_left", "label": "Début de la photo (accueil)", "min": 0, "max": 70, "step": 1, "unit": "%", "default": 0 },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "zoom", "label": "Zoom", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "mobile_image", "label": "Photo sur téléphone (facultative)" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Photo sur téléphone (fichier du thème)" },
+    { "type": "range", "id": "mobile_focus_x", "label": "Cadrage horizontal (téléphone)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Cadrage vertical (téléphone)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_zoom", "label": "Zoom (téléphone)", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "range", "id": "shade", "label": "Assombrissement de la photo", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 55 },
+    { "type": "range", "id": "brightness", "label": "Luminosité de la photo", "min": 30, "max": 120, "step": 1, "unit": "%", "default": 100, "info": "Réglage d'affichage : le fichier de la photo n'est pas modifié." },
+    { "type": "range", "id": "warmth", "label": "Chaleur de la photo (ton bougie)", "min": 0, "max": 60, "step": 1, "unit": "%", "default": 0 },
+    { "type": "checkbox", "id": "medallion", "label": "Grand médaillon du logo sur la photo", "default": false },
+    { "type": "text", "id": "medallion_asset", "label": "Médaillon (fichier du logo)", "default": "coven-logo.jpg" },
+    { "type": "textarea", "id": "caption", "label": "Légende sur la photo" },
+    { "type": "header", "content": "Textes" },
+    { "type": "select", "id": "icon", "label": "Icône au-dessus du titre", "default": "none", "options": [
+      { "value": "none", "label": "Aucune" },
+      { "value": "moon_check", "label": "Lune et coche (confirmation)" },
+      { "value": "moon", "label": "Croissant de lune" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "title", "label": "Titre" },
+    { "type": "textarea", "id": "mobile_title", "label": "Titre sur téléphone (facultatif)" },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet et croissant sous le titre", "default": false },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "richtext", "id": "mobile_text", "label": "Texte sur téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (ordinateur)", "min": 30, "max": 100, "step": 1, "unit": "px", "default": 66 },
+    { "type": "range", "id": "text_size", "label": "Taille du texte (ordinateur)", "min": 14, "max": 40, "step": 1, "unit": "px", "default": 26 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre (téléphone)", "min": 22, "max": 60, "step": 1, "unit": "px", "default": 38 },
+    { "type": "range", "id": "text_width", "label": "Largeur du texte", "min": 280, "max": 1200, "step": 10, "unit": "px", "default": 640 },
+    { "type": "range", "id": "text_x", "label": "Retrait du texte (ordinateur)", "min": 0, "max": 300, "step": 1, "unit": "px", "default": 115 },
+    { "type": "range", "id": "text_y", "label": "Position verticale du texte (ordinateur)", "min": 0, "max": 400, "step": 1, "unit": "px", "default": 60 },
+    { "type": "range", "id": "mobile_text_y", "label": "Position verticale du texte (téléphone)", "min": 0, "max": 600, "step": 2, "unit": "px", "default": 0 },
+    { "type": "text", "id": "button_label", "label": "Bouton principal" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "text", "id": "discover_label", "label": "Lien « découvrir »" },
+    { "type": "url", "id": "discover_link", "label": "Destination du lien « découvrir »" }
+  ],
+  "presets": [{ "name": "Coven — ouverture" }]
+}
+{% endschema %}
