@@ -4,6 +4,8 @@
  * correspondante (identifiant tiré de sa catégorie), sans identifiant en double pour les cartes réservées au téléphone.
  * MAISON & HORIZON (formulaires) : les cases cachées des choix restent dans leur libellé (PrestaShop élargit les champs :
  * la page « Créer une alerte » dépassait de 444 px).
+ * Aperçu du studio : les liens d'un texte riche gardé dans un attribut (ONDE, étapes de la commande) suivent l'adresse de
+ * l'aperçu comme les autres liens.
  * ONDE, page « Aide » : les anneaux décoratifs de l'ouverture restent dans l'écran (138 px de trop au téléphone).
  * Panier (page) sur téléphone : trois colonnes au plus, le lien « Supprimer » passe sous la ligne (HEUREN débordait de
  * 9 px, lien coupé ; vérifié à 390 et 360 px sur la démonstration).
@@ -21,7 +23,7 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import { sampleSpec, serviceSpec } from "./fixtures";
 import { compileTheme } from "@/lib/theme/compile";
-import { renderPage } from "@/lib/theme/render";
+import { renderPage, rewriteLinks } from "@/lib/theme/render";
 import { runWithLang } from "@/lib/i18n-server";
 import { unzipSync, strFromU8 } from "fflate";
 import { cmsExport } from "@/lib/cms-v2/export";
@@ -136,5 +138,16 @@ describe("contrôle des liens des thèmes (mission #190)", () => {
       const code = `function es_site() { return ["lang" => "${lang}", "body" => ["ds" => "none"]]; } function esc_attr($s) { return $s; } $f = ${body}; echo $f('lang="en-US"');`;
       expect(execFileSync("php", ["-r", code]).toString(), lang).toContain(expected);
     }
+  });
+
+  it("aperçu : liens d'un texte riche gardé dans un attribut réécrits comme les autres", () => {
+    const html = `<a href="/pages/faq">FAQ</a><p data-texts="Voir nos &lt;a href=&quot;/pages/conditions-de-vente&quot;&gt;CGV&lt;/a&gt;"></p><a href="https://exemple.fr/x">ext</a>`;
+    const out = rewriteLinks(html, "/preview/p/v/x");
+    expect(out).toContain(`href="/preview/p/v/x/pages/faq"`);
+    expect(out).toContain(`href=&quot;/preview/p/v/x/pages/conditions-de-vente&quot;`);
+    expect(out).toContain(`href="https://exemple.fr/x"`);
+    expect(rewriteLinks(out, "/preview/p/v/x")).toBe(out);
+    // Échappement de Liquid (« escape ») : &#34;
+    expect(rewriteLinks(`<p data-texts="&lt;a href=&#34;/pages/cgv&#34;&gt;"></p>`, "/b")).toContain(`href=&#34;/b/pages/cgv&#34;`);
   });
 });

@@ -941,6 +941,12 @@ export function rewriteLinks(html: string, base: string): string {
     const full = `/${rest}`;
     if (full.startsWith(base + "/") || full === base) return all;
     return `${attr}="${base}${full === "/" ? "/" : full}"`;
+  // Liens d'un texte riche gardé dans un attribut (ex. ONDE, « data-texts » des étapes de la commande, posé par le script) :
+  // mêmes adresses, guillemets échappés (mission #190 : « Conditions de vente » menait hors de l'aperçu).
+  }).replace(/href=(&quot;|&#34;)\/(?!\/)(.*?)\1/g, (all, q: string, rest: string) => {
+    const full = `/${rest}`;
+    if (full.startsWith(base + "/") || full === base || !base) return all;
+    return `href=${q}${base}${full}${q}`;
   });
 }
 
