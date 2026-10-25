@@ -9,6 +9,7 @@
   assign countries = s.countries | newline_to_br | split: '<br />'
 -%}
 <section class="cvn-checkout" data-cvn-checkout-page data-confirm="{{ s.confirm_link }}" data-photo="{{ s.photo_asset | asset_url }}" data-example="{{ s.example_label | escape }}" data-size="{{ s.size_label | escape }}" data-qty="{{ s.qty_label | escape }}" data-size-placeholder="À préciser" data-price-note="{{ s.price_note | escape }}" data-empty="{{ s.empty_text | escape }}" data-refused="{{ s.refused_text | escape }}" data-shopify="{{ s.shopify_text | escape }}">
+  <a href="{{ s.confirm_link }}" data-cvn-confirm-link hidden tabindex="-1" aria-hidden="true"></a>
   <div class="cvn-checkout__inner cvn-scale">
     <ol class="cvn-stepper" role="list" aria-label="{{ s.steps_label }}">
       <li class="is-done"><span class="cvn-stepper__dot">1</span><span>{{ s.step_1 }}</span></li>
