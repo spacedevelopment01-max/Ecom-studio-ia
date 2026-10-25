@@ -61,5 +61,6 @@ client.
 
 ## Hors catalogue
 
-- **Le Coven des Charmes** (PR #189) : site d'un projet client, jamais proposé aux autres clients.
+- **Le Coven des Charmes** (PR #189) : site d'un projet client, jamais proposé aux autres clients. Son code n'est pas
+  dans `main` (fusion globale #194) : il reste sur la branche de la PR #191 jusqu'à son intervention dédiée.
 - **Les 30 thèmes de l'ancien catalogue** (retirés le 19 octobre) : lisibles pour les projets qui les utilisent.

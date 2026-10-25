@@ -129,8 +129,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Projets clients dédiés** (`clients/<clé>/`, ex. Le Coven des Charmes, PR #189) : site posé dans le thème DU projet
   du client (sections `es-custom-<clé>-*` du projet, médias de sa bibliothèque, pages et menus du projet) ; jamais dans
   `theme-base/`, le catalogue, les démos ni la bibliothèque de sections ; aucun média du client dans le dépôt
-  (`.gitignore`). Aperçu isolé, rattachement au vrai projet et rapport : `clients/le-coven-des-charmes/`,
-  `docs/client-briefs/le-coven-des-charmes/RESULTATS.md`.
+  (`.gitignore`). **Le Coven des Charmes n'est pas dans `main`** (décision de Thomas du 25 octobre, fusion globale
+  #194) : son site, ses scripts et son rapport restent sur la branche `claude/le-coven-des-charmes` (PR #191) ; seul
+  son dossier de consigne (`docs/client-briefs/le-coven-des-charmes/`, PR #189) est versionné. Son raccordement et la
+  vérification de ses scripts se feront dans une intervention dédiée avec Codex, sans modifier les protections
+  générales du studio (lot 9 : aucun script dans les sections d'un projet).
 
 ## Travail en plusieurs conversations (choix du propriétaire)
 
