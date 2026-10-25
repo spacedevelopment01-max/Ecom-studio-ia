@@ -14,7 +14,7 @@
  * activé le service réel dans son thème ; débit limité par adresse IP.
  */
 import { BookingError, appointmentFor, availability, cancelAppointment, createAppointment, liveCabinet, lookup, monthAvailability, moveAppointment, publicView, saveNote, saveRequest, sendConfirmation, tokenOf, workshops } from "@/lib/cabinet/booking";
-import { clientIp, rateCount, rateHit } from "@/lib/rate-limit";
+import { clientIp, rateTake } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -24,9 +24,8 @@ type Ctx = { params: Promise<{ projectId: string; path?: string[] }> };
 
 function limited(req: Request, projectId: string, action: string, max: number, windowMs = 10 * 60_000) {
   const key = `cabinet:${action}:${projectId}:${clientIp(req) ?? "?"}`;
-  if (rateCount(key, windowMs) >= max) return true;
-  rateHit(key);
-  return false;
+  // Lecture et enregistrement dans une seule transaction (lot 9) : des requêtes parallèles ne dépassent pas le plafond.
+  return !rateTake([{ key, max, windowMs }]);
 }
 
 async function body(req: Request): Promise<Record<string, unknown>> {

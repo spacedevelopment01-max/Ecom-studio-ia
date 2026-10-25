@@ -17,7 +17,7 @@
  */
 import { BookingError, availability, cancelAppointment, createAppointment, liveSalon, login, logout, lookup, me, monthAvailability, moveAppointment, publicView, register, saveRequest, sendConfirmation, tokenOf, updateMe } from "@/lib/salon/booking";
 import { one } from "@/lib/db";
-import { clientIp, rateCount, rateHit } from "@/lib/rate-limit";
+import { clientIp, rateTake } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -27,9 +27,8 @@ type Ctx = { params: Promise<{ projectId: string; path?: string[] }> };
 
 function limited(req: Request, projectId: string, action: string, max: number, windowMs = 10 * 60_000) {
   const key = `salon:${action}:${projectId}:${clientIp(req) ?? "?"}`;
-  if (rateCount(key, windowMs) >= max) return true;
-  rateHit(key);
-  return false;
+  // Lecture et enregistrement dans une seule transaction (lot 9) : des requêtes parallèles ne dépassent pas le plafond.
+  return !rateTake([{ key, max, windowMs }]);
 }
 
 async function body(req: Request): Promise<Record<string, unknown>> {

@@ -60,7 +60,9 @@ function storeRow(projectId: string, storeId: string): StoreRow {
 export type StoreCredentialsInput = { platform: Platform; url: string; key?: string; secret?: string; token?: string };
 
 /** Connecteur prêt à l'emploi (adresse contrôlée). `fetcher` : remplacé dans les tests. */
-export async function makeConnector(c: StoreCredentialsInput, fetcher: typeof fetch = fetch): Promise<StoreConnector> {
+export async function makeConnector(c: StoreCredentialsInput, fetcher0: typeof fetch = fetch): Promise<StoreConnector> {
+  // Aucune redirection suivie (lot 9) : une boutique ne peut pas renvoyer les appels authentifiés ailleurs.
+  const fetcher: typeof fetch = (input, init) => fetcher0(input, { ...init, redirect: "error" });
   if (c.platform === "shopify") return shopifyConnector({ shop: c.url, token: c.token ?? "" }, fetcher);
   const u = await assertStoreUrl(c.url);
   const url = `${u.origin}${u.pathname.replace(/\/+$/, "")}`;

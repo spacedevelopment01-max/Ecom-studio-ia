@@ -12,7 +12,7 @@
  * a activé le service réel dans son thème ; débit limité par adresse IP.
  */
 import { BookingError, availability, cancelReservation, createReservation, liveRestaurant, lookupByEmail, modifyReservation, publicView, reservationByToken, saveRequest, sendConfirmation } from "@/lib/restaurant/booking";
-import { clientIp, rateCount, rateHit } from "@/lib/rate-limit";
+import { clientIp, rateTake } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -22,9 +22,8 @@ type Ctx = { params: Promise<{ projectId: string; path?: string[] }> };
 
 function limited(req: Request, projectId: string, action: string, max: number, windowMs = 10 * 60_000) {
   const key = `restaurant:${action}:${projectId}:${clientIp(req) ?? "?"}`;
-  if (rateCount(key, windowMs) >= max) return true;
-  rateHit(key);
-  return false;
+  // Lecture et enregistrement dans une seule transaction (lot 9) : des requêtes parallèles ne dépassent pas le plafond.
+  return !rateTake([{ key, max, windowMs }]);
 }
 
 async function body(req: Request): Promise<Record<string, unknown>> {

@@ -8,18 +8,18 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { requirePlan } from "@/lib/plan-gates";
 import { connectorOf, importFromStore, syncProducts, type ImageReader } from "@/lib/products/sync";
 import { assertStoreUrl } from "@/lib/products/connectors/types";
+import { publicDownload } from "@/lib/public-download";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
-/** Photo d'un produit importé : adresse publique contrôlée (anti-SSRF), image de 15 Mo au plus. */
+/** Photo d'un produit importé : téléchargement public contrôlé du lot 9 (DNS, redirections, taille), 15 Mo au plus. */
 const readImage: ImageReader = async (url) => {
   await assertStoreUrl(url);
-  const r = await fetch(url, { redirect: "error" });
-  const mime = (r.headers.get("content-type") ?? "").split(";")[0];
-  if (!r.ok || !/^image\/(jpeg|png|webp)$/.test(mime)) return null;
-  const data = Buffer.from(await r.arrayBuffer());
-  return data.length > 15 * 1048576 ? null : { data, mime };
+  const r = await publicDownload(url, { maxBytes: 15 * 1048576, accept: "image/jpeg,image/png,image/webp", timeoutMs: 30_000 }).catch(() => null);
+  const mime = (r?.headers.get("content-type") ?? "").split(";")[0];
+  if (!r?.ok || !/^image\/(jpeg|png|webp)$/.test(mime)) return null;
+  return { data: Buffer.from(await r.arrayBuffer()), mime };
 };
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
