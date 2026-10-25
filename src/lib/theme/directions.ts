@@ -14,7 +14,7 @@ import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
 import { planForTheme, plansForTheme, themeRank } from "./theme-access";
 import { DEFAULT_THEME_RIGHTS, type ThemeRights } from "./theme-rights";
-import { isActiveThemeId, themePreviewPath } from "./theme-fit";
+import { isActiveThemeId, isReferenceThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
 import { addRealEstateSite } from "./real-estate-site";
@@ -159,6 +159,12 @@ export const DIRECTIONS: Direction[] = [
  * Marque, IA, commandes locales, recommandation, découverte, vignettes) part de cette liste.
  */
 export const ACTIVE_DIRECTIONS: Direction[] = DIRECTIONS.filter((d) => isActiveThemeId(d.id));
+/**
+ * Thèmes de référence (composition du catalogue, moteur V1), y compris ceux retirés du catalogue proposé le 25 octobre
+ * (ORBE, ALCÔVE) : un projet qui les utilise se recompose toujours dans son thème. Le choix d'un NOUVEAU thème reste
+ * limité au catalogue proposé (plan-gates.ts, assertThemeAllowed).
+ */
+export const REFERENCE_DIRECTIONS: Direction[] = DIRECTIONS.filter((d) => isReferenceThemeId(d.id));
 /** Thème retiré du catalogue (défini, mais plus proposé) ; false pour un thème actif ou inconnu. */
 export const isRetiredDirection = (id: string) => !isActiveThemeId(id) && DIRECTIONS.some((d) => d.id === id);
 

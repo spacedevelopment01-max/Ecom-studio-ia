@@ -17,9 +17,14 @@ beforeEach(()=>vi.stubGlobal('fetch',async()=>{throw new Error('No external netw
 const ctx=(id:string)=>({params:Promise.resolve({id})}) as never;
 const post=(b:any)=>new Request('http://localhost/test',{method:'POST',body:JSON.stringify(b),headers:{'content-type':'application/json'}});
 const fr=<T,>(fn:()=>T)=>runWithLang({ui:'fr',content:'fr'},fn);
-it.each(['creer','vendre','dominer'] as const)('%s : galerie native de la famille filtrée, thème existant conservé et modification permise',async plan=>{
+it.each(['creer','vendre','dominer'] as const)('%s : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise',async plan=>{
  user=await createUser(`api150-${id()}@example.test`,'test-password-150','API isolée');const d=await fr(()=>demoProject(user.id,'fraise'));grantProjectPlan(d.pid,plan);if(!currentTheme(d.pid))saveThemeVersion(d.pid,d.spec,'Fixture native','user');
- const result=await fr(()=>theme(new Request('http://localhost/test'),ctx(d.pid)));expect(result.status).toBe(200);const data=await result.json();expect(data.library.filter((x:any)=>x.addable!==false)).toHaveLength(plan==='creer'?8:plan==='vendre'?12:20);
+ const result=await fr(()=>theme(new Request('http://localhost/test'),ctx(d.pid)));expect(result.status).toBe(200);const data=await result.json();const items=data.library.filter((x:any)=>x.addable!==false);
+ // Mission #190 : sections propres au thème (FRAISE : fg-*) toujours ouvertes ; fonctions de la bibliothèque commune selon le forfait, sans famille.
+ expect(items.some((x:any)=>x.type.startsWith('own:fg-'))).toBe(true);
+ const {planAllowsSection}=await import('@/lib/plan-entitlements');
+ expect(items.filter((x:any)=>x.type.startsWith('fam:')).every((x:any)=>x.dispositions.every((d:any)=>planAllowsSection(plan,d.id)))).toBe(true);
+ expect(items.some((x:any)=>/\.press/.test(x.type)||x.dispositions.some((d:any)=>/\.press~/.test(d.id)))).toBe(plan==='dominer');
  const before=currentTheme(d.pid)!.version.number;
  const rejected=await fr(()=>sections(post({type:'fam:specialty.press',template:'index'}),ctx(d.pid)));expect(rejected.status).toBe(plan==='dominer'?200:402);
  if(plan!=='dominer')expect(currentTheme(d.pid)!.version.number).toBe(before);

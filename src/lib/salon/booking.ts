@@ -453,6 +453,43 @@ export async function saveRequest(projectId: string, payload: Record<string, unk
   }
 }
 
+/** Rendez-vous d'un salon par sa référence (studio, propriétaire du projet). */
+function byNumber(projectId: string, number: string): Appointment {
+  const a = one<Appointment>("SELECT * FROM salon_appointments WHERE project_id = ? AND number = ?", projectId, str(number).toUpperCase());
+  if (!a) throw new BookingError("not_found", 404);
+  return a;
+}
+
+/**
+ * Déplacement par le salon lui-même (rubrique « Rendez-vous » du studio) : autre jour, autre heure et, au besoin, autre
+ * professionnel. Même contrôle de créneau que le site, dans la même transaction exclusive ; le délai d'annulation
+ * imposé aux clients ne s'applique pas au salon.
+ */
+export function proMoveAppointment(projectId: string, number: string, change: { date: string; time: string; staff?: string }, at = now()) {
+  const r = liveSalon(projectId);
+  return tx(() => {
+    const a = byNumber(projectId, number);
+    if (a.status !== "confirmed") throw new BookingError("canceled", 409);
+    const q: SlotQuery = { date: str(change.date), service: a.service, staff: str(change.staff) || a.staff, length: a.length };
+    const errors = core.validate(r.config, { ...q, time: str(change.time) }, busyFor(projectId, q.date, a.id), at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const start = core.toMin(str(change.time));
+    run("UPDATE salon_appointments SET date = ?, start_min = ?, end_min = ?, staff = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), q.staff, at, a.id);
+    return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), staff: q.staff ?? a.staff, updated_at: at });
+  });
+}
+
+/** Annulation par le salon (studio) : le créneau est libéré ; aucun délai ne s'impose au salon. */
+export function proCancelAppointment(projectId: string, number: string, at = now()) {
+  liveSalon(projectId);
+  return tx(() => {
+    const a = byNumber(projectId, number);
+    if (a.status === "canceled") return publicView(a);
+    run("UPDATE salon_appointments SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ?", at, at, a.id);
+    return publicView({ ...a, status: "canceled", canceled_at: at, updated_at: at });
+  });
+}
+
 /** Rendez-vous d'un salon (studio, propriétaire du projet) : planning d'une période. */
 export function listAppointments(projectId: string, from: string, to: string): Appointment[] {
   ensureTables();

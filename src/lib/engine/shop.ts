@@ -21,7 +21,7 @@ import { getAsset, type Asset } from "../library";
 import { currentTheme, listThemeVersions, loadProject, saveThemeVersion, themeVersion, type Project } from "../projects";
 import { tradeText } from "../brain/trade";
 import { cleanVariants, MAX_PRODUCT_OPTIONS, variantCombinations } from "../project-types";
-import { ACTIVE_DIRECTIONS, buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
+import { REFERENCE_DIRECTIONS, buildSpec, directionById, type DirectionId, type ImageSlots } from "../theme/directions";
 import { libraryFiller } from "../theme/library-fill";
 import { contentContext } from "../theme/section-content";
 import type { ShopCopy } from "../theme/copy";
@@ -301,7 +301,7 @@ export async function composeShop(projectId: string, directionOpt?: DirectionId,
     shopName: brand.name,
     // Palette verrouillée par la direction (ou « Vos couleurs » du client) ; ancienne marque dans sa direction
     // actuelle : couleurs de la piste de logo retenue, comme avant.
-    palette: preparedIdentity?brand.palette:clientAdaptation&&ACTIVE_DIRECTIONS.some(d=>d.id===direction)&&brand.paletteMode!=="direction"?(effectivePalette(brand)??brand.palette):brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
+    palette: preparedIdentity?brand.palette:clientAdaptation&&REFERENCE_DIRECTIONS.some(d=>d.id===direction)&&brand.paletteMode!=="direction"?(effectivePalette(brand)??brand.palette):brand.paletteMode || direction !== brand.direction ? paletteFor(brand, direction) : (effectivePalette(brand) ?? brand.palette),
     // Typographies de la piste de logo retenue (logo, site et réseaux parlent d'une seule voix), quelle que soit la
     // direction ; à défaut, celles de la marque si elles ont été choisies (IA ou client), pas recopiées d'une direction.
     fonts: preparedIdentity||brand.validated?.includes("fonts")?brand.fonts:routeFonts(brand.logo?.route) ?? ((directionOpt && directionOpt !== brand.direction) || brand.generatedBy === "local" ? undefined : brand.fonts),
@@ -341,7 +341,7 @@ async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parame
 
   if((await import("../preparation/store")).stateOf(projectId)){
     const target=opts.direction??currentTheme(projectId)?.spec.direction;
-    const selected=ACTIVE_DIRECTIONS.find(d=>d.id===target);
+    const selected=REFERENCE_DIRECTIONS.find(d=>d.id===target);
     if(!selected||opts.engine==="v2")throw new UserFacingError(L("Choisissez un thème disponible dans la galerie avant de composer ce projet. Aucun gabarit générique n’est substitué.","Choose an available gallery theme before building this project. No generic template is substituted."));
     opts={...opts,direction:selected.id,engine:"v1"};
   }
@@ -352,7 +352,7 @@ async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parame
     const existing = currentTheme(projectId);
     // A historical V2 theme can share a direction id without being that reference composition.
     // Only an explicit choice may replace it; reading/rebuilding it must preserve its engine.
-    const installed = ACTIVE_DIRECTIONS.find((d) => d.id === (opts.direction ?? (existing?.spec.meta?.engine === "v2" ? null : existing?.spec.direction)));
+    const installed = REFERENCE_DIRECTIONS.find((d) => d.id === (opts.direction ?? (existing?.spec.meta?.engine === "v2" ? null : existing?.spec.direction)));
     if (installed) {
       if (opts.engine === "v2") throw new UserFacingError(L(`Ce projet utilise le thème ${installed.name} : il se recompose dans ce thème, pas dans un langage visuel V2.`, `This project uses the ${installed.name} theme: it is rebuilt in that theme, not in a V2 visual language.`));
       opts = { ...opts, direction: installed.id, engine: "v1" };
@@ -368,7 +368,7 @@ async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parame
     const r = await buildShopV2(ctx, projectId, { language: opts.language, summary: opts.summary });
     return { versionId: r.versionId, number: r.number, delivery: r.delivery };
   }
-  const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx, !ACTIVE_DIRECTIONS.some(d=>d.id===(opts.direction??loadProject(projectId).brand?.direction)), true);
+  const { p, direction, services, catalog, spec: built } = await composeShop(projectId, opts.direction, ctx, !REFERENCE_DIRECTIONS.some(d=>d.id===(opts.direction??loadProject(projectId).brand?.direction)), true);
   let spec = built;
   let author: "ai" | "system" = "system";
   // Résumé de la version enregistré dans les deux langues : affiché ensuite dans celle de l'interface.
@@ -381,7 +381,7 @@ async function buildShopInScope(ctx:JobContext|null,projectId:string,opts:Parame
   // Relecture visuelle (si elle a lieu) : sert au verdict de qualité de la version enregistrée.
   let reviewed: { score: number } | null = null;
   let reviewedKept = true;
-  if (!ACTIVE_DIRECTIONS.some(d=>d.id===direction) && opts.useAi !== false && llmConfigured() && ctx) {
+  if (!REFERENCE_DIRECTIONS.some(d=>d.id===direction) && opts.useAi !== false && llmConfigured() && ctx) {
     try {
       const design = await ctx.step(`design:${direction}`, () => aiDesignHome({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:design:${direction}` }, p, spec));
       const ops: ThemeOp[] = [];
@@ -526,7 +526,7 @@ export async function switchDirection(ctx: JobContext | null, projectId: string,
   // La marque prend la direction et ses couleurs (logo, charte) avant la construction du site.
   const { adoptDirection } = await import("./brand-direction");
   // Le choix de mise en page ne recolore pas une identité déjà approuvée dans le parcours amont.
-  if(ACTIVE_DIRECTIONS.some(d=>d.id===direction)){const p=loadProject(projectId);if(p.brand)(await import("../projects")).saveBrand(projectId,{...p.brand,direction});}
+  if(REFERENCE_DIRECTIONS.some(d=>d.id===direction)){const p=loadProject(projectId);if(p.brand)(await import("../projects")).saveBrand(projectId,{...p.brand,direction});}
   else if((await import("../preparation/store")).stateOf(projectId)?.stages.brand?.status!=="approved")await adoptDirection(projectId, direction);
   return buildShop(ctx, projectId, { direction, useAi: false, summary: inBothLangs(() => L(`Direction ${directionById(direction).name} appliquée`, `${directionById(direction).name} direction applied`)) });
 }

@@ -5,7 +5,9 @@
  * la section du thème et ses réglages (section-families.ts).
  */
 import type { Lang } from "../i18n";
-import { FAMILY_LABEL, FAMILY_LIBRARY, libraryId, parseLibraryId, pickT, type FamilyEntry, type FamilyId, type Thumb } from "./section-families";
+import { ALL_ENTRIES, FAMILY_LABEL, FAMILY_LIBRARY, isStructuralType, libraryId, parseLibraryId, pickT, type FamilyEntry, type FamilyId, type Thumb } from "./section-families";
+import { ownDispositions, ownLibraryId, parseOwnId, OWN_SECTION_PREFIX } from "./theme-own-sections";
+import { libraryEntry } from "./section-library";
 
 /** Rubrique de la galerie de chaque fonction (clés de catégorie de l'interface). */
 const CATEGORY: Record<string, string> = {
@@ -134,8 +136,74 @@ export function familyGallery(family: FamilyId, lang: Lang, available?: (type: s
   }));
 }
 
-/** Type de section et réglages d'un identifiant de galerie (« fam:… ») ou d'un type de section direct. */
-export function resolveLibraryType(id: string): { type: string; settings: Record<string, unknown>; blocks?: { type: string; settings: Record<string, unknown> }[]; entryKey?: string; dispositionId?: string } {
+/**
+ * Galerie « Sections » d'un thème (mission #190 : plus de familles). Deux parts :
+ *  1. les sections propres au thème (dessinées d'après ses maquettes), avec leurs dispositions déclarées ;
+ *  2. la bibliothèque commune : toutes les fonctions des anciennes familles réunies par nom, chacune avec les seules
+ *     dispositions que le thème sait rendre (`available`) et que le forfait ouvre (`allowed`).
+ * `schemaOf` lit le schéma d'une section (préréglages, réglage « Disposition »).
+ */
+export function themeGallery(theme: string, lang: Lang, opts: { available: (type: string) => boolean; allowed: (galleryKey: string) => boolean; types: string[]; schemaOf: (type: string) => { name?: string; settings?: never[]; presets?: never[]; enabled_on?: { groups?: string[] } } | null }): GalleryItem[] {
+  const own: GalleryItem[] = [];
+  const prefix = OWN_SECTION_PREFIX[theme];
+  if (prefix) {
+    for (const type of opts.types.filter((t) => t.startsWith(prefix))) {
+      const schema = opts.schemaOf(type);
+      if (!schema || isStructuralType(type) || schema.enabled_on?.groups?.length || !opts.available(type)) continue;
+      const disps = ownDispositions(schema as never, lang);
+      const lib = libraryEntry(type, lang);
+      own.push({
+        type: ownLibraryId(type),
+        name: lib?.name ?? String(schema.name ?? type),
+        category: lib?.category ?? "Votre thème",
+        description: lib?.description ?? "",
+        keywords: `${lib?.keywords ?? ""} ${disps.map((d) => d.label).join(" ")} ${type.replace(/-/g, " ")}`,
+        preview: thumbSvg(disps[0]?.thumb ?? "stacked"),
+        addable: true,
+        family: lang === "en" ? "Your theme" : "Votre thème",
+        n: own.length + 1,
+        dispositions: disps.map((d) => ({ id: ownLibraryId(type, d.id), label: d.label, preview: thumbSvg(d.thumb) })),
+      });
+    }
+  }
+  // Bibliothèque commune : fonctions des trois anciennes familles réunies par nom (une seule entrée « Questions
+  // fréquentes », avec toutes les dispositions que le thème sait rendre).
+  const groups = new Map<string, { entries: FamilyEntry[]; disps: { entry: FamilyEntry; d: FamilyEntry["dispositions"][number] }[] }>();
+  for (const entry of ALL_ENTRIES) {
+    const name = pickT(entry.name, lang);
+    const g = groups.get(name) ?? { entries: [], disps: [] };
+    g.entries.push(entry);
+    for (const d of entry.dispositions) if (opts.available(d.type) && opts.allowed(libraryId(entry, d)) && !g.disps.some((x) => x.d.type === d.type && JSON.stringify(x.d.settings ?? {}) === JSON.stringify(d.settings ?? {}))) g.disps.push({ entry, d });
+    groups.set(name, g);
+  }
+  const shared: GalleryItem[] = [];
+  for (const [name, g] of groups) {
+    if (!g.disps.length) continue;
+    const first = g.disps[0].entry;
+    shared.push({
+      type: libraryId(first),
+      name,
+      category: categoryOf(first),
+      description: pickT(first.description, lang),
+      keywords: `${g.entries.map((e) => e.keywords).join(" ")} ${g.disps.map((x) => pickT(x.d.label, lang)).join(" ")}`,
+      preview: thumbSvg(g.disps[0].d.thumb),
+      addable: true,
+      family: lang === "en" ? "Section library" : "Bibliothèque de sections",
+      n: own.length + shared.length + 1,
+      dispositions: g.disps.map((x) => ({ id: libraryId(x.entry, x.d), label: pickT(x.d.label, lang), preview: thumbSvg(x.d.thumb) })),
+    });
+  }
+  return [...own, ...shared];
+}
+
+/** Type de section et réglages d'un identifiant de galerie (« fam:… », « own:… ») ou d'un type de section direct. */
+export function resolveLibraryType(id: string, schemaOf?: (type: string) => unknown, lang: Lang = "fr"): { type: string; settings: Record<string, unknown>; blocks?: { type: string; settings: Record<string, unknown> }[]; entryKey?: string; dispositionId?: string } {
+  const own = parseOwnId(id);
+  if (own) {
+    const disps = ownDispositions(schemaOf?.(own.type) as never, lang);
+    const d = disps.find((x) => x.id === own.dispositionId) ?? disps[0];
+    return { type: own.type, settings: { ...(d?.settings ?? {}) }, ...(d?.blocks ? { blocks: d.blocks } : {}), dispositionId: d?.id };
+  }
   const parsed = parseLibraryId(id);
   if (!parsed) return { type: id, settings: {} };
   const blocks = parsed.disposition.blocks?.map((b) => ({ type: b.type, settings: { ...(b.settings ?? {}) } }));

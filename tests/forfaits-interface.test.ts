@@ -38,7 +38,7 @@ describe("grille tarifaire et textes commerciaux", () => {
   it("4 cartes : Découverte + 3 forfaits, accroches et boutons officiels, 1 projet inclus par abonnement", () => {
     const pricing = read("src/components/pricing.tsx");
     const page = read("src/app/page.tsx");
-    expect(page).toContain("<PricingCards loggedIn={!!user} withDiscovery />");
+    expect(page).toContain("<PricingCards loggedIn={!!user} withDiscovery themeRights={themeRights} />");
     expect(pricing).toContain("Découvrez toute la puissance du studio, gratuitement.");
     expect(pricing).toContain("Découvrir gratuitement");
     expect(pricing).toContain("Sans carte bancaire");

@@ -220,6 +220,39 @@ export function cancelReservation(projectId: string, number: string, token: stri
   });
 }
 
+function byNumber(projectId: string, number: string): Reservation {
+  ensureTables();
+  const res = one<Reservation>("SELECT * FROM restaurant_reservations WHERE project_id = ? AND number = ?", projectId, str(number).toUpperCase());
+  if (!res) throw new BookingError("not_found", 404);
+  return res;
+}
+
+/** Modification par le restaurant (studio) : couverts, date, heure ; disponibilité vérifiée hors couverts de cette réservation. */
+export function proModifyReservation(projectId: string, number: string, change: { party?: number; date?: string; time?: string }, at = now()): Reservation {
+  const r = liveRestaurant(projectId);
+  return tx(() => {
+    const res = byNumber(projectId, number);
+    if (res.status !== "confirmed") throw new BookingError("canceled", 409);
+    const next = { party: change.party === undefined ? res.party : Number(change.party), date: change.date === undefined ? res.date : str(change.date), time: change.time === undefined ? res.time : str(change.time) };
+    const errors = core.validate(r.config, next, bookedCovers(projectId, next.date, res.id), at);
+    if (errors.some((e) => e.startsWith("slot_"))) throw new BookingError("unavailable", 409, { alternatives: alternatives(projectId, r, next.date, next.party, res.id, at) });
+    if (errors.length) throw new BookingError("invalid", 400, { fields: errors });
+    run("UPDATE restaurant_reservations SET party = ?, date = ?, time = ?, updated_at = ? WHERE id = ?", next.party, next.date, next.time, at, res.id);
+    return { ...res, ...next, updated_at: at };
+  });
+}
+
+/** Annulation par le restaurant (studio) : la réservation libère ses couverts. */
+export function proCancelReservation(projectId: string, number: string, at = now()): Reservation {
+  liveRestaurant(projectId);
+  return tx(() => {
+    const res = byNumber(projectId, number);
+    if (res.status === "canceled") return res;
+    run("UPDATE restaurant_reservations SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ?", at, at, res.id);
+    return { ...res, status: "canceled" as const, canceled_at: at, updated_at: at };
+  });
+}
+
 /** Lien sécurisé de gestion (page « Ma réservation » du site, numéro et jeton dans le fragment : jamais envoyé aux serveurs). */
 export function manageLink(siteUrl: string | null, number: string, token: string) {
   if (!siteUrl) return "";

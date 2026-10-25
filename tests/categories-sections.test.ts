@@ -3,6 +3,7 @@
  * contrat du parcours amont, galerie de sections strictement contextuelle et refus des sections incompatibles par
  * toutes les voies (bibliothèque, commandes locales, opérations serveur, consignes IA).
  */
+import { ownerThemeOf } from "../src/lib/theme/theme-own-sections";
 import { beforeAll, describe, expect, it } from "vitest";
 import { storeKindOf } from "../src/lib/theme/store-kind";
 import { themeFits, themeKinds, themeFitReason, REFERENCE_THEMES } from "../src/lib/theme/theme-fit";
@@ -80,7 +81,8 @@ describe("Galerie « Sections » strictement contextuelle", () => {
     // Bandeau d'appel : « Contact et prise de rendez-vous » de la bibliothèque des services (issue #145).
     expect(services).toContain("cta-banner");
     // Les composants structurels ne sont jamais filtrés par la catégorie (ils se règlent, ne s'ajoutent pas).
-    for (const t of availableSectionTypes(vitrine).filter((x) => !addable(x))) expect(sectionIncompatibility(vitrine, t, "services")).toBe("");
+    // (Les composants propres à un thème refait d'après maquette — ap-header, ph-footer… — ne vont qu'à leur thème.)
+    for (const t of availableSectionTypes(vitrine).filter((x) => !addable(x) && !ownerThemeOf(x))) expect(sectionIncompatibility(vitrine, t, "services")).toBe("");
   });
 
   it("le profil « conversion » activé sur un thème ouvre les sections cv-* (rendu adapté), le thème importé n'est jamais filtré", () => {

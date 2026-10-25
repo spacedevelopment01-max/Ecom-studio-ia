@@ -15,6 +15,7 @@
  */
 import type { StoreKind } from "./store-kind";
 import { isReferenceThemeId } from "./theme-fit";
+import { ownerThemeOf } from "./theme-own-sections";
 
 export type SectionFit = {
   /** Catégories de projet où la section a un sens (absent : toutes). */
@@ -163,6 +164,13 @@ function activeProfiles(settings?: Record<string, unknown>): Set<"conversion" | 
 
 /** Vérifie une section contre le contexte ; renvoie le motif d'incompatibilité (vide si compatible). */
 export function sectionFitReason(type: string, ctx: FitContext, lang: "fr" | "en" = "fr"): string {
+  // Section propre à un thème refait d'après maquette (fg-, sv-, ts-, an-, pa-, ph-…) : seul ce thème sait la rendre.
+  const owner = ownerThemeOf(type);
+  if (owner && owner !== ctx.theme) {
+    return lang === "en"
+      ? `Section belonging to the ${owner} theme (drawn from its mockups); another theme can't render it.`
+      : `Section propre au thème ${owner} (dessinée d'après ses maquettes) ; un autre thème ne sait pas la rendre.`;
+  }
   const fit = SECTION_FIT[type];
   if (!fit) return "";
   if (fit.kinds && ctx.kind && !fit.kinds.includes(ctx.kind)) {

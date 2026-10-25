@@ -1,7 +1,6 @@
 /** Catégories du projet : offre et modèle de vente, jamais le nom d'une démonstration. */
 import type { Project } from "../projects";
 import type { Input } from "../preparation/types";
-import { isActiveThemeId } from "../theme/theme-fit";
 
 export const PROJECT_CATEGORIES = ["specialized", "ecommerce", "services"] as const;
 export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
@@ -26,16 +25,7 @@ export const REFERENCE_THEMES = [
   { referenceId: "museau-club", name: "MUSEAU CLUB", categories: ["specialized"] },
   // Issue #158 : quatre accessoires de yoga et de Pilates en collection, famille E-commerce.
   { referenceId: "souple", name: "SOUPLE", categories: ["ecommerce"] },
-  // Thèmes de prestations refaits d'après maquette (issues #172, #175, #177, PR #179, #187, #188).
-  { referenceId: "table-saison", name: "TABLE SAISON", categories: ["services"] },
-  { referenceId: "atelier-nuance", name: "ATELIER NUANCE", categories: ["services"] },
-  { referenceId: "parenthese", name: "PARENTHÈSE", categories: ["services"] },
-  { referenceId: "phase", name: "PHASE", categories: ["services"] },
-  { referenceId: "maison-horizon", name: "MAISON & HORIZON", categories: ["services"] },
-  { referenceId: "aplat", name: "APLAT", categories: ["services"] },
 ] as const;
-/** Identifiant du thème dans le studio (« atelier-rive » est le nom amont d'Atelier Rive). */
-const engineIdOf = (referenceId: string) => (referenceId === "atelier-rive" ? "rive" : referenceId);
 export type ReferenceThemeId = (typeof REFERENCE_THEMES)[number]["referenceId"];
 export const REFERENCE_THEME_IDS = REFERENCE_THEMES.map(t => t.referenceId) as [ReferenceThemeId, ...ReferenceThemeId[]];
 export type CategoryRecommendation = {
@@ -89,8 +79,6 @@ export function recommendProjectCategory(p: Pick<Project, "business" | "storeTyp
     }
   }
   return { status: category ? "recommended" : "clarification_required", category, salesModel, goal, reasons, evidence, clarification,
-    // Plus de familles (mission #190) : tous les thèmes proposés restent éligibles ; ceux conçus d'abord pour cette
-    // catégorie viennent en premier. Les thèmes retirés du catalogue (ORBE, ALCÔVE) ne sont plus proposés.
-    eligibleThemes: category ? [...REFERENCE_THEMES].filter(t => isActiveThemeId(engineIdOf(t.referenceId))).sort((a, b) => Number((b.categories as readonly ProjectCategory[]).includes(category)) - Number((a.categories as readonly ProjectCategory[]).includes(category))).map(t => ({ referenceId: t.referenceId, name: t.name, engineThemeId: null, status: "awaiting_integration" as const })) : [],
+    eligibleThemes: category ? REFERENCE_THEMES.filter(t => (t.categories as readonly ProjectCategory[]).includes(category)).map(t => ({ referenceId: t.referenceId, name: t.name, engineThemeId: null, status: "awaiting_integration" as const })) : [],
   };
 }

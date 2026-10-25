@@ -31,11 +31,11 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const asked = new URL(req.url).searchParams.get("type") ?? "";
-  // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
-  const lib: ReturnType<typeof resolveLibraryType> = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} };
+  // Élément de galerie (« fam:<fonction>~<disposition> » ou « own:<section>~<disposition> ») : section et réglages.
+  const lib: ReturnType<typeof resolveLibraryType> = /^(fam:[a-z]+\.[a-z0-9-]+|own:[a-z0-9-]+)(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked, (t) => sectionSchema(cur.spec, t, uiLang()), uiLang()) : { type: asked, settings: {} };
   const type = lib.type;
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
-  // Même bibliothèque que la galerie : une section d'une autre famille (ou retirée) n'a pas d'aperçu.
+  // Même bibliothèque que la galerie : une section d'un autre thème (ou retirée) n'a pas d'aperçu.
   const outside = sectionIncompatibility(cur.spec, type, projectKind(p), uiLang());
   if (outside) throw new HttpError(404, outside);
   const targetTemplate = new URL(req.url).searchParams.get("template") ?? "index";

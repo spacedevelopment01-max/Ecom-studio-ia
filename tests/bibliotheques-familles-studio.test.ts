@@ -50,14 +50,21 @@ describe("bibliothèques par famille dans le studio", () => {
     const disposition = await import("@/app/api/projects/[id]/theme/disposition/route");
     const panel = await import("@/app/api/projects/[id]/theme/section/route");
 
-    // 1. Galerie de la famille seule.
-    for (const [p, fam] of [[fraise, "specialty"], [rive, "services"]] as const) {
-      const lib = (await json(await fr(() => theme.GET(new Request("http://x"), ctx(p.pid))))).library as { type: string; addable: boolean; dispositions?: unknown[] }[];
-      const own = lib.filter((x) => x.addable !== false);
-      expect(own.length, fam).toBe(20);
-      expect(own.every((x) => x.type.startsWith(`fam:${fam}.`)), fam).toBe(true);
-      expect(own.every((x) => (x.dispositions ?? []).length >= 1), fam).toBe(true);
-      expect(lib.filter((x) => x.addable === false).every((x) => !x.type.startsWith("fam:")), fam).toBe(true);
+    // 1. Galerie du thème (mission #190 : plus de familles) : sections propres au thème (FRAISE : fg-*), puis la
+    // bibliothèque commune réunie par fonction ; chaque élément a au moins une disposition ; aucun doublon de nom.
+    for (const [p, id] of [[fraise, "fraise"], [rive, "rive"]] as const) {
+      const lib = (await json(await fr(() => theme.GET(new Request("http://x"), ctx(p.pid))))).library as { type: string; name: string; addable: boolean; dispositions?: { id: string }[] }[];
+      const items = lib.filter((x) => x.addable !== false);
+      expect(items.every((x) => x.type.startsWith("fam:") || x.type.startsWith("own:")), id).toBe(true);
+      expect(items.every((x) => (x.dispositions ?? []).length >= 1), id).toBe(true);
+      const shared = items.filter((x) => x.type.startsWith("fam:"));
+      expect(new Set(shared.map((x) => x.name)).size, id).toBe(shared.length);
+      expect(items.filter((x) => x.type.startsWith("own:")).every((x) => x.type.startsWith("own:fg-")), id).toBe(true);
+      if (id === "fraise") expect(items.some((x) => x.type.startsWith("own:fg-")), id).toBe(true);
+      else expect(items.some((x) => x.type.startsWith("own:")), id).toBe(false);
+      // Aucune disposition d'une section propre à un autre thème.
+      expect(items.flatMap((x) => x.dispositions ?? []).some((d) => /^own:(?!fg-)/.test(d.id)), id).toBe(false);
+      expect(lib.filter((x) => x.addable === false).every((x) => !x.type.startsWith("fam:")), id).toBe(true);
     }
 
     // 2. Ajout depuis la galerie (disposition choisie) ; refus d'une fonction d'une autre famille.
@@ -67,9 +74,12 @@ describe("bibliothèques par famille dans le studio", () => {
     const vid = spec.templates.index.order[1];
     expect(spec.templates.index.sections[vid].type).toBe("fs-video");
     expect(spec.templates.index.sections[vid].settings.layout).toBe("split");
-    expect((await fr(() => sections.POST(post({ type: "fam:services.case", template: "index" }), ctx(fraise.pid)))).status).toBe(400);
+    // Section propre à un autre thème : refusée ; fonction d'une ancienne autre famille : acceptée si le thème sait la rendre.
+    expect((await fr(() => sections.POST(post({ type: "own:ph-hero", template: "index" }), ctx(fraise.pid)))).status).toBe(400);
     expect((await fr(() => sections.POST(post({ type: "cv-hero", template: "index" }), ctx(rive.pid)))).status).toBe(400);
-    expect((await fr(() => ops.POST(post({ ops: [{ op: "add_section", template: "index", type: "fs-service" }] }), ctx(fraise.pid)))).status).toBe(400);
+    // Opérations : section propre à un autre thème refusée ; fonction commune d'une ancienne autre famille acceptée.
+    expect((await fr(() => ops.POST(post({ ops: [{ op: "add_section", template: "index", type: "ph-hero" }] }), ctx(fraise.pid)))).status).toBe(400);
+    expect((await fr(() => ops.POST(post({ ops: [{ op: "add_section", template: "index", type: "fs-service" }] }), ctx(fraise.pid)))).status).toBe(200);
     expect((await fr(() => ops.POST(post({ ops: [{ op: "add_section", template: "index", type: "gallery-mosaic" }] }), ctx(rive.pid)))).status).toBe(400);
 
     // 3. Changement de disposition : même section (réglages) puis autre section (contenu converti), et retour.
@@ -106,7 +116,13 @@ describe("bibliothèques par famille dans le studio", () => {
     expect((await cur(fraise, "footer")).findIndex((x) => x.current)).toBe(0);
     expect((await cur(rive, "header")).findIndex((x) => x.current)).toBe(0);
     expect((await cur(rive, "footer")).findIndex((x) => x.current)).toBe(0);
-    expect((await cur(rive, "header")).length).toBe(5);
+    // Plus de familles : toutes les dispositions d'en-tête sont proposées, celles prévues pour l'usage du projet d'abord ;
+    // un site de prestations n'en reçoit aucune qui afficherait un panier ou une recherche de produits.
+    expect((await cur(rive, "header")).length).toBeGreaterThanOrEqual(5);
+    expect((await cur(fraise, "header")).length).toBeGreaterThan(5);
+    const { chromePresets } = await import("@/lib/theme/family-chrome");
+    expect(chromePresets("services", "header").every((x) => x.settings.show_cart !== true && x.settings.show_search !== true)).toBe(true);
+    expect(chromePresets("services", "header").slice(0, 5).map((x) => x.id)).toEqual((await import("@/lib/theme/family-chrome")).HEADER_PRESETS.services.map((x) => x.id));
     const before = hdr(fraise).s;
     expect((await fr(() => disposition.POST(post({ chrome: { part: "header", preset: "two-rows" } }), ctx(fraise.pid)))).status).toBe(200);
     const after = hdr(fraise).s;

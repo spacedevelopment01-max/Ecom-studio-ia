@@ -588,6 +588,21 @@ export function familyTypes(family: FamilyId): Set<string> {
   return new Set(FAMILY_LIBRARY[family].flatMap((x) => x.dispositions.map((y) => y.type)));
 }
 
+/** Mission #190 : bibliothèque commune, sans famille — tous les types de toutes les fonctions. */
+let LIB_TYPES: Set<string> | null = null;
+export function libraryTypes(): Set<string> {
+  return (LIB_TYPES ??= new Set(ALL_ENTRIES.flatMap((x) => x.dispositions.map((y) => y.type))));
+}
+
+/**
+ * Entrée de la bibliothèque commune qui contient ce type (plus de famille) : celle de l'ancienne famille préférée si
+ * plusieurs en contiennent (usage prévu du thème), sinon la première.
+ */
+export function entryForAnyType(type: string, prefer?: FamilyId | null): FamilyEntry | undefined {
+  const all = ALL_ENTRIES.filter((x) => x.dispositions.some((y) => y.type === type));
+  return all.find((x) => x.family === prefer) ?? all[0];
+}
+
 /** Famille d'un thème de référence (repli quand la catégorie du projet n'est pas connue). */
 export const THEME_FAMILY: Record<string, FamilyId> = { fraise: "specialty", onde: "catalog", orbe: "catalog", rive: "services", sillon: "specialty", noctil: "specialty", traverse: "specialty", heuren: "catalog", alcove: "catalog", "museau-club": "specialty", souple: "catalog", "table-saison": "services", "atelier-nuance": "services", parenthese: "services", phase: "services", "maison-horizon": "services", aplat: "services" };
 export const familyOf = (kind: StoreKind | null | undefined, theme?: string): FamilyId | null => kind ?? (theme ? THEME_FAMILY[theme] ?? null : null);

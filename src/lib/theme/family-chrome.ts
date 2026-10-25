@@ -87,10 +87,21 @@ export const FOOTER_PRESETS: Record<FamilyId, ChromePreset[]> = {
   ],
 };
 
-export const chromePresets = (family: FamilyId, part: ChromePart) => (part === "header" ? HEADER_PRESETS : FOOTER_PRESETS)[family];
+/**
+ * Dispositions d'en-tête ou de pied de page proposées (mission #190 : plus de familles) : toutes, celles conçues pour
+ * l'usage prévu du projet en premier ; un identifiant déjà vu n'est pas répété.
+ */
+export function chromePresets(prefer: FamilyId | null | undefined, part: ChromePart): ChromePreset[] {
+  const all = part === "header" ? HEADER_PRESETS : FOOTER_PRESETS;
+  const order = [...(prefer ? [prefer] : []), ...(["specialty", "catalog", "services"] as FamilyId[]).filter((f) => f !== prefer)];
+  const seen = new Set<string>();
+  // Site de prestations (sans produits) : jamais un en-tête qui afficherait un panier ou une recherche de produits.
+  const noShop = (x: ChromePreset) => prefer !== "services" || (x.settings.show_cart !== true && x.settings.show_search !== true);
+  return order.flatMap((f) => all[f]).filter((x) => noShop(x) && (seen.has(x.id) ? false : (seen.add(x.id), true)));
+}
 
 /** Disposition actuelle d'un en-tête ou pied de page : la première dont tous les réglages de mise en forme concordent. */
-export function currentChromePreset(family: FamilyId, part: ChromePart, settings: Record<string, unknown>, defaults: Record<string, unknown> = {}): ChromePreset | null {
+export function currentChromePreset(family: FamilyId | null | undefined, part: ChromePart, settings: Record<string, unknown>, defaults: Record<string, unknown> = {}): ChromePreset | null {
   const val = (k: string) => (settings[k] === undefined ? defaults[k] : settings[k]);
   return chromePresets(family, part).find((x) => Object.entries(x.settings).every(([k, v]) => String(val(k) ?? "") === String(v))) ?? null;
 }

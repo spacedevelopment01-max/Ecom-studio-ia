@@ -38,19 +38,17 @@ async function completeContract(business: "products" | "services") {
 }
 
 describe("catégorie selon l’offre et le modèle de vente", () => {
-  it("les références ont leur usage prévu, sans nom de produit dans la règle", () => {
-    expect(REFERENCE_THEMES.map(t => [t.referenceId, ...t.categories])).toEqual([["fraise", "specialized"], ["onde", "ecommerce"], ["orbe", "ecommerce"], ["atelier-rive", "services"], ["sillon", "specialized"], ["noctil", "specialized"], ["traverse", "specialized"], ["heuren", "ecommerce"], ["alcove", "ecommerce"], ["museau-club", "specialized"], ["souple", "ecommerce"], ["table-saison", "services"], ["atelier-nuance", "services"], ["parenthese", "services"], ["phase", "services"], ["maison-horizon", "services"], ["aplat", "services"]]);
+  it("les onze références ont les catégories imposées sans nom de produit dans la règle", () => {
+    expect(REFERENCE_THEMES.map(t => [t.referenceId, ...t.categories])).toEqual([["fraise", "specialized"], ["onde", "ecommerce"], ["orbe", "ecommerce"], ["atelier-rive", "services"], ["sillon", "specialized"], ["noctil", "specialized"], ["traverse", "specialized"], ["heuren", "ecommerce"], ["alcove", "ecommerce"], ["museau-club", "specialized"], ["souple", "ecommerce"]]);
   });
   it.each(["lampe", "instrument de mesure", "savon solide", "pièce de vélo"])("%s : l’offre ciblée et le catalogue ont des recommandations distinctes", async name => {
     const f = await fixture(), p = loadProject(f.pid);
     const focused = recommendProjectCategory(p, { description: `${name} : une boutique spécialisée autour d’une offre ciblée.`, constraints: "Achat direct" });
     const catalogue = recommendProjectCategory({ ...p, storeType: "multi" });
     expect(focused).toMatchObject({ category: "specialized", salesModel: "focused_offer", goal: "purchase" });
-    // Plus de familles (mission #190) : tous les thèmes proposés restent éligibles, ceux conçus pour la catégorie d'abord ;
-    // ORBE et ALCÔVE, retirés du catalogue proposé, n'y figurent plus.
-    expect(focused.eligibleThemes.map(t => t.referenceId)).toEqual(["fraise", "sillon", "noctil", "traverse", "museau-club", "onde", "atelier-rive", "heuren", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
+    expect(focused.eligibleThemes.map(t => t.referenceId)).toEqual(["fraise", "sillon", "noctil", "traverse", "museau-club"]);
     expect(catalogue).toMatchObject({ category: "ecommerce", salesModel: "catalogue" });
-    expect(catalogue.eligibleThemes.map(t => t.referenceId)).toEqual(["onde", "heuren", "souple", "fraise", "atelier-rive", "sillon", "noctil", "traverse", "museau-club", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
+    expect(catalogue.eligibleThemes.map(t => t.referenceId)).toEqual(["onde", "orbe", "heuren", "alcove", "souple"]);
     expect(focused.eligibleThemes.every(t => t.engineThemeId === null && t.status === "awaiting_integration")).toBe(true);
   });
   it("mono historique et description ambiguë : une précision est demandée, aucune catégorie inventée", async () => {
@@ -62,7 +60,7 @@ describe("catégorie selon l’offre et le modèle de vente", () => {
     const f = await fixture("services"), p = loadProject(f.pid);
     const r = recommendProjectCategory({ ...p, services: { ...p.services, contactMode } });
     expect(r.category).toBe("services"); expect(r.goal).toBe(contactMode === "form" ? "contact" : contactMode);
-    expect(r.eligibleThemes.map(t => t.referenceId)).toEqual(["atelier-rive", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat", "fraise", "onde", "sillon", "noctil", "traverse", "heuren", "museau-club", "souple"]);
+    expect(r.eligibleThemes.map(t => t.referenceId)).toEqual(["atelier-rive"]);
   });
   it("choix client explicite versionné, prioritaire, idempotent ; ancien choix conservé mais invalidé si l’offre change", async () => {
     const f = await fixture(), p = loadProject(f.pid), before = categoryForProject(p, f.input);

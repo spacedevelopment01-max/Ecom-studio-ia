@@ -19,10 +19,19 @@ export const ADVANCED_SECTIONS: Record<PlanFamily, readonly string[]> = {
 export function planAllowsTheme(plan: PlanId|null,themeId: string,rights: ThemeRights=DEFAULT_THEME_RIGHTS): boolean {
   return planOpensTheme(plan,themeId,rights);
 }
-export function planAllowsSection(plan:PlanId|null,family:PlanFamily,key:string):boolean {
-  if(!plan||!key.startsWith(family+'.'))return false;
-  if(PLANS[plan].librarySections===20)return true;
-  const keys=[...BASE_SECTIONS[family],...(PLANS[plan].librarySections>=12?ADVANCED_SECTIONS[family]:[])];
-  return keys.some(x=>key===`${family}.${x}`);
+/**
+ * Fonctions de la bibliothèque de sections ouvertes au forfait (mission #190 : sans famille). La fonction est repérée
+ * par son nom (« hero », « faq »…, l'ancienne famille n'est qu'un espace de nommage) : Créer ouvre les fonctions
+ * essentielles, Développer y ajoute les avancées, Dominer ouvre tout. Les sections propres au thème choisi (dessinées
+ * d'après ses maquettes) sont toujours ouvertes : elles font partie du thème.
+ */
+export const BASE_FUNCTIONS = new Set(Object.values(BASE_SECTIONS).flat());
+export const ADVANCED_FUNCTIONS = new Set(Object.values(ADVANCED_SECTIONS).flat());
+export function planAllowsSection(plan:PlanId|null,key:string):boolean {
+  if(!plan)return false;
+  if(key.startsWith('own:'))return true;
+  if(PLANS[plan].librarySections>=20)return true;
+  const fn=key.replace(/^fam:/,'').split('~')[0].split('.').pop()??'';
+  return BASE_FUNCTIONS.has(fn)||(PLANS[plan].librarySections>=12&&ADVANCED_FUNCTIONS.has(fn));
 }
 export const planAllowsAds=(plan:PlanId|null)=>!!plan&&PLANS[plan].ads!=='none';

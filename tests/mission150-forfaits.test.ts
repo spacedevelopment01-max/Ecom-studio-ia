@@ -29,11 +29,22 @@ it('thèmes : droits par thème (aucune famille) ; répartition à choisir = tou
  const rights={plans:{creer:['phase','onde']}};
  expect(themeAllowed('creer','phase',rights)).toBe(true);expect(themeAllowed('creer','sillon',rights)).toBe(false);expect(themeAllowed('vendre','sillon',rights)).toBe(true);
 });
-it.each(['creer','vendre','dominer'] as const)('%s : exactement les fonctions autorisées dans chacune des trois familles, variantes non comptées',plan=>{
- for(const family of Object.keys(FAMILY_LIBRARY) as (keyof typeof FAMILY_LIBRARY)[]){const allowed=FAMILY_LIBRARY[family].filter(e=>planAllowsSection(plan,family,e.key));expect(allowed).toHaveLength(PLANS[plan].librarySections);expect(allowed.every(e=>e.family===family)).toBe(true);}
+it.each(['creer','vendre','dominer'] as const)('%s : fonctions de la bibliothèque ouvertes par nom de fonction, sans famille (mission #190)',plan=>{
+ const fn=(k:string)=>k.split('.').pop()!;
+ const all=Object.values(FAMILY_LIBRARY).flat();
+ const allowed=new Set(all.filter(e=>planAllowsSection(plan,e.key)).map(e=>fn(e.key)));
+ // Une même fonction (ex. « faq ») est ouverte ou fermée pareil quelle que soit l'ancienne famille qui la propose.
+ for(const e of all)expect(planAllowsSection(plan,e.key),e.key).toBe(allowed.has(fn(e.key)));
+ if(plan==='dominer')expect(all.every(e=>planAllowsSection(plan,e.key))).toBe(true);
+ else{expect(allowed.has('faq')).toBe(true);expect(allowed.has('press')).toBe(false);}
+ if(plan!=='creer')expect(allowed.has('before-after')).toBe(true);else expect(allowed.has('before-after')).toBe(false);
+ // Sections propres au thème installé : toujours ouvertes (elles font partie du thème).
+ expect(planAllowsSection(plan,'own:ph-hero~p0')).toBe(true);
 });
 it('insertion directe de fonction verrouillée refusée, fonction permise acceptée sans limite de blocs',async()=>{
- const f=await fixture('creer');expect(()=>assertLibrarySelection(f.pid,'fam:specialty.faq')).not.toThrow();expect(()=>assertLibrarySelection(f.pid,'fam:specialty.press')).toThrow(/forfait/);expect(()=>assertLibrarySelection(f.pid,'fam:services.faq')).toThrow();
+ const f=await fixture('creer');expect(()=>assertLibrarySelection(f.pid,'fam:specialty.faq')).not.toThrow();expect(()=>assertLibrarySelection(f.pid,'fam:specialty.press')).toThrow(/forfait/);
+ // Plus de familles : la même fonction proposée par une autre ancienne famille est acceptée.
+ expect(()=>assertLibrarySelection(f.pid,'fam:services.faq')).not.toThrow();
 });
 it.each(['creer','vendre'] as const)('%s : devis, tâche directe et worker publicitaire refusés avant toute dépense',async plan=>{
  const f=await fixture(plan);expect(()=>assertAdvertising(f.pid)).toThrow(/129/);expect(()=>enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{request:{as:'ad'}}})).toThrow(/129/);

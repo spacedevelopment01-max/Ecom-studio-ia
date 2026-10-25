@@ -319,6 +319,39 @@ export function cancelAppointment(projectId: string, token: string, at = now()) 
   });
 }
 
+function byNumber(projectId: string, number: string): Appointment {
+  const a = one<Appointment>("SELECT * FROM cabinet_appointments WHERE project_id = ? AND number = ?", projectId, str(number).toUpperCase());
+  if (!a) throw new BookingError("not_found", 404);
+  return a;
+}
+
+/** Déplacement d'une séance par le cabinet (studio) : même contrôle de créneau, sans le délai imposé aux clients. */
+export function proMoveAppointment(projectId: string, number: string, change: { date: string; time: string }, at = now()) {
+  const r = liveCabinet(projectId);
+  return tx(() => {
+    const a = byNumber(projectId, number);
+    if (a.status !== "confirmed") throw new BookingError("canceled", 409);
+    if (a.kind !== "seance") throw new BookingError("not_movable", 409);
+    const q = { date: str(change.date) || a.date, service: a.service };
+    const errors = core.validate(r.config, { kind: "seance", ...q, modality: a.modality, time: str(change.time) }, { busy: busyFor(projectId, q.date, a.id) }, at);
+    if (errors.length) throw new BookingError(errors.includes("slot_taken") || errors.includes("time") ? "unavailable" : "invalid", 409, { alternatives: alternatives(r, projectId, q, a.id, at) });
+    const start = core.toMin(str(change.time));
+    run("UPDATE cabinet_appointments SET date = ?, start_min = ?, end_min = ?, updated_at = ? WHERE id = ?", q.date, start, start + (a.end_min - a.start_min), at, a.id);
+    return publicView({ ...a, date: q.date, start_min: start, end_min: start + (a.end_min - a.start_min), updated_at: at }, r);
+  });
+}
+
+/** Annulation par le cabinet (studio) : le créneau ou la place d'atelier est rendu. */
+export function proCancelAppointment(projectId: string, number: string, at = now()) {
+  const r = liveCabinet(projectId);
+  return tx(() => {
+    const a = byNumber(projectId, number);
+    if (a.status === "canceled") return publicView(a, r);
+    run("UPDATE cabinet_appointments SET status = 'canceled', canceled_at = ?, updated_at = ? WHERE id = ?", at, at, a.id);
+    return publicView({ ...a, status: "canceled", canceled_at: at, updated_at: at }, r);
+  });
+}
+
 /** Note personnelle (visible seulement avec l'accès au rendez-vous, jamais transmise). */
 export function saveNote(projectId: string, token: string, note: string, at = now()) {
   liveCabinet(projectId);
