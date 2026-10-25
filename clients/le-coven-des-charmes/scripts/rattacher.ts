@@ -3,11 +3,12 @@
  * projet du client créé par son compte). Sans « --confirmer », le script ne fait que vérifier et décrire.
  *
  *   npx tsx clients/le-coven-des-charmes/scripts/rattacher.ts --projet <identifiant> --kit <chemin>/COVEN_CLIENT \
- *     --visuels <dossier des visuels provisoires> [--confirmer]
+ *     --images <chemin>/LE_COVEN_DES_CHARMES [--visuels <dossier des visuels provisoires>] [--confirmer]
  *
  * Ce que fait « --confirmer », pour CE projet uniquement :
- *  1. range le logo original et les quatre photos du client dans la bibliothèque du projet (fichiers du client,
- *     convertis pour le web sans retouche), plus les polices et le sprite d'icônes ;
+ *  1. range le logo original, les photos du client et ses images HD du thème (dossier « --images », 58 images) dans
+ *     la bibliothèque du projet (fichiers du client, convertis pour le web sans retouche), plus les polices et le
+ *     sprite d'icônes ;
  *  2. pose le site du Coven dans le thème du projet (sections propres au projet, pages, menus, fiche du bracelet) et
  *     enregistre une nouvelle version du thème (l'ancienne reste restaurable dans l'historique du studio).
  * Aucun compte n'est créé, aucun autre projet n'est lu ni modifié, rien n'est publié sur Shopify, aucun appel IA.
@@ -17,6 +18,7 @@ import path from "node:path";
 
 const arg = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i > -1 ? process.argv[i + 1] : undefined; };
 const pid = arg("projet"), kit = path.resolve(arg("kit") ?? ""), visuels = arg("visuels") ? path.resolve(arg("visuels")!) : null;
+const images = arg("images") ? path.resolve(arg("images")!) : null;
 const confirm = process.argv.includes("--confirmer");
 if (!pid) throw new Error("Indiquez l'identifiant du projet du client : --projet <identifiant> (onglet du projet dans le studio).");
 if (!fs.existsSync(path.join(kit, "VERIFIER_COVEN.py"))) throw new Error("Indiquez le dossier COVEN_CLIENT extrait : --kit <chemin>/COVEN_CLIENT");
@@ -35,22 +37,23 @@ if (!row) throw new Error(`Projet ${pid} introuvable dans les données du studio
 const project = loadProject(pid);
 const theme = currentTheme(pid);
 if (!theme) throw new Error("Le projet n'a pas encore de thème : composez d'abord la boutique dans le studio (n'importe quel thème), puis relancez.");
-const media = covenMedia().filter((m) => m.origin !== "maquette" || visuels);
+const media = covenMedia().filter((m) => (m.origin !== "maquette" || visuels) && (m.origin !== "hd" || images));
 console.log(`Projet : ${row.name} (${pid}) — marque « ${project.brand?.name ?? "?"} »`);
 if (!/coven/i.test(`${row.name} ${project.brand?.name ?? ""}`)) console.warn("Attention : le nom du projet ne mentionne pas « Coven ». Vérifiez qu'il s'agit bien du projet du client.");
-console.log(`Médias à ranger dans la bibliothèque du projet : ${media.length} (${media.filter((m) => m.origin === "client").length} fichiers du client)`);
+console.log(`Médias à ranger dans la bibliothèque du projet : ${media.length} (${media.filter((m) => m.origin === "client" || m.origin === "hd").length} fichiers du client)`);
 console.log(`Thème actuel : version ${theme.version.id} — il restera restaurable dans l'historique.`);
 if (!confirm) { console.log("Vérification seulement : ajoutez --confirmer pour poser le site du Coven dans ce projet."); process.exit(0); }
 
 const ids: Record<string, string> = {};
 for (const m of media) {
-  const src = m.origin === "police" ? path.join(COVEN_DIR, "theme", m.source) : m.origin === "maquette" ? path.join(visuels!, m.source) : path.join(kit, m.source);
+  const src = m.origin === "police" ? path.join(COVEN_DIR, "theme", m.source) : m.origin === "maquette" ? path.join(visuels!, m.source) : m.origin === "hd" ? path.join(images!, m.source) : path.join(kit, m.source);
   if (!fs.existsSync(src)) { console.warn(`absent : ${m.file}`); continue; }
   let data = fs.readFileSync(src); let mime = "image/png";
-  if (m.file.endsWith(".jpg")) { data = await sharp(data).jpeg({ quality: 90, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
+  if (m.origin === "hd") { data = await sharp(data).resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
+  else if (m.file.endsWith(".jpg")) { data = await sharp(data).jpeg({ quality: 90, mozjpeg: true }).toBuffer(); mime = "image/jpeg"; }
   else if (m.file.endsWith(".svg")) { data = Buffer.from(covenSprite(data.toString("utf8"))); mime = "image/svg+xml"; }
   else if (m.file.endsWith(".ttf")) mime = "font/ttf";
-  const a = await saveAsset({ projectId: pid, userId: row.user_id, data, mime, name: m.file, origin: "upload", role: m.origin === "client" ? "scene" : "detail", status: "approved", meta: { alt: m.alt, provenance: m.origin === "client" ? "Fichier du client (Le Coven des Charmes)" : m.origin } as never });
+  const a = await saveAsset({ projectId: pid, userId: row.user_id, data, mime, name: m.file, origin: "upload", role: m.origin === "client" || m.origin === "hd" ? "scene" : "detail", status: "approved", meta: { alt: m.alt, provenance: m.origin === "client" || m.origin === "hd" ? "Fichier du client (Le Coven des Charmes)" : m.origin } as never });
   ids[m.file] = a.id;
 }
 const spec = applyCoven(structuredClone(theme.spec), ids, { mode: "client" });

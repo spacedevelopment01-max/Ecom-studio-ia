@@ -6,7 +6,7 @@
 import type { CovenSectionDef } from "./coven-spec";
 import type { StoreProduct } from "../../src/lib/theme/spec";
 
-type Ctx = { img: (file: string) => string; v: (clientFile: string | null, crop: string) => string; mode: "client" | "controle"; preview: boolean };
+type Ctx = { img: (file: string) => string; v: (clientFile: string | null, crop: string) => string; mode: "client" | "controle"; preview: boolean; hd: boolean; hdFile: (n: string) => string };
 
 export const PRODUCT_HANDLE = "bracelet-de-charms-surprise";
 export const URL = {
@@ -26,7 +26,7 @@ export const COVEN_PRODUCT = (ctx: Ctx): StoreProduct => ({
   currency: "EUR",
   options: [],
   variants: [{ title: "Default Title", options: [], price: null, available: true }],
-  images: ["coven-photo-bracelet.jpg", "coven-photo-poignet.jpg"].map(ctx.img).filter(Boolean),
+  images: (ctx.hd ? ["02", "05"].map(ctx.hdFile) : ["coven-photo-bracelet.jpg", "coven-photo-poignet.jpg"].map(ctx.img)).filter(Boolean),
   tags: ["bracelet", "charms"],
   seo: { title: "Bracelet de charms surprise — Le Coven des Charmes", description: CENTRAL },
 });
@@ -78,9 +78,14 @@ const DRAWER: Record<string, { focus_x: number; focus_y: number; zoom: number }>
   mysteres: { focus_x: 26, focus_y: 66, zoom: 470 }, pierres: { focus_x: 41, focus_y: 66, zoom: 470 }, rituels: { focus_x: 12, focus_y: 85, zoom: 470 }, protections: { focus_x: 41, focus_y: 85, zoom: 470 },
 };
 
+/** Tiroirs ouverts des images HD du client (37 à 42). */
+const DRAWER_HD: Record<keyof typeof DRAWER, string> = { familiers: "37", divinations: "38", accessoires: "37", mysteres: "39", pierres: "40", rituels: "41", protections: "42" };
+
 export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => {
-  const client = ctx.mode === "client";
-  const cab = (k: keyof typeof DRAWER, crop: string) => (client ? { image_asset: ctx.img("coven-photo-cabinet.jpg"), image_alt: "Tiroir du cabinet du Coven", ...DRAWER[k] } : { image_asset: ctx.img(`coven-mq-${crop}.jpg`) });
+  // « client » : photos du téléphone du client (repli quand les images HD du client ne sont pas fournies).
+  const client = ctx.mode === "client" && !ctx.hd;
+  const cab = (k: keyof typeof DRAWER, crop: string) => (ctx.hd ? { image_asset: ctx.hdFile(DRAWER_HD[k]), image_alt: "Tiroir du cabinet du Coven" }
+    : client ? { image_asset: ctx.img("coven-photo-cabinet.jpg"), image_alt: "Tiroir du cabinet du Coven", ...DRAWER[k] } : { image_asset: ctx.img(`coven-mq-${crop}.jpg`) });
   return {
   index: [
     ["hero", "es-custom-coven-hero", {
@@ -106,7 +111,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
     ["families", "es-custom-coven-families", {
       layout: "drawers", mobile_layout: "list", heading: "Les symboles désignent les charms.", subheading: "Les symboles du scoop déterminent quels charms sont assemblés sur votre bracelet.",
       mobile_heading: "Derrière chaque tiroir, un univers.", mobile_subheading: "Les symboles désignent les charms. Voici quelques thèmes présents dans nos tirages.",
-      bg_asset: client ? "" : ctx.img("coven-mq-accueil-tiroirs.jpg"), label_style: client ? "plaque" : "photo", padding_top: 0, padding_bottom: 0,
+      bg_asset: client || ctx.hd ? "" : ctx.img("coven-mq-accueil-tiroirs.jpg"), label_style: client || ctx.hd ? "plaque" : "photo", padding_top: 0, padding_bottom: 0,
     }, [
       fam("Familiers", "Animaux, esprits et créatures\nqui vous accompagnent.", cab("familiers", "m-accueil-tiroir")),
       fam("Divination", "Astres, cartes et arts\nprédictifs.", cab("divinations", "m-accueil-tiroir")),
@@ -156,7 +161,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
       thumb_asset: ctx.img(`coven-mq-produit-vignette-${i}.jpg`), ...(i <= 4 ? { mobile_thumb_asset: ctx.img(`coven-mq-m-produit-vignette-${i}.jpg`) } : { mobile_hidden: true }),
     } }))],
     ["steps", "es-custom-coven-steps", { layout: "photos", mobile_layout: "thumbs", heading: "Le tirage des charms, étape par étape", mobile_heading: "Vous recevez un bracelet assemblé.", padding_top: 0, padding_bottom: 14 }, [
-      step("Vous commandez le bracelet", "", { desktop_hidden: true, mobile_title: "Vous\ncommandez\nle bracelet", mobile_text: "Taille de bracelet\net quantité.", icon: "panier", ...(client ? {} : { image_asset: ctx.img("coven-mq-m-produit-etape-1.jpg") }) }),
+      step("Vous commandez le bracelet", "", { desktop_hidden: true, mobile_title: "Vous\ncommandez\nle bracelet", mobile_text: "Taille de bracelet\net quantité.", icon: "panier", ...(client || ctx.hd ? {} : { image_asset: ctx.img("coven-mq-m-produit-etape-1.jpg") }) }),
       step("Des symboles sont tirés\nau hasard au scoop.", "", { mobile_title: "Les charms\nsont tirés au sort\nau scoop", mobile_text: "Après votre commande, nous tirons les charms au sort.", image_asset: ctx.img("coven-mq-produit-etape-1.jpg"), mobile_image_asset: ctx.img("coven-mq-m-produit-etape-2.jpg") }),
       step("Les charms correspondants\nsont réunis dans les tiroirs.", "", { mobile_title: "Les charms\ndésignés sont réunis", mobile_text: "Les symboles tirés indiquent les charms à préparer.", ...(client ? { image_asset: ctx.img("coven-photo-cabinet.jpg"), image_alt: "Tiroirs du cabinet", focus_x: 26, focus_y: 66, zoom: 260 } : { image_asset: ctx.img("coven-mq-produit-etape-2.jpg"), mobile_image_asset: ctx.img("coven-mq-m-produit-etape-3.jpg") }) }),
       step("Votre bracelet est assemblé\navec soin.", "", { mobile_title: "Votre bracelet\nest assemblé", mobile_text: "Les charms sont assemblés sur votre bracelet, par nos soins.", ...(client ? { image_asset: ctx.img("coven-photo-poignet.jpg"), image_alt: "Exemple de bracelet assemblé", focus_y: 40, zoom: 120 } : { image_asset: ctx.img("coven-mq-produit-etape-3.jpg"), mobile_image_asset: ctx.img("coven-mq-m-produit-etape-4.jpg") }) }),
@@ -183,7 +188,7 @@ export const COVEN_TEMPLATES = (ctx: Ctx): Record<string, CovenSectionDef[]> => 
   ],
   "page.coven-tirage": [
     ["hero", "es-custom-coven-hero", {
-      layout: "left", mobile_layout: "top", mobile_align: "left", height: 558, mobile_media_top: 35, mobile_height: 350, image_asset: ctx.img("coven-mq-tirage-scene.jpg"), mobile_image_asset: ctx.img("coven-mq-m-tirage-scene.jpg"), image_alt: "Coupelle de symboles et scoop", shade: 0,
+      layout: "left", mobile_layout: "top", mobile_align: "left", height: 558, mobile_media_top: 35, mobile_height: 350, image_asset: ctx.img("coven-mq-tirage-scene.jpg"), mobile_image_asset: ctx.img("coven-mq-m-tirage-scene.jpg"), image_alt: "Coupelle de symboles et scoop", shade: 0, ...(ctx.hd ? { media_left: 36 } : {}),
       title: "Comment les charms\nsont-ils tirés au sort ?", text_size: 31, mobile_title: "Le tirage des\ncharms au scoop.", title_size: 70, mobile_title_size: 33, text_x: 88, text_y: 102, text_width: 760,
       text: p("Vous commandez un bracelet.<br>Après votre achat, nous réalisons<br>un tirage au scoop, puis assemblons<br>les charms désignés sur votre bracelet."),
       mobile_text: p("Des charms tirés au sort,<br>puis assemblés sur votre bracelet."), mobile_text_y: 0,

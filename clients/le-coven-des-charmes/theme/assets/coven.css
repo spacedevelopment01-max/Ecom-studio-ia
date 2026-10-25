@@ -133,7 +133,7 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
 .cvn-hero__icon--moon { width: 34px; height: 34px; }
 
 /* Accueil : photo à droite, fondue dans le noir. */
-.cvn-hero--home .cvn-hero__media { left: var(--media-l); -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, #000 22%); }
+.cvn-hero--home .cvn-hero__media, .cvn-hero--inset .cvn-hero__media { left: var(--media-l); -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22%); mask-image: linear-gradient(90deg, transparent 0, #000 22%); }
 .cvn-hero--home .cvn-hero__shade { background: radial-gradient(70% 90% at 0% 40%, rgba(6, 5, 8, .92), rgba(6, 5, 8, 0) 70%), linear-gradient(0deg, rgba(6, 5, 8, calc(var(--shade) * .9)), rgba(6, 5, 8, 0) 35%); }
 .cvn-hero--home .cvn-hero__copy { position: absolute; left: var(--tx); top: var(--ty); width: var(--tw); }
 .cvn-hero--home .cvn-hero__eyebrow { margin-bottom: 22px; }
@@ -154,7 +154,7 @@ body.cvn-body > *:not(.cvn-keep) { font-family: "Coven Garamond", "EB Garamond",
   .cvn-hero__inner { height: var(--mh); }
   .cvn-hero--home .cvn-hero__rule { display: flex; }
   .cvn-hero__media img { object-position: var(--mfx) var(--mfy); transform: scale(var(--mz)); transform-origin: var(--mfx) var(--mfy); }
-  .cvn-hero--home .cvn-hero__media { left: 0; -webkit-mask-image: none; mask-image: none; }
+  .cvn-hero--home .cvn-hero__media, .cvn-hero--inset .cvn-hero__media { left: 0; -webkit-mask-image: none; mask-image: none; }
   .cvn-hero__shade, .cvn-hero--home .cvn-hero__shade { background: linear-gradient(0deg, rgba(7, 6, 10, .96) 0%, rgba(7, 6, 10, calc(.4 + var(--shade) * .5)) 38%, rgba(7, 6, 10, 0) 70%), linear-gradient(180deg, rgba(7, 6, 10, .55), rgba(7, 6, 10, 0) 22%); }
   .cvn-hero .cvn-hero__copy { position: absolute; left: 16px; right: 16px; top: auto; bottom: 22px; width: auto; transform: none; text-align: center; margin-top: var(--mty); }
   .cvn-hero--m-top .cvn-hero__copy { top: calc(108px + var(--mty)); bottom: auto; }
