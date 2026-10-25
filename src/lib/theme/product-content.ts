@@ -27,10 +27,18 @@ function descriptionRepeatsBlocks(main: { blocks?: Record<string, { type: string
   return rest.length <= 24;
 }
 
+/** Fiche propre à un thème (ONDE : « on-product », la section Produit commune masquée) et ses réglages liés au produit principal. */
+const OWN_BODY: Record<string, string[]> = { "on-product": ["product", "heading", "current_label", "brand_line", "price_note", "card_brand", "card_name", "finish_value", "text", "bar_image_asset", "bar_name", "bar_note"] };
+
 export function neutralProductTemplate(source: TemplateJson): TemplateJson {
   const out = structuredClone(source);
-  out.order = out.order.filter((id) => ["main-product", "product-recommendations"].includes(out.sections[id]?.type));
+  out.order = out.order.filter((id) => ["main-product", "product-recommendations"].includes(out.sections[id]?.type) || (!out.sections[id]?.disabled && !!OWN_BODY[out.sections[id]?.type ?? ""]));
   out.sections = Object.fromEntries(out.order.map((id) => [id, out.sections[id]]));
+  // Fiche du thème gardée sans les textes du produit principal (nom, carte, barre) ni ses onglets (sections absentes ici) ;
+  // sans elle, la section Produit commune redevient visible : jamais de fiche vide.
+  const own = Object.values(out.sections).find((s) => OWN_BODY[s.type]);
+  if (own) { for (const k of OWN_BODY[own.type]) delete own.settings[k]; own.settings.show_description = true; own.blocks = {}; own.block_order = []; }
+  else for (const s of Object.values(out.sections)) if (s.type === "main-product") delete s.disabled;
   for (const s of Object.values(out.sections)) if (s.type === "main-product") {
     s.block_order = (s.block_order ?? Object.keys(s.blocks ?? {})).filter((id) => dynamicBlocks.has(s.blocks?.[id]?.type ?? ""));
     s.blocks = Object.fromEntries(s.block_order.map((id) => [id, s.blocks![id]]));

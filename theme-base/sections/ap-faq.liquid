@@ -1,0 +1,164 @@
+{%- comment -%}
+  Questions fréquentes d'APLAT (accordéons accessibles). Dispositions :
+  - row : titre et filet à gauche, questions à droite (chevron, question, plus) — accueil, prestations, confirmation ;
+  - band : bande bleu pétrole, titre à gauche (enduits) ; stack : titre au-dessus (métiers) ;
+  - page : recherche, catégories, accordéons et panneau d'aide (FAQ, planche 03).
+  Sur téléphone : surtitre et questions encadrées à « + ». Les réponses sont du texte riche, modifiables.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign qs = section.blocks | where: 'type', 'question'
+  assign tabs = s.tabs | split: ','
+-%}
+<section class="ap-s ap-faq ap-faq--{{ s.layout }}{% if s.desktop_span != blank and s.desktop_span != '12' %} ap-span ap-span-{{ s.desktop_span }}{% endif %}{% if s.mobile_order > 0 %} ap-mo ap-mo-{{ s.mobile_order }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}{% if s.mobile_style == 'lines' %} ap-faq--m-lines{% endif %}" aria-labelledby="ApF-{{ section.id }}" data-ap-faq>
+  <div class="ap-faq__inner ap-wrap">
+    <header class="ap-faq__head">
+      <h2 class="ap-faq__title{% if s.mobile_heading != blank %} ap-faq__title--m-eyebrow{% endif %}" id="ApF-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</h2>
+      {%- if s.show_rule -%}<span class="ap-rule" aria-hidden="true"></span>{%- elsif s.mobile_style == 'lines' -%}<span class="ap-rule ap-only-m" aria-hidden="true"></span>{%- endif -%}
+      {%- if s.text != blank -%}<p class="ap-faq__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+    </header>
+    <div class="ap-faq__main">
+      {%- if s.search_placeholder != blank or s.tabs != blank -%}
+        <div class="ap-faq__tools">
+          {%- if s.search_placeholder != blank -%}
+            <form class="ap-faq__search" role="search">
+              <label class="ap-sr" for="ApFq-{{ section.id }}">{{ s.search_label | escape }}</label>
+              {% render 'ap-icon', name: 'search' %}
+              <input id="ApFq-{{ section.id }}" type="search" placeholder="{{ s.search_placeholder | escape }}" data-ap-faq-search autocomplete="off">
+            </form>
+          {%- endif -%}
+          {%- if s.tabs != blank -%}
+            <div class="ap-faq__tabs" role="group" aria-label="{{ s.tabs_label | escape }}">
+              {%- for t in tabs -%}{%- assign kv = t | split: '|' -%}<button type="button" class="ap-filters__btn" data-ap-faq-tab="{{ kv[1] | default: 'all' | strip }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">{{ kv[0] | strip | escape }}</button>{%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+      <div class="ap-faq__list" data-ap-acc-group{% if s.single %} data-single{% endif %}>
+        {%- for b in qs -%}
+          {%- assign open = false -%}{%- if b.settings.open -%}{%- assign open = true -%}{%- endif -%}
+          <div class="ap-acc{% if open %} is-open{% endif %}{% if b.settings.show_on != 'all' %} ap-only-{{ b.settings.show_on | slice: 0 }}{% endif %}" data-cat="{{ b.settings.category | remove: ' ' }}" {{ b.shopify_attributes }}>
+            <h3 class="ap-acc__q">
+              <button type="button" class="ap-acc__btn" data-ap-acc aria-expanded="{{ open }}" aria-controls="ApA-{{ section.id }}-{{ forloop.index }}" id="ApAb-{{ section.id }}-{{ forloop.index }}">
+                <span class="ap-acc__chev" aria-hidden="true">{% render 'ap-icon', name: 'chevron' %}</span>
+                <span class="ap-acc__label">{%- render 'ap-dm', d: b.settings.question, m: b.settings.mobile_question -%}</span>
+                <span class="ap-acc__sign" aria-hidden="true"><span class="ap-acc__plus">{% render 'ap-icon', name: 'plus' %}</span><span class="ap-acc__minus">{% render 'ap-icon', name: 'minus' %}</span></span>
+              </button>
+            </h3>
+            <div class="ap-acc__a" id="ApA-{{ section.id }}-{{ forloop.index }}" role="region" aria-labelledby="ApAb-{{ section.id }}-{{ forloop.index }}"{% unless open %} hidden{% endunless %}>{{ b.settings.answer }}</div>
+          </div>
+        {%- endfor -%}
+        {%- if s.empty_text != blank -%}<p class="ap-faq__empty" data-ap-faq-empty hidden role="status">{{ s.empty_text | escape }}</p>{%- endif -%}
+      </div>
+    </div>
+    {%- for b in section.blocks -%}
+      {%- if b.type == 'help' -%}
+        <aside class="ap-faq__help{% if b.settings.show_on != 'all' %} ap-only-{{ b.settings.show_on | slice: 0 }}{% endif %}" {{ b.shopify_attributes }}>
+          {%- if b.settings.image != blank or b.settings.image_asset != blank -%}{%- render 'ap-img', img: b.settings.image, asset: b.settings.image_asset, alt: b.settings.image_alt, fx: b.settings.focus_x, fy: b.settings.focus_y, cls: 'ap-faq__help-img', width: 900 -%}{%- endif -%}
+          <div class="ap-faq__help-body">
+            <p class="ap-faq__help-title">{{ b.settings.title | escape | newline_to_br }}</p>
+            {%- if b.settings.text != blank -%}<p class="ap-faq__help-text">{{ b.settings.text | escape | newline_to_br }}</p>{%- endif -%}
+            {%- if b.settings.button_label != blank -%}<a class="ap-faq__help-link" href="{{ b.settings.button_link | default: routes.root_url }}">{{ b.settings.button_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+        </aside>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "row",
+      "options": [
+        { "value": "row", "label": "Titre à gauche, questions à droite" },
+        { "value": "band", "label": "Bande bleu pétrole" },
+        { "value": "stack", "label": "Titre au-dessus" },
+        { "value": "page", "label": "Page de questions (recherche, catégories, aide)" }
+      ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    {
+      "type": "select", "id": "desktop_span", "label": "Largeur sur ordinateur", "default": "12",
+      "options": [
+        { "value": "12", "label": "Pleine largeur" },
+        { "value": "8", "label": "Deux tiers" },
+        { "value": "7", "label": "Un peu plus de la moitié" },
+        { "value": "6", "label": "Moitié" },
+        { "value": "6r2", "label": "Moitié, sur deux rangées" },
+        { "value": "5", "label": "Un peu moins de la moitié" },
+        { "value": "4", "label": "Un tiers" }
+      ]
+    },
+    { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 5, "step": 1, "default": 0 },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone (en surtitre)" },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": true },
+    {
+      "type": "select", "id": "mobile_style", "label": "Présentation sur téléphone", "default": "boxes",
+      "options": [ { "value": "boxes", "label": "Surtitre et questions encadrées" }, { "value": "lines", "label": "Titre, filet et questions sur des lignes" } ]
+    },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "single", "label": "Une seule réponse ouverte à la fois", "default": false },
+    { "type": "text", "id": "search_placeholder", "label": "Recherche : texte indicatif" },
+    { "type": "text", "id": "search_label", "label": "Recherche (lecteurs d'écran)", "default": "Rechercher une question" },
+    { "type": "text", "id": "tabs", "label": "Catégories", "info": "Libellé|catégorie, séparés par des virgules. Ex. : Toutes|all,Devis|devis" },
+    { "type": "text", "id": "tabs_label", "label": "Catégories (lecteurs d'écran)", "default": "Catégories de questions" },
+    { "type": "text", "id": "empty_text", "label": "Message sans résultat" }
+  ],
+  "blocks": [
+    {
+      "type": "question", "name": "Question",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "text", "id": "mobile_question", "label": "Question sur téléphone" },
+        { "type": "richtext", "id": "answer", "label": "Réponse" },
+        { "type": "text", "id": "category", "label": "Catégories", "info": "Séparées par des virgules." },
+        { "type": "checkbox", "id": "open", "label": "Ouverte au chargement", "default": false },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "help", "name": "Panneau d'aide", "limit": 2,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+        { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "textarea", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "text", "id": "button_label", "label": "Lien" },
+        { "type": "url", "id": "button_link", "label": "Adresse du lien" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Questions APLAT" } ]
+}
+{% endschema %}

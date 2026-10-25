@@ -1,0 +1,47 @@
+{%- comment -%}
+  Inscription d'ONDE (maquettes du 24 octobre) : bande lime (ou graphite), titre, texte, champ e-mail et bouton (texte ou
+  flèche). Formulaire « customer » de la plateforme : rien n'est enregistré dans l'aperçu du studio.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="on-newsletter on-newsletter--{{ s.layout }} on-tone--{{ s.tone }} on-show--{{ s.show_on | default: 'all' }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;">
+  <div class="on-newsletter__inner on-container">
+    <div class="on-newsletter__copy">
+      {%- if s.heading != blank -%}<h2 class="on-title on-newsletter__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<p class="on-newsletter__text">{{ s.text | escape }}</p>{%- endif -%}
+    </div>
+    {%- assign form_id = 'OnNewsletter-' | append: section.id -%}
+    {%- form 'customer', class: 'on-newsletter__form', id: form_id -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="OnNewsletterEmail-{{ section.id }}">{{ s.placeholder | default: 'Votre adresse e-mail' | escape }}</label>
+      <input id="OnNewsletterEmail-{{ section.id }}" class="on-newsletter__input" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ s.placeholder | escape }}">
+      <button type="submit" class="on-newsletter__submit{% if s.button_label == blank %} on-newsletter__submit--icon{% endif %}"{% if s.button_label == blank %} aria-label="{{ s.submit_label | escape }}"{% endif %}>{%- if s.button_label != blank -%}<span>{{ s.button_label | escape }}</span>{%- endif -%}{% render 'icon', name: 'arrow' %}</button>
+      {%- if form.posted_successfully? -%}<p class="on-newsletter__note" role="status">{{ 'newsletter.success' | t }}</p>{%- endif -%}
+      {%- if form.errors -%}<p class="on-newsletter__note" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}
+    {%- endform -%}
+    {%- if s.wave -%}<div class="on-newsletter__wave" aria-hidden="true">{% render 'on-wave', bars: 64, shape: 'line' %}</div>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inscription ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "row", "options": [ { "value": "row", "label": "Texte à gauche, champ à droite" }, { "value": "stack", "label": "Texte puis champ" } ] },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "lime", "options": [ { "value": "lime", "label": "Lime" }, { "value": "dark", "label": "Graphite" } ] },
+    { "type": "select", "id": "show_on", "label": "Affichage", "default": "all", "options": [ { "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" } ] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Restez informé." },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Recevez nos nouveautés et nos conseils." },
+    { "type": "text", "id": "placeholder", "label": "Texte d'aide du champ", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "info": "Vide : une flèche." },
+    { "type": "text", "id": "submit_label", "label": "Nom du bouton flèche (lecteurs d'écran)", "default": "S'inscrire" },
+    { "type": "checkbox", "id": "wave", "label": "Onde sonore sous le formulaire", "default": false },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 16, "max": 80, "step": 1, "unit": "px", "default": 32 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 16, "max": 60, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 24 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 160, "step": 2, "unit": "px", "default": 24 }
+  ],
+  "presets": [ { "name": "Inscription ONDE" } ]
+}
+{% endschema %}

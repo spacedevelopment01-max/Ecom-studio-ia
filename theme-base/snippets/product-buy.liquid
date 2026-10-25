@@ -1,6 +1,7 @@
 {%- comment -%}
   Formulaire d'achat : variantes, quantité, ajout au panier, paiement accéléré.
-  Paramètres : product, section_id, show_quantity, show_dynamic_checkout, picker, price_in_button
+  Paramètres : product, section_id, show_quantity, show_dynamic_checkout, picker, price_in_button ; swatch_color (pastille
+  devant les valeurs de l'option « Couleur »), guide_label et guide_link (lien sous l'option « Taille »), quantity_label.
 {%- endcomment -%}
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
@@ -18,7 +19,10 @@
   {%- unless product.has_only_default_variant -%}
     {%- for option in product.options_with_values -%}
       {%- assign option_index = forloop.index0 -%}
-      <fieldset class="es-option es-option--{{ picker | default: 'buttons' }}">
+      {%- assign opt_name = option.name | downcase -%}
+      {%- assign is_color = false -%}{%- if opt_name == 'couleur' or opt_name == 'color' or opt_name == 'colour' or opt_name == 'coloris' -%}{%- assign is_color = true -%}{%- endif -%}
+      {%- assign is_size = false -%}{%- if opt_name == 'taille' or opt_name == 'size' or opt_name == 'pointure' -%}{%- assign is_size = true -%}{%- endif -%}
+      <fieldset class="es-option es-option--{{ picker | default: 'buttons' }}{% if is_color and swatch_color != blank %} es-option--swatch{% endif %}{% if is_size %} es-option--size{% endif %}">
         <legend class="es-option__label">{{ option.name }}{% if request.locale.iso_code contains 'fr' %}&nbsp;:{% else %}:{% endif %} <span data-option-value="{{ forloop.index0 }}">{{ option.selected_value }}</span></legend>
         {%- if picker == 'dropdown' -%}
           <select class="es-select" data-option-index="{{ forloop.index0 }}" aria-label="{{ option.name }}">
@@ -29,16 +33,18 @@
             {%- for value in option.values -%}
               {%- assign input_id = section_id | append: '-' | append: option_index | append: '-' | append: forloop.index0 -%}
               <input type="radio" class="visually-hidden" id="{{ input_id }}" name="{{ section_id }}-{{ option.name | handleize }}" value="{{ value | escape }}" data-option-index="{{ option_index }}"{% if option.selected_value == value %} checked{% endif %}>
-              <label for="{{ input_id }}" class="es-chip">{{ value }}</label>
+              <label for="{{ input_id }}" class="es-chip">{% if is_color and swatch_color != blank %}<span class="es-chip__swatch" style="background:{{ swatch_color }}" aria-hidden="true"></span>{% endif %}{{ value }}</label>
             {%- endfor -%}
           </div>
         {%- endif -%}
+        {%- if is_size and guide_label != blank -%}<a class="es-option__guide" href="{{ guide_link | default: '#' }}">{% render 'icon', name: 'ruler' %}{{ guide_label | escape }}</a>{%- endif -%}
       </fieldset>
     {%- endfor -%}
   {%- endunless -%}
 
   {%- form 'product', product, id: form_id, class: 'es-buy__form', data-product-form: '' -%}
     <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+    {%- if show_quantity and quantity_label != blank -%}<p class="es-option__label es-buy__qty-label">{{ quantity_label | escape }}</p>{%- endif -%}
     <div class="es-buy__row">
       {%- if show_quantity -%}
         <div class="es-qty">

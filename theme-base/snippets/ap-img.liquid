@@ -1,0 +1,21 @@
+{%- comment -%}
+  Photo d'APLAT : image de la boutique (image_picker) ou fichier du thème, cadrage réglable (point focal, agrandissement),
+  photo distincte facultative sur téléphone. Paramètres : img, asset, alt, fx, fy, zoom, mimg, masset, mfx, mfy, cls,
+  eager, width.
+{%- endcomment -%}
+{%- liquid
+  assign w = width | default: 1600
+  assign load = 'lazy'
+  if eager
+    assign load = 'eager'
+  endif
+  assign has_mobile = false
+  if mimg != blank or masset != blank
+    assign has_mobile = true
+  endif
+  assign z = zoom | default: 100 | divided_by: 100.0
+-%}
+<span class="ap-img{% if cls != blank %} {{ cls }}{% endif %}{% if has_mobile %} ap-img--has-m{% endif %}" style="--ap-fx:{{ fx | default: 50 }}%;--ap-fy:{{ fy | default: 50 }}%;--ap-fxm:{{ mfx | default: fx | default: 50 }}%;--ap-fym:{{ mfy | default: fy | default: 50 }}%;--ap-zoom:{{ z }};">
+  {%- if img != blank -%}{{ img | image_url: width: w | image_tag: loading: load, alt: alt, class: 'ap-img__d' }}{%- elsif asset != blank -%}<img class="ap-img__d" width="1200" height="800" src="{{ asset | asset_url }}" alt="{{ alt | escape }}" loading="{{ load }}" decoding="async">{%- endif -%}
+  {%- if has_mobile -%}{%- if mimg != blank -%}{{ mimg | image_url: width: 900 | image_tag: loading: load, alt: alt, class: 'ap-img__m' }}{%- else -%}<img class="ap-img__m" width="900" height="1200" src="{{ masset | asset_url }}" alt="{{ alt | escape }}" loading="{{ load }}" decoding="async">{%- endif -%}{%- endif -%}
+</span>

@@ -1,0 +1,151 @@
+{%- comment -%}
+  Pied de page d'ONDE (maquettes du 24 octobre), trois styles selon la page :
+  - wordmark : graphite, grand logo, onde sonore, menu et liens légaux, réseaux (accueil, fiche) ;
+  - lime : fond lime, grand logo foncé, onde, deux colonnes de liens séparées par un filet (boutique, expérience, marque,
+    journal) ;
+  - slim : graphite compact, logo, onde, menu et liens légaux (panier, commande, aide).
+  Le style suit le type de page (accueil, fiche, panier, collection) et deux listes de pages (identifiants séparés par
+  des virgules). Sur téléphone : menus repliables ou listes à chevrons selon le style.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign style = s.style_default
+  case template.name
+    when 'product'
+      assign style = s.style_product
+    when 'cart'
+      assign style = s.style_cart
+    when 'collection', 'list-collections', 'search'
+      assign style = s.style_collection
+    when 'page', 'article', 'blog'
+      assign h = page.handle | default: article.handle | default: ''
+      assign lime_list = s.lime_pages | remove: ' ' | split: ','
+      assign slim_list = s.slim_pages | remove: ' ' | split: ','
+      if lime_list contains h
+        assign style = 'lime'
+      elsif slim_list contains h
+        assign style = 'slim'
+      endif
+  endcase
+  assign main_menu = linklists[s.menu]
+  assign second_menu = linklists[s.second_menu]
+  assign legal_menu = linklists[s.legal_menu]
+  if style == 'slim' and s.slim_legal_menu != blank
+    assign legal_menu = linklists[s.slim_legal_menu]
+  endif
+  assign logo_mono = false
+  if style == 'lime'
+    assign logo_src = s.logo_dark_asset | default: settings.logo_asset
+    assign logo_img = s.logo_dark
+  else
+    assign logo_src = s.logo_light_asset
+    assign logo_img = s.logo_light
+    if logo_img == blank and logo_src == blank and settings.logo_asset != blank
+      assign logo_src = settings.logo_asset
+      assign logo_mono = true
+    endif
+  endif
+-%}
+{%- liquid
+  assign m_list = false
+  if template.name == 'page'
+    assign list_pages = s.mobile_list_pages | remove: ' ' | split: ','
+    if list_pages contains page.handle
+      assign m_list = true
+    endif
+  endif
+-%}
+<footer class="on-footer on-footer--{{ style }}{% if m_list %} on-footer--m-list{% endif %}" style="--on-logo-w:{{ s.logo_width }}px;--on-logo-wm:{{ s.mobile_logo_width }}px;">
+  <div class="on-footer__inner on-container">
+    <a class="on-footer__brand" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      {%- if logo_img != blank -%}{{ logo_img | image_url: width: 900 | image_tag: alt: shop.name, class: 'on-footer__logo', loading: 'lazy' }}{%- elsif style == 'wordmark' and s.logo_wordmark_asset != blank -%}<img width="1200" height="1200" class="on-footer__logo on-desktop-only" src="{{ s.logo_wordmark_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async"><img width="1200" height="1200" class="on-footer__logo on-mobile-only" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif logo_src != blank -%}<img width="1200" height="1200" class="on-footer__logo{% if logo_mono %} on-logo-mono{% endif %}" src="{{ logo_src | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="on-footer__wordmark">{{ shop.name | escape }}</span>{%- endif -%}
+    </a>
+    <div class="on-footer__wave" aria-hidden="true">{% render 'on-wave', bars: 34, shape: 'burst' %}</div>
+    {%- if style == 'lime' -%}
+      <div class="on-footer__cols">
+        {%- if main_menu.links.size > 0 -%}<ul class="on-footer__col" role="list">{%- for l in main_menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+        {%- if second_menu.links.size > 0 -%}<ul class="on-footer__col" role="list">{%- for l in second_menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+      </div>
+    {%- else -%}
+      <nav class="on-footer__nav" aria-label="{{ s.nav_label | escape }}">
+        {%- if main_menu.links.size > 0 -%}
+          <ul class="on-footer__links" role="list">{%- for l in main_menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}{% render 'icon', name: 'arrow' %}</a></li>{%- endfor -%}</ul>
+        {%- endif -%}
+        {%- if legal_menu.links.size > 0 -%}
+          <ul class="on-footer__legal" role="list">{%- for l in legal_menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>
+        {%- endif -%}
+      </nav>
+      {%- if style == 'wordmark' -%}
+        <div class="on-footer__accordions">
+          {%- for g in (1..3) -%}
+            {%- liquid
+              case g
+                when 1
+                  assign gt = s.group1_title
+                  assign gm = linklists[s.group1_menu]
+                when 2
+                  assign gt = s.group2_title
+                  assign gm = linklists[s.group2_menu]
+                else
+                  assign gt = s.group3_title
+                  assign gm = linklists[s.group3_menu]
+              endcase
+            -%}
+            {%- if gt != blank and gm.links.size > 0 -%}
+              <details class="on-footer__acc"><summary>{{ gt | escape }}{% render 'icon', name: 'plus' %}</summary><ul role="list">{%- for l in gm.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul></details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+        {%- if s.show_social -%}
+          <ul class="on-footer__social" role="list">
+            {%- if settings.social_instagram != blank -%}<li><a href="{{ settings.social_instagram }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a></li>{%- endif -%}
+            {%- if settings.social_youtube != blank -%}<li><a href="{{ settings.social_youtube }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a></li>{%- endif -%}
+            {%- if settings.social_tiktok != blank -%}<li><a href="{{ settings.social_tiktok }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a></li>{%- endif -%}
+          </ul>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+  {%- if s.bottom_text != blank -%}<p class="on-footer__bottom on-container">{{ s.bottom_text | escape }}</p>{%- endif -%}
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "header", "content": "Style selon la page" },
+    { "type": "select", "id": "style_default", "label": "Style par défaut (accueil et autres pages)", "default": "wordmark", "options": [ { "value": "wordmark", "label": "Graphite, grand logo" }, { "value": "lime", "label": "Lime" }, { "value": "slim", "label": "Graphite compact" } ] },
+    { "type": "select", "id": "style_product", "label": "Style sur la fiche produit", "default": "wordmark", "options": [ { "value": "wordmark", "label": "Graphite, grand logo" }, { "value": "lime", "label": "Lime" }, { "value": "slim", "label": "Graphite compact" } ] },
+    { "type": "select", "id": "style_collection", "label": "Style sur la boutique et la recherche", "default": "lime", "options": [ { "value": "wordmark", "label": "Graphite, grand logo" }, { "value": "lime", "label": "Lime" }, { "value": "slim", "label": "Graphite compact" } ] },
+    { "type": "select", "id": "style_cart", "label": "Style sur le panier", "default": "slim", "options": [ { "value": "wordmark", "label": "Graphite, grand logo" }, { "value": "lime", "label": "Lime" }, { "value": "slim", "label": "Graphite compact" } ] },
+    { "type": "text", "id": "lime_pages", "label": "Pages au pied lime", "info": "Identifiants des pages séparés par des virgules. Ex. : l-experience, la-marque, journal." },
+    { "type": "text", "id": "slim_pages", "label": "Pages au pied compact", "info": "Ex. : faq, contact, livraison-retours, suivi-de-commande." },
+    { "type": "text", "id": "mobile_list_pages", "label": "Pages au pied en liste sur téléphone", "info": "Pied compact : liens en liste à chevrons sur téléphone. Ex. : faq, contact." },
+    { "type": "header", "content": "Logo" },
+    { "type": "image_picker", "id": "logo_light", "label": "Logo clair (fonds graphite)" },
+    { "type": "text", "id": "logo_light_asset", "label": "Logo clair (fichier du thème)" },
+    { "type": "text", "id": "logo_wordmark_asset", "label": "Grand logo du pied graphite sur ordinateur (fichier du thème)", "info": "Vide : le logo clair." },
+    { "type": "image_picker", "id": "logo_dark", "label": "Logo foncé (fond lime)" },
+    { "type": "text", "id": "logo_dark_asset", "label": "Logo foncé (fichier du thème)" },
+    { "type": "range", "id": "logo_width", "label": "Largeur du logo", "min": 80, "max": 700, "step": 2, "unit": "px", "default": 500 },
+    { "type": "range", "id": "mobile_logo_width", "label": "Largeur du logo sur téléphone", "min": 60, "max": 360, "step": 2, "unit": "px", "default": 200 },
+    { "type": "header", "content": "Liens" },
+    { "type": "link_list", "id": "menu", "label": "Menu principal", "default": "main-menu" },
+    { "type": "link_list", "id": "second_menu", "label": "Deuxième colonne (pied lime)" },
+    { "type": "link_list", "id": "legal_menu", "label": "Liens légaux" },
+    { "type": "link_list", "id": "slim_legal_menu", "label": "Liens légaux du pied compact", "info": "Vide : les mêmes." },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu du pied (lecteurs d'écran)", "default": "Pied de page" },
+    { "type": "text", "id": "group1_title", "label": "Téléphone : titre du menu 1", "default": "Explorer" },
+    { "type": "link_list", "id": "group1_menu", "label": "Téléphone : menu 1" },
+    { "type": "text", "id": "group2_title", "label": "Téléphone : titre du menu 2", "default": "Aide" },
+    { "type": "link_list", "id": "group2_menu", "label": "Téléphone : menu 2" },
+    { "type": "text", "id": "group3_title", "label": "Téléphone : titre du menu 3", "default": "Informations" },
+    { "type": "link_list", "id": "group3_menu", "label": "Téléphone : menu 3" },
+    { "type": "checkbox", "id": "show_social", "label": "Réseaux sociaux (adresses des réglages du thème)", "default": true },
+    { "type": "text", "id": "bottom_text", "label": "Ligne du bas", "info": "Facultatif." }
+  ]
+}
+{% endschema %}

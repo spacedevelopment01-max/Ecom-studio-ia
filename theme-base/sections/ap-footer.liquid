@@ -1,0 +1,292 @@
+{%- comment -%}
+  Pied de page d'APLAT (dix planches du 25 octobre). Cinq styles, comme les planches, selon la page :
+  - dark : charbon, logo clair et trois colonnes (accueil, prestations) ; téléphone : blanc, logo et colonnes ;
+  - minimal : clair, logo, menu et liens légaux en deux lignes, phrase soulignée (plâtrerie, peinture, réalisations,
+    détail) ; téléphone : logo centré, liens légaux et retour en haut ;
+  - columns : clair, logo, trois colonnes à titres bleus, matière d'enduit et devise en capitales (approche, FAQ,
+    contact, devis) ; téléphone : logo centré et liens légaux ;
+  - plaster : charbon, logo clair, colonnes, trait de peinture bleu et phrase (enduits, conseils, article,
+    confirmation) ; téléphone : charbon, menu, bouton de devis, bande d'enduit et liens légaux ;
+  - bar : charbon, logo clair, menu et bouton, ligne légale (pages légales, cookies, 404) ; téléphone : carte bleu
+    pétrole, logo, menu et ligne légale.
+  Les colonnes sont des blocs (titre, menu, texte facultatif, styles concernés, ordinateur ou téléphone).
+  Le panneau « Vos préférences de navigation » (cookies) est ici : il s'ouvre depuis tout lien vers #cookies ou
+  [data-ap-cookies-open] ; rien n'est chargé avant accord (assets/aplat.js).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign style = s.style_default
+  if template.name == 'index'
+    assign style = s.style_home
+  elsif template.name == '404'
+    assign style = s.style_404
+  elsif template.name == 'page' or template.name == 'article' or template.name == 'blog'
+    assign h = page.handle | default: article.handle | default: ''
+    assign l_dark = s.dark_pages | remove: ' ' | split: ','
+    assign l_min = s.minimal_pages | remove: ' ' | split: ','
+    assign l_col = s.columns_pages | remove: ' ' | split: ','
+    assign l_pla = s.plaster_pages | remove: ' ' | split: ','
+    assign l_bar = s.bar_pages | remove: ' ' | split: ','
+    if l_dark contains h
+      assign style = 'dark'
+    elsif l_min contains h
+      assign style = 'minimal'
+    elsif l_col contains h
+      assign style = 'columns'
+    elsif l_pla contains h
+      assign style = 'plaster'
+    elsif l_bar contains h
+      assign style = 'bar'
+    endif
+  endif
+  assign menu = linklists[s.menu]
+  assign legal = linklists[s.legal_menu]
+  assign legal_long = linklists[s.legal_long_menu]
+  if legal_long.links.size == 0
+    assign legal_long = legal
+  endif
+  assign legal_bar = linklists[s.bar_legal_menu]
+  if legal_bar.links.size == 0
+    assign legal_bar = legal
+  endif
+  assign dark = false
+  if style == 'dark' or style == 'plaster' or style == 'bar'
+    assign dark = true
+  endif
+-%}
+{%- capture logo_dark -%}
+  {%- if s.logo != blank -%}{{ s.logo | image_url: width: 600 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_asset != blank -%}<img width="600" height="214" src="{{ s.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif settings.logo_asset != blank -%}<img width="600" height="214" src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="ap-footer__name">{{ shop.name | escape }}</span>{%- endif -%}
+{%- endcapture -%}
+{%- capture logo_light -%}
+  {%- if s.logo_light != blank -%}{{ s.logo_light | image_url: width: 600 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_light_asset != blank -%}<img width="600" height="214" src="{{ s.logo_light_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}{{ logo_dark }}{%- endif -%}
+{%- endcapture -%}
+{%- capture cols_desktop -%}
+  {%- for b in section.blocks -%}
+    {%- assign b_styles = b.settings.styles | remove: ' ' | split: ',' -%}
+    {%- if b.type == 'column' and b_styles contains style and b.settings.show_on != 'mobile' -%}
+      {%- assign bm = linklists[b.settings.menu] -%}
+      <div class="ap-footer__col" {{ b.shopify_attributes }}>
+        {%- if b.settings.title != blank -%}<p class="ap-footer__col-title">{{ b.settings.title | escape }}</p>{%- endif -%}
+        <ul role="list">
+          {%- for l in bm.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}
+          {%- if b.settings.note != blank -%}<li><span>{{ b.settings.note | escape }}</span></li>{%- endif -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- capture cols_mobile -%}
+  {%- for b in section.blocks -%}
+    {%- assign b_styles = b.settings.styles | remove: ' ' | split: ',' -%}
+    {%- if b.type == 'column' and b_styles contains style and b.settings.show_on != 'desktop' -%}
+      {%- assign bm = linklists[b.settings.menu] -%}
+      <div class="ap-footer__col" {{ b.shopify_attributes }}>
+        {%- if b.settings.title != blank -%}<p class="ap-footer__col-title">{{ b.settings.title | escape }}</p>{%- endif -%}
+        <ul role="list">
+          {%- for l in bm.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}
+          {%- if b.settings.note != blank -%}<li><span>{{ b.settings.note | escape }}</span></li>{%- endif -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+<footer class="ap-footer ap-footer--{{ style }}{% if dark %} ap-footer--on-dark{% endif %}">
+  {%- comment -%} Ordinateur {%- endcomment -%}
+  <div class="ap-footer__d">
+    <div class="ap-footer__inner ap-wrap">
+      <a class="ap-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{%- if dark -%}{{ logo_light }}{%- else -%}{{ logo_dark }}{%- endif -%}</a>
+      {%- case style -%}
+        {%- when 'minimal' -%}
+          <div class="ap-footer__rows">
+            {%- if menu.links.size > 0 -%}<ul class="ap-footer__row" role="list">{%- for l in menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+            {%- if legal.links.size > 0 -%}<ul class="ap-footer__row ap-footer__row--legal" role="list">{%- for l in legal.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+          </div>
+          {%- if s.minimal_tagline != blank -%}<p class="ap-footer__tagline">{{ s.minimal_tagline | escape }}</p>{%- endif -%}
+        {%- when 'bar' -%}
+          <div class="ap-footer__rows">
+            <div class="ap-footer__top">
+              {%- if menu.links.size > 0 -%}<ul class="ap-footer__row" role="list">{%- for l in menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+              {%- if s.cta_label != blank -%}<a class="ap-btn ap-btn--petrol ap-footer__cta" href="{{ s.cta_link | default: routes.root_url }}">{{ s.cta_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+            </div>
+            {%- if legal_bar.links.size > 0 -%}<ul class="ap-footer__row ap-footer__row--legal ap-footer__row--sep" role="list">{%- for l in legal_bar.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+          </div>
+        {%- else -%}
+          <div class="ap-footer__cols">{{ cols_desktop }}</div>
+          {%- if style == 'columns' -%}
+            <div class="ap-footer__matter">
+              {%- render 'ap-img', img: s.columns_image, asset: s.columns_image_asset, alt: '', fx: s.columns_focus_x, fy: s.columns_focus_y, cls: 'ap-footer__matter-img', width: 900 -%}
+              {%- if s.columns_tagline != blank -%}<p class="ap-footer__motto">{{ s.columns_tagline | escape | newline_to_br }}</p>{%- endif -%}
+            </div>
+          {%- elsif style == 'plaster' -%}
+            <div class="ap-footer__stroke">
+              <svg class="ap-footer__stroke-shape" viewBox="0 0 120 140" aria-hidden="true" focusable="false"><defs><linearGradient id="ApStroke" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9E2F0"/><stop offset="1" stop-color="#7FB3D3"/></linearGradient></defs><path fill="url(#ApStroke)" d="M8 30 74 2l40 12-6 18 8 10-12 22 6 14-16 26 4 14-30 20-30-8 2-12-16-6 6-16-12-10 10-18-12-12 8-10Z"/><path d="M30 26 92 6M24 50l80-26M20 74l82-28M26 98l70-26M34 120l52-20" stroke="#fff" stroke-opacity=".45" stroke-width="2" fill="none"/></svg>
+              {%- if s.plaster_tagline != blank -%}<p class="ap-footer__serif">{{ s.plaster_tagline | escape | newline_to_br }}</p>{%- endif -%}
+            </div>
+          {%- endif -%}
+      {%- endcase -%}
+    </div>
+  </div>
+  {%- comment -%} Téléphone {%- endcomment -%}
+  <div class="ap-footer__m">
+    {%- case style -%}
+      {%- when 'dark' -%}
+        <div class="ap-footer__m-inner ap-wrap ap-footer__m-cols">
+          <a class="ap-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{{ logo_dark }}</a>
+          <div class="ap-footer__cols">{{ cols_mobile }}</div>
+        </div>
+      {%- when 'plaster' -%}
+        <div class="ap-footer__m-dark">
+          <a class="ap-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{{ logo_light }}</a>
+          {%- if menu.links.size > 0 -%}<ul class="ap-footer__row" role="list">{%- for l in menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+          {%- if s.cta_label != blank -%}<a class="ap-btn ap-btn--petrol ap-btn--sm ap-footer__cta" href="{{ s.cta_link | default: routes.root_url }}">{{ s.cta_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+        </div>
+        <div class="ap-footer__m-band">
+          {%- render 'ap-img', img: s.columns_image, asset: s.columns_image_asset, alt: '', fx: s.columns_focus_x, fy: s.columns_focus_y, cls: 'ap-footer__band-img', width: 900 -%}
+          <ul class="ap-footer__row ap-footer__row--legal" role="list">
+            {%- for l in legal_long.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}
+            {%- if s.legal_note != blank -%}<li><span>{{ s.legal_note | escape }}</span></li>{%- endif -%}
+          </ul>
+          <span class="ap-footer__shards" aria-hidden="true"><i></i><i></i></span>
+        </div>
+      {%- when 'bar' -%}
+        <div class="ap-footer__m-card">
+          <div class="ap-footer__m-top">
+            <a class="ap-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{{ logo_light }}</a>
+            {%- if menu.links.size > 0 -%}<ul class="ap-footer__grid" role="list">{%- for l in menu.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+          </div>
+          {%- if legal.links.size > 0 -%}<ul class="ap-footer__row ap-footer__row--legal ap-footer__row--sep" role="list">{%- for l in legal.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+        </div>
+      {%- else -%}
+        <div class="ap-footer__m-inner ap-footer__m-center">
+          <a class="ap-footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">{{ logo_dark }}</a>
+          {%- if legal.links.size > 0 -%}<ul class="ap-footer__row ap-footer__row--legal ap-footer__row--sep" role="list">{%- for l in legal.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+          {%- if style == 'minimal' and s.top_label != blank -%}<a class="ap-footer__top-btn" href="#MainContent" data-ap-top aria-label="{{ s.top_label | escape }}">{% render 'ap-icon', name: 'arrow-up' %}</a>{%- endif -%}
+        </div>
+    {%- endcase -%}
+  </div>
+
+  {%- comment -%} Préférences de navigation (cookies) : panneau commun à toutes les pages. {%- endcomment -%}
+  <div class="ap-cookies" id="ApCookies" hidden role="dialog" aria-modal="true" aria-labelledby="ApCookiesTitle" data-ap-cookies data-ap-banner="{{ s.cookie_banner }}">
+    <div class="ap-cookies__box">
+      <button type="button" class="ap-cookies__close" data-ap-cookies-close aria-label="{{ s.cookie_close_label | escape }}">{% render 'ap-icon', name: 'close' %}</button>
+      <p class="ap-cookies__title" id="ApCookiesTitle">{{ s.cookie_title | escape }}</p>
+      {%- if s.cookie_text != blank -%}<div class="ap-cookies__text">{{ s.cookie_text }}</div>{%- endif -%}
+      {%- if s.cookie_more_label != blank -%}
+        <p class="ap-cookies__more">{{ s.cookie_more_label | escape }}
+          {%- if s.cookie_privacy_label != blank %} <a href="{{ s.cookie_privacy_link | default: routes.root_url }}">{{ s.cookie_privacy_label | escape }}</a>{%- endif -%}
+          {%- if s.cookie_policy_label != blank -%}<span aria-hidden="true"> | </span><a href="{{ s.cookie_policy_link | default: routes.root_url }}">{{ s.cookie_policy_label | escape }}</a>{%- endif -%}
+        </p>
+      {%- endif -%}
+      {%- render 'ap-consent', s: s, id: 'panel' -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "image_picker", "id": "logo_light", "label": "Logo clair (fonds foncés)" },
+    { "type": "text", "id": "logo_light_asset", "label": "Logo clair (fichier du thème)" },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "link_list", "id": "legal_menu", "label": "Liens légaux", "default": "footer" },
+    { "type": "link_list", "id": "legal_long_menu", "label": "Liens légaux détaillés (téléphone, style charbon et enduit)" },
+    { "type": "text", "id": "legal_note", "label": "Mention après les liens légaux" },
+    { "type": "link_list", "id": "bar_legal_menu", "label": "Ligne légale (style barre)" },
+    { "type": "text", "id": "cta_label", "label": "Texte du bouton", "default": "Demander un devis" },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton" },
+    { "type": "header", "content": "Style selon la page" },
+    {
+      "type": "select", "id": "style_home", "label": "Accueil", "default": "dark",
+      "options": [
+        { "value": "dark", "label": "Charbon à colonnes" },
+        { "value": "minimal", "label": "Clair, deux lignes" },
+        { "value": "columns", "label": "Clair à colonnes et matière" },
+        { "value": "plaster", "label": "Charbon, trait de peinture" },
+        { "value": "bar", "label": "Barre charbon" }
+      ]
+    },
+    {
+      "type": "select", "id": "style_default", "label": "Autres pages", "default": "bar",
+      "options": [
+        { "value": "dark", "label": "Charbon à colonnes" },
+        { "value": "minimal", "label": "Clair, deux lignes" },
+        { "value": "columns", "label": "Clair à colonnes et matière" },
+        { "value": "plaster", "label": "Charbon, trait de peinture" },
+        { "value": "bar", "label": "Barre charbon" }
+      ]
+    },
+    {
+      "type": "select", "id": "style_404", "label": "Page introuvable", "default": "bar",
+      "options": [
+        { "value": "dark", "label": "Charbon à colonnes" },
+        { "value": "minimal", "label": "Clair, deux lignes" },
+        { "value": "columns", "label": "Clair à colonnes et matière" },
+        { "value": "plaster", "label": "Charbon, trait de peinture" },
+        { "value": "bar", "label": "Barre charbon" }
+      ]
+    },
+    { "type": "text", "id": "dark_pages", "label": "Pages au pied charbon à colonnes", "info": "Identifiants séparés par des virgules." },
+    { "type": "text", "id": "minimal_pages", "label": "Pages au pied clair en deux lignes" },
+    { "type": "text", "id": "columns_pages", "label": "Pages au pied clair à colonnes" },
+    { "type": "text", "id": "plaster_pages", "label": "Pages au pied charbon et trait de peinture" },
+    { "type": "text", "id": "bar_pages", "label": "Pages au pied en barre" },
+    { "type": "header", "content": "Phrases et matières" },
+    { "type": "text", "id": "minimal_tagline", "label": "Phrase (pied clair en deux lignes)" },
+    { "type": "textarea", "id": "columns_tagline", "label": "Devise (pied clair à colonnes)" },
+    { "type": "image_picker", "id": "columns_image", "label": "Matière d'enduit" },
+    { "type": "text", "id": "columns_image_asset", "label": "Matière d'enduit (fichier du thème)" },
+    { "type": "range", "id": "columns_focus_x", "label": "Matière : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "columns_focus_y", "label": "Matière : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "textarea", "id": "plaster_tagline", "label": "Phrase (pied charbon et trait de peinture)" },
+    { "type": "text", "id": "top_label", "label": "Bouton retour en haut (lecteurs d'écran)", "default": "Retour en haut de la page" },
+    { "type": "header", "content": "Préférences de navigation (cookies)" },
+    { "type": "checkbox", "id": "cookie_banner", "label": "Ouvrir le panneau à la première visite", "info": "À activer seulement si un outil de mesure ou un contenu externe est installé.", "default": false },
+    { "type": "text", "id": "cookie_title", "label": "Titre du panneau", "default": "Vos préférences de navigation" },
+    { "type": "richtext", "id": "cookie_text", "label": "Texte du panneau" },
+    { "type": "text", "id": "cookie_more_label", "label": "Texte avant les liens", "default": "En savoir plus :" },
+    { "type": "text", "id": "cookie_privacy_label", "label": "Lien confidentialité", "default": "Confidentialité" },
+    { "type": "url", "id": "cookie_privacy_link", "label": "Adresse du lien confidentialité" },
+    { "type": "text", "id": "cookie_policy_label", "label": "Lien cookies", "default": "Cookies" },
+    { "type": "url", "id": "cookie_policy_link", "label": "Adresse du lien cookies" },
+    { "type": "text", "id": "cookie_close_label", "label": "Bouton fermer (lecteurs d'écran)", "default": "Fermer" },
+    { "type": "text", "id": "consent_essential_title", "label": "Cookies essentiels : titre", "default": "Cookies essentiels" },
+    { "type": "text", "id": "consent_essential_text", "label": "Cookies essentiels : texte", "default": "Nécessaires au bon fonctionnement du site." },
+    { "type": "text", "id": "consent_badge", "label": "Badge « toujours activés »", "default": "Toujours activés" },
+    { "type": "text", "id": "consent_audience_title", "label": "Mesure d'audience : titre", "default": "Mesure d'audience" },
+    { "type": "text", "id": "consent_audience_text", "label": "Mesure d'audience : texte", "default": "À préciser selon le fonctionnement réel du site." },
+    { "type": "text", "id": "consent_external_title", "label": "Contenus externes : titre", "default": "Contenus externes" },
+    { "type": "text", "id": "consent_external_text", "label": "Contenus externes : texte", "default": "À préciser selon le fonctionnement réel du site." },
+    { "type": "text", "id": "consent_refuse_label", "label": "Bouton tout refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "consent_accept_label", "label": "Bouton tout accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "consent_save_label", "label": "Bouton enregistrer", "default": "Enregistrer mes choix" },
+    { "type": "text", "id": "consent_saved_label", "label": "Message après enregistrement", "default": "Vos choix sont enregistrés." },
+    { "type": "text", "id": "consent_none_label", "label": "Message sans outil installé", "default": "Aucun outil de mesure ni contenu externe n'est installé pour l'instant : vos choix seront appliqués dès qu'un outil le sera." }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Colonne de liens",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "link_list", "id": "menu", "label": "Menu" },
+        { "type": "text", "id": "note", "label": "Texte après les liens" },
+        { "type": "text", "id": "styles", "label": "Styles concernés", "info": "dark, columns ou plaster, séparés par des virgules.", "default": "dark" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

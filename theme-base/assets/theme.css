@@ -459,6 +459,10 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 .es-line-item__info p { margin: 4px 0; }
 .es-line-items--page .es-line-item { grid-template-columns: 110px 1fr auto auto; padding-bottom: 18px; border-bottom: 1px solid var(--c-border); }
 .es-qty-input { width: 72px; min-height: 40px; padding: 0 10px; border: 1px solid var(--c-border); border-radius: var(--radius-button); background: var(--c-bg); }
+.es-cart__step { width: 34px; height: 36px; display: grid; place-items: center; color: inherit; }
+.es-cart__step .es-icon { width: 14px; }
+.es-cart__qty input { width: 36px; height: 36px; padding: 0; }
+.es-cart__continue { display: block; margin-top: 14px; text-align: center; font-size: .88rem; text-decoration: underline; text-underline-offset: 4px; }
 .es-cart__grid { display: grid; gap: 40px; }
 @media (min-width: 990px) { .es-cart__grid { grid-template-columns: 1.4fr .6fr; } .es-cart__summary { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
 .es-cart__summary { display: grid; gap: 12px; padding: 24px; background: var(--c-surface); border-radius: var(--radius-card); }
@@ -489,6 +493,7 @@ input:focus-visible + .es-chip { outline: 2px solid var(--c-accent); outline-off
 .es-contact__grid { display: grid; gap: 40px; }
 @media (min-width: 990px) { .es-contact__grid { grid-template-columns: .8fr 1.2fr; gap: 96px; } }
 .es-form { display: grid; gap: 16px; }
+.es-form[hidden] { display: none; }
 .es-form label { display: grid; gap: 6px; font-size: .9rem; }
 .es-form input:not([type=checkbox]), .es-form select { min-height: 50px; padding: 0 14px; border: 1px solid var(--c-border); border-radius: var(--radius-button); background: var(--c-bg); }
 .es-form__row { display: grid; gap: 16px; }
@@ -1384,3 +1389,53 @@ body:has(.es-newsletter) .es-footer__card, body:has(.es-newsletter) .es-footer__
 /* SOUPLE (issue #158) : le caractère est porté par le profil éditorial « poudre ». */
 .dir-souple .es-heading { letter-spacing: -.01em; line-height: 1.08; }
 .dir-souple .es-button { border-radius: 10px; }
+/* MAISON & HORIZON (issue #172) : le caractère est porté par le profil éditorial « horizon » (assets/horizon.css). */
+.dir-maison-horizon .es-heading { letter-spacing: -.01em; line-height: 1.08; }
+.dir-maison-horizon .es-button { border-radius: 2px; }
+/* APLAT (PR #187) : le caractère est porté par le profil éditorial « aplat » (assets/aplat.css). */
+.dir-aplat .es-heading { letter-spacing: -.01em; line-height: 1.1; }
+.dir-aplat .es-button { border-radius: 0; }
+
+/* Page dont le titre est porté par la première section : la section de page ne garde que le fil d'Ariane. */
+.es-page--untitled { padding: 0 !important; }
+/* Bandeau de préférences de cookies (réglage du thème « Cookies »). */
+.es-cookies { position: fixed; left: 50%; bottom: 16px; z-index: 60; width: min(calc(100% - 24px), 860px); transform: translateX(-50%); background: var(--c-bg); color: var(--c-text); border-radius: var(--radius-card, 16px); box-shadow: 0 18px 50px -18px rgba(0,0,0,.45); border: 1px solid rgba(var(--c-text-rgb), .1); }
+.es-cookies[hidden] { display: none; }
+.es-cookies__inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px 18px; align-items: center; padding: 16px 20px; }
+.es-cookies__icon { color: var(--c-accent); }
+.es-cookies__title { margin: 0 0 4px; font-weight: 700; }
+.es-cookies__text, .es-cookies__needed { margin: 0; font-size: .85rem; line-height: 1.45; }
+.es-cookies__needed { margin-top: 6px; opacity: .8; }
+.es-cookies__prefs { display: grid; gap: 6px; margin-top: 10px; }
+.es-cookies__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.es-cookies__btn { min-height: 42px; padding: 8px 16px; font-size: .88rem; }
+@media (max-width: 749px) { .es-cookies__inner { grid-template-columns: 1fr; } .es-cookies__icon { display: none; } .es-cookies__actions { justify-content: stretch; } .es-cookies__btn { flex: 1 1 auto; } }
+.es-collection__item { min-width: 0; }
+/* Liens utiles sous l'achat (bloc « Liens utiles » de la fiche). */
+.es-product-links { display: flex; flex-wrap: wrap; gap: 10px 28px; margin: 18px 0 0; padding: 0; list-style: none; }
+.es-product-links a { display: inline-flex; align-items: center; gap: 8px; color: inherit; font-size: .9rem; text-decoration: underline; text-underline-offset: 3px; min-height: 32px; }
+.es-product-links .es-icon { width: 20px; height: 20px; flex: none; }
+/* Panier en pastille (réglage « Texte à côté de l'icône du panier » de l'en-tête). */
+.es-cart-link--label { width: auto; padding: 0 16px 0 12px; gap: 6px; border-radius: 999px; display: inline-flex; align-items: center; }
+.es-cart-link--label .es-cart-link__label { font-weight: 600; font-size: .9rem; }
+@media (max-width: 749px) { .es-cart-link--label { padding: 0; width: 44px; justify-content: center; } .es-cart-link--label .es-cart-link__label { display: none; } }
+/* Planète dessinée (panier vide « Planète dessinée », page introuvable). */
+.es-planet { display: block; width: min(240px, 60vw); height: auto; margin: 0 auto 8px; color: var(--c-accent); }
+.es-planet__stars { fill: var(--cv-star, #F2B84B); }
+.es-cart__empty-illus { display: block; }
+/* Logo foncé éclairci sur fond sombre (réglage « Logo éclairci sur fond sombre ») : en-tête transparent posé sur la
+   photo d'ouverture (les profils au pied sombre, comme « astral », l'appliquent aussi au pied). Couleurs inversées puis
+   teinte rétablie : les nuances du logo restent. */
+body[data-logo-light] .es-header--transparent:not(.is-scrolled) .es-header__logo-img{filter:invert(1) hue-rotate(180deg)}
+/* Page introuvable : photo de fond sous un voile, étoile dessinée. */
+.es-404--photo { position: relative; overflow: hidden; }
+.es-404__bg { position: absolute; inset: 0; z-index: 0; }
+.es-404__bg .ed-media { position: absolute; inset: 0; height: 100%; }
+.es-404__bg img { width: 100%; height: 100%; object-fit: cover; }
+.es-404--photo::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, var(--c-bg) 0%, color-mix(in srgb, var(--c-bg) 82%, transparent) 55%, color-mix(in srgb, var(--c-bg) 30%, transparent) 100%); }
+.es-404__inner { position: relative; z-index: 2; }
+.es-404__illus { display: block; }
+.es-star-illus { display: block; width: min(320px, 80vw); height: auto; margin: 0 auto 12px; color: var(--c-accent); }
+.es-star-illus__star { fill: var(--cv-star, #F2B84B); filter: drop-shadow(0 0 18px rgba(255, 214, 120, .55)); }
+.es-star-illus__planet { fill: color-mix(in srgb, var(--c-accent) 70%, #fff); opacity: .85; }
+.es-star-illus__dots { fill: var(--cv-star, #F2B84B); }

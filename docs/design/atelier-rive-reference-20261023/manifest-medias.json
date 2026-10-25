@@ -1,0 +1,142 @@
+[
+  {
+    "fichier": "medias/01-hero-salon.webp",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "usage": "Accueil : photographie principale, ordinateur et téléphone.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "c58e0c2955d707146fdf8ac42aab40052937be5ff7ef6782f4f2f09f40d0db54"
+  },
+  {
+    "fichier": "medias/02-projet-salon.webp",
+    "dimensions": [
+      1122,
+      1402
+    ],
+    "usage": "Accueil : grande carte projet à gauche ; projet appartement.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "92dd39c868d64d0393a09df4cacea19ce15ea4ebe7c426d7d49b48387d81cac9"
+  },
+  {
+    "fichier": "medias/03-projet-cuisine.webp",
+    "dimensions": [
+      1983,
+      793
+    ],
+    "usage": "Accueil : carte cuisine en haut à droite.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "4648e743319a49a42671aa6c7575d750ce71eb0ec37dc71db47502f2df990846"
+  },
+  {
+    "fichier": "medias/04-projet-jardin.webp",
+    "dimensions": [
+      1774,
+      887
+    ],
+    "usage": "Accueil : carte jardin en bas à droite.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "21e721dddf48bcac77ede830a74d396ecb5785da78c6f91846946e95b59748cb"
+  },
+  {
+    "fichier": "medias/05-bandeau-cuisine.webp",
+    "dimensions": [
+      2172,
+      724
+    ],
+    "usage": "Accueil : bandeau photographique avant la FAQ.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "4413e8d0f7195c5c68d0baffef39c6337ecbebb70ae5f3624cce39bf568a4402"
+  },
+  {
+    "fichier": "medias/06-matieres.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "usage": "Accueil : miniature Conseil ; prestations et détails de matières.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "7a0f6e306e9af19f16c535725571ea31b4bef7385cb42513c4e471bd7fa0554e"
+  },
+  {
+    "fichier": "medias/07-chaise.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "usage": "Accueil : miniature Aménagement.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "e934493f4c37b25037ef4a2c4ce14848e2d4b2cda60643ae3ac13b9f11c1e953"
+  },
+  {
+    "fichier": "medias/08-plan-matieres.webp",
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "usage": "Accueil : méthode ; illustration de plan dans les pages projet.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "7ffa16c52c0a165f6fb291d72ff59590c73873a202829abf6d3936e506ea141d"
+  },
+  {
+    "fichier": "medias/09-chambre.webp",
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "usage": "Projets : carte chambre.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "de699cc68f3514caddc5b9f8fdededc5cb878f3cf4c05d93a8301b67e1678ec7"
+  },
+  {
+    "fichier": "medias/10-espace-professionnel.webp",
+    "dimensions": [
+      1122,
+      1402
+    ],
+    "usage": "Projets : carte espace professionnel ; recadrage vertical contact.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "5885c4923ec6ce4e9b893e8b16c37b32ffa8f80a729beeabb311b812fa03d1db"
+  },
+  {
+    "fichier": "medias/11-atelier-plans.webp",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "usage": "L'atelier : photographie principale ; contact sur téléphone.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "8f536520c4f473d3b316cc1d10d85a059a9f24b4c370a6f2aa9db311302632b3"
+  },
+  {
+    "fichier": "medias/12-salon-jardin.webp",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "usage": "Détail du projet de maison : photographie principale.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "8e08fd4c4ef3cd0cd3115bf0d7d4fd138f7e0cf2208daafe83b8d3fafab53beb"
+  },
+  {
+    "fichier": "medias/13-cuisine-prestations.webp",
+    "dimensions": [
+      1672,
+      941
+    ],
+    "usage": "Prestations : photographie principale ; carte maison dans Projets.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "ebf9012d2be95b7f6ac153b72e6a44b81e60716c3b718c683a4f974a4088a8e0"
+  },
+  {
+    "fichier": "medias/14-detail-table.webp",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "usage": "Détail de projet : détail de table et matières.",
+    "origine": "Reconstitution IA à partir de la maquette, non identique au pixel près",
+    "sha256": "fba19b8ffdfd749197982c6292639c9c7b54715ce61ad0e210dd297e66409771"
+  }
+]

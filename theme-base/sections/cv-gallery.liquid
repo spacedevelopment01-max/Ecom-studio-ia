@@ -1,12 +1,13 @@
 {%- comment -%}
   Galerie de mises en situation : grille ou carrousel de visuels avec légende, visionneuse plein écran (boîte de
   dialogue, clavier, Échap). Les visuels gardent leur format réglé ; le produit n'est jamais déformé.
+  « Carrousel sur téléphone » (maquettes NOCTIL) : la grille d'ordinateur défile une image à la fois sur téléphone.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
   assign speed = s.animation_speed | default: 'normal'
 -%}
-<section class="es-section cv-gallery cv-gallery--{{ s.layout }} cv-gallery--{{ s.ratio }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--cols:{{ s.columns }}" data-cv-gallery>
+<section class="es-section cv-gallery cv-gallery--{{ s.layout }} cv-gallery--{{ s.ratio }}{% if s.mobile_carousel %} cv-gallery--mcarousel{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;--cols:{{ s.columns }}" data-cv-gallery>
   <div class="es-container">
     {%- if s.heading != blank -%}
       <header class="cv-head"{% render 'cv-reveal', animation: s.animation %}>
@@ -49,32 +50,233 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
-    { "type": "text", "id": "heading", "label": "Titre", "default": "En situation" },
-    { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
-    { "type": "richtext", "id": "text", "label": "Texte" },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [ { "value": "grid", "label": "Grille" }, { "value": "carousel", "label": "Carrousel" }, { "value": "mosaic", "label": "Mosaïque (premier visuel plus grand)" } ] },
-    { "type": "range", "id": "columns", "label": "Colonnes sur ordinateur", "min": 2, "max": 4, "step": 1, "default": 3 },
-    { "type": "select", "id": "ratio", "label": "Format des visuels", "default": "square", "options": [ { "value": "square", "label": "Carré" }, { "value": "landscape", "label": "Paysage 4:3" }, { "value": "portrait", "label": "Portrait 4:5" }, { "value": "natural", "label": "Naturel" } ] },
-    { "type": "text", "id": "ai_label", "label": "Mention sur chaque visuel", "info": "Ex. « Image IA — démonstration ». Vide : aucune mention." },
-    { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
-    { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },
-    { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
-    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 },
-    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 64 }
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Surtitre"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Titre",
+      "default": "En situation"
+    },
+    {
+      "type": "text",
+      "id": "heading_accent",
+      "label": "Fin du titre en accent"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texte"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Disposition",
+      "default": "grid",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grille"
+        },
+        {
+          "value": "carousel",
+          "label": "Carrousel"
+        },
+        {
+          "value": "mosaic",
+          "label": "Mosaïque (premier visuel plus grand)"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_carousel",
+      "label": "Carrousel sur téléphone",
+      "info": "Sur téléphone, les éléments défilent un à un au lieu de s'empiler.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Colonnes sur ordinateur",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "Format des visuels",
+      "default": "square",
+      "options": [
+        {
+          "value": "square",
+          "label": "Carré"
+        },
+        {
+          "value": "landscape",
+          "label": "Paysage 4:3"
+        },
+        {
+          "value": "portrait",
+          "label": "Portrait 4:5"
+        },
+        {
+          "value": "natural",
+          "label": "Naturel"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "ai_label",
+      "label": "Mention sur chaque visuel",
+      "info": "Ex. « Image IA — démonstration ». Vide : aucune mention."
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Animation",
+      "default": "rise",
+      "options": [
+        {
+          "value": "none",
+          "label": "Aucune"
+        },
+        {
+          "value": "fade",
+          "label": "Fondu"
+        },
+        {
+          "value": "rise",
+          "label": "Montée en fondu"
+        },
+        {
+          "value": "zoom",
+          "label": "Léger zoom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "animation_speed",
+      "label": "Vitesse",
+      "default": "normal",
+      "options": [
+        {
+          "value": "slow",
+          "label": "Lente"
+        },
+        {
+          "value": "normal",
+          "label": "Normale"
+        },
+        {
+          "value": "fast",
+          "label": "Rapide"
+        }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Schéma de couleurs",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espace au-dessus",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espace en dessous",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
   ],
   "blocks": [
-    { "type": "image", "name": "Visuel", "settings": [
-      { "type": "image_picker", "id": "image", "label": "Visuel" },
-      { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
-      { "type": "text", "id": "image_alt", "label": "Description du visuel" },
-      { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
-      { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-      { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-      { "type": "text", "id": "caption", "label": "Légende" }
-    ] }
+    {
+      "type": "image",
+      "name": "Visuel",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Visuel"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier image fourni avec le thème"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Description du visuel"
+        },
+        {
+          "type": "text",
+          "id": "media_role",
+          "label": "Rôle du visuel attendu"
+        },
+        {
+          "type": "range",
+          "id": "focus_x",
+          "label": "Point focal horizontal",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "focus_y",
+          "label": "Point focal vertical",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Légende"
+        }
+      ]
+    }
   ],
   "max_blocks": 12,
-  "presets": [ { "name": "Galerie en situation", "blocks": [ { "type": "image" }, { "type": "image" }, { "type": "image" } ] } ]
+  "presets": [
+    {
+      "name": "Galerie en situation",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

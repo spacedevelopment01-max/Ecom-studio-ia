@@ -146,22 +146,7 @@ body[data-editorial="object"] [data-main-product] .purchase__offers{grid-templat
 /* Téléphone (#157) : l'arche se range à gauche du titre au lieu de le repousser sous le premier écran ; le texte et le
    bouton suivent sur toute la largeur. L'arche garde son rapport 2/3, le produit reste entier. */
 @media(max-width:749px){.ed-opening--arch .ed-shell{grid-template-columns:minmax(0,46fr) minmax(0,54fr);grid-template-rows:1fr auto auto 1fr auto auto;grid-template-areas:"media ." "media kicker" "media title" "media ." "prose prose" "button button";column-gap:18px;row-gap:0;align-items:start}.ed-opening--arch .ed-opening__copy{display:contents;text-align:left}.ed-opening--arch .ed-opening__media{grid-area:media;justify-self:stretch;width:100%}.ed-opening--arch .ed-kicker{grid-area:kicker;margin-bottom:6px}.ed-opening--arch .ed-opening__title{grid-area:title;font-size:clamp(32px,9.6vw,44px);line-height:1.04;margin:0;max-width:none}.ed-opening--arch .ed-prose{grid-area:prose;margin-top:22px}.ed-opening--arch .ed-button{grid-area:button;justify-self:start;margin-top:14px}.ed-opening--arch .ed-caption{grid-column:1/-1}}
-/* ─── Profil « cadran » (HEUREN, issue #155) : ivoire et bleu nuit, serif fine, filets argentés, angles droits, cadres
-   doublés d'un fin liseré comme une lunette. */
-body[data-editorial="cadran"]{--radius-button:0px;--cd-line:color-mix(in srgb,var(--c-text) 16%,transparent)}
-body[data-editorial="cadran"] .ed-kicker,body[data-editorial="cadran"] .fs .fs-eyebrow,body[data-editorial="cadran"] .es-eyebrow{text-transform:uppercase;letter-spacing:.32em;font-size:11px;font-weight:500;color:color-mix(in srgb,var(--c-text) 64%,transparent)}
-body[data-editorial="cadran"] .ed-title,body[data-editorial="cadran"] .fs h2{font-weight:400;letter-spacing:-.01em}
-body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:clamp(64px,7.4vw,124px);max-width:11ch;line-height:.98}
-body[data-editorial="cadran"] .ed-opening--journal .ed-opening__copy{border-bottom:1px solid var(--cd-line);margin-bottom:28px}
-body[data-editorial="cadran"] .ed-button,body[data-editorial="cadran"] .es-button{border-radius:0;text-transform:uppercase;letter-spacing:.18em;font-size:12px}
-body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline:1px solid var(--cd-line);outline-offset:10px}
-body[data-editorial="cadran"] .ed-points>*{border-top:1px solid var(--cd-line);padding-top:18px}
-body[data-editorial="cadran"] .ed-diptych figcaption h3{font-weight:400}
-body[data-editorial="cadran"] .es-header{border-bottom:1px solid var(--cd-line)}
-body[data-editorial="cadran"] .es-header__wordmark{letter-spacing:.3em;text-transform:uppercase;font-size:24px}
-body[data-editorial="cadran"] .fs-look__dot,body[data-editorial="cadran"] .fs-look__marker{border-radius:50%}
-body[data-editorial="cadran"] .es-product__title{font-weight:400;letter-spacing:-.01em}
-@media(max-width:749px){body[data-editorial="cadran"] .ed-opening--journal .ed-opening__title{font-size:54px}body[data-editorial="cadran"] .ed-opening__media .ed-media,body[data-editorial="cadran"] .ed-statement__aside>.ed-media,body[data-editorial="cadran"] .ed-diptych__frame>.ed-media{outline-offset:6px}}
+/* Profil « cadran » (HEUREN) : voir la fin du fichier (maquette du 22 octobre). */
 /* ─── Profil « arrondi » (ALCÔVE, issue #155) : sable et terre cuite, serif douce, arches, coins arrondis, boutons en
    pastille ; les sur-titres en italique de la serif. */
 body[data-editorial="arrondi"]{--radius-button:999px;--radius-card:24px}
@@ -179,8 +164,6 @@ body[data-editorial="arrondi"] .es-product__thumb,body[data-editorial="arrondi"]
 body[data-editorial="arrondi"] .es-header{min-height:76px}
 /* Repères sur le produit (issue #155) : la photo garde son format d'origine (vue carrée chez HEUREN, scène 16:9 chez
    ALCÔVE) pour que chaque repère tombe exactement sur le détail qu'il nomme, à toutes les largeurs. */
-body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__scene{max-width:760px;margin-inline:auto}
-body[data-editorial="cadran"] .fs-lookbook--markers .fs-look__media .ed-media{aspect-ratio:1}
 body[data-editorial="arrondi"] .fs-lookbook--side .fs-look__media .ed-media{aspect-ratio:16/9}
 /* ─── Profil « studio » (ONDE, refonte E-commerce de l'issue #158) : graphite profond, vert signal, titres Chivo serrés,
    cadres nets à petits rayons, filets verts ; une boutique technique sombre, le produit éclairé comme en studio. */
@@ -221,6 +204,9 @@ body[data-editorial="studio"] .fs-camp--background .fs-camp__media .ed-media{asp
    sous l'en-tête (hauteur réelle mesurée, repli 120 px ; svh suit la barre du navigateur mobile), titre court et bouton
    posés sur l'image avec un voile pour le contraste. Image dédiée et cadrage propres au téléphone (texte en haut). */
 .ed-opening--fullscreen{padding:0!important}
+/* Bandeau photo (maquette HEUREN du 22 octobre) : même photo pleine largeur que « Plein écran », sur une hauteur de bandeau
+   à l'ordinateur ; au téléphone, le premier écran entier (texte en haut, produit dessous). */
+@media(min-width:750px){.ed-opening--banner .ed-shell{min-height:clamp(520px,64vh,720px)!important;align-items:center!important}}
 .ed-opening--fullscreen .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:flex-end;min-height:max(520px,calc(100vh - var(--es-header-bottom,120px)));min-height:max(520px,calc(100svh - var(--es-header-bottom,120px)))}
 .ed-opening--fullscreen .ed-opening__media{position:absolute;inset:0;z-index:0;height:auto}
 .ed-opening--fullscreen .ed-opening__media .ed-media,.ed-opening--fullscreen .ed-opening__media picture{height:100%;aspect-ratio:auto;border-radius:0}
@@ -326,3 +312,380 @@ body[data-editorial="poudre"] .es-button--secondary{background:transparent;color
   body[data-editorial="poudre"] .es-product__title{font-size:clamp(1.4rem,6.6vw,1.8rem);line-height:1.05;margin-bottom:2px}
   body[data-editorial="poudre"] .es-product__price{margin-bottom:8px}
 }
+/* ─── Ouverture « Cartouche » (différenciation du 22 octobre, Atelier Rive) : la pièce en pleine largeur sur tout le premier
+   écran, le titre dans un cartouche plein de la couleur de la section posé en bas à gauche, comme une couverture de
+   magazine ; sur téléphone, la photo en grand puis le cartouche qui la chevauche. */
+.ed-section.ed-opening--cartouche{padding:0}
+.ed-section.ed-opening--cartouche .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:flex-end;min-height:max(560px,calc(100vh - var(--es-header-bottom,120px)));min-height:max(560px,calc(100svh - var(--es-header-bottom,120px)))}
+.ed-section.ed-opening--cartouche .ed-opening__media{position:absolute;inset:0;height:auto;z-index:0}
+.ed-section.ed-opening--cartouche .ed-opening__media .ed-media,.ed-section.ed-opening--cartouche .ed-opening__media picture{height:100%;aspect-ratio:auto;border-radius:0}
+.ed-section.ed-opening--cartouche .ed-opening__media picture .ed-image{height:100%}
+.ed-section.ed-opening--cartouche .ed-opening__copy{position:relative;z-index:1;display:block;max-width:none;width:min(620px,calc(100% - 40px));margin:0 0 clamp(32px,6vh,72px) max(clamp(20px,4vw,64px),calc((100vw - 1344px)/2));padding:clamp(28px,3.2vw,52px);background:var(--c-bg);color:var(--c-text);box-shadow:0 24px 60px -32px rgba(0,0,0,.45)}
+.ed-section.ed-opening--cartouche .ed-opening__title{font-size:clamp(44px,4.4vw,72px);max-width:12ch;line-height:1.02;margin:0 0 20px}
+.ed-section.ed-opening--cartouche .ed-opening__copy .ed-prose{max-width:44ch}
+.ed-section.ed-opening--cartouche .ed-caption{position:absolute;right:16px;bottom:12px;z-index:1;color:#fff}
+@media(max-width:749px){
+  .ed-section.ed-opening--cartouche .ed-shell{display:flex;flex-direction:column;align-items:stretch;min-height:0}
+  .ed-section.ed-opening--cartouche .ed-opening__media{order:-1;position:relative;inset:auto;height:min(84vw,42vh);height:min(84vw,42svh)}
+  .ed-section.ed-opening--cartouche .ed-opening__copy{width:auto;margin:-48px 16px 0;padding:20px 20px 24px}
+  .ed-section.ed-opening--cartouche .ed-kicker{margin-bottom:10px}
+  .ed-section.ed-opening--cartouche .ed-opening__title{font-size:clamp(32px,9.4vw,40px);margin-bottom:12px}
+  .ed-section.ed-opening--cartouche .ed-opening__copy .ed-prose{font-size:15px;line-height:1.5}
+  .ed-section.ed-opening--cartouche .ed-opening__copy .ed-button{margin-top:12px}
+}
+/* ─── Bandeau photo pleine largeur (« ed-scene », disposition « band », maquette HEUREN du 22 octobre) : la photographie
+   occupe toute la largeur, le texte se pose à gauche ou à droite, voile de la couleur de la section sous le texte. Sur
+   téléphone, la photo garde sa hauteur et le texte reste en haut, au-dessus du voile. */
+.ed-section.ed-scene--band{padding:0}
+.ed-scene--h-medium{--band-h:clamp(380px,40vw,560px)}
+.ed-scene--h-tall{--band-h:clamp(460px,46vw,680px)}
+.ed-scene--h-screen{--band-h:max(520px,calc(100svh - var(--es-header-bottom,96px)))}
+.ed-scene--band .ed-shell{width:100%;max-width:none;position:relative;display:flex;align-items:center;min-height:var(--band-h)}
+.ed-scene--band .ed-scene__media{position:absolute;inset:0;z-index:0}
+.ed-scene--band .ed-scene__media>.ed-media,.ed-scene--band .ed-scene__media picture{height:100%;max-width:none;margin:0;aspect-ratio:auto;border-radius:0}
+.ed-scene--band .ed-scene__media picture .ed-image{height:100%}
+.ed-scene--band .ed-scene__media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,color-mix(in srgb,var(--c-bg) 82%,transparent) 0%,color-mix(in srgb,var(--c-bg) 46%,transparent) 34%,transparent 60%)}
+.ed-scene--band.ed-scene--text-right .ed-scene__media::after{background:linear-gradient(270deg,color-mix(in srgb,var(--c-bg) 82%,transparent) 0%,color-mix(in srgb,var(--c-bg) 46%,transparent) 34%,transparent 60%)}
+.ed-scene--band.ed-scene--clear .ed-scene__media::after{display:none}
+.ed-scene--band .ed-scene__copy{position:relative;z-index:1;width:min(1320px,calc(100% - 2*clamp(20px,4vw,64px)));margin:0 auto;padding:clamp(40px,6vw,88px) 0;display:flex;flex-direction:column;align-items:flex-start}
+.ed-scene--band.ed-scene--text-right .ed-scene__copy{padding-left:var(--band-x,52%)}
+.ed-scene--band .ed-scene__copy>*{max-width:min(520px,100%)}
+.ed-scene--band .ed-title{font-size:clamp(34px,3.6vw,58px);line-height:1.08;margin:0 0 16px;white-space:pre-line}
+.ed-scene--band .ed-prose{margin:0}
+.ed-scene--band .ed-button,.ed-scene--band .ed-scene__link{margin-top:24px}
+.ed-scene__link{display:inline-flex;gap:10px;align-items:center;font-size:15px}
+.ed-scene--band .ed-caption{position:absolute;left:clamp(20px,4vw,64px);bottom:14px;z-index:1;margin:0;font-size:12px;opacity:.8}
+.ed-scene__links{display:flex;flex-wrap:wrap;gap:0;list-style:none;padding:0;margin:clamp(24px,4vw,48px) 0 0}
+.ed-scene__links li{padding:0 22px}
+.ed-scene__links li:first-child{padding-left:0}
+.ed-scene__links li+li{border-left:1px solid color-mix(in srgb,currentColor 35%,transparent)}
+.ed-scene__links a,.ed-scene__links span{display:inline-block;color:inherit;text-decoration:none;font-size:14px;padding-bottom:8px;border-bottom:1px solid currentColor}
+.ed-scene__links a:hover,.ed-scene__links a:focus-visible{opacity:.75}
+@media(max-width:749px){
+  .ed-scene--band .ed-shell{align-items:flex-start;min-height:min(var(--band-h),128vw)}
+  .ed-scene--h-screen{--band-h:min(640px,calc(100svh - var(--es-header-bottom,96px)))}
+  .ed-scene--band .ed-scene__media::after,.ed-scene--band.ed-scene--text-right .ed-scene__media::after{background:linear-gradient(180deg,color-mix(in srgb,var(--c-bg) 84%,transparent) 0%,color-mix(in srgb,var(--c-bg) 40%,transparent) 38%,transparent 62%)}
+  .ed-scene--band .ed-scene__copy,.ed-scene--band.ed-scene--text-right .ed-scene__copy{width:calc(100% - 40px);padding:28px 0 32px}
+  .ed-scene--band .ed-title{font-size:clamp(28px,8vw,36px);margin-bottom:10px}
+  .ed-scene--band .ed-prose{font-size:15px}
+  .ed-scene__links li{padding:0 14px}
+}
+/* ─── Triptyque plein cadre (« ed-diptych », disposition « triptych ») : trois photographies bord à bord, légende posée
+   en bas de chacune. Sur téléphone : deux côte à côte, la troisième en large dessous. */
+.ed-section.ed-diptych--triptych{padding:0}
+.ed-diptych--triptych .ed-shell{width:100%;max-width:none}
+.ed-diptych--triptych .ed-section-head{width:min(1320px,calc(100% - 40px));margin:0 auto;padding:48px 0 24px}
+.ed-diptych--triptych .ed-diptych__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.ed-diptych--triptych .ed-diptych__frame{position:relative;margin:0;aspect-ratio:4/5;overflow:hidden}
+.ed-diptych--triptych .ed-diptych__frame>.ed-media{position:absolute;inset:0;height:100%;aspect-ratio:auto;max-width:none;margin:0;border-radius:0;outline:none}
+.ed-diptych--triptych figcaption{position:absolute;left:0;right:0;bottom:0;padding:clamp(18px,2.4vw,32px);color:#fff;background:linear-gradient(0deg,rgba(6,10,20,.62) 0%,rgba(6,10,20,0) 100%)}
+.ed-diptych--triptych figcaption h3{font-size:clamp(20px,1.7vw,26px);font-weight:400;line-height:1.15;max-width:12ch;margin:0;color:#fff}
+.ed-diptych--triptych figcaption h3::after{content:"";display:block;width:32px;height:1px;background:currentColor;margin-top:14px}
+.ed-diptych--triptych figcaption .ed-prose{color:#fff;font-size:14px;margin-top:8px}
+.ed-diptych--triptych figcaption .ed-prose:empty{display:none}
+@media(max-width:749px){
+  .ed-diptych--triptych .ed-diptych__grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ed-diptych--triptych .ed-diptych__frame:nth-child(3n){grid-column:1/-1;aspect-ratio:16/10}
+  .ed-diptych--triptych figcaption{padding:16px}
+  .ed-diptych--triptych figcaption h3{font-size:18px}
+}
+/* ─── Produit à la une, disposition « Deux photos » : deux vues côte à côte, puis nom, prix, mention et deux actions. */
+.fp__grid.fp__grid--duo{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);grid-template-areas:none;gap:clamp(24px,4vw,64px);align-items:center}
+.fp-duo__media{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fp-duo__frame{margin:0;aspect-ratio:4/5;overflow:hidden;background:var(--c-surface,#f3f4f6)}
+.fp-duo__img{display:block;width:100%;height:100%;object-fit:cover}
+.fp-duo__body .fp__title{margin:0 0 12px}
+.fp-duo__note{margin:6px 0 0;font-size:13px;opacity:.6}
+.fp-duo__actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.fp-duo__actions .fp-duo__buy{flex:1 1 200px}
+.fp-duo__buy .es-option{display:none}
+.fp-duo__buy .es-buy__row{display:block}
+.fp-duo__buy .es-button{width:100%}
+.fp-duo__see{flex:1 1 180px;justify-content:center;background:transparent;color:var(--c-text);border:1px solid currentColor}
+@media(max-width:749px){.fp__grid.fp__grid--duo{grid-template-columns:minmax(0,1fr);gap:20px}.fp-duo__actions{flex-direction:column}.fp-duo__actions>*{flex:1 1 auto;width:100%}}
+
+/* ─── Profil « cadran » : HEUREN selon la maquette du 22 octobre (docs/design/heuren-reference-20261022). Fonds blanc pur
+   et bleu nuit, boutons de la couleur d'accent (champagne), titres fins sans empattement, nom en lettres espacées,
+   en-tête transparent sur l'ouverture, pied bleu nuit sur une ligne. Angles droits, aucun liseré décoratif. */
+body[data-editorial="cadran"]{--radius-button:0px;--cd-line:color-mix(in srgb,var(--c-text) 14%,transparent)}
+body[data-editorial="cadran"] :is(.ed-title,.v2-h2,.fs h2,.es-heading,.es-product__title,.fp__title,.v2-faq__col-title,.fs-look__detail .fs-item__title){font-weight:300;letter-spacing:-.005em}
+body[data-editorial="cadran"] :is(.ed-kicker,.fs .fs-eyebrow,.es-eyebrow,.v2-eyebrow){text-transform:uppercase;letter-spacing:.28em;font-size:11px;font-weight:500;color:color-mix(in srgb,var(--c-text) 66%,transparent)}
+body[data-editorial="cadran"] :is(.ed-button,.es-button,.fs-button):not(.es-button--secondary):not(.fp-duo__see){border-radius:0;text-transform:none;letter-spacing:.01em;font-size:14px;font-weight:400;min-height:48px;padding:13px 26px;gap:16px;background:var(--c-accent);border-color:var(--c-accent);color:#14203a}
+body[data-editorial="cadran"] :is(.ed-button,.es-button):not(:disabled):hover{filter:brightness(1.06)}
+body[data-editorial="cadran"] .ed-button>span[aria-hidden]{font-size:0}
+body[data-editorial="cadran"] .ed-button>span[aria-hidden]::after{content:"→";font-size:15px}
+body[data-editorial="cadran"] .fp-duo__see{min-height:48px;padding:13px 26px;font-size:14px;font-weight:400;letter-spacing:.01em;text-transform:none;border-radius:0;border:1px solid currentColor;background:transparent;color:var(--c-text)}
+body[data-editorial="cadran"] .fp-duo__see>span[aria-hidden]{display:none}
+/* En-tête : nom en lettres espacées à gauche, menu au centre, icônes à droite ; transparent sur l'ouverture. */
+body[data-editorial="cadran"] .es-header{border-bottom:1px solid var(--cd-line)}
+body[data-editorial="cadran"] .es-header--transparent{border-bottom-color:transparent;background:linear-gradient(180deg,rgba(8,12,24,.45),rgba(8,12,24,0))}
+body[data-editorial="cadran"] .es-header--transparent.is-scrolled{background:var(--c-bg)}
+body[data-editorial="cadran"] .es-header .es-header__wordmark{letter-spacing:.42em;text-transform:uppercase;font-size:19px;font-weight:400;font-family:var(--font-body)}
+body[data-editorial="cadran"] .es-header--transparent .es-icon-button{background:transparent;border-color:transparent}
+body[data-editorial="cadran"] .es-header__nav a,body[data-editorial="cadran"] .es-header__menu a{font-size:13px;letter-spacing:.02em}
+/* Ouverture plein écran : titre en capitales fines, texte au milieu à gauche, voile bleu nuit du côté du texte. */
+body[data-editorial="cadran"] .ed-opening--fullscreen .ed-shell{align-items:center}
+body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__media::after{background:linear-gradient(90deg,rgba(9,14,28,.74) 0%,rgba(9,14,28,.38) 38%,rgba(9,14,28,0) 62%)}
+body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__title{text-transform:uppercase;font-weight:300;font-size:clamp(44px,5.2vw,80px);line-height:1.02;letter-spacing:.005em;max-width:12ch;white-space:pre-line}
+body[data-editorial="cadran"] .ed-opening--fullscreen .ed-prose{font-size:clamp(16px,1.3vw,19px);font-weight:300}
+body[data-editorial="cadran"] .ed-opening--fullscreen .ed-button{background:var(--c-accent);border-color:var(--c-accent);color:#14203a}
+/* Bandeaux photo : grands titres fins. */
+body[data-editorial="cadran"] .ed-scene--band .ed-title{font-size:clamp(36px,4vw,64px);line-height:1.06}
+body[data-editorial="cadran"] .ed-scene--band.ed-scene--h-medium .ed-title{font-size:clamp(32px,3.2vw,48px)}
+body[data-editorial="cadran"] .ed-scene--band .ed-title::after,body[data-editorial="cadran"] .fs-commitments--aside .fs-head h2::after,body[data-editorial="cadran"] .v2-faq--side .v2-h2::after{content:"";display:block;width:40px;height:1px;background:currentColor;margin-top:22px;opacity:.8}
+body[data-editorial="cadran"] .ed-scene--band:has(.ed-scene__links) .ed-title::after,body[data-editorial="cadran"] .ed-scene--band:has(.ed-prose p) .ed-title::after,body[data-editorial="cadran"] .ed-scene--band:has(.ed-button) .ed-title::after,body[data-editorial="cadran"] .ed-scene--band:has(.ed-scene__link) .ed-title::after{display:none}
+/* « Vous hésitez ? Prenons le temps. » : deux lignes de même graisse, sans italique. */
+body[data-editorial="cadran"] .fs-head .ed-accent,body[data-editorial="cadran"] .fs-head em{font-style:normal;color:inherit;display:block}
+body[data-editorial="cadran"] .fs-commitments--aside .fs-head h2{font-size:clamp(30px,2.8vw,42px);line-height:1.12;margin:0}
+body[data-editorial="cadran"] .fs-commit__list--strip .fs-commit__go>span{display:none}
+body[data-editorial="cadran"] .fs-commit__list--strip .fs-commit__icon,body[data-editorial="cadran"] .fs-commit__list--aside .fs-commit__icon{background:transparent;border:0;width:auto;height:auto}
+/* Produit à la une « Deux photos » : vues sur gris très clair, nom fin. */
+body[data-editorial="cadran"] .fp-duo__frame{background:#F3F4F6}
+body[data-editorial="cadran"] .fp-duo__body .fp__title{font-size:clamp(28px,2.4vw,38px)}
+body[data-editorial="cadran"] .fp-duo__body .fp__price{font-size:20px}
+/* Questions : titre à gauche, filets fins. */
+body[data-editorial="cadran"] .v2-faq__item{border-color:var(--cd-line)}
+body[data-editorial="cadran"] .v2-faq--side .v2-h2{font-size:clamp(30px,2.6vw,40px);max-width:9ch}
+/* Pied bleu nuit : nom espacé à gauche, liens sur une ligne. */
+body[data-editorial="cadran"] .es-footer .es-footer__wordmark,body[data-editorial="cadran"] .es-footer__brand{letter-spacing:.42em;text-transform:uppercase;font-weight:400}
+@media(max-width:749px){
+  body[data-editorial="cadran"] .ed-opening--fullscreen .ed-shell{align-items:flex-start}
+  /* En-tête transparent : le contenu principal commence sous la seule barre d'annonce (--es-header-bottom), la barre de
+     l'en-tête (64 px) passe par-dessus l'ouverture ; le texte commence dessous. */
+  body[data-editorial="cadran"]:has(.es-header--transparent) .ed-opening--fullscreen .ed-opening__copy{padding-top:calc(var(--es-header-bottom,0px) + 82px)}
+  body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__title{font-size:clamp(32px,9.6vw,42px)}
+  body[data-editorial="cadran"] .ed-opening--fullscreen .ed-opening__media::after{background:linear-gradient(180deg,rgba(9,14,28,.72) 0%,rgba(9,14,28,.32) 40%,rgba(9,14,28,0) 62%)}
+  body[data-editorial="cadran"] .es-header .es-header__wordmark{font-size:16px;letter-spacing:.36em}
+}
+body[data-editorial="cadran"] .es-product__media,body[data-editorial="cadran"] .es-product__gallery{background:#F3F4F6}
+body[data-editorial="cadran"] .es-product__media img,body[data-editorial="cadran"] .es-product__slide img{border-radius:0}
+/* Contact (maquette) : titre, texte et formulaire à gauche ; la photographie à droite sur toute la hauteur. */
+body[data-editorial="cadran"] .ed-contact{padding:0}
+body[data-editorial="cadran"] .ed-contact .ed-contact__grid{width:100%;max-width:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto 1fr;gap:0}
+body[data-editorial="cadran"] .ed-contact__grid>header{display:contents}
+body[data-editorial="cadran"] .ed-contact__grid>header>:not(.ed-contact__image),body[data-editorial="cadran"] .ed-contact__grid>[data-ed-contact]{grid-column:1;padding-inline:max(20px,calc((100vw - 1320px)/2)) clamp(24px,5vw,80px)}
+body[data-editorial="cadran"] .ed-contact__grid>header>.ed-kicker:empty{display:none}
+body[data-editorial="cadran"] .ed-contact__grid>header>.ed-title{margin-top:clamp(40px,6vw,88px)}
+body[data-editorial="cadran"] .ed-contact__grid>[data-ed-contact]{padding-bottom:clamp(40px,6vw,88px)}
+body[data-editorial="cadran"] .ed-contact__image{grid-column:2;grid-row:1/span 4;width:auto;margin:0;aspect-ratio:auto;min-height:100%}
+body[data-editorial="cadran"] .ed-contact__image>.ed-media{height:100%;aspect-ratio:auto;outline:none}
+body[data-editorial="cadran"] .ed-form :is(input,select,textarea){border:1px solid var(--cd-line);padding:12px 14px}
+body[data-editorial="cadran"] .ed-form .ed-button{width:100%;justify-content:center}
+/* Menu mobile plein écran (maquette) : grands liens fins sur le schéma choisi dans l'en-tête, filets clairs. */
+body[data-editorial="cadran"] .es-mobile-menu--fullscreen .es-mobile-menu__list a{font-weight:300}
+/* Panier (maquette) : lignes sur filets, récapitulatif encadré ; panier vide avec la montre, un titre fin et un bouton. */
+body[data-editorial="cadran"] .es-cart__title{font-weight:300;font-size:clamp(34px,3.4vw,48px);margin-bottom:6px}
+body[data-editorial="cadran"] .es-cart__intro{margin:0 0 32px}
+body[data-editorial="cadran"] .es-cart__summary{border:1px solid var(--cd-line);padding:24px;border-radius:0}
+body[data-editorial="cadran"] .es-line-item__media img{background:#F3F4F6}
+body[data-editorial="cadran"] .es-cart__empty{text-align:center;max-width:520px;margin:24px auto 0}
+body[data-editorial="cadran"] .es-cart__empty-media{width:min(220px,60%);margin:0 auto 24px}
+body[data-editorial="cadran"] .es-cart__empty-media .ed-media{aspect-ratio:1;background:transparent}
+body[data-editorial="cadran"] .es-cart__empty-media .ed-image{object-fit:contain}
+body[data-editorial="cadran"] .es-cart__empty-title{font-weight:300;font-size:clamp(28px,3vw,40px);line-height:1.15;margin:0 0 10px}
+body[data-editorial="cadran"] .es-cart__empty-text{margin:0 0 24px}
+body[data-editorial="cadran"] .es-button.es-button--secondary{border-radius:0;text-transform:none;letter-spacing:.01em;font-size:14px;font-weight:400;min-height:48px;background:transparent;border:1px solid var(--cd-line);color:inherit}
+body[data-editorial="cadran"] .es-line-item{border-bottom:1px solid var(--cd-line);padding-bottom:20px}
+body[data-editorial="cadran"] .es-cart__qty{border-radius:0;border-color:var(--cd-line);margin-top:10px}
+body[data-editorial="cadran"] .es-line-item__remove{font-size:13px;text-decoration:underline;text-underline-offset:4px}
+body[data-editorial="cadran"] .es-line-item__total{white-space:nowrap}
+body[data-editorial="cadran"] .es-line-item__title{font-weight:400}
+/* Livraison et retours (maquette) : cartes encadrées sur deux colonnes, pictogramme à gauche, note de démonstration teintée. */
+body[data-editorial="cadran"] .fs-commit__list--grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-commit__item{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;border:1px solid var(--cd-line);border-top:1px solid var(--cd-line);padding:28px;border-radius:0;background:transparent}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-commit__icon{margin:0}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-item__title{font-weight:400;font-size:20px;margin:0 0 8px}
+body[data-editorial="cadran"] .fs-commit__list--grid .fs-meta{display:block;margin-top:16px;padding:10px 14px;background:color-mix(in srgb,var(--c-accent) 18%,transparent);font-size:13px;letter-spacing:0;text-transform:none}
+@media(max-width:749px){body[data-editorial="cadran"] .fs-commit__list--grid{grid-template-columns:1fr}}
+/* Boutique : la montre seule, carte large. */
+body[data-editorial="cadran"] .es-collection__title,body[data-editorial="cadran"] .es-collection h1{font-weight:300}
+@media(max-width:749px){
+  body[data-editorial="cadran"] .ed-contact .ed-contact__grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none}
+  body[data-editorial="cadran"] .ed-contact__image{grid-column:1;grid-row:auto;order:5;aspect-ratio:4/3;min-height:0}
+  body[data-editorial="cadran"] .ed-contact__grid>header>:not(.ed-contact__image),body[data-editorial="cadran"] .ed-contact__grid>[data-ed-contact]{padding-inline:20px}
+}
+/* ─── Premier échange : champs supplémentaires, erreurs utiles, envoi en cours, succès (tous profils) ──────────────── */
+.ed-form__row{display:contents}
+.ed-field{display:grid;gap:6px}
+.ed-field__error{font-size:13px;color:#A12A2A}
+.ed-form [aria-invalid="true"]{border-color:#A12A2A!important;box-shadow:0 0 0 1px #A12A2A}
+.ed-consent{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:13px;line-height:1.45}
+.ed-consent input{width:18px;height:18px;margin:2px 0 0}
+.ed-consent .ed-field__error{grid-column:1 / -1}
+.ed-files__zone{position:relative;display:grid;gap:4px;justify-items:center;padding:18px 14px;border:1px dashed color-mix(in srgb,var(--c-text) 35%,transparent);text-align:center;font-size:14px}
+.ed-files__zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ed-files__zone:focus-within{outline:2px solid var(--c-accent);outline-offset:2px}
+.ed-files__hint{font-size:12px;opacity:.7}
+.ed-files__list{font-size:13px}
+[data-ed-contact].is-sending .ed-button{opacity:.75;cursor:progress}
+[data-ed-contact].is-failed [data-contact-status]{color:#A12A2A}
+.ed-form[hidden]{display:none!important}
+.ed-form__done{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:20px 22px;border:1px solid color-mix(in srgb,var(--c-text) 20%,transparent)}
+.ed-form__done svg{width:36px;height:36px;fill:var(--c-accent);stroke:var(--c-accent-text,#fff);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ed-form__done svg path{fill:none}
+.ed-form__done p{margin:0}
+
+/* ─── Profil « journal » (maquettes de services du 23 octobre) : fonds blancs, serif fine contrastée
+   (Newsreader), corps Inter, boutons prune pleins, grandes photos sans arrondi, filets fins. ──────────────────────── */
+body[data-editorial="journal"]{--rv-line:color-mix(in srgb,var(--c-text) 16%,transparent);--rv-muted:color-mix(in srgb,var(--c-text) 72%,transparent)}
+body[data-editorial="journal"] .ed-shell{width:min(1240px,calc(100% - 2*clamp(20px,7vw,100px)))}
+body[data-editorial="journal"] .es-container{max-width:1240px;padding-inline:0;width:min(1240px,calc(100% - 2*clamp(20px,7vw,100px)))}
+body[data-editorial="journal"] :is(.ed-title,.es-heading,.fs-head .ed-title,.es-h2,.es-h3,.es-h4){font-family:var(--font-heading);font-weight:400;letter-spacing:-.012em;text-transform:none}
+body[data-editorial="journal"] :is(.ed-button,.es-button){border-radius:0;text-transform:none;letter-spacing:.01em;font-size:14px;font-weight:400;min-height:46px;padding:12px 24px;gap:12px;background:var(--c-accent);border:1px solid var(--c-accent);color:var(--c-accent-text);box-shadow:none}
+body[data-editorial="journal"] :is(.ed-button,.es-button) span[aria-hidden]{display:none}
+body[data-editorial="journal"] :is(.ed-button,.es-button)::after{content:"→";font-size:15px;line-height:1}
+body[data-editorial="journal"] .es-button .es-icon{display:none}
+body[data-editorial="journal"] :is(.es-button--secondary,.ed-button--ghost){background:transparent;color:var(--c-text);border-color:currentColor}
+/* En-tête blanc : nom de l'atelier en serif, navigation centrée, bouton prune plein. */
+body[data-editorial="journal"] .es-header{border-bottom:1px solid var(--rv-line)}
+body[data-editorial="journal"] .es-header__inner{min-height:72px}
+body[data-editorial="journal"] .es-header .es-header__wordmark{font-family:var(--font-heading);font-size:27px;font-weight:400;letter-spacing:-.01em;text-transform:none}
+body[data-editorial="journal"] .es-header__cta{background:var(--c-accent);color:var(--c-accent-text);border:1px solid var(--c-accent);border-radius:0;font-size:13px;letter-spacing:.01em;text-transform:none;font-weight:400;padding:10px 20px;min-height:42px}
+body[data-editorial="journal"] .es-header__cta::after{content:none}
+body[data-editorial="journal"] .es-nav__link{font-size:14px;letter-spacing:0;text-transform:none}
+@media(min-width:990px){
+  body[data-editorial="journal"] .es-header--logo-left .es-header__inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+  body[data-editorial="journal"] .es-header--logo-left .es-header__nav{justify-self:center}
+  body[data-editorial="journal"] .es-header--logo-left .es-header__icons{justify-self:end}
+}
+/* Ouverture : la photo sur toute la largeur, titre serif blanc, deux boutons. */
+body[data-editorial="journal"] .ed-opening--banner .ed-shell{width:100%;min-height:clamp(480px,40vw,600px)!important;align-items:center!important}
+body[data-editorial="journal"] .ed-opening--banner .ed-opening__copy{width:min(1240px,calc(100% - 2*clamp(20px,7vw,100px)));padding:0}
+body[data-editorial="journal"] .ed-opening--banner .ed-opening__title{font-size:clamp(56px,7.4vw,108px);line-height:.95;letter-spacing:-.02em;max-width:9ch;margin-bottom:22px;text-transform:none}
+body[data-editorial="journal"] .ed-opening--banner .ed-prose{font-size:clamp(17px,1.5vw,22px);margin-bottom:28px}
+body[data-editorial="journal"] .ed-opening--banner .ed-opening__media::after{background:linear-gradient(90deg,rgba(20,12,10,.55) 0%,rgba(20,12,10,.25) 40%,rgba(20,12,10,0) 62%)}
+body[data-editorial="journal"] .ed-opening__actions{display:flex;flex-wrap:wrap;gap:12px}
+body[data-editorial="journal"] .ed-opening--banner .ed-button--ghost{color:#fff;border-color:rgba(255,255,255,.8);background:rgba(255,255,255,.04)}
+body[data-editorial="journal"] .ed-opening--banner .ed-button--ghost::after{content:"↓"}
+/* Titres de section : serif, deux lignes, filet vertical avant le texte de droite. */
+body[data-editorial="journal"] :is(.fs-head .ed-title,.es-svc__head .es-heading,.es-timeline__heading,.es-folio__head .es-heading){font-size:clamp(32px,3.4vw,50px);line-height:1.08;margin:0}
+body[data-editorial="journal"] .fs-needs--row .fs-head .ed-title{max-width:none}
+body[data-editorial="journal"] .fs-needs--row .ed-prose{font-size:15px;color:var(--rv-muted);max-width:42ch}
+body[data-editorial="journal"] .fs-needs__list--row .fs-item__title{font-family:var(--font-heading);font-weight:400;font-size:21px;margin:4px 0 6px}
+body[data-editorial="journal"] .fs-needs__list--row .fs-item__text{font-size:14px;color:var(--rv-muted)}
+body[data-editorial="journal"] .fs-needs__list--row .fs-commit__icon{width:56px;height:56px;border:0;border-radius:0;background:none}
+body[data-editorial="journal"] .fs-needs__list--row .fs-commit__icon svg{width:46px;height:46px;stroke-width:1;color:var(--c-text)}
+body[data-editorial="journal"] .es-timeline--columns .es-timeline__heading{text-align:left;margin:0}
+/* Galerie asymétrique : photos sans arrondi, légendes serif, flèche à droite ; « Voir tous les projets » en lien. */
+body[data-editorial="journal"] .es-folio__media{border-radius:0}
+body[data-editorial="journal"] .es-folio__title{font-family:var(--font-heading);font-weight:400;font-size:clamp(19px,1.5vw,22px)}
+body[data-editorial="journal"] .es-folio--kicker .es-folio__text{color:var(--rv-muted)}
+body[data-editorial="journal"] .es-folio--asym .es-folio__item:hover .es-cover{transform:none}
+body[data-editorial="journal"] .es-folio--asym>.es-container>.es-actions{justify-content:flex-end;margin-top:12px}
+body[data-editorial="journal"] .es-folio--asym>.es-container>.es-actions .es-button{background:none;border:0;border-bottom:1px solid currentColor;padding:2px 0;min-height:0;color:var(--c-text);font-size:14px}
+body[data-editorial="journal"] .es-folio__head{margin-bottom:clamp(20px,3vw,36px)}
+body[data-editorial="journal"] .es-folio__head .es-lead{font-size:15px;color:var(--rv-muted);max-width:52ch}
+body[data-editorial="journal"] .es-folio__filters{gap:28px;grid-column:1 / -1}
+body[data-editorial="journal"] .es-folio__filter{min-height:0;padding:6px 0;border:0;border-bottom:1px solid transparent;border-radius:0;font-size:14px;color:var(--rv-muted);background:none}
+body[data-editorial="journal"] .es-folio__filter.is-active{background:none;color:var(--c-text);border-bottom-color:var(--c-text)}
+body[data-editorial="journal"] .es-folio--asym .es-folio__link{font-size:13px}
+@media(min-width:750px){body[data-editorial="journal"] .es-folio--asym .es-folio__media{aspect-ratio:16/6.4}}
+body[data-editorial="journal"] .es-timeline__side--media{aspect-ratio:16/9}
+/* Prestations : miniatures, cartes illustrées sans fond, listes courtes, boutons encadrés. */
+body[data-editorial="journal"] .es-svc__head--split{margin-bottom:clamp(24px,3.4vw,44px)}
+body[data-editorial="journal"] .es-svc__head--split .es-svc__intro{font-size:15px;color:var(--rv-muted)}
+@media(min-width:750px){body[data-editorial="journal"] .es-svc__head--split{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center}body[data-editorial="journal"] .es-svc__head--split .es-svc__intro{padding-left:clamp(20px,2.4vw,32px);border-left:1px solid var(--rv-line)}}
+/* Retours à la ligne des maquettes : un saut de ligne dans un titre est respecté. */
+body[data-editorial="journal"] :is(.ed-title,.es-heading,.es-about__title){white-space:pre-line}
+body[data-editorial="journal"] .es-svc__item{background:none;border:0;border-radius:0;box-shadow:none;transform:none}
+body[data-editorial="journal"] .es-svc__title{font-family:var(--font-heading);font-weight:400;font-size:clamp(20px,1.6vw,24px);margin:0}
+body[data-editorial="journal"] .es-svc__text{font-size:14px;color:var(--rv-muted)}
+body[data-editorial="journal"] .es-svc__text ul{margin:10px 0 0;padding-left:18px}
+body[data-editorial="journal"] .es-svc--cards .es-svc__body{padding:16px 0 0}
+body[data-editorial="journal"] .es-svc--cards .es-svc__action{padding:16px 0 0}
+body[data-editorial="journal"] .es-svc--cards .es-svc__media{aspect-ratio:16/9;border-radius:0}
+body[data-editorial="journal"] .es-svc--cards .es-svc__list{gap:clamp(24px,3vw,44px)}
+body[data-editorial="journal"] .es-svc--cards .es-svc__item+.es-svc__item{border-left:1px solid var(--rv-line);padding-left:clamp(12px,1.6vw,22px)}
+body[data-editorial="journal"] .es-svc__button{background:transparent;color:var(--c-text);border-color:var(--c-text);min-width:190px;justify-content:center}
+body[data-editorial="journal"] .es-svc__button::after{content:none}
+body[data-editorial="journal"] .es-svc--thumbs .es-svc__link{color:var(--c-text)}
+body[data-editorial="journal"] .es-svc__media .es-cover,body[data-editorial="journal"] .es-svc__item:hover .es-svc__media .es-cover{transform:none}
+/* Méthode : numéros serif, titres serif, textes courts ; photo ou encart à droite. */
+body[data-editorial="journal"] .es-timeline--columns .es-timeline__num{font-family:var(--font-heading);font-size:20px;letter-spacing:0;font-weight:400;color:var(--c-text)}
+body[data-editorial="journal"] .es-timeline__col-title{font-family:var(--font-heading);font-weight:400;font-size:21px}
+body[data-editorial="journal"] .es-timeline__col+.es-timeline__col{border-left:1px solid var(--rv-line);padding-left:16px}
+body[data-editorial="journal"] .es-timeline__side--aside .es-h4{font-family:var(--font-heading);font-weight:400;font-size:22px;margin:0}
+body[data-editorial="journal"] .es-timeline__aside-text{font-size:14px;color:var(--rv-muted);margin:0}
+/* Bandeau photo : pleine largeur, texte serif blanc à gauche. */
+body[data-editorial="journal"] .ed-scene--band .ed-shell{width:100%}
+body[data-editorial="journal"] .ed-scene--band .ed-title{font-size:clamp(30px,2.9vw,44px);line-height:1.1;max-width:24ch;color:#fff}
+body[data-editorial="journal"] .ed-scene--band.ed-scene--h-medium{--band-h:clamp(240px,18vw,280px)}
+/* Questions : titre à gauche, questions courtes sur filets. */
+body[data-editorial="journal"] .es-faq .es-heading{font-size:clamp(28px,2.4vw,36px)}
+body[data-editorial="journal"] .es-faq summary,body[data-editorial="journal"] .es-faq__q{font-size:14px;font-weight:400}
+/* Bandeau prune : titre serif blanc, filet, texte et bouton blanc. */
+body[data-editorial="journal"] .es-cta--split .es-heading{font-size:clamp(32px,3.2vw,46px);line-height:1.1;font-weight:400}
+body[data-editorial="journal"] .es-cta--split .es-lead{font-size:15px;margin-bottom:18px}
+body[data-editorial="journal"] .es-cta--split .es-button{background:#fff;color:var(--c-bg);border-color:#fff}
+/* Carte d'appel (pages intérieures) : filet fin, petite photo, bouton prune. */
+body[data-editorial="journal"] .es-cta__card{border-color:var(--rv-line)}
+body[data-editorial="journal"] .es-cta__copy .es-h4{font-size:22px}
+body[data-editorial="journal"] .es-cta__copy .es-rte{color:var(--rv-muted)}
+/* Ouverture des pages intérieures : titre serif à gauche, photo à droite jusqu'au bord. */
+body[data-editorial="journal"] .ed-scene--split .ed-title{font-size:clamp(38px,3.8vw,56px);line-height:1.06;letter-spacing:-.015em}
+@media(min-width:990px){
+  body[data-editorial="journal"] .ed-scene--split .ed-shell{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:clamp(32px,4vw,64px);align-items:center}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__copy{grid-column:1;grid-row:1}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__media{grid-column:2;grid-row:1;margin-right:calc(-1 * max(20px,(100vw - 1240px) / 2))}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__media>.ed-media{aspect-ratio:16/7.6;height:auto}
+}
+body[data-editorial="journal"] .ed-scene--split .ed-kicker:empty{display:none}
+body[data-editorial="journal"] .ed-scene--split .ed-kicker{font-family:var(--font-heading);font-style:italic;text-transform:none;letter-spacing:0;font-size:18px}
+/* L'atelier : photo large, titre, présentation, valeurs illustrées. */
+body[data-editorial="journal"] .es-about__title{font-size:clamp(36px,3.6vw,52px);line-height:1.08;letter-spacing:-.015em;font-weight:400}
+body[data-editorial="journal"] .es-about__card{background:none;border:0;padding:0;box-shadow:none}
+body[data-editorial="journal"] .es-about__card-title{font-family:var(--font-heading);font-weight:400;font-size:20px;margin:0 0 6px}
+body[data-editorial="journal"] .es-about__card-text{font-size:14px;color:var(--rv-muted)}
+/* Détail de projet. */
+body[data-editorial="journal"] .fs-case--detail .fs-head .ed-prose{font-size:13px;color:var(--rv-muted)}
+body[data-editorial="journal"] .fs-case__label{font-family:var(--font-heading)}
+body[data-editorial="journal"] .fs-case__detail .fs-item__text{font-size:14px;color:var(--rv-muted)}
+/* Contact : titre et formulaire à gauche, photo verticale à droite. */
+body[data-editorial="journal"] .ed-contact .ed-kicker:empty{display:none}
+body[data-editorial="journal"] .es-about--stacked .es-about__values{margin-top:clamp(24px,3vw,40px)}
+body[data-editorial="journal"] .es-about__card-media{aspect-ratio:16/10}
+body[data-editorial="journal"] .ed-contact .ed-title{font-size:clamp(38px,3.8vw,56px);line-height:1.06}
+body[data-editorial="journal"] .ed-form{display:grid;gap:16px}
+body[data-editorial="journal"] .ed-form :is(input:not([type=checkbox]):not([type=file]),select,textarea){border:1px solid var(--rv-line);border-radius:0;padding:12px 14px;font-size:14px;background:#fff;width:100%}
+body[data-editorial="journal"] .ed-field__label{font-size:13px}
+@media(min-width:750px){body[data-editorial="journal"] .ed-form__row{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:16px}}
+@media(min-width:990px){
+  body[data-editorial="journal"] .ed-contact__grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;gap:16px clamp(32px,4vw,64px);align-items:start}
+  body[data-editorial="journal"] .ed-contact__grid>header{display:contents}
+  body[data-editorial="journal"] .ed-contact__grid>header>:not(.ed-contact__image){grid-column:1}
+  body[data-editorial="journal"] .ed-contact__image{grid-column:2;grid-row:1 / span 6;margin:0 calc(-1 * max(20px,(100vw - 1240px) / 2)) 0 0;width:auto}
+  body[data-editorial="journal"] .ed-contact__image>.ed-media{height:100%;width:100%;aspect-ratio:auto;min-height:680px}
+  body[data-editorial="journal"] .ed-contact__grid>[data-ed-contact]{grid-column:1}
+  body[data-editorial="journal"] .ed-contact .ed-contact__grid>header>.ed-title{margin-top:clamp(40px,4vw,64px)}
+  body[data-editorial="journal"] .ed-contact__grid>[data-ed-contact]{padding-bottom:clamp(40px,4vw,64px)}
+}
+/* Pied blanc : grand nom de l'atelier, liens des pages qui existent. */
+body[data-editorial="journal"] .es-footer{padding-top:48px;border-top:1px solid var(--rv-line)}
+body[data-editorial="journal"] .es-footer .es-footer__brand{font-family:var(--font-heading);font-size:clamp(32px,3vw,46px);font-weight:400;letter-spacing:-.01em;text-transform:none}
+@media(max-width:749px){
+  body[data-editorial="journal"] .ed-opening--banner .ed-shell{min-height:max(520px,78svh)!important;align-items:flex-start!important}
+  body[data-editorial="journal"] .ed-opening--banner .ed-opening__copy{padding-top:40px}
+  body[data-editorial="journal"] .ed-opening--banner .ed-opening__title{font-size:clamp(48px,14vw,60px)}
+  body[data-editorial="journal"] .ed-opening--banner .ed-opening__media::after{background:linear-gradient(180deg,rgba(20,12,10,.55) 0%,rgba(20,12,10,.25) 45%,rgba(20,12,10,0) 70%)}
+  body[data-editorial="journal"] .ed-opening__actions .ed-button{width:100%;justify-content:space-between}
+  body[data-editorial="journal"] .es-svc--cards .es-svc__item+.es-svc__item{border-left:0;padding-left:0;border-top:1px solid var(--rv-line);padding-top:20px}
+  body[data-editorial="journal"] .es-timeline__col+.es-timeline__col{border-left:0;padding-left:0}
+  body[data-editorial="journal"] .es-cta--split .es-heading{font-size:32px}
+  body[data-editorial="journal"] .es-header .es-header__wordmark{font-size:23px}
+  body[data-editorial="journal"] .es-header__cta{display:none}
+  body[data-editorial="journal"] .ed-scene--band .ed-title{font-size:27px;max-width:13ch}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__copy{order:-1}
+  body[data-editorial="journal"] .ed-scene--split .ed-scene__media>.ed-media{aspect-ratio:4/3}
+  body[data-editorial="journal"] .es-folio__filters{flex-wrap:nowrap;overflow-x:auto;gap:20px;scrollbar-width:none}
+  body[data-editorial="journal"] .es-folio__filter{white-space:nowrap}
+  body[data-editorial="journal"] .ed-contact__grid>header{display:flex;flex-direction:column}
+  body[data-editorial="journal"] .ed-contact__image{order:-1;width:calc(100% + 40px);margin:0 -20px 24px}
+  body[data-editorial="journal"] .ed-contact__image>.ed-media{aspect-ratio:4/3;width:100%}
+}
+@media(max-width:989px){
+  body[data-editorial="journal"] .es-header__inner{display:flex;align-items:center;gap:12px}
+  body[data-editorial="journal"] .es-header__logo{order:1;margin:0 auto 0 0}
+  body[data-editorial="journal"] .es-header__icons{order:2}
+  body[data-editorial="journal"] .es-header__burger{order:3;margin:0}
+}
+

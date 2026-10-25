@@ -1,0 +1,130 @@
+{
+  "demo": "noctil",
+  "origin": "studio Next.js de développement, base temporaire",
+  "steps": [
+    {
+      "step": "aperçu du studio : le projecteur déborde sur l'ouverture",
+      "ok": true,
+      "on": "1",
+      "rise": "20",
+      "width": 521,
+      "overlap": 58
+    },
+    {
+      "step": "galerie : « Présentation principale › night » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Présentation principale › dark-right » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Achat et offres › rise » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Achat et offres › rise-final » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Bénéfices du produit › row » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Détails du produit › columns-carousel » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Situations d'utilisation › grid-carousel » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Histoire de la marque › journal-pages » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Histoire de la marque › journal-list » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Questions fréquentes › pair » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Questions fréquentes › topic-titles » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "galerie : « Contact › form-subject » avec aperçu",
+      "ok": true
+    },
+    {
+      "step": "« Produit en surplomb » ajouté après « faq » : reste dans sa section",
+      "ok": true,
+      "on": "0",
+      "rise": "20",
+      "width": 521,
+      "overlap": -63
+    },
+    {
+      "step": "réglages : débordement et taille du produit modifiés, l'aperçu suit",
+      "ok": true,
+      "rise": "20 → 30",
+      "media_width": "44 → 40",
+      "overlap": "58 → 100 px"
+    },
+    {
+      "step": "section dupliquée",
+      "ok": true,
+      "copy": "cv_rise_3"
+    },
+    {
+      "step": "section déplacée",
+      "ok": true,
+      "from": 8,
+      "to": 7
+    },
+    {
+      "step": "rechargement : réglages, ajout, copie et ordre conservés",
+      "ok": true,
+      "structure": [
+        "cv-banner",
+        "cv-rise",
+        "cv-cards",
+        "cv-banner",
+        "cv-steps",
+        "cv-banner",
+        "fs-journal",
+        "cv-rise",
+        "faq",
+        "cv-rise"
+      ],
+      "overlap": 100
+    },
+    {
+      "step": "aperçu téléphone du studio : le projecteur déborde sur l'ouverture",
+      "ok": true,
+      "on": "1",
+      "rise": "30",
+      "width": 262,
+      "overlap": 76
+    },
+    {
+      "step": "projet client en NOCTIL (1440 px) : son détourage remonte sur sa photo d'ouverture, rien de la démonstration",
+      "ok": true,
+      "on": "1",
+      "src": "/preview/tncxcr6k9ifmhxfk/v/thxzf9l89qw2ssz5~tne21p.H4V-NXmFG2S-DxOsOCKZ5OZUiezFJ3a_/assets/es-client-bf69imfba41hn9vc.png",
+      "above": 203,
+      "visible": 65
+    },
+    {
+      "step": "projet client en NOCTIL (390 px) : son détourage remonte sur sa photo d'ouverture, rien de la démonstration",
+      "ok": true,
+      "on": "1",
+      "src": "/preview/tncxcr6k9ifmhxfk/v/thxzf9l89qw2ssz5~tne21t.RGQGWT2SsNVxEz_zu8VuHM1HgAmOqpOG/assets/es-client-bf69imfba41hn9vc.png",
+      "above": 131,
+      "visible": 67
+    }
+  ],
+  "date": "2026-10-23T13:41:57.629Z"
+}

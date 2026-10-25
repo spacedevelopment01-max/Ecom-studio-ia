@@ -22,7 +22,18 @@ export const DEMO_THEMES = REFERENCE_THEMES as readonly string[];
 export const isDemoTheme = (id: string) => DEMO_THEMES.includes(id);
 
 export type ThemeDemoPage = { file: string; label: string };
-export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; stale: boolean; title?: string; services?: boolean; version?: string; date?: string; pages: ThemeDemoPage[] };
+/**
+ * `missing` : visuels de la démo absents du serveur au moment de la préparation (kit privé non copié dans
+ * public/demo/<id>/, diagnostic du 22 octobre). Une telle démo n'est jamais servie comme prête : elle s'afficherait sans
+ * aucune image.
+ */
+export type ThemeDemoStatus = { id: string; ready: boolean; preparing: boolean; stale: boolean; title?: string; services?: boolean; version?: string; date?: string; pages: ThemeDemoPage[]; missing?: string[] };
+
+/** Dossier du kit privé d'une démo (FRAISE, ONDE, ORBE, MAISON & HORIZON) ; les autres thèmes ont leurs médias suivis dans le
+ * dépôt (Atelier Rive depuis le dossier du 23 octobre : public/theme-assets/rive/). MAISON & HORIZON (issue #172) : les 90
+ * images ne sont pas publiées sur GitHub (consigne du dossier), elles restent dans public/demo/maison-horizon/. */
+export const KIT_THEMES = ["fraise", "onde", "orbe", "maison-horizon", "aplat"] as const;
+export const kitDir = (id: string, root = process.cwd()) => path.join(root, "public", "demo", id);
 
 const LOCK = () => path.join(themeDemosDir(), ".preparation.json");
 const LOCK_TTL = 45 * 60_000;
@@ -61,12 +72,13 @@ export function themeDemoStatus(id: string, version = codeVersion()): ThemeDemoS
   const busy = preparing();
   const base: ThemeDemoStatus = { id, ready: false, preparing: busy, stale: false, pages: [] };
   if (!isDemoTheme(id) || !fs.existsSync(path.join(dir, "accueil.html"))) return base;
-  let plan: { title?: string; services?: boolean; pages?: ThemeDemoPage[] } = {};
+  let plan: { title?: string; services?: boolean; pages?: ThemeDemoPage[]; missing?: string[] } = {};
   let meta: { version?: string; date?: string } = {};
   try { plan = JSON.parse(fs.readFileSync(path.join(dir, "pages.json"), "utf8")); } catch { /* démo sans plan : accueil seul */ }
   try { meta = JSON.parse(fs.readFileSync(path.join(dir, "demo.json"), "utf8")); } catch { /* préparée à la main */ }
   const pages = (plan.pages ?? [{ file: "accueil.html", label: "Accueil" }]).filter((p) => /^[a-z0-9-]+\.html$/.test(p.file) && fs.existsSync(path.join(dir, p.file)));
-  return { ...base, ready: true, stale: !!version && !!meta.version && meta.version !== version, title: plan.title, services: plan.services, version: meta.version, date: meta.date, pages };
+  const missing = (plan.missing ?? []).filter((m) => typeof m === "string");
+  return { ...base, ready: missing.length === 0, stale: !!version && !!meta.version && meta.version !== version, title: plan.title, services: plan.services, version: meta.version, date: meta.date, pages, ...(missing.length ? { missing } : {}) };
 }
 
 export function themeDemoStatuses(): ThemeDemoStatus[] {
@@ -94,13 +106,23 @@ export function themeDemoFile(id: string, rel: string): { body: Buffer; type: st
   }
 }
 
+/** Démo incomplète : le kit a-t-il été copié (ou complété) depuis sa préparation ? Sinon, inutile de la refaire en boucle. */
+function kitChanged(s: ThemeDemoStatus): boolean {
+  try {
+    const prepared = s.date ? Date.parse(s.date) : 0;
+    return fs.statSync(kitDir(s.id)).mtimeMs > prepared;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Lance la préparation des démos absentes ou périmées dans un processus détaché (un seul à la fois). Rend vrai si une
  * préparation tourne (déjà lancée ou lancée ici). Jamais pendant les tests.
  */
 export function prepareThemeDemos(statuses = themeDemoStatuses()): boolean {
   if (preparing()) return true;
-  const todo = statuses.filter((s) => !s.ready || s.stale).map((s) => s.id);
+  const todo = statuses.filter((s) => s.stale || (!s.ready && (!s.missing || kitChanged(s)))).map((s) => s.id);
   if (!todo.length || process.env.VITEST || process.env.THEME_DEMOS_AUTO === "0") return false;
   try {
     fs.mkdirSync(themeDemosDir(), { recursive: true });

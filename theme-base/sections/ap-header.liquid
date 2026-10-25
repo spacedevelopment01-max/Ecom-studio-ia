@@ -1,0 +1,120 @@
+{%- comment -%}
+  En-tête d'APLAT (dix planches du 25 octobre) : logo architectural à gauche, menu, bouton « Demander un devis » bleu
+  pétrole. Téléphone : grand logo, bouton menu ; menu plein panneau sur fond enduit (logo et fermeture, grands liens à
+  flèche, sous-liens des prestations, bouton de devis, photo et phrase, liens légaux). Barre « Mon projet / Contact »
+  fixée en bas de l'écran du téléphone sur les pages choisies (planche 06), sans masquer le dernier contenu.
+  Menu : ouverture, fermeture (bouton, Échap, clic hors des liens), focus piégé et rendu par assets/aplat.js.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+  assign mmenu = linklists[s.mobile_menu]
+  if mmenu.links.size == 0
+    assign mmenu = menu
+  endif
+  assign legal = linklists[s.legal_menu]
+  assign bar = false
+  if s.bar_project_label != blank or s.bar_contact_label != blank
+    if template.name == 'index' and s.bar_on_home
+      assign bar = true
+    elsif template.name == 'page'
+      assign bar_list = s.bar_pages | remove: ' ' | split: ','
+      if bar_list contains page.handle
+        assign bar = true
+      endif
+    endif
+  endif
+-%}
+<header class="ap-header{% if bar %} ap-header--bar{% endif %}" style="--ap-logo-w:{{ s.logo_width }}px;--ap-logo-wm:{{ s.mobile_logo_width }}px;" data-ap-header data-ap-parents="{{ s.nav_parents | escape }}">
+  <div class="ap-header__inner ap-wrap">
+    <a class="ap-header__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+      {%- if s.logo != blank -%}{{ s.logo | image_url: width: 600 | image_tag: alt: shop.name, loading: 'eager' }}{%- elsif s.logo_asset != blank -%}<img width="600" height="250" src="{{ s.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- elsif settings.logo != blank -%}{{ settings.logo | image_url: width: 600 | image_tag: alt: shop.name, loading: 'eager' }}{%- elsif settings.logo_asset != blank -%}<img width="600" height="250" src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="eager" decoding="async">{%- else -%}<span class="ap-header__name">{{ shop.name | escape }}</span>{%- endif -%}
+    </a>
+    {%- if menu.links.size > 0 -%}
+      <nav class="ap-header__nav" aria-label="{{ s.nav_label | escape }}">
+        <ul role="list">
+          {%- for l in menu.links -%}<li><a href="{{ l.url }}"{% if l.active or l.current or l.child_active %} aria-current="page"{% endif %}>{{ l.title | escape }}</a></li>{%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+    {%- if s.cta_label != blank -%}<a class="ap-btn ap-btn--petrol ap-header__cta" href="{{ s.cta_link | default: routes.root_url }}">{{ s.cta_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+    <button type="button" class="ap-header__burger" data-ap-menu-open aria-controls="ApMenu" aria-expanded="false" aria-label="{{ s.menu_label | escape }}">{% render 'ap-icon', name: 'menu' %}</button>
+  </div>
+  <div class="ap-menu" id="ApMenu" hidden role="dialog" aria-modal="true" aria-label="{{ s.menu_label | escape }}" data-ap-menu>
+    {%- if s.menu_bg != blank or s.menu_bg_asset != blank -%}{%- render 'ap-img', img: s.menu_bg, asset: s.menu_bg_asset, alt: '', cls: 'ap-menu__bg', width: 900 -%}{%- endif -%}
+    <div class="ap-menu__head">
+      <a class="ap-menu__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+        {%- if s.logo != blank -%}{{ s.logo | image_url: width: 600 | image_tag: alt: shop.name, loading: 'lazy' }}{%- elsif s.logo_asset != blank -%}<img width="600" height="250" src="{{ s.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- elsif settings.logo_asset != blank -%}<img width="600" height="250" src="{{ settings.logo_asset | asset_url }}" alt="{{ shop.name | escape }}" loading="lazy" decoding="async">{%- else -%}<span class="ap-header__name">{{ shop.name | escape }}</span>{%- endif -%}
+      </a>
+      <button type="button" class="ap-menu__close" data-ap-menu-close aria-label="{{ s.close_label | escape }}">{% render 'ap-icon', name: 'close' %}</button>
+    </div>
+    <nav class="ap-menu__nav" aria-label="{{ s.nav_label | escape }}">
+      <ul class="ap-menu__list" role="list">
+        {%- for l in mmenu.links -%}
+          <li>
+            <a class="ap-menu__link" href="{{ l.url }}"{% if l.active or l.current %} aria-current="page"{% endif %}><span>{{ l.title | escape }}</span>{% render 'ap-icon', name: 'arrow' %}</a>
+            {%- if l.links.size > 0 -%}
+              <ul class="ap-menu__sub" role="list">
+                {%- for c in l.links -%}<li><a href="{{ c.url }}"{% if c.active or c.current %} aria-current="page"{% endif %}><span>{{ c.title | escape }}</span>{% render 'ap-icon', name: 'arrow' %}</a></li>{%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+    {%- if s.cta_label != blank -%}<a class="ap-btn ap-btn--petrol ap-menu__cta" href="{{ s.cta_link | default: routes.root_url }}">{{ s.cta_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+    {%- if s.menu_image != blank or s.menu_image_asset != blank or s.menu_tagline != blank -%}
+      <div class="ap-menu__visual">
+        {%- render 'ap-img', img: s.menu_image, asset: s.menu_image_asset, alt: s.menu_image_alt, fx: s.menu_focus_x, fy: s.menu_focus_y, cls: 'ap-menu__photo', width: 900 -%}
+        {%- if s.menu_tagline != blank -%}<p class="ap-menu__tagline">{{ s.menu_tagline | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if legal.links.size > 0 -%}<ul class="ap-menu__legal" role="list">{%- for l in legal.links -%}<li><a href="{{ l.url }}">{{ l.title | escape }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+  </div>
+  {%- if bar -%}
+    <div class="ap-mbar" data-ap-mbar>
+      {%- if s.bar_project_label != blank -%}<a class="ap-btn ap-btn--petrol" href="{{ s.bar_project_link | default: s.cta_link }}">{% render 'ap-icon', name: 'chat' %}{{ s.bar_project_label | escape }}</a>{%- endif -%}
+      {%- if s.bar_contact_label != blank -%}<a class="ap-btn ap-btn--outline" href="{{ s.bar_contact_link | default: routes.root_url }}">{% render 'ap-icon', name: 'mail' %}{{ s.bar_contact_label | escape }}</a>{%- endif -%}
+    </div>
+  {%- endif -%}
+</header>
+
+{% schema %}
+{
+  "name": "En-tête APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)" },
+    { "type": "range", "id": "logo_width", "label": "Largeur du logo", "min": 80, "max": 360, "step": 2, "unit": "px", "default": 200 },
+    { "type": "range", "id": "mobile_logo_width", "label": "Largeur du logo sur téléphone", "min": 80, "max": 320, "step": 2, "unit": "px", "default": 180 },
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "main-menu" },
+    { "type": "text", "id": "cta_label", "label": "Texte du bouton", "default": "Demander un devis" },
+    { "type": "url", "id": "cta_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "nav_label", "label": "Nom du menu (lecteurs d'écran)", "default": "Navigation principale" },
+    { "type": "text", "id": "menu_label", "label": "Bouton menu (lecteurs d'écran)", "default": "Menu" },
+    { "type": "text", "id": "nav_parents", "label": "Pages rattachées à un lien du menu", "info": "Ex. : prestations=platrerie,peinture ; le lien reste actif sur ces pages." },
+    { "type": "text", "id": "close_label", "label": "Bouton fermer (lecteurs d'écran)", "default": "Fermer le menu" },
+    { "type": "header", "content": "Menu du téléphone" },
+    { "type": "link_list", "id": "mobile_menu", "label": "Liens du menu (sous-liens acceptés)" },
+    { "type": "image_picker", "id": "menu_bg", "label": "Fond du menu (matière)" },
+    { "type": "text", "id": "menu_bg_asset", "label": "Fond du menu (fichier du thème)" },
+    { "type": "image_picker", "id": "menu_image", "label": "Photo du menu" },
+    { "type": "text", "id": "menu_image_asset", "label": "Photo du menu (fichier du thème)" },
+    { "type": "text", "id": "menu_image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "range", "id": "menu_focus_x", "label": "Photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "menu_focus_y", "label": "Photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "textarea", "id": "menu_tagline", "label": "Phrase sur la photo" },
+    { "type": "link_list", "id": "legal_menu", "label": "Liens légaux" },
+    { "type": "header", "content": "Barre du bas (téléphone)" },
+    { "type": "text", "id": "bar_project_label", "label": "Bouton projet" },
+    { "type": "url", "id": "bar_project_link", "label": "Lien du bouton projet" },
+    { "type": "text", "id": "bar_contact_label", "label": "Bouton contact" },
+    { "type": "url", "id": "bar_contact_link", "label": "Lien du bouton contact" },
+    { "type": "checkbox", "id": "bar_on_home", "label": "Barre sur l'accueil", "default": true },
+    { "type": "text", "id": "bar_pages", "label": "Pages avec la barre", "info": "Identifiants séparés par des virgules. Ex. : prestations." }
+  ]
+}
+{% endschema %}

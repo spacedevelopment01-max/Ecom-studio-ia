@@ -29,6 +29,8 @@ export type ClientMedium = {
     };
     authentic: boolean;
     placement: string;
+    /** Détourage (fond transparent) : part de la hauteur laissée transparente au-dessus du produit (0 à 1). */
+    alphaTop?: number;
 };
 export type MediaInventory = {
     usable: ClientMedium[];
@@ -62,7 +64,7 @@ export async function inventoryClientMedia(p: Project): Promise<MediaInventory> 
                 continue;
             }
             hashes.add(digest);
-            let width = a.width ?? 0, height = a.height ?? 0;
+            let width = a.width ?? 0, height = a.height ?? 0, alphaTop: number | undefined;
             if (a.kind === 'image') {
                 const image = sharp(bytes, { limitInputPixels: 64000000 });
                 const meta = await image.metadata();
@@ -71,6 +73,16 @@ export async function inventoryClientMedia(p: Project): Promise<MediaInventory> 
                 height = meta.height ?? 0;
                 if (!width || !height)
                     throw Error('dimensions');
+                if (/cutout/.test(a.role ?? '') && meta.hasAlpha) {
+                    // Marge transparente au-dessus du produit, pour que « Produit en surplomb » (NOCTIL) en tienne compte.
+                    const { data, info } = await sharp(bytes, { limitInputPixels: 64000000 }).ensureAlpha().resize(160, 160, { fit: 'inside' }).raw().toBuffer({ resolveWithObject: true });
+                    let top = 0;
+                    rows: for (; top < info.height; top++)
+                        for (let x = 0; x < info.width; x++)
+                            if (data[(top * info.width + x) * info.channels + 3] > 24)
+                                break rows;
+                    alphaTop = top / info.height;
+                }
             }
             else {
                 if (!width || !height || !a.duration)
@@ -89,7 +101,7 @@ export async function inventoryClientMedia(p: Project): Promise<MediaInventory> 
                 continue;
             }
             const ext = a.mime === 'image/svg+xml' ? 'svg' : a.mime === 'image/webp' ? 'webp' : a.mime === 'image/png' ? 'png' : a.mime === 'image/avif' ? 'avif' : a.kind === 'video' ? /webm/.test(a.mime) ? 'webm' : 'mp4' : 'jpg';
-            usable.push({ id: a.id, file: `es-client-${a.id}.${ext}`, kind: a.kind, role, sourceRole: a.role ?? '', name: a.name, description: String(m.themeContent?.description ?? m.alt ?? m.description ?? m.triage?.caption ?? ''), width, height, origin: a.origin, subject: target, serviceKey: String(m.serviceKey ?? ''), reviewed: m.themeContent?.reviewed === true || m.preparation?.reviewedSlot?.alignment?.status === 'accepted', focal: { desktop: String(m.themeContent?.focus ?? m.media?.desktop ?? '50% 50%'), mobile: String(m.themeContent?.mobileFocus ?? m.media?.mobile ?? '50% 50%') }, placement: String(m.slot ?? '').startsWith('theme:') ? String(m.slot) : '', authentic: a.origin !== 'generated' && m.authenticWork === true });
+            usable.push({ id: a.id, file: `es-client-${a.id}.${ext}`, kind: a.kind, role, sourceRole: a.role ?? '', name: a.name, description: String(m.themeContent?.description ?? m.alt ?? m.description ?? m.triage?.caption ?? ''), width, height, origin: a.origin, subject: target, serviceKey: String(m.serviceKey ?? ''), reviewed: m.themeContent?.reviewed === true || m.preparation?.reviewedSlot?.alignment?.status === 'accepted', focal: { desktop: String(m.themeContent?.focus ?? m.media?.desktop ?? '50% 50%'), mobile: String(m.themeContent?.mobileFocus ?? m.media?.mobile ?? '50% 50%') }, placement: String(m.slot ?? '').startsWith('theme:') ? String(m.slot) : '', authentic: a.origin !== 'generated' && m.authenticWork === true , ...(alphaTop !== undefined ? { alphaTop } : {}) });
         }
         catch {
             excluded.push({ id: a.id, reason: 'file_missing_or_undecodable' });

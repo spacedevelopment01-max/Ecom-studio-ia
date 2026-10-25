@@ -1,9 +1,9 @@
 {% assign s = section.settings %}
-<section class="ed-section ed-opening ed-opening--{{ s.layout }}{% if s.copy_surface == false %} ed-opening--clear{% endif %} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
+<section class="ed-section ed-opening ed-opening--{{ s.layout }}{% if s.layout == 'banner' %} ed-opening--fullscreen{% endif %}{% if s.copy_surface == false %} ed-opening--clear{% endif %} color-{{ s.color_scheme }}"{% if s.anchor != blank %} id="{{ s.anchor | handleize }}"{% endif %} data-ed-motion="{{ s.motion }}" style="--ed-pt:{{ s.padding_top }}px;--ed-pb:{{ s.padding_bottom }}px;">
 <div class="ed-shell">
  <header class="ed-opening__copy">{% if s.label != blank %}<p class="ed-kicker">{{ s.label | escape }}</p>{% endif %}
  <{{ s.heading_tag }} class="ed-title ed-opening__title" data-ed-title>{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag }}>
- <div class="ed-prose">{{ s.text }}</div>{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</header>
+ <div class="ed-prose">{{ s.text }}</div>{% if s.button2_label != blank and s.button2_link != blank %}<div class="ed-opening__actions">{% if s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}<a class="ed-button ed-button--ghost" href="{{ s.button2_link }}">{{ s.button2_label | escape }}<span aria-hidden="true">↓</span></a></div>{% elsif s.button_label != blank and s.button_link != blank %}<a class="ed-button" href="{{ s.button_link }}">{{ s.button_label | escape }}<span aria-hidden="true">↗</span></a>{% endif %}</header>
  <div class="ed-opening__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, mobile_image: s.mobile_image, mobile_asset: s.mobile_image_asset, loading: 'eager' %}</div>
  {% if s.caption != blank %}<p class="ed-caption">{{ s.caption | escape }}</p>{% endif %}
 </div></section>
@@ -86,6 +86,16 @@
       "type": "url",
       "id": "button_link",
       "label": "Destination"
+    },
+    {
+      "type": "text",
+      "id": "button2_label",
+      "label": "Second bouton (facultatif)"
+    },
+    {
+      "type": "url",
+      "id": "button2_link",
+      "label": "Lien du second bouton"
     },
     {
       "type": "image_picker",
@@ -179,6 +189,14 @@
         {
           "value": "fullscreen",
           "label": "Plein écran"
+        },
+        {
+          "value": "banner",
+          "label": "Bandeau photo, texte à gauche"
+        },
+        {
+          "value": "cartouche",
+          "label": "Photo pleine largeur et cartouche"
         }
       ],
       "default": "journal"

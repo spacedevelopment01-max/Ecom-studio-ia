@@ -1,0 +1,437 @@
+[
+ {
+  "name": "ordinateur : navigation de l'en-tête",
+  "ok": true,
+  "detail": "page-projets.html,page-prestations.html,page-atelier.html"
+ },
+ {
+  "name": "ordinateur : « Découvrir les projets » descend jusqu'aux projets",
+  "ok": true,
+  "detail": "0"
+ },
+ {
+  "name": "ordinateur : question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : filtres (tous 6, maisons 2, espaces pro 1, puis tous)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : filtre actif annoncé (aria-pressed)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : « Appartement haussmannien » ouvre son projet",
+  "ok": true,
+  "detail": "Un salon pour se retrouver. — Appartement haussmannien — Paris"
+ },
+ {
+  "name": "ordinateur : « Maison sur la pinède » ouvre son projet",
+  "ok": true,
+  "detail": "Un salon pour se retrouver. — Maison familiale au vert"
+ },
+ {
+  "name": "ordinateur : « Appartement Lumière » ouvre son projet",
+  "ok": true,
+  "detail": "Une chambre pour ralentir. — Appartement — chambre"
+ },
+ {
+  "name": "ordinateur : « Espace professionnel » ouvre son projet",
+  "ok": true,
+  "detail": "Un lieu de travail chaleureux. — Espace professionnel"
+ },
+ {
+  "name": "ordinateur : « Studio — Paris 11e » ouvre son projet",
+  "ok": true,
+  "detail": "Un petit espace qui respire. — Studio — Paris 11e"
+ },
+ {
+  "name": "ordinateur : « Maison contemporaine » ouvre son projet",
+  "ok": true,
+  "detail": "Une maison ouverte sur le jardin. — Maison contemporaine — Île-de-France"
+ },
+ {
+  "name": "ordinateur : « Projet suivant » mène au projet suivant",
+  "ok": true,
+  "detail": "page-projet-appartement-lumiere.html"
+ },
+ {
+  "name": "ordinateur : formulaire vide, erreurs utiles et focus sur le premier champ",
+  "ok": true,
+  "detail": "5 messages, focus contact[name]"
+ },
+ {
+  "name": "ordinateur : adresse e-mail incomplète signalée",
+  "ok": true,
+  "detail": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr)."
+ },
+ {
+  "name": "ordinateur : fichier joint affiché",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : envoi en cours affiché",
+  "ok": true,
+  "detail": "Envoi en cours…"
+ },
+ {
+  "name": "ordinateur : succès seulement après la réponse, formulaire remplacé, démonstration annoncée",
+  "ok": true,
+  "detail": "Merci : votre demande est bien complète. Démonstration : aucun message n’est réellement envoyé."
+ },
+ {
+  "name": "ordinateur : échec simulé, message et formulaire conservés",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "ordinateur : accueil.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-prestations.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projets.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-appartement-haussmannien.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-maison-pinede.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-appartement-lumiere.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-espace-professionnel.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-studio-paris.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-projet-maison-jardin.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-atelier.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-contact.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mentions-legales.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu ouvert, liens et bouton de contact",
+  "ok": true,
+  "detail": "Projets | Prestations | L'atelier | Parlons de votre projet"
+ },
+ {
+  "name": "telephone : menu fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : « Découvrir les projets » descend jusqu'aux projets",
+  "ok": true,
+  "detail": "0"
+ },
+ {
+  "name": "telephone : question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : filtres (tous 6, maisons 2, espaces pro 1, puis tous)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : filtre actif annoncé (aria-pressed)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : « Appartement haussmannien » ouvre son projet",
+  "ok": true,
+  "detail": "Un salon pour se retrouver. — Appartement haussmannien — Paris"
+ },
+ {
+  "name": "telephone : « Maison sur la pinède » ouvre son projet",
+  "ok": true,
+  "detail": "Un salon pour se retrouver. — Maison familiale au vert"
+ },
+ {
+  "name": "telephone : « Appartement Lumière » ouvre son projet",
+  "ok": true,
+  "detail": "Une chambre pour ralentir. — Appartement — chambre"
+ },
+ {
+  "name": "telephone : « Espace professionnel » ouvre son projet",
+  "ok": true,
+  "detail": "Un lieu de travail chaleureux. — Espace professionnel"
+ },
+ {
+  "name": "telephone : « Studio — Paris 11e » ouvre son projet",
+  "ok": true,
+  "detail": "Un petit espace qui respire. — Studio — Paris 11e"
+ },
+ {
+  "name": "telephone : « Maison contemporaine » ouvre son projet",
+  "ok": true,
+  "detail": "Une maison ouverte sur le jardin. — Maison contemporaine — Île-de-France"
+ },
+ {
+  "name": "telephone : « Projet suivant » mène au projet suivant",
+  "ok": true,
+  "detail": "page-projet-appartement-lumiere.html"
+ },
+ {
+  "name": "telephone : formulaire vide, erreurs utiles et focus sur le premier champ",
+  "ok": true,
+  "detail": "5 messages, focus contact[name]"
+ },
+ {
+  "name": "telephone : adresse e-mail incomplète signalée",
+  "ok": true,
+  "detail": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr)."
+ },
+ {
+  "name": "telephone : fichier joint affiché",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : envoi en cours affiché",
+  "ok": true,
+  "detail": "Envoi en cours…"
+ },
+ {
+  "name": "telephone : succès seulement après la réponse, formulaire remplacé, démonstration annoncée",
+  "ok": true,
+  "detail": "Merci : votre demande est bien complète. Démonstration : aucun message n’est réellement envoyé."
+ },
+ {
+  "name": "telephone : échec simulé, message et formulaire conservés",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "telephone : accueil.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-prestations.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projets.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-appartement-haussmannien.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-maison-pinede.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-appartement-lumiere.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-espace-professionnel.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-studio-paris.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-projet-maison-jardin.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-atelier.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-contact.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mentions-legales.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "360 px : accueil.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-prestations.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projets.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-appartement-haussmannien.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-maison-pinede.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-appartement-lumiere.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-espace-professionnel.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-studio-paris.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-projet-maison-jardin.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-atelier.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-contact.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "360 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : accueil.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-prestations.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projets.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-appartement-haussmannien.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-maison-pinede.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-appartement-lumiere.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-espace-professionnel.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-studio-paris.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-projet-maison-jardin.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-atelier.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-contact.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ },
+ {
+  "name": "430 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, 0 coupé(s)"
+ }
+]

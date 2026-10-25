@@ -1,0 +1,20 @@
+{%- comment -%}
+  Vignettes légendées d'une fiche (maquettes TRAVERSE et MUSEAU CLUB) : jusqu'à quatre gros plans du produit, carrés ou
+  en médaillons ronds, sous l'achat ou sous la galerie. Paramètre : block (bloc « tiles » de la fiche).
+{%- endcomment -%}
+              <ul class="es-product__tiles es-product__tiles--{{ block.settings.shape | default: 'square' }}" role="list" {{ block.shopify_attributes }}>
+                {%- for i in (1..4) -%}
+                  {%- liquid
+                    assign k_image = 'image_' | append: i
+                    assign k_pick = 'picker_' | append: i
+                    assign k_caption = 'caption_' | append: i
+                    assign t_image = block.settings[k_image]
+                    assign t_pick = block.settings[k_pick]
+                    assign t_caption = block.settings[k_caption]
+                  -%}
+                  {%- if t_image != blank or t_pick != blank -%}
+                    {%- assign k_zoom = 'zoom_' | append: i -%}{%- assign t_zoom = block.settings[k_zoom] | default: 100 -%}{%- assign k_fx = 'focus_x_' | append: i -%}{%- assign k_fy = 'focus_y_' | append: i -%}
+                    <li class="es-product__tile cv-zoom-box"{% if t_zoom > 100 %} style="--cv-zoom:{{ t_zoom | divided_by: 100.0 }}"{% endif %}>{% render 'ed-media', image: t_pick, asset: t_image, alt: t_caption, focus_x: block.settings[k_fx], focus_y: block.settings[k_fy] %}{% if t_caption != blank %}<span>{{ t_caption | escape }}</span>{% endif %}</li>
+                  {%- endif -%}
+                {%- endfor -%}
+              </ul>

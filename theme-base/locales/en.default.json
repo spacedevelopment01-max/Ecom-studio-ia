@@ -5,6 +5,7 @@
     "previous": "Previous",
     "next": "Next",
     "pagination": "Pagination",
+    "page": "Page",
     "pause": "Pause",
     "play": "Play",
     "error": "Something went wrong. Please try again.",
@@ -301,17 +302,31 @@
     "compare_price": "Price before discount",
     "payment_methods": "Payment methods",
     "close": "Close cart",
-    "preview_note": "Demo preview · checkout disabled"
+    "preview_note": "Demo preview · checkout disabled",
+    "view_cart": "View my cart",
+    "shipping": "Shipping",
+    "shipping_next_step": "Calculated at the next step"
   },
   "contact": {
     "name": "Name",
+    "order": "Order number (optional)",
+    "subject": "Subject",
+    "subject_choose": "Choose a subject",
     "email": "Email",
     "phone": "Phone",
     "message": "Message",
     "send": "Send",
     "success": "Thanks, we'll get back to you shortly.",
     "error": "Please check your request before trying again.",
-    "preview_demo": "Studio preview: sending is not active in this demo; the form validation itself is real."
+    "preview_demo": "Studio preview: sending is not active in this demo; the form validation itself is real.",
+    "errors": {
+      "required": "Please fill in this field.",
+      "email": "This email address looks incomplete (example: name@domain.com).",
+      "choice": "Please choose an option.",
+      "consent": "Tick the box so that we can reply to you."
+    },
+    "sending": "Sending…",
+    "failed": "Your message could not be sent. Check your connection and try again."
   },
   "customer": {
     "account": "My account",
@@ -320,7 +335,8 @@
       "title": "Log in",
       "password": "Password",
       "submit": "Sign in",
-      "forgot": "Forgot your password?"
+      "forgot": "Forgot your password?",
+      "or": "or"
     },
     "recover": {
       "title": "Reset your password",

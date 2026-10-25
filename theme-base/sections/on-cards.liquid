@@ -1,0 +1,139 @@
+{%- comment -%}
+  Rangées de cartes d'ONDE (maquettes du 24 octobre) :
+  - details : titre, texte et bouton à gauche, cartes photo légendées à droite (accueil « Le détail fait la différence ») ;
+  - grid : titre au-dessus, cartes photo avec titre et texte dessous (fiche « Un design pensé pour l'essentiel ») ;
+  - scenes : grandes photos, titre et texte posés dessus, flèche ronde (accueil, boutique, expérience) ;
+  - macros : texte à gauche, petits gros plans légendés à droite (expérience « Tout commence par le contact ») ;
+  - thumbs : vignettes du produit et texte à droite avec flèche (boutique « Sous tous les angles ») ;
+  - numbered : grande photo à gauche, points numérotés à droite (marque).
+  Chaque carte : photo (fichier ou image de la boutique), titre, texte, lien. Sur téléphone : empilées, 2 colonnes ou
+  carrousel selon la maquette.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'grid'
+  assign cards = section.blocks | where: 'type', 'card'
+-%}
+<section{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} class="on-cards on-cards--{{ layout }} on-tone--{{ s.tone }} on-cards--m-{{ s.mobile_layout }}{% if s.title_top %} on-cards--top{% endif %} on-show--{{ s.show_on | default: 'all' }}" style="--on-cols:{{ s.columns }};--on-ratio:{{ s.ratio }};--on-card-h:{{ s.card_height }}px;--on-card-hm:{{ s.mobile_card_height }}px;--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-side:{{ s.side_width }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;--on-gap:{{ s.gap }}px;">
+  <div class="on-cards__inner on-container">
+    {%- if s.heading != blank or s.text != blank or s.button_label != blank -%}
+      <div class="on-cards__head">
+        {%- if s.eyebrow != blank -%}<p class="on-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="on-title on-cards__title">{%- if s.mobile_heading != blank -%}<span class="on-desktop-only">{{ s.heading | escape | newline_to_br }}</span><span class="on-mobile-only">{{ s.mobile_heading | escape | newline_to_br }}</span>{%- else -%}{{ s.heading | escape | newline_to_br }}{%- endif -%}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="on-text on-cards__text{% if s.text_mobile_only %} on-mobile-only{% endif %}">{{ s.text | replace: '<br>', ' <br>' }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="on-button on-button--{{ s.button_style }} on-cards__button" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}{% render 'icon', name: 'arrow-up-right' %}</a>{%- endif -%}
+        {%- if layout == 'thumbs' and s.head_link != blank -%}<a class="on-round on-cards__head-link" href="{{ s.head_link }}" aria-label="{{ s.heading | strip_newlines | escape }}">{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    {%- endif -%}
+    {%- if s.side_image_asset != blank -%}<div class="on-cards__side-media" style="--on-fx:{{ s.side_focus_x }}%;--on-fy:{{ s.side_focus_y }}%;"><img width="1200" height="1200" src="{{ s.side_image_asset | asset_url }}" alt="{{ s.side_image_alt | escape }}" loading="lazy" decoding="async"></div>{%- endif -%}
+    <ul class="on-cards__list" role="list"{% if s.mobile_layout == 'carousel' %} data-on-carousel{% endif %}>
+      {%- for b in cards -%}
+        {%- assign c = b.settings -%}
+        <li class="on-card{% if c.mobile_only %} on-mobile-only{% endif %}{% if c.desktop_only %} on-desktop-only{% endif %}" {{ b.shopify_attributes }}>
+          {%- if c.link != blank -%}<a class="on-card__hit" href="{{ c.link }}" aria-label="{{ c.title | strip_newlines | escape }}"></a>{%- endif -%}
+          {%- if c.image != blank or c.image_asset != blank -%}
+            <div class="on-card__media" style="--on-fx:{{ c.focus_x }}%;--on-fy:{{ c.focus_y }}%;--on-zoom:{{ c.zoom | divided_by: 100.0 }};">
+              {%- if c.image != blank -%}{{ c.image | image_url: width: 1200 | image_tag: loading: 'lazy', alt: c.image_alt }}{%- else -%}<img width="1200" height="1200" src="{{ c.image_asset | asset_url }}" alt="{{ c.image_alt | escape }}" loading="lazy" decoding="async">{%- endif -%}
+            </div>
+          {%- endif -%}
+          <div class="on-card__body">
+            {%- if c.number != blank -%}<span class="on-card__number">{{ c.number | escape }}</span>{%- endif -%}
+            {%- if c.title != blank -%}<h3 class="on-card__title">{{ c.title | escape | newline_to_br }}</h3>{%- endif -%}
+            {%- if c.text != blank -%}<p class="on-card__text">{{ c.text | escape | newline_to_br }}</p>{%- endif -%}
+          </div>
+          {%- if c.link != blank and s.card_arrow -%}<span class="on-round on-card__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span>{%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if s.mobile_layout == 'carousel' and cards.size > 1 -%}
+      <div class="on-carousel-nav"><button type="button" class="on-round" data-on-slide="-1" aria-label="{{ s.prev_label | escape }}">{% render 'icon', name: 'arrow-left' %}</button><div class="on-dots" aria-hidden="true">{%- for b in cards -%}<span{% if forloop.first %} class="is-active"{% endif %}></span>{%- endfor -%}</div><button type="button" class="on-round" data-on-slide="1" aria-label="{{ s.next_label | escape }}">{% render 'icon', name: 'arrow' %}</button></div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cartes ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre (lien vers cette section)" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "grid", "options": [
+      { "value": "details", "label": "Texte à gauche, gros plans légendés" },
+      { "value": "grid", "label": "Titre au-dessus, cartes légendées" },
+      { "value": "scenes", "label": "Photos avec titre posé et flèche" },
+      { "value": "macros", "label": "Texte à gauche, petits gros plans" },
+      { "value": "thumbs", "label": "Vignettes du produit et texte" },
+      { "value": "numbered", "label": "Grande photo et points numérotés" }
+    ] },
+    { "type": "select", "id": "show_on", "label": "Affichage", "default": "all", "options": [ { "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" } ] },
+    { "type": "text", "id": "side_image_asset", "label": "Grande photo à gauche (points numérotés, fichier du thème)" },
+    { "type": "text", "id": "side_image_alt", "label": "Texte alternatif de la grande photo" },
+    { "type": "range", "id": "side_focus_x", "label": "Grande photo : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "side_focus_y", "label": "Grande photo : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "prev_label", "label": "Carrousel : précédent (lecteurs d'écran)", "default": "Précédent" },
+    { "type": "text", "id": "next_label", "label": "Carrousel : suivant (lecteurs d'écran)", "default": "Suivant" },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "white", "options": [
+      { "value": "dark", "label": "Graphite" },
+      { "value": "light", "label": "Gris clair" },
+      { "value": "white", "label": "Blanc" },
+      { "value": "lime", "label": "Lime" }
+    ] },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone", "info": "Vide : le même." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "checkbox", "id": "text_mobile_only", "label": "Texte sur téléphone seulement", "default": false },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "outline", "options": [
+      { "value": "lime", "label": "Lime" },
+      { "value": "dark", "label": "Graphite" },
+      { "value": "outline", "label": "Contour" },
+      { "value": "outline-light", "label": "Contour clair" }
+    ] },
+    { "type": "url", "id": "head_link", "label": "Lien de la flèche (vignettes)" },
+    { "type": "checkbox", "id": "title_top", "label": "Titres en haut des photos (grandes photos)", "default": false },
+    { "type": "checkbox", "id": "card_arrow", "label": "Flèche ronde sur les cartes reliées", "default": true },
+    { "type": "range", "id": "columns", "label": "Cartes par ligne", "min": 1, "max": 6, "step": 1, "default": 3 },
+    { "type": "select", "id": "ratio", "label": "Format des photos", "default": "4 / 3", "options": [
+      { "value": "1 / 1", "label": "Carré" },
+      { "value": "4 / 3", "label": "Paysage" },
+      { "value": "16 / 9", "label": "Large" },
+      { "value": "3 / 4", "label": "Portrait" }
+    ] },
+    { "type": "range", "id": "card_height", "label": "Hauteur des photos (0 : selon le format)", "min": 0, "max": 700, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "mobile_card_height", "label": "Hauteur des photos sur téléphone (0 : selon le format)", "min": 0, "max": 600, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "side_width", "label": "Largeur de la colonne de texte", "min": 160, "max": 700, "step": 2, "unit": "px", "default": 360 },
+    { "type": "range", "id": "gap", "label": "Espace entre les cartes", "min": 0, "max": 60, "step": 1, "unit": "px", "default": 16 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 18, "max": 120, "step": 1, "unit": "px", "default": 46 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 30 },
+    { "type": "select", "id": "mobile_layout", "label": "Sur téléphone", "default": "stack", "options": [
+      { "value": "stack", "label": "Cartes empilées" },
+      { "value": "three", "label": "Trois colonnes" },
+      { "value": "two", "label": "Deux colonnes" },
+      { "value": "rows", "label": "Photo et texte côte à côte" },
+      { "value": "carousel", "label": "Carrousel" }
+    ] },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 48 }
+  ],
+  "blocks": [
+    { "type": "card", "name": "Carte", "settings": [
+      { "type": "checkbox", "id": "mobile_only", "label": "Sur téléphone seulement", "default": false },
+      { "type": "checkbox", "id": "desktop_only", "label": "Sur ordinateur seulement", "default": false },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+      { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "text", "id": "number", "label": "Numéro", "info": "Ex. : 01. Vide : aucun." },
+      { "type": "textarea", "id": "title", "label": "Titre", "default": "La matière" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "presets": [ { "name": "Cartes ONDE", "blocks": [ { "type": "card" }, { "type": "card" }, { "type": "card" } ] } ]
+}
+{% endschema %}

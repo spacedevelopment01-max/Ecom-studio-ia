@@ -1,0 +1,1716 @@
+{
+ "_note": "Panneaux des six planches (rectangles aux pixels natifs) et visuels de contrôle découpés dans ces panneaux. Coordonnées des visuels : panneau mis à 1440 px (ordinateur) ou 390 px (téléphone) de large. erase : zones de texte des maquettes effacées (retouche par diffusion) pour ne jamais figer un texte dans une image.",
+ "panels": {
+  "d-accueil": {
+   "sheet": "01_ordinateur_accueil_produit.png",
+   "box": [
+    17,
+    28,
+    649,
+    1187
+   ],
+   "width": 1440
+  },
+  "d-produit": {
+   "sheet": "01_ordinateur_accueil_produit.png",
+   "box": [
+    666,
+    28,
+    1297,
+    1181
+   ],
+   "width": 1440
+  },
+  "d-tirage": {
+   "sheet": "02_ordinateur_tirage_coven_creations_faq.png",
+   "box": [
+    17,
+    23,
+    515,
+    862
+   ],
+   "width": 1440
+  },
+  "d-coven": {
+   "sheet": "02_ordinateur_tirage_coven_creations_faq.png",
+   "box": [
+    532,
+    24,
+    1010,
+    861
+   ],
+   "width": 1440
+  },
+  "d-creations": {
+   "sheet": "02_ordinateur_tirage_coven_creations_faq.png",
+   "box": [
+    17,
+    887,
+    516,
+    1514
+   ],
+   "width": 1440
+  },
+  "d-faq": {
+   "sheet": "02_ordinateur_tirage_coven_creations_faq.png",
+   "box": [
+    532,
+    887,
+    1010,
+    1514
+   ],
+   "width": 1440
+  },
+  "d-panier": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    13,
+    25,
+    433,
+    537
+   ],
+   "width": 1440
+  },
+  "d-commande": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    449,
+    25,
+    863,
+    537
+   ],
+   "width": 1440
+  },
+  "d-confirmation": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    881,
+    25,
+    1300,
+    537
+   ],
+   "width": 1440
+  },
+  "d-compte": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    13,
+    567,
+    431,
+    1061
+   ],
+   "width": 1440
+  },
+  "d-contact": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    449,
+    567,
+    863,
+    1055
+   ],
+   "width": 1440
+  },
+  "d-informations": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    881,
+    567,
+    1300,
+    1061
+   ],
+   "width": 1440
+  },
+  "d-404": {
+   "sheet": "03_ordinateur_achat_compte_contact_informations.png",
+   "box": [
+    11,
+    1067,
+    1299,
+    1189
+   ],
+   "width": 1440
+  },
+  "m-accueil": {
+   "sheet": "04_mobile_accueil_produit.png",
+   "box": [
+    30,
+    0,
+    532,
+    1536
+   ],
+   "width": 390
+  },
+  "m-produit": {
+   "sheet": "04_mobile_accueil_produit.png",
+   "box": [
+    560,
+    0,
+    994,
+    1536
+   ],
+   "width": 390
+  },
+  "m-tirage": {
+   "sheet": "05_mobile_tirage_coven_creations_faq.png",
+   "box": [
+    12,
+    28,
+    342,
+    1121
+   ],
+   "width": 390
+  },
+  "m-coven": {
+   "sheet": "05_mobile_tirage_coven_creations_faq.png",
+   "box": [
+    360,
+    28,
+    689,
+    1121
+   ],
+   "width": 390
+  },
+  "m-creations": {
+   "sheet": "05_mobile_tirage_coven_creations_faq.png",
+   "box": [
+    703,
+    28,
+    1034,
+    1121
+   ],
+   "width": 390
+  },
+  "m-faq": {
+   "sheet": "05_mobile_tirage_coven_creations_faq.png",
+   "box": [
+    1050,
+    28,
+    1382,
+    1121
+   ],
+   "width": 390
+  },
+  "m-panier": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    14,
+    29,
+    254,
+    1010
+   ],
+   "width": 390
+  },
+  "m-commande": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    267,
+    29,
+    510,
+    1010
+   ],
+   "width": 390
+  },
+  "m-confirmation": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    523,
+    29,
+    763,
+    1011
+   ],
+   "width": 390
+  },
+  "m-compte": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    775,
+    29,
+    1016,
+    1011
+   ],
+   "width": 390
+  },
+  "m-contact": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    1029,
+    29,
+    1270,
+    1010
+   ],
+   "width": 390
+  },
+  "m-informations": {
+   "sheet": "06_mobile_achat_compte_contact_informations.png",
+   "box": [
+    1283,
+    29,
+    1523,
+    1011
+   ],
+   "width": 390
+  }
+ },
+ "crops": {
+  "accueil-scene": {
+   "panel": "d-accueil",
+   "box": [
+    0,
+    84,
+    1440,
+    1012
+   ],
+   "erase": [
+    [
+     110,
+     135,
+     495,
+     168
+    ],
+    [
+     105,
+     175,
+     705,
+     480
+    ],
+    [
+     105,
+     490,
+     668,
+     605
+    ],
+    [
+     112,
+     615,
+     560,
+     692,
+     1
+    ],
+    [
+     112,
+     700,
+     482,
+     765
+    ],
+    [
+     60,
+     910,
+     425,
+     975
+    ],
+    [
+     565,
+     84,
+     875,
+     170,
+     1
+    ]
+   ]
+  },
+  "accueil-coupelle": {
+   "panel": "d-accueil",
+   "box": [
+    700,
+    1018,
+    1434,
+    1370
+   ],
+   "erase": [
+    [
+     700,
+     1080,
+     860,
+     1240,
+     1
+    ],
+    [
+     940,
+     1090,
+     1180,
+     1172,
+     1
+    ],
+    [
+     945,
+     1080,
+     1010,
+     1140,
+     1
+    ]
+   ]
+  },
+  "accueil-tiroirs": {
+   "panel": "d-accueil",
+   "box": [
+    0,
+    1375,
+    1440,
+    1790
+   ],
+   "erase": [
+    [
+     320,
+     1380,
+     1120,
+     1470
+    ]
+   ]
+  },
+  "accueil-exemple-1": {
+   "panel": "d-accueil",
+   "box": [
+    88,
+    1845,
+    470,
+    2085
+   ]
+  },
+  "accueil-exemple-2": {
+   "panel": "d-accueil",
+   "box": [
+    528,
+    1845,
+    910,
+    2085
+   ]
+  },
+  "accueil-exemple-3": {
+   "panel": "d-accueil",
+   "box": [
+    970,
+    1845,
+    1352,
+    2085
+   ]
+  },
+  "accueil-livre": {
+   "panel": "d-accueil",
+   "box": [
+    0,
+    2150,
+    790,
+    2345
+   ]
+  },
+  "accueil-bougies": {
+   "panel": "d-accueil",
+   "box": [
+    0,
+    2347,
+    1440,
+    2520
+   ],
+   "erase": [
+    [
+     500,
+     2352,
+     945,
+     2442
+    ],
+    [
+     500,
+     2444,
+     930,
+     2504,
+     1
+    ]
+   ]
+  },
+  "m-accueil-scene": {
+   "panel": "m-accueil",
+   "box": [
+    0,
+    35,
+    390,
+    512
+   ],
+   "erase": [
+    [
+     12,
+     330,
+     382,
+     398
+    ],
+    [
+     25,
+     393,
+     365,
+     411
+    ],
+    [
+     45,
+     404,
+     345,
+     452
+    ],
+    [
+     78,
+     452,
+     298,
+     482,
+     1
+    ],
+    [
+     106,
+     482,
+     272,
+     508
+    ],
+    [
+     146,
+     0,
+     222,
+     80,
+     1
+    ]
+   ]
+  },
+  "m-accueil-etape-1": {
+   "panel": "m-accueil",
+   "box": [
+    57,
+    544,
+    197,
+    584
+   ]
+  },
+  "m-accueil-etape-2": {
+   "panel": "m-accueil",
+   "box": [
+    57,
+    591,
+    197,
+    634
+   ]
+  },
+  "m-accueil-etape-3": {
+   "panel": "m-accueil",
+   "box": [
+    57,
+    640,
+    197,
+    685
+   ]
+  },
+  "m-accueil-etape-4": {
+   "panel": "m-accueil",
+   "box": [
+    57,
+    692,
+    197,
+    738
+   ]
+  },
+  "m-accueil-tiroir": {
+   "panel": "m-accueil",
+   "box": [
+    13,
+    812,
+    72,
+    845
+   ]
+  },
+  "m-accueil-coupelle": {
+   "panel": "m-accueil",
+   "box": [
+    0,
+    1040,
+    222,
+    1112
+   ]
+  },
+  "produit-photo": {
+   "panel": "d-produit",
+   "box": [
+    37,
+    166,
+    822,
+    860
+   ]
+  },
+  "produit-vignette-1": {
+   "panel": "d-produit",
+   "box": [
+    37,
+    884,
+    170,
+    992
+   ]
+  },
+  "produit-vignette-2": {
+   "panel": "d-produit",
+   "box": [
+    190,
+    884,
+    305,
+    992
+   ]
+  },
+  "produit-vignette-3": {
+   "panel": "d-produit",
+   "box": [
+    327,
+    884,
+    438,
+    992
+   ]
+  },
+  "produit-vignette-4": {
+   "panel": "d-produit",
+   "box": [
+    458,
+    884,
+    570,
+    992
+   ]
+  },
+  "produit-vignette-5": {
+   "panel": "d-produit",
+   "box": [
+    589,
+    884,
+    696,
+    992
+   ]
+  },
+  "produit-vignette-6": {
+   "panel": "d-produit",
+   "box": [
+    714,
+    884,
+    822,
+    992
+   ]
+  },
+  "produit-etape-1": {
+   "panel": "d-produit",
+   "box": [
+    94,
+    1100,
+    473,
+    1373
+   ]
+  },
+  "produit-etape-2": {
+   "panel": "d-produit",
+   "box": [
+    530,
+    1100,
+    910,
+    1373
+   ]
+  },
+  "produit-etape-3": {
+   "panel": "d-produit",
+   "box": [
+    967,
+    1100,
+    1348,
+    1373
+   ]
+  },
+  "produit-exemple-1": {
+   "panel": "d-produit",
+   "box": [
+    24,
+    1894,
+    338,
+    2125
+   ]
+  },
+  "produit-exemple-2": {
+   "panel": "d-produit",
+   "box": [
+    375,
+    1894,
+    695,
+    2125
+   ]
+  },
+  "produit-exemple-3": {
+   "panel": "d-produit",
+   "box": [
+    735,
+    1894,
+    1056,
+    2125
+   ]
+  },
+  "produit-exemple-4": {
+   "panel": "d-produit",
+   "box": [
+    1092,
+    1894,
+    1412,
+    2125
+   ]
+  },
+  "produit-bougies": {
+   "panel": "d-produit",
+   "box": [
+    0,
+    2197,
+    1440,
+    2436
+   ],
+   "erase": [
+    [
+     140,
+     2210,
+     800,
+     2310
+    ],
+    [
+     255,
+     2320,
+     668,
+     2392,
+     1
+    ]
+   ]
+  },
+  "m-produit-photo": {
+   "panel": "m-produit",
+   "box": [
+    0,
+    41,
+    390,
+    365
+   ],
+   "erase": [
+    [
+     12,
+     86,
+     190,
+     110
+    ],
+    [
+     146,
+     0,
+     236,
+     94,
+     1
+    ],
+    [
+     6,
+     203,
+     34,
+     234
+    ],
+    [
+     358,
+     203,
+     386,
+     234
+    ]
+   ]
+  },
+  "m-produit-vignette-1": {
+   "panel": "m-produit",
+   "box": [
+    19,
+    371,
+    98,
+    446
+   ]
+  },
+  "m-produit-vignette-2": {
+   "panel": "m-produit",
+   "box": [
+    106,
+    371,
+    186,
+    446
+   ]
+  },
+  "m-produit-vignette-3": {
+   "panel": "m-produit",
+   "box": [
+    194,
+    371,
+    277,
+    446
+   ]
+  },
+  "m-produit-vignette-4": {
+   "panel": "m-produit",
+   "box": [
+    284,
+    371,
+    368,
+    446
+   ]
+  },
+  "m-produit-etape-1": {
+   "panel": "m-produit",
+   "box": [
+    21,
+    822,
+    96,
+    872
+   ]
+  },
+  "m-produit-etape-2": {
+   "panel": "m-produit",
+   "box": [
+    106,
+    822,
+    189,
+    872
+   ]
+  },
+  "m-produit-etape-3": {
+   "panel": "m-produit",
+   "box": [
+    199,
+    822,
+    276,
+    872
+   ]
+  },
+  "m-produit-etape-4": {
+   "panel": "m-produit",
+   "box": [
+    286,
+    822,
+    370,
+    872
+   ]
+  },
+  "m-produit-exemple-1": {
+   "panel": "m-produit",
+   "box": [
+    21,
+    1100,
+    189,
+    1229
+   ]
+  },
+  "m-produit-exemple-2": {
+   "panel": "m-produit",
+   "box": [
+    201,
+    1100,
+    370,
+    1229
+   ]
+  },
+  "tirage-scene": {
+   "panel": "d-tirage",
+   "box": [
+    0,
+    92,
+    1440,
+    650
+   ],
+   "erase": [
+    [
+     80,
+     160,
+     770,
+     345
+    ],
+    [
+     80,
+     360,
+     640,
+     548
+    ],
+    [
+     565,
+     92,
+     875,
+     172,
+     1
+    ]
+   ]
+  },
+  "tirage-etape-1": {
+   "panel": "d-tirage",
+   "box": [
+    32,
+    830,
+    350,
+    1085
+   ]
+  },
+  "tirage-etape-2": {
+   "panel": "d-tirage",
+   "box": [
+    372,
+    830,
+    698,
+    1085
+   ]
+  },
+  "tirage-etape-3": {
+   "panel": "d-tirage",
+   "box": [
+    716,
+    830,
+    1058,
+    1085
+   ]
+  },
+  "tirage-etape-4": {
+   "panel": "d-tirage",
+   "box": [
+    1082,
+    830,
+    1428,
+    1085
+   ]
+  },
+  "tirage-famille-1": {
+   "panel": "d-tirage",
+   "box": [
+    34,
+    1375,
+    226,
+    1570
+   ]
+  },
+  "tirage-famille-2": {
+   "panel": "d-tirage",
+   "box": [
+    260,
+    1375,
+    456,
+    1570
+   ]
+  },
+  "tirage-famille-3": {
+   "panel": "d-tirage",
+   "box": [
+    484,
+    1375,
+    686,
+    1570
+   ]
+  },
+  "tirage-famille-4": {
+   "panel": "d-tirage",
+   "box": [
+    730,
+    1375,
+    940,
+    1570
+   ]
+  },
+  "tirage-famille-5": {
+   "panel": "d-tirage",
+   "box": [
+    970,
+    1375,
+    1176,
+    1570
+   ]
+  },
+  "tirage-famille-6": {
+   "panel": "d-tirage",
+   "box": [
+    1210,
+    1375,
+    1426,
+    1570
+   ]
+  },
+  "tirage-tableau": {
+   "panel": "d-tirage",
+   "box": [
+    90,
+    1722,
+    560,
+    1930
+   ]
+  },
+  "tirage-questions": {
+   "panel": "d-tirage",
+   "box": [
+    0,
+    2100,
+    1440,
+    2245
+   ],
+   "erase": [
+    [
+     280,
+     2118,
+     860,
+     2205
+    ],
+    [
+     845,
+     2138,
+     1065,
+     2207,
+     1
+    ]
+   ]
+  },
+  "coven-scene": {
+   "panel": "d-coven",
+   "box": [
+    0,
+    92,
+    1440,
+    1280
+   ],
+   "erase": [
+    [
+     40,
+     255,
+     770,
+     432
+    ],
+    [
+     40,
+     440,
+     705,
+     592
+    ],
+    [
+     565,
+     92,
+     875,
+     212,
+     1
+    ]
+   ]
+  },
+  "coven-bougie": {
+   "panel": "d-coven",
+   "box": [
+    0,
+    1280,
+    1440,
+    1925
+   ],
+   "erase": [
+    [
+     40,
+     1350,
+     760,
+     1660
+    ],
+    [
+     185,
+     1690,
+     690,
+     1800,
+     1
+    ]
+   ]
+  },
+  "coven-photo-1": {
+   "panel": "d-coven",
+   "box": [
+    762,
+    1312,
+    1128,
+    1613
+   ]
+  },
+  "coven-photo-2": {
+   "panel": "d-coven",
+   "box": [
+    1152,
+    1312,
+    1413,
+    1613
+   ]
+  },
+  "coven-photo-3": {
+   "panel": "d-coven",
+   "box": [
+    762,
+    1637,
+    1028,
+    1893
+   ]
+  },
+  "coven-photo-4": {
+   "panel": "d-coven",
+   "box": [
+    1052,
+    1637,
+    1413,
+    1893
+   ]
+  },
+  "creations-scene": {
+   "panel": "d-creations",
+   "box": [
+    0,
+    90,
+    1440,
+    1605
+   ],
+   "erase": [
+    [
+     150,
+     180,
+     1290,
+     350
+    ],
+    [
+     400,
+     770,
+     1040,
+     850
+    ],
+    [
+     405,
+     1480,
+     990,
+     1570,
+     1
+    ],
+    [
+     565,
+     90,
+     875,
+     190,
+     1
+    ]
+   ]
+  },
+  "creations-1": {
+   "panel": "d-creations",
+   "box": [
+    44,
+    864,
+    463,
+    1146
+   ]
+  },
+  "creations-2": {
+   "panel": "d-creations",
+   "box": [
+    493,
+    864,
+    907,
+    1146
+   ]
+  },
+  "creations-3": {
+   "panel": "d-creations",
+   "box": [
+    942,
+    864,
+    1396,
+    1146
+   ]
+  },
+  "creations-4": {
+   "panel": "d-creations",
+   "box": [
+    44,
+    1171,
+    463,
+    1441
+   ]
+  },
+  "creations-5": {
+   "panel": "d-creations",
+   "box": [
+    493,
+    1171,
+    907,
+    1441
+   ]
+  },
+  "creations-6": {
+   "panel": "d-creations",
+   "box": [
+    942,
+    1171,
+    1396,
+    1441
+   ]
+  },
+  "faq-scene": {
+   "panel": "d-faq",
+   "box": [
+    0,
+    90,
+    1440,
+    505
+   ],
+   "erase": [
+    [
+     150,
+     240,
+     1300,
+     420
+    ],
+    [
+     565,
+     90,
+     875,
+     215,
+     1
+    ]
+   ]
+  },
+  "faq-livres": {
+   "panel": "d-faq",
+   "box": [
+    1140,
+    1385,
+    1410,
+    1660
+   ]
+  },
+  "panier-scene": {
+   "panel": "d-panier",
+   "box": [
+    0,
+    100,
+    1440,
+    1385
+   ],
+   "erase": [
+    [
+     30,
+     185,
+     945,
+     435
+    ],
+    [
+     55,
+     780,
+     1395,
+     1385,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     195,
+     1
+    ]
+   ]
+  },
+  "panier-ligne": {
+   "panel": "d-panier",
+   "box": [
+    124,
+    845,
+    281,
+    988
+   ]
+  },
+  "commande-scene": {
+   "panel": "d-commande",
+   "box": [
+    0,
+    100,
+    1440,
+    1530
+   ],
+   "erase": [
+    [
+     150,
+     245,
+     1300,
+     425
+    ],
+    [
+     120,
+     420,
+     1320,
+     530,
+     1
+    ],
+    [
+     35,
+     535,
+     1415,
+     1530,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     205,
+     1
+    ]
+   ]
+  },
+  "confirmation-scene": {
+   "panel": "d-confirmation",
+   "box": [
+    0,
+    100,
+    1440,
+    1520
+   ],
+   "erase": [
+    [
+     150,
+     265,
+     1290,
+     640
+    ],
+    [
+     225,
+     628,
+     1240,
+     1112,
+     2
+    ],
+    [
+     140,
+     1125,
+     1310,
+     1500,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     205,
+     1
+    ]
+   ]
+  },
+  "compte-scene": {
+   "panel": "d-compte",
+   "box": [
+    0,
+    100,
+    1440,
+    1495
+   ],
+   "erase": [
+    [
+     40,
+     245,
+     790,
+     385
+    ],
+    [
+     55,
+     392,
+     640,
+     1128,
+     2
+    ],
+    [
+     50,
+     1158,
+     1380,
+     1480,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     205,
+     1
+    ]
+   ]
+  },
+  "contact-scene": {
+   "panel": "d-contact",
+   "box": [
+    0,
+    100,
+    1440,
+    1495
+   ],
+   "erase": [
+    [
+     50,
+     235,
+     1310,
+     380
+    ],
+    [
+     45,
+     400,
+     745,
+     1365,
+     2
+    ],
+    [
+     765,
+     860,
+     1420,
+     1410,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     205,
+     1
+    ]
+   ]
+  },
+  "informations-scene": {
+   "panel": "d-informations",
+   "box": [
+    0,
+    100,
+    1440,
+    1495
+   ],
+   "erase": [
+    [
+     150,
+     225,
+     1300,
+     375
+    ],
+    [
+     50,
+     372,
+     1390,
+     1495,
+     2
+    ],
+    [
+     565,
+     100,
+     875,
+     205,
+     1
+    ]
+   ]
+  },
+  "404-scene": {
+   "panel": "d-404",
+   "box": [
+    0,
+    0,
+    1440,
+    136
+   ],
+   "erase": [
+    [
+     500,
+     0,
+     940,
+     136,
+     1
+    ]
+   ]
+  },
+  "m-tirage-scene": {
+   "panel": "m-tirage",
+   "box": [
+    0,
+    68,
+    390,
+    350
+   ],
+   "erase": [
+    [
+     10,
+     108,
+     300,
+     192
+    ],
+    [
+     10,
+     192,
+     300,
+     236
+    ],
+    [
+     120,
+     0,
+     270,
+     120,
+     1
+    ]
+   ]
+  },
+  "m-coven-scene": {
+   "panel": "m-coven",
+   "box": [
+    0,
+    69,
+    390,
+    632
+   ],
+   "erase": [
+    [
+     90,
+     118,
+     300,
+     240
+    ],
+    [
+     120,
+     0,
+     270,
+     120,
+     1
+    ]
+   ]
+  },
+  "m-coven-photo-3": {
+   "panel": "m-coven",
+   "box": [
+    266,
+    762,
+    388,
+    858
+   ]
+  },
+  "m-coven-photo-6": {
+   "panel": "m-coven",
+   "box": [
+    266,
+    862,
+    388,
+    995
+   ]
+  },
+  "m-creations-scene": {
+   "panel": "m-creations",
+   "box": [
+    0,
+    68,
+    390,
+    282
+   ],
+   "erase": [
+    [
+     10,
+     120,
+     385,
+     280
+    ],
+    [
+     120,
+     0,
+     270,
+     120,
+     1
+    ]
+   ]
+  },
+  "m-creations-1": {
+   "panel": "m-creations",
+   "box": [
+    12,
+    312,
+    382,
+    462
+   ]
+  },
+  "m-creations-2": {
+   "panel": "m-creations",
+   "box": [
+    12,
+    505,
+    382,
+    652
+   ]
+  },
+  "m-creations-3": {
+   "panel": "m-creations",
+   "box": [
+    12,
+    698,
+    382,
+    848
+   ]
+  },
+  "m-creations-4": {
+   "panel": "m-creations",
+   "box": [
+    12,
+    890,
+    382,
+    1028
+   ]
+  },
+  "m-faq-scene": {
+   "panel": "m-faq",
+   "box": [
+    0,
+    68,
+    390,
+    305
+   ],
+   "erase": [
+    [
+     15,
+     120,
+     380,
+     262
+    ],
+    [
+     120,
+     0,
+     270,
+     120,
+     1
+    ]
+   ]
+  },
+  "m-panier-scene": {
+   "panel": "m-panier",
+   "box": [
+    0,
+    80,
+    390,
+    470
+   ],
+   "erase": [
+    [
+     15,
+     280,
+     375,
+     452
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  },
+  "m-commande-scene": {
+   "panel": "m-commande",
+   "box": [
+    0,
+    79,
+    390,
+    420
+   ],
+   "erase": [
+    [
+     15,
+     180,
+     375,
+     415,
+     1
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  },
+  "m-confirmation-scene": {
+   "panel": "m-confirmation",
+   "box": [
+    0,
+    80,
+    390,
+    520
+   ],
+   "erase": [
+    [
+     95,
+     160,
+     295,
+     295,
+     1
+    ],
+    [
+     10,
+     320,
+     380,
+     505
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  },
+  "m-compte-scene": {
+   "panel": "m-compte",
+   "box": [
+    0,
+    79,
+    390,
+    480
+   ],
+   "erase": [
+    [
+     15,
+     325,
+     375,
+     470
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  },
+  "m-contact-scene": {
+   "panel": "m-contact",
+   "box": [
+    0,
+    80,
+    390,
+    520
+   ],
+   "erase": [
+    [
+     15,
+     185,
+     375,
+     330
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  },
+  "m-informations-scene": {
+   "panel": "m-informations",
+   "box": [
+    0,
+    80,
+    390,
+    360
+   ],
+   "erase": [
+    [
+     15,
+     190,
+     375,
+     345
+    ],
+    [
+     95,
+     0,
+     295,
+     180,
+     1
+    ]
+   ]
+  }
+ }
+}
