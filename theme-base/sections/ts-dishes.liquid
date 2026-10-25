@@ -1,0 +1,60 @@
+{%- comment -%}
+  TABLE SAISON : plats mis en avant (accueil « Nos incontournables », page « Au fil des saisons »). Cartes avec photo,
+  nom, description, prix et pastille végétarienne ; style « carte » ou « sans cadre ». Un plat sans nom n'est pas affiché.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-dishes ts-dishes--{{ s.style }}">
+  <div class="ts-wrap">
+    {%- if s.eyebrow != blank or s.heading != blank -%}
+      <div class="ts-dishes__head">
+        {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="ts-title ts-title--m">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.style == 'plain' -%}<span class="ts-rule" aria-hidden="true" style="color: var(--ts-wine)"></span>{%- endif -%}
+        {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="ts-dishes__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.name == blank -%}{%- continue -%}{%- endif -%}
+        <article class="ts-dish" {{ block.shopify_attributes }}>
+          {% render 'ts-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.name, pos: block.settings.image_position, sizes: '(min-width: 750px) 33vw, 100vw' %}
+          <div class="ts-dish__body">
+            <h3 class="ts-dish__name">{{ block.settings.name }}{% if block.settings.vegetarian %}<span class="ts-veg" title="{{ s.veg_label | escape }}">{% render 'ts-icon', name: 'leaf' %}<span class="ts-visually-hidden">{{ s.veg_label }}</span></span>{% endif %}</h3>
+            {%- if block.settings.description != blank -%}<p class="ts-dish__desc">{{ block.settings.description }}</p>{%- endif -%}
+            {%- if block.settings.price != blank -%}<p class="ts-dish__price">{{ block.settings.price }}</p>{%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+    {%- if s.more_label != blank -%}<a class="ts-btn ts-btn--block ts-dishes__more" href="{{ s.more_link | default: '/pages/la-carte' }}">{{ s.more_label }}</a>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Plats en avant",
+  "class": "ts-dishes-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Des plats de saison, tout simplement." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "style", "label": "Style", "default": "cards", "options": [{ "value": "cards", "label": "Cartes encadrées" }, { "value": "plain", "label": "Sans cadre" }] },
+    { "type": "text", "id": "veg_label", "label": "Mention végétarienne", "default": "Plat végétarien" },
+    { "type": "text", "id": "more_label", "label": "Bouton sur téléphone" },
+    { "type": "url", "id": "more_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    { "type": "dish", "name": "Plat", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "name", "label": "Nom du plat" },
+      { "type": "textarea", "id": "description", "label": "Description" },
+      { "type": "text", "id": "price", "label": "Prix affiché", "info": "Ex. « 22 € ». Vide : aucun prix affiché." },
+      { "type": "checkbox", "id": "vegetarian", "label": "Plat végétarien", "default": false }
+    ] }
+  ],
+  "presets": [{ "name": "Plats en avant" }]
+}
+{% endschema %}

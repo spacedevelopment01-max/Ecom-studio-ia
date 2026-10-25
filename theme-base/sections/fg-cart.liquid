@@ -1,0 +1,110 @@
+{%- comment -%}
+  FRAISE : panier (planches 03 et 07) — en-tête du tableau (Produit, Prix, Quantité, Total), une ligne par FORMAT : photo de
+  la bonne quantité, marque, nom, format, unités au total (lots × unités par lot), prix du lot, quantité de lots − / +,
+  suppression, total de la ligne ; « Continuer mes achats » ; récapitulatif (sous-total, livraison « calculée à l'étape
+  suivante », total des produits hors livraison : jamais un total final tant que la livraison est inconnue), « Passer
+  commande ». Panier vide (planche 07) : titre, photo, texte, bouton. Une ligne de 1 lot de 3 flacons (33,20 €) n'est
+  jamais confondue avec 3 lots d'un flacon (49,80 €) : les prix viennent du panier de la boutique.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-cart{% if cart.item_count == 0 %} is-empty{% endif %}" data-fg-cart>
+  <div class="fg-c">
+    {%- if cart.item_count == 0 -%}
+      <div class="fg-cart__empty">
+        {% render 'fg-title', text: s.empty_title, tag: 'h2', class: 'fg-cart__etitle' %}
+        <span class="fg-cart__eart" aria-hidden="true">{% render 'fg-art', name: 'petals' %}{% render 'fg-art', name: 'sparks' %}</span>
+        {% render 'fg-img', asset: s.empty_image_asset, alt: '', class: 'fg-cart__eimg' %}
+        <p class="fg-cart__etext">{{ s.empty_text }}</p>
+        {%- if s.empty_sub != blank -%}<p class="fg-cart__esub">{{ s.empty_sub }}</p>{%- endif -%}
+        <a class="fg-btn fg-btn--red fg-cart__ebtn" href="{{ s.empty_link | default: routes.all_products_collection_url }}">{{ s.empty_button }}</a>
+      </div>
+    {%- else -%}
+      <div class="fg-cart__table" role="table" aria-label="{{ s.table_label | escape }}">
+        <div class="fg-cart__head" role="row"><span role="columnheader">{{ s.col_product }}</span><span role="columnheader">{{ s.col_price }}</span><span role="columnheader">{{ s.col_qty }}</span><span role="columnheader">{{ s.col_total }}</span></div>
+        {%- for item in cart.items -%}
+          {%- liquid
+            assign per = item.variant.option1 | split: ' ' | first | plus: 0
+            assign units = per | times: item.quantity
+            assign less = item.quantity | minus: 1
+            assign more = item.quantity | plus: 1
+          -%}
+          <div class="fg-cart__row" role="row" data-units="{{ units }}">
+            <div class="fg-cart__prod" role="cell">
+              <a class="fg-cart__thumb" href="{{ item.url }}" tabindex="-1" aria-hidden="true">{%- if item.image -%}{{ item.image | image_url: width: 300 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</a>
+              <div class="fg-cart__ptext">
+                <p class="fg-cart__name">{{ s.line_brand | default: item.product.title }}</p>
+                {%- if s.line_brand != blank -%}<p class="fg-cart__sub">{{ item.product.title }}</p>{%- endif -%}
+                {%- unless item.variant.title == 'Default Title' -%}<p class="fg-cart__sub fg-cart__variant">{{ item.variant.title }}</p>{%- endunless -%}
+                {%- if per > 0 and units > 1 -%}<p class="fg-cart__units">{{ s.units_label | replace: '[n]', units }}</p>{%- endif -%}
+                <p class="fg-cart__mprice">{{ item.final_line_price | money }}</p>
+              </div>
+            </div>
+            <p class="fg-cart__price" role="cell"><span class="visually-hidden">{{ s.col_price }} : </span>{{ item.price | money }}</p>
+            <div class="fg-cart__qty" role="cell">
+              <div class="fg-qty">
+                <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ less }}" aria-label="{{ s.less_label | escape }} — {{ item.variant.title | escape }}" rel="nofollow">{% render 'fg-icon', name: 'minus' %}</a>
+                <span><span class="visually-hidden">{{ s.packs_label }} : </span>{{ item.quantity }}</span>
+                <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ more }}" aria-label="{{ s.more_label | escape }} — {{ item.variant.title | escape }}" rel="nofollow">{% render 'fg-icon', name: 'plus' %}</a>
+              </div>
+              <a class="fg-cart__remove" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity=0" aria-label="{{ s.remove_label | escape }} — {{ item.variant.title | escape }}" rel="nofollow">{% render 'fg-icon', name: 'trash' %}</a>
+            </div>
+            <p class="fg-cart__total" role="cell"><span class="visually-hidden">{{ s.col_total }} : </span>{{ item.final_line_price | money }}</p>
+          </div>
+        {%- endfor -%}
+      </div>
+      <a class="fg-cart__continue" href="{{ s.continue_link | default: routes.all_products_collection_url }}">{% render 'fg-icon', name: 'arrow-left' %}<span>{{ s.continue_label }}</span></a>
+      <div class="fg-cart__sum">
+        <dl>
+          <div><dt>{{ s.subtotal_label }}</dt><dd data-fg-cart-subtotal>{{ cart.total_price | money }}</dd></div>
+          <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
+        </dl>
+        <div class="fg-cart__grand"><span>{{ s.total_label }}{%- if s.total_note != blank -%} <small>({{ s.total_note }})</small>{%- endif -%}</span><span class="fg-cart__gval">{{ cart.total_price | money }}</span></div>
+        {%- if s.checkout_page != blank -%}
+          <a class="fg-btn fg-btn--red fg-cart__checkout" href="{{ s.checkout_page }}">{{ s.checkout_label }}{% render 'fg-icon', name: 'arrow' %}</a>
+        {%- else -%}
+          <form action="{{ routes.cart_url }}" method="post" class="fg-cart__form"><button type="submit" name="checkout" class="fg-btn fg-btn--red fg-cart__checkout">{{ s.checkout_label }}{% render 'fg-icon', name: 'arrow' %}</button></form>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+  {%- if cart.item_count > 0 -%}{% render 'fg-img', asset: s.foot_image_asset, alt: '', pos: s.foot_image_position, zoom: s.foot_image_zoom, pos_mobile: s.foot_image_position, zoom_mobile: s.foot_image_zoom, class: 'fg-cart__foot' %}{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Panier FRAISE",
+  "class": "fg-cart-section",
+  "settings": [
+    { "type": "text", "id": "table_label", "label": "Nom du tableau (lecteurs d'écran)", "default": "Contenu du panier" },
+    { "type": "text", "id": "col_product", "label": "Colonne produit", "default": "Produit" },
+    { "type": "text", "id": "col_price", "label": "Colonne prix", "default": "Prix" },
+    { "type": "text", "id": "col_qty", "label": "Colonne quantité", "default": "Quantité" },
+    { "type": "text", "id": "col_total", "label": "Colonne total", "default": "Total" },
+    { "type": "text", "id": "line_brand", "label": "Marque affichée sur les lignes", "info": "Vide : le nom du produit seul." },
+    { "type": "text", "id": "units_label", "label": "Unités d'une ligne", "default": "[n] unités au total", "info": "[n] : lots × unités par lot." },
+    { "type": "text", "id": "packs_label", "label": "Quantité de lots (lecteurs d'écran)", "default": "Lots" },
+    { "type": "text", "id": "less_label", "label": "Moins (lecteurs d'écran)", "default": "Retirer un lot" },
+    { "type": "text", "id": "more_label", "label": "Plus (lecteurs d'écran)", "default": "Ajouter un lot" },
+    { "type": "text", "id": "remove_label", "label": "Supprimer (lecteurs d'écran)", "default": "Supprimer" },
+    { "type": "text", "id": "continue_label", "label": "Continuer les achats", "default": "Continuer mes achats" },
+    { "type": "url", "id": "continue_link", "label": "Lien « continuer »" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Montant de la livraison", "default": "Calculée à l’étape suivante" },
+    { "type": "text", "id": "total_label", "label": "Total des produits", "default": "Total des produits" },
+    { "type": "text", "id": "total_note", "label": "Précision du total", "default": "hors livraison" },
+    { "type": "text", "id": "checkout_label", "label": "Bouton de commande", "default": "Passer commande" },
+    { "type": "url", "id": "checkout_page", "label": "Page de commande de démonstration", "info": "Vide : le paiement Shopify." },
+    { "type": "textarea", "id": "empty_title", "label": "Panier vide : titre", "default": "Votre panier\nvous attend." },
+    { "type": "text", "id": "empty_image_asset", "label": "Panier vide : photo (fichier du thème)" },
+    { "type": "text", "id": "empty_text", "label": "Panier vide : texte", "default": "Votre panier est vide." },
+    { "type": "text", "id": "empty_sub", "label": "Panier vide : phrase" },
+    { "type": "text", "id": "empty_button", "label": "Panier vide : bouton", "default": "Découvrir la boutique" },
+    { "type": "url", "id": "empty_link", "label": "Panier vide : lien du bouton" },
+    { "type": "text", "id": "foot_image_asset", "label": "Photo du bas (téléphone, fichier du thème)" },
+    { "type": "text", "id": "foot_image_position", "label": "Cadrage de la photo du bas", "default": "50% 50%" },
+    { "type": "range", "id": "foot_image_zoom", "label": "Agrandissement de la photo du bas", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
+  ],
+  "presets": [{ "name": "Panier FRAISE" }]
+}
+{% endschema %}

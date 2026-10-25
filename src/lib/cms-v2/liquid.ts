@@ -7,6 +7,7 @@
  *  - conversion de la syntaxe propre à Shopify vers celle du moteur PHP (schéma retiré, {% liquid %} déplié,
  *    {% render %} → {% include %}).
  */
+import { FONT_FILES } from "../theme/render";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 import type { ThemeFiles } from "../theme/compile";
 
@@ -134,6 +135,23 @@ export function flatStrings(files: ThemeFiles, lang: string): Record<string, str
 }
 
 /** Réglages globaux du thème (valeurs par défaut du schéma + réglages du projet), comme dans Shopify. */
+/**
+ * Réglages « police » (font_picker) pour un moteur de rendu qui ne connaît pas les objets police de Shopify (moteur PHP
+ * de l'export WordPress) : l'identifiant (« inter_n4 ») devient un objet {family, fallback_families, weight, style}.
+ * Sans cela, `settings.type_body_font.family` était vide et une déclaration comme `font: 600 12px var(--ph-body)`
+ * devenait invalide (PHASE : pied de page plus large que l'écran du téléphone, constaté à l'installation, mission #190).
+ */
+export function fontSettingsAsObjects(files: ThemeFiles, settings: Record<string, unknown>): Record<string, unknown> {
+  const schema = JSON.parse(files.get("config/settings_schema.json") || "[]") as { settings?: SchemaSetting[] }[];
+  const fonts = new Set(schema.flatMap((g) => (g.settings ?? []).filter((s) => s.type === "font_picker").map((s) => s.id)));
+  return Object.fromEntries(Object.entries(settings).map(([k, v]) => {
+    if (!fonts.has(k) || typeof v !== "string") return [k, v];
+    const m = v.match(/^(.*)_([ni])(\d)$/);
+    const def = FONT_FILES[m?.[1] ?? ""] ?? FONT_FILES.dm_sans;
+    return [k, { handle: v, family: `"${def.family}"`, fallback_families: def.fallback, weight: m ? Number(m[3]) * 100 : 400, style: m?.[2] === "i" ? "italic" : "normal" }];
+  }));
+}
+
 export function themeSettings(files: ThemeFiles, settings: Record<string, unknown>): Record<string, unknown> {
   const schema = JSON.parse(files.get("config/settings_schema.json") || "[]") as { settings?: SchemaSetting[] }[];
   const out: Record<string, unknown> = {};

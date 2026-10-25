@@ -27,13 +27,13 @@
           assign side = 'right'
         endif
       -%}
-      <div class="cv-alt__row cv-alt__row--{{ side }}" {{ block.shopify_attributes }}>
+      <div class="cv-alt__row cv-alt__row--{{ side }}"{% if block.settings.anchor != blank %} id="{{ block.settings.anchor | handleize }}"{% endif %} {{ block.shopify_attributes }}>
         <div class="cv-alt__media cv-zoomable"{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt, role_label: block.settings.media_role, focus_x: block.settings.focus_x, focus_y: block.settings.focus_y %}</div>
         <div class="cv-alt__copy"{% render 'cv-reveal', animation: s.animation, index: forloop.index0 %}>
           {%- if block.settings.eyebrow != blank -%}<p class="cv-eyebrow">{{ block.settings.eyebrow | escape }}</p>{%- endif -%}
-          <h3 class="es-heading cv-alt__title">{{ block.settings.heading | escape }}{% if block.settings.heading_accent != blank %} <em class="cv-accent">{{ block.settings.heading_accent | escape }}</em>{% endif %}</h3>
+          <h3 class="es-heading cv-alt__title">{{ block.settings.heading | escape | newline_to_br }}{% if block.settings.heading_accent != blank %} <em class="cv-accent">{{ block.settings.heading_accent | escape }}</em>{% endif %}</h3>
           {%- if block.settings.text != blank -%}<div class="es-rte cv-alt__text">{{ block.settings.text }}</div>{%- endif -%}
-          {%- if block.settings.button_label != blank -%}<a class="es-button cv-button cv-alt__button" href="{{ block.settings.button_link | default: routes.all_products_collection_url }}">{{ block.settings.button_label | escape }}</a>{%- endif -%}
+          {%- if block.settings.button_label != blank -%}<a class="es-button cv-button cv-alt__button" href="{{ block.settings.button_link | default: routes.all_products_collection_url }}">{{ block.settings.button_label | escape }}{% if block.settings.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
         </div>
       </div>
     {%- endfor -%}
@@ -60,6 +60,7 @@
   ],
   "blocks": [
     { "type": "row", "name": "Rangée", "settings": [
+      { "type": "text", "id": "anchor", "label": "Ancre de la rangée", "info": "Ex. « choisir » : un lien vers #choisir descend jusqu'à cette rangée." },
       { "type": "image_picker", "id": "image", "label": "Visuel" },
       { "type": "text", "id": "image_asset", "label": "Fichier image fourni avec le thème" },
       { "type": "text", "id": "image_alt", "label": "Description du visuel" },
@@ -71,7 +72,8 @@
       { "type": "text", "id": "heading_accent", "label": "Fin du titre en accent" },
       { "type": "richtext", "id": "text", "label": "Texte" },
       { "type": "text", "id": "button_label", "label": "Bouton" },
-      { "type": "url", "id": "button_link", "label": "Lien du bouton" }
+      { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+      { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false }
     ] }
   ],
   "max_blocks": 6,

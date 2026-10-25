@@ -9,7 +9,8 @@
  */
 import type { ThemeOp } from "./ops";
 import { containerOf, sectionSchema, type SectionInstance, type ThemeSpec } from "./spec";
-import { entryForType, FAMILY_LIBRARY, pickT, currentDisposition, type FamilyEntry, type FamilyId } from "./section-families";
+import { entryForAnyType, FAMILY_LIBRARY, pickT, currentDisposition, type FamilyEntry, type FamilyId } from "./section-families";
+import { isOwnSectionOf, ownDispositions } from "./theme-own-sections";
 import { chromePresets, currentChromePreset, fillValue, type ChromePart } from "./family-chrome";
 import type { Lang } from "../i18n";
 
@@ -82,14 +83,24 @@ export function convertContent(spec: ThemeSpec, s: SectionInstance, toType: stri
   return { settings, blocks };
 }
 
-export type DispositionResult = { ops: ThemeOp[]; entry: FamilyEntry; dispositionId: string; changedType: boolean } | { error: { fr: string; en: string } };
+export type DispositionResult = { ops: ThemeOp[]; entry?: FamilyEntry; dispositionId: string; changedType: boolean } | { error: { fr: string; en: string } };
 
-/** Opérations pour passer une section à une autre disposition de sa fonction (famille du projet). */
-export function dispositionOps(spec: ThemeSpec, family: FamilyId, template: string, sectionId: string, dispositionId: string, fill?: (type: string) => { settings: Record<string, unknown>; blocks?: { type: string; settings: Record<string, unknown> }[] }): DispositionResult {
+/**
+ * Opérations pour passer une section à une autre disposition de sa fonction (bibliothèque commune, sans famille ; la
+ * famille transmise n'est qu'une préférence) ou, pour une section propre au thème, à une autre de ses dispositions
+ * déclarées (préréglages, réglage « Disposition ») : mêmes réglages posés, contenus conservés.
+ */
+export function dispositionOps(spec: ThemeSpec, family: FamilyId | null | undefined, template: string, sectionId: string, dispositionId: string, fill?: (type: string) => { settings: Record<string, unknown>; blocks?: { type: string; settings: Record<string, unknown> }[] }): DispositionResult {
   const s = containerOf(spec, template)?.sections[sectionId];
   if (!s) return { error: { fr: "Section introuvable.", en: "Section not found." } };
-  const entry = entryForType(family, s.type);
-  if (!entry) return { error: { fr: "Cette section ne fait pas partie de la bibliothèque de ce projet.", en: "This section isn't part of this project's library." } };
+  if (isOwnSectionOf(spec.direction, s.type)) {
+    const own = ownDispositions(sectionSchema(spec, s.type) as never, "fr").find((x) => x.id === dispositionId);
+    if (!own) return { error: { fr: "Disposition inconnue pour cette section.", en: "Unknown layout for this section." } };
+    const ops = Object.entries(own.settings).filter(([k, v]) => JSON.stringify(s.settings?.[k]) !== JSON.stringify(v)).map(([key, value]) => ({ op: "set_setting", template, section: sectionId, key, value }) as ThemeOp);
+    return { ops, dispositionId, changedType: false };
+  }
+  const entry = entryForAnyType(s.type, family);
+  if (!entry) return { error: { fr: "Cette section ne fait pas partie de la bibliothèque de sections.", en: "This section isn't part of the section library." } };
   const disp = entry.dispositions.find((x) => x.id === dispositionId);
   if (!disp) return { error: { fr: "Disposition inconnue pour cette section.", en: "Unknown layout for this section." } };
   if (disp.type === s.type) {
@@ -116,7 +127,7 @@ export function chromeSection(spec: ThemeSpec, part: ChromePart): { id: string; 
 /** Opérations pour appliquer une des cinq dispositions d'en-tête ou de pied de page de la famille. */
 /** Coordonnées du projet, reprises dans un bloc « coordonnées » ajouté au pied de page (jamais inventées). */
 export type ChromeContact = { address?: string; phone?: string; email?: string; hours?: string };
-export function chromeOps(spec: ThemeSpec, family: FamilyId, part: ChromePart, presetId: string, lang: Lang, contact: ChromeContact = {}): { ops: ThemeOp[] } | { error: { fr: string; en: string } } {
+export function chromeOps(spec: ThemeSpec, family: FamilyId | null | undefined, part: ChromePart, presetId: string, lang: Lang, contact: ChromeContact = {}): { ops: ThemeOp[] } | { error: { fr: string; en: string } } {
   const preset = chromePresets(family, part).find((x) => x.id === presetId);
   if (!preset) return { error: { fr: "Disposition inconnue.", en: "Unknown layout." } };
   const found = chromeSection(spec, part);
@@ -143,25 +154,36 @@ export function chromeOps(spec: ThemeSpec, family: FamilyId, part: ChromePart, p
 
 export type PanelDisposition = { id: string; label: string; thumb: string; type: string; current: boolean };
 export type FamilyPanel = {
-  family: FamilyId;
+  family: FamilyId | null;
   entry?: { key: string; name: string; n: number };
   dispositions?: PanelDisposition[];
   chrome?: { part: ChromePart; presets: { id: string; label: string; description: string; thumb: string; current: boolean }[] };
 };
 
-/** Ce que le panneau « Réglages » montre en plus pour une section de bibliothèque ou l'en-tête / le pied de page. */
-export function familyPanel(spec: ThemeSpec, family: FamilyId, s: SectionInstance, lang: Lang): FamilyPanel | null {
+/** Ce que le panneau « Réglages » montre en plus pour une section de bibliothèque, propre au thème, ou l'en-tête / le pied de page. */
+export function familyPanel(spec: ThemeSpec, family: FamilyId | null | undefined, s: SectionInstance, lang: Lang): FamilyPanel | null {
+  const fam = family ?? null;
   if (s.type === "header" || s.type === "footer") {
     const schema = sectionSchema(spec, s.type);
     const defaults = Object.fromEntries((schema?.settings ?? []).filter((x) => x.id).map((x) => [x.id!, (x as { default?: unknown }).default]));
-    const cur = currentChromePreset(family, s.type, s.settings ?? {}, defaults);
-    return { family, chrome: { part: s.type, presets: chromePresets(family, s.type).map((x) => ({ id: x.id, label: pickT(x.label, lang), description: pickT(x.description, lang), thumb: x.thumb, current: cur?.id === x.id })) } };
+    const cur = currentChromePreset(fam, s.type, s.settings ?? {}, defaults);
+    return { family: fam, chrome: { part: s.type, presets: chromePresets(fam, s.type).map((x) => ({ id: x.id, label: pickT(x.label, lang), description: pickT(x.description, lang), thumb: x.thumb, current: cur?.id === x.id })) } };
   }
-  const entry = entryForType(family, s.type);
+  // Section propre au thème (d'après ses maquettes) : ses dispositions déclarées, la première étant celle d'origine.
+  if (isOwnSectionOf(spec.direction, s.type)) {
+    const schema = sectionSchema(spec, s.type, lang);
+    const disps = ownDispositions(schema as never, lang);
+    if (disps.length < 2) return null;
+    const settings = s.settings ?? {};
+    const matches = (d: (typeof disps)[number]) => Object.entries(d.settings).every(([k, v]) => JSON.stringify(settings[k]) === JSON.stringify(v));
+    const current = [...disps].reverse().find(matches) ?? null;
+    return { family: fam, entry: { key: `own.${s.type}`, name: String(schema?.name ?? s.type), n: 0 }, dispositions: disps.map((x) => ({ id: x.id, label: x.label, thumb: x.thumb, type: s.type, current: current?.id === x.id })) };
+  }
+  const entry = entryForAnyType(s.type, fam);
   if (!entry) return null;
   const cur = currentDisposition(entry, s.type, s.settings ?? {});
   return {
-    family,
+    family: fam,
     entry: { key: entry.key, name: pickT(entry.name, lang), n: entry.n },
     dispositions: entry.dispositions.map((x) => ({ id: x.id, label: pickT(x.label, lang), thumb: x.thumb, type: x.type, current: cur?.disposition.id === x.id })),
   };

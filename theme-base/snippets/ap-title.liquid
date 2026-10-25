@@ -1,0 +1,9 @@
+{%- comment -%}
+  Titre d'APLAT : les mots entre astérisques sont en bleu pétrole (« *Les* bonnes bases. »), retours à la ligne gardés.
+  Paramètre : text.
+{%- endcomment -%}
+{%- assign ap_parts = text | split: '*' -%}
+{%- for ap_part in ap_parts -%}
+  {%- assign ap_odd = forloop.index0 | modulo: 2 -%}
+  {%- if ap_odd == 1 -%}<em class="ap-accent">{{ ap_part | escape | newline_to_br }}</em>{%- else -%}{{ ap_part | escape | newline_to_br }}{%- endif -%}
+{%- endfor -%}

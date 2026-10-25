@@ -1,0 +1,299 @@
+{%- comment -%}
+  PARENTHÈSE : prise de rendez-vous (planche 04), quatre étapes avec l'étape active visible :
+    1. Prestation (première séance, séance de suivi, atelier de groupe) et modalité (au cabinet, en visioconférence) ;
+    2. Date et heure : calendrier navigable et horaires disponibles (séance), ou ateliers à venir et places restantes ;
+    3. Vos coordonnées : prénom, nom, e-mail, téléphone (facultatif), note de préparation (sans information médicale),
+       conditions de réservation obligatoires, lettre d'information facultative et décochée ; récapitulatif ;
+    4. Confirmation : variante cabinet (adresse) ou visioconférence (lien privé envoyé par le cabinet, jamais une
+       adresse), fichier d'agenda réel (.ics, Europe/Paris), « Gérer mon rendez-vous ».
+  Précédent / suivant sans perdre les choix, erreurs de champ, double envoi impossible, créneau pris au dernier moment.
+  Tarifs, durées et disponibilités viennent des « Réglages du cabinet » ; démonstration annoncée, aucun e-mail envoyé.
+  Blocs : « Choix de prestation ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-booking" data-pa-booking data-step="1">
+  <h1 class="visually-hidden">{{ s.page_title }}</h1>
+  <div hidden data-pa-texts data-steps="{{ s.step_names | escape }}" data-visio="{{ s.visio_line | escape }}" data-address-todo="{{ s.address_todo | escape }}" data-demo="{{ s.demo_label | escape }}"></div>
+  <div class="pa-wrap pa-booking__wrap">
+
+    {%- comment -%} Étape 1 : prestation et modalité {%- endcomment -%}
+    <div class="pa-pane pa-pane--1" data-pa-pane="1">
+      <div class="pa-pane__main">
+        <div class="pa-pane__head">
+          <h2 class="pa-pane__title" tabindex="-1">{{ s.step1_title }}</h2>
+          <p class="pa-pane__sub">{{ s.step1_text }}</p>
+        </div>
+        <ol class="pa-stepper" role="list" aria-label="{{ s.steps_label | escape }}" data-pa-stepper></ol>
+        <fieldset class="pa-choices">
+          <legend class="visually-hidden">{{ s.service_legend }}</legend>
+          {%- for block in section.blocks -%}
+            {%- assign b = block.settings -%}
+            <label class="pa-choice" {{ block.shopify_attributes }} {% if b.kind == 'atelier' %}data-pa-atelier-choice data-pa-atelier="{{ b.seance_id | escape }}"{% else %}data-pa-svc="{{ b.seance_id | escape }}"{% endif %}>
+              <input type="radio" name="pa-service" value="{% if b.kind == 'atelier' %}atelier{% else %}{{ b.seance_id | escape }}{% endif %}" class="visually-hidden" data-pa-service>
+              {% render 'pa-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position, class: 'pa-choice__img' %}
+              <span class="pa-choice__body">
+                <span class="pa-choice__name">{{ b.title }}</span>
+                {%- if b.text != blank -%}<span class="pa-choice__text">{{ b.text }}</span>{%- endif -%}
+                <span class="pa-choice__meta">{% render 'pa-icon', name: 'clock' %}<span data-pa-f="duration-long">{{ b.duration }}</span></span>
+                <span class="pa-choice__meta">{% render 'pa-icon', name: 'euro' %}<span data-pa-f="price">{{ b.price }}</span></span>
+              </span>
+            </label>
+          {%- endfor -%}
+        </fieldset>
+        <p class="pa-field__error" data-pa-err="service" hidden>{{ s.error_service }}</p>
+        <div class="pa-modes" data-pa-modes>
+          <h3 class="pa-modes__title" id="pa-modes-{{ section.id }}">{{ s.mode_title }}</h3>
+          <div class="pa-modes__list" role="radiogroup" aria-labelledby="pa-modes-{{ section.id }}">
+            <label class="pa-mode" data-mode="cabinet"><input type="radio" name="pa-mode" value="cabinet" class="visually-hidden" data-pa-mode>{% render 'pa-icon', name: 'home', class: 'pa-mode__ico' %}<span><strong>{{ s.mode_cabinet }}</strong><small>{{ s.mode_cabinet_text }}</small></span><span class="pa-mode__check" aria-hidden="true">{% render 'pa-icon', name: 'check' %}</span></label>
+            <label class="pa-mode" data-mode="visio"><input type="radio" name="pa-mode" value="visio" class="visually-hidden" data-pa-mode>{% render 'pa-icon', name: 'monitor', class: 'pa-mode__ico' %}<span><strong>{{ s.mode_visio }}</strong><small>{{ s.mode_visio_text }}</small></span><span class="pa-mode__check" aria-hidden="true">{% render 'pa-icon', name: 'check' %}</span></label>
+          </div>
+          <p class="pa-field__error" data-pa-err="modality" hidden>{{ s.error_modality }}</p>
+        </div>
+        <p class="pa-modes__atelier" data-pa-atelier-mode hidden>{% render 'pa-icon', name: 'home' %}{{ s.atelier_place_note }}</p>
+        <div class="pa-pane__actions pa-pane__actions--center">
+          <button type="button" class="pa-btn pa-btn--forest pa-btn--wide" data-pa-next>{{ s.continue_label }}{% render 'pa-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+      <div class="pa-pane__art pa-pane__art--right">{% render 'pa-img', image: s.image_step1, asset: s.image_step1_asset, alt: '', pos: s.image_step1_position %}</div>
+    </div>
+
+    {%- comment -%} Étape 2 : date et heure, ou atelier {%- endcomment -%}
+    <div class="pa-pane pa-pane--2" data-pa-pane="2" hidden>
+      <div class="pa-pane__art pa-pane__art--left">{% render 'pa-img', image: s.image_step2, asset: s.image_step2_asset, alt: '', pos: s.image_step2_position %}</div>
+      <div class="pa-pane__main">
+        <div class="pa-pane__head pa-pane__head--center">
+          <h2 class="pa-pane__title" tabindex="-1" data-pa-step2-title data-seance="{{ s.step2_title | escape }}" data-atelier="{{ s.step2_atelier_title | escape }}">{{ s.step2_title }}</h2>
+          <p class="pa-pane__sub" data-pa-step2-sub data-seance="{{ s.step2_text | escape }}" data-atelier="{{ s.step2_atelier_text | escape }}">{{ s.step2_text }}</p>
+        </div>
+        <ol class="pa-stepper" role="list" aria-label="{{ s.steps_label | escape }}" data-pa-stepper></ol>
+        <p class="pa-alert" role="alert" data-pa-conflict hidden></p>
+        <div class="pa-when" data-pa-when>
+          <div class="pa-when__cal" data-pa-cal-box>
+            <div class="pa-cal" data-pa-cal></div>
+          </div>
+          <div class="pa-when__slots" data-pa-slots-box>
+            <h3 class="pa-when__title" data-pa-day-title>{{ s.slots_title }}</h3>
+            <div class="pa-slots" role="group" aria-label="{{ s.slots_title | escape }}" data-pa-slots></div>
+            <p class="pa-empty" data-pa-no-slot hidden>{{ s.no_slot_text }}</p>
+            <p class="pa-empty" data-pa-pick-day>{{ s.pick_day_text }}</p>
+          </div>
+          <div class="pa-when__sessions" data-pa-sessions-box hidden>
+            <div class="pa-sessions" role="radiogroup" aria-label="{{ s.sessions_label | escape }}" data-pa-sessions></div>
+            <p class="pa-empty" data-pa-no-session hidden>{{ s.no_session_text }}</p>
+          </div>
+          <aside class="pa-when__summary" aria-label="{{ s.summary_title | escape }}">
+            <h3 class="pa-when__title">{{ s.summary_title }}</h3>
+            <div data-pa-mini-summary></div>
+          </aside>
+        </div>
+        <p class="pa-field__error" data-pa-err="time" hidden>{{ s.error_time }}</p>
+        <p class="pa-alert" role="alert" data-pa-net-error hidden>{{ s.error_network }}</p>
+        <div class="pa-pane__actions pa-pane__actions--center">
+          <button type="button" class="pa-btn pa-btn--line pa-btn--back" data-pa-prev>{% render 'pa-icon', name: 'arrow-left' %}{{ s.back_label }}</button>
+          <button type="button" class="pa-btn pa-btn--forest pa-btn--wide" data-pa-next>{{ s.continue_label }}{% render 'pa-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Étape 3 : coordonnées et récapitulatif {%- endcomment -%}
+    <div class="pa-pane pa-pane--3" data-pa-pane="3" data-sub="form" hidden>
+      <div class="pa-pane__main">
+        <div class="pa-pane__head">
+          <h2 class="pa-pane__title" tabindex="-1">{{ s.step3_title }}</h2>
+          <p class="pa-pane__sub">{{ s.step3_text }}</p>
+        </div>
+        <ol class="pa-stepper" role="list" aria-label="{{ s.steps_label | escape }}" data-pa-stepper></ol>
+        <div class="pa-details">
+          <form class="pa-form pa-details__form" novalidate data-pa-contact>
+            <div class="pa-form__row">
+              <div class="pa-field"><label for="pa-first-{{ section.id }}">{{ s.first_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-first-{{ section.id }}" name="firstName" autocomplete="given-name" required placeholder="{{ s.first_placeholder | escape }}"><p class="pa-field__error" data-pa-err="firstName" hidden>{{ s.error_required }}</p></div>
+              <div class="pa-field"><label for="pa-last-{{ section.id }}">{{ s.last_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-last-{{ section.id }}" name="lastName" autocomplete="family-name" required placeholder="{{ s.last_placeholder | escape }}"><p class="pa-field__error" data-pa-err="lastName" hidden>{{ s.error_required }}</p></div>
+            </div>
+            <div class="pa-field"><label for="pa-email-{{ section.id }}">{{ s.email_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-email-{{ section.id }}" name="email" type="email" autocomplete="email" required placeholder="votre@email.fr"><p class="pa-field__error" data-pa-err="email" hidden>{{ s.error_email }}</p></div>
+            <div class="pa-field"><label for="pa-phone-{{ section.id }}">{{ s.phone_label }}</label><input id="pa-phone-{{ section.id }}" name="phone" type="tel" autocomplete="tel" placeholder="{{ s.phone_placeholder | escape }}"><p class="pa-field__error" data-pa-err="phone" hidden>{{ s.error_phone }}</p></div>
+            <div class="pa-field"><label for="pa-note-{{ section.id }}">{{ s.note_label }}</label><textarea id="pa-note-{{ section.id }}" name="note" rows="2" maxlength="600" placeholder="{{ s.note_placeholder | escape }}"></textarea><p class="pa-field__hint">{{ s.note_hint }}</p></div>
+            <label class="pa-check pa-check--block"><input type="checkbox" name="terms" required><span><strong>{{ s.terms_label }} <span class="pa-req" aria-hidden="true">*</span></strong><small>{{ s.terms_text_before }} <a href="{{ s.terms_link | default: '/pages/conditions-de-reservation' }}" target="_blank" rel="noopener">{{ s.terms_link_label }}</a> {{ s.terms_text_after }}</small></span></label>
+            <p class="pa-field__error" data-pa-err="terms" hidden>{{ s.error_terms }}</p>
+            <label class="pa-check pa-check--block"><input type="checkbox" name="newsletter"><span><strong>{{ s.newsletter_label }}</strong><small>{{ s.newsletter_text }}</small></span></label>
+          </form>
+          <aside class="pa-recap" aria-label="{{ s.recap_title | escape }}">
+            <h3 class="pa-recap__title">{{ s.recap_title }}</h3>
+            <div data-pa-recap></div>
+            <p class="pa-recap__demo" data-pa-demo-only>{{ s.demo_label }}</p>
+            <p class="pa-recap__info">{% render 'pa-icon', name: 'info' %}<span>{{ s.recap_notice }}</span></p>
+          </aside>
+        </div>
+        <p class="pa-alert" role="alert" data-pa-submit-status hidden></p>
+        <div class="pa-pane__actions pa-pane__actions--split">
+          <button type="button" class="pa-btn pa-btn--line pa-btn--back" data-pa-prev>{% render 'pa-icon', name: 'arrow-left' %}{{ s.back_label }}</button>
+          <button type="button" class="pa-btn pa-btn--forest pa-btn--wide pa-mreview-only" data-pa-mnext>{{ s.continue_label }}{% render 'pa-icon', name: 'arrow' %}</button>
+          <button type="button" class="pa-btn pa-btn--forest pa-btn--wide" data-pa-submit>{{ s.confirm_label }}</button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Étape 4 : confirmation (cabinet ou visioconférence) {%- endcomment -%}
+    <div class="pa-pane pa-pane--4" data-pa-pane="4" hidden>
+      <div class="pa-pane__main">
+        <div class="pa-done__head">
+          {% render 'pa-ornament', name: 'quill', class: 'pa-done__leaf' %}
+          <h2 class="pa-pane__title" tabindex="-1">{{ s.done_title }}</h2>
+          <p class="pa-pane__sub" data-pa-done-text data-live="{{ s.done_text | escape }}" data-demo="{{ s.done_text_demo | escape }}">{{ s.done_text }}</p>
+        </div>
+        <div class="pa-done__ref">
+          {% render 'pa-icon', name: 'calendar' %}
+          <p><span>{{ s.ref_label }}</span><strong data-pa-ref>—</strong><small data-pa-demo-only>({{ s.demo_label }})</small></p>
+        </div>
+        <div class="pa-done__card">
+          <div class="pa-done__photo" data-pa-done-photo>
+            <span data-mode="cabinet">{% render 'pa-img', image: s.image_done, asset: s.image_done_asset, alt: '', pos: s.image_done_position %}</span>
+            <span data-mode="visio" hidden>{% render 'pa-img', image: s.image_done_visio, asset: s.image_done_visio_asset, alt: '', pos: s.image_done_visio_position %}</span>
+          </div>
+          <ul class="pa-done__lines" role="list" data-pa-done-lines></ul>
+        </div>
+        <div class="pa-done__actions">
+          <button type="button" class="pa-btn pa-btn--line" data-pa-ics>{% render 'pa-icon', name: 'calendar' %}{{ s.ics_label }}</button>
+          <a class="pa-btn pa-btn--forest" href="{{ s.manage_link | default: '/pages/mon-rendez-vous' }}" data-pa-manage-link>{{ s.manage_label }}</a>
+        </div>
+        <p class="pa-done__mail" data-pa-mail data-demo="{{ s.mail_demo | escape }}" data-sent="{{ s.mail_sent | escape }}" data-off="{{ s.mail_off | escape }}" data-failed="{{ s.mail_failed | escape }}">{{ s.mail_demo }}</p>
+      </div>
+      <div class="pa-pane__art pa-pane__art--right" data-pa-done-art>{% render 'pa-img', image: s.image_done_side, asset: s.image_done_side_asset, alt: '', pos: s.image_done_side_position %}</div>
+      <aside class="pa-prepare" data-pa-prepare hidden>
+        <h3>{{ s.prepare_title }}</h3>
+        <ul role="list">
+          {%- assign tips = s.prepare_items | newline_to_br | split: '<br />' -%}
+          {%- for t in tips -%}{%- assign tt = t | strip -%}{%- if tt != blank -%}<li>{% render 'pa-icon', name: 'check-box' %}<span>{{ tt }}</span></li>{%- endif -%}{%- endfor -%}
+        </ul>
+      </aside>
+    </div>
+  </div>
+  <template data-pa-tpl="recap">
+    <ul class="pa-recap__lines" role="list">
+      <li data-line="when">{% render 'pa-icon', name: 'calendar' %}<span></span></li>
+      <li data-line="service">{% render 'pa-icon', name: 'clock' %}<span></span></li>
+      <li data-line="place">{% render 'pa-icon', name: 'home' %}<span></span></li>
+    </ul>
+  </template>
+  <template data-pa-tpl="ico-home">{% render 'pa-icon', name: 'home' %}</template>
+  <template data-pa-tpl="ico-monitor">{% render 'pa-icon', name: 'monitor' %}</template>
+  <template data-pa-tpl="ico-calendar">{% render 'pa-icon', name: 'calendar' %}</template>
+  <template data-pa-tpl="ico-clock">{% render 'pa-icon', name: 'clock' %}</template>
+  <template data-pa-tpl="ico-euro">{% render 'pa-icon', name: 'euro' %}</template>
+  <template data-pa-tpl="ico-people">{% render 'pa-icon', name: 'people' %}</template>
+</section>
+
+{% schema %}
+{
+  "name": "Réservation Parenthèse",
+  "class": "pa-booking-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "page_title", "label": "Titre de la page (lecteurs d'écran)", "default": "Prendre rendez-vous" },
+    { "type": "text", "id": "steps_label", "label": "Nom des étapes (lecteurs d'écran)", "default": "Étapes de la réservation" },
+    { "type": "text", "id": "step_names", "label": "Noms des étapes", "default": "Prestation, Date et heure, Vos coordonnées, Confirmation" },
+    { "type": "text", "id": "demo_label", "label": "Mention de simulation", "default": "Simulation – aucun rendez-vous réel" },
+    { "type": "text", "id": "continue_label", "label": "Bouton continuer", "default": "Continuer" },
+    { "type": "text", "id": "back_label", "label": "Bouton retour", "default": "Retour" },
+    { "type": "header", "content": "Étape 1 : prestation" },
+    { "type": "text", "id": "step1_title", "label": "Titre", "default": "Choisissez votre rendez-vous" },
+    { "type": "text", "id": "step1_text", "label": "Texte", "default": "Un temps pour vous, en toute simplicité." },
+    { "type": "text", "id": "service_legend", "label": "Nom du choix (lecteurs d'écran)", "default": "Prestation" },
+    { "type": "text", "id": "mode_title", "label": "Titre de la modalité", "default": "Modalité de rendez-vous" },
+    { "type": "text", "id": "mode_cabinet", "label": "Au cabinet : titre", "default": "Au cabinet" },
+    { "type": "text", "id": "mode_cabinet_text", "label": "Au cabinet : texte", "default": "Dans un cadre chaleureux et apaisant." },
+    { "type": "text", "id": "mode_visio", "label": "Visioconférence : titre", "default": "En visioconférence" },
+    { "type": "text", "id": "mode_visio_text", "label": "Visioconférence : texte", "default": "Depuis chez vous, en toute tranquillité." },
+    { "type": "text", "id": "atelier_place_note", "label": "Note des ateliers", "default": "Les ateliers ont lieu au cabinet, en petit groupe." },
+    { "type": "text", "id": "error_service", "label": "Erreur : prestation", "default": "Choisissez une prestation pour continuer." },
+    { "type": "text", "id": "error_modality", "label": "Erreur : modalité", "default": "Choisissez une modalité pour continuer." },
+    { "type": "image_picker", "id": "image_step1", "label": "Photo de l'étape 1" },
+    { "type": "text", "id": "image_step1_asset", "label": "Étape 1 : photo fournie avec le thème" },
+    { "type": "text", "id": "image_step1_position", "label": "Étape 1 : cadrage", "default": "50% 50%" },
+    { "type": "header", "content": "Étape 2 : date et heure" },
+    { "type": "text", "id": "step2_title", "label": "Titre", "default": "Choisissez la date et l'heure" },
+    { "type": "text", "id": "step2_text", "label": "Texte", "default": "Sélectionnez le créneau qui vous convient." },
+    { "type": "text", "id": "step2_atelier_title", "label": "Titre (atelier)", "default": "Choisissez votre atelier" },
+    { "type": "text", "id": "step2_atelier_text", "label": "Texte (atelier)", "default": "Sélectionnez la date qui vous convient." },
+    { "type": "text", "id": "slots_title", "label": "Titre des horaires", "default": "Horaires disponibles" },
+    { "type": "text", "id": "pick_day_text", "label": "Invitation à choisir un jour", "default": "Choisissez un jour dans le calendrier." },
+    { "type": "text", "id": "no_slot_text", "label": "Aucun créneau ce jour-là", "default": "Aucun horaire disponible ce jour-là. Choisissez une autre date." },
+    { "type": "text", "id": "sessions_label", "label": "Nom de la liste des ateliers (lecteurs d'écran)", "default": "Ateliers à venir" },
+    { "type": "text", "id": "no_session_text", "label": "Aucun atelier à venir", "default": "Aucun atelier n'est ouvert à la réservation pour le moment." },
+    { "type": "text", "id": "summary_title", "label": "Titre du résumé", "default": "Votre rendez-vous" },
+    { "type": "text", "id": "error_time", "label": "Erreur : horaire", "default": "Choisissez une date et un horaire." },
+    { "type": "text", "id": "error_network", "label": "Erreur réseau", "default": "Le service de rendez-vous n'a pas répondu. Rien n'a été réservé et vos choix sont conservés : réessayez." },
+    { "type": "image_picker", "id": "image_step2", "label": "Photo de l'étape 2" },
+    { "type": "text", "id": "image_step2_asset", "label": "Étape 2 : photo fournie avec le thème" },
+    { "type": "text", "id": "image_step2_position", "label": "Étape 2 : cadrage", "default": "50% 50%" },
+    { "type": "header", "content": "Étape 3 : coordonnées" },
+    { "type": "text", "id": "step3_title", "label": "Titre", "default": "Vos coordonnées" },
+    { "type": "text", "id": "step3_text", "label": "Texte", "default": "Pour finaliser votre rendez-vous." },
+    { "type": "text", "id": "first_label", "label": "Champ prénom", "default": "Prénom" },
+    { "type": "text", "id": "first_placeholder", "label": "Exemple de prénom", "default": "Votre prénom" },
+    { "type": "text", "id": "last_label", "label": "Champ nom", "default": "Nom" },
+    { "type": "text", "id": "last_placeholder", "label": "Exemple de nom", "default": "Votre nom" },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "Adresse e-mail" },
+    { "type": "text", "id": "phone_label", "label": "Champ téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone_placeholder", "label": "Exemple de téléphone", "default": "Votre numéro (optionnel)" },
+    { "type": "text", "id": "note_label", "label": "Champ note", "default": "Une note pour préparer la séance (optionnel)" },
+    { "type": "text", "id": "note_placeholder", "label": "Exemple de note", "default": "Par exemple : un sujet particulier que vous souhaitez aborder." },
+    { "type": "text", "id": "note_hint", "label": "Aide de la note", "default": "Évitez les informations médicales dans ce formulaire." },
+    { "type": "text", "id": "terms_label", "label": "Case des conditions", "default": "J'accepte les conditions de réservation" },
+    { "type": "text", "id": "terms_text_before", "label": "Conditions : texte avant le lien", "default": "En cochant cette case, vous acceptez les" },
+    { "type": "text", "id": "terms_link_label", "label": "Conditions : lien", "default": "conditions générales" },
+    { "type": "url", "id": "terms_link", "label": "Conditions : page" },
+    { "type": "text", "id": "terms_text_after", "label": "Conditions : texte après le lien", "default": "de ce cabinet de démonstration." },
+    { "type": "text", "id": "newsletter_label", "label": "Case de la lettre d'information", "default": "Je souhaite recevoir la newsletter (optionnel)" },
+    { "type": "text", "id": "newsletter_text", "label": "Lettre d'information : détail", "default": "Des conseils et actualités autour du bien-être." },
+    { "type": "text", "id": "recap_title", "label": "Titre du récapitulatif", "default": "Récapitulatif" },
+    { "type": "textarea", "id": "recap_notice", "label": "Note du récapitulatif", "default": "Ce formulaire ne remplace pas un échange avec un professionnel de santé. La sophrologie est une pratique de bien-être et de relaxation, et ne se substitue pas à un suivi médical." },
+    { "type": "text", "id": "confirm_label", "label": "Bouton de confirmation", "default": "Confirmer mon rendez-vous" },
+    { "type": "text", "id": "error_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "error_phone", "label": "Erreur : téléphone", "default": "Indiquez un numéro valide ou laissez ce champ vide." },
+    { "type": "text", "id": "error_terms", "label": "Erreur : conditions", "default": "Acceptez les conditions de réservation pour confirmer." },
+    { "type": "header", "content": "Étape 4 : confirmation" },
+    { "type": "text", "id": "done_title", "label": "Titre", "default": "Votre parenthèse est réservée" },
+    { "type": "textarea", "id": "done_text", "label": "Texte (service réel)", "default": "Merci pour votre confiance.\nVotre rendez-vous a bien été enregistré." },
+    { "type": "textarea", "id": "done_text_demo", "label": "Texte (démonstration)", "default": "Merci pour votre confiance.\nVotre rendez-vous est simulé dans ce navigateur uniquement." },
+    { "type": "text", "id": "ref_label", "label": "Libellé de la référence", "default": "Référence de réservation" },
+    { "type": "text", "id": "ics_label", "label": "Bouton agenda", "default": "Ajouter à mon agenda" },
+    { "type": "text", "id": "manage_label", "label": "Bouton de gestion", "default": "Gérer mon rendez-vous" },
+    { "type": "url", "id": "manage_link", "label": "Page de gestion" },
+    { "type": "textarea", "id": "mail_demo", "label": "Note e-mail (démonstration)", "default": "Un e-mail de confirmation serait envoyé dans un cas réel.\nIci, il s'agit d'une simulation sans envoi." },
+    { "type": "text", "id": "mail_sent", "label": "Note e-mail (envoyé)", "default": "Un e-mail de confirmation vient de vous être envoyé." },
+    { "type": "text", "id": "mail_off", "label": "Note e-mail (envoi non configuré)", "default": "Votre rendez-vous est enregistré. Notez votre référence : aucun e-mail n'a pu être envoyé." },
+    { "type": "text", "id": "mail_failed", "label": "Note e-mail (échec)", "default": "Votre rendez-vous est enregistré, mais l'e-mail de confirmation n'a pas pu partir. Notez votre référence." },
+    { "type": "text", "id": "visio_line", "label": "Ligne visioconférence", "default": "Le lien privé sera envoyé après confirmation (dans un cas réel)." },
+    { "type": "text", "id": "address_todo", "label": "Adresse manquante", "default": "[Adresse du cabinet à renseigner]" },
+    { "type": "text", "id": "prepare_title", "label": "Préparation (visio) : titre", "default": "Bien préparer votre séance" },
+    { "type": "textarea", "id": "prepare_items", "label": "Préparation (visio) : conseils (un par ligne)", "default": "Installez-vous dans un endroit calme et confortable.\nVérifiez votre connexion internet et le bon fonctionnement de votre matériel.\nPrévoyez un espace où vous ne serez pas dérangé(e).\nMunissez-vous d'une tenue confortable et, si vous le souhaitez, d'un carnet." },
+    { "type": "image_picker", "id": "image_done", "label": "Photo de la confirmation (cabinet)" },
+    { "type": "text", "id": "image_done_asset", "label": "Confirmation (cabinet) : photo fournie avec le thème" },
+    { "type": "text", "id": "image_done_position", "label": "Confirmation (cabinet) : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_done_visio", "label": "Photo de la confirmation (visio)" },
+    { "type": "text", "id": "image_done_visio_asset", "label": "Confirmation (visio) : photo fournie avec le thème" },
+    { "type": "text", "id": "image_done_visio_position", "label": "Confirmation (visio) : cadrage", "default": "50% 50%" },
+    { "type": "image_picker", "id": "image_done_side", "label": "Photo à droite de la confirmation" },
+    { "type": "text", "id": "image_done_side_asset", "label": "Photo à droite : fichier fourni avec le thème" },
+    { "type": "text", "id": "image_done_side_position", "label": "Photo à droite : cadrage", "default": "50% 50%" }
+  ],
+  "blocks": [
+    {
+      "type": "choice", "name": "Choix de prestation",
+      "settings": [
+        { "type": "select", "id": "kind", "label": "Type", "default": "seance", "options": [{ "value": "seance", "label": "Séance individuelle" }, { "value": "atelier", "label": "Atelier de groupe" }] },
+        { "type": "text", "id": "seance_id", "label": "Identifiant de la séance", "info": "Le même que dans les « Réglages du cabinet »." },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "title", "label": "Titre", "default": "Première séance" },
+        { "type": "text", "id": "text", "label": "Texte" },
+        { "type": "text", "id": "duration", "label": "Durée affichée sans script" },
+        { "type": "text", "id": "price", "label": "Tarif affiché sans script" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Réservation Parenthèse" }]
+}
+{% endschema %}

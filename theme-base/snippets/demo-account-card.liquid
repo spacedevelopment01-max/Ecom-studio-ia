@@ -1,0 +1,15 @@
+{%- comment -%}
+  Carte libre de l'espace client de démonstration (bloc « Carte ») : titre, texte, bouton facultatif, image facultative ;
+  « mise en avant » (sur la nuit, avant le contenu de l'écran) ou simple (après). Un bouton sans lien n'est pas affiché.
+  Paramètre : block.
+{%- endcomment -%}
+{%- assign c = block.settings -%}
+<div class="es-acct__card es-acct__free es-acct__free--{{ c.style | default: 'plain' }}{% if c.image != blank or c.image_asset != blank %} es-acct__free--media{% endif %}" {{ block.shopify_attributes }}>
+  {%- if c.image != blank or c.image_asset != blank -%}<span class="es-acct__free-media">{% render 'es-image', image: c.image, asset: c.image_asset, alt: '', loading: 'lazy', sizes: '240px' %}</span>{%- endif -%}
+  <div class="es-acct__free-copy">
+    {%- if c.icon != blank and c.icon != 'none' -%}<span class="es-acct__free-icon" aria-hidden="true">{% render 'icon', name: c.icon %}</span>{%- endif -%}
+    {%- if c.title != blank -%}<h2 class="es-acct__card-title">{{ c.title | escape }}</h2>{%- endif -%}
+    {%- if c.text != blank -%}<div class="es-rte">{{ c.text }}</div>{%- endif -%}
+    {%- if c.button_label != blank and c.button_link != blank -%}<a class="es-button{% if c.style != 'promo' %} es-button--secondary{% endif %}" href="{{ c.button_link }}">{{ c.button_label | escape }}{% if c.style == 'promo' %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+  </div>
+</div>

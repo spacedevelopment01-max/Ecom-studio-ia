@@ -1,0 +1,64 @@
+{%- comment -%}
+  TABLE SAISON : galerie en grille asymétrique avec filtres (Tout, Le lieu, Dans l'assiette, Les détails) et
+  visionneuse : précédent / suivant, flèches du clavier, Échap, glissement au doigt, fermeture en touchant le fond, focus
+  rendu à la photo d'origine. Chaque photo a sa largeur (sur 12 colonnes) et son format réglables.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-gallery" data-ts-gallery>
+  <div class="ts-wrap">
+    <div class="ts-filters" role="group" aria-label="{{ s.filters_label | escape }}">
+      <button type="button" class="ts-chip" aria-pressed="true" data-filter="all">{{ s.filter_all }}</button>
+      {%- if s.filter_1 != blank -%}<button type="button" class="ts-chip" aria-pressed="false" data-filter="lieu">{{ s.filter_1 }}</button>{%- endif -%}
+      {%- if s.filter_2 != blank -%}<button type="button" class="ts-chip" aria-pressed="false" data-filter="assiette">{{ s.filter_2 }}</button>{%- endif -%}
+      {%- if s.filter_3 != blank -%}<button type="button" class="ts-chip" aria-pressed="false" data-filter="details">{{ s.filter_3 }}</button>{%- endif -%}
+    </div>
+    <p class="ts-visually-hidden" role="status" aria-live="polite" data-ts-count></p>
+    <div class="ts-gallery__grid">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- if b.image == blank and b.image_asset == blank -%}{%- continue -%}{%- endif -%}
+        {%- capture src -%}{% if b.image != blank %}{{ b.image | image_url: width: 2000 }}{% else %}{{ b.image_asset | asset_url }}{% endif %}{%- endcapture -%}
+        <button type="button" class="ts-gallery__item" data-cat="{{ b.category }}" data-full="{{ src | strip }}" data-alt="{{ b.alt | escape }}" style="--span: {{ b.span }};" aria-label="{{ s.open_label | escape }} : {{ b.alt | escape }}" {{ block.shopify_attributes }}>
+          {%- if b.image != blank -%}{{ b.image | image_url: width: 1200 | image_tag: loading: 'lazy', alt: b.alt, sizes: '(min-width: 750px) 40vw, 100vw' }}{%- else -%}<img src="{{ b.image_asset | asset_url }}" alt="{{ b.alt | escape }}" loading="lazy" decoding="async" width="1536" height="1024" style="object-position: {{ b.image_position }}">{%- endif -%}
+        </button>
+      {%- endfor -%}
+    </div>
+  </div>
+  <div class="ts-lightbox" role="dialog" aria-modal="true" aria-label="{{ s.viewer_label | escape }}" hidden data-ts-lightbox>
+    <figure><img alt="" width="1600" height="1067" decoding="async"><figcaption></figcaption></figure>
+    <button type="button" class="ts-lightbox__btn ts-lightbox__close" data-ts-close aria-label="{{ s.close_label | escape }}">{% render 'ts-icon', name: 'close' %}</button>
+    <button type="button" class="ts-lightbox__btn ts-lightbox__prev" data-ts-prev aria-label="{{ s.prev_label | escape }}">{% render 'ts-icon', name: 'prev' %}</button>
+    <button type="button" class="ts-lightbox__btn ts-lightbox__next" data-ts-next aria-label="{{ s.next_label | escape }}">{% render 'ts-icon', name: 'next' %}</button>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Galerie du restaurant",
+  "class": "ts-gallery-section",
+  "max_blocks": 30,
+  "settings": [
+    { "type": "text", "id": "filters_label", "label": "Nom des filtres (accessibilité)", "default": "Filtrer les photos" },
+    { "type": "text", "id": "filter_all", "label": "Filtre Tout", "default": "Tout" },
+    { "type": "text", "id": "filter_1", "label": "Filtre Le lieu", "default": "Le lieu" },
+    { "type": "text", "id": "filter_2", "label": "Filtre Dans l'assiette", "default": "Dans l'assiette" },
+    { "type": "text", "id": "filter_3", "label": "Filtre Les détails", "default": "Les détails" },
+    { "type": "text", "id": "open_label", "label": "Texte d'ouverture (accessibilité)", "default": "Agrandir la photo" },
+    { "type": "text", "id": "viewer_label", "label": "Nom de la visionneuse", "default": "Visionneuse de photos" },
+    { "type": "text", "id": "close_label", "label": "Bouton fermer", "default": "Fermer" },
+    { "type": "text", "id": "prev_label", "label": "Bouton précédente", "default": "Photo précédente" },
+    { "type": "text", "id": "next_label", "label": "Bouton suivante", "default": "Photo suivante" }
+  ],
+  "blocks": [
+    { "type": "photo", "name": "Photo", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "alt", "label": "Description de l'image" },
+      { "type": "select", "id": "category", "label": "Catégorie", "default": "lieu", "options": [{ "value": "lieu", "label": "Le lieu" }, { "value": "assiette", "label": "Dans l'assiette" }, { "value": "details", "label": "Les détails" }] },
+      { "type": "range", "id": "span", "label": "Largeur (sur 12 colonnes)", "min": 2, "max": 12, "step": 1, "default": 4 }
+    ] }
+  ],
+  "presets": [{ "name": "Galerie du restaurant" }]
+}
+{% endschema %}

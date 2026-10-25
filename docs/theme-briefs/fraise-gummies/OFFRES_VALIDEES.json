@@ -1,0 +1,50 @@
+{
+  "devise": "EUR",
+  "nature": "Prix de démonstration validés par Thomas",
+  "prix_unitaire_centimes": 1660,
+  "offres": [
+    {
+      "id": "fraise-1",
+      "flacons_par_pack": 1,
+      "prix_pack_centimes": 1660,
+      "prix_reference_unites_centimes": 1660,
+      "economie_centimes": 0,
+      "message": "1 flacon",
+      "prix_barre": false
+    },
+    {
+      "id": "fraise-2",
+      "flacons_par_pack": 2,
+      "prix_pack_centimes": 2490,
+      "prix_reference_unites_centimes": 3320,
+      "economie_centimes": 830,
+      "message": "−50 % sur le deuxième flacon",
+      "remise_pack_pourcent": 25
+    },
+    {
+      "id": "fraise-3",
+      "flacons_par_pack": 3,
+      "prix_pack_centimes": 3320,
+      "prix_reference_unites_centimes": 4980,
+      "economie_centimes": 1660,
+      "message": "2 achetés + 1 offert"
+    }
+  ],
+  "exemples": [
+    {
+      "packs": {
+        "fraise-3": 2
+      },
+      "flacons": 6,
+      "sous_total_centimes": 6640
+    },
+    {
+      "packs": {
+        "fraise-2": 1,
+        "fraise-3": 1
+      },
+      "flacons": 5,
+      "sous_total_centimes": 5810
+    }
+  ]
+}

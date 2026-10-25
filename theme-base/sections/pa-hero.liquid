@@ -1,0 +1,138 @@
+{%- comment -%}
+  PARENTHÈSE : ouvertures des planches.
+  - home : grande photo plein cadre, titre et texte sur la photo, deux boutons, filet courbe et mots en colonne (02) ;
+  - page : texte sur l'ivoire à gauche, photo à droite fondue dans le fond (séances, approche, journal, contact…) ;
+  - center : photo plein cadre, contenu centré avec le signe du cabinet (page introuvable).
+  Options : fil d'Ariane, petit titre, repères (tarif, durée, lieu), étiquettes, infos d'atelier (date, durée, tarif lus
+  dans les « Réglages du cabinet »), citation sur la photo.
+  Blocs : « Repère » (icône, valeur, détail) et « Étiquette ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign facts = section.blocks | where: 'type', 'fact'
+  assign tags = section.blocks | where: 'type', 'tag'
+-%}
+<section class="pa-section pa-hero pa-hero--{{ s.layout }}{% if s.tone == 'dark' %} pa-hero--dark{% endif %}" style="--h: {{ s.height }}px; --h-m: {{ s.height_mobile }}px; --fade: {{ s.fade }}%;" {% if s.atelier_id != blank %}data-pa-atelier="{{ s.atelier_id | escape }}"{% endif %}{% if s.seance_id != blank %} data-pa-svc="{{ s.seance_id | escape }}"{% endif %}>
+  <div class="pa-hero__media">
+    {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile, loading: 'eager', class: 'pa-hero__img' %}
+    {%- if s.quote != blank -%}<p class="pa-hero__quote">{{ s.quote | escape | newline_to_br }}</p>{%- endif -%}
+  </div>
+  {%- if s.curve -%}{% render 'pa-ornament', name: 'curve', class: 'pa-hero__curve' %}{%- endif -%}
+  <div class="pa-wrap pa-hero__inner">
+    <div class="pa-hero__content">
+      {%- if s.crumb1_label != blank -%}
+        <nav class="pa-crumbs" aria-label="{{ s.crumbs_label | escape }}">
+          <ol role="list">
+            <li><a href="{{ s.crumb1_link | default: '/' }}">{{ s.crumb1_label }}</a></li>
+            {%- if s.crumb2_label != blank -%}<li><a href="{{ s.crumb2_link }}">{{ s.crumb2_label }}</a></li>{%- endif -%}
+            <li aria-current="page">{{ s.crumb_current | default: s.heading | strip_newlines }}</li>
+          </ol>
+        </nav>
+      {%- endif -%}
+      {%- if s.layout == 'center' -%}{% render 'pa-ornament', name: 'mark', class: 'pa-hero__mark' %}{%- endif -%}
+      {%- if s.eyebrow != blank -%}<p class="pa-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}
+        {%- if s.heading_level == 'h2' -%}<h2 class="pa-hero__title">{{ s.heading | escape | newline_to_br }}</h2>{%- else -%}<h1 class="pa-hero__title">{{ s.heading | escape | newline_to_br }}</h1>{%- endif -%}
+      {%- endif -%}
+      {%- if tags.size > 0 -%}<ul class="pa-tags" role="list">{%- for block in tags -%}<li {{ block.shopify_attributes }}>{{ block.settings.label }}</li>{%- endfor -%}</ul>{%- endif -%}
+      {%- if s.text != blank -%}<div class="pa-hero__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.atelier_id != blank -%}
+        <ul class="pa-meta pa-meta--stack" role="list">
+          <li>{% render 'pa-icon', name: 'calendar' %}<span data-pa-f="when">{{ s.atelier_when }}</span></li>
+          <li>{% render 'pa-icon', name: 'clock' %}<span data-pa-f="duration">{{ s.atelier_duration }}</span></li>
+          <li>{% render 'pa-icon', name: 'tag' %}<span data-pa-f="price">{{ s.atelier_price }}</span></li>
+        </ul>
+      {%- endif -%}
+      {%- if facts.size > 0 -%}
+        <ul class="pa-facts" role="list">
+          {%- for block in facts -%}
+            {%- assign b = block.settings -%}
+            <li {{ block.shopify_attributes }}>{% render 'pa-icon', name: b.icon, class: 'pa-facts__ico' %}<span><strong{% if b.field != blank and b.field != 'none' %} data-pa-f="{{ b.field }}"{% endif %}>{{ b.value | escape | newline_to_br }}</strong>{%- if b.detail != blank -%}<small>{{ b.detail }}</small>{%- endif -%}</span></li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+      {%- if s.button_label != blank or s.button2_label != blank -%}
+        <div class="pa-hero__actions">
+          {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--forest" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"{% if s.book_kind != blank %} data-pa-book="{{ s.book_kind }}"{% endif %}>{% if s.layout == 'center' %}{% render 'pa-icon', name: 'home' %}{% endif %}<span>{{ s.button_label }}</span>{% if s.button_arrow %}{% render 'pa-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+          {%- if s.button2_label != blank -%}
+            {%- if s.button2_style == 'link' -%}
+              <a class="pa-link pa-link--plain" href="{{ s.button2_link }}">{{ s.button2_label }}{% render 'pa-icon', name: 'arrow' %}</a>
+            {%- else -%}
+              <a class="pa-btn pa-btn--{{ s.button2_style }}" href="{{ s.button2_link }}">{% if s.layout == 'center' %}{% render 'pa-icon', name: 'calendar' %}{% endif %}<span>{{ s.button2_label }}</span></a>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- if s.side_words != blank -%}<p class="pa-hero__words" aria-hidden="true">{{ s.side_words | escape | newline_to_br }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture Parenthèse",
+  "class": "pa-hero-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "page",
+      "options": [
+        { "value": "home", "label": "Accueil : photo plein cadre" },
+        { "value": "page", "label": "Page : texte à gauche, photo fondue à droite" },
+        { "value": "center", "label": "Centrée sur la photo (page introuvable)" }
+      ]
+    },
+    { "type": "select", "id": "heading_level", "label": "Niveau du titre", "default": "h1", "options": [{ "value": "h1", "label": "Titre principal de la page" }, { "value": "h2", "label": "Titre de niveau 2" }] },
+    { "type": "select", "id": "tone", "label": "Couleur du texte", "default": "auto", "options": [{ "value": "auto", "label": "Selon la disposition" }, { "value": "dark", "label": "Foncé" }] },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "range", "id": "fade", "label": "Largeur de la photo (page)", "min": 40, "max": 100, "step": 5, "unit": "%", "default": 62 },
+    { "type": "checkbox", "id": "curve", "label": "Filet courbe abricot", "default": false },
+    { "type": "header", "content": "Fil d'Ariane" },
+    { "type": "text", "id": "crumbs_label", "label": "Nom du fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "crumb1_label", "label": "Premier lien" },
+    { "type": "url", "id": "crumb1_link", "label": "Adresse du premier lien" },
+    { "type": "text", "id": "crumb2_label", "label": "Deuxième lien" },
+    { "type": "url", "id": "crumb2_link", "label": "Adresse du deuxième lien" },
+    { "type": "text", "id": "crumb_current", "label": "Page actuelle" },
+    { "type": "header", "content": "Textes" },
+    { "type": "text", "id": "eyebrow", "label": "Petit titre" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un temps pour souffler." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "quote", "label": "Phrase posée sur la photo" },
+    { "type": "textarea", "id": "side_words", "label": "Mots en colonne (accueil)" },
+    { "type": "header", "content": "Atelier (fiche)" },
+    { "type": "text", "id": "atelier_id", "label": "Identifiant de l'atelier", "info": "La date, la durée et le tarif suivent alors les « Réglages du cabinet »." },
+    { "type": "text", "id": "atelier_when", "label": "Date affichée sans script" },
+    { "type": "text", "id": "atelier_duration", "label": "Durée affichée sans script" },
+    { "type": "text", "id": "atelier_price", "label": "Tarif affiché sans script" },
+    { "type": "text", "id": "seance_id", "label": "Identifiant de la séance (repères)", "info": "Les repères « tarif » et « durée » suivent alors les « Réglages du cabinet »." },
+    { "type": "header", "content": "Boutons" },
+    { "type": "text", "id": "button_label", "label": "Bouton principal" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton principal", "default": false },
+    { "type": "text", "id": "book_kind", "label": "Réservation préparée", "info": "Ex. « seance:premiere:cabinet », « seance:premiere:visio » ou « atelier:pause-semaine »." },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "select", "id": "button2_style", "label": "Style du second bouton", "default": "ghost", "options": [{ "value": "ghost", "label": "Contour clair" }, { "value": "apricot", "label": "Abricot" }, { "value": "line", "label": "Contour vert" }, { "value": "link", "label": "Lien fléché" }] },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 280, "max": 760, "step": 10, "unit": "px", "default": 460 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 200, "max": 640, "step": 10, "unit": "px", "default": 380 }
+  ],
+  "blocks": [
+    {
+      "type": "fact", "name": "Repère",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icône", "default": "euro", "options": [{ "value": "euro", "label": "Tarif" }, { "value": "clock", "label": "Durée" }, { "value": "pin", "label": "Lieu" }, { "value": "calendar", "label": "Date" }] },
+        { "type": "text", "id": "value", "label": "Valeur", "default": "60 €" },
+        { "type": "text", "id": "detail", "label": "Détail" },
+        { "type": "select", "id": "field", "label": "Valeur suivie des réglages", "default": "none", "options": [{ "value": "none", "label": "Aucune (texte libre)" }, { "value": "price", "label": "Tarif de la séance" }, { "value": "duration-long", "label": "Durée de la séance" }] }
+      ]
+    },
+    { "type": "tag", "name": "Étiquette", "settings": [{ "type": "text", "id": "label", "label": "Texte", "default": "Relaxation" }] }
+  ],
+  "presets": [{ "name": "Ouverture Parenthèse" }]
+}
+{% endschema %}

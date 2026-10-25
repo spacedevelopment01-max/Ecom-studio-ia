@@ -113,7 +113,10 @@ function es_globals() {
 
 /** Valeurs filtrées (aucun script) et complétées par les valeurs par défaut du schéma de la section. */
 function es_clean($v) {
-	if (is_string($v)) return wp_kses_post($v);
+	// wp_kses_post écrit « & » en « &amp; » ; les gabarits échappent eux-mêmes (« | escape », « | json »), comme dans Shopify :
+	// sans ce retour, « Coupe & brushing » s'affichait « Coupe &amp; brushing » (constaté à l'installation, mission #190).
+	// Seul « &amp; » est ramené : aucun « < » n'est réintroduit (&lt; reste &lt;).
+	if (is_string($v)) return str_replace('&amp;', '&', wp_kses_post($v));
 	if (is_array($v)) return array_map('es_clean', $v);
 	return $v;
 }
@@ -210,6 +213,10 @@ add_action('enqueue_block_editor_assets', function () {
 /** Attributs du design (langage visuel, densité, classes d'animation) : les mêmes que dans l'aperçu du studio. */
 add_filter('language_attributes', function ($out) {
 	$b = es_site()['body'] ?? [];
+	// Langue du contenu = celle du site exporté (et non celle de l'administration de WordPress) : les scripts du thème
+	// choisissent leurs textes d'après elle (WordPress en anglais : réservation à moitié en anglais, mission #190).
+	$lang = (es_site()['lang'] ?? 'fr') === 'en' ? 'en' : 'fr-FR';
+	$out = preg_match('/\blang="[^"]*"/', $out) ? preg_replace('/\blang="[^"]*"/', 'lang="' . $lang . '"', $out) : $out . ' lang="' . $lang . '"';
 	return $out . ' class="no-js" data-ds="' . esc_attr($b['ds'] ?? 'none') . '" data-density="' . esc_attr($b['density'] ?? 'balanced') . '"';
 });
 add_filter('body_class', function ($classes) { return array_merge($classes, es_site()['body']['classes'] ?? []); });

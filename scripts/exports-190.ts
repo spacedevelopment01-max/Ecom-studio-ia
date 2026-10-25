@@ -1,0 +1,65 @@
+/**
+ * Mission #190, point 6 — exports natifs des thèmes sur maquette, prêts à être installés dans des boutiques de test.
+ * Base temporaire à part (aucune base de projet ouverte), aucun appel réseau, aucune IA.
+ *
+ *   npx tsx scripts/exports-190.ts <dossier-de-sortie> [theme,theme…] [--platforms=woocommerce,prestashop,shopify]
+ *
+ * Pour chaque thème : la démonstration complète (tests/demo-fixtures.ts) est enregistrée, puis exportée par le même
+ * moteur que le bouton « Exporter » (CMS Engine V2, contrôles compris). Sortie : <dossier>/<thème>/<plateforme>.zip et
+ * <dossier>/resume.json (verdict, nombre de fichiers, produits, commit).
+ */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+
+if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
+process.env.DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-exports-"));
+process.env.STOCK_OFFLINE = "1";
+globalThis.fetch = async () => { throw new Error("Réseau interdit"); };
+const args = process.argv.slice(2);
+const out = path.resolve(args.find((a) => !a.startsWith("--") && !/^[a-z,-]+$/.test(a)) ?? "reports/exports-190");
+const only = args.find((a) => /^[a-z][a-z,-]*$/.test(a) && !a.startsWith("--"))?.split(",") ?? null;
+const platforms = (args.find((a) => a.startsWith("--platforms="))?.slice(12) ?? "woocommerce,prestashop,shopify").split(",");
+fs.mkdirSync(out, { recursive: true });
+
+const { createUser } = await import("../src/lib/auth");
+const { saveThemeVersion } = await import("../src/lib/projects");
+const { runWithLang } = await import("../src/lib/i18n-server");
+const { cmsExport, checkCmsExport } = await import("../src/lib/cms-v2/export");
+const { libraryLoader } = await import("../src/lib/theme/loader");
+const { MAQUETTE_THEMES } = await import("../src/lib/theme/theme-fit");
+const { storeProducts } = await import("../src/lib/theme/spec");
+const { withBiens } = await import("../src/lib/biens");
+const { withStudioProducts } = await import("../src/lib/products/catalog");
+const { demoProject } = await import("../tests/demo-fixtures");
+const user = await createUser("exports-190@example.invalid", "isolated-test-only", "Exports");
+const commit = (() => { try { return execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(); } catch { return ""; } })();
+
+const summary: Record<string, unknown>[] = [];
+for (const id of MAQUETTE_THEMES.filter((t) => !only || only.includes(t))) {
+  await runWithLang({ content: "fr", ui: "fr" }, async () => {
+    const row: Record<string, unknown> = { theme: id };
+    try {
+      const f = await demoProject(user.id, id as never);
+      saveThemeVersion(f.pid, f.spec, "Export mission #190", "user");
+      const spec = withStudioProducts(withBiens(f.spec, f.pid), f.pid);
+      row.services = !!f.services;
+      row.missing = f.missing ?? [];
+      row.products = f.services ? 0 : storeProducts(spec).length;
+      fs.mkdirSync(path.join(out, id), { recursive: true });
+      for (const pf of platforms) {
+        try {
+          const ex = await cmsExport(pf as never, spec, libraryLoader, { projectId: f.pid });
+          const check = await checkCmsExport(pf as never, ex, spec, { projectId: f.pid }).then((c) => ({ verdict: String(c.gate.decision), issues: c.static.issues })).catch((e: Error) => ({ verdict: "ERREUR " + e.message, issues: [] as unknown[] }));
+          fs.writeFileSync(path.join(out, id, `${pf}.zip`), ex.zip);
+          row[pf] = { file: `${id}/${pf}.zip`, name: ex.name, bytes: ex.zip.length, sections: ex.sections.length, media: ex.media.length, verdict: check.verdict, issues: check.issues.slice(0, 6) };
+        } catch (e) { row[pf] = { error: (e as Error).message }; }
+      }
+    } catch (e) { row.error = (e as Error).message; }
+    summary.push(row);
+    console.log(`[exports] ${id} : ${JSON.stringify(row).slice(0, 300)}`);
+  });
+}
+fs.writeFileSync(path.join(out, "resume.json"), JSON.stringify({ commit, date: new Date().toISOString(), themes: summary }, null, 2) + "\n");
+fs.rmSync(process.env.DATA_DIR!, { recursive: true, force: true });

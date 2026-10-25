@@ -1,0 +1,77 @@
+{%- comment -%}
+  Article du journal d'ONDE : déclinaison de la direction des planches (aucune maquette d'article fournie) — retour au
+  journal, thème, grand titre, chapeau, photo, puis paragraphes titrés (blocs) et articles liés en cartes.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign parts = section.blocks | where: 'type', 'part'
+  assign related = section.blocks | where: 'type', 'related'
+-%}
+<article class="on-article on-tone--white" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-fx:{{ s.focus_x }}%;--on-fy:{{ s.focus_y }}%;">
+  <header class="on-article__head on-container">
+    {%- if s.back_label != blank -%}<a class="on-back on-back--dark" href="{{ s.back_link | default: '#' }}">{% render 'icon', name: 'arrow-left' %}<span>{{ s.back_label | escape }}</span></a>{%- endif -%}
+    {%- if s.tag != blank -%}<p class="on-chip on-chip--static">{{ s.tag | escape }}</p>{%- endif -%}
+    <h1 class="on-title on-article__title">{{ s.heading | escape | newline_to_br }}</h1>
+    {%- if s.intro != blank -%}<p class="on-article__intro">{{ s.intro | escape }}</p>{%- endif -%}
+  </header>
+  {%- if s.image_asset != blank -%}<div class="on-article__media on-container"><img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="{{ s.image_alt | escape }}" loading="eager" decoding="async"></div>{%- endif -%}
+  <div class="on-article__body on-container">
+    {%- for b in parts -%}
+      <section class="on-article__part" {{ b.shopify_attributes }}>
+        {%- if b.settings.heading != blank -%}<h2 class="on-article__h2">{{ b.settings.heading | escape }}</h2>{%- endif -%}
+        <div class="on-article__text">{{ b.settings.text }}</div>
+      </section>
+    {%- endfor -%}
+  </div>
+  {%- if related.size > 0 -%}
+    <aside class="on-article__related on-container" aria-label="{{ s.related_title | escape }}">
+      {%- if s.related_title != blank -%}<h2 class="on-article__h2">{{ s.related_title | escape }}</h2>{%- endif -%}
+      <ul class="on-journal__list" role="list">
+        {%- for b in related -%}
+          {%- assign c = b.settings -%}
+          <li class="on-post" {{ b.shopify_attributes }}>
+            <a class="on-post__hit" href="{{ c.link | default: '#' }}" aria-label="{{ c.title | strip_newlines | escape }}"></a>
+            <div class="on-post__media">{%- if c.image_asset != blank -%}<img width="1200" height="1200" src="{{ c.image_asset | asset_url }}" alt="" loading="lazy" decoding="async">{%- endif -%}</div>
+            <div class="on-post__body"><h3 class="on-post__title">{{ c.title | escape }}</h3>{%- if c.text != blank -%}<p class="on-post__text">{{ c.text | escape }}</p>{%- endif -%}</div>
+            <span class="on-round on-post__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </aside>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "Article ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "back_label", "label": "Lien de retour", "default": "Journal" },
+    { "type": "url", "id": "back_link", "label": "Lien de retour : adresse" },
+    { "type": "text", "id": "tag", "label": "Thème" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Titre de l'article" },
+    { "type": "textarea", "id": "intro", "label": "Chapeau" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "related_title", "label": "Titre des articles liés", "default": "À lire aussi" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 24, "max": 140, "step": 1, "unit": "px", "default": 72 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 20, "max": 64, "step": 1, "unit": "px", "default": 36 }
+  ],
+  "blocks": [
+    { "type": "part", "name": "Paragraphe", "settings": [
+      { "type": "text", "id": "heading", "label": "Intertitre" },
+      { "type": "richtext", "id": "text", "label": "Texte" }
+    ] },
+    { "type": "related", "name": "Article lié", "limit": 3, "settings": [
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "presets": [ { "name": "Article ONDE", "blocks": [ { "type": "part" } ] } ]
+}
+{% endschema %}

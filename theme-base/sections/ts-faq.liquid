@@ -1,0 +1,72 @@
+{%- comment -%}
+  TABLE SAISON : questions fréquentes en accordéons accessibles (bouton, aria-expanded, région liée). Disposition
+  « ligne » (accueil : titre à gauche, questions à droite) ou « page » (catégories Réservations, La carte, Votre visite).
+  Sans JavaScript, toutes les réponses restent lisibles.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-faq ts-faq--{{ s.layout }}" data-ts-acc>
+  <div class="ts-wrap">
+    {%- if s.layout == 'inline' -%}
+      <div class="ts-faq__inline">
+        <div class="ts-faq__head">
+          {%- if s.ornament -%}{% render 'ts-ornament', name: 'branch' %}{%- endif -%}
+          {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+          {%- if s.heading != blank -%}<h2 class="ts-title ts-title--m">{{ s.heading }}</h2>{%- endif -%}
+        </div>
+        <div class="ts-acc">
+          {%- for block in section.blocks -%}
+            {%- if block.type != 'question' or block.settings.question == blank -%}{%- continue -%}{%- endif -%}
+            <div class="ts-acc__item" {{ block.shopify_attributes }}>
+              <button type="button" class="ts-acc__q" aria-expanded="false" aria-controls="ts-a-{{ section.id }}-{{ forloop.index }}" id="ts-q-{{ section.id }}-{{ forloop.index }}"><span>{{ block.settings.question }}</span>{% render 'ts-icon', name: 'plus', class: 'ts-acc__icon' %}</button>
+              <div class="ts-acc__a" id="ts-a-{{ section.id }}-{{ forloop.index }}" role="region" aria-labelledby="ts-q-{{ section.id }}-{{ forloop.index }}">{{ block.settings.answer }}</div>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- else -%}
+      <div class="ts-faq__cats">
+        {%- for block in section.blocks -%}
+          {%- if block.type != 'category' -%}{%- continue -%}{%- endif -%}
+          {%- assign cat_index = forloop.index -%}
+          <div class="ts-faq__cat" {{ block.shopify_attributes }}>
+            <h2 class="ts-title">{{ block.settings.title }}</h2>
+            <div class="ts-acc ts-acc--chevron">
+              {%- for q in section.blocks offset: cat_index -%}
+                {%- if q.type == 'category' -%}{%- break -%}{%- endif -%}
+                {%- if q.settings.question == blank -%}{%- continue -%}{%- endif -%}
+                <div class="ts-acc__item" {{ q.shopify_attributes }}>
+                  <h3 class="ts-acc__h"><button type="button" class="ts-acc__q" aria-expanded="false" aria-controls="ts-a-{{ section.id }}-{{ cat_index }}-{{ forloop.index }}" id="ts-q-{{ section.id }}-{{ cat_index }}-{{ forloop.index }}"><span>{{ q.settings.question }}</span>{% render 'ts-icon', name: 'chevron', class: 'ts-acc__icon' %}</button></h3>
+                  <div class="ts-acc__a" id="ts-a-{{ section.id }}-{{ cat_index }}-{{ forloop.index }}" role="region" aria-labelledby="ts-q-{{ section.id }}-{{ cat_index }}-{{ forloop.index }}">{{ q.settings.answer }}</div>
+                </div>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions du restaurant",
+  "class": "ts-faq-section",
+  "max_blocks": 30,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "inline", "options": [{ "value": "inline", "label": "Titre à gauche, questions à droite" }, { "value": "page", "label": "Page par catégories" }] },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Questions fréquentes" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Vos questions, nos réponses." },
+    { "type": "checkbox", "id": "ornament", "label": "Ornement botanique", "default": true }
+  ],
+  "blocks": [
+    { "type": "category", "name": "Catégorie", "settings": [
+      { "type": "text", "id": "title", "label": "Nom de la catégorie", "default": "Réservations" }
+    ] },
+    { "type": "question", "name": "Question", "settings": [
+      { "type": "text", "id": "question", "label": "Question" },
+      { "type": "richtext", "id": "answer", "label": "Réponse" }
+    ] }
+  ],
+  "presets": [{ "name": "Questions du restaurant" }]
+}
+{% endschema %}

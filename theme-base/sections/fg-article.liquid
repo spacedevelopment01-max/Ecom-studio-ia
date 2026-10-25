@@ -1,0 +1,65 @@
+{%- comment -%}
+  FRAISE : article du journal (déclinaison des planches 02 et 05 : aucune maquette d'article n'existe) — retour au
+  journal, étiquette, titre, chapeau, photo de couverture, texte, encadré, liens vers d'autres articles. Chaque article
+  a son propre contenu ; aucun conseil de santé ni ingrédient non prouvé.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<article class="fg fg-article" aria-labelledby="fg-art-t-{{ section.id }}">
+  <div class="fg-c">
+    <a class="fg-article__back" href="{{ s.back_link | default: routes.root_url }}">{% render 'fg-icon', name: 'arrow-left' %}{{ s.back_label }}</a>
+    <div class="fg-article__head">
+      {%- if s.category != blank -%}<p class="fg-journal__tag fg-article__tag">{{ s.category }}</p>{%- endif -%}
+      {%- assign aid = 'fg-art-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h1', class: 'fg-article__title', id: aid %}
+      {%- if s.lead != blank -%}<p class="fg-article__lead">{{ s.lead }}</p>{%- endif -%}
+      {%- if s.meta != blank -%}<p class="fg-article__meta">{{ s.meta }}</p>{%- endif -%}
+    </div>
+    {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'fg-article__cover', loading: 'eager' %}
+    <div class="fg-article__body">{{ s.body }}</div>
+    {%- if s.box_title != blank -%}<aside class="fg-article__box"><p class="fg-article__boxt">{{ s.box_title }}</p><div>{{ s.box_text }}</div></aside>{%- endif -%}
+    {%- if section.blocks.size > 0 -%}
+      <nav class="fg-article__more" aria-label="{{ s.more_label | escape }}">
+        <p class="fg-article__moret">{{ s.more_label }}</p>
+        <ul role="list">
+          {%- for block in section.blocks -%}
+            <li {{ block.shopify_attributes }}><a href="{{ block.settings.link | default: '#' }}">{% render 'fg-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', class: 'fg-article__mimg' %}<span>{{ block.settings.title }}</span></a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Article du journal",
+  "class": "fg-article-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "back_label", "label": "Retour", "default": "Retour au journal" },
+    { "type": "url", "id": "back_link", "label": "Lien du retour" },
+    { "type": "text", "id": "category", "label": "Catégorie" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "text", "id": "lead", "label": "Chapeau" },
+    { "type": "text", "id": "meta", "label": "Mention sous le chapeau" },
+    { "type": "image_picker", "id": "image", "label": "Photo de couverture" },
+    { "type": "text", "id": "image_asset", "label": "Photo de couverture (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "richtext", "id": "body", "label": "Texte" },
+    { "type": "text", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "richtext", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "more_label", "label": "Titre des autres articles", "default": "À lire aussi" }
+  ],
+  "blocks": [
+    { "type": "post", "name": "Autre article", "settings": [
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" }
+    ] }
+  ],
+  "presets": [{ "name": "Article du journal" }]
+}
+{% endschema %}

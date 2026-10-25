@@ -1,0 +1,37 @@
+{%- comment -%}
+  FRAISE : « Restons en contact. » (planche 01) — titre rouge, phrase, champ e-mail et bouton « S'inscrire », fleur de
+  fraisier. Démonstration : inscription simulée et annoncée. Au téléphone, l'inscription est dans le pied de page.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-news fg-news--{{ s.visibility }}" aria-labelledby="fg-news-t-{{ section.id }}">
+  <div class="fg-c">
+    <h2 class="fg-news__title" id="fg-news-t-{{ section.id }}">{{ s.heading }}</h2>
+    {%- if s.text != blank -%}<p class="fg-news__text">{{ s.text }}</p>{%- endif -%}
+    {%- form 'customer', class: 'fg-news__form', data-fg-news: '' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <label class="visually-hidden" for="fg-news-in-{{ section.id }}">{{ s.placeholder }}</label>
+      <input id="fg-news-in-{{ section.id }}" type="email" name="contact[email]" placeholder="{{ s.placeholder | escape }}" autocomplete="email" required>
+      <button type="submit" class="fg-btn fg-btn--red"><span class="fg-news__btxt">{{ s.button }}</span>{% render 'fg-icon', name: 'arrow' %}</button>
+      <p class="fg-news__status" role="status" data-fg-status hidden></p>
+      {%- if form.posted_successfully? -%}<p class="fg-news__status" role="status">{{ s.done }}</p>{%- endif -%}
+    {%- endform -%}
+    <span class="fg-news__flower" aria-hidden="true">{% render 'fg-art', name: 'tulips' %}</span>
+    <span class="fg-news__mart" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'half' %}</span>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inscription",
+  "class": "fg-news-section",
+  "settings": [
+    { "type": "select", "id": "visibility", "label": "Affichage", "default": "desktop", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement (au téléphone : dans le pied de page)" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Restons en contact." },
+    { "type": "text", "id": "text", "label": "Phrase" },
+    { "type": "text", "id": "placeholder", "label": "Texte du champ", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "button", "label": "Bouton", "default": "S'inscrire" },
+    { "type": "text", "id": "done", "label": "Message d'inscription réussie", "default": "Merci, votre inscription est enregistrée." }
+  ],
+  "presets": [{ "name": "Inscription" }]
+}
+{% endschema %}

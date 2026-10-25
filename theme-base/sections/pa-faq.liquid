@@ -1,0 +1,99 @@
+{%- comment -%}
+  PARENTHÈSE : questions fréquentes en accordéons (clavier : bouton, aria-expanded ; une réponse peut rester ouverte).
+  - home : titre, texte, bouton et rameau à gauche ; questions à « + » à droite (accueil) ; téléphone : titre repliable ;
+  - list : liste à chevrons, « Afficher toutes les réponses » (première séance) ;
+  - cards : questions en cartes (fiche atelier) ;
+  - page : catégories à gauche (La sophrologie, Les séances, Réservation, Visio) qui affichent leurs questions, carte
+    « Une autre question ? » (planche 06).
+  Blocs : « Catégorie » (page) suivie de ses « Question ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign questions = section.blocks | where: 'type', 'question' -%}
+{%- if questions.size > 0 -%}
+<section class="pa-section pa-faq pa-faq--{{ s.layout }}" data-pa-faq>
+  <div class="pa-wrap pa-faq__grid">
+    {%- if s.layout == 'home' -%}
+      <div class="pa-faq__intro">
+        <h2 class="pa-title pa-title--md"><button type="button" class="pa-faq__fold" aria-expanded="true" data-pa-fold>{{ s.heading }}{% render 'pa-icon', name: 'down' %}</button><span class="pa-faq__fold-label">{{ s.heading }}</span></h2>
+        {%- if s.text != blank -%}<p class="pa-faq__lead">{{ s.text }}</p>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.button_link | default: '/pages/faq' }}">{{ s.button_label }}</a>{%- endif -%}
+        {% render 'pa-ornament', name: 'branch', class: 'pa-faq__branch' %}
+      </div>
+    {%- elsif s.layout == 'page' -%}
+      <div class="pa-faq__cats" role="tablist" aria-label="{{ s.cats_label | escape }}">
+        {%- assign n = 0 -%}
+        {%- for block in section.blocks -%}{%- if block.type == 'category' -%}{%- assign n = n | plus: 1 -%}<button type="button" class="pa-faq__cat" role="tab" id="pa-faq-tab-{{ section.id }}-{{ n }}" aria-controls="pa-faq-panel-{{ section.id }}-{{ n }}" aria-selected="{% if n == 1 %}true{% else %}false{% endif %}" data-pa-faq-tab="{{ n }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</button>{%- endif -%}{%- endfor -%}
+      </div>
+    {%- elsif s.heading != blank -%}
+      <div class="pa-faq__head">
+        <h2 class="pa-title pa-title--sm">{{ s.heading }}</h2>
+        {%- if s.layout == 'list' and s.all_label != blank -%}<button type="button" class="pa-faq__all" aria-expanded="false" data-pa-faq-all>{{ s.all_label }}{% render 'pa-icon', name: 'plus' %}</button>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="pa-faq__main" data-pa-fold-target>
+      {%- if s.layout == 'page' -%}
+        {%- assign n = 0 -%}
+        {%- for group in section.blocks -%}
+          {%- if group.type != 'category' -%}{%- continue -%}{%- endif -%}
+          {%- assign n = n | plus: 1 -%}
+          <div class="pa-faq__panel" role="tabpanel" id="pa-faq-panel-{{ section.id }}-{{ n }}" aria-labelledby="pa-faq-tab-{{ section.id }}-{{ n }}" data-pa-faq-panel="{{ n }}"{% if n > 1 %} hidden{% endif %}>
+            <h2 class="pa-title pa-title--sm">{{ group.settings.label }}</h2>
+            <div class="pa-acc">
+              {%- for block in section.blocks offset: forloop.index -%}
+                {%- if block.type == 'category' -%}{%- break -%}{%- endif -%}
+                <div class="pa-acc__item" {{ block.shopify_attributes }}>
+                  <h3 class="pa-acc__q"><button type="button" aria-expanded="{% if forloop.first and n == 1 and s.open_first %}true{% else %}false{% endif %}" aria-controls="pa-acc-{{ block.id }}" data-pa-acc>{{ block.settings.question }}{% render 'pa-icon', name: 'down', class: 'pa-acc__ico' %}</button></h3>
+                  <div class="pa-acc__a" id="pa-acc-{{ block.id }}"{% unless forloop.first and n == 1 and s.open_first %} hidden{% endunless %}>{{ block.settings.answer }}</div>
+                </div>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endfor -%}
+        {%- if s.aside_heading != blank -%}
+          <div class="pa-faq__more">
+            {% render 'pa-ornament', name: 'quill', class: 'pa-faq__more-orn' %}
+            <p><strong>{{ s.aside_heading }}</strong>{%- if s.aside_text != blank -%}<span>{{ s.aside_text }}</span>{%- endif -%}</p>
+            {%- if s.aside_button_label != blank -%}<a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.aside_link | default: '/pages/contact' }}">{{ s.aside_button_label }}{% render 'pa-icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- else -%}
+        <div class="pa-acc">
+          {%- for block in questions -%}
+            <div class="pa-acc__item" {{ block.shopify_attributes }}>
+              <h3 class="pa-acc__q"><button type="button" aria-expanded="false" aria-controls="pa-acc-{{ block.id }}" data-pa-acc>{{ block.settings.question }}{% if s.layout == 'home' %}{% render 'pa-icon', name: 'plus', class: 'pa-acc__ico' %}{% else %}{% render 'pa-icon', name: 'down', class: 'pa-acc__ico' %}{% endif %}</button></h3>
+              <div class="pa-acc__a" id="pa-acc-{{ block.id }}" hidden>{{ block.settings.answer }}</div>
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "FAQ Parenthèse",
+  "class": "pa-faq-section",
+  "max_blocks": 40,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil (titre à gauche)" }, { "value": "list", "label": "Liste à chevrons" }, { "value": "cards", "label": "Cartes" }, { "value": "page", "label": "Page FAQ par catégories" }] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Vos questions, nos réponses" },
+    { "type": "text", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "all_label", "label": "Bouton « tout afficher » (liste)", "default": "Afficher toutes les réponses" },
+    { "type": "checkbox", "id": "open_first", "label": "Première réponse ouverte (page)", "default": true },
+    { "type": "text", "id": "cats_label", "label": "Nom des catégories (lecteurs d'écran)", "default": "Catégories de questions" },
+    { "type": "text", "id": "aside_heading", "label": "Encadré : titre", "default": "Une autre question ?" },
+    { "type": "text", "id": "aside_text", "label": "Encadré : texte", "default": "Je suis à votre écoute pour y répondre." },
+    { "type": "text", "id": "aside_button_label", "label": "Encadré : bouton", "default": "Me contacter" },
+    { "type": "url", "id": "aside_link", "label": "Encadré : lien" }
+  ],
+  "blocks": [
+    { "type": "category", "name": "Catégorie", "settings": [{ "type": "text", "id": "label", "label": "Nom", "default": "La sophrologie" }] },
+    { "type": "question", "name": "Question", "settings": [{ "type": "text", "id": "question", "label": "Question", "default": "Qu'est-ce que la sophrologie ?" }, { "type": "richtext", "id": "answer", "label": "Réponse" }] }
+  ],
+  "presets": [{ "name": "FAQ Parenthèse" }]
+}
+{% endschema %}

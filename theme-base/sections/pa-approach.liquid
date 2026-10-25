@@ -1,0 +1,53 @@
+{%- comment -%}
+  PARENTHÈSE : « Mon approche » (accueil, planche 02) : titre, texte et bouton ; photo ; panneau sauge « Une approche
+  basée sur : » avec quatre engagements à pictogrammes ronds.
+  Blocs : « Engagement ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-approach">
+  <div class="pa-approach__grid">
+    <div class="pa-approach__text">
+      <h2 class="pa-title pa-title--md">{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<div class="pa-approach__lead">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.button_link | default: '/pages/mon-approche' }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+    {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'pa-approach__img' %}
+    {%- if section.blocks.size > 0 -%}
+      <div class="pa-approach__panel">
+        {%- if s.panel_title != blank -%}<p class="pa-approach__panel-title">{{ s.panel_title }}</p>{%- endif -%}
+        <ul role="list">
+          {%- for block in section.blocks -%}<li {{ block.shopify_attributes }}><span class="pa-round">{% render 'pa-icon', name: block.settings.icon %}</span>{{ block.settings.label }}</li>{%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Approche et engagements",
+  "class": "pa-approach-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Mon approche" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "En savoir plus" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "panel_title", "label": "Titre du panneau", "default": "Une approche basée sur :" }
+  ],
+  "blocks": [
+    {
+      "type": "value", "name": "Engagement",
+      "settings": [
+        { "type": "select", "id": "icon", "label": "Icône", "default": "heart-hands", "options": [{ "value": "heart-hands", "label": "Écoute" }, { "value": "tools", "label": "Outils" }, { "value": "rhythm", "label": "Rythme" }, { "value": "globe", "label": "Vision globale" }, { "value": "leaf", "label": "Feuille" }] },
+        { "type": "text", "id": "label", "label": "Texte", "default": "L'écoute et la bienveillance" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Approche et engagements" }]
+}
+{% endschema %}

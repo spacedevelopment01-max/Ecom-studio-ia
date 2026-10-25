@@ -1,0 +1,40 @@
+{%- comment -%}
+  ATELIER NUANCE : texte et photo côte à côte (« Le salon — Un temps pour vous. »). Fond rosé à gauche, photo pleine
+  hauteur à droite ; sur téléphone, le bouton se pose sur la photo.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="an-section an-split an-split--{{ s.image_side }} an-bg--{{ s.background }}" style="--min-h: {{ s.min_height }}px;">
+  <div class="an-split__text">
+    {%- if s.eyebrow != blank -%}<p class="an-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="an-title an-title--lg">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="an-text">{{ s.text }}</div>{%- endif -%}
+    {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-split__btn" href="{{ s.button_link | default: '/pages/le-salon' }}">{{ s.button_label }}</a>{%- endif -%}
+  </div>
+  <div class="an-split__media">
+    {% render 'an-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile %}
+    {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-split__btn-m" href="{{ s.button_link | default: '/pages/le-salon' }}">{{ s.button_label }}</a>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Texte et photo du salon",
+  "class": "an-split-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Le salon" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un temps pour vous." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "select", "id": "image_side", "label": "Côté de la photo", "default": "right", "options": [{ "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" }] },
+    { "type": "select", "id": "background", "label": "Fond du texte", "default": "blush", "options": [{ "value": "blush", "label": "Rosé" }, { "value": "ivory", "label": "Ivoire" }, { "value": "stone", "label": "Pierre" }] },
+    { "type": "range", "id": "min_height", "label": "Hauteur minimale", "min": 240, "max": 640, "step": 10, "unit": "px", "default": 360 }
+  ],
+  "presets": [{ "name": "Texte et photo du salon" }]
+}
+{% endschema %}

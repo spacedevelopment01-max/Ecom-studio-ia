@@ -88,6 +88,19 @@ const commitments = make(
   }),
 );
 
+/** Notes à compléter (TRAVERSE : livraison, retours, pages légales) : titre neutre, rubriques nommées sans rien promettre,
+ * encadrés « À compléter » ; jamais « Ce que … garantit ». */
+const commitmentsOrNotes: CopyFn = (ctx, base, schema) => {
+  if (base.settings.layout !== "notes") return commitments(ctx, base, schema);
+  const names = [tr(ctx, "Livraison", "Shipping"), tr(ctx, "Retours et échanges", "Returns and exchanges")];
+  const list = base.blocks?.length ? base.blocks : names.map(() => ({ type: "item", settings: {} as Record<string, unknown> }));
+  return {
+    settings: fill(base.settings, { eyebrow: "", heading: tr(ctx, "Livraison et retours", "Shipping and returns"), heading_accent: "", text: "" }),
+    blocks: list.map((b, i) => ({ type: "item", settings: fill(b.settings ?? {}, { title: names[i] ?? tr(ctx, "Rubrique", "Section"), box_title: tr(ctx, "À compléter", "To complete"), box_text: tr(ctx, "Informations à ajouter ici.", "Details to add here.") }) })),
+    samples: false,
+  };
+};
+
 const collections = make(
   (ctx) => ({ eyebrow: tr(ctx, "Collections", "Collections"), heading: tr(ctx, "Explorer la boutique", "Explore the store") }),
   (ctx) => ({
@@ -244,7 +257,7 @@ const references = make(
 );
 
 export const FAMILY_COPY: Record<string, CopyFn> = {
-  "fs-video": video, "fs-results": results, "fs-press": press, "fs-making": making, "fs-products": products, "fs-commitments": commitments,
+  "fs-video": video, "fs-results": results, "fs-press": press, "fs-making": making, "fs-products": products, "fs-commitments": commitmentsOrNotes,
   "fs-collections": collections, "fs-lookbook": lookbook, "fs-dimensions": dimensions, "fs-care": care, "fs-campaign": campaign, "fs-reviews": reviews,
   "fs-journal": journal, "fs-stores": stores, "fs-service": service, "fs-needs": needs, "fs-case": caseStudy, "fs-credentials": credentials,
   "fs-equipment": equipment, "fs-references": references,

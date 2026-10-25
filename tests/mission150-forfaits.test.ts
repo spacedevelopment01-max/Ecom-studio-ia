@@ -4,7 +4,7 @@ import { id,now,one,run } from '@/lib/db';
 import { grantProjectPlan,createSubscription } from './communication-choice-fixture';
 import { PLANS, type PlanId } from '@/lib/plans';
 import { FAMILY_LIBRARY } from '@/lib/theme/section-families';
-import { planAllowsTheme,planAllowsSection,PLAN_THEME_ORDER } from '@/lib/plan-entitlements';
+import { planAllowsTheme,planAllowsSection } from '@/lib/plan-entitlements';
 import { themeAllowed } from '@/lib/theme/theme-access';
 import { assertAdvertising,assertJobEntitlements } from '@/lib/job-entitlements';
 import { assertLibrarySelection } from '@/lib/theme/plan-access';
@@ -17,18 +17,34 @@ const fixture=async(plan:PlanId)=>{const user=await createUser(`droits150-${id()
 let slotSeq=0;
 const slot=()=>{const sid=id(),at=now()+4*86400000+(++slotSeq)*60000;run('INSERT INTO call_slots(id,starts_at,ends_at,status,created_at) VALUES(?,?,?,?,?)',sid,at,at+3600000,'open',now());return sid;};
 it('grille unique TTC, droits et quotas 49/89/129 sans quotas vidéo inventés',()=>{
- expect(Object.values(PLANS).map(p=>[p.price.month,p.themes,p.librarySections,p.quotas.blog,p.postsPerDay,p.calendarDays])).toEqual([[49,1,8,0,1,7],[89,3,12,5,3,30],[129,5,20,10,5,90]]);
+ expect(Object.values(PLANS).map(p=>[p.price.month,p.librarySections,p.quotas.blog,p.postsPerDay,p.calendarDays])).toEqual([[49,8,0,1,7],[89,12,5,3,30],[129,20,10,5,90]]);
+ // Mission #190 : plus de quota « N thèmes par famille » ; les thèmes sont ouverts par thème et par forfait (theme-rights.ts).
+ expect(Object.values(PLANS).some(p=>'themes' in p)).toBe(false);
  expect(Object.values(PLANS).map(p=>p.quotas.aiVideos)).toEqual([0,0,0]);
 });
-it('thèmes par famille : slots futurs ne sont pas des thèmes activés ; aucun ancien thème réintroduit',()=>{
- for(const family of Object.keys(PLAN_THEME_ORDER) as (keyof typeof PLAN_THEME_ORDER)[]){expect(PLAN_THEME_ORDER[family]).toHaveLength(5);expect(planAllowsTheme('creer',PLAN_THEME_ORDER[family][0]!)).toBe(true);}
- expect(themeAllowed('creer','onde')).toBe(false);expect(themeAllowed('vendre','onde')).toBe(true);expect(themeAllowed('dominer','atelier')).toBe(false);expect(themeAllowed('vendre','sillon')).toBe(true);expect(planAllowsTheme('vendre','sillon')).toBe(true);
+it('thèmes : droits par thème (aucune famille) ; répartition à choisir = tous les thèmes proposés ; aucun ancien thème réintroduit',()=>{
+ for(const plan of ['creer','vendre','dominer'] as const){expect(themeAllowed(plan,'onde')).toBe(true);expect(themeAllowed(plan,'sillon')).toBe(true);expect(planAllowsTheme(plan,'phase')).toBe(true);expect(themeAllowed(plan,'atelier')).toBe(false);expect(themeAllowed(plan,'orbe')).toBe(false);}
+ expect(themeAllowed(null,'onde')).toBe(false);
+ // Liste choisie pour un forfait : seuls ces thèmes lui sont ouverts, les autres forfaits restent « à choisir ».
+ const rights={plans:{creer:['phase','onde']}};
+ expect(themeAllowed('creer','phase',rights)).toBe(true);expect(themeAllowed('creer','sillon',rights)).toBe(false);expect(themeAllowed('vendre','sillon',rights)).toBe(true);
 });
-it.each(['creer','vendre','dominer'] as const)('%s : exactement les fonctions autorisées dans chacune des trois familles, variantes non comptées',plan=>{
- for(const family of Object.keys(FAMILY_LIBRARY) as (keyof typeof FAMILY_LIBRARY)[]){const allowed=FAMILY_LIBRARY[family].filter(e=>planAllowsSection(plan,family,e.key));expect(allowed).toHaveLength(PLANS[plan].librarySections);expect(allowed.every(e=>e.family===family)).toBe(true);}
+it.each(['creer','vendre','dominer'] as const)('%s : fonctions de la bibliothèque ouvertes par nom de fonction, sans famille (mission #190)',plan=>{
+ const fn=(k:string)=>k.split('.').pop()!;
+ const all=Object.values(FAMILY_LIBRARY).flat();
+ const allowed=new Set(all.filter(e=>planAllowsSection(plan,e.key)).map(e=>fn(e.key)));
+ // Une même fonction (ex. « faq ») est ouverte ou fermée pareil quelle que soit l'ancienne famille qui la propose.
+ for(const e of all)expect(planAllowsSection(plan,e.key),e.key).toBe(allowed.has(fn(e.key)));
+ if(plan==='dominer')expect(all.every(e=>planAllowsSection(plan,e.key))).toBe(true);
+ else{expect(allowed.has('faq')).toBe(true);expect(allowed.has('press')).toBe(false);}
+ if(plan!=='creer')expect(allowed.has('before-after')).toBe(true);else expect(allowed.has('before-after')).toBe(false);
+ // Sections propres au thème installé : toujours ouvertes (elles font partie du thème).
+ expect(planAllowsSection(plan,'own:ph-hero~p0')).toBe(true);
 });
 it('insertion directe de fonction verrouillée refusée, fonction permise acceptée sans limite de blocs',async()=>{
- const f=await fixture('creer');expect(()=>assertLibrarySelection(f.pid,'fam:specialty.faq')).not.toThrow();expect(()=>assertLibrarySelection(f.pid,'fam:specialty.press')).toThrow(/forfait/);expect(()=>assertLibrarySelection(f.pid,'fam:services.faq')).toThrow();
+ const f=await fixture('creer');expect(()=>assertLibrarySelection(f.pid,'fam:specialty.faq')).not.toThrow();expect(()=>assertLibrarySelection(f.pid,'fam:specialty.press')).toThrow(/forfait/);
+ // Plus de familles : la même fonction proposée par une autre ancienne famille est acceptée.
+ expect(()=>assertLibrarySelection(f.pid,'fam:services.faq')).not.toThrow();
 });
 it.each(['creer','vendre'] as const)('%s : devis, tâche directe et worker publicitaire refusés avant toute dépense',async plan=>{
  const f=await fixture(plan);expect(()=>assertAdvertising(f.pid)).toThrow(/129/);expect(()=>enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{request:{as:'ad'}}})).toThrow(/129/);

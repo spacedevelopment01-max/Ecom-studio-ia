@@ -1,0 +1,33 @@
+{%- comment -%}
+  Onde sonore décorative d'ONDE (maquettes du 24 octobre) : barres verticales d'amplitude variable, dessinées en SVG
+  (aucune image). Paramètres : bars (nombre de barres, 24 par défaut), shape (« burst » : forte au centre, « line » :
+  régulière, « fade » : s'éteint vers la droite), class (classe ajoutée). La couleur suit `currentColor`.
+{%- endcomment -%}
+{%- liquid
+  assign n = bars | default: 48
+  assign kind = shape | default: 'burst'
+  assign w = n | times: 6
+  assign mid = n | divided_by: 2
+-%}
+<svg class="on-wave on-wave--{{ kind }} {{ class }}" viewBox="0 0 {{ w }} 60" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  {%- for i in (1..n) -%}
+    {%- liquid
+      assign seed = i | times: 37 | plus: 11 | modulo: 23
+      assign dist = i | minus: mid | abs
+      if kind == 'line'
+        assign amp = seed | times: 2 | plus: 8
+      elsif kind == 'fade'
+        assign amp = n | minus: i | times: 46 | divided_by: n | plus: 4 | plus: seed
+      else
+        assign env = mid | minus: dist | times: 52 | divided_by: mid
+        assign amp = seed | times: env | divided_by: 22 | plus: 3
+      endif
+      if amp > 58
+        assign amp = 58
+      endif
+      assign x = i | minus: 1 | times: 6 | plus: 2
+      assign y = 60 | minus: amp | divided_by: 2
+    -%}
+    <rect x="{{ x }}" y="{{ y }}" width="2" height="{{ amp }}" rx="1"/>
+  {%- endfor -%}
+</svg>

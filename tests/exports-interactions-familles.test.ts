@@ -28,7 +28,7 @@ import { designLayer } from "@/lib/cms-v2/design";
 import { phpAvailable } from "@/lib/cms-v2/checks";
 import { liquidGlobals, normalizedSection, phpLiquidSource, phpTemplates, sectionSchemaOf } from "@/lib/cms-v2/liquid";
 import type { ThemeSpec } from "@/lib/theme/spec";
-import { demoProject } from "./demo-fixtures";
+import { conversionProject } from "./lot2c-fixtures";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
@@ -37,7 +37,8 @@ const CONVERSION_JS = "Profil « conversion »";
 
 describe("exports CMS des sections de bibliothèque", async () => {
   const user = await createUser("exports-familles@example.invalid", "isolated-test-only", "Exports");
-  const demo = await fr(() => demoProject(user.id, "fraise"));
+  // Composition de conversion (comparatif, onglets, profil « conversion ») gardée constructible par conversionProject.
+  const demo = await fr(() => conversionProject(user.id, "fraise"));
   const add = (spec: ThemeSpec, type: string, settings: Record<string, unknown> = {}, blocks: { type: string; settings: Record<string, unknown> }[] = []) => {
     const r = applyOps(spec, [{ op: "add_section", template: "index", type, settings, blocks } as never], { targeted: new Set(), storeKind: "specialty" });
     expect(r.applied.length, `${type} : ${r.rejected.map((x) => x.reason).join(" ; ")}`).toBe(1);

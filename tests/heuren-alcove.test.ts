@@ -29,6 +29,8 @@ import { saveBrand, loadProject } from "@/lib/projects";
 import { libraryLoader } from "@/lib/theme/loader";
 import { cmsExport } from "@/lib/cms-v2/export";
 import { designLayer } from "@/lib/cms-v2/design";
+import { resolveLibraryType } from "@/lib/theme/family-gallery";
+import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { demoProject } from "./demo-fixtures";
 import { SHOP_KIT_MEDIA, type ShopKitId } from "./heuren-alcove-fixtures";
 import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
@@ -42,10 +44,11 @@ const zipText = (z: Record<string, Uint8Array>, re: RegExp) => Object.entries(z)
 
 const PLAN: Record<ShopKitId, { profile: string; fonts: { heading: string; body: string }; home: string[]; product: string[]; pages: string[]; header: string; footer: string; brand: RegExp; leak: RegExp }> = {
   heuren: {
-    profile: "cadran", fonts: { heading: "instrument_serif_n4", body: "inter_n4" },
-    home: ["ed-opening", "ed-statement", "fs-lookbook", "fs-campaign", "ed-scene", "featured-purchase", "v2-faq", "newsletter-media"],
-    product: ["main-product", "ed-diptych", "v2-faq", "product-recommendations"],
-    pages: ["au-fil-du-jour", "aide"], header: "centered-nav", footer: "boxed", brand: /HEUREN/, leak: /HEUREN|heure bleue|bleu nuit soleillé|Au fil du jour/i,
+    // Maquette du 22 octobre (docs/design/heuren-reference-20261022).
+    profile: "cadran", fonts: { heading: "jost_n3", body: "jost_n4" },
+    home: ["ed-opening", "fs-commitments", "ed-scene", "ed-diptych", "ed-scene", "featured-purchase", "fs-commitments", "v2-faq", "ed-scene"],
+    product: ["main-product", "ed-scene", "fs-lookbook", "ed-scene", "ed-scene", "v2-faq", "product-recommendations"],
+    pages: ["notre-histoire", "conseils", "contact", "livraison-retours"], header: "transparent", footer: "minimal", brand: /HEUREN/, leak: /HEUREN|Marquez ce moment|Pour ce qui compte|Un cadeau qui marque|Bleu nuit/i,
   },
   alcove: {
     profile: "arrondi", fonts: { heading: "lora_n4", body: "work_sans_n4" },
@@ -57,14 +60,14 @@ const PLAN: Record<ShopKitId, { profile: string; fonts: { heading: string; body:
 
 describe("HEUREN et ALCÔVE : thèmes actifs de la famille E-commerce (mono-produit), jamais « boutique spécialisée »", () => {
   for (const id of ["heuren", "alcove"] as const) it(`${id} : catalogue, famille E-commerce partout, profil, polices, accès par forfait, aperçu suivi`, () => {
-    expect(ACTIVE_THEMES).toContain(id);
+    // ALCÔVE, créé avant les maquettes (aucune maquette retrouvée), n'est plus proposé depuis le 25 octobre (mission #190).
+    if (id === "alcove") expect(ACTIVE_THEMES).not.toContain(id); else expect(ACTIVE_THEMES).toContain(id);
     expect(themeKinds(id)).toEqual(["catalog"]);
     expect(THEME_FAMILY[id]).toBe("catalog");
     expect(REFERENCE_THEMES.find((t) => t.referenceId === id)?.categories).toEqual(["ecommerce"]);
-    // Droits par famille (plan-entitlements.ts) : HEUREN dès Développer, ALCÔVE avec Dominer (rangs 3 et 4 en E-commerce).
-    expect(themeAllowed("creer", id)).toBe(false);
-    expect(themeAllowed("vendre", id)).toBe(id === "heuren");
-    expect(themeAllowed("dominer", id)).toBe(true);
+    // Droits par thème et par forfait (mission #190) : répartition encore à choisir, HEUREN est ouvert à tous les forfaits
+    // payants ; ALCÔVE, retiré du catalogue proposé, à aucun (les projets qui l'utilisent le gardent).
+    for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(id === "heuren");
     expect(themeAllowed(null, id)).toBe(false);
     const t = catalogTheme(id)!;
     expect(t.kinds).toEqual(["catalog"]);
@@ -80,15 +83,17 @@ describe("HEUREN et ALCÔVE : thèmes actifs de la famille E-commerce (mono-prod
     const schema = fs.readFileSync(path.join(process.cwd(), "theme-base", "config", "settings_schema.json"), "utf8");
     for (const v of ["cadran", "arrondi", "heuren", "alcove"]) expect(schema).toContain(`"value": "${v}"`);
     expect(fs.readFileSync(path.join(process.cwd(), "theme-base", "sections", "ed-opening.liquid"), "utf8")).toContain('"value": "arch"');
-    expect(FAMILY_LIBRARY.catalog.find((e) => e.key === "catalog.hero")!.dispositions.map((d) => d.id)).toEqual(["immersive", "journal", "arch", "fullscreen"]);
+    expect(FAMILY_LIBRARY.catalog.find((e) => e.key === "catalog.hero")!.dispositions.map((d) => d.id)).toEqual(["immersive", "journal", "arch", "fullscreen", "banner", "scene", "soft-panel", "soft-panel-right", "brand-band", "buy-bar", "onde-split", "onde-wordmark", "onde-background", "onde-cta", "onde-orbit"]);
   });
 
   it("compositions distinctes : ni entre elles, ni avec ORBE (polices, en-têtes, pieds, ouverture)", () => {
     const ids = ["orbe", "heuren", "alcove"];
     const themes = ids.map((i) => catalogTheme(i)!);
     expect(new Set(themes.map((t) => t.fonts.heading)).size).toBe(3);
-    expect(new Set(themes.map((t) => t.look.footer)).size).toBe(3);
-    expect(new Set(themes.map((t) => String(t.headerSettings?.layout ?? t.look.headerLayout) + "/" + String(t.headerSettings?.mega_menu ?? "none"))).size).toBe(3);
+    // Pieds de page : HEUREN reprend la disposition « Sobre » d'ORBE, imposée par sa maquette (une ligne bleu nuit) ;
+    // ALCÔVE garde le sien. En-têtes, polices et ouvertures restent toutes distinctes.
+    expect(new Set(themes.map((t) => t.look.footer)).size).toBe(2);
+    expect(new Set(themes.map((t) => String(t.headerSettings?.layout ?? t.look.headerLayout) + "/" + String(t.headerSettings?.mega_menu ?? "none") + "/" + String(t.headerSettings?.transparent_on_home ?? false))).size).toBe(3);
     expect(PLAN.heuren.home).not.toEqual(PLAN.alcove.home);
   });
 });
@@ -128,15 +133,16 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
 
   it("médias : logo, 5 vues et 10 ambiances utilisés ; jamais la même image dans deux sections qui se suivent", () => {
     expect(f.missing).toEqual([]);
-    expect(SHOP_KIT_MEDIA[id].length).toBe(16);
+    expect(SHOP_KIT_MEDIA[id].length).toBe(id === "heuren" ? 14 : 16);
     const shown = all + JSON.stringify(spec.store.product.images);
-    for (const m of SHOP_KIT_MEDIA[id]) expect(shown, m.file).toContain(`${id}-${m.file}`);
+    // HEUREN : le logo serif sert d'icône du site ; l'en-tête porte le nom en lettres espacées (maquette).
+    for (const m of SHOP_KIT_MEDIA[id]) if (!(id === "heuren" && m.role === "logo")) expect(shown, m.file).toContain(`${id}-${m.file}`);
     for (const key of Object.keys(spec.templates)) {
-      const imgs = types(key).filter((s) => !s.disabled).map((s) => new Set(JSON.stringify(s).match(new RegExp(`${id}-(?:produit|ambiance)-\\d\\d\\.webp`, "g")) ?? []));
+      const imgs = types(key).filter((s) => !s.disabled).map((s) => new Set(JSON.stringify(s).match(new RegExp(`${id}-[a-z0-9-]+\\.webp`, "g")) ?? []));
       for (let i = 1; i < imgs.length; i++) for (const file of imgs[i]) expect(imgs[i - 1].has(file), `${key} : ${file} dans deux sections successives`).toBe(false);
     }
-    // HEUREN : la scène sur pierre noire est la version corrigée (ambiance-07) ; l'ancienne n'est pas dans le lot.
-    if (id === "heuren") expect(all).toContain("heuren-ambiance-07.webp");
+    // HEUREN : la scène du bureau est la version corrigée ; la version défectueuse (couronne mal placée) n'est pas dans le lot.
+    if (id === "heuren") { expect(all).toContain("heuren-bureau-corrige.webp"); expect(all).not.toMatch(/heuren-(produit|ambiance)-\d\d/); }
   });
 
   it("SEO : un H1, titre et description uniques par page, fil d'Ariane, alt partout, aperçu non indexable", () => {
@@ -158,7 +164,7 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     expect(descriptions.size).toBe(pages.size);
   });
 
-  it("rien d'inventé ; aucun manque public ; champs inconnus conservés masqués dans l'éditeur", () => {
+  if (id === "alcove") it("rien d'inventé ; aucun manque public ; champs inconnus conservés masqués dans l'éditeur", () => {
     expect(spec.store.product.price).toBeNull();
     const product = pages.get(`/products/${spec.store.product.handle}`)!;
     const ld = [...product.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
@@ -177,10 +183,10 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     // Une seule mention de démonstration (#157) : celle de l'aperçu, pas un bandeau d'annonce en plus.
     expect(visibleText(pages.get("/")!)).not.toContain("Boutique de démonstration");
     expect(Object.values(spec.groups.header.sections).map((sec) => sec.type)).toEqual(["header"]);
-    expect(visibleText(pages.get("/")!)).toMatch(new RegExp(`(©|&copy;)\\s*\\d{4}\\s*${id === "heuren" ? "HEUREN" : "ALCÔVE"}`));
+    expect(visibleText(pages.get("/")!)).toMatch(new RegExp(`(©|&copy;)\\s*\\d{4}\\s*ALCÔVE`));
   });
 
-  it("sans prix : achat affiché indisponible (fiche, produit à la une, barre mobile) ; avec un prix de test, l'achat reste normal (#157)", async () => {
+  if (id === "alcove") it("sans prix : achat affiché indisponible (fiche, produit à la une, barre mobile) ; avec un prix de test, l'achat reste normal (#157)", async () => {
     const productRoute = `/products/${spec.store.product.handle}`;
     const addButtons = (html: string) => [...html.matchAll(/<button[^>]*data-add-button[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
     const stickyButton = (html: string) => html.match(/<button[^>]*data-sticky-add[^>]*>[^<]*<\/button>/)?.[0] ?? "";
@@ -201,6 +207,43 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     expect(stickyButton(html)).toMatch(/>Ajouter au panier<\/button>$/);
     expect(stickyButton(html)).not.toMatch(/disabled/);
     expect(reconcileOfferCart(priced, [{ variantId: 1000, quantity: 2 }]).map((l) => [l.variantId, l.quantity])).toEqual([[1000, 2]]);
+  });
+
+  // HEUREN (maquette du 22 octobre) : 190 € est un prix fictif annoncé comme tel ; les données techniques restent « à
+  // renseigner pour le produit réel » (mention de la maquette), jamais inventées ; le panier fonctionne, sans paiement.
+  if (id === "heuren") it("prix fictif annoncé, rien d'inventé, données techniques à renseigner, champs inconnus masqués dans l'éditeur", () => {
+    expect(spec.store.product.price).toBe(19000);
+    const product = pages.get(`/products/${spec.store.product.handle}`)!;
+    expect(visibleText(product)).toContain("Prix et caractéristiques de démonstration.");
+    expect(visibleText(pages.get("/")!)).toMatch(/prix démo[\s\S]*Modèle fictif/);
+    const ld = [...product.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
+    expect(JSON.stringify(ld)).not.toMatch(/AggregateRating|Review|ratingValue/);
+    for (const [route, html] of pages) {
+      const text = visibleText(html);
+      expect(text, route).not.toMatch(/\[\s*À|lorem ipsum|à confirmer|à préciser/i);
+      expect(text.replace(/190,00\s?€/g, ""), route).not.toMatch(/\d+\s?€/);
+      expect(text, route).not.toMatch(/\d+\s?(mm|cm|ATM|bar|g|kg)\b|garantie \d|livraison (offerte|gratuite|en \d)|\d+([,.]\d)?\s?\/\s?5|★|avis clients?|plus que \d|stock limité|étanche\b|automatique|quartz|saphir|acier|inoxydable|depuis 1\d\d\d/i);
+      for (const m of text.matchAll(/à compléter/gi)) expect(text.slice(Math.max(0, m.index! - 40), m.index! + 40), route).toMatch(/Conditions de démonstration à compléter avant mise en vente/);
+    }
+    expect(visibleText(pages.get("/pages/livraison-retours")!)).toContain("Conditions de démonstration à compléter avant mise en vente.");
+    expect(visibleText(product)).toContain("à renseigner pour le produit réel");
+    const hidden = Object.values(spec.templates).flatMap((t) => Object.values(t.sections)).flatMap((s) => [...(s.disabled ? [s] : []), ...Object.values(s.blocks ?? {}).filter((b) => b.disabled)]);
+    expect(JSON.stringify(spec.templates).match(/À compléter/g)!.length).toBe(JSON.stringify(hidden).match(/À compléter/g)!.length);
+    for (const field of ["Caractéristiques techniques", "Quelle est la garantie ?"]) expect(JSON.stringify(hidden), field).toContain(field);
+    expect(Object.values(spec.groups.header.sections).map((sec) => sec.type)).toEqual(["header"]);
+    expect(visibleText(pages.get("/")!)).toMatch(/(©|&copy;)\s*\d{4}\s*HEUREN/);
+  });
+
+  if (id === "heuren") it("achat actif : bouton avec le prix, quantité, barre mobile, panier accepté ; aucun paiement réel annoncé", () => {
+    const productRoute = `/products/${spec.store.product.handle}`;
+    const html = pages.get(productRoute)!;
+    const add = [...html.matchAll(/<button[^>]*data-add-button[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
+    expect(add.length).toBeGreaterThan(0);
+    for (const b of add) { expect(b).not.toMatch(/\sdisabled[\s>]/); expect(visibleText(b).replace(/\s+/g, " ").trim()).toMatch(/^Ajouter au panier/); }
+    expect(html).toMatch(/data-qty-step="1"/);
+    expect(html).toMatch(/data-sticky-add/);
+    expect(reconcileOfferCart(spec, [{ variantId: 1000, quantity: 2 }]).map((l) => [l.variantId, l.quantity])).toEqual([[1000, 2]]);
+    expect(spec.settings.cart_reassurance).toBe("Démonstration — aucun paiement réel.");
   });
 
   it("liens internes : chaque lien de page mène à une page existante de la démonstration", () => {
@@ -230,7 +273,7 @@ describe("HEUREN et ALCÔVE appliqués à un autre projet : identité du projet,
       expect(html, route).not.toMatch(/theme-assets\/(heuren|alcove)|(heuren|alcove)-(produit|ambiance|logo)/);
       expect(html).toContain("Atelier Verre");
     }
-    expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#B8946A|#A14225/);
+    expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#CDB893|#A14225/);
   });
 });
 
@@ -269,5 +312,24 @@ for (const id of ["heuren", "alcove"] as const) describe(`${id.toUpperCase()} : 
     const all = names + zipText(z, /\.(json|php|tpl|html|txt|csv|xml)$/);
     expect(all).toContain(`es-editorial-${PLAN[id].profile}`);
     expect(all).not.toMatch(/\/home\/user|\/tmp\/ecs-/);
+  });
+});
+
+describe("HEUREN : dispositions de la galerie qui n'existent pas sans leurs blocs", async () => {
+  const user = await createUser("heuren-galerie@example.invalid", "isolated-test-only", "Galerie");
+  const demo = await fr(() => demoProject(user.id, "heuren"));
+  it("triptyque : trois cadres avec une photo du projet ; FAQ en colonnes : trois thèmes illustrés et leurs questions", () => {
+    const tri = resolveLibraryType("fam:catalog.uses~triptych");
+    expect(tri.blocks?.map((b) => b.type)).toEqual(["frame", "frame", "frame"]);
+    const triFilled = withProjectMedia(demo.spec, tri.type, tri.settings, tri.blocks);
+    expect(triFilled.blocks?.every((b) => typeof b.settings?.image_asset === "string" && (b.settings.image_asset as string).length > 0)).toBe(true);
+    const faq = resolveLibraryType("fam:catalog.faq~columns");
+    expect(faq.blocks?.filter((b) => b.type === "topic")).toHaveLength(3);
+    expect(faq.blocks?.filter((b) => b.type === "question")).toHaveLength(6);
+    const faqFilled = withProjectMedia(demo.spec, faq.type, faq.settings, faq.blocks);
+    for (const b of faqFilled.blocks!.filter((x) => x.type === "topic")) expect(String(b.settings?.image_asset ?? "")).not.toBe("");
+    // Copie à chaque appel : le registre de la galerie ne change jamais.
+    tri.blocks![0].settings.ratio = "square";
+    expect(resolveLibraryType("fam:catalog.uses~triptych").blocks![0].settings.ratio).toBe("portrait");
   });
 });

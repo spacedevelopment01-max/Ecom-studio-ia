@@ -1,0 +1,31 @@
+{%- comment -%}
+  FRAISE : onglets d'ancres de la fiche (planche 01) — « Le produit », « La recette », « Utilisation », « Questions » ; le
+  premier est souligné. Chaque lien mène à sa section (ou à une page). Masqué au téléphone.
+{%- endcomment -%}
+<nav class="fg fg-tabs" aria-label="{{ section.settings.label | escape }}">
+  <div class="fg-c">
+    <ul role="list">
+      {%- for block in section.blocks -%}
+        <li {{ block.shopify_attributes }}><a href="{{ block.settings.link | default: '#' }}"{% if forloop.first %} class="is-active" aria-current="true"{% endif %}>{{ block.settings.label }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</nav>
+
+{% schema %}
+{
+  "name": "Onglets de la fiche",
+  "class": "fg-tabs-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "Sommaire de la fiche" }
+  ],
+  "blocks": [
+    { "type": "tab", "name": "Onglet", "settings": [
+      { "type": "text", "id": "label", "label": "Texte" },
+      { "type": "text", "id": "link", "label": "Lien ou ancre", "info": "Ex. : #la-texture" }
+    ] }
+  ],
+  "presets": [{ "name": "Onglets de la fiche" }]
+}
+{% endschema %}

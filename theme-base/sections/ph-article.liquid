@@ -1,0 +1,200 @@
+{%- comment -%}
+  PHASE : corps d'un article de conseil (planches 04 et 09) — à l'ordinateur, colonne principale (photo, parties
+  numérotées, photos légendées, listes cochées, bandeau de question) et colonne de droite (sommaire construit à partir
+  des parties, encadré photo et bouton, photo et articles liés). Au téléphone, tout s'empile dans l'ordre des blocs ;
+  chaque bloc peut être réservé à l'ordinateur ou au téléphone (les planches téléphone ont leur propre découpage).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign parts = section.blocks | where: 'type', 'part'
+  assign ph_aside2 = ''
+-%}
+<section class="ph ph-article ph-pad" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-article__grid">
+      {%- for b in section.blocks -%}
+        {%- assign c = b.settings -%}
+        {%- capture vis -%}{% if c.show == 'desktop' %} ph-only-d{% elsif c.show == 'mobile' %} ph-only-m{% endif %}{%- endcapture -%}
+        {%- case b.type -%}
+          {%- when 'image' -%}
+            <figure class="ph-article__image{{ vis }}" {{ b.shopify_attributes }}>
+              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, zoom: c.zoom, pos_mobile: c.position_mobile, class: 'ph-article__img', sizes: '(min-width: 1080px) 70vw, 100vw', caption: c.caption %}
+            </figure>
+            {%- if forloop.first -%}
+              <aside class="ph-article__aside ph-only-d" aria-label="{{ s.toc_title | escape }}">
+                {%- if parts.size > 0 and s.toc_title != blank -%}
+                  <nav class="ph-article__toc" aria-label="{{ s.toc_title | escape }}">
+                    <p class="ph-article__toc-title">{{ s.toc_title }}</p>
+                    <ol role="list">
+                      {%- for pt in parts -%}<li><a href="#partie-{{ forloop.index }}"><span class="ph-article__toc-num">{{ pt.settings.number }}</span>{{ pt.settings.title }}</a></li>{%- endfor -%}
+                    </ol>
+                  </nav>
+                {%- endif -%}
+                {%- if s.box_title != blank -%}
+                  <div class="ph-article__box">
+                    {% render 'ph-img', image: s.box_image, asset: s.box_image_asset, alt: '', pos: s.box_image_position, class: 'ph-article__box-img', sizes: '25vw' %}
+                    <div class="ph-article__box-copy">
+                      <p class="ph-article__box-title">{{ s.box_title }}</p>
+                      {%- if s.box_text != blank -%}<p class="ph-article__box-text">{{ s.box_text }}</p>{%- endif -%}
+                      {%- if s.box_button != blank -%}<a class="ph-btn ph-btn--navy ph-article__box-btn" href="{{ s.box_link | default: routes.root_url }}"><span>{{ s.box_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+                    </div>
+                  </div>
+                {%- endif -%}
+              </aside>
+            {%- endif -%}
+          {%- when 'part' -%}
+            {%- assign pi = 0 -%}
+            {%- for pt in parts -%}{%- if pt.id == b.id -%}{%- assign pi = forloop.index -%}{%- endif -%}{%- endfor -%}
+            <div class="ph-article__part{% if pi == 1 %} is-first{% endif %}{{ vis }}" id="partie-{{ pi }}" {{ b.shopify_attributes }}>
+              {%- if c.number != blank -%}<span class="ph-article__num ph-only-d" aria-hidden="true">{{ c.number }}</span>{%- endif -%}
+              <div class="ph-article__copy">
+                <h2 class="ph-article__title">{{ c.title }}</h2>
+                {%- if c.subtitle != blank -%}<p class="ph-article__subtitle">{{ c.subtitle }}</p>{%- endif -%}
+                {%- if c.text != blank -%}<div class="ph-article__text"><div{% if c.text_mobile != blank %} class="ph-txt-d"{% endif %}>{{ c.text }}</div>{%- if c.text_mobile != blank -%}<div class="ph-txt-m">{{ c.text_mobile }}</div>{%- endif -%}</div>{%- endif -%}
+              </div>
+            </div>
+          {%- when 'photos' -%}
+            <ul class="ph-article__photos{{ vis }}" role="list" {{ b.shopify_attributes }}>
+              {%- for i in (1..3) -%}
+                {%- assign ak = 'image' | append: i | append: '_asset' -%}
+                {%- assign ck = 'caption' | append: i -%}
+                {%- assign pk = 'position' | append: i -%}
+                {%- assign ik = 'image' | append: i -%}
+                {%- if c[ak] != blank or c[ik] != blank -%}
+                  <li><figure>{% render 'ph-img', image: c[ik], asset: c[ak], alt: '', pos: c[pk], class: 'ph-article__photo', sizes: '(min-width: 1080px) 30vw, 100vw' %}{%- if c[ck] != blank -%}<figcaption>{{ c[ck] }}</figcaption>{%- endif -%}</figure></li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- when 'checklist' -%}
+            {%- assign items = c.items | newline_to_br | split: '<br />' -%}
+            <ul class="ph-article__check{% if c.boxed %} is-boxed{% endif %}{{ vis }}" role="list" {{ b.shopify_attributes }}>
+              {%- for it in items -%}{%- assign t = it | strip -%}{%- if t != blank -%}<li><span class="ph-article__tick" aria-hidden="true">{% render 'ph-icon', name: 'validation', stroke: 2.2 %}</span><span>{{ t }}</span></li>{%- endif -%}{%- endfor -%}
+            </ul>
+          {%- when 'callout' -%}
+            <div class="ph-article__callout ph-article__callout--{{ c.style }}{{ vis }}" {{ b.shopify_attributes }}>
+              <div>
+                <p class="ph-article__callout-title">{{ c.title }}</p>
+                {%- if c.text != blank -%}<p class="ph-article__callout-text">{{ c.text }}</p>{%- endif -%}
+              </div>
+              {%- if c.button != blank -%}<a class="ph-btn {% if c.style == 'navy' %}ph-btn--yellow{% else %}ph-btn--navy{% endif %}" href="{{ c.link | default: routes.root_url }}"><span>{{ c.button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+              {%- if c.style == 'yellow' -%}{% render 'ph-art', name: 'box-low' %}{%- endif -%}
+            </div>
+          {%- when 'figure', 'related_title', 'related' -%}
+            {%- capture ph_piece -%}
+              {%- if b.type == 'figure' -%}            <figure class="ph-article__figure{{ vis }}" {{ b.shopify_attributes }}>
+              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: c.alt, pos: c.position, class: 'ph-article__fig-img', sizes: '(min-width: 1080px) 30vw, 100vw', caption: c.caption %}
+            </figure>
+              {%- elsif b.type == 'related_title' -%}
+            <p class="ph-article__related-title{{ vis }}" {{ b.shopify_attributes }}>{{ c.title }}</p>
+                        {%- else -%}
+            <a class="ph-article__related{{ vis }}" href="{{ c.link | default: routes.root_url }}" {{ b.shopify_attributes }}>
+              {% render 'ph-img', image: c.image, asset: c.image_asset, alt: '', pos: c.position, class: 'ph-article__related-img', sizes: '20vw' %}
+              <span class="ph-article__related-copy">
+                {%- if c.kicker != blank -%}<span class="ph-article__related-kicker">{{ c.kicker }}</span>{%- endif -%}
+                <span class="ph-article__related-name">{{ c.title }}</span>
+                {%- if c.link_label != blank -%}<span class="ph-article__related-more"><span>{{ c.link_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>{%- else -%}<span class="ph-article__related-arrow" aria-hidden="true">{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</span>{%- endif -%}
+              </span>
+            </a>
+              {%- endif -%}
+            {%- endcapture -%}
+            {%- if c.show == 'mobile' -%}{{ ph_piece }}{%- else -%}{%- assign ph_aside2 = ph_aside2 | append: ph_piece -%}{%- endif -%}
+        {%- endcase -%}
+      {%- endfor -%}
+      {%- if ph_aside2 != blank -%}<div class="ph-article__aside2">{{ ph_aside2 }}</div>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Article de conseil",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "toc_title", "label": "Titre du sommaire", "default": "Dans cet article" },
+    { "type": "header", "content": "Encadré de la colonne de droite" },
+    { "type": "image_picker", "id": "box_image", "label": "Photo de l'encadré" },
+    { "type": "text", "id": "box_image_asset", "label": "Photo de l'encadré (fichier du thème)" },
+    { "type": "text", "id": "box_image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "text", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "box_button", "label": "Bouton de l'encadré" },
+    { "type": "url", "id": "box_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 20 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 12 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "blocks": [
+    { "type": "image", "name": "Photo principale", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Texte alternatif" },
+      { "type": "text", "id": "position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+      { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+      { "type": "text", "id": "position_mobile", "label": "Cadrage (téléphone)" },
+      { "type": "text", "id": "caption", "label": "Légende sur la photo", "default": "Visuel de démonstration" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "part", "name": "Partie", "settings": [
+      { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "subtitle", "label": "Sous-titre" },
+      { "type": "richtext", "id": "text", "label": "Texte" },
+      { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "photos", "name": "Trois photos légendées", "settings": [
+      { "type": "image_picker", "id": "image1", "label": "Photo 1" },
+      { "type": "text", "id": "image1_asset", "label": "Photo 1 (fichier du thème)" },
+      { "type": "text", "id": "position1", "label": "Cadrage 1", "default": "50% 50%" },
+      { "type": "text", "id": "caption1", "label": "Légende 1" },
+      { "type": "image_picker", "id": "image2", "label": "Photo 2" },
+      { "type": "text", "id": "image2_asset", "label": "Photo 2 (fichier du thème)" },
+      { "type": "text", "id": "position2", "label": "Cadrage 2", "default": "50% 50%" },
+      { "type": "text", "id": "caption2", "label": "Légende 2" },
+      { "type": "image_picker", "id": "image3", "label": "Photo 3" },
+      { "type": "text", "id": "image3_asset", "label": "Photo 3 (fichier du thème)" },
+      { "type": "text", "id": "position3", "label": "Cadrage 3", "default": "50% 50%" },
+      { "type": "text", "id": "caption3", "label": "Légende 3" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "checklist", "name": "Liste cochée", "settings": [
+      { "type": "textarea", "id": "items", "label": "Éléments (un par ligne)" },
+      { "type": "checkbox", "id": "boxed", "label": "Dans un cadre gris", "default": false },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "figure", "name": "Photo à droite", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Texte alternatif" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "text", "id": "caption", "label": "Légende sur la photo" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "callout", "name": "Bandeau de question", "settings": [
+      { "type": "select", "id": "style", "label": "Style", "default": "navy", "options": [{ "value": "navy", "label": "Bleu nuit, bouton jaune" }, { "value": "yellow", "label": "Jaune, bouton bleu nuit" }] },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" },
+      { "type": "text", "id": "button", "label": "Bouton" },
+      { "type": "url", "id": "link", "label": "Lien du bouton" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "related_title", "name": "Titre des articles liés", "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Articles liés" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] },
+    { "type": "related", "name": "Article lié", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "position", "label": "Cadrage", "default": "50% 50%" },
+      { "type": "text", "id": "kicker", "label": "Catégorie" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "link_label", "label": "Libellé du lien", "default": "Lire l'article" },
+      { "type": "url", "id": "link", "label": "Lien" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] }
+  ],
+  "max_blocks": 30,
+  "presets": [{ "name": "Article de conseil" }]
+}
+{% endschema %}

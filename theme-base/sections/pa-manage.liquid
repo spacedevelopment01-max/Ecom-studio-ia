@@ -1,0 +1,143 @@
+{%- comment -%}
+  PARENTHÈSE : « Détails de votre rendez-vous » (planche 06), ouvert par un lien d'accès (jeton secret à durée limitée)
+  ou, en démonstration, par un rendez-vous simulé dans ce navigateur. Récapitulatif (date, séance, référence, durée,
+  tarif, lieu : adresse du cabinet ou visioconférence), « Modifier le rendez-vous » (nouvel horaire, enregistré avant de
+  libérer l'ancien), « Annuler le rendez-vous » (dialogue de confirmation, conditions), « Ajouter à mon agenda »,
+  « Note personnelle » enregistrée. Dialogues : focus piégé, Échap, retour du focus. États : aucun accès, lien expiré,
+  rendez-vous annulé, délai dépassé, erreur réseau.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-manage" data-pa-manage data-note-saved="{{ s.note_saved | escape }}">
+  <div class="pa-manage__media">{% render 'pa-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, loading: 'eager' %}</div>
+  <div class="pa-wrap">
+    <div class="pa-manage__intro">
+      {%- if s.eyebrow != blank -%}<p class="pa-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h1 class="pa-hero__title" tabindex="-1">{{ s.heading }}</h1>
+      {%- if s.text != blank -%}<p class="pa-manage__lead">{{ s.text }}</p>{%- endif -%}
+    </div>
+    <div data-pa-view="details" hidden>
+      <div class="pa-manage__card">
+        <div class="pa-manage__date" data-pa-m="date"></div>
+        <div class="pa-manage__info">
+          <p class="pa-manage__name"><strong data-pa-m="service"></strong><span class="pa-badge" data-pa-m="number"></span><span class="pa-badge pa-badge--off" data-pa-m="canceled" hidden>{{ s.canceled_badge }}</span></p>
+          <ul class="pa-meta pa-meta--stack" role="list">
+            <li>{% render 'pa-icon', name: 'clock' %}<span data-pa-m="duration"></span></li>
+            <li>{% render 'pa-icon', name: 'euro' %}<span data-pa-m="price"></span></li>
+            <li>{% render 'pa-icon', name: 'pin' %}<span data-pa-m="place"></span></li>
+          </ul>
+          <p class="pa-note" data-pa-demo-only>{{ s.demo_label }}</p>
+        </div>
+        <div class="pa-manage__actions">
+          <button type="button" class="pa-action pa-action--edit" data-pa-open-move>{% render 'pa-icon', name: 'edit' %}{{ s.move_label }}</button>
+          <button type="button" class="pa-action pa-action--cancel" data-pa-open-cancel>{% render 'pa-icon', name: 'cancel' %}{{ s.cancel_label }}</button>
+          <button type="button" class="pa-action" data-pa-ics>{% render 'pa-icon', name: 'cal-plus' %}{{ s.ics_label }}</button>
+        </div>
+        <p class="pa-alert" role="status" aria-live="polite" data-pa-m-status hidden></p>
+      </div>
+      <form class="pa-manage__note" novalidate data-pa-note>
+        <h2 class="pa-manage__note-title"><label for="pa-pnote-{{ section.id }}">{{ s.note_title }}</label></h2>
+        <p>{{ s.note_text }}</p>
+        <textarea id="pa-pnote-{{ section.id }}" name="note" rows="3" maxlength="1000" placeholder="{{ s.note_placeholder | escape }}"></textarea>
+        <button type="submit" class="pa-btn pa-btn--soft pa-btn--sm">{% render 'pa-icon', name: 'check' %}{{ s.note_save }}</button>
+        <p class="pa-form__status" role="status" aria-live="polite" data-pa-status hidden></p>
+      </form>
+    </div>
+    <div class="pa-manage__state" data-pa-view="none" hidden>
+      {% render 'pa-icon', name: 'calendar' %}
+      <h2 class="pa-title pa-title--sm" tabindex="-1">{{ s.none_title }}</h2>
+      <p>{{ s.none_text }}</p>
+      <div class="pa-manage__state-actions">
+        <a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.lookup_link | default: '/pages/retrouver-mon-rendez-vous' }}">{{ s.lookup_label }}</a>
+        <button type="button" class="pa-btn pa-btn--line pa-btn--sm" data-pa-demo-example data-pa-demo-only>{{ s.example_label }}</button>
+      </div>
+    </div>
+    <div class="pa-manage__state" data-pa-view="expired" hidden>
+      {% render 'pa-icon', name: 'lock' %}
+      <h2 class="pa-title pa-title--sm" tabindex="-1">{{ s.expired_title }}</h2>
+      <p>{{ s.expired_text }}</p>
+      <a class="pa-btn pa-btn--forest pa-btn--sm" href="{{ s.lookup_link | default: '/pages/retrouver-mon-rendez-vous' }}">{{ s.lookup_label }}</a>
+    </div>
+    <div class="pa-manage__state" data-pa-view="error" hidden>
+      {% render 'pa-icon', name: 'wifi-off' %}
+      <h2 class="pa-title pa-title--sm" tabindex="-1">{{ s.network_title }}</h2>
+      <p>{{ s.network_text }}</p>
+      <button type="button" class="pa-btn pa-btn--forest pa-btn--sm" data-pa-retry>{{ s.retry_label }}</button>
+    </div>
+  </div>
+
+  <div class="pa-dialog" role="dialog" aria-modal="true" aria-labelledby="pa-move-title-{{ section.id }}" data-pa-move-dialog hidden>
+    <div class="pa-dialog__box">
+      <button type="button" class="pa-dialog__close" aria-label="{{ s.close_label | escape }}" data-pa-close>{% render 'pa-icon', name: 'close' %}</button>
+      <h2 class="pa-dialog__title" id="pa-move-title-{{ section.id }}">{{ s.move_title }}</h2>
+      <div class="pa-field pa-field--select"><label for="pa-mdate-{{ section.id }}">{{ s.move_date_label }}</label><select id="pa-mdate-{{ section.id }}" data-pa-move-date></select></div>
+      <div class="pa-field pa-field--select"><label for="pa-mtime-{{ section.id }}">{{ s.move_time_label }} <span class="pa-req" aria-hidden="true">*</span></label><select id="pa-mtime-{{ section.id }}" data-pa-move-time></select><p class="pa-field__error" data-pa-move-error hidden>{{ s.move_error }}</p></div>
+      <p class="pa-alert" role="alert" data-pa-move-status hidden></p>
+      <div class="pa-dialog__actions">
+        <button type="button" class="pa-btn pa-btn--line pa-btn--sm" data-pa-close>{{ s.move_back }}</button>
+        <button type="button" class="pa-btn pa-btn--forest pa-btn--sm" data-pa-move-save>{{ s.move_save }}</button>
+      </div>
+    </div>
+  </div>
+  <div class="pa-dialog" role="dialog" aria-modal="true" aria-labelledby="pa-cancel-title-{{ section.id }}" data-pa-cancel-dialog hidden>
+    <div class="pa-dialog__box">
+      <button type="button" class="pa-dialog__close" aria-label="{{ s.close_label | escape }}" data-pa-close>{% render 'pa-icon', name: 'close' %}</button>
+      <h2 class="pa-dialog__title" id="pa-cancel-title-{{ section.id }}">{{ s.cancel_title }}</h2>
+      <p class="pa-dialog__warn">{% render 'pa-icon', name: 'alert' %}<span>{{ s.cancel_text }}</span></p>
+      <div class="pa-dialog__terms"><p class="pa-dialog__terms-title">{{ s.terms_title }}</p><p data-pa-cancel-terms>{{ s.terms_default }}</p></div>
+      <p class="pa-alert" role="alert" data-pa-cancel-status hidden></p>
+      <div class="pa-dialog__actions">
+        <button type="button" class="pa-btn pa-btn--line pa-btn--sm" data-pa-close>{{ s.cancel_back }}</button>
+        <button type="button" class="pa-btn pa-btn--danger pa-btn--sm" data-pa-cancel-confirm>{{ s.cancel_confirm }}</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Gestion d'un rendez-vous",
+  "class": "pa-manage-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit titre", "default": "Mon rendez-vous" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Détails de votre rendez-vous" },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Retrouvez ici les informations de votre séance et gérez votre rendez-vous." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "demo_label", "label": "Mention de simulation", "default": "Simulation – aucun rendez-vous réel" },
+    { "type": "text", "id": "canceled_badge", "label": "Badge annulé", "default": "Annulé" },
+    { "type": "text", "id": "move_label", "label": "Bouton modifier", "default": "Modifier le rendez-vous" },
+    { "type": "text", "id": "cancel_label", "label": "Bouton annuler", "default": "Annuler le rendez-vous" },
+    { "type": "text", "id": "ics_label", "label": "Bouton agenda", "default": "Ajouter à mon agenda" },
+    { "type": "text", "id": "note_title", "label": "Note : titre", "default": "Note personnelle (optionnel)" },
+    { "type": "text", "id": "note_text", "label": "Note : texte", "default": "Cette note est uniquement pour vous et n'est pas partagée." },
+    { "type": "text", "id": "note_placeholder", "label": "Note : exemple", "default": "Ex. : préparer mes questions, venir 10 minutes en avance…" },
+    { "type": "text", "id": "note_save", "label": "Note : bouton", "default": "Enregistrer la note" },
+    { "type": "text", "id": "note_saved", "label": "Note : enregistrée", "default": "Note enregistrée." },
+    { "type": "text", "id": "none_title", "label": "Sans accès : titre", "default": "Aucun rendez-vous ouvert" },
+    { "type": "text", "id": "none_text", "label": "Sans accès : texte", "default": "Ouvrez cette page avec le lien d'accès reçu, ou retrouvez votre rendez-vous avec sa référence et votre e-mail." },
+    { "type": "text", "id": "lookup_label", "label": "Bouton « retrouver »", "default": "Retrouver mon rendez-vous" },
+    { "type": "url", "id": "lookup_link", "label": "Page « Retrouver mon rendez-vous »" },
+    { "type": "text", "id": "example_label", "label": "Bouton d'exemple (démonstration)", "default": "Voir un exemple de démonstration" },
+    { "type": "text", "id": "expired_title", "label": "Lien expiré : titre", "default": "Ce lien a expiré" },
+    { "type": "text", "id": "expired_text", "label": "Lien expiré : texte", "default": "Pour protéger votre rendez-vous, les liens d'accès ont une durée limitée. Demandez un nouveau lien." },
+    { "type": "text", "id": "network_title", "label": "Erreur réseau : titre", "default": "Connexion impossible" },
+    { "type": "text", "id": "network_text", "label": "Erreur réseau : texte", "default": "Le service de rendez-vous ne répond pas. Vérifiez votre connexion puis réessayez." },
+    { "type": "text", "id": "retry_label", "label": "Bouton réessayer", "default": "Réessayer" },
+    { "type": "text", "id": "close_label", "label": "Bouton fermer (lecteurs d'écran)", "default": "Fermer" },
+    { "type": "text", "id": "move_title", "label": "Modifier : titre", "default": "Modifier le rendez-vous" },
+    { "type": "text", "id": "move_date_label", "label": "Modifier : date", "default": "Date" },
+    { "type": "text", "id": "move_time_label", "label": "Modifier : horaire", "default": "Nouvel horaire" },
+    { "type": "text", "id": "move_error", "label": "Modifier : erreur", "default": "Choisissez un nouvel horaire." },
+    { "type": "text", "id": "move_back", "label": "Modifier : retour", "default": "Annuler" },
+    { "type": "text", "id": "move_save", "label": "Modifier : enregistrer", "default": "Enregistrer" },
+    { "type": "text", "id": "cancel_title", "label": "Annuler : titre", "default": "Annuler le rendez-vous" },
+    { "type": "textarea", "id": "cancel_text", "label": "Annuler : texte", "default": "Souhaitez-vous vraiment annuler ce rendez-vous ? Cette action est irréversible." },
+    { "type": "text", "id": "terms_title", "label": "Annuler : titre des conditions", "default": "Conditions à préciser." },
+    { "type": "textarea", "id": "terms_default", "label": "Annuler : conditions par défaut", "default": "Les modalités d'annulation seront communiquées lors de la réservation." },
+    { "type": "text", "id": "cancel_back", "label": "Annuler : retour", "default": "Retour" },
+    { "type": "text", "id": "cancel_confirm", "label": "Annuler : confirmer", "default": "Confirmer l'annulation" }
+  ],
+  "presets": [{ "name": "Gestion d'un rendez-vous" }]
+}
+{% endschema %}

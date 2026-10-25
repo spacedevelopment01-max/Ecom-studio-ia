@@ -53,12 +53,10 @@ const fr = <T,>(fn: () => T) => runWithLang({ ui: 'fr', content: 'fr' }, fn);
 const ctx = (id: string) => ({ params: Promise.resolve({ id }) }) as never;
 beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('External supplier forbidden'); }));
 afterEach(() => vi.unstubAllGlobals());
-it.each(['creer', 'vendre', 'dominer'] as const)('%s : matrice réelle des onze références et droits de famille', plan => {
-    const count = plan === 'creer' ? 1 : plan === 'vendre' ? 3 : 5;
-    // Familles réconciliées à l'intégration #159 / #161 : ONDE, HEUREN, ALCÔVE, SOUPLE en E-commerce ; MUSEAU CLUB spécialisée.
-    for (const family of [['fraise', 'sillon', 'noctil', 'traverse', 'museau-club'], ['orbe', 'onde', 'heuren', 'alcove', 'souple'], ['rive']])
-        for (const [id, i] of family.map((id, i) => [id, i] as const))
-            expect(themeAllowed(plan, id)).toBe(i < count);
+it.each(['creer', 'vendre', 'dominer'] as const)('%s : droits par thème (mission #190), plus de famille ni de rang', plan => {
+    // Répartition encore à choisir : chaque thème proposé est ouvert ; ORBE et ALCÔVE (créés avant les maquettes) jamais.
+    for (const id of ['fraise', 'sillon', 'noctil', 'traverse', 'museau-club', 'onde', 'heuren', 'souple', 'rive']) expect(themeAllowed(plan, id)).toBe(true);
+    for (const id of ['orbe', 'alcove']) expect(themeAllowed(plan, id)).toBe(false);
     expect(themeAllowed(null, 'fraise')).toBe(false);
 });
 it('nouvelle session : retouches des pages, menus, identité et verrous conservées, état actualisé sans écriture', async () => {

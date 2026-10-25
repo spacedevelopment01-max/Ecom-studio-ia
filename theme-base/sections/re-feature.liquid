@@ -1,0 +1,127 @@
+{%- comment -%}
+  Mise en avant Maison & Horizon :
+  - « Bien » : un bien de l'onglet Biens (sa référence, sinon le premier marqué « d'exception ») en panneau vert et
+    grande photo : surtitre, titre, lieu, prix, surface, pièces, chambres, accroche, bouton vers la fiche.
+  - « Histoire » : texte et photo côte à côte (l'agence, une méthode).
+  - « Bandeau » : photo pleine largeur voilée, titre, texte et bouton (propriétaires).
+  - « Bande de contact » : question, téléphone, e-mail (ou « à renseigner ») et bouton.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign layout = s.layout | default: 'story' -%}
+{%- assign bien = nil -%}
+{%- if layout == 'bien' -%}
+  {%- for b in shop.metaobjects.bien.values -%}
+    {%- if s.bien_ref != blank and b.reference.value == s.bien_ref -%}{%- assign bien = b -%}{%- break -%}{%- endif -%}
+  {%- endfor -%}
+  {%- if bien == nil -%}{%- for b in shop.metaobjects.bien.values -%}{%- if b.exception.value and b.disponible.value -%}{%- assign bien = b -%}{%- break -%}{%- endif -%}{%- endfor -%}{%- endif -%}
+{%- endif -%}
+{%- if layout != 'bien' or bien != nil -%}
+<section class="es-section re-feature re-feature--{{ layout }}{% if s.side == 'left' %} re-feature--media-left{% endif %} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+  {%- if layout == 'bien' -%}
+    {%- assign cover = bien.couverture.value -%}
+    <div class="re-feature__grid">
+      <div class="re-feature__panel">
+        {%- if s.eyebrow != blank -%}<p class="re-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        <h2 class="re-feature__title">{{ bien.titre.value }}</h2>
+        <p class="re-feature__place">{% render 'mh-icon', name: 'pin' %}<span>{{ bien.localisation.value }}</span></p>
+        <p class="re-feature__price">{% if bien.transaction.value == 'location' %}{{ bien.loyer_cc_texte.value }}<small> / mois</small>{% else %}{{ bien.prix_texte.value }}{% endif %}</p>
+        <ul class="re-facts" role="list">
+          {%- if bien.surface.value -%}<li>{% render 'mh-icon', name: 'surface' %}<span>{{ bien.surface_texte.value }}</span></li>{%- endif -%}
+          {%- if bien.pieces.value -%}<li>{% render 'mh-icon', name: 'rooms' %}<span>{{ bien.pieces.value }} pièces</span></li>{%- endif -%}
+          {%- if bien.chambres.value -%}<li>{% render 'mh-icon', name: 'bed' %}<span>{{ bien.chambres.value }} ch.</span></li>{%- endif -%}
+        </ul>
+        {%- if bien.accroche.value != blank -%}<p class="re-feature__text">{{ bien.accroche.value }}</p>{%- endif -%}
+        {%- if bien.demo.value -%}<p class="re-note re-feature__note">Bien et prix de démonstration</p>{%- endif -%}
+        <div class="re-actions"><a class="re-btn re-btn--ghost" href="{{ bien.system.url }}">{{ s.button_label | default: 'Découvrir ce bien' | escape }} {% render 'mh-icon', name: 'arrow' %}</a></div>
+      </div>
+      <a class="re-feature__media" href="{{ bien.system.url }}" tabindex="-1" aria-hidden="true">{%- if cover -%}{% render 'es-image', asset: cover.file, alt: cover.alt, class: 're-feature__img', loading: 'lazy' %}{%- endif -%}</a>
+    </div>
+  {%- elsif layout == 'band' -%}
+    <div class="re-feature__band">
+      <div class="re-feature__photo">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'lazy' %}</div>
+      <div class="es-container re-feature__copy">
+        {%- if s.eyebrow != blank -%}<p class="re-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="re-feature__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="re-feature__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}<div class="re-actions"><a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- if s.button2_label != blank -%}<a class="re-btn re-btn--ghost" href="{{ s.button2_link | default: '#' }}">{{ s.button2_label | escape }}</a>{%- endif -%}</div>{%- endif -%}
+      </div>
+    </div>
+  {%- elsif layout == 'overlay' -%}
+    <div class="es-container re-feature__overlay">
+      <div class="re-feature__media">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'lazy' %}</div>
+      <div class="re-feature__card">
+        {%- if s.eyebrow != blank -%}<p class="re-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="re-feature__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="re-feature__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}{%- if s.button_style == 'button' -%}<div class="re-actions"><a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></div>{%- else -%}<p class="re-feature__more"><a class="re-link re-link--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}{%- endif -%}
+      </div>
+    </div>
+  {%- elsif layout == 'cta' -%}
+    <div class="es-container re-feature__cta">
+      {%- if s.heading != blank -%}<h2 class="re-feature__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="re-feature__text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<div class="re-actions"><a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></div>{%- endif -%}
+    </div>
+  {%- elsif layout == 'strip' -%}
+    <div class="es-container re-feature__strip">
+      {%- if s.heading != blank -%}<h2 class="re-feature__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+      <div class="re-feature__contact">
+        {%- if s.phone != blank or s.phone_note != blank -%}
+        <p class="re-feature__line">{% render 'mh-icon', name: 'phone' %}<span>{%- if s.phone != blank -%}<a href="tel:{{ s.phone | remove: ' ' | remove: '.' }}">{{ s.phone | escape }}</a>{%- endif -%}{%- if s.phone_note != blank -%}<small>{{ s.phone_note | escape }}</small>{%- endif -%}</span></p>
+        {%- endif -%}
+        {%- if s.email != blank or s.email_note != blank -%}
+        <p class="re-feature__line">{% render 'mh-icon', name: 'mail' %}<span>{%- if s.email != blank -%}<a href="mailto:{{ s.email | escape }}">{{ s.email | escape }}</a>{%- endif -%}{%- if s.email_note != blank -%}<small>{{ s.email_note | escape }}</small>{%- endif -%}</span></p>
+        {%- endif -%}
+      </div>
+      {%- if s.button_label != blank -%}<a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+  {%- else -%}
+    <div class="es-container re-feature__story">
+      <div class="re-feature__copy">
+        {%- if s.eyebrow != blank -%}<p class="re-feature__kicker">{{ s.eyebrow | escape }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="re-feature__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+        {%- if s.text != blank -%}<div class="re-feature__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.button_label != blank -%}{%- if s.button_style == 'button' -%}<div class="re-actions"><a class="re-btn re-btn--accent" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></div>{%- else -%}<p class="re-feature__more"><a class="re-link" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }} {% render 'mh-icon', name: 'arrow' %}</a></p>{%- endif -%}{%- endif -%}
+      </div>
+      <div class="re-feature__media{% if s.quote != blank %} re-feature__media--quote{% endif %}">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, focus_x: s.focus_x, focus_y: s.focus_y, loading: 'lazy' %}{% if s.quote != blank %}<p class="re-feature__quote">{{ s.quote | escape | newline_to_br }}</p>{% endif %}</div>
+    </div>
+  {%- endif -%}
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Mise en avant immobilière",
+  "tag": "div",
+  "class": "section-re-feature",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "story", "options": [ { "value": "bien", "label": "Un bien (panneau et grande photo)" }, { "value": "story", "label": "Histoire (texte et photo)" }, { "value": "band", "label": "Bandeau photo avec bouton" }, { "value": "strip", "label": "Bande de contact" }, { "value": "overlay", "label": "Grande photo et encart de texte" }, { "value": "cta", "label": "Appel centré (titre, texte, bouton)" } ] },
+    { "type": "text", "id": "bien_ref", "label": "Référence du bien", "info": "Ex. V-0010. Vide : le premier bien marqué « d'exception » dans l'onglet Biens." },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton (bandeau)" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "select", "id": "button_style", "label": "Bouton (histoire)", "default": "link", "options": [ { "value": "link", "label": "Lien souligné" }, { "value": "button", "label": "Bouton plein" } ] },
+    { "type": "textarea", "id": "quote", "label": "Phrase sur panneau vert (histoire)" },
+    { "type": "select", "id": "side", "label": "Place de la photo (histoire)", "default": "right", "options": [ { "value": "right", "label": "À droite" }, { "value": "left", "label": "À gauche" } ] },
+    { "type": "header", "content": "Bande de contact" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "phone_note", "label": "Précision sous le téléphone", "info": "Ex. horaires d'ouverture, ou « Téléphone : à renseigner »." },
+    { "type": "text", "id": "email", "label": "E-mail" },
+    { "type": "text", "id": "email_note", "label": "Précision sous l'e-mail" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Couleurs", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "label": "Marge haute", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "label": "Marge basse", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 40 }
+  ],
+  "presets": [ { "name": "Mise en avant immobilière" } ]
+}
+{% endschema %}

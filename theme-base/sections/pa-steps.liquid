@@ -1,0 +1,62 @@
+{%- comment -%}
+  PARENTHÈSE : étapes numérotées dans des pastilles abricot.
+  - curve : trois étapes reliées par une courbe fine, rameau à droite (« Votre premier rendez-vous », planche 02) ;
+  - line : pastilles et filet, texte dessous (« Le déroulement de la séance », planche 01) ;
+  - cards : cartes claires centrées (« Comment se passe une séance en visioconférence ? », planche 01) ;
+  - program : liste verticale reliée par un trait et photo à droite (« Le programme », planche 03).
+  Téléphone : liste verticale.
+  Blocs : « Étape ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="pa-section pa-steps pa-steps--{{ s.layout }}">
+  <div class="pa-wrap">
+    {%- if s.heading != blank -%}
+      <div class="pa-steps__head">
+        <h2 class="pa-title pa-title--md">{{ s.heading | escape | newline_to_br }}</h2>
+        {%- if s.text != blank -%}<p class="pa-steps__sub">{{ s.text }}</p>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="pa-steps__body">
+      {%- if s.layout == 'curve' -%}
+        <svg class="pa-steps__wave" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 22C120 10 220 10 330 22S560 34 670 22 880 10 1000 22" fill="none" stroke="var(--pa-apricot)" stroke-width="1.6"/></svg>
+      {%- endif -%}
+      <ol class="pa-steps__list" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          <li class="pa-steps__item" {{ block.shopify_attributes }}>
+            <span class="pa-num" aria-hidden="true">{{ forloop.index }}</span>
+            <div class="pa-steps__copy">
+              <h3 class="pa-steps__title">{{ b.title }}</h3>
+              {%- if b.text != blank -%}<p class="pa-steps__text">{{ b.text | escape | newline_to_br }}</p>{%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+      {%- if s.layout == 'program' -%}{% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'pa-steps__img' %}{%- endif -%}
+    </div>
+    {%- if s.layout == 'curve' -%}{% render 'pa-ornament', name: 'branch', class: 'pa-steps__branch' %}{%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Étapes numérotées",
+  "class": "pa-steps-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "curve", "options": [{ "value": "curve", "label": "Courbe (accueil)" }, { "value": "line", "label": "Filet (déroulement)" }, { "value": "cards", "label": "Cartes (visioconférence)" }, { "value": "program", "label": "Programme avec photo" }] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Votre premier rendez-vous" },
+    { "type": "text", "id": "text", "label": "Sous-titre" },
+    { "type": "image_picker", "id": "image", "label": "Photo (programme)" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" }
+  ],
+  "blocks": [
+    { "type": "step", "name": "Étape", "settings": [{ "type": "text", "id": "title", "label": "Titre", "default": "Échanger" }, { "type": "textarea", "id": "text", "label": "Texte" }] }
+  ],
+  "presets": [{ "name": "Étapes numérotées" }]
+}
+{% endschema %}

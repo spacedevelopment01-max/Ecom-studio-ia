@@ -1,0 +1,38 @@
+{%- comment -%}
+  FRAISE : grand bandeau rouge à vague (planches 02 et 05, « Voir la vie côté fraise. ») — très grand titre arrondi blanc,
+  éclats, photo à droite au bord courbe, bouton blanc. Téléphone : titre, photo, bouton empilés.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-band-sec" aria-labelledby="fg-band-t-{{ section.id }}">
+  <svg class="fg-wave fg-band-sec__wave" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 40V22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40z" fill="currentColor"/></svg>
+  <div class="fg-band-sec__body">
+    <div class="fg-c">
+      {% render 'fg-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile, class: 'fg-band-sec__img' %}
+      <h2 class="fg-band-sec__title" id="fg-band-t-{{ section.id }}">{{ s.heading | escape | newline_to_br }}</h2>
+      <span class="fg-band-sec__sparks" aria-hidden="true">{% render 'fg-art', name: 'sparks' %}</span>
+      {%- if s.text_mobile != blank -%}<p class="fg-band-sec__mtext fg-only-m">{{ s.text_mobile | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="fg-btn fg-band-sec__btn" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label }}{% render 'fg-icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau rouge",
+  "class": "fg-band-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un petit plaisir\nau quotidien." },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone" },
+    { "type": "text", "id": "button_label", "label": "Bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage (ordinateur)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement (ordinateur)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 }
+  ],
+  "presets": [{ "name": "Bandeau rouge" }]
+}
+{% endschema %}

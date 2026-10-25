@@ -1,0 +1,25 @@
+{%- comment -%}
+  PHASE : réglages propres à une page — disposition du pied de page au téléphone (chaque planche téléphone a la sienne),
+  échelle du contenu à l'ordinateur (les planches ordinateur n'ont pas la même échelle) et rubrique du menu active. Rien n'est affiché à cet endroit.
+{%- endcomment -%}
+<div class="ph-page-mark" data-ph-foot-m="{{ section.settings.footer_mobile }}" data-ph-nav="{{ section.settings.nav_active }}" hidden></div>
+{%- if section.settings.scale != 100 -%}<style>:root { --ph-k: {{ section.settings.scale | divided_by: 100.0 }}; }</style>{%- endif -%}
+
+{% schema %}
+{
+  "name": "Réglages de la page",
+  "class": "ph-page-section",
+  "settings": [
+    { "type": "select", "id": "footer_mobile", "label": "Pied de page au téléphone", "default": "cols", "options": [
+      { "value": "cols", "label": "Logo, menu et coordonnées en colonnes" },
+      { "value": "grid", "label": "Logo et menu, puis coordonnées et liens légaux" },
+      { "value": "pair", "label": "Logo et coordonnées, puis menu et liens légaux" },
+      { "value": "split", "label": "Logo, menu à gauche, coordonnées et liens à droite" },
+      { "value": "stack", "label": "Empilé (logo, menu, coordonnées, liens)" }
+    ] },
+    { "type": "range", "id": "scale", "label": "Échelle du contenu à l'ordinateur", "min": 70, "max": 110, "step": 1, "unit": "%", "default": 100, "info": "Les planches n'ont pas toutes la même échelle : 100 % pour les planches 01 et 03, 82 % pour les planches 02 et 04, 94 % pour la planche 05 (dessinées plus « dézoomées »). S'applique aussi à l'en-tête et au pied de la page ; 100 % partout donne un site homogène." },
+    { "type": "text", "id": "nav_active", "label": "Rubrique active du menu (adresse)", "info": "Adresse de la rubrique à marquer comme active, par exemple /pages/prestations." }
+  ],
+  "presets": [{ "name": "Réglages de la page" }]
+}
+{% endschema %}

@@ -970,6 +970,25 @@ CREATE TABLE IF NOT EXISTS social_edit_undo (
   after TEXT NOT NULL DEFAULT '{}'
 );
 
+-- Biens immobiliers d'un projet (thème Maison & Horizon, issue #172) : une fiche par bien, saisie une seule fois dans
+-- l'onglet « Biens » ; elle alimente l'accueil, les listes, la carte, la fiche, les favoris et l'export. Jamais effacée :
+-- « archivé » la retire de tout affichage. Référence unique dans le projet ; toutes les valeurs saisies dans data_json.
+CREATE TABLE IF NOT EXISTS biens (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  transaction_type TEXT NOT NULL,          -- vente | location
+  status TEXT NOT NULL DEFAULT 'draft',    -- draft | published | withdrawn | sold | rented | archived
+  position INTEGER NOT NULL DEFAULT 0,
+  data_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  published_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS biens_ref ON biens(project_id, ref);
+CREATE INDEX IF NOT EXISTS biens_project ON biens(project_id, status, position);
+
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,
   run_key TEXT NOT NULL,

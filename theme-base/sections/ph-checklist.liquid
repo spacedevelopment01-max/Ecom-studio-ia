@@ -1,0 +1,45 @@
+{%- comment -%}
+  PHASE : encadré gris « Bien préparer votre projet » (installation, éclairage au téléphone, planche 07) — pictogramme,
+  titre, puis liste cochée (cases jaunes). Les éléments sont des blocs : on en ajoute, retire ou réordonne librement.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-checklist ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-checklist__box">
+      <div class="ph-checklist__head">
+        {%- if s.icon != blank -%}<span class="ph-checklist__icon" aria-hidden="true">{% render 'ph-icon', name: s.icon, stroke: 1.8 %}</span>{%- endif -%}
+        <h2 class="ph-checklist__title">{{ s.title }}</h2>
+      </div>
+      <ul class="ph-checklist__list" role="list">
+        {%- for b in section.blocks -%}
+          <li class="ph-checklist__item" {{ b.shopify_attributes }}><span class="ph-checklist__tick" aria-hidden="true">{% render 'ph-icon', name: 'coche', stroke: 2.6 %}</span><span>{{ b.settings.text }}</span></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Liste à cocher PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "devis-document" },
+    { "type": "text", "id": "title", "label": "Titre", "default": "Bien préparer votre projet" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 20 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 20 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Élément", "settings": [
+      { "type": "text", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "Liste à cocher PHASE" }]
+}
+{% endschema %}

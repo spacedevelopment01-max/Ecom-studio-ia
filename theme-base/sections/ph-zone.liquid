@@ -1,0 +1,49 @@
+{%- comment -%}
+  PHASE : zone d'intervention (planches 03 et 08) — sur-titre, titre, texte à gauche ; plan stylisé dessiné en SVG
+  (aucune carte réelle ni adresse inventée), repère et étiquette jaune à droite. Tant que le client n'a pas renseigné
+  sa zone, l'étiquette dit « Votre ville et sa région à renseigner ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-zone ph-pad" style="--ph-ts: {{ s.title_size }}; --ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-zone__copy">
+      {%- if s.eyebrow != blank or s.eyebrow_mobile != blank -%}<p class="ph-eyebrow{% if s.eyebrow == blank %} ph-only-m{% endif %}"><span{% if s.eyebrow_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.eyebrow }}</span>{%- if s.eyebrow_mobile != blank -%}<span class="ph-txt-m">{{ s.eyebrow_mobile }}</span>{%- endif -%}</p>{%- endif -%}
+      {%- if s.text_mobile != blank -%}
+        <div class="ph-zone__m ph-only-m">{% render 'ph-icon', name: 'lieu-repere', class: 'ph-zone__m-ico', stroke: 1.8 %}<p>{{ s.text_mobile | newline_to_br }}</p></div>
+      {%- endif -%}
+      <div class="ph-zone__full{% if s.text_mobile != blank %} ph-only-d{% endif %}">
+        {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-zone__title' %}
+        {%- if s.text != blank -%}<div class="ph-zone__text">{{ s.text }}</div>{%- endif -%}
+      </div>
+    </div>
+    <div class="ph-zone__map" role="img" aria-label="{{ s.map_label | escape }}">
+      {% render 'ph-art', name: 'map' %}
+      <span class="ph-zone__pin" aria-hidden="true">{% render 'ph-icon', name: 'carte-repere', stroke: 2 %}</span>
+      <p class="ph-zone__tag">{% render 'ph-icon', name: 'carte-repere', stroke: 2 %}<span>{{ s.tag | newline_to_br }}</span></p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Zone d'intervention",
+  "class": "ph-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Notre zone d'intervention" },
+    { "type": "text", "id": "eyebrow_mobile", "label": "Sur-titre au téléphone (facultatif)" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Zone d'intervention\nà renseigner." },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (remplace titre et texte, facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 100, "step": 1, "default": 50 },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "tag", "label": "Étiquette du plan", "default": "Votre ville\net sa région\nà renseigner" },
+    { "type": "text", "id": "map_label", "label": "Description du plan (lecteurs d'écran)", "default": "Plan stylisé de la zone d'intervention, à renseigner" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "presets": [{ "name": "Zone d'intervention" }]
+}
+{% endschema %}

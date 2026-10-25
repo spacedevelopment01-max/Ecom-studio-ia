@@ -1,0 +1,123 @@
+{%- comment -%}
+  SILLON V2 : questions fréquentes (planche 03, « 09 FAQ ») — très grand titre, courbes de niveau, cercle cuivre « ? »,
+  photo du produit sur son rocher (ou produit détouré en surplomb
+  au-dessus d'un socle photographique) ; recherche, filtres en pastilles, questions numérotées en accordéon (la première
+  ouverte), bouton sombre « Nous contacter », paysage et chemin cuivre en bas.
+  Blocs : « Question » (catégorie, question, réponse). Les catégories des pastilles sont celles du réglage « Filtres » ; une pastille
+  active filtre la liste, un second clic la relâche (toutes les questions).
+  Sans script : toutes les questions restent lisibles (details / summary).
+  Les planches ordinateur et téléphone n'ont pas le même contenu : chaque question peut être réservée à l'un des deux,
+  les pastilles du téléphone ont leur propre réglage ; la pastille du thème de la question ouverte est mise en avant.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign cats = s.filters | split: ',' -%}
+{%- assign cats_m = s.filters_mobile | default: s.filters | split: ',' -%}
+<section class="sv sv-faq{% if s.product_image != blank or s.product_image_asset != blank %} sv-faq--overhang{% endif %}" data-sv-faq>
+  <div class="sv-c">
+    <div class="sv-faq__inner">
+      <span class="sv-topo sv-topo--tall sv-faq__topo" aria-hidden="true"></span>
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'sv-faq__photo', loading: 'eager', pos_mobile: s.image_position_mobile, zoom_mobile: s.image_zoom_mobile %}
+      {%- if s.image_mobile != blank or s.image_mobile_asset != blank -%}{% render 'sv-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_mobile_position, zoom: s.image_mobile_zoom, class: 'sv-faq__mphoto', loading: 'eager', place_w: s.image_mobile_place_w, place_x: s.image_mobile_place_x, place_y: s.image_mobile_place_y %}{%- endif -%}
+      {%- if s.product_image != blank or s.product_image_asset != blank -%}{% render 'sv-img', image: s.product_image, asset: s.product_image_asset, alt: '', class: 'sv-faq__product sv-cut', loading: 'eager' %}{%- endif -%}
+      <span class="sv-display sv-faq__mark" aria-hidden="true">?</span>
+      <h1 class="sv-display sv-faq__title">{{ s.heading | escape | newline_to_br }}</h1>
+      <div class="sv-faq__search">
+        <label class="visually-hidden" for="sv-faq-q-{{ section.id }}">{{ s.search_label }}</label>
+        {% render 'sv-icon', name: 'search' %}
+        <input id="sv-faq-q-{{ section.id }}" type="search" placeholder="{{ s.search_placeholder | escape }}" autocomplete="off" data-sv-faq-search{% if s.search_placeholder_mobile != blank %} data-ph="{{ s.search_placeholder | escape }}" data-ph-mobile="{{ s.search_placeholder_mobile | escape }}"{% endif %}>
+      </div>
+      {%- if cats.size > 0 -%}
+        <div class="sv-faq__filters{% if s.filters_mobile != blank %} sv-only-d{% endif %}" role="group" aria-label="{{ s.filters_label | escape }}">
+          {%- for c in cats -%}
+            {%- assign cs = c | strip -%}
+            <button type="button" class="sv-pill sv-faq__pill" data-sv-faq-filter="{{ cs | handleize }}" aria-pressed="false">{{ cs }}</button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+      {%- if s.filters_mobile != blank -%}
+        <div class="sv-faq__filters sv-only-m" role="group" aria-label="{{ s.filters_label | escape }}">
+          {%- for c in cats_m -%}
+            {%- assign cs = c | strip -%}
+            <button type="button" class="sv-pill sv-faq__pill" data-sv-faq-filter="{{ cs | handleize }}" aria-pressed="false">{{ cs }}</button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+      <div class="sv-faq__list" data-sv-faq-list>
+        {%- assign n_d = 0 -%}{%- assign n_m = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          {%- assign vis = b.visibility | default: 'all' -%}
+          {%- if vis != 'mobile' -%}{%- assign n_d = n_d | plus: 1 -%}{%- endif -%}
+          {%- if vis != 'desktop' -%}{%- assign n_m = n_m | plus: 1 -%}{%- endif -%}
+          <details class="sv-faq__item sv-vis--{{ vis }}" data-cat="{{ b.category | strip | handleize }}" {% if forloop.first %}open{% endif %} {{ block.shopify_attributes }}>
+            <summary><span class="sv-display sv-faq__num" data-sv-faq-num>{%- if n_d == n_m -%}{% if n_d < 10 %}0{% endif %}{{ n_d }}{%- else -%}<span class="sv-d">{% if n_d < 10 %}0{% endif %}{{ n_d }}</span><span class="sv-m">{% if n_m < 10 %}0{% endif %}{{ n_m }}</span>{%- endif -%}</span><span class="sv-faq__q">{%- if b.question_mobile != blank -%}<span class="sv-d">{{ b.question }}</span><span class="sv-m">{{ b.question_mobile | escape | newline_to_br }}</span>{%- else -%}{{ b.question }}{%- endif -%}</span>{% render 'sv-icon', name: 'down', class: 'sv-faq__chev' %}</summary>
+            <div class="sv-faq__a">{{ b.answer }}</div>
+          </details>
+        {%- endfor -%}
+        <p class="sv-faq__empty" data-sv-faq-empty hidden>{{ s.empty_text }}</p>
+      </div>
+      {%- if s.contact_label != blank -%}
+        <a class="sv-faq__contact" href="{{ s.contact_link | default: routes.root_url }}"><span class="sv-faq__contact-ico">{% render 'sv-icon', name: 'mail' %}</span><span>{{ s.contact_label }}</span>{% render 'sv-icon', name: 'arrow-ne' %}</a>
+      {%- endif -%}
+      {%- if s.image_bottom_mobile != blank or s.image_bottom_mobile_asset != blank -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land sv-only-d', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{% render 'sv-img', image: s.image_bottom_mobile, asset: s.image_bottom_mobile_asset, alt: '', pos: s.image_bottom_position_mobile, zoom: s.image_bottom_zoom_mobile, class: 'sv-faq__land sv-only-m' %}{%- else -%}{% render 'sv-img', image: s.image_bottom, asset: s.image_bottom_asset, alt: '', pos: s.image_bottom_position, zoom: s.image_bottom_zoom, class: 'sv-faq__land', pos_mobile: s.image_bottom_position_mobile, zoom_mobile: s.image_bottom_zoom_mobile %}{%- endif -%}
+      {% render 'sv-route', d: 'M0 220C60 170 110 120 180 90S300 30 380 30 520 20 560 30', vb: '0 0 560 220', dots: '300,40', class: 'sv-faq__route' %}
+      {% render 'sv-route', d: 'M-5 330C20 310 40 300 55 295S150 250 185 235 280 140 330 82 380 20 400 10', vb: '0 0 390 330', dots: '55,295 185,235 330,82', class: 'sv-faq__mroute', width: 2.4 %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions SILLON",
+  "class": "sv-faq-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "On vous\nrépond." },
+    { "type": "image_picker", "id": "image", "label": "Photo du produit" },
+    { "type": "text", "id": "image_asset", "label": "Photo du produit (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement de la photo", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_mobile", "label": "Photo du téléphone" },
+    { "type": "text", "id": "image_mobile_asset", "label": "Photo du téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_mobile_position", "label": "Cadrage (téléphone)", "default": "50% 50%" },
+    { "type": "range", "id": "image_mobile_zoom", "label": "Agrandissement (téléphone)", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "number", "id": "image_mobile_place_w", "label": "Photo du téléphone : largeur posée (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+    { "type": "number", "id": "image_mobile_place_x", "label": "Photo du téléphone : position à gauche (px)" },
+    { "type": "number", "id": "image_mobile_place_y", "label": "Photo du téléphone : position en haut (px)" },
+    { "type": "image_picker", "id": "product_image", "label": "Produit détouré en surplomb", "info": "La photo devient alors le socle (rocher, paysage) sous le produit." },
+    { "type": "text", "id": "product_image_asset", "label": "Produit détouré (fichier du thème)" },
+    { "type": "text", "id": "search_label", "label": "Recherche (lecteurs d'écran)", "default": "Rechercher une question" },
+    { "type": "text", "id": "search_placeholder", "label": "Texte de la recherche", "default": "Rechercher une question…" },
+    { "type": "text", "id": "search_placeholder_mobile", "label": "Texte de la recherche au téléphone", "info": "Vide : le même texte." },
+    { "type": "text", "id": "filters", "label": "Filtres (séparés par des virgules)", "default": "Machine, Utilisation, Commande", "info": "Chaque question indique l'un de ces filtres." },
+    { "type": "text", "id": "filters_mobile", "label": "Filtres au téléphone (séparés par des virgules)", "info": "Vide : les mêmes filtres." },
+    { "type": "text", "id": "filters_label", "label": "Filtres (lecteurs d'écran)", "default": "Thèmes des questions" },
+    { "type": "text", "id": "empty_text", "label": "Aucune question trouvée", "default": "Aucune question ne correspond à votre recherche." },
+    { "type": "text", "id": "contact_label", "label": "Bouton de contact", "default": "Nous contacter" },
+    { "type": "url", "id": "contact_link", "label": "Adresse du bouton de contact" },
+    { "type": "image_picker", "id": "image_bottom", "label": "Paysage du bas" },
+    { "type": "text", "id": "image_bottom_asset", "label": "Paysage du bas (fichier du thème)" },
+    { "type": "image_picker", "id": "image_bottom_mobile", "label": "Paysage du bas (téléphone)" },
+    { "type": "text", "id": "image_bottom_mobile_asset", "label": "Paysage du bas, téléphone (fichier du thème)" },
+    { "type": "text", "id": "image_bottom_position", "label": "Cadrage du paysage du bas", "default": "50% 50%" },
+    { "type": "text", "id": "image_bottom_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+    { "type": "range", "id": "image_bottom_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+    { "type": "range", "id": "image_bottom_zoom", "label": "Agrandissement du paysage du bas", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+  ],
+  "blocks": [
+    {
+      "type": "question", "name": "Question",
+      "settings": [
+        { "type": "text", "id": "category", "label": "Filtre", "default": "Machine" },
+        { "type": "select", "id": "visibility", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "mobile", "label": "Téléphone seulement" }, { "value": "desktop", "label": "Ordinateur seulement" }] },
+        { "type": "text", "id": "question", "label": "Question", "default": "Votre question ?" },
+        { "type": "textarea", "id": "question_mobile", "label": "Question au téléphone (coupe des lignes)", "info": "Vide : la question ci-dessus." },
+        { "type": "richtext", "id": "answer", "label": "Réponse" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Questions SILLON", "blocks": [{ "type": "question" }, { "type": "question" }, { "type": "question" }] }]
+}
+{% endschema %}

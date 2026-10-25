@@ -1,3 +1,19 @@
+{%- comment -%} Bannière d'appel. « Bandeau partagé » (maquette Atelier Rive) : titre à gauche, texte et bouton à droite
+  après un filet ; « Carte » : encadré avec une petite photo, titre, texte et bouton. {%- endcomment -%}
+{%- if section.settings.style == 'card' -%}
+<section class="es-section es-cta es-cta--card color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container">
+    <div class="es-cta__card">
+      {%- if section.settings.image != blank or section.settings.image_asset != blank -%}<div class="es-cta__thumb">{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '240px', class: 'es-cover' %}</div>{%- endif -%}
+      <div class="es-cta__copy">
+        <h2 class="es-heading es-h4">{{ section.settings.heading }}</h2>
+        {%- if section.settings.text != blank -%}<div class="es-rte">{{ section.settings.text }}</div>{%- endif -%}
+      </div>
+      {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+{%- else -%}
 <section class="es-section es-cta color-{{ section.settings.color_scheme }} es-cta--{{ section.settings.style }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px; --overlay: {{ section.settings.overlay | divided_by: 100.0 }};">
   {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
     <div class="es-cta__media"{% if section.settings.parallax %} data-parallax="0.2"{% endif %}>{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: '', sizes: '100vw', class: 'es-cover' %}</div>
@@ -8,9 +24,23 @@
     {%- if section.settings.button_label != blank -%}<a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="es-button" data-reveal="up" style="--d: 1">{{ section.settings.button_label }} {% render 'icon', name: 'arrow' %}</a>{%- endif -%}
   </div>
 </section>
+{%- endif -%}
 
 
 {% stylesheet %}
+.es-cta--split .es-cta__inner { display: grid; gap: 20px; align-items: center; text-align: left; }
+@media (min-width: 990px) {
+  .es-cta--split .es-cta__inner { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: clamp(32px, 5vw, 72px); }
+  .es-cta--split .es-cta__inner > .es-heading { grid-row: 1 / span 2; margin: 0; padding-right: clamp(24px, 4vw, 56px); border-right: 1px solid rgba(var(--c-text-rgb), .28); }
+  .es-cta--split .es-cta__inner > .es-rte { margin: 0; }
+}
+.es-cta--split .es-cta__inner > .es-button { justify-self: start; }
+.es-cta__card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: clamp(16px, 2.4vw, 32px); align-items: center; border: 1px solid rgba(var(--c-text-rgb), .14); padding: 12px clamp(16px, 2.4vw, 28px) 12px 12px; }
+.es-cta__thumb { position: relative; width: clamp(120px, 14vw, 180px); aspect-ratio: 16 / 9; overflow: hidden; }
+.es-cta__thumb .es-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.es-cta__copy .es-heading { margin: 0 0 4px; }
+.es-cta__copy .es-rte { font-size: .9rem; }
+@media (max-width: 749px) { .es-cta__card { grid-template-columns: 1fr; padding: 16px; text-align: center; } .es-cta__thumb { display: none; } .es-cta__card .es-button { justify-self: center; } }
 /* Image en fond : marge de parallaxe suffisante, jamais de bande vide en haut ou en bas. */
 .es-cta { position: relative; isolation: isolate; }
 .es-cta__media { inset: -30% 0; }
@@ -33,7 +63,7 @@
     { "type": "image_picker", "id": "image", "label": "Image de fond" },
     { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
     { "type": "range", "id": "overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "label": "Voile", "default": 35 },
-    { "type": "select", "id": "style", "label": "Style", "default": "center", "options": [ { "value": "center", "label": "Centré" }, { "value": "left", "label": "Aligné à gauche" } ] },
+    { "type": "select", "id": "style", "label": "Style", "default": "center", "options": [ { "value": "center", "label": "Centré" }, { "value": "left", "label": "Aligné à gauche" }, { "value": "split", "label": "Titre à gauche, texte et bouton à droite" }, { "value": "card", "label": "Carte avec petite photo" } ] },
     { "type": "checkbox", "id": "parallax", "label": "Effet de profondeur", "default": true },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-3" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },

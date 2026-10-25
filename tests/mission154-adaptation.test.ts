@@ -44,7 +44,8 @@ const fr = <T,>(f: () => T) => runWithLang({ ui: 'fr', content: 'fr' }, f);
 beforeEach(() => vi.stubGlobal('fetch', async () => { throw Error('No external fetch in mission154'); }));
 afterEach(() => vi.unstubAllGlobals());
 // Intégration #159 / #161 : les onze thèmes de référence passent par la même adaptation client.
-it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heuren', 'alcove', 'museau-club', 'souple'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
+// Mission #190 : ORBE et ALCÔVE (créés avant les maquettes) ne peuvent plus être choisis pour un projet ; les autres oui.
+it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'rive', 'heuren', 'museau-club', 'souple'] as const)('%s : composition de référence, propres médias et copie persistante, aucun contenu de démo', async (direction) => {
     const f = await clientFixture({ services: direction === 'rive', catalog: ['orbe', 'onde', 'heuren', 'alcove', 'souple'].includes(direction) });
     const before = loadProject(f.pid).brand;
     const built = await fr(() => buildShop(null, f.pid, { direction, useAi: false }));
@@ -78,14 +79,22 @@ it.each(['fraise', 'onde', 'sillon', 'noctil', 'traverse', 'orbe', 'rive', 'heur
         expect(s.templates[target].order.map(id => s.templates[target].sections[id].type)).toEqual(value.order.map((id: string) => value.sections[id].type));
         for (const [i, id] of value.order.entries())
             for (const [key, setting] of Object.entries(value.sections[id].settings))
-                if (!['heading_tag', 'focus_x', 'focus_y'].includes(key))
+                // Titre de page rallumé quand la section titrée (H1) est masquée faute de contenu authentique (Atelier Rive, Projets).
+                // NOCTIL : sans détourage du client, le produit en surplomb ne déborde plus (réglages propres à la photo).
+                // ONDE : hauteur sur téléphone des ouvertures et cercles cadrée sur les vues de la démo, suivie du contenu chez un client.
+                if (!['heading_tag', 'focus_x', 'focus_y'].includes(key) && !(key === 'show_title' && Object.values(s.templates[target].sections).some(x => x.disabled && x.settings.heading_tag === 'h1')) && !(value.sections[id].type === 'cv-rise' && ['overlap', 'decor', 'curve'].includes(key)) && !(value.sections[id].type === 'on-banner' && key === 'mobile_min_height'))
                     expect(s.templates[target].sections[s.templates[target].order[i]].settings[key], `${direction} ${key} reference composition`).toEqual(setting);
     }
     expect(s.meta!.adaptation!.slots.some(x => x.assetId)).toBe(true);
-    for (const tpl of Object.values(s.templates))
-        for (const section of Object.values(tpl.sections)) {
+    // NOCTIL : le client n'a pas de produit détouré, sa photo à fond plein ne remonte jamais sur l'ouverture.
+    if (direction === 'noctil') {
+        const rise = Object.values(s.templates.index.sections).find(x => x.type === 'cv-rise');
+        expect(rise?.settings).toMatchObject({ overlap: 'none', decor: false, curve: false });
+    }
+    for (const [tplKey, tpl] of Object.entries(s.templates))
+        for (const [sectionId, section] of Object.entries(tpl.sections)) {
             if (section.type === 'timeline' && f.copy.story.steps.length) {
-                expect(section.disabled).toBe(false);
+                expect(section.disabled ?? false, `${direction} ${tplKey} ${sectionId} ${JSON.stringify((s.meta!.adaptation as any).issues?.filter((i: any) => i.section === sectionId))}`).toBe(false);
                 expect(Object.values(section.blocks ?? {}).map(b => b.type)).toEqual(f.copy.story.steps.map(() => 'step'));
             }
             if (section.type === 'marquee' && f.copy.marquee.length) {

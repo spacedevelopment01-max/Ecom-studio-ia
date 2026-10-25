@@ -15,29 +15,33 @@
  * vente. L'ancienne ambiance HEUREN rejetée (bracelet dépassant) n'est pas dans le lot : seule ambiance-07, corrigée, sert.
  */
 import { buildKitProject, p, TODO, ORDER_FAQ, type Brand, type Kit, type Media } from "./noctil-traverse-fixtures";
-import { sectionSchema, withDefaults } from "../src/lib/theme/spec";
+import { sectionSchema, withDefaults, type SectionInstance } from "../src/lib/theme/spec";
 
 export type ShopKitId = "heuren" | "alcove";
 export const SHOP_KIT_PROVENANCE = "Issue #155 (21 octobre 2026) — démonstration du studio, images IA déjà générées fournies par Thomas (commit 370c28f6), sans personne, aucun paiement";
 
 /** Ordre d'import = rôles du thème (le dernier importé d'un rôle prend le premier emplacement). Textes alternatifs descriptifs. */
+/**
+ * Médias HEUREN de la maquette du 22 octobre (docs/design/heuren-reference-20261022/medias, copiés dans
+ * public/theme-assets/heuren/) : une seule montre, cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit ;
+ * coffret bleu nuit à l'intérieur ivoire. La scène du bureau défectueuse (couronne mal placée) n'est pas dans le lot :
+ * seule « bureau-corrige » sert. Les anciennes photos du lot #155 restent dans le dossier, plus utilisées par la démo.
+ */
 export const HEUREN_MEDIA: Media[] = [
   { file: "logo.webp", role: "logo", alt: "HEUREN" },
-  { file: "produit-03.webp", role: "packshot", alt: "Montre HEUREN de profil : boîtier argenté, couronne et bracelet en cuir bleu nuit." },
-  { file: "produit-02.webp", role: "packshot", alt: "Montre HEUREN de face : cadran bleu nuit soleillé, index argentés et nom HEUREN." },
-  { file: "produit-01.webp", role: "packshot", alt: "Montre HEUREN entière de trois quarts, cadran bleu nuit et bracelet en cuir bleu nuit doublé de beige." },
-  { file: "produit-05.webp", role: "detail", alt: "Gros plan du bracelet en cuir bleu nuit et de sa couture bleue, au pied du boîtier argenté." },
-  { file: "produit-04.webp", role: "detail", alt: "Gros plan du cadran bleu nuit soleillé, des aiguilles argentées et du nom HEUREN." },
-  { file: "ambiance-08.webp", role: "scene", alt: "Montre HEUREN sur un support argenté, sur une table de chevet éclairée par une lampe." },
-  { file: "ambiance-02.webp", role: "scene", alt: "Montre HEUREN sur un bureau en noyer, à côté d'un carnet et d'un stylo." },
-  { file: "ambiance-03.webp", role: "scene", alt: "Montre HEUREN posée sur un socle de travertin, dans une lumière rasante." },
-  { file: "ambiance-01.webp", role: "scene", alt: "Montre HEUREN sur une ardoise, devant un mur bleu nuit." },
-  { file: "ambiance-06.webp", role: "scene", alt: "Montre HEUREN posée sur un lin ivoire froissé." },
-  { file: "ambiance-04.webp", role: "scene", alt: "Montre HEUREN sur une trousse de voyage en cuir bleu, à côté d'une carte dépliée." },
-  { file: "ambiance-05.webp", role: "scene", alt: "Montre HEUREN posée sur un veston plié, près d'une chemise blanche." },
-  { file: "ambiance-10.webp", role: "lifestyle", alt: "Montre HEUREN dans un écrin bleu nuit, ruban crème à côté." },
-  { file: "ambiance-09.webp", role: "banner", alt: "Montre HEUREN sur un bloc de béton, devant un mur bleu, sous des ombres géométriques." },
-  { file: "ambiance-07.webp", role: "lifestyle", alt: "Montre HEUREN entière sur une pierre noire brillante, au coucher du soleil, bracelet fermé." },
+  { file: "montre-profil.webp", role: "packshot", alt: "Montre HEUREN de profil : boîtier argenté, couronne et bracelet bleu nuit." },
+  { file: "montre-face.webp", role: "packshot", alt: "Montre HEUREN de face : cadran bleu nuit soleillé sans dateur, index argentés, bracelet bleu nuit." },
+  { file: "bracelet.webp", role: "detail", alt: "Gros plan du bracelet bleu nuit et de sa boucle argentée." },
+  { file: "cadran-macro.webp", role: "detail", alt: "Gros plan du cadran bleu nuit soleillé, des aiguilles et des index argentés." },
+  { file: "bureau-corrige.webp", role: "scene", alt: "Montre HEUREN posée sur un sous-main en cuir, à côté d'un carnet et d'un stylo, lumière du soir." },
+  { file: "tissu.webp", role: "scene", alt: "Montre HEUREN posée sur un velours bleu nuit." },
+  { file: "bureau-dessus.webp", role: "scene", alt: "Montre HEUREN sur un carnet en cuir noir, stylo à côté, vue de dessus." },
+  { file: "cadeau-ruban.webp", role: "scene", alt: "Montre HEUREN devant un paquet cadeau noué d'un ruban bleu nuit." },
+  { file: "bandeau-final.webp", role: "banner", alt: "Montre HEUREN près d'un paquet cadeau au ruban bleu nuit, lumières de la ville le soir." },
+  { file: "coffret-ferme.webp", role: "lifestyle", alt: "Coffret HEUREN bleu nuit fermé, noué d'un ruban bleu nuit, sur un marbre clair." },
+  { file: "coffret-ouvert.webp", role: "lifestyle", alt: "Montre HEUREN dans son coffret bleu nuit ouvert, intérieur ivoire, ruban bleu nuit sur un marbre blanc." },
+  { file: "hero-mobile.webp", role: "lifestyle", alt: "Montre HEUREN posée sur une roche sombre, dans une lumière bleutée." },
+  { file: "hero-desktop.webp", role: "lifestyle", alt: "Montre HEUREN posée sur une roche sombre, dans une lumière bleutée." },
 ];
 export const ALCOVE_MEDIA: Media[] = [
   { file: "logo.webp", role: "logo", alt: "ALCÔVE" },
@@ -60,31 +64,22 @@ export const ALCOVE_MEDIA: Media[] = [
 export const SHOP_KIT_MEDIA: Record<ShopKitId, Media[]> = { heuren: HEUREN_MEDIA, alcove: ALCOVE_MEDIA };
 export const SHOP_KIT_HANDLE: Record<ShopKitId, string> = { heuren: "montre-heuren-bleu-nuit", alcove: "fauteuil-alcove-terracotta" };
 
-// HEUREN — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) :
-//  acheteur : une personne qui offre une montre à son compagnon ; utilisateur : lui, qui la portera ;
-//  situation d'achat : une étape de sa vie à marquer (nouveau poste, anniversaire, projet qui aboutit) ;
-//  tension (ses mots) : « Je veux un cadeau à la hauteur du moment, pas un objet qui finira dans un tiroir. » ;
-//  désir : que le cadeau garde la trace de ce moment, et qu'il le porte ensuite ;
-//  angle unique : un cadeau qui matérialise ce moment et se porte ensuite au quotidien ;
-//  promesse tenable : une montre à aiguilles au cadran bleu nuit soleillé, présentée en écrin sur les photos, assez
-//  sobre pour le bureau comme pour le soir ; faits = visuels (cadran, index, aiguilles, boîtier, bracelet, écrin, décors) ;
-//  objections : pour quelle occasion, comment elle est présentée (écrin, contenu non renseigné), le bleu au quotidien,
-//  connectée ou non (une montre à aiguilles), gravure, prix, taille et mouvement (non renseignés) ;
-//  exclusions : aucune guerre contre les notifications, aucun mouvement, taille, matière, étanchéité ni gravure inventés.
+// HEUREN — fiche de stratégie (maquette approuvée par Thomas le 22 octobre ; consigne CONSIGNE_VALIDEE.md) :
+//  acheteur : une personne qui offre une montre pour marquer un moment (étape, remerciement, envie de faire plaisir) ;
+//  tension : « Je veux un cadeau à la hauteur du moment » ; désir : que le cadeau reste, au poignet, après ce jour-là ;
+//  promesse tenable : une montre au cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit, présentée dans un
+//  coffret bleu nuit à l'intérieur ivoire (photos) ; 190 € = prix fictif de démonstration ;
+//  jamais affirmés : dimensions, matières, mouvement, étanchéité, garantie, délais et conditions de livraison et de retour
+//  (« à renseigner pour le produit réel »), avis, histoire de marque réelle.
 export const HEUREN_FAQ: [string, string][] = [
-  ["Pour quelles occasions l'offrir ?", "Un nouveau poste, un anniversaire, des fiançailles, un diplôme, un projet qui aboutit : une étape que vous voulez marquer avec un objet qu'il portera ensuite tous les jours."],
-  ["Comment est-elle présentée ?", "Nos photos la montrent dans un écrin bleu nuit, un ruban crème à côté. Le contenu exact de l'écrin n'est pas encore renseigné."],
-  ["Le bleu nuit se porte-t-il tous les jours ?", "Sur nos photos, il accompagne un veston, une chemise blanche, un bureau en noyer et une trousse de voyage : un bleu sombre, sobre, que les index argentés éclairent."],
-  ["Est-ce une montre connectée ?", "Non : un cadran, des index et des aiguilles. Elle donne l'heure, avec un beau bleu autour."],
-  ["Que puis-je faire dans cette boutique de démonstration ?", "Faire le tour de la montre en cinq vues et la voir au fil du jour. Le prix, la taille du boîtier, le mouvement et la gravure ne sont pas encore renseignés, et la commande est désactivée."],
+  ["Comment choisir sa montre ?", "HEUREN existe en une seule version : cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit. Ses dimensions ne sont pas encore renseignées dans cette démonstration."],
+  ["Comment entretenir le bracelet ?", "Les conseils d'entretien dépendent de la matière du bracelet, qui n'est pas encore renseignée dans cette démonstration."],
+  ["Comment se déroule une commande ?", "Ajoutez la montre au panier, vérifiez votre sélection, puis passez commande. Dans cette démonstration, le panier fonctionne mais aucun paiement n'est demandé."],
 ];
 export const HEUREN_FAQ_PENDING: [string, string][] = [
   ["Peut-on la faire graver ?", TODO("gravure possible ou non, emplacement et nombre de caractères")],
   ["Quel mouvement anime la montre ?", TODO("type de mouvement et réserve de marche")],
   ["Est-elle étanche ?", TODO("étanchéité, en mètres ou en ATM")],
-  ["Quelle est la taille du boîtier ?", TODO("diamètre, épaisseur, largeur entre les cornes")],
-  ["De quoi sont faits le boîtier et le verre ?", TODO("matière du boîtier, du verre et du fond")],
-  ["Le bracelet se change-t-il ?", TODO("système d'attache et largeur du bracelet")],
   ["Quelle est la garantie ?", TODO("durée et conditions de garantie")],
 ];
 // ALCÔVE — fiche de stratégie (consigne de Thomas du 21 octobre, 21 h 45 ; brief, hypothèse éditoriale) :
@@ -121,7 +116,7 @@ const BRANDS: Record<ShopKitId, Brand> = {
     facts: [["Cadran", "bleu nuit soleillé, index et aiguilles argentés"], ["Bracelet", "cuir bleu nuit, couture bleue, doublure beige"]],
     tagline: "Pour marquer une étape, à porter chaque jour.", story: "HEUREN est née d'une idée : qu'un cadeau marquant ne finisse pas dans un tiroir, mais au poignet, chaque jour.", positioning: "Une montre au cadran bleu nuit à offrir pour une étape de vie, et à porter au quotidien.",
     // Bleu nuit du cadran, argent brumeux des fonds produit, beige de la doublure, ivoire.
-    palette: { primary: "#15233E", secondary: "#D9DDE3", accent: "#B8946A", light: "#F7F5F0", dark: "#0D1526" },
+    palette: { primary: "#15233E", secondary: "#D9DDE3", accent: "#CDB893", light: "#F7F5F0", dark: "#0D1526" },
   },
   alcove: {
     name: "ALCÔVE", product: "Fauteuil ALCÔVE terracotta", category: "Fauteuil",
@@ -134,7 +129,7 @@ const BRANDS: Record<ShopKitId, Brand> = {
 };
 
 export async function shopKitProject(userId: string, id: ShopKitId) {
-  return buildKitProject(userId, { id, media: SHOP_KIT_MEDIA[id], handle: SHOP_KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "heuren" ? "Heuren" : "Alcôve", provenance: SHOP_KIT_PROVENANCE, storeKind: "catalog", sector: "maison" }, id === "heuren" ? curateHeuren : curateAlcove);
+  return buildKitProject(userId, { id, media: SHOP_KIT_MEDIA[id], handle: SHOP_KIT_HANDLE[id], brand: BRANDS[id], themeName: id === "heuren" ? "Heuren" : "Alcôve", provenance: SHOP_KIT_PROVENANCE, storeKind: "catalog", sector: id === "heuren" ? "bijoux" : "maison" }, id === "heuren" ? curateHeuren : curateAlcove);
 }
 
 /** Cadre d'un diptyque (photo, titre, phrase). */
@@ -145,98 +140,180 @@ const v2faq = (k: Kit, layout: "side" | "center", eyebrow: string, heading: stri
 /** Repère d'un lookbook sur le produit unique (titre seul, aucun prix). */
 const marker = (_k: Kit, x: number, y: number, title: string) => ({ type: "marker", settings: { product: "", title, price_text: "", link: "", x, y } });
 
-// ─── HEUREN ───────────────────────────────────────────────────────────────────────────────────────────────────────
+// ─── HEUREN (maquette du 22 octobre : docs/design/heuren-reference-20261022) ───────────────────────────────────────
+const NOTE_DEMO = "Conditions de démonstration à compléter avant mise en vente.";
+const A_RENSEIGNER = "à renseigner pour le produit réel.";
 function curateHeuren(k: Kit) {
-  const { spec, img, section, overlay, faq, productHref } = k;
+  const { spec, img, section, overlay, productHref } = k;
   k.demoMeta();
-  spec.store.seo = { title: "HEUREN | Une montre à offrir pour marquer une étape de sa vie", description: "Nouveau poste, anniversaire, projet abouti : offrez-lui la montre HEUREN au cadran bleu nuit soleillé, pour garder ce moment au poignet, chaque jour." };
-  k.product({
-    title: "Montre HEUREN bleu nuit",
-    description_html: p("Pourquoi l'offrir : pour marquer une étape de sa vie (un nouveau poste, un anniversaire, un projet qui aboutit) avec un objet qu'il portera ensuite tous les jours.") + p("Ce qu'on voit : un cadran bleu nuit soleillé dont les reflets changent avec la lumière, des index et des aiguilles argentés, un boîtier argenté, un bracelet en cuir bleu nuit cousu de bleu et doublé de beige. Le nom HEUREN est inscrit sur le cadran.") + p("Après le jour J : au bureau, avec un veston, en voyage, et posée sur son support le soir ; nos photos la montrent à chacun de ces moments. Le contenu exact de l'écrin n'est pas encore renseigné."),
-    images: ["produit-01.webp", "produit-02.webp", "produit-03.webp", "produit-04.webp", "produit-05.webp"],
-    tags: ["montre", "bleu nuit", "cuir"],
-    seo: { title: "Montre HEUREN bleu nuit, à offrir : cadran et bracelet en détail", description: "Avant de l'offrir, faites le tour de la montre HEUREN : trois quarts, face, profil, cadran bleu nuit soleillé et bracelet en cuir cousu de bleu." },
+  spec.store.seo = { title: "HEUREN | Une montre bleu nuit à offrir, pour marquer un moment", description: "Une montre au cadran bleu nuit, présentée dans son coffret : pour célébrer une étape, remercier ou faire plaisir. Boutique de démonstration." };
+  const main = k.product({
+    title: "HEUREN Bleu nuit",
+    description_html: p("Une montre à offrir pour marquer un moment : un cadran bleu nuit soleillé sans dateur, des index et des aiguilles argentés, un boîtier argenté et un bracelet bleu nuit, présentée dans un coffret bleu nuit à l'intérieur ivoire.") + p("Dimensions, matières, mouvement et étanchéité : " + A_RENSEIGNER),
+    images: ["montre-face.webp", "montre-profil.webp", "cadran-macro.webp", "bracelet.webp", "coffret-ferme.webp"],
+    tags: ["montre", "bleu nuit", "cadeau"],
+    seo: { title: "HEUREN Bleu nuit : la montre à offrir, cadran bleu nuit sans dateur", description: "Cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit, coffret bleu nuit : faites le tour de la montre HEUREN avant de l'offrir." },
   });
+  // 190 € : prix fictif de démonstration (consigne) ; une seule version, nommée par sa couleur.
+  main.price = 19000;
+  main.options = ["Couleur"];
+  main.variants = [{ title: "Bleu nuit", options: ["Bleu nuit"], price: 19000, available: true, image: main.images[0] }];
+  spec.store.collections = [{ handle: "all", title: "La boutique", description: "Une montre, une seule version : HEUREN Bleu nuit, cadran bleu nuit sans dateur, à offrir pour marquer un moment.", products: [main.handle] }];
 
-  // ─── Accueil : l'heure bleue, le cadran, les repères, puis la montre portée. ──────────────────────────────────────
+  // ─── Accueil ─────────────────────────────────────────────────────────────────────────────────────────────────────
   overlay("index", [
-    section("ed-opening", { ...img("ambiance-10.webp"), layout: "journal", heading_tag: "h1", label: "Une montre à offrir", heading: "Il y a des étapes\nqui méritent une montre.", text: p("Un nouveau poste, un anniversaire, un projet qui aboutit : offrez-lui HEUREN. Ce soir-là, il ouvre l'écrin ; ensuite, il la porte chaque jour."), button_label: "Découvrir la montre", button_link: productHref, focus_x: 50, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 50, copy_surface: true, caption: "", motion: "reveal", padding_top: 24, padding_bottom: 72 }),
-    section("ed-statement", { ...img("produit-04.webp"), label: "Le cadran", heading: "Un bleu qu'il regardera longtemps", text: p("Le cadran soleillé renvoie la lumière du centre vers le bord : il change sous la lampe du bureau et au coucher du soleil. Chaque fois qu'il lira l'heure, il retrouvera ce bleu, et le jour où il l'a reçue."), button_label: "", button_link: "", motion: "reveal", color_scheme: "scheme-2", padding_top: 96, padding_bottom: 96 }, [
-      { type: "point", settings: { title: "Cadran soleillé", text: "Bleu nuit, reflets rayonnants du centre vers le bord." } },
-      { type: "point", settings: { title: "Index et aiguilles", text: "Argentés et fins, nets sur le bleu." } },
-      { type: "point", settings: { title: "Boîtier", text: "Argenté, couronne sur le côté droit." } },
-      { type: "point", settings: { title: "Bracelet", text: "Cuir bleu nuit, couture bleue, doublure beige." } },
+    section("ed-opening", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "banner", heading_tag: "h1", label: "", heading: "Marquez\nce moment.", text: p("Une montre à offrir. Un moment à garder."), button_label: "Découvrir la montre", button_link: productHref, copy_surface: false, focus_x: 62, focus_y: 50, mobile_focus_x: 12, mobile_focus_y: 60, padding_top: 0, padding_bottom: 0 }),
+    section("fs-commitments", { layout: "strip", align: "center", eyebrow: "", heading: "", heading_accent: "", text: "", note: "", padding_top: 20, padding_bottom: 20 }, [
+      { type: "item", settings: { icon: "box", title: "Livraison", text: "", proof_label: "", proof_link: "/pages/livraison-retours" } },
+      { type: "item", settings: { icon: "return", title: "Retours", text: "", proof_label: "", proof_link: "/pages/livraison-retours" } },
+      { type: "item", settings: { icon: "headset", title: "Assistance", text: "", proof_label: "", proof_link: "/pages/contact" } },
     ]),
-    section("fs-lookbook", { ...img("produit-02.webp"), layout: "markers", eyebrow: "Repères", heading: "Ce qu'il découvrira,", heading_accent: "point par point", text: p("Touchez un repère : le nom, le cadran, la couronne et le bracelet, un détail à la fois."), align: "left", button_label: "Voir la fiche", button_link: productHref, link_label: "Voir la montre", effect: "fade", stagger: true, hover: false, background: "scheme" }, [
-      marker(k, 48, 33, "Le nom HEUREN, en argent sur le cadran"),
-      marker(k, 37, 55, "Le cadran bleu nuit soleillé"),
-      marker(k, 75, 44, "La couronne, sur le côté du boîtier"),
-      marker(k, 58, 84, "Le bracelet en cuir, cousu de bleu"),
+    section("ed-scene", { ...img("coffret-ouvert.webp"), layout: "band", text_side: "left", band_height: "tall", label: "", heading: "Pour ce qui compte.", text: p("Pour célébrer une étape.<br>Ou simplement lui faire plaisir."), button_label: "Trouver son cadeau", button_link: productHref, focus_x: 70, focus_y: 50, mobile_focus_x: 78, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
+    section("ed-diptych", { layout: "triptych", label: "", heading: "", text: "", button_label: "", button_link: "", color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }, [
+      frame(k, "cadeau-ruban.webp", "Une étape à célébrer", "", "portrait"),
+      frame(k, "bureau-dessus.webp", "Un cadeau personnel", "", "portrait"),
+      frame(k, "tissu.webp", "Une envie à soi", "", "portrait"),
     ]),
-    section("fs-campaign", { ...img("ambiance-09.webp"), layout: "background", eyebrow: "Après le jour J", heading: "Un cadeau qui se porte,", heading_accent: "bien après la fête", text: p("Au soleil comme à l'ombre, le cadran reste profond et les index argentés restent nets : une montre faite pour être portée, pas rangée dans un tiroir."), align: "left", label: "", offer_title: "", offer_text: "", period_text: "", conditions: "", cta_label: "Voir la montre", cta_link: productHref, cta2_label: "Au fil du jour", cta2_link: "/pages/au-fil-du-jour", focus_x: 55, focus_y: 50, effect: "fade", stagger: false, hover: false, background: "scheme", color_scheme: "scheme-2" }),
-    section("ed-scene", { ...img("ambiance-05.webp"), layout: "split", label: "Au quotidien", heading: "Du bureau au dîner, il la garde", text: p("Posée sur un veston plié, près d'une chemise blanche : le bleu nuit accompagne les tenues sobres. Le cadeau d'un soir devient sa montre de tous les jours."), button_label: "Au fil du jour", button_link: "/pages/au-fil-du-jour", caption: "", focus_x: 40, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, motion: "reveal", padding_top: 72, padding_bottom: 72 }),
-    section("featured-purchase", { label: "La montre", heading: "Montre HEUREN bleu nuit", text: p("Avant de l'offrir, faites-en le tour : trois quarts, face, profil, puis le cadran et le bracelet en gros plan."), product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_style: "compact", purchase_enabled: false, image_fit: "contain", gallery_limit: 4, enable_zoom: true, link_label: "Voir la fiche complète", color_scheme: "scheme-4" }),
-    v2faq(k, "center", "Questions", "Avant de l'offrir", "Les occasions, l'écrin, le bleu au quotidien, ce que permet la démonstration.", HEUREN_FAQ.slice(0, 5)),
-    section("newsletter-media", { ...img("ambiance-07.webp"), layout: "right", eyebrow: "Nouvelles d'HEUREN", heading: "Être prévenu quand HEUREN ouvre", text: p("Un e-mail à l'ouverture de la boutique, pour préparer votre cadeau. Rien d'autre."), perk_1: "", perk_2: "", perk_3: "", button_label: "Me prévenir", legal: p("Désinscription possible à tout moment depuis chaque e-mail.") }),
+    section("ed-scene", { ...img("cadran-macro.webp"), layout: "band", text_side: "left", band_height: "medium", label: "", heading: "Le plaisir est dans les détails.", text: "", button_label: "", button_link: "", focus_x: 70, focus_y: 45, mobile_focus_x: 72, mobile_focus_y: 45, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }, [
+      { type: "link", settings: { label: "Le cadran", link: productHref } },
+      { type: "link", settings: { label: "Le boîtier", link: productHref } },
+      { type: "link", settings: { label: "Le bracelet", link: productHref } },
+    ]),
+    section("featured-purchase", { layout: "duo", label: "", heading: "HEUREN — Bleu nuit", text: "", note: "Modèle fictif", purchase_unit_label: "— prix démo", product: SHOP_KIT_HANDLE.heuren, product_target: "product:main", purchase_enabled: false, image_fit: "cover", link_label: "Voir la montre", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }),
+    section("fs-commitments", { layout: "aside", align: "left", eyebrow: "", heading: "Vous hésitez ?", heading_accent: "Prenons le temps.", text: "", note: "", color_scheme: "scheme-2", padding_top: 64, padding_bottom: 64 }, [
+      { type: "item", settings: { icon: "ruler", title: "Découvrir les dimensions", text: "", proof_label: "", proof_link: productHref } },
+      { type: "item", settings: { icon: "box", title: "Livraison et retours", text: "", proof_label: "", proof_link: "/pages/livraison-retours" } },
+      { type: "item", settings: { icon: "chat", title: "Nous contacter", text: "", proof_label: "", proof_link: "/pages/contact" } },
+    ]),
+    v2faq(k, "side", "", "Questions fréquentes", "", HEUREN_FAQ, { color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }),
+    section("ed-scene", { ...img("bandeau-final.webp"), layout: "band", text_side: "right", band_height: "medium", button_style: "link", label: "", heading: "Le prochain moment compte aussi.", text: "", button_label: "Découvrir HEUREN", button_link: productHref, focus_x: 35, focus_y: 55, mobile_focus_x: 30, mobile_focus_y: 55, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
   ]);
 
   // ─── Fiche produit ──────────────────────────────────────────────────────────────────────────────────────────────
   k.mainProduct({
-    eyebrow: "Montre à aiguilles · à offrir",
-    text: "Pour marquer une étape de sa vie : un cadran bleu nuit soleillé, des aiguilles argentées, un bracelet en cuir cousu de bleu, qu'il portera ensuite chaque jour.",
-    highlights: "Cadran bleu nuit soleillé\nIndex et aiguilles argentés\nBracelet cuir bleu nuit, couture bleue, doublure beige\nPrésentée en écrin sur nos photos",
+    eyebrow: "",
+    text: "Pour célébrer une étape, remercier ou simplement faire plaisir.",
+    highlights: "",
     description: spec.store.product.description_html,
-    specs: "gravure, mouvement, réserve de marche, étanchéité, diamètre et épaisseur du boîtier, matières du boîtier et du verre, largeur du bracelet",
-    box: "contenu exact de l'écrin",
-    shipping: "zones, délais et frais de livraison ; délai et conditions de retour ; durée de garantie",
-    settings: { gallery_layout: "grid", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1" },
+    specs: "diamètre, épaisseur, matières du boîtier et du verre, mouvement, étanchéité",
+    box: "contenu exact du coffret",
+    shipping: "zones, délais et frais de livraison ; délai et conditions de retour ; garantie",
+    settings: { gallery_layout: "carousel", gallery_ratio: "square", enable_zoom: true, sticky_bar: true, color_scheme: "scheme-1", display_heading: "Un cadeau qui marque.", display_intro: "HEUREN — Bleu nuit", padding_top: 0, padding_bottom: 56 },
   });
+  {
+    const key = k.productKey();
+    const t = spec.templates[key];
+    const mp = t.sections[t.order.find((x) => t.sections[x].type === "main-product")!];
+    const schema = sectionSchema(spec, "main-product")!;
+    const block = (type: string, settings: Record<string, unknown>) => ({ type, settings: withDefaults(schema.blocks.find((b) => b.type === type)?.settings, settings) });
+    // Titre éditorial, nom, prix (mention démo), phrase, couleur et quantité, ajout avec le prix, deux liens d'aide.
+    mp.blocks = {
+      title: block("title", {}),
+      price: block("price", {}),
+      demo: block("text", { text: p("Prix et caractéristiques de démonstration.") }),
+      text: block("text", { text: p("Pour célébrer une étape, remercier ou simplement faire plaisir.") }),
+      buy: block("buy_buttons", { picker: "buttons", show_quantity: true, show_dynamic_checkout: false, price_in_button: true }),
+      help: block("text", { text: p('<a href="/pages/livraison-retours">Livraison et retours</a>') + p('<a href="/pages/contact">Une question ? Contactez-nous</a>') }),
+      specs: { ...block("collapsible", { heading: "Caractéristiques techniques", content: p(TODO("diamètre, épaisseur, matières, mouvement, étanchéité")), open: false }), disabled: true },
+    };
+    mp.block_order = ["title", "price", "demo", "text", "buy", "help", "specs"];
+  }
   overlay(k.productKey(), [
-    section("ed-diptych", { layout: "pair", label: "Deux lumières", heading: "Le même bleu, deux humeurs", text: p("Face à un mur bleu nuit, le cadran se fond dans le décor ; sur un lin ivoire, il ressort."), button_label: "", button_link: "", motion: "reveal", padding_top: 72, padding_bottom: 72 }, [
-      frame(k, "ambiance-01.webp", "Sur l'ardoise", "Le cadran bleu face à un mur bleu nuit.", "landscape", { focus_x: 70, mobile_focus_x: 70 }),
-      frame(k, "ambiance-06.webp", "Sur le lin", "Posée sur un lin ivoire froissé, en lumière douce.", "landscape"),
+    section("ed-scene", { ...img("cadran-macro.webp"), layout: "band", text_side: "left", band_height: "medium", label: "", heading: "Chaque détail mérite un regard.", text: "", button_label: "", button_link: "", focus_x: 62, focus_y: 40, mobile_focus_x: 70, mobile_focus_y: 40, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
+    section("fs-lookbook", { ...img("montre-profil.webp"), layout: "detail", eyebrow: "", heading: "La montre, de près.", heading_accent: "", text: "", align: "left", button_label: "", button_link: "", note: "Données techniques " + A_RENSEIGNER, color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }, [
+      { type: "marker", settings: { product: "", title: "Dimensions et ajustement", price_text: "", link: "", x: 30, y: 46, text: p("Diamètre et épaisseur du boîtier, tour de poignet : " + A_RENSEIGNER) } },
+      { type: "marker", settings: { product: "", title: "Composition et mouvement", price_text: "", link: "", x: 55, y: 55, text: p("Matières du boîtier, du verre et du bracelet, type de mouvement : " + A_RENSEIGNER) } },
+      { type: "marker", settings: { product: "", title: "Entretien", price_text: "", link: "", x: 86, y: 62, text: p("Conseils d'entretien du bracelet et du boîtier : " + A_RENSEIGNER) } },
     ]),
-    v2faq(k, "side", "Questions", "Questions sur la montre", "", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING]),
+    section("ed-scene", { ...img("coffret-ferme.webp"), layout: "band", text_side: "right", text_offset: 72, band_height: "medium", label: "", heading: "Le plaisir commence à l'ouverture.", text: "", button_label: "", button_link: "", caption: "Présentation proposée pour la démonstration.", focus_x: 35, focus_y: 50, mobile_focus_x: 40, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 }),
+    section("ed-scene", { ...img("bureau-corrige.webp"), layout: "band", text_side: "left", band_height: "medium", label: "", heading: "À porter bien après ce jour-là.", text: "", button_label: "", button_link: "", focus_x: 60, focus_y: 50, mobile_focus_x: 55, mobile_focus_y: 50, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
+    v2faq(k, "side", "", "Questions fréquentes.", "", [
+      ["Comment choisir ?", "HEUREN existe en une seule version : cadran bleu nuit sans dateur, boîtier argenté, bracelet bleu nuit. Ses dimensions sont " + A_RENSEIGNER],
+      ["Comment commander ?", "Choisissez la quantité, ajoutez la montre au panier, puis passez commande. Dans cette démonstration, aucun paiement n'est demandé."],
+      ["Comment demander un retour ?", "Les conditions de retour sont " + A_RENSEIGNER + " Une page « Livraison et retours » les réunira."],
+      ...HEUREN_FAQ_PENDING,
+    ], { color_scheme: "scheme-1", padding_top: 72, padding_bottom: 72 }),
   ]);
+
+  // ─── Boutique (une seule montre, pas de fausse collection) ─────────────────────────────────────────────────────
+  spec.templates.collection = { order: ["hero", "main"], sections: {
+    hero: section("ed-scene", { ...img("hero-desktop.webp"), mobile_image_asset: img("hero-mobile.webp").image_asset, layout: "band", text_side: "left", band_height: "medium", label: "HEUREN", heading: "Une montre.\nVotre moment.", heading_tag: "h2", text: p("Une seule montre, pour les instants qui comptent vraiment."), button_label: "Découvrir", button_link: productHref, focus_x: 62, focus_y: 50, mobile_focus_x: 50, mobile_focus_y: 60, color_scheme: "scheme-2", padding_top: 0, padding_bottom: 0 }),
+    main: section("main-collection", { per_page: 12, columns: 2, enable_filters: false, enable_sorting: false, color_scheme: "scheme-1" }),
+  } };
+
+  // ─── Panier : phrase d'introduction, panier vide avec la montre ; mention de démonstration sous le paiement. ──────
+  for (const sec of Object.values(spec.templates.cart?.sections ?? {})) if (sec.type === "main-cart") sec.settings = { ...sec.settings, intro: "Vérifiez votre sélection avant de passer commande.", empty_image_asset: img("montre-face.webp").image_asset, empty_heading: "Votre panier attend son premier moment.", empty_text: "Certaines histoires commencent par une belle attention.", empty_button_label: "Découvrir la montre", empty_button_link: productHref, qty_buttons: true, remove_label: "Supprimer", continue_label: "← Continuer mes achats" };
+  spec.settings = { ...spec.settings, cart_reassurance: "Démonstration — aucun paiement réel." };
 
   // ─── Pages ──────────────────────────────────────────────────────────────────────────────────────────────────────
-  k.page("au-fil-du-jour", "Au fil du jour", { title: "Après le jour J : la montre HEUREN au fil de ses journées | HEUREN", description: "Au bureau, en voyage, sur son support le soir : la montre HEUREN au fil de ses journées, en photos, pour imaginer le cadeau à son poignet." }, [
-    ["intro", section("rich-text", { style: "plain", align: "left", color_scheme: "scheme-1", padding_top: 24, padding_bottom: 24 }, [{ type: "text", settings: { text: p("Le soir où on l'offre compte. Les jours suivants aussi : voici HEUREN au fil d'une journée, du bureau du matin au support du soir.") } }])],
-    ["moments", section("ed-diptych", { layout: "index", label: "Trois moments", heading: "Au bureau, en voyage, le soir", text: "", button_label: "", button_link: "", motion: "reveal", padding_top: 48, padding_bottom: 72 }, [
-      frame(k, "ambiance-02.webp", "Le matin, au bureau", "Sur le noyer, à côté d'un carnet ouvert et d'un stylo.", "landscape"),
-      frame(k, "ambiance-04.webp", "En voyage", "Sur sa trousse de cuir bleu, près d'une carte dépliée.", "landscape", { focus_x: 52 }),
-      frame(k, "ambiance-08.webp", "Le soir, sur son support", "Sur un support argenté, à la lumière d'une lampe de chevet.", "portrait"),
-    ])],
-    ["fin", section("ed-scene", { ...img("ambiance-03.webp"), layout: "closing", label: "Posée", heading: "Une montre à regarder, aussi", text: p("Sur un socle de travertin, dans la lumière rasante : HEUREN se regarde même quand on ne la porte pas."), button_label: "Voir la montre", button_link: productHref, caption: "", motion: "reveal", color_scheme: "scheme-4", padding_top: 88, padding_bottom: 88 })],
+  const page = (handle: string, title: string, seo: { title: string; description: string }, rows: [string, SectionInstance][]) => {
+    k.page(handle, title, seo, rows);
+    // Le titre de page est porté par la première section (H1) : la section de page garde le fil d'Ariane.
+    spec.templates[`page.${handle}`].sections.title.settings = { ...spec.templates[`page.${handle}`].sections.title.settings, show_title: false, padding_top: 0, padding_bottom: 0 };
+  };
+  page("notre-histoire", "Notre histoire", { title: "Notre histoire | HEUREN", description: "HEUREN, marque de démonstration du studio : une montre pensée pour marquer un moment et se porter ensuite, chaque jour." }, [
+    ["ouverture", section("ed-scene", { ...img("coffret-ouvert.webp"), layout: "band", text_side: "left", band_height: "tall", label: "", heading: "Les moments passent.\nCe qu'ils représentent reste.", heading_tag: "h1", text: p("HEUREN est une marque de démonstration du studio. Son idée : une montre pensée comme un repère discret, offerte pour un moment qui compte et portée ensuite au quotidien."), button_label: "Découvrir HEUREN", button_link: productHref, focus_x: 72, focus_y: 50, mobile_focus_x: 78, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
+    ["detail", section("ed-scene", { ...img("cadran-macro.webp"), layout: "split", label: "", heading: "Plus qu'une montre, un compagnon de vos plus beaux moments.", text: "", button_label: "", button_link: "", focus_x: 55, focus_y: 45, mobile_focus_x: 60, mobile_focus_y: 45, color_scheme: "scheme-1", padding_top: 48, padding_bottom: 96 })],
   ]);
-  k.page("aide", "Questions et contact", { title: "Questions et contact | HEUREN, montre à offrir", description: "Les occasions, l'écrin, le bleu au quotidien, montre connectée ou non : nos réponses avant d'offrir HEUREN, et un formulaire pour le reste." }, [
-    ["faq", faq("Questions fréquentes", [...HEUREN_FAQ, ...HEUREN_FAQ_PENDING], "numbered", "stacked", "", { color_scheme: "scheme-1" })],
-    ["form", section("contact-form", { eyebrow: "Contact", heading: "Une question avant de l'offrir ?", text: p("Écrivez-nous : le formulaire vérifie les champs avant l'envoi. Dans cette démonstration, aucun message n'est réellement transmis."), email: "", hours: "", response: "", preview_note: true, color_scheme: "scheme-4", padding_top: 64, padding_bottom: 96 })],
+  page("conseils", "Conseils et FAQ", { title: "Conseils et FAQ | HEUREN", description: "Choisir, entretenir et commander la montre HEUREN : nos réponses, et ce qui reste à renseigner dans cette démonstration." }, [
+    ["faq", k.section("v2-faq", { layout: "columns", eyebrow: "", heading: "Prenons le temps de vous répondre.", heading_tag: "h1", text: p("Nos conseils et réponses aux questions les plus fréquentes, pour vous accompagner à chaque étape."), color_scheme: "scheme-1", padding_top: 72, padding_bottom: 48 }, [
+      { type: "topic", settings: { ...img("cadran-macro.webp"), title: "Choisir votre montre", text: "Nos conseils pour trouver la montre qui vous correspond." } },
+      { type: "question", settings: { question: "Quelle est la taille de la montre ?", answer: p("Diamètre et épaisseur du boîtier : " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "Le bracelet est-il ajustable ?", answer: p("Le bracelet se ferme par une boucle argentée, visible sur nos photos. Longueur et réglage : " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "La montre convient-elle à un usage quotidien ?", answer: p("Elle est pensée pour être portée après le jour où on l'offre. Étanchéité et résistance : " + A_RENSEIGNER) } },
+      { type: "topic", settings: { ...img("bracelet.webp"), title: "Entretenir votre montre", text: "Nos recommandations pour préserver sa beauté dans le temps." } },
+      { type: "question", settings: { question: "Comment nettoyer ma montre ?", answer: p("Les conseils de nettoyage dépendent des matières, " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "Comment entretenir le bracelet ?", answer: p("Ils dépendent de la matière du bracelet, " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "La montre est-elle résistante à l'eau ?", answer: p("Étanchéité : " + A_RENSEIGNER) } },
+      { type: "topic", settings: { ...img("montre-profil.webp"), title: "Commander en toute sérénité", text: "Toutes les informations pour un achat simple." } },
+      { type: "question", settings: { question: "Quels sont les moyens de paiement ?", answer: p("Aucun paiement n'est demandé dans cette démonstration. Les moyens de paiement de la boutique réelle sont " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "Comment se passe la livraison ?", answer: p("Zones, délais et frais de livraison : " + A_RENSEIGNER) } },
+      { type: "question", settings: { question: "Puis-je retourner ma montre ?", answer: p("Délai et conditions de retour : " + A_RENSEIGNER) } },
+    ])],
+    ["contact", section("fs-commitments", { layout: "aside", align: "left", eyebrow: "", heading: "Une autre question ?", heading_accent: "", text: p("Écrivez-nous, nous vous répondrons."), note: "", color_scheme: "scheme-3", padding_top: 40, padding_bottom: 40 }, [
+      { type: "item", settings: { icon: "chat", title: "Nous contacter", text: "", proof_label: "", proof_link: "/pages/contact" } },
+    ])],
+  ]);
+  page("contact", "Contact", { title: "Contact | HEUREN", description: "Une question sur la montre HEUREN, une commande ou un retour ? Écrivez-nous. Dans cette démonstration, aucun message n'est envoyé." }, [
+    ["form", section("ed-contact", { ...img("bureau-dessus.webp"), label: "", heading: "Parlons de votre montre.", heading_tag: "h1", text: p("Une question, un conseil ou un besoin particulier ? Écrivez-nous. Dans cette démonstration, aucun message n'est réellement envoyé."), button_label: "", button_link: "", room_label: "Sujet", room_placeholder: "Sélectionnez un sujet", rooms: "Choisir sa montre\nUne commande\nUn retour\nAutre question", submit_label: "Envoyer", color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
+  ]);
+  page("livraison-retours", "Livraison et retours", { title: "Livraison et retours | HEUREN", description: "Livraison, retours, remboursement et assistance : les informations à compléter avant la mise en vente de la montre HEUREN." }, [
+    ["ouverture", section("ed-scene", { ...img("coffret-ouvert.webp"), layout: "band", text_side: "left", band_height: "medium", label: "", heading: "Avant de commander.", heading_tag: "h1", text: p("Retrouvez ici les informations utiles sur la livraison, les retours, le remboursement et l'assistance."), button_label: "", button_link: "", focus_x: 72, focus_y: 50, mobile_focus_x: 78, mobile_focus_y: 50, color_scheme: "scheme-1", padding_top: 0, padding_bottom: 0 })],
+    ["infos", section("fs-commitments", { layout: "grid", align: "left", eyebrow: "", heading: "", heading_accent: "", text: "", note: "", color_scheme: "scheme-1", padding_top: 48, padding_bottom: 96 }, [
+      { type: "item", settings: { icon: "truck", title: "Livraison", text: p("Les informations sur la préparation et l'expédition de votre commande."), proof_label: NOTE_DEMO, proof_link: "" } },
+      { type: "item", settings: { icon: "box", title: "Retours", text: p("Les modalités pour retourner une montre."), proof_label: NOTE_DEMO, proof_link: "" } },
+      { type: "item", settings: { icon: "return", title: "Remboursement", text: p("Les informations sur le remboursement de votre commande."), proof_label: NOTE_DEMO, proof_link: "" } },
+      { type: "item", settings: { icon: "headset", title: "Assistance", text: p("Besoin d'aide ? Écrivez-nous depuis la page Contact."), proof_label: "", proof_link: "/pages/contact" } },
+    ])],
   ]);
 
-  // ─── Menus, en-tête « logo centré, menu à gauche » sur blanc (fond du logo), pied « encadré » ────────────────────
+  // ─── Menus, en-tête transparent sur l'ouverture, pied bleu nuit ───────────────────────────────────────────────────
   spec.store.menus["main-menu"] = { title: "Navigation", links: [
-    { title: "La montre", url: productHref, links: [{ title: "Vues et détails", url: productHref }, { title: "Au fil du jour", url: "/pages/au-fil-du-jour" }, { title: "Questions et contact", url: "/pages/aide" }] },
-    { title: "Au fil du jour", url: "/pages/au-fil-du-jour" },
-    { title: "Aide", url: "/pages/aide" },
+    { title: "La montre", url: productHref },
+    { title: "Notre histoire", url: "/pages/notre-histoire" },
+    { title: "Conseils & FAQ", url: "/pages/conseils" },
+    { title: "Contact", url: "/pages/contact" },
   ] };
-  spec.store.menus.footer = { title: "Aide", links: [{ title: "La montre", url: productHref }, { title: "Au fil du jour", url: "/pages/au-fil-du-jour" }, { title: "Questions et contact", url: "/pages/aide" }, { title: "Recherche", url: "/search" }] };
+  spec.store.menus.footer = { title: "HEUREN", links: [
+    { title: "Boutique", url: "/collections/all" },
+    { title: "Notre histoire", url: "/pages/notre-histoire" },
+    { title: "Contact", url: "/pages/contact" },
+    { title: "Livraison et retours", url: "/pages/livraison-retours" },
+    { title: "FAQ", url: "/pages/conseils" },
+  ] };
   const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-  header.settings = { ...header.settings, menu: "main-menu", layout: "nav-left", shape: "bar", icons: "plain", mega_menu: "columns", mobile_menu: "fullscreen", mobile_submenu: "accordion", sticky: true, transparent_on_home: false, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-3" };
+  header.settings = { ...header.settings, menu: "main-menu", layout: "logo-left", shape: "bar", icons: "plain", mega_menu: "none", mobile_menu: "fullscreen", mobile_submenu: "accordion", sticky: true, transparent_on_home: true, show_search: true, show_cart: true, cta_label: "", phone: "", color_scheme: "scheme-1", mobile_menu_scheme: "scheme-2" };
   header.blocks = {}; header.block_order = [];
-  // Pas de bandeau « Boutique de démonstration » : la mention d'aperçu (studio et aperçu statique) le dit déjà (#157).
   spec.groups.header.sections = { header };
   spec.groups.header.order = ["header"];
   const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
-  footer.settings = { ...footer.settings, style: "boxed", show_wordmark: false, show_policies: false, show_payment: false, color_scheme: "scheme-1", logo_asset: "" };
-  footer.blocks = {
-    about: { type: "text", settings: { heading: "HEUREN", text: p("La montre au cadran bleu nuit à offrir pour marquer une étape, et à porter chaque jour ensuite. Marque de démonstration du studio.") } },
-    links: { type: "links", settings: { heading: "Aide", menu: "footer" } },
-  };
-  footer.block_order = ["about", "links"];
+  footer.settings = { ...footer.settings, style: "minimal", show_wordmark: true, show_policies: false, show_payment: false, color_scheme: "scheme-2", logo_asset: "" };
+  footer.blocks = { links: { type: "links", settings: { heading: "", menu: "footer" } } };
+  footer.block_order = ["links"];
   for (const s of Object.values(spec.groups.footer.sections)) if (s.type !== "footer") s.disabled = true;
   k.finish();
-  spec.settings = { ...spec.settings, logo_width: 150 };
+  // Nom en lettres espacées (maquette) : le logo serif livré sur fond blanc reste l'icône du site, pas l'en-tête.
+  spec.settings = { ...spec.settings, logo_asset: "", fab_contact_link: "", fab_back_to_top: false };
 }
 
 // ─── ALCÔVE ───────────────────────────────────────────────────────────────────────────────────────────────────────

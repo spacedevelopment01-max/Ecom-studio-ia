@@ -1,26 +1,61 @@
 {%- comment -%}
   Bannière d'achat : visuel (à côté ou en fond), surtitre, titre en deux temps, argument, prix facultatif (texte,
   pour une mention d'exemple identifiée), bouton et note. Dispositions : visuel à gauche, à droite, ou en fond.
+  Visuel en fond (maquettes TRAVERSE du 23 octobre) : hauteur du bandeau, voile, place du texte sur téléphone, bouton
+  plein ou en contour, trait sous le titre ; le titre garde ses retours à la ligne.
+  MUSEAU CLUB (maquettes enrichies du 23 octobre) : panneau arrondi à côté de la photo, illustration du guide des tailles
+  (chien dessiné, repères « tour de cou » et « tour de poitrail » modifiables), voile clair, ajout au panier d'un produit
+  choisi (un produit à tailles mène à sa fiche, pour choisir la taille).
+  SOUPLE (maquettes du 23 octobre) : texte centré en haut de la photo, courbe douce entre texte et photo, bandeau de
+  marque (symbole du logo, titre, texte et lien) et barre d'achat (photo du produit, nom, prix et bouton).
+  NOCTIL (maquettes du 23 octobre) : ouverture de nuit (texte clair, bas de photo réservé au produit en surplomb de la
+  section suivante) et dégradé sombre à droite pour les bandeaux au texte placé à droite.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
   assign speed = s.animation_speed | default: 'normal'
+  assign buy = s.buy_product
+  # Barre d'achat posée sur le modèle de fiche commun : sans produit choisi, celui de la fiche.
+  if s.layout == 'buybar' and buy == blank and product != blank
+    assign buy = product
+  endif
+  # « spotlight » (ouverture MUSEAU CLUB) : rendu « visuel en fond » avec sa propre classe, voile clair conseillé.
+  # « night » (ouverture NOCTIL) : rendu « visuel en fond », texte clair, bas de photo laissé libre pour la section
+  # « Produit en surplomb » qui suit (le produit y remonte sans couvrir le bouton).
+  # « scene » (ouverture SOUPLE) : rendu « visuel en fond », titre et bouton centrés en haut de la photo.
 -%}
-<section class="es-section cv-banner cv-banner--{{ s.layout }} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;">
+{%- if s.hide_when_cart_empty and cart.item_count == 0 -%}{%- else -%}
+<section class="es-section cv-banner cv-banner--{% if s.layout == 'spotlight' %}background cv-banner--spotlight{% elsif s.layout == 'night' %}background cv-banner--night{% elsif s.layout == 'scene' %}background cv-banner--scene cv-banner--align-center cv-banner--dv-top{% else %}{{ s.layout }}{% endif %} cv-banner--h-{{ s.band_height | default: 'auto' }} cv-banner--mv-{{ s.mobile_valign | default: 'center' }} cv-banner--veil-{{ s.veil | default: 'none' }}{% if s.title_rule %} cv-banner--rule{% endif %}{% if s.copy_align == 'center' %} cv-banner--align-center{% endif %}{% if s.copy_valign == 'top' %} cv-banner--dv-top{% endif %}{% if s.curve %} cv-banner--curve{% endif %} cv-anim cv-anim--{{ speed }} color-{{ s.color_scheme }}" style="--pt:{{ s.padding_top }}px;--pb:{{ s.padding_bottom }}px;{% if s.image_zoom > 100 %}--cv-zoom:{{ s.image_zoom | divided_by: 100.0 }};{% endif %}">
   <div class="es-container">
     <div class="cv-banner__inner"{% render 'cv-reveal', animation: s.animation %}>
-      <div class="cv-banner__media cv-zoomable">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y %}</div>
+      {%- if s.layout == 'illustration' -%}
+      <div class="cv-banner__illus" aria-hidden="true">{% render 'dog-measure' %}{%- if s.illus_label_1 != blank -%}<span class="cv-banner__mark cv-banner__mark--1">{{ s.illus_label_1 | escape }}</span>{%- endif -%}{%- if s.illus_label_2 != blank -%}<span class="cv-banner__mark cv-banner__mark--2">{{ s.illus_label_2 | escape }}</span>{%- endif -%}{%- if s.illus_note != blank -%}<span class="cv-banner__bubble">{{ s.illus_note | escape }}</span>{%- endif -%}</div>
+      {%- else -%}
+      {%- if s.layout == 'buybar' and s.image == blank and s.image_asset == blank and buy != blank -%}
+      <div class="cv-banner__media">{%- if buy.featured_media -%}{{ buy.featured_media | image_url: width: 600 | image_tag: loading: 'lazy', alt: buy.featured_media.alt, class: 'cv-banner__buy-img' }}{%- endif -%}</div>
+      {%- else -%}
+      <div class="cv-banner__media cv-zoomable">{% render 'ed-media', image: s.image, asset: s.image_asset, alt: s.image_alt, role_label: s.media_role, focus_x: s.focus_x, focus_y: s.focus_y, mobile_focus_x: s.mobile_focus_x, mobile_focus_y: s.mobile_focus_y, loading: s.image_loading %}</div>
+      {%- endif -%}
+      {%- endif -%}
       <div class="cv-banner__copy">
         {%- if s.eyebrow != blank -%}<p class="cv-eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
-        <{{ s.heading_tag | default: "h2" }} class="es-heading cv-title cv-banner__title">{{ s.heading | escape }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag | default: "h2" }}>
+        <{{ s.heading_tag | default: "h2" }} class="es-heading cv-title cv-banner__title">{{ s.heading | escape | newline_to_br }}{% if s.heading_accent != blank %} <em class="cv-accent">{{ s.heading_accent | escape }}</em>{% endif %}</{{ s.heading_tag | default: "h2" }}>
         {%- if s.text != blank -%}<div class="es-rte cv-banner__text">{{ s.text }}</div>{%- endif -%}
         {%- if s.price_text != blank -%}<p class="cv-banner__price">{{ s.price_text | escape }}{% if s.price_note != blank %} <span class="cv-fictional">{{ s.price_note | escape }}</span>{% endif %}</p>{%- endif -%}
-        {%- if s.button_label != blank -%}<a class="es-button cv-button cv-banner__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}</a>{%- endif -%}
+        {%- if buy != blank -%}
+          <div class="cv-banner__product"><span class="cv-banner__product-name">{{ buy.title | escape }}</span> <span class="cv-banner__product-price">{% render 'price', product: buy %}</span>{% if s.price_note != blank and s.price_text == blank %}<span class="cv-banner__product-note">{{ s.price_note | escape }}</span>{% endif %}</div>
+          {%- if buy.variants.size == 1 -%}
+            {%- form 'product', buy, class: 'cv-banner__buy', data-product-form: '' -%}<input type="hidden" name="id" value="{{ buy.selected_or_first_available_variant.id }}"><input type="hidden" name="quantity" value="1"><button type="submit" name="add" class="es-button cv-button cv-banner__button{% if s.button_style == 'outline' %} cv-button--outline{% endif %}" data-add-button>{{ s.button_label | default: 'products.product.add_to_cart' | t | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</button>{%- endform -%}
+          {%- else -%}
+            <a class="es-button cv-button cv-banner__button{% if s.button_style == 'outline' %} cv-button--outline{% endif %}" href="{{ buy.url }}#acheter">{{ s.size_label | default: s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>
+          {%- endif -%}
+        {%- elsif s.button_label != blank -%}<a class="es-button cv-button cv-banner__button{% if s.button_style == 'outline' %} cv-button--outline{% endif %}" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}{% if s.button_arrow %} {% render 'icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
         {%- if s.note != blank -%}<p class="cv-guarantee-line">{% render 'icon', name: 'shield' %}<span>{{ s.note | escape }}</span></p>{%- endif -%}
       </div>
     </div>
   </div>
 </section>
+{%- endif -%}
 
 {% schema %}
 {
@@ -34,7 +69,22 @@
     { "type": "text", "id": "media_role", "label": "Rôle du visuel attendu" },
     { "type": "range", "id": "focus_x", "label": "Point focal horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
     { "type": "range", "id": "focus_y", "label": "Point focal vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" } ] },
+    { "type": "range", "id": "mobile_focus_x", "label": "Point focal horizontal sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Point focal vertical sur téléphone", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement du visuel", "info": "Au-delà de 100 %, la photo est agrandie autour du point focal (pour cadrer un paysage sans le produit, par exemple).", "min": 100, "max": 250, "step": 5, "unit": "%", "default": 100 },
+    { "type": "select", "id": "image_loading", "label": "Chargement du visuel", "default": "lazy", "options": [ { "value": "lazy", "label": "Différé" }, { "value": "eager", "label": "Immédiat (haut de page)" } ] },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "image-left", "options": [ { "value": "image-left", "label": "Visuel à gauche" }, { "value": "image-right", "label": "Visuel à droite" }, { "value": "background", "label": "Visuel en fond, texte par-dessus" }, { "value": "spotlight", "label": "Ouverture lumineuse : grande photo, texte sur voile clair" }, { "value": "night", "label": "Ouverture de nuit : grande photo, texte clair, place pour un produit en surplomb" }, { "value": "scene", "label": "Grande scène : photo, titre et bouton centrés en haut" }, { "value": "panel-left", "label": "Panneau arrondi à gauche, photo à droite" }, { "value": "panel-right", "label": "Photo à gauche, panneau arrondi à droite" }, { "value": "illustration", "label": "Illustration du guide des tailles" }, { "value": "brand", "label": "Bandeau de marque : symbole, titre, texte et lien" }, { "value": "buybar", "label": "Barre d'achat : produit, prix et bouton" } ] },
+    { "type": "select", "id": "copy_align", "label": "Alignement du texte", "default": "left", "options": [ { "value": "left", "label": "À gauche" }, { "value": "center", "label": "Centré" } ] },
+    { "type": "select", "id": "copy_valign", "label": "Place du texte sur ordinateur (visuel en fond)", "default": "center", "options": [ { "value": "center", "label": "Au centre" }, { "value": "top", "label": "En haut" } ] },
+    { "type": "checkbox", "id": "curve", "label": "Courbe douce entre le texte et la photo", "default": false },
+    { "type": "text", "id": "illus_label_1", "label": "Illustration : premier repère", "default": "Tour de cou" },
+    { "type": "text", "id": "illus_label_2", "label": "Illustration : second repère", "default": "Tour de poitrail" },
+    { "type": "text", "id": "illus_note", "label": "Illustration : bulle", "info": "Facultatif, ex. « Mesurez le tour de cou à l'endroit indiqué »." },
+    { "type": "select", "id": "band_height", "label": "Hauteur (visuel en fond)", "default": "auto", "options": [ { "value": "auto", "label": "Selon le texte" }, { "value": "short", "label": "Bandeau bas" }, { "value": "medium", "label": "Bandeau moyen" }, { "value": "tall", "label": "Grand bandeau" }, { "value": "hero", "label": "Ouverture plein écran" } ] },
+    { "type": "select", "id": "veil", "label": "Voile sous le texte (visuel en fond)", "default": "none", "options": [ { "value": "none", "label": "Encadré clair" }, { "value": "left", "label": "Dégradé sombre à gauche" }, { "value": "full", "label": "Voile sombre uniforme" }, { "value": "light", "label": "Voile clair à gauche" }, { "value": "light-right", "label": "Voile clair à droite" }, { "value": "right", "label": "Dégradé sombre à droite" } ] },
+    { "type": "select", "id": "mobile_valign", "label": "Place du texte sur téléphone (visuel en fond)", "default": "center", "options": [ { "value": "top", "label": "En haut" }, { "value": "center", "label": "Au centre" }, { "value": "bottom", "label": "En bas" } ] },
+    { "type": "checkbox", "id": "title_rule", "label": "Trait sous le titre", "default": false },
+    { "type": "checkbox", "id": "hide_when_cart_empty", "label": "Masquer quand le panier est vide", "info": "Pour un bandeau placé sur la page panier.", "default": false },
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Prêt à essayer ?" },
     { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "H1 (ouverture de page)" }, { "value": "h2", "label": "H2" } ] },
@@ -44,6 +94,10 @@
     { "type": "text", "id": "price_note", "label": "Mention à côté du prix", "info": "Ex. « exemple de promotion »." },
     { "type": "text", "id": "button_label", "label": "Bouton", "default": "Découvrir" },
     { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "solid", "options": [ { "value": "solid", "label": "Plein" }, { "value": "outline", "label": "Contour" } ] },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false },
+    { "type": "product", "id": "buy_product", "label": "Produit à ajouter au panier", "info": "Le bouton ajoute ce produit au panier. Un produit à plusieurs tailles mène à sa fiche, pour choisir la taille." },
+    { "type": "text", "id": "size_label", "label": "Bouton d'un produit à tailles", "info": "Ex. « Choisir ma taille ». Vide : le texte du bouton." },
     { "type": "text", "id": "note", "label": "Ligne de réassurance", "info": "Uniquement une politique réelle, ou un exemple identifié." },
     { "type": "select", "id": "animation", "label": "Animation", "default": "rise", "options": [ { "value": "none", "label": "Aucune" }, { "value": "fade", "label": "Fondu" }, { "value": "rise", "label": "Montée en fondu" }, { "value": "zoom", "label": "Léger zoom" } ] },
     { "type": "select", "id": "animation_speed", "label": "Vitesse", "default": "normal", "options": [ { "value": "slow", "label": "Lente" }, { "value": "normal", "label": "Normale" }, { "value": "fast", "label": "Rapide" } ] },

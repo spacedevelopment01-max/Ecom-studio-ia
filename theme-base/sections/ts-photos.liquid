@@ -1,0 +1,37 @@
+{%- comment -%}
+  TABLE SAISON : rangée de photos (une, deux ou trois), encadrée dans la page ou bord à bord (salle en pleine largeur,
+  table et cuisine, triptyque figues / fleurs / banquette). Une photo sans fichier n'est pas affichée.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign count = 0 -%}
+{%- for block in section.blocks -%}{%- if block.settings.image != blank or block.settings.image_asset != blank -%}{%- assign count = count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+{%- if count > 0 -%}
+<section class="ts-section ts-photos{% if s.bleed %} ts-photos--bleed{% endif %}{% if count == 3 %} ts-photos--three{% endif %}{% if s.height > 0 %} ts-photos--fixed{% endif %}" style="--ts-photos-cols: {{ s.columns | default: '1fr 1fr' }}; --ts-photos-ratio: {{ s.ratio }}; --ts-photo-ratio: {{ s.ratio }}; --ts-photos-h: clamp(200px, {{ s.height | times: 100 | divided_by: 1440 }}vw, {{ s.height }}px);{% if count == 1 %} grid-template-columns: 1fr;{% endif %}">
+  {%- for block in section.blocks -%}
+    <div {{ block.shopify_attributes }}>{% render 'ts-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.image_position, sizes: '(min-width: 750px) 50vw, 100vw' %}</div>
+  {%- endfor -%}
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Rangée de photos",
+  "class": "ts-photos-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "text", "id": "columns", "label": "Proportions des colonnes", "default": "1fr 1fr", "info": "Ex. « 1fr 1fr » ou « 1.15fr .8fr 1.1fr »." },
+    { "type": "text", "id": "ratio", "label": "Format des photos (largeur / hauteur)", "default": "1.35" },
+    { "type": "checkbox", "id": "bleed", "label": "Bord à bord", "default": false },
+    { "type": "range", "id": "height", "label": "Hauteur commune sur ordinateur", "min": 0, "max": 700, "step": 10, "default": 0, "unit": "px", "info": "0 : chaque photo garde le format choisi." }
+  ],
+  "blocks": [
+    { "type": "photo", "name": "Photo", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "alt", "label": "Description de l'image" }
+    ] }
+  ],
+  "presets": [{ "name": "Rangée de photos" }]
+}
+{% endschema %}

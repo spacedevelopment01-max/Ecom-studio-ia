@@ -1,0 +1,1037 @@
+[
+ {
+  "name": "cookies : bandeau affiché à la première visite",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : « Tout refuser » et « Tout accepter » aussi visibles l'un que l'autre",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : catégories facultatives décochées par défaut",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : « Personnaliser » montre les deux choix et « Enregistrer »",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : choix enregistré (mesure d'audience oui, publicité non) et bandeau fermé",
+  "ok": true,
+  "detail": "{\"analytics\":true,\"marketing\":false}"
+ },
+ {
+  "name": "cookies : bandeau non réaffiché après le choix",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : lien « Cookies » du pied rouvre le bandeau",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "cookies : « Tout refuser »",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : navigation de l'en-tête",
+  "ok": true,
+  "detail": "Le projecteur, Notre univers, Le journal, Aide"
+ },
+ {
+  "name": "ordinateur : focus clavier visible",
+  "ok": true,
+  "detail": "A"
+ },
+ {
+  "name": "ordinateur : bouton « Découvrir NOCTIL » cliquable, produit en surplomb sans clic capté",
+  "ok": true,
+  "detail": "{\"hit\":true,\"pe\":\"none\",\"on\":\"1\"}"
+ },
+ {
+  "name": "ordinateur : liens de l'accueil vers des pages existantes (20)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : aucun lien inerte « # »",
+  "ok": true,
+  "detail": "0"
+ },
+ {
+  "name": "ordinateur : mouvement réduit, aucun contenu laissé invisible",
+  "ok": true,
+  "detail": "0 masqué(s)"
+ },
+ {
+  "name": "ordinateur : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : contrastes ≥ 4,5:1 (bouton lavande, texte, cartes, pied, questions sur la nuit)",
+  "ok": true,
+  "detail": "{\"boutonLavande\":8.67,\"texte\":16.45,\"carte\":16.87,\"pied\":16.9,\"faqNuit\":15.4}"
+ },
+ {
+  "name": "ordinateur : retour en haut de page",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : 2 projecteurs ajoutés, tiroir ouvert, 138 €",
+  "ok": true,
+  "detail": "138 €, pastille 2"
+ },
+ {
+  "name": "ordinateur : panier : 2 projecteurs, sous-total 138 €, livraison à l'étape suivante, pas de « Total »",
+  "ok": true,
+  "detail": "Code de réduction Appliquer Aperçu du studio : les codes s'appliquent au paiement, aucun code n'est actif dans la démonstration. LivraisonCalculée à l'étape sui"
+ },
+ {
+  "name": "ordinateur : « + » : 207 €",
+  "ok": true,
+  "detail": "207 €"
+ },
+ {
+  "name": "ordinateur : « − » : 138 €",
+  "ok": true,
+  "detail": "138 €"
+ },
+ {
+  "name": "ordinateur : « Passer commande » → exemple de commande (aucun paiement)",
+  "ok": true,
+  "detail": "page-finaliser-la-commande.html"
+ },
+ {
+  "name": "ordinateur : « Supprimer » : panier vide illustré (« L'univers vous attend »)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : journal : 6 articles sur la page 1, pages 1 et 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : journal : page 2 (3 articles)",
+  "ok": true,
+  "detail": "3"
+ },
+ {
+  "name": "ordinateur : journal filtré « Histoires » (2 articles, pagination masquée)",
+  "ok": true,
+  "detail": "2"
+ },
+ {
+  "name": "ordinateur : journal « Tous » : retour page 1",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : FAQ : quatre thèmes en intertitres",
+  "ok": true,
+  "detail": "Le projecteur NOCTIL | Ma commande | Livraison | Retours"
+ },
+ {
+  "name": "ordinateur : FAQ recherche « livraison »",
+  "ok": true,
+  "detail": "4"
+ },
+ {
+  "name": "ordinateur : FAQ recherche sans résultat annoncée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : FAQ : question dépliée puis repliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : contact vide : erreurs (nom, e-mail, sujet, message, accord)",
+  "ok": true,
+  "detail": "5 messages"
+ },
+ {
+  "name": "ordinateur : e-mail incomplet signalé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : succès affiché seulement après la réponse simulée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : échec simulé annoncé, formulaire conservé",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "ordinateur : « Se connecter » → aperçu du compte",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : menu du compte → commande d'exemple",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : menu du compte → informations",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : déconnexion → connexion",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : « Gérer les cookies » rouvre les préférences",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : accueil.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : boutique.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-notre-univers.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-journal.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-une-chambre-mille-histoires.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-creer-un-rituel-du-soir.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-histoires-d-etoiles.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-decorer-une-chambre-qui-fait-rever.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-couleurs-et-ambiance.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-les-doudous-aussi-revent.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-a-la-decouverte-des-planetes.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-un-univers-qui-grandit-avec-eux.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-observer-la-lune.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-bien-demarrer.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-faq.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-contact.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-livraison-retours.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mentions-legales.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-cgv.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-confidentialite.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-politique-cookies.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-finaliser-la-commande.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-connexion.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mon-compte.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-commande-noctil-0001.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mes-informations.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : panier.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu ouvert avec les quatre entrées",
+  "ok": true,
+  "detail": "Le projecteur | Notre univers | Le journal | Aide"
+ },
+ {
+  "name": "telephone : menu ouvert au-dessus du produit en surplomb",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : bouton « Découvrir NOCTIL » cliquable, produit en surplomb sans clic capté",
+  "ok": true,
+  "detail": "{\"hit\":true,\"pe\":\"none\",\"on\":\"1\"}"
+ },
+ {
+  "name": "telephone : liens de l'accueil vers des pages existantes (20)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : aucun lien inerte « # »",
+  "ok": true,
+  "detail": "0"
+ },
+ {
+  "name": "telephone : mouvement réduit, aucun contenu laissé invisible",
+  "ok": true,
+  "detail": "0 masqué(s)"
+ },
+ {
+  "name": "telephone : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : contrastes ≥ 4,5:1 (bouton lavande, texte, cartes, pied, questions sur la nuit)",
+  "ok": true,
+  "detail": "{\"boutonLavande\":8.67,\"texte\":16.45,\"carte\":16.87,\"pied\":16.9,\"faqNuit\":15.4}"
+ },
+ {
+  "name": "telephone : retour en haut de page",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : barre d'achat : projecteur, 69 €",
+  "ok": true,
+  "detail": "{\"shown\":true,\"title\":\"Projecteur galaxie NOCTIL\",\"total\":\"69 €\"}"
+ },
+ {
+  "name": "telephone : barre masquée au pied de page (ne cache ni le pied ni ses liens)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : 2 projecteurs ajoutés, tiroir ouvert, 138 €",
+  "ok": true,
+  "detail": "138 €, pastille 2"
+ },
+ {
+  "name": "telephone : panier : 2 projecteurs, sous-total 138 €, livraison à l'étape suivante, pas de « Total »",
+  "ok": true,
+  "detail": "Code de réduction Appliquer Aperçu du studio : les codes s'appliquent au paiement, aucun code n'est actif dans la démonstration. LivraisonCalculée à l'étape sui"
+ },
+ {
+  "name": "telephone : « + » : 207 €",
+  "ok": true,
+  "detail": "207 €"
+ },
+ {
+  "name": "telephone : « − » : 138 €",
+  "ok": true,
+  "detail": "138 €"
+ },
+ {
+  "name": "telephone : « Passer commande » → exemple de commande (aucun paiement)",
+  "ok": true,
+  "detail": "page-finaliser-la-commande.html"
+ },
+ {
+  "name": "telephone : « Supprimer » : panier vide illustré (« L'univers vous attend »)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : journal : 6 articles sur la page 1, pages 1 et 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : journal : page 2 (3 articles)",
+  "ok": true,
+  "detail": "3"
+ },
+ {
+  "name": "telephone : journal filtré « Histoires » (2 articles, pagination masquée)",
+  "ok": true,
+  "detail": "2"
+ },
+ {
+  "name": "telephone : journal « Tous » : retour page 1",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : FAQ : quatre thèmes en intertitres",
+  "ok": true,
+  "detail": "Le projecteur NOCTIL | Ma commande | Livraison | Retours"
+ },
+ {
+  "name": "telephone : FAQ recherche « livraison »",
+  "ok": true,
+  "detail": "4"
+ },
+ {
+  "name": "telephone : FAQ recherche sans résultat annoncée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : FAQ : question dépliée puis repliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : contact vide : erreurs (nom, e-mail, sujet, message, accord)",
+  "ok": true,
+  "detail": "5 messages"
+ },
+ {
+  "name": "telephone : e-mail incomplet signalé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : succès affiché seulement après la réponse simulée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : échec simulé annoncé, formulaire conservé",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "telephone : « Se connecter » → aperçu du compte",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu du compte → commande d'exemple",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu du compte → informations",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : déconnexion → connexion",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : « Gérer les cookies » rouvre les préférences",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : accueil.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : boutique.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-notre-univers.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-journal.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-une-chambre-mille-histoires.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-creer-un-rituel-du-soir.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-histoires-d-etoiles.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-decorer-une-chambre-qui-fait-rever.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-couleurs-et-ambiance.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-les-doudous-aussi-revent.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-a-la-decouverte-des-planetes.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-un-univers-qui-grandit-avec-eux.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-observer-la-lune.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-bien-demarrer.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-faq.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-contact.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-livraison-retours.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mentions-legales.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-cgv.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-confidentialite.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-politique-cookies.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-finaliser-la-commande.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-connexion.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mon-compte.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-commande-noctil-0001.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mes-informations.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : panier.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "360 px : accueil.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : boutique.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-notre-univers.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-journal.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-une-chambre-mille-histoires.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-creer-un-rituel-du-soir.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-histoires-d-etoiles.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-decorer-une-chambre-qui-fait-rever.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-couleurs-et-ambiance.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-les-doudous-aussi-revent.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-a-la-decouverte-des-planetes.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-un-univers-qui-grandit-avec-eux.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-observer-la-lune.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-bien-demarrer.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-faq.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-contact.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-cgv.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-politique-cookies.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-finaliser-la-commande.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-connexion.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mon-compte.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-commande-noctil-0001.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mes-informations.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : panier.html",
+  "ok": true,
+  "detail": "360px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : accueil.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : boutique.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-notre-univers.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-journal.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-une-chambre-mille-histoires.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-creer-un-rituel-du-soir.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-histoires-d-etoiles.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-decorer-une-chambre-qui-fait-rever.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-couleurs-et-ambiance.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-les-doudous-aussi-revent.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-a-la-decouverte-des-planetes.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-un-univers-qui-grandit-avec-eux.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-observer-la-lune.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-bien-demarrer.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-faq.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-contact.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-cgv.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-politique-cookies.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-finaliser-la-commande.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-confirmation-de-commande.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-connexion.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-creer-un-compte.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mot-de-passe-oublie.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mon-compte.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-commande-noctil-0001.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mes-informations.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : panier.html",
+  "ok": true,
+  "detail": "430px, 1 H1, coupé(s) : "
+ }
+]

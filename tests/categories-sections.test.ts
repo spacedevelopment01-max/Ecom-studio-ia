@@ -3,6 +3,7 @@
  * contrat du parcours amont, galerie de sections strictement contextuelle et refus des sections incompatibles par
  * toutes les voies (bibliothèque, commandes locales, opérations serveur, consignes IA).
  */
+import { ownerThemeOf } from "../src/lib/theme/theme-own-sections";
 import { beforeAll, describe, expect, it } from "vitest";
 import { storeKindOf } from "../src/lib/theme/store-kind";
 import { themeFits, themeKinds, themeFitReason, REFERENCE_THEMES } from "../src/lib/theme/theme-fit";
@@ -40,16 +41,16 @@ describe("Catégories du projet (prestations de services / e-commerce / boutique
   });
 });
 
-describe("Éligibilité des thèmes par catégorie", () => {
-  it("FRAISE → boutique spécialisée ; ORBE et ONDE (refonte de l'issue #158) → e-commerce ; Atelier Rive → prestations ; les 30 anciens thèmes retirés ne servent plus aucune catégorie", () => {
+describe("Plus de familles dans le choix des thèmes (mission #190)", () => {
+  it("l'usage prévu sert à recommander ; tout thème proposé convient à toute catégorie ; un thème retiré n'est jamais proposé", () => {
     expect(themeKinds("fraise")).toEqual(["specialty"]);
     expect(themeKinds("onde")).toEqual(["catalog"]);
-    expect(themeKinds("orbe")).toEqual(["catalog"]);
     expect(themeKinds("rive")).toEqual(["services"]);
     for (const d of DIRECTIONS) if (!(REFERENCE_THEMES as readonly string[]).includes(d.id)) expect(themeKinds(d.id)).toEqual([]);
-    expect(themeFits("fraise", "catalog")).toBe(false);
-    expect(themeFitReason("rive", "specialty", "fr")).toMatch(/prestations de services/);
+    expect(themeFits("fraise", "catalog")).toBe(true);
+    expect(themeFitReason("rive", "specialty", "fr")).toBe("");
     expect(themeFitReason("vitrine", "specialty")).toMatch(/retiré du catalogue/);
+    expect(themeFitReason("orbe", "catalog")).toMatch(/retiré du catalogue le 25 octobre/);
   });
 });
 
@@ -58,8 +59,8 @@ describe("Galerie « Sections » strictement contextuelle", () => {
   beforeAll(() => { vitrine = sampleSpec("vitrine"); });
 
   it("déclare la compatibilité par métadonnées explicites, pas par le nom", () => {
-    expect(SECTION_FIT["cv-hero"]).toMatchObject({ kinds: ["catalog", "specialty"], themes: ["fraise", "sillon", "noctil", "traverse", "museau-club"], profiles: ["conversion"] });
-    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove", "onde", "souple"] });
+    expect(SECTION_FIT["cv-hero"]).toMatchObject({ kinds: ["catalog", "specialty"], themes: ["fraise", "sillon", "noctil", "traverse", "museau-club", "souple"], profiles: ["conversion"] });
+    expect(SECTION_FIT["ed-opening"]).toMatchObject({ themes: ["orbe", "rive", "heuren", "alcove", "souple"] });
     expect(SECTION_FIT["services-list"]).toEqual({ kinds: ["services"] });
     expect(SECTION_FIT["faq"]).toBeUndefined(); // transversale : rendue dans le style du thème actif
     expect(SECTION_FIT["image-with-text"]).toBeUndefined();
@@ -80,7 +81,8 @@ describe("Galerie « Sections » strictement contextuelle", () => {
     // Bandeau d'appel : « Contact et prise de rendez-vous » de la bibliothèque des services (issue #145).
     expect(services).toContain("cta-banner");
     // Les composants structurels ne sont jamais filtrés par la catégorie (ils se règlent, ne s'ajoutent pas).
-    for (const t of availableSectionTypes(vitrine).filter((x) => !addable(x))) expect(sectionIncompatibility(vitrine, t, "services")).toBe("");
+    // (Les composants propres à un thème refait d'après maquette — ap-header, ph-footer… — ne vont qu'à leur thème.)
+    for (const t of availableSectionTypes(vitrine).filter((x) => !addable(x) && !ownerThemeOf(x))) expect(sectionIncompatibility(vitrine, t, "services")).toBe("");
   });
 
   it("le profil « conversion » activé sur un thème ouvre les sections cv-* (rendu adapté), le thème importé n'est jamais filtré", () => {

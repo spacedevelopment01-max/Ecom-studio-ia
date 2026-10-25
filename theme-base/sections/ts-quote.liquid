@@ -1,0 +1,31 @@
+{%- comment -%}
+  TABLE SAISON : citation éditoriale centrée avec branche au trait et deux boutons (page Au fil des saisons).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-quote">
+  {%- if s.ornament -%}{% render 'ts-ornament', name: 'leaves' %}{%- endif -%}
+  <div class="ts-wrap">
+    <blockquote>{{ s.quote | newline_to_br }}</blockquote>
+    <span class="ts-rule" aria-hidden="true"></span>
+    <div class="ts-btns">
+      {%- if s.button_label != blank -%}<a class="ts-btn ts-btn--ghost" href="{{ s.button_link | default: '/pages/la-carte' }}">{{ s.button_label }}</a>{%- endif -%}
+      {%- if s.button2_label != blank -%}<a class="ts-btn" href="{{ s.button2_link | default: '/pages/reserver' }}">{{ s.button2_label }}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Citation et boutons",
+  "class": "ts-quote-section",
+  "settings": [
+    { "type": "textarea", "id": "quote", "label": "Citation", "default": "« Une cuisine de saison pour des moments qui comptent. »" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Découvrir la carte" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "button2_label", "label": "Texte du second bouton", "default": "Réserver une table" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" },
+    { "type": "checkbox", "id": "ornament", "label": "Ornement botanique", "default": true }
+  ],
+  "presets": [{ "name": "Citation et boutons" }]
+}
+{% endschema %}

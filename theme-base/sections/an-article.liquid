@@ -1,0 +1,60 @@
+{%- comment -%}
+  ATELIER NUANCE : article du journal (modèle détaillé de la planche 03) : photo, rubrique, titre, introduction et
+  conseils numérotés ; retour au journal et lien de rendez-vous. Contenu entièrement éditable.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<article class="an-section an-article{% if s.compact %} an-article--compact{% endif %}">
+  <div class="an-wrap an-article__grid">
+    <div class="an-article__media">{% render 'an-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position %}</div>
+    <div class="an-article__body">
+      {%- if s.eyebrow != blank -%}<p class="an-eyebrow an-eyebrow--terra">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.compact -%}<h2 class="an-title an-title--md">{{ s.heading | escape | newline_to_br }}</h2>{%- else -%}<h1 class="an-title an-title--md">{{ s.heading | escape | newline_to_br }}</h1>{%- endif -%}
+      {%- if s.intro != blank -%}<div class="an-article__intro">{{ s.intro }}</div>{%- endif -%}
+      {%- if section.blocks.size > 0 -%}
+        <ol class="an-article__tips" role="list">
+          {%- for block in section.blocks -%}
+            <li {{ block.shopify_attributes }}><span class="an-article__n" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span><div>{%- if block.settings.title != blank -%}<strong>{{ block.settings.title }}</strong> {% endif -%}{{ block.settings.text }}</div></li>
+          {%- endfor -%}
+        </ol>
+      {%- endif -%}
+      {%- if s.body != blank -%}<div class="an-text an-article__more">{{ s.body }}</div>{%- endif -%}
+      <div class="an-article__links">
+        {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-btn--sm" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"><span>{{ s.button_label }}</span>{% render 'an-icon', name: 'arrow' %}</a>{%- endif -%}
+        {%- if s.back_label != blank -%}<a class="an-link" href="{{ s.back_link | default: '/pages/journal' }}">{{ s.back_label }}</a>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Article du journal",
+  "class": "an-article-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "checkbox", "id": "compact", "label": "Aperçu dans la page Journal", "default": false, "info": "Titre de niveau 2 au lieu du titre principal de la page." },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de l'image" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "eyebrow", "label": "Rubrique", "default": "Conseils" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Article" },
+    { "type": "richtext", "id": "intro", "label": "Introduction" },
+    { "type": "richtext", "id": "body", "label": "Suite de l'article (facultatif)" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "back_label", "label": "Texte du lien de retour" },
+    { "type": "url", "id": "back_link", "label": "Lien de retour" }
+  ],
+  "blocks": [
+    {
+      "type": "tip", "name": "Conseil numéroté",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Titre (facultatif)" },
+        { "type": "textarea", "id": "text", "label": "Texte", "default": "Conseil" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Article du journal" }]
+}
+{% endschema %}

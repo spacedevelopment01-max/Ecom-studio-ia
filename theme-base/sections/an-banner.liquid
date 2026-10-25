@@ -1,0 +1,43 @@
+{%- comment -%}
+  ATELIER NUANCE : bandeau photo avec texte et bouton (« Une expérience au-delà du soin », « Prenez du temps pour
+  vous », « Une idée en tête ? », « Envie de prendre rendez-vous ? »). Texte clair sur photo, ou foncé sur une
+  texture claire (travertin).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if s.image != blank or s.image_asset != blank -%}
+<section class="an-section an-banner an-banner--{{ s.align }} an-banner--{{ s.vertical }} an-banner--{{ s.tone }}" style="--h: {{ s.height }}px; --h-m: {{ s.height_mobile }}px; --veil: {{ s.overlay | divided_by: 100.0 }};">
+  {% render 'an-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, pos_mobile: s.image_position_mobile %}
+  <div class="an-wrap an-banner__inner">
+    <div class="an-banner__content">
+      {%- if s.heading != blank -%}<h2 class="an-title an-title--lg">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<p class="an-banner__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="an-btn an-btn--peach an-btn--sm" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"><span>{{ s.button_label }}</span>{% if s.arrow %}{% render 'an-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bandeau photo du salon",
+  "class": "an-banner-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Une expérience\nau-delà du soin" },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "arrow", "label": "Flèche dans le bouton", "default": false },
+    { "type": "select", "id": "align", "label": "Alignement du texte", "default": "left", "options": [{ "value": "left", "label": "À gauche" }, { "value": "center", "label": "Centré" }] },
+    { "type": "select", "id": "vertical", "label": "Position verticale", "default": "middle", "options": [{ "value": "middle", "label": "Au milieu" }, { "value": "bottom", "label": "En bas" }] },
+    { "type": "select", "id": "tone", "label": "Couleur du texte", "default": "light", "options": [{ "value": "light", "label": "Clair (sur photo)" }, { "value": "dark", "label": "Foncé (sur texture claire)" }] },
+    { "type": "range", "id": "overlay", "label": "Voile sur la photo", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 45 },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 160, "max": 640, "step": 10, "unit": "px", "default": 300 },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 160, "max": 560, "step": 10, "unit": "px", "default": 300 }
+  ],
+  "presets": [{ "name": "Bandeau photo du salon" }]
+}
+{% endschema %}

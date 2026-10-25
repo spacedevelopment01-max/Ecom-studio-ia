@@ -44,27 +44,80 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 - **Réponses courtes et claires**, sans jargon ; ne pas reposer une question à laquelle il a déjà répondu.
 - **Ne pas décider à sa place** : un retrait de contenu ou un changement visible important se propose, il ne s'applique
   qu'après son accord. Retirer un visuel raté sans rien mettre à la place n'est pas une correction.
-- **Catalogue de thèmes actif** (consigne du 19 octobre 2026, issue #137, commentaire 6264783184 ; SILLON ajouté par l'issue #148, NOCTIL et TRAVERSE par l'issue #152, HEUREN et ALCÔVE par l'issue #155, MUSEAU CLUB et SOUPLE par l'issue #158) :
-  seuls **fraise**, **onde**, **orbe**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **alcove**, **museau-club** et **souple** sont proposés (galerie, IA, commandes, recommandation, tarifs). Les 30 anciens thèmes ne sont ni
-  sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de lecture), jamais de migration
-  silencieuse, jamais de repli vers l'ancien catalogue. Ne pas les moderniser ni créer leurs remplaçants sans consigne.
-- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée),
-  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce** depuis la refonte demandée par Thomas le
-  21 octobre, issue #158 ; profil « studio », démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé
-  `public/demo/onde/`, jamais copiés dans le dépôt), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
-  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; médias suivis dans `public/theme-assets/sillon/`,
-  démonstration `tests/sillon-fixtures.ts`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
+- **Catalogue de thèmes proposé** (mission #190 du 25 octobre 2026, inventaire `docs/INVENTAIRE-THEMES-190.md`) : seuls les
+  thèmes **refaits d'après les maquettes de Thomas** sont proposés (galerie, IA, commandes, recommandation, tarifs) :
+  **fraise**, **onde**, **rive**, **sillon**, **noctil**, **traverse**, **heuren**, **museau-club**, **souple**,
+  **table-saison**, **atelier-nuance**, **parenthese**, **phase**, **maison-horizon** et **aplat** (`MAQUETTE_THEMES`,
+  `src/lib/theme/theme-fit.ts`). ORBE et ALCÔVE (créés avant les maquettes, aucune maquette retrouvée) et les 30 thèmes de
+  l'ancien catalogue ne sont ni sélectionnables ni recommandés ; un projet qui en utilise un le garde (compatibilité de
+  lecture), jamais de migration silencieuse ni de suppression. **Plus de familles** pour le choix, les quotas et les
+  droits : tout thème proposé sert à tout projet ; l'usage prévu (`themeKinds`) ne sert qu'à recommander. **Droits par
+  thème et par forfait** (`src/lib/theme/theme-rights.ts`, Administration › Thèmes et forfaits) : Thomas choisira les
+  thèmes des forfaits à 49 € et 89 € ; tant qu'un forfait est « à choisir », tous les thèmes proposés lui restent ouverts.
+- **Démonstrations** (priorité du 19 octobre 2026, issue #137) : les seules sont **FRAISE** (gummies, boutique spécialisée ; reprise des sept planches corrigées du 24 octobre, sections `fg-*`, voir `docs/LISEZMOI-fraise.md`),
+  **ONDE** (casque audio : thème **mono-produit de la famille E-commerce**, refait d'après les sept planches du
+  24 octobre, PR #183, `docs/theme-briefs/onde/` : profil de conversion « onde » (`assets/onde.css`, `onde.js`, règles
+  préfixées `body[data-conversion="onde"]`, aucun texte dans la feuille), sections `on-*` (en-tête, pied, fiche, panier,
+  tiroir, commande d'exemple, aide) réservées à ce thème, titres Montserrat 700, textes Inter, prix illustratif centralisé
+  `ONDE_PRICE` (149 €), démonstration `tests/onde-fixtures.ts`, visuels lus dans le kit privé `public/demo/onde/`, jamais
+  copiés dans le dépôt ; cellules « ordinateur » de la planche 03 comparées à 913 px ; rapport
+  `docs/coordination/ONDE_RESULTATS.md`), **ORBE** (lampe, e-commerce), **Atelier Rive** (prestations de services),
+  **SILLON** (machine à espresso nomade, boutique spécialisée, issue #148 ; **V2** refaite d'après les trois planches
+  validées et les quatre planches téléphone, PR #182 : sections `sv-*`, `theme-base/assets/sillon.css`, 129 € illustratif,
+  commande simulée sans champ de carte ; médias suivis dans `public/theme-assets/sillon/`, démonstration
+  `tests/sillon-fixtures.ts`, voir `docs/LISEZMOI-sillon-v2.md`), **NOCTIL** (projecteur de galaxies) et **TRAVERSE** (sac de voyage modulable),
   boutiques spécialisées de l'issue #152 (médias dans `public/theme-assets/noctil/` et `traverse/`, TRAVERSE ambiance-04
-  volontairement hors rendu ; démonstrations `tests/noctil-traverse-fixtures.ts`), **HEUREN** (montre bleu nuit) et
+  volontairement hors rendu ; NOCTIL refait d'après les maquettes du 23 octobre, PR #167 : démonstration
+  `tests/noctil-fixtures.ts`, aides communes dans `tests/noctil-traverse-fixtures.ts`), **HEUREN** (montre bleu nuit) et
   **ALCÔVE** (fauteuil terracotta) : thèmes **mono-produit de la famille E-commerce** (consigne expresse de Thomas, issue
   #155 ; jamais « boutique spécialisée »), médias dans `public/theme-assets/heuren/` et `alcove/`, démonstrations
   `tests/heuren-alcove-fixtures.ts` ; **MUSEAU CLUB** (harnais, laisse, collier et pochette à sacs pour chiens) : thème de la
   **famille Produit spécifique / Boutique spécialisée, à quatre produits** (décision de Thomas du 21 octobre, 12 h 58, issue
   #158, qui remplace le premier classement E-commerce ; profil « club » de la famille), chaque produit avec sa propre fiche,
   médias dans `public/theme-assets/museau-club/`, démonstration `tests/museau-souple-fixtures.ts` ; **SOUPLE** (tapis de yoga,
-  brique, sangle et anneau de Pilates) : thème de la **famille E-commerce, à quatre produits** (consigne du 21 octobre,
-  16 h 02 ; profil éditorial « poudre », ouverture en mosaïque de la collection, en-tête « Collections en cartes », pied
-  « Boutique éditoriale »), médias dans `public/theme-assets/souple/`, démonstration dans le même fichier.
+  brique, sangle et anneau Pilates) : thème de la **famille E-commerce, à quatre produits**, refait d'après les six
+  maquettes du 23 octobre (PR #180, `docs/theme-briefs/souple/`) : profil de conversion « souple » (`assets/souple.css`,
+  règles toutes préfixées `body[data-conversion="souple"]`, aucun texte dans la feuille), titres Playfair Display, textes
+  Jost, sections cv- rangées dans la galerie E-commerce (refusées aux thèmes qui ne savent pas les rendre), prix de
+  démonstration centralisés (`SOUPLE_PRICES`, tapis + brique = 78 € de sous-total), commande d'exemple en 4 étapes et
+  compte fictif `demo@souple.example` / `demo` ; médias dans `public/theme-assets/souple/` (59 visuels ; 21 et 22
+  reçus par correctif, 21 recréé), démonstration `tests/souple-fixtures.ts`, rapport `docs/coordination/SOUPLE_RESULTATS.md`.
+  **TABLE SAISON** (restaurant, famille **Services**, issue #175) : démonstration complète d'après les cinq planches de
+  Thomas (`tests/table-saison-fixtures.ts`, médias WebP dans `public/theme-assets/table-saison/`), réservation simulée en
+  démonstration et service réel du studio (`src/lib/restaurant/booking.ts`) ; voir `docs/LISEZMOI-table-saison-175.md`.
+  **ATELIER NUANCE** (salon de coiffure, famille **Services**, issue #177) : reproduction des six planches de Thomas (la 05
+  prime sur la 01 pour les prestations et la fiche ; prix et durées d'une seule source, la section « Réglages du salon »),
+  démonstration `tests/atelier-nuance-fixtures.ts`, médias WebP dans `public/theme-assets/atelier-nuance/`, rendez-vous
+  simulés en démonstration (« Simulation — aucun rendez-vous réel ») et service réel du studio (`src/lib/salon/booking.ts`) ;
+  voir `docs/LISEZMOI-atelier-nuance-177.md`.
+  **PARENTHÈSE** (cabinet de sophrologie, famille **Services**, mission du 24 octobre, PR #179) : reproduction des six
+  planches (`docs/theme-briefs/parenthese/`), séances, ateliers à places, réservation en quatre étapes (cabinet / visio),
+  gestion du rendez-vous ; séances, ateliers, tarifs et horaires d'une seule source (section « Réglages du cabinet »),
+  valeurs d'exemple annoncées ; démonstration `tests/parenthese-fixtures.ts`, médias WebP dans
+  `public/theme-assets/parenthese/`, service réel du studio (`src/lib/cabinet/booking.ts`) ; voir `docs/LISEZMOI-parenthese.md`.
+  **PHASE** (électricien, famille **Services**, mission du 25 octobre, planches de la PR #188) : reproduction des dix planches
+  (`docs/theme-briefs/phase/`), 18 pages ordinateur et téléphone (sections `ph-*`, `theme-base/assets/phase.css` /
+  `phase.js`), formulaires de contact et de devis sans envoi réel en démonstration (récapitulatif lu dans le navigateur),
+  filtres, questions, cookies ; démonstration `tests/phase-fixtures.ts`, photos du kit privé `public/demo/phase/images/`
+  (hors dépôt) ; voir `docs/LISEZMOI-phase.md`.
+  **MAISON & HORIZON** (agence immobilière, achat et location, issue #172) : thème de la **famille Prestations de services**
+  (ouvert à partir du forfait Vendre, à confirmer), profil éditorial « horizon » (`assets/horizon.css`, `horizon.js`,
+  sections `re-*`) ; les **biens** se saisissent dans l'espace **Biens** du studio (`src/lib/biens.ts`, table `biens`) et
+  sont injectés au rendu (`withBiens`), jamais écrits dans le thème ; pages de recherche et fiche ajoutées à tout projet
+  qui choisit le thème (`src/lib/theme/real-estate-site.ts`, chargé aussi dans le navigateur via `directions.ts` : imports de
+  types seulement, sinon le studio ne compile plus) ; démonstration `tests/maison-horizon-fixtures.ts` (27 biens,
+  une série de photos par bien, aucune photo partagée), 90 images en grand format dans le kit privé
+  `public/demo/maison-horizon/` (non publiées sur GitHub, consigne du dossier) ; rapport
+  `docs/coordination/MAISON_HORIZON_RESULTATS.md`.
+  **APLAT — Plâtrerie & Peinture** (artisan, PR #187, dix planches du 25 octobre, `docs/theme-briefs/aplat/`) : thème de la
+  **famille Prestations de services** (forfait Vendre, à confirmer), profil éditorial « aplat » (`assets/aplat.css`,
+  `aplat.js`, sections `ap-*` réservées à ce thème), titres et textes Lato ; 18 pages (accueil, prestations, métiers,
+  réalisations filtrables, détail avant/après, approche, FAQ, contact, devis en deux étapes avec photos, enduits, conseils,
+  article, confirmation, pages légales, cookies réels, 404) ; démonstration `tests/aplat-fixtures.ts`, photos dans le kit
+  privé `public/demo/aplat/` (non publié) ; « Choisir ce thème » pose la structure avec les données du client
+  (`src/lib/theme/aplat-site.ts`, chargé aussi dans le navigateur : imports de types seulement), sans photo ni coordonnée
+  de démonstration ; formulaires en démonstration : envoi simulé « Démonstration — demande non envoyée » ; contrôle des
+  interactions `scripts/aplat-interactions.ts` ; rapport `docs/coordination/APLAT_RESULTATS.md`.
   Les anciennes démos (ARVEN, Cime, Les Tribunes, Sonore, Racines & Pierres, Atelier Pivoine, Ostral) sont abandonnées :
   ne pas les adapter ni les maintenir. Leurs visuels viennent du kit privé de Thomas (`public/demo/<id>/`, hors dépôt).
   **Démos intégrales avant le choix** (revue PR #149) : la galerie « Thèmes » ouvre la boutique de démonstration
@@ -73,6 +126,11 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
   ne change qu'à « Choisir ce thème » (une seule tâche même en double-clic).
   **Page d'accueil** : chaque section montre de vrais visuels (sinon rien, jamais un gabarit) et les sections tournent
   entre ces quatre démos, en alternant produits et services.
+- **Projets clients dédiés** (`clients/<clé>/`, ex. Le Coven des Charmes, PR #189) : site posé dans le thème DU projet
+  du client (sections `es-custom-<clé>-*` du projet, médias de sa bibliothèque, pages et menus du projet) ; jamais dans
+  `theme-base/`, le catalogue, les démos ni la bibliothèque de sections ; aucun média du client dans le dépôt
+  (`.gitignore`). Aperçu isolé, rattachement au vrai projet et rapport : `clients/le-coven-des-charmes/`,
+  `docs/client-briefs/le-coven-des-charmes/RESULTATS.md`.
 
 ## Travail en plusieurs conversations (choix du propriétaire)
 
@@ -109,8 +167,8 @@ publications et publicités d'un projet. Next.js 15 (App Router) + worker de tâ
 
 ## Démonstrations de référence (règle du 19 octobre, retour de Thomas 15 h 07)
 
-- La démonstration FRAISE GUMMIES est la composition complète de la référence Lumora (`tests/lot2c-fixtures.ts`, `conversionProject`) : accueil et fiche riches, offres, avis fictifs étiquetés, comparatif, garantie en exemple, stories, FAQ, pages. Ne jamais la recomposer par le parcours « thème du catalogue » (il masque toute section sans contenu) ni la simplifier sans consigne écrite de Thomas.
-- ONDE AUDIO n'est plus la référence Pawish : Thomas a demandé sa refonte en E-commerce (issue #158, 21 octobre, 12 h 58) ; sa nouvelle composition (`tests/onde-fixtures.ts`) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
+- La démonstration FRAISE GUMMIES est la reprise complète des **sept planches corrigées** (consigne écrite de Thomas du 24 octobre, PR #185 pour les maquettes, `docs/theme-briefs/fraise-gummies/`) : sections `fg-*`, `theme-base/assets/fraise.css` / `fraise.js` (chargés par la mise en page, réglage `theme_kit`), offres 1 / 2 / 3 flacons à 16,60 / 24,90 / 33,20 € (`OFFRES_VALIDEES.json`, messages calculés par le snippet `fg-offer`), prix total du pack en premier, commande simulée sans champ de carte ; démonstration `tests/fraise-fixtures.ts`, photos du kit privé `public/demo/fraise/v2/` (hors dépôt) ; voir `docs/LISEZMOI-fraise.md`. Ne jamais la recomposer par le parcours « thème du catalogue » ni la simplifier sans consigne écrite de Thomas. L'ancienne composition Lumora reste constructible par `conversionProject(…, "fraise")` pour les anciens contrôles (lot 2C, bibliothèques par famille).
+- ONDE AUDIO n'est plus la référence Pawish : refonte E-commerce (issue #158), puis reprise à l'identique des sept planches du 24 octobre (PR #183) ; sa composition (`tests/onde-fixtures.ts`, sections `on-*`, section Produit commune présente mais masquée) est figée de la même façon. Garde-fou commun : `tests/demos-fraise-onde-composition.test.ts` (liste ordonnée des sections, aucune masquée). L'ancienne composition Pawish reste constructible par `conversionProject(…, "onde")` pour les anciens contrôles du lot 2C.
 - Toute livraison d'aperçu indique le commit exporté (`resume.json`) et la version d'artefact ; vérifier l'inventaire des sections de l'export avant de publier, et comparer à la version précédente (une section de moins = à expliquer dans la PR, jamais silencieux).
 
 ## Avant chaque envoi (commit + push)
@@ -133,6 +191,9 @@ npx vitest run
   `ops.ts` (opérations de retouche validées), `preview-tools.ts` (sélection d'un élément dans l'aperçu).
 - `theme-base/` — sections, snippets, `assets/theme.css`, `assets/theme.js` du thème Shopify.
 - `src/lib/engine` — pipeline et moteur local ; `src/lib/ai` — fournisseurs, prompts, tâches IA.
+- `src/lib/products` — onglet « Catalogue » (fiches produits du studio, variantes, stock) et connecteurs WooCommerce,
+  PrestaShop, Shopify (correspondances, stock à trois points, import) ; `src/lib/rendez-vous.ts` — rubrique « Rendez-vous ».
+  Exports et boutiques de test : `docs/EXPORTS-PLATEFORMES-190.md`, `docs/VALIDATION-190.md` (mission #190).
 - Tutoriels vidéo : textes dans `src/lib/tutorials/`, vidéos dans `public/tutorials/`, voix off par
   `scripts/narrate-tutorials.ts` (voix Kokoro, voir l'en-tête du script ; le tutoriel « publicites » a pour fichier
   `campagnes`).

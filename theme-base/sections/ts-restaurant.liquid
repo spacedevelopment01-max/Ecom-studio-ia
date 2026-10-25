@@ -1,0 +1,132 @@
+{%- comment -%}
+  TABLE SAISON (issue #175) : réglages du restaurant, communs à toutes les pages. Charge la feuille de style et les
+  scripts du thème, porte les règles de réservation (services, heures, fermetures, capacité, fuseau horaire), le mode
+  « démonstration » ou « service réel », la barre de réservation fixe du téléphone et le bandeau des cookies.
+  Le service réel (API du studio) relit ces mêmes réglages dans le thème enregistré : jamais ceux du navigateur.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign live = false
+  if s.booking_mode == 'live' and s.service_url contains 'https://'
+    assign live = true
+  endif
+-%}
+{{ 'table-saison.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'table-saison-core.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'table-saison.js' | asset_url }}" defer="defer"></script>
+<style>
+  .ts-root, .ts-section, .ts-header, .ts-footer, .ts-bookbar, .ts-cookies, .ts-dialog, body.dir-table-saison {
+    --ts-wine: {{ s.color_wine }};
+    --ts-olive: {{ s.color_olive }};
+    --ts-ivory: {{ s.color_ivory }};
+  }
+  body.dir-table-saison .es-header__wordmark::after, body.dir-table-saison .es-footer__brand::after { content: {{ s.logo_subtitle | json }}; }
+</style>
+<script type="application/json" id="ts-config">
+  {
+    "mode": {% if live %}"live"{% else %}"demo"{% endif %},
+    "api": {% if live %}{{ s.service_url | json }}{% else %}""{% endif %},
+    "restaurant": {{ shop.name | json }},
+    "address": {{ s.address | json }},
+    "timezone": {{ s.timezone | default: 'Europe/Paris' | json }},
+    "openDays": {{ s.open_days | json }},
+    "closures": {{ s.closures | json }},
+    "services": [
+      { "id": "dejeuner", "label": {{ s.lunch_label | json }}, "slots": {{ s.lunch_slots | json }} },
+      { "id": "diner", "label": {{ s.dinner_label | json }}, "slots": {{ s.dinner_slots | json }} }
+    ],
+    "capacity": {{ s.capacity | json }},
+    "minParty": {{ s.min_party | json }},
+    "maxParty": {{ s.max_party | json }},
+    "horizonDays": {{ s.horizon_days | json }},
+    "leadMinutes": {{ s.lead_minutes | json }}
+  }
+</script>
+{%- comment -%} Adresses des pages du parcours : de vrais liens (réécrits par l'aperçu et les exports), lus par le script. {%- endcomment -%}
+<div hidden data-ts-pages>
+  <a data-page="reserve" href="{{ s.page_reserve | default: '/pages/reserver' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="manage" href="{{ s.page_manage | default: '/pages/ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="modify" href="{{ s.page_modify | default: '/pages/modifier-ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="lookup" href="{{ s.page_lookup | default: '/pages/retrouver-ma-reservation' }}" tabindex="-1" aria-hidden="true"></a>
+  <a data-page="groupSent" href="{{ s.page_group_sent | default: '/pages/demande-de-groupe-recue' }}" tabindex="-1" aria-hidden="true"></a>
+</div>
+{%- if s.show_bookbar and s.booking_label != blank -%}
+  <div class="ts-bookbar" data-ts-bookbar>
+    <a href="{{ s.booking_link | default: '/pages/reserver' }}">{% render 'ts-icon', name: 'calendar-grid' %}<span>{{ s.booking_label }}</span></a>
+  </div>
+{%- endif -%}
+{%- if s.show_cookies -%}
+  <div class="ts-cookies" role="dialog" aria-modal="false" aria-labelledby="ts-cookies-title-{{ section.id }}" data-ts-cookies hidden>
+    <h2 id="ts-cookies-title-{{ section.id }}">{{ s.cookies_title }}</h2>
+    <p>{{ s.cookies_text }}{% if s.cookies_link != blank %} <a href="{{ s.cookies_link }}">{{ s.cookies_link_label }}</a>{% endif %}</p>
+    <div class="ts-cookies__actions">
+      <button type="button" class="ts-btn ts-btn--olive" data-ts-cookies-accept>{{ s.cookies_accept }}</button>
+      <button type="button" class="ts-btn ts-btn--line" data-ts-cookies-refuse>{{ s.cookies_refuse }}</button>
+    </div>
+    <button type="button" class="ts-cookies__toggle" aria-expanded="false" aria-controls="ts-cookies-prefs-{{ section.id }}" data-ts-cookies-custom><span></span>{{ s.cookies_custom }}</button>
+    <div class="ts-cookies__prefs" id="ts-cookies-prefs-{{ section.id }}" hidden>
+      <label class="ts-check"><input type="checkbox" checked disabled> {{ s.cookies_needed }}</label>
+      <label class="ts-check"><input type="checkbox" data-ts-cookies-stats> {{ s.cookies_stats }}</label>
+      <button type="button" class="ts-btn ts-btn--line" data-ts-cookies-save>{{ s.cookies_save }}</button>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Réglages du restaurant",
+  "class": "ts-restaurant-section",
+  "settings": [
+    { "type": "header", "content": "Identité" },
+    { "type": "text", "id": "logo_subtitle", "label": "Ligne sous le nom", "default": "Cuisine de saison" },
+    { "type": "color", "id": "color_wine", "label": "Couleur des boutons et du pied de page", "default": "#6E1F2D" },
+    { "type": "color", "id": "color_olive", "label": "Couleur des sections olive", "default": "#3C3F28" },
+    { "type": "color", "id": "color_ivory", "label": "Couleur du fond", "default": "#F6F0E5" },
+    { "type": "textarea", "id": "address", "label": "Adresse du restaurant", "info": "Utilisée par l'agenda (fichier ICS) et le plan." },
+    { "type": "header", "content": "Bouton de réservation" },
+    { "type": "text", "id": "booking_label", "label": "Texte du bouton", "default": "Réserver une table" },
+    { "type": "url", "id": "booking_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "show_bookbar", "label": "Barre de réservation fixe sur téléphone", "default": true },
+    { "type": "header", "content": "Réservations" },
+    { "type": "select", "id": "booking_mode", "label": "Fonctionnement", "default": "demo", "options": [
+      { "value": "demo", "label": "Démonstration (aucune réservation réelle)" },
+      { "value": "live", "label": "Service réel du studio" }
+    ], "info": "Service réel : renseignez l'adresse du service fournie par le studio. Sans elle, le site reste en démonstration." },
+    { "type": "url", "id": "service_url", "label": "Adresse du service de réservation" },
+    { "type": "url", "id": "site_url", "label": "Adresse publique du site", "info": "Seule adresse utilisée dans les liens envoyés par e-mail." },
+    { "type": "text", "id": "notify_email", "label": "E-mail qui reçoit les réservations" },
+    { "type": "text", "id": "timezone", "label": "Fuseau horaire", "default": "Europe/Paris" },
+    { "type": "text", "id": "open_days", "label": "Jours d'ouverture", "default": "0,1,2,3,4,5,6", "info": "0 = dimanche, 1 = lundi … 6 = samedi, séparés par des virgules." },
+    { "type": "textarea", "id": "closures", "label": "Fermetures", "info": "Dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ, séparées par des virgules." },
+    { "type": "text", "id": "lunch_label", "label": "Nom du premier service", "default": "Déjeuner" },
+    { "type": "text", "id": "lunch_slots", "label": "Heures du premier service", "default": "12:00, 12:30, 13:00" },
+    { "type": "text", "id": "dinner_label", "label": "Nom du second service", "default": "Dîner" },
+    { "type": "text", "id": "dinner_slots", "label": "Heures du second service", "default": "19:00, 19:30, 20:00, 20:30" },
+    { "type": "range", "id": "capacity", "label": "Couverts par créneau", "min": 2, "max": 120, "step": 1, "default": 24 },
+    { "type": "range", "id": "min_party", "label": "Personnes au minimum", "min": 1, "max": 10, "step": 1, "default": 1 },
+    { "type": "range", "id": "max_party", "label": "Personnes au maximum en ligne", "min": 2, "max": 20, "step": 1, "default": 8 },
+    { "type": "range", "id": "horizon_days", "label": "Réservation jusqu'à (jours)", "min": 7, "max": 180, "step": 1, "default": 90 },
+    { "type": "range", "id": "lead_minutes", "label": "Délai minimal le jour même (minutes)", "min": 0, "max": 240, "step": 15, "default": 60 },
+    { "type": "header", "content": "Pages" },
+    { "type": "url", "id": "page_reserve", "label": "Page Réserver" },
+    { "type": "url", "id": "page_manage", "label": "Page Ma réservation" },
+    { "type": "url", "id": "page_modify", "label": "Page Modifier ma réservation" },
+    { "type": "url", "id": "page_lookup", "label": "Page Retrouver ma réservation" },
+    { "type": "url", "id": "page_group_sent", "label": "Page Demande de groupe reçue" },
+    { "type": "header", "content": "Cookies" },
+    { "type": "checkbox", "id": "show_cookies", "label": "Bandeau des cookies", "default": true },
+    { "type": "text", "id": "cookies_title", "label": "Titre du bandeau", "default": "Vos préférences de cookies" },
+    { "type": "textarea", "id": "cookies_text", "label": "Texte du bandeau", "default": "Nous utilisons des cookies pour améliorer votre expérience de navigation. Vous pouvez les accepter ou les refuser." },
+    { "type": "url", "id": "cookies_link", "label": "Lien vers la page Cookies" },
+    { "type": "text", "id": "cookies_link_label", "label": "Texte du lien Cookies", "default": "En savoir plus" },
+    { "type": "text", "id": "cookies_accept", "label": "Bouton accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "cookies_refuse", "label": "Bouton refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "cookies_custom", "label": "Lien personnaliser", "default": "Mes choix (optionnel)" },
+    { "type": "text", "id": "cookies_needed", "label": "Cookies nécessaires", "default": "Nécessaires au fonctionnement du site (toujours actifs)" },
+    { "type": "text", "id": "cookies_stats", "label": "Cookies de mesure", "default": "Mesure d'audience (facultatif)" },
+    { "type": "text", "id": "cookies_save", "label": "Bouton enregistrer", "default": "Enregistrer mes choix" }
+  ],
+  "enabled_on": { "groups": ["header"] },
+  "presets": [{ "name": "Réglages du restaurant" }]
+}
+{% endschema %}

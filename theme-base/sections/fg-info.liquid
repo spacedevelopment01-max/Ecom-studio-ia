@@ -1,0 +1,74 @@
+{%- comment -%}
+  FRAISE : « Tout savoir sur le flacon. » (planches 01 et 04) — lignes dépliables (ingrédients, valeurs nutritionnelles,
+  utilisation, conservation) renvoyant à l'étiquette : rien d'inventé, « [À compléter : …] » tant que le produit réel ne
+  les a pas donnés. À droite (ordinateur) : « Choisissez votre format. », les trois formats du produit en petit.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = product | default: s.product | default: collections.all.products.first
+-%}
+<section class="fg fg-info" aria-labelledby="fg-info-t-{{ section.id }}" id="{{ s.anchor | default: 'informations' }}">
+  <div class="fg-c">
+    <div class="fg-info__main">
+      <h2 class="fg-title fg-info__title" id="fg-info-t-{{ section.id }}">{{ s.heading }}</h2>
+      <div class="fg-info__list">
+        {%- for block in section.blocks -%}
+          <details class="fg-info__row" {{ block.shopify_attributes }}>
+            <summary><span class="fg-info__label"><span class="fg-only-d">{{ block.settings.label }}</span><span class="fg-only-m">{{ block.settings.label_mobile | default: block.settings.label }}</span></span><span class="fg-info__short"><span class="fg-only-d">{{ block.settings.short }}</span><span class="fg-only-m">{{ block.settings.short_mobile | default: block.settings.short }}</span></span>{% render 'fg-icon', name: 'plus', class: 'fg-info__plus' %}{% render 'fg-icon', name: 'down', class: 'fg-info__down' %}</summary>
+            <div class="fg-info__body">{{ block.settings.body }}</div>
+          </details>
+        {%- endfor -%}
+      </div>
+    </div>
+    {%- if s.show_offers and p != blank -%}
+      <div class="fg-info__offers">
+        <p class="fg-title fg-info__otitle">{{ s.offers_heading }}</p>
+        <div class="fg-info__grid">
+          {%- for variant in p.variants limit: 3 -%}
+            {%- liquid
+              assign img_a = ''
+              case forloop.index
+                when 1
+                  assign img_a = s.format_1_asset
+                when 2
+                  assign img_a = s.format_2_asset
+                when 3
+                  assign img_a = s.format_3_asset
+              endcase
+            -%}
+            <a class="fg-info__cell" href="{{ s.offers_link | default: '#produit' }}">{% render 'fg-offer', product: p, variant: variant, mode: 'mini', image_asset: img_a, alt: '', show_compare: true, show_last: true, show_per: 'all', show_save: true, index: forloop.index %}</a>
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Tout savoir",
+  "class": "fg-info-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "informations" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Tout savoir sur le produit." },
+    { "type": "checkbox", "id": "show_offers", "label": "Formats à droite (ordinateur)", "default": true },
+    { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
+    { "type": "text", "id": "offers_heading", "label": "Titre des formats", "default": "Choisissez votre format." },
+    { "type": "text", "id": "offers_link", "label": "Lien des formats", "default": "#produit" },
+    { "type": "text", "id": "format_1_asset", "label": "Photo du format 1 (fichier du thème)" },
+    { "type": "text", "id": "format_2_asset", "label": "Photo du format 2 (fichier du thème)" },
+    { "type": "text", "id": "format_3_asset", "label": "Photo du format 3 (fichier du thème)" }
+  ],
+  "blocks": [
+    { "type": "row", "name": "Ligne", "settings": [
+      { "type": "text", "id": "label", "label": "Titre" },
+      { "type": "text", "id": "short", "label": "Résumé" },
+      { "type": "text", "id": "label_mobile", "label": "Titre au téléphone" },
+      { "type": "text", "id": "short_mobile", "label": "Résumé au téléphone" },
+      { "type": "richtext", "id": "body", "label": "Détail" }
+    ] }
+  ],
+  "presets": [{ "name": "Tout savoir" }]
+}
+{% endschema %}

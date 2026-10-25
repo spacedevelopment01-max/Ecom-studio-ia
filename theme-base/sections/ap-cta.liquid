@@ -1,0 +1,105 @@
+{%- comment -%}
+  Appel à projet d'APLAT : bande bleu pétrole (titre, texte, bouton blanc) et photo à droite (accueil, prestations) ;
+  carte bleue centrée sur téléphone. Autres dispositions : « slim » (bande fine, bouton à droite : réalisations),
+  « project » (bande claire, chantier lié à gauche et encart bleu à droite : plâtrerie, détail), « paint » (encart bleu
+  et rouleau : peinture), « light » (bande claire et bouton bleu : approche, enduits).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ap-s ap-cta ap-cta--{{ s.layout }}{% if s.desktop_span != blank and s.desktop_span != '12' %} ap-span ap-span-{{ s.desktop_span }}{% endif %}{% if s.mobile_order > 0 %} ap-mo ap-mo-{{ s.mobile_order }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}{% if s.mobile_style == 'card' %} ap-cta--m-card{% endif %}" aria-labelledby="ApK-{{ section.id }}">
+  <div class="ap-cta__inner">
+    {%- if s.project_title != blank -%}
+      <a class="ap-cta__project" href="{{ s.project_link | default: routes.root_url }}">
+        {%- render 'ap-img', img: s.project_image, asset: s.project_image_asset, alt: '', fx: s.project_focus_x, fy: s.project_focus_y, cls: 'ap-cta__project-img', width: 700 -%}
+        <span class="ap-cta__project-body">
+          {%- if s.project_badge != blank -%}<span class="ap-cta__project-badge">{{ s.project_badge | escape }}</span>{%- endif -%}
+          <strong class="ap-cta__project-title">{{ s.project_title | escape | newline_to_br }}</strong>
+          {%- if s.project_text != blank -%}<span class="ap-cta__project-text">{{ s.project_text | escape }}</span>{%- endif -%}
+          {%- if s.project_link_label != blank -%}<span class="ap-link ap-cta__project-more">{{ s.project_link_label | escape }}{% render 'ap-icon', name: 'arrow' %}</span>{%- endif -%}
+        </span>
+        <span class="ap-cta__project-arrow" aria-hidden="true">{% render 'ap-icon', name: 'arrow' %}</span>
+      </a>
+    {%- endif -%}
+    <div class="ap-cta__band">
+      {%- if s.layout == 'help' -%}<span class="ap-cta__icon" aria-hidden="true">{% render 'ap-icon', name: 'chats' %}</span>{%- endif -%}
+      <h2 class="ap-cta__title" id="ApK-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</h2>
+      <div class="ap-cta__side">
+        {%- if s.text != blank or s.mobile_text != blank -%}<p class="ap-cta__text">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="ap-btn ap-cta__btn" href="{{ s.button_link | default: routes.root_url }}">{%- render 'ap-dm', d: s.button_label, m: s.mobile_button_label -%}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    </div>
+    {%- if s.image != blank or s.image_asset != blank -%}<div class="ap-cta__media">{%- render 'ap-img', img: s.image, asset: s.image_asset, alt: s.image_alt, fx: s.focus_x, fy: s.focus_y, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, cls: 'ap-cta__img', width: 1200 -%}</div>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Appel à projet APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "band",
+      "options": [
+        { "value": "band", "label": "Bande bleu pétrole et photo" },
+        { "value": "slim", "label": "Bande bleu pétrole fine" },
+        { "value": "project", "label": "Chantier lié et encart bleu" },
+        { "value": "projectslim", "label": "Chantier lié et bande bleue fine" },
+        { "value": "paint", "label": "Encart bleu et rouleau" },
+        { "value": "note", "label": "Bande claire et photo fondue" },
+        { "value": "help", "label": "Encart d'aide à icône" },
+        { "value": "light", "label": "Bande claire et bouton bleu" }
+      ]
+    },
+    {
+      "type": "select", "id": "mobile_style", "label": "Présentation sur téléphone", "default": "same",
+      "options": [ { "value": "same", "label": "Selon la disposition" }, { "value": "card", "label": "Encart clair, texte à gauche et bouton bleu" } ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    {
+      "type": "select", "id": "desktop_span", "label": "Largeur sur ordinateur", "default": "12",
+      "options": [
+        { "value": "12", "label": "Pleine largeur" },
+        { "value": "8", "label": "Deux tiers" },
+        { "value": "7", "label": "Un peu plus de la moitié" },
+        { "value": "6", "label": "Moitié" },
+        { "value": "6r2", "label": "Moitié, sur deux rangées" },
+        { "value": "5", "label": "Un peu moins de la moitié" },
+        { "value": "4", "label": "Un tiers" }
+      ]
+    },
+    { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 5, "step": 1, "default": 0 },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Donnons forme\nà votre intérieur." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Demander un devis" },
+    { "type": "text", "id": "mobile_button_label", "label": "Bouton sur téléphone" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "header", "content": "Chantier lié (facultatif)" },
+    { "type": "image_picker", "id": "project_image", "label": "Photo du chantier" },
+    { "type": "text", "id": "project_image_asset", "label": "Photo du chantier (fichier du thème)" },
+    { "type": "range", "id": "project_focus_x", "label": "Photo du chantier : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "project_focus_y", "label": "Photo du chantier : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "project_badge", "label": "Étiquette" },
+    { "type": "textarea", "id": "project_title", "label": "Titre du chantier" },
+    { "type": "text", "id": "project_text", "label": "Précision" },
+    { "type": "text", "id": "project_link_label", "label": "Lien (téléphone)" },
+    { "type": "url", "id": "project_link", "label": "Adresse du chantier" }
+  ],
+  "presets": [ { "name": "Appel à projet APLAT" } ]
+}
+{% endschema %}

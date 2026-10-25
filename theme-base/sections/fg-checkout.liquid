@@ -1,0 +1,189 @@
+{%- comment -%}
+  FRAISE : commande de DÉMONSTRATION (planches 03 et 07) — Informations → Livraison → Paiement → Confirmation, étapes
+  numérotées, récapitulatif relu dans le panier (lots, unités, sous-total), champs validés un par un, retour sans perte
+  (saisie gardée pour la session), consentement à l'inscription facultatif et décoché.
+  Honnêteté : aucun paiement, aucun envoi. L'étape Paiement est une MAQUETTE sans aucun champ de carte saisissable ;
+  la confirmation est un écran d'exemple, jamais une commande prétendument enregistrée. Frais de livraison inconnus :
+  « À calculer », total « À confirmer ». Chez un vrai client, le bouton du panier mène au paiement Shopify.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- capture fg_summary -%}
+  <div class="fg-co__items" data-fg-co-items>
+    {%- for item in cart.items -%}
+      {%- assign per = item.variant.option1 | split: ' ' | first | plus: 0 -%}{%- assign units = per | times: item.quantity -%}
+      <div class="fg-co__item"><span class="fg-co__thumb">{%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</span><div class="fg-co__iname"><b>{{ s.line_brand | default: item.product.title }}</b>{%- if s.line_brand != blank -%}<span>{{ item.product.title }}</span>{%- endif -%}{%- unless item.variant.title == 'Default Title' -%}<span>{{ item.variant.title }}</span>{%- endunless -%}<span class="fg-co__iprice">{{ item.final_line_price | money }}</span><span class="fg-co__iqty">{{ s.qty_label | replace: '[q]', item.quantity }}{% if per > 0 and units > 1 %} · {{ s.units_label | replace: '[n]', units }}{% endif %}</span></div></div>
+    {%- endfor -%}
+  </div>
+{%- endcapture -%}
+<section class="fg fg-co" data-fg-checkout data-step="1">
+  <div class="fg-c">
+    {% render 'fg-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, zoom: s.image_zoom, class: 'fg-co__photo' %}
+    <ol class="fg-co__steps" aria-label="{{ s.steps_label | escape }}">
+      <li class="fg-co__step is-current" data-n="1" aria-current="step"><span class="fg-co__num">1</span><span>{{ s.step_1 }}</span></li>
+      <li class="fg-co__step" data-n="2"><span class="fg-co__num">2</span><span>{{ s.step_2 }}</span></li>
+      <li class="fg-co__step" data-n="3"><span class="fg-co__num">3</span><span>{{ s.step_3 }}</span></li>
+    </ol>
+    <p class="fg-co__demo">{{ s.demo_note }}</p>
+    {%- if cart.item_count == 0 -%}<p class="fg-co__emptycart" data-fg-co-emptycart>{{ s.empty_cart }} <a href="{{ routes.cart_url }}">{{ s.back_cart }}</a></p>{%- endif -%}
+    <form class="fg-co__form" data-fg-co-form novalidate>
+      {%- comment -%} Étape 1 : informations {%- endcomment -%}
+      <div class="fg-co__pane" data-pane="1">
+        {% render 'fg-title', text: s.title_1, tag: 'h1', class: 'fg-co__title fg-co__title--d' %}
+        {% render 'fg-title', text: s.title_1m, tag: 'p', class: 'fg-co__title fg-co__title--m' %}
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
+        <div class="fg-co__card">
+          <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.info_title }}</h2>
+          <div class="fg-co__grid">
+            <label class="fg-field fg-field--full"><span>{{ s.email_label }} <b aria-hidden="true">*</b></span><input type="email" name="email" data-ph-m="{{ s.email_label }} *" autocomplete="email" required placeholder="{{ s.email_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_email }}</span></label>
+            <label class="fg-field"><span>{{ s.first_label }} <b aria-hidden="true">*</b></span><input type="text" name="first" data-ph-m="{{ s.first_label }} *" autocomplete="given-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field"><span>{{ s.last_label }} <b aria-hidden="true">*</b></span><input type="text" name="last" data-ph-m="{{ s.last_label }} *" autocomplete="family-name" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full"><span>{{ s.address_label }} <b aria-hidden="true">*</b></span><input type="text" name="address" data-ph-m="{{ s.address_label }} *" autocomplete="address-line1" required placeholder="{{ s.address_ph | escape }}"><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full fg-only-m"><span>{{ s.address2_label }}</span><input type="text" name="address2" autocomplete="address-line2" data-ph-m="{{ s.address2_label }}"></label>
+            <label class="fg-field"><span>{{ s.zip_label }} <b aria-hidden="true">*</b></span><input type="text" name="zip" data-ph-m="{{ s.zip_label }} *" autocomplete="postal-code" required inputmode="numeric" pattern="[0-9A-Za-z \-]{3,10}"><span class="fg-field__err" hidden>{{ s.err_zip }}</span></label>
+            <label class="fg-field"><span>{{ s.city_label }} <b aria-hidden="true">*</b></span><input type="text" name="city" data-ph-m="{{ s.city_label }} *" autocomplete="address-level2" required><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-field fg-field--full"><span>{{ s.country_label }} <b aria-hidden="true">*</b></span><select name="country" autocomplete="country-name" required>{%- assign cs = s.countries | split: ',' -%}{%- for c in cs -%}<option>{{ c | strip }}</option>{%- endfor -%}</select><span class="fg-field__err" hidden>{{ s.err_required }}</span></label>
+            <label class="fg-check fg-field--full fg-co__news"><input type="checkbox" name="newsletter"><span>{{ s.news_label }}</span></label>
+          </div>
+          <button type="button" class="fg-btn fg-btn--red fg-co__next" data-fg-co-next>{{ s.next_1 }}{% render 'fg-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+      {%- comment -%} Étape 2 : livraison (modes de la boutique à compléter) {%- endcomment -%}
+      <div class="fg-co__pane" data-pane="2" hidden>
+        {% render 'fg-title', text: s.title_2, tag: 'p', class: 'fg-co__title' %}
+        {%- if s.text_2 != blank -%}<p class="fg-co__lead">{{ s.text_2 }}</p>{%- endif -%}
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
+        <div class="fg-co__card">
+          <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.ship_title }}</h2>
+          <p class="fg-co__addr"><span class="fg-co__lab">{{ s.ship_to }}</span><span data-fg-co-address></span></p>
+          <div class="fg-co__shipbox">{% render 'fg-icon', name: 'truck' %}<p class="fg-co__ship-has">{{ s.ship_text }}</p><p class="fg-co__ship-none">{{ s.no_address }}</p></div>
+          <button type="button" class="fg-btn fg-btn--line fg-co__back" data-fg-co-back>{% render 'fg-icon', name: 'arrow-left' %}{{ s.back_2 }}</button>
+          <button type="button" class="fg-btn fg-btn--red fg-co__next" data-fg-co-next>{{ s.next_2 }}{% render 'fg-icon', name: 'arrow' %}</button>
+        </div>
+      </div>
+      {%- comment -%} Étape 3 : paiement — MAQUETTE, aucun champ de carte saisissable {%- endcomment -%}
+      <div class="fg-co__pane" data-pane="3" hidden>
+        {% render 'fg-title', text: s.title_3, tag: 'p', class: 'fg-co__title' %}
+        {%- if s.text_3 != blank -%}<p class="fg-co__lead">{{ s.text_3 }}</p>{%- endif -%}
+        <a class="fg-co__mini fg-only-m" href="{{ routes.cart_url }}" aria-label="{{ s.edit_label | escape }}">{{ fg_summary }}{% render 'fg-icon', name: 'chevron', class: 'fg-co__minichev' %}</a>
+        <div class="fg-co__card">
+          <h2 class="fg-co__h" tabindex="-1" data-fg-co-title>{{ s.pay_title }}</h2>
+          <div class="fg-co__mock" aria-hidden="true">
+            <span class="fg-co__mfield fg-field--full">{{ s.card_name }} *</span>
+            <span class="fg-co__mfield fg-field--full">{{ s.card_number }} *{% render 'fg-icon', name: 'card' %}</span>
+            <span class="fg-co__mfield"><small>{{ s.card_exp }} *</small>MM / AA</span>
+            <span class="fg-co__mfield"><small>{{ s.card_cvc }} *</small>{% render 'fg-icon', name: 'question' %}</span>
+          </div>
+          <p class="fg-co__mocknote">{% render 'fg-icon', name: 'lock' %}{{ s.pay_note }}</p>
+          <dl class="fg-co__sums">
+            <div><dt>{{ s.subtotal_label }}</dt><dd data-fg-co-subtotal>{{ cart.total_price | money }}</dd></div>
+            <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
+            <div class="fg-co__tot"><dt>{{ s.total_label }}</dt><dd>{{ s.total_pending }}</dd></div>
+          </dl>
+          <button type="button" class="fg-btn fg-co__pay" disabled>{{ s.pay_button }}</button>
+          <button type="button" class="fg-btn fg-btn--link fg-co__see" data-fg-co-goto="4">{{ s.see_confirm }}</button>
+          <button type="button" class="fg-btn fg-btn--line fg-co__back" data-fg-co-back>{% render 'fg-icon', name: 'arrow-left' %}{{ s.back_3 }}</button>
+        </div>
+      </div>
+      {%- comment -%} Écran 4 : confirmation d'EXEMPLE {%- endcomment -%}
+      <div class="fg-co__pane fg-co__done" data-pane="4" hidden>
+        <span class="fg-co__check" aria-hidden="true">{% render 'fg-icon', name: 'check' %}{% render 'fg-art', name: 'sparks' %}</span>
+        {% render 'fg-title', text: s.title_4, tag: 'h2', class: 'fg-co__title' %}
+        <p class="fg-co__lead" tabindex="-1" data-fg-co-title>{{ s.text_4 }}</p>
+        {% render 'fg-img', asset: s.done_image_asset, alt: '', class: 'fg-co__doneimg' %}
+        <div class="fg-co__mini fg-co__mini--done">{{ fg_summary }}</div>
+        <a class="fg-btn fg-btn--red fg-co__home" href="{{ s.done_link | default: routes.root_url }}" data-fg-co-restart>{{ s.done_button }}</a>
+        <p class="fg-co__illus">{{ s.done_note }}</p>
+      </div>
+      <p class="fg-co__status" role="status" data-fg-co-status data-fix="{{ s.err_fix | escape }}"></p>
+    </form>
+    <aside class="fg-co__summary" aria-label="{{ s.summary_title | escape }}">
+      <div class="fg-co__shead"><p class="fg-co__stitle">{{ s.summary_title }}</p><a href="{{ routes.cart_url }}">{{ s.edit_label }}</a></div>
+      {{ fg_summary }}
+      <dl class="fg-co__sums">
+        <div><dt>{{ s.subtotal_label }}</dt><dd data-fg-co-subtotal>{{ cart.total_price | money }}</dd></div>
+        <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
+        <div class="fg-co__tot"><dt>{{ s.total_label }}</dt><dd data-fg-co-total>{{ cart.total_price | money }}</dd></div>
+      </dl>
+      <div class="fg-co__secure">{% render 'fg-icon', name: 'leaf', class: 'fg-only-m' %}{% render 'fg-art', name: 'leaf-solid', class: 'fg-only-d' %}<div><p class="fg-co__sect">{{ s.secure_title }}</p><p>{{ s.secure_text }}</p></div></div>
+    </aside>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Commande (démo)",
+  "class": "fg-checkout-section",
+  "settings": [
+    { "type": "paragraph", "content": "Démonstration : aucun paiement, aucun envoi. Chez un vrai client, le panier mène au paiement Shopify." },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "steps_label", "label": "Étapes (lecteurs d'écran)", "default": "Étapes de la commande" },
+    { "type": "text", "id": "step_1", "label": "Étape 1", "default": "Informations" },
+    { "type": "text", "id": "step_2", "label": "Étape 2", "default": "Livraison" },
+    { "type": "text", "id": "step_3", "label": "Étape 3", "default": "Paiement" },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Commande de démonstration : aucun paiement, aucun envoi." },
+    { "type": "text", "id": "empty_cart", "label": "Panier vide", "default": "Votre panier est vide." },
+    { "type": "text", "id": "back_cart", "label": "Lien vers le panier", "default": "Voir le panier" },
+    { "type": "textarea", "id": "title_1", "label": "Titre de l'étape 1 (ordinateur)", "default": "Votre commande\nen quelques étapes." },
+    { "type": "textarea", "id": "title_1m", "label": "Titre de l'étape 1 (téléphone)", "default": "Presque dans\nvotre panier." },
+    { "type": "text", "id": "info_title", "label": "Titre du formulaire", "default": "Vos informations" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "email_ph", "label": "Exemple d'e-mail", "default": "votre@email.com" },
+    { "type": "text", "id": "first_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "address_label", "label": "Adresse", "default": "Adresse" },
+    { "type": "text", "id": "address_ph", "label": "Exemple d'adresse", "default": "Numéro et nom de rue" },
+    { "type": "text", "id": "address2_label", "label": "Complément d'adresse", "default": "Complément d'adresse (facultatif)" },
+    { "type": "text", "id": "zip_label", "label": "Code postal", "default": "Code postal" },
+    { "type": "text", "id": "city_label", "label": "Ville", "default": "Ville" },
+    { "type": "text", "id": "country_label", "label": "Pays", "default": "Pays" },
+    { "type": "text", "id": "countries", "label": "Pays proposés (séparés par des virgules)", "default": "France, Belgique, Suisse, Luxembourg" },
+    { "type": "text", "id": "news_label", "label": "Inscription facultative (décochée)", "default": "Je souhaite recevoir les nouveautés par e-mail (facultatif)." },
+    { "type": "text", "id": "next_1", "label": "Bouton de l'étape 1", "default": "Continuer vers la livraison" },
+    { "type": "textarea", "id": "title_2", "label": "Titre de l'étape 2", "default": "Votre livraison." },
+    { "type": "text", "id": "text_2", "label": "Texte de l'étape 2" },
+    { "type": "text", "id": "ship_title", "label": "Titre de la livraison", "default": "Livraison" },
+    { "type": "text", "id": "ship_to", "label": "Adresse de livraison", "default": "Livrer à" },
+    { "type": "text", "id": "no_address", "label": "Sans adresse", "default": "Renseignez votre adresse pour consulter les modes de livraison." },
+    { "type": "textarea", "id": "ship_text", "label": "Modes de livraison" },
+    { "type": "text", "id": "back_2", "label": "Retour de l'étape 2", "default": "Modifier mes informations" },
+    { "type": "text", "id": "next_2", "label": "Bouton de l'étape 2", "default": "Continuer vers le paiement" },
+    { "type": "textarea", "id": "title_3", "label": "Titre de l'étape 3", "default": "La dernière étape." },
+    { "type": "text", "id": "text_3", "label": "Texte de l'étape 3" },
+    { "type": "text", "id": "pay_title", "label": "Titre du paiement", "default": "Paiement" },
+    { "type": "text", "id": "card_name", "label": "Maquette : nom sur la carte", "default": "Nom sur la carte" },
+    { "type": "text", "id": "card_number", "label": "Maquette : numéro", "default": "Numéro de carte" },
+    { "type": "text", "id": "card_exp", "label": "Maquette : expiration", "default": "Expiration" },
+    { "type": "text", "id": "card_cvc", "label": "Maquette : code", "default": "Code de sécurité" },
+    { "type": "text", "id": "pay_note", "label": "Mention de la maquette", "default": "Maquette de paiement — aucune saisie, aucun débit effectué." },
+    { "type": "text", "id": "pay_button", "label": "Bouton de paiement (inactif)", "default": "Valider le paiement" },
+    { "type": "text", "id": "see_confirm", "label": "Lien vers l'écran d'exemple", "default": "Voir l'écran de confirmation (exemple)" },
+    { "type": "text", "id": "back_3", "label": "Retour de l'étape 3", "default": "Revenir à la livraison" },
+    { "type": "textarea", "id": "title_4", "label": "Titre de la confirmation", "default": "Merci, et à très vite !" },
+    { "type": "text", "id": "text_4", "label": "Texte de la confirmation", "default": "Exemple d'écran : aucune commande n'a été enregistrée." },
+    { "type": "text", "id": "done_image_asset", "label": "Photo de la confirmation (fichier du thème)" },
+    { "type": "text", "id": "done_button", "label": "Bouton de la confirmation", "default": "Retour à la boutique" },
+    { "type": "url", "id": "done_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "done_note", "label": "Mention de la confirmation", "default": "Écran illustratif de confirmation." },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif", "default": "Votre commande" },
+    { "type": "text", "id": "edit_label", "label": "Lien « modifier »", "default": "Modifier" },
+    { "type": "text", "id": "line_brand", "label": "Marque affichée sur les lignes" },
+    { "type": "text", "id": "qty_label", "label": "Quantité d'une ligne", "default": "Quantité : [q]" },
+    { "type": "text", "id": "units_label", "label": "Unités d'une ligne", "default": "[n] unités" },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Montant de la livraison", "default": "À calculer" },
+    { "type": "text", "id": "total_label", "label": "Total", "default": "Total des produits" },
+    { "type": "text", "id": "total_pending", "label": "Total à confirmer", "default": "À confirmer" },
+    { "type": "text", "id": "secure_title", "label": "Encadré : titre", "default": "Paiement sécurisé" },
+    { "type": "text", "id": "secure_text", "label": "Encadré : texte" },
+    { "type": "text", "id": "err_required", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "err_email", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "err_zip", "label": "Erreur : code postal", "default": "Saisissez un code postal valide." },
+    { "type": "text", "id": "err_fix", "label": "Erreur : formulaire", "default": "Vérifiez les champs signalés." }
+  ],
+  "presets": [{ "name": "Commande (démo)" }]
+}
+{% endschema %}

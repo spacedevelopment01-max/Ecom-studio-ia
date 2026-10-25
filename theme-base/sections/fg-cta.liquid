@@ -1,0 +1,53 @@
+{%- comment -%}
+  FRAISE : bandeau rouge « Votre rituel, côté fraise. » (planche 01, bas de la fiche ; planche 04, bas de la fiche 2/2) —
+  phrase en italique blanche, gummies détourés, bouton blanc « Ajouter le pack — prix » qui ajoute le format choisi.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = product | default: s.product | default: collections.all.products.first
+  assign v = p.selected_or_first_available_variant
+  if s.format > 0
+    assign fi = s.format | minus: 1
+    if p.variants[fi]
+      assign v = p.variants[fi]
+    endif
+  endif
+-%}
+<section class="fg fg-cta" aria-label="{{ s.heading | escape }}">
+  <svg class="fg-wave fg-cta__wave" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 40V22C60 6 120 6 180 18s120 18 180 6 120-20 180-8 120 20 180 8 120-20 180-8 120 20 180 8 120-20 180-8 120 18 180 4V40z" fill="currentColor"/></svg>
+  <div class="fg-cta__body">
+    <div class="fg-c">
+      <p class="fg-cta__title fg-only-d">{{ s.heading }}</p>
+      {%- assign mh = s.heading_mobile | default: s.heading -%}
+      {% render 'fg-title', text: mh, tag: 'p', class: 'fg-cta__title fg-cta__title--m fg-only-m' %}
+      <span class="fg-cta__mart" aria-hidden="true">{% render 'fg-art', name: 'half' %}{% render 'fg-art', name: 'half' %}</span>
+      {% render 'fg-img', image: s.image, asset: s.image_asset, alt: '', class: 'fg-cut fg-cta__img' %}
+      <span class="fg-cta__deco" aria-hidden="true">{% render 'fg-art', name: 'gummy-ghost' %}</span>
+      {%- if p != blank -%}
+        {%- form 'product', p, class: 'fg-cta__form', data-fg-quick-add: '' -%}
+          <input type="hidden" name="id" value="{{ v.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="fg-btn fg-cta__btn"{% unless v.available %} disabled{% endunless %}><span class="fg-only-d">{{ s.button_label }} — {{ v.price | money }}</span><span class="fg-only-m">{{ s.button_label_mobile | default: s.button_label }}</span>{% render 'fg-icon', name: 'arrow', class: 'fg-only-m' %}</button>
+        {%- endform -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau d'achat",
+  "class": "fg-cta-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Phrase", "default": "Un plaisir à portée de main." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Phrase au téléphone", "info": "Une ligne par retour à la ligne ; [i]italique[/i]." },
+    { "type": "product", "id": "product", "label": "Produit (hors fiche)" },
+    { "type": "range", "id": "format", "label": "Format ajouté (rang, 0 = le premier)", "min": 0, "max": 6, "step": 1, "default": 0 },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Ajouter le pack" },
+    { "type": "text", "id": "button_label_mobile", "label": "Bouton au téléphone" },
+    { "type": "image_picker", "id": "image", "label": "Photo détourée" },
+    { "type": "text", "id": "image_asset", "label": "Photo détourée (fichier du thème)" }
+  ],
+  "presets": [{ "name": "Bandeau d'achat" }]
+}
+{% endschema %}

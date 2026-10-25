@@ -23,6 +23,31 @@
         {%- if s.year != blank -%}<div><dt>{{ s.label_year | default: 'Année' | escape }}</dt><dd>{{ s.year | escape }}</dd></div>{%- endif -%}
       </dl>
     {%- endif -%}
+    {%- if s.layout == 'detail' -%}
+    {%- comment -%} Détail de projet (maquette Atelier Rive) : le besoin et la réponse à gauche, la galerie de détails à droite,
+      puis la navigation vers le projet précédent et le suivant. {%- endcomment -%}
+    <div class="fs-case__detail">
+      <div class="fs-case__story">
+        {%- for block in section.blocks -%}{%- if block.type != 'part' -%}{%- continue -%}{%- endif -%}
+          <div class="fs-case__part" {{ block.shopify_attributes }}>
+            <h3 class="fs-case__part-title"><span class="fs-case__label">{% case block.settings.kind %}{% when 'request' %}{{ s.label_request | default: 'La demande' | escape }}{% when 'constraints' %}{{ s.label_constraints | default: 'Les contraintes' | escape }}{% when 'answer' %}{{ s.label_answer | default: 'Notre réponse' | escape }}{% else %}{{ s.label_result | default: 'Le résultat' | escape }}{% endcase %}</span>{% if block.settings.title != blank %} {{ block.settings.title | escape }}{% endif %}</h3>
+            <div class="fs-item__text">{{ block.settings.text }}</div>
+          </div>
+        {%- endfor -%}
+      </div>
+      <ul class="fs-case__gallery" role="list">
+        {%- for block in section.blocks -%}{%- if block.type != 'photo' -%}{%- continue -%}{%- endif -%}
+          <li class="fs-case__photo" {{ block.shopify_attributes }}><figure>{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.image_alt %}{% if block.settings.caption != blank %}<figcaption>{{ block.settings.caption | escape }}</figcaption>{% endif %}</figure></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+    {%- if s.prev_link != blank or s.next_link != blank -%}
+      <nav class="fs-case__nav" aria-label="{{ s.nav_label | default: 'Autres projets' | escape }}">
+        {%- if s.prev_link != blank -%}<a class="fs-case__prev" href="{{ s.prev_link }}"><span>← {{ s.prev_label | default: 'Projet précédent' | escape }}</span>{% if s.prev_title != blank %}<small>{{ s.prev_title | escape }}</small>{% endif %}</a>{%- else -%}<span></span>{%- endif -%}
+        {%- if s.next_link != blank -%}<a class="fs-case__next" href="{{ s.next_link }}"><span>{{ s.next_label | default: 'Projet suivant' | escape }} →</span>{% if s.next_title != blank %}<small>{{ s.next_title | escape }}</small>{% endif %}</a>{%- endif -%}
+      </nav>
+    {%- endif -%}
+    {%- else -%}
     <div class="fs-case__body">
       {%- if s.layout != 'columns' -%}
         <div class="fs-case__visual"{% if s.layout == 'sticky' %} data-fs-sticky-visual{% endif %}>
@@ -31,7 +56,7 @@
         </div>
       {%- endif -%}
       <ol class="fs-case__parts{% if s.layout == 'columns' %} fs-grid fs-grid--{{ section.blocks.size | at_most: 4 | at_least: 2 }}{% endif %}" role="list"{% if s.layout == 'sticky' %} data-fs-sticky-steps{% endif %}>
-        {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
+        {%- for block in section.blocks -%}{%- if block.type != 'part' -%}{%- continue -%}{%- endif -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
           <li class="fs-case__part{% if s.layout == 'columns' %} {{ cards }}{% endif %}" data-fs-step="{{ forloop.index0 }}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
             <span class="fs-chip">{% case block.settings.kind %}{% when 'request' %}{{ s.label_request | default: 'La demande' | escape }}{% when 'constraints' %}{{ s.label_constraints | default: 'Les contraintes' | escape }}{% when 'answer' %}{{ s.label_answer | default: 'Notre réponse' | escape }}{% else %}{{ s.label_result | default: 'Le résultat' | escape }}{% endcase %}</span>
             {%- if block.settings.title != blank -%}<h3 class="fs-item__title">{{ block.settings.title | escape }}</h3>{%- endif -%}
@@ -40,6 +65,7 @@
         {%- endfor -%}
       </ol>
     </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -109,9 +135,55 @@
         {
           "value": "stacked",
           "label": "Image puis récit"
+        },
+        {
+          "value": "detail",
+          "label": "Besoin et réponse, galerie de détails, projets voisins"
         }
       ],
       "default": "sticky"
+    },
+    {
+      "type": "header",
+      "content": "Projets voisins (disposition « détail »)"
+    },
+    {
+      "type": "text",
+      "id": "nav_label",
+      "label": "Nom de la navigation",
+      "default": "Autres projets"
+    },
+    {
+      "type": "text",
+      "id": "prev_label",
+      "label": "Lien précédent",
+      "default": "Projet précédent"
+    },
+    {
+      "type": "text",
+      "id": "prev_title",
+      "label": "Nom du projet précédent"
+    },
+    {
+      "type": "url",
+      "id": "prev_link",
+      "label": "Adresse du projet précédent"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Lien suivant",
+      "default": "Projet suivant"
+    },
+    {
+      "type": "text",
+      "id": "next_title",
+      "label": "Nom du projet suivant"
+    },
+    {
+      "type": "url",
+      "id": "next_link",
+      "label": "Adresse du projet suivant"
     },
     {
       "type": "text",
@@ -341,6 +413,32 @@
           "label": "Fichier du projet"
         }
       ]
+    },
+    {
+      "type": "photo",
+      "name": "Photo de détail",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "image_asset",
+          "label": "Fichier du projet"
+        },
+        {
+          "type": "text",
+          "id": "image_alt",
+          "label": "Description de l'image"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Légende"
+        }
+      ]
     }
   ],
   "presets": [
@@ -351,6 +449,6 @@
       }
     }
   ],
-  "max_blocks": 6
+  "max_blocks": 8
 }
 {% endschema %}

@@ -14,26 +14,39 @@ import { parseSchemaBlock, storeProducts, themeLang, withDefaults, type SectionI
 import { intlLocale, pick, type Lang } from "../i18n";
 import { L } from "../i18n-server";
 import { sampleBlogs } from "./preview-samples";
+import { bienDrops } from "./biens-drop";
 
 // ---------------------------------------------------------------- polices
 
 /** Correspondance des polices Shopify utilisées par les directions → fichiers locaux. */
 export const FONT_FILES: Record<string, { family: string; files: Record<number, string>; italic?: Record<number, string>; fallback: string }> = {
   // Instrument Serif (italique d'accent des profils « conversion ») : fichiers locaux ; à confirmer dans la bibliothèque de polices Shopify à l'export.
+  newsreader: { family: "Newsreader", files: { 400: "Newsreader-400.ttf" }, fallback: "serif" },
+  // Anton (titres condensés de TRAVERSE, maquettes du 23 octobre) : fichier local sous licence OFL ; présence dans la bibliothèque de polices Shopify à confirmer à l'export.
+  anton: { family: "Anton", files: { 400: "Anton-400.ttf" }, fallback: "sans-serif" },
+  // Nunito très gras (titres ronds de MUSEAU CLUB, maquettes du 23 octobre) : fichier local sous licence OFL ; présence dans la bibliothèque de polices Shopify à confirmer à l'export.
+  nunito: { family: "Nunito", files: { 400: "Nunito-400.ttf", 700: "Nunito-700.ttf", 800: "Nunito-800.ttf", 900: "Nunito-900.ttf" }, fallback: "sans-serif" },
+  // APLAT (maquettes du 25 octobre) : titres et textes en Nunito Sans (bibliothèque Shopify), la plus proche du dessin humaniste des planches.
+  lato: { family: "Lato", files: { 300: "Lato-300.ttf", 400: "Lato-400.ttf", 700: "Lato-700.ttf", 900: "Lato-900.ttf" }, fallback: "sans-serif" },
   instrument_serif: { family: "Instrument Serif", files: { 400: "InstrumentSerif-400.ttf" }, italic: { 400: "InstrumentSerif-400italic.ttf" }, fallback: "serif" },
   cormorant: { family: "Cormorant", files: { 400: "Cormorant-400.ttf", 500: "Cormorant-500.ttf", 600: "Cormorant-600.ttf" }, italic: { 400: "Cormorant-500italic.ttf", 500: "Cormorant-500italic.ttf" }, fallback: "serif" },
   inter: { family: "Inter", files: { 400: "Inter-400.ttf", 500: "Inter-500.ttf", 600: "Inter-600.ttf", 700: "Inter-700.ttf", 800: "Inter-700.ttf" }, fallback: "sans-serif" },
-  jost: { family: "Jost", files: { 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf", 700: "Jost-600.ttf" }, fallback: "sans-serif" },
+  jost: { family: "Jost", files: { 300: "Jost-300.ttf", 400: "Jost-400.ttf", 500: "Jost-500.ttf", 600: "Jost-600.ttf", 700: "Jost-600.ttf" }, fallback: "sans-serif" },
   dm_sans: { family: "DM Sans", files: { 400: "DMSans-400.ttf", 500: "DMSans-500.ttf", 700: "DMSans-700.ttf" }, fallback: "sans-serif" },
   archivo: { family: "Archivo", files: { 400: "Archivo-400.ttf", 600: "Archivo-600.ttf", 700: "Archivo-800.ttf", 800: "Archivo-800.ttf" }, fallback: "sans-serif" },
   chivo: { family: "Chivo", files: { 400: "Chivo-400.ttf", 600: "Chivo-600.ttf", 700: "Chivo-800.ttf" }, fallback: "sans-serif" },
   lora: { family: "Lora", files: { 400: "Lora-400.ttf", 600: "Lora-600.ttf", 700: "Lora-600.ttf" }, fallback: "serif" },
   work_sans: { family: "Work Sans", files: { 400: "WorkSans-400.ttf", 500: "WorkSans-500.ttf", 600: "WorkSans-600.ttf", 700: "WorkSans-600.ttf" }, fallback: "sans-serif" },
   space_grotesk: { family: "Space Grotesk", files: { 400: "SpaceGrotesk-400.ttf", 500: "SpaceGrotesk-500.ttf", 700: "SpaceGrotesk-700.ttf" }, fallback: "sans-serif" },
-  montserrat: { family: "Montserrat", files: { 400: "Montserrat-400.ttf", 600: "Montserrat-600.ttf", 700: "Montserrat-800.ttf", 800: "Montserrat-800.ttf" }, fallback: "sans-serif" },
+  montserrat: { family: "Montserrat", files: { 400: "Montserrat-400.ttf", 600: "Montserrat-600.ttf", 700: "Montserrat-700.ttf", 800: "Montserrat-800.ttf" }, fallback: "sans-serif" },
   karla: { family: "Karla", files: { 400: "Karla-400.ttf", 600: "Karla-600.ttf", 700: "Karla-600.ttf" }, fallback: "sans-serif" },
   libre_baskerville: { family: "Libre Baskerville", files: { 400: "LibreBaskerville-400.ttf", 700: "LibreBaskerville-700.ttf" }, fallback: "serif" },
-  playfair_display: { family: "Playfair Display", files: { 400: "PlayfairDisplay-400.ttf", 600: "PlayfairDisplay-600.ttf", 700: "PlayfairDisplay-700.ttf" }, fallback: "serif" },
+  playfair_display: { family: "Playfair Display", files: { 400: "PlayfairDisplay-400.ttf", 600: "PlayfairDisplay-600.ttf", 700: "PlayfairDisplay-700.ttf" }, italic: { 800: "PlayfairDisplay-800italic.ttf" }, fallback: "serif" },
+  // FRAISE : titres ronds et gras, italique d'accent (Playfair Display 800 italique) — OFL, bibliothèque de polices Shopify.
+  poppins: { family: "Poppins", files: { 400: "Poppins-400.ttf", 500: "Poppins-500.ttf", 600: "Poppins-600.ttf", 700: "Poppins-700.ttf", 800: "Poppins-800.ttf" }, fallback: "sans-serif" },
+  // SILLON V2 : grands titres condensés, étiquettes à chasse fixe, signature fine (OFL, bibliothèque de polices Shopify).
+  space_mono: { family: "Space Mono", files: { 400: "SpaceMono-400.ttf", 700: "SpaceMono-700.ttf" }, fallback: "monospace" },
+  oswald: { family: "Oswald", files: { 200: "Oswald-200.ttf", 300: "Oswald-300.ttf", 500: "Oswald-500.ttf", 700: "Oswald-700.ttf" }, fallback: "sans-serif" },
 };
 
 export const FONT_HANDLES = Object.keys(FONT_FILES).flatMap((k) => [
@@ -255,6 +268,7 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
         line_price: price * l.quantity,
         final_line_price: finalLine,
         url_to_remove: `${base}/cart/change?line=${i + 1}&quantity=0`,
+        options_with_values: ((p.options ?? []) as string[]).map((name, oi) => ({ name, value: v.options?.[oi] ?? "" })),
       };
     });
   const cart = {
@@ -273,9 +287,13 @@ function buildStore(opts: PreviewOptions, current: { product?: string; collectio
     money_format: lang === "en" ? "€{{amount}}" : "{{amount_with_comma_separator}} €",
     customer_accounts_enabled: false,
     es_demo_contact: spec.meta?.demo?.isDemo === true && spec.meta.demo.contactTest === true,
+    // Démonstration du studio : les formulaires Maison & Horizon n'envoient rien et le disent (jamais de fausse confirmation).
+    es_demo: spec.meta?.demo?.isDemo === true,
     policies,
     enabled_payment_types: spec.store.paymentTypes ?? [],
     password_message: "",
+    // Biens immobiliers (Maison & Horizon) : `shop.metaobjects.bien.values`, comme les métaobjets de Shopify.
+    metaobjects: { bien: { values: bienDrops(spec.store.biens, base) } },
   };
   const routes = {
     root_url: `${base}/`,
@@ -565,6 +583,8 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
   });
   f("placeholder_svg_tag", (name: string, cls = "") => placeholderSvg(name, cls));
   f("money", (c: unknown) => money(c, lang));
+  // Comme Shopify : « 129 € » pour un montant rond, « 12,50 € » sinon.
+  f("money_without_trailing_zeros", (c: unknown) => money(c, lang).replace(/[.,]00(?=\D*$)/, ""));
   f("money_with_currency", (c: unknown) => (c === null || c === undefined ? priceToSet(lang) : `${money(c, lang)} EUR`));
   f("money_without_currency", (c: unknown) => (c === null || c === undefined ? "" : lang === "en" ? (Number(c) / 100).toFixed(2) : (Number(c) / 100).toFixed(2).replace(".", ",")));
   f("t", (key: string, ...args: any[]) => translate(locale, key, Object.fromEntries(args.filter(Array.isArray))));
@@ -727,6 +747,12 @@ export function routeFor(spec: ThemeSpec, pathname: string, search: URLSearchPar
   }
   if (p === "/search") return { template: "search", status: 200, search: search.get("q") ?? "" };
   if (p === "/cart") return { template: "cart", status: 200 };
+  // Fiche d'un bien immobilier (Maison & Horizon) : page du métaobjet « bien », comme dans Shopify.
+  m = p.match(/^\/pages\/bien\/([^/]+)$/);
+  if (m) {
+    const bien = (spec.store.biens ?? []).find((b) => b.handle === m![1]);
+    return bien && spec.templates["metaobject/bien"] ? { template: "metaobject/bien", status: 200, handle: bien.handle } : { template: "404", status: 404 };
+  }
   m = p.match(/^\/pages\/([^/]+)$/);
   if (m) {
     const page = spec.store.pages.find((x) => x.handle === m![1]);
@@ -771,6 +797,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const globalSettings = globalSettingsFor(files, opts.base);
 
   let page: any = null;
+  let metaobject: any = null;
   // Accueil : titre pour Google (Theme V2) quand il existe, sinon le nom de la boutique.
   let pageTitle = tplKey === "index" && opts.spec.store.seo?.title ? opts.spec.store.seo.title : opts.spec.store.shopName;
   let seoDescription: string | null = tplKey === "index" ? opts.spec.store.seo?.description || null : null;
@@ -783,6 +810,12 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     if (sp) page = { title: sp.title, content: sp.body_html, handle: sp.handle, url: `${opts.base}/pages/${sp.handle}`, template_suffix: sp.template_suffix };
     pageTitle = sp?.seo?.title || sp?.title || pageTitle;
     seoDescription = sp?.seo?.description || null;
+  } else if (tplKey === "metaobject/bien") {
+    metaobject = (store.shop.metaobjects.bien.values as any[]).find((b) => b.system.handle === route.handle) ?? null;
+    if (metaobject) {
+      pageTitle = `${metaobject.titre.value} | ${opts.spec.store.shopName}`;
+      seoDescription = String(metaobject.accroche.value || metaobject.description.value).slice(0, 160) || null;
+    }
   } else if (tplKey === "product" || tplKey.startsWith("product.")) {
     const product = storeProducts(opts.spec).find((p) => p.handle === route.handle);
     pageTitle = product?.seo?.title || store.product.title;
@@ -812,6 +845,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     product: tplKey === "product" || tplKey.startsWith("product.") ? store.product : null,
     cart: store.cart,
     page,
+    metaobject,
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
     // Articles « Exemple » pour l'aperçu du studio uniquement (section featured-blog) ; jamais dans le thème exporté.
     blogs: sampleBlogs(opts.spec, opts.base, lang),
@@ -900,12 +934,19 @@ export async function renderNamedSections(opts: PreviewOptions, names: string[],
   return out;
 }
 
-/** Préfixe les liens absolus du thème par l'adresse de l'aperçu. */
+/** Préfixe les liens absolus du thème par l'adresse de l'aperçu (et les destinations des formulaires d'exemple : page
+ * de confirmation de la commande, compte après connexion). */
 export function rewriteLinks(html: string, base: string): string {
-  return html.replace(/(href|action)="\/(?!\/)([^"]*)"/g, (all, attr, rest) => {
+  return html.replace(/(href|action|data-confirm|data-success)="\/(?!\/)([^"]*)"/g, (all, attr, rest) => {
     const full = `/${rest}`;
     if (full.startsWith(base + "/") || full === base) return all;
     return `${attr}="${base}${full === "/" ? "/" : full}"`;
+  // Liens d'un texte riche gardé dans un attribut (ex. ONDE, « data-texts » des étapes de la commande, posé par le script) :
+  // mêmes adresses, guillemets échappés (mission #190 : « Conditions de vente » menait hors de l'aperçu).
+  }).replace(/href=(&quot;|&#34;)\/(?!\/)(.*?)\1/g, (all, q: string, rest: string) => {
+    const full = `/${rest}`;
+    if (full.startsWith(base + "/") || full === base || !base) return all;
+    return `href=${q}${base}${full}${q}`;
   });
 }
 

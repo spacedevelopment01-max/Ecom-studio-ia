@@ -1,0 +1,53 @@
+{%- comment -%}
+  Contenu du panier latéral d'ONDE (planche 06, « Tiroir panier ») : titre et nombre, ligne (miniature, nom, finition,
+  quantité −/+, suppression, prix), encadré graphite (sous-total, livraison calculée à l'étape suivante, commande,
+  « voir mon panier »). Mêmes accroches que le panier latéral commun (data-key, data-qty-change, data-cart-close) :
+  le script du thème modifie les quantités et redessine ce contenu.
+{%- endcomment -%}
+<div class="es-drawer__head on-drawer__head">
+  <h2 id="CartDrawerTitle" class="es-drawer__title on-drawer__title">{{ settings.cart_heading | default: 'cart.title' | t }} <span data-cart-drawer-count>({{ cart.item_count }})</span></h2>
+  <button type="button" class="es-icon-button" data-cart-close aria-label="{{ 'cart.close' | t }}">{% render 'icon', name: 'close' %}</button>
+</div>
+<div class="es-drawer__scroll on-drawer__scroll" data-cart-scroll>
+  <div class="es-drawer__body" data-cart-items>
+    {%- if cart.item_count == 0 -%}
+      <div class="on-drawer__empty">
+        <p class="on-drawer__empty-title">{{ settings.cart_empty_title | default: 'cart.empty' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="on-button on-button--lime">{{ 'cart.continue' | t }}{% render 'icon', name: 'arrow' %}</a>
+      </div>
+    {%- else -%}
+      <ul role="list" class="on-drawer__lines">
+        {%- for item in cart.items -%}
+          <li class="on-dline" data-line="{{ forloop.index }}" data-key="{{ item.key }}">
+            <a href="{{ item.url }}" class="on-dline__media" tabindex="-1" aria-hidden="true">{%- if item.image -%}{{ item.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</a>
+            <div class="on-dline__info">
+              <a href="{{ item.url }}" class="on-dline__title">{{ item.product.title | escape }}</a>
+              {%- unless item.product.has_only_default_variant -%}<p class="on-dline__note">{{ item.variant.title | escape }}</p>{%- endunless -%}
+              <div class="on-dline__controls">
+                <span class="on-qty on-qty--small">
+                  <button type="button" data-qty-change="{{ item.quantity | minus: 1 }}" aria-label="{{ 'cart.decrease' | t }}">{% render 'icon', name: 'minus' %}</button>
+                  <span aria-live="polite">{{ item.quantity }}</span>
+                  <button type="button" data-qty-change="{{ item.quantity | plus: 1 }}" aria-label="{{ 'cart.increase' | t }}">{% render 'icon', name: 'plus' %}</button>
+                </span>
+                <button type="button" class="on-dline__remove" data-qty-change="0" aria-label="{{ 'cart.remove' | t }} : {{ item.product.title | escape }}">{% render 'icon', name: 'trash' %}</button>
+              </div>
+              <p class="on-dline__price">{% if settings.price_trim_zeros %}{{ item.final_line_price | money_without_trailing_zeros }}{% else %}{{ item.final_line_price | money }}{% endif %}</p>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+{%- if cart.item_count > 0 -%}
+  <div class="es-drawer__foot on-drawer__foot">
+    <dl class="on-summary__rows">
+      <div class="on-summary__sub"><dt>{{ 'cart.subtotal' | t }}</dt><dd>{% if settings.price_trim_zeros %}{{ cart.total_price | money_without_trailing_zeros }}{% else %}{{ cart.total_price | money }}{% endif %}</dd></div>
+      <div><dt>{{ 'cart.shipping' | t }}</dt><dd>{{ 'cart.shipping_next_step' | t }}</dd></div>
+    </dl>
+    <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm">
+      <button type="submit" name="checkout" class="on-button on-button--lime on-drawer__checkout">{{ settings.cart_checkout_label | default: 'cart.checkout' | t }}{% render 'icon', name: 'arrow' %}</button>
+    </form>
+    <a class="on-drawer__view" href="{{ routes.cart_url }}">{{ 'cart.view_cart' | t }}{% render 'icon', name: 'arrow' %}</a>
+  </div>
+{%- endif -%}

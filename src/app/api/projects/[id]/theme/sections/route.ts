@@ -12,6 +12,7 @@ import { addable, libraryEntry } from "@/lib/theme/section-library";
 import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { sectionContentContext } from "@/lib/theme/section-content";
 import { resolveLibraryType } from "@/lib/theme/family-gallery";
+import { sectionSchema } from "@/lib/theme/spec";
 import { entryByKey, pickT } from "@/lib/theme/section-families";
 
 const familyName = (key: string, lang: "fr" | "en") => { const e = entryByKey(key); return e ? pickT(e.name, lang) : null; };
@@ -26,9 +27,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const raw = await body(req, z.object({ type: z.string().max(120), template: z.string().max(80), index: z.number().int().min(0).optional(), replace: z.string().max(120).optional() }));
-  // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
+  // Élément de galerie (« fam:<fonction>~<disposition> » ou « own:<section>~<disposition> ») : section et réglages.
   if(!cur.spec.imported)assertLibrarySelection(p.id,raw.type,raw.replace?cur.spec.templates[raw.template]?.sections[raw.replace]?.type:undefined);
-  const lib = resolveLibraryType(raw.type);
+  const lib = resolveLibraryType(raw.type, (t) => sectionSchema(cur.spec, t, uiLang()), uiLang());
   const b = { ...raw, type: lib.type };
   if (!addable(b.type)) throw new HttpError(400, L("Cette section ne s'ajoute pas depuis la bibliothèque.", "This section can't be added from the library."));
   // Galerie contextuelle : une section incompatible avec le thème installé ou la catégorie du projet est refusée ici
@@ -36,7 +37,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const kind = projectKind(p);
   const why = sectionIncompatibility(cur.spec, b.type, kind, uiLang());
   if (why) throw new HttpError(400, L(`Section incompatible avec ce thème ou cette catégorie : ${why}`, `Section incompatible with this theme or category: ${why}`));
-  const filled = withProjectMedia(cur.spec, b.type, { ...lib.settings }, undefined, sectionContentContext(p, cur.spec, false, b.template));
+  const filled = withProjectMedia(cur.spec, b.type, { ...lib.settings }, lib.blocks, sectionContentContext(p, cur.spec, false, b.template));
   if (b.replace) {
     const prev = cur.spec.templates[b.template]?.sections[b.replace];
     if (!prev) throw new HttpError(404, L("Section introuvable.", "Section not found."));

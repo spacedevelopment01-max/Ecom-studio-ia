@@ -1,0 +1,9 @@
+{%- comment -%}
+  PHASE : logo sans fichier — nom de la marque et signature en capitales ; le monogramme « P » à double trait de la
+  démonstration (retracé d'après l'extrait du kit, pas un master vectoriel) n'est dessiné que si « monogram » est coché.
+  Paramètres : brand, tagline, monogram.
+{%- endcomment -%}
+<span class="ph-logo{% if monogram %} has-mark{% endif %}">
+  {%- if monogram -%}<svg class="ph-logo__mark" viewBox="0 0 21.4 22" fill="none" aria-hidden="true" focusable="false"><path d="M1.1 1H20.2V14.9H10.4M1.1 5.2V20.9H6.4V5.7H14.7V11.2" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/></svg>{%- endif -%}
+  <span class="ph-logo__words"><span class="ph-logo__name">{{ brand }}</span>{%- if tagline != blank -%}<span class="ph-logo__tag">{{ tagline }}</span>{%- endif -%}</span>
+</span>

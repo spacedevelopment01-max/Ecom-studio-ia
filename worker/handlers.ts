@@ -34,6 +34,11 @@ import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } fro
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
 import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { hasStudioProducts, withStudioProducts } from "../src/lib/products/catalog";
+import { syncProducts } from "../src/lib/products/sync";
+import { decrypt } from "../src/lib/secrets";
+import { getSetting } from "../src/lib/settings";
+import { shopifyConnector } from "../src/lib/products/connectors/shopify";
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
@@ -492,12 +497,19 @@ export const handlers: Record<string, Handler> = {
     // n'est jamais envoyé vers la boutique réelle.
     const checked = await ctx.step("cms-v2-check", async () => {
       const { exportAndRecord } = await import("../src/lib/cms-v2/record");
-      const r = await exportAndRecord({ id: projectId, userId: ctx.job.user_id }, { spec: cur.spec, number: cur.version.number, id: cur.version.id }, "shopify", contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
+      const r = await exportAndRecord({ id: projectId, userId: ctx.job.user_id }, { spec: withStudioProducts(cur.spec, projectId), number: cur.version.number, id: cur.version.id }, "shopify", contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
       return { verdict: r.verdict, message: r.message, issues: r.issues };
     });
     if (checked.verdict === "REJECTED") throw new PermanentError(`${L("Envoi bloqué par le contrôle de l'export Shopify : ", "Sending blocked by the Shopify export check: ")}${checked.message}`);
     const out: Record<string, unknown> = { cmsCheck: checked.verdict };
-    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
+    // Produits du Studio (onglet « Catalogue ») : envoi avec toutes les variantes, références et stocks, correspondances
+    // conservées (mise à jour sans doublon, stock vendu dans la boutique jamais écrasé). Sinon, le produit de la boutique.
+    if (parts.includes("product") && hasStudioProducts(projectId)) out.catalog = await ctx.step("catalog", async () => {
+      ctx.progress(0.1, L("Envoi des produits du Studio vers Shopify", "Sending the Studio products to Shopify"));
+      const r = await syncProducts(projectId, shopifyConnector({ shop: c.external_id, token: decrypt(c.access_token) ?? "", apiVersion: getSetting("shopify.apiVersion") || undefined }));
+      return r.counts;
+    });
+    else if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
     // SEO des fiches : envoyé / accepté / refusé / inconnu, jamais présenté comme vérifié.

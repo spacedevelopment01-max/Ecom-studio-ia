@@ -31,6 +31,14 @@ Ambiance et lookbook (e-commerce) : une scène et des repères numérotés qui i
           </div>
         {%- endfor -%}
       </figure>
+      {%- if s.layout == 'detail' -%}
+        <div class="fs-look__details">
+          {%- for block in section.blocks -%}
+            <details class="fs-look__detail"{% render 'fs-reveal', effect: fx %}><summary><span class="fs-look__n" aria-hidden="true">{{ forloop.index }}</span><span class="fs-item__title">{{ block.settings.title | escape }}</span><span class="fs-look__plus" aria-hidden="true"></span></summary>{%- if block.settings.text != blank -%}<div class="fs-item__text">{{ block.settings.text }}</div>{%- endif -%}</details>
+          {%- endfor -%}
+          {%- if s.note != blank -%}<p class="fs-note">{{ s.note | escape }}</p>{%- endif -%}
+        </div>
+      {%- endif -%}
       {%- if s.layout == 'side' -%}
         <ol class="fs-look__list" role="list">
           {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
@@ -122,9 +130,19 @@ Ambiance et lookbook (e-commerce) : une scène et des repères numérotés qui i
         {
           "value": "side",
           "label": "Scène et liste des produits"
+        },
+        {
+          "value": "detail",
+          "label": "Repères numérotés et détails dépliables"
         }
       ],
       "default": "markers"
+    },
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Mention sous les détails",
+      "info": "Disposition « Repères et détails » : ex. « Données techniques à renseigner pour le produit réel. »"
     },
     {
       "type": "image_picker",
@@ -317,6 +335,11 @@ Ambiance et lookbook (e-commerce) : une scène et des repères numérotés qui i
           "step": 1,
           "unit": "%",
           "default": 50
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Détail (disposition « Repères et détails »)"
         }
       ]
     }

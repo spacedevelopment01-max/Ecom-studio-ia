@@ -15,6 +15,7 @@
  */
 import type { StoreKind } from "./store-kind";
 import { isReferenceThemeId } from "./theme-fit";
+import { ownerThemeOf } from "./theme-own-sections";
 
 export type SectionFit = {
   /** Catégories de projet où la section a un sens (absent : toutes). */
@@ -26,8 +27,8 @@ export type SectionFit = {
 };
 
 const SHOP: StoreKind[] = ["catalog", "specialty"];
-const CONVERSION_THEMES = ["fraise", "sillon", "noctil", "traverse", "museau-club"];
-const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove", "onde", "souple"];
+const CONVERSION_THEMES = ["fraise", "sillon", "noctil", "traverse", "museau-club", "souple"];
+const EDITORIAL_THEMES = ["orbe", "rive", "heuren", "alcove", "souple"];
 // Vitrine et Jardin sont retirés du catalogue (19 octobre) mais rendent encore ces sections : un projet existant qui les
 // utilise les garde compatibles ; aucun thème actif autre qu'ORBE / Rive ne se les voit proposer.
 const REFERENCE_THEMES = ["vitrine", "jardin", "orbe", "rive"];
@@ -46,9 +47,12 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "cv-gallery": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-specs": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-banner": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
+  "cv-rise": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-stories": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-ingredients": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   "cv-quote": { themes: CONVERSION_THEMES, profiles: ["conversion"] },
+  // SOUPLE (maquettes du 23 octobre) : caractéristiques, produits associés et questions en trois colonnes sous la fiche.
+  "cv-infos": { kinds: SHOP, themes: CONVERSION_THEMES, profiles: ["conversion"] },
   // Compositions éditoriales (ORBE, Atelier Rive).
   "ed-opening": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-statement": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
@@ -57,6 +61,39 @@ export const SECTION_FIT: Record<string, SectionFit> = {
   "ed-study": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-contact": { themes: EDITORIAL_THEMES, profiles: ["editorial"] },
   "ed-finishes": { kinds: SHOP, themes: EDITORIAL_THEMES, profiles: ["editorial"] },
+  // ONDE (sept planches du 24 octobre, PR #183) : sections « on-* » stylées par assets/onde.css, chargé avec ce thème.
+  "on-banner": { kinds: SHOP, themes: ["onde"] },
+  "on-cards": { kinds: SHOP, themes: ["onde"] },
+  "on-journal": { kinds: SHOP, themes: ["onde"] },
+  "on-faq": { kinds: SHOP, themes: ["onde"] },
+  "on-newsletter": { kinds: SHOP, themes: ["onde"] },
+  "on-product": { kinds: SHOP, themes: ["onde"] },
+  "on-checkout": { kinds: SHOP, themes: ["onde"] },
+  "on-help": { kinds: SHOP, themes: ["onde"] },
+  "on-article": { kinds: SHOP, themes: ["onde"] },
+  // Immobilier (MAISON & HORIZON, issue #172) : sections stylées par assets/horizon.css, chargé avec ce thème seulement.
+  // « re-bien » (fiche d'un bien) n'y figure pas : composant structurel posé par le moteur, jamais ajouté depuis la galerie.
+  "re-hero": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-listings": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-tiles": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-feature": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-form": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-favorites": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-account": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-legal": { kinds: ["services"], themes: ["maison-horizon"] },
+  "re-article": { kinds: ["services"], themes: ["maison-horizon"] },
+  // APLAT (dix planches du 25 octobre, docs/theme-briefs/aplat) : sections « ap-* » stylées par assets/aplat.css,
+  // chargé avec ce thème seulement. En-tête, pied et confirmation : composants posés par le moteur.
+  "ap-hero": { kinds: ["services"], themes: ["aplat"] },
+  "ap-strip": { kinds: ["services"], themes: ["aplat"] },
+  "ap-split": { kinds: ["services"], themes: ["aplat"] },
+  "ap-cards": { kinds: ["services"], themes: ["aplat"] },
+  "ap-compare": { kinds: ["services"], themes: ["aplat"] },
+  "ap-faq": { kinds: ["services"], themes: ["aplat"] },
+  "ap-cta": { kinds: ["services"], themes: ["aplat"] },
+  "ap-form": { kinds: ["services"], themes: ["aplat"] },
+  "ap-article": { kinds: ["services"], themes: ["aplat"] },
+  "ap-legal": { kinds: ["services"], themes: ["aplat"] },
   // Compositions de référence (Vitrine, Jardin) et leurs dérivées.
   "ref-hero": { themes: REFERENCE_THEMES },
   "ref-editorial": { themes: REFERENCE_THEMES },
@@ -114,17 +151,26 @@ export type FitContext = {
   settings?: Record<string, unknown>;
 };
 
+const OWN_PROFILES = new Set(["onde"]);
 function activeProfiles(settings?: Record<string, unknown>): Set<"conversion" | "editorial"> {
   const out = new Set<"conversion" | "editorial">();
   const conv = String(settings?.conversion_profile ?? "none");
   const ed = String(settings?.editorial_profile ?? "none");
-  if (conv && conv !== "none") out.add("conversion");
+  // Profil propre à un thème (ONDE : sections « on-* » seulement) : n'ouvre pas les sections cv-* communes.
+  if (conv && conv !== "none" && !OWN_PROFILES.has(conv)) out.add("conversion");
   if (ed && ed !== "none") out.add("editorial");
   return out;
 }
 
 /** Vérifie une section contre le contexte ; renvoie le motif d'incompatibilité (vide si compatible). */
 export function sectionFitReason(type: string, ctx: FitContext, lang: "fr" | "en" = "fr"): string {
+  // Section propre à un thème refait d'après maquette (fg-, sv-, ts-, an-, pa-, ph-…) : seul ce thème sait la rendre.
+  const owner = ownerThemeOf(type);
+  if (owner && owner !== ctx.theme) {
+    return lang === "en"
+      ? `Section belonging to the ${owner} theme (drawn from its mockups); another theme can't render it.`
+      : `Section propre au thème ${owner} (dessinée d'après ses maquettes) ; un autre thème ne sait pas la rendre.`;
+  }
   const fit = SECTION_FIT[type];
   if (!fit) return "";
   if (fit.kinds && ctx.kind && !fit.kinds.includes(ctx.kind)) {

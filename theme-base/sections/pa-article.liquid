@@ -1,0 +1,85 @@
+{%- comment -%}
+  PARENTHÈSE : article du journal (planche 05) : fil d'Ariane, grande photo de couverture, catégorie, titre, date et
+  temps de lecture, introduction, conseils numérotés 01, 02, 03 (chacun avec sa photo fondue), citation sur fond doux
+  avec feuillage. Le contenu complet de chaque article est écrit dans ses blocs (jamais de paragraphes répétés).
+  Blocs : « Conseil numéroté ».
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<article class="pa-section pa-article">
+  <div class="pa-wrap pa-article__wrap">
+    {%- if s.crumb1_label != blank -%}
+      <nav class="pa-crumbs" aria-label="{{ s.crumbs_label | escape }}">
+        <ol role="list"><li><a href="{{ s.crumb1_link | default: '/' }}">{{ s.crumb1_label }}</a></li>{%- if s.crumb2_label != blank -%}<li><a href="{{ s.crumb2_link }}">{{ s.crumb2_label }}</a></li>{%- endif -%}<li aria-current="page">{{ s.title | strip_newlines }}</li></ol>
+      </nav>
+    {%- endif -%}
+    {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, loading: 'eager', class: 'pa-article__cover' %}
+    <header class="pa-article__head">
+      {%- if s.category != blank -%}<p class="pa-eyebrow">{{ s.category }}</p>{%- endif -%}
+      <h1 class="pa-article__title">{{ s.title | escape | newline_to_br }}</h1>
+      <p class="pa-article__meta">{% if s.date != blank %}<span>{{ s.date }}</span>{% endif %}{% if s.date != blank and s.reading != blank %}<span aria-hidden="true">•</span>{% endif %}{% if s.reading != blank %}<span>{{ s.reading }}</span>{% endif %}</p>
+    </header>
+    {%- if s.intro != blank -%}<div class="pa-article__intro">{{ s.intro }}</div>{%- endif -%}
+    {%- if section.blocks.size > 0 -%}
+      <ol class="pa-article__tips" role="list">
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          <li class="pa-tip{% if b.image_side == 'left' %} pa-tip--left{% endif %}" {{ block.shopify_attributes }}>
+            <span class="pa-tip__num" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <div class="pa-tip__copy"><h2 class="pa-tip__title">{{ b.title }}</h2><div class="pa-tip__text">{{ b.text }}</div></div>
+            {% render 'pa-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position, class: 'pa-tip__img' %}
+          </li>
+        {%- endfor -%}
+      </ol>
+    {%- endif -%}
+    {%- if s.outro != blank -%}<div class="pa-article__outro">{{ s.outro }}</div>{%- endif -%}
+  </div>
+  {%- if s.quote != blank -%}
+    <figure class="pa-quote">
+      <div class="pa-wrap pa-quote__inner">
+        {% render 'pa-ornament', name: 'leaves', class: 'pa-quote__leaves' %}
+        <span class="pa-quote__mark" aria-hidden="true">“</span>
+        <blockquote>{{ s.quote | escape | newline_to_br }}</blockquote>
+      </div>
+    </figure>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "Article Parenthèse",
+  "class": "pa-article-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "crumbs_label", "label": "Nom du fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "crumb1_label", "label": "Premier lien", "default": "Accueil" },
+    { "type": "url", "id": "crumb1_link", "label": "Adresse du premier lien" },
+    { "type": "text", "id": "crumb2_label", "label": "Deuxième lien", "default": "Conseils" },
+    { "type": "url", "id": "crumb2_link", "label": "Adresse du deuxième lien" },
+    { "type": "image_picker", "id": "image", "label": "Photo de couverture" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "category", "label": "Catégorie", "default": "Quotidien" },
+    { "type": "textarea", "id": "title", "label": "Titre", "default": "Faire une place à la pause dans sa journée" },
+    { "type": "text", "id": "date", "label": "Date de publication" },
+    { "type": "text", "id": "reading", "label": "Temps de lecture" },
+    { "type": "richtext", "id": "intro", "label": "Introduction" },
+    { "type": "richtext", "id": "outro", "label": "Conclusion (facultative)" },
+    { "type": "textarea", "id": "quote", "label": "Citation" }
+  ],
+  "blocks": [
+    {
+      "type": "tip", "name": "Conseil numéroté",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Titre", "default": "Choisir un moment qui vous convient" },
+        { "type": "richtext", "id": "text", "label": "Texte" },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "select", "id": "image_side", "label": "Côté de la photo", "default": "right", "options": [{ "value": "right", "label": "Droite" }, { "value": "left", "label": "Gauche" }] }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Article Parenthèse" }]
+}
+{% endschema %}
