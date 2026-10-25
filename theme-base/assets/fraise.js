@@ -405,7 +405,7 @@
       if (!c.items || !c.items.length) { boxes.forEach(function (b) { b.innerHTML = ''; }); $$('[data-fg-co-subtotal], [data-fg-co-total]', root).forEach(function (st) { st.textContent = money(0); }); return; }
       var html = c.items.map(function (it) {
         var info = lineInfo(it), img = it.image || '';
-        return '<div class="fg-co__item"><span class="fg-co__thumb">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '</span><div class="fg-co__iname"><b>' + esc(CFG.lineBrand || it.product_title) + '</b>' + (CFG.lineBrand ? '<span>' + esc(it.product_title) + '</span>' : '') + (info.name ? '<span>' + esc(info.name) + '</span>' : '') + '<span class="fg-co__iprice">' + esc(money(it.final_line_price)) + '</span><span class="fg-co__iqty">' + esc(fill(T.qty || 'Quantité : [q]', { q: it.quantity })) + (info.per ? ' · ' + esc(fill(T.units || '[n]', { n: info.units })) : '') + '</span></div></div>';
+        return '<div class="fg-co__item"><span class="fg-co__thumb">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '</span><div class="fg-co__iname"><b>' + esc(CFG.lineBrand || it.product_title) + '</b>' + (CFG.lineBrand ? '<span>' + esc(it.product_title) + '</span>' : '') + (info.name ? '<span>' + esc(info.name) + '</span>' : '') + '<span class="fg-co__iprice">' + esc(money(it.final_line_price)) + '</span><span class="fg-co__iqty">' + esc(fill(T.qty || 'Quantité : [q]', { q: it.quantity })) + (info.per && info.units > 1 ? ' · ' + esc(fill(T.units || '[n]', { n: info.units })) : '') + '</span></div></div>';
       }).join('');
       boxes.forEach(function (b) { b.innerHTML = html; });
       $$('[data-fg-co-subtotal], [data-fg-co-total]', root).forEach(function (st) { st.textContent = money(c.total_price); });

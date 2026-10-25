@@ -11,7 +11,7 @@
   <div class="fg-co__items" data-fg-co-items>
     {%- for item in cart.items -%}
       {%- assign per = item.variant.option1 | split: ' ' | first | plus: 0 -%}{%- assign units = per | times: item.quantity -%}
-      <div class="fg-co__item"><span class="fg-co__thumb">{%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</span><div class="fg-co__iname"><b>{{ s.line_brand | default: item.product.title }}</b>{%- if s.line_brand != blank -%}<span>{{ item.product.title }}</span>{%- endif -%}{%- unless item.variant.title == 'Default Title' -%}<span>{{ item.variant.title }}</span>{%- endunless -%}<span class="fg-co__iprice">{{ item.final_line_price | money }}</span><span class="fg-co__iqty">{{ s.qty_label | replace: '[q]', item.quantity }}{% if per > 0 %} · {{ s.units_label | replace: '[n]', units }}{% endif %}</span></div></div>
+      <div class="fg-co__item"><span class="fg-co__thumb">{%- if item.image -%}{{ item.image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</span><div class="fg-co__iname"><b>{{ s.line_brand | default: item.product.title }}</b>{%- if s.line_brand != blank -%}<span>{{ item.product.title }}</span>{%- endif -%}{%- unless item.variant.title == 'Default Title' -%}<span>{{ item.variant.title }}</span>{%- endunless -%}<span class="fg-co__iprice">{{ item.final_line_price | money }}</span><span class="fg-co__iqty">{{ s.qty_label | replace: '[q]', item.quantity }}{% if per > 0 and units > 1 %} · {{ s.units_label | replace: '[n]', units }}{% endif %}</span></div></div>
     {%- endfor -%}
   </div>
 {%- endcapture -%}
@@ -104,7 +104,7 @@
         <div><dt>{{ s.shipping_label }}</dt><dd>{{ s.shipping_value }}</dd></div>
         <div class="fg-co__tot"><dt>{{ s.total_label }}</dt><dd data-fg-co-total>{{ cart.total_price | money }}</dd></div>
       </dl>
-      <div class="fg-co__secure">{% render 'fg-icon', name: 'leaf' %}<div><p class="fg-co__sect">{{ s.secure_title }}</p><p>{{ s.secure_text }}</p></div></div>
+      <div class="fg-co__secure">{% render 'fg-icon', name: 'leaf', class: 'fg-only-m' %}{% render 'fg-art', name: 'leaf-solid', class: 'fg-only-d' %}<div><p class="fg-co__sect">{{ s.secure_title }}</p><p>{{ s.secure_text }}</p></div></div>
     </aside>
   </div>
 </section>

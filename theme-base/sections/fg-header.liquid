@@ -110,7 +110,7 @@
       {%- endif -%}
       {%- if fg_cart -%}
         <a class="fg-header__icon fg-header__cart{% if cart.item_count > 0 %} has-items{% endif %}" href="{{ routes.cart_url }}" data-fg-cart-link>
-          <span class="visually-hidden">{{ s.cart_label }}</span>{% render 'fg-icon', name: 'jarbag' %}
+          <span class="visually-hidden">{{ s.cart_label }}</span>{% render 'fg-icon', name: 'jarbag', class: 'fg-ico--jarbag' %}{% render 'fg-icon', name: 'bag', class: 'fg-ico--bag' %}
           <span class="fg-header__count" data-fg-count data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
         </a>
       {%- endif -%}
