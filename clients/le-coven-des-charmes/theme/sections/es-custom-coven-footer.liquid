@@ -1,8 +1,8 @@
 {%- comment -%}
   Le Coven des Charmes — pied de page (projet client dédié). Deux compositions ordinateur dessinées sur les planches :
-  « colonnes » (accueil, produit, achat : rameaux dorés, liens en colonnes, lunes et logo au centre) et « ligne »
-  (tirage, Coven, créations, FAQ : logo à gauche, liens en ligne). Téléphone : grande lune sur les rameaux et liens
-  centrés, ou colonnes autour du logo (accueil). Préférences de cookies : aucun traceur facultatif avant accord.
+  « colonnes » (rameaux dorés, liens en colonnes, lunes et logo au centre) et « ligne » (logo à gauche, liens en
+  ligne). Téléphone : logo entre deux lunes, grande lune ou colonnes. Par défaut, le même pied sur tout le site
+  (colonnes / logo entre deux lunes) ; une composition peut être choisie page par page. Préférences de cookies : aucun traceur facultatif avant accord.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -96,13 +96,14 @@
       { "value": "colonnes", "label": "Colonnes autour du logo (accueil, produit, achat)" },
       { "value": "ligne", "label": "Logo à gauche, liens en ligne (tirage, Coven, créations, FAQ)" }
     ] },
-    { "type": "select", "id": "mobile_layout", "label": "Composition sur téléphone", "default": "lune", "options": [
+    { "type": "select", "id": "mobile_layout", "label": "Composition sur téléphone", "default": "logo", "options": [
+      { "value": "logo", "label": "Logo entre deux lunes et liens centrés" },
       { "value": "lune", "label": "Grande lune et liens centrés" },
       { "value": "colonnes", "label": "Colonnes autour du logo" }
     ] },
-    { "type": "text", "id": "ligne_on", "label": "Pages au pied « logo à gauche, liens en ligne »", "default": "le-tirage, le-coven, creations, faq", "info": "Identifiants des pages, séparés par des virgules." },
-    { "type": "text", "id": "mobile_logo_on", "label": "Pages au pied « logo entre deux lunes » sur téléphone", "default": "le-tirage, le-coven, creations, faq" },
-    { "type": "text", "id": "mobile_colonnes_on", "label": "Gabarits au pied « colonnes » sur téléphone", "default": "index, product", "info": "Exemple : index (accueil), product (fiche produit)." },
+    { "type": "text", "id": "ligne_on", "label": "Pages au pied « logo à gauche, liens en ligne »", "default": "", "info": "Laisser vide : même pied sur tout le site. Sinon, identifiants des pages, séparés par des virgules." },
+    { "type": "text", "id": "mobile_logo_on", "label": "Pages au pied « logo entre deux lunes » sur téléphone", "default": "" },
+    { "type": "text", "id": "mobile_colonnes_on", "label": "Gabarits au pied « colonnes » sur téléphone", "default": "", "info": "Laisser vide : même pied sur tout le site. Exemple : index (accueil), product (fiche produit)." },
     { "type": "image_picker", "id": "logo", "label": "Logo" },
     { "type": "text", "id": "logo_asset", "label": "Logo (fichier du thème)", "default": "coven-logo.jpg" },
     { "type": "text", "id": "logo_alt", "label": "Texte alternatif du logo", "default": "Le Coven des Charmes" },
