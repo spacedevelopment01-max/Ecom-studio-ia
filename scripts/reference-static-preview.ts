@@ -14,6 +14,7 @@ import os from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { staticDeinliner } from "./static-deinline";
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base existante refusée");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-static-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
 globalThis.fetch = async () => { throw new Error("Réseau fournisseur interdit"); };
@@ -98,8 +99,10 @@ try {
       const hash = rest.match(/#[^"'\s)<>]*$/)?.[0] ?? ""; const query = rest.includes("?") ? "?" + rest.split("?")[1].replace(/#.*$/, "") : "";
       return (file.startsWith("panier.html/") ? file + query : file.split("?")[0]) + hash;
     });
+    // Lot 9 : ressources embarquées par l'aperçu remises en fichiers partagés (scripts/static-deinline.ts).
+    const { deinline } = staticDeinliner(path.join(dir, "assets"));
     const inject = (html: string, extra = "") => html.replace("</body>", `<script>window.__esStaticProduct=${JSON.stringify(productTitle)};</script><script id="es-static-demo">${SHIM}</script>${extra}</body>`);
-    async function pageHtml(route: string, status = 200) { const r = await get(`${base}${route}${route.includes("?") ? "&" : "?"}es_raw=1`); assert.equal(r.status, status, `${run.name} ${route} → ${r.status}`); return await r.text(); }
+    async function pageHtml(route: string, status = 200) { const r = await get(`${base}${route}${route.includes("?") ? "&" : "?"}es_raw=1`); assert.equal(r.status, status, `${run.name} ${route} → ${r.status}`); return deinline(await r.text()); }
     // Pages.
     const routes: [string, string][] = [["accueil.html", "/"], ...(services ? [] : [["produit.html", `/products/${productHandle}`], ...others.map((o) => [`produit-${o.handle}.html`, `/products/${o.handle}`]), ["boutique.html", "/collections/all"]] as [string, string][]), ...pageHandles.map((h) => [`page-${h}.html`, `/pages/${h}`] as [string, string]), ...bienPages.map((b) => [`bien-${b.handle}.html`, `/pages/bien/${b.handle}`] as [string, string])];
     for (const [file, route] of routes) fs.writeFileSync(path.join(dir, file), inject(rewrite(await pageHtml(route))));
@@ -114,7 +117,7 @@ try {
     if (!services) {
       // Panier : parcours exhaustif des états atteignables depuis l'interface, rendus par le serveur réel.
       type Item = { key: string; id: number; quantity: number; properties?: Record<string, unknown> };
-      const cartJson = async () => JSON.parse(await (await get(`${base}/cart.js`, { accept: "application/json" })).text()) as { item_count: number; items: Item[] };
+      const cartJson = async () => JSON.parse(deinline(await (await get(`${base}/cart.js`, { accept: "application/json" })).text())) as { item_count: number; items: Item[] };
       const clear = async () => { for (let guard = 0; guard < 8; guard++) { const c = await cartJson(); if (!c.items.length) return; for (const item of c.items) if (!item.properties?._es_gift) await post(`${base}/cart/change`, JSON.stringify({ id: item.key, quantity: 0 }), "application/json"); } };
       const stateKey = (c: { items: Item[] }) => c.items.map((i) => `${i.key}x${i.quantity}`).sort().join("|") || "vide";
       const mainSection = Object.values(spec.templates.product.sections).find((sec) => sec.type === "main-product")!, purchase = purchaseConfig(mainSection), vid = variantId(0, 0);
@@ -131,7 +134,7 @@ try {
             ? spec.store.product.variants.map((_, k) => ({ action: `add:id:${variantId(0, k)}:1`, body: JSON.stringify({ id: variantId(0, k), quantity: 1 }) }))
             : [1, 2, 3].map((n) => ({ action: `add:id:${vid}:${n}`, body: JSON.stringify({ id: vid, quantity: n }) }));
       const states: Record<string, { cart: unknown; drawer: string; page: string }> = {}, edges: Record<string, Record<string, string>> = {}, queue: string[] = [];
-      const capture = async (key: string) => { if (states[key]) return; const c = await cartJson(); const sections = JSON.parse(await (await get(`${base}/cart?sections=cart-drawer`)).text()) as Record<string, string>; assert.ok(sections["cart-drawer"], `tiroir non rendu pour ${key}`); const page = await pageHtml("/cart"); states[key] = { cart: JSON.parse(rewrite(JSON.stringify(c))), drawer: rewrite(sections["cart-drawer"] ?? ""), page: inject(rewrite(page).replace("<html", `<html data-static-state="${key}"`)) }; queue.push(key); };
+      const capture = async (key: string) => { if (states[key]) return; const c = await cartJson(); const sections = JSON.parse(deinline(await (await get(`${base}/cart?sections=cart-drawer`)).text())) as Record<string, string>; assert.ok(sections["cart-drawer"], `tiroir non rendu pour ${key}`); const page = await pageHtml("/cart"); states[key] = { cart: JSON.parse(rewrite(JSON.stringify(c))), drawer: rewrite(sections["cart-drawer"] ?? ""), page: inject(rewrite(page).replace("<html", `<html data-static-state="${key}"`)) }; queue.push(key); };
       const MAX_ITEMS = multi ? 3 : formats > 1 ? 4 : 12, MAX_LINES = multi ? 2 : 3;
       const pathsTo: Record<string, { action: string; body: string; url: string }[]> = { vide: [] };
       await clear(); await capture("vide");
