@@ -5,6 +5,7 @@
  * (requêtes envoyées, vérifiées sans boutique réelle) ; adresse de boutique contrôlée.
  * L'essai réel contre WooCommerce et PrestaShop est dans produits-boutiques-e2e-190.test.ts.
  */
+import sharp from "sharp";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createUser } from "@/lib/auth";
 import { saveThemeVersion, currentTheme } from "@/lib/projects";
@@ -62,7 +63,7 @@ describe("produits du Studio (mission #190)", () => {
     session.user = u;
     pid = seedHoldout(uid, 0, "Catalogue");
     saveThemeVersion(pid, fr(() => sampleSpec("souple", "multi", { rich: true })), "test", "user");
-    photo = (await saveAsset({ projectId: pid, userId: uid, data: Buffer.from("x"), name: "sac.jpg", mime: "image/jpeg", origin: "upload" })).id;
+    photo = (await saveAsset({ projectId: pid, userId: uid, data: await sharp({ create: { width: 8, height: 8, channels: 3, background: "#806040" } }).jpeg().toBuffer(), name: "sac.jpg", mime: "image/jpeg", origin: "upload" })).id;
   });
 
   it("reprise des produits de la boutique : mêmes produits, aperçu et export identiques tant que rien ne change", async () => {
@@ -93,7 +94,7 @@ describe("produits du Studio (mission #190)", () => {
 
   it("références uniques, photos du projet seulement, modification concurrente refusée", async () => {
     const other = seedHoldout(uid, 0, "Autre projet");
-    const foreign = (await saveAsset({ projectId: other, userId: uid, data: Buffer.from("y"), name: "x.jpg", mime: "image/jpeg", origin: "upload" })).id;
+    const foreign = (await saveAsset({ projectId: other, userId: uid, data: await sharp({ create: { width: 8, height: 8, channels: 3, background: "#405060" } }).jpeg().toBuffer(), name: "x.jpg", mime: "image/jpeg", origin: "upload" })).id;
     expect(() => createProduct(pid, { title: "Doublon", variants: [{ options: [], sku: "SOU-SAB" }] })).toThrow(/existe déjà/);
     expect(() => createProduct(pid, { title: "Photo étrangère", images: [{ assetId: foreign, alt: "" }] })).toThrow(/médias de ce projet/);
     const p = createProduct(pid, { title: "Sangle", price: 1500, images: [{ assetId: photo, alt: "Sangle" }] });

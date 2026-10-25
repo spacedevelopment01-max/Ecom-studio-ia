@@ -1,5 +1,7 @@
 /** Native adapter, native billing, fake queue/download only. No provider network. */
 import {it,expect,vi,afterEach,beforeEach} from 'vitest';
+// Lot 9 : téléchargement public contrôlé ; ici le double de transport explicite qui réutilise le faux fetch.
+vi.mock('@/lib/public-download',()=>import('./public-download-double'));
 import sharp from 'sharp';
 import {createUser} from '@/lib/auth';
 import {seedImageFixture} from './image-v2-fixtures';
