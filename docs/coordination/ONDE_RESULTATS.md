@@ -43,6 +43,8 @@ conversation, jamais publiées dans le dépôt (même règle que MAISON & HORIZO
   établie. « Coussins en tissu haute densité » (planche 02) devient « Coussins en tissu noir et doux » (densité non
   renseignée). « Arceau confortable et bien équilibré » devient « Arceau rembourré et coulisseau lime » (ce que montre la
   photo).
+- Accueil : la planche 01 montre « 01 / Écouter autrement » sous l'ouverture ; il n'y a ni 02 ni 03, le numéro est
+  retiré à la demande de Thomas (25 octobre) : « Écouter autrement ».
 - Paiement : la planche 06 montre des champs de carte ; ils sont remplacés par un encadré « Paiement d'exemple » (aucun
   champ de carte, aucune donnée bancaire, aucun débit). La confirmation s'annonce « Exemple de confirmation » : aucune
   commande enregistrée, aucun e-mail envoyé ; numéro « ONDE-EXEMPLE (fictive) ».
