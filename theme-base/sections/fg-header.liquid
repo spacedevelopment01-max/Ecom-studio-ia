@@ -75,6 +75,7 @@
       {%- endfor -%}
       <span class="fg-band__item">{% render 'fg-art', name: 'petal' %}</span>
     </div>
+    <p class="fg-band__trio"><span>— {{ s.band_brand }} • {{ s.band_text }} —</span><span class="fg-band__main">{{ s.band_brand }} • {{ s.band_text }}</span><span>— {{ s.band_brand }} • {{ s.band_text }} •</span></p>
     <p class="fg-band__static">{% render 'fg-art', name: 'petal' %}{% render 'fg-art', name: 'petal' %}<b>{{ s.band_brand }}</b><span class="fg-band__dash">—</span><b>{{ s.band_text }}</b>{% render 'fg-art', name: 'petal' %}{% render 'fg-art', name: 'petal' %}</p>
   </div>
 {%- endcapture -%}

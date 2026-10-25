@@ -22,7 +22,7 @@
         {% render 'fg-img', image: s.image_mobile, asset: s.image_mobile_asset, alt: s.image_alt, pos: s.image_position_mobile, zoom: s.image_zoom_mobile, class: 'fg-hero__mimg', loading: 'eager', sizes: '100vw' %}
       {%- endif -%}
     </div>
-    <span class="fg-hero__deco" aria-hidden="true">{% render 'fg-art', name: 'berry-ghost', class: 'fg-hero__ghost' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-hero__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-hero__petals' %}</span>
+    <span class="fg-hero__deco" aria-hidden="true">{% render 'fg-art', name: 'berry-ghost', class: 'fg-hero__ghost' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-hero__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-hero__petals' %}{% render 'fg-art', name: 'berry-ghost', class: 'fg-hero__ghost2' %}</span>
     <div class="fg-hero__text">
       {%- if s.eyebrow != blank -%}<p class="fg-eyebrow fg-hero__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
       {%- if s.heading_mobile != blank -%}
