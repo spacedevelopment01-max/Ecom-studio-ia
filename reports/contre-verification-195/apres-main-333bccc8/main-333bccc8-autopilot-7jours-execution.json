@@ -1,0 +1,13 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "command": [
+    "bash",
+    "scripts/lot1/recette-jours.sh",
+    "/tmp/ecs-195-main-333bccc8",
+    "tests/social-autopilot-pilote.test.ts"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 50.61,
+  "networkGuard": true,
+  "isolatedSyntheticData": true
+}

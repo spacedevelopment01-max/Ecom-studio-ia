@@ -1,0 +1,21 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "tests/contre-verification-195-products.test.ts",
+    "tests/produits-studio-190.test.ts",
+    "tests/integration194-isolation-ab.test.ts",
+    "tests/integration194-securite.test.ts",
+    "tests/integration194-exports-scripts.test.ts",
+    "--maxWorkers=1"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 83.48,
+  "networkGuard": true,
+  "isolatedSyntheticData": true,
+  "independentTestOverlay": true,
+  "nativeTestSha256": "c487a7adec0bc5b23a062f36df237685be00d7ab9a663486e08266de5cca47d0",
+  "testOverlaySha256": "692b3c14b452262920b658f8aa9069015cece7b354b75e5037f236d7c5a9f745",
+  "threeExtraIndependentStockCases": true
+}

@@ -1,0 +1,13 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "temporaryHarnessChange": {
+    "file": "scripts/higgsfield-proof-seed.ts",
+    "purpose": "Move fixture isolation guard before imports, also reject DATABASE_FILE/STORAGE_DIR; fixture behavior unchanged; after native build/types/full suite",
+    "nativeSha256": "1833615ce5af9bea1c5f8e3c6ce3e9d17f43ef1ca1f9eccd834f81fe5df911fa",
+    "guardedHarnessSha256": "19de2bb4116bce4e114e2b20dc741f10fbc06390c8c654f57af705d91d7673a5",
+    "restoredToNative": true
+  },
+  "trackedStatusAfter": "",
+  "applicationSourceChanged": false,
+  "realProviderCalls": 0
+}

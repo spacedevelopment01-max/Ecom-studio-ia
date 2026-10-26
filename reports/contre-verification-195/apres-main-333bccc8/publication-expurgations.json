@@ -1,0 +1,13 @@
+{
+  "realClientData": false,
+  "noSessionDatabaseConfigurationOrCredentialFiles": true,
+  "rawReportsPreservedLocally": true,
+  "redactions": [
+    {
+      "file": "navigateur/resultat.json",
+      "rawSha256": "8009a1938c27db7c0e131fc30ce6e779e02e2b909368c3234bb2a56912766fff",
+      "rawBytes": 27244108,
+      "publication": "Long media references compacted and URL capability parameters redacted; metrics unchanged."
+    }
+  ]
+}

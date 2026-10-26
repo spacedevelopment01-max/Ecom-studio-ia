@@ -1,0 +1,11 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+browserType.launch: Failed to launch chromium because executable doesn't exist at /opt/pw-browsers/chromium
+    at <anonymous> (/tmp/ecs-195-main-333bccc8/scripts/contre-verification-195-aplat.ts:36:32) {
+  log: [],
+  name: 'Error'
+}
+
+Node.js v24.19.0

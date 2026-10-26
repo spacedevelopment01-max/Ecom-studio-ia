@@ -1,0 +1,16 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "--maxWorkers=2",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=/tmp/ecs-195-preuves/main-333bccc8-suite.json"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 1487.8,
+  "networkGuard": true,
+  "php": "8.4.27",
+  "isolatedData": true
+}

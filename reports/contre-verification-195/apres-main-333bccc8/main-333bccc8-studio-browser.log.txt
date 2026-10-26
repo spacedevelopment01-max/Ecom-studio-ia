@@ -1,0 +1,53 @@
+{
+  "demos": 30,
+  "overflow": [],
+  "broken": [
+    "onde/ordinateur:11",
+    "onde/mobile:11",
+    "rive/ordinateur:1",
+    "rive/mobile:5",
+    "sillon/ordinateur:4",
+    "sillon/mobile:9",
+    "noctil/ordinateur:4",
+    "noctil/mobile:5",
+    "traverse/ordinateur:1",
+    "traverse/mobile:2",
+    "heuren/ordinateur:3",
+    "heuren/mobile:3",
+    "museau-club/ordinateur:9",
+    "museau-club/mobile:12",
+    "souple/ordinateur:5",
+    "souple/mobile:6",
+    "table-saison/ordinateur:2",
+    "table-saison/mobile:13",
+    "atelier-nuance/ordinateur:1",
+    "atelier-nuance/mobile:3",
+    "parenthese/ordinateur:4",
+    "parenthese/mobile:7"
+  ],
+  "errors": [],
+  "holdouts": [
+    {
+      "kind": "product",
+      "savedAndReopened": true,
+      "status": 200,
+      "productTitles": [
+        "Cartouche de filtration",
+        "Support de filtration — contre-épreuve 195"
+      ]
+    },
+    {
+      "kind": "service",
+      "catalogueDistinction": true,
+      "bookingPageAccessible": true
+    },
+    {
+      "kind": "product-preview",
+      "status": "rendered"
+    },
+    {
+      "kind": "service-preview",
+      "status": "rendered"
+    }
+  ]
+}

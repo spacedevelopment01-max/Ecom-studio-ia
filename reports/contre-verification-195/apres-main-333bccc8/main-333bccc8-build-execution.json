@@ -1,0 +1,12 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "command": [
+    "node_modules/.bin/next",
+    "build"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 102.07,
+  "networkGuard": true,
+  "php": "8.4.27",
+  "isolatedData": true
+}

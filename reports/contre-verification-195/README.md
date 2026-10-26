@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-**État actuel : PR196 fusionnée par Claude, main `333bccc8daf97b9746dcf590a9525c830a53915f`. Contre-vérification APRÈS en cours : build/types réussis, suite et vraie CI main en cours. AVANT d38 validé ; pas encore de verdict APRÈS.**
+**AVANT d38 et APRÈS main333bccc8 contrôlés : suite3395/0/31 et CI main vertes. [DERNIÈRE LIVRAISON APRÈS :814PNG,3vidéos,preuves et réserves](apres-main-333bccc8/README.md). Défaut FRAISE mobile préexistant signalé ; validation visuelle globale retenue, CMS réels et version du studio utilisateur non vérifiés. Les sections suivantes conservent les anciennes preuves avec leurs SHA.**
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 

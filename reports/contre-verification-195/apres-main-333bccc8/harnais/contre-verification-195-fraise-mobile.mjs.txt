@@ -1,0 +1,27 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {chromium} from 'playwright';
+const root='/tmp/ecs-higgsfield-proof-195-main-333bccc8';
+const {token}=JSON.parse(fs.readFileSync(root+'/session.json'));
+const fixture=JSON.parse(fs.readFileSync(root+'/projects.json')).demos.find(x=>x.theme==='fraise');
+const commit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+assert.equal(commit,'333bccc8daf97b9746dcf590a9525c830a53915f');
+const b=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+const result={commit,syntheticOnly:true,realProviderCalls:0,scope:'Read-only native preview; no screenshot editing, no CSS overrides, no provider or submission',pages:[]};
+try {
+ const c=await b.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+ await c.addCookies([{name:'ecs_session',value:token,url:'http://127.0.0.1:3192'}]);
+ await c.route('**/*',r=>new URL(r.request().url()).origin==='http://127.0.0.1:3192'||/^(data|blob):/.test(r.request().url())?r.continue():r.abort());
+ const p=await c.newPage();
+ for(const route of ['mentions-legales','journal-les-details-d-un-petit-rituel']) {
+  const response=await p.goto(`http://127.0.0.1:3192/preview/${fixture.project}/v/current/pages/${route}`);
+  await p.evaluate(()=>document.fonts.ready);
+  result.pages.push({route,status:response.status(),...await p.evaluate(()=>{
+   const c=document.querySelector('.fg-legal .fg-c,.fg-article .fg-c'),h=c.querySelector('h1'),s=getComputedStyle(c),rect=c.getBoundingClientRect(),hr=h.getBoundingClientRect();
+   return{viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,container:{x:rect.x,width:rect.width,paddingLeft:s.paddingLeft,paddingRight:s.paddingRight,contentWidth:rect.width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)},title:{x:hr.x,width:hr.width,right:hr.right,scrollWidth:h.scrollWidth,clientWidth:h.clientWidth},bodyOverflowX:getComputedStyle(document.body).overflowX};
+  })});
+ }
+ fs.writeFileSync('reports/contre-verification-195/toutes-pages/fraise/mobile-colonne-etroite.json',JSON.stringify(result,null,2));
+ console.log(JSON.stringify(result));
+} finally {await b.close();}

@@ -1,0 +1,162 @@
+{
+  "commit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "tree": "b176bc230eed7a8cb6986a2baafc50f6f7b23d78",
+  "run": 40295873897,
+  "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897",
+  "event": "push",
+  "branch": "main",
+  "headSha": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "checkoutSha": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "allJobsSuccess": true,
+  "jobs": [
+    {
+      "id": 121481670710,
+      "name": "Typecheck, tests, Theme Check, build",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40295873897,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Installation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "ffmpeg",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Vérification des types",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Tests (réseau fournisseur interdit)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Build de production",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    },
+    {
+      "id": 121481671068,
+      "name": "Image Docker (construction et démarrage)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40295873897,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Construction de l'image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Démarrage et vérifications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Journaux du conteneur",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    }
+  ],
+  "nativeTests": {
+    "passed": 3395,
+    "failed": 0,
+    "skipped": 31,
+    "filesPassed": 396,
+    "filesSkipped": 1
+  },
+  "scope": "Actual main push CI; no provider calls; this does not prove a real CMS install or user studio deployment.",
+  "dockerObservedLog": {
+    "worker": "actif",
+    "homeStatus": 200,
+    "registrationStatus": 200,
+    "ffmpegAvailable": true,
+    "source": "Read completed Docker job121481671068 logs"
+  }
+}

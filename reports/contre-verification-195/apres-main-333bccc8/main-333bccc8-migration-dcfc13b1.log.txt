@@ -1,0 +1,47 @@
+OK  sauvegarde — manifeste intact
+OK  sauvegarde — empreinte de la base
+OK  sauvegarde — intégrité SQLite
+OK  sauvegarde — clés étrangères
+OK  sauvegarde — schéma identique
+OK  sauvegarde — tables identiques (54)
+OK  sauvegarde — médias (36 fichiers)
+OK  sauvegarde — video-receipts (0 fichiers)
+OK  sauvegarde — preview-contact-tests (0 fichiers)
+OK  sauvegarde — références médias de l'instantané
+OK  copie de migration — empreinte de la base
+OK  copie de migration — intégrité SQLite
+OK  copie de migration — clés étrangères
+OK  copie de migration — schéma identique
+OK  copie de migration — tables identiques (54)
+OK  copie de migration — médias (36 fichiers)
+OK  copie de migration — video-receipts (0 fichiers)
+OK  copie de migration — preview-contact-tests (0 fichiers)
+OK  copie de migration — références médias de l'instantané
+OK  migration 1 — intégrité SQLite
+OK  migration 1 — clés étrangères
+OK  migration 1 — chaque ligne d'origine retrouvée à l'identique
+OK  rattachement — chaque abonnement a son compte
+OK  rattachement — un projet n'a jamais deux abonnements
+OK  rattachement — chaque abonnement pointe un projet du même compte
+OK  aucun projet supprimé (un projet par abonnement non imposé par suppression)
+OK  migration 1 — repère « forfaits V2 migrés » présent
+OK  migration 2 — schéma identique au premier passage
+OK  migration 2 — toutes les tables identiques au premier passage
+OK  médias inchangés par la migration
+OK  budgets — toute baisse des crédits hors forfait est inscrite au relevé — ["u-historique-b"]
+OK  restauration — empreinte de la base
+OK  restauration — intégrité SQLite
+OK  restauration — clés étrangères
+OK  restauration — schéma identique
+OK  restauration — tables identiques (54)
+OK  restauration — médias (36 fichiers)
+OK  restauration — video-receipts (0 fichiers)
+OK  restauration — preview-contact-tests (0 fichiers)
+OK  restauration — références médias de l'instantané
+OK  restauration — comptes et projets retrouvés avec leur propriétaire
+OK  restauration refusée dans un dossier non vide
+OK  recette — plus aucune tâche prête à partir — {"jobsEnPause":2,"calendriersEnPause":1,"secretsRetires":1,"connexionsCoupees":1}
+OK  recette — aucun secret ni jeton dans la copie
+OK  source jamais modifiée
+
+Essai réussi (45 contrôles).

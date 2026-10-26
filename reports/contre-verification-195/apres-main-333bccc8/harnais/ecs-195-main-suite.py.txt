@@ -1,0 +1,15 @@
+import subprocess,os,json,time,sys
+from pathlib import Path
+sha='333bccc8daf97b9746dcf590a9525c830a53915f';root=Path('/tmp/ecs-195-main-333bccc8');assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==sha
+assert not(root/'.env.local').exists() and not(root/'.env').exists()
+prefix=Path('/tmp/ecs-195-preuves/main-333bccc8');env=os.environ.copy();env.update(APP_SECRET='countercheck-195-fictitious-secret-not-live',NEXT_TELEMETRY_DISABLED='1',THEME_DEMOS_AUTO='0',STOCK_OFFLINE='1',PATH='/tmp/ecs-195-php84-complet/bin:'+env['PATH'])
+for key in ['DATA_DIR','DATABASE_FILE','STORAGE_DIR']:env.pop(key,None)
+phases=[('build',['node_modules/.bin/next','build'],4096),('types',['node_modules/.bin/tsc','--noEmit'],3072),('suite',['node_modules/.bin/vitest','run','--maxWorkers=2','--reporter=default','--reporter=json','--outputFile=/tmp/ecs-195-preuves/main-333bccc8-suite.json'],1536)]
+for name,cmd,heap in phases:
+ env['NODE_OPTIONS']=f'--max-old-space-size={heap} --import={root}/scripts/lot9/network-guard.mjs'
+ if name=='build':env['DATA_DIR']='/tmp/ecs-higgsfield-proof-195-main-333bccc8-build'
+ else:env.pop('DATA_DIR',None)
+ print('START',name,flush=True);start=time.time()
+ with open(f'{prefix}-{name}.log','w') as log:r=subprocess.run(cmd,cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT)
+ Path(f'{prefix}-{name}.exit').write_text(str(r.returncode)+'\n');Path(f'{prefix}-{name}-execution.json').write_text(json.dumps({'source':sha,'command':cmd,'exitCode':r.returncode,'durationSeconds':round(time.time()-start,2),'networkGuard':True,'php':'8.4.27','isolatedData':True},indent=2)+'\n');print('END',name,r.returncode,flush=True)
+ if r.returncode:sys.exit(r.returncode)

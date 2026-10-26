@@ -1,8 +1,10 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **PR196 effectivement fusionnée par Claude ; main = `333bccc8daf97b9746dcf590a9525c830a53915f`. AVANT d38 validé. APRÈS en cours dans une nouvelle copie : arbre identique, build/types réussis ; suite complète et vraie CI main en cours. Aucun verdict APRÈS encore émis.**
+État final au 26 octobre 2026 : **AVANT d38 et APRÈS le vrai main `333bccc8daf97b9746dcf590a9525c830a53915f` contrôlés. Avis technique favorable à l'intégration avec réserves explicites ; suite native3395/0/31 et vraie CI main vertes. Validation visuelle globale retenue : défaut FRAISE mobile préexistant, médias privés incomplets et autres suivisP2 ouverts. Aucun CMS réel, fournisseur réel ou studio utilisateur déployé/vérifié.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
+
+[Dernier verdict APRÈS et preuves](../../reports/contre-verification-195/apres-main-333bccc8/README.md). Les états « en cours », « aucun verdict APRÈS » et anciens accords ci-dessous sont conservés comme **chronologie**, puis remplacés par le verdict final en fin de document.
 
 ## Versions et périmètre
 
@@ -14,7 +16,7 @@ Responsabilités : Claude conserve seul la branche d’intégration et la fusion
 | `aec79070dce88666e2b59be3452f7b6b1304bdb9` | Corrige la reprise multi-variante ; saisie client concurrente encore perdue |
 | `7f854218bb7afd08ec8ec2209b55c36ee53011f7` | Candidat intermédiaire ; corrige aussi la saisie concurrente |
 | `3ae89a6d42711c13962571483f55c496d6b3ddaa` | Corrige les faux rejets PrestaShop et la configuration du formulaire APLAT ; 57 contre-épreuves, 17 exports, 38 interactions et suite globale réussis |
-| `333bccc8daf97b9746dcf590a9525c830a53915f` | Fusion réellement faite par Claude ; copie neuve en cours de contre-vérification APRÈS |
+| `333bccc8daf97b9746dcf590a9525c830a53915f` | Fusion réellement faite par Claude ; contre-vérification APRÈS exécutée, résultats et limites en fin de rapport |
 
 Copies isolées, SQLite et médias fictifs sous `/tmp/ecs-195-*`. Dépôt de travail initial préservé : branche `codex/lot-2a-themes-reference`, commit `9f8b6c437580490acc52fd165986a1c3a79b394a`, propre. Aucun secret/configuration/base client copié. Garde réseau du lot 9 active pendant les tests natifs ; zéro appel fournisseur réel ou payant. Aucune fusion, publication client, modification du studio réel ou suppression globale Docker.
 
@@ -204,3 +206,53 @@ Sur **ce vrai SHA main** : build natif réussi, sortie0,102,07s ; types réussis
 Vraie CI événement **push/main**, `head_sha=333bccc8…` : [run40295873897](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897). Types réussis, construction/démarrage Docker réussis, tests en cours au relevé. Le raccourci du connecteur « runs par commit » retournait à tort une liste vide pour ce push ; le listing Actions général puis les jobs du run ont été consultés. Aucun run inventé ou relancé pour contourner un rouge. Ce run est distinct des merges temporaires des CI de PR.
 
 Restent à terminer pour le verdict APRÈS : suite locale et CI main, migrations/restaurations, sept jours Autopilot, contre-épreuves ciblées et parcours compilés/navigateur, dont contrôle des pages définies des15démos. Aucun studio réel, clé fournisseur, média privé, achat CMS, paiement ou déploiement touché. La version réellement servie au client reste non vérifiée.
+
+
+## Verdict final APRÈS — main réellement fusionné333bccc8
+
+**AVIS TECHNIQUE FAVORABLE À L'INTÉGRATION sur `333bccc8daf97b9746dcf590a9525c830a53915f`, avec réserves ; pas de validation visuelle globale ni d'activation client.** PR196 fusionnée par Claude seul, parents0a+d38 et arbre completb176 identique au candidat d38 approuvé. Seconde copie indépendante créée, source suivie propre, dépendances exactes, build et parcours compilés de **ce vrai main**, pas seulement comparaison du diff. Les deux verdicts AVANT/APRÈS sont maintenant publiés séparément ; aucun merge Codex.
+
+### Résultats exécutés après fusion
+
+- Suite native : **3395 réussis,0échec,31ignorés**,396fichiers réussis/1ignoré, sortie0,1487,19s (chronométrage processus1487,80s). Aucun navigateur concurrent ;2workers, garde réseau native, PHP8.4CLI. Les14cas PHP sont réellement exécutés, sans prétendre à un CMS installé. [Synthèse et empreinte du JSON brut](../../reports/contre-verification-195/apres-main-333bccc8/main-333bccc8-suite-synthese.json).
+- Types et production : sorties0,45,10s et102,07s ;58pages compilées. `/api/version` du serveur **de test loopback** =333bccc8/compiled-build. [Preuve de version](../../reports/contre-verification-195/apres-main-333bccc8/main-333bccc8-production-http.json).
+- Vraie CI [40295873897](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897), événementpush/main, head et checkout333bccc8 : types,3395tests/31ignorés,ThemeCheck30scénarios,build,construction/démarrage Docker **tous réussis**. Journal Docker relu : workeractif,accueil200,inscription200,FFmpeg disponible. Journaux d'étapes relus, distincts du checkout temporaire de PR. [Identité et jobs](../../reports/contre-verification-195/apres-main-333bccc8/main-333bccc8-ci-identite.json).
+- Contre-épreuves : **57/57**, dont3cas stock indépendants hors décompte natif3395 ; overlay temporaire exactement empreinté puis fichier natif restauré. Autopilot **63/63** sur7dates, mêmes assertions/plafonds. Migrations/restaurations fictives **45/45/46**, sources historiques inchangées. **64contrôles HTTP** compilés A/B/anonyme/admin ; sauvegarde propriétaire et refus étranger vérifiés sur SQLite et fichiers, pas seulement codes de réponse.
+- Catalogue/stocks : création/modification/sauvegarde/rechargement sans doublon ; vente/réassort, concurrence, réponses perdues/503, échecs partiels et éditions concurrentes couverts par les tests natifs et contre-épreuves maintenues. Connecteurs mémoire/faux transports clairement déclarés. Fenêtre résiduelle lecture/écriture absolue Woo/Presta maintenue comme limite, sans retirer leur envoi de stock.
+- Studio produit et service : sections visibles déplacées et sauvegardées, disposition d'en-tête choisie par UI, réouverture ordinateur/mobile ; store complet identique et ancienne version conservée. Métiers de contrôle inédits filtration et accord de piano prévisualisés. Sécurité navigateur : inscription avec confirmation SMTP loopback avant session, export du seul compte, demande d'effacement sans effacement automatique, iframe opaque, pont panier limité au projet, API privée refusée.20captures dédiées, zéro appel nouveau, reçu SIM initial identifié.
+- Higgsfield natif admin/API/SQLite : **810estimations fictives**, import et validation groupée2modèles, actualisation et réouverture mobile, anonyme401, aucun secret renvoyé. Tests natifs prix/hausse/réservation/reprise/reçu/stockage verts ; aucun second dépôt réel ou compte fournisseur essayé. Angles sans API/recherche incomplète : refus d'inventer et conservation quotas/historique couverts dans la suite main.
+- **51exports natifs** réellement générés et contrôlés :17Woo/WordPress,17PrestaShop,17Shopify, tous **PROVISIONAL**, gates structurés conservés. ZIP calculés en mémoire, empreintes/tailles/inventaires publiés, archives non stockées (`archiveStored:false`). Les faux rejets dangereux restent corrigés sans relâcher la garde contre les injections. Dispositions propres à chaque produit non reprises par Woo/Presta et prix barré Presta manuel toujours limités.
+- APLAT : export statique natif, **38/38interactions navigateur** (devis2étapes, erreurs, fichier, doubleclic, filtres,FAQ,comparaison clavier,cookies,responsive). Mode`demo=false` rendu séparément :1POST vers un récepteur loopback contrôlé malgré doubleclic, pas de fausse confirmation, e-mail ni CMS. Aucune vidéo IA.
+
+### Revue visuelle, défaut préexistant réellement découvert
+
+Inventaire natif des15thèmes : **347URLs/694vues ordinateur/mobile**, y compris pages secondaires et routes produit existantes ;200,0JSexception,0écran vide,0littéralundefined/NaN. Défilement complet, images forcées/décodées, fontes prêtes, retour instantané en haut, premier écran capturé. Les30accueils complets/premiers écrans sont également publiés. Mode mouvement réduit pour l'inventaire, mouvements/interactions normaux dans3vidéos réelles. Les15planches de pages et5planches d'accueils ont été ouvertes et inspectées ; échantillons natifs relus. **Ce n'est pas une inspection manuelle exhaustive de347corps de pages ni de tous leurs boutons.**
+
+**REPRODUIT : FRAISE mobile, articles et informations légales illisibles.** À390px, `.fg-article .fg-c` et `.fg-legal .fg-c` gardent260px de padding de chaque côté : boîte520px, largeur utile0px, titre tronqué et texte réduit à une colonne. `document.scrollWidth=390` ne détecte pas le problème ; le vert technique694vues ne prouve pas leur qualité. Cause confirmée `theme-base/assets/fraise.css:1012,1379`, **blob14f0d9bbc9e49a7e36b9fd45830796cb5a7553ad identique à #176/0af6fe1f et main333**. L'absence d'images n'explique pas cette géométrie. Défaut préexistant de composition responsive, pas une régression de résolution de conflit. [PNG lisible](../../reports/contre-verification-195/apres-main-333bccc8/toutes-pages/fraise/15--pages-mentions-legales-mobile.png), [mesures DOM](../../reports/contre-verification-195/apres-main-333bccc8/toutes-pages/fraise/mobile-colonne-etroite.json), prise en charge demandée à Claude dans [#194/6413339947](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6413339947). **À corriger dans un suivi dédié avant validation visuelle FRAISE ; ne pas modifier simultanément le main gelé.**
+
+Les huit kits complets n'ont aucune image visible en échec inattendu après décodage. Les sept kits incomplets restent FRAISE25,ONDE26,Nuance2,Parenthèse7,Phase26,Maison&Horizon87,APLAT29 médias source absents. Le logo ONDE et plusieurs galeries sont donc incomplets, sans remplacement inventé. Les pages cart/collection héritées de thèmes services sont inventoriées comme routes auxiliaires, pas comme leur navigation commerciale. Les mentions « Àcompléter » et écrans commande/compte démo gardent leur qualification.
+
+### Verdict par point et réserves
+
+| Point de mission | État après fusion et portée |
+|---|---|
+| Apports, conflits et compositions conservées | CONFIRMÉ DANS LE CODE : arbre main identique au candidat validé,11racines comparées ; registre13têtes relu avant fusion. Coven191 exclu par décision ultérieure de Thomas, branche conservée. |
+| Droits, plafonds, worker, médias, auth et isolation | REPRODUIT dans les suites natives et HTTP ; plafonds40%/50% conservés, aucun droit49/89 inventé. Docker/worker vérifiés en CI. Aucun compte client ou stockage de production touché. |
+| Stock, concurrence, reprise et catalogue | REPRODUIT avec doubles ; P1 identifiés et corrigés avant fusion, retests verts sur main. Limite d'atomicité des API absolues Woo/Presta conservée et texte UI trop absolu à corriger. |
+| Autopilot, types, suite, build et migrations | REPRODUIT après fusion ; chiffres ci-dessus.31ignorés explicitement non validés. |
+|15thèmes, éditeur et rendu | PARTIEL :694vues, sauvegarde/réouverture et actions ciblées exécutées ;7kits incomplets, défaut FRAISE mobile et menu de section masquée encore ouverts. Pas de validation visuelle globale. |
+| Exports et réservations CMS | Natif REPRODUIT,51PROVISIONAL ; installation/achat/réservation réelle BLOQUÉS par les accès/stockage CMS, pas annoncés verts. |
+| Higgsfield et angles | REPRODUIT techniquement avec transports/prix fictifs ; aucun prix réel de compte ni génération/qualité créative certifiés. |
+| Studio utilisateur accessible | NON VÉRIFIÉ : aucune mise à jour ou relance autorisée par cette mission ; ne pas confondre main et version servie. |
+
+**Suivis maintenus :** (1)FRAISE responsive ci-dessus ; (2)menu d'action d'une section masquée intercepté par la ligne suivante, déjà reproduit sur3a et sources inchangées ; (3)libellé « jamais écrasé » du stock incompatible avec la fenêtre résiduelle Woo/Presta ; (4)maintenance des anciens harnais/fixtures. Les P1 d'intégration ont été traités et contre-testés ; ces défauts préexistants ne sont ni effacés ni annoncés corrigés. Les limites externes n'ont pas été converties en succès.
+
+Le seed du compte factice a aussi reçu temporairement une garde de test avant ses imports (refus DATABASE_FILE/STORAGE_DIR), après le build/types/suite. Copie et patch de preuve conservés, octets natifs restaurés ; [état final suivi propre](../../reports/contre-verification-195/apres-main-333bccc8/preparation-et-proprete-finale.json). Aucun fichier applicatif modifié.
+
+Deux échecs de préparation APRÈS sont conservés : FFmpeg de Playwright absent, puis ancien chemin Chromium absent. Résolution uniquement dans l'environnement du harnais vers les binaires système ; aucun changement d'application, de budget, d'assertion ou de délai.31ignorés : FRAISE14,ONDE11,APLAT1,Maison1,films suspendus2,vraisCMS2. Les premiers lancements rouges et toutes les corrections précédentes restent consultables.
+
+### Livraison et coordination
+
+[Index APRÈS complet et liens directs](../../reports/contre-verification-195/apres-main-333bccc8/README.md) : **814PNG nouveaux (794captures natives+20planches),3vidéos navigateur**, JSON, journaux, processus et harnais distincts du code applicatif. Total historique de cette branche :920PNG (895natifs+25planches),6vidéos. Manifestes SHA256, références volumineuses compactées et capacités signées expurgées ; aucune base/session/configuration/clé ou donnée client publiée. Rapport brut natif de suite conservé localement, empreinte publiée ; comptes par fichier et journal intégral fournis.
+
+Les données initiales du dépôt et la configuration client sont préservées. Zéro IA/fournisseur réel, paiement, message externe, connexion CMS, déploiement ou redémarrage du studio réel. La branche documentaire de preuves ne doit pas être fusionnée comme branche applicative. Claude peut finaliser par sa PR documentaire le rapport central après ce verdict ; si un nouveau correctif applicatif est demandé, il requiert sa propre contre-vérification. La présente conclusion porte exactement sur333bccc8 et sur les limites ci-dessus.

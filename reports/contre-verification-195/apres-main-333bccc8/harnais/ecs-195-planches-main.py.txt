@@ -1,0 +1,22 @@
+from pathlib import Path
+from PIL import Image,ImageDraw,ImageFont
+import json,math
+r=Path('/tmp/ecs-195-main-333bccc8/reports/contre-verification-195');data=json.loads((r/'toutes-pages/resultat.json').read_text());font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',14);small=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',11)
+boards=r/'toutes-pages/planches';boards.mkdir(exist_ok=True)
+for theme in data['themes']:
+ rows=math.ceil(len(theme['routes'])/4);canvas=Image.new('RGB',(1440,90+rows*260),'#ecebe7');draw=ImageDraw.Draw(canvas);draw.text((14,12),f"{theme['theme']} — MAIN 333bccc8 — {len(theme['routes'])} pages / deux vues",font=font,fill='#141922');draw.text((14,38),f"Premiers écrans natifs réduits pour inspection ; PNG originaux via l’index. Médias source absents : {theme['sourceMediaMissingCount']}",font=small,fill='#444444')
+ for i,p in enumerate(theme['routes']):
+  x=(i%4)*360+8;y=82+(i//4)*260;draw.text((x,y),(p['label']+' '+p['path'])[:49],font=small,fill='#111111')
+  for j,v in enumerate(p['views']):
+   im=Image.open(r/'toutes-pages'/theme['theme']/v['screenshot']).convert('RGB');im.thumbnail((232 if j==0 else 100,220));canvas.paste(im,(x+(0 if j==0 else 242),y+23))
+ canvas.save(boards/(theme['theme']+'.png'))
+# Main full-home contact sheets, source main same as before but new actual captures.
+media=json.loads((r/'navigateur/controle-medias-cadrage.json').read_text());missing={x['theme']:len(x['sourceMediaMissing']) for x in media['rows']};themes=[x['theme'] for x in data['themes']];dest=r/'navigateur/planches';dest.mkdir(exist_ok=True)
+for k in range(5):
+ canvas=Image.new('RGB',(1440,1260),'#ecebe7');d=ImageDraw.Draw(canvas);d.text((18,12),f"MAIN 333bccc8 — accueils natifs, planche {k+1}/5 — images complètes liées dans l’index",font=font,fill='#161a23')
+ for i,t in enumerate(themes[k*3:k*3+3]):
+  y=58+i*400;d.text((18,y),f"{t} — médias source absents : {missing[t]}",font=font,fill='#161a23')
+  for dev,x,w in [('ordinateur',18,940),('mobile',1000,170)]:
+   im=Image.open(r/'navigateur'/f'{t}-{dev}-premier-ecran.png').convert('RGB');im.thumbnail((w,350));canvas.paste(im,(x,y+28))
+ canvas.save(dest/f'{k+1:02d}-accueils.png')
+print('15 page contact sheets and5 main-home contact sheets generated; original PNG unchanged.')

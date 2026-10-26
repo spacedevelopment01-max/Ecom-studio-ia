@@ -155,12 +155,16 @@ Rapport indépendant et preuves #195 : [CONTRE_VERIFICATION_195.md](https://gith
 |---|---|
 | Contre-épreuves préparatoires de Codex sur #176 | 4 défauts reproduits ([6403952034](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6403952034)), matrice et inventaire ([6404002831](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6404002831)) ; défauts corrigés (§ 5, point 6) |
 | Candidat transmis | `2dbdc050ef57bd6c74a44699f158e00d19c92208` ([#194](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6405720106), [#195](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/195#issuecomment-6405720253)) |
-| Verdict Codex avant fusion | VERDICT_AVANT |
-| Fusion | FUSION |
+| Verdict Codex avant fusion | d38 favorable techniquement, réserves explicites ; [verdict194/6412068448](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6412068448) |
+| Fusion | PR196 fusionnée par Claude ; main333bccc8daf97b9746dcf590a9525c830a53915f |
 
 ## 8. Contrôles APRÈS fusion
 
-À compléter.
+Complément indépendant Codex #195 : vrai main `333bccc8daf97b9746dcf590a9525c830a53915f`, copie neuve, suite3395/0/31, types/build, CI push main40295873897 et Docker verts ;57ciblés,63Autopilot,migrations45/45/46,64HTTP,51exportsPROVISIONAL et694vues natives rejoués. [Rapport complet](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/codex/contre-verification-195-integration/docs/coordination/CONTRE_VERIFICATION_195.md), [preuves APRÈS](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/codex/contre-verification-195-integration/reports/contre-verification-195/apres-main-333bccc8/README.md).
+
+Avis technique favorable à l'intégration avec réserves ; **pas de validation visuelle globale** : FRAISE mobile articles/légal illisibles (padding260px, préexistant #176), menu section masquée et libellé stock absolu ouverts,7kits privés incomplets ; vrais CMS/fournisseurs/prix/qualité créative et studio réellement servi non vérifiés. Aucun déploiement/redémarrage.
+
+Cette mise à jour figure uniquement sur la branche documentaire Codex. Claude conserve la responsabilité de finaliser le rapport central dans main par sa PR documentaire ; ne pas fusionner cette branche de preuves à la place de l'application.
 
 ## 9. Ce qui n'est pas vérifié ici (accès manquants) — à ne pas confondre avec une réussite
 

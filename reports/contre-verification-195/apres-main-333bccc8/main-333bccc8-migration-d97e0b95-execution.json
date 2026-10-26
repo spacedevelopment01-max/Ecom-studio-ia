@@ -1,0 +1,19 @@
+{
+  "source": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "command": [
+    "node_modules/.bin/tsx",
+    "scripts/lot1/essai-complet.ts",
+    "--source",
+    "/tmp/ecs-195-historiques/base-d97e0b95",
+    "--code",
+    "/tmp/ecs-195-main-333bccc8",
+    "--travail",
+    "/tmp/ecs-195-historiques/essai-d97e0b95-par-main-333bccc8",
+    "--rapport",
+    "/tmp/ecs-195-preuves/migration-d97e0b95-main-333bccc8.json"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 2.47,
+  "networkGuard": true,
+  "isolatedSyntheticData": true
+}

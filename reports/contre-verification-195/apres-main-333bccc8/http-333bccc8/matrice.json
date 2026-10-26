@@ -1,0 +1,407 @@
+{
+  "codeCommit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "served": {
+    "commit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+    "source": "compiled-build"
+  },
+  "realCompiledHttp": true,
+  "realCookies": true,
+  "sqliteNative": true,
+  "syntheticOnly": true,
+  "providerCalls": 0,
+  "workersStarted": false,
+  "storeConnectionCreated": false,
+  "observedCounts": {
+    "providerCalls": 0,
+    "jobs": 0,
+    "storeConnections": 0
+  },
+  "ownerStockSaved": 9,
+  "foreignDataPreserved": true,
+  "checks": [
+    {
+      "actor": "B",
+      "label": "products",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "products",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "products",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "products",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "stores",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "stores",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "stores",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "stores",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "appointments",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "appointments",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "appointments",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "appointments",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "properties",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "properties",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "properties",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "properties",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "property",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "property",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "property",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "property",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "product-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "product-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "product-create",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "stock",
+      "method": "PATCH",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "stock",
+      "method": "PATCH",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "stock",
+      "method": "PATCH",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "store-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "store-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "store-create",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "store-delete",
+      "method": "DELETE",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "store-delete",
+      "method": "DELETE",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "store-delete",
+      "method": "DELETE",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "store-sync",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "store-sync",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "store-sync",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "appointments-mutate",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "appointments-mutate",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "appointments-mutate",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "property-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "property-create",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "property-create",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "property-order",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "property-order",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "property-order",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "property-update",
+      "method": "PATCH",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "property-update",
+      "method": "PATCH",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "property-update",
+      "method": "PATCH",
+      "status": 401
+    },
+    {
+      "actor": "B",
+      "label": "foreign-product-through-own-project",
+      "method": "PATCH",
+      "status": 404
+    },
+    {
+      "actor": "B",
+      "label": "foreign-property-through-own-project",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "A",
+      "label": "administration",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "actor": "B",
+      "label": "administration",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "actor": "anonymous",
+      "label": "administration",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "admin",
+      "label": "administration",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "A",
+      "label": "administration",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "actor": "B",
+      "label": "administration",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "actor": "anonymous",
+      "label": "administration",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "admin",
+      "label": "administration",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "A",
+      "label": "service-appointments",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "B",
+      "label": "private-media",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "admin",
+      "label": "private-media",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "anonymous",
+      "label": "private-media",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "A",
+      "label": "private-media",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "A",
+      "label": "owner-product-create",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "actor": "A",
+      "label": "owner-stock-update",
+      "method": "PATCH",
+      "status": 200
+    }
+  ]
+}

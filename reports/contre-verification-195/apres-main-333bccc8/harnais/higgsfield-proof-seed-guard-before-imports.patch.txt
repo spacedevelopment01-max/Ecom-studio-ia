@@ -1,0 +1,23 @@
+diff --git a/scripts/higgsfield-proof-seed.ts b/scripts/higgsfield-proof-seed.ts
+index a3c9d7f4..74cb5306 100644
+--- a/scripts/higgsfield-proof-seed.ts
++++ b/scripts/higgsfield-proof-seed.ts
+@@ -1,12 +1,11 @@
+-/** Create a throwaway admin session; only a fixture token file in isolated /tmp, never stdout. */
++/** Isolated main195 admin fixture; guards precede all application imports. No provider request. */
+ import fs from "node:fs";
+ import path from "node:path";
+-import { DATA_DIR, run, now } from "../src/lib/db";
+-import { createUser } from "../src/lib/auth";
+-import { randomToken, sha256 } from "../src/lib/secrets";
+-import { setSetting } from "../src/lib/settings";
+-if (!DATA_DIR.startsWith("/tmp/ecs-higgsfield-proof-"))
+-  throw Error("Isolated proof DATA_DIR required");
++if (!process.env.DATA_DIR?.startsWith("/tmp/ecs-higgsfield-proof-195-main-") || process.env.DATABASE_FILE || process.env.STORAGE_DIR) throw Error("Isolated main195 selectors required");
++const { DATA_DIR, run, now } = await import("../src/lib/db");
++const { createUser } = await import("../src/lib/auth");
++const { randomToken, sha256 } = await import("../src/lib/secrets");
++const { setSetting } = await import("../src/lib/settings");
+ const user = await createUser(
+   `higgsfield-proof-${Date.now()}@example.invalid`,
+   "IsolatedFixturePassword192",

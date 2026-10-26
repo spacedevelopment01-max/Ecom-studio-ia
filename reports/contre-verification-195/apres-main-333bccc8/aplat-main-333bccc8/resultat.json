@@ -1,0 +1,169 @@
+{
+  "codeCommit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "nativeStaticExport": true,
+  "realCmsInstallation": false,
+  "sourceMediaMissing": 29,
+  "providerCalls": 0,
+  "externalEmail": false,
+  "checks": [
+    {
+      "passed": true,
+      "label": "menu : s'ouvre au toucher du bouton"
+    },
+    {
+      "passed": true,
+      "label": "menu : le focus va sur « Fermer »"
+    },
+    {
+      "passed": true,
+      "label": "menu : se ferme avec Échap"
+    },
+    {
+      "passed": true,
+      "label": "menu : le focus revient sur le bouton"
+    },
+    {
+      "passed": true,
+      "label": "menu : se ferme au clic en dehors des liens"
+    },
+    {
+      "passed": true,
+      "label": "navigation : « Prestations » actif sur la page Plâtrerie"
+    },
+    {
+      "passed": true,
+      "label": "réalisations : « charger plus » affiche d'autres projets (6 → 9)"
+    },
+    {
+      "passed": true,
+      "label": "réalisations : le filtre « platrerie » ne garde que ses projets (4)"
+    },
+    {
+      "passed": true,
+      "label": "réalisations : le filtre choisi est annoncé (aria-pressed)"
+    },
+    {
+      "passed": true,
+      "label": "questions : la recherche « photos » filtre (8 → 2)"
+    },
+    {
+      "passed": true,
+      "label": "questions : message sans résultat"
+    },
+    {
+      "passed": true,
+      "label": "questions : l'onglet filtre (3/8)"
+    },
+    {
+      "passed": true,
+      "label": "questions : la réponse s'ouvre (aria-expanded)"
+    },
+    {
+      "passed": true,
+      "label": "comparateur : flèches du clavier (50 → 55, --ap-pos 55%)"
+    },
+    {
+      "passed": true,
+      "label": "devis : résumé des erreurs affiché"
+    },
+    {
+      "passed": true,
+      "label": "devis : le focus va sur le résumé des erreurs"
+    },
+    {
+      "passed": true,
+      "label": "devis : champs en erreur annoncés (aria-invalid)"
+    },
+    {
+      "passed": true,
+      "label": "devis : code postal mal saisi refusé"
+    },
+    {
+      "passed": true,
+      "label": "devis : passage à l'étape 2"
+    },
+    {
+      "passed": true,
+      "label": "devis : les champs sont gardés entre les étapes"
+    },
+    {
+      "passed": true,
+      "label": "photos : un GIF est refusé avec un message"
+    },
+    {
+      "passed": true,
+      "label": "photos : un fichier de plus de 10 Mo est refusé"
+    },
+    {
+      "passed": true,
+      "label": "photos : la photo JPEG est ajoutée (vignette, nom)"
+    },
+    {
+      "passed": true,
+      "label": "photos : la photo est retirée"
+    },
+    {
+      "passed": true,
+      "label": "devis : envoi simulé puis page de confirmation (double clic sans double envoi)"
+    },
+    {
+      "passed": true,
+      "label": "confirmation : « Démonstration — demande non envoyée »"
+    },
+    {
+      "passed": true,
+      "label": "confirmation : récapitulatif repris du formulaire"
+    },
+    {
+      "passed": true,
+      "label": "cookies : mesure d'audience et contenus externes désactivés par défaut"
+    },
+    {
+      "passed": true,
+      "label": "cookies : essentiels toujours actifs"
+    },
+    {
+      "passed": true,
+      "label": "cookies : choix enregistrés"
+    },
+    {
+      "passed": true,
+      "label": "cookies : choix retrouvés au retour sur la page"
+    },
+    {
+      "passed": true,
+      "label": "cookies : « Gestion des cookies » rouvre le panneau"
+    },
+    {
+      "passed": true,
+      "label": "cookies : le panneau se ferme avec Échap"
+    },
+    {
+      "passed": true,
+      "label": "largeur 360 px : aucun défilement horizontal"
+    },
+    {
+      "passed": true,
+      "label": "largeur 390 px : aucun défilement horizontal"
+    },
+    {
+      "passed": true,
+      "label": "largeur 430 px : aucun défilement horizontal"
+    },
+    {
+      "passed": true,
+      "label": "largeur 768 px : aucun défilement horizontal"
+    },
+    {
+      "passed": true,
+      "label": "largeur 1440 px : aucun défilement horizontal"
+    }
+  ],
+  "captures": [
+    "01-devis-mobile-initial.png",
+    "02-devis-mobile-erreurs.png",
+    "03-devis-mobile-etape2.png",
+    "04-confirmation-demo.png"
+  ],
+  "remoteDenied": []
+}

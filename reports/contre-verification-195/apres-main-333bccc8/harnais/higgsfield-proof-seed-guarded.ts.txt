@@ -1,0 +1,37 @@
+/** Isolated main195 admin fixture; guards precede all application imports. No provider request. */
+import fs from "node:fs";
+import path from "node:path";
+if (!process.env.DATA_DIR?.startsWith("/tmp/ecs-higgsfield-proof-195-main-") || process.env.DATABASE_FILE || process.env.STORAGE_DIR) throw Error("Isolated main195 selectors required");
+const { DATA_DIR, run, now } = await import("../src/lib/db");
+const { createUser } = await import("../src/lib/auth");
+const { randomToken, sha256 } = await import("../src/lib/secrets");
+const { setSetting } = await import("../src/lib/settings");
+const user = await createUser(
+  `higgsfield-proof-${Date.now()}@example.invalid`,
+  "IsolatedFixturePassword192",
+  "Vérification Higgsfield",
+);
+run("UPDATE users SET role='admin' WHERE id=?", user.id);
+const token = randomToken();
+run(
+  "INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)",
+  sha256(token),
+  user.id,
+  now() + 3600000,
+  now(),
+);
+fs.writeFileSync(
+  path.join(DATA_DIR, "session.json"),
+  JSON.stringify({ token }),
+  { mode: 0o600 },
+);
+for (const key of [
+  "higgsfield.approved",
+  "higgsfield.proposal",
+  "higgsfield.history",
+])
+  setSetting(key, null);
+setSetting("provider.higgsfield.keyId", "simulated-key-id", true);
+setSetting("provider.higgsfield.keySecret", "simulated-key-secret", true);
+setSetting("provider.higgsfield.disabled", "1");
+console.log("Isolated administrator fixture ready; no provider request.");

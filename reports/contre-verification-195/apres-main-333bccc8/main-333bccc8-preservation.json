@@ -1,0 +1,71 @@
+{
+  "main": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "candidate": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
+  "parents": [
+    "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+    "d38b0b7c676e045d103238179e0e4a2d30ad5d05"
+  ],
+  "mainTree": "b176bc230eed7a8cb6986a2baafc50f6f7b23d78",
+  "candidateTree": "b176bc230eed7a8cb6986a2baafc50f6f7b23d78",
+  "parts": {
+    "src": {
+      "mainObject": "85f4cf203571e1663066f0894dc27408eeec68fc",
+      "candidateObject": "85f4cf203571e1663066f0894dc27408eeec68fc",
+      "identical": true
+    },
+    "tests": {
+      "mainObject": "561c1638b243e4595b1ddf039db43b449f6bc59f",
+      "candidateObject": "561c1638b243e4595b1ddf039db43b449f6bc59f",
+      "identical": true
+    },
+    "theme-base": {
+      "mainObject": "8b388d5210ff756ea0cf84dd1d7dba32ef695ac4",
+      "candidateObject": "8b388d5210ff756ea0cf84dd1d7dba32ef695ac4",
+      "identical": true
+    },
+    "public": {
+      "mainObject": "e8d0e1b91a3e7b9a5b9b905128f5fe4e56068e78",
+      "candidateObject": "e8d0e1b91a3e7b9a5b9b905128f5fe4e56068e78",
+      "identical": true
+    },
+    "assets": {
+      "mainObject": "9b98a4b5794ce456c4632efb04a36a8daa73894d",
+      "candidateObject": "9b98a4b5794ce456c4632efb04a36a8daa73894d",
+      "identical": true
+    },
+    "scripts": {
+      "mainObject": "07e8917fb793eaebf712c8b5664398014a9678ee",
+      "candidateObject": "07e8917fb793eaebf712c8b5664398014a9678ee",
+      "identical": true
+    },
+    "worker": {
+      "mainObject": "04bc9172c8ea9ebe4383a97d29b684b8ab1f2fdc",
+      "candidateObject": "04bc9172c8ea9ebe4383a97d29b684b8ab1f2fdc",
+      "identical": true
+    },
+    ".github": {
+      "mainObject": "4003eededea97abe122af13a81e1175f4c1da4c8",
+      "candidateObject": "4003eededea97abe122af13a81e1175f4c1da4c8",
+      "identical": true
+    },
+    "package.json": {
+      "mainObject": "d0a8d4a6b23fbc1cd5fa8aa1427496cfa39381a0",
+      "candidateObject": "d0a8d4a6b23fbc1cd5fa8aa1427496cfa39381a0",
+      "identical": true
+    },
+    "package-lock.json": {
+      "mainObject": "ea1b57764aea004c3095c241a6afd6386c551889",
+      "candidateObject": "ea1b57764aea004c3095c241a6afd6386c551889",
+      "identical": true
+    },
+    "CLAUDE.md": {
+      "mainObject": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "candidateObject": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "identical": true
+    }
+  },
+  "trackedWorkingTreeClean": true,
+  "exactLockMatchesInstalled": true,
+  "notServedCustomerStudio": true,
+  "wholeTreeIdentical": true
+}

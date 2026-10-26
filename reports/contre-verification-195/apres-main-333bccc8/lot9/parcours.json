@@ -1,0 +1,165 @@
+{
+  "schema": "lot9-native-browser-1",
+  "codeCommit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "served": {
+    "commit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+    "source": "compiled-build"
+  },
+  "head": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "dirtyApplicationSource": false,
+  "realNextProduction": true,
+  "nextVersion": "15.5.28",
+  "simulatedDataOnly": true,
+  "realProviderCalls": 0,
+  "newProviderOrSimulatedCalls": 0,
+  "seededSimulatedReceiptCount": 1,
+  "realPayments": 0,
+  "externalEmailDelivery": false,
+  "localSmtpMessages": 1,
+  "captures": [
+    "01-inscription-confirmation-demandee-ordinateur.png",
+    "01-inscription-confirmation-demandee-mobile.png",
+    "02-confirmation-adresse-ordinateur.png",
+    "02-confirmation-adresse-mobile.png",
+    "03-donnees-personnelles-ordinateur.png",
+    "03-donnees-personnelles-mobile.png",
+    "04-demande-effacement-en-attente-ordinateur.png",
+    "04-demande-effacement-en-attente-mobile.png",
+    "05-apercu-produit-base-noctil-ordinateur.png",
+    "05-apercu-produit-base-noctil-mobile.png",
+    "06-produit-base-noctil-accueil-ordinateur.png",
+    "06-produit-base-noctil-accueil-mobile.png",
+    "06-produit-base-noctil-detail-ordinateur.png",
+    "06-produit-base-noctil-detail-mobile.png",
+    "05-apercu-service-donnees-synthetiques-ordinateur.png",
+    "05-apercu-service-donnees-synthetiques-mobile.png",
+    "06-service-donnees-synthetiques-accueil-ordinateur.png",
+    "06-service-donnees-synthetiques-accueil-mobile.png",
+    "06-service-donnees-synthetiques-detail-ordinateur.png",
+    "06-service-donnees-synthetiques-detail-mobile.png"
+  ],
+  "checks": [
+    {
+      "nativeLogin": true
+    },
+    {
+      "registrationNativeUI": true,
+      "smtp": "LOCAL_LOOPBACK_ONLY",
+      "emailConfirmedBeforeSession": true,
+      "role": "client",
+      "privacyExportOwned": true,
+      "erasureRequestStored": true,
+      "productionErasureDisabled": true
+    },
+    {
+      "scopedCartWrite": true,
+      "itemCount": 1
+    },
+    {
+      "theme": "produit-base-noctil",
+      "page": "accueil",
+      "viewport": "ordinateur",
+      "embeddedImages": 16,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "produit-base-noctil",
+      "page": "accueil",
+      "viewport": "mobile",
+      "embeddedImages": 16,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "produit-base-noctil",
+      "page": "detail",
+      "viewport": "ordinateur",
+      "embeddedImages": 27,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "produit-base-noctil",
+      "page": "detail",
+      "viewport": "mobile",
+      "embeddedImages": 27,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "produit-base-noctil",
+      "standaloneSignedCartReadable": true
+    },
+    {
+      "theme": "produit-base-noctil",
+      "isolation": {
+        "parentReadable": false,
+        "images": 15,
+        "loadedImages": 9,
+        "fonts": "loaded",
+        "css": 11,
+        "title": "NOCTIL | Un petit monde. Un ciel immense."
+      },
+      "cartReadThroughScopedBridge": true,
+      "forbiddenApiBridgeRefused": true,
+      "cloudProxy": "SIMULATED: opaque subresources without cookie refused; assets inlined",
+      "creativeQualityCertified": false,
+      "legacyLot9OnlyIntegrationFlagNotApplicable": true
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "page": "accueil",
+      "viewport": "ordinateur",
+      "embeddedImages": 6,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "page": "accueil",
+      "viewport": "mobile",
+      "embeddedImages": 6,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "page": "detail",
+      "viewport": "ordinateur",
+      "embeddedImages": 5,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "page": "detail",
+      "viewport": "mobile",
+      "embeddedImages": 5,
+      "allEmbeddedImagesDecoded": true,
+      "horizontalOverflow": false
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "standaloneSignedCartReadable": true
+    },
+    {
+      "theme": "service-donnees-synthetiques",
+      "isolation": {
+        "parentReadable": false,
+        "images": 6,
+        "loadedImages": 5,
+        "fonts": "loaded",
+        "css": 11,
+        "title": "Atelier de céramique — recette fictive | Atelier de tournage individuel"
+      },
+      "cartReadThroughScopedBridge": true,
+      "forbiddenApiBridgeRefused": true,
+      "cloudProxy": "SIMULATED: opaque subresources without cookie refused; assets inlined",
+      "creativeQualityCertified": false,
+      "legacyLot9OnlyIntegrationFlagNotApplicable": true
+    }
+  ],
+  "browserErrors": [],
+  "proxyDeniedRequests": 0
+}

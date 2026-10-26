@@ -1,0 +1,1684 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-main-333bccc8
+
+ ✓ tests/video-v2-engine.test.ts (12 tests) 116183ms
+   ✓ Video Engine V2 — moteur et rendu (12)
+     ✓ vidéo publicitaire complète : plans, document éditable, MP4 H.264 + AAC à la bonne durée, sous-titres SRT/VTT, affiche ; FINAL après relecture 8813ms
+     ✓ sans accord du client : AUCUN plan généré (estimation montrée d'abord) ; plan seul : rien produit, coût estimé 13815ms
+     ✓ plafond : un plan qui dépasserait le budget n'est jamais envoyé (plan local à la place) ; sans contrôle de vision, rien n'est généré 7029ms
+     ✓ fidélité produit : un produit transformé est refusé, acquis conservés et aucun substitut local 1161ms
+     ✓ UGC : personnage synthétique signalé, même image de départ pour tous ses plans ; incohérence → reprise ciblée du plan ; faux témoignage écarté 16841ms
+     ✓ reprise ciblée : la relecture désigne un plan → ce plan SEUL est refait ; les plans acceptés et payés sont gardés 14438ms
+     ✓ réutilisation et idempotence : relancer ne repaie aucun plan accepté ; même demande = même lignée ; une vidéo modifiée par le client n'est jamais écrasée 19236ms
+     ✓ édition gratuite puis nouveau rendu : retouches par conversation, document enregistré, rendu local sans aucun appel 6081ms
+     ✓ « Remplace le deuxième plan » avec génération acceptée : UN seul plan change, les autres restent identiques 4565ms
+     ✓ vidéo de service longue (> 30 s), format 16:9 ; plans stock distincts sans génération d’image 17759ms
+     ✓ audio : silences de la voix retirés, musique atténuée sous la voix, intensité normalisée, aucune saturation 6425ms
+ ✓ tests/workflow-v2.test.ts (11 tests) 138286ms
+   ✓ Studio Workflow V2 (11)
+     ✓ parcours complet sur un projet existant : publicités V2, calendrier Social V2 (30 j Instagram), export Shopify contrôlé, à valider, 0 € 93077ms
+     ✓ site de plâtrier-peintre (services) : calendrier Facebook de 2 semaines, aucune trace de vente 2022ms
+     ✓ forfait Découverte : export, visuels, publicités et calendrier ne sont pas faits (raison affichée), aucun contournement 552ms
+     ✓ calendrier sauté par la création complète (remplacé par la demande) : la demande le fait bien 28603ms
+     ✓ propagation contrôlée : nouvelle palette → créations listées ; mise à jour locale des choisies, création modifiée par le client conservée 13975ms
+ ✓ tests/bibliotheque-modeles.test.ts (4 tests) 77989ms
+   ✓ Bibliothèque de modèles de publications (4)
+     ✓ chaque modèle × chaque format : lisible, dans les marges, sans chevauchement, aucun texte inventé 69026ms
+     ✓ studio : galerie de la publication du client dans chaque modèle, application, autre format refait 8943ms
+ ✓ tests/integration194-exports-scripts.test.ts (6 tests) 71744ms
+   ✓ exports PrestaShop des thèmes à scripts propres (4)
+     ✓ table-saison : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 27319ms
+     ✓ atelier-nuance : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 25516ms
+     ✓ parenthese : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 17690ms
+     ✓ aplat : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 1015ms
+ ✓ tests/logo-v2-artwork.test.ts (22 tests) 56562ms
+   ✓ Logo V2 — logos complets de l'IA d'images (18)
+     ✓ styles illustré, minimaliste, typographique : un logo complet par territoire, demande au style, sans règle « formes noires / sans lettre » 2576ms
+     ✓ style choisi par le client : toutes les directions dans ce style (différentes sur les autres axes) 2416ms
+     ✓ original conservé tel quel : l'image livrée est celle de l'IA (fond retiré, recadrée), sans vectorisation ni redessin 3970ms
+     ✓ contrôle adapté au style : texture et petite taille non pénalisées pour un logo illustré ; 7/10 refusé sans nouvelle image ; note jamais relevée 3083ms
+     ✓ nom mal écrit → réécrit par le studio au même endroit, dessin intact, original gardé, aucune image regénérée 3248ms
+     ✓ fond blanc retiré même quand l'image a un canal alpha entièrement opaque ; un fond déjà transparent est gardé 355ms
+     ✓ reprise de tâche : aucune image ni relecture rappelée (points de reprise) 4486ms
+     ✓ SVG facultatif : proposé pour des aplats (fidèle), refusé pour une texture ou des dégradés (le PNG reste le livrable) 972ms
+     ✓ choix : logo original principal, déclinaisons fidèles, version simplifiée, planche d'identité, charte ; SVG seulement fidèle 8217ms
+     ✓ logo complet écarté sans défaut rédhibitoire : choisissable par le client (son choix vaut contrôle) ; nom faux : jamais 5879ms
+     ✓ nouvelle version : seulement à la demande (une image, remarques transmises), la précédente reste 3515ms
+     ✓ nom de marque modifié après le choix : le nom est réécrit dans le logo, sans nouvelle image 10497ms
+     ✓ sans modèle d'images capable d'écrire le nom : logos construits avec de vraies polices, et c'est écrit dans les notes 870ms
+     ✓ concept pauvre relevé par le contrôle (cachet sans personnalité, initiales encadrées…) : jamais validé même bien noté, image gardée ; critères couleur et différenciation comptés 2254ms
+     ✓ nouvelle version : la critique du contrôle (défauts, correction proposée) est transmise au dessin, avec les remarques du client 3953ms
+ ✓ tests/theme-custom.test.ts (3 tests) 59321ms
+   ✓ thème entièrement sur mesure (IA simulée) (3)
+     ✓ plan + sections valides → nouvelle version, Theme Check propre ; section refusée → bibliothèque à cet endroit, signalée 56344ms
+     ✓ refuse le thème entièrement sur mesure hors forfait Dominer (402) et au-delà de 2 par mois 1486ms
+     ✓ génération d'une section par l'IA : réservée à Dominer (issue #141) — refusée avec Créer et Développer (402) 1483ms
+ ✓ tests/publications-initiales.test.ts (21 tests) 62355ms
+   ✓ Vingt créations initiales distinctes — simulations (21)
+     ✓ prépare immédiatement sans IA, et attend les validations et le devis global 330ms
+     ✓ vingt concepts/fichiers, deux ensembles 4/3/3, cas 0 5372ms
+     ✓ vingt concepts/fichiers, deux ensembles 4/3/3, cas 1 5646ms
+     ✓ vingt concepts/fichiers, deux ensembles 4/3/3, cas 2 5553ms
+     ✓ vingt concepts/fichiers, deux ensembles 4/3/3, cas 3 6461ms
+     ✓ reprise des 17 manquantes, les trois acceptées et le plan conservés ; lot générique bloqué 6444ms
+     ✓ ne compte pas le résultat ad comme final 471ms
+     ✓ ne compte pas le résultat local comme final 462ms
+     ✓ ne compte pas le résultat wrongformat comme final 507ms
+     ✓ ne compte pas le résultat stock comme final 639ms
+     ✓ ne compte pas le résultat rejected comme final 532ms
+     ✓ modifications client et devis obsolète protégés 643ms
+     ✓ budget indisponible avant appel ; appel de plan incertain non renvoyé 443ms
+     ✓ ancien parcours : accord explicite, pas d’invalidation par une direction technique calculée 6299ms
+     ✓ même concept sous trois ratios refusé avant images, seuls les doublons sont remplacés 7076ms
+     ✓ reformulation sémantique proche bloquée par la revue du plan malgré textes différents 6077ms
+     ✓ doublon constaté sur les images réelles remplacé seul, organique et publicité comparés ensemble 6634ms
+     ✓ diversité non obtenue : arrêt borné, pas vingt faux résultats 924ms
+     ✓ le contrôleur réel reçoit les fichiers de la candidate et de chaque création acceptée 959ms
+     ✓ le budget d’essais restant est transmis au moteur natif, sans réinitialiser trois essais 443ms
+     ✓ le branchement réel conserve toutes les prestations quand aucun service particulier n’est choisi 425ms
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+stderr | tests/migration-v2.test.ts > migration V1 → V2 : moteurs réellement appelés > calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon
+[pipeline] publication IA en plus non créée : Choisissez explicitement un angle autorisé dans Stratégie avant de créer cette communication.
+
+ ✓ tests/migration-v2.test.ts (6 tests) 53059ms
+   ✓ migration V1 → V2 : moteurs réellement appelés (6)
+     ✓ création complète — marque : fournisseur absent, attente explicite ; aucun nouveau logo local ni remplacement 929ms
+     ✓ calendrier de la création : Social V2, une seule fois par projet — une reprise ne crée aucun doublon 50791ms
+     ✓ anciennes routes : plus de nouvelle génération V1 ; l'ancien point d'accès des publications ne contourne pas V2 437ms
+     ✓ textes : le document SEO V2 est la référence de la boutique ; le kit ne complète que le reste 309ms
+     ✓ blog : un article modifié par le client dans l'onglet Blog n'est jamais écrasé par une nouvelle rédaction V2 305ms
+ ✓ tests/video-v2-bench.test.ts (6 tests) 52491ms
+   ✓ Benchmark Vidéo V2 — 5 scénarios simulés (6)
+     ✓ scénario A (artisan) : intention, langage visuel, durée, vidéo rendue, barrière 13340ms
+     ✓ scénario B (cosmetic) : intention, langage visuel, durée, vidéo rendue, barrière 7745ms
+     ✓ scénario C (hightech) : intention, langage visuel, durée, vidéo rendue, barrière 10357ms
+     ✓ scénario D (restaurant) : intention, langage visuel, durée, vidéo rendue, barrière 9930ms
+     ✓ scénario E (saas) : intention, langage visuel, durée, vidéo rendue, barrière 11111ms
+ ✓ tests/mission154-livraison.test.ts (15 tests) 48949ms
+   ✓ nouvelle session : retouches des pages, menus, identité et verrous conservées, état actualisé sans écriture 2711ms
+   ✓ products : ZIP natifs des cinq plateformes, textes entiers, fichiers décodés et plan partiel explicite 6080ms
+   ✓ services : ZIP natifs des cinq plateformes, textes entiers, fichiers décodés et plan partiel explicite 5813ms
+   ✓ un fichier corrompu après sauvegarde bloque la livraison exportée, sans toucher à la version ni au fichier acquis 27587ms
+   ✓ une mauvaise proposition de famille ne masque pas la vérification de forfait de l’opération suivante 2030ms
+   ✓ vidéo préparée : contexte périmé refusé avant fournisseur, aucun coût ni nouvelle tâche 2057ms
+   ✓ cas nouveau Pli : métier et faits remplacés sans règle de nom 475ms
+   ✓ cas nouveau Accord : métier et faits remplacés sans règle de nom 426ms
+   ✓ horizon réel en Europe/Paris : préparation utile, garde de 6 jours inchangée 380ms
+   ✓ horizon réel en Pacific/Kiritimati : préparation utile, garde de 7 jours inchangée 375ms
+   ✓ référence corrompue : préparation et génération refusées avant coût ; fausse vidéo décodable exclue malgré ses dimensions déclarées 517ms
+   ✓ déclinaisons de logo et planches d’identité : jamais utilisées comme photos du produit 480ms
+ ✓ tests/identite-validation-parcours.test.ts (9 tests) 33266ms
+   ✓ choix products enregistré et rouvert sans remplacer la marque avant validation, kit propre puis état cohérent 3716ms
+   ✓ choix services enregistré et rouvert sans remplacer la marque avant validation, kit propre puis état cohérent 3465ms
+   ✓ une ancienne charte ne masque pas un échec de la nouvelle ; identité active, versions et textes manuels conservés 7568ms
+   ✓ une retouche concurrente pendant les déclinaisons est conservée et bloque l’activation 3673ms
+   ✓ un renouvellement et sa série restent séparés de l’identité active et de ses validations 3736ms
+   ✓ confirmer un nouveau nom proposé prépare la nouvelle série sans remplacer l’identité déjà active 6755ms
+   ✓ la retouche de marque se retrouve dans le parcours sans écraser ses documents ; la revalidation ne rend pas la suite faussement approuvée 380ms
+   ✓ trois palettes ne suffisent pas à trois ensembles ; absence d’un dessin final relue comme série partielle 431ms
+   ✓ redemander des propositions dans le parcours conserve l’identité déjà approuvée 3538ms
+ ✓ tests/video-pixabay-montage.test.ts (4 tests) 36597ms
+   ✓ Montage vidéo sur plans Pixabay (4)
+     ✓ boutique : plans Pixabay différents pour l'accroche et le développement, vraies photos du produit, fin composée — 0 € 9508ms
+     ✓ musique : une piste libre de droits trouvée remplace la musique composée, avec sa licence et sa mention 13110ms
+     ✓ services : la vidéo s'ouvre sur un vrai plan du métier 13972ms
+ ✓ tests/direction-artistique.test.ts (21 tests) 31543ms
+   ✓ pistes de l'IA contrôlées (9)
+     ✓ réponses réalistes : trois pistes IA, chacune notée sur sa planche de mises en situation 959ms
+     ✓ piste cliché : reprise CIBLÉE de cette seule piste avec les défauts relevés, la version refusée n'est jamais montrée 1264ms
+     ✓ SVG malveillant ou hors règles (script, <text>, trait fin) refusé ; sans dessin exploitable, version du studio 516ms
+     ✓ allégation dans la justification → reprise demandée 1078ms
+     ✓ contrôle visuel en panne : aucune piste de l'IA n'est proposée (jamais FINAL) ; versions du studio PROVISOIRES, sans nouveau dessin 829ms
+     ✓ tout noté sévèrement (cliché) : jamais proposé comme logo ; reprises ciblées puis versions du studio PROVISOIRES 913ms
+     ✓ ressemblance avec une marque existante : jamais montrée, version du studio à la place 903ms
+   ✓ présentation et kit réseaux sociaux (4)
+     ✓ planche de mises en situation : portrait, couleurs de la piste (blanc sur couleur) visibles 426ms
+     ✓ kit : profil, 5 stories à la une, 3 modèles, 2 bannières aux bons formats 1233ms
+   ✓ dans le studio : pistes, choix, déclinaisons, kit (PNG + ZIP) et charte (3)
+     ✓ trois pistes enregistrées avec leurs planches ; choix → déclinaisons, kit réseaux (PNG + ZIP) et charte avec planche « Réseaux sociaux » 19067ms
+     ✓ réserve de 3 pistes : une suppression libère une place, « Nouvelles pistes » complète sans remplacer, jamais plus de 3 1576ms
+     ✓ charte sans kit : 10 planches (pas de planche vide) 388ms
+   ✓ « Nouvelles pistes » : refonte radicale, jamais une variante (2)
+     ✓ avec l'IA : une piste trop proche de la série précédente est refusée et redessinée avec la consigne 1939ms
+ ✓ tests/ads-v2.test.ts (18 tests) 31022ms
+   ✓ Phase 6A — Advertising Engine V2 (18)
+     ✓ rédaction IA : une reprise ciblée avec les défauts exacts ; ce qui reste fautif repasse à la version locale 1824ms
+     ✓ composition : formats exacts, zones de sécurité respectées, contraste et taille lisibles, produit non recouvert 7261ms
+     ✓ B — cosmétique : créations par format, produit réel posé tel quel, images Image V2 réutilisées entre formats, une relecture par concept 3001ms
+     ✓ A — artisan (service) : photo du métier en plein cadre, bouton selon le mode de contact, aucune idée cadeau 3375ms
+     ✓ réutilisation : même campagne → créations validées réutilisées, aucune relecture ni image repayée ; une création refusée ne revient pas 2834ms
+     ✓ reprises ciblées : mise en page (gratuite) ; jamais une seconde photo payée pour « une image plus forte » (création gardée à améliorer) 891ms
+     ✓ forfait sans IA : textes et créations locaux, PROVISOIRES (choix manuel), jamais FINAL 1189ms
+     ✓ les cinq scénarios tournent sans traitement propre à un scénario ; visuel adapté à l'angle 9623ms
+     ✓ aucun secret ni consigne IA stockés avec la création ; verdicts et trace de la barrière enregistrés 553ms
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > pistes notées 4,4 et 5,9 : jamais proposées ; version du studio PROVISOIRE, sans planche, kit, ligne éditoriale ni charte
+[logo] 2nk6x8x137a9uttq : produit : symbole non dessiné par l'IA d'images (aucun fournisseur d'images (test)) | produit : piste « Le geste de la lisseuse » écartée (sous la barrière (4.4/10, attendu 8) — notes faibles : originalité 4.4/10, mémorisation 4.4/10, pertinence 4.4/10, simplicité 4.4/10, lisibilité à 16 px et en noir et blanc 4.4/10, cohérence typo/couleur 4.4/10, singularité (pas de cliché du secteur) 4.4/10 ; symbole générique ; critère faible : originality ; critère faible : memorability ; critère faible : relevance ; critère faible : simplicity ; critère faible : smallSizes ; critère faible : coherence ; critère faible : distinctiveness) | produit : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place. | concept : piste « La surface juste » écartée (sous la barrière (5.9/10, attendu 8) — notes faibles : originalité 5.9/10, mémorisation 5.9/10, pertinence 5.9/10, simplicité 5.9/10, lisibilité à 16 px et en noir et blanc 5.9/10, cohérence typo/couleur 5.9/10, singularité (pas de cliché du secteur) 5.9/10 ; symbole générique ; critère faible : originality ; critère faible : memorability ; critère faible : relevance ; critère faible : simplicity ; critère faible : smallSizes ; critère faible : coherence ; critère faible : distinctiveness) | concept : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place. | typo : piste « Le S du plâtre » écartée (sous la barrière (5.9/10, attendu 8) — notes faibles : originalité 5.9/10, mémorisation 5.9/10, pertinence 5.9/10, simplicité 5.9/10, lisibilité à 16 px et en noir et blanc 5.9/10, cohérence typo/couleur 5.9/10, singularité (pas de cliché du secteur) 5.9/10 ; symbole générique ; critère faible : originality ; critère faible : memorability ; critère faible : relevance ; critère faible : simplicity ; critère faible : smallSizes ; critère faible : coherence ; critère faible : distinctiveness) | typo : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place.
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > contrôle en panne : aucune piste de l'IA proposée, aucune nouvelle génération
+[logo] o47r0es5215eiiby : produit : symbole non dessiné par l'IA d'images (aucun fournisseur d'images (test)) | produit : piste « Le geste de la lisseuse » écartée (contrôle en panne : vision indisponible) | produit : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place. | concept : piste « La surface juste » écartée (contrôle en panne : vision indisponible) | concept : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place. | typo : piste « Le S du plâtre » écartée (contrôle en panne : vision indisponible) | typo : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place.
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > piste 7,2 avec défaut précis puis 8,6 : reprise ciblée, puis piste FINAL appliquée (badge contrôlé), gain enregistré
+[logo] 0ziu5p2mhp6kkxxn : produit : symbole non dessiné par l'IA d'images (aucun fournisseur d'images (test)) | produit : piste « Le geste de la lisseuse » à reprendre (sous la barrière (7.2/10, attendu 8) — typographie faible ; critère faible : relevance) | concept : piste « La surface juste » écartée (sous la barrière (4.0/10, attendu 8) — notes faibles : originalité 4/10, mémorisation 4/10, pertinence 4/10, simplicité 4/10, lisibilité à 16 px et en noir et blanc 4/10, cohérence typo/couleur 4/10, singularité (pas de cliché du secteur) 4/10 ; critère faible : originality ; critère faible : memorability ; critère faible : relevance ; critère faible : simplicity ; critère faible : smallSizes ; critère faible : coherence ; critère faible : distinctiveness) | concept : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place. | typo : piste « Le S du plâtre » écartée (sous la barrière (4.0/10, attendu 8) — notes faibles : originalité 4/10, mémorisation 4/10, pertinence 4/10, simplicité 4/10, lisibilité à 16 px et en noir et blanc 4/10, cohérence typo/couleur 4/10, singularité (pas de cliché du secteur) 4/10 ; critère faible : originality ; critère faible : memorability ; critère faible : relevance ; critère faible : simplicity ; critère faible : smallSizes ; critère faible : coherence ; critère faible : distinctiveness) | typo : aucune proposition de l'IA n'a franchi la barrière de qualité ; version du studio PROVISOIRE à la place.
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > piste 7,2 avec défaut précis puis 8,6 : reprise ciblée, puis piste FINAL appliquée (badge contrôlé), gain enregistré
+[kit social] 0ziu5p2mhp6kkxxn : ligne éditoriale IA indisponible (pas d'appel réel), version du studio
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > reprise d'une tâche interrompue : pistes et contrôles déjà faits relus, aucun nouvel appel
+[logo] t0gdoko3j03f58x4 : produit : symbole non dessiné par l'IA d'images (aucun fournisseur d'images (test))
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > reprise d'une tâche interrompue : pistes et contrôles déjà faits relus, aucun nouvel appel
+[kit social] t0gdoko3j03f58x4 : ligne éditoriale IA indisponible (pas d'appel réel), version du studio
+
+stdout | tests/logo-barriere.test.ts > logos : barrière de qualité branchée > reprise d'une tâche interrompue : pistes et contrôles déjà faits relus, aucun nouvel appel
+[logo] t0gdoko3j03f58x4 : produit : symbole non dessiné par l'IA d'images (aucun fournisseur d'images (test))
+
+ ✓ tests/logo-barriere.test.ts (4 tests) 28668ms
+   ✓ logos : barrière de qualité branchée (4)
+     ✓ pistes notées 4,4 et 5,9 : jamais proposées ; version du studio PROVISOIRE, sans planche, kit, ligne éditoriale ni charte 3930ms
+     ✓ contrôle en panne : aucune piste de l'IA proposée, aucune nouvelle génération 3497ms
+     ✓ piste 7,2 avec défaut précis puis 8,6 : reprise ciblée, puis piste FINAL appliquée (badge contrôlé), gain enregistré 6873ms
+     ✓ reprise d'une tâche interrompue : pistes et contrôles déjà faits relus, aucun nouvel appel 14362ms
+ ✓ tests/openai-streaming.test.ts (14 tests) 29791ms
+   ✓ OpenAI en flux dans le moteur multimédia (14)
+     ✓ flux : 2 aperçus puis l'image finale (le vrai logo), progression transmise, coût tracé, original conservé tel quel 372ms
+     ✓ flux coupé après un aperçu, ou terminé sans image : incertain, aucune relance 425ms
+     ✓ proxy HTTPS de l'environnement : utilisé même sans NODE_USE_ENV_PROXY (Claude Cloud), ignoré sans proxy (serveur, Codespace) 341ms
+     ✓ parcours Logo V2 avec le vrai logo : flux, sauvegarde, reprise SANS nouvel appel, choix → identité tirée du logo 9635ms
+     ✓ série de 3 : 3 prompts réellement distincts, 3 demandes en flux, 3 originaux distincts, provenance et coût réel sur chaque proposition 3372ms
+     ✓ 3 copies du même logo : une seule proposition, les 2 autres écartées comme copies (jamais choisissables) 4600ms
+     ✓ forme de remplissage (disque plein au-dessus du nom) : jamais une bonne note, aucune relecture payée, image gardée parmi les écartés 3081ms
+     ✓ le client choisit la 2e proposition (pas la première) : palette, symbole, déclinaisons et planche tirés de CE logo 7146ms
+ ✓ tests/workflow-garde-fous.test.ts (7 tests) 25316ms
+   ✓ demande unique : accord, plafond, statuts, Réessayer (7)
+     ✓ blog inaccessible (forfait Créer) : étape non faite avec sa raison, la demande continue et aboutit 13091ms
+     ✓ « Réessayer » : relance les étapes en échec avec la même tâche ; les étapes faites ne sont pas refaites 11980ms
+ ✓ tests/cms-v2.test.ts (23 tests) 26319ms
+   ✓ CMS Engine V2 (23)
+     ✓ kits Wix / Squarespace : présentés comme un kit de reconstruction, jamais comme un thème installable 840ms
+     ✓ Shopify : thème OS 2.0 conforme (Theme Check sans erreur), PROVISOIRE — installation réelle non vérifiée 13173ms
+     ✓ WooCommerce (boutique) : thème de blocs complet, intégration WooCommerce native, CSV produits, aucun faux panier 1955ms
+     ✓ PrestaShop : thème enfant de Classic valide, module compagnon, fichiers préfixés, aucun faux moyen de paiement 577ms
+     ✓ médias refusés jamais exportés ; secrets du studio jamais dans un export ; contenu inventé signalé 3915ms
+     ✓ parité : les sections rendues par le moteur PHP livré sont identiques à l'aperçu du studio 382ms
+     ✓ consignes « à compléter » adaptées à la plateforme (jamais « dans Shopify » sur WordPress / PrestaShop), projet intact 328ms
+     ✓ exports reproductibles (mêmes octets), noms de fichiers sûrs, sans collision 3403ms
+     ✓ navigation et SEO de base livrés : menus du studio, titre de page géré par WordPress, langue 855ms
+     ✓ aucun appel d'IA ni réseau pendant les exports 577ms
+ ✓ tests/site-reproduce.test.ts (17 tests) 23048ms
+   ✓ reproduction d'une boutique (Webflow → Shopify) (7)
+     ✓ thème valide, compilé, chaque page rendue 450ms
+     ✓ Theme Check : aucune erreur 11001ms
+   ✓ reproduction d'un site de services (site sur mesure → WordPress) (5)
+     ✓ Theme Check : aucune erreur 10281ms
+   ✓ enregistrement de la reproduction (version du thème) (1)
+     ✓ images du site (meta.source) et logo du client repris, version enregistrée et exportable 584ms
+ ✓ tests/heuren-alcove.test.ts (29 tests) 24380ms
+   ✓ HEUREN : exports (4)
+     ✓ Shopify : tous les médias, sections, profil et SEO 9195ms
+     ✓ woocommerce : médias, feuilles réécrites, scripts et classes du profil 809ms
+     ✓ prestashop : médias, feuilles réécrites, scripts et classes du profil 865ms
+   ✓ ALCOVE : exports (4)
+     ✓ Shopify : tous les médias, sections, profil et SEO 10844ms
+     ✓ woocommerce : médias, feuilles réécrites, scripts et classes du profil 1140ms
+     ✓ prestashop : médias, feuilles réécrites, scripts et classes du profil 1233ms
+ ✓ tests/services-theme.test.ts (99 tests) 22341ms
+   ✓ site d'entreprise de services (99)
+     ✓ atelier : pages attendues, ni panier ni produit ni livraison (FR et EN) 704ms
+     ✓ clinique : pages attendues, ni panier ni produit ni livraison (FR et EN) 448ms
+     ✓ brut : pages attendues, ni panier ni produit ni livraison (FR et EN) 410ms
+     ✓ terroir : pages attendues, ni panier ni produit ni livraison (FR et EN) 405ms
+     ✓ nocturne : pages attendues, ni panier ni produit ni livraison (FR et EN) 412ms
+     ✓ pop : pages attendues, ni panier ni produit ni livraison (FR et EN) 386ms
+     ✓ galerie : pages attendues, ni panier ni produit ni livraison (FR et EN) 368ms
+     ✓ elan : pages attendues, ni panier ni produit ni livraison (FR et EN) 385ms
+     ✓ flux : pages attendues, ni panier ni produit ni livraison (FR et EN) 367ms
+     ✓ joaillerie : pages attendues, ni panier ni produit ni livraison (FR et EN) 370ms
+     ✓ gourmand : pages attendues, ni panier ni produit ni livraison (FR et EN) 400ms
+     ✓ vitrine : pages attendues, ni panier ni produit ni livraison (FR et EN) 385ms
+     ✓ manifeste : pages attendues, ni panier ni produit ni livraison (FR et EN) 386ms
+     ✓ laboratoire : pages attendues, ni panier ni produit ni livraison (FR et EN) 386ms
+     ✓ magazine : pages attendues, ni panier ni produit ni livraison (FR et EN) 402ms
+     ✓ cinema : pages attendues, ni panier ni produit ni livraison (FR et EN) 387ms
+     ✓ rituel : pages attendues, ni panier ni produit ni livraison (FR et EN) 368ms
+     ✓ horizon : pages attendues, ni panier ni produit ni livraison (FR et EN) 378ms
+     ✓ lookbook : pages attendues, ni panier ni produit ni livraison (FR et EN) 375ms
+     ✓ marche : pages attendues, ni panier ni produit ni livraison (FR et EN) 376ms
+     ✓ signal : pages attendues, ni panier ni produit ni livraison (FR et EN) 386ms
+     ✓ jardin : pages attendues, ni panier ni produit ni livraison (FR et EN) 369ms
+     ✓ reception : pages attendues, ni panier ni produit ni livraison (FR et EN) 370ms
+     ✓ cabinet : pages attendues, ni panier ni produit ni livraison (FR et EN) 372ms
+     ✓ recre : pages attendues, ni panier ni produit ni livraison (FR et EN) 426ms
+     ✓ epure : pages attendues, ni panier ni produit ni livraison (FR et EN) 396ms
+     ✓ tribu : pages attendues, ni panier ni produit ni livraison (FR et EN) 402ms
+     ✓ etabli : pages attendues, ni panier ni produit ni livraison (FR et EN) 418ms
+     ✓ velours : pages attendues, ni panier ni produit ni livraison (FR et EN) 379ms
+     ✓ lancement : pages attendues, ni panier ni produit ni livraison (FR et EN) 366ms
+     ✓ fraise : pages attendues, ni panier ni produit ni livraison (FR et EN) 389ms
+     ✓ onde : pages attendues, ni panier ni produit ni livraison (FR et EN) 405ms
+     ✓ orbe : pages attendues, ni panier ni produit ni livraison (FR et EN) 423ms
+     ✓ rive : pages attendues, ni panier ni produit ni livraison (FR et EN) 409ms
+     ✓ sillon : pages attendues, ni panier ni produit ni livraison (FR et EN) 366ms
+     ✓ noctil : pages attendues, ni panier ni produit ni livraison (FR et EN) 407ms
+     ✓ traverse : pages attendues, ni panier ni produit ni livraison (FR et EN) 387ms
+     ✓ heuren : pages attendues, ni panier ni produit ni livraison (FR et EN) 363ms
+     ✓ alcove : pages attendues, ni panier ni produit ni livraison (FR et EN) 394ms
+     ✓ museau-club : pages attendues, ni panier ni produit ni livraison (FR et EN) 403ms
+     ✓ souple : pages attendues, ni panier ni produit ni livraison (FR et EN) 401ms
+     ✓ table-saison : pages attendues, ni panier ni produit ni livraison (FR et EN) 448ms
+     ✓ atelier-nuance : pages attendues, ni panier ni produit ni livraison (FR et EN) 478ms
+     ✓ parenthese : pages attendues, ni panier ni produit ni livraison (FR et EN) 435ms
+     ✓ phase : pages attendues, ni panier ni produit ni livraison (FR et EN) 380ms
+     ✓ maison-horizon : pages attendues, ni panier ni produit ni livraison (FR et EN) 492ms
+     ✓ aplat : pages attendues, ni panier ni produit ni livraison (FR et EN) 405ms
+ ✓ tests/souple.test.ts (21 tests) 22652ms
+   ✓ SOUPLE : exports (4)
+     ✓ Shopify : tous les médias, les quatre produits, sections, profil 18550ms
+     ✓ woocommerce : médias, feuilles réécrites, classes du profil, produits 1626ms
+     ✓ prestashop : médias, feuilles réécrites, classes du profil, produits 2235ms
+ ✓ tests/mission154-adaptation.test.ts (10 tests) 22139ms
+   ✓ fraise : composition de référence, propres médias et copie persistante, aucun contenu de démo 2765ms
+   ✓ onde : composition de référence, propres médias et copie persistante, aucun contenu de démo 2507ms
+   ✓ sillon : composition de référence, propres médias et copie persistante, aucun contenu de démo 2227ms
+   ✓ noctil : composition de référence, propres médias et copie persistante, aucun contenu de démo 2380ms
+   ✓ traverse : composition de référence, propres médias et copie persistante, aucun contenu de démo 2606ms
+   ✓ rive : composition de référence, propres médias et copie persistante, aucun contenu de démo 2124ms
+   ✓ heuren : composition de référence, propres médias et copie persistante, aucun contenu de démo 2278ms
+   ✓ museau-club : composition de référence, propres médias et copie persistante, aucun contenu de démo 2341ms
+   ✓ souple : composition de référence, propres médias et copie persistante, aucun contenu de démo 2283ms
+   ✓ média incomplet et fichier disparu : état partiel, acquis conservés et préparation des seuls manques 625ms
+ ✓ tests/logo-v2.test.ts (14 tests) 22179ms
+   ✓ Phase 4A — Brand & Logo Engine V2 (14)
+     ✓ concept avant image : les territoires sont décidés avant tout dessin ou contrôle ; pas de symbole pour un logotype 1083ms
+     ✓ direction faible abandonnée : 3/10 → aucune reprise ni nouveau dessin pour la sauver 1107ms
+     ✓ reprise CIBLÉE : typographie faible → seule la police change (symbole gardé) ; symbole faible → seul le symbole est redessiné 1440ms
+     ✓ aucun contrôle répété sans changement : rien de pertinent à modifier → arrêt (meilleure version gardée, pas de nouvel appel) 995ms
+     ✓ propositions : seules les FINALES dans la galerie ; essais écartés au diagnostic ; aucune déclinaison ni mockup avant le choix 1058ms
+     ✓ choix du client : décision du Project Brain, logo validé, PUIS déclinaisons, typographie et charte 6050ms
+     ✓ reprise de tâche : rien n'est rappelé ni repayé (points de reprise) 1908ms
+     ✓ Router V2 et coût : vraie chaîne d'appels (fournisseur simulé) — modèle fort, relecture forte d'emblée, coûts tracés, plafond réel 1266ms
+     ✓ cinq catégories : le moteur n'a pas une esthétique unique (styles typographiques et compositions différents) 7103ms
+ ✓ tests/mission160-service-scopes.test.ts (11 tests) 19423ms
+   ✓ site multi-prestations + SEO + export sans angle ni quota ; A/B ne modifie aucun de ces acquis 2494ms
+   ✓ droits services creer : quota persistant, concurrence, identité et aucun appel 1584ms
+   ✓ droits services vendre : quota persistant, concurrence, identité et aucun appel 1557ms
+   ✓ droits services dominer : quota persistant, concurrence, identité et aucun appel 1772ms
+   ✓ A/B coexistent : calendrier, publication, worker différé et approbation A inchangés après B 1754ms
+   ✓ site : un média de campagne reste consultable sans pouvoir entrer automatiquement dans le site 1656ms
+   ✓ production simulée A et B : mêmes moteurs, média et provenance héritent de chaque publication 1872ms
+   ✓ scénario/voix : l’accord A ne peut pas être utilisé sous B ; le site ne dépend d’aucun des deux 1719ms
+   ✓ cache et accord vidéo distinguent A/B même quand le moteur est appelé sans angle dans la demande 1664ms
+   ✓ une approbation historique antérieure aux angles reste valide ; elle n’autorise pas une nouvelle génération sans choix 1658ms
+   ✓ une vidéo du site décrite en langage naturel reste générale avant et après A/B 1688ms
+ ✓ tests/lot5-openai-voice.test.ts (16 tests) 20575ms
+   ✓ réserve, acquiert, trace et réouvre la même voix sans la repayer, même après changement de job 419ms
+   ✓ un compte sans forfait, une clé désactivée et une voix non choisie bloquent avant envoi 421ms
+   ✓ parcours guidé : choix, devis non gratuit, phrases acquises, sauvegarde/reprise et véritable mixage audio 1853ms
+   ✓ parcours libre : branche voix native, montage MP4 avec audio, réouverture et nouveau rendu sans synthèse 15230ms
+ ✓ tests/logo-relais-jamais-zero.test.ts (7 tests) 20141ms
+   ✓ Logos : relais OpenAI et jamais zéro logo (7)
+     ✓ tous les logos Qwen écartés : OpenAI redessine chacun (avec la critique), ses logos validés sont proposés 5103ms
+     ✓ Qwen validé : aucun relais (rien de plus n'est dépensé) 2577ms
+     ✓ Qwen et OpenAI tous deux écartés : le meilleur logo obtenu est présenté, signalé comme non validé — jamais zéro 4870ms
+     ✓ aucune image possible (Qwen et OpenAI en panne) : versions du studio construites — jamais zéro 665ms
+     ✓ relais indisponible (pas de clé OpenAI) : c'est écrit, et le meilleur logo Qwen est quand même présenté 2468ms
+     ✓ nouvelle version écartée par le contrôle : OpenAI la redessine aussi 4408ms
+ ✓ tests/benchmark-seo-v2-check.test.ts (1 test) 19705ms
+   ✓ benchmark SEO V2 --check (1)
+     ✓ choisit l'administrateur, masque l'e-mail, ne montre aucune clé, annonce les hypothèses et ne crée rien 19702ms
+ ✓ tests/audit-backend.test.ts (29 tests) 18979ms
+   ✓ webhook Stripe (6)
+     ✓ B1 : le rejeu d'un ancien paiement ne rétablit pas l'ancien forfait et n'arrête jamais l'abonnement en cours 302ms
+     ✓ I2 : l'arrêt de l'ancien abonnement est réessayé, journalisé et signalé à l'administration en cas d'échec 2263ms
+   ✓ tâches (3)
+     ✓ I4 : seule la première création est hors décompte ; une relance pendant une création est refusée 1226ms
+   ✓ comptes et connexions (4)
+     ✓ I8 : la limite des tentatives de connexion ne se contourne pas avec des espaces ou des majuscules 1669ms
+     ✓ I8 : limite par adresse IP, toutes adresses e-mail confondues 5460ms
+   ✓ I10 : section Liquid écrite à la main (1)
+     ✓ plage littérale démesurée refusée ; boucles imbriquées interrompues par les limites du moteur 5009ms
+ ✓ tests/preparation-directions-integration.test.ts (4 tests) 19054ms
+   ✓ trois directions, reprise, sélection et charte : chaîne réelle avec fournisseur injecté (4)
+     ✓ une interruption conserve la première direction avant les appels suivants et la reprise ne la redessine pas 2970ms
+     ✓ un résultat incertain arrête la série sans relais ni reprise du même appel ; les directions acceptées restent enregistrées 1188ms
+     ✓ répare seulement les directions manquantes, conserve le nom, choisit l'ensemble sans génération ni thème 14667ms
+ ✓ tests/benchmark-social-v2-check.test.ts (1 test) 18219ms
+   ✓ benchmark Social V2 (1)
+     ✓ --check : rien créé, aucune clé, aucune publication annoncée ; --dry-run : calendrier gratuit, 0 publication 18216ms
+ ✓ tests/video-audio-termination.test.ts (2 tests) 18408ms
+   ✓ Mixage borné des voix courtes et musique longue (2)
+     ✓ termine six vrais mixages avec 3 voix retardées, garde la durée et un signal non muet 10467ms
+     ✓ termine six vrais mixages avec 6 voix retardées, garde la durée et un signal non muet 7937ms
+ ✓ tests/noctil.test.ts (24 tests) 16591ms
+   ✓ NOCTIL appliqué à un autre projet : identité du projet, jamais celle de la démonstration (3)
+     ✓ bandeaux des pages chez un client : titre de la page en ouverture, un argument différent par bandeau, « Une question ? » sur les pages d'aide 2024ms
+     ✓ détourage du client avec une grande marge transparente : la remontée en tient compte (haut visible du produit) 1963ms
+   ✓ NOCTIL : exports (4)
+     ✓ Shopify : tous les médias (le détourage en PNG), sections, profil, polices 9001ms
+     ✓ woocommerce : médias, feuilles réécrites, scripts et classes du profil 1319ms
+     ✓ prestashop : médias, feuilles réécrites, scripts et classes du profil 2042ms
+ ✓ tests/museau-club.test.ts (19 tests) 16606ms
+   ✓ MUSEAU CLUB : exports (4)
+     ✓ Shopify : tous les médias, les quatre produits et leurs variantes, sections, profil 13230ms
+     ✓ woocommerce : médias, feuilles réécrites, scripts et classes du profil 1279ms
+     ✓ prestashop : médias, feuilles réécrites, scripts et classes du profil 1859ms
+ ✓ tests/budget-ia.test.ts (30 tests) 15946ms
+   ✓ budget IA : règle des 40 % / 50 % et réservations (19)
+     ✓ première création : aucune enveloppe en plus du budget mensuel ; découverte : 0 € 386ms
+     ✓ abonnement annuel : budget mensuel plus bas (équivalent mensuel remisé) 350ms
+     ✓ refus du fournisseur (429) : rien n'est facturé, la réservation est rendue 5172ms
+     ✓ séparation des comptes : la réservation et le débit d'un compte ne touchent jamais un autre 349ms
+     ✓ administrateur : aucun passe-droit (sans forfait, pas d'IA ; pas de budget ajouté à la main) 351ms
+   ✓ plafond fournisseur : coût maximal réellement borné (11)
+     ✓ relances : uniquement sur une réponse d'erreur HTTP, dans la même réservation ; coupure en cours de réponse : incertain, jamais relancée 5197ms
+ ✓ tests/mission150-forfaits.test.ts (28 tests) 14993ms
+   ✓ RDV : isolation, annulation/report existants et paiement tardif ne créent aucun deuxième droit 375ms
+   ✓ creer : lot natif de dix publications, zéro plan/publicité et devis limité aux dix 2145ms
+   ✓ vendre : lot natif de dix publications, zéro plan/publicité et devis limité aux dix 2210ms
+   ✓ changement de forfait : les dix publications acquises restent identiques ; seule l’extension publicitaire est créée 6264ms
+   ✓ éditeur partagé : seule la filiation organique enregistrée autorise les modèles de publications ; texte modifié et autre projet ne la falsifient pas 334ms
+   ✓ idempotence isolée : une clé ne révèle ni ne réutilise une tâche d’un autre compte/projet 345ms
+ ✓ tests/palette-piste.test.ts (2 tests) 16922ms
+   ✓ palette de la piste retenue (2)
+     ✓ même piste recolorée, appliquée partout, autres pistes intactes, validation conservée 10908ms
+     ✓ piste ancienne sans rôles enregistrés : couleurs retrouvées dans l'ancienne palette 6005ms
+ ✓ tests/ads-premium.test.ts (8 tests) 17131ms
+   ✓ Publicités premium — direction artistique et formats (8)
+     ✓ chaque composition est refaite pour chaque format : textes lisibles, dans les marges, sans chevauchement, logo présent (story comprise) 8683ms
+     ✓ produit réel : d'abord une mise en scène avec la photo de référence ; le détourage n'est pas reposé par-dessus 3412ms
+     ✓ sans mise en scène possible (aucune génération) : jamais de décor d'univers sous le produit, affiche « produit héros » 1309ms
+     ✓ services : formats carré, portrait et paysage 1,91:1 (Google) ; composition panneau ou cadre possible 3369ms
+ ✓ tests/mission160-parcours.test.ts (7 tests) 14432ms
+   ✓ aucune construction avant choix, cartes consultées sans consommation ni tâche 606ms
+   ✓ parcours produit : angle A→B→A, copie/faits/retouches/pages/export persistants sans appel 3142ms
+   ✓ parcours service RDV : angle A→B→A, copie/faits/retouches/pages/export persistants sans appel 2234ms
+   ✓ tâche préparée avant bascule refusée avant fournisseur ; changement de droits reste revérifié 1841ms
+   ✓ retour vers un angle : version de thème compatible réutilisée sans mutation de sa provenance ni nouvelle version 2685ms
+   ✓ une rédaction explicitement fournie par le client reste intégrale et signalée comme protégée 1801ms
+   ✓ les documents automatiques ne passent pas devant une rédaction exacte fournie par le client 2118ms
+ ✓ tests/rive.test.ts (15 tests) 15538ms
+   ✓ Atelier Rive : démonstration (7)
+     ✓ six pages et les mentions légales ; un H1 par page ; liens internes vers des pages existantes ; rien « à compléter » visible 317ms
+   ✓ Atelier Rive : chaque composition dans la galerie Services (3)
+     ✓ le détail de projet ajouté depuis la galerie reçoit des photos du projet 2013ms
+     ✓ le bandeau d'appel partagé reste un aplat de couleur ; la carte d'appel reçoit sa petite photo 1928ms
+   ✓ Atelier Rive : exports (3)
+     ✓ Shopify : médias, pages, sections et profil 8409ms
+     ✓ woocommerce : export produit, médias inclus 1090ms
+     ✓ prestashop : export produit, médias inclus 1186ms
+ ✓ tests/lot1-consignes-livraison.test.ts (17 tests) 14113ms
+   ✓ Lot 1 — consignes et livraison (17)
+     ✓ long texte client : document → thème → rendu Liquid réel → ZIP et CSV, HTML dangereux inerte 13117ms
+ ✓ tests/traverse.test.ts (16 tests) 14975ms
+   ✓ TRAVERSE : démonstration (7)
+     ✓ toutes les pages des maquettes ; un H1 par page ; liens internes vers des pages existantes 344ms
+     ✓ rien d'inventé : prix de démonstration, aucune promesse interdite, gabarits légaux « À compléter » 426ms
+   ✓ TRAVERSE : chaque composition dans la galerie « Boutique spécialisée » (2)
+     ✓ les essentiels ajoutés depuis la galerie reçoivent des gros plans du projet ; les cartes sur photo aussi 1535ms
+   ✓ TRAVERSE appliqué à un autre projet : rien de TRAVERSE (2)
+     ✓ projet client complet : pages légales sans rubriques de livraison ; essentiels avec ses caractéristiques et ses gros plans 2166ms
+   ✓ TRAVERSE : exports (3)
+     ✓ Shopify : médias, pages, sections, profil et police 7912ms
+     ✓ woocommerce : export produit, médias inclus 955ms
+     ✓ prestashop : export produit, médias inclus 1194ms
+ ✓ tests/themes-catalogue.test.ts (11 tests) 13157ms
+   ✓ Catalogue de thèmes : trente choix réellement différents (11)
+     ✓ toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques) 13002ms
+ ✓ tests/sillon-exports.test.ts (3 tests) 13653ms
+   ✓ SILLON V2 : exports (3)
+     ✓ Shopify : médias, sections sv-*, feuille et script du thème, SEO des pages et du produit 10702ms
+     ✓ woocommerce : médias exportés, aucun blocage 1241ms
+     ✓ prestashop : médias exportés, aucun blocage 1706ms
+ ✓ tests/theme-v2.test.ts (15 tests) 13297ms
+   ✓ Theme Engine V2 (15)
+     ✓ export Shopify : ZIP réel avec sections V2, feuille de style et réglages — Theme Check sans erreur 12185ms
+     ✓ exports WordPress / PrestaShop / kits (CMS Engine V2) : le contenu et la composition des sections V2 sont repris 505ms
+     ✓ buildShop : V2 par défaut, version enregistrée avec son contrôle ; V1 conservé sur demande 537ms
+ ✓ tests/preparation.test.ts (19 tests) 13478ms
+   ✓ Parcours amont — moteur réel, fournisseurs injectés et données isolées (19)
+     ✓ parcours complet et reprise du cas synthétique 0, sans thème ni dépenses 1206ms
+     ✓ parcours complet et reprise du cas synthétique 1, sans thème ni dépenses 1176ms
+     ✓ parcours complet et reprise du cas synthétique 2, sans thème ni dépenses 978ms
+     ✓ parcours complet et reprise du cas synthétique 3, sans thème ni dépenses 1173ms
+     ✓ changement amont : conserve les versions approuvées et bloque la suite obsolète 1039ms
+     ✓ un brouillon à compléter n’est jamais un contrat prêt, même après une ancienne validation 1231ms
+     ✓ textes refusés même après modification manuelle ; changement de texte invalide le contrat 1120ms
+     ✓ corrige une page sans refaire les autres et conserve leurs identifiants et documents 316ms
+     ✓ médias : rejets, tiers, stock, ancienne marque et autorisation par emplacement 899ms
+     ✓ adaptateur local réel : pages de prestations séparées et prix/contraintes intacts, sans réseau 401ms
+     ✓ restaure une version pour vérification sans refaire recherche, identité, textes ou images 1106ms
+     ✓ une correction de cible conserve l’analyse existante ; les textes modifiés bloquent un devis image 1026ms
+ ✓ tests/image-v2.test.ts (30 tests) 13123ms
+   ✓ Phase 5A — Image & Search Engine V2 (30)
+     ✓ formats : cadrage pensé dès le brief, recadrage refusé quand il couperait trop 341ms
+     ✓ reprises ciblées : correction précise, jamais deux fois la même consigne, au plus maxRetries 330ms
+     ✓ A — Sébastien Blanc : murs nus jamais téléchargés ni contrôlés ; photo du métier retenue, licence conservée 406ms
+     ✓ hors sujet au contrôle : refus retenu, jamais retéléchargé ni recontrôlé au passage suivant 774ms
+     ✓ forfait sans IA : photo du métier gardée sur sa description seulement → PROVISOIRE, jamais FINAL 404ms
+     ✓ fallback capable : aucune banque → génération ; génération impossible → refus clair ; catégorie inconnue → brief générique 362ms
+     ✓ B — produit transformé par la génération : refusé, jamais réutilisé, aucune nouvelle tentative 361ms
+     ✓ produit ressemblant aux détails près : gardé « à vérifier », sans nouvelle génération payante 320ms
+     ✓ reprise ciblée réelle : deuxième consigne différente et corrigée, puis FINAL 744ms
+     ✓ scène hors sujet générée : une seule nouvelle direction artistique, choisie localement 731ms
+     ✓ diversité : une série de 3 = angles, lumières et intentions différents ; un quasi-doublon est refusé 1269ms
+     ✓ idempotence et réutilisation : même brief → image FINAL réutilisée, aucun nouvel appel ; jamais une image refusée 450ms
+     ✓ coût tracé et plafond réel : l'appel au-delà du plafond ne part pas ; le coût de la tâche est rapporté 473ms
+     ✓ les cinq scénarios A–E tournent avec des fournisseurs simulés (aucun traitement propre à un scénario) 5032ms
+     ✓ aucun secret, aucune consigne de génération stockée avec l'image ; le diagnostic garde la trace des essais 394ms
+ ✓ tests/logo-budget.test.ts (4 tests) 12535ms
+   ✓ Logo V2 — devis et plafond de la série (4)
+     ✓ série : 3 logos complets + reprise (nom réécrit) — dépense réelle sous le devis, qui est le plafond 4126ms
+     ✓ plafond plus bas que le devis : les images suivantes ne partent pas (aucune réservation), l'image payée est gardée 1367ms
+     ✓ « Nouvelle version » : une seule image, sous son propre devis ; aucune autre image 5329ms
+     ✓ Découverte (sans forfait) : aucun appel, ni texte ni image ; logos construits par le studio 1406ms
+ ✓ tests/ad-editor.test.ts (8 tests) 11037ms
+   ✓ Éditeur visuel des publicités — documents en calques (8)
+     ✓ une publicité générée est un document en calques (fond, image, produit, marque, titre, bouton, logo), rendu identique à l'export 752ms
+     ✓ CRITÈRE DE RÉUSSITE — titre, photo, forme, logo modifiés, enregistrés et exportés sans aucun appel d'IA 1355ms
+     ✓ calques : masquer, verrouiller (refus de déplacer), réordonner, dupliquer, supprimer ; annuler / rétablir 705ms
+     ✓ autre format : modifications conservées, textes et produit entiers dans la zone sûre 702ms
+     ✓ retouches en langage naturel : simples → locales et gratuites, ciblées ; génération → annoncée, jamais lancée 680ms
+     ✓ modifications préservées : une régénération n'écrase jamais une création modifiée ; versions, restauration, duplication 836ms
+     ✓ contrôles signalés après modification (lisibilité, zone sûre) ; images d'un autre projet refusées 835ms
+     ✓ aucun texte ne chevauche le bouton, quels que soient la mise en page et le format (contrôle signalé sinon) 5167ms
+ ✓ tests/mission154-parcours.test.ts (7 tests) 11975ms
+   ✓ choix explicite et double clic : une tâche, une version, acquisition sans fournisseur et état partiel inférieur à 100 % 741ms
+   ✓ préparation exacte, isolation, budget réellement insuffisant et changement de contexte bloquent avant toute génération 2285ms
+   ✓ média acquis par le moteur simulé puis réutilisé : une seule génération, emplacement exact repris sans écraser une retouche 841ms
+   ✓ creer : baisse après mise en file et publicité directe restent refusées sans dépense 1829ms
+   ✓ vendre : baisse après mise en file et publicité directe restent refusées sans dépense 2007ms
+   ✓ média acquis pendant la préparation : réutilisé dans le thème sans nouvelle génération 834ms
+   ✓ deux reprises successives : pages de référence actualisées et retouches client conservées à travers les compositions automatiques 3428ms
+ ✓ tests/benchmark-logo-v2-check.test.ts (1 test) 10255ms
+   ✓ benchmark Logo V2 --check (1)
+     ✓ choisit l'administrateur sans e-mail, le masque, ne montre aucune clé et ne crée rien 10253ms
+ ✓ tests/project-handoff.test.ts (33 tests) 10631ms
+   ✓ contrat structuré products (3)
+     ✓ transmet intégralement pages/sections/SEO/identité/médias ; séparation sociale et absence de remplissage honnêtes 332ms
+   ✓ média final de qualité acceptée exclu du pool site : initialCreative 316ms
+   ✓ dérivée d’une publicité refusée comme création indépendante du site 632ms
+   ✓ une publicité archivée à 12 liens reste refusée par la validation réelle et le contrat 826ms
+   ✓ une publicité archivée à 13 liens reste refusée par la validation réelle et le contrat 942ms
+   ✓ filiation non vérifiable (cycle) refusée par les deux consommateurs sans effacer les fichiers 360ms
+   ✓ filiation non vérifiable (missing) refusée par les deux consommateurs sans effacer les fichiers 332ms
+   ✓ filiation non vérifiable (foreign) refusée par les deux consommateurs sans effacer les fichiers 572ms
+   ✓ un parent IA archivé mais vérifiable reste auditable, sans redevenir sélectionnable 322ms
+ ✓ tests/benchmark-video-v2-check.test.ts (1 test) 10310ms
+   ✓ benchmark Vidéo V2 --check (1)
+     ✓ choisit l'administrateur sans e-mail, le masque, ne montre aucune clé, annonce les capacités vérifiées et ne crée rien 10307ms
+ ✓ tests/higgsfield-engine.test.ts (19 tests) 10256ms
+   ✓ connects approval to actual native generation, reservation, settlement and permanent storage 717ms
+   ✓ reuses the acquired local result after reopening, with no network generation 528ms
+   ✓ resumes a failed download by polling the same paid request, without another debit 527ms
+   ✓ preserves the receipt after interrupted status and resumes without resubmission 538ms
+   ✓ releases a confirmed failed/refunded request and records no successful usage 457ms
+   ✓ never submits a second generation after an ambiguous 503 522ms
+   ✓ rejects task budget overflow before any paid submission 457ms
+   ✓ refuses cross-project ownership even when a result was already acquired 662ms
+   ✓ blocks unreferenced people and a disabled provider before dispatch 482ms
+   ✓ records a deliberately new paid attempt under a new action key 486ms
+   ✓ connects the existing video engine dependencies to Higgsfield product shots 1284ms
+   ✓ resumes through the native outer video receipt without a second generation or charge 514ms
+   ✓ outer read-only recovery cannot turn an uncertain result without a receipt into a paid retry 532ms
+   ✓ a started outer receipt after worker restart remains read-only and can recover an expired lease 495ms
+   ✓ refunds an earlier uncertain debit when the provider subsequently confirms failure 433ms
+   ✓ respects the existing per-model disable switch before direct native dispatch 508ms
+   ✓ uses the approved Higgsfield route in the explicit staged guided workflow 557ms
+ ✓ tests/benchmark-image-v2-check.test.ts (1 test) 10405ms
+   ✓ benchmark Image V2 --check (1)
+     ✓ choisit l'administrateur sans e-mail, le masque, ne montre aucune clé et ne crée rien 10402ms
+ ✓ tests/piste-partout.test.ts (1 test) 10426ms
+   ✓ la piste choisie s'applique partout (1)
+     ✓ charte, bannières du site et logo du site suivent la piste 10421ms
+ ✓ tests/benchmark-ads-v2-check.test.ts (1 test) 9932ms
+   ✓ benchmark Pub V2 --check (1)
+     ✓ choisit l'administrateur sans e-mail, le masque, ne montre aucune clé et ne crée rien 9930ms
+ ✓ tests/mission171-registration-privacy.test.ts (18 tests) 10018ms
+   ✓ inscription : réponse identique pour une adresse connue/inconnue, aucune session avant preuve de contrôle 988ms
+   ✓ inscription : un GET de scanner de courriel ne consomme rien ; confirmations concurrentes une seule création 895ms
+   ✓ export natif : authentifié, compte courant seul, pas de secrets de sécurité ni donnée du compte B 369ms
+   ✓ demande d’effacement : reste désactivée, requête dédupliquée, assistance liée au seul compte courant 362ms
+   ✓ effacement seulement sur copie isolée : fichiers/dérivés/cache A retirés, B intact, tâches/liens/sessions A invalidés et traces conservées 416ms
+   ✓ séparation sensible fraise : prix, dose, santé et avis de démonstration absents du projet client 4089ms
+   ✓ séparation sensible noctil : prix, dose, santé et avis de démonstration absents du projet client 2036ms
+ ✓ tests/existing-site.test.ts (9 tests) 9481ms
+   ✓ site existant : lecture et intégration au projet (7)
+     ✓ site Shopify (boutique) : conservé, produits → produit principal + catalogue, logo et images repris, marque du site 4339ms
+     ✓ site Webflow (boutique, plateforme non gérée) : reproduit sur Shopify, version enregistrée avec ses notes 2109ms
+     ✓ logo envoyé par le client : il prime sur celui du site (non téléchargé) 2009ms
+ ✓ tests/videos-creation.test.ts (7 tests) 9645ms
+   ✓ Vidéos de la création (7)
+     ✓ produit : 2 vidéos de 15 s en 3 scènes IA (9:16 et 16:9), carte de fin et musique 2785ms
+     ✓ prix refusé ou échec du fournisseur : incomplet explicite, aucun remplacement 301ms
+     ✓ service : plans libres de droits du métier, aucune génération 2959ms
+     ✓ creer : lancement sans publicité, seule la vidéo organique est produite avec ses points de reprise inchangés 553ms
+     ✓ vendre : lancement sans publicité, seule la vidéo organique est produite avec ses points de reprise inchangés 1415ms
+     ✓ service Créer : présentation avec plans libres conservée, aucune vidéo publicitaire ni génération 1415ms
+ ✓ tests/preparation-nouvelle-mission.test.ts (36 tests) 9268ms
+   ✓ un brief local reste enregistré mais ne peut plus être validé comme compréhension IA 327ms
+   ✓ l'absence de fournisseur ne produit plus de devis de rédaction locale finale 304ms
+   ✓ droits de séries du forfait creer (1)
+     ✓ séries versionnées sous le même nom ; rechargement et double demande idempotents 381ms
+   ✓ droits de séries du forfait vendre (1)
+     ✓ séries versionnées sous le même nom ; rechargement et double demande idempotents 405ms
+   ✓ droits de séries du forfait dominer (1)
+     ✓ séries versionnées sous le même nom ; rechargement et double demande idempotents 415ms
+   ✓ une reprise de série partielle conserve les directions et consomme zéro nouvelle série 344ms
+   ✓ le même choix formulé après renouvellement vise la nouvelle version, sans réutiliser une tâche ancienne 374ms
+ ✓ tests/lot1-rattachement-parcours.test.ts (28 tests) 8410ms
+   ✓ Lot 1 — rattachement jusqu'au rendu/export (28)
+     ✓ activité 2, ordres {"reverseServices":false,"reversePages":false} : textes et SEO conservés 994ms
+     ✓ activité 2, ordres {"reverseServices":false,"reversePages":true} : textes et SEO conservés 781ms
+     ✓ activité 2, ordres {"reverseServices":true,"reversePages":false} : textes et SEO conservés 818ms
+     ✓ activité 2, ordres {"reverseServices":true,"reversePages":true} : textes et SEO conservés 813ms
+     ✓ activité 3, ordres {"reverseServices":false,"reversePages":false} : textes et SEO conservés 809ms
+     ✓ activité 3, ordres {"reverseServices":false,"reversePages":true} : textes et SEO conservés 781ms
+     ✓ activité 3, ordres {"reverseServices":true,"reversePages":false} : textes et SEO conservés 781ms
+     ✓ activité 3, ordres {"reverseServices":true,"reversePages":true} : textes et SEO conservés 769ms
+ ✓ tests/pub-v3-direction.test.ts (12 tests) 8115ms
+   ✓ Publicités V3 : direction artistique par publicité (5)
+     ✓ casque montré seulement sur les photos du client : 3 publicités, 3 concepts, 3 mises en page, 3 photos différentes 1690ms
+     ✓ avec l'IA d'images : une photo publicitaire par concept générée depuis la photo du client, la mise en situation garde la photo entière 1986ms
+     ✓ prise de vue du concept transmise au moteur d'images (cadrage, lumière, zone de texte) 1239ms
+   ✓ création correcte mais perfectible (1)
+     ✓ essais épuisés sans défaut grave (note ≥ 6) : gardée « à améliorer », jamais jetée 1246ms
+   ✓ une seule image payante par création (1)
+     ✓ le contrôle demande un autre visuel : la photo générée (payée) n'est pas remplacée par une autre photo payée 502ms
+   ✓ nombre d'images et formats choisis par le client (1)
+     ✓ 2 images au format 4:5 : 2 publications, 2 photos payées ; les autres formats reprennent la même photo 1406ms
+ ✓ tests/modeles-produit.test.ts (4 tests) 9092ms
+   ✓ Modèles de publications « produit » (4)
+     ✓ dix modèles produit, chacun dans chaque format : produit posé, atouts fournis seulement, lisible et dans les marges 8949ms
+ ✓ tests/video-beginners-direct.test.ts (20 tests) 8195ms
+   ✓ Vidéo débutants : orchestration sans fournisseur réel (10)
+     ✓ produit : vrais clips demandés directement, aucune image ou banque appelée, clips réutilisés 1228ms
+     ✓ service : vrais clips demandés directement, aucune image ou banque appelée, clips réutilisés 1124ms
+     ✓ référence fournie transmise au clip, sans créer une autre image 849ms
+     ✓ clip trop court conservé mais pas rendu ni régénéré automatiquement 444ms
+     ✓ humain non autorisé : refus du contrôle, aucune substitution 449ms
+     ✓ images de contrôle manquantes : clip à revoir, aucune acceptation automatique 372ms
+     ✓ ambiance : proposition sans voix, sous-titres ni texte commercial imposés 626ms
+   ✓ pause et reprise natives : le premier clip direct reçu ne se repaye pas 869ms
+ ✓ tests/modeles-pages.test.ts (10 tests) 8276ms
+   ✓ modèles de pages et pages multiples (10)
+     ✓ CRÉER : la bibliothèque est visible mais l'API refuse la création (402) ; la page existante reste modifiable 773ms
+     ✓ DÉVELOPPER : deux produits avec des mises en page différentes et indépendantes, rendues par l'aperçu 852ms
+     ✓ page depuis un modèle, duplication indépendante, renommage (menu et liens suivis), suppression protégée 716ms
+     ✓ pages indispensables : adresse fixe (pas de contournement de la protection) ; thème importé refusé côté serveur 675ms
+     ✓ baisse de forfait : les pages et mises en page restent ; seules les nouvelles créations sont bloquées 728ms
+     ✓ isolation : un autre compte ne voit ni ne modifie les pages du projet 823ms
+     ✓ exports : Shopify garde chaque page et chaque mise en page produit ; WordPress et PrestaShop gardent les pages et signalent la limite produit 3202ms
+ ✓ tests/mission142-blocages-transversaux.test.ts (28 tests) 7836ms
+   ✓ hightech : demande simple, prix facultatif inconnu, sortie native conservée et réutilisable 366ms
+   ✓ restaurant : demande simple, prix facultatif inconnu, sortie native conservée et réutilisable 305ms
+   ✓ références incompatibles, mise en page absente et plafond trop faible : zéro rédaction achetée, aucun reçu pending 333ms
+   ✓ choix explicite disparu : images, publications et vidéos ne changent jamais de sujet en silence 427ms
+   ✓ hightech : sous-ligne injustifiée → édition gratuite → reprise explicite → fichier décodé, sans repayer la rédaction 396ms
+   ✓ restaurant : sous-ligne injustifiée → édition gratuite → reprise explicite → fichier décodé, sans repayer la rédaction 381ms
+   ✓ une ancienne tâche reçoit le même parcours de correction depuis son reçu exact, sans texte d’un autre projet 445ms
+   ✓ un prix saisi non confirmé est demandé avant toute dépense ; le prix d’une autre prestation n’est pas emprunté 419ms
+   ✓ un texte client exact reste intact jusque dans la consigne image malgré les préférences génériques de vocabulaire 310ms
+ ✓ tests/lot1-sauvegarde-restauration.test.ts (5 tests) 8012ms
+   ✓ Lot 1 — sauvegarde et restauration (5)
+     ✓ prend un instantané cohérent pendant que le site et le worker écrivent, sans les arrêter 4967ms
+     ✓ migre une base historique synthétique d'avant les forfaits V2 sans perte, deux fois de suite, puis la restaure 2979ms
+ ✓ tests/integration194-isolation-ab.test.ts (16 tests) 8112ms
+   ✓ produits GET : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 556ms
+   ✓ produits POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 544ms
+   ✓ produits PATCH (stock) : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 548ms
+   ✓ boutiques GET : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 542ms
+   ✓ boutiques POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 528ms
+   ✓ boutiques DELETE : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 539ms
+   ✓ synchronisation POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 521ms
+   ✓ rendez-vous GET : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 524ms
+   ✓ rendez-vous POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 554ms
+   ✓ biens GET : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 544ms
+   ✓ biens POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 569ms
+   ✓ biens ordre POST : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 542ms
+   ✓ bien GET : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 520ms
+   ✓ bien PATCH : A autorisé, B/administrateur/non connecté refusés sans rien révéler ni modifier 539ms
+   ✓ B ne modifie pas le produit ni le bien de A par son propre projet (identifiants de A) 357ms
+ ✓ tests/video-mission-reliability.test.ts (11 tests) 7961ms
+   ✓ Mission vidéo : refus explicites et acquis conservés (fournisseurs simulés) (11)
+     ✓ sans voix, conserve toutes les phrases en sous-titres et dans le document 1152ms
+     ✓ une interruption après réception du clip reprend le fichier sans nouvelle génération 1708ms
+     ✓ service : ne livre pas deux plans sur trois en prétendant satisfaire la demande 418ms
+     ✓ une reprise ciblée conserve les plans acceptés et ne refait que l'image refusée 1364ms
+     ✓ réutilise les photos fournies sans les régénérer ni modifier les originaux 1323ms
+     ✓ une version retouchée par le client n'est pas écrasée par une reprise 1090ms
+ ✓ tests/identite-projets-neufs-familles.test.ts (4 tests) 7735ms
+   ✓ identité automatique sur des projets neufs : deux marques par famille, toutes les dispositions (4)
+     ✓ specialty : chaque disposition prend l'identité du projet, sans contenu de démonstration ni d'une autre marque 3287ms
+     ✓ catalog : chaque disposition prend l'identité du projet, sans contenu de démonstration ni d'une autre marque 2191ms
+     ✓ services : chaque disposition prend l'identité du projet, sans contenu de démonstration ni d'une autre marque 2063ms
+ ✓ tests/mission171-routes-lifecycle.test.ts (23 tests) 7022ms
+   ✓ matrice theme : A autorisé, B/non connecté/admin ordinaire refusés 652ms
+   ✓ matrice jobs : A autorisé, B/non connecté/admin ordinaire refusés 557ms
+   ✓ matrice files : A autorisé, B/non connecté/admin ordinaire refusés 566ms
+   ✓ matrice export-csv : A autorisé, B/non connecté/admin ordinaire refusés 564ms
+   ✓ liens : révocation native par A, aucune révocation par B ou un rôle envoyé dans la requête 432ms
+   ✓ clé d’aperçu A ne donne pas accès à la version B, même si son identifiant est connu 389ms
+   ✓ tâches et résultats : A et administration explicite autorisés ; B et anonyme refusés 559ms
+   ✓ références persistées contradictoires : listes et tableau projet ne révèlent pas le média ou la tâche B 406ms
+   ✓ groupes de tâches : pause/reprise/annulation ne touchent pas un enfant ou une dépendance B corrompus 368ms
+   ✓ racine et ressources de la tâche : post B, identité B et lecture projet B refusés avant un appel 369ms
+   ✓ copie personnelle d’un fichier archivé : accessible au compte A seul, droits du projet non rouverts 381ms
+   ✓ facturation et devis globaux : des identifiants B dans l’URL ne changent pas le compte serveur courant 389ms
+stderr | tests/isolation-forfait-familles.test.ts > isolation des familles et forfait Dominer (issue #145) > chat : la correction automatique de l'IA n'ajoute pas de section sur mesure hors Dominer
+[chat] auto-correction indisponible : La création de sections par l'IA n'est pas incluse dans le forfait Développer : vous pouvez modifier les sections existantes et en ajouter depuis la bibliothèque. Disponible avec le forfait Dominer.
+
+ ✓ tests/mission160-strategy.test.ts (33 tests) 7546ms
+   ✓ 129 cinq identités seulement et un seul actif 314ms
+   ✓ identités et préparations isolées par projet 365ms
+   ✓ une réanalyse ne transforme pas un angle activé en une autre cible sans consommer un nouveau droit 353ms
+ ✓ tests/isolation-forfait-familles.test.ts (6 tests) 8109ms
+   ✓ isolation des familles et forfait Dominer (issue #145) (6)
+     ✓ chat : la correction automatique de l'IA n'ajoute pas de section sur mesure hors Dominer 1734ms
+     ✓ chat : en Dominer, la même section sur mesure est acceptée 1747ms
+     ✓ moteur local : une commande dont la section est hors bibliothèque n'est pas faite « à blanc » puis refusée 1954ms
+     ✓ aperçu de section et menu de disposition : alignés sur la galerie du thème (mission #190 : plus de familles) 2338ms
+ ✓ tests/brain-memoire-coherence.test.ts (11 tests) 6944ms
+   ✓ Project Brain 2B — mémoire et cohérence (11)
+     ✓ cohérence de marque (3)
+       ✓ palette et typographies validées : jamais écrasées par l'application d'une piste ; sinon la piste s'applique 6685ms
+ ✓ tests/audit-ecrans.test.ts (17 tests) 6583ms
+   ✓ B1 — mot de passe (8)
+     ✓ Mon compte : l'ancien mot de passe est exigé ; le nouveau ferme les autres sessions et garde la session en cours 1359ms
+     ✓ Mon compte : changement limité en fréquence après plusieurs mauvais mots de passe 1073ms
+     ✓ lien de réinitialisation : usage unique, valable 1 heure, ferme toutes les sessions 875ms
+     ✓ administration : génère un lien pour un client (réservé à l'administrateur) 370ms
+     ✓ réglages SMTP : acceptés, chiffrés, jamais renvoyés en clair ; port et expéditeur vérifiés 338ms
+   ✓ I7 — découverte gratuite : images, vidéos et UGC réservées aux forfaits (2)
+     ✓ 402 clair sans forfait, accepté avec un forfait 1101ms
+   ✓ I9 / M12 — administration (2)
+     ✓ l'option « Essai » n'est plus acceptée ; les comptes existants en essai restent lisibles 375ms
+ ✓ tests/angles-sources.test.ts (28 tests) 5990ms
+   ✓ un reçu absent ou appartenant à un autre projet ne suffit pas 350ms
+   ✓ API : authentification et propriété réelles, contexte de cookies simulé 356ms
+ ✓ tests/publication-animee.test.ts (2 tests) 6439ms
+   ✓ Publications animées (2)
+     ✓ chronologie : rien au départ, le titre arrive, le bouton surgit puis bat ; la fin reprend la publication 420ms
+     ✓ dans le studio : « Créer la version animée » enregistre une vidéo MP4 de 7 s liée à l'image — 0 € 6015ms
+ ✓ tests/lot1-produits-sections.test.ts (17 tests) 6905ms
+   ✓ Lot 1 — sections propres au produit (17)
+     ✓ l'accessoire n'affiche aucun fait ni accordéon ni bénéfice du principal 464ms
+     ✓ lab, ordre inversé=false : trois fiches et ZIP distincts 1328ms
+     ✓ lab, ordre inversé=true : trois fiches et ZIP distincts 1126ms
+     ✓ music, ordre inversé=false : trois fiches et ZIP distincts 1065ms
+     ✓ music, ordre inversé=true : trois fiches et ZIP distincts 945ms
+     ✓ changement de nom, ordre des objets et faits nouveaux : même identité, gabarit indépendant 304ms
+     ✓ retouches de la fiche et du corps conservées après recomposition ; anciens thèmes intacts 327ms
+     ✓ média d'une section utilisateur en conflit et style ciblé : conservation sans emprunter le principal 342ms
+ ✓ tests/mission171-scope-inputs.test.ts (26 tests) 5733ms
+   ✓ matrice média original : A autorisé, B/administrateur/non connecté refusés 604ms
+   ✓ matrice média ?thumb=1 : A autorisé, B/administrateur/non connecté refusés 559ms
+   ✓ matrice média ?download=1 : A autorisé, B/administrateur/non connecté refusés 554ms
+   ✓ matrice média ?info=1 : A autorisé, B/administrateur/non connecté refusés 574ms
+   ✓ matrice projet : aucun accès implicite du compte B ou d'un rôle administrateur 559ms
+   ✓ médias : sauvegarde croisée refusée avant toute écriture et dérivés confinés 380ms
+   ✓ la portée asynchrone de deux comptes simultanés reste distincte 372ms
+   ✓ worker : chemin d'entrée valide exécuté une fois, même parcours après changement de propriétaire refusé 378ms
+   ✓ mise en file : parents et dépendances ne peuvent référencer un autre compte 367ms
+   ✓ liens signés : révocation, expiration, portée et transfert du propriétaire 368ms
+   ✓ cache d'archive : une lecture autorisée n'ouvre pas ensuite l'archive au compte B 387ms
+ ✓ tests/affiches-publications.test.ts (6 tests) 6947ms
+   ✓ Affiches de publication (6)
+     ✓ publication : affiche sur la photo du projet, document modifiable, à part des publicités 500ms
+     ✓ visuel de prestation avec photo : affiche (photo pleine page, faits de l'offre, bouton) 753ms
+     ✓ citation et infos pratiques : affiches modifiables dans l'éditeur, avec l'image choisie parmi toutes les images 3276ms
+     ✓ chaque format : texte lisible, dans les marges, sans chevauchement 1846ms
+     ✓ images 100 % IA : sans dépense acceptée, le calendrier ne pose aucune affiche du studio sur les photos 524ms
+ ✓ tests/lot2a-reference.test.ts (11 tests) 5816ms
+   ✓ Lot 2A — références intégrées (11)
+     ✓ compose deux structures distinctes, riches, valides, sans modifier une version existante 1476ms
+     ✓ relie les prestations à leur identité, leur image et leur texte complet après changement d'ordre 765ms
+     ✓ renommer une prestation garde son image ; un ancien nom ambigu n'attribue aucune photo à tort 712ms
+     ✓ ZIP Shopify : composants, CSS, images et modèles propres à chaque produit ; autres formats signalés 2406ms
+ ✓ tests/mission169-payments.test.ts (30 tests) 5650ms
+   ✓ rapprochement et recharge : isolation même par appels directs de fonctions 352ms
+   ✓ factures : bon client uniquement, liens externes bornés et aucun secret dans la réponse 385ms
+ ✓ tests/video-creative-guide.test.ts (10 tests) 5945ms
+   ✓ Guide créatif vidéo (10)
+     ✓ fiche créative adaptée à l'offre : montre premium ≠ artisan ; couleurs de la charte lisibles ; action selon l'objectif 386ms
+     ✓ moteur réel (services) : recherches Pixabay de chaque étape transmises, marque tierce retirée, tailles du guide, carte de fin 2,5–4 s, mémoire créative 1016ms
+     ✓ une étape sans plan bloque la livraison : aucun titre déplacé ni vidéo incomplète 386ms
+     ✓ sans contrôle visuel : contenus conservés et vérification explicitement requise 1070ms
+     ✓ contrôle du fichier final mesuré sur une vraie vidéo : scènes identiques et texte trop petit repérés, rien de déclaré bon sans contrôle 2688ms
+ ✓ tests/mission142-billing.test.ts (17 tests) 5809ms
+   ✓ Mission 142 : frontières de comptabilisation (17)
+     ✓ une clé commune à deux comptes ne masque pas le coût du second 350ms
+     ✓ un règlement étranger ne touche jamais la réservation d'un autre compte 327ms
+     ✓ trois processus SQLite simultanés ne peuvent engager deux fois le même reste 2656ms
+ ✓ tests/bibliotheques-familles-studio.test.ts (2 tests) 5696ms
+   ✓ bibliothèques par famille dans le studio (2)
+     ✓ galerie : 20 fonctions de la famille du projet (+ structure), ajout, refus des autres familles, disposition, en-tête et pied de page 2517ms
+     ✓ identité automatique : la même section dans deux marques de la même famille prend le nom, les textes et le style de chacune 3169ms
+ ✓ tests/lot2a-purchase.test.ts (18 tests) 5578ms
+   ✓ Lot 2A complément — offres commerciales (18)
+     ✓ édition manuelle, vrai chat local/worker, rechargement, restauration et export partagent les mêmes blocs 1095ms
+     ✓ exporte les cinq plateformes sans activer une remise ou un cadeau sans serveur commercial 2313ms
+     ✓ galerie réelle : aperçu et insertion reprennent le produit ciblé, ses faits et ses médias 764ms
+     ✓ garde la quantité simple native Shopify, mais ferme les routes commerciales non adaptées des autres CMS 778ms
+stderr | tests/cutout-quality.test.ts > fond des photos et choix du modèle > modèle planté : détourage par fond uni seulement si le fond est réellement uni, sinon échec propre
+[cutout] modèle medium indisponible (3167 Mo libres), essai du petit modèle : détourage interrompu (SIGKILL) 
+
+stderr | tests/cutout-quality.test.ts > fond des photos et choix du modèle > modèle planté : détourage par fond uni seulement si le fond est réellement uni, sinon échec propre
+[cutout] modèle indisponible, détourage par fond uni : détourage interrompu (SIGKILL) 
+
+stderr | tests/cutout-quality.test.ts > fond des photos et choix du modèle > modèle planté : détourage par fond uni seulement si le fond est réellement uni, sinon échec propre
+[cutout] modèle medium indisponible (3165 Mo libres), essai du petit modèle : détourage interrompu (SIGKILL) 
+
+stderr | tests/cutout-quality.test.ts > fond des photos et choix du modèle > modèle planté : détourage par fond uni seulement si le fond est réellement uni, sinon échec propre
+[cutout] modèle indisponible et fond non uni : pas de détourage : détourage interrompu (SIGKILL) 
+
+ ✓ tests/audit-amont-regressions.test.ts (27 tests) 5461ms
+   ✓ la lecture de pages seule ne fabrique aucun angle 333ms
+   ✓ mémoire : reconstruction complète, correction remplacée, 21e fait conservé et isolation des projets 505ms
+   ✓ moteurs historiques : demande complète dans leur Brain, limitée à la tâche et au projet 449ms
+stderr | tests/cutout-quality.test.ts > tri des photos et détourages d'un projet (lien Alibaba, IA simulée) > machine trop juste et fond chargé : pas de détourage, photo notée, pas de nouvel essai immédiat
+[cutout] modèle medium indisponible (3350 Mo libres), essai du petit modèle : détourage interrompu (SIGKILL) 
+
+stderr | tests/cutout-quality.test.ts > tri des photos et détourages d'un projet (lien Alibaba, IA simulée) > machine trop juste et fond chargé : pas de détourage, photo notée, pas de nouvel essai immédiat
+[cutout] modèle indisponible et fond non uni : pas de détourage : détourage interrompu (SIGKILL) 
+
+ ✓ tests/cutout-quality.test.ts (21 tests) 4734ms
+   ✓ tri des photos et détourages d'un projet (lien Alibaba, IA simulée) (7)
+     ✓ packshots détourés et contrôlés, photo en situation gardée, visuel avec texte écarté ; les refus ne servent jamais 1006ms
+     ✓ aucun packshot : la meilleure candidate n'est gardée que si le contrôle visuel la valide ; sinon message clair 495ms
+     ✓ détourage du modèle refusé (partie retirée) sur fond uni : second essai gratuit par le fond, gardé s'il est validé ; jamais pour une main restée 1098ms
+     ✓ détourage refusé : la vraie photo du client (packshot sur fond uni) illustre quand même la boutique, jamais un cadre vide 420ms
+     ✓ sans IA : packshot sur fond uni détouré et contrôlé localement ; photo sur fond chargé jamais détourée 371ms
+ ✓ tests/video-editorial-contract.test.ts (4 tests) 4990ms
+   ✓ Contrat éditorial vidéo commun, aucun appel fournisseur (4)
+     ✓ accepte le scénario IA organique sans exiger un CTA ni repayer sa rédaction 4376ms
+ ✓ tests/mission142-livraison-logo-video.test.ts (16 tests) 5162ms
+   ✓ video.v2 : une référence vidéo vide ne devient pas une livraison réussie 326ms
+   ✓ vidéo foreign : fichier absent, illisible ou étranger refusé 389ms
+   ✓ vidéo corrupt : fichier absent, illisible ou étranger refusé 503ms
+   ✓ workflow direct et création initiale : vidéos lisibles, reprise partielle sans refaire la première 953ms
+   ✓ une vidéo réellement encodée reste livrée à vérifier, sans promotion du verdict 669ms
+ ✓ tests/qualite-images-videos.test.ts (14 tests) 5178ms
+   ✓ contrôle de fidélité des images IA (réponses simulées) (3)
+     ✓ réponse réaliste acceptée ; produit différent, note faible, note sur 100 ou réponse hors format refusées 1530ms
+   ✓ cadrage et netteté des compositions (3)
+     ✓ produit large décalé (bannière, visuel texte à gauche) : jamais coupé par le bord ni sous le texte 891ms
+     ✓ petit détourage : jamais agrandi plus de 1,6 fois (pas de produit flou ou pixelisé) 706ms
+     ✓ décor généré : aucun reflet miroir sous le produit (un lit ou une table en bois ne reflètent pas) 1146ms
+ ✓ tests/video-scenes.test.ts (11 tests) 5217ms
+   ✓ Vidéo en scènes (11)
+     ✓ produit : une image (vrai produit en référence, aucun texte ni personne) puis un plan Wan par scène, montage de la durée voulue 1147ms
+     ✓ le client choisit 5 scènes, 30 s, format carré 1587ms
+     ✓ service : plans libres de droits liés au métier, aucune génération 1222ms
+     ✓ prix et droits : vidéos IA réservées à Développer/Dominer, 30 s au plus avec Développer, gratuit pour un service 391ms
+ ✓ tests/social-v2-engine.test.ts (17 tests) 5113ms
+   ✓ Social V2 — parcours (17)
+     ✓ délai dépassé : plateforme non vérifiable → INCERTAIN, aucun nouvel envoi ; vérifiable → retrouvée (publiée) ou absente (nouvel essai) 431ms
+     ✓ worker arrêté pendant l'envoi (verrou orphelin) : reprise sans renvoi à l'aveugle ; serveur redémarré avant l'échéance : rien de perdu 414ms
+     ✓ sans forfait : jamais publiée ; publieur réel refusé dans les tests 374ms
+     ✓ benchmarks simulés A–E : volume demandé, stratégie du métier, aucune affirmation inventée, variété, réseaux adaptés 1091ms
+ ✓ tests/pubs-variees.test.ts (3 tests) 4619ms
+   ✓ Publicités variées et travaillées (3)
+     ✓ chaque nouvelle composition est lisible, dans les marges, et garde son traitement dans le document (éditeur) 2930ms
+     ✓ anti-répétition : composition, traitement et place du logo changent d'une publication à la suivante 1678ms
+ ✓ tests/controle-themes-190.test.ts (10 tests) 4659ms
+   ✓ contrôle des liens des thèmes (mission #190) (10)
+     ✓ export WordPress : chaque script appelé par une section existe à son adresse, sans double exécution 641ms
+     ✓ exports WordPress et PrestaShop : la feuille propre au thème appelée par une section est livrée et chargée 3412ms
+     ✓ export WordPress : la police du thème est rendue par le moteur PHP (PHASE) 365ms
+ ✓ tests/publications-services.test.ts (3 tests) 5242ms
+   ✓ publications d'une entreprise de services avec ses propres photos (1)
+     ✓ la plupart des publications montrent les vraies photos du client (pas une photo libre hors sujet) 2329ms
+   ✓ publications d'un produit avec les vraies photos du client (1)
+     ✓ la plupart des publications montrent les photos en situation du client ; un packshot sur fond uni n'en est pas une 2628ms
+ ✓ tests/cms-catalogue-fiable.test.ts (17 tests) 4803ms
+   ✓ exports catalogue fiables (17)
+     ✓ une présentation Presta adaptée à un ancien thème livre ses dépendances V2 655ms
+     ✓ Presta livre son module actualisable séparément sans effacer les correspondances 461ms
+     ✓ les données complètes des sections restent livrées même quand le CMS utilise sa fiche native 751ms
+     ✓ les cinq formats excluent réellement les octets et associations des médias étrangers ou refusés 2454ms
+ ✓ tests/publications-qualite.test.ts (23 tests) 4784ms
+   ✓ Campagnes — preuves de contrat simulées, pas de qualité fournisseur (23)
+     ✓ reprise idempotente conserve concept, image et contrôle ; changement explicite de version distinct 503ms
+     ✓ service sans photo avec logo : vrai logo transmis et contrôlé, pas de faux produit requis 430ms
+     ✓ une référence étrangère est bloquée avant conception 437ms
+     ✓ promotion exacte demandée préservée ; aucune coupe de la consigne en régénération 315ms
+     ✓ copie gratuite clairement provisoire, pas de certification héritée ; original conservé 676ms
+     ✓ A/B/A : une autre publication et un autre sujet n'invalident pas une version acceptée 460ms
+     ✓ reprise deux étapes : seul layout + contrôle restants sont requis et payés 463ms
+ ✓ tests/higgsfield-pricing.test.ts (31 tests) 4558ms
+   ✓ Automatic exact account prices and bulk approval (16)
+     ✓ imports every configuration automatically and never submits a generation 390ms
+     ✓ approves selected models once and activates only those models 317ms
+     ✓ uses sourced FX and distinct audio/resolution/duration/aspect prices 301ms
+     ✓ creates proposals without mutating approved prices 619ms
+     ✓ preserves manual corrections with a reason over refresh 581ms
+     ✓ blocks upstream increase before any paid dispatch, including old approved tariffs 324ms
+     ✓ keeps approval history and old approved revision 552ms
+ ✓ tests/publications-editoriales.test.ts (10 tests) 4614ms
+   ✓ Publicité et organique : mêmes identité/sujet, intentions et structures distinctes — simulations (10)
+     ✓ publicité conserve sa direction complète ; conseil, FAQ et checklist conservent leurs blocs sans CTA forcé 559ms
+     ✓ avis sans preuve/autorisation bloqué avant tout appel ; avis fourni exact et attribution immuables 344ms
+     ✓ vrai carrousel de trois fichiers ordonnés, reprise sans paiement, métadonnées complètes et conservation des pages 427ms
+     ✓ carrousel refusé en partie conserve sa première page sans annoncer un carrousel complet 518ms
+     ✓ création unitaire et lot : brief entier, devis par page, fichiers ordonnés, aperçu/reprise et aucune réutilisation hors sujet 1250ms
+     ✓ conseil conçu par l’IA : des explications utiles, jamais seulement headline/subline/CTA 311ms
+     ✓ worker : aucune publication complète ne se transforme en tâche terminée 369ms
+ ✓ tests/mission160-consumers.test.ts (19 tests) 4661ms
+   ✓ le même angle versionné alimente tous les scopes Brain, produit/service=false 335ms
+   ✓ un contexte préparé ne peut pas transporter la stratégie d’un autre compte 383ms
+   ✓ reprendre un ID de calendrier ne réétiquette pas son ancien angle et ne permet pas de remplir le calendrier d’un autre compte 419ms
+ ✓ tests/audit-contenus.test.ts (15 tests) 4426ms
+   ✓ I-1 nettoyeur HTML du blog (anti-XSS) (3)
+     ✓ exports HTML et WordPress, et vue de l'écran : un ancien corps dangereux est nettoyé à la sortie 1708ms
+   ✓ I-3 sections sur mesure et aperçus cloisonnés (4)
+     ✓ clé d'aperçu signée : liée au projet, infalsifiable, temporaire 361ms
+     ✓ route d'aperçu : bac à sable (CSP), clé sans cookie, redirection depuis la session, 401 sinon, CORS pour l'origine opaque 761ms
+ ✓ tests/mission160-editorial-delivery.test.ts (2 tests) 3846ms
+   ✓ séquence éditoriale conservée, description média uniquement accessible, services=false 2066ms
+   ✓ séquence éditoriale conservée, description média uniquement accessible, services=true 1776ms
+ ✓ tests/routage-multimedia.test.ts (25 tests) 4334ms
+ ✓ tests/mission160-export-security.test.ts (2 tests) 4289ms
+   ✓ le véritable export PrestaShop du produit client garde ses données de variantes sans faux blocage de sécurité 4282ms
+ ✓ tests/lot2b-editorial.test.ts (8 tests) 3955ms
+   ✓ Lot 2B — moteur éditorial et parcours isolés (8)
+     ✓ construit quatre vraies pages, deux identités, un H1, sans visuel emprunté et sans fournisseur 300ms
+     ✓ exporte les cinq plateformes, conserve les composants et signale médias manquants et achats avancés non installés 3378ms
+ ✓ tests/mission169-assistance.test.ts (15 tests) 4100ms
+   ✓ demande enregistrée/rechargée, double clic sans doublon, autre client isolé 396ms
+   ✓ réponse équipe, suivi client, clôture et réouverture sans perte 348ms
+   ✓ mot de passe : expiration, invalidation du lien antérieur et fermeture des seules sessions concernées 906ms
+   ✓ un lien ne peut pas servir deux fois sous concurrence 544ms
+ ✓ tests/themes-differenciation.test.ts (3 tests) 4178ms
+   ✓ heuren : un projet client garde l'ouverture du thème avec ses propres textes 2156ms
+   ✓ rive : un projet client garde l'ouverture du thème avec ses propres textes 2012ms
+ ✓ tests/alibaba-media.test.ts (15 tests) 2415ms
+   ✓ Alibaba Cloud — Qwen-Image et Wan (15)
+     ✓ résultat incertain (erreur 5xx, réponse sans image) : coût maximal retenu, erreur définitive, jamais relancé ni secours 383ms
+     ✓ deux clients avec la même clé média ne récupèrent pas le résultat de l'autre 372ms
+ ✓ tests/demos-quatre-themes.test.ts (5 tests) 3647ms
+   ✓ Les quatre démonstrations dans leur thème de référence (5)
+     ✓ fraise : identité, catégorie, galerie filtrée, pages rendues 697ms
+     ✓ onde : identité, catégorie, galerie filtrée, pages rendues 644ms
+     ✓ rive : identité, catégorie, galerie filtrée, pages rendues 2068ms
+ ✓ tests/visuels-sans-detourage.test.ts (4 tests) 3560ms
+   ✓ visuels sans détourage (1)
+     ✓ photos en situation seulement : pas de silhouette découpée, visuels posés sur les vraies photos 3373ms
+ ✓ tests/planche-marque.test.ts (5 tests) 3517ms
+   ✓ Planche d'identité de marque (5)
+     ✓ rendu complet produit et service (grille 2400 px), sans photo comme avec de vraies photos 556ms
+     ✓ après le logo : planche enregistrée, nouvelle version à chaque refonte, reprise en page 2 de la charte ; route du studio 2899ms
+ ✓ tests/initial-authorization.test.ts (11 tests) 3617ms
+   ✓ Accord initial intégré et lancement automatique — fournisseurs simulés (11)
+     ✓ un plafond trop élevé n’annonce pas un budget consommé à 100 % et ne débite rien 405ms
+     ✓ accord avant validation marque puis un seul démarrage, cas 0 335ms
+     ✓ accord avant validation marque puis un seul démarrage, cas 1 394ms
+     ✓ un contexte déjà validé démarre sans exiger le même devis une deuxième fois 347ms
+     ✓ un accord déjà consommé ne devient pas expiré le lendemain 333ms
+     ✓ un changement manuel/automatique des routes arrête la suite avant un nouveau contrôle payant 305ms
+     ✓ retrait avant départ, devis expiré et plafond changé refusent un lancement 308ms
+     ✓ échec de budget au moment utile reste visible et ne défait pas l’identité validée 365ms
+     ✓ une nouvelle identité ne réutilise pas un accord déjà consommé et garde le premier lot 305ms
+ ✓ tests/excellence-visuels.test.ts (14 tests) 3978ms
+   ✓ ligne photographique de la marque (2)
+     ✓ projet complet : la ligne vient de la marque (direction, piste retenue, cible) et sert aussi aux ambiances de services 2010ms
+   ✓ rendus locaux et mises en page (4)
+     ✓ lumière de la ligne à droite : le décor est éclairé à droite ; l'étalonnage ne touche jamais au produit 714ms
+     ✓ projecteur sombre avec reflet : le fond n'est jamais effacé sous le produit (pas de rectangle noir) 1115ms
+ ✓ tests/preparation-pixabay-integration.test.ts (5 tests) 3938ms
+   ✓ photo service : fichier réel, provenance/licence, miniature ; reprise sans doublon ni second téléchargement 586ms
+   ✓ vidéo products : MP4 décodé, durée, banque vidéo et poster de la vraie séquence 1541ms
+   ✓ vidéo services : MP4 décodé, durée, banque vidéo et poster de la vraie séquence 1520ms
+ ✓ tests/publications-produit-visible.test.ts (1 test) 3738ms
+   ✓ Publications : le vrai produit reste visible sans détourage (1)
+     ✓ le vrai produit en fond de chaque publication (plus jamais un paysage libre de droits : réservés au thème) 3735ms
+ ✓ tests/maison-horizon.test.ts (7 tests | 1 skipped) 3724ms
+   ✓ Maison & Horizon : les biens alimentent le thème (6)
+     ✓ un bien ajouté apparaît sur l'accueil, Acheter et sa fiche sans modifier le thème ; retiré il disparaît ; vendu il reste 660ms
+     ✓ formulaires honnêtes : en démonstration rien n'est envoyé ; aucune estimation chiffrée ; carte illustrative 727ms
+     ✓ export : biens joints (données, métaobjets Shopify, marche à suivre), photos dans les médias, rien créé en silence 2032ms
+ ✓ tests/theme.test.ts (12 tests) 3639ms
+   ✓ thème Shopify (5)
+     ✓ chaque direction produit un thème OS 2.0 complet et valide 421ms
+     ✓ l'aperçu, la version enregistrée et le ZIP exporté sont identiques 473ms
+     ✓ rend toutes les pages publiques avec un vrai prix 366ms
+     ✓ boutiques multi-produit et niche : grille, collections, fiches, panier et exports 588ms
+   ✓ référence de thème pour l'IA (1)
+     ✓ est stable d'un appel à l'autre (mise en cache) et décrit sections, réglages et opérations 1727ms
+ ✓ tests/mission160-bundle.test.ts (7 tests) 3792ms
+   ✓ un devis, une tâche, deux versions acquises avant activation, produit/service=false 1080ms
+   ✓ un devis, une tâche, deux versions acquises avant activation, produit/service=true 343ms
+   ✓ échec au second élément : ancien ensemble actif, premier acquis réutilisé, une seule reprise explicite 430ms
+   ✓ plafond global atteint : aucun exécuteur appelé, aucune bascule ni contournement du budget 409ms
+   ✓ baisse de forfait entre devis et worker : angle et module revérifiés avant toute création 381ms
+   ✓ archives, retouches et autre compte : aucune inclusion abusive dans un devis 743ms
+   ✓ création rédactionnelle : moteur IA complet, textes exacts conservés et points de reprise séparés 393ms
+ ✓ tests/routage-usages.test.ts (16 tests) 3229ms
+   ✓ routage multimédia par usage (16)
+     ✓ Logo Engine V2 : modèle requis désactivé 911ms
+ ✓ tests/securite-ia.test.ts (16 tests) 3307ms
+   ✓ sécurité de l'IA (16)
+     ✓ droits d'accès (4)
+       ✓ appel hors runForUser par un compte sans forfait : refusé, aucune requête envoyée 1462ms
+       ✓ image hors runForUser sans forfait : refusée avant tout envoi au fournisseur 322ms
+ ✓ tests/services-media.test.ts (11 tests) 3223ms
+   ✓ visuels d'une entreprise de services (7)
+     ✓ jeu complet : bannières, réseaux, publicités, textes tirés de l'offre réelle, sans packshot ni faux chiffres 1998ms
+   ✓ vidéos d'une entreprise de services (2)
+     ✓ rendu sans produit : MP4 H.264 en typographie animée 1026ms
+ ✓ tests/preparation-catalogue-actif.test.ts (9 tests) 3118ms
+   ✓ cas 0 : validation des textes et préparation médias sans fausse installation de référence 514ms
+   ✓ cas 2 : validation des textes et préparation médias sans fausse installation de référence 356ms
+   ✓ cas 1 : validation des textes et préparation médias sans fausse installation de référence 378ms
+   ✓ cas 3 : validation des textes et préparation médias sans fausse installation de référence 362ms
+   ✓ une catégorie ambiguë reste bloquée puis se résout localement sans réécriture des documents 325ms
+ ✓ tests/lot1-holdout.test.ts (4 tests) 3209ms
+   ✓ Lot 1 — validation indépendante (4)
+     ✓ laboratoire : texte complet, métadonnées, rendu et export après renommage du projet 909ms
+     ✓ jardinage : texte complet, métadonnées, rendu et export après renommage du projet 717ms
+     ✓ piano : texte complet, métadonnées, rendu et export après renommage du projet 842ms
+     ✓ voix : texte complet, métadonnées, rendu et export après renommage du projet 731ms
+ ✓ tests/permissions-forfaits.test.ts (6 tests) 3078ms
+   ✓ droits des forfaits, vérifiés côté serveur (6)
+     ✓ catalogue proposé (mission #190) : thèmes sur maquettes ouverts par droits par thème et par forfait, sans famille ; les anciens et ORBE / ALCÔVE restent lisibles mais jamais sélectionnables ; rien sans forfait 371ms
+     ✓ le changement vers un thème retiré est aussi refusé dans le worker (chat, écran) 1072ms
+     ✓ vidéos : Créer = aucune vidéo IA (montage sans IA possible) ; Développer = courtes ; Dominer = avancées + UGC 625ms
+     ✓ sections IA : Dominer seulement (issue #141) ; Créer et Développer modifient et ajoutent les sections de la bibliothèque 503ms
+     ✓ calendrier 7 / 30 / 90 jours et 1 / 3 / 5 publications programmées par jour 335ms
+ ✓ tests/sujet-photo.test.ts (3 tests) 2739ms
+   ✓ sujet de la photo et mise en page (3)
+     ✓ bouton, titre et carte d'atouts ne recouvrent pas le produit 2621ms
+ ✓ tests/retouches-composees.test.ts (3 tests) 2939ms
+   ✓ retouches composées, IA de secours et aperçu des formats (3)
+     ✓ « augmente la taille du texte et du titre et centre-le sur l'image avec le bouton » : fait en local, gratuit 811ms
+     ✓ demande non comprise en local → IA : modifications bornées, calques inconnus ou fond ignorés 738ms
+     ✓ autre format : aperçu sans rien créer, puis création seulement à la validation 1384ms
+ ✓ tests/lot2a-php-export.test.ts (9 tests) 3056ms
+   ✓ Lot 2A — moteur PHP exporté (9)
+     ✓ for/else : collection vide 492ms
+     ✓ for/else : offset au-delà du dernier article 308ms
+     ✓ adapte les grilles commerciales en bloc de catalogue natif WooCommerce 489ms
+     ✓ rend réellement les sections éditoriales des deux références (catalogue commercial distinct) 397ms
+ ✓ tests/video-render-missing.test.ts (2 tests) 2407ms
+   ✓ Un clip absent ne devient pas un écran noir réussi (2)
+     ✓ ne prolonge pas un clip au-delà du passage disponible pour suivre la musique 2147ms
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+stderr | tests/video-recherche-plans-libres.test.ts > recherche de plans libres : « escape game » (bug du projet contretemps) > Pixabay injoignable : erreur dite au client, pas avalée
+[vidéos libres] pixabay indisponible : pixabay.com 503
+
+ ✓ tests/video-recherche-plans-libres.test.ts (14 tests) 2629ms
+   ✓ recherche de plans libres : « escape game » (bug du projet contretemps) (7)
+     ✓ le texte tapé est envoyé tel quel, en anglais et en français, avec assez de résultats par page 879ms
+     ✓ les plans « ai generated » qui collent sont retenus et signalés comme créés par l'IA 581ms
+     ✓ un métier non reconnu (« Loisirs ») : le texte tapé suffit à trouver les plans 414ms
+     ✓ silhouettes : écartées par défaut (projet sans personnes), proposées et signalées si le client coche la case 371ms
+ ✓ tests/banque-du-theme.test.ts (3 tests) 2448ms
+   ✓ Banque du thème (3)
+     ✓ service : 3 vidéos marquées « thème », AUCUNE photo de banque comme image du site (images 100 % IA) 815ms
+     ✓ produit : une seule vidéo, et aucune si rien de vraiment lié n'est trouvé 352ms
+     ✓ jamais une photo libre de droits en fond de publication (rendu gratuit) 1277ms
+ ✓ tests/publication-conçue-par-ia.test.ts (8 tests) 2603ms
+   ✓ Publicité conçue par l'IA (8)
+     ✓ accepté au premier essai : la publication complète est enregistrée, accroche de l'IA écrite mot pour mot 442ms
+     ✓ texte faux puis corrigé : un seul nouvel essai, avec la correction demandée 451ms
+     ✓ refusé trois fois (règle du propriétaire : 3 essais) : rien d'enregistré, mais les trois essais payés restent comptés 483ms
+     ✓ orthographe vérifiée par le studio : « Découvrïr » refusé même si le contrôle dit « textes exacts » 471ms
+     ✓ une reprise identique réutilise la version acceptée sans nouvel appel 303ms
+ ✓ tests/images-tri.test.ts (4 tests) 2439ms
+   ✓ Images : versions, tri, supprimées, nouveaux types (4)
+     ✓ nouveau type « Offre du moment » : affiche modifiable avec le texte du client ; sans texte, rien n'est inventé 814ms
+     ✓ même demande répétée : un texte et un bouton différents à chaque visuel (rien d'inventé) 781ms
+     ✓ changement de modèle : nouvelle version liée, la liste n'affiche que la dernière ; tri par statut ; supprimées et restauration 557ms
+ ✓ tests/mission150-api.test.ts (9 tests) 2299ms
+   ✓ creer : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise 361ms
+   ✓ devis publicitaire et appel disponibles : refus avant fournisseur et isolation des comptes 388ms
+ ✓ tests/blog.test.ts (7 tests) 2310ms
+   ✓ articles de blog écrits par l'IA (7)
+     ✓ requête visée et intention de recherche conservées de bout en bout (demande → tâche → base → réécriture) ; verdict enregistré 708ms
+     ✓ refuse sans forfait et avec Créer (inclus dans Vendre et Dominer) ; l'administrateur suit son forfait ; quota épuisé 850ms
+ ✓ tests/skills-bibliotheque.test.ts (8 tests) 2245ms
+   ✓ bibliothèque de compétences (8)
+     ✓ moteurs branchés : chaque appel transmet les bonnes compétences (vidéo, UGC, marque, textes du site, réseaux sociaux, SEO V2, vidéo V2) 2222ms
+ ✓ tests/theme-import.test.ts (3 tests) 2240ms
+   ✓ import du thème Shopify du client (3)
+     ✓ importe dans un projet : modifiable section par section, aperçu fidèle, export complet 2204ms
+ ✓ tests/social-autopilot-pilote.test.ts (9 tests) 2451ms
+   ✓ Autopilot V2 — pilote (9)
+     ✓ réseaux : 6 états réels — à connecter, expirée, autorisation manquante, connecté, publication automatique disponible (non vérifiée), non disponible 377ms
+     ✓ réglages : limites du forfait, Découverte = démonstration, objectif changé sans perdre le calendrier 365ms
+     ✓ budget : sans IA disponible, visuels gratuits et recharge de 10 € proposée ; avec IA, tâche payante seulement dans le plafond de la semaine 528ms
+ ✓ tests/prompts-destinations.test.ts (2 tests) 2242ms
+   ✓ prompts : compléter et lancer (2)
+     ✓ compléter : variables remplies avec le projet, et ce qui manque est signalé 761ms
+     ✓ lancer avec l'IA : refus clair sans IA (découverte), réponse avec le projet sinon 1478ms
+ ✓ tests/logo-v2-progress.test.ts (3 tests) 2281ms
+   ✓ Logo V2 — avancement et échecs visibles (3)
+     ✓ images refusées par le fournisseur : chaque direction en échec avec la vraie raison, série enregistrée et affichée 600ms
+     ✓ série réussie : chaque direction contrôlée (validée ou écartée, avec note et proposition), visible après « rechargement » 1668ms
+ ✓ tests/exports-interactions-familles.test.ts (4 tests) 2169ms
+   ✓ exports CMS des sections de bibliothèque (4)
+     ✓ WordPress et PrestaShop : family.js, conversion.js et les scripts de section sont dans le script exporté 1438ms
+     ✓ WooCommerce : « Sélection de produits » devient la grille native avec les mêmes produits 543ms
+ ✓ tests/affiches-produit-heros.test.ts (3 tests) 2145ms
+   ✓ Affiches produit héros (3)
+     ✓ les trois modèles existent, sont des modèles produit, et passent avant les autres 2018ms
+ ✓ tests/photos-du-metier.test.ts (6 tests) 2112ms
+   ✓ remplissage des emplacements (1)
+     ✓ avec l'IA : une photo hors sujet est refusée, la suivante du métier est prise 2099ms
+ ✓ tests/db-migration-race.test.ts (1 test) 2261ms
+   ✓ migration de la base : ouverture concurrente (1)
+     ✓ huit processus ouvrent la même base neuve en même temps sans erreur 2258ms
+ ✓ tests/routage-multifournisseur.test.ts (26 tests) 2212ms
+   ✓ mêmes garde-fous budgétaires pour OpenAI et Gemini (7)
+     ✓ 502 du relais (« upstream request failed ») : UN seul envoi, coût maximal retenu (incertain), arrêt sans relance ; 429 : relancé 1184ms
+ ✓ tests/produit-detoure-propre.test.ts (7 tests) 2081ms
+   ✓ Produit détouré propre (3)
+     ✓ une photo libre avec le produit collé n'est pas un fond de publication 1988ms
+ ✓ tests/mission160-staging.test.ts (4 tests) 2002ms
+   ✓ un document et une image préparés sont inspectables mais invisibles au courant ; activation atomique, exception conserve A 564ms
+   ✓ préparation native groupée SEO + calendrier ; reprise sans doublons, service=false 741ms
+   ✓ préparation native groupée SEO + calendrier ; reprise sans doublons, service=true 351ms
+   ✓ une préparation étrangère ne devient ni visible ni consommable dans un autre contexte préparé 337ms
+ ✓ tests/directions-palettes-completes.test.ts (14 tests) 2205ms
+   ✓ série historique invalide relue comme partielle, sélection refusée, marque/fichiers conservés 473ms
+   ✓ la complétude persistée exige la palette entière, pas uniquement trois fichiers 380ms
+   ✓ les planches natives appliquent et sauvegardent exactement les cinq couleurs et leurs rôles 1331ms
+ ✓ tests/i18n-media.test.ts (4 tests) 2067ms
+   ✓ médias créés en anglais (4)
+     ✓ script UGC local entièrement en anglais, honnête et conforme aux règles 2034ms
+ ✓ tests/audit-onglet-boutique.test.ts (9 tests) 2160ms
+   ✓ Onglet Boutique — audit (2)
+     ✓ la fiche produit n'affiche jamais d'astérisques : gras rendu en HTML, texte simple ailleurs 1958ms
+ ✓ tests/calendrier-une-phrase.test.ts (10 tests) 2169ms
+ ✓ tests/qualite-boutique.test.ts (11 tests) 2115ms
+   ✓ composition et relecture visuelle par l'IA (simulées) (4)
+     ✓ composition avec une section retirée du catalogue (hero-split) : refusée seule, jamais ajoutée à l'accueil 755ms
+     ✓ relecture qui retirerait l'ouverture ou viderait l'accueil : non appliquée 504ms
+ ✓ tests/paiements-projets.test.ts (10 tests) 2217ms
+   ✓ paiements Stripe des forfaits V2 (Stripe simulé) (10)
+     ✓ une recharge visant le projet d'un autre compte n'est jamais créditée ; pas de recharge sans abonnement actif 372ms
+ ✓ tests/recommandation-quatre-references.test.ts (8 tests) 2051ms
+   ✓ specialized : onze références actives (SILLON : issue #148 ; NOCTIL et TRAVERSE : issue #152 ; HEUREN et ALCÔVE, e-commerce : issue #155 ; MUSEAU CLUB, boutique spécialisée, et SOUPLE, e-commerce : issue #158), seulement les bonnes éligibles et aucune installation supposée 334ms
+ ✓ tests/reference-produit-sans-detourage.test.ts (4 tests) 2175ms
+   ✓ Référence du produit sans détourage validé (4)
+     ✓ détourage refusé + packshot propre : la photo d'origine devient la référence 630ms
+     ✓ photo d'origine en situation (produit porté) : aucune référence, rien n'est recopié 479ms
+     ✓ produit porté : le produit recadré par le module publicités sert de référence 545ms
+     ✓ détourage validé : il reste la référence prioritaire 515ms
+ ✓ tests/formats-et-copies.test.ts (4 tests) 2052ms
+   ✓ Formats et copies (4)
+     ✓ visuel fait par l'IA : copie gratuite au nouveau format, l'image entière (rien coupé), même étiquette 1115ms
+     ✓ publication du calendrier : copie au nouveau format avec son visuel, l'originale intacte 663ms
+ ✓ tests/logo-consignes-francais.test.ts (2 tests) 2062ms
+   ✓ consignes des logos en français (2)
+     ✓ logo complet (moteur Logo V2) : demande, styles, composition et typographie en français ; seuls les textes voulus entre guillemets 1804ms
+ ✓ tests/rendez-vous.test.ts (6 tests) 1986ms
+   ✓ rendez-vous téléphoniques (6)
+     ✓ prix selon le forfait du projet : CRÉER 60 €, DÉVELOPPER 30 €, DOMINER première heure offerte 539ms
+     ✓ deux réservations concurrentes ne peuvent pas prendre le même créneau 365ms
+     ✓ rendez-vous payant : en attente jusqu'au webhook signé ; session expirée = créneau libéré 370ms
+     ✓ annulation ou report jusqu'à 24 h avant seulement ; un rendez-vous payé annulé est remboursable 520ms
+ ✓ tests/mission142-jobs.test.ts (9 tests) 1908ms
+   ✓ Mission 142 : suivi et isolation des tâches (8)
+     ✓ deux comptes utilisant la même clé ne récupèrent jamais le travail de l'autre 330ms
+     ✓ un prérequis appartenant à un autre client ne déclenche pas son travail 329ms
+ ✓ tests/produits-studio-190.test.ts (11 tests) 1978ms
+   ✓ produits du Studio (mission #190) (8)
+     ✓ reprise des produits de la boutique : mêmes produits, aperçu et export identiques tant que rien ne change 372ms
+     ✓ chaque thème de produits sur maquette : aperçu identique après reprise du catalogue (maquettes préservées) 1214ms
+ ✓ tests/mission171-boundaries.test.ts (10 tests) 1945ms
+   ✓ métadonnées : un lien de source croisé ne révèle aucune donnée du compte B 390ms
+   ✓ mise en file : propriétaire de tâche et projet doivent correspondre avant toute consommation 416ms
+   ✓ worker : tâche persistée avec média croisé refusée avant le transport, pas seulement dans l’interface 369ms
+   ✓ version courante : un pointeur de projet croisé ne lit jamais le thème du compte B 376ms
+ ✓ tests/social-autopilot-limites.test.ts (9 tests) 1896ms
+   ✓ Autopilot V2 — structure éditoriale et limites (7)
+     ✓ calendrier hebdomadaire : 3 par jour × 7 jours (cosmétique) puis 5 par jour × 7 jours (plâtrier) — rôles du jour, rien d'inventé 484ms
+     ✓ par jour : une publication et ses adaptations (même contenu) comptent pour UN ; le jour est celui du fuseau du projet 331ms
+     ✓ « mettre les vidéos le mardi » respecte la limite ; la reprise après pause revérifie chaque publication 368ms
+     ✓ formulaire, demande écrite et automatisation : jamais plus que le forfait ; Découverte : aucune préparation automatique 351ms
+ ✓ tests/voix-client.test.ts (5 tests) 1930ms
+   ✓ Voix client : la phrase d'analyse de marque n'apparaît jamais telle quelle chez le client (5)
+     ✓ le contrôle des textes du site repère la tournure dans le texte d'ouverture 1921ms
+ ✓ tests/mission160-holdout.test.ts (4 tests) 2058ms
+   ✓ nouveau cas tenu à part : tamis de semences / accessibilité numérique, service=false 753ms
+   ✓ cas supplémentaire tenu à part : pupitre de lecture / archivage documentaire, service=false 598ms
+   ✓ cas supplémentaire tenu à part : pupitre de lecture / archivage documentaire, service=true 432ms
+ ✓ tests/mission142-preparation-reprise.test.ts (7 tests) 1806ms
+   ✓ reprise explicite du même travail : résultat acquis gardé ; retouche client protégée (false) 375ms
+ ✓ tests/ugc.test.ts (5 tests) 1925ms
+   ✓ vidéos UGC générées par IA (5)
+     ✓ le script local n'utilise que les faits confirmés et respecte les règles 1917ms
+ ✓ tests/product-completion.test.ts (4 tests) 1952ms
+   ✓ produit entier obligatoire (4)
+     ✓ avec l'IA : produit incomplet reconstruit en entier, contrôlé, détouré ; l'original du client est gardé 916ms
+     ✓ sans IA : rien d'incomplet n'est utilisé, le client est prévenu une fois 452ms
+     ✓ reconstruction infidèle (pas le même produit) : écartée, deux essais au plus, puis message clair 577ms
+ ✓ tests/video-render-conflict.test.ts (3 tests) 2010ms
+   ✓ Modification concurrente pendant l'encodage : fichier local réel, outils d'encodage injectés (3)
+     ✓ le moteur V2 conserve aussi son document si son premier encodeur échoue 732ms
+     ✓ un premier encodage repris retrouve sa carte guidée sans refaire les médias 692ms
+     ✓ conserve la version client et range le rendu reçu dans une lignée distincte 581ms
+stderr | tests/photos-libres.test.ts > photos libres de droits > une banque en panne ne bloque pas les autres ; photos déjà prises écartées
+[photos libres] pexels indisponible : api.pexels.com 500
+
+ ✓ tests/photos-libres.test.ts (5 tests) 1890ms
+   ✓ publications : photo libre avant l'IA (1)
+     ✓ une photo libre trouvée → enregistrée pour la publication, aucune image IA payée 1857ms
+ ✓ tests/accounting.test.ts (11 tests) 1722ms
+   ✓ charges récurrentes (2)
+     ✓ crée les échéances en base sans doublon, payées si passées et à payer pour la prochaine 1253ms
+   ✓ accès réservé à l'administration (1)
+     ✓ refuse un compte client et accepte l'administrateur 454ms
+ ✓ tests/aplat.test.ts (11 tests | 1 skipped) 1780ms
+   ✓ APLAT : « Choisir ce thème » pose les pages avec les données du client (5)
+     ✓ toutes les pages se rendent sans erreur, en français et en anglais 1121ms
+ ✓ tests/description-ia-erreurs.test.ts (11 tests) 1835ms
+ ✓ tests/preparation-collecte-reprise.test.ts (2 tests) 1818ms
+   ✓ collecte products : avancement sauvé avant échec, seuls les manques repris, aucun double achat 936ms
+   ✓ collecte services : avancement sauvé avant échec, seuls les manques repris, aucun double achat 874ms
+ ✓ tests/creation-guidee.test.ts (5 tests) 1662ms
+   ✓ Création guidée par produit ou service (5)
+     ✓ propose le produit principal puis ceux du catalogue, chacun avec SA photo de référence 340ms
+     ✓ le sujet et la demande du client sont gardés sur la publication et passent dans la consigne de l'IA 443ms
+     ✓ publicité guidée : enregistrée comme publicité (jamais reprise dans les publications) 387ms
+     ✓ 3 essais refusés : AUCUN gabarit ni affiche du studio à la place (toute image finale est créée par l'IA) ; le blocage est dit, le coût des essais reste compté 314ms
+ ✓ tests/project-handoff-api.test.ts (4 tests) 1722ms
+   ✓ remise products propriétaire : étapes manquantes explicites, aucun thème/réseau, autre compte refusé 502ms
+   ✓ remise services propriétaire : étapes manquantes explicites, aucun thème/réseau, autre compte refusé 441ms
+   ✓ choix catégorie API : droits serveur, conflit, isolation, sauvegarde sans travail payant ni thème modifié 460ms
+   ✓ changement de catégorie après rédaction : références actives requalifiées localement, textes/médias et choix historique conservés 311ms
+ ✓ tests/parenthese-theme.test.ts (15 tests) 1861ms
+   ✓ Démonstration PARENTHÈSE (planches 01 à 06) (9)
+     ✓ toutes les pages existent et se rendent, un seul titre principal, page introuvable de la planche 06 790ms
+     ✓ honnêteté : avertissement médical, aucune promesse de guérison, aucun diplôme, avis, chiffre ni coordonnée inventés 678ms
+ ✓ tests/logo-identity.test.ts (3 tests) 1688ms
+   ✓ identité tirée du logo (3)
+     ✓ vrai logo : palette anthracite et sable mesurée, lisible ; symbole SB découpé sans le nom 780ms
+     ✓ symbole au-dessus du nom, à gauche du nom ; nom seul → aucun symbole inventé 750ms
+ ✓ tests/lot2c-conversion.test.ts (5 tests) 1680ms
+   ✓ Lot 2C — FRAISE GUMMIES (référence Lumora) et ONDE AUDIO (référence Pawish) (5)
+     ✓ fraise : toutes les pages se rendent, données de démonstration identifiées, aucun produit inventé 691ms
+     ✓ onde : toutes les pages se rendent, données de démonstration identifiées, aucun produit inventé 611ms
+ ✓ tests/video-creation-rights.test.ts (5 tests) 1600ms
+   ✓ Création vidéo guidée : droits natifs, sans fournisseur (4)
+     ✓ choisir une photo conserve le scénario staged déjà rédigé sans nouvelle tâche texte 307ms
+     ✓ devis consultable, communication refusée sans choix autorisé ; propriétaire payé avec choix accepté, étranger refusé 608ms
+ ✓ tests/atelier-nuance-theme.test.ts (16 tests) 1574ms
+   ✓ Démonstration ATELIER NUANCE (planches 01 à 06) (7)
+     ✓ toutes les pages existent et se rendent, un seul titre principal ; « [À compléter : …] » réservé aux réponses qui engageraient le salon 653ms
+ ✓ tests/abonnement-projet.test.ts (8 tests) 1515ms
+   ✓ un abonnement = un projet (8)
+     ✓ nouvel abonnement : deuxième projet ; projets, forfaits et budgets IA indépendants 362ms
+ ✓ tests/publications-campagnes.test.ts (6 tests) 1670ms
+   ✓ Campagnes : devis, reprise HTTP et statut réel de la tâche (6)
+     ✓ quote compte concepts et destinations, accord obligatoire, plafond transmis à la file 340ms
+ ✓ tests/creations-initiales-api.test.ts (6 tests) 1569ms
+   ✓ Création initiale depuis les vraies API, sans fournisseurs (6)
+     ✓ nouveau projet products : lot préparé sans bloquer ni lancer d’IA 362ms
+     ✓ nouveau projet services : lot préparé sans bloquer ni lancer d’IA 396ms
+ ✓ tests/images-recherche-elargie-silhouettes.test.ts (6 tests) 1366ms
+   ✓ Images : recherche élargie et silhouettes (photos libres) (6)
+     ✓ le texte tapé est cherché tel quel (anglais et français) ; recherche élargie : chaque mot aussi seul 457ms
+     ✓ silhouettes : sans la case, aucune photo de personne ; avec la case, la silhouette est gardée et signalée, un visage jamais 439ms
+     ✓ photo « ai generated » de Pixabay : proposée et marquée « créée par l'IA » ; badge de la banque 421ms
+ ✓ tests/initial-context-concurrency.test.ts (3 tests) 1569ms
+   ✓ changement pendant le rendu : image reçue conservée, aucune relecture payante suivante ni association au post 618ms
+   ✓ changement pendant la réparation : aucune revue ni nouvelle image sous l’ancien accord, résultat précédent conservé 495ms
+   ✓ le vrai moteur d’image contrôle le contexte entre le générateur asynchrone et sa relecture payante 452ms
+ ✓ tests/preparation-theme-integration.test.ts (5 tests) 1267ms
+   ✓ accueil, marque, prestation indexée et Contact passent intégralement au thème ; formulaire conservé 368ms
+   ✓ choisir un thème conserve intégralement l’identité approuvée et sa palette dans le rendu 393ms
+ ✓ tests/mission160-api.test.ts (3 tests) 1452ms
+   ✓ API : lire les cinq cartes ne consomme aucun droit ; le serveur refuse la construction avant choix 468ms
+   ✓ API : double clic concurrent au choix du thème crée exactement une tâche 372ms
+   ✓ API : un autre compte ne lit ni ne prépare la stratégie, et ne certifie aucun de ses médias 604ms
+ ✓ tests/audit-forfaits-admin.test.ts (6 tests) 1360ms
+   ✓ abonnement payé en vigueur (hasPaidSubscription) (1)
+     ✓ Découverte : non ; résilié ou impayé : non ; payé ou offert (en attente de projet) : oui 355ms
+   ✓ connexion : le temps de réponse ne révèle pas si un compte existe (1)
+     ✓ adresse inconnue : une vraie vérification bcrypt est faite (durée comparable à un vrai compte) 996ms
+ ✓ tests/images-faire-un-visuel.test.ts (5 tests) 1484ms
+   ✓ Faire un visuel (onglet Images) (5)
+     ✓ tout par l'IA (services) : textes du client écrits mot pour mot, scène de l'IA gardée, format respecté, visuel rangé 463ms
+     ✓ tout par l'IA : « une de mes images » choisie sert de référence ; produit sans photo refusé (rien d'inventé) 448ms
+ ✓ tests/mission142-livraison-images.test.ts (7 tests) 1452ms
+ ✓ tests/phase-theme.test.ts (11 tests) 1332ms
+   ✓ Démonstration PHASE (planches 01 à 10) (7)
+     ✓ accueil de la planche 01, en-tête et pied PHASE, pages de la planche, une seule h1 par page 505ms
+     ✓ honnêteté : aucun avis, note, chiffre d'expérience, certification, délai garanti ni coordonnée inventés 365ms
+stdout | tests/securite-post-audit.test.ts > sécurité après l'audit > ADMIN_EMAIL : inscription = compte client ; rôle donné seulement par le lien, au compte connecté de cette adresse
+[admin] Confirmation administration en attente : configurez l’envoi d’e-mails. Aucun jeton n’est écrit dans les journaux.
+
+ ✓ tests/billing.test.ts (7 tests) 1310ms
+   ✓ découverte gratuite, forfait et budget épuisé (1)
+     ✓ découverte : aucun appel à l'IA (moteur local), ni images ni vidéos ; avec un forfait, tout est ouvert ; budget épuisé : moteur local 560ms
+   ✓ avertissement avant une action IA gourmande (1)
+     ✓ estime la part des crédits et classe l'action (légère, gourmande, insuffisante) 355ms
+ ✓ tests/securite-post-audit.test.ts (4 tests) 1460ms
+   ✓ sécurité après l'audit (3)
+     ✓ OAuth : un lien d'autorisation lancé par un fraudeur et ouvert par une victime n'est rattaché à personne 395ms
+     ✓ ADMIN_EMAIL : inscription = compte client ; rôle donné seulement par le lien, au compte connecté de cette adresse 337ms
+     ✓ projet supprimé (archivé) : inaccessible, et la limite d'une boutique par abonnement s'applique aussi à l'administrateur 536ms
+ ✓ tests/cle-passerelle.test.ts (4 tests) 1377ms
+   ✓ clé fournie par la passerelle de l'hébergement (4)
+     ✓ OpenAI seul (routage automatique) : l'IA de texte est annoncée disponible et choisie pour les tâches fortes 1328ms
+ ✓ tests/musique-au-choix.test.ts (2 tests) 1151ms
+   ✓ Musique au choix (2)
+     ✓ publication animée : la musique du studio est bien ajoutée à la vidéo muette 875ms
+ ✓ tests/publications-organisation.test.ts (7 tests) 1317ms
+   ✓ Publications, banques et stratégie (7)
+     ✓ une publication : une par réseau choisi, titre du client gardé, format image ou vidéo ; prix seulement en payant 319ms
+     ✓ API create_one : gratuit sans image IA validée = en attente (jamais une photo de la banque mise en page) ; payant refusé sans IA ou sans prix accepté 326ms
+ ✓ tests/video-vocabulaire-client.test.ts (1 test) 1314ms
+   ✓ vidéo : vocabulaire du client appliqué (1)
+     ✓ vidéo en scènes : aucun « chronographe » à l'écran ni dans la voix, même dans un plan écrit par l'IA 1308ms
+ ✓ tests/preparation-adapters.test.ts (4 tests) 1256ms
+   ✓ Préparation : raccordements aux moteurs existants (fournisseurs simulés) (4)
+     ✓ adaptateur images : références originales, consentement précis, pas de stock et refus du provisoire 438ms
+     ✓ adaptateur logos : seuls les candidats finaux et consignes intégrales, aucune propagation automatique 302ms
+ ✓ tests/mission160-unseen-final.test.ts (2 tests) 1341ms
+   ✓ validation tenue à part : réparation vélo / entretien de vergers, service=false 903ms
+   ✓ validation tenue à part : réparation vélo / entretien de vergers, service=true 433ms
+ ✓ tests/regle-presence-humaine.test.ts (16 tests) 1199ms
+   ✓ règle de présence humaine (15)
+     ✓ Image V2 : personne visible sans autorisation → REFUSÉ (fatal) ; autorisée → FINAL 329ms
+     ✓ Image V2, moteur : photo de banque avec une personne jamais téléchargée ; image générée avec une personne refusée, jamais utilisée 781ms
+ ✓ tests/logo-openai-routage.test.ts (6 tests) 1120ms
+   ✓ Logos avec OpenAI seul (routage automatique) (6)
+     ✓ conversation : un fournisseur texte OpenAI prêt suffit, l'abonnement reste obligatoire 876ms
+ ✓ tests/theme-en.test.ts (4 tests) 1301ms
+   ✓ boutique en anglais (4)
+     ✓ compilée sous withContentLang("en") : locale par défaut anglaise, schémas et textes par défaut sans français 1193ms
+ ✓ tests/biens.test.ts (4 tests) 1191ms
+   ✓ Biens : saisie, contrôles et états (2)
+     ✓ photos : seulement les images de ce projet, jamais deux fois la même dans la galerie 341ms
+   ✓ Biens : routes du studio (1)
+     ✓ un autre compte ne voit pas les biens du projet ; création, modification et publication par les routes 399ms
+ ✓ tests/droits-themes-190.test.ts (4 tests) 1119ms
+   ✓ droits par thème et par forfait (mission #190) (4)
+     ✓ administration : réservée à l'administrateur ; liste nettoyée (thèmes inconnus ou retirés ignorés) ; null = à choisir 373ms
+     ✓ le serveur applique la liste choisie : thème hors liste refusé (402), thème de la liste accepté, thème déjà utilisé conservé 363ms
+     ✓ remise « à choisir » : le forfait retrouve tous les thèmes proposés 360ms
+ ✓ tests/music-library-admin.test.ts (2 tests) 1085ms
+   ✓ bibliothèque musicale du studio (2)
+     ✓ ajoute, classe par style, choisit selon le métier et copie une seule fois dans le projet 987ms
+ ✓ tests/music-library.test.ts (7 tests) 1047ms
+   ✓ musique libre de droits pour les vidéos (6)
+     ✓ projet : la piste est gardée avec sa licence et sa mention, puis réutilisée sans nouvelle recherche 301ms
+   ✓ piste de la banque : introduction calme sautée (1)
+     ✓ le passage utilisé commence là où le morceau est lancé 728ms
+stdout | tests/admin-stats.test.ts > administration réservée au propriétaire > avec ADMIN_EMAIL, seul ce compte peut devenir administrateur — après confirmation de l'adresse (lien signé)
+[admin] Confirmation administration en attente : configurez l’envoi d’e-mails. Aucun jeton n’est écrit dans les journaux.
+
+ ✓ tests/admin-stats.test.ts (2 tests) 1072ms
+   ✓ tableau de bord de l'administration (1)
+     ✓ compte abonnés, essais, paiements, revenu récurrent et utilisation du forfait 727ms
+   ✓ administration réservée au propriétaire (1)
+     ✓ avec ADMIN_EMAIL, seul ce compte peut devenir administrateur — après confirmation de l'adresse (lien signé) 342ms
+ ✓ tests/qualite-logo-symbole.test.ts (43 tests) 1104ms
+ ✓ tests/client-logo.test.ts (2 tests) 999ms
+   ✓ logo fourni par le client (2)
+     ✓ symbole découpé dans le logo du client, couleurs tirées du logo 912ms
+ ✓ tests/images-100-ia.test.ts (8 tests) 978ms
+   ✓ Deux étapes : photo par Qwen, texte et logo par ChatGPT Images (2)
+     ✓ photo sans texte puis mise en page ; texte raté : seule la mise en page est refaite (photo payée gardée) ; produit raté : photo refaite 676ms
+ ✓ tests/taches-fond-robustesse.test.ts (6 tests) 1067ms
+ ✓ tests/video-receipts-approval.test.ts (10 tests) 1078ms
+   ✓ Reçus et accords vidéo, aucun fournisseur réel (8)
+     ✓ l'accord du projet reste valable quand le moteur cible une autre prestation 566ms
+ ✓ tests/table-saison-theme.test.ts (10 tests) 863ms
+   ✓ Démonstration TABLE SAISON (planches 01 à 05) (6)
+     ✓ toutes les pages des planches existent et se rendent, sans « [À compléter » ni débordement de mention 447ms
+ ✓ tests/galerie-sections-190.test.ts (16 tests) 974ms
+ ✓ tests/forfaits-interface.test.ts (6 tests) 1043ms
+   ✓ routes des projets et abonnements (3)
+     ✓ l'abonnement d'un projet n'est visible et modifiable que par son propriétaire 368ms
+     ✓ paiement : la réactivation ou la recharge d'un projet d'un autre compte est refusée avant tout appel à Stripe 394ms
+ ✓ tests/mission142-diagnostic-livraison.test.ts (28 tests) 898ms
+   ✓ diagnostic ancien schéma : image réellement décodée, coût enregistré, aucune donnée privée exportée ni écriture SQLite 397ms
+ ✓ tests/audit-intent-contexte.test.ts (2 tests) 1054ms
+   ✓ classement : original entier, restriction finale, contexte du projet et provenance distincte 591ms
+   ✓ un identifiant de projet d'un autre compte est refusé avant le LLM 460ms
+ ✓ tests/image-plates.test.ts (6 tests) 973ms
+   ✓ Décors libres de droits pour les images du produit (6)
+     ✓ produit réel : jamais collé sur une photo libre (même un décor vide parfait) ; photo générée à partir de la photo du produit 344ms
+ ✓ tests/palette-direction.test.ts (7 tests) 999ms
+ ✓ tests/description-ia.test.ts (5 tests) 958ms
+   ✓ Description rédigée par l'IA (offerte par la plateforme) (5)
+     ✓ compte Découverte (sans abonnement, administrateur compris) : refus net, aucun appel à l'IA, aucune dépense 408ms
+ ✓ tests/directions-palettes-consignes.test.ts (2 tests) 911ms
+   ✓ renouveler propose trois nouvelles palettes sans imposer celle du choix précédent ni modifier ce choix 493ms
+   ✓ une palette fournie et verrouillée hors choix de direction reste une contrainte, sans remplacement silencieux 415ms
+ ✓ tests/mission142-producteurs-directs.test.ts (4 tests) 850ms
+ ✓ tests/marque-mise-a-jour-medias.test.ts (3 tests) 840ms
+ ✓ tests/panneau-photo.test.ts (3 tests) 974ms
+   ✓ panneau photo des déclinaisons (3)
+     ✓ sujet au centre : photo en panneau, texte et bouton sur l'aplat 572ms
+ ✓ tests/audit-workflow-portee.test.ts (3 tests) 792ms
+   ✓ workflow : texte intégral conservé, restriction transmise, aucune création complète ajoutée 319ms
+ ✓ tests/menus-entete.test.ts (16 tests) 639ms
+ ✓ tests/medias-barriere.test.ts (6 tests) 742ms
+ ✓ tests/idempotence-reprise.test.ts (4 tests) 653ms
+   ✓ idempotence des reprises (4)
+     ✓ textes de la boutique : chaque tour (rédaction, relecture) est un point de reprise 433ms
+ ✓ tests/calendrier-phrases-variees.test.ts (2 tests) 672ms
+   ✓ Calendrier en une phrase — phrases variées (2)
+     ✓ 54 phrases : action et publications visées 429ms
+ ✓ tests/lot2b-featured.test.ts (5 tests) 773ms
+   ✓ Produit à la une — section réutilisable branchée sur la source de la fiche (5)
+     ✓ montre dans le panier le visuel de la variante choisie, avec repli sur l'image du produit, et le libellé du prix unitaire 353ms
+ ✓ tests/budget-ia-visuels.test.ts (5 tests) 720ms
+ ✓ tests/onglet-images-audit.test.ts (11 tests) 648ms
+   ✓ onglet Images — audit (11)
+     ✓ vocabulaire du client appliqué à la consigne du modèle d'images (ex. « montre », jamais « chronographe ») 538ms
+ ✓ tests/mission142-images-idempotence.test.ts (2 tests) 656ms
+   ✓ retouche renvoyée : un seul job et aucun accès à la photo d'un autre projet 420ms
+ ✓ tests/publicite-ligne-campagne.test.ts (3 tests) 667ms
+   ✓ Ligne « campagne » et Qwen-Image 3.0 Pro par défaut (3)
+     ✓ le vrai logo est transmis à l'IA et contrôlé contre l'original (le nom de la marque n'est plus exigé en texte libre) 446ms
+ ✓ tests/idees-de-prompts.test.ts (4 tests) 686ms
+ ✓ tests/preparation-media-contrat.test.ts (21 tests) 761ms
+   ✓ un même fichier répété ne compte pas dix fois — products 420ms
+   ✓ un même fichier répété ne compte pas dix fois — services 327ms
+ ✓ tests/logo-visible.test.ts (1 test) 695ms
+   ✓ logo agrandi sur les images (1)
+     ✓ composition classique et modèle de la bibliothèque : logo grand, rien ne se chevauche 692ms
+ ✓ tests/securite-audit-stabilisation.test.ts (4 tests) 680ms
+   ✓ Sécurité (audit de stabilisation) (4)
+     ✓ bombe ZIP : refusée AVANT décompression (fichier de 30 Mo de zéros compressé en quelques Ko) 397ms
+ ✓ tests/preparation-textes-reprise.test.ts (2 tests) 613ms
+   ✓ products : échec tardif du plan sans repayer les pages, Contact inclus ; correction d'une seule page 346ms
+ ✓ tests/publications-ia-creation.test.ts (5 tests) 705ms
+ ✓ tests/logo-complet-ia.test.ts (6 tests) 729ms
+ ✓ tests/site-texte-seo.test.ts (2 tests) 526ms
+   ✓ Texte et SEO du site (2)
+     ✓ accueil : titre principal de la page rédigée, titres et descriptions Google bornés, appel final selon le mode de contact 323ms
+ ✓ tests/ia-utilisation-pourcent.test.ts (3 tests) 598ms
+ ✓ tests/vocabulaire-client.test.ts (5 tests) 572ms
+   ✓ Vocabulaire du client (5)
+     ✓ enregistrée dans la mémoire du projet et appliquée aux textes et à la consigne de l'image 389ms
+ ✓ tests/rendu-bibliotheques-familles.test.ts (4 tests) 613ms
+   ✓ rendu des sections de bibliothèque (issue #145) (4)
+     ✓ citation (projet sans avis) : ni étoiles, ni « Avis fictif », ni disque vide ; le manque est signalé 343ms
+ ✓ tests/publications-contrat-llm.test.ts (2 tests) 582ms
+   ✓ concepteur et contrôleur réels : brief complet, identité, références préparées, mobile, avant/après et visuel récent — LLM simulé 307ms
+ ✓ tests/signature-marque-partout.test.ts (2 tests) 574ms
+   ✓ Nouvelle signature de marque appliquée au site (2)
+     ✓ le site prend la nouvelle signature dans une nouvelle version, l'ancienne est conservée 569ms
+ ✓ tests/video-promo.test.ts (8 tests) 542ms
+   ✓ habillage publicitaire des vidéos (6)
+     ✓ musique composée : durée exacte, reproductible, sans saturation 488ms
+ ✓ tests/preparation-preuve-api.test.ts (2 tests) 522ms
+ ✓ tests/logo-declinaisons-couleurs.test.ts (7 tests) 534ms
+ ✓ tests/reservation-activite.test.ts (5 tests) 467ms
+ ✓ tests/calendrier-reservation.test.ts (10 tests) 482ms
+ ✓ tests/choix-publication-ia.test.ts (4 tests) 447ms
+ ✓ tests/selection-couleurs.test.ts (8 tests) 438ms
+   ✓ couleurs d'UN élément désigné (titre, bouton) (3)
+     ✓ titre désigné, « rouge sur fond jaune » : texte rouge et fond jaune de ce titre seulement 401ms
+ ✓ tests/qualite-textes-marque.test.ts (22 tests) 477ms
+ ✓ tests/logo-relais-openai-routage.test.ts (4 tests) 498ms
+ ✓ tests/lot5-fal-adapter.test.ts (3 tests) 454ms
+ ✓ tests/reference-produit.test.ts (1 test) 373ms
+   ✓ référence du produit recadrée dans la photo du client (1)
+     ✓ recadre le produit (cases désignées + marge), le garde, et note la personne 369ms
+ ✓ tests/palette-site-metiers.test.ts (3 tests) 438ms
+   ✓ Palette verrouillée par la direction (1)
+     ✓ palette verrouillée par la direction : modification à la main refusée ; une autre direction change vraiment les couleurs du site 428ms
+ ✓ tests/logo-ia-images.test.ts (2 tests) 452ms
+ ✓ tests/brain-lecture.test.ts (14 tests) 409ms
+ ✓ tests/publicites-organisation.test.ts (3 tests) 437ms
+   ✓ Publicités séparées de l'organique (3)
+     ✓ une publication vidéo organique ne reprend pas une publicité vidéo de la bibliothèque 430ms
+ ✓ tests/jobs-calendar.test.ts (5 tests) 400ms
+ ✓ tests/video-voice-timing.test.ts (3 tests) 377ms
+ ✓ tests/quotas.test.ts (3 tests) 399ms
+ ✓ tests/photos-pixabay-galerie.test.ts (3 tests) 383ms
+   ✓ Site de services : galerie « En images » avec les photos du métier (1)
+     ✓ 12 photos libres : 7 emplacements + une galerie de 4 à 8 photos sur l'accueil 340ms
+ ✓ tests/preparation-analyse-reprise.test.ts (1 test) 345ms
+   ✓ une réanalyse ne perd ni réponse ni fait client, même si l'API change l'identifiant de question 342ms
+ ✓ tests/demos-fraise-onde-composition.test.ts (2 tests) 375ms
+ ✓ tests/song-composer.test.ts (6 tests) 401ms
+   ✓ compositeur de musique des vidéos (6)
+     ✓ vrais instruments : durée exacte, son présent jusqu'à la fin, aucune saturation 377ms
+ ✓ tests/brain-contextes-2c.test.ts (11 tests) 351ms
+ ✓ tests/contre-verification-195-products.test.ts (18 tests) 386ms
+ ✓ tests/atelier-nuance-booking.test.ts (15 tests) 378ms
+ ✓ tests/coordonnees-demarrage.test.ts (1 test) 357ms
+   ✓ coordonnées saisies une seule fois (1)
+     ✓ démarrer la création garde les coordonnées connues et enregistre les nouvelles 353ms
+ ✓ tests/parenthese-booking.test.ts (20 tests) 390ms
+ ✓ tests/rendez-vous-190.test.ts (7 tests) 340ms
+ ✓ tests/table-saison-booking.test.ts (9 tests) 324ms
+ ✓ tests/retouche-photo-ia.test.ts (4 tests) 261ms
+ ✓ tests/preparation-analysis.test.ts (1 test) 296ms
+stdout | tests/excellence-reseaux-sociaux.test.ts > boucle de qualité du calendrier : relecture notée, une reprise ciblée, la meilleure version gardée > relecture impossible (panne) : le plan reste utilisable, reprise guidée par la grille du studio
+[calendrier] relecture indisponible (surcharge)
+
+stdout | tests/excellence-reseaux-sociaux.test.ts > ligne éditoriale du kit réseaux sociaux > IA médiocre puis reprise : la meilleure version est gardée (deux appels au plus)
+[kit social] w43mjp2lxkahd93n : textes remplacés (légende 3 : rassure votre enfant retiré)
+
+ ✓ tests/excellence-reseaux-sociaux.test.ts (21 tests) 267ms
+ ✓ tests/visuel-cree.test.ts (1 test) 302ms
+stderr | tests/admin-forfaits.test.ts > administration des abonnements par projet > routes d'administration des abonnements et des rendez-vous : refusées sans compte administrateur
+Error: `cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context
+    at throwForMissingRequestStore (/tmp/ecs-195-dependances-7f/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js:63:33)
+    at cookies (/tmp/ecs-195-dependances-7f/node_modules/next/dist/server/request/cookies.js:119:67)
+    at currentUser (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:100:21)
+    at requireUser (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:105:19)
+    at requireAdmin (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:112:19)
+    at /tmp/ecs-195-main-333bccc8/src/app/api/admin/billing/overview/route.ts:13:9
+    at run (/tmp/ecs-195-main-333bccc8/src/lib/http.ts:31:30)
+    at /tmp/ecs-195-main-333bccc8/src/lib/http.ts:25:100
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithLang (/tmp/ecs-195-main-333bccc8/src/lib/i18n-server.ts:19:14)
+
+stderr | tests/admin-forfaits.test.ts > administration des abonnements par projet > routes d'administration des abonnements et des rendez-vous : refusées sans compte administrateur
+Error: `cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context
+    at throwForMissingRequestStore (/tmp/ecs-195-dependances-7f/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js:63:33)
+    at cookies (/tmp/ecs-195-dependances-7f/node_modules/next/dist/server/request/cookies.js:119:67)
+    at currentUser (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:100:21)
+    at requireUser (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:105:19)
+    at requireAdmin (/tmp/ecs-195-main-333bccc8/src/lib/auth.ts:112:19)
+    at /tmp/ecs-195-main-333bccc8/src/app/api/admin/calls/route.ts:8:9
+    at run (/tmp/ecs-195-main-333bccc8/src/lib/http.ts:31:30)
+    at /tmp/ecs-195-main-333bccc8/src/lib/http.ts:25:100
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runWithLang (/tmp/ecs-195-main-333bccc8/src/lib/i18n-server.ts:19:14)
+
+ ✓ tests/admin-forfaits.test.ts (2 tests) 306ms
+ ✓ tests/seo-v2-engine.test.ts (14 tests) 244ms
+ ✓ tests/excellence-video-pub.test.ts (17 tests) 284ms
+ ✓ tests/texte-local-sur-photo.test.ts (1 test) 234ms
+ ✓ tests/site-agence.test.ts (16 tests) 230ms
+ ✓ tests/contact-multiple.test.ts (4 tests) 259ms
+ ✓ tests/alerte-qwen.test.ts (4 tests) 260ms
+ ✓ tests/prix-pourcentage-budget.test.ts (20 tests) 228ms
+ ✓ tests/heros-paysage.test.ts (1 test) 230ms
+ ✓ tests/logo-v2-route.test.ts (1 test) 242ms
+ ✓ tests/orchestrateur-3b.test.ts (12 tests) 248ms
+ ✓ tests/sillon-theme.test.ts (14 tests) 205ms
+ ✓ tests/diagnostic-ia.test.ts (8 tests) 212ms
+ ✓ tests/remplacer-image.test.ts (5 tests) 224ms
+ ✓ tests/site-import.test.ts (26 tests) 211ms
+ ✓ tests/temps-preparation.test.ts (3 tests) 198ms
+ ✓ tests/brain-facade.test.ts (9 tests) 183ms
+ ✓ tests/excellence-strategie-redaction.test.ts (22 tests) 144ms
+ ✓ tests/cutout.test.ts (3 tests) 160ms
+ ✓ tests/i18n-content.test.ts (4 tests) 142ms
+ ✓ tests/onde.test.ts (16 tests | 11 skipped) 125ms
+ ✓ tests/mission171-public-download.test.ts (5 tests) 154ms
+ ✓ tests/planche-couleurs-uniques.test.ts (11 tests) 157ms
+ ✓ tests/icones-metier.test.ts (3 tests) 125ms
+ ✓ tests/skills-publicite.test.ts (7 tests) 149ms
+ ✓ tests/social-v2.test.ts (9 tests) 119ms
+ ✓ tests/seo-v2.test.ts (21 tests) 141ms
+stderr | tests/brain-moteurs-2c.test.ts > Project Brain 2C — branchement des moteurs > chaque moteur reçoit son scope explicite (jamais « all » ni « legacy:* »)
+[blog] sujets IA indisponibles : IA simulée : appel enregistré
+
+ ✓ tests/brain-moteurs-2c.test.ts (6 tests) 148ms
+ ✓ tests/section-library-coverage.test.ts (5 tests) 119ms
+ ✓ tests/opentype-esm.test.ts (3 tests) 117ms
+ ✓ tests/services-copy.test.ts (9 tests) 83ms
+ ✓ tests/fraise-theme.test.ts (19 tests | 14 skipped) 97ms
+ ✓ tests/orchestrateur-3a.test.ts (17 tests) 104ms
+ ✓ tests/catalogue-actif.test.ts (5 tests) 83ms
+ ✓ tests/lot1-rattachement-pages.test.ts (1 test) 81ms
+ ✓ tests/serveur-dev.test.ts (5 tests) 100ms
+ ✓ tests/cutout-enclosed-background.test.ts (1 test) 77ms
+ ✓ tests/planche-icones-metier.test.ts (3 tests) 90ms
+ ✓ tests/video-v2.test.ts (12 tests) 74ms
+ ✓ tests/categories-sections.test.ts (10 tests) 67ms
+ ✓ tests/lot5-routing-preview.test.ts (7 tests) 69ms
+ ✓ tests/handoff-contrat.test.ts (4 tests) 61ms
+stdout | tests/decouverte-visuels.test.ts > aperçus des thèmes (vignettes privées, rendues avec les quatre démonstrations) > en anglais, chaque aperçu pointe vers un fichier existant quand les vignettes sont installées ; jamais une ancienne démonstration
+Vignettes des thèmes non installées (kit privé) : contrôle d'existence sauté.
+
+ ✓ tests/decouverte-visuels.test.ts (4 tests) 57ms
+ ✓ tests/bibliotheques-familles.test.ts (5 tests) 43ms
+ ✓ tests/editeur-sections.test.ts (4 tests) 60ms
+ ✓ tests/meilleure-photo-pub.test.ts (4 tests) 51ms
+ ✓ tests/trace-appels.test.ts (6 tests) 54ms
+ ✓ tests/import-site-et-matiere.test.ts (7 tests) 58ms
+ ✓ tests/image-ratee-reprise.test.ts (4 tests) 58ms
+stderr | tests/image-par-publication.test.ts > une image IA par publication > avec l'IA : une consigne propre au sujet de chaque publication, au format de la publication
+[calendrier] image de publication indisponible : pas de vrai appel dans les tests
+
+stderr | tests/image-par-publication.test.ts > une image IA par publication > avec l'IA : une consigne propre au sujet de chaque publication, au format de la publication
+[calendrier] image de publication indisponible : pas de vrai appel dans les tests
+
+ ✓ tests/image-par-publication.test.ts (3 tests) 39ms
+ ✓ tests/accueil-mots-simples-google.test.ts (12 tests) 44ms
+ ✓ tests/aide-description.test.ts (7 tests) 51ms
+ ✓ tests/opentype-cjs.test.ts (1 test) 68ms
+ ✓ tests/seo-utilise.test.ts (4 tests) 43ms
+ ✓ tests/local-dabord.test.ts (9 tests) 45ms
+ ✓ tests/static-deinline.test.ts (3 tests) 41ms
+ ✓ tests/planche-symbole-detaille.test.ts (4 tests) 29ms
+ ✓ tests/qualite-gate.test.ts (15 tests) 55ms
+ ✓ tests/accueil-audit.test.ts (13 tests) 41ms
+ ✓ tests/disposition-entete-pied.test.ts (5 tests) 23ms
+ ✓ tests/images-distinctes.test.ts (4 tests) 26ms
+ ✓ tests/images-par-sujet.test.ts (6 tests) 33ms
+ ✓ tests/metier-fr.test.ts (6 tests) 22ms
+ ✓ tests/carry-over.test.ts (4 tests) 27ms
+ ✓ tests/ligne-artistique.test.ts (6 tests) 27ms
+ ✓ tests/fournisseur-desactive.test.ts (1 test) 22ms
+ ✓ tests/animation-elements.test.ts (5 tests) 18ms
+ ✓ tests/brain-metier.test.ts (6 tests) 15ms
+ ✓ tests/passerelle-alibaba.test.ts (3 tests) 23ms
+ ✓ tests/devis-image-modele-route.test.ts (2 tests) 21ms
+ ✓ tests/theme-demos.test.ts (8 tests) 20ms
+ ✓ tests/theme-thumbnails.test.ts (9 tests) 20ms
+ ✓ tests/hooks-avant-retour.test.ts (1 test) 19ms
+ ✓ tests/accueil-premium.test.ts (6 tests) 14ms
+ ✓ tests/marque-inventee.test.ts (3 tests) 16ms
+ ✓ tests/ai-analysis-schema.test.ts (2 tests) 12ms
+ ✓ tests/ai-lang.test.ts (4 tests) 11ms
+ ✓ tests/films-accueil.test.ts (15 tests | 2 skipped) 8ms
+ ✓ tests/demo-services-cta.test.ts (3 tests) 12ms
+ ✓ tests/ad-editor-ui.test.ts (8 tests) 10ms
+ ✓ tests/reponses-ia-reparees.test.ts (2 tests) 11ms
+ ✓ tests/video-pixabay-plans.test.ts (5 tests) 12ms
+ ✓ tests/integration194-securite.test.ts (3 tests) 10ms
+ ✓ tests/onglet-produit-audit.test.ts (9 tests) 11ms
+ ✓ tests/logo-texte-exact.test.ts (3 tests) 9ms
+ ✓ tests/lot1-grille-offres.test.ts (5 tests) 16ms
+ ✓ tests/plan-studio.test.ts (4 tests) 9ms
+ ✓ tests/logo-pertinence.test.ts (10 tests) 10ms
+ ✓ tests/titres-coupes.test.ts (2 tests) 5ms
+ ✓ tests/palette-entiere.test.ts (3 tests) 8ms
+ ✓ tests/piste-identite.test.ts (5 tests) 9ms
+ ✓ tests/accueil-film-motion.test.ts (3 tests) 6ms
+ ✓ tests/plateformes-honnetes.test.ts (9 tests) 9ms
+ ✓ tests/logo-notation-petites-entreprises.test.ts (4 tests) 9ms
+ ✓ tests/ugc-rules-en.test.ts (3 tests) 8ms
+ ✓ tests/signe-de-vie.test.ts (3 tests) 5ms
+ ✓ tests/ads.test.ts (2 tests) 8ms
+ ✓ tests/ia-connectee.test.ts (3 tests) 7ms
+ ✓ tests/trade-restaurant.test.ts (1 test) 7ms
+ ✓ tests/planche-grille-telephone.test.ts (3 tests) 6ms
+ ✓ tests/progression-projet.test.ts (4 tests) 7ms
+ ✓ tests/erreurs-outils.test.ts (3 tests) 6ms
+ ✓ tests/content-roles.test.ts (4 tests) 7ms
+ ✓ tests/passerelle-fal.test.ts (3 tests) 7ms
+ ✓ tests/cle-fal.test.ts (3 tests) 9ms
+ ✓ tests/studio-incitations.test.ts (3 tests) 6ms
+ ✓ tests/publications-sans-point-interrogation.test.ts (3 tests) 6ms
+ ✓ tests/palette-exacte.test.ts (2 tests) 6ms
+ ✓ tests/fenetres-studio.test.ts (2 tests) 7ms
+ ✓ tests/apercu-codespaces.test.ts (3 tests) 6ms
+ ✓ tests/barre-achat-mobile.test.ts (3 tests) 8ms
+ ✓ tests/mission142-confirmation-cout.test.ts (3 tests) 5ms
+ ✓ tests/intro-splash.test.ts (2 tests) 6ms
+ ✓ tests/voile-produit-cache.test.ts (1 test) 5ms
+ ✓ tests/poster-titres-varies.test.ts (2 tests) 6ms
+ ↓ tests/produits-boutiques-e2e-190.test.ts (2 tests | 2 skipped)
+
+ Test Files  396 passed | 1 skipped (397)
+      Tests  3395 passed | 31 skipped (3426)
+   Start at  09:01:18
+   Duration  1487.19s (tests 75%, import 24%, transform 1%)
+
+    Isolate  397 workers spawned · ~142ms startup each (spawn + environment, per file)
+             at least ~28.08s faster with isolate: false — reuses workers across files instead of one per file
+
+JSON report written to /tmp/ecs-195-preuves/main-333bccc8-suite.json

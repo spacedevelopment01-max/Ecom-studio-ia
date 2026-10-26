@@ -1,0 +1,60 @@
+{
+  "commit": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "syntheticOnly": true,
+  "realProviderCalls": 0,
+  "scope": "Read-only native preview; no screenshot editing, no CSS overrides, no provider or submission",
+  "pages": [
+    {
+      "route": "mentions-legales",
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "container": {
+        "x": 0,
+        "width": 520,
+        "paddingLeft": "260px",
+        "paddingRight": "260px",
+        "contentWidth": 0
+      },
+      "title": {
+        "x": 260,
+        "width": 0,
+        "right": 260,
+        "scrollWidth": 295,
+        "clientWidth": 0
+      },
+      "bodyOverflowX": "visible"
+    },
+    {
+      "route": "journal-les-details-d-un-petit-rituel",
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "container": {
+        "x": 0,
+        "width": 520,
+        "paddingLeft": "260px",
+        "paddingRight": "260px",
+        "contentWidth": 0
+      },
+      "title": {
+        "x": 260,
+        "width": 0,
+        "right": 260,
+        "scrollWidth": 216,
+        "clientWidth": 0
+      },
+      "bodyOverflowX": "visible"
+    }
+  ],
+  "sourceEvidence": {
+    "file": "theme-base/assets/fraise.css",
+    "lines": [
+      1012,
+      1379
+    ],
+    "mainAnd176Blob": "14f0d9bbc9e49a7e36b9fd45830796cb5a7553ad",
+    "preExistingCssConfirmed": true,
+    "historicalBrowserRenderNotRun": true
+  }
+}
