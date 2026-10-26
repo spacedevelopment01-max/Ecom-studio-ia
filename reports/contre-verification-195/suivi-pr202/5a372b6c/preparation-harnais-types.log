@@ -1,0 +1,2 @@
+scripts/contre-verification-202-runtime.ts(13,207): error TS18046: 'e' is of type 'unknown'.
+scripts/contre-verification-202-runtime.ts(13,234): error TS18046: 'e' is of type 'unknown'.

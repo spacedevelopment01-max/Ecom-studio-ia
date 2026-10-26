@@ -1,0 +1,13 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "nativeRuntimeFunction": "src/lib/theme/theme-check.ts:themeCheck",
+  "realProviderCalls": 0,
+  "environmentUnchanged": true,
+  "fakeDocsMode": "empty-preset",
+  "invalidTheme": null,
+  "available": true,
+  "errors": 0,
+  "validSchemaErrors": 0,
+  "checks": [],
+  "sample": []
+}

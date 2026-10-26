@@ -1,0 +1,29 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "passed": 59,
+  "failed": 0,
+  "skipped": 0,
+  "total": 59,
+  "complete": true,
+  "success": true,
+  "files": [
+    {
+      "file": "cms-v2.test.ts",
+      "status": "passed"
+    },
+    {
+      "file": "site-reproduce.test.ts",
+      "status": "passed"
+    },
+    {
+      "file": "theme-check-docs-locaux.test.ts",
+      "status": "passed"
+    },
+    {
+      "file": "theme-v2.test.ts",
+      "status": "passed"
+    }
+  ],
+  "rawSha256": "c7a333605344154723b1758d0d4b80cc4b89513409be39da2be6a62cbd6d4c07",
+  "realProviderCalls": 0
+}

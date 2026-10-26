@@ -1,0 +1,9 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "nativeRuntimeFunction": "src/lib/theme/theme-check.ts:themeCheck",
+  "outcome": "thrown",
+  "errorClass": "ShopifyDocsError",
+  "message": "Document Shopify de Theme Check illisible (preset.json) : Unexpected end of JSON input",
+  "realProviderCalls": 0,
+  "environmentUnchanged": true
+}

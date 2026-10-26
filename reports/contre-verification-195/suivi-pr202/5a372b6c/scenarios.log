@@ -1,0 +1,4 @@
+{"case": "runtime-bundle-vide", "passed": true, "exit": 0, "docsDownloads": 0, "docsCacheIo": 0}
+{"case": "runtime-racine-fournie-1", "passed": true, "exit": 0, "docsDownloads": 0, "docsCacheIo": 0}
+{"case": "runtime-racine-fournie-2", "passed": true, "exit": 0, "docsDownloads": 0, "docsCacheIo": 0}
+{"case": "runtime-schema-invalide", "passed": true, "exit": 0, "docsDownloads": 0, "docsCacheIo": 0}

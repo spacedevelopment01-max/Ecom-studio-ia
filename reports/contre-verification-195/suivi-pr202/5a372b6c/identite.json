@@ -1,0 +1,81 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "containsMain": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "appTrackedClean": true,
+  "ownPrFilesIdenticalTo9a": [
+    {
+      "file": "scripts/lot1-produits-proof.ts",
+      "candidateBlob": "685a9005aff015ab0b8c8bf139f8f3772d6ab3b2",
+      "correction9aBlob": "685a9005aff015ab0b8c8bf139f8f3772d6ab3b2"
+    },
+    {
+      "file": "scripts/lot1-proof.ts",
+      "candidateBlob": "ef63083110699c70bfb825a5e9454206268eceb2",
+      "correction9aBlob": "ef63083110699c70bfb825a5e9454206268eceb2"
+    },
+    {
+      "file": "scripts/lot1-rattachement-proof.ts",
+      "candidateBlob": "edb83d096b533524147cf9c7fd2279899a941f43",
+      "correction9aBlob": "edb83d096b533524147cf9c7fd2279899a941f43"
+    },
+    {
+      "file": "scripts/theme-check-exports-190.ts",
+      "candidateBlob": "65e14e848fc4074fba5d2a7564159103f0876884",
+      "correction9aBlob": "65e14e848fc4074fba5d2a7564159103f0876884"
+    },
+    {
+      "file": "scripts/theme-check-zip.ts",
+      "candidateBlob": "85170dd5ed113fcbb73a79761c83ac9c1a04068a",
+      "correction9aBlob": "85170dd5ed113fcbb73a79761c83ac9c1a04068a"
+    },
+    {
+      "file": "scripts/theme-check.ts",
+      "candidateBlob": "377407ea92d4d0121f4646e46a5593410ed28b9a",
+      "correction9aBlob": "377407ea92d4d0121f4646e46a5593410ed28b9a"
+    },
+    {
+      "file": "scripts/theme-v2-check.ts",
+      "candidateBlob": "aa45439e6946504a2fe4d713cca14cdd52bcfd87",
+      "correction9aBlob": "aa45439e6946504a2fe4d713cca14cdd52bcfd87"
+    },
+    {
+      "file": "src/lib/cms-v2/checks.ts",
+      "candidateBlob": "8e3dd956910c33f3ae0c6f90d14d69e5a3315350",
+      "correction9aBlob": "8e3dd956910c33f3ae0c6f90d14d69e5a3315350"
+    },
+    {
+      "file": "src/lib/theme/shopify-docs.ts",
+      "candidateBlob": "d0efb9a68c251f51924ee0593b564ef48d181074",
+      "correction9aBlob": "d0efb9a68c251f51924ee0593b564ef48d181074"
+    },
+    {
+      "file": "src/lib/theme/theme-check.ts",
+      "candidateBlob": "2e7a94baa23fe5139b19cc1998d33c808f6b086c",
+      "correction9aBlob": "2e7a94baa23fe5139b19cc1998d33c808f6b086c"
+    },
+    {
+      "file": "tests/site-reproduce.test.ts",
+      "candidateBlob": "140d380848c794079d7cd1ba940e445284040bae",
+      "correction9aBlob": "140d380848c794079d7cd1ba940e445284040bae"
+    },
+    {
+      "file": "tests/theme-check-docs-locaux.test.ts",
+      "candidateBlob": "9c85609f833db1ae7edbcf992bdd235afcd49cd7",
+      "correction9aBlob": "9c85609f833db1ae7edbcf992bdd235afcd49cd7"
+    },
+    {
+      "file": "tests/theme-v2.test.ts",
+      "candidateBlob": "17f6a74e371cec3a41ac2ba2f7f8c990ad653c91",
+      "correction9aBlob": "17f6a74e371cec3a41ac2ba2f7f8c990ad653c91"
+    }
+  ],
+  "approved198199200FilesUnchanged": true,
+  "shellWrapperIdenticalToMain": true,
+  "packageLockSha256": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf",
+  "realProviderCalls": 0,
+  "tree": "c67f3e1d8c532fc1ffeaa1855aa357556456f14c",
+  "ciRun": 40353362722,
+  "ciCheckout": "726d3508efa0efece3c95e4de618c4531bda81ac",
+  "ciCheckoutTreeEqualsCandidate": true,
+  "status": "PENDING_FULL_MATRIX_AND_CI"
+}

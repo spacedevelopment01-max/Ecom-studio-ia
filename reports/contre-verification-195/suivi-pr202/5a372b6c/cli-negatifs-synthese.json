@@ -1,0 +1,12 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "realLiquidSyntaxError": {
+    "exit": 1,
+    "messagePreserved": true
+  },
+  "bundledPresetEmpty": {
+    "exit": 1,
+    "shopifyDocsErrorPreserved": true
+  },
+  "realProviderCalls": 0
+}

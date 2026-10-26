@@ -1,0 +1,7 @@
+{
+  "source": "9a292acfa73719644675fd176a108f5024c0e0de",
+  "reason": "Head superseded by frozen5a372b6c integrating main; restart exact candidate with lower parallelism",
+  "exitExpected": 143,
+  "completedCases": 19,
+  "controlledRootPid": 376727
+}

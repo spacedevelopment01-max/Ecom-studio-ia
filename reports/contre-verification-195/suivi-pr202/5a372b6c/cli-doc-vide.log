@@ -1,0 +1,15 @@
+/tmp/ecs-202-candidat-5a372b6c/src/lib/theme/shopify-docs.ts:43
+      throw new ShopifyDocsError(`Document Shopify de Theme Check illisible (${file}) : ${(e as Error).message}`);
+            ^
+
+ShopifyDocsError: Document Shopify de Theme Check illisible (preset.json) : Unexpected end of JSON input
+    at read (/tmp/ecs-202-candidat-5a372b6c/src/lib/theme/shopify-docs.ts:43:13)
+    at readShopifyDocs (/tmp/ecs-202-candidat-5a372b6c/src/lib/theme/shopify-docs.ts:50:100)
+    at <anonymous> (/tmp/ecs-202-candidat-5a372b6c/src/lib/theme/shopify-docs.ts:60:18)
+    at loadThemeCheck (/tmp/ecs-202-candidat-5a372b6c/src/lib/theme/shopify-docs.ts:79:3)
+    at <anonymous> (/tmp/ecs-202-candidat-5a372b6c/scripts/theme-check.ts:23:25)
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.19.0

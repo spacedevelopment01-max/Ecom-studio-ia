@@ -1,0 +1,13 @@
+{
+  "source": "9a292acfa73719644675fd176a108f5024c0e0de",
+  "qualifiesFullSuccess": false,
+  "processExit": 1,
+  "reportSaysSuccessButIncomplete": true,
+  "passed": 40,
+  "total": 59,
+  "pending": 2,
+  "typesExit": 137,
+  "memoryPressure": true,
+  "nativeValidScenariosKeptOn9aOnly": true,
+  "matrixRestartedOnFrozen5a": true
+}

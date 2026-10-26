@@ -1,0 +1,34 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "cases": [
+    {
+      "case": "runtime-bundle-vide",
+      "passed": true,
+      "exit": 0,
+      "docsDownloads": 0,
+      "docsCacheIo": 0
+    },
+    {
+      "case": "runtime-racine-fournie-1",
+      "passed": true,
+      "exit": 0,
+      "docsDownloads": 0,
+      "docsCacheIo": 0
+    },
+    {
+      "case": "runtime-racine-fournie-2",
+      "passed": true,
+      "exit": 0,
+      "docsDownloads": 0,
+      "docsCacheIo": 0
+    },
+    {
+      "case": "runtime-schema-invalide",
+      "passed": true,
+      "exit": 0,
+      "docsDownloads": 0,
+      "docsCacheIo": 0
+    }
+  ],
+  "realProviderCalls": 0
+}

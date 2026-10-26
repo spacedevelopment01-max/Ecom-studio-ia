@@ -1,0 +1,13 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
+const out=process.argv[2];assert.ok(out?.startsWith('/tmp/ecs-202-preuves/'));
+const {sampleSpec}=await import('../tests/fixtures');const {themeCheck}=await import('../src/lib/theme/theme-check');
+const beforeEnv=JSON.stringify([process.env.SHOPIFY_TLD_ROOT??null,process.env.XDG_CACHE_HOME??null]);const spec=sampleSpec('atelier');
+if(process.env.PROBE_202_INVALID==='liquid') {
+ const first=spec.templates.index.order[0],section=spec.templates.index.sections[first];
+ spec.customSections={...(spec.customSections??{}),[section.type]:{name:'Fixture',liquid:'{% if %}broken{% endif %}{% schema %}{"name":"Fixture","settings":[]}{% endschema %}'}};
+}
+if(process.env.PROBE_202_INVALID==='schema') {
+ const first=spec.templates.index.order[0],section=spec.templates.index.sections[first];
+ spec.customSections={...(spec.customSections??{}),[section.type]:{name:'Fixture',liquid:'<p>Fixture</p>{% schema %}{"name":"Fixture","settings":[{"type":"not-a-shopify-setting","id":"x","label":"X"}]}{% endschema %}'}};
+}
+let result;try{result=await themeCheck(spec);}catch(caught){const e=caught as Error;const d={source:'5a372b6c87b899bdbf1473386160bed7ff20c847',nativeRuntimeFunction:'src/lib/theme/theme-check.ts:themeCheck',outcome:'thrown',errorClass:e.constructor.name,message:e.message,realProviderCalls:0,environmentUnchanged:beforeEnv===JSON.stringify([process.env.SHOPIFY_TLD_ROOT??null,process.env.XDG_CACHE_HOME??null])};fs.writeFileSync(out,JSON.stringify(d,null,2));console.log(JSON.stringify(d));if(process.env.PROBE_202_CORRUPT_BUNDLED!=='1')throw e;process.exit(0);}const d={source:'5a372b6c87b899bdbf1473386160bed7ff20c847',nativeRuntimeFunction:'src/lib/theme/theme-check.ts:themeCheck',realProviderCalls:0,environmentUnchanged:beforeEnv===JSON.stringify([process.env.SHOPIFY_TLD_ROOT??null,process.env.XDG_CACHE_HOME??null]),fakeDocsMode:process.env.PROBE_202_MODE,invalidTheme:process.env.PROBE_202_INVALID??null,available:result.available,errors:result.errors.length,validSchemaErrors:result.errors.filter(e=>e.check==='ValidSchema').length,checks:[...new Set(result.errors.map(e=>e.check))],sample:result.errors.slice(0,3)};fs.writeFileSync(out,JSON.stringify(d,null,2));console.log(JSON.stringify(d));
