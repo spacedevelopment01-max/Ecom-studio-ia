@@ -278,15 +278,26 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
       };
       for (const { v, rv, d, deferred } of decisions) if (!deferred) saveVariant(v, rv, d.result);
       const pending = decisions.filter((x) => x.deferred && x.delta !== 0);
+      // Chaque variante acquise est enregistrée aussitôt, d'un bloc (point de synchronisation, stock du studio, journal
+      // effacé) : un échec sur une variante suivante ne fait jamais oublier ni rejouer celles déjà appliquées.
+      const settled = new Set<string>();
+      const settle = (x: (typeof decisions)[number], q: number) => tx(() => {
+        saveVariant(x.v, x.rv, q);
+        if (q !== x.v.stock) setVariantStock(projectId, x.v.id, q);
+        clearOp(projectId, conn, x.v.id);
+        x.entry.result = q;
+        settled.add(x.v.id);
+      });
+      // Refus net de la plateforme (4xx) : seule l'opération de CETTE variante est abandonnée ; sinon elle reste au journal.
+      const send = async (x: (typeof decisions)[number], from: number, target: number, call: () => Promise<number | null | void>) => {
+        writeOp(projectId, conn, x.v.id, { remote_variant: x.rv!.id, from_qty: from, target_qty: target, studio_qty: x.studio! });
+        const after = await call().catch((e) => { if (surelyRejected(e)) clearOp(projectId, conn, x.v.id); throw e; });
+        settle(x, typeof after === "number" ? after : target);
+      };
       if (pending.length) {
+        if (line.action === "unchanged") line.action = "updated";
         if (conn.adjustStock) {
-          for (const x of pending) {
-            const from = x.rv!.stock!;
-            writeOp(projectId, conn, x.v.id, { remote_variant: x.rv!.id, from_qty: from, target_qty: from + x.delta, studio_qty: x.studio! });
-            const after = await conn.adjustStock(remoteId, x.rv!.id, x.delta).catch((e) => { if (surelyRejected(e)) clearOp(projectId, conn, x.v.id); throw e; });
-            clearOp(projectId, conn, x.v.id);
-            final.set(x.v.id, after ?? from + x.delta);
-          }
+          for (const x of pending) await send(x, x.rv!.stock!, x.rv!.stock! + x.delta, () => conn.adjustStock!(remoteId, x.rv!.id, x.delta));
         } else {
           // Quantité absolue seulement : relecture juste avant d'écrire, pour ne pas effacer une vente faite entre-temps.
           const fresh = await conn.get(remoteId);
@@ -295,20 +306,24 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
             const current = fresh?.variants.find((y) => y.id === x.rv!.id)?.stock;
             if (typeof current !== "number") { line.warnings.push(L(`Stock « ${x.entry.variant} » non envoyé : la boutique ne suit plus ce stock.`, `Stock "${x.entry.variant}" not sent: the store no longer tracks it.`)); final.set(x.v.id, x.v.stock); continue; }
             targets.set(x.v.id, current + x.delta);
-            writeOp(projectId, conn, x.v.id, { remote_variant: x.rv!.id, from_qty: current, target_qty: targets.get(x.v.id)!, studio_qty: x.studio! });
           }
           if (targets.size) {
-            const write = conn.setStock
-              ? async () => { for (const x of pending) if (targets.has(x.v.id)) await conn.setStock!(remoteId, x.rv!.id, targets.get(x.v.id)!); }
-              : async () => { await conn.update(remoteId, { ...push, images: null, variants: variantPush(targets) }); };
-            await write().catch((e) => { if (surelyRejected(e)) for (const id of targets.keys()) clearOp(projectId, conn, id); throw e; });
-            for (const [id, q] of targets) { clearOp(projectId, conn, id); final.set(id, q); }
             line.warnings.push(L(`${PLATFORM_NAME[conn.platform]} n'accepte pas d'ajustement relatif du stock : la quantité a été relue juste avant l'envoi ; une vente faite pendant l'envoi lui-même ne serait pas déduite. Vérifiez le stock dans la boutique après un réassort.`, `${PLATFORM_NAME[conn.platform]} does not accept relative stock adjustments: the quantity was re-read just before sending; a sale made during the send itself would not be deducted. Check the stock in the store after a restock.`));
+            const sendable = pending.filter((x) => targets.has(x.v.id));
+            const fromOf = (x: (typeof decisions)[number]) => targets.get(x.v.id)! - x.delta;
+            if (conn.setStock) {
+              for (const x of sendable) await send(x, fromOf(x), targets.get(x.v.id)!, () => conn.setStock!(remoteId, x.rv!.id, targets.get(x.v.id)!));
+            } else {
+              // Fiche entière renvoyée (connecteur sans écriture de quantité seule) : un seul appel pour toutes les variantes.
+              for (const x of sendable) writeOp(projectId, conn, x.v.id, { remote_variant: x.rv!.id, from_qty: fromOf(x), target_qty: targets.get(x.v.id)!, studio_qty: x.studio! });
+              await conn.update(remoteId, { ...push, images: null, variants: variantPush(targets) }).catch((e) => { if (surelyRejected(e)) for (const x of sendable) clearOp(projectId, conn, x.v.id); throw e; });
+              for (const x of sendable) settle(x, targets.get(x.v.id)!);
+            }
           }
         }
-        if (line.action === "unchanged") line.action = "updated";
       }
       for (const x of decisions) {
+        if (settled.has(x.v.id)) continue;
         const q = final.get(x.v.id) ?? null;
         x.entry.result = q;
         if (x.deferred) saveVariant(x.v, x.rv, q);

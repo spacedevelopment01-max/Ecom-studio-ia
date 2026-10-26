@@ -19,7 +19,7 @@ import { shopifyConnector } from "@/lib/products/connectors/shopify";
 import { wooConnector } from "@/lib/products/connectors/woocommerce";
 import { prestaConnector } from "@/lib/products/connectors/prestashop";
 import { storeFetch } from "@/lib/products/connectors/transport";
-import type { PushProduct, RemoteProduct, StoreConnector } from "@/lib/products/connectors/types";
+import { StoreApiError, type PushProduct, type RemoteProduct, type StoreConnector } from "@/lib/products/connectors/types";
 
 let uid = "";
 beforeAll(async () => {
@@ -32,8 +32,11 @@ function fixture() {
   const product = createProduct(pid, { title: "Cartouche de filtration", price: 1200, variants: [{ options: [], sku: "FICTIF-195", stock: 10 }] });
   return { pid, product };
 }
-/** Boutique en mémoire de Codex ; `atomic` : elle accepte en plus l'ajustement relatif du stock (comme Shopify). */
-function memoryStore(o: { atomic?: boolean } = {}) {
+/**
+ * Boutique en mémoire de Codex ; `atomic` : elle accepte en plus l'ajustement relatif du stock (comme Shopify) ;
+ * `quantity` : écriture de la seule quantité (comme WooCommerce et PrestaShop).
+ */
+function memoryStore(o: { atomic?: boolean; quantity?: boolean } = {}) {
   const products = new Map<string, RemoteProduct>();
   let seq = 0;
   let beforeUpdate: (() => void) | null = null;
@@ -69,6 +72,14 @@ function memoryStore(o: { atomic?: boolean } = {}) {
       v.stock = (v.stock ?? 0) + delta;
       if (failAfterUpdate) { failAfterUpdate = false; throw new Error("SIMULATED_RESPONSE_LOST_AFTER_REMOTE_COMMIT"); }
       return v.stock;
+    };
+  }
+  if (o.quantity) {
+    conn.setStock = async (rid, vid, quantity) => {
+      writes.push(`set ${quantity}`);
+      const hook = beforeUpdate; beforeUpdate = null; hook?.();
+      products.get(rid)!.variants.find((x) => x.id === vid)!.stock = quantity;
+      if (failAfterUpdate) { failAfterUpdate = false; throw new Error("SIMULATED_RESPONSE_LOST_AFTER_REMOTE_COMMIT"); }
     };
   }
   return { conn, products, writes, onNextUpdate(fn: () => void) { beforeUpdate = fn; }, loseNextUpdateResponse() { failAfterUpdate = true; } };
@@ -155,6 +166,88 @@ describe("#195 — invariants attendus, aucun fournisseur réel", () => {
       expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
       expect(m.products.get(rid)!.variants[0].stock).toBe(14);
     }
+  });
+
+  // Contre-épreuve de Codex (#196, commentaire 6408750773), reprise telle quelle, puis jouée aussi en quantité absolue.
+  it("P1 #195 : variante A acquise, variante B refusée, reprise sans redoubler A", async () => {
+    const { pid } = fixture();
+    const m = memoryStore({ atomic: true });
+    const product = createProduct(pid, {
+      title: "Produit synthétique à deux variantes",
+      options: [{ name: "Coloris", values: ["A", "B"] }],
+      variants: [
+        { options: ["A"], sku: "PARTIAL-A-195", stock: 10 },
+        { options: ["B"], sku: "PARTIAL-B-195", stock: 5 },
+      ],
+    });
+    const opts = { productIds: [product.id] };
+    const first = await syncProducts(pid, m.conn, opts);
+    const rid = first.lines[0].remoteId!;
+    const bId = m.products.get(rid)!.variants[1].id;
+    setVariantStock(pid, product.variants[0].id, 12);
+    setVariantStock(pid, product.variants[1].id, 7);
+    const adjust = m.conn.adjustStock!;
+    let rejectBOnce = true;
+    m.conn.adjustStock = async (productId, variantId, delta) => {
+      if (variantId === bId && rejectBOnce) {
+        rejectBOnce = false;
+        throw new StoreApiError("shopify", 422, "SIMULATED_VARIANT_B_REJECTED");
+      }
+      return adjust(productId, variantId, delta);
+    };
+    expect((await syncProducts(pid, m.conn, opts)).counts.error).toBe(1);
+    expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12, 5]);
+    expect((await syncProducts(pid, m.conn, opts)).counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12, 7]);
+    expect(getProduct(pid, product.id).variants.map(v => v.stock)).toEqual([12, 7]);
+  });
+
+  it("P1 #195 (quantité absolue) : A écrite, B refusée puis réponse perdue : A jamais redoublée, B jamais rejouée sans contrôle", async () => {
+    for (const failure of ["refus", "réponse perdue"] as const) {
+      const { pid } = fixture();
+      const m = memoryStore({ quantity: true });
+      const product = createProduct(pid, {
+        title: "Produit synthétique à deux variantes",
+        options: [{ name: "Coloris", values: ["A", "B"] }],
+        variants: [{ options: ["A"], sku: `ABS-A-${failure}`, stock: 10 }, { options: ["B"], sku: `ABS-B-${failure}`, stock: 5 }],
+      });
+      const opts = { productIds: [product.id] };
+      const rid = (await syncProducts(pid, m.conn, opts)).lines[0].remoteId!;
+      const bId = m.products.get(rid)!.variants[1].id;
+      setVariantStock(pid, product.variants[0].id, 12);
+      setVariantStock(pid, product.variants[1].id, 7);
+      const set = m.conn.setStock!;
+      let failBOnce = true;
+      m.conn.setStock = async (productId, variantId, quantity) => {
+        if (variantId === bId && failBOnce) {
+          failBOnce = false;
+          if (failure === "refus") throw new StoreApiError("woocommerce", 422, "SIMULATED_VARIANT_B_REJECTED");
+          await set(productId, variantId, quantity);
+          throw new Error("SIMULATED_RESPONSE_LOST_AFTER_REMOTE_COMMIT");
+        }
+        return set(productId, variantId, quantity);
+      };
+      expect((await syncProducts(pid, m.conn, opts)).counts.error).toBe(1);
+      expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual(failure === "refus" ? [12, 5] : [12, 7]);
+      const retry = await syncProducts(pid, m.conn, opts);
+      expect(retry.counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants.map(v => v.stock), failure).toEqual([12, 7]);
+      expect(getProduct(pid, product.id).variants.map(v => v.stock), failure).toEqual([12, 7]);
+    }
+  });
+
+  it("P1 #195 : arrêt du processus après la réponse de la boutique, avant l'enregistrement : reprise sans redoubler", async () => {
+    const { pid, product } = fixture(); const m = memoryStore({ atomic: true });
+    const rid = (await syncProducts(pid, m.conn)).lines[0].remoteId!;
+    setVariantStock(pid, product.variants[0].id, 12);
+    // Simule l'arrêt : l'ajustement est appliqué par la boutique, puis le processus s'arrête avant l'enregistrement local.
+    const adjust = m.conn.adjustStock!;
+    m.conn.adjustStock = async (a, b, d) => { await adjust(a, b, d); throw new Error("SIMULATED_PROCESS_STOPPED"); };
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(1);
+    m.conn.adjustStock = adjust;
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock).toBe(12);
+    expect(getProduct(pid, product.id).variants[0].stock).toBe(12);
   });
 
   it("P2 : une boutique qui répond 503 ne doit pas être enregistrée active", async () => {
