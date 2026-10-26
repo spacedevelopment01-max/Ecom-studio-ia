@@ -1,0 +1,58 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "tree": "11b3cea9e26ce9eea7b81d7ca6eb3412c4cc21c2",
+  "previousMain": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+  "onlyChangedFromPreviousMain": [
+    "docs/coordination/FUSION_GLOBALE_2026-10-25.md"
+  ],
+  "allApplicationCodeIdenticalToApprovedCandidate": true,
+  "candidate": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "allTrackedFilesUnmodified": true,
+  "fixtureMissingFilesRestoredByIdenticalGitBlob": 948,
+  "publicIdenticalFilesLinked": 661,
+  "publicBytesReleased": 235068349,
+  "preserved": [
+    {
+      "path": "theme-base",
+      "blobOrTree": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "public",
+      "blobOrTree": "e8d0e1b91a3e7b9a5b9b905128f5fe4e56068e78",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-boutique.tsx",
+      "blobOrTree": "672b30da890f15a83772cfdb67cf51ecdc608c26",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-catalogue.tsx",
+      "blobOrTree": "bbea2cc4da2fd4c9a96cebb2b9d0c7900e6edefe",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "scripts/verify-theme.sh",
+      "blobOrTree": "2c7341cf063ad878fa4b5edc52b207a9461064aa",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "package-lock.json",
+      "blobOrTree": "ea1b57764aea004c3095c241a6afd6386c551889",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "CLAUDE.md",
+      "blobOrTree": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": ".claude/skills/verifier-theme/SKILL.md",
+      "blobOrTree": "095e401b3a6f924d09ee172106ba05b9d0ca4a60",
+      "unchangedFrom": "d2fb63ee"
+    }
+  ],
+  "newCiRun": 40378448440,
+  "realProviderCalls": 0
+}

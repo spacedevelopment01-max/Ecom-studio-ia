@@ -1,0 +1,45 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "run": 40378448440,
+  "event": "push",
+  "branch": "main",
+  "conclusion": "success",
+  "primaryJob": 121768374676,
+  "dockerJob": 121768375060,
+  "checkoutCommits": [
+    "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "a2d00fcbc5c2bdf7d7712a8d34373854dc953619"
+  ],
+  "tree": "11b3cea9e26ce9eea7b81d7ca6eb3412c4cc21c2",
+  "tests": {
+    "passed": 3409,
+    "failed": 0,
+    "skipped": 31,
+    "filesPassed": 400,
+    "filesSkipped": 1,
+    "files": 401
+  },
+  "nativeThemeMatrix": {
+    "cases": 204,
+    "zip": 1,
+    "total": 205,
+    "errors": 0,
+    "warningsPerCase": 35
+  },
+  "compiledExport": {
+    "servedCommit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "source": "compiled-build",
+    "http": 200,
+    "themeCheckErrors": 0,
+    "themeCheckWarnings": 35,
+    "unavailableOrStopped": false
+  },
+  "docker": {
+    "build": "success",
+    "worker": "actif",
+    "home": 200,
+    "registration": 200,
+    "ffmpeg": "available"
+  },
+  "fullLogsRead": true
+}

@@ -1,0 +1,20 @@
+{
+ "projet": "1yhutgq8zzw3ab6k",
+ "version": {
+  "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "source": "compiled-build"
+ },
+ "export": {
+  "statut": 200,
+  "type": "application/zip",
+  "octets": 8498068,
+  "debut": null
+ },
+ "controle": {
+  "themeCheckErrors": null,
+  "themeCheckWarnings": null,
+  "problemesThemeCheck": [
+   "Theme Check arrêté : Document Shopify de Theme Check illisible (preset.json) : Unexpected non-whitespace character after JSON at position 3 (line 1 column 4)"
+  ]
+ }
+}

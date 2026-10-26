@@ -1,0 +1,19 @@
+{
+ "projet": "12rzdc9hrowmv730",
+ "version": {
+  "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "source": "compiled-build"
+ },
+ "export": {
+  "statut": 200,
+  "type": "application/zip",
+  "octets": 8498064,
+  "debut": null
+ },
+ "controle": {
+  "themeCheckErrors": 0,
+  "themeCheckWarnings": 35,
+  "problemesThemeCheck": []
+ }
+}
+RÉUSSI : Theme Check a tourné dans le build compilé, 0 erreur.

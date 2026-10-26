@@ -1,0 +1,16 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "exitCode": 0,
+  "passed": 3409,
+  "failed": 0,
+  "skipped": 31,
+  "total": 3440,
+  "filesPassed": 400,
+  "filesSkipped": 1,
+  "fileReports": 401,
+  "jsonSha256": "bb78e28cee0c929a957971dfda7b4accf56ac5ac6bbf835a310703a5492b34b3",
+  "nativeNetworkGuard": true,
+  "fetchFakeInjected": false,
+  "allTrackedApplicationFilesUnmodified": true,
+  "realProviderCalls": 0
+}

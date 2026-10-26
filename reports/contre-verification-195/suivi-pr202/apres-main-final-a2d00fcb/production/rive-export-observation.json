@@ -1,0 +1,23 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "served": {
+    "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "source": "compiled-build"
+  },
+  "exportHttp": 200,
+  "themeCheckErrors": 0,
+  "themeCheckWarnings": 35,
+  "issues": [],
+  "unmeasured": [
+    "installation",
+    "page_fidelity",
+    "section_fidelity",
+    "typography",
+    "colors",
+    "responsive",
+    "navigation",
+    "buttons",
+    "forms"
+  ],
+  "verdict": "PROVISIONAL"
+}

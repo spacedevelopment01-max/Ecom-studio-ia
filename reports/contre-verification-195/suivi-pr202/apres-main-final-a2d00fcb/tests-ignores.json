@@ -1,0 +1,213 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "total": 31,
+  "byFile": {
+    "tests/aplat.test.ts": 1,
+    "tests/films-accueil.test.ts": 2,
+    "tests/fraise-theme.test.ts": 14,
+    "tests/maison-horizon.test.ts": 1,
+    "tests/onde.test.ts": 11,
+    "tests/produits-boutiques-e2e-190.test.ts": 2
+  },
+  "tests": [
+    {
+      "file": "tests/aplat.test.ts",
+      "title": "APLAT : démonstration complète (kit privé) les 18 pages et la page introuvable se rendent, avec la mention d'envoi simulé",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/films-accueil.test.ts",
+      "title": "films explicatifs de l'accueil chaque image utilisée existe et vient d'une démo du manifeste, sans gabarit",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/films-accueil.test.ts",
+      "title": "films explicatifs de l'accueil répartition : une démo par film, deux services, la montre dans deux films au plus",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) toutes les pages des planches, valides, un H1 chacune ; toutes les photos complémentaires utilisées",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) produit : un seul produit en trois formats, prix de OFFRES_VALIDEES.json (centimes entiers)",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) offres identiques partout : prix total du lot, messages calculés, comparaison annoncée, rien de barré sur le flacon seul",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) panier : 1 flacon = 16,60 € de sous-total, livraison à calculer, aucun total final ; lots × flacons par lot",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) ajouts : chaque carte ajoute SON lot (variante), un lot à la fois ; la fiche ajoute le format choisi",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) fiche : chaque carte de format montre sa photo (aucun texte technique à la place)",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) fiche : pied « fiche » de la planche (prolonge le bandeau d'achat), trois liens par rubrique ; l'accueil garde son pied",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) confiserie, rien d'inventé : aucune vitamine, promesse de santé, avis, stock ou certification",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) commande simulée : annoncée, aucun champ de carte, paiement non validable, confirmation présentée comme un exemple",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) contact, suivi et inscription : simulés et annoncés ; consentement décoché",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) journal : filtres reliés aux catégories, chaque carte ouvre SON article, contenus distincts",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) téléphone : menu (liens, recherche, mentions), tiroir, cookies, questions propres à la planche mobile",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) édition et sauvegarde : une retouche de l'éditeur est enregistrée et relue à l'identique",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "title": "FRAISE : démonstration (sept planches) édition : photo, prix, duplication et déplacement de section enregistrés ; les offres se recalculent depuis les prix",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/maison-horizon.test.ts",
+      "title": "Maison & Horizon : démonstration complète (kit privé) 27 biens publiés, une série de photos par bien, aucune photo partagée, pages rendues",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches douze pages, cinq articles, commande et confirmation ; sections « on-* » ; spécification valide",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches un seul produit, prix illustratif centralisé (149 €), ajout réel au panier avec quantité",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches panier : 1 casque = 149 €, 2 = 298 € de sous-total, livraison « calculée à l'étape suivante », vide sans total",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches commande d'exemple : trois étapes vérifiées, aucun champ de carte, confirmation annoncée comme exemple",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches FAQ : recherche, quatre thèmes, état sans résultat, notice à ajouter (aucun faux téléchargement)",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches contact (accord non coché), suivi (résultat d'exemple), journal (filtres), menu mobile et tiroir",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches médias du kit : tous montrés ; logo des planches ; aucun original de réserve",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches SEO : un H1, titre et description uniques par page, alt partout, aperçu non indexable",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches rien d'inventé : caractéristiques à confirmer, aucun avis, aucune promotion ni livraison gratuite",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches liens internes : chaque lien mène à une page existante",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "title": "ONDE : démonstration des sept planches exports : profil « onde », feuille et script, produit",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/produits-boutiques-e2e-190.test.ts",
+      "title": "produits du Studio ↔ boutiques de test réelles (mission #190) woocommerce : envoi, panier, modification sans doublon, vente + réassort fusionnés, import sans doublon",
+      "status": "skipped"
+    },
+    {
+      "file": "tests/produits-boutiques-e2e-190.test.ts",
+      "title": "produits du Studio ↔ boutiques de test réelles (mission #190) prestashop : envoi, panier, modification sans doublon, vente + réassort fusionnés, import sans doublon",
+      "status": "skipped"
+    }
+  ],
+  "unchangedFiles": [
+    {
+      "file": "tests/aplat.test.ts",
+      "count": 1,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "e481cb1846c4e553bba45463b01c7676aa6c8dfd"
+    },
+    {
+      "file": "tests/films-accueil.test.ts",
+      "count": 2,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "2aad917019e84e5e2bd95591357ae829af20bf44"
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "count": 14,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "45530f1a88d39c36116955dab977ad0d06fd6062"
+    },
+    {
+      "file": "tests/maison-horizon.test.ts",
+      "count": 1,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "7b546a18a8bf178f280cc2fa5cf69c8c2a5b8a2f"
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "count": 11,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "b5e891dfd366acd445f7ac4a7b36a11eeff3efed"
+    },
+    {
+      "file": "tests/produits-boutiques-e2e-190.test.ts",
+      "count": 2,
+      "unchangedFromPreviousMain": true,
+      "gitBlob": "5922b851be2b1ee219ce6ad2fe741f946375aeee"
+    }
+  ],
+  "reasons": {
+    "privateDemoKitsUnavailable": 27,
+    "legacyAccueilFilmChecksExplicitlySkipped": 2,
+    "realStoreE2EDisabledNotConnected": 2
+  },
+  "same31AsCandidateAndIntermediateMain": true
+}

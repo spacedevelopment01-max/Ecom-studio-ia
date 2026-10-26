@@ -1,0 +1,116 @@
+{
+  "verdict": "FAVORABLE_APRES_FUSION_DANS_LE_PERIMETRE_VERIFIE",
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "tree": "11b3cea9e26ce9eea7b81d7ca6eb3412c4cc21c2",
+  "candidatePreviouslyApproved": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "localNativeSuite": {
+    "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "exitCode": 0,
+    "passed": 3409,
+    "failed": 0,
+    "skipped": 31,
+    "total": 3440,
+    "filesPassed": 400,
+    "filesSkipped": 1,
+    "fileReports": 401,
+    "jsonSha256": "bb78e28cee0c929a957971dfda7b4accf56ac5ac6bbf835a310703a5492b34b3",
+    "nativeNetworkGuard": true,
+    "fetchFakeInjected": false,
+    "allTrackedApplicationFilesUnmodified": true,
+    "realProviderCalls": 0
+  },
+  "ci": {
+    "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "run": 40378448440,
+    "event": "push",
+    "branch": "main",
+    "conclusion": "success",
+    "primaryJob": 121768374676,
+    "dockerJob": 121768375060,
+    "checkoutCommits": [
+      "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+      "a2d00fcbc5c2bdf7d7712a8d34373854dc953619"
+    ],
+    "tree": "11b3cea9e26ce9eea7b81d7ca6eb3412c4cc21c2",
+    "tests": {
+      "passed": 3409,
+      "failed": 0,
+      "skipped": 31,
+      "filesPassed": 400,
+      "filesSkipped": 1,
+      "files": 401
+    },
+    "nativeThemeMatrix": {
+      "cases": 204,
+      "zip": 1,
+      "total": 205,
+      "errors": 0,
+      "warningsPerCase": 35
+    },
+    "compiledExport": {
+      "servedCommit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+      "source": "compiled-build",
+      "http": 200,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "unavailableOrStopped": false
+    },
+    "docker": {
+      "build": "success",
+      "worker": "actif",
+      "home": 200,
+      "registration": 200,
+      "ffmpeg": "available"
+    },
+    "fullLogsRead": true
+  },
+  "compiledControls": {
+    "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "served": {
+      "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+      "source": "compiled-build"
+    },
+    "officialPositiveExit": 0,
+    "officialPositiveUsesNativeTransportGuardOnly": true,
+    "negativeExit": 1,
+    "negativeOutcome": "EXPECTED_FAILURE",
+    "negativeReportedStoppedNotUnavailable": true,
+    "sdkOriginalPresetUnmodified": true,
+    "realHttp429Observed": false,
+    "productAndServiceIndependentClientProbes": "PASSED",
+    "screenshotsActuallyOpenedAndInspected": 4,
+    "all35NativeWarningsIdenticalToCandidate": true,
+    "traces": [
+      {
+        "file": "production-trace.jsonl",
+        "events": {
+          "checker-import": 1
+        }
+      },
+      {
+        "file": "theme-check-trace.jsonl",
+        "events": {
+          "checker-import": 1
+        }
+      }
+    ],
+    "realProviderCalls": 0
+  },
+  "originalThemeSpecAndVersionsPreserved": true,
+  "themesAndPriorCorrectionsPreservedByExactGitIdentity": true,
+  "realProviderCalls": 0,
+  "realCmsInstallations": false,
+  "creativeApproval": false,
+  "privateKitsComplete": false,
+  "userStudioServedVersionVerified": false,
+  "codexMerge": false,
+  "codexDeployment": false,
+  "limitations": [
+    "31 ignored native tests remain explicitly enumerated",
+    "CMS installation and transactions not tested",
+    "No real provider credentials prices quality or invoices tested",
+    "Private kits incomplete; not a full creative validation of 15 themes",
+    "User Codespace served version not checked or updated",
+    "Two historical manual direct-SDK scripts outside new loader guarantee"
+  ]
+}

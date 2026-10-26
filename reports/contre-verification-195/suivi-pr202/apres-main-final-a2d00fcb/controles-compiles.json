@@ -1,0 +1,32 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "served": {
+    "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+    "source": "compiled-build"
+  },
+  "officialPositiveExit": 0,
+  "officialPositiveUsesNativeTransportGuardOnly": true,
+  "negativeExit": 1,
+  "negativeOutcome": "EXPECTED_FAILURE",
+  "negativeReportedStoppedNotUnavailable": true,
+  "sdkOriginalPresetUnmodified": true,
+  "realHttp429Observed": false,
+  "productAndServiceIndependentClientProbes": "PASSED",
+  "screenshotsActuallyOpenedAndInspected": 4,
+  "all35NativeWarningsIdenticalToCandidate": true,
+  "traces": [
+    {
+      "file": "production-trace.jsonl",
+      "events": {
+        "checker-import": 1
+      }
+    },
+    {
+      "file": "theme-check-trace.jsonl",
+      "events": {
+        "checker-import": 1
+      }
+    }
+  ],
+  "realProviderCalls": 0
+}

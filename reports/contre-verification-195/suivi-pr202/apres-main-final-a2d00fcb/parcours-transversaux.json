@@ -1,0 +1,103 @@
+{
+  "source": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "basis": "READ_FROM_THIS_EXACT_COMPLETED_NATIVE_SUITE_NOT_EXTRA_EXECUTIONS",
+  "files": [
+    {
+      "file": "catalogue-actif.test.ts",
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "cms-catalogue-fiable.test.ts",
+      "passed": 17,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "db-migration-race.test.ts",
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "higgsfield-engine.test.ts",
+      "passed": 19,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "higgsfield-pricing.test.ts",
+      "passed": 31,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "initial-authorization.test.ts",
+      "passed": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "integration194-isolation-ab.test.ts",
+      "passed": 16,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "isolation-forfait-familles.test.ts",
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "lot1-sauvegarde-restauration.test.ts",
+      "passed": 5,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "migration-v2.test.ts",
+      "passed": 6,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "preparation-catalogue-actif.test.ts",
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "social-autopilot-limites.test.ts",
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "social-autopilot-pilote.test.ts",
+      "passed": 9,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "stock-libelle-fidele.test.ts",
+      "passed": 4,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "themes-catalogue.test.ts",
+      "passed": 11,
+      "skipped": 0,
+      "failed": 0
+    },
+    {
+      "file": "trade-restaurant.test.ts",
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0
+    }
+  ],
+  "realProviderCalls": 0
+}
