@@ -1,0 +1,30 @@
+{
+  "source": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+  "verdict": "CONTROLES_LOCAUX_REUSSIS_MAIN_INTERMEDIAIRE",
+  "nativeFullSuite": {
+    "passed": 3409,
+    "failed": 0,
+    "skipped": 31,
+    "filesPassed": 400,
+    "filesSkipped": 1,
+    "totalFileReports": 401,
+    "exitCode": 0,
+    "jsonSha256": "5ebb50a065bb42c3c7f248497adf6cc356ae2ad18860a433bd734963ee75c8e5"
+  },
+  "typecheckExit": 0,
+  "buildExit": 0,
+  "compiledOfficialSmokeExit": 0,
+  "compiledInvalidDocNegativeControlExpectedExit": 1,
+  "nativeWarnings": 35,
+  "all35IdenticalToCandidate": true,
+  "fictitiousProductsAndServices": true,
+  "savedZipIdentical": true,
+  "themeSpecAndVersionsPreserved": true,
+  "trackedApplicationFilesUnmodified": true,
+  "ciPushRun": 40370220372,
+  "ciPushStatus": "IN_PROGRESS_NOT_CLAIMED_GREEN",
+  "finalMainAfter203": "NOT_YET_EXISTS_OR_VERIFIED",
+  "realProviderCalls": 0,
+  "userStudioUpdated": false,
+  "codexMerge": false
+}

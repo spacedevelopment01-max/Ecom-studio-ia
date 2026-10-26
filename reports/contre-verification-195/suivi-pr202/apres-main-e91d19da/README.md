@@ -2,7 +2,7 @@
 
 **Source exacte : `e91d19da4323c1f049191161e8f2a0a73b41c4b0`.** Nouvelle copie isolée, nouveau build ; arbre `6595cd464bb129dc28df11195d1c1e68c6fd9569`, identique au candidat approuvé 51275. [Identité et préservation](identite.json).
 
-**Publication intermédiaire** : Claude prépare ensuite #203, documentation centrale uniquement. Le présent dossier ne sera pas renommé ni présenté comme une exécution du futur SHA final. Suite générale locale et CI push encore en cours à cette publication ; aucun verdict final global n'est annoncé.
+**Publication intermédiaire** : Claude prépare ensuite #203, documentation centrale uniquement. Le présent dossier ne sera pas renommé ni présenté comme une exécution du futur SHA final. **Tous les contrôles locaux sont terminés et réussis** ; la CI push est encore en cours à cette publication. Aucun verdict final global n'est annoncé. [Résultats locaux structurés](verdict-local.json).
 
 ## Vérifié sur le nouveau build e91
 
@@ -23,6 +23,8 @@ Le texte simulé contient « 429 », mais aucune réponse HTTP 429 réelle n'est
 
 ## En cours
 
-Suite native complète relancée sur e91 avec la garde réseau, 2 workers et les mêmes assertions. CI push propre à ce main : [40370220372](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40370220372). Les résultats seront ajoutés après sortie réelle ; ils ne sont pas anticipés ici.
+**Suite native complète sur e91 terminée : 3 409 réussis, 0 échec, 31 ignorés, sortie 0**, 400 fichiers réussis / 1 ignoré. [JSON brut](suite-complete.json), [journal](suite-complete.log), [code de sortie](suite-complete.exit). Garde réseau native, 2 workers, aucune double de transport. L'exécution a continué pendant la reconnexion de l'environnement et son shell a bien enregistré la sortie ; aucun test n'a été relancé. Les 31 ignorés correspondent exactement au candidat : [liste et raisons](tests-ignores.json).
+
+CI push propre à ce main : [40370220372](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40370220372), encore en cours. Aucun vert CI n'est anticipé. Le futur main après #203 aura sa propre CI.
 
 Après fusion par Claude de #203, relever le nouveau SHA final et le contrôler séparément, avec sa propre CI push et un build affichant ce SHA. Le studio utilisateur et son commit effectivement servi ne sont pas modifiés ni validés ici.

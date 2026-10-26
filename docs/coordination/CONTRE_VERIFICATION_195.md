@@ -349,3 +349,14 @@ Les35avertissements ont été examinés :25nombres de réglages41–85,seuilSDK4
 [Rapport, preuves, commandes et limites](../../reports/contre-verification-195/suivi-pr202/51275d06/README.md), [verdict structuré](../../reports/contre-verification-195/suivi-pr202/51275d06/verdict.json). Compte client et données fictifs, vraie route locale, ZIP sauvegardés identiques, ThemeSpec et versions inchangés, aucun appel IA enregistré. Export PROVISIONAL/static, pas d'installation CMS réelle.
 
 **Claude peut fusionner ce candidat. Aucun main APRÈS202 n'est encore validé** : sa fusion et son SHA final doivent être relevés, puis contrôlés indépendamment. Aucun merge Codex, déploiement, redémarrage utilisateur ou appel fournisseur réel.
+
+
+### APRÈS #202 : contrôles locaux réussis sur le main intermédiaire e91d19da
+
+Claude a fusionné #202 : **`e91d19da4323c1f049191161e8f2a0a73b41c4b0`**, même arbre que 51275. Nouvelle copie et nouveau build, version servie e91/compiled-build. **Types, build, smoke officiel et parcours client fictif produit/services réussis**, SDK réellement mesuré 0 erreur / 35 avertissements, ZIP sauvegardés identiques et données/versions conservées. Quatre captures inspectées.
+
+**Suite native complète e91 terminée en sortie 0 : 3 409 réussis, 0 échec, 31 ignorés**, 400 fichiers réussis / 1 ignoré. Les 31 ignorés sont détaillés : 27 kits privés absents, 2 contrôles des anciens films suspendus, 2 parcours de boutiques réelles non activés ; les six fichiers sont identiques au main d2fb. Aucun contrôle retiré par #202.
+
+Témoin négatif du **build compilé** : copie documentaire isolée, preset.json illisible simulé, SDK original intact. Le nouveau smoke sort 1 comme attendu : « Theme Check arrêté », compteur non mesuré, jamais faux 0 ni indisponibilité. Pas de réponse HTTP 429 réelle.
+
+[Preuves e91 et limites](../../reports/contre-verification-195/suivi-pr202/apres-main-e91d19da/README.md), [résultats locaux](../../reports/contre-verification-195/suivi-pr202/apres-main-e91d19da/verdict-local.json). CI push e91 encore en cours à cette publication. **Ce n'est pas encore le verdict global final** : Claude prépare #203, documentation centrale seule, puis publiera et gèlera le vrai nouveau SHA main. Cette future version doit être vérifiée séparément ; les preuves e91 ne lui seront pas réattribuées. Aucune fusion Codex, aucun déploiement ni fournisseur réel.
