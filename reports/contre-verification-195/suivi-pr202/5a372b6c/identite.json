@@ -72,5 +72,6 @@
   "approved198199200FilesUnchanged": true,
   "shellWrapperIdenticalToMain": true,
   "packageLockSha256": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf",
-  "realProviderCalls": 0
+  "realProviderCalls": 0,
+  "status": "BLOCKED_COMPILED_PRODUCTION"
 }

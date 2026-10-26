@@ -1,0 +1,53 @@
+{
+  "schema": "counter-verification-195-pr202-2",
+  "at": "2026-10-26T16:39:00.974225+00:00",
+  "candidate": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "tree": "c67f3e1d8c532fc1ffeaa1855aa357556456f14c",
+  "verdict": "BLOCKED",
+  "blocker": "WEBPACK_EMITS_UNDEFINED_REQUIRE_IN_STUDIO_EXPORT",
+  "classification": [
+    "CONFIRMED_COMPILED_CODE",
+    "REPRODUCED_IN_PRODUCTION_BUILD"
+  ],
+  "earlierNativeBlockersFixed": true,
+  "nativeTests": {
+    "passed": 59,
+    "failed": 0,
+    "skipped": 0
+  },
+  "nativeThemeChecks": {
+    "passedIncludingZip": 205,
+    "failed": 0,
+    "downloadAttempts": 0,
+    "sdkCacheIoAttempts": 0
+  },
+  "ci": {
+    "run": 40353362722,
+    "status": "success",
+    "testsPassed": 3409,
+    "testsFailed": 0,
+    "testsSkipped": 31,
+    "checkout": "726d3508efa0efece3c95e4de618c4531bda81ac",
+    "treeEqualsCandidate": true
+  },
+  "localBuildExit": 0,
+  "production": {
+    "servedCandidate": true,
+    "source": "compiled-build",
+    "productExportHttp": 200,
+    "themeCheckErrors": null,
+    "compatibilityMeasured": false,
+    "recordedIssue": "Cannot read properties of undefined (reading 'resolve')",
+    "reproducedWithoutDocumentaryDouble": true,
+    "completeProductPath": false,
+    "servicePath": "NOT_RUN_AFTER_PRODUCT_ASSERTION_FAILURE",
+    "visualScreens": "INTRO_OVERLAY_ONLY_NOT_VISUAL_VALIDATION"
+  },
+  "mainCurrent": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "mainCurrentVerdict": "FAVORABLE_PREVIOUS_SCOPE_ALREADY_PUBLISHED",
+  "mainAfter202": null,
+  "afterMergeVerdict": "PENDING_NO_MERGE",
+  "realProviderCalls": 0,
+  "mergesByCodex": 0,
+  "deploymentsByCodex": 0
+}

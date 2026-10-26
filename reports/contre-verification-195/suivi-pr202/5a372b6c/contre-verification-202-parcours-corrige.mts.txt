@@ -8,7 +8,10 @@ import {randomUUID,createHash} from 'node:crypto';
 import {chromium} from 'playwright';
 import {unzipSync} from 'fflate';
 
-if(process.env.DATA_DIR||process.env.DATABASE_FILE)throw Error('Existing database refused');
+if(process.env.DATA_DIR||process.env.DATABASE_FILE||process.env.STORAGE_DIR)throw Error('Existing database/storage selectors refused');
+for(const name of ['.env','.env.local','.env.production','.env.production.local']){
+  if(fs.existsSync(path.resolve(name)))throw Error('Isolated checkout without runtime env files required');
+}
 const out=path.resolve(process.argv[2]??'');
 assert.ok(out.startsWith('/tmp/ecs-202-preuves/'));
 fs.mkdirSync(out,{recursive:true});
