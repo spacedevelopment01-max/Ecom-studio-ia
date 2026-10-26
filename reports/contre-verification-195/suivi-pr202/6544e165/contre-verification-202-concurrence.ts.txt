@@ -1,0 +1,6 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+import {sampleSpec} from '../tests/fixtures';import {themeCheck} from '../src/lib/theme/theme-check';
+const before=process.env.XDG_CACHE_HOME;const a=sampleSpec('atelier');const b=sampleSpec('atelier');const first=b.templates.index.order[0];const section=b.templates.index.sections[first];b.customSections={...(b.customSections??{}),[section.type]:{name:'Fixture',liquid:'{% if %}broken{% endif %}{% schema %}{"name":"Fixture","settings":[]}{% endschema %}'}};
+const outcomes=await Promise.all([themeCheck(a),themeCheck(b),themeCheck(sampleSpec('atelier'))]);
+const result={source:'6544e165343b4cccfc7686a47839a9b489996c80',calls:outcomes.map(x=>({available:x.available,errors:x.errors.length,checks:[...new Set(x.errors.map(e=>e.check))]})),cacheEnvRestored:before===process.env.XDG_CACHE_HOME,realProviderCalls:0};fs.writeFileSync('/tmp/ecs-202-preuves/6544e165/runtime-concurrence.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+assert.deepEqual(outcomes.map(x=>x.available),[true,true,true]);assert.deepEqual(outcomes.map(x=>x.errors.length),[0,1,0]);assert.equal(before,process.env.XDG_CACHE_HOME);

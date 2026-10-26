@@ -1,0 +1,14 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "baseBranchMain": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "mergeBase": "53ecf5bb15ac27527bfce3e432031eb664603d26",
+  "note": "Head predates198/200/199; three-dot PR diff does not remove them. Actual merged main must be verified after Claude merges.",
+  "sourceFiles": {
+    "src/lib/theme/shopify-docs.ts": "ce230535b620a0247dde61faa93ecf941c2cc9b409bb9dd367edc3b7339125ef",
+    "src/lib/theme/theme-check.ts": "b9b2cb9c1ef66832a2f87f21411c7ee1b31ce8ebfa072a9bf1c7fd0a7646412a",
+    "src/lib/cms-v2/checks.ts": "af16df122b0b75c35e6bdd1046ea7b94b679e21f52a09585292b8762ce31ba97",
+    "scripts/verify-theme.sh": "2a6725006b447581c7d9969bdf46b71a4790ce3403b6e2a46e7e18c9f465c689",
+    "package-lock.json": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf"
+  },
+  "realProviderCalls": 0
+}

@@ -1,0 +1,29 @@
+{
+  "source": "02fff7705bb213c8237a7374109879852e09afa0",
+  "interrupted": true,
+  "reason": "PR head superseded by 6544e165; native complete matrix will restart on new exact head",
+  "controlledRootPid": 367807,
+  "descendantPids": [
+    367807,
+    372251,
+    372256,
+    372268,
+    372269,
+    372281,
+    372295,
+    372300,
+    372320,
+    372325,
+    372338,
+    372341,
+    372361,
+    372362,
+    372375,
+    372384,
+    372385,
+    372393,
+    372394,
+    372411,
+    372422
+  ]
+}

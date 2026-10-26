@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "source": "02fff7705bb213c8237a7374109879852e09afa0",
+  "completedCases": 64,
+  "passed": 64,
+  "failed": 0,
+  "exit": 143,
+  "reason": "Stopped only own process tree because reviewed PR head changed. Logs saved; no full success claimed."
+}
