@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État du suivi : **198/445,200/e005 et199/d63 approuvés puis fusionnés par Claude ; vrai main final d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5 contre-vérifié nativement :3405/0/31,build/types et parcours compilés verts. Verdict APRÈS global en attente de la fin de la CI push40340415088.**
+État final du suivi : **FAVORABLE AVANT sur198/445,200/e005,199/d63, puis APRÈS sur le vrai main final `d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5`. Trois fusions réalisées par Claude,3405tests réussis/0échec/31ignorés,build/types,parcours compilés et vraie CI main entièrement verts. Aucun appel fournisseur réel ni déploiement ; limites CMS/médias/qualité globale/version utilisateur explicitement conservées.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -286,3 +286,19 @@ Vraies fusions par Claude198→200→199 constatées par PR et ref distante,main
 - **CI push/main40340415088 au relevé :**Docker,types et tests verts ;ThemeCheck en cours,build principal ensuite. Verdict global APRÈS encore **en attente**,aucune CI verte annoncée par déduction des tests locaux.
 
 Aucun test fournisseur réel,déploiement/redémarrage,paiement,message externe,ni fusion Codex. Version du studio utilisateur non vérifiée. Les résultats antérieurs ne sont pas rebaptisés sur ce main. Les limites CMS,31ignorés,kits privés et qualité créative restent à distinguer de la correction technique des3points.
+
+
+## Verdict final APRÈS du suivi198/200/199 — FAVORABLE sur d2fb63ee
+
+**FAVORABLE**,sur **`d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5`**,arbre `247141cd75e7502659d98126eb4f66a9c1bd0bb5`. Les trois réserves ciblées sont corrigées dans ce main : lisibilité FRAISE mobile,menu de section masquée utilisable avec sauvegarde,description du stock conforme à la limite réelle Woo/Presta. Les observations et états « en attente » précédents restent historiques ; ils sont remplacés par ce verdict final.
+
+- **Nouvelle copie native :3405réussis,0échec,31ignorés,399fichiers réussis/1ignoré**,sortie0,1487,12s ; build0/103,71s,types0/47,77s. Dépendances exactes,deux workers,garde réseau,aucun navigateur concurrent. Premier passage de préparation130 conservé et expliqué,sans test assoupli.
+- **Vrai build compilé d2fb/compiled-build** ouvert au navigateur :8mouvements par clic normal,hit-testetDB sur1440/390/360/768,témoins7/7 ; contenus inchangés,ordre restauré,ancienneversion conservée,exactement8versions supplémentaires(1→9),aucun appel enregistré nouveau. Stocks FR/EN1440/390,bloc ouvert/fermé,aucun JSexception/overflow.
+- **FRAISE vrai moteur :26pages/144captures**,10pages corrigées à360/390/430/1440,aucune erreurJS. Main versus445approuvé :51/52comparaisons pixel-identiques,1écart10pixelsFAQordinateur déjà identifié ;10pages visées identiques ordinateur/mobile. Captures natives sélectionnées ouvertes et relues,aucune retouche ni masque.
+- **VraieCIpushmain [40340415088](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40340415088),terminée SUCCESS**,head ET checkout d2fb63ee relus dans le journal :3405/0/31,types,ThemeCheck205cas et ZIPclient,build58pages,Docker démarré avec workeractif,accueil200/inscription200/FFmpeg. Tous les jobs et étapes réussis,pas un ancien badge de PR.
+
+[Preuves finales APRÈS avec journaux,JSON,176PNG et harnais](../../reports/contre-verification-195/suivi-pr198-199-200/apres-main-d2fb63ee/README.md),[identité CI finale](../../reports/contre-verification-195/suivi-pr198-199-200/apres-main-d2fb63ee/ci-identite-finale.json),[conservation réelle](../../reports/contre-verification-195/suivi-pr198-199-200/apres-main-d2fb63ee/studio/resultat.json). Les preuves AVANT restent séparées sur445/e005/d63 ; aucune ancienneexécution n'a été renommée APRÈS. Les fichiers corrigés du main sont bit-identiques à leurs têtes approuvées ; aucune fonctionnalité des résolutions précédentes n'est retirée.
+
+**Reste hors validation** :31ignorés (kits privés et films/CMS documentés),7kits incomplets dont25médiasFRAISE,petit texte ordinateur/détails du footer préexistants,prix/fournisseurs/générations réels,installations et transactions CMS,qualité créative globale et validation visuelle de Thomas,version effectivement servie dans son studio. La dépendance intermittente de ThemeCheck aux schémasShopify est reconnue et fait l'objet d'un suivi séparé annoncé par Claude ; pas de correctif supplémentaire fusionné pendant ce contrôle,aucune garde retirée. Cette fois le run final a réellement réussi.
+
+**Aucun blocage de contre-vérification restant pour ces trois corrections.** Claude peut finaliser le rapport central par sa révision documentaire en citant ce SHA de code et ces preuves. Aucun mergeCodex,déploiement,redémarrage du studio réel,paiement,message externe ou appel fournisseur réel. Une modification applicative ultérieure requiert les contrôles concernés ; le présent verdict porte exactement sur d2fb63ee.

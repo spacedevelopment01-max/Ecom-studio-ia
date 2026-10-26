@@ -1,7 +1,7 @@
 {
   "codeTestedLatest": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "AFTER_FINAL_MAIN_D2FB_NATIVE_GREEN_CI_IN_PROGRESS",
+  "state": "BEFORE_198_199_200_AND_AFTER_FINAL_MAIN_D2FB_FAVORABLE_CI_AND_NATIVE_VERIFIED",
   "realProviderCalls": 0,
   "nativeScreenshots": null,
   "inspectionBoards": 25,
@@ -509,8 +509,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 12132,
-      "sha256": "6f79348a830b3c2e0c91eae294479081182b0a66391bdf877d57a976d1b66822"
+      "bytes": 12152,
+      "sha256": "99ebda49602366d6ed5d4b0053cce986cd179036bf0b7c4a3ec0d2bd80eb0cf1"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -6069,13 +6069,13 @@
     },
     {
       "file": "suivi-pr198-199-200/README.md",
-      "bytes": 9235,
-      "sha256": "5df0be7b6e340cc3bec32865eb48637aec6015cb64582b08c20c37c123e8adbe"
+      "bytes": 9298,
+      "sha256": "c43dc460e8455206af91786209474b4729ba4a954213b54f37f58c62f3d6e94c"
     },
     {
       "file": "suivi-pr198-199-200/apres-main-d2fb63ee/README.md",
-      "bytes": 6253,
-      "sha256": "ecf8a6463a123414c522802d124e7358a4cbfa305f6a1018127623933eda4459"
+      "bytes": 6596,
+      "sha256": "4b22ad51891e29cdf53269d699de4072d29abf9b766b9d7b84234fa019798621"
     },
     {
       "file": "suivi-pr198-199-200/apres-main-d2fb63ee/apports-fusionnes.json",
@@ -6101,6 +6101,16 @@
       "file": "suivi-pr198-199-200/apres-main-d2fb63ee/ci-etat.json",
       "bytes": 3773,
       "sha256": "c26a528746c9d4b38e21678cf826fd20a5785c05290483f153bfd8afde4afa04"
+    },
+    {
+      "file": "suivi-pr198-199-200/apres-main-d2fb63ee/ci-identite-finale.json",
+      "bytes": 4301,
+      "sha256": "60d28fb9b825909d8c6bfd82f22f254fbaa673b6d18e3d5d63850e344be0f34e"
+    },
+    {
+      "file": "suivi-pr198-199-200/apres-main-d2fb63ee/ci-journal-extraits.txt",
+      "bytes": 477,
+      "sha256": "03486ed30097f1e55e52ef92b00c1c27839a5d44f297a536867628c8040f9f61"
     },
     {
       "file": "suivi-pr198-199-200/apres-main-d2fb63ee/fraise/apres-1440-404.png",

@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-**Nouveau suivi : [accords AVANT sur les têtes exactes198/199/200,preuves indépendantes](suivi-pr198-199-200/README.md). Main final après ces corrections en attente des fusions de Claude.**
+**Nouveau suivi : [accords AVANT sur les têtes exactes198/199/200,preuves indépendantes](suivi-pr198-199-200/README.md). **APRÈS main final d2fb63ee : favorable,3405/0/31 et CI verte**,preuves dans le suivi.**
 
 **AVANT d38 et APRÈS main333bccc8 contrôlés : suite3395/0/31 et CI main vertes. [DERNIÈRE LIVRAISON APRÈS :814PNG,3vidéos,preuves et réserves](apres-main-333bccc8/README.md). Défaut FRAISE mobile préexistant signalé ; validation visuelle globale retenue, CMS réels et version du studio utilisateur non vérifiés. Les sections suivantes conservent les anciennes preuves avec leurs SHA.**
 

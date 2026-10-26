@@ -1,8 +1,8 @@
 # Suivi indépendant #195 — PR198 / PR199 / PR200
 
-**Dernier contrôle : [APRÈS fusion réelle d2fb63ee,3405tests et parcours compilés verts ; CI encore en cours](apres-main-d2fb63ee/README.md).**
+**Dernier contrôle : [APRÈS fusion réelle d2fb63ee :3405tests,parcours compilés et CI entièrement verts](apres-main-d2fb63ee/README.md).**
 
-**Verdict AVANT : ACCORD POUR FUSION pour chacune des trois têtes ci-dessous, CI verte. Claude seul opérateur. Contrôle du vrai main final EN ATTENTE de ses fusions. Aucun appel API fournisseur réel.**
+**Verdict AVANT : ACCORD POUR FUSION pour chacune des trois têtes ci-dessous, CI verte. Claude seul opérateur. Contrôle du vrai main final d2fb63ee terminé favorablement ; voir les preuves APRÈS ci-dessus. Aucun appel API fournisseur réel.**
 
 | PR | Tête effectivement contrôlée | Verdict | Preuves |
 |---|---|---|---|
@@ -60,4 +60,4 @@ Les anciens rouges n'ont pas été cachés : [199/865](ci-199-86525ca9-rouge.txt
 
 Les journaux `pr*-tests.log`,sorties,`*-execution.json` et types se trouvent dans ce dossier. Commandes : `vitest run` sur les fichiers ciblés de chaque PR,workers1,garde native du lot9 ; `tsc --noEmit`,tas3GiB. Les33tests de200 utilisent les transports simulés existants. Harnais ajoutés uniquement dans des copies de preuve : [sources](harnais/),hors code applicatif. Premier contrôle types avec tas1,5GiB insuffisant et omissions de métadonnées du checkout partiel sont conservés dans les fichiers `preparation-*` ; corrigés dans l'environnement,aucune assertion ni délai relâchés. Le premier inventaire FRAISE a aussi démarré avant la fin de l'export ; seule la comparaison finale184captures après sorties0 des deux exports fait foi.
 
-**Reste obligatoire : Claude fusionne,sans intervention Codex,publie le SHA main final et le gèle pendant sa CI et la vérification APRÈS.** Les résultats du main333 antérieur restent historiques. La version réellement servie n'est pas vérifiée et aucun déploiement n'est autorisé. CMS réels,prix et générations fournisseurs,tests ignorés et médias privés restent hors validation de cette passe.
+**Étape maintenant accomplie : Claude a fusionné les trois PR,figé d2fb63ee ; Codex a contre-vérifié ce main dans une nouvelle copie,avec CI entièrement verte.** Les résultats du main333 antérieur restent historiques. La version réellement servie n'est pas vérifiée et aucun déploiement n'est autorisé. CMS réels,prix et générations fournisseurs,tests ignorés et médias privés restent hors validation de cette passe.
