@@ -7,7 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { strFromU8, unzipSync } from "fflate";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "@/lib/theme/shopify-docs";
 import { matchFont, reproduceSpec, reproductionNotes, sanitizeHtml } from "@/lib/engine/site-reproduce";
 import type { SiteImport } from "@/lib/engine/site-types";
 import { compileTheme } from "@/lib/theme/compile";
@@ -58,6 +58,7 @@ async function themeCheck(spec: ThemeSpec) {
     fs.writeFileSync(path.join(dir, p), c);
   }
   for (const f of Object.keys(spec.files)) fs.writeFileSync(path.join(dir, "assets", f), "");
+  const { check } = await loadThemeCheck();
   const offenses = await check(dir);
   fs.rmSync(dir, { recursive: true, force: true });
   return offenses.filter((o) => o.severity === 0).map((o) => `${o.check} ${o.uri.split("/").slice(-2).join("/")}: ${o.message}`);

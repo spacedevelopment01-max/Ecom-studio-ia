@@ -190,7 +190,7 @@ describe("Theme Engine V2", async () => {
   });
 
   it("export Shopify : ZIP réel avec sections V2, feuille de style et réglages — Theme Check sans erreur", async () => {
-    const { check } = await import("@shopify/theme-check-node");
+    const { check } = await (await import("@/lib/theme/shopify-docs")).loadThemeCheck();
     const { unzipSync } = await import("fflate");
     const spec = results.artisan.spec;
     const { zip } = await exportThemeZip(spec, libraryLoader);

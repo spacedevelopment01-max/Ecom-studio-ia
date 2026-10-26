@@ -14,9 +14,9 @@ if [ "${1:-}" = "--rapide" ]; then ALL="atelier pop galerie vitrine cinema"; MUL
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/verify-theme-XXXX")"
 FAIL=0
-# Documents Shopify de Theme Check figés et servis en local (scripts/theme-docs-local.mjs) : plus de téléchargement à
+# Documents Shopify de Theme Check figés et servis en local (src/lib/theme/shopify-docs.ts) : plus de téléchargement à
 # chaque cas, ni de cache partagé entre processus parallèles (cause des faux « ValidSchema » intermittents en CI).
-node scripts/theme-docs-local.mjs "$TMP/shopify-docs" || { echo "✗ Documents Shopify de Theme Check illisibles"; rm -rf "$TMP"; exit 1; }
+npx tsx scripts/theme-docs-local.ts "$TMP/shopify-docs" || { echo "✗ Documents Shopify de Theme Check illisibles"; rm -rf "$TMP"; exit 1; }
 export SHOPIFY_TLD_ROOT="$TMP/shopify-docs"
 # Cas vérifiés en parallèle (JOBS à la fois, 4 par défaut) ; résultats affichés dans l'ordre à la fin.
 JOBS="${JOBS:-4}"

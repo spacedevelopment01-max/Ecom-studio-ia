@@ -11,7 +11,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { unzipSync } from "fflate";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "../src/lib/theme/shopify-docs";
 import { buildSpec } from "../src/lib/theme/directions";
 import { localCopy } from "../src/lib/engine/local-copy";
 import { emptyProduct } from "../src/lib/project-types";
@@ -72,6 +72,7 @@ await runWithLang({ content: "fr", ui: "fr" }, async () => {
       fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
       fs.writeFileSync(path.join(dir, f), d);
     }
+    const { check } = await loadThemeCheck();
     const offenses = await check(dir);
     const errors = offenses.filter((o) => o.severity === 0);
     console.log(`${errors.length ? "ERREUR" : "ok"} ${t.name}${t.spec.imported ? " (importé)" : ""} : ${errors.length} erreur(s), ${offenses.length - errors.length} autre(s)`);

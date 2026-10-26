@@ -1,7 +1,7 @@
 /** Vérifie un thème compilé avec Theme Check (outil officiel de Shopify). */
 import fs from "node:fs";
 import path from "node:path";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "../src/lib/theme/shopify-docs";
 import { localCopy } from "../src/lib/engine/local-copy";
 import { emptyProduct } from "../src/lib/project-types";
 import { compileTheme } from "../src/lib/theme/compile";
@@ -20,6 +20,7 @@ const spec = process.env.BUSINESS === "services" ? serviceSpec((process.argv[3] 
 fs.rmSync(dir, { recursive: true, force: true });
 for (const [p, c] of compileTheme(spec)) { fs.mkdirSync(path.dirname(path.join(dir, p)), { recursive: true }); fs.writeFileSync(path.join(dir, p), c); }
 fs.writeFileSync(path.join(dir, "assets/es-hero.jpg"), ""); fs.writeFileSync(path.join(dir, "assets/es-packshot.jpg"), "");
+const { check } = await loadThemeCheck();
 const offenses = await check(dir);
 const by = new Map<string, number>();
 for (const o of offenses) {

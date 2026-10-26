@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { compileTheme } from "./compile";
 import type { ThemeSpec } from "./spec";
+import { loadThemeCheck } from "./shopify-docs";
 
 export type ThemeCheckOffense = { file: string; check: string; message: string; line: number | null };
 export type ThemeCheckResult = { available: boolean; errors: ThemeCheckOffense[] };
@@ -29,7 +30,7 @@ export async function themeCheck(spec: ThemeSpec): Promise<ThemeCheckResult> {
   let check: (root: string) => Promise<{ severity: number; check: string; uri: string; message: string; start?: { line: number } }[]>;
   try {
     // Chargement à la demande : l'outil n'est nécessaire que pour le worker.
-    const mod = (await import("@shopify/theme-check-node")) as any;
+    const mod = (await loadThemeCheck()) as any;
     check = mod.check;
     if (typeof check !== "function") return { available: false, errors: [] };
   } catch {

@@ -15,6 +15,7 @@ import { getAsset } from "../library";
 import { manuallySelectable } from "../quality/usable";
 import type { CriterionKey, Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
+import { loadThemeCheck } from "../theme/shopify-docs";
 
 export type StaticCheck = { measures: Partial<Record<CriterionKey, Measure>>; codes: string[]; issues: string[]; stats: Record<string, number> };
 
@@ -133,7 +134,7 @@ export async function staticChecks(platform: CmsPlatform, exp: PlatformExport, s
       // Theme Check indisponible : la compatibilité reste NON MESURÉE (jamais comptée comme réussie).
       let offenses: { severity: number; check: string; message: string }[] | null = null;
       try {
-        const { check } = await import("@shopify/theme-check-node");
+        const { check } = await loadThemeCheck();
         offenses = await check(dir);
       } catch (e) {
         issues.push(`Theme Check indisponible : ${String((e as Error).message).slice(0, 120)}`);
