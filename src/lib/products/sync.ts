@@ -6,9 +6,10 @@
  *    correspondance, un produit de la boutique de même identifiant (handle) ou de même référence (SKU) est relié
  *    au lieu d'être dupliqué.
  *  - Stock à trois points (dernier stock synchronisé S, stock du studio L, stock de la boutique R) : une vente ou une
- *    modification faite dans la boutique (R ≠ S) n'est jamais écrasée. Les deux changements s'additionnent
+ *    modification faite dans la boutique (R ≠ S) est reprise dans le calcul, les deux changements s'additionnent
  *    (nouveau stock = R + (L − S)) ; si seul le studio a changé, son stock est envoyé ; si seule la boutique a changé,
- *    le studio reprend son stock.
+ *    le studio reprend son stock. Limite : sans ajustement relatif (WooCommerce, PrestaShop), une vente faite pendant
+ *    l'écriture elle-même peut ne pas être déduite (voir « Sûreté » ; texte montré au client dans tab-catalogue.tsx).
  *  - Contenu (nom, description, prix, options, catégories…) : le studio en est la source ; il n'est renvoyé que s'il a
  *    changé depuis le dernier envoi. Photos renvoyées seulement si elles ont changé (pas de doublons dans la
  *    médiathèque de la boutique) ; un produit relié qui existait déjà garde ses photos.

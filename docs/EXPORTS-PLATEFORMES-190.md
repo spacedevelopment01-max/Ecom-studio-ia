@@ -41,8 +41,15 @@ boutique de test, et **ce qu'il reste à faire à la main**. Les résultats chif
 - Correspondances conservées (table `product_links`) : un produit déjà envoyé est **mis à jour**, jamais recréé. Sans
   correspondance, un produit de la boutique de même identifiant ou de même référence est **relié** au lieu d'être
   dupliqué.
-- Stock à trois points : une vente ou une modification faite dans la boutique n'est jamais écrasée ; si le studio a
-  aussi changé (réassort), les deux s'additionnent (stock de la boutique + changement du studio).
+- Stock à trois points, calculé à chaque envoi : une vente ou une modification faite dans la boutique depuis le dernier
+  envoi est reprise ; si le studio a aussi changé (réassort), les deux s'additionnent (stock de la boutique + changement
+  du studio). Garanties et limites réelles (contre-vérification #195, texte montré dans l'onglet Catalogue) :
+  - Shopify reçoit un ajustement relatif : une vente simultanée reste déduite.
+  - WooCommerce et PrestaShop n'acceptent qu'une quantité : elle est relue juste avant l'écriture, mais une vente faite
+    pendant l'écriture elle-même peut ne pas être déduite ; le rapport le signale.
+  - Envoi sans réponse sûre : jamais rejoué ; à l'envoi suivant, le stock de la boutique est repris et le rapport
+    demande de vérifier le réassort s'il diffère de la quantité visée.
+  - Une seule synchronisation à la fois par projet et par boutique.
 - Contenu (nom, description, prix, options, catégories) : le studio est la source ; il n'est renvoyé que s'il a changé.
   Photos renvoyées seulement si elles ont changé.
 - Import des produits existants : créés dans le studio et reliés ; jamais importés deux fois.

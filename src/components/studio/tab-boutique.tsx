@@ -2,7 +2,7 @@
 import { TimeInfo } from "../wait-time";
 import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
 import type { StoreKindVerdict } from "@/lib/theme/store-kind";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -343,6 +343,26 @@ export default function TabBoutique() {
   const [focused, setFocused] = useState<string | null>(null);
   // Menu « … » d'une section ouvert (une seule à la fois).
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  // Le menu s'ouvre vers le haut quand la place manque en dessous (bas de la liste, barre d'onglets du téléphone) ;
+  // sinon il défile jusqu'à être entièrement visible : aucune entrée ne reste cachée sous un autre élément.
+  const menuBox = useRef<HTMLDivElement>(null);
+  const [menuUp, setMenuUp] = useState(false);
+  useLayoutEffect(() => {
+    const box = menuBox.current;
+    if (!menuFor || !box) return setMenuUp(false);
+    const nav = document.querySelector<HTMLElement>("[data-mobile-nav]");
+    const navTop = nav && nav.getClientRects().length ? nav.getBoundingClientRect().top : window.innerHeight;
+    // Zone réellement visible : la liste défilante qui contient la ligne (elle rogne le menu), l'écran, la barre d'onglets.
+    let scroller = box.parentElement;
+    while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    const area = scroller?.getBoundingClientRect();
+    const top = Math.max(area?.top ?? 0, 0) + 8, bottom = Math.min(area?.bottom ?? window.innerHeight, window.innerHeight, navTop) - 8;
+    const row = box.parentElement!.getBoundingClientRect(), h = box.offsetHeight;
+    const fitsBelow = row.bottom + 4 + h <= bottom;
+    const up = !fitsBelow && row.top - 4 - h >= top;
+    setMenuUp(up);
+    if (!fitsBelow && !up) requestAnimationFrame(() => menuBox.current?.scrollIntoView({ block: "nearest" }));
+  }, [menuFor]);
   function focusSection(sectionId: string, hidden?: boolean) {
     setFocused(sectionId);
     if (hidden) return toast("info", t("Cette section est masquée : réaffichez-la (icône œil) pour la voir dans l'aperçu.", "This section is hidden: show it again (eye icon) to see it in the preview."));
@@ -557,9 +577,11 @@ export default function TabBoutique() {
               onMove={(from, to) => ops([{ op: "move_section", template: tp.template, section: tp.sections[from].id, position: { index: to } }], t(`${tp.sections[from].name} déplacée`, `${tp.sections[from].name} moved`))}
               render={(s, i, handle, dragging) => (
                 <div>
-                  <div className={cx("relative flex items-center gap-1.5 rounded-xl border bg-card p-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", s.disabled && "opacity-60")}>
+                  {/* Section masquée : seul le libellé est atténué. Une opacité sur toute la ligne en ferait un
+                      contexte d'empilement : son menu passerait alors sous les lignes suivantes et sous le bouton d'ajout. */}
+                  <div className={cx("relative flex items-center gap-1.5 rounded-xl border bg-card p-1.5 text-sm", dragging ? "border-signal shadow-soft" : "border-line", menuFor === s.id && "z-40")} data-section-row={s.id} data-hidden={s.disabled || undefined}>
                     {handle}
-                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1.5 py-1 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
+                    <button type="button" onClick={() => focusSection(s.id, s.disabled)} className={cx("min-w-0 flex-1 rounded-lg px-1.5 py-1 text-left hover:bg-paper-2", focused === s.id && "bg-signal-soft/60", s.disabled && "opacity-60")} title={t("Voir cette section dans l'aperçu", "Show this section in the preview")}>
                       <p className="flex items-center gap-1.5 font-medium leading-snug">
                         <span className="line-clamp-2">{theme.library.find((l) => l.type === s.type)?.name ?? s.name}</span>
                         {s.locked && <Lock className="size-3 shrink-0 text-ok" aria-label={t("Validée", "Approved")} />}
@@ -572,7 +594,7 @@ export default function TabBoutique() {
                     {menuFor === s.id && (
                       <>
                         <button type="button" className="fixed inset-0 z-30 cursor-default" aria-label={t("Fermer le menu", "Close the menu")} onClick={() => setMenuFor(null)} />
-                        <div role="menu" className="absolute right-1 top-full z-40 mt-1 w-60 overflow-hidden rounded-xl border border-line bg-card py-1 text-sm shadow-soft" onClick={() => setMenuFor(null)}>
+                        <div ref={menuBox} role="menu" className={cx("absolute right-1 z-40 w-60 scroll-my-24 overflow-hidden rounded-xl border border-line bg-card py-1 text-sm shadow-soft lg:scroll-my-2", menuUp ? "bottom-full mb-1" : "top-full mt-1")} onClick={() => setMenuFor(null)}>
                           {(() => {
                             const item = (icon: React.ReactNode, label: string, run: () => void, opts: { disabled?: boolean; danger?: boolean } = {}) => (
                               <button role="menuitem" disabled={opts.disabled} onClick={run} className={cx("flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-paper-2 disabled:opacity-40", opts.danger && "text-bad")}>{icon}{label}</button>

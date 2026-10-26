@@ -82,7 +82,18 @@ export default function TabCatalogue() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-2xl">
             <h2 className="font-display text-xl font-semibold">{t("Boutiques connectées", "Connected stores")}</h2>
-            <p className="mt-1 text-sm text-muted">{t("Envoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Un stock modifié par une vente ou dans la boutique n'est jamais écrasé : les deux changements s'additionnent.", "Sending creates the products the first time, then updates them (never a duplicate). Stock changed by a sale or in the store is never overwritten: both changes add up.")}</p>
+            <p className="mt-1 text-sm text-muted">{t("Envoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Le stock n'est synchronisé qu'à chaque envoi : les ventes et modifications faites dans la boutique depuis le dernier envoi sont reprises, et vos changements du studio s'y ajoutent.", "Sending creates the products the first time, then updates them (never a duplicate). Stock is only synchronised when you send: sales and changes made in the store since the last send are kept, and your studio changes are added to them.")}</p>
+            {/* Garanties réelles de src/lib/products/sync.ts (contre-vérification #195) : ne rien promettre de plus. */}
+            <details className="mt-2 text-sm text-muted" data-stock-guarantees>
+              <summary className="cursor-pointer font-medium text-ink">{t("Garanties et limites du stock", "Stock guarantees and limits")}</summary>
+              <ul className="mt-2 grid list-disc gap-1.5 pl-5">
+                <li>{t("Shopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une vente faite au même moment reste déduite.", "Shopify: the studio sends an adjustment (+3, −2…) rather than a quantity; a sale made at the same moment is still deducted.")}</li>
+                <li>{t("WooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la relit juste avant de l'envoyer, mais une vente passée pendant l'envoi lui-même peut ne pas être déduite. Le rapport le signale : vérifiez alors le stock dans la boutique.", "WooCommerce and PrestaShop only accept a total quantity: the studio re-reads it just before sending, but a sale made during the send itself may not be deducted. The report says so: then check the stock in the store.")}</li>
+                <li>{t("Envoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait automatiquement. À l'envoi suivant, le studio reprend le stock affiché par la boutique ; s'il diffère de la quantité attendue, le rapport vous demande de vérifier le réassort.", "Send left without an answer (outage, timeout): it is never repeated automatically. On the next send, the studio takes the stock shown by the store; if it differs from the expected quantity, the report asks you to check the restock.")}</li>
+                <li>{t("Premier envoi d'un produit qui existait déjà dans la boutique (même identifiant ou même référence) : le stock de la boutique est conservé et repris dans le studio.", "First send of a product that already existed in the store (same handle or same SKU): the store stock is kept and copied into the studio.")}</li>
+                <li>{t("Une seule synchronisation à la fois par boutique : un second envoi attend la fin du premier, ou vous demande de réessayer quelques minutes plus tard. Il ne crée pas de doublon.", "One synchronisation at a time per store: a second send waits for the first to finish, or asks you to try again a few minutes later. It does not create a duplicate.")}</li>
+              </ul>
+            </details>
           </div>
           <Button variant="secondary" icon={<Plug className="size-4" />} onClick={() => setConnecting(true)}>{t("Connecter une boutique", "Connect a store")}</Button>
         </div>

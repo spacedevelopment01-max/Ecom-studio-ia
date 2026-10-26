@@ -1382,6 +1382,30 @@ body.template-cart .fg-hero-section:has(+ .fg-cart-section .is-empty) { display:
 .fg-legal__body p + p { margin-top: 1em; }
 .fg-legal__btn { margin-top: calc(24 * var(--u)); height: 52px; padding: 0 26px; border-radius: 10px; }
 
+/* Article et pages légales au téléphone (déclinaisons sans planche téléphone) : les 260 unités de marge de l'ordinateur
+   ne laissaient plus aucune largeur au texte (titres coupés, lettres empilées). Marges, tailles et colonnes de téléphone,
+   mesurées sur la largeur de la section (--m) ; l'ordinateur est inchangé. */
+@media (max-width: 749px) {
+  .fg-article .fg-c { padding: calc(20 * var(--m)) calc(18 * var(--m)) calc(48 * var(--m)); }
+  .fg-article__back { font-size: calc(15 * var(--m)); }
+  .fg-article__head { margin-top: calc(16 * var(--m)); }
+  .fg-article__title { margin-top: calc(12 * var(--m)); font-size: calc(36 * var(--m)); line-height: 1.04; }
+  .fg-article__lead { margin-top: calc(12 * var(--m)); font-size: calc(17 * var(--m)); }
+  .fg-article__meta { font-size: calc(13 * var(--m)); }
+  .fg-article__cover { margin-top: calc(20 * var(--m)); height: calc(230 * var(--m)); border-radius: calc(14 * var(--m)); }
+  .fg-article__body { margin-top: calc(22 * var(--m)); font-size: calc(16 * var(--m)); line-height: 1.65; }
+  .fg-article__box { margin-top: calc(24 * var(--m)); padding: calc(16 * var(--m)) calc(18 * var(--m)); border-radius: calc(12 * var(--m)); font-size: calc(15 * var(--m)); }
+  .fg-article__boxt { font-size: calc(17 * var(--m)); }
+  .fg-article__more { margin-top: calc(34 * var(--m)); }
+  .fg-article__moret { font-size: calc(21 * var(--m)); }
+  .fg-article__more ul { grid-template-columns: 1fr; gap: calc(18 * var(--m)); margin-top: calc(12 * var(--m)); }
+  .fg-article__more a { font-size: calc(16 * var(--m)); }
+  .fg-article__mimg { height: calc(170 * var(--m)); border-radius: calc(12 * var(--m)); }
+  .fg-legal .fg-c { padding: calc(26 * var(--m)) calc(18 * var(--m)) calc(48 * var(--m)); }
+  .fg-legal__title { font-size: calc(36 * var(--m)); line-height: 1.04; }
+  .fg-legal__body { margin-top: calc(18 * var(--m)); font-size: calc(15.5 * var(--m)); }
+}
+
 /* =============================================================================================== Téléphone : accueil */
 @media (max-width: 749px) {
   .fg-c { --u: var(--m); }
