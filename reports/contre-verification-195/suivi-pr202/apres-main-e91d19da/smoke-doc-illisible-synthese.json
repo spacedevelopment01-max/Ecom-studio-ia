@@ -1,0 +1,17 @@
+{
+  "source": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+  "served": {
+    "commit": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+    "source": "compiled-build"
+  },
+  "negativeControl": "SIMULATED_INVALID_DOCUMENT_IN_ISOLATED_COPY",
+  "officialScriptExit": 1,
+  "expectedFailure": true,
+  "exportHttp": 200,
+  "errorsNotFalselyZero": true,
+  "reportedAsStoppedNotUnavailable": true,
+  "originalSdkPresetStillValidJson": true,
+  "originalSdkPresetSha256": "559d3e430669063f6a293d080aa2cda3d9e501670764a516aa632241ed296d56",
+  "realHttp429Observed": false,
+  "realProviderCalls": 0
+}

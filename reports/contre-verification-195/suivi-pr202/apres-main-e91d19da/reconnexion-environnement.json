@@ -1,0 +1,11 @@
+{
+  "at": 1793037020.4234235,
+  "filesystemPreserved": true,
+  "nativeSuiteProcesses": [],
+  "exitFilePresent": false,
+  "logModifiedSecondsAgo": 1.5,
+  "transportSessionNoLongerRegistered": true,
+  "nativeProcessVisibilityUnknown": true,
+  "suiteContinuationConfirmedByLaterLogGrowth": true,
+  "noTestRelaunched": true
+}

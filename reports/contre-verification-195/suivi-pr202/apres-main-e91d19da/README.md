@@ -13,6 +13,14 @@
 
 Les données sont fictives, bases/médias temporaires isolés. Les captures montrent l'éditeur technique, pas une validation créative. Export **PROVISIONAL/static**, pas une installation réelle Shopify. Aucune API fournisseur réelle, aucun déploiement, aucune fusion Codex. Le cache Webpack de cette seule copie a été libéré après les contrôles ; le serveur compilé est conservé, aucune source ni donnée touchée.
 
+## Témoin négatif sur le même build compilé
+
+Une copie privée des documents du SDK est créée ; seul son `preset.json` est remplacé par du texte illisible simulé. Le SDK partagé reste intact (JSON et empreinte contrôlés). Le script officiel est relancé avec `ES_SHOPIFY_DOCS_DIR` pointant vers cette copie et la garde réseau native, sans double de transport.
+
+**Sortie 1 attendue** : version réellement servie e91/compiled-build, HTTP 200 avec export provisoire, compteur d'erreurs non mesuré et message **« Theme Check arrêté : Document Shopify de Theme Check illisible (preset.json)… »**. Jamais un faux 0 ni « outil indisponible ». Le test de build refuse donc aussi une défaillance documentaire, pas seulement le défaut de résolution antérieur. [Synthèse](smoke-doc-illisible-synthese.json), [résultat](smoke-doc-illisible/resultat.json), [journal](smoke-doc-illisible.log).
+
+Le texte simulé contient « 429 », mais aucune réponse HTTP 429 réelle n'est observée par cet essai. Cette sortie 1 est un contrôle négatif réussi, pas un échec de la suite native en cours.
+
 ## En cours
 
 Suite native complète relancée sur e91 avec la garde réseau, 2 workers et les mêmes assertions. CI push propre à ce main : [40370220372](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40370220372). Les résultats seront ajoutés après sortie réelle ; ils ne sont pas anticipés ici.
