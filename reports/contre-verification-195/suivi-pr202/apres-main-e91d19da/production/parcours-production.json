@@ -1,0 +1,59 @@
+{
+  "source": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+  "stage": "after_merge_intermediate_main",
+  "served": {
+    "commit": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+    "source": "compiled-build"
+  },
+  "compiledProduction": true,
+  "isolatedFictitiousData": true,
+  "userRole": "client",
+  "plan": "dominer_test_only",
+  "results": [
+    {
+      "scenario": "cosmetic",
+      "business": "products",
+      "studioOpenedAtWidths": [
+        1440,
+        390
+      ],
+      "exportHttp": 200,
+      "savedDownloadHttp": 200,
+      "sameSavedZip": true,
+      "zipBytes": 1792102,
+      "zipFileCount": 506,
+      "zipSha256": "5a4a495bd2d733fb6061313a39445c669833b57934fd1edae4c1cb5f885e1b7e",
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "verdict": "PROVISIONAL",
+      "scope": "static",
+      "originalSpecPreserved": true,
+      "versionsPreserved": true,
+      "javascriptErrors": []
+    },
+    {
+      "scenario": "rive",
+      "business": "services",
+      "studioOpenedAtWidths": [
+        1440,
+        390
+      ],
+      "exportHttp": 200,
+      "savedDownloadHttp": 200,
+      "sameSavedZip": true,
+      "zipBytes": 8498064,
+      "zipFileCount": 531,
+      "zipSha256": "e492fbe9cdc74075d95b3c903be6ec9d0c26ccce6374f3cf09925cecad59e8ec",
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "verdict": "PROVISIONAL",
+      "scope": "static",
+      "originalSpecPreserved": true,
+      "versionsPreserved": true,
+      "javascriptErrors": []
+    }
+  ],
+  "recordedAiCalls": 0,
+  "realProviderCalls": 0,
+  "realCmsInstall": false
+}

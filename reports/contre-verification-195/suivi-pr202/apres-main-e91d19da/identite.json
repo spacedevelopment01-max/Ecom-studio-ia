@@ -1,0 +1,49 @@
+{
+  "source": "e91d19da4323c1f049191161e8f2a0a73b41c4b0",
+  "candidate": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "sameTreeAsApprovedCandidate": true,
+  "tree": "6595cd464bb129dc28df11195d1c1e68c6fd9569",
+  "allTrackedFilesUnmodified": true,
+  "fixtureMissingFilesRestoredByIdenticalGitBlob": 948,
+  "publicIdenticalFilesLinked": 661,
+  "publicBytesReleased": 235068349,
+  "preserved": [
+    {
+      "path": "theme-base",
+      "blobOrTree": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "public",
+      "blobOrTree": "e8d0e1b91a3e7b9a5b9b905128f5fe4e56068e78",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-boutique.tsx",
+      "blobOrTree": "672b30da890f15a83772cfdb67cf51ecdc608c26",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-catalogue.tsx",
+      "blobOrTree": "bbea2cc4da2fd4c9a96cebb2b9d0c7900e6edefe",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "scripts/verify-theme.sh",
+      "blobOrTree": "2c7341cf063ad878fa4b5edc52b207a9461064aa",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "package-lock.json",
+      "blobOrTree": "ea1b57764aea004c3095c241a6afd6386c551889",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "CLAUDE.md",
+      "blobOrTree": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "unchangedFrom": "d2fb63ee"
+    }
+  ],
+  "newCiRun": 40370220372,
+  "realProviderCalls": 0
+}

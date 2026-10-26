@@ -1,0 +1,31 @@
+/** Independent probe: only fake public Shopify docs; every other fetch is rejected. No real API. */
+import fs from 'node:fs';import path from 'node:path';import {createRequire} from 'node:module';
+import fsp from 'node:fs/promises';
+const base='/tmp/ecs-202-preuves';fs.mkdirSync(base,{recursive:true});
+const mode=process.env.PROBE_202_MODE??'deny';const log=process.env.PROBE_202_TRACE;
+if(log&&!path.resolve(log).startsWith(base+'/'))throw Error('Isolated trace required');
+const require=createRequire(import.meta.url),pkg=require.resolve('@shopify/theme-check-docs-updater/package.json');
+const r=createRequire(pkg),fetchPath=r.resolve('node-fetch'),data=path.join(path.dirname(pkg),'data');
+const trace=(o)=>{if(log)fs.appendFileSync(log,JSON.stringify({pid:process.pid,cache:process.env.XDG_CACHE_HOME??null,localDocs:process.env.SHOPIFY_TLD_ROOT??null,...o})+'\n');};
+if(process.env.PROBE_202_DENY_DOC_CACHE==='1') {
+ for(const obj of [fs,fsp])for(const name of ['readFile','writeFile','appendFile','open','mkdir','stat','access','readFileSync','writeFileSync','appendFileSync','openSync','mkdirSync','statSync','accessSync']){
+  if(typeof obj[name]!=='function')continue;const original=obj[name];
+  obj[name]=function(file,...args){if(/(?:^|\/)theme-liquid-docs(?:-nodejs)?(?:\/|$)/.test(String(file))){trace({event:'forbidden-doc-cache-io',operation:name});throw Error('Independent probe forbids Shopify docs disk-cache IO');}return original.call(this,file,...args);};
+ }
+}
+if(process.env.PROBE_202_CORRUPT_BUNDLED==='1') {
+ const read=fs.readFileSync;
+ fs.readFileSync=function(file,...args){if(String(file)===path.join(data,'preset.json')){trace({event:'fake-bundled-preset-empty'});return '';}return read.call(this,file,...args);};
+}
+if(process.env.PROBE_202_INVALID_EXPORT==='1') {
+ const write=fs.writeFileSync;
+ fs.writeFileSync=function(file,content,...args){const f=String(file);if(f.startsWith(base+'/51275d06/verify-theme-')&&f.endsWith('/fr-atelier/sections/hero-editorial.liquid')){trace({event:'fake-invalid-export-liquid',file:f});content='{% if %}broken{% endif %}{% schema %}{"name":"Fixture","settings":[]}{% endschema %}';}return write.call(this,file,content,...args);};
+}
+const fake=async(url)=>{const u=String(url);trace({event:'fake-doc-request',url:u});
+ if(mode==='deny'||!u.startsWith('https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/'))throw Error('No remote requests permitted');
+ const file=path.basename(new URL(u).pathname);if(!/^[a-zA-Z0-9_-]+\.json$/.test(file))throw Error('Unexpected docs file');
+ const text=mode==='empty-preset'&&file==='preset.json'?'':fs.readFileSync(path.join(data,file),'utf8');return{ok:true,status:200,text:async()=>text};
+};fake.default=fake;require.cache[fetchPath]={id:fetchPath,filename:fetchPath,loaded:true,exports:fake};
+// Record the actual checker import after the shell has assigned its per-case environment.
+const Module=require('node:module'),original=Module._load;let recorded=false;
+Module._load=function(name,parent,isMain){const value=original.apply(this,arguments);if(!recorded&&parent?.filename?.includes('theme-check-docs-updater')&&String(name).includes('themeLiquidDocsDownloader')){recorded=true;trace({event:'checker-import'});}return value;};
