@@ -47,6 +47,11 @@ jobs:
       - name: Build de production
         run: npm run build
 
+      # Le build compilé peut différer du code source (empaquetage Next) : export Shopify par la vraie route du serveur
+      # compilé, Theme Check réellement exécuté et 0 erreur exigée (#202). Base et démonstration fictives, aucune IA.
+      - name: Export Shopify contrôlé sur le build compilé
+        run: npx tsx scripts/export-shopify-build-check.ts
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest
