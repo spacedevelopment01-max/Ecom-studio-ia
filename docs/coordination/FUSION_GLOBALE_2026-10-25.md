@@ -11,7 +11,7 @@ réel, appel IA payant, paiement, envoi réel ni publication.
 |---|---|
 | `main` avant (base observée et relue) | `0a6aa1dd6dfa5932a5e42e027cef2a3335e74679` |
 | Branche d'intégration | `claude/integration-fusion-globale` — PR #196 |
-| Candidats successifs | `2dbdc050` (refusé par Codex : P1 multi-variante) → `aec79070` (refusé : P1 saisie pendant l'attente) → **`7f854218bb7afd08ec8ec2209b55c36ee53011f7`** (code contrôlé, § 6) ; les commits suivants n'ajoutent que ce rapport et ses preuves |
+| Candidats successifs | `2dbdc050` (refusé par Codex : P1 multi-variante) → `aec79070` (refusé : P1 saisie pendant l'attente) → `7f854218` (refusé : faux rejet des exports PrestaShop) → **`3ae89a6d42711c13962571483f55c496d6b3ddaa`** (code contrôlé, § 6, **feu vert de Codex**) ; les commits suivants n'ajoutent que ce rapport et ses preuves |
 | `main` après fusion | voir § 7 |
 
 ## 2. Registre des apports (têtes relues sur GitHub)
@@ -127,26 +127,36 @@ d'une intervention dédiée avec Codex, sans modifier les protections générale
     à la décision puis à l'enregistrement ; le stock acquis devient le point de synchronisation et toute saisie
     postérieure s'y ajoute, envoyée une seule fois ensuite. Tests : cas de Codex ; quantité absolue ; vente de la
     boutique ; reprise d'un envoi resté sans réponse.
+13. **Exports PrestaShop sans script dans les contenus** (`3ae89a6d`, défaut relevé par Codex,
+    [#196 commentaire 6409417245](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6409417245),
+    reproduit, déjà présent dans #176 seul). TABLE SAISON, ATELIER NUANCE et PARENTHÈSE étaient rejetés
+    (`dangerous_script`, balises des scripts du thème dans l'en-tête) ; APLAT aussi (petit script du formulaire, en
+    démonstration comme sur un site publié), trouvé en étendant le contrôle aux 17 démos. L'adaptateur retire la seule
+    balise d'un script du thème déjà livré dans `assets/js/es-theme.js` (fichier neutre) ; tout autre script reste et
+    reste refusé ; APLAT lit ses réglages dans un bloc JSON. 17 exports PrestaShop PROVISIONAL, interactions APLAT 38/38,
+    tests `tests/integration194-exports-scripts.test.ts` (échouent sans la correction).
 
 ## 6. Contrôles AVANT fusion
 
-Code contrôlé : **`7f854218bb7afd08ec8ec2209b55c36ee53011f7`**. Premiers contrôles sur `1ed7b817` (candidat provisoire),
-tout rejoué sur `2dbdc050` après les corrections 5 à 9, puis sur `7f854218` après les corrections 11 et 12 (seul
-`src/lib/products/sync.ts` et son test changent entre `2dbdc050` et `7f854218`, en plus de `ci.yml` et du rapport :
-la comparaison visuelle des démos, faite sur `2dbdc050`, reste valable, aucun fichier de thème, d'aperçu ni d'export
-n'ayant changé).
+Code contrôlé : **`3ae89a6d42711c13962571483f55c496d6b3ddaa`** (feu vert de Codex). Premiers contrôles sur `1ed7b817` (candidat provisoire),
+tout rejoué sur `2dbdc050` après les corrections 5 à 9, puis sur `3ae89a6d` après les corrections 11 à 13. Entre `2dbdc050` et `3ae89a6d`, le code change dans
+`src/lib/products/sync.ts`, `src/lib/cms-v2/adapters/prestashop.ts` (exports seulement), `theme-base/sections/ap-form.liquid`
+et `theme-base/assets/aplat.js` (formulaire APLAT : bloc JSON au lieu d'un script, rendu identique) : la comparaison
+visuelle des démos faite sur `2dbdc050` reste valable pour l'affichage ; le formulaire APLAT est revérifié dans le
+navigateur (38/38).
 
 | Contrôle | SHA | Résultat | Preuve |
 |---|---|---|---|
-| Types (`tsc --noEmit`) | `7f854218` | OK | local + CI |
-| Suite complète, garde réseau du lot 9 comme la CI | `7f854218` | **395 fichiers, 3 389 réussis, 0 échec**, 31 ignorés (ci-dessous) | journal local ; CI |
-| Pilote sur les 7 jours de la semaine (32 fichiers) | `7f854218` | 7 jours sur 7 réussis | [`recette-7-jours-7f854218.txt`](../../reports/fusion-globale/recette-7-jours-7f854218.txt) |
-| Migrations depuis 3 bases historiques synthétiques (`dcfc13b1`, `d97e0b95`, `0a6aa1dd`), 2ᵉ passage sans changement, sauvegarde, restauration dans une autre copie, copie de recette neutralisée | `7f854218` | 3 essais réussis (45, 45, 46 contrôles) | [`essais/`](../../reports/fusion-globale/essais/) |
-| Isolation A/B/administrateur/visiteur (routes du lot 9 et routes arrivées après) | `7f854218` | réussie (suite : `mission171-*`, `integration194-isolation-ab`, `integration194-securite`) | suite |
-| Contre-épreuves Codex #195/#196 (synchronisation des boutiques) | `7f854218` | 18/18 (dont les 2 nouvelles contre-épreuves de Codex, reprises telles quelles) | `tests/contre-verification-195-products.test.ts` |
-| Build de production | `1ed7b817` local (58 pages, 6 Go de tas : le tas par défaut de ce conteneur, 2 Go, est dépassé par la vérification des types de Next) ; `7f854218` en CI | réussi | CI de la PR #196 |
-| Image Docker (construction et démarrage) | `7f854218` | réussie | CI de la PR #196 |
-| CI complète (types, tests, Theme Check des thèmes, build) | `7f854218` | **réussie** (run 40273960432, limite 75 min). Sur `2dbdc050`, réussie au 2ᵉ essai après une coupure à 45 min sans échec (correction 10) | CI de la PR #196 |
+| Types (`tsc --noEmit`) | `3ae89a6d` | OK | local + CI |
+| Suite complète, garde réseau du lot 9 comme la CI | `3ae89a6d` | **396 fichiers, 3 395 réussis, 0 échec**, 31 ignorés (ci-dessous) | journal local ; CI |
+| Pilote sur les 7 jours de la semaine (32 fichiers) | `3ae89a6d` | 7 jours sur 7 réussis | [`recette-7-jours-3ae89a6d.txt`](../../reports/fusion-globale/recette-7-jours-3ae89a6d.txt) |
+| Migrations depuis 3 bases historiques synthétiques (`dcfc13b1`, `d97e0b95`, `0a6aa1dd`), 2ᵉ passage sans changement, sauvegarde, restauration dans une autre copie, copie de recette neutralisée | `3ae89a6d` | 3 essais réussis (45, 45, 46 contrôles) | [`essais/`](../../reports/fusion-globale/essais/) |
+| Isolation A/B/administrateur/visiteur (routes du lot 9 et routes arrivées après) | `3ae89a6d` | réussie (suite : `mission171-*`, `integration194-isolation-ab`, `integration194-securite`) | suite |
+| Exports PrestaShop des 17 démos (contrôle natif) | `3ae89a6d` | 17 PROVISIONAL, aucun `dangerous_script` | `tests/integration194-exports-scripts.test.ts` |
+| Contre-épreuves Codex #195/#196 (synchronisation des boutiques) | `3ae89a6d` | 18/18 (dont les 2 nouvelles contre-épreuves de Codex, reprises telles quelles) | `tests/contre-verification-195-products.test.ts` |
+| Build de production | `1ed7b817` local (58 pages, 6 Go de tas : le tas par défaut de ce conteneur, 2 Go, est dépassé par la vérification des types de Next) ; `3ae89a6d` en CI | réussi | CI de la PR #196 |
+| Image Docker (construction et démarrage) | `3ae89a6d` | réussie | CI de la PR #196 |
+| CI complète (types, tests, Theme Check des thèmes, build) | `3ae89a6d` | **réussie** (run 40280030470, limite 75 min). Sur `2dbdc050`, réussie au 2ᵉ essai après une coupure à 45 min sans échec (correction 10) | CI de la PR #196 |
 | Démos intégrales des 17 démonstrations (15 thèmes + FRAISE, ONDE) : candidat comparé à #176 seul, captures 1440 et 390 px de chaque page | `2dbdc050` vs `0af6fe1f` | **aucune régression constatée** : les 17 démos sont produites des deux côtés, avec le même nombre de pages et d'états du panier ; 884 captures. Au premier passage, 51 pages dépassent 1 ; au second passage, 47 retombent à 1 ou moins. Les 4 restantes sont instables d'elles-mêmes : la référence capturée deux fois diffère d'autant (RIVE atelier 42,4/42,4 ; SOUPLE accueil 3,2/3,2 ; NOCTIL journal 8,8/10,0 ; ALCÔVE accueil téléphone 3,1, où deux captures de la référence ont aussi donné 3,1 lors d'un nouvel essai, image identique au bit près) | [`demos-visuel-176-vs-candidat.txt`](../../reports/fusion-globale/demos-visuel-176-vs-candidat.txt), [`demos-visuel-second-passage.txt`](../../reports/fusion-globale/demos-visuel-second-passage.txt) |
 | Panier tiroir d'une démo exportée (ONDE, servie en HTTP local) | `2dbdc050` vs `0af6fe1f` | identique : article, prix, image chargée, aucune erreur JavaScript ni ressource manquante | — |
 
@@ -169,7 +179,8 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
 |---|---|
 | Contre-épreuves préparatoires de Codex sur #176 | 4 défauts reproduits ([6403952034](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6403952034)), matrice et inventaire ([6404002831](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6404002831)) ; défauts corrigés (§ 5, point 6) |
 | Candidat transmis | `2dbdc050ef57bd6c74a44699f158e00d19c92208` ([#194](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6405720106), [#195](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/195#issuecomment-6405720253)) |
-| Verdict Codex avant fusion | VERDICT_AVANT |
+| Refus successifs | `2dbdc050` (P1 multi-variante), `aec79070` (P1 saisie pendant l'attente), `7f854218` (exports PrestaShop rejetés) : chaque défaut reproduit, corrigé, testé (§ 5, points 11 à 13) |
+| Verdict Codex avant fusion | **FEU VERT TECHNIQUE** sur `3ae89a6d` ([#196 commentaire 6410664191](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6410664191)) : suite indépendante 3 395 réussis / 0 échec, 57 contre-épreuves ciblées, 63 Autopilot, migrations 45/45/46, 64 contrôles HTTP A/B/administrateur/visiteur, 17 exports PrestaShop PROVISIONAL, 38 interactions APLAT, CI verte. [Rapport de contre-vérification de Codex](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/01ede95b6096d6e42befa7502b230b5c97b6659b/docs/coordination/CONTRE_VERIFICATION_195.md) (branche séparée `codex/contre-verification-195-integration`, preuves en 101 PNG et 3 vidéos sur données fictives) |
 | Fusion | FUSION |
 
 ## 8. Contrôles APRÈS fusion
@@ -198,6 +209,10 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
   ONDE, APLAT et MAISON & HORIZON ont été rejoués avec les kits privés liés temporairement (rien d'ajouté au dépôt).
 - Captures #190 restées dans l'espace de travail de la session qui a produit #176 (demande de Codex) : hors de cette
   session, non traitées ici.
+- **Suivi P2 signalé par Codex, non bloquant pour l'intégration, à traiter avant l'activation chez un client** :
+  l'onglet Catalogue (`tab-catalogue.tsx`) promet encore qu'une vente n'est « jamais écrasée » ; pour WooCommerce et
+  PrestaShop, une vente faite pendant l'écriture elle-même reste une limite réelle (déjà annoncée par le rapport de
+  synchronisation). Le texte de l'onglet est à aligner, sans promettre une atomicité que ces API n'offrent pas.
 - CI : le job principal dure environ 35 min ; la limite de 45 min l'a coupé deux fois sur des machines lentes (tests
   21 min, puis installation de ffmpeg 10 min), sans aucun échec. Limite relevée à 75 min (correction 10).
 - Version réellement servie par le studio : non vérifiée (aucun déploiement autorisé).
