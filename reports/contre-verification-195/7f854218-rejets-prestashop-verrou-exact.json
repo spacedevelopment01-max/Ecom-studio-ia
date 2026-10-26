@@ -1,0 +1,413 @@
+{
+  "commit": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "date": "2026-10-26T06:06:07.135Z",
+  "themes": [
+    {
+      "theme": "table-saison",
+      "services": true,
+      "missing": [],
+      "products": 0,
+      "prestashop": {
+        "file": "table-saison/prestashop.zip",
+        "name": "establesaisonc0e3fe77-prestashop.zip",
+        "bytes": 16724050,
+        "sections": 20,
+        "media": 80,
+        "verdict": "REJECTED",
+        "issues": [
+          "script dans les contenus : templates/es/header.tpl"
+        ],
+        "check": {
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 0,
+                "provenance": "static",
+                "detail": "83 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "80 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 651 Ko, JS 174 Ko, médias 15809 Ko"
+              }
+            },
+            "codes": [
+              "dangerous_script"
+            ],
+            "issues": [
+              "script dans les contenus : templates/es/header.tpl"
+            ],
+            "stats": {
+              "files": 169,
+              "zipKb": 16332,
+              "cssKb": 651,
+              "jsKb": 174,
+              "mediaKb": 15809
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "atelier-nuance",
+      "services": true,
+      "missing": [
+        "reservation-confirmation.webp",
+        "salon-bandeau.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "atelier-nuance/prestashop.zip",
+        "name": "esateliernuancefbdca3ef-prestashop.zip",
+        "bytes": 15930714,
+        "sections": 24,
+        "media": 76,
+        "verdict": "REJECTED",
+        "issues": [
+          "script dans les contenus : templates/es/header.tpl"
+        ],
+        "check": {
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 0,
+                "provenance": "static",
+                "detail": "99 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "76 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 669 Ko, JS 208 Ko, médias 14852 Ko"
+              }
+            },
+            "codes": [
+              "dangerous_script"
+            ],
+            "issues": [
+              "script dans les contenus : templates/es/header.tpl"
+            ],
+            "stats": {
+              "files": 181,
+              "zipKb": 15557,
+              "cssKb": 669,
+              "jsKb": 208,
+              "mediaKb": 14852
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "parenthese",
+      "services": true,
+      "missing": [
+        "05-vase-livres.webp",
+        "06-fauteuil-individuel.webp",
+        "07-atelier-coussins.webp",
+        "08-cabinet-panorama.webp",
+        "09-approche-bureau.webp",
+        "10-soleil-feuillage.webp",
+        "11-fleurs-sechees.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "parenthese/prestashop.zip",
+        "name": "esparenthese54842bfc-prestashop.zip",
+        "bytes": 12546361,
+        "sections": 27,
+        "media": 54,
+        "verdict": "REJECTED",
+        "issues": [
+          "script dans les contenus : templates/es/header.tpl"
+        ],
+        "check": {
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 0,
+                "provenance": "static",
+                "detail": "111 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "54 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 675 Ko, JS 196 Ko, médias 11565 Ko"
+              }
+            },
+            "codes": [
+              "dangerous_script"
+            ],
+            "issues": [
+              "script dans les contenus : templates/es/header.tpl"
+            ],
+            "stats": {
+              "files": 171,
+              "zipKb": 12252,
+              "cssKb": 675,
+              "jsKb": 196,
+              "mediaKb": 11565
+            }
+          }
+        }
+      }
+    }
+  ]
+}

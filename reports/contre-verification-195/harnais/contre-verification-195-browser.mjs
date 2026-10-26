@@ -11,6 +11,7 @@ const {token}=JSON.parse(fs.readFileSync(path.join(root,'session.json'),'utf8'))
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 const ctx=await browser.newContext({viewport:{width:1440,height:1000},locale:'fr-FR',recordVideo:{dir:path.join(root,'video-195'),size:{width:1440,height:1000}}});
 await ctx.addCookies([{name:'ecs_session',value:token,url:base}]);
+await ctx.addInitScript(()=>{if(location.pathname.startsWith('/studio/')){sessionStorage.setItem('ecsSeen','1');for(const tab of ['catalogue','rendez-vous','boutique'])localStorage.setItem('ecs-tuto-seen-'+tab,'1');}});
 const denied=[];
 await ctx.route('**/*',route=>{
  const u=new URL(route.request().url());
@@ -25,6 +26,7 @@ for(const d of fixtures.demos.filter(d=>!d.error)){
   const response=await page.goto(`${base}/preview/${d.project}/v/current/`,{waitUntil:'networkidle',timeout:120000});
   await page.evaluate(async()=>{for(let y=0;y<document.body.scrollHeight;y+=650){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,40));}window.scrollTo(0,0);});
   const metrics=await page.evaluate(()=>({title:document.title,h1:[...document.querySelectorAll('h1')].map(e=>e.textContent),width:innerWidth,scrollWidth:document.documentElement.scrollWidth,height:document.body.scrollHeight,brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).map(i=>({src:new URL(i.src).pathname,alt:i.alt})),liquidError:document.body.innerText.includes('Liquid error')}));
+  await page.screenshot({path:path.join(out,`${d.theme}-${device}-premier-ecran.png`),fullPage:false,animations:'disabled'});
   await page.screenshot({path:path.join(out,`${d.theme}-${device}.png`),fullPage:true,animations:'disabled',timeout:120000});
   result.demos.push({theme:d.theme,device,status:response.status(),missingSourceMedia:d.missing,...metrics});
  }

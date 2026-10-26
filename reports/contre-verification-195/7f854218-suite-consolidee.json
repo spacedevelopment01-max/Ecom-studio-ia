@@ -1,0 +1,23 @@
+{
+  "code": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "wholeRun": {
+    "files": 396,
+    "passedFiles": 391,
+    "skippedFiles": 1,
+    "failedFiles": 4,
+    "passedTests": 3355,
+    "failedTests": 15,
+    "skippedTests": 31,
+    "exit": 1,
+    "durationSeconds": 1133.44
+  },
+  "afterExactTrackedResourceRestoration": {
+    "files": 4,
+    "passedFiles": 4,
+    "passedTests": 32,
+    "skippedTests": 14,
+    "exit": 0,
+    "durationSeconds": 19.15
+  },
+  "interpretation": "All originally failing files pass after restoring missing tracked JSON/skills. Whole invocation was not green. No application changes, assertions removed, or additional skips introduced. Original four file results replaced, not added to the global count."
+}

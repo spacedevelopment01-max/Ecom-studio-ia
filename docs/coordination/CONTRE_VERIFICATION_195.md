@@ -31,11 +31,19 @@ Claude a reproduit puis corrigé dans `aec79070`, fichier `src/lib/products/sync
 
 Claude a reproduit puis corrigé dans `7f854218`, même fichier : relire le stock au moment de la décision puis dans la transaction d’acquisition ; garder les variations postérieures et la désactivation du suivi. Notre contre-épreuve inchangée vérifie 11 distant/14 Studio puis 14 partout à l’envoi suivant. [Reproduction exécutée et test complet](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6408857860), [prise en charge et correctif](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6408883932).
 
+### P1 : exports PrestaShop des trois thèmes de réservation rejetés pour leurs scripts natifs
+
+**REPRODUIT sous le verrou exact sur 7f** : `demoProject` → `cmsExport` → `checkCmsExport`, Table Saison, Atelier Nuance et Parenthèse, sans installation CMS ni fournisseur. Tous trois : **REJECTED, fatal=true, dangerous_script**, motif `script dans les contenus : templates/es/header.tpl`. Les références des scripts natifs conservées par `splitHtml` dans l’adaptateur PrestaShop sont traitées comme des injections par `CONTENT_FILE` / `executableContentScript` dans `src/lib/cms-v2/checks.ts`. L’adaptateur assemble pourtant déjà ces scripts dans `assets/js/es-theme.js`. Le JSON de configuration inerte est correctement accepté ; les deux références exécutables déclenchent le refus.
+
+**Correction demandée à Claude, en attente** : conserver l’exécution des scripts natifs et des réservations en corrigeant leur représentation dans l’adaptateur ; ne pas autoriser globalement les scripts de contenus. Ajouter les trois exports aux tests et garder le refus d’un script injecté. Une sortie PROVISIONAL avec installation non mesurée peut être correcte ; aucune transformation arbitraire en FINAL. [Constat et commande](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6409417476). Le gate structuré est publié dans `7f854218-rejets-prestashop-verrou-exact.json`. Le harnais original `exports-190.ts` perdait le verdict par `String(objet)` ; notre harnais séparé conserve les données réelles, sans modifier le moteur.
+
 ### Défauts antérieurs de #176
 
 Écrasement d’une vente par réassort, doublon de création concurrente, répétition après réponse perdue et boutique déclarée connectée après 503 : contre-épreuves et traitement déjà publiés [dans #194](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6403952034). Le candidat conserve les journaux durables, verrous et vraies sondes de connexion. L’envoi de stock WooCommerce/PrestaShop reste présent. Leur API d’écriture absolue garde une fenêtre vente/écriture explicitement déclarée ; une double simulée ne prouve pas l’atomicité d’un CMS réel.
 
 ## Commandes et résultats exécutés
+
+**Préparation corrigée :** les premiers résultats ci-dessous utilisaient un `node_modules` partagé avec Next 15.5.27, sanitize-html 2.18.0 et PostCSS 8.5.28, au lieu des versions verrouillées 15.5.28 / 2.18.1 / 8.5.31. Une installation `npm ci` isolée a maintenant réussi ; les 43 dépendances directes correspondent au verrou, SQLite natif fonctionne. Les contrôles finaux sont repris dans ce contexte exact. Le premier `npm ci` a échoué sur le téléchargement GPU optionnel ONNX ; l’option officielle CPU seule `npm_config_onnxruntime_node_install_cuda=skip` a permis l’installation sans changer le verrou. Aucun composant partagé initial modifié.
 
 Préfixe de sécurité utilisé : `NODE_OPTIONS='--max-old-space-size=1536 --import=<copie>/scripts/lot9/network-guard.mjs' APP_SECRET=<secret fictif>` ; aucune clé fournisseur configurée.
 
@@ -51,7 +59,7 @@ Préfixe de sécurité utilisé : `NODE_OPTIONS='--max-old-space-size=1536 --imp
 | 7f | Idem depuis d97e0b95 | **45 contrôles réussis** |
 | 7f | Idem depuis main 0a6aa1dd | **46 contrôles réussis** |
 | aec, avant correctif stock seul de 7f | Huit fichiers Higgsfield/prix, angles, reçus, idempotence et budgets | **138/138**, sortie 0 ; 34,30 s ; fournisseurs simulés |
-| 7f | Suite complète `npx vitest run --maxWorkers=3` | **En cours** ; erreurs de préparation du checkout partiel observées, à retester après restauration des références et compétences suivies |
+| 7f, dépendances partagées préliminaires | Suite complète `npx vitest run --maxWorkers=3` | 391 fichiers réussis, quatre échoués, un ignoré ; 3 355 tests réussis / 15 échoués / 31 ignorés ; sortie 1 ; 1 133,44 s. Les quatre fichiers échoués repassent après restauration des ressources suivies : **32 réussis / 14 ignorés**, sortie 0, 19,15 s. Les 14 ignorés préexistaient et ne pouvaient être collectés avant le rétablissement du JSON. Aucun de ces lancements n’est présenté comme une invocation globale verte. |
 | 7f | Build de production / navigateur natif / exports | **En cours** |
 
 Les commandes de migrations, leurs rapports JSON et les journaux sont livrés dans `reports/contre-verification-195/`. Les harnais isolés ajoutés pour les preuves ne modifient pas le moteur applicatif.
@@ -62,7 +70,7 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 - **Coven #191 explicitement exclu par la décision de Thomas consignée dans le rapport actuel et CLAUDE.md**, malgré sa mention dans la liste initiale #195. Branche conservée, pas réintégrée arbitrairement ; protections générales toujours présentes.
 - CI 2db [40247116214](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40247116214) et 8d [40266288826](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40266288826) réussies. Dernier journal 8d : **395 fichiers réussis / 1 ignoré ; 3 384 tests réussis / 31 ignorés**. Ce sont les exécutions GitHub, pas des commandes Codex.
 - Cette CI testait le merge temporaire `7b46c9f9d0e1848359cf2f27b6bfb9757668a12a` ; arbre `bacfa98f54386348cd27263a0d55ef002df3d211`, identique à la tête 8d. Ce n’est pas une fusion réelle dans main.
-- CI 7f [40273960432](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40273960432) : types/tests réussis, construction/démarrage Docker réussis ; autres étapes encore en cours au dernier relevé.
+- CI 7f [40273960432](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40273960432) : **entièrement réussie**, types, tests, Theme Check, build et Docker. Journal relu : **395 fichiers réussis / 1 ignoré ; 3 389 tests réussis / 31 ignorés**. Cela ne couvre pas le faux rejet PrestaShop reproduit ensuite.
 - Diff Git #176 `0af6fe1f` → 7f exécuté : **aucun changement dans `theme-base/`, `public/`, `assets/cms/`**. Changements du moteur de thèmes liés aux protections, import, transport/accès, compilation et médias clients ; ce constat ne suffit pas à lui seul à valider les captures.
 
 ## Limites constatées, à ne pas compter comme réussites
@@ -78,4 +86,7 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 
 Stocks/reprises/saisies concurrentes : **contre-épreuves ciblées validées sur 7f, connecteurs simulés**. Autopilot, types, migration/restauration : **validés sur 7f**. Catalogue/sections/droits/isolation/exports/Higgsfield/angles : contrôles globaux et navigateur en cours ; précisions finales à ajouter. CMS réel, kits privés et version servie : **non vérifiés**, raisons ci-dessus.
 
-**Pas encore de feu vert global AVANT fusion. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
+**AVANT fusion : CORRECTION REQUISE pour le rejet des exports PrestaShop de réservation. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
+
+
+Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s), build Next 15.5.28 réussi ; `/api/version` relu = `7f854218bb7afd08ec8ec2209b55c36ee53011f7`. Parcours admin Higgsfield natif réussi, cinq captures et vidéo : 810 estimations simulées, approbation groupée de deux modèles, actualisation et reprise, accès anonyme 401, aucun secret renvoyé, aucun débordement mobile ni erreur JavaScript. Ce sont des tarifs simulés. Suite globale du verrou exact et autres parcours navigateur en cours.

@@ -1,0 +1,1738 @@
+{
+  "code": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "preliminaryDependencySet": "shared modules; exact lock recheck pending",
+  "nativeExportEngine": true,
+  "realCmsExecutions": 0,
+  "providerCalls": 0,
+  "themes": [
+    {
+      "theme": "fraise",
+      "missingSourceMedia": [
+        "01-un-flacon-detoure.webp",
+        "02-deux-flacons-detoures.webp",
+        "03-trois-flacons-detoures.webp",
+        "04-accueil-flacon-fraises.webp",
+        "05-fiche-flacon-principal.webp",
+        "06-flacon-ouvert-plongee.webp",
+        "07-macro-gummies-texture.webp",
+        "08-macro-etiquette-bouchon.webp",
+        "09-recette-composition-fraise.webp",
+        "10-recette-gummies-fraises.webp",
+        "11-histoire-composition-flacon.webp",
+        "12-scene-cuisine.webp",
+        "13-scene-jardin.webp",
+        "14-scene-bureau.webp",
+        "15-offre-deux-flacons.webp",
+        "16-offre-trois-flacons.webp",
+        "17-journal-petit-rituel.webp",
+        "18-journal-gout-fraise.webp",
+        "19-journal-pause-cuisine.webp",
+        "20-journal-flacon-angles.webp",
+        "21-journal-lire-etiquette.webp",
+        "22-flacon-format-portrait.webp",
+        "23-article-conservation.webp",
+        "24-fraises-detail-saveur.webp",
+        "logo-proposition.png"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 1696293,
+          "sha256": "4841a034d68561bf698d7310c110ccc159016e463c3e0e39d717235e23ee5c52",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.2,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.2,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.2
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 940396,
+          "sha256": "c4c860a4c139a0c594e48286be4134bf77d785ca7f2ca6ab5a494bdc4b107b98",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.2,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 893856,
+          "sha256": "bfa4e82449abded6782e6101f7cfe91bf194898be453d98ac27ab9e7b067d70e",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 8.7
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "onde",
+      "missingSourceMedia": [
+        "logo-fonce.webp",
+        "logo.webp",
+        "logo-mot.webp",
+        "logo-contour.png",
+        "logo-contour-lime.png",
+        "c01-casque-detoure-trois-quarts.webp",
+        "c02-casque-detoure-profil.webp",
+        "c03-produit-fond-clair.webp",
+        "c04-accueil-grande-ouverture.webp",
+        "c05-detail-coussinet.webp",
+        "c06-detail-arceau.webp",
+        "c07-detail-commandes.webp",
+        "c08-detail-finition.webp",
+        "c09-scene-maison.webp",
+        "c10-scene-deplacement-train.webp",
+        "c11-scene-studio.webp",
+        "c12-journal-bureau-parenthese.webp",
+        "c13-boutique-sous-tous-les-angles.webp",
+        "c14-experience-entrez-dans-votre-bulle.webp",
+        "c15-experience-contact-matiere.webp",
+        "c16-marque-propre-frequence.webp",
+        "c18-journal-details-ligne.webp",
+        "c19-journal-entretien-coussinets.webp",
+        "c20-journal-casque-quotidien.webp",
+        "04-detail-coussinet.webp",
+        "05-detail-arceau.webp"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 1708272,
+          "sha256": "a37237a5f46f1ff0008e95ac71ec934545f15f57374c11b86ad1367c109ba896",
+          "verdict": "[object Object]",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 876035,
+          "sha256": "053acf79fb80ae5976bf5a1d85d51671197c57ff881e643d3e0af96ee6104e0b",
+          "verdict": "[object Object]",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 850381,
+          "sha256": "3b28f54469dac6a6c5b090afe3c8a6de3c390ffc885f39b1c77fba3e5ade9368",
+          "verdict": "[object Object]",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "rive",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 8497496,
+          "sha256": "26401451de3f088ec4868f55a1c8c27715eeaca2079f12aa867aebba68ddb0b7",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.1,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.1
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 9259259,
+          "sha256": "1319fda87fe3f43ce30ffa14532f15e3afb814f344e0b4ec0f916eea752eafbb",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.9,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.1,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.9
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 8358893,
+          "sha256": "9eae64cb22dd97c24515b2f6ec06f4683accf8ff12809bda3b7b59cf24fc22cc",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "sillon",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 10344511,
+          "sha256": "fcdcd311ba50f771a79889abf264830e98a7df920d3f214435795122d7800a5d",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 10991939,
+          "sha256": "baf403c5d851bb19a63c741cc236ddd52dbd004e07dac8a9a4d1d3ccf2e33202",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 10070479,
+          "sha256": "3f6dfbe48df8df28f171ae07eb8a175569255fa4564fca97731aa80f91569ad6",
+          "verdict": "[object Object]",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "noctil",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 11280215,
+          "sha256": "88bb8a093cd4f70b73e231fce1061038c4fbac7b18f7e7621dd94820b9ed2815",
+          "verdict": "[object Object]",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 11142122,
+          "sha256": "251456023760fe1d8242af6fdeda158e186274519a7c539815364f6d1925e9bc",
+          "verdict": "[object Object]",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 10619622,
+          "sha256": "d3e7c6e0414e652138f7783bf8748231eafec13a9ee75651bc7b6ac0c033eedf",
+          "verdict": "[object Object]",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "traverse",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 7929713,
+          "sha256": "02d221b96b9c81b3ec2c5388256682761465dce4dc7939ab5ce33debc155e5aa",
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.3,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée. ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.3
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 7863710,
+          "sha256": "9044f787ac78964a1a1b62bd12181e2329d3e0fdd13a49f3e20d46b246a222f5",
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.6,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.6
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 7311039,
+          "sha256": "d9c9d23bf1580fef120040bca49ebd5acf17b65e54917d089cef2a57b6a530ea",
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "heuren",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 7474856,
+          "sha256": "003539da990de990857c9047ca57c8ee3922376691d49598f39abdc786601e0a",
+          "verdict": "[object Object]",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 6893128,
+          "sha256": "902163717019de6def2fa07c44653bbb63e1a5c0ebadadf751b5327a348fa448",
+          "verdict": "[object Object]",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 6495960,
+          "sha256": "47ac944df590d5c9c5ea5f8689ccc84b6e6616154c1e08635867a0cde37dc04b",
+          "verdict": "[object Object]",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "museau-club",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 11987605,
+          "sha256": "3600c71b78ac132191cdc14e4778e91f6ad61580c8c76bf1ecd98f7518f8b6c8",
+          "verdict": "[object Object]",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 12072279,
+          "sha256": "5001febff66a4c361898003fe40cb0c7c032538bc0cf77cc6d24728b4c4b801a",
+          "verdict": "[object Object]",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 11388881,
+          "sha256": "bfadbfd12a1b0023587473517dbfd6c5a3895a81314b3e4f5bdabd2f4c9135e2",
+          "verdict": "[object Object]",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "souple",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 15823278,
+          "sha256": "e33c8be411351de05325bf25056b761a5937c043e31a8dee4a4a60e01c80a3a3",
+          "verdict": "[object Object]",
+          "issues": [
+            "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 15477228,
+          "sha256": "0ef22af79c7e6b9378d5fef34cc34c305da5f0add7ea5ae9c04c1385bb69ccb6",
+          "verdict": "[object Object]",
+          "issues": [
+            "WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 15073939,
+          "sha256": "07e5d3be288cff27ac51209278804e6f922b7595a4a8be6b69d8b22761876714",
+          "verdict": "[object Object]",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "table-saison",
+      "missingSourceMedia": [],
+      "platforms": {
+        "shopify": {
+          "bytes": 17289414,
+          "sha256": "86d2cce4faa64d0735a15ade5889c3d100820959dce0ae2d4a13f74010979b85",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.3,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.3
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 17423890,
+          "sha256": "b579d62d067d2c76c4b25167ef54f8db19e892526f306632061d6d1e65e44217",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.1
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 16724050,
+          "sha256": "248aa4d01f76df6298c1d78d4128226c237a0224941f2da7614c5875080b941c",
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "atelier-nuance",
+      "missingSourceMedia": [
+        "reservation-confirmation.webp",
+        "salon-bandeau.webp"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 16368432,
+          "sha256": "1115122cbd6d9771d06828dd63543b4796bd92203c980a0001a34a35d1bc64f8",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.3,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.3
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 16542222,
+          "sha256": "6f23370b1f604cc3facd3162c346f3ef21ecbd901cc57d3efbb808fd10b9c938",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.1
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 15930701,
+          "sha256": "8abcfcc7a8d841f5a38ed324cdd3f73c471b78f6d06ae72b5c5911c2c320acdf",
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "parenthese",
+      "missingSourceMedia": [
+        "05-vase-livres.webp",
+        "06-fauteuil-individuel.webp",
+        "07-atelier-coussins.webp",
+        "08-cabinet-panorama.webp",
+        "09-approche-bureau.webp",
+        "10-soleil-feuillage.webp",
+        "11-fleurs-sechees.webp"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 12539671,
+          "sha256": "b2ab262c74270bd5250ca193ea600935fdace14ceaec393b3a29d9b55688271b",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.3,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 9,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.3
+          },
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 13653067,
+          "sha256": "006d21ded305094e2de8083b9f4b65d19a4bac4ae7a51db6b29f40896aa0b936",
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 8,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 9.1
+          },
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 12546401,
+          "sha256": "e0c9d492bb3c57299683fe2dbfd2d15707635046ec0ff3d3c9b17ef9ecce4836",
+          "verdict": "REJECTED",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "nativeGate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 7.3,
+              "fatalCodes": [
+                "dangerous_script"
+              ],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "security",
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "script dans les contenus : templates/es/header.tpl ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : security ; critère faible : native_editing",
+              "verdict": "REJECTED",
+              "action": "none",
+              "reason": "défaut rédhibitoire : dangerous_script",
+              "fatal": true,
+              "checked": true
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 7.7,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 7.3
+          },
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "phase",
+      "missingSourceMedia": [
+        "01_accueil_hero.webp",
+        "02_installation_renovation.webp",
+        "03_tableau_electrique.webp",
+        "04_eclairage_interieur.webp",
+        "05_depannage.webp",
+        "06_renovation_appartement.webp",
+        "07_cuisine_contemporaine.webp",
+        "08_salle_de_bain.webp",
+        "09_tableau_renove.webp",
+        "10_eclairage_exterieur.webp",
+        "11_chambre_eclairage.webp",
+        "12_sejour_renove.webp",
+        "13_couloir_eclaire.webp",
+        "14_maison_installation.webp",
+        "15_projet_avant.webp",
+        "16_projet_ambiance.webp",
+        "17_entreprise_hero.webp",
+        "18_installation_neuve.webp",
+        "19_extension_habitation.webp",
+        "20_spots_plafond.webp",
+        "21_prise_interrupteur.webp",
+        "22_pilotage_confort.webp",
+        "23_conseils_hero.webp",
+        "24_article_eclairage.webp",
+        "25_besoins_plans.webp",
+        "26_renovation_conseil.webp"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 1763262,
+          "sha256": "e0897d806c3e89698bfb399dd6b5b61864cb9a308dcd5c312b6c1d88799cb9aa",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 877089,
+          "sha256": "6c01db66ba9516cc51a1f3bdf88c9459e7d2e2a0004c278765fed084ec6feab5",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 962572,
+          "sha256": "c462e41c791fccd890e591365cff10c9adff37ab25f628e3a7b629f8586ab88a",
+          "verdict": "[object Object]",
+          "issues": [
+            "script dans les contenus : templates/es/header.tpl"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "maison-horizon",
+      "missingSourceMedia": [
+        "404-village.webp",
+        "accueil-agence.webp",
+        "accueil-hero.webp",
+        "acheter.webp",
+        "agence-hero.webp",
+        "agence-piscine.webp",
+        "alerte-maison.webp",
+        "article-cuisine.webp",
+        "article-escalier.webp",
+        "article-hero.webp",
+        "article-location.webp",
+        "article-terrasse.webp",
+        "article-vente.webp",
+        "bandeau-proprietaires.webp",
+        "compte-interieur.webp",
+        "conseil-achat.webp",
+        "conseil-location.webp",
+        "conseil-luberon.webp",
+        "conseils-hero.webp",
+        "contact-hero.webp",
+        "contact-village.webp",
+        "espace-recherche.webp",
+        "espace-visite.webp",
+        "estimation-hero.webp",
+        "estimation-salon.webp",
+        "estimation-terrasse.webp",
+        "favori-appartement.webp",
+        "favori-villa.webp",
+        "footer-interieur.webp",
+        "legal-plaque.webp",
+        "location-balcon.webp",
+        "location-carte-1.webp",
+        "location-carte-2.webp",
+        "location-carte-3.webp",
+        "location-carte-4.webp",
+        "location-carte-5.webp",
+        "location-carte-6.webp",
+        "location-chambre.webp",
+        "location-cour.webp",
+        "location-cuisine.webp",
+        "location-parc.webp",
+        "location-salle-bain.webp",
+        "location-salon.webp",
+        "location-similaire-1.webp",
+        "location-similaire-2.webp",
+        "location-similaire-3.webp",
+        "location-similaire-4.webp",
+        "location-vue.webp",
+        "louer.webp",
+        "mas-alpilles.webp",
+        "mise-location-balcon.webp",
+        "mise-location-chambre.webp",
+        "mise-location-hero.webp",
+        "mise-location-salon.webp",
+        "recherche-achat-hero.webp",
+        "recherche-carte-hero.webp",
+        "recherche-location-hero.webp",
+        "secteur-aix.webp",
+        "secteur-luberon.webp",
+        "secteur-marseille.webp",
+        "secteur-paris.webp",
+        "vedette-maison.webp",
+        "vedette-paris.webp",
+        "vedette-villa.webp",
+        "vendre-hero.webp",
+        "vendre-maison.webp",
+        "vendre-olivier.webp",
+        "vendre-village.webp",
+        "vente-carte-1.webp",
+        "vente-carte-2.webp",
+        "vente-carte-3.webp",
+        "vente-carte-4.webp",
+        "vente-carte-5.webp",
+        "vente-carte-6.webp",
+        "vente-cuisine.webp",
+        "vente-jardin.webp",
+        "vente-quartier-parc.webp",
+        "vente-quartier-rhone.webp",
+        "vente-quartier-rue.webp",
+        "vente-salon.webp",
+        "vente-similaire-appartement.webp",
+        "vente-similaire-maison.webp",
+        "vente-similaire-vue.webp",
+        "vente-terrasse.webp",
+        "village.webp",
+        "carte-reference.png",
+        "vente-plan-illustratif.png"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 1697019,
+          "sha256": "3ae92a6b9617c141a32307d93943cfe84f80d515fb8d23552836f94c80a8c2ba",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 577515,
+          "sha256": "bcc3b291a036a316ffdfeff30e0aad07cc67aa5ae57c810fed92dee60ff2e286",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 553240,
+          "sha256": "f14dcf6a98ad6d62e44ae8334f701841bcab69195e7412a7e569e16d2c9ba7a3",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    },
+    {
+      "theme": "aplat",
+      "missingSourceMedia": [
+        "00_logo_aplat_original.png",
+        "01_accueil_chantier_mixte.webp",
+        "02_piece_avant.webp",
+        "03_piece_apres.webp",
+        "04_ossature_cloisons.webp",
+        "05_enduit_lisseuse.webp",
+        "06_rouleau_mur_bleu.webp",
+        "07_texture_enduit.webp",
+        "08_jonction_plafond.webp",
+        "09_raccord_bleu_blanc.webp",
+        "10_preparation_murs.webp",
+        "11_ponceuse_supports.webp",
+        "12_nuancier_echantillons.webp",
+        "13_piece_protegee.webp",
+        "14_combles.webp",
+        "15_couloir.webp",
+        "16_seau_bac_rouleau.webp",
+        "17_plans_crayon.webp",
+        "18_fenetre_lumiere.webp",
+        "19_outils_preparation.webp",
+        "20_mur_bleu_soleil.webp",
+        "21_eventail_couleurs.webp",
+        "22_plans_metre.webp",
+        "23_appareil_photo_chantier.webp",
+        "24_plafond_joints.webp",
+        "25_doublage_isolation.webp",
+        "26_masquage_plinthe.webp",
+        "27_angle_prise_mur.webp",
+        "28_enduit_spatule_verticale.webp"
+      ],
+      "platforms": {
+        "shopify": {
+          "bytes": 1726143,
+          "sha256": "b925d6129717fc6eea307a1e49bf083611d6317bff7891d0295757fc80e3b8ff",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "woocommerce": {
+          "bytes": 534107,
+          "sha256": "e09576e1c2b2756fb5d055486e753a02d0c59941db283863ca0d26ad3d1422ff",
+          "verdict": "[object Object]",
+          "issues": [],
+          "nativeGate": null,
+          "cmsInstalled": false
+        },
+        "prestashop": {
+          "bytes": 532790,
+          "sha256": "548b17e9575befd5a40bf86552f804323c9ee8f70d5a1fc8284726794d6cd602",
+          "verdict": "[object Object]",
+          "issues": [
+            "script dans les contenus : dependencies/modules/esstudio/views/templates/pages/contact.tpl",
+            "script dans les contenus : templates/es/pages/contact.tpl",
+            "script dans les contenus : dependencies/modules/esstudio/views/templates/pages/devis.tpl",
+            "script dans les contenus : templates/es/pages/devis.tpl"
+          ],
+          "nativeGate": null,
+          "cmsInstalled": false
+        }
+      }
+    }
+  ],
+  "uniqueArchives": 45,
+  "proofHarnessLimitation": "Original exports-190 stringifies gate as [object Object]. Separate harness retains the native structured gate for six themes; unknown verdicts not treated as success."
+}

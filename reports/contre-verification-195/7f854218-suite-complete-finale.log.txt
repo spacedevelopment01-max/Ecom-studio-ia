@@ -1,0 +1,223 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-candidat-7f854218
+
+ ❯ tests/fraise-theme.test.ts (0 test)
+ ❯ tests/skills-publicite.test.ts (7 tests | 6 failed) 174ms
+   ❯ Compétences publicitaires installées (3)
+     × les cinq compétences sont dans .claude/skills, avec un SKILL.md valide et leur licence 4ms
+     × le studio lit chaque compétence et retrouve toutes les sections utiles (aucune renommée ou disparue) 3ms
+     × sélection automatique selon la demande, sans charger toutes les compétences 5ms
+   ❯ Les consignes arrivent jusqu'au modèle (4)
+     × publicité produit : ad-creative, image, canvas-design, brand-guidelines dans la requête envoyée 48ms
+     × publicité d'une entreprise de services : la compétence ads s'ajoute 18ms
+     × visuel publicitaire : le brief d'image reçoit image, canvas-design et brand-guidelines ; une image du site non 83ms
+ ❯ tests/mission150-api.test.ts (9 tests | 8 failed) 1899ms
+   × creer : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise 202ms
+   × vendre : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise 165ms
+   × dominer : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise 175ms
+   × creer : niveaux IA et création de pages appliqués sans modèle IA réel 174ms
+   × vendre : niveaux IA et création de pages appliqués sans modèle IA réel 190ms
+   × dominer : niveaux IA et création de pages appliqués sans modèle IA réel 174ms
+   × creer : demande de campagne ignorée avec raison dès le devis puis au worker, aucune création ni dépense 172ms
+   × vendre : demande de campagne ignorée avec raison dès le devis puis au worker, aucune création ni dépense 173ms
+ ❯ tests/themes-catalogue.test.ts (11 tests | 1 failed) 17611ms
+   ❯ Catalogue de thèmes : trente choix réellement différents (11)
+     × toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques) 17444ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/fraise-theme.test.ts [ tests/fraise-theme.test.ts ]
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/docs/theme-briefs/fraise-gummies/OFFRES_VALIDEES.json'
+ ❯ fraiseOffers tests/fraise-fixtures.ts:38:27
+     36| export type FraiseOffer = { id: string; flacons_par_pack: number; prix…
+     37| export function fraiseOffers(): { unit: number; offers: FraiseOffer[];…
+     38|   const j = JSON.parse(fs.readFileSync(path.join(FRAISE_BRIEF, "OFFRES…
+       |                           ^
+     39|   return { unit: j.prix_unitaire_centimes, offers: j.offres, examples:…
+     40| }
+ ❯ fraiseProject tests/fraise-fixtures.ts:78:22
+ ❯ tests/fraise-theme.test.ts:81:31
+ ❯ runWithLang src/lib/i18n-server.ts:19:14
+ ❯ fr tests/fraise-theme.test.ts:36:32
+ ❯ tests/fraise-theme.test.ts:81:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/mission150-api.test.ts > creer : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise
+ FAIL  tests/mission150-api.test.ts > vendre : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise
+ FAIL  tests/mission150-api.test.ts > dominer : galerie du thème filtrée par forfait (sans famille), thème existant conservé et modification permise
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/docs/theme-briefs/fraise-gummies/OFFRES_VALIDEES.json'
+ ❯ fraiseOffers tests/fraise-fixtures.ts:38:27
+     36| export type FraiseOffer = { id: string; flacons_par_pack: number; prix…
+     37| export function fraiseOffers(): { unit: number; offers: FraiseOffer[];…
+     38|   const j = JSON.parse(fs.readFileSync(path.join(FRAISE_BRIEF, "OFFRES…
+       |                           ^
+     39|   return { unit: j.prix_unitaire_centimes, offers: j.offres, examples:…
+     40| }
+ ❯ fraiseProject tests/fraise-fixtures.ts:78:22
+ ❯ Module.demoProject tests/demo-fixtures.ts:251:21
+ ❯ tests/mission150-api.test.ts:21:109
+ ❯ Module.runWithLang src/lib/i18n-server.ts:19:14
+ ❯ fr tests/mission150-api.test.ts:19:26
+ ❯ tests/mission150-api.test.ts:21:102
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  tests/mission150-api.test.ts > creer : niveaux IA et création de pages appliqués sans modèle IA réel
+ FAIL  tests/mission150-api.test.ts > vendre : niveaux IA et création de pages appliqués sans modèle IA réel
+ FAIL  tests/mission150-api.test.ts > dominer : niveaux IA et création de pages appliqués sans modèle IA réel
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/docs/theme-briefs/fraise-gummies/OFFRES_VALIDEES.json'
+ ❯ fraiseOffers tests/fraise-fixtures.ts:38:27
+     36| export type FraiseOffer = { id: string; flacons_par_pack: number; prix…
+     37| export function fraiseOffers(): { unit: number; offers: FraiseOffer[];…
+     38|   const j = JSON.parse(fs.readFileSync(path.join(FRAISE_BRIEF, "OFFRES…
+       |                           ^
+     39|   return { unit: j.prix_unitaire_centimes, offers: j.offres, examples:…
+     40| }
+ ❯ fraiseProject tests/fraise-fixtures.ts:78:22
+ ❯ Module.demoProject tests/demo-fixtures.ts:251:21
+ ❯ tests/mission150-api.test.ts:42:121
+ ❯ Module.runWithLang src/lib/i18n-server.ts:19:14
+ ❯ fr tests/mission150-api.test.ts:19:26
+ ❯ tests/mission150-api.test.ts:42:114
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  tests/mission150-api.test.ts > creer : demande de campagne ignorée avec raison dès le devis puis au worker, aucune création ni dépense
+ FAIL  tests/mission150-api.test.ts > vendre : demande de campagne ignorée avec raison dès le devis puis au worker, aucune création ni dépense
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/docs/theme-briefs/fraise-gummies/OFFRES_VALIDEES.json'
+ ❯ fraiseOffers tests/fraise-fixtures.ts:38:27
+     36| export type FraiseOffer = { id: string; flacons_par_pack: number; prix…
+     37| export function fraiseOffers(): { unit: number; offers: FraiseOffer[];…
+     38|   const j = JSON.parse(fs.readFileSync(path.join(FRAISE_BRIEF, "OFFRES…
+       |                           ^
+     39|   return { unit: j.prix_unitaire_centimes, offers: j.offres, examples:…
+     40| }
+ ❯ fraiseProject tests/fraise-fixtures.ts:78:22
+ ❯ Module.demoProject tests/demo-fixtures.ts:251:21
+ ❯ tests/mission150-api.test.ts:53:118
+ ❯ Module.runWithLang src/lib/i18n-server.ts:19:14
+ ❯ fr tests/mission150-api.test.ts:19:26
+ ❯ tests/mission150-api.test.ts:53:111
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Compétences publicitaires installées > les cinq compétences sont dans .claude/skills, avec un SKILL.md valide et leur licence
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/.claude/skills/image/SKILL.md'
+ ❯ tests/skills-publicite.test.ts:49:21
+     47|     for (const s of SKILLS) {
+     48|       const dir = path.join(process.cwd(), ".claude", "skills", s);
+     49|       const md = fs.readFileSync(path.join(dir, "SKILL.md"), "utf8");
+       |                     ^
+     50|       expect(md.match(/^---\nname: ([^\n]+)\ndescription: /)?.[1], s).…
+     51|       expect(fs.existsSync(path.join(dir, "LICENSE")) || fs.existsSync…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Compétences publicitaires installées > le studio lit chaque compétence et retrouve toutes les sections utiles (aucune renommée ou disparue)
+AssertionError: image: expected null not to be null
+ ❯ tests/skills-publicite.test.ts:63:24
+     61|     for (const s of SKILLS) {
+     62|       const d = skillDigest(s as any);
+     63|       expect(d, s).not.toBeNull();
+       |                        ^
+     64|       expect(d!.missing, s).toEqual([]);
+     65|       expect(d!.text.length, s).toBeGreaterThan(400);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Compétences publicitaires installées > sélection automatique selon la demande, sans charger toutes les compétences
+AssertionError: expected [] to deeply equal [ 'ad-creative', 'image', …(2) ]
+
+- Expected
++ Received
+
+- [
+-   "ad-creative",
+-   "image",
+-   "canvas-design",
+-   "brand-guidelines",
+- ]
++ []
+
+ ❯ tests/skills-publicite.test.ts:71:59
+     69|   it("sélection automatique selon la demande, sans charger toutes les …
+     70|     const { skillsFor, adIntent, skillReference } = await import("@/li…
+     71|     expect(skillsFor(adIntent({ business: "products" }))).toEqual(["ad…
+       |                                                           ^
+     72|     expect(skillsFor(adIntent({ business: "services" }))).toEqual(["ad…
+     73|     expect(skillsFor("ad_visual")).toEqual(["image", "canvas-design", …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Les consignes arrivent jusqu'au modèle > publicité produit : ad-creative, image, canvas-design, brand-guidelines dans la requête envoyée
+AssertionError: expected '[{"role":"user","content":[{"type":"t…' to contain '<skills names=\"ad-creative,image,can…'
+
+Expected: "<skills names=\"ad-creative,image,canvas-design,brand-guidelines\">"
+Received: "[{"role":"user","content":[{"type":"text","text":"<contexte_projet scope=\"advertising\">\n### CONTRAINTES FERMES (faits confirmés, décisions validées, corrections et refus du client — à respecter)\n- Type : boutique de produits (mono).\n- Produit : Sérum Éclat · catégorie : Sérum visage · secteur : Beauté & cosmétique\n- Marque : Sérum Éclat (fourni par le client)\n- Fait CONFIRMÉ — Contenance : 30 ml\n- INCONNU — Livraison : ne jamais l'inventer (écrire « [À compléter : …] » si un texte en a besoin).\n- Réponse du client — Quelle est l'origine des ingrédients ? → Fabriqué en France\n- Prix confirmé : 34.90 EUR\n- Variantes : Contenance (15 ml, 30 ml)\n- Allégations interdites : anti-âge prouvé\n- Arguments SANS PREUVE (ne jamais les affirmer) : Résultats visibles en 7 jours\n- Texte lisible sur le produit : ÉCLAT | 30 ml\n### CONTRAINTES SOUPLES (préférences et marque — à suivre, adaptables si la création le justifie)\n- Palette (adaptable) : principale #945B24, secondaire #E4D6C8, accent #CFCA59, clair #F7F5F2, sombre #1F1914\n- Signature : « Le soin, simplement. »\n- Typographies : titres poppins_n7, texte dm_sans_n4\n- Ton : Clair, précis et chaleureux. À faire : Parler concret ; Citer les caractéristiques vérifiées. À éviter : Promettre sans preuve ; Superlatifs vides.\n- Personnalité : premium, raffiné, épuré\n- Positionnement : Soin visage haut de gamme à la vitamine C.\n- Cible : [À préciser]\n- Preuves disponibles : Fabriqué en France (réponse du client)\n- Résumé : Sérum à la vitamine C pour un teint lumineux.\n- Aspect du produit : flacon compte-gouttes · Flacon en verre ambré, pipette blanche · couleurs mesurées #C77B30 ambre 60 %\n- Messages clés : Un teint lumineux en 2 gestes\n- Plateforme de marque — persona : Femme active · problème : Teint terne · alternatives et codes de la concurrence (à éviter) : Sérums de grande surface · différence : Formule courte\n- Objections et réponses (FAQ, fiche) : Est-ce que ça pique ? → [À compléter : …]\n- Angles :  · piliers : Produit ; Usage ; Coulisses\n### INDICATIONS (déductions et constats automatiques — utiles, jamais des interdictions)\n- Famille du produit (déduite, à confirmer) : cosmétique [core] · lieux : bathroom shelf in natural light ; vanity table ; spa-like washbasin · usages : hands applying cream ; morning skincare routine ; texture swatch on skin · hors sujet : medical syringe, hospital, before after skin, heavy glitter, competitor brand logo · fidélité à surveiller : label text, cap and pump shape, liquid colour, bottle proportions\n- Observation (à formuler avec prudence, jamais comme une promesse) — Texture : gel fluide\n</contexte_projet>","cache_control":{"type":"ephemeral"}},{"type":"text","text":"Écris 1 concept."},{"type":"text","text":"Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code."}]}]"
+
+ ❯ tests/skills-publicite.test.ts:100:18
+     98|     expect(sent.length).toBeGreaterThan(0);
+     99|     const body = textOf(sent[0]);
+    100|     expect(body).toContain('<skills names=\\"ad-creative,image,canvas-…
+       |                  ^
+    101|     expect(body).toContain("Writing Quality Standards");
+    102|     expect(body).toContain("Prompting Basics");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Les consignes arrivent jusqu'au modèle > publicité d'une entreprise de services : la compétence ads s'ajoute
+AssertionError: expected '[{"role":"user","content":[{"type":"t…' to contain '<skills names=\"ads,ad-creative,image…'
+
+Expected: "<skills names=\"ads,ad-creative,image,canvas-design,brand-guidelines\">"
+Received: "[{"role":"user","content":[{"type":"text","text":"<contexte_projet scope=\"advertising\">\n### CONTRAINTES FERMES (faits confirmés, décisions validées, corrections et refus du client — à respecter)\n- CORRECTION du client — zone : Ne pas écrire Lyon : la zone est Mâcon et 30 km autour\n- Type : entreprise de services (site vitrine : rendez-vous, devis ou contact ; pas une boutique de produits).\n- Activité : Sébastien Blanc · métier : Plâtrier peintre · secteur : Artisan & bâtiment\n- Marque : Sébastien Blanc (fourni par le client)\n- Fait CONFIRMÉ — Zone : Mâcon et alentours\n- INCONNU — Années d'expérience : ne jamais l'inventer (écrire « [À compléter : …] » si un texte en a besoin).\n- Allégations interdites : artisan certifié RGE (non confirmé)\n- Règles des services — Consignes propres aux services :\n- Vocabulaire du métier : prestations, rendez-vous, séance, consultation, intervention, devis, zone d'intervention, horaires, clients accompagnés, réalisations, équipe. N'emploie jamais « produit », « panier », « livraison », « commande », « stock », « expédition », « retours », « packshot » ou « détourage ».\n- Appels à l'action adaptés au mode de contact : « Prendre rendez-vous », « Demander un devis », « Appeler », « Nous contacter » (ou leurs équivalents dans la langue des contenus).\n- Ne jamais inventer : tarif, devis gratuit, délai ou rapidité d'intervention, disponibilité (7j/7, 24h/24), diplôme, qualification, certification, label, assurance, années d'expérience, nombre de clients, résultat garanti, avis ou note. Seuls les éléments ci-dessus et les faits confirmés sont utilisables ; sinon « [À compléter : …] ».\n- Les pages « livraison et retours » deviennent « Infos pratiques » (zone, adresse, horaires, accès, contact, prise de rendez-vous) ; les conditions générales de vente deviennent des conditions de prestation, rédigées en espaces réservés à faire valider par le professionnel.\n- Santé, juridique, finances : aucune promesse de résultat, de guérison ou de gain.\n### CONTRAINTES SOUPLES (préférences et marque — à suivre, adaptables si la création le justifie)\n- Prestations (saisies par le client) : Plâtrerie et plaques de plâtre · tarif : non communiqué ; Enduits et lissage · tarif : non communiqué ; Peinture intérieure · tarif : sur devis\n- Zone d'intervention : Mâcon et 30 km autour\n- Appel à l'action — mode de contact principal : demande de devis.\n- Palette (adaptable) : principale #446274, secondaire #D0D8DD, accent #747FB4, clair #F2F5F7, sombre #141B1F\n- Signature : « Plâtrier peintre, Mâcon et 30 km autour. »\n- Typographies : titres newsreader_n4, texte inter_n4\n- Ton : Professionnel, rassurant et accessible. À faire : Expliquer simplement chaque prestation ; Donner les informations pratiques (zone, horaires, contact) ; Montrer le vrai travail. À éviter : Inventer des tarifs, des délais ou des avis ; Promettre un résultat ; Jargon sans explication.\n- Positionnement : [À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]\n- Cible : [À compléter : clients visés]\n- Préférence — couleurs : Préférer des tons chauds (terre, sable)\n- Résumé : Plâtrerie, plaques de plâtre, enduits, lissage, peinture intérieure, rénovation intérieure.\n- Messages clés : Prestations : Plâtrerie et plaques de plâtre, Enduits et lissage, Peinture intérieure ; Zone d'intervention : Mâcon et 30 km autour ; Horaires : Lundi–vendredi 8 h–18 h ; Demander un devis\n- Angles :  · piliers : Savoir-faire ; Réalisations ; Conseils ; Coulisses ; Prise de rendez-vous\n</contexte_projet>","cache_control":{"type":"ephemeral"}},{"type":"text","text":"Écris 1 concept."},{"type":"text","text":"Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code."}]}]"
+
+ ❯ tests/skills-publicite.test.ts:111:18
+    109|     await fr(() => realAdDeps(null, p, true).writeCopy("Tu rédiges des…
+    110|     const body = textOf(sent[0]);
+    111|     expect(body).toContain('<skills names=\\"ads,ad-creative,image,can…
+       |                  ^
+    112|     expect(body).toContain("Ad Copy Frameworks");
+    113|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  tests/skills-publicite.test.ts > Les consignes arrivent jusqu'au modèle > visuel publicitaire : le brief d'image reçoit image, canvas-design et brand-guidelines ; une image du site non
+AssertionError: expected '[{"role":"user","content":[{"type":"t…' to contain '<skills names=\"image,canvas-design,b…'
+
+Expected: "<skills names=\"image,canvas-design,brand-guidelines\">"
+Received: "[{"role":"user","content":[{"type":"text","text":"<contexte_projet scope=\"image\">\n### CONTRAINTES FERMES (faits confirmés, décisions validées, corrections et refus du client — à respecter)\n- Type : boutique de produits (mono).\n- Produit : Sérum Éclat · catégorie : Sérum visage · secteur : Beauté & cosmétique\n- Marque : Sérum Éclat (fourni par le client)\n- Variantes : Contenance (15 ml, 30 ml)\n- Allégations interdites : anti-âge prouvé\n- Texte lisible sur le produit : ÉCLAT | 30 ml\n### CONTRAINTES SOUPLES (préférences et marque — à suivre, adaptables si la création le justifie)\n- Palette (adaptable) : principale #945B24, secondaire #E4D6C8, accent #CFCA59, clair #F7F5F2, sombre #1F1914\n- Direction artistique : fraise\n- Aspect du produit : flacon compte-gouttes · Flacon en verre ambré, pipette blanche · couleurs mesurées #C77B30 ambre 60 %\n### INDICATIONS (déductions et constats automatiques — utiles, jamais des interdictions)\n- Métier compris (déduit, à confirmer) : Sérum visage · Sérum Éclat · Sérum à la vitamine C pour un teint lumineux [generic]\n- Scènes pertinentes : Sérum visage · Sérum Éclat · Sérum à la vitamine C pour un teint lumineux professional at work. Hors sujet à écarter : empty room, bare wall, wall texture, background texture, isolated object, generic handshake, office stock photo.\n- Famille du produit (déduite, à confirmer) : cosmétique [core] · lieux : bathroom shelf in natural light ; vanity table ; spa-like washbasin · usages : hands applying cream ; morning skincare routine ; texture swatch on skin · hors sujet : medical syringe, hospital, before after skin, heavy glitter, competitor brand logo · fidélité à surveiller : label text, cap and pump shape, liquid colour, bottle proportions\n- Observation (à formuler avec prudence, jamais comme une promesse) — Texture : gel fluide\n</contexte_projet>","cache_control":{"type":"ephemeral"}},{"type":"text","text":"Visuel à produire : visuel publicitaire (format 4:5).\nMISE EN SCÈNE PRODUIT : le produit réel posé au centre du premier plan, sur le plateau.\nAUCUNE PERSONNE : le client n'a pas autorisé de personne à l'image. Ni personne, ni visage, ni main, ni silhouette (la règle « une personne ou un animal peuvent être présents » ne s'applique pas) ; la consigne finale se termine par : « No people: no person, no face, no hands, no body parts, no silhouettes, no reflections of people, no mannequins with faces; show only places, objects, tools, materials and results. »\nLIGNE PHOTOGRAPHIQUE DE LA MARQUE (à respecter, toutes les images forment une même campagne) :\n- Ligne photographique : Lumière de fin de matinée, matières nobles (Logotype typographique en Cormorant)\n- Lumière : grande fenêtre diffusée par un voilage, venant de la gauche, 4800 K, fin de matinée\n- Matières : travertin clair, lin ivoire, chêne blond\n- Décors : mur enduit à la chaux, ivoire ; console en pierre dans un appartement haussmannien\n- Accessoires : serviette de coton plié, petit plateau en céramique, brosse à cheveux en bois\n- Cadrage : 85mm, à hauteur du produit, légèrement au-dessus (10°), f/4 : produit net, fond fondu ; produit sur le tiers gauche, grand espace négatif à droite\n- Palette : orange pâle, orange, jaune, blanc\n- Saison : intemporelle, sans marqueur de saison\n- Étalonnage : tons crème, noirs légèrement levés, contraste doux\n- À éviter : pétales de rose éparpillés, brin d'eucalyptus, marbre blanc et doré, tasse de café avec latte art, carnet ouvert et stylo, guirlande lumineuse et bokeh en cœur…\nCouleurs de la ligne en anglais : pale orange, orange, yellow, white. Accessoires possibles : folded cotton towel, small ceramic tray, wooden hairbrush. Situations de la marque : on the edge of a washbasin during the morning routine | inside an open handbag on a bed, just before going out.\n\nRéponds { \"intent\": \"…\", \"set\": \"…\", \"surface\": \"…\", \"props\": [\"…\"], \"light\": \"…\", \"lightFrom\": \"left\" | \"right\", \"camera\": \"…\", \"composition\": \"…\", \"palette\": \"…\", \"season\": \"…\", \"prompt\": \"…\" } (champs en anglais sauf « intent »)."},{"type":"text","text":"Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code."}]}]"
+
+ ❯ tests/skills-publicite.test.ts:121:29
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  tests/themes-catalogue.test.ts > Catalogue de thèmes : trente choix réellement différents > toutes les sections de la bibliothèque servent dans un thème ou une composition de référence (sauf les deux conteneurs techniques)
+Error: ENOENT: no such file or directory, open '/tmp/ecs-195-candidat-7f854218/docs/theme-briefs/fraise-gummies/OFFRES_VALIDEES.json'
+ ❯ fraiseOffers tests/fraise-fixtures.ts:38:27
+     36| export type FraiseOffer = { id: string; flacons_par_pack: number; prix…
+     37| export function fraiseOffers(): { unit: number; offers: FraiseOffer[];…
+     38|   const j = JSON.parse(fs.readFileSync(path.join(FRAISE_BRIEF, "OFFRES…
+       |                           ^
+     39|   return { unit: j.prix_unitaire_centimes, offers: j.offres, examples:…
+     40| }
+ ❯ fraiseProject tests/fraise-fixtures.ts:78:22
+ ❯ tests/themes-catalogue.test.ts:160:63
+ ❯ runWithLang src/lib/i18n-server.ts:19:14
+ ❯ tests/themes-catalogue.test.ts:160:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+
+ Test Files  4 failed | 391 passed | 1 skipped (396)
+      Tests  15 failed | 3355 passed | 31 skipped (3401)
+   Start at  05:40:12
+   Duration  1133.44s (tests 75%, import 25%, transform 1%)
+
+    Isolate  396 workers spawned · ~171ms startup each (spawn + environment, per file)
+             at least ~22.38s faster with isolate: false — reuses workers across files instead of one per file
+

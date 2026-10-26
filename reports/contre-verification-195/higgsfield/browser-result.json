@@ -1,0 +1,17 @@
+{
+  "method": "Native browser, API and database; mocked upstream via separate process preload",
+  "paidCalls": 0,
+  "realProviderCalls": 0,
+  "routeInterception": false,
+  "desktop": [
+    1440,
+    1080
+  ],
+  "mobile": [
+    390,
+    844
+  ],
+  "approvedModels": 2,
+  "errors": [],
+  "captures": 5
+}

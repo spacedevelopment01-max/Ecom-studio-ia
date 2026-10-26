@@ -1,0 +1,21 @@
+{
+  "testedSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "preliminarySharedDependencies": [
+    {
+      "name": "next",
+      "installed": "15.5.27",
+      "locked": "15.5.28"
+    },
+    {
+      "name": "sanitize-html",
+      "installed": "2.18.0",
+      "locked": "2.18.1"
+    },
+    {
+      "name": "postcss",
+      "installed": "8.5.28",
+      "locked": "8.5.31"
+    }
+  ],
+  "action": "Install fresh candidate lock into isolated node_modules, then rerun final checks. Original shared dependencies preserved."
+}
