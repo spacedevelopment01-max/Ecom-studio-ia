@@ -1,7 +1,7 @@
 {
   "codeTestedLatest": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "TARGETED_FIX_VALIDATED_FULL_SUITE_IN_PROGRESS",
+  "state": "BEFORE_MERGE_TECHNICALLY_FAVORABLE_AFTER_PENDING",
   "realProviderCalls": 0,
   "nativeScreenshots": 96,
   "inspectionBoards": 5,
@@ -53,6 +53,16 @@
       "sha256": "1d221451e3e5dfb50260beeea65dbb0df955cd30504d169576a64ace6bcc1fc1"
     },
     {
+      "file": "3ae89a6d-autopilot-7jours.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-autopilot-7jours.log.txt",
+      "bytes": 382,
+      "sha256": "9a2de8bf19cc998e3e873437acc8ea0591cc7bf2b43f8de201b1ef4faecaecda"
+    },
+    {
       "file": "3ae89a6d-build.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -88,6 +98,26 @@
       "sha256": "979fe270ec582103ce4757dd18edc2c384e37d9ccc9202a2af1d10a3f704c1dc"
     },
     {
+      "file": "3ae89a6d-github-candidat-ci-registre.json",
+      "bytes": 6949,
+      "sha256": "a88b5ad8fd296aae43c87d47f6a4d98e06153438885aa839b474264949b5560a"
+    },
+    {
+      "file": "3ae89a6d-http-matrice-64.json",
+      "bytes": 7665,
+      "sha256": "9970d46d7105882dd573c900d700811f407edce7e24e5e6f8db152261935cf1c"
+    },
+    {
+      "file": "3ae89a6d-http-matrice-complete.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-http-matrice-complete.log.txt",
+      "bytes": 116,
+      "sha256": "4df03451863d897d69c9ea419b7bd61e9d3d22202c76828af25fc5fceb8e6382"
+    },
+    {
       "file": "3ae89a6d-php-native-smoke.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -101,6 +131,21 @@
       "file": "3ae89a6d-production-http.json",
       "bytes": 361,
       "sha256": "bcf8fa05ca8723752481d4bd0564404157996602989edbda77d3a9e7787aab7e"
+    },
+    {
+      "file": "3ae89a6d-suite-synthese.json",
+      "bytes": 73420,
+      "sha256": "f1fbd0e8979c2715184a7c5001212f48c8d4100e55db34ede460e2c1dfdb8490"
+    },
+    {
+      "file": "3ae89a6d-suite.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-suite.log.txt",
+      "bytes": 150740,
+      "sha256": "bc127f35671f53cffc5df2a6cade23fc495cd257ba8347bb304ca867d0e97283"
     },
     {
       "file": "3ae89a6d-types.exit",
@@ -349,8 +394,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 8626,
-      "sha256": "fc77c65bff4de810a74a424c1d295545706eb4edc09da5c6aa39d0b8a5dded06"
+      "bytes": 9419,
+      "sha256": "520e34e5ab549fd86097fb71710578c266e44874fd5c21f944dfa578d8efb9d4"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -456,6 +501,11 @@
       "file": "harnais/contre-verification-195-higgsfield.ts.txt",
       "bytes": 6098,
       "sha256": "1e2c94c57bc7dd5ced90f650cd448e2e4916e7de248a60edc16882bb80279fcc"
+    },
+    {
+      "file": "harnais/contre-verification-195-http.mjs.txt",
+      "bytes": 6943,
+      "sha256": "68872f2ac190bed2f08d3eab1a26ccadd259d306a2b375d891610de1af3f9530"
     },
     {
       "file": "harnais/contre-verification-195-medias.mjs",
@@ -613,6 +663,21 @@
       "sha256": "4cea5e92ed5de821353c8dcc883ff0a39261def833e15a201d6a72bd79dfc749"
     },
     {
+      "file": "migration-0a6aa1dd-3ae89a6d.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-0a6aa1dd-3ae89a6d.json",
+      "bytes": 14547,
+      "sha256": "4219d8ee355ede86d84a651146d487d5c2198849eaa87e22fab7147f9f6c627a"
+    },
+    {
+      "file": "migration-0a6aa1dd-3ae89a6d.log.txt",
+      "bytes": 2646,
+      "sha256": "7a202da1786de58b4a1fdfd90840c77caa14fec114187be117d2d5d6ce665063"
+    },
+    {
       "file": "migration-0a6aa1dd-7f854218-locked.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -633,6 +698,21 @@
       "sha256": "1e60e25d0c5efb904ef4f54447529f2fccc592aaa796442db2827edd22556d3b"
     },
     {
+      "file": "migration-d97e0b95-3ae89a6d.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-d97e0b95-3ae89a6d.json",
+      "bytes": 13257,
+      "sha256": "98fd22cd81d54c99c44b0c19a05bd56926c7d8676a3fdf8776efdf2cc2613492"
+    },
+    {
+      "file": "migration-d97e0b95-3ae89a6d.log.txt",
+      "bytes": 2422,
+      "sha256": "765677ec33ecac93e2d8e61fe83f002c1f95c6f15bf594434891a4d4688dbada"
+    },
+    {
       "file": "migration-d97e0b95-7f854218-locked.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -651,6 +731,21 @@
       "file": "migration-d97e0b95-7f854218.json",
       "bytes": 13257,
       "sha256": "c22a5c16ea5ead1626b16c80829e6ed3102769ccf3351e77b249ed23d1bf9cea"
+    },
+    {
+      "file": "migration-dcfc13b1-3ae89a6d.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-dcfc13b1-3ae89a6d.json",
+      "bytes": 13074,
+      "sha256": "971b907f394bf5d81fad121ee6434d679cd4a8db3d574c8e99f50f125f7b7c78"
+    },
+    {
+      "file": "migration-dcfc13b1-3ae89a6d.log.txt",
+      "bytes": 2426,
+      "sha256": "fd854e2619ba864fb66279ea5b3cf70395b9f6ec2536b7b1e3b922c83f0c2095"
     },
     {
       "file": "migration-dcfc13b1-7f854218-locked.exit",

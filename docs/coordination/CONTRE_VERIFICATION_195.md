@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **contre-épreuves corrigées sur `3ae89a6d` ; suite finale en cours ; aucun feu vert global ni contrôle APRÈS fusion annoncé.**
+État au 26 octobre 2026 : **AVIS TECHNIQUE FAVORABLE AVANT FUSION sur le code `3ae89a6d42711c13962571483f55c496d6b3ddaa`, sur la base main `0a6aa1dd`. Contrôle APRÈS fusion en attente du SHA réel de Claude. Les limites CMS, kits privés et studio servi restent ouvertes.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -12,8 +12,8 @@ Responsabilités : Claude conserve seul la branche d’intégration et la fusion
 | `2dbdc050ef57bd6c74a44699f158e00d19c92208` | Premier candidat figé ; défaut multi-variante reproduit |
 | `8d5d236ad67f9ded1ce8547fe446693b12db7b64` | Même application que 2db ; 16 documents/preuves et timeout CI modifiés |
 | `aec79070dce88666e2b59be3452f7b6b1304bdb9` | Corrige la reprise multi-variante ; saisie client concurrente encore perdue |
-| `7f854218bb7afd08ec8ec2209b55c36ee53011f7` | Candidat actuellement contrôlé ; corrige aussi la saisie concurrente |
-| `3ae89a6d42711c13962571483f55c496d6b3ddaa` | Corrige les faux rejets PrestaShop et la configuration du formulaire APLAT ; 57 contre-épreuves, 17 exports et 38 interactions réussis ; suite en cours |
+| `7f854218bb7afd08ec8ec2209b55c36ee53011f7` | Candidat intermédiaire ; corrige aussi la saisie concurrente |
+| `3ae89a6d42711c13962571483f55c496d6b3ddaa` | Corrige les faux rejets PrestaShop et la configuration du formulaire APLAT ; 57 contre-épreuves, 17 exports, 38 interactions et suite globale réussis |
 | SHA effectivement fusionné | **EN ATTENTE de Claude ; aucun contrôle après fusion possible à ce stade** |
 
 Copies isolées, SQLite et médias fictifs sous `/tmp/ecs-195-*`. Dépôt de travail initial préservé : branche `codex/lot-2a-themes-reference`, commit `9f8b6c437580490acc52fd165986a1c3a79b394a`, propre. Aucun secret/configuration/base client copié. Garde réseau du lot 9 active pendant les tests natifs ; zéro appel fournisseur réel ou payant. Aucune fusion, publication client, modification du studio réel ou suppression globale Docker.
@@ -87,7 +87,7 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 
 Stocks/reprises/saisies concurrentes : **contre-épreuves ciblées validées sur 7f, connecteurs simulés**. Autopilot, types, migration/restauration : **validés sur 7f**. Catalogue/sections/droits/isolation/exports/Higgsfield/angles : contrôles globaux et navigateur en cours ; précisions finales à ajouter. CMS réel, kits privés et version servie : **non vérifiés**, raisons ci-dessus.
 
-**AVANT fusion : les défauts reproduits sont corrigés dans 3a et leurs contre-épreuves passent ; validation globale en attente de la suite complète et de la CI du nouveau candidat. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
+**AVANT fusion : avis technique favorable sur 3a, suite complète et CI réussies, avec les limites explicites ci-dessous. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
 
 
 Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s), build Next 15.5.28 réussi ; `/api/version` relu = `7f854218bb7afd08ec8ec2209b55c36ee53011f7`. Parcours admin Higgsfield natif réussi, cinq captures et vidéo : 810 estimations simulées, approbation groupée de deux modèles, actualisation et reprise, accès anonyme 401, aucun secret renvoyé, aucun débordement mobile ni erreur JavaScript. Ce sont des tarifs simulés. Suite globale du verrou exact et autres parcours navigateur en cours.
@@ -118,10 +118,32 @@ Claude a repris le P1 et l’a étendu à APLAT. Le diff avec 7f a été relu : 
 | APLAT, configuration non démonstration rendue par le moteur natif | **Un seul POST** après double clic vers un récepteur HTTP exclusivement local, `demo=false`, texte d’envoi conservé, aucune fausse confirmation ; aucun e-mail ni CMS testé |
 | Compilation de production et types explicites | **Réussis** ; serveur loopback relu : `/api/version` = 3a ; connexion HTTP 200 et administration Higgsfield anonyme 401 |
 | PHP réel isolé, sans installation système | **9/9** dans `lot2a-php-export.test.ts` ; binaire Debian PHP 8.4.27 extrait sous `/tmp`, modules explicites, ouverture d’URL externe désactivée. Cela ne fournit pas WordPress/PrestaShop ni une preuve de réservation après export. |
-| Suite complète 3a, verrou exact, PHP disponible, deux workers sans navigateur concurrent | **En cours** |
+| Suite complète 3a, verrou exact, PHP disponible, deux workers sans navigateur concurrent | **3 395 réussis / 0 échec / 31 ignorés**, 396 fichiers réussis / 1 ignoré, sortie 0, 24 min 47,93 s |
 
-La suite 7f au verrou exact a fini avec **3 374 réussites / un dépassement de 60 s / 45 ignorés**, sortie 1. Le fichier concerné (`mission154-livraison`) a été rejoué intégralement à l’identique en un worker : **15/15**, le cas de média corrompu en 27,72 s, délai et assertions inchangés. L’hypothèse de contention sous les vérifications navigateur parallèles n’est pas une cause applicative démontrée. Le journal rouge est conservé ; il n’est pas présenté comme une invocation verte. Parmi les 45 ignorés, 14 nécessitaient PHP absent alors ; les autres motifs sont les kits privés, CMS de test et films suspendus déjà signalés. La nouvelle invocation 3a emploie PHP et reste à terminer.
+La suite 7f au verrou exact a fini avec **3 374 réussites / un dépassement de 60 s / 45 ignorés**, sortie 1. Le fichier concerné (`mission154-livraison`) a été rejoué intégralement à l’identique en un worker : **15/15**, le cas de média corrompu en 27,72 s, délai et assertions inchangés. L’hypothèse de contention sous les vérifications navigateur parallèles n’est pas une cause applicative démontrée. Le journal rouge est conservé ; il n’est pas présenté comme une invocation verte. Parmi les 45 ignorés, 14 nécessitaient PHP absent alors ; les autres motifs sont les kits privés, CMS de test et films suspendus déjà signalés. La nouvelle invocation 3a emploie PHP et a réussi intégralement ; les 14 cas PHP ont réellement été exécutés.
 
 Le harnais APLAT historique utilise `file://`, refusé par la politique du navigateur de cet environnement. Notre copie sert seulement l’export fictif généré, sur `127.0.0.1`, refuse les écritures et toute requête distante, sans changer la politique du navigateur. Les 38 assertions sont conservées. Le second contrôle utilise un POST local contrôlé, sans transmission au CMS ni à un destinataire. Les 29 médias privés APLAT restent absents : ces interactions ne certifient pas son rendu photographique complet.
 
 Les captures précédentes des quinze accueils restent attribuées au SHA 7f : nous ne les présentons pas comme une nouvelle prise de vue de toutes les pages 3a. Les deux autres fichiers modifiés de thème concernent les réglages et interactions du formulaire APLAT, contre-vérifiés ici ; ses styles et ses médias n’ont pas changé. Les éléments préservés et les limites externes du contrôle précédent restent explicitement séparés.
+
+
+## Verdict AVANT définitif — 26 octobre 2026
+
+**AVIS TECHNIQUE FAVORABLE pour l’intégration pilotée par Claude du code `3ae89a6d42711c13962571483f55c496d6b3ddaa` sur main `0a6aa1dd6dfa5932a5e42e027cef2a3335e74679`.** Ce verdict autorise la poursuite de la fusion déjà décidée par Thomas ; il ne certifie pas les CMS absents, les médias privés absents ni un studio déployé. Codex ne fusionne rien. Un ajout uniquement documentaire est admissible après comparaison ; tout changement applicatif nécessite de revoir les contrôles concernés. Le contrôle APRÈS portera sur le vrai SHA main, jamais sur le merge temporaire de CI.
+
+| Derniers contrôles indépendants, tous sur 3a exact | Preuve publiée |
+|---|---|
+| Suite complète : 3 395 réussis, 0 échec, 31 ignorés ; sortie 0 ; 1 487,93 s | `3ae89a6d-suite.log.txt`, `3ae89a6d-suite-synthese.json`, `.exit` |
+| 31 ignorés détaillés : FRAISE 14, ONDE 11, APLAT 1, Maison & Horizon 1, films suspendus 2, CMS E2E 2 | Synthèse par fichier ; aucun ignoré compté comme réussite |
+| Autopilot : sept dates, neuf tests par date, **63/63**, sortie 0 | `3ae89a6d-autopilot-7jours.log.txt` |
+| Migration/restauration de trois bases historiques fictives : **45/45/46**, sorties 0, sources intactes | `migration-*-3ae89a6d.json` |
+| Serveur compilé 3a : **64 contrôles HTTP** A/B/admin/anonyme, cookies et SQLite natifs ; sauvegarde du stock propriétaire à 9 ; aucune modification étrangère ; octets du fichier privé autorisé identiques | `3ae89a6d-http-matrice-64.json` ; compteurs observés **0 appel / 0 tâche / 0 boutique connectée** |
+| CI GitHub [40280030470](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40280030470) entièrement réussie : types, tests, Theme Check, build, Docker | `3ae89a6d-github-candidat-ci-registre.json` ; journaux lus ; 3 395 tests et 31 ignorés |
+
+Le checkout CI `105095ce0733131990e8d8cf63ffadc06b891c11` est un merge temporaire, avec parents main 0a et candidat 3a. Son arbre `b8eb12b826b92e7320ad4538442f1ee79239dbdd` a été confronté via l’API Git à celui du candidat : égalité vérifiée. **Il ne s’agit pas du SHA réellement fusionné.** Les 13 têtes de PR sources ont été relues et conservées dans le registre machine ; aucune évolution concurrente constatée.
+
+La réutilisation des captures 7f est explicitement attribuée : le diff 7f → 3a n’altère ni CSS ni photographie ; APLAT modifié a son propre navigateur 3a, 38 assertions et mode non-démo. Les preuves visuelles consultables demeurent 101 PNG et trois vidéos. Les outils historiques de preuve ont deux incompatibilités non applicatives signalées : import de fixture supprimé et ancienne exigence de zéro reçu même simulé ; une copie adaptée explicite est fournie, sans toucher aux garde-fous réseau. Le script historique d’exports stringifyait aussi l’objet de gate ; notre harnais conserve sa décision structurée.
+
+**Réserve de plateforme stock** : Shopify utilise un ajustement relatif ; WooCommerce et PrestaShop relisent puis écrivent un nombre absolu. Une vente entre leur dernière lecture et leur écriture ne peut pas être garantie par ces API. Le moteur l’indique ; ne pas annoncer une atomicité absolue pour ces plateformes. Suivi P2 de rédaction avant activation client : `src/components/studio/tab-catalogue.tsx` promet encore « jamais écrasé » ; l’aligner sur la limite réelle. Ce point ne remet pas en cause les contre-épreuves corrigées et n’est pas présenté comme une correction déjà faite.
+
+Restent non vérifiés : vraie installation et parcours CMS (Docker VFS plein, aucun accès devstore), complétude photographique des sept kits privés absents, qualité de génération fournisseur réelle, moyens de paiement/e-mail/publication réels et version du studio client. Les doubles ne valent pas recette CMS. Aucun seuil 40 % / 50 %, droit 49/89, protection d’accès, budget ou travail de thème n’a été arbitrairement changé.

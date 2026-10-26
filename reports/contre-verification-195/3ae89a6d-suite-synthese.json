@@ -1,0 +1,3194 @@
+{
+  "codeCommit": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "rawReportSha256": "ee1205554cfd765c8700eba476063a53b26b804ca65a875610b988f889cf0aa5",
+  "command": "vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=<private-temp>/3ae89a6d-suite.json",
+  "networkGuard": true,
+  "node": "24.19.0",
+  "php": "8.4.27",
+  "exitCode": 0,
+  "durationSeconds": 1487.93,
+  "filesPassed": 396,
+  "filesSkipped": 1,
+  "passed": 3395,
+  "failed": 0,
+  "skipped": 31,
+  "total": 3426,
+  "files": [
+    {
+      "file": "tests/abonnement-projet.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1541.86865234375
+    },
+    {
+      "file": "tests/accounting.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1747.57568359375
+    },
+    {
+      "file": "tests/accueil-audit.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 27.27685546875
+    },
+    {
+      "file": "tests/accueil-film-motion.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.294921875
+    },
+    {
+      "file": "tests/accueil-mots-simples-google.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 58.69970703125
+    },
+    {
+      "file": "tests/accueil-premium.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 12.5849609375
+    },
+    {
+      "file": "tests/ad-editor-ui.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 11.810302734375
+    },
+    {
+      "file": "tests/ad-editor.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 11309.243408203125
+    },
+    {
+      "file": "tests/admin-forfaits.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 299.237060546875
+    },
+    {
+      "file": "tests/admin-stats.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1069.3076171875
+    },
+    {
+      "file": "tests/ads-premium.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16043.07861328125
+    },
+    {
+      "file": "tests/ads-v2.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 32882.627685546875
+    },
+    {
+      "file": "tests/ads.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7.134033203125
+    },
+    {
+      "file": "tests/affiches-produit-heros.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2232.463623046875
+    },
+    {
+      "file": "tests/affiches-publications.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6483.74462890625
+    },
+    {
+      "file": "tests/ai-analysis-schema.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9.62353515625
+    },
+    {
+      "file": "tests/ai-lang.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16.15673828125
+    },
+    {
+      "file": "tests/aide-description.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 45.986083984375
+    },
+    {
+      "file": "tests/alerte-qwen.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 228.961181640625
+    },
+    {
+      "file": "tests/alibaba-media.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2450.89599609375
+    },
+    {
+      "file": "tests/angles-sources.test.ts",
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6137.189208984375
+    },
+    {
+      "file": "tests/animation-elements.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 11.78759765625
+    },
+    {
+      "file": "tests/apercu-codespaces.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.30712890625
+    },
+    {
+      "file": "tests/aplat.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 1,
+      "durationMs": 1833.718017578125
+    },
+    {
+      "file": "tests/atelier-nuance-booking.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 417.051025390625
+    },
+    {
+      "file": "tests/atelier-nuance-theme.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1917.380126953125
+    },
+    {
+      "file": "tests/audit-amont-regressions.test.ts",
+      "status": "passed",
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5075.1865234375
+    },
+    {
+      "file": "tests/audit-backend.test.ts",
+      "status": "passed",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 18927.724609375
+    },
+    {
+      "file": "tests/audit-contenus.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4395.504638671875
+    },
+    {
+      "file": "tests/audit-ecrans.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6629.62451171875
+    },
+    {
+      "file": "tests/audit-forfaits-admin.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1355.210693359375
+    },
+    {
+      "file": "tests/audit-intent-contexte.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1029.108154296875
+    },
+    {
+      "file": "tests/audit-onglet-boutique.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2070.730224609375
+    },
+    {
+      "file": "tests/audit-workflow-portee.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 797.930419921875
+    },
+    {
+      "file": "tests/banque-du-theme.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2347.049072265625
+    },
+    {
+      "file": "tests/barre-achat-mobile.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2.770263671875
+    },
+    {
+      "file": "tests/benchmark-ads-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8039.04736328125
+    },
+    {
+      "file": "tests/benchmark-image-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8403.927490234375
+    },
+    {
+      "file": "tests/benchmark-logo-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8287.65478515625
+    },
+    {
+      "file": "tests/benchmark-seo-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16644.548583984375
+    },
+    {
+      "file": "tests/benchmark-social-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14495.495849609375
+    },
+    {
+      "file": "tests/benchmark-video-v2-check.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8420.58642578125
+    },
+    {
+      "file": "tests/bibliotheque-modeles.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 80614.30395507812
+    },
+    {
+      "file": "tests/bibliotheques-familles-studio.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5681.606201171875
+    },
+    {
+      "file": "tests/bibliotheques-familles.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 42.832275390625
+    },
+    {
+      "file": "tests/biens.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1166.15576171875
+    },
+    {
+      "file": "tests/billing.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1272.332763671875
+    },
+    {
+      "file": "tests/blog.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2328.079345703125
+    },
+    {
+      "file": "tests/brain-contextes-2c.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 359.014404296875
+    },
+    {
+      "file": "tests/brain-facade.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 191.495849609375
+    },
+    {
+      "file": "tests/brain-lecture.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 413.335205078125
+    },
+    {
+      "file": "tests/brain-memoire-coherence.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7024.019775390625
+    },
+    {
+      "file": "tests/brain-metier.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 12.955810546875
+    },
+    {
+      "file": "tests/brain-moteurs-2c.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 112.24169921875
+    },
+    {
+      "file": "tests/budget-ia-visuels.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 690.55224609375
+    },
+    {
+      "file": "tests/budget-ia.test.ts",
+      "status": "passed",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 15968.139892578125
+    },
+    {
+      "file": "tests/calendrier-phrases-variees.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 680.32763671875
+    },
+    {
+      "file": "tests/calendrier-reservation.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 432.887939453125
+    },
+    {
+      "file": "tests/calendrier-une-phrase.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2052.99755859375
+    },
+    {
+      "file": "tests/carry-over.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 24.11328125
+    },
+    {
+      "file": "tests/catalogue-actif.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 111.333984375
+    },
+    {
+      "file": "tests/categories-sections.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 70.646728515625
+    },
+    {
+      "file": "tests/choix-publication-ia.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 444.439208984375
+    },
+    {
+      "file": "tests/cle-fal.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.354736328125
+    },
+    {
+      "file": "tests/cle-passerelle.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1463.0205078125
+    },
+    {
+      "file": "tests/client-logo.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 972.6484375
+    },
+    {
+      "file": "tests/cms-catalogue-fiable.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4814.6240234375
+    },
+    {
+      "file": "tests/cms-v2.test.ts",
+      "status": "passed",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 26418.23974609375
+    },
+    {
+      "file": "tests/contact-multiple.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 263.673828125
+    },
+    {
+      "file": "tests/content-roles.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.259033203125
+    },
+    {
+      "file": "tests/contre-verification-195-products.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 195.493896484375
+    },
+    {
+      "file": "tests/controle-themes-190.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4726.60205078125
+    },
+    {
+      "file": "tests/coordonnees-demarrage.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 335.13720703125
+    },
+    {
+      "file": "tests/creation-guidee.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1643.18212890625
+    },
+    {
+      "file": "tests/creations-initiales-api.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1531.579345703125
+    },
+    {
+      "file": "tests/cutout-enclosed-background.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 77.0888671875
+    },
+    {
+      "file": "tests/cutout-quality.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4864.839599609375
+    },
+    {
+      "file": "tests/cutout.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 162.181884765625
+    },
+    {
+      "file": "tests/db-migration-race.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2437.817626953125
+    },
+    {
+      "file": "tests/decouverte-visuels.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 59.079833984375
+    },
+    {
+      "file": "tests/demo-services-cta.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10.494384765625
+    },
+    {
+      "file": "tests/demos-fraise-onde-composition.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 385.652099609375
+    },
+    {
+      "file": "tests/demos-quatre-themes.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3552.465087890625
+    },
+    {
+      "file": "tests/description-ia-erreurs.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1839.882568359375
+    },
+    {
+      "file": "tests/description-ia.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 926.6044921875
+    },
+    {
+      "file": "tests/devis-image-modele-route.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 17.95068359375
+    },
+    {
+      "file": "tests/diagnostic-ia.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 219.126708984375
+    },
+    {
+      "file": "tests/direction-artistique.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 30507.506591796875
+    },
+    {
+      "file": "tests/directions-palettes-completes.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2225.94921875
+    },
+    {
+      "file": "tests/directions-palettes-consignes.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 937.166259765625
+    },
+    {
+      "file": "tests/disposition-entete-pied.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 22.4482421875
+    },
+    {
+      "file": "tests/droits-themes-190.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1125.56591796875
+    },
+    {
+      "file": "tests/editeur-sections.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 62.8251953125
+    },
+    {
+      "file": "tests/erreurs-outils.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.354736328125
+    },
+    {
+      "file": "tests/excellence-reseaux-sociaux.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 281.4150390625
+    },
+    {
+      "file": "tests/excellence-strategie-redaction.test.ts",
+      "status": "passed",
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 161.81884765625
+    },
+    {
+      "file": "tests/excellence-video-pub.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 58.271484375
+    },
+    {
+      "file": "tests/excellence-visuels.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3504.427978515625
+    },
+    {
+      "file": "tests/existing-site.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9641.484130859375
+    },
+    {
+      "file": "tests/exports-interactions-familles.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2245.28662109375
+    },
+    {
+      "file": "tests/fenetres-studio.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2.9111328125
+    },
+    {
+      "file": "tests/films-accueil.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 2,
+      "durationMs": 6.29833984375
+    },
+    {
+      "file": "tests/forfaits-interface.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1079.875732421875
+    },
+    {
+      "file": "tests/formats-et-copies.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1966.046142578125
+    },
+    {
+      "file": "tests/fournisseur-desactive.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 21.09912109375
+    },
+    {
+      "file": "tests/fraise-theme.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 14,
+      "durationMs": 99.18701171875
+    },
+    {
+      "file": "tests/galerie-sections-190.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 996.327880859375
+    },
+    {
+      "file": "tests/handoff-contrat.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 64.223388671875
+    },
+    {
+      "file": "tests/heros-paysage.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 230.5009765625
+    },
+    {
+      "file": "tests/heuren-alcove.test.ts",
+      "status": "passed",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 25561.1904296875
+    },
+    {
+      "file": "tests/higgsfield-engine.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9755.60791015625
+    },
+    {
+      "file": "tests/higgsfield-pricing.test.ts",
+      "status": "passed",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4666.338134765625
+    },
+    {
+      "file": "tests/hooks-avant-retour.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 19.85302734375
+    },
+    {
+      "file": "tests/i18n-content.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 158.50439453125
+    },
+    {
+      "file": "tests/i18n-media.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2009.4052734375
+    },
+    {
+      "file": "tests/ia-connectee.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.407958984375
+    },
+    {
+      "file": "tests/ia-utilisation-pourcent.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 551.83447265625
+    },
+    {
+      "file": "tests/icones-metier.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 142.0390625
+    },
+    {
+      "file": "tests/idees-de-prompts.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 716.964111328125
+    },
+    {
+      "file": "tests/idempotence-reprise.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 723.877685546875
+    },
+    {
+      "file": "tests/identite-projets-neufs-familles.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7552.75537109375
+    },
+    {
+      "file": "tests/identite-validation-parcours.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 33831.765625
+    },
+    {
+      "file": "tests/image-par-publication.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 40.710205078125
+    },
+    {
+      "file": "tests/image-plates.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 936.20361328125
+    },
+    {
+      "file": "tests/image-ratee-reprise.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 51.623046875
+    },
+    {
+      "file": "tests/image-v2.test.ts",
+      "status": "passed",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13406.617431640625
+    },
+    {
+      "file": "tests/images-100-ia.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1040.523681640625
+    },
+    {
+      "file": "tests/images-distinctes.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 25.405029296875
+    },
+    {
+      "file": "tests/images-faire-un-visuel.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1424.17041015625
+    },
+    {
+      "file": "tests/images-par-sujet.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 26.363525390625
+    },
+    {
+      "file": "tests/images-recherche-elargie-silhouettes.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1359.48583984375
+    },
+    {
+      "file": "tests/images-tri.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2678.422607421875
+    },
+    {
+      "file": "tests/import-site-et-matiere.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 61.355224609375
+    },
+    {
+      "file": "tests/initial-authorization.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3617.669921875
+    },
+    {
+      "file": "tests/initial-context-concurrency.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1530.6015625
+    },
+    {
+      "file": "tests/integration194-exports-scripts.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 67870.591796875
+    },
+    {
+      "file": "tests/integration194-isolation-ab.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8071.298583984375
+    },
+    {
+      "file": "tests/integration194-securite.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13.22998046875
+    },
+    {
+      "file": "tests/intro-splash.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2.49462890625
+    },
+    {
+      "file": "tests/isolation-forfait-familles.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8064.259765625
+    },
+    {
+      "file": "tests/jobs-calendar.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 398.9462890625
+    },
+    {
+      "file": "tests/ligne-artistique.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 25.63671875
+    },
+    {
+      "file": "tests/local-dabord.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 60.041748046875
+    },
+    {
+      "file": "tests/logo-barriere.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 28849.2060546875
+    },
+    {
+      "file": "tests/logo-budget.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 12217.66845703125
+    },
+    {
+      "file": "tests/logo-complet-ia.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 690.03564453125
+    },
+    {
+      "file": "tests/logo-consignes-francais.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2034.453125
+    },
+    {
+      "file": "tests/logo-declinaisons-couleurs.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 488.981201171875
+    },
+    {
+      "file": "tests/logo-ia-images.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 434.880859375
+    },
+    {
+      "file": "tests/logo-identity.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1578.92431640625
+    },
+    {
+      "file": "tests/logo-notation-petites-entreprises.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6.421142578125
+    },
+    {
+      "file": "tests/logo-openai-routage.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1128.956298828125
+    },
+    {
+      "file": "tests/logo-pertinence.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7.487060546875
+    },
+    {
+      "file": "tests/logo-relais-jamais-zero.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 19862.279541015625
+    },
+    {
+      "file": "tests/logo-relais-openai-routage.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 466.750732421875
+    },
+    {
+      "file": "tests/logo-texte-exact.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8.634765625
+    },
+    {
+      "file": "tests/logo-v2-artwork.test.ts",
+      "status": "passed",
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 54675.074462890625
+    },
+    {
+      "file": "tests/logo-v2-progress.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2486.998046875
+    },
+    {
+      "file": "tests/logo-v2-route.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 223.93603515625
+    },
+    {
+      "file": "tests/logo-v2.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 22158.921630859375
+    },
+    {
+      "file": "tests/logo-visible.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 589.727783203125
+    },
+    {
+      "file": "tests/lot1-consignes-livraison.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14272.974853515625
+    },
+    {
+      "file": "tests/lot1-grille-offres.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7.642822265625
+    },
+    {
+      "file": "tests/lot1-holdout.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3088.9697265625
+    },
+    {
+      "file": "tests/lot1-produits-sections.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6668.236328125
+    },
+    {
+      "file": "tests/lot1-rattachement-pages.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 74.87109375
+    },
+    {
+      "file": "tests/lot1-rattachement-parcours.test.ts",
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8805.354736328125
+    },
+    {
+      "file": "tests/lot1-sauvegarde-restauration.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8136.220947265625
+    },
+    {
+      "file": "tests/lot2a-php-export.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2845.759765625
+    },
+    {
+      "file": "tests/lot2a-purchase.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5244.31201171875
+    },
+    {
+      "file": "tests/lot2a-reference.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5616.00830078125
+    },
+    {
+      "file": "tests/lot2b-editorial.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3990.74853515625
+    },
+    {
+      "file": "tests/lot2b-featured.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 672.6953125
+    },
+    {
+      "file": "tests/lot2c-conversion.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1744.980712890625
+    },
+    {
+      "file": "tests/lot5-fal-adapter.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 453.7236328125
+    },
+    {
+      "file": "tests/lot5-openai-voice.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 20376.484130859375
+    },
+    {
+      "file": "tests/lot5-routing-preview.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 77.54443359375
+    },
+    {
+      "file": "tests/maison-horizon.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 1,
+      "durationMs": 3374.49267578125
+    },
+    {
+      "file": "tests/marque-inventee.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 15.029541015625
+    },
+    {
+      "file": "tests/marque-mise-a-jour-medias.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 820.533447265625
+    },
+    {
+      "file": "tests/medias-barriere.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 738.323486328125
+    },
+    {
+      "file": "tests/meilleure-photo-pub.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 74.44287109375
+    },
+    {
+      "file": "tests/menus-entete.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 788.52197265625
+    },
+    {
+      "file": "tests/metier-fr.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 18.700927734375
+    },
+    {
+      "file": "tests/migration-v2.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 54149.749267578125
+    },
+    {
+      "file": "tests/mission142-billing.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5669.5390625
+    },
+    {
+      "file": "tests/mission142-blocages-transversaux.test.ts",
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7775.861572265625
+    },
+    {
+      "file": "tests/mission142-confirmation-cout.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2.824951171875
+    },
+    {
+      "file": "tests/mission142-diagnostic-livraison.test.ts",
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 994.501953125
+    },
+    {
+      "file": "tests/mission142-images-idempotence.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 685.792724609375
+    },
+    {
+      "file": "tests/mission142-jobs.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1937.5654296875
+    },
+    {
+      "file": "tests/mission142-livraison-images.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1385.61767578125
+    },
+    {
+      "file": "tests/mission142-livraison-logo-video.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5186.846923828125
+    },
+    {
+      "file": "tests/mission142-preparation-reprise.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1842.2490234375
+    },
+    {
+      "file": "tests/mission142-producteurs-directs.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 951.25048828125
+    },
+    {
+      "file": "tests/mission150-api.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2414.854736328125
+    },
+    {
+      "file": "tests/mission150-forfaits.test.ts",
+      "status": "passed",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16404.835693359375
+    },
+    {
+      "file": "tests/mission154-adaptation.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 21409.350341796875
+    },
+    {
+      "file": "tests/mission154-livraison.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 52100.3544921875
+    },
+    {
+      "file": "tests/mission154-parcours.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 11834.5419921875
+    },
+    {
+      "file": "tests/mission160-api.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1435.158203125
+    },
+    {
+      "file": "tests/mission160-bundle.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3398.323974609375
+    },
+    {
+      "file": "tests/mission160-consumers.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4544.33349609375
+    },
+    {
+      "file": "tests/mission160-editorial-delivery.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3978.13916015625
+    },
+    {
+      "file": "tests/mission160-export-security.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4176.35107421875
+    },
+    {
+      "file": "tests/mission160-holdout.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2073.806884765625
+    },
+    {
+      "file": "tests/mission160-parcours.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14502.3671875
+    },
+    {
+      "file": "tests/mission160-service-scopes.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 20215.83251953125
+    },
+    {
+      "file": "tests/mission160-staging.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1902.285888671875
+    },
+    {
+      "file": "tests/mission160-strategy.test.ts",
+      "status": "passed",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7443.25341796875
+    },
+    {
+      "file": "tests/mission160-unseen-final.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1198.418212890625
+    },
+    {
+      "file": "tests/mission169-assistance.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4031.8759765625
+    },
+    {
+      "file": "tests/mission169-payments.test.ts",
+      "status": "passed",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5584.4638671875
+    },
+    {
+      "file": "tests/mission171-boundaries.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1923.4296875
+    },
+    {
+      "file": "tests/mission171-public-download.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 160.010009765625
+    },
+    {
+      "file": "tests/mission171-registration-privacy.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10133.0537109375
+    },
+    {
+      "file": "tests/mission171-routes-lifecycle.test.ts",
+      "status": "passed",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7020.803955078125
+    },
+    {
+      "file": "tests/mission171-scope-inputs.test.ts",
+      "status": "passed",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5738.67822265625
+    },
+    {
+      "file": "tests/modeles-pages.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8704.476318359375
+    },
+    {
+      "file": "tests/modeles-produit.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8669.56494140625
+    },
+    {
+      "file": "tests/museau-club.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 17232.802978515625
+    },
+    {
+      "file": "tests/music-library-admin.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1052.89013671875
+    },
+    {
+      "file": "tests/music-library.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1093.8837890625
+    },
+    {
+      "file": "tests/musique-au-choix.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1202.611083984375
+    },
+    {
+      "file": "tests/noctil.test.ts",
+      "status": "passed",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 17552.4521484375
+    },
+    {
+      "file": "tests/onde.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 11,
+      "durationMs": 130.547607421875
+    },
+    {
+      "file": "tests/onglet-images-audit.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 689.2412109375
+    },
+    {
+      "file": "tests/onglet-produit-audit.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8.4482421875
+    },
+    {
+      "file": "tests/openai-streaming.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 29071.02392578125
+    },
+    {
+      "file": "tests/opentype-cjs.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 36.74755859375
+    },
+    {
+      "file": "tests/opentype-esm.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 99.905517578125
+    },
+    {
+      "file": "tests/orchestrateur-3a.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 95.538330078125
+    },
+    {
+      "file": "tests/orchestrateur-3b.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 221.427978515625
+    },
+    {
+      "file": "tests/paiements-projets.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2042.451171875
+    },
+    {
+      "file": "tests/palette-direction.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 881.872802734375
+    },
+    {
+      "file": "tests/palette-entiere.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6.712158203125
+    },
+    {
+      "file": "tests/palette-exacte.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.52392578125
+    },
+    {
+      "file": "tests/palette-piste.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16662.04931640625
+    },
+    {
+      "file": "tests/palette-site-metiers.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 388.357666015625
+    },
+    {
+      "file": "tests/panneau-photo.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 922.804931640625
+    },
+    {
+      "file": "tests/parenthese-booking.test.ts",
+      "status": "passed",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 405.83251953125
+    },
+    {
+      "file": "tests/parenthese-theme.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1830.8388671875
+    },
+    {
+      "file": "tests/passerelle-alibaba.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 24.5126953125
+    },
+    {
+      "file": "tests/passerelle-fal.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.441650390625
+    },
+    {
+      "file": "tests/permissions-forfaits.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2905.63330078125
+    },
+    {
+      "file": "tests/phase-theme.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1264.967529296875
+    },
+    {
+      "file": "tests/photos-du-metier.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2098.458984375
+    },
+    {
+      "file": "tests/photos-libres.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1884.71728515625
+    },
+    {
+      "file": "tests/photos-pixabay-galerie.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 403.716796875
+    },
+    {
+      "file": "tests/piste-identite.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5.867431640625
+    },
+    {
+      "file": "tests/piste-partout.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10127.66796875
+    },
+    {
+      "file": "tests/plan-studio.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7.563720703125
+    },
+    {
+      "file": "tests/planche-couleurs-uniques.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 148.34326171875
+    },
+    {
+      "file": "tests/planche-grille-telephone.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.3896484375
+    },
+    {
+      "file": "tests/planche-icones-metier.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 80.92138671875
+    },
+    {
+      "file": "tests/planche-marque.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3563.556884765625
+    },
+    {
+      "file": "tests/planche-symbole-detaille.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 30.212158203125
+    },
+    {
+      "file": "tests/plateformes-honnetes.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5.390625
+    },
+    {
+      "file": "tests/poster-titres-varies.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.5205078125
+    },
+    {
+      "file": "tests/preparation-adapters.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1371.416259765625
+    },
+    {
+      "file": "tests/preparation-analyse-reprise.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 335.386474609375
+    },
+    {
+      "file": "tests/preparation-analysis.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 315.3388671875
+    },
+    {
+      "file": "tests/preparation-catalogue-actif.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3072.566650390625
+    },
+    {
+      "file": "tests/preparation-collecte-reprise.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1830.927001953125
+    },
+    {
+      "file": "tests/preparation-directions-integration.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 19830.44140625
+    },
+    {
+      "file": "tests/preparation-media-contrat.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 657.415771484375
+    },
+    {
+      "file": "tests/preparation-nouvelle-mission.test.ts",
+      "status": "passed",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 9171.291748046875
+    },
+    {
+      "file": "tests/preparation-pixabay-integration.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3346.5166015625
+    },
+    {
+      "file": "tests/preparation-preuve-api.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 539.14794921875
+    },
+    {
+      "file": "tests/preparation-textes-reprise.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 639.60400390625
+    },
+    {
+      "file": "tests/preparation-theme-integration.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1240.099609375
+    },
+    {
+      "file": "tests/preparation.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13055.5556640625
+    },
+    {
+      "file": "tests/prix-pourcentage-budget.test.ts",
+      "status": "passed",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 223.47021484375
+    },
+    {
+      "file": "tests/product-completion.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1895.3505859375
+    },
+    {
+      "file": "tests/produit-detoure-propre.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2192.1572265625
+    },
+    {
+      "file": "tests/produits-boutiques-e2e-190.test.ts",
+      "status": "passed",
+      "passed": 0,
+      "failed": 0,
+      "skipped": 2,
+      "durationMs": 0
+    },
+    {
+      "file": "tests/produits-studio-190.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3133.9365234375
+    },
+    {
+      "file": "tests/progression-projet.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.51123046875
+    },
+    {
+      "file": "tests/project-handoff-api.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1689.177734375
+    },
+    {
+      "file": "tests/project-handoff.test.ts",
+      "status": "passed",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10587.025390625
+    },
+    {
+      "file": "tests/prompts-destinations.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2361.3408203125
+    },
+    {
+      "file": "tests/pub-v3-direction.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8321.4560546875
+    },
+    {
+      "file": "tests/publication-animee.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6553.73486328125
+    },
+    {
+      "file": "tests/publication-con\u00e7ue-par-ia.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2561.08203125
+    },
+    {
+      "file": "tests/publications-campagnes.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1737.4404296875
+    },
+    {
+      "file": "tests/publications-contrat-llm.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 601.544189453125
+    },
+    {
+      "file": "tests/publications-editoriales.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4780.982177734375
+    },
+    {
+      "file": "tests/publications-ia-creation.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 626.025634765625
+    },
+    {
+      "file": "tests/publications-initiales.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 65053.363037109375
+    },
+    {
+      "file": "tests/publications-organisation.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1287.625
+    },
+    {
+      "file": "tests/publications-produit-visible.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3459.447509765625
+    },
+    {
+      "file": "tests/publications-qualite.test.ts",
+      "status": "passed",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4677.04833984375
+    },
+    {
+      "file": "tests/publications-sans-point-interrogation.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.415771484375
+    },
+    {
+      "file": "tests/publications-services.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4737.274169921875
+    },
+    {
+      "file": "tests/publicite-ligne-campagne.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 707.940185546875
+    },
+    {
+      "file": "tests/publicites-organisation.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 438.2978515625
+    },
+    {
+      "file": "tests/pubs-variees.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4821.4267578125
+    },
+    {
+      "file": "tests/qualite-boutique.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2040.591064453125
+    },
+    {
+      "file": "tests/qualite-gate.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 40.54638671875
+    },
+    {
+      "file": "tests/qualite-images-videos.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5229.299072265625
+    },
+    {
+      "file": "tests/qualite-logo-symbole.test.ts",
+      "status": "passed",
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1083.587158203125
+    },
+    {
+      "file": "tests/qualite-textes-marque.test.ts",
+      "status": "passed",
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 449.2919921875
+    },
+    {
+      "file": "tests/quotas.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 368.811279296875
+    },
+    {
+      "file": "tests/recommandation-quatre-references.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1904.18603515625
+    },
+    {
+      "file": "tests/reference-produit-sans-detourage.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2068.990478515625
+    },
+    {
+      "file": "tests/reference-produit.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 395.675537109375
+    },
+    {
+      "file": "tests/regle-presence-humaine.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1211.443359375
+    },
+    {
+      "file": "tests/remplacer-image.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 222.63720703125
+    },
+    {
+      "file": "tests/rendez-vous-190.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 115.2294921875
+    },
+    {
+      "file": "tests/rendez-vous.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1946.684326171875
+    },
+    {
+      "file": "tests/rendu-bibliotheques-familles.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 537.287353515625
+    },
+    {
+      "file": "tests/reponses-ia-reparees.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10.518310546875
+    },
+    {
+      "file": "tests/reservation-activite.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 490.904052734375
+    },
+    {
+      "file": "tests/retouche-photo-ia.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 291.645263671875
+    },
+    {
+      "file": "tests/retouches-composees.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2729.308349609375
+    },
+    {
+      "file": "tests/rive.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 15789.268798828125
+    },
+    {
+      "file": "tests/routage-multifournisseur.test.ts",
+      "status": "passed",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2190.304443359375
+    },
+    {
+      "file": "tests/routage-multimedia.test.ts",
+      "status": "passed",
+      "passed": 25,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4308.489501953125
+    },
+    {
+      "file": "tests/routage-usages.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3327.490966796875
+    },
+    {
+      "file": "tests/section-library-coverage.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 124.828857421875
+    },
+    {
+      "file": "tests/securite-audit-stabilisation.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 602.883544921875
+    },
+    {
+      "file": "tests/securite-ia.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3301.107421875
+    },
+    {
+      "file": "tests/securite-post-audit.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1361.392578125
+    },
+    {
+      "file": "tests/selection-couleurs.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 494.170166015625
+    },
+    {
+      "file": "tests/seo-utilise.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 46.255615234375
+    },
+    {
+      "file": "tests/seo-v2-engine.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 247.28076171875
+    },
+    {
+      "file": "tests/seo-v2.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 136.463623046875
+    },
+    {
+      "file": "tests/serveur-dev.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 112.72705078125
+    },
+    {
+      "file": "tests/services-copy.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 88.322509765625
+    },
+    {
+      "file": "tests/services-media.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3313.7197265625
+    },
+    {
+      "file": "tests/services-theme.test.ts",
+      "status": "passed",
+      "passed": 99,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 22439.62646484375
+    },
+    {
+      "file": "tests/signature-marque-partout.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 538.037109375
+    },
+    {
+      "file": "tests/signe-de-vie.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.358642578125
+    },
+    {
+      "file": "tests/sillon-exports.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13866.3662109375
+    },
+    {
+      "file": "tests/sillon-theme.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 215.26904296875
+    },
+    {
+      "file": "tests/site-agence.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 238.584716796875
+    },
+    {
+      "file": "tests/site-import.test.ts",
+      "status": "passed",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 179.883544921875
+    },
+    {
+      "file": "tests/site-reproduce.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 23971.996826171875
+    },
+    {
+      "file": "tests/site-texte-seo.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 545.645751953125
+    },
+    {
+      "file": "tests/skills-bibliotheque.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2363.00146484375
+    },
+    {
+      "file": "tests/skills-publicite.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 126.6044921875
+    },
+    {
+      "file": "tests/social-autopilot-limites.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1983.69970703125
+    },
+    {
+      "file": "tests/social-autopilot-pilote.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2451.11181640625
+    },
+    {
+      "file": "tests/social-v2-engine.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5011.43701171875
+    },
+    {
+      "file": "tests/social-v2.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 100.825439453125
+    },
+    {
+      "file": "tests/song-composer.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 341.154541015625
+    },
+    {
+      "file": "tests/souple.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 24587.4453125
+    },
+    {
+      "file": "tests/static-deinline.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 39.533935546875
+    },
+    {
+      "file": "tests/studio-incitations.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.6787109375
+    },
+    {
+      "file": "tests/sujet-photo.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2769.133056640625
+    },
+    {
+      "file": "tests/table-saison-booking.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 308.401611328125
+    },
+    {
+      "file": "tests/table-saison-theme.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 822.86328125
+    },
+    {
+      "file": "tests/taches-fond-robustesse.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1099.41357421875
+    },
+    {
+      "file": "tests/temps-preparation.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 200.654541015625
+    },
+    {
+      "file": "tests/texte-local-sur-photo.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 234.936767578125
+    },
+    {
+      "file": "tests/theme-custom.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 61978.790283203125
+    },
+    {
+      "file": "tests/theme-demos.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 16.49072265625
+    },
+    {
+      "file": "tests/theme-en.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1297.34814453125
+    },
+    {
+      "file": "tests/theme-import.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2323.918701171875
+    },
+    {
+      "file": "tests/theme-thumbnails.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 20.544677734375
+    },
+    {
+      "file": "tests/theme-v2.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 13031.29345703125
+    },
+    {
+      "file": "tests/theme.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3155.735107421875
+    },
+    {
+      "file": "tests/themes-catalogue.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14230.183349609375
+    },
+    {
+      "file": "tests/themes-differenciation.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4122.767822265625
+    },
+    {
+      "file": "tests/titres-coupes.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3.58154296875
+    },
+    {
+      "file": "tests/trace-appels.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 53.384521484375
+    },
+    {
+      "file": "tests/trade-restaurant.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 4.154541015625
+    },
+    {
+      "file": "tests/traverse.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 14760.996337890625
+    },
+    {
+      "file": "tests/ugc-rules-en.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 6.2861328125
+    },
+    {
+      "file": "tests/ugc.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1871.8046875
+    },
+    {
+      "file": "tests/video-audio-termination.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 18076.708251953125
+    },
+    {
+      "file": "tests/video-beginners-direct.test.ts",
+      "status": "passed",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 8049.781005859375
+    },
+    {
+      "file": "tests/video-creation-rights.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1520.749267578125
+    },
+    {
+      "file": "tests/video-creative-guide.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5515.632080078125
+    },
+    {
+      "file": "tests/video-editorial-contract.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5627.11181640625
+    },
+    {
+      "file": "tests/video-mission-reliability.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 7771.0546875
+    },
+    {
+      "file": "tests/video-pixabay-montage.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 36100.69677734375
+    },
+    {
+      "file": "tests/video-pixabay-plans.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10.235595703125
+    },
+    {
+      "file": "tests/video-promo.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 505.435546875
+    },
+    {
+      "file": "tests/video-receipts-approval.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 977.9130859375
+    },
+    {
+      "file": "tests/video-recherche-plans-libres.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2690.2705078125
+    },
+    {
+      "file": "tests/video-render-conflict.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1796.952392578125
+    },
+    {
+      "file": "tests/video-render-missing.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2321.6103515625
+    },
+    {
+      "file": "tests/video-scenes.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 5170.7880859375
+    },
+    {
+      "file": "tests/video-v2-bench.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 52675.525390625
+    },
+    {
+      "file": "tests/video-v2-engine.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 117869.31298828125
+    },
+    {
+      "file": "tests/video-v2.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 77.215087890625
+    },
+    {
+      "file": "tests/video-vocabulaire-client.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1320.2470703125
+    },
+    {
+      "file": "tests/video-voice-timing.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 397.819580078125
+    },
+    {
+      "file": "tests/videos-creation.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 10290.7822265625
+    },
+    {
+      "file": "tests/visuel-cree.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 284.72607421875
+    },
+    {
+      "file": "tests/visuels-sans-detourage.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 3649.25634765625
+    },
+    {
+      "file": "tests/vocabulaire-client.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 509.35693359375
+    },
+    {
+      "file": "tests/voile-produit-cache.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2.037109375
+    },
+    {
+      "file": "tests/voix-client.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 1855.887939453125
+    },
+    {
+      "file": "tests/workflow-garde-fous.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 24916.0126953125
+    },
+    {
+      "file": "tests/workflow-v2.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 139602.60620117188
+    }
+  ]
+}

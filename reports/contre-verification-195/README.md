@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Contre-épreuves des défauts corrigés réussies sur 3a ; suite finale en cours. Aucun accord global ni contrôle APRÈS fusion encore annoncé.**
+Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Avis technique favorable AVANT fusion sur 3a : 3 395 tests réussis, aucun échec, 31 ignorés ; CI entièrement verte. APRÈS fusion en attente du vrai SHA main. CMS et kits privés restent partiellement non vérifiés.**
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 
@@ -73,3 +73,13 @@ Les adaptations du harnais historique sont expliquées dans le [rapport](../../d
 - [PHP CLI isolé et empreintes des paquets](php-cli-isole.json), [9 tests réels du moteur PHP exporté](3ae89a6d-php-native-smoke.log.txt). Aucun paquet système installé et aucun CMS créé par ces commandes.
 
 Les six nouvelles captures et la vidéo APLAT n’emportent pas les 29 médias privés absents : elles attestent les interactions et la configuration du formulaire. La version sans démonstration est uniquement rendue et reçue sur loopback, sans publication. Les limites CMS et photo restent ouvertes.
+
+## Verdict AVANT et preuves finales 3a
+
+- [Suite complète, synthèse machine](3ae89a6d-suite-synthese.json) ; [journal](3ae89a6d-suite.log.txt).
+- [64 contrôles HTTP natifs, sauvegarde et isolation](3ae89a6d-http-matrice-64.json).
+- [CI, identité du candidat et registre des apports](3ae89a6d-github-candidat-ci-registre.json).
+- [Pilote sept jours, 63 réussites](3ae89a6d-autopilot-7jours.log.txt).
+- Migrations/restaurations 3a : [dcfc13b1](migration-dcfc13b1-3ae89a6d.json), [d97e0b95](migration-d97e0b95-3ae89a6d.json), [main 0a](migration-0a6aa1dd-3ae89a6d.json).
+
+Tous les éléments sont attribués à leur SHA. Aucun résultat avant fusion ne vaut contrôle après fusion ni mise à jour du studio réel.
