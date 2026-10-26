@@ -1,6 +1,6 @@
 /**
  * Envoi des produits du Studio vers une boutique connectée, ou import des produits qu'elle a déjà
- * (règles : src/lib/products/sync.ts — correspondances conservées, stock vendu jamais écrasé, aucun doublon).
+ * (règles : src/lib/products/sync.ts — correspondances conservées, ventes de la boutique reprises dans le calcul du stock, aucun doublon).
  */
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
