@@ -1,0 +1,23 @@
+{
+  "main": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "approvedFilesIdentical": {
+    "theme-base/assets/fraise.css": {
+      "approvedHead": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+      "mainBlob": "4b1c5fdb7b7ddaff8984814bd67040488897ac30",
+      "approvedBlob": "4b1c5fdb7b7ddaff8984814bd67040488897ac30",
+      "identical": true
+    },
+    "src/components/studio/tab-boutique.tsx": {
+      "approvedHead": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+      "mainBlob": "672b30da890f15a83772cfdb67cf51ecdc608c26",
+      "approvedBlob": "672b30da890f15a83772cfdb67cf51ecdc608c26",
+      "identical": true
+    },
+    "src/components/studio/tab-catalogue.tsx": {
+      "approvedHead": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48",
+      "mainBlob": "bbea2cc4da2fd4c9a96cebb2b9d0c7900e6edefe",
+      "approvedBlob": "bbea2cc4da2fd4c9a96cebb2b9d0c7900e6edefe",
+      "identical": true
+    }
+  }
+}

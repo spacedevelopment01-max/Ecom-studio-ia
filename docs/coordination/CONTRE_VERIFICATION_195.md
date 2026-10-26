@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État du suivi au 26 octobre 2026 : **PR198/44546ab9, PR200/e005414c et PR199/d63bba11 : ACCORD POUR FUSION après contrôles indépendants et CI verte. Le main333bccc8 antérieur reste validé dans sa portée historique ; contrôle du main final après ces trois corrections EN ATTENTE des fusions de Claude.**
+État du suivi : **198/445,200/e005 et199/d63 approuvés puis fusionnés par Claude ; vrai main final d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5 contre-vérifié nativement :3405/0/31,build/types et parcours compilés verts. Verdict APRÈS global en attente de la fin de la CI push40340415088.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -273,3 +273,16 @@ Trois vraiesCI terminées vertes,journaux relus :198/40307621221 (3398/31),200/4
 Sources suivies propres,dépendances exactes,gardes réseau et requêtes navigateur externes refusées,données fictives,aucun appel fournisseur réel. Harnais et journaux de préparation explicitement séparés : omissions du checkout partiel restaurées,types avec tas1,5GiB insuffisant puis3GiB,export pas encore fini lors de la première comparaison,mesure avant repaint corrigée dans le harnais,compte produit repris après choix erroné d'une fixture service. Aucune assertion ou délai relâchés.
 
 **Le verdict APRÈS sur le main final reste à exécuter après les fusions par Claude.** Ne pas confondre ces accords avec la version servie ou une recette fournisseur/CMS. Aucun déploiement ni redémarrage du studio réel.
+
+
+## Seconde contre-vérification APRÈS les trois corrections — d2fb63ee
+
+Vraies fusions par Claude198→200→199 constatées par PR et ref distante,main gelé **d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5**. Nouvelle copie :[preuves complètes APRÈS](../../reports/contre-verification-195/suivi-pr198-199-200/apres-main-d2fb63ee/README.md). Ascendance3têtes et blobs des3fichiers corrigés exacts ; DB,worker,budgets/droits,rendu,public/assets inchangés.
+
+- Build0/103,71s,types0/47,77s,58pages ; aucune modification applicative.
+- **Suite native3405réussis/0échec/31ignorés,399fichiers réussis/1ignoré**,sortie0,1487,12s ; deux workers,garde réseau,PHPCLI,aucun navigateur concurrent. JSONbrut SHA256 `ba4786caa410faf23a6159fb4d0b74db2947de10e67c3a8bb691ec4367194e3f`. Premier passage130 conservé,ancienPNG de test omis du checkout rétabli à blob identique ; reprise intégrale réussie.
+- **Vrai build de production navigateur**,APIversion d2fb/compiled-build :8clics normaux et déplacements DB sur4largeurs,témoins7/7,contenus inchangés,ordre restauré,ancienne version gardée,exactement8nouvellesversions(1→9),aucun nouvel appel enregistré. Stocks FR/EN1440/390,bloc ouvert/fermé,aucun JSexception/overflow.
+- **FRAISE native** :26HTML,144PNG après export du moteur de ce main ;10pages visées mesurées à360/390/430/1440,0JSexception. Comparaison avec445approuvé :51/52pixel-identiques,1variation10pixels surFAQordinateur au même endroit déjà relevé ;10pages corrigées identiques surordinateur/mobile. Médias privés et limites visuelles préexistantes toujours explicitement incomplets.
+- **CI push/main40340415088 au relevé :**Docker,types et tests verts ;ThemeCheck en cours,build principal ensuite. Verdict global APRÈS encore **en attente**,aucune CI verte annoncée par déduction des tests locaux.
+
+Aucun test fournisseur réel,déploiement/redémarrage,paiement,message externe,ni fusion Codex. Version du studio utilisateur non vérifiée. Les résultats antérieurs ne sont pas rebaptisés sur ce main. Les limites CMS,31ignorés,kits privés et qualité créative restent à distinguer de la correction technique des3points.

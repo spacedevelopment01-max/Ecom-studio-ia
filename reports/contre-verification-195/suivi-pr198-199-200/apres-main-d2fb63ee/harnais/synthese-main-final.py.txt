@@ -1,0 +1,7 @@
+import json,hashlib,re
+from pathlib import Path
+sha='d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5';root=Path('/tmp/ecs-195-reprise/main-final-d2fb63ee');out=Path('/tmp/ecs-195-reprise/preuves/apres-d2fb63ee');raw=out/'suite-brute.json';x=json.loads(raw.read_text());e=json.loads((out/'suite-execution.json').read_text());log=re.sub(r'\x1b\[[0-9;]*m','',(out/'suite.log').read_text());dur=re.findall(r'Duration\s+([\d.]+)s',log);rows=[]
+for r in x['testResults']:
+ a=r['assertionResults'];p=sum(z['status']=='passed' for z in a);f=sum(z['status']=='failed' for z in a);rows.append({'file':str(Path(r['name']).relative_to(root)),'passed':p,'failed':f,'skipped':len(a)-p-f,'status':'failed' if f else 'passed' if p else 'skipped','durationMs':max(0,r['endTime']-r['startTime'])})
+d={'codeCommit':sha,'rawReportSha256':hashlib.sha256(raw.read_bytes()).hexdigest(),'command':e['command'],'networkGuard':True,'realProviderCalls':0,'phpCli':'8.4.27','exitCode':e['exitCode'],'durationSeconds':float(dur[-1]) if dur else e['seconds'],'filesPassed':sum(r['status']=='passed' for r in rows),'filesSkipped':sum(r['status']=='skipped' for r in rows),'passed':x['numPassedTests'],'failed':x['numFailedTests'],'skipped':x['numPendingTests']+x.get('numTodoTests',0),'total':x['numTotalTests'],'success':x['success'],'files':rows}
+(out/'suite-synthese.json').write_text(json.dumps(d,indent=2)+'\n');print({k:v for k,v in d.items() if k not in ['files','command']})

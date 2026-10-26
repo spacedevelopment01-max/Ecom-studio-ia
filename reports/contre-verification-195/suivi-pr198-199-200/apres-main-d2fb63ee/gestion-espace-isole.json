@@ -1,0 +1,13 @@
+{
+  "realStudioTouched": false,
+  "installedDependenciesPreserved": true,
+  "sourceAndEvidenceFilesPreserved": true,
+  "disposableCachesRemoved": [
+    "own prior main333 .next build before new pass",
+    "own PR199/200 dev build directories after test servers exited",
+    "own final main webpack build cache only after successful production build and types",
+    "own /tmp/ecs-195-npm-cache download cache"
+  ],
+  "duplicateEvidenceHardlinkedAfterSha256Equality": 817,
+  "globalCleanupOrDestructiveReset": false
+}

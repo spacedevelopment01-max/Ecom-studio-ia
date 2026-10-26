@@ -1,0 +1,38 @@
+import subprocess,os,sys,re,time,json,hashlib
+from pathlib import Path
+sha=sys.argv[1];assert re.fullmatch('[0-9a-f]{40}',sha)
+common=Path('/tmp/ecs-195-review-remote');base=Path('/tmp/ecs-195-reprise');root=base/('main-final-'+sha[:8]);out=base/'preuves'/('apres-'+sha[:8]);out.mkdir(exist_ok=True)
+heads={'198':'44546ab98b44fac4823e41eccbb4c4b034979f51','199':'d63bba1127a8487c426d5b2259ff36a9bbfaba06','200':'e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48'}
+for h in heads.values():subprocess.run(['git','merge-base','--is-ancestor',h,sha],cwd=common,check=True)
+if not root.exists():
+ subprocess.run(['git','worktree','add','--detach','--no-checkout',str(root),sha],cwd=common,check=True)
+ subprocess.run(['git','sparse-checkout','set','--cone','src','tests','theme-base','scripts','worker','.claude','.github','.devcontainer','assets','design-system','docs/theme-briefs/fraise-gummies','docs/coordination'],cwd=root,check=True)
+ subprocess.run(['git','read-tree','-mu','HEAD'],cwd=root,check=True)
+ def git(*args):return subprocess.check_output(['git',*args],cwd=root,text=True).strip()
+ assert git('rev-parse','HEAD:public')==git('rev-parse','333bccc8:public')
+ subprocess.run(['cp','-al','/tmp/ecs-195-main-333bccc8/public',str(root/'public')],check=True)
+ (root/'node_modules').symlink_to('/tmp/ecs-195-dependances-7f/node_modules',target_is_directory=True)
+ assert git('rev-parse','HEAD:package-lock.json')==git('rev-parse','333bccc8:package-lock.json')
+assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()==sha
+def git(*args):return subprocess.check_output(['git',*args],cwd=root,text=True).strip()
+assert not(root/'.env.local').exists() and not(root/'.env').exists()
+env=os.environ.copy();env.update(APP_SECRET='countercheck-195-fictitious-secret-not-live',NEXT_TELEMETRY_DISABLED='1',THEME_DEMOS_AUTO='0',STOCK_OFFLINE='1',PATH='/tmp/ecs-195-php84-complet/bin:'+env['PATH'])
+for k in ['DATA_DIR','DATABASE_FILE','STORAGE_DIR']:env.pop(k,None)
+preserve={p:git('rev-parse','HEAD:'+p)==git('rev-parse','333bccc8:'+p) for p in ['public','assets','worker','src/lib/db.ts','src/lib/theme/ops.ts','src/lib/ai','src/lib/billing.ts','src/lib/theme/render.ts']}
+identity={'main':sha,'tree':git('rev-parse','HEAD^{tree}'),'approvedHeadsIncluded':heads,'unchangedPartsFrom333':preserve,'applicationDiffFrom333':git('diff','--name-only','333bccc8','HEAD','--','src','theme-base','worker','package-lock.json').splitlines(),'trackedStatusAtStart':git('status','--short','--untracked-files=no'),'realProviderCalls':0}
+(out/'identite.json').write_text(json.dumps(identity,indent=2)+'\n')
+phases=[('build',['node_modules/.bin/next','build'],4096),('types',['node_modules/.bin/tsc','--noEmit'],3072),('suite',['node_modules/.bin/vitest','run','--maxWorkers=2','--reporter=default','--reporter=json','--outputFile='+str(out/'suite-brute.json')],1536)]
+for name,cmd,heap in phases:
+ if name in ['build','types'] and (out/(name+'.exit')).read_text().strip()=='0':
+  print('RETAIN_COMPLETED_NATIVE_CHECK',name,flush=True);continue
+ env['NODE_OPTIONS']=f'--max-old-space-size={heap} --import={root}/scripts/lot9/network-guard.mjs'
+ if name=='build':env['DATA_DIR']='/tmp/ecs-higgsfield-proof-195-final-'+sha[:8]+'-build'
+ else:env.pop('DATA_DIR',None)
+ st=time.time();print('START',sha,name,flush=True)
+ with (out/(name+'.log')).open('w') as f:r=subprocess.run(cmd,cwd=root,env=env,stdout=f,stderr=subprocess.STDOUT)
+ (out/(name+'.exit')).write_text(str(r.returncode)+'\n')
+ (out/(name+'-execution.json')).write_text(json.dumps({'source':sha,'command':cmd,'heapMiB':heap,'exitCode':r.returncode,'seconds':round(time.time()-st,2),'networkGuard':True,'isolatedFictitiousData':True,'noConcurrentBrowser':True},indent=2)+'\n')
+ print('END',name,r.returncode,flush=True)
+ if r.returncode:sys.exit(r.returncode)
+identity['trackedStatusAfterNativeChecks']=git('status','--short','--untracked-files=no');(out/'identite.json').write_text(json.dumps(identity,indent=2)+'\n')
+print('BUILD TYPES FULL SUITE COMPLETE',sha,flush=True)

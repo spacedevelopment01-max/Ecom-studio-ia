@@ -1,0 +1,14 @@
+{
+  "codeCommit": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "command": [
+    "node_modules/.bin/tsx",
+    "scripts/reference-static-preview.ts",
+    "/tmp/ecs-195-reprise/statique-mainfinal",
+    "--only=fraise"
+  ],
+  "exitCode": 0,
+  "seconds": 50.62,
+  "realProviderCalls": 0,
+  "nativeNetworkGuard": true,
+  "sequentialAfterFullSuite": true
+}

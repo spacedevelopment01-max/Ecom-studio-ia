@@ -1,0 +1,13 @@
+{
+  "codeCommit": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "command": [
+    "node_modules/.bin/tsx",
+    "scripts/contre-verification-195-main-final-browser.ts",
+    "/tmp/ecs-195-reprise/preuves/apres-d2fb63ee/studio"
+  ],
+  "exitCode": 0,
+  "seconds": 119.96,
+  "realProviderCalls": 0,
+  "nativeNetworkGuard": true,
+  "sequentialAfterFullSuite": true
+}

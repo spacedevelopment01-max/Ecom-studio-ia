@@ -1,0 +1,30 @@
+{
+  "main": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "tree": "247141cd75e7502659d98126eb4f66a9c1bd0bb5",
+  "approvedHeadsIncluded": {
+    "198": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+    "199": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+    "200": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48"
+  },
+  "unchangedPartsFrom333": {
+    "public": true,
+    "assets": true,
+    "worker": true,
+    "src/lib/db.ts": true,
+    "src/lib/theme/ops.ts": true,
+    "src/lib/ai": true,
+    "src/lib/billing.ts": true,
+    "src/lib/theme/render.ts": true
+  },
+  "applicationDiffFrom333": [
+    "src/app/api/projects/[id]/products/sync/route.ts",
+    "src/components/studio/tab-boutique.tsx",
+    "src/components/studio/tab-catalogue.tsx",
+    "src/lib/products/catalog.ts",
+    "src/lib/products/sync.ts",
+    "theme-base/assets/fraise.css"
+  ],
+  "trackedStatusAtStart": "",
+  "realProviderCalls": 0,
+  "trackedStatusAfterNativeChecks": ""
+}

@@ -1,0 +1,355 @@
+{
+  "readOnlySharedTrackedFiles": true,
+  "onlyMissingFilesWithIdenticalOldAndNewGitBlob": true,
+  "restored": [
+    {
+      "file": "docs/briefs/maison-horizon/CONSIGNE_CLAUDE.md",
+      "gitBlob": "c6ec2e24e4704a001bb72285961ac42dce3b208c"
+    },
+    {
+      "file": "docs/client-briefs/le-coven-des-charmes/CONSIGNE_CLAUDE.md",
+      "gitBlob": "bc458fc08bb2be1a2919099b2af38d94edd97d55"
+    },
+    {
+      "file": "docs/client-briefs/le-coven-des-charmes/INVENTAIRE_MAQUETTES.md",
+      "gitBlob": "ac8a7140627c43d7b2cf2c15f06e11eddb62126c"
+    },
+    {
+      "file": "docs/client-briefs/le-coven-des-charmes/LOGO_ORIGINAL.json",
+      "gitBlob": "ef2f2bbd7cd9a1746389eee86e1ecdd55be7b1ae"
+    },
+    {
+      "file": "docs/client-briefs/le-coven-des-charmes/MAQUETTES_ORIGINALES.json",
+      "gitBlob": "5756b6655f2b653c0e711718eeccf17183e31eb9"
+    },
+    {
+      "file": "docs/design/atelier-rive-reference-20261023/CONSIGNE_VALIDEE.md",
+      "gitBlob": "26b90940215c1a0c63ddce60c741d06cbc802d20"
+    },
+    {
+      "file": "docs/design/atelier-rive-reference-20261023/MEDIAS_ET_RESERVES.md",
+      "gitBlob": "dd2423b2d84b7b0092b4dbda69d03d49e8597e0a"
+    },
+    {
+      "file": "docs/design/atelier-rive-reference-20261023/manifest-medias.json",
+      "gitBlob": "530f338349fb1844522418ba50a6f7375e9f1843"
+    },
+    {
+      "file": "docs/design/atelier-rive-reference-20261023/resultats/interactions.json",
+      "gitBlob": "37d214217ea3cfd129d05c79515dda433b7b95f2"
+    },
+    {
+      "file": "docs/design/atelier-rive-reference-20261023/resultats/studio.json",
+      "gitBlob": "ff850d563d46446927ae88066e8b9ee21c3739ba"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/CONSIGNE_VALIDEE.md",
+      "gitBlob": "51c6d8b01ca6c47595d9d1cad1259af831054395"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/README.md",
+      "gitBlob": "84ec6c93c5ef15d5fa0b583a8aa0220289920471"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/medias/README.md",
+      "gitBlob": "7f00206bb0c12ae4047cad1d3ddc0e13c093791e"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/medias/manifest.json",
+      "gitBlob": "e80dac0143239828e5dd622716481143afb491d0"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/resultats/interactions.json",
+      "gitBlob": "03e8db5cdb42e657934561f297db54f642e0ebff"
+    },
+    {
+      "file": "docs/design/heuren-reference-20261022/resultats/studio.json",
+      "gitBlob": "2eafc3fa7db163e71ae7f91da8774c38a9fe1ee8"
+    },
+    {
+      "file": "docs/design/museau-club-reference-20261023/CONSIGNE_VALIDEE.md",
+      "gitBlob": "fde6cb99a3cdc113b234de0ab3877f1495955e99"
+    },
+    {
+      "file": "docs/design/museau-club-reference-20261023/README.md",
+      "gitBlob": "88c2ff8fe6f1c6c6242fe7757f43ce0130f5fd39"
+    },
+    {
+      "file": "docs/design/museau-club-reference-20261023/manifest.json",
+      "gitBlob": "b1e74a0a7376e3480f951d63c14aa688fecf0a37"
+    },
+    {
+      "file": "docs/design/museau-club-reference-20261023/resultats/interactions.json",
+      "gitBlob": "37c7b1b3b411315ac89d1860d77f45f4fd36a18e"
+    },
+    {
+      "file": "docs/design/museau-club-reference-20261023/resultats/studio.json",
+      "gitBlob": "a1381c5248d5608a12fa442523ed2377e533657e"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/CONSIGNE_VALIDEE.md",
+      "gitBlob": "1b9c1777de114fff290874d3716f710951596c8d"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/MEDIAS.md",
+      "gitBlob": "3f2eb9cf626d106a8d33bc042b67e78d1c7f8eca"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/README.md",
+      "gitBlob": "a055ff55df25cff9377e254cbf4560210decb46a"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/manifest.json",
+      "gitBlob": "c115e82eff13d5686945f8b16a5e27c31aa156ee"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/resultats/interactions.json",
+      "gitBlob": "7c02ad789217cfa2a574794e4ebfb0268fc1feae"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/resultats/jonction-mesures.json",
+      "gitBlob": "ea5a57292bb42e77aed8c8128138fcdfef4fe110"
+    },
+    {
+      "file": "docs/design/noctil-reference-20261023/resultats/studio.json",
+      "gitBlob": "d69a79df649a9dc44c89b82934c06ea9ffe32479"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/CONSIGNE_VALIDEE.md",
+      "gitBlob": "3cedba2b9f8c2955b9ada3bd991137f39bf455c2"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/LIRE_LES_IMAGES.md",
+      "gitBlob": "314e03d474947f01b9fd55635b2dc46c9616ad34"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/manifest-lecture.json",
+      "gitBlob": "128764d4ec5314364d4ddd08f502c9d76e0772c2"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/manifest.json",
+      "gitBlob": "4a1b4ac35cbc128e5a22389e99f9d087797c639c"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/resultats/interactions.json",
+      "gitBlob": "1430e5fd5e5091d7d31c8432337bcff4cbd59a3b"
+    },
+    {
+      "file": "docs/design/traverse-reference-20261023/resultats/studio.json",
+      "gitBlob": "16f85ff93fd28971adfc36d6e8e2a5019385ac0f"
+    },
+    {
+      "file": "docs/preuves/museau-club-159/adaptation-client/choix-theme.json",
+      "gitBlob": "e9c92ad93e53be85eb8458cecd008ab77352def6"
+    },
+    {
+      "file": "docs/preuves/museau-club-159/mesures-premier-ecran.json",
+      "gitBlob": "3a99e1eda977721799499e88d503dff3a06c84e4"
+    },
+    {
+      "file": "docs/preuves/souple-158/AVANT-APRES.md",
+      "gitBlob": "3d774037521e1ae2c82579219ffe238855f58174"
+    },
+    {
+      "file": "docs/preuves/souple-158/adaptation-client/resultat.json",
+      "gitBlob": "12298eb4905bf7a6a4831378ce326ca06a0aec10"
+    },
+    {
+      "file": "docs/preuves/souple-158/avant-85888fc7/adaptation-client/resultat-choix.json",
+      "gitBlob": "1f960a5a22fbaa4fc6678bb7d0bf4a1d6893ea4b"
+    },
+    {
+      "file": "docs/preuves/souple-158/avant-85888fc7/premier-ecran/mesures.json",
+      "gitBlob": "7ba1aed5fd2f2776e4cdd20b918189815dd9f614"
+    },
+    {
+      "file": "docs/preuves/souple-158/premier-ecran/mesures.json",
+      "gitBlob": "cec4312dfe44cbbe58038ae8e1db69826dbd3bda"
+    },
+    {
+      "file": "docs/theme-assets/MISSION_MUSEAU_CLUB_SOUPLE.md",
+      "gitBlob": "1f1893f77c1bea9c9392679f0fa3181d2e02f406"
+    },
+    {
+      "file": "docs/theme-assets/heuren-alcove-attendu.md",
+      "gitBlob": "54fa017d43dc038bfea8a79f995df6020ec4fcb3"
+    },
+    {
+      "file": "docs/theme-assets/heuren-alcove-manifest.json",
+      "gitBlob": "681bdb48ff1f62d3788e5ada8c90d8a59a82dd9b"
+    },
+    {
+      "file": "docs/theme-assets/museau-club-souple-manifest.json",
+      "gitBlob": "8a7f4f7b270272fa44950cc9e3c63d603d5b3dce"
+    },
+    {
+      "file": "docs/theme-assets/noctil-traverse-manifest.json",
+      "gitBlob": "b592c51873871cfaa96f0e43f8211fb510ccbb83"
+    },
+    {
+      "file": "docs/theme-assets/noctil-traverse-mission.md",
+      "gitBlob": "bc151c750a2ebf424c38c581ed4f21a4a9874c6d"
+    },
+    {
+      "file": "docs/theme-assets/noctil-traverse-readme.md",
+      "gitBlob": "03104401dcf7a1f8eba86bf47334d7f0aa757ffd"
+    },
+    {
+      "file": "docs/theme-briefs/aplat/CONSIGNE_CLAUDE.md",
+      "gitBlob": "ac8d27b74bb90d7d0d6c4e1880f54c7ab07ae051"
+    },
+    {
+      "file": "docs/theme-briefs/aplat/INVENTAIRE_MAQUETTES.md",
+      "gitBlob": "897d40e8e806a2efa0f1464f8d9d1100e27c9b44"
+    },
+    {
+      "file": "docs/theme-briefs/aplat/MAQUETTES_ORIGINALES.json",
+      "gitBlob": "c3426346bd5705c5992de2e83d5e7b7170538c83"
+    },
+    {
+      "file": "docs/theme-briefs/onde/CONSIGNE_CLAUDE.md",
+      "gitBlob": "c4d255e4eafa7df3c5e1abc5cf56933c62ce5461"
+    },
+    {
+      "file": "docs/theme-briefs/onde/MAQUETTES_ORIGINALES.json",
+      "gitBlob": "2f3f3f896422e72f3eb26cc5b6364de8651f0db6"
+    },
+    {
+      "file": "docs/theme-briefs/parenthese/CONSIGNE_CLAUDE.md",
+      "gitBlob": "dbcac03865420570eb219746af31786b6dea12bf"
+    },
+    {
+      "file": "docs/theme-briefs/parenthese/INVENTAIRE_MAQUETTES.md",
+      "gitBlob": "db99e725c231f2a849b6a2676b5027bb3d38f699"
+    },
+    {
+      "file": "docs/theme-briefs/parenthese/MAQUETTES_ET_ASSETS.md",
+      "gitBlob": "c27069595ec02ff178ff48476aa8dce865042b7a"
+    },
+    {
+      "file": "docs/theme-briefs/phase/CONSIGNE_CLAUDE.md",
+      "gitBlob": "85d0bf498942c90f5289053aed2bd1479f5d8a0d"
+    },
+    {
+      "file": "docs/theme-briefs/phase/INVENTAIRE_MAQUETTES.md",
+      "gitBlob": "6dd038ac96e92d67efa69fb82a70a87f10fa5859"
+    },
+    {
+      "file": "docs/theme-briefs/phase/MAQUETTES_ORIGINALES.json",
+      "gitBlob": "27fad26dcb6ebe4a36ea0523a56fff6f1fe14292"
+    },
+    {
+      "file": "docs/theme-briefs/sillon-v2/CONSIGNE_CLAUDE.md",
+      "gitBlob": "ea4d19bd58ce81daf470b9cad6dafc7981859777"
+    },
+    {
+      "file": "docs/theme-briefs/sillon-v2/MAQUETTES_ORIGINALES.json",
+      "gitBlob": "1374b62fbbb7b6ef70e79ee35991f3e5000a6652"
+    },
+    {
+      "file": "docs/theme-briefs/souple/CONSIGNE_CLAUDE.md",
+      "gitBlob": "ce8e73d6ab1dbfd74565c9b9d484cea218d49239"
+    },
+    {
+      "file": "docs/theme-briefs/souple/INVENTAIRE_MAQUETTES.md",
+      "gitBlob": "601108b4991fb6e219d9ec71ef24eb934f002ff5"
+    },
+    {
+      "file": "docs/theme-briefs/souple/PROMPTS_COMPLEMENTS.json",
+      "gitBlob": "410a9c6aacfe4278315f4bc20ed5287fd847f0ce"
+    },
+    {
+      "file": "docs/theme-briefs/souple/resultats/fonctions-interactions.json",
+      "gitBlob": "39cf01d235d0d51c2976ea5364184ead5e14dc52"
+    },
+    {
+      "file": "docs/theme-briefs/souple/resultats/studio.json",
+      "gitBlob": "bda8c25cb2e785e9dcf01c807b1501d483dce38d"
+    },
+    {
+      "file": "reports/lot2a/passe-2/products/theme-spec.json",
+      "gitBlob": "5f8aa732b13acf30056213859ee175d430b36baf"
+    },
+    {
+      "file": "reports/lot2a/passe-2/services/theme-spec.json",
+      "gitBlob": "21c6e6d694c96804b1164d8965124fa5722cc134"
+    },
+    {
+      "file": "reports/openai-real-brand-test/direct-2026-10-10T12-39-18-157Z-partiel-0.png",
+      "gitBlob": "c5b21ae9067f59904cdb0482c876f63bb6abdf98"
+    },
+    {
+      "file": "reports/openai-real-brand-test/direct-2026-10-10T12-39-18-157Z-partiel-1.png",
+      "gitBlob": "9935c70715410db09ab017f028cf3d65b16fbe4d"
+    },
+    {
+      "file": "reports/openai-real-brand-test/direct-2026-10-10T12-39-18-157Z.json",
+      "gitBlob": "693646bdc6842fe03aa2a159af5d27f02889cb38"
+    },
+    {
+      "file": "reports/openai-real-brand-test/direct-2026-10-10T12-39-18-157Z.png",
+      "gitBlob": "f324119a11df978858c60b2ec3099d589517add2"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/brand-board-planche-identite.png",
+      "gitBlob": "84dabc9eaf9e84fbe56eca27e7ff917fe9590fe6"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/favicon-favicon.png",
+      "gitBlob": "097a49a85108b1e6e9688f449d280cc6ad38d3a3"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/identite.json",
+      "gitBlob": "ebe66ac545cd916e26855886c50812f161b928da"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-light-logo-fond-sombre.png",
+      "gitBlob": "c2d433c9f3f3afc97ac4eb01349134ec7b8cfaf3"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-light-webp-logo-fond-sombre.webp",
+      "gitBlob": "70ee4955caaa2f1839c58f6fdfc0474fd60daf56"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-logo-principal.png",
+      "gitBlob": "79e0bb622847a879111e954f2e77528c74a8c602"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-mark-symbole-seul.png",
+      "gitBlob": "c12829e360c1515490b1c56c4a117a8a393962b7"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-mark-webp-symbole-seul.webp",
+      "gitBlob": "51630887649525e655df32a1906afbc600549906"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-mono-logo-noir.png",
+      "gitBlob": "d53f81be8f3742c3754675f6f066427ab0cf8eef"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-v2-logo-v2-t1.png",
+      "gitBlob": "79e0bb622847a879111e954f2e77528c74a8c602"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-v2-original-logo-v2-t1-original.png",
+      "gitBlob": "f324119a11df978858c60b2ec3099d589517add2"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-v2-studio-logo-v2-t2.png",
+      "gitBlob": "a1195ad20d0b20cc8434b38161620192aef75669"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-v2-studio-logo-v2-t3.png",
+      "gitBlob": "a5cf709a0f897bb1dad5b22b51942ed69fe2d967"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-webp-logo-principal.webp",
+      "gitBlob": "e9376fe28c7553a53feca17cbb07d59cfa4e050a"
+    },
+    {
+      "file": "reports/openai-real-brand-test/identite/logo-white-logo-blanc.png",
+      "gitBlob": "95b074849806e90e5589e81b0a41f81519924c13"
+    }
+  ],
+  "noPrivateOrIgnoredDataCopied": true
+}

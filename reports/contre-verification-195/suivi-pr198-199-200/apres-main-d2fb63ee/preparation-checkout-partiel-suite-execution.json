@@ -1,0 +1,17 @@
+{
+  "source": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "--maxWorkers=2",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=/tmp/ecs-195-reprise/preuves/apres-d2fb63ee/suite-brute.json"
+  ],
+  "heapMiB": 1536,
+  "exitCode": 130,
+  "seconds": 554.87,
+  "networkGuard": true,
+  "isolatedFictitiousData": true,
+  "noConcurrentBrowser": true
+}

@@ -1,0 +1,13 @@
+{
+  "source": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "command": [
+    "node_modules/.bin/tsc",
+    "--noEmit"
+  ],
+  "heapMiB": 3072,
+  "exitCode": 0,
+  "seconds": 47.77,
+  "networkGuard": true,
+  "isolatedFictitiousData": true,
+  "noConcurrentBrowser": true
+}

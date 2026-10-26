@@ -1,0 +1,171 @@
+{
+ "codeCommit": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+ "syntheticOnly": true,
+ "realProviderCalls": 0,
+ "served": {
+  "commit": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "source": "compiled-build"
+ },
+ "conservation": {
+  "storeUnchanged": true,
+  "orderRestored": true,
+  "oldVersionsKept": true,
+  "oneVersionPerAction": true,
+  "versionsBefore": 1,
+  "versionsAfter": 9,
+  "noNewRecordedCalls": true
+ },
+ "nativeHarnessAdaptations": "External browser requests blocked; STORAGE_DIR rejected; extra360/768 widths; assertions unchanged",
+ "projet": "Atelier Rive",
+ "sectionMasquee": "rive_projects",
+ "resultats": [
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"k33nci7sftowun57\",\"number\":2,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"i574wtealcf542s0\",\"number\":3,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "ordinateur",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "ordinateur",
+   "erreursJavaScript": []
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"6vu5r9u9eb7zejvj\",\"number\":4,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"fq6lzdk3y5rkm2wu\",\"number\":5,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "telephone",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "telephone",
+   "erreursJavaScript": []
+  },
+  {
+   "largeur": "petit-telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"7e4z3v6pv70q90pb\",\"number\":6,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "petit-telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"9g53elb0ttl6t09p\",\"number\":7,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "petit-telephone",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "petit-telephone",
+   "erreursJavaScript": []
+  },
+  {
+   "largeur": "tablette",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"kz1fmjp3c51i3o30\",\"number\":8,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "tablette",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"jzosrpt3ffii01zw\",\"number\":9,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "tablette",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "tablette",
+   "erreursJavaScript": []
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+import os,subprocess,time,json,sys
+from pathlib import Path
+base=Path('/tmp/ecs-195-reprise');root=base/'main-final-d2fb63ee';out=base/'preuves/apres-d2fb63ee';sha='d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5'
+print('Waiting for actual native suite completion; no browser concurrently.',flush=True)
+while not(out/'suite.exit').exists():time.sleep(2)
+if (out/'suite.exit').read_text().strip()!='0':raise RuntimeError('Native suite failed; browser phase not started')
+subprocess.run(['python3',str(base/'synthese-main-final.py')],check=True)
+x=json.loads((out/'suite-synthese.json').read_text());assert x['success'] and x['failed']==0 and x['skipped']==31
+env=os.environ.copy();env.update(APP_SECRET='countercheck-195-fictitious-secret-not-live',CHROMIUM='/usr/bin/chromium',NEXT_TELEMETRY_DISABLED='1',THEME_DEMOS_AUTO='0',STOCK_OFFLINE='1',NODE_OPTIONS=f'--max-old-space-size=3072 --import={root}/scripts/lot9/network-guard.mjs')
+for k in ['DATA_DIR','DATABASE_FILE','STORAGE_DIR']:env.pop(k,None)
+def phase(name,cmd):
+ print('START',name,flush=True);st=time.time()
+ with (out/(name+'.log')).open('w') as f:r=subprocess.run(cmd,cwd=root,env=env,stdout=f,stderr=subprocess.STDOUT)
+ (out/(name+'.exit')).write_text(str(r.returncode)+'\n');(out/(name+'-execution.json')).write_text(json.dumps({'codeCommit':sha,'command':cmd,'exitCode':r.returncode,'seconds':round(time.time()-st,2),'realProviderCalls':0,'nativeNetworkGuard':True,'sequentialAfterFullSuite':True},indent=2)+'\n');print('END',name,r.returncode,flush=True)
+ if r.returncode:raise RuntimeError(name+' failed')
+(root/'scripts/contre-verification-195-main-final-browser.ts').write_bytes((base/'harnais-main-final-browser.ts.txt').read_bytes())
+phase('navigateur-production',['node_modules/.bin/tsx','scripts/contre-verification-195-main-final-browser.ts',str(out/'studio')])
+env['NODE_OPTIONS']=f'--max-old-space-size=1536 --import={root}/scripts/lot9/network-guard.mjs'
+phase('fraise-export',['node_modules/.bin/tsx','scripts/reference-static-preview.ts',str(base/'statique-mainfinal'),'--only=fraise'])
+s=(base/'pr198/scripts/contre-verification-195-fraise198.mjs').read_text().replace("out=base+'/preuves/fraise'","out=base+'/preuves/apres-d2fb63ee/fraise'").replace("['statique-base333/fraise','statique-pr198/fraise']","['statique-pr198/fraise','statique-mainfinal/fraise']").replace("base:'333bccc8daf97b9746dcf590a9525c830a53915f'","base:'44546ab98b44fac4823e41eccbb4c4b034979f51'").replace("candidate:'44546ab98b44fac4823e41eccbb4c4b034979f51'","candidate:'"+sha+"'").replace('[360,390,430,749,750,1440]','[360,390,430,1440]')
+(root/'scripts/contre-verification-195-fraise-mainfinal.mjs').write_text(s)
+phase('fraise-navigateur',['node','scripts/contre-verification-195-fraise-mainfinal.mjs'])
+print('FINAL MAIN COMPILED BROWSER AND NATIVE FRAISE PAGES COMPLETE',flush=True)

@@ -1,5 +1,7 @@
 # Suivi indépendant #195 — PR198 / PR199 / PR200
 
+**Dernier contrôle : [APRÈS fusion réelle d2fb63ee,3405tests et parcours compilés verts ; CI encore en cours](apres-main-d2fb63ee/README.md).**
+
 **Verdict AVANT : ACCORD POUR FUSION pour chacune des trois têtes ci-dessous, CI verte. Claude seul opérateur. Contrôle du vrai main final EN ATTENTE de ses fusions. Aucun appel API fournisseur réel.**
 
 | PR | Tête effectivement contrôlée | Verdict | Preuves |

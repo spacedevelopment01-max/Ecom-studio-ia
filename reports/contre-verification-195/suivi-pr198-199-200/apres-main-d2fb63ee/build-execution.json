@@ -1,0 +1,13 @@
+{
+  "source": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "command": [
+    "node_modules/.bin/next",
+    "build"
+  ],
+  "heapMiB": 4096,
+  "exitCode": 0,
+  "seconds": 103.71,
+  "networkGuard": true,
+  "isolatedFictitiousData": true,
+  "noConcurrentBrowser": true
+}
