@@ -261,4 +261,35 @@ référence #176 et fichiers temporaires des scripts de Claude), tout rejoué su
 | Validation visuelle complète des 15 thèmes | **PARTIEL** : aucune régression due à la fusion ; FRAISE mobile (articles, légal) défectueux, préexistant ; 7 kits privés incomplets |
 | Installation, achat et réservation dans de vrais CMS | **BLOQUÉ** : aucun CMS de test accessible ; 51 exports natifs PROVISIONAL seulement |
 | Données réelles, fournisseurs, prix réels, version servie | **NON VÉRIFIÉ** (§ 9) |
-| Suivis avant activation client | **À FAIRE** : FRAISE responsive ; menu d'une section masquée ; libellé « jamais écrasé » de l'onglet Catalogue ; décision de Thomas sur l'envoi de stock vers WooCommerce/PrestaShop |
+| Suivis avant activation client | **FAITS** (§ 11) : FRAISE responsive (#198), menu d'une section masquée (#199), texte du stock (#200), Theme Check fiable en CI et au studio (#201, #202). **Reste** : décision de Thomas sur l'envoi de stock vers WooCommerce/PrestaShop |
+
+## 11. Suivi du 26 octobre : corrections après fusion (#198 à #202)
+
+Demandées par Thomas après le rapport ci-dessus. Chaque correction a sa propre PR. Chacune est reproduite avant d'être corrigée, avec un test qui échoue sans elle. Codex a donné son accord explicite sur la tête exacte de chaque PR, puis Claude l'a fusionnée.
+
+| PR | Correction | Tête approuvée | Fusion |
+|---|---|---|---|
+| #198 | FRAISE au téléphone : articles et pages légales lisibles. La largeur utile passe de 0 à 327–390 px ; l'ordinateur est inchangé (52 captures comparées) | `44546ab9` | `3edb7347` |
+| #200 | Onglet Catalogue : le texte du stock décrit les garanties réelles de la synchronisation, dont la limite WooCommerce/PrestaShop (une vente pendant l'écriture elle-même) ; comportement inchangé | `e005414c` | `eeb99050` |
+| #199 | Onglet Site : le menu « … » d'une section masquée est de nouveau utilisable (seul le libellé est atténué, menu au premier plan, ouverture vers le haut si la place manque) ; studio réel, clic normal, ordinateur et téléphone | `d63bba11` | `d2fb63ee` |
+| #201 | CI : erreurs de Theme Check publiées en annotations (diagnostic) | `d1ef4620` | `53ecf5bb` |
+| #202 | Theme Check : documents Shopify vérifiés et servis en mémoire, ni téléchargement ni cache ; un document illisible arrête le contrôle, jamais « outil absent » ; export contrôlé sur le build compilé en CI | `51275d06` | `e91d19da` |
+
+**Theme Check intermittent en CI (#201, #202).**
+- **Observé** dans les journaux relevés par Codex : schémas Shopify illisibles (« Parse error at offset 0 ») et centaines de faux `ValidJSON`/`ValidSchema`, sur 3 exécutions sur 7 le 26/10. Le statut HTTP réel n'a pas été capturé.
+- **Mécanisme reproduit par simulation**, sans 429 historique constaté : le module téléchargeait les documents dans chaque processus sans contrôler la réponse. Sur la fonction réelle du studio, `main` `d2fb63ee` donne 357 erreurs pour 21 requêtes ; après #202, 0 erreur et 0 requête.
+- **Au studio**, ces fausses erreurs déclenchaient des corrections de sections par l'IA (`custom-theme.ts`).
+- **Défauts trouvés par Codex pendant la revue de #202, chacun reproduit puis corrigé** : chemin du studio non couvert ; erreur de préparation prise pour « outil indisponible » ; résolution par `createRequire` réécrite par Next dans le build servi. Le dernier défaut était invisible aux tests et à la CI, d'où la nouvelle étape « Export Shopify contrôlé sur le build compilé ».
+- **Limites déclarées** : deux scripts de preuve historiques et manuels importent encore le SDK directement (`scripts/mission154/export-proof.ts`, `scripts/cms-v2/catalogue-archives-proof.mts`). Les 35 avertissements Theme Check sont conservés, identiques à ceux d'avant #202.
+
+**Contrôles.**
+- APRÈS sur `d2fb63ee` (Claude, puis verdict favorable de Codex) :
+  - CI push verte ; `tsc` 0 erreur ; suite complète 3 405 / 0 / 31 ; build 58 pages ;
+  - Theme Check 205 contrôles (204 cas + ZIP) ;
+  - migrations 45/45/46 ; pilote 7/7 ;
+  - menu d'une section masquée dans le studio réel : RÉUSSI.
+- AVANT #202 sur `51275d06` (Claude et Codex) : CI verte, nouvelle étape comprise ; 3 409 / 0 / 31 ; 205 contrôles Theme Check ; export compilé à 0 erreur.
+- Le `main` qui suit #202 et ce rapport est gelé pour la contre-vérification APRÈS de Codex. Son SHA est publié dans #194.
+
+**Version réellement servie** : le studio expose le commit compilé sur `GET /api/version`. Après `npm run maj` chez Thomas, cette adresse doit afficher le SHA final de `main` publié dans #194. Non vérifié ici : aucun accès au studio de Thomas, aucun déploiement.
+
