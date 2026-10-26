@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-review-remote
+
+
+ Test Files  4 passed (4)
+      Tests  48 passed (48)
+   Start at  05:20:13
+   Duration  12.30s (tests 67%, import 19%, transform 14%)
+

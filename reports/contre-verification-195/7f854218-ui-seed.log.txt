@@ -1,0 +1,67 @@
+Isolated administrator fixture ready; no provider request.
+{
+  "commit": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "demos": [
+    {
+      "theme": "fraise",
+      "missing": 25
+    },
+    {
+      "theme": "onde",
+      "missing": 26
+    },
+    {
+      "theme": "rive",
+      "missing": 0
+    },
+    {
+      "theme": "sillon",
+      "missing": 0
+    },
+    {
+      "theme": "noctil",
+      "missing": 0
+    },
+    {
+      "theme": "traverse",
+      "missing": 0
+    },
+    {
+      "theme": "heuren",
+      "missing": 0
+    },
+    {
+      "theme": "museau-club",
+      "missing": 0
+    },
+    {
+      "theme": "souple",
+      "missing": 0
+    },
+    {
+      "theme": "table-saison",
+      "missing": 0
+    },
+    {
+      "theme": "atelier-nuance",
+      "missing": 2
+    },
+    {
+      "theme": "parenthese",
+      "missing": 7
+    },
+    {
+      "theme": "phase",
+      "missing": 26
+    },
+    {
+      "theme": "maison-horizon",
+      "missing": 87
+    },
+    {
+      "theme": "aplat",
+      "missing": 29
+    }
+  ],
+  "holdouts": 2
+}

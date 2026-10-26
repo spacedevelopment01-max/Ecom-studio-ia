@@ -1,0 +1,59 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-review-remote
+
+ ❯ tests/contre-verification-195-products.test.ts (15 tests | 2 failed) 324ms
+   × P1 #195 : variante A acquise, variante B refusée, reprise sans redoubler A 13ms
+   × P1 #195 : quantité absolue A acquise, refus 422 de B, reprise sans doubler A 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/contre-verification-195-products.test.ts > P1 #195 : variante A acquise, variante B refusée, reprise sans redoubler A
+AssertionError: expected [ 14, 7 ] to deeply equal [ 12, 7 ]
+
+- Expected
++ Received
+
+  [
+-   12,
++   14,
+    7,
+  ]
+
+ ❯ tests/contre-verification-195-products.test.ts:292:59
+    290|   expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12,…
+    291|   expect((await syncProducts(pid, m.conn, opts)).counts.error).toBe(0);
+    292|   expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12,…
+       |                                                           ^
+    293|   expect(getProduct(pid, product.id).variants.map(v => v.stock)).toEqu…
+    294| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/contre-verification-195-products.test.ts > P1 #195 : quantité absolue A acquise, refus 422 de B, reprise sans doubler A
+AssertionError: expected [ 14, 7 ] to deeply equal [ 12, 7 ]
+
+- Expected
++ Received
+
+  [
+-   12,
++   14,
+    7,
+  ]
+
+ ❯ tests/contre-verification-195-products.test.ts:324:59
+    322|   expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12,…
+    323|   expect((await syncProducts(pid, m.conn, opts)).counts.error).toBe(0);
+    324|   expect(m.products.get(rid)!.variants.map(v => v.stock)).toEqual([12,…
+       |                                                           ^
+    325|   expect(getProduct(pid, product.id).variants.map(v => v.stock)).toEqu…
+    326| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 13 passed (15)
+   Start at  05:18:49
+   Duration  2.31s (import 45%, transform 38%, tests 17%)
+

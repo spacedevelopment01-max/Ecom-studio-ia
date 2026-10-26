@@ -1,0 +1,33 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-review-remote
+
+ ❯ tests/contre-verification-195-products.test.ts (19 tests | 1 failed | 18 skipped) 214ms
+   × P1 #195 : réassort saisi au Studio pendant vente et ajustement, modification client conservée 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/contre-verification-195-products.test.ts > P1 #195 : réassort saisi au Studio pendant vente et ajustement, modification client conservée
+AssertionError: expected 11 to be 14 // Object.is equality
+
+- Expected
++ Received
+
+- 14
++ 11
+
+ ❯ tests/contre-verification-195-products.test.ts:434:57
+    432|   expect(m.products.get(rid)!.variants[0].stock).toBe(11);
+    433|   // Les 3 unités ajoutées au Studio pendant l'attente restent à envoy…
+    434|   expect(getProduct(pid, product.id).variants[0].stock).toBe(14);
+       |                                                         ^
+    435|   expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+    436|   expect(m.products.get(rid)!.variants[0].stock).toBe(14);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 18 skipped (19)
+   Start at  05:20:51
+   Duration  2.01s (transform 47%, import 39%, tests 13%, setup 1%)
+

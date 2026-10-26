@@ -1,0 +1,37 @@
+/** Isolated countercheck #195. No provider, worker, payment or client data. */
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+const root = process.env.DATA_DIR;
+if (!root?.startsWith('/tmp/ecs-higgsfield-proof-195-')) throw Error('Isolated proof directory required');
+globalThis.fetch = async () => { throw Error('External network forbidden in seed'); };
+const { one } = await import('../src/lib/db.ts');
+const { seedHoldout } = await import('../tests/lot1-holdout-fixtures.ts');
+const { demoProject } = await import('../tests/demo-fixtures.ts');
+const { MAQUETTE_THEMES } = await import('../src/lib/theme/theme-fit.ts');
+const { composeShop } = await import('../src/lib/engine/shop.ts');
+const { saveThemeVersion } = await import('../src/lib/projects.ts');
+const { grantProjectPlan } = await import('../src/lib/project-subscriptions.ts');
+const { runWithLang } = await import('../src/lib/i18n-server.ts');
+const user = one("SELECT id FROM users WHERE role='admin' ORDER BY created_at DESC LIMIT 1");
+if (!user) throw Error('Run native Higgsfield proof seed first');
+const report = { commit: execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim(), fictitious: true, realProviderCalls:0, demos: [], holdouts: [] };
+await runWithLang({content:'fr', ui:'fr'}, async () => {
+  for (const theme of MAQUETTE_THEMES) {
+    try {
+      const f = await demoProject(user.id, theme);
+      grantProjectPlan(f.pid, 'dominer');
+      const version = saveThemeVersion(f.pid, f.spec, 'Contre-vérification #195 : démonstration native', 'user');
+      report.demos.push({theme, project:f.pid, version:version.id, missing:f.missing ?? [], pages:f.spec.store.pages.map(p=>({handle:p.handle,title:p.title})), product:f.spec.store.product.handle, services:!!f.services});
+    } catch (e) { report.demos.push({theme,error:String(e.message)}); }
+  }
+  for (const [index, direction] of [[0,'traverse'],[2,'rive']]) {
+    const pid = seedHoldout(user.id,index,'Contre-épreuve fictive 195');
+    grantProjectPlan(pid,'dominer');
+    const f = await composeShop(pid,direction,undefined,false,true);
+    const v = saveThemeVersion(pid,f.spec,'Contre-vérification #195 : autre métier, sans génération','user');
+    report.holdouts.push({project:pid,index,direction,version:v.id,product:f.spec.store.product.handle,pages:f.spec.store.pages.map(p=>p.handle)});
+  }
+});
+fs.writeFileSync(path.join(root,'projects.json'),JSON.stringify(report,null,2));
+console.log(JSON.stringify({commit:report.commit,demos:report.demos.map(d=>({theme:d.theme,missing:d.missing?.length,error:d.error})),holdouts:report.holdouts.length},null,2));

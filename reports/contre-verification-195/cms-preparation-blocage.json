@@ -1,0 +1,15 @@
+{
+  "scope": "isolated_CMS_preparation_only_no_application_test",
+  "status": "BLOCKED_DOCKER_STORAGE",
+  "observedErrors": [
+    "MariaDB initialization: errno 28 No space left on device",
+    "WordPress container creation: no space left on device",
+    "Docker exec/copy: pivot_root mkdir no space left on device"
+  ],
+  "runnerFreeBytes": 7619051520,
+  "noGlobalPrune": true,
+  "oldContainersUntouched": true,
+  "realCmsTestsRun": 0,
+  "providerCalls": 0,
+  "temporaryDatabase": "RAM fixture attempted; stopped after preparation failure"
+}
