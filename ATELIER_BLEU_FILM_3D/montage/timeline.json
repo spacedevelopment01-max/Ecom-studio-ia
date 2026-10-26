@@ -1,0 +1,145 @@
+{
+  "source_voix": "Kokoro v1.0 (ff_siwis, vitesse 0.94)",
+  "duree": 65.841,
+  "ips": 30,
+  "phrases": {
+    "p01": {
+      "debut": 1,
+      "fin": 2.756,
+      "texte": "Votre métier, vous le connaissez.",
+      "fichier": "audio/phrases/p01.wav",
+      "mots": {
+        "métier": 1.41
+      },
+      "avant": "le rouleau géant entre dans le cadre"
+    },
+    "p02": {
+      "debut": 4.956,
+      "fin": 8.827,
+      "texte": "Mais votre site, vos visuels et votre communication vous prennent du temps.",
+      "fichier": "audio/phrases/p02.wav",
+      "mots": {
+        "site": 5.486,
+        "visuels": 5.966,
+        "communication": 7.236,
+        "temps": 8.446
+      },
+      "avant": "la surface se plie en façade, l'enseigne ATELIER BLEU s'allume"
+    },
+    "p03": {
+      "debut": 9.327,
+      "fin": 13.066,
+      "texte": "E-COM STUDIO IA rassemble leur création dans un seul espace.",
+      "fichier": "audio/phrases/p03.wav",
+      "mots": {
+        "rassemble": 10.477,
+        "seul": 12.057
+      },
+      "avant": "les morceaux dispersés (site, visuels, communication)"
+    },
+    "p04": {
+      "debut": 14.466,
+      "fin": 19.961,
+      "texte": "Vous décrivez votre activité, vos prestations, votre zone d'intervention et le style que vous aimez.",
+      "fichier": "audio/phrases/p04.wav",
+      "mots": {
+        "activité": 15.616,
+        "prestations": 16.176,
+        "zone": 17.636,
+        "style": 18.886
+      },
+      "avant": "la façade s'ouvre, la caméra entre ; l'écran du studio se pose"
+    },
+    "p05": {
+      "debut": 22.461,
+      "fin": 26.418,
+      "texte": "Le studio vous aide à créer votre logo, vos couleurs et votre identité.",
+      "fichier": "audio/phrases/p05.wav",
+      "mots": {
+        "logo": 24.271,
+        "couleurs": 24.591,
+        "identité": 25.721
+      },
+      "avant": "lecture du formulaire rempli, puis traversée de la lettre B"
+    },
+    "p06": {
+      "debut": 30.018,
+      "fin": 36.631,
+      "texte": "Vous construisez ensuite un site qui explique vos services, présente vos réalisations et indique comment vous contacter.",
+      "fichier": "audio/phrases/p06.wav",
+      "mots": {
+        "site": 31.768,
+        "services": 32.848,
+        "réalisations": 33.948,
+        "contacter": 35.928
+      },
+      "avant": "composition Logo / Couleurs / Typographie, résultat sur l'enseigne et les documents, le bâtiment se déplie"
+    },
+    "p07": {
+      "debut": 38.631,
+      "fin": 43.848,
+      "texte": "À partir de cette même identité, préparez vos visuels, vos publications et vos publicités.",
+      "fichier": "audio/phrases/p07.wav",
+      "mots": {
+        "identité": 40.131,
+        "visuels": 41.251,
+        "publications": 41.871,
+        "publicités": 43.061
+      },
+      "avant": "fin de lecture du site, plongée dans la photo de la réalisation"
+    },
+    "p08": {
+      "debut": 46.448,
+      "fin": 50.33,
+      "texte": "Vous gardez la main sur les contenus et les ajustez à votre entreprise.",
+      "fichier": "audio/phrases/p08.wav",
+      "mots": {
+        "main": 47.298,
+        "ajustez": 48.558
+      },
+      "avant": "composition d'ensemble des trois supports, puis l'écran de modification"
+    },
+    "p09": {
+      "debut": 52.93,
+      "fin": 54.241,
+      "texte": "Moins d'outils à gérer.",
+      "fichier": "audio/phrases/p09.wav",
+      "mots": {},
+      "avant": "le support se met à jour, sortie du bâtiment"
+    },
+    "p10": {
+      "debut": 54.741,
+      "fin": 56.314,
+      "texte": "Une image plus cohérente.",
+      "fichier": "audio/phrases/p10.wav",
+      "mots": {},
+      "avant": ""
+    },
+    "p11": {
+      "debut": 56.814,
+      "fin": 58.484,
+      "texte": "Plus de temps pour votre métier.",
+      "fichier": "audio/phrases/p11.wav",
+      "mots": {},
+      "avant": ""
+    },
+    "p12": {
+      "debut": 59.484,
+      "fin": 60.792,
+      "texte": "E-COM STUDIO IA.",
+      "fichier": "audio/phrases/p12.wav",
+      "mots": {},
+      "avant": "les volumes s'alignent autour du nom"
+    },
+    "p13": {
+      "debut": 61.192,
+      "fin": 63.241,
+      "texte": "Votre activité, mise en lumière.",
+      "fichier": "audio/phrases/p13.wav",
+      "mots": {
+        "lumière": 62.632
+      },
+      "avant": ""
+    }
+  }
+}

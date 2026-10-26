@@ -1,0 +1,18 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="commun.css">
+<style>
+body { width: 600px; height: 750px; background: #fff; position: relative; }
+.visuel { position: relative; height: 610px; overflow: hidden; } .visuel img.photo { width: 100%; height: 100%; object-fit: cover; }
+.voile { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,23,54,.88) 0%, rgba(11,23,54,.2) 46%, rgba(11,23,54,0) 70%); }
+.txt { position: absolute; top: 34px; left: 32px; right: 32px; color: #fff; }
+.marque { display: flex; align-items: center; gap: 12px; font-family: "Montserrat"; font-weight: 800; letter-spacing: .08em; font-size: 20px; margin-bottom: 22px; } .marque img { width: 46px; height: 46px; }
+h1 { font-weight: 800; font-size: 54px; line-height: 1.02; white-space: nowrap; }
+.txt p { font-size: 23px; margin-top: 14px; color: #DCE5FF; }
+.cta { height: 140px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; background: var(--ab-nuit); color: #fff; }
+.cta div b { font-family: "Montserrat"; font-weight: 700; font-size: 22px; display: block; } .cta div small { color: #C9D6FF; font-size: 18px; }
+.cta span { background: var(--ab-bleu); font-family: "Montserrat"; font-weight: 700; font-size: 22px; padding: 18px 26px; border-radius: 14px; }
+.etat-nouveau .ancien, .etat-base .nouveau { display: none; }
+</style></head><body class="ab">
+<div class="visuel"><img class="photo" src="img/salon-apres.jpg"><div class="voile"></div>
+<div class="txt"><div class="marque"><img src="img/logo-atelier-bleu.svg">ATELIER BLEU</div><h1 data-zone="titre"><span class="ancien">Peinture intérieure</span><span class="nouveau">Peinture intérieure<br>à Lyon</span></h1><p>Murs et plafonds, finitions soignées.</p></div></div>
+<div class="cta"><div><b>Atelier Bleu</b><small>Lyon et ses environs</small></div><span>Nous contacter</span></div>
+<script src="etat.js"></script></body></html>

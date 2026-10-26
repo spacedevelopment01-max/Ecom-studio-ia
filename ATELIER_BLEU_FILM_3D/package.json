@@ -1,0 +1,17 @@
+{
+  "name": "atelier-bleu-film-3d",
+  "private": true,
+  "description": "Film vertical 3D « Votre entreprise prend une autre dimension » (E-COM STUDIO IA, sociétés de services) — projet séparé du studio.",
+  "scripts": {
+    "photos": "node scripts/photos.cjs",
+    "ecrans": "node scripts/ecrans.cjs",
+    "planning": "node scripts/planning.cjs",
+    "reperes": "node scripts/reperes.cjs",
+    "bande-son": "python3 scripts/bande-son.py",
+    "rendre": "node scripts/rendre.cjs --postes 2"
+  },
+  "dependencies": {
+    "@fontsource/montserrat": "5.1.0",
+    "three": "0.169.0"
+  }
+}

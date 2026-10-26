@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>ATELIER BLEU — film 3D</title>
+<link rel="stylesheet" href="../ui/commun.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #030a22; }
+  canvas { position: absolute; inset: 0; display: block; }
+  #calque { position: absolute; inset: 0; pointer-events: none; font-family: "Bricolage", sans-serif; color: #fff; }
+  /* Légende principale : une seule information à la fois, en haut (hors zones des applications). */
+  .leg { position: absolute; left: 56px; top: 200px; max-width: 968px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; opacity: 0; background: rgba(4,10,34,.78); border: 2px solid rgba(143,184,255,.28); border-radius: 34px; padding: 26px 36px 30px 28px; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+  .leg.centre { left: 50%; align-items: center; text-align: center; padding: 26px 40px 30px; }
+  .leg .sur { font-family: "Inter"; font-weight: 700; font-size: 30px; letter-spacing: .16em; text-transform: uppercase; color: #9fbcff; }
+  .leg .ligne { display: flex; align-items: center; gap: 26px; }
+  .leg .num { flex: none; width: 96px; height: 96px; border-radius: 28px; background: #2350FF; display: grid; place-items: center; font-weight: 800; font-size: 58px; box-shadow: 0 0 60px rgba(60,110,255,.65); }
+  .leg .txt { font-weight: 800; font-size: 74px; line-height: 1.02; letter-spacing: -0.03em; font-variation-settings: "opsz" 96; text-shadow: 0 6px 40px rgba(2,8,30,.85); }
+  .leg .txt em { font-style: normal; color: #8fb8ff; }
+  .leg .mot { display: inline-block; transition: none; }
+  /* Étiquettes accrochées aux objets 3D */
+  .eti { position: absolute; transform: translate(-50%, -50%); font-family: "Inter"; font-weight: 800; font-size: 40px; color: #fff; background: rgba(8,18,52,.82); border: 2px solid rgba(143,184,255,.55); padding: 12px 26px; border-radius: 18px; white-space: nowrap; opacity: 0; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
+  .eti.bleu { background: #2350FF; border-color: #8fb8ff; }
+  /* Signature finale */
+  #fin { position: absolute; left: 0; right: 0; top: 1270px; text-align: center; opacity: 0; }
+  #fin .marque { font-family: "Bricolage"; font-weight: 600; font-size: 104px; letter-spacing: -0.03em; }
+  #fin .marque i { font-family: "Instrument"; font-style: italic; font-weight: 400; color: #6f9bff; }
+  #fin .slogan { font-family: "Inter"; font-weight: 600; font-size: 48px; color: #cfdcff; margin-top: 22px; }
+  #fondu { position: absolute; inset: 0; background: #fff; opacity: 0; }
+  #noir { position: absolute; inset: 0; background: #030a22; opacity: 0; }
+</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<div id="calque"><div id="fondu"></div><div id="noir"></div><div id="fin"><div class="marque">E-COM STUDIO <i>ia</i></div><div class="slogan">Votre activité, mise en lumière.</div></div></div>
+<script type="module" src="film.js"></script>
+</body></html>

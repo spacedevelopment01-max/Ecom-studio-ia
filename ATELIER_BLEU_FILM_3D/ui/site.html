@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="commun.css">
+<style>
+body { width: 600px; background: var(--ab-blanc); }
+header { display: flex; justify-content: space-between; align-items: center; padding: 22px 28px; background: #fff; }
+.burger { width: 34px; display: grid; gap: 7px; } .burger i { height: 3px; border-radius: 2px; background: var(--ab-nuit); display: block; }
+.hero { position: relative; height: 640px; color: #fff; overflow: hidden; }
+.hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,23,54,0) 25%, rgba(11,23,54,.92) 78%); }
+.hero .txt { position: absolute; left: 30px; right: 30px; bottom: 34px; z-index: 1; }
+.hero h1 { font-weight: 800; font-size: 46px; line-height: 1.06; letter-spacing: -0.01em; }
+.hero p { font-size: 21px; line-height: 1.4; margin: 14px 0 22px; color: #DCE5FF; }
+.btn { display: inline-flex; align-items: center; gap: 12px; background: var(--ab-bleu); color: #fff; font-family: "Montserrat"; font-weight: 700; font-size: 23px; padding: 19px 30px; border-radius: 999px; }
+.btn svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+section { padding: 46px 30px 10px; }
+.sur { font-family: "Montserrat"; font-weight: 700; font-size: 17px; letter-spacing: .16em; color: var(--ab-bleu); text-transform: uppercase; }
+h2 { font-weight: 800; font-size: 38px; line-height: 1.08; margin: 10px 0 14px; }
+.intro { font-size: 22px; line-height: 1.5; color: #33405F; }
+.carte { background: #fff; border-radius: 26px; padding: 26px 26px 28px; margin-top: 18px; box-shadow: 0 18px 40px -26px rgba(11,23,54,.45); display: grid; grid-template-columns: 70px 1fr; column-gap: 20px; }
+.carte .ico { width: 70px; height: 70px; border-radius: 20px; background: #E6ECFF; display: grid; place-items: center; grid-row: span 2; }
+.carte .ico svg { width: 36px; height: 36px; stroke: var(--ab-bleu); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.carte h3 { font-weight: 800; font-size: 27px; margin-top: 4px; }
+.carte p { font-size: 20px; line-height: 1.45; color: #33405F; margin-top: 8px; }
+.real { background: #fff; border-radius: 26px; overflow: hidden; margin-top: 18px; box-shadow: 0 18px 40px -26px rgba(11,23,54,.45); }
+.real .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.real .duo div { position: relative; } .real img { width: 100%; height: 300px; object-fit: cover; display: block; }
+.real .tag { position: absolute; left: 14px; top: 14px; background: rgba(11,23,54,.85); color: #fff; font-family: "Montserrat"; font-weight: 700; font-size: 16px; letter-spacing: .1em; padding: 7px 12px; border-radius: 10px; }
+.real .tag.b { background: var(--ab-bleu); }
+.real .leg { padding: 22px 26px 26px; } .real h3 { font-weight: 800; font-size: 27px; } .real p { font-size: 20px; color: #33405F; margin-top: 6px; line-height: 1.45; }
+.zone { display: grid; grid-template-columns: 210px 1fr; gap: 24px; align-items: center; background: var(--ab-nuit); color: #fff; border-radius: 26px; padding: 26px; margin-top: 18px; }
+.zone h3 { font-weight: 800; font-size: 29px; } .zone p { font-size: 20px; color: #C9D6FF; margin-top: 8px; line-height: 1.4; }
+.contact { margin: 44px 30px 0; background: linear-gradient(160deg, var(--ab-bleu), #1A3BD1); color: #fff; border-radius: 30px; padding: 40px 32px; text-align: center; }
+.contact h2 { color: #fff; margin-top: 0; } .contact p { font-size: 21px; color: #DCE5FF; margin-bottom: 26px; }
+.contact .btn { background: #fff; color: var(--ab-bleu); font-size: 26px; padding: 22px 38px; } .contact .btn svg { stroke: var(--ab-bleu); }
+footer { padding: 40px 30px 46px; display: flex; justify-content: space-between; align-items: center; color: #5B6785; font-size: 18px; }
+</style></head><body class="ab">
+<header><span class="logo-ab"><img src="img/logo-atelier-bleu.svg"><b>ATELIER BLEU</b></span><span class="burger"><i></i><i></i><i></i></span></header>
+<div class="hero" data-zone="hero"><img src="img/salon-apres.jpg"><div class="txt"><h1>Peinture intérieure et rénovation à Lyon</h1><p>Murs, plafonds et finitions : votre intérieur rénové avec soin.</p><span class="btn">Nous contacter</span></div></div>
+<section data-zone="metier"><div class="sur">Ce que nous faisons</div><h2>Un intérieur repeint, du sol au plafond</h2><p class="intro">Atelier Bleu prépare vos murs et vos plafonds, applique la peinture et soigne chaque finition.</p></section>
+<section data-zone="prestations"><div class="sur">Nos prestations</div><h2>Murs, plafonds, finitions</h2>
+<div class="carte"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="13" height="6" rx="2"/><path d="M16 7h3v5h-8v3"/><path d="M11 15v5"/></svg></span><h3>Peinture intérieure</h3><p>Salons, chambres, couloirs : vos pièces repeintes dans la teinte de votre choix.</p></div>
+<div class="carte" data-zone="prestation"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11"/><path d="M9 20v-6h6v6"/></svg></span><h3>Murs et plafonds</h3><p>Rebouchage, ponçage, sous-couche, puis deux couches de peinture. Finition mate, satinée ou velours.</p></div>
+<div class="carte"><span class="ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span><h3>Rénovation</h3><p>Fissures, trous, anciennes tapisseries : les murs abîmés remis en état avant peinture.</p></div>
+</section>
+<section data-zone="realisations"><div class="sur">Nos réalisations</div><h2>Avant, après</h2>
+<div class="real" data-zone="realisation"><div class="duo"><div><img src="img/salon-avant.jpg"><span class="tag">AVANT</span></div><div><img src="img/salon-apres.jpg" data-zone="photo"><span class="tag b">APRÈS</span></div></div>
+<div class="leg"><h3>Salon repeint — Lyon 3e</h3><p>Mur bleu nuit, plafond blanc mat, plinthes satinées.</p></div></div>
+</section>
+<section data-zone="zone-bloc"><div class="sur">Zone d'intervention</div>
+<div class="zone" data-zone="zone"><svg viewBox="0 0 210 170" width="210" height="170"><circle cx="105" cy="85" r="78" fill="none" stroke="#2350FF" stroke-width="2" stroke-dasharray="6 6"/><circle cx="105" cy="85" r="48" fill="rgba(35,80,255,.25)" stroke="#8FB8FF" stroke-width="2"/><path d="M20 120 C60 95 80 110 105 85 S160 40 195 55" fill="none" stroke="#3B4C7A" stroke-width="5"/><circle cx="105" cy="85" r="11" fill="#fff"/><circle cx="105" cy="85" r="5" fill="#2350FF"/></svg><div><h3>Lyon et ses environs</h3><p>Nous intervenons à Lyon et dans les communes alentour.</p></div></div>
+</section>
+<div class="contact" data-zone="contact"><h2>Un projet de peinture ?</h2><p>Décrivez votre projet : nous vous répondons.</p><span class="btn" data-zone="bouton"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>Nous contacter</span></div>
+<footer><span class="logo-ab"><img src="img/logo-atelier-bleu.svg" style="width:38px;height:38px"><b style="font-size:18px">ATELIER BLEU</b></span><span>Lyon et ses environs</span></footer>
+<script src="etat.js"></script></body></html>

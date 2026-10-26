@@ -1,0 +1,130 @@
+{
+  "source": "Kokoro v1.0 (ff_siwis, vitesse 0.94)",
+  "phrases": [
+    {
+      "id": "p01",
+      "texte": "Votre métier, vous le connaissez.",
+      "fichier": "audio/phrases/p01.wav",
+      "duree": 1.756,
+      "reperes": {
+        "métier": 0.41
+      }
+    },
+    {
+      "id": "p02",
+      "texte": "Mais votre site, vos visuels et votre communication vous prennent du temps.",
+      "fichier": "audio/phrases/p02.wav",
+      "duree": 3.871,
+      "reperes": {
+        "site": 0.53,
+        "visuels": 1.01,
+        "communication": 2.28,
+        "temps": 3.49
+      }
+    },
+    {
+      "id": "p03",
+      "texte": "E-COM STUDIO IA rassemble leur création dans un seul espace.",
+      "fichier": "audio/phrases/p03.wav",
+      "duree": 3.739,
+      "reperes": {
+        "rassemble": 1.15,
+        "seul": 2.73
+      }
+    },
+    {
+      "id": "p04",
+      "texte": "Vous décrivez votre activité, vos prestations, votre zone d'intervention et le style que vous aimez.",
+      "fichier": "audio/phrases/p04.wav",
+      "duree": 5.495,
+      "reperes": {
+        "activité": 1.15,
+        "prestations": 1.71,
+        "zone": 3.17,
+        "style": 4.42
+      }
+    },
+    {
+      "id": "p05",
+      "texte": "Le studio vous aide à créer votre logo, vos couleurs et votre identité.",
+      "fichier": "audio/phrases/p05.wav",
+      "duree": 3.957,
+      "reperes": {
+        "logo": 1.81,
+        "couleurs": 2.13,
+        "identité": 3.26
+      }
+    },
+    {
+      "id": "p06",
+      "texte": "Vous construisez ensuite un site qui explique vos services, présente vos réalisations et indique comment vous contacter.",
+      "fichier": "audio/phrases/p06.wav",
+      "duree": 6.613,
+      "reperes": {
+        "site": 1.75,
+        "services": 2.83,
+        "réalisations": 3.93,
+        "contacter": 5.91
+      }
+    },
+    {
+      "id": "p07",
+      "texte": "À partir de cette même identité, préparez vos visuels, vos publications et vos publicités.",
+      "fichier": "audio/phrases/p07.wav",
+      "duree": 5.217,
+      "reperes": {
+        "identité": 1.5,
+        "visuels": 2.62,
+        "publications": 3.24,
+        "publicités": 4.43
+      }
+    },
+    {
+      "id": "p08",
+      "texte": "Vous gardez la main sur les contenus et les ajustez à votre entreprise.",
+      "fichier": "audio/phrases/p08.wav",
+      "duree": 3.882,
+      "reperes": {
+        "main": 0.85,
+        "ajustez": 2.11
+      }
+    },
+    {
+      "id": "p09",
+      "texte": "Moins d'outils à gérer.",
+      "fichier": "audio/phrases/p09.wav",
+      "duree": 1.311,
+      "reperes": {}
+    },
+    {
+      "id": "p10",
+      "texte": "Une image plus cohérente.",
+      "fichier": "audio/phrases/p10.wav",
+      "duree": 1.573,
+      "reperes": {}
+    },
+    {
+      "id": "p11",
+      "texte": "Plus de temps pour votre métier.",
+      "fichier": "audio/phrases/p11.wav",
+      "duree": 1.67,
+      "reperes": {}
+    },
+    {
+      "id": "p12",
+      "texte": "E-COM STUDIO IA.",
+      "fichier": "audio/phrases/p12.wav",
+      "duree": 1.308,
+      "reperes": {}
+    },
+    {
+      "id": "p13",
+      "texte": "Votre activité, mise en lumière.",
+      "fichier": "audio/phrases/p13.wav",
+      "duree": 2.049,
+      "reperes": {
+        "lumière": 1.44
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Régénérables (voir LISEZMOI) : dépendances, tranches de rendu, pistes audio intermédiaires
+node_modules/
+rendu/
+audio/musique.wav
+audio/bruitages.wav
+audio/voix.wav
+audio/mixage.wav
+audio/mixage-final.wav

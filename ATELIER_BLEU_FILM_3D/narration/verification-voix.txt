@@ -1,0 +1,41 @@
+Transcription automatique (Whisper small, local) de chaque phrase de la voix off.
+
+p01
+  attendu : Votre métier, vous le connaissez.
+  entendu : Votre métier, vous le connaissez.
+p02
+  attendu : Mais votre site, vos visuels et votre communication vous prennent du temps.
+  entendu : Mais votre site, vos visuels et votre communication vous prennent du temps.
+p03
+  attendu : E-COM STUDIO IA rassemble leur création dans un seul espace.
+  entendu : Icom Studio IA rassemble leur création dans un seul espace.
+p04
+  attendu : Vous décrivez votre activité, vos prestations, votre zone d'intervention et le style que vous aimez.
+  entendu : Vous décrivez votre activité, vos prestations, votre zone d'intervention et le style que vous aimez.
+p05
+  attendu : Le studio vous aide à créer votre logo, vos couleurs et votre identité.
+  entendu : Le studio vous aide à créer votre logo, vos couleurs et votre identité.
+p06
+  attendu : Vous construisez ensuite un site qui explique vos services, présente vos réalisations et indique comment vous contacter.
+  entendu : Vous construisez ensuite un site qui explique vos services, présente vos réalisations et indique comment vous contactez.
+p07
+  attendu : À partir de cette même identité, préparez vos visuels, vos publications et vos publicités.
+  entendu : A partir de cette même identité, préparez vos visuels, vos publications et vos publicités.
+p08
+  attendu : Vous gardez la main sur les contenus et les ajustez à votre entreprise.
+  entendu : Vous gardez la main sur les contenus et les ajustez à votre entreprise.
+p09
+  attendu : Moins d'outils à gérer.
+  entendu : Moins d'outils à gérer.
+p10
+  attendu : Une image plus cohérente.
+  entendu : Une image plus cohérente.
+p11
+  attendu : Plus de temps pour votre métier.
+  entendu : Plus de temps pour votre métier.
+p12
+  attendu : E-COM STUDIO IA.
+  entendu : et comme studio IA.
+p13
+  attendu : Votre activité, mise en lumière.
+  entendu : Votre activité mise en lumière.

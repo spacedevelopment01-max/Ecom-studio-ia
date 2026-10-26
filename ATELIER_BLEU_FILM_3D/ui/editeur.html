@@ -1,0 +1,31 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="commun.css">
+<style>
+body { width: 1000px; height: 1060px; padding: 40px 48px; }
+.barre { display: flex; justify-content: space-between; align-items: center; }
+.projet { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 22px; } .projet img { width: 40px; height: 40px; }
+.onglets { display: flex; gap: 10px; margin: 28px 0 30px; border-bottom: 2px solid var(--line); padding-bottom: 18px; }
+.onglets span { font-size: 21px; font-weight: 600; color: var(--muted); padding: 10px 16px; border-radius: 12px; }
+.onglets span.on { background: var(--ink); color: #fff; }
+h1 { font-size: 46px; font-weight: 700; margin-bottom: 24px; }
+.champ { background: var(--card); border: 2px solid var(--line); border-radius: 22px; padding: 20px 26px; margin-bottom: 18px; }
+.champ label { font-size: 21px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 6px; }
+.champ .val { font-size: 42px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; height: 56px; }
+.champ.focus { border-color: var(--signal); box-shadow: 0 0 0 6px var(--signal-soft); }
+.champ .val.petit { font-size: 28px; font-weight: 500; color: var(--ink-2); height: 40px; }
+.caret { display: inline-block; width: 4px; height: 46px; background: var(--signal); margin-left: 4px; }
+.etat-valide .caret { visibility: hidden; }
+.actions { display: flex; align-items: center; gap: 20px; margin-top: 26px; }
+.bouton { background: var(--signal); color: #fff; font-weight: 700; font-size: 30px; padding: 22px 46px; border-radius: 18px; display: inline-flex; gap: 12px; align-items: center; }
+.bouton svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ok { display: none; background: var(--ok-soft); color: var(--ok); font-weight: 700; font-size: 25px; padding: 14px 20px; border-radius: 14px; }
+.etat-valide .ok { display: inline-block; } .etat-valide .bouton { background: var(--ok); }
+.etat-base .n, .etat-nouveau .a, .etat-valide .a { display: none; }
+</style></head><body class="studio">
+<div class="barre"><span class="logo-studio"><img src="img/logo-studio.svg"><span>E-COM STUDIO <i>ia</i></span></span><span class="projet"><img src="img/logo-atelier-bleu.svg">Atelier Bleu</span></div>
+<div class="onglets"><span>Marque</span><span>Site</span><span>Images</span><span>Publications</span><span class="on">Publicités</span></div>
+<h1 class="display">Modifier la publicité</h1>
+<div class="champ focus"><label>Titre</label><div class="val" data-zone="titre"><span class="a" data-zone="titre-a">Peinture intérieure</span><span class="n" data-zone="titre-n">Peinture intérieure à Lyon</span><span class="caret"></span></div></div>
+<div class="champ"><label>Texte</label><div class="val petit">Murs et plafonds, finitions soignées.</div></div>
+<div class="champ"><label>Bouton</label><div class="val petit">Nous contacter</div></div>
+<div class="actions"><span class="bouton" data-zone="valider"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Valider</span><span class="ok">Modification enregistrée</span></div>
+<script src="etat.js"></script></body></html>

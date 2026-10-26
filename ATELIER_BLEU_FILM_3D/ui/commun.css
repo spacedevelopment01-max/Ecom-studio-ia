@@ -1,0 +1,28 @@
+/* Polices libres (licence OFL) : Montserrat + Inter pour ATELIER BLEU, Bricolage + Inter + Instrument pour le studio. */
+@font-face { font-family: "Montserrat"; src: url("../polices/montserrat-latin-500-normal.woff2") format("woff2"); font-weight: 500; }
+@font-face { font-family: "Montserrat"; src: url("../polices/montserrat-latin-600-normal.woff2") format("woff2"); font-weight: 600; }
+@font-face { font-family: "Montserrat"; src: url("../polices/montserrat-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+@font-face { font-family: "Montserrat"; src: url("../polices/montserrat-latin-800-normal.woff2") format("woff2"); font-weight: 800; }
+@font-face { font-family: "Inter"; src: url("../polices/inter.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Bricolage"; src: url("../polices/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+@font-face { font-family: "Instrument"; src: url("../polices/instrument-italic.woff2") format("woff2"); font-style: italic; }
+:root {
+  /* ATELIER BLEU : ancrage bleu nuit, bleu électrique, accent bleu ciel, deux neutres (blanc, argent) */
+  --ab-nuit: #0B1736; --ab-bleu: #2350FF; --ab-ciel: #8FB8FF; --ab-blanc: #F5F7FB; --ab-argent: #C9CFD9;
+  /* Studio (couleurs réelles de l'interface, src/app/globals.css) */
+  --paper: #F5F7FC; --paper-2: #EAEEF7; --card: #FFFFFF; --ink: #0A1024; --ink-2: #2B3452; --muted: #5E6886; --line: #DCE2EE;
+  --signal: #2F5BEA; --signal-soft: #E3E9FD; --ok: #1F7A4D; --ok-soft: #DDF2E6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow: hidden; -webkit-font-smoothing: antialiased; }
+.ab { font-family: "Inter", sans-serif; color: var(--ab-nuit); }
+.ab h1, .ab h2, .ab h3, .ab .titre { font-family: "Montserrat", sans-serif; }
+.studio { font-family: "Inter", sans-serif; color: var(--ink); background: var(--paper); }
+.studio .display { font-family: "Bricolage", sans-serif; font-variation-settings: "opsz" 96; letter-spacing: -0.03em; }
+.logo-studio { display: inline-flex; align-items: center; gap: 12px; }
+.logo-studio img { width: 44px; height: 44px; }
+.logo-studio span { font-family: "Bricolage", sans-serif; font-weight: 600; font-size: 24px; letter-spacing: -0.02em; }
+.logo-studio i { font-family: "Instrument", serif; font-style: italic; font-weight: 400; color: var(--signal); }
+.logo-ab { display: inline-flex; align-items: center; gap: 12px; }
+.logo-ab img { width: 48px; height: 48px; }
+.logo-ab b { font-family: "Montserrat", sans-serif; font-weight: 800; letter-spacing: 0.08em; font-size: 22px; }
