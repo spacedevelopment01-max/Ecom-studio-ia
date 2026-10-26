@@ -1,7 +1,7 @@
 {
-  "codeTestedLatest": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "codeTestedLatest": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "BEFORE_MERGE_TECHNICALLY_FAVORABLE_AFTER_PENDING",
+  "state": "BEFORE_SUSPENDED_PENDING_D38_TEST_CORRECTION_SUITE_AND_CI",
   "realProviderCalls": 0,
   "nativeScreenshots": 101,
   "inspectionBoards": 5,
@@ -21,6 +21,26 @@
       "file": "2dbdc050-multivariantes.log.txt",
       "bytes": 2113,
       "sha256": "e93a30e190a595425f4e3f94b972ba6abc61c8505391963e1a64988b0dcc206e"
+    },
+    {
+      "file": "3ae89a6d-affiches-harnais-recu-fixture.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "3ae89a6d-affiches-harnais-recu-fixture.log.txt",
+      "bytes": 399,
+      "sha256": "d56c486d1aa62cc8767fb590381eea617586c4f58c99b56d156889926221ab34"
+    },
+    {
+      "file": "3ae89a6d-affiches.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-affiches.log.txt",
+      "bytes": 17684,
+      "sha256": "5c4de11c110a331d5a873c4e9c892866f8471ff25ece2c868c8853b945d5d106"
     },
     {
       "file": "3ae89a6d-aplat-interactions-http.exit",
@@ -166,6 +186,21 @@
       "file": "3ae89a6d-exports-17-prestashop.log.txt",
       "bytes": 5465,
       "sha256": "979fe270ec582103ce4757dd18edc2c384e37d9ccc9202a2af1d10a3f704c1dc"
+    },
+    {
+      "file": "3ae89a6d-exports-17-woo-shopify.json",
+      "bytes": 155810,
+      "sha256": "9465091b34c8e3769bcd11f5af3322eeff6b9873e86f8d5ba84bea99fd77f343"
+    },
+    {
+      "file": "3ae89a6d-exports-woo-shopify.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-exports-woo-shopify.log.txt",
+      "bytes": 5465,
+      "sha256": "597b484a6e53f30ae24c174ae7a75fec849cc921410f375259d02084d621f840"
     },
     {
       "file": "3ae89a6d-github-candidat-ci-registre.json",
@@ -468,9 +503,14 @@
       "sha256": "12612ebbc7b0e277dc6b9b4c66c8d1804fc71856fb7028c783758ad5730ee725"
     },
     {
+      "file": "96ad41b3-ci-echec-affiche.json",
+      "bytes": 4053,
+      "sha256": "72f69bb873b10ea3eeb23c4db532f5a72d7b134a0ca31672d08c621b3ca40c8b"
+    },
+    {
       "file": "README.md",
-      "bytes": 10260,
-      "sha256": "c11c99ac4498607241e3c76ba5f2d6363db7857f10c6978f1a5f9f295c87e2ad"
+      "bytes": 10869,
+      "sha256": "f197ec14b968ad4dbd0b7a6d429ceb52260c6b9450efed9b16d5187adce97da7"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -486,6 +526,11 @@
       "file": "aec79070-prix-reprises-angles-budgets.log.txt",
       "bytes": 180,
       "sha256": "7cf883ac90c06e155c4bf8617fa7bd8d283cab09e5b87a3c4d3e5cc45033d8b0"
+    },
+    {
+      "file": "affiches-3ae89a6d/resultat.json",
+      "bytes": 30164,
+      "sha256": "f81f1b2adeda8c461c8c9b68bf0b6c232931ab162be8edc6ddb49b4b47450f0a"
     },
     {
       "file": "aplat-3ae89a6d/01-devis-mobile-initial.png",
@@ -538,6 +583,16 @@
       "sha256": "0593fd0273295c438e48b119092f04f9cb542fa521b57563f906778e58db6a70"
     },
     {
+      "file": "d38b0b7c-affiches.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "d38b0b7c-affiches.log.txt",
+      "bytes": 181,
+      "sha256": "df2aee8519f7ebadec06a0da3bf1eae2df00779b4138c9fd3e3d835fd9cc6cad"
+    },
+    {
       "file": "dependances-preparation-ecart.json",
       "bytes": 524,
       "sha256": "1fd94a5e9bae8b7aa19b385e097af029b96c067b12ec87dbf69a85042df4c040"
@@ -581,6 +636,11 @@
       "file": "exports-consolides-7f854218.json",
       "bytes": 62063,
       "sha256": "afb02b2bf267f185ceb919a2be42d6b64551952202f2dbba88b1561346bd69f1"
+    },
+    {
+      "file": "harnais/3ae89a6d-contre-verification-195-affiches.mjs.txt",
+      "bytes": 4681,
+      "sha256": "c9e4aa056546da670a474760693cf93852e9a6837165a9794a7a594e53638ad9"
     },
     {
       "file": "harnais/3ae89a6d-contre-verification-195-aplat-published.mjs",
@@ -1272,5 +1332,6 @@
       "bytes": 947,
       "sha256": "05dc200cef0070ce116cfbcf28c9a3f31879b0c0f0abfc3e38f62183c122c822"
     }
-  ]
+  ],
+  "applicationSourceUnchangedFrom": "3ae89a6d42711c13962571483f55c496d6b3ddaa"
 }

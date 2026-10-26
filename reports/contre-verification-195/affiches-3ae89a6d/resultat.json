@@ -1,0 +1,1329 @@
+{
+  "source": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "syntheticOnly": true,
+  "realProviderCalls": 0,
+  "cases": [
+    {
+      "seed": "post-contre-verification-195-0",
+      "predictedFirstLayout": "tpl:frame-center",
+      "actualLayout": "tpl:frame-center",
+      "roles": [
+        "background",
+        "background",
+        "scrim",
+        "decor",
+        "body",
+        "title",
+        "scrim",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-1",
+      "predictedFirstLayout": "tpl:passe-partout",
+      "actualLayout": "tpl:passe-partout",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 108,
+          "y": 94.50000000000001,
+          "w": 864,
+          "h": 675,
+          "coverage": 0.4,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-2",
+      "predictedFirstLayout": "tpl:stamp",
+      "actualLayout": "poster",
+      "roles": [
+        "background",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-3",
+      "predictedFirstLayout": "tpl:corner-square",
+      "actualLayout": "tpl:corner-square",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 399.19999999999993,
+          "y": 94.50000000000001,
+          "w": 604.8000000000001,
+          "h": 604.8000000000001,
+          "coverage": 0.25088000000000005,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-4",
+      "predictedFirstLayout": "tpl:big-circle",
+      "actualLayout": "tpl:big-circle",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 10.800000000000068,
+          "y": 542.1600000000001,
+          "w": 1188,
+          "h": 1188,
+          "coverage": 0.968,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-5",
+      "predictedFirstLayout": "corner",
+      "actualLayout": "corner",
+      "roles": [
+        "background",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-6",
+      "predictedFirstLayout": "corner",
+      "actualLayout": "tpl:half-tint",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "body",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-7",
+      "predictedFirstLayout": "tpl:minimal-line",
+      "actualLayout": "tpl:minimal-line",
+      "roles": [
+        "background",
+        "body",
+        "image",
+        "title",
+        "subtitle",
+        "decor",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 396.1333333333333,
+          "y": 81,
+          "w": 607.8666666666667,
+          "h": 741.5973333333334,
+          "coverage": 0.3091853902758726,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-8",
+      "predictedFirstLayout": "tpl:minimal-line",
+      "actualLayout": "tpl:corner-marks",
+      "roles": [
+        "background",
+        "scrim",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-9",
+      "predictedFirstLayout": "tpl:cameo",
+      "actualLayout": "frame",
+      "roles": [
+        "background",
+        "scrim",
+        "body",
+        "decor",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-10",
+      "predictedFirstLayout": "tpl:stone-panel",
+      "actualLayout": "tpl:stone-panel",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 513,
+          "coverage": 0.38,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-11",
+      "predictedFirstLayout": "tpl:gallery-wall",
+      "actualLayout": "tpl:gallery-wall",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "image",
+        "decor",
+        "decor",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 144.4,
+          "y": 149.74200000000008,
+          "w": 402.4,
+          "h": 478,
+          "coverage": 0.13192537722908093,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        },
+        {
+          "role": "image",
+          "x": 709.6,
+          "y": 266.7420000000001,
+          "w": 244,
+          "h": 244,
+          "coverage": 0.040834019204389574,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-12",
+      "predictedFirstLayout": "editorial",
+      "actualLayout": "editorial",
+      "roles": [
+        "background",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-13",
+      "predictedFirstLayout": "tpl:frame-center",
+      "actualLayout": "tpl:frame-center",
+      "roles": [
+        "background",
+        "background",
+        "scrim",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-14",
+      "predictedFirstLayout": "tpl:rising-disc",
+      "actualLayout": "tpl:rising-disc",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": -54,
+          "y": 845.0999999999999,
+          "w": 1188,
+          "h": 1188,
+          "coverage": 0.968,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-15",
+      "predictedFirstLayout": "tpl:half-tint",
+      "actualLayout": "tpl:corner-square",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 399.19999999999993,
+          "y": 94.50000000000001,
+          "w": 604.8000000000001,
+          "h": 604.8000000000001,
+          "coverage": 0.25088000000000005,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-16",
+      "predictedFirstLayout": "tpl:detail-zoom",
+      "actualLayout": "tpl:detail-zoom",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "decor",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 810,
+          "coverage": 0.6,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        },
+        {
+          "role": "image",
+          "x": 593.6,
+          "y": 604.8,
+          "w": 410.4,
+          "h": 410.4,
+          "coverage": 0.11551999999999998,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-17",
+      "predictedFirstLayout": "tpl:stamp",
+      "actualLayout": "corner",
+      "roles": [
+        "background",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-18",
+      "predictedFirstLayout": "tpl:minimal-line",
+      "actualLayout": "tpl:minimal-line",
+      "roles": [
+        "background",
+        "body",
+        "image",
+        "title",
+        "subtitle",
+        "decor",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 396.1333333333333,
+          "y": 81,
+          "w": 607.8666666666667,
+          "h": 741.5973333333334,
+          "coverage": 0.3091853902758726,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-19",
+      "predictedFirstLayout": "tpl:rounded-screen",
+      "actualLayout": "tpl:rounded-screen",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 108,
+          "y": 94.50000000000001,
+          "w": 864,
+          "h": 702,
+          "coverage": 0.416,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-20",
+      "predictedFirstLayout": "glass",
+      "actualLayout": "glass",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        },
+        {
+          "role": "decor",
+          "x": 81,
+          "y": 622.2000000000003,
+          "w": 918,
+          "h": 646.7999999999997,
+          "coverage": 0.4072444444444443,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-21",
+      "predictedFirstLayout": "corner",
+      "actualLayout": "tpl:double-frame",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 108,
+          "y": 94.50000000000001,
+          "w": 864,
+          "h": 621,
+          "coverage": 0.368,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-22",
+      "predictedFirstLayout": "tpl:lux-caption",
+      "actualLayout": "tpl:lux-caption",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 702,
+          "coverage": 0.52,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-23",
+      "predictedFirstLayout": "tpl:fine-grid",
+      "actualLayout": "tpl:frame-tab",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "decor",
+        "body",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 54,
+          "y": 54,
+          "w": 972,
+          "h": 756.0000000000001,
+          "coverage": 0.5040000000000001,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-24",
+      "predictedFirstLayout": "tpl:stacked-bands",
+      "actualLayout": "tpl:stacked-bands",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 729,
+          "coverage": 0.54,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-25",
+      "predictedFirstLayout": "tpl:twin-panes",
+      "actualLayout": "tpl:frame-center",
+      "roles": [
+        "background",
+        "background",
+        "scrim",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-26",
+      "predictedFirstLayout": "tpl:rising-disc",
+      "actualLayout": "tpl:rising-disc",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": -54,
+          "y": 845.0999999999999,
+          "w": 1188,
+          "h": 1188,
+          "coverage": 0.968,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-27",
+      "predictedFirstLayout": "poster",
+      "actualLayout": "poster",
+      "roles": [
+        "background",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-28",
+      "predictedFirstLayout": "tpl:fine-grid",
+      "actualLayout": "tpl:fine-grid",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-29",
+      "predictedFirstLayout": "tpl:duo-circles",
+      "actualLayout": "tpl:duo-circles",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "decor",
+        "image",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 108,
+          "y": 81,
+          "w": 648,
+          "h": 648,
+          "coverage": 0.288,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        },
+        {
+          "role": "image",
+          "x": 626.4,
+          "y": 436.752,
+          "w": 356.40000000000003,
+          "h": 356.40000000000003,
+          "coverage": 0.08712000000000002,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-30",
+      "predictedFirstLayout": "lower",
+      "actualLayout": "lower",
+      "roles": [
+        "background",
+        "decor",
+        "scrim",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-31",
+      "predictedFirstLayout": "frame",
+      "actualLayout": "frame",
+      "roles": [
+        "background",
+        "scrim",
+        "body",
+        "decor",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-32",
+      "predictedFirstLayout": "tpl:steps",
+      "actualLayout": "tpl:steps",
+      "roles": [
+        "background",
+        "image",
+        "decor",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 675,
+          "coverage": 0.5,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-33",
+      "predictedFirstLayout": "tpl:rounded-screen",
+      "actualLayout": "tpl:rounded-screen",
+      "roles": [
+        "background",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 108,
+          "y": 94.50000000000001,
+          "w": 864,
+          "h": 702,
+          "coverage": 0.416,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-34",
+      "predictedFirstLayout": "tpl:open-curtain",
+      "actualLayout": "tpl:open-curtain",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "background",
+          "x": 0,
+          "y": 0,
+          "w": 1080,
+          "h": 1350,
+          "coverage": 1,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-35",
+      "predictedFirstLayout": "tpl:postcard",
+      "actualLayout": "tpl:postcard",
+      "roles": [
+        "background",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "decor",
+        "image",
+        "body",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 118.8,
+          "y": 132.3,
+          "w": 842.4,
+          "h": 596.9700000000001,
+          "coverage": 0.34491600000000006,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": false,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    },
+    {
+      "seed": "post-contre-verification-195-36",
+      "predictedFirstLayout": "tpl:shadow-tile",
+      "actualLayout": "panel",
+      "roles": [
+        "shape",
+        "image",
+        "body",
+        "decor",
+        "title",
+        "subtitle",
+        "cta"
+      ],
+      "photoLayers": [
+        {
+          "role": "image",
+          "x": 0,
+          "y": 648,
+          "w": 1080,
+          "h": 702,
+          "coverage": 0.52,
+          "locked": false,
+          "visible": true,
+          "assetMatches": true
+        }
+      ],
+      "oldAssertionWouldFail": true,
+      "exactPhotoRetained": true,
+      "editableTitleExact": true,
+      "ctaVisible": true,
+      "costMicro": 0
+    }
+  ],
+  "nativeRecordedCalls": 1,
+  "seededSimulatedReceiptCount": 1,
+  "newRecordedCalls": 0,
+  "illustrations": [
+    {
+      "file": "background.jpg",
+      "document": "background-document.json",
+      "seed": "post-contre-verification-195-0",
+      "layout": "tpl:frame-center",
+      "storedNativeAsset": true
+    },
+    {
+      "file": "image-only.jpg",
+      "document": "image-only-document.json",
+      "seed": "post-contre-verification-195-36",
+      "layout": "panel",
+      "storedNativeAsset": true
+    }
+  ]
+}

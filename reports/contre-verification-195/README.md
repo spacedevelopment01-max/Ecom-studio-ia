@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Avis technique favorable AVANT fusion sur 3a : 3 395 tests réussis, aucun échec, 31 ignorés ; CI entièrement verte. APRÈS fusion en attente du vrai SHA main. CMS et kits privés restent partiellement non vérifiés.**
+Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Dernier état : avis AVANT suspendu à la CI finale d38 (correction du seul test d’affiche) ; la CI documentaire96ad a échoué. Les3395 réussites3a restent historiques. Contrôle APRÈS toujours en attente du vrai SHA main.**
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 
@@ -94,3 +94,10 @@ Tous les éléments sont attribués à leur SHA. Aucun résultat avant fusion ne
 | Cours de tournage | [PNG](editeur-3ae89a6d/service-ordinateur.png) | [PNG](editeur-3ae89a6d/service-mobile.png) |
 
 Suivi P2 existant : [menu de section masquée, preuve machine](editeur-3ae89a6d/menu-section-masquee.json), [capture](editeur-3ae89a6d/menu-section-masquee.png). Les parcours réussis n’annulent pas ce défaut limité aux sections masquées. Les préparations incorrectes du harnais sont conservées dans les journaux, sans modification de l’application ni de la sandbox.
+
+## CI finale et compléments
+
+- [Échec observé de la CI96ad, extrait et compteurs](96ad41b3-ci-echec-affiche.json).
+- [37 publications natives : photo exacte et calques, zéro appel ajouté](affiches-3ae89a6d/resultat.json). Rendus inspectés localement ; seule cette métrique fermée est publiée pour cette fixture.
+- [17 exports Woo/WordPress et17Shopify natifs PROVISIONAL, décisions intégrales](3ae89a6d-exports-17-woo-shopify.json). Aucun parcours réel CMS.
+- Test corrigé par Claude en d38 ; [6/6 natifs](d38b0b7c-affiches.log.txt). Suite et CI en cours, pas encore de nouveau feu vert.
