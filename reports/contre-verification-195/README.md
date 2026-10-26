@@ -101,3 +101,7 @@ Suivi P2 existant : [menu de section masquée, preuve machine](editeur-3ae89a6d/
 - [37 publications natives : photo exacte et calques, zéro appel ajouté](affiches-3ae89a6d/resultat.json). Rendus inspectés localement ; seule cette métrique fermée est publiée pour cette fixture.
 - [17 exports Woo/WordPress et17Shopify natifs PROVISIONAL, décisions intégrales](3ae89a6d-exports-17-woo-shopify.json). Aucun parcours réel CMS.
 - Test corrigé par Claude en d38 ; [6/6 natifs](d38b0b7c-affiches.log.txt). Suite et CI en cours, pas encore de nouveau feu vert.
+
+## Suite indépendante d38 terminée
+
+[3 395 réussites,0échec,31ignorés — synthèse par fichier](d38b0b7c-suite-synthese.json), [journal](d38b0b7c-suite.log.txt), [processus et commande exacts](d38b0b7c-suite-execution.json). Types réussis. CI finale encore en cours ; ne pas confondre cette réussite locale avec un accord de fusion déjà renouvelé.

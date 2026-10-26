@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **avis AVANT suspendu à la CI finale du correctif de test `d38b0b7c676e045d103238179e0e4a2d30ad5d05`. Le code applicatif reste identique à 3a. CI documentaire96ad rouge (3 394/1/31), cause analysée ci-dessous ; nouveau test ciblé réussi et nouvelle suite indépendante en cours. Aucun contrôle APRÈS fusion.**
+État au 26 octobre 2026 : **avis AVANT suspendu à la CI finale du correctif de test `d38b0b7c676e045d103238179e0e4a2d30ad5d05`. Le code applicatif reste identique à 3a. CI documentaire96ad rouge (3 394/1/31), cause analysée ci-dessous ; nouveau test ciblé et nouvelle suite indépendante réussis (3 395/0/31), CI finale encore en cours. Aucun contrôle APRÈS fusion.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -169,3 +169,10 @@ La CI96ad [40286840876](https://github.com/spacedevelopment01-max/Ecom-studio-ia
 ## Complément export natif, 3a exact
 
 **17 WooCommerce/WordPress + 17 Shopify PROVISIONAL**, en plus des17PrestaShop précédents : 51 exports natifs sur17références, tous contrôlés par le vrai moteur et gate structuré. `3ae89a6d-exports-17-woo-shopify.json` conserve les limites par thème, pas seulement le code de sortie du script (qui capture aussi ses erreurs). Le statut PROVISIONAL n’est pas une certification CMS. Les ZIP ne sont pas installés dans un CMS ici. Les limites par plateforme restent celles du rapport : mises en page individuelles non reprises sur Woo/Presta, prix barrés Presta manuels, fonctions de réservation après installation non vérifiées ; médias privés absents signalés, y compris les références historiques ORBE/ALCÔVE lorsqu’elles en demandent.
+
+
+## Suite indépendante finale d38 réussie — CI encore en attente
+
+Sur `d38b0b7c676e045d103238179e0e4a2d30ad5d05`, copie neuve, sources et verrou propres : **396 fichiers réussis / 1 ignoré ; 3 395 tests réussis / 0 échec / 31 ignorés**, sortie0, **1 485,37s**. Commande : `vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=<temp>/d38b0b7c-suite.json` ; garde réseau du lot9, PHP8.4CLI isolé, aucun navigateur concurrent. Typecheck explicite réussi ; fichier d’affiche corrigé6/6 confirmé avant la suite. Les assertions/plafonds du pilote, les délais des tests et le code applicatif n’ont pas été modifiés par Codex.
+
+Preuves : `d38b0b7c-suite-synthese.json` (empreinte du rapport brut et compteurs par fichier), journal intégral, fichier de sortie0 et métadonnées d’exécution du processus natif. Les31ignorés restent les mêmes kits privés/CMS absents/films suspendus, sans les compter comme réussites. La CI [40289682986](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40289682986) a passé types/tests et Docker ; **Theme Check en cours au relevé**, build principal encore en attente. **Accord avant fusion toujours retenu jusqu’à sa fin effective.** Les13têtes sources relues à08h16UTC sont inchangées ; le périmètre d’intégration est stable.

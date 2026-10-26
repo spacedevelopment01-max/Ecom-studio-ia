@@ -1,7 +1,7 @@
 {
   "codeTestedLatest": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "BEFORE_SUSPENDED_PENDING_D38_TEST_CORRECTION_SUITE_AND_CI",
+  "state": "BEFORE_D38_NATIVE_SUITE_GREEN_FINAL_CI_PENDING",
   "realProviderCalls": 0,
   "nativeScreenshots": 101,
   "inspectionBoards": 5,
@@ -509,8 +509,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 10869,
-      "sha256": "f197ec14b968ad4dbd0b7a6d429ceb52260c6b9450efed9b16d5187adce97da7"
+      "bytes": 11229,
+      "sha256": "cc7a4cee56c8fd507cf4fadf8c6051701166be261a2af781a036efbb20525efa"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -583,6 +583,21 @@
       "sha256": "0593fd0273295c438e48b119092f04f9cb542fa521b57563f906778e58db6a70"
     },
     {
+      "file": "d38b0b7c-affiches-confirmation-execution.json",
+      "bytes": 298,
+      "sha256": "3a5d7490216dbaf634005eaf78096bd38fc4a0d3af54a6c660a31a7fcb5bbddf"
+    },
+    {
+      "file": "d38b0b7c-affiches-confirmation.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "d38b0b7c-affiches-confirmation.log.txt",
+      "bytes": 181,
+      "sha256": "959659a8a285fd3acdefa5cec9e78dc3e7153422682544c45a597ba977fcd37c"
+    },
+    {
       "file": "d38b0b7c-affiches.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -591,6 +606,41 @@
       "file": "d38b0b7c-affiches.log.txt",
       "bytes": 181,
       "sha256": "df2aee8519f7ebadec06a0da3bf1eae2df00779b4138c9fd3e3d835fd9cc6cad"
+    },
+    {
+      "file": "d38b0b7c-suite-execution.json",
+      "bytes": 366,
+      "sha256": "0e455bf5278c21b11341ec0a79c5f60b087f7ed2fd3dfcafe56b678e05e24606"
+    },
+    {
+      "file": "d38b0b7c-suite-synthese.json",
+      "bytes": 73540,
+      "sha256": "1bd623472eba6b0192618a4e2de979c67023d37bfa5fc714d73e4d56f9043f63"
+    },
+    {
+      "file": "d38b0b7c-suite.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "d38b0b7c-suite.log.txt",
+      "bytes": 151961,
+      "sha256": "379605379520eec2cb9dd746871e44a1e57e1deadb4e8636f8ab7c50101adf17"
+    },
+    {
+      "file": "d38b0b7c-types-execution.json",
+      "bytes": 235,
+      "sha256": "2995361d8636c2a6ea031111add0f792ed18050ebe81f98cca8986809e64c2bf"
+    },
+    {
+      "file": "d38b0b7c-types.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "d38b0b7c-types.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "file": "dependances-preparation-ecart.json",

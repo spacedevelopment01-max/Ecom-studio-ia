@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-candidat-d38b0b7c
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  08:09:25
+   Duration  10.39s (tests 58%, import 21%, transform 20%)
+

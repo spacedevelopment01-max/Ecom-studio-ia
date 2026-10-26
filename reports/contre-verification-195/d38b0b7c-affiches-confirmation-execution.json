@@ -1,0 +1,14 @@
+{
+  "source": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "tests/affiches-publications.test.ts",
+    "--maxWorkers=1"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 10.82,
+  "networkGuard": true,
+  "php": "8.4.27",
+  "isolatedData": true
+}
