@@ -112,6 +112,8 @@ d'une intervention dédiée avec Codex, sans modifier les protections générale
    (manque de mémoire). L'export remet ces ressources en fichiers `assets/inline-<empreinte>` (un fichier par contenu).
    La route d'aperçu et ses protections ne changent pas. Résultat : MUSEAU CLUB 28 Mo (26 Mo pour #176), pages
    identiques à #176 au pixel.
+10. **Limite de durée du job principal de CI relevée de 45 à 75 min** (`.github/workflows/ci.yml`) : la suite fusionnée
+    a été coupée deux fois pendant le Theme Check, sans échec. Aucun contrôle n'est retiré ni allégé.
 
 ## 6. Contrôles AVANT fusion
 
@@ -180,8 +182,8 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
   ONDE, APLAT et MAISON & HORIZON ont été rejoués avec les kits privés liés temporairement (rien d'ajouté au dépôt).
 - Captures #190 restées dans l'espace de travail de la session qui a produit #176 (demande de Codex) : hors de cette
   session, non traitées ici.
-- CI : le job principal dure environ 35 min sur une limite de 45 min ; une machine lente l'a déjà coupé une fois
-  (aucun échec de test). À surveiller sur `main`.
+- CI : le job principal dure environ 35 min ; la limite de 45 min l'a coupé deux fois sur des machines lentes (tests
+  21 min, puis installation de ffmpeg 10 min), sans aucun échec. Limite relevée à 75 min (correction 10).
 - Version réellement servie par le studio : non vérifiée (aucun déploiement autorisé).
 
 ## 10. Tableau final

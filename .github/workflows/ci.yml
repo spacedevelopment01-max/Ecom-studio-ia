@@ -13,7 +13,9 @@ jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Suite fusionnée (#194) : environ 35 min en temps normal, coupée deux fois à 45 min sur des machines lentes
+    # (tests 21 min, ou installation de ffmpeg 10 min), sans aucun échec. Limite relevée, aucun contrôle retiré.
+    timeout-minutes: 75
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       APP_SECRET: ci-only-secret-not-used-in-production-000000
