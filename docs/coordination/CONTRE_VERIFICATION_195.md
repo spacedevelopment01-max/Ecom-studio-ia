@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **EN COURS ; aucun feu vert global ni contrôle APRÈS fusion annoncé.**
+État au 26 octobre 2026 : **contre-épreuves corrigées sur `3ae89a6d` ; suite finale en cours ; aucun feu vert global ni contrôle APRÈS fusion annoncé.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -13,6 +13,7 @@ Responsabilités : Claude conserve seul la branche d’intégration et la fusion
 | `8d5d236ad67f9ded1ce8547fe446693b12db7b64` | Même application que 2db ; 16 documents/preuves et timeout CI modifiés |
 | `aec79070dce88666e2b59be3452f7b6b1304bdb9` | Corrige la reprise multi-variante ; saisie client concurrente encore perdue |
 | `7f854218bb7afd08ec8ec2209b55c36ee53011f7` | Candidat actuellement contrôlé ; corrige aussi la saisie concurrente |
+| `3ae89a6d42711c13962571483f55c496d6b3ddaa` | Corrige les faux rejets PrestaShop et la configuration du formulaire APLAT ; 57 contre-épreuves, 17 exports et 38 interactions réussis ; suite en cours |
 | SHA effectivement fusionné | **EN ATTENTE de Claude ; aucun contrôle après fusion possible à ce stade** |
 
 Copies isolées, SQLite et médias fictifs sous `/tmp/ecs-195-*`. Dépôt de travail initial préservé : branche `codex/lot-2a-themes-reference`, commit `9f8b6c437580490acc52fd165986a1c3a79b394a`, propre. Aucun secret/configuration/base client copié. Garde réseau du lot 9 active pendant les tests natifs ; zéro appel fournisseur réel ou payant. Aucune fusion, publication client, modification du studio réel ou suppression globale Docker.
@@ -35,7 +36,7 @@ Claude a reproduit puis corrigé dans `7f854218`, même fichier : relire le stoc
 
 **REPRODUIT sous le verrou exact sur 7f** : `demoProject` → `cmsExport` → `checkCmsExport`, Table Saison, Atelier Nuance et Parenthèse, sans installation CMS ni fournisseur. Tous trois : **REJECTED, fatal=true, dangerous_script**, motif `script dans les contenus : templates/es/header.tpl`. Les références des scripts natifs conservées par `splitHtml` dans l’adaptateur PrestaShop sont traitées comme des injections par `CONTENT_FILE` / `executableContentScript` dans `src/lib/cms-v2/checks.ts`. L’adaptateur assemble pourtant déjà ces scripts dans `assets/js/es-theme.js`. Le JSON de configuration inerte est correctement accepté ; les deux références exécutables déclenchent le refus.
 
-**Correction demandée à Claude, en attente** : conserver l’exécution des scripts natifs et des réservations en corrigeant leur représentation dans l’adaptateur ; ne pas autoriser globalement les scripts de contenus. Ajouter les trois exports aux tests et garder le refus d’un script injecté. Une sortie PROVISIONAL avec installation non mesurée peut être correcte ; aucune transformation arbitraire en FINAL. [Constat et commande](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6409417476). Le gate structuré est publié dans `7f854218-rejets-prestashop-verrou-exact.json`. Le harnais original `exports-190.ts` perdait le verdict par `String(objet)` ; notre harnais séparé conserve les données réelles, sans modifier le moteur.
+**Correction demandée puis reprise par Claude dans `3ae89a6d` (contre-épreuves ci-dessous)** : conserver l’exécution des scripts natifs et des réservations en corrigeant leur représentation dans l’adaptateur ; ne pas autoriser globalement les scripts de contenus. Ajouter les trois exports aux tests et garder le refus d’un script injecté. Une sortie PROVISIONAL avec installation non mesurée peut être correcte ; aucune transformation arbitraire en FINAL. [Constat et commande](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6409417476). Le gate structuré est publié dans `7f854218-rejets-prestashop-verrou-exact.json`. Le harnais original `exports-190.ts` perdait le verdict par `String(objet)` ; notre harnais séparé conserve les données réelles, sans modifier le moteur.
 
 ### Défauts antérieurs de #176
 
@@ -67,7 +68,7 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 ## Preuves GitHub et registre des apports
 
 - Registre et conflits du rapport de Claude lus intégralement ; chaîne #170 → #173 → #168 → #166 → #174 → #176 → #193 conservée. Anciennes branches documentaires confrontées aux fichiers actuels, sans réintroduire les travaux remplacés.
-- **Coven #191 explicitement exclu par la décision de Thomas consignée dans le rapport actuel et CLAUDE.md**, malgré sa mention dans la liste initiale #195. Branche conservée, pas réintégrée arbitrairement ; protections générales toujours présentes.
+- **Coven #191 explicitement exclu par la décision de Thomas rapportée dans le [commentaire de coordination 6404170120](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6404170120), le rapport actuel et CLAUDE.md**, malgré sa mention dans la liste initiale #195. Branche conservée, pas réintégrée arbitrairement ; protections générales toujours présentes.
 - CI 2db [40247116214](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40247116214) et 8d [40266288826](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40266288826) réussies. Dernier journal 8d : **395 fichiers réussis / 1 ignoré ; 3 384 tests réussis / 31 ignorés**. Ce sont les exécutions GitHub, pas des commandes Codex.
 - Cette CI testait le merge temporaire `7b46c9f9d0e1848359cf2f27b6bfb9757668a12a` ; arbre `bacfa98f54386348cd27263a0d55ef002df3d211`, identique à la tête 8d. Ce n’est pas une fusion réelle dans main.
 - CI 7f [40273960432](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40273960432) : **entièrement réussie**, types, tests, Theme Check, build et Docker. Journal relu : **395 fichiers réussis / 1 ignoré ; 3 389 tests réussis / 31 ignorés**. Cela ne couvre pas le faux rejet PrestaShop reproduit ensuite.
@@ -86,7 +87,7 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 
 Stocks/reprises/saisies concurrentes : **contre-épreuves ciblées validées sur 7f, connecteurs simulés**. Autopilot, types, migration/restauration : **validés sur 7f**. Catalogue/sections/droits/isolation/exports/Higgsfield/angles : contrôles globaux et navigateur en cours ; précisions finales à ajouter. CMS réel, kits privés et version servie : **non vérifiés**, raisons ci-dessus.
 
-**AVANT fusion : CORRECTION REQUISE pour le rejet des exports PrestaShop de réservation. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
+**AVANT fusion : les défauts reproduits sont corrigés dans 3a et leurs contre-épreuves passent ; validation globale en attente de la suite complète et de la CI du nouveau candidat. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
 
 
 Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s), build Next 15.5.28 réussi ; `/api/version` relu = `7f854218bb7afd08ec8ec2209b55c36ee53011f7`. Parcours admin Higgsfield natif réussi, cinq captures et vidéo : 810 estimations simulées, approbation groupée de deux modèles, actualisation et reprise, accès anonyme 401, aucun secret renvoyé, aucun débordement mobile ni erreur JavaScript. Ce sont des tarifs simulés. Suite globale du verrou exact et autres parcours navigateur en cours.
@@ -101,4 +102,26 @@ Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s)
 - **Livraison visuelle** : 90 captures natives (accueils complets/premiers écrans, studio, sécurité et administrateur), cinq planches d’inspection et deux vidéos réelles du navigateur. Les tarifs Higgsfield sont explicitement simulés ; les kits absents sont signalés. Voir [l’index visuel](../../reports/contre-verification-195/README.md).
 - **Autopilot et migrations sous verrou exact** : sept dates × neuf cas = 63 réussites ; bases historiques dcfc13b1 / d97e0b95 / main 0a6aa1dd : 45 / 45 / 46 contrôles de migration/restauration, sources fictives conservées. Rapports JSON marqués `synthetique: true`, `reussi: true`.
 
-Les preuves de cette branche sont consultables directement ; leur branche ne doit pas être fusionnée à la place d’un correctif applicatif pris en charge par Claude. Le défaut PrestaShop reste à corriger avant le verdict favorable. Main n’est pas encore la version de cette recette.
+Les preuves de cette branche sont consultables directement ; leur branche ne doit pas être fusionnée à la place d’un correctif applicatif pris en charge par Claude. Le défaut PrestaShop de 7f a ensuite été corrigé dans 3a ; les contrôles de ce nouveau candidat sont distingués ci-dessous. Main n’est pas encore la version de cette recette.
+
+
+## Nouveau candidat corrigé : `3ae89a6d42711c13962571483f55c496d6b3ddaa`
+
+Claude a repris le P1 et l’a étendu à APLAT. Le diff avec 7f a été relu : seul l’adaptateur PrestaShop, `aplat.js`, `ap-form.liquid` et un nouveau fichier de tests changent dans le code ; le reste est documentaire. Aucun changement de verrou ni de DB. `dangerous_script` n’a pas été assoupli. `toSmarty` retire uniquement une référence de script natif déjà présente dans le bundle livré, à partir de `design.scripts`, sans règle portant sur un nom de projet client. La section de formulaire APLAT émet des réglages JSON inertes, lus par son script natif. CSS et médias inchangés.
+
+| Contre-vérification indépendante | Résultat |
+|---|---|
+| Six nouveaux cas exécutés contre l’ancien moteur 7f | **6/6 échouent**, sortie 1, 74,82 s ; rouge attendu et conservé |
+| 3a + ces six cas, produits/sécurité/A-B et trois contre-épreuves stock inchangées | **57/57 réussissent**, sortie 0, 77,98 s |
+| 17 exports PrestaShop natifs, dont les deux références historiques ORBE/ALCÔVE | **17 PROVISIONAL**, aucun rejet fatal ; gate intégral dans `3ae89a6d-exports-17-prestashop.json` ; aucune installation ni recette CMS certifiée |
+| APLAT, export statique réel, navigateur local | **38/38** : menus/focus/Échap, filtres, FAQ, comparateur au clavier, devis en deux étapes, erreurs, données conservées, fichiers refusés/retirés, double clic, confirmation explicitement simulée, cookies, cinq largeurs 360–1440 |
+| APLAT, configuration non démonstration rendue par le moteur natif | **Un seul POST** après double clic vers un récepteur HTTP exclusivement local, `demo=false`, texte d’envoi conservé, aucune fausse confirmation ; aucun e-mail ni CMS testé |
+| Compilation de production et types explicites | **Réussis** ; serveur loopback relu : `/api/version` = 3a ; connexion HTTP 200 et administration Higgsfield anonyme 401 |
+| PHP réel isolé, sans installation système | **9/9** dans `lot2a-php-export.test.ts` ; binaire Debian PHP 8.4.27 extrait sous `/tmp`, modules explicites, ouverture d’URL externe désactivée. Cela ne fournit pas WordPress/PrestaShop ni une preuve de réservation après export. |
+| Suite complète 3a, verrou exact, PHP disponible, deux workers sans navigateur concurrent | **En cours** |
+
+La suite 7f au verrou exact a fini avec **3 374 réussites / un dépassement de 60 s / 45 ignorés**, sortie 1. Le fichier concerné (`mission154-livraison`) a été rejoué intégralement à l’identique en un worker : **15/15**, le cas de média corrompu en 27,72 s, délai et assertions inchangés. L’hypothèse de contention sous les vérifications navigateur parallèles n’est pas une cause applicative démontrée. Le journal rouge est conservé ; il n’est pas présenté comme une invocation verte. Parmi les 45 ignorés, 14 nécessitaient PHP absent alors ; les autres motifs sont les kits privés, CMS de test et films suspendus déjà signalés. La nouvelle invocation 3a emploie PHP et reste à terminer.
+
+Le harnais APLAT historique utilise `file://`, refusé par la politique du navigateur de cet environnement. Notre copie sert seulement l’export fictif généré, sur `127.0.0.1`, refuse les écritures et toute requête distante, sans changer la politique du navigateur. Les 38 assertions sont conservées. Le second contrôle utilise un POST local contrôlé, sans transmission au CMS ni à un destinataire. Les 29 médias privés APLAT restent absents : ces interactions ne certifient pas son rendu photographique complet.
+
+Les captures précédentes des quinze accueils restent attribuées au SHA 7f : nous ne les présentons pas comme une nouvelle prise de vue de toutes les pages 3a. Les deux autres fichiers modifiés de thème concernent les réglages et interactions du formulaire APLAT, contre-vérifiés ici ; ses styles et ses médias n’ont pas changé. Les éléments préservés et les limites externes du contrôle précédent restent explicitement séparés.

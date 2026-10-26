@@ -1,0 +1,19 @@
+{
+  "isolatedLoopbackOnly": true,
+  "realStudioNotUpdated": true,
+  "checks": {
+    "/api/version": {
+      "status": 200,
+      "body": {
+        "commit": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+        "source": "compiled-build"
+      }
+    },
+    "/connexion": {
+      "status": 200
+    },
+    "/api/admin/higgsfield": {
+      "status": 401
+    }
+  }
+}

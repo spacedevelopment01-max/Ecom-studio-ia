@@ -1,0 +1,21 @@
+{
+  "codeCommit": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "nativeRendering": true,
+  "demoFlag": false,
+  "nativePostCount": 1,
+  "posts": [
+    {
+      "method": "POST",
+      "path": "/contact",
+      "hasSyntheticName": true,
+      "hasSyntheticEmail": true
+    }
+  ],
+  "noFakeConfirmation": true,
+  "realCmsInstalled": false,
+  "realEmailSent": false,
+  "realProviderCalls": 0,
+  "missingSourceMedia": 29,
+  "errors": [],
+  "deniedOrigins": []
+}

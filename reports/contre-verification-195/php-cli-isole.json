@@ -1,0 +1,40 @@
+{
+  "version": "8.4.27",
+  "source": "Official Debian HTTPS package pool; php8.4-cli, common, mbstring; libargon2-1",
+  "packages": [
+    {
+      "file": "common.deb",
+      "bytes": 786664,
+      "sha256": "9372e2b0028228180445829467773058dc6f13b64e066ca00d9f4107bbceef7a"
+    },
+    {
+      "file": "libargon.deb",
+      "bytes": 21076,
+      "sha256": "077cb46624141ad6e53b247a287327f304d925b973645618eebc2fd93b8afcc2"
+    },
+    {
+      "file": "mbstring.deb",
+      "bytes": 452996,
+      "sha256": "ebe36dbe6fece74c0adf3924a653d2b9da087c1af9380dfb5cd8309e7b405a4f"
+    },
+    {
+      "file": "php-cli.deb",
+      "bytes": 1875436,
+      "sha256": "111191e9eec53db65198f9a38a15dcbd498935be88e2fa83336ba142fd5ae152"
+    }
+  ],
+  "systemInstallation": false,
+  "dockerContainersStarted": false,
+  "cmsInstallation": false,
+  "temporaryPrefix": "/tmp/ecs-195-php84",
+  "enabledModules": [
+    "ctype",
+    "mbstring",
+    "iconv",
+    "fileinfo",
+    "pdo",
+    "tokenizer"
+  ],
+  "remoteUrlFopen": false,
+  "testSmoke": "9/9 native PHP export tests passed"
+}

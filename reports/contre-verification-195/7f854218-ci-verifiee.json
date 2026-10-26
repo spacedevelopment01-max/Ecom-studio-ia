@@ -1,0 +1,25 @@
+{
+  "sourceCommit": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "githubActionsRun": 40273960432,
+  "job": 121412721931,
+  "actionsCheckout": "713847b2ffb0fef45934aca043c1598b305db648",
+  "checkoutParents": [
+    "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+    "7f854218bb7afd08ec8ec2209b55c36ee53011f7"
+  ],
+  "candidateTree": "2fd9b62a378190587356cae3a9d7fea9ae69de3b",
+  "checkoutTree": "2fd9b62a378190587356cae3a9d7fea9ae69de3b",
+  "identicalTree": true,
+  "observedResults": {
+    "filesPassed": 395,
+    "filesSkipped": 1,
+    "testsPassed": 3389,
+    "testsSkipped": 31,
+    "types": "success",
+    "themeCheck": "success",
+    "productionBuild": "success",
+    "dockerBuildAndStart": "success"
+  },
+  "realMergeInMain": false,
+  "provenance": "GitHub REST jobs, completed job log, and both Git commit objects read independently by Codex"
+}

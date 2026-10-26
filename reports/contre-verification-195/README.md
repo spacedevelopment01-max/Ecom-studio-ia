@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-Code testé : `7f854218bb7afd08ec8ec2209b55c36ee53011f7` ; Next 15.5.28, dépendances installées depuis le verrou. **Avis AVANT : correction requise sur les exports PrestaShop de réservation. APRÈS fusion : en attente.**
+Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Contre-épreuves des défauts corrigés réussies sur 3a ; suite finale en cours. Aucun accord global ni contrôle APRÈS fusion encore annoncé.**
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 
@@ -61,3 +61,15 @@ Utiliser une copie isolée sans `.env` ni `.env.local`, jamais le dossier du stu
 Les fichiers de [harnais](harnais/) sont des copies de preuve ; placer chaque copie dans son emplacement prévu sous `scripts/` (et le harnais de sécurité sous `scripts/lot9/`) pour conserver ses imports relatifs. Les extensions `.ts.txt` / `.mts.txt` doivent retrouver `.ts` / `.mts`. Ne remplacer aucun fichier existant : les noms `contre-verification-195-*` sont dédiés. Le harnais de sécurité crée lui-même sa base fictive et un serveur Next sur loopback, puis les arrête ; il refuse une configuration client préexistante. Pour les autres harnais, n’utiliser qu’un `DATA_DIR` commençant par `/tmp/ecs-higgsfield-proof-195-` et le réseau simulé séparé `scripts/higgsfield-proof-network.mjs`. Lancer le serveur web seul, sans worker.
 
 Les adaptations du harnais historique sont expliquées dans le [rapport](../../docs/coordination/CONTRE_VERIFICATION_195.md) : fixture native renommée et garde stricte contre tout nouvel appel, même simulé. Le contrôle média remet le défilement instantanément à zéro et attend le décodage avant capture. Les jetons signés fictifs ont été expurgés des références exportées ; aucune session/clé/base n’est incluse.
+
+
+## Correctif PrestaShop et formulaire APLAT — nouveau candidat 3a
+
+- [57 contrôles ciblés réussis](3ae89a6d-cibles.log.txt), contre [6 échecs attendus de la même nouvelle contre-épreuve sur l’ancien moteur](7f854218-exports-scripts-contre-epreuve-rouge.log.txt).
+- [17 exports PrestaShop, gates natifs complets](3ae89a6d-exports-17-prestashop.json) : tous PROVISIONAL ; pas de faux rejet, pas de qualification d’installation ou de qualité photographique complète.
+- [38 interactions APLAT](aplat-3ae89a6d/resultat.json), [étape 2 du devis](aplat-3ae89a6d/03-devis-mobile-etape2.png), [vidéo de la démonstration](aplat-3ae89a6d/aplat-devis-demo.webm).
+- [Mode non démonstration, un seul POST local et aucune fausse confirmation](aplat-3ae89a6d/mode-nondemo.json) ; [capture avant POST](aplat-3ae89a6d/05-mode-nondemo-avant-post-local.png), [récepteur local sans e-mail](aplat-3ae89a6d/06-recepteur-local-sans-email.png). Le serveur ne transmet rien à un CMS ou à un destinataire.
+- [SHA du build effectivement servi sur loopback, accès anonyme refusé](3ae89a6d-production-http.json). Le studio réel de Thomas n’a pas été modifié.
+- [PHP CLI isolé et empreintes des paquets](php-cli-isole.json), [9 tests réels du moteur PHP exporté](3ae89a6d-php-native-smoke.log.txt). Aucun paquet système installé et aucun CMS créé par ces commandes.
+
+Les six nouvelles captures et la vidéo APLAT n’emportent pas les 29 médias privés absents : elles attestent les interactions et la configuration du formulaire. La version sans démonstration est uniquement rendue et reçue sur loopback, sans publication. Les limites CMS et photo restent ouvertes.

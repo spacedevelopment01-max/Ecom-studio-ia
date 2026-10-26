@@ -1,0 +1,196 @@
+/** Countercheck #195: same 38 assertions, fictitious data, deny remote browser requests, preserve machine-readable results and screenshots. */
+/**
+ * APLAT (PR #187) : vérifie dans un vrai navigateur les fonctions de l'export statique de la démonstration.
+ * Menu plein panneau (Échap, clic en dehors, focus rendu), lien actif, filtres et « charger plus », recherche et onglets
+ * des questions, comparateur avant/après au clavier, devis en deux étapes (erreurs, résumé accessible, champs gardés,
+ * photo refusée puis retirée, envoi simulé, confirmation), préférences de cookies (refus par défaut, enregistrement,
+ * réouverture) et absence de défilement horizontal à 360, 390, 430, 768 et 1440 px.
+ *
+ *   npx tsx scripts/reference-static-preview.ts <dossier> --only=aplat
+ *   npx tsx scripts/aplat-interactions.ts <dossier>/aplat
+ */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { chromium, type Page } from "playwright";
+import {execFileSync} from "node:child_process";
+import http from "node:http";
+const proofOut=path.resolve("reports/contre-verification-195/aplat-3ae89a6d");fs.mkdirSync(proofOut,{recursive:true});
+const proofImages:string[]=[],remoteDenied:string[]=[];
+async function proofCapture(p:Page,name:string){await p.evaluate(()=>document.fonts.ready);const f=name+".png";await p.screenshot({path:path.join(proofOut,f),fullPage:true,animations:"disabled"});proofImages.push(f);}
+
+const dir = path.resolve(process.argv[2] ?? "");
+if (!fs.existsSync(path.join(dir, "accueil.html"))) throw new Error("Export APLAT introuvable : " + dir);
+if(!dir.startsWith("/tmp/ecs-195-"))throw Error("Only generated isolated export may be served");
+const staticServer=http.createServer((req,res)=>{try{if(!["GET","HEAD"].includes(req.method||"")){res.writeHead(405).end();return;}const p=path.resolve(dir,"."+decodeURIComponent(new URL(req.url||"/","http://127.0.0.1").pathname));if(!p.startsWith(dir+path.sep)||!fs.existsSync(p)||!fs.statSync(p).isFile()||!fs.realpathSync(p).startsWith(dir+path.sep)){res.writeHead(404).end();return;}const mime:Record<string,string>={".html":"text/html; charset=utf-8",".css":"text/css",".js":"text/javascript",".json":"application/json",".svg":"image/svg+xml",".png":"image/png",".webp":"image/webp",".jpg":"image/jpeg",".woff":"font/woff",".woff2":"font/woff2",".ttf":"font/ttf"};if(!mime[path.extname(p)]){res.writeHead(404).end();return;}res.writeHead(200,{"Content-Type":mime[path.extname(p)]});res.end(req.method==="HEAD"?undefined:fs.readFileSync(p));}catch{res.writeHead(404).end();}});
+await new Promise<void>(r=>staticServer.listen(0,"127.0.0.1",r));const localBase="http://127.0.0.1:"+(staticServer.address() as any).port;
+const url=(f:string)=>localBase+"/"+f;
+const results: [boolean, string][] = [];
+const ok = (cond: boolean, label: string) => { results.push([cond, label]); console.log(`${cond ? "✓" : "✗"} ${label}`); };
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "aplat-"));
+const gif = path.join(tmp, "plan.gif"); fs.writeFileSync(gif, Buffer.from("GIF89a\x01\x00\x01\x00\x00\x00\x00;", "binary"));
+// Plus petite image JPEG valide (1 × 1 px).
+const jpg = path.join(tmp, "piece.jpg"); fs.writeFileSync(jpg, Buffer.from("/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=", "base64"));
+const big = path.join(tmp, "grande.jpg"); fs.writeFileSync(big, Buffer.alloc(11 * 1024 * 1024, 0xff));
+
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM ?? "/opt/pw-browsers/chromium" });
+try {
+async function open(file: string, width = 1440, height = 900): Promise<Page> {
+  const p = await browser.newPage({ viewport: { width, height }, ...(file==="page-devis.html"?{recordVideo:{dir:path.join(proofOut,"video-temp"),size:{width:390,height:844}}}:{}) });
+  await p.route("**/*",r=>{const u=new URL(r.request().url());if((u.origin===localBase||["data:","blob:"].includes(u.protocol)))return r.continue();remoteDenied.push(u.origin);return r.abort();});
+  await p.goto(url(file));
+  return p;
+}
+
+// Menu plein panneau (téléphone).
+{
+  const p = await open("accueil.html", 390, 844);
+  const burger = p.locator("[data-ap-menu-open]").first();
+  await burger.click();
+  ok(await p.locator("[data-ap-menu]").isVisible(), "menu : s'ouvre au toucher du bouton");
+  ok(await p.evaluate(() => document.activeElement?.hasAttribute("data-ap-menu-close") ?? false), "menu : le focus va sur « Fermer »");
+  await p.keyboard.press("Escape");
+  ok(!(await p.locator("[data-ap-menu]").isVisible()), "menu : se ferme avec Échap");
+  ok(await p.evaluate(() => document.activeElement?.hasAttribute("data-ap-menu-open") ?? false), "menu : le focus revient sur le bouton");
+  await burger.click();
+  await p.locator("[data-ap-menu]").click({ position: { x: 5, y: 400 } });
+  ok(!(await p.locator("[data-ap-menu]").isVisible()), "menu : se ferme au clic en dehors des liens");
+  await p.close();
+}
+// Lien actif, page enfant rattachée à son parent.
+{
+  const p = await open("page-platrerie.html");
+  ok(await p.locator('.ap-header__nav a[aria-current="page"]').first().textContent().then((t) => /Prestations/.test(t ?? "")), "navigation : « Prestations » actif sur la page Plâtrerie");
+  await p.close();
+}
+// Réalisations : filtres et « charger plus ».
+{
+  const p = await open("page-realisations.html");
+  const visible = () => p.locator("[data-ap-item]:visible").count();
+  const before = await visible();
+  const more = p.locator("[data-ap-more]");
+  if (await more.count()) { await more.click(); ok((await visible()) > before, `réalisations : « charger plus » affiche d'autres projets (${before} → ${await visible()})`); }
+  const btn = p.locator("[data-ap-filter]").nth(1);
+  const cat = await btn.getAttribute("data-ap-filter");
+  await btn.click();
+  const cats = await p.locator("[data-ap-item]:visible").evaluateAll((els) => els.map((e) => e.getAttribute("data-ap-item")));
+  ok(cats.length > 0 && cats.every((c) => (c ?? "").split(",").includes(cat!)), `réalisations : le filtre « ${cat} » ne garde que ses projets (${cats.length})`);
+  ok((await btn.getAttribute("aria-pressed")) === "true", "réalisations : le filtre choisi est annoncé (aria-pressed)");
+  await p.close();
+}
+// Questions : recherche, onglets, accordéon.
+{
+  const p = await open("page-faq.html");
+  const all = await p.locator(".ap-faq--page .ap-acc:visible").count();
+  await p.fill("[data-ap-faq-search]", "photos");
+  const found = await p.locator(".ap-faq--page .ap-acc:visible").count();
+  ok(found > 0 && found < all, `questions : la recherche « photos » filtre (${all} → ${found})`);
+  await p.fill("[data-ap-faq-search]", "zzzz");
+  ok(await p.locator(".ap-faq__empty:visible").count() === 1, "questions : message sans résultat");
+  await p.fill("[data-ap-faq-search]", "");
+  await p.locator("[data-ap-faq-tab]").nth(1).click();
+  const tabbed = await p.locator(".ap-faq--page .ap-acc:visible").count();
+  ok(tabbed > 0 && tabbed < all, `questions : l'onglet filtre (${tabbed}/${all})`);
+  const acc = p.locator(".ap-faq--page [data-ap-acc]:visible").last();
+  await acc.click();
+  ok((await acc.getAttribute("aria-expanded")) === "true", "questions : la réponse s'ouvre (aria-expanded)");
+  await p.close();
+}
+// Comparateur avant/après au clavier.
+{
+  const p = await open("page-detail-chantier.html");
+  const range = p.locator("[data-ap-compare] input[type=range]").first();
+  const before = await range.inputValue();
+  await range.focus();
+  for (let i = 0; i < 5; i++) await p.keyboard.press("ArrowRight");
+  const after = await range.inputValue();
+  const pos = await p.locator("[data-ap-compare]").first().evaluate((e) => (e as HTMLElement).style.getPropertyValue("--ap-pos"));
+  ok(Number(after) > Number(before) && pos === `${after}%`, `comparateur : flèches du clavier (${before} → ${after}, --ap-pos ${pos})`);
+  await p.close();
+}
+// Devis : deux étapes sur téléphone, erreurs, photos, envoi simulé et confirmation.
+{
+  const p = await open("page-devis.html", 390, 844);
+  await proofCapture(p,"01-devis-mobile-initial");
+  await p.click("[data-ap-next]");
+  ok(await p.locator("[data-ap-summary]").isVisible(), "devis : résumé des erreurs affiché");
+  await proofCapture(p,"02-devis-mobile-erreurs");
+  ok(await p.evaluate(() => document.activeElement?.hasAttribute("data-ap-summary") ?? false), "devis : le focus va sur le résumé des erreurs");
+  ok((await p.locator("[aria-invalid=true]").count()) > 0, "devis : champs en erreur annoncés (aria-invalid)");
+  await p.locator("input[name='contact[travaux]']").first().check({ force: true });
+  await p.locator("input[name='contact[logement]']").first().check({ force: true });
+  await p.selectOption("select[name='contact[pieces]']", { index: 1 });
+  await p.fill("input[name='contact[commune]']", "Commune test");
+  await p.fill("input[name='contact[code_postal]']", "123");
+  await p.fill("textarea[name='contact[body]']:visible", "Description de test");
+  await p.click("[data-ap-next]");
+  ok(await p.locator(".ap-field.is-invalid input[name='contact[code_postal]']").count() === 1, "devis : code postal mal saisi refusé");
+  await p.fill("input[name='contact[code_postal]']", "12345");
+  await p.click("[data-ap-next]");
+  ok(await p.locator("[data-ap-prev]").isVisible(), "devis : passage à l'étape 2");
+  await proofCapture(p,"03-devis-mobile-etape2");
+  await p.click("[data-ap-prev]");
+  ok((await p.inputValue("input[name='contact[commune]']")) === "Commune test", "devis : les champs sont gardés entre les étapes");
+  await p.click("[data-ap-next]");
+  const file = p.locator("[data-ap-photos] input[type=file]");
+  await file.setInputFiles(gif);
+  ok(await p.locator("[data-ap-photo-error]").isVisible(), "photos : un GIF est refusé avec un message");
+  await file.setInputFiles(big);
+  ok(await p.locator("[data-ap-photo-error]").isVisible(), "photos : un fichier de plus de 10 Mo est refusé");
+  await file.setInputFiles(jpg);
+  ok((await p.locator("[data-ap-photo-list] li").count()) === 1, "photos : la photo JPEG est ajoutée (vignette, nom)");
+  await p.locator(".ap-photos__del").first().click();
+  ok((await p.locator("[data-ap-photo-list] li").count()) === 0, "photos : la photo est retirée");
+  await file.setInputFiles(jpg);
+  await p.fill("input[name='contact[name]']:visible", "Nom test");
+  await p.fill("input[name='contact[email]']:visible", "aplat-195@example.invalid");
+  await p.locator("input[name='contact[consentement]']:visible").check({ force: true });
+  const submit = p.locator("[data-ap-formbox] [type=submit]:visible");
+  await Promise.all([p.waitForURL(/confirmation/, { timeout: 5000 }).catch(() => null), submit.click(), submit.click({ timeout: 300 }).catch(() => null)]);
+  ok(/confirmation/.test(p.url()), "devis : envoi simulé puis page de confirmation (double clic sans double envoi)");
+  if (!/confirmation/.test(p.url())) console.log("  → URL", p.url(), "| résumé :", await p.locator("[data-ap-summary]").innerText().catch(() => ""), "| état :", await p.locator("[data-ap-status]").innerText().catch(() => ""));
+  await proofCapture(p,"04-confirmation-demo");
+  const proofVideo=p.video();
+  const txt = await p.locator("[data-ap-confirm]").innerText();
+  ok(/Démonstration — demande non envoyée/.test(txt), "confirmation : « Démonstration — demande non envoyée »");
+  ok(/Commune test/.test(await p.locator("[data-ap-sum-out=commune]").innerText().catch(() => "")) || /Commune test/.test(txt), "confirmation : récapitulatif repris du formulaire");
+  await p.close();
+  if(proofVideo)await proofVideo.saveAs(path.join(proofOut,"aplat-devis-demo.webm"));
+}
+// Cookies : refus par défaut, enregistrement, réouverture.
+{
+  const p = await open("page-cookies.html");
+  const form = p.locator(".ap-legal [data-ap-consent-form]");
+  ok(!(await form.locator("input[name=audience]").isChecked()) && !(await form.locator("input[name=external]").isChecked()), "cookies : mesure d'audience et contenus externes désactivés par défaut");
+  ok(await form.locator("input[disabled]").isChecked(), "cookies : essentiels toujours actifs");
+  await form.locator("input[name=audience]").check({ force: true });
+  await form.locator("[type=submit]").click();
+  const saved = await p.evaluate(() => JSON.parse(localStorage.getItem("aplat-consent") || "null"));
+  ok(saved?.audience === true && saved?.external === false, "cookies : choix enregistrés");
+  await p.reload();
+  ok(await p.locator(".ap-legal input[name=audience]").isChecked(), "cookies : choix retrouvés au retour sur la page");
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.goto(url("page-conseils.html"));
+  await p.locator('a[href$="#cookies"]:visible').first().click();
+  ok(await p.locator("[data-ap-cookies]").isVisible(), "cookies : « Gestion des cookies » rouvre le panneau");
+  await p.keyboard.press("Escape");
+  ok(!(await p.locator("[data-ap-cookies]").isVisible()), "cookies : le panneau se ferme avec Échap");
+  await p.close();
+}
+// Aucun défilement horizontal.
+for (const w of [360, 390, 430, 768, 1440]) {
+  const p = await browser.newPage({ viewport: { width: w, height: 900 } });
+  await p.route("**/*",r=>{const u=new URL(r.request().url());if(u.origin===localBase||["data:","blob:"].includes(u.protocol))return r.continue();remoteDenied.push(u.origin);return r.abort();});
+  const bad: string[] = [];
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".html"))) {
+    await p.goto(url(f));
+    if (await p.evaluate((W) => document.documentElement.scrollWidth > W, w)) bad.push(f);
+  }
+  ok(!bad.length, `largeur ${w} px : aucun défilement horizontal${bad.length ? " (" + bad.join(", ") + ")" : ""}`);
+  await p.close();
+}
+} finally {await browser.close();await new Promise<void>(r=>staticServer.close(()=>r()));}
+const failed = results.filter(([c]) => !c).length;
+console.log(`\n${results.length - failed}/${results.length} vérifications réussies.`);
+fs.writeFileSync(path.join(proofOut,"resultat.json"),JSON.stringify({codeCommit:execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim(),nativeStaticExport:true,realCmsInstallation:false,sourceMediaMissing:29,providerCalls:0,externalEmail:false,checks:results.map(([passed,label])=>({passed,label})),captures:proofImages,remoteDenied:[...new Set(remoteDenied)]},null,2));
+process.exit(failed ? 1 : 0);

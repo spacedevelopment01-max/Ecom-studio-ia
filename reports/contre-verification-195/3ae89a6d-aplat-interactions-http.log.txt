@@ -1,0 +1,40 @@
+✓ menu : s'ouvre au toucher du bouton
+✓ menu : le focus va sur « Fermer »
+✓ menu : se ferme avec Échap
+✓ menu : le focus revient sur le bouton
+✓ menu : se ferme au clic en dehors des liens
+✓ navigation : « Prestations » actif sur la page Plâtrerie
+✓ réalisations : « charger plus » affiche d'autres projets (6 → 9)
+✓ réalisations : le filtre « platrerie » ne garde que ses projets (4)
+✓ réalisations : le filtre choisi est annoncé (aria-pressed)
+✓ questions : la recherche « photos » filtre (8 → 2)
+✓ questions : message sans résultat
+✓ questions : l'onglet filtre (3/8)
+✓ questions : la réponse s'ouvre (aria-expanded)
+✓ comparateur : flèches du clavier (50 → 55, --ap-pos 55%)
+✓ devis : résumé des erreurs affiché
+✓ devis : le focus va sur le résumé des erreurs
+✓ devis : champs en erreur annoncés (aria-invalid)
+✓ devis : code postal mal saisi refusé
+✓ devis : passage à l'étape 2
+✓ devis : les champs sont gardés entre les étapes
+✓ photos : un GIF est refusé avec un message
+✓ photos : un fichier de plus de 10 Mo est refusé
+✓ photos : la photo JPEG est ajoutée (vignette, nom)
+✓ photos : la photo est retirée
+✓ devis : envoi simulé puis page de confirmation (double clic sans double envoi)
+✓ confirmation : « Démonstration — demande non envoyée »
+✓ confirmation : récapitulatif repris du formulaire
+✓ cookies : mesure d'audience et contenus externes désactivés par défaut
+✓ cookies : essentiels toujours actifs
+✓ cookies : choix enregistrés
+✓ cookies : choix retrouvés au retour sur la page
+✓ cookies : « Gestion des cookies » rouvre le panneau
+✓ cookies : le panneau se ferme avec Échap
+✓ largeur 360 px : aucun défilement horizontal
+✓ largeur 390 px : aucun défilement horizontal
+✓ largeur 430 px : aucun défilement horizontal
+✓ largeur 768 px : aucun défilement horizontal
+✓ largeur 1440 px : aucun défilement horizontal
+
+38/38 vérifications réussies.

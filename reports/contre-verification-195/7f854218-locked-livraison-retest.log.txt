@@ -1,0 +1,23 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-candidat-7f854218
+
+ ✓ tests/mission154-livraison.test.ts (15 tests) 48352ms
+   ✓ nouvelle session : retouches des pages, menus, identité et verrous conservées, état actualisé sans écriture 2756ms
+   ✓ products : ZIP natifs des cinq plateformes, textes entiers, fichiers décodés et plan partiel explicite 5847ms
+   ✓ services : ZIP natifs des cinq plateformes, textes entiers, fichiers décodés et plan partiel explicite 5523ms
+   ✓ un fichier corrompu après sauvegarde bloque la livraison exportée, sans toucher à la version ni au fichier acquis 27719ms
+   ✓ une mauvaise proposition de famille ne masque pas la vérification de forfait de l’opération suivante 1844ms
+   ✓ vidéo préparée : contexte périmé refusé avant fournisseur, aucun coût ni nouvelle tâche 1935ms
+   ✓ cas nouveau Pli : métier et faits remplacés sans règle de nom 467ms
+   ✓ cas nouveau Accord : métier et faits remplacés sans règle de nom 382ms
+   ✓ horizon réel en Europe/Paris : préparation utile, garde de 6 jours inchangée 603ms
+   ✓ horizon réel en Pacific/Kiritimati : préparation utile, garde de 7 jours inchangée 326ms
+   ✓ référence corrompue : préparation et génération refusées avant coût ; fausse vidéo décodable exclue malgré ses dimensions déclarées 487ms
+   ✓ déclinaisons de logo et planches d’identité : jamais utilisées comme photos du produit 445ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  06:29:03
+   Duration  53.47s (tests 91%, transform 5%, import 4%)
+
+JSON report written to /tmp/ecs-195-preuves/7f854218-locked-livraison-retest.json

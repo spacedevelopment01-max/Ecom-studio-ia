@@ -1,0 +1,2398 @@
+{
+  "commit": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "date": "2026-10-26T06:41:50.091Z",
+  "themes": [
+    {
+      "theme": "fraise",
+      "services": false,
+      "missing": [
+        "01-un-flacon-detoure.webp",
+        "02-deux-flacons-detoures.webp",
+        "03-trois-flacons-detoures.webp",
+        "04-accueil-flacon-fraises.webp",
+        "05-fiche-flacon-principal.webp",
+        "06-flacon-ouvert-plongee.webp",
+        "07-macro-gummies-texture.webp",
+        "08-macro-etiquette-bouchon.webp",
+        "09-recette-composition-fraise.webp",
+        "10-recette-gummies-fraises.webp",
+        "11-histoire-composition-flacon.webp",
+        "12-scene-cuisine.webp",
+        "13-scene-jardin.webp",
+        "14-scene-bureau.webp",
+        "15-offre-deux-flacons.webp",
+        "16-offre-trois-flacons.webp",
+        "17-journal-petit-rituel.webp",
+        "18-journal-gout-fraise.webp",
+        "19-journal-pause-cuisine.webp",
+        "20-journal-flacon-angles.webp",
+        "21-journal-lire-etiquette.webp",
+        "22-flacon-format-portrait.webp",
+        "23-article-conservation.webp",
+        "24-fraises-detail-saveur.webp",
+        "logo-proposition.png"
+      ],
+      "products": 1,
+      "prestashop": {
+        "file": "fraise/prestashop.zip",
+        "name": "esfraisegummies2dcf2b6e-prestashop.zip",
+        "bytes": 893845,
+        "sections": 20,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "96 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 912 Ko, JS 150 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 105,
+              "zipKb": 873,
+              "cssKb": 912,
+              "jsKb": 150,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "onde",
+      "services": false,
+      "missing": [
+        "logo-fonce.webp",
+        "logo.webp",
+        "logo-mot.webp",
+        "logo-contour.png",
+        "logo-contour-lime.png",
+        "c01-casque-detoure-trois-quarts.webp",
+        "c02-casque-detoure-profil.webp",
+        "c03-produit-fond-clair.webp",
+        "c04-accueil-grande-ouverture.webp",
+        "c05-detail-coussinet.webp",
+        "c06-detail-arceau.webp",
+        "c07-detail-commandes.webp",
+        "c08-detail-finition.webp",
+        "c09-scene-maison.webp",
+        "c10-scene-deplacement-train.webp",
+        "c11-scene-studio.webp",
+        "c12-journal-bureau-parenthese.webp",
+        "c13-boutique-sous-tous-les-angles.webp",
+        "c14-experience-entrez-dans-votre-bulle.webp",
+        "c15-experience-contact-matiere.webp",
+        "c16-marque-propre-frequence.webp",
+        "c18-journal-details-ligne.webp",
+        "c19-journal-entretien-coussinets.webp",
+        "c20-journal-casque-quotidien.webp",
+        "04-detail-coussinet.webp",
+        "05-detail-arceau.webp"
+      ],
+      "products": 1,
+      "prestashop": {
+        "file": "onde/prestashop.zip",
+        "name": "esondeaudio48e24086-prestashop.zip",
+        "bytes": 850420,
+        "sections": 9,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "86 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 701 Ko, JS 132 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Le casque ONDE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 91,
+              "zipKb": 830,
+              "cssKb": 701,
+              "jsKb": 132,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "orbe",
+      "services": false,
+      "missing": [
+        "orbe-09-charbon.webp",
+        "orbe-10-argile.webp",
+        "orbe-01-dune.webp",
+        "orbe-07-trio.webp",
+        "orbe-08-lumiere.webp",
+        "orbe-03-diner.webp",
+        "orbe-02-chambre.webp",
+        "orbe-04-lecture.webp",
+        "orbe-05-bureau.webp"
+      ],
+      "products": 1,
+      "prestashop": {
+        "file": "orbe/prestashop.zip",
+        "name": "esorbe11b2cefb-prestashop.zip",
+        "bytes": 444732,
+        "sections": 13,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "63 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.8,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 587 Ko, JS 117 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Lampe nomade ORBE ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 68,
+              "zipKb": 434,
+              "cssKb": 587,
+              "jsKb": 117,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "rive",
+      "services": true,
+      "missing": [],
+      "products": 0,
+      "prestashop": {
+        "file": "rive/prestashop.zip",
+        "name": "esatelierrive0c12864d-prestashop.zip",
+        "bytes": 8358813,
+        "sections": 13,
+        "media": 28,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "75 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "28 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.8,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 608 Ko, JS 118 Ko, médias 7431 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 109,
+              "zipKb": 8163,
+              "cssKb": 608,
+              "jsKb": 118,
+              "mediaKb": 7431
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "sillon",
+      "services": false,
+      "missing": [],
+      "products": 1,
+      "prestashop": {
+        "file": "sillon/prestashop.zip",
+        "name": "essillon6cb16b86-prestashop.zip",
+        "bytes": 10070483,
+        "sections": 18,
+        "media": 42,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "94 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "42 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 904 Ko, JS 141 Ko, médias 9310 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 142,
+              "zipKb": 9834,
+              "cssKb": 904,
+              "jsKb": 141,
+              "mediaKb": 9310
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "noctil",
+      "services": false,
+      "missing": [],
+      "products": 1,
+      "prestashop": {
+        "file": "noctil/prestashop.zip",
+        "name": "esnoctil81c641ab-prestashop.zip",
+        "bytes": 10619478,
+        "sections": 14,
+        "media": 37,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "101 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "37 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 590 Ko, JS 120 Ko, médias 9743 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Projecteur galaxie NOCTIL ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 144,
+              "zipKb": 10371,
+              "cssKb": 590,
+              "jsKb": 120,
+              "mediaKb": 9743
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "traverse",
+      "services": false,
+      "missing": [],
+      "products": 1,
+      "prestashop": {
+        "file": "traverse/prestashop.zip",
+        "name": "estraverse51d07a17-prestashop.zip",
+        "bytes": 7311089,
+        "sections": 10,
+        "media": 24,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "65 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "24 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.8,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 590 Ko, JS 117 Ko, médias 6485 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Sac de voyage ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 95,
+              "zipKb": 7140,
+              "cssKb": 590,
+              "jsKb": 117,
+              "mediaKb": 6485
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "heuren",
+      "services": false,
+      "missing": [],
+      "products": 1,
+      "prestashop": {
+        "file": "heuren/prestashop.zip",
+        "name": "esheurenad98786e-prestashop.zip",
+        "bytes": 6495954,
+        "sections": 8,
+        "media": 35,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "57 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "35 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.6,
+                "provenance": "static",
+                "detail": "absents : aller au contenu | couleur :"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 585 Ko, JS 114 Ko, médias 5970 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à HEUREN Bleu nuit ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 98,
+              "zipKb": 6344,
+              "cssKb": 585,
+              "jsKb": 114,
+              "mediaKb": 5970
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "alcove",
+      "services": false,
+      "missing": [],
+      "products": 1,
+      "prestashop": {
+        "file": "alcove/prestashop.zip",
+        "name": "esalcoved08c769b-prestashop.zip",
+        "bytes": 9788381,
+        "sections": 11,
+        "media": 37,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Fauteuil ALCÔVE terracotta ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Fauteuil ALCÔVE terracotta ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Fauteuil ALCÔVE terracotta ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "51 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "37 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.8,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 590 Ko, JS 117 Ko, médias 9093 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Fauteuil ALCÔVE terracotta ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 94,
+              "zipKb": 9559,
+              "cssKb": 590,
+              "jsKb": 117,
+              "mediaKb": 9093
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "museau-club",
+      "services": false,
+      "missing": [],
+      "products": 4,
+      "prestashop": {
+        "file": "museau-club/prestashop.zip",
+        "name": "esmuseauclub258a43d0-prestashop.zip",
+        "bytes": 11388865,
+        "sections": 14,
+        "media": 52,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 9.1,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.8,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 9.1
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "93 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "52 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 9,
+                "provenance": "static",
+                "detail": "CSS 594 Ko, JS 120 Ko, médias 10567 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Harnais, Laisse, Collier, Pochette ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 151,
+              "zipKb": 11122,
+              "cssKb": 594,
+              "jsKb": 120,
+              "mediaKb": 10567
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "souple",
+      "services": false,
+      "missing": [],
+      "products": 4,
+      "prestashop": {
+        "file": "souple/prestashop.zip",
+        "name": "essouple088b0ced-prestashop.zip",
+        "bytes": 15073967,
+        "sections": 14,
+        "media": 79,
+        "verdict": "PROVISIONAL",
+        "issues": [
+          "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify)"
+        ],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [
+            "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify)"
+          ],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify) ; non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : ecommerce ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 8
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "ecommerce"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "98 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "79 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 664 Ko, JS 121 Ko, médias 14146 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [
+              "PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à Tapis de yoga, Brique de yoga, Sangle de yoga, Anneau Pilates ne sont pas reprises (elles le sont dans l'export Shopify)"
+            ],
+            "stats": {
+              "files": 183,
+              "zipKb": 14721,
+              "cssKb": 664,
+              "jsKb": 121,
+              "mediaKb": 14146
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "table-saison",
+      "services": true,
+      "missing": [],
+      "products": 0,
+      "prestashop": {
+        "file": "table-saison/prestashop.zip",
+        "name": "establesaison3ff8fbcf-prestashop.zip",
+        "bytes": 16723995,
+        "sections": 20,
+        "media": 80,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "83 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "80 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 651 Ko, JS 174 Ko, médias 15809 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 169,
+              "zipKb": 16332,
+              "cssKb": 651,
+              "jsKb": 174,
+              "mediaKb": 15809
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "atelier-nuance",
+      "services": true,
+      "missing": [
+        "reservation-confirmation.webp",
+        "salon-bandeau.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "atelier-nuance/prestashop.zip",
+        "name": "esateliernuanceeb397cbe-prestashop.zip",
+        "bytes": 15930660,
+        "sections": 24,
+        "media": 76,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "99 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "76 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 669 Ko, JS 208 Ko, médias 14852 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 181,
+              "zipKb": 15557,
+              "cssKb": 669,
+              "jsKb": 208,
+              "mediaKb": 14852
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "parenthese",
+      "services": true,
+      "missing": [
+        "05-vase-livres.webp",
+        "06-fauteuil-individuel.webp",
+        "07-atelier-coussins.webp",
+        "08-cabinet-panorama.webp",
+        "09-approche-bureau.webp",
+        "10-soleil-feuillage.webp",
+        "11-fleurs-sechees.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "parenthese/prestashop.zip",
+        "name": "esparenthese82399ca8-prestashop.zip",
+        "bytes": 12546376,
+        "sections": 27,
+        "media": 54,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "111 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "54 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 675 Ko, JS 196 Ko, médias 11565 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 171,
+              "zipKb": 12252,
+              "cssKb": 675,
+              "jsKb": 196,
+              "mediaKb": 11565
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "phase",
+      "services": true,
+      "missing": [
+        "01_accueil_hero.webp",
+        "02_installation_renovation.webp",
+        "03_tableau_electrique.webp",
+        "04_eclairage_interieur.webp",
+        "05_depannage.webp",
+        "06_renovation_appartement.webp",
+        "07_cuisine_contemporaine.webp",
+        "08_salle_de_bain.webp",
+        "09_tableau_renove.webp",
+        "10_eclairage_exterieur.webp",
+        "11_chambre_eclairage.webp",
+        "12_sejour_renove.webp",
+        "13_couloir_eclaire.webp",
+        "14_maison_installation.webp",
+        "15_projet_avant.webp",
+        "16_projet_ambiance.webp",
+        "17_entreprise_hero.webp",
+        "18_installation_neuve.webp",
+        "19_extension_habitation.webp",
+        "20_spots_plafond.webp",
+        "21_prise_interrupteur.webp",
+        "22_pilotage_confort.webp",
+        "23_conseils_hero.webp",
+        "24_article_eclairage.webp",
+        "25_besoins_plans.webp",
+        "26_renovation_conseil.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "phase/prestashop.zip",
+        "name": "esphaseelectricite2f579c7d-prestashop.zip",
+        "bytes": 962520,
+        "sections": 25,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "124 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 820 Ko, JS 144 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 128,
+              "zipKb": 940,
+              "cssKb": 820,
+              "jsKb": 144,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "maison-horizon",
+      "services": true,
+      "missing": [
+        "404-village.webp",
+        "accueil-agence.webp",
+        "accueil-hero.webp",
+        "acheter.webp",
+        "agence-hero.webp",
+        "agence-piscine.webp",
+        "alerte-maison.webp",
+        "article-cuisine.webp",
+        "article-escalier.webp",
+        "article-hero.webp",
+        "article-location.webp",
+        "article-terrasse.webp",
+        "article-vente.webp",
+        "bandeau-proprietaires.webp",
+        "compte-interieur.webp",
+        "conseil-achat.webp",
+        "conseil-location.webp",
+        "conseil-luberon.webp",
+        "conseils-hero.webp",
+        "contact-hero.webp",
+        "contact-village.webp",
+        "espace-recherche.webp",
+        "espace-visite.webp",
+        "estimation-hero.webp",
+        "estimation-salon.webp",
+        "estimation-terrasse.webp",
+        "favori-appartement.webp",
+        "favori-villa.webp",
+        "footer-interieur.webp",
+        "legal-plaque.webp",
+        "location-balcon.webp",
+        "location-carte-1.webp",
+        "location-carte-2.webp",
+        "location-carte-3.webp",
+        "location-carte-4.webp",
+        "location-carte-5.webp",
+        "location-carte-6.webp",
+        "location-chambre.webp",
+        "location-cour.webp",
+        "location-cuisine.webp",
+        "location-parc.webp",
+        "location-salle-bain.webp",
+        "location-salon.webp",
+        "location-similaire-1.webp",
+        "location-similaire-2.webp",
+        "location-similaire-3.webp",
+        "location-similaire-4.webp",
+        "location-vue.webp",
+        "louer.webp",
+        "mas-alpilles.webp",
+        "mise-location-balcon.webp",
+        "mise-location-chambre.webp",
+        "mise-location-hero.webp",
+        "mise-location-salon.webp",
+        "recherche-achat-hero.webp",
+        "recherche-carte-hero.webp",
+        "recherche-location-hero.webp",
+        "secteur-aix.webp",
+        "secteur-luberon.webp",
+        "secteur-marseille.webp",
+        "secteur-paris.webp",
+        "vedette-maison.webp",
+        "vedette-paris.webp",
+        "vedette-villa.webp",
+        "vendre-hero.webp",
+        "vendre-maison.webp",
+        "vendre-olivier.webp",
+        "vendre-village.webp",
+        "vente-carte-1.webp",
+        "vente-carte-2.webp",
+        "vente-carte-3.webp",
+        "vente-carte-4.webp",
+        "vente-carte-5.webp",
+        "vente-carte-6.webp",
+        "vente-cuisine.webp",
+        "vente-jardin.webp",
+        "vente-quartier-parc.webp",
+        "vente-quartier-rhone.webp",
+        "vente-quartier-rue.webp",
+        "vente-salon.webp",
+        "vente-similaire-appartement.webp",
+        "vente-similaire-maison.webp",
+        "vente-similaire-vue.webp",
+        "vente-terrasse.webp",
+        "village.webp",
+        "carte-reference.png",
+        "vente-plan-illustratif.png"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "maison-horizon/prestashop.zip",
+        "name": "esmaisonhorizone094b23e-prestashop.zip",
+        "bytes": 553216,
+        "sections": 10,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "88 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 668 Ko, JS 150 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 93,
+              "zipKb": 540,
+              "cssKb": 668,
+              "jsKb": 150,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "theme": "aplat",
+      "services": true,
+      "missing": [
+        "00_logo_aplat_original.png",
+        "01_accueil_chantier_mixte.webp",
+        "02_piece_avant.webp",
+        "03_piece_apres.webp",
+        "04_ossature_cloisons.webp",
+        "05_enduit_lisseuse.webp",
+        "06_rouleau_mur_bleu.webp",
+        "07_texture_enduit.webp",
+        "08_jonction_plafond.webp",
+        "09_raccord_bleu_blanc.webp",
+        "10_preparation_murs.webp",
+        "11_ponceuse_supports.webp",
+        "12_nuancier_echantillons.webp",
+        "13_piece_protegee.webp",
+        "14_combles.webp",
+        "15_couloir.webp",
+        "16_seau_bac_rouleau.webp",
+        "17_plans_crayon.webp",
+        "18_fenetre_lumiere.webp",
+        "19_outils_preparation.webp",
+        "20_mur_bleu_soleil.webp",
+        "21_eventail_couleurs.webp",
+        "22_plans_metre.webp",
+        "23_appareil_photo_chantier.webp",
+        "24_plafond_joints.webp",
+        "25_doublage_isolation.webp",
+        "26_masquage_plinthe.webp",
+        "27_angle_prise_mur.webp",
+        "28_enduit_spatule_verticale.webp"
+      ],
+      "products": 0,
+      "prestashop": {
+        "file": "aplat/prestashop.zip",
+        "name": "esaplat1c3cb725-prestashop.zip",
+        "bytes": 532596,
+        "sections": 12,
+        "media": 0,
+        "verdict": "PROVISIONAL",
+        "issues": [],
+        "check": {
+          "verdict": "PROVISIONAL",
+          "issues": [],
+          "gate": {
+            "decision": {
+              "deliverable": "cms_export_v2",
+              "checker": "metadata",
+              "confidence": 0.6,
+              "score": 8.7,
+              "fatalCodes": [],
+              "blockingCodes": [],
+              "weakCriteria": [
+                "native_editing"
+              ],
+              "attempt": 0,
+              "policyVersion": "2026-10-p11h",
+              "feedback": "non mesuré : installation ; non mesuré : page_fidelity ; non mesuré : section_fidelity ; non mesuré : typography ; non mesuré : colors ; non mesuré : responsive ; non mesuré : navigation ; non mesuré : buttons ; non mesuré : forms ; critère faible : native_editing",
+              "verdict": "PROVISIONAL",
+              "action": "none",
+              "reason": "contrôle insuffisant pour un résultat final : provisoire",
+              "fatal": false,
+              "checked": true,
+              "provisional": {
+                "use": "manual",
+                "label": "needs_improvement"
+              }
+            },
+            "scope": "static",
+            "scopeLabel": {
+              "fr": "validation statique (fichiers seulement)",
+              "en": "static validation (files only)"
+            },
+            "dimensions": {
+              "technical": {
+                "score": 9.3,
+                "measured": 6,
+                "total": 7
+              },
+              "visual": {
+                "score": null,
+                "measured": 0,
+                "total": 7
+              },
+              "commercial": {
+                "score": 5,
+                "measured": 1,
+                "total": 7
+              }
+            },
+            "unmeasured": [
+              "installation",
+              "page_fidelity",
+              "section_fidelity",
+              "typography",
+              "colors",
+              "responsive",
+              "navigation",
+              "buttons",
+              "forms"
+            ],
+            "score": 8.7
+          },
+          "static": {
+            "measures": {
+              "structure": {
+                "score": 10,
+                "provenance": "static"
+              },
+              "compatibility": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "propriétés exigées par le validateur de PrestaShop"
+              },
+              "security": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "90 fichiers texte analysés"
+              },
+              "media_integrity": {
+                "score": 10,
+                "provenance": "static",
+                "detail": "0 média(s), 0 exclu(s)"
+              },
+              "data_preservation": {
+                "score": 9.9,
+                "provenance": "static",
+                "detail": "absents : aller au contenu"
+              },
+              "native_editing": {
+                "score": 5,
+                "provenance": "static",
+                "detail": "pages natives modifiables ; textes des sections via le studio"
+              },
+              "performance": {
+                "score": 6,
+                "provenance": "static",
+                "detail": "CSS 756 Ko, JS 141 Ko, médias 0 Ko"
+              }
+            },
+            "codes": [],
+            "issues": [],
+            "stats": {
+              "files": 94,
+              "zipKb": 520,
+              "cssKb": 756,
+              "jsKb": 141,
+              "mediaKb": 0
+            }
+          }
+        }
+      }
+    }
+  ]
+}

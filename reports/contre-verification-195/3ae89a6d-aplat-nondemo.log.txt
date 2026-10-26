@@ -1,0 +1,1 @@
+Native non-demo JSON configuration: exactly one local POST, no simulated success, no email or CMS tested

@@ -1,0 +1,67 @@
+
+ RUN  v5.0.3 /tmp/ecs-195-candidat-7f854218
+
+ ❯ tests/195-exports-script-red-probe.test.ts (6 tests | 6 failed) 68281ms
+   ❯ exports PrestaShop des thèmes à scripts propres (4)
+     × table-saison : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 26432ms
+     × atelier-nuance : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 23691ms
+     × parenthese : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 17033ms
+     × aplat : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés 884ms
+   ❯ garde-fous conservés (2)
+     × seules les balises des scripts du thème déjà livrés sont retirées ; tout autre script reste et est refusé 5ms
+     × APLAT : le formulaire n'emporte plus qu'un bloc de données JSON (démonstration et site publié) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/195-exports-script-red-probe.test.ts > exports PrestaShop des thèmes à scripts propres > table-saison : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés
+ FAIL  tests/195-exports-script-red-probe.test.ts > exports PrestaShop des thèmes à scripts propres > atelier-nuance : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés
+ FAIL  tests/195-exports-script-red-probe.test.ts > exports PrestaShop des thèmes à scripts propres > parenthese : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés
+ FAIL  tests/195-exports-script-red-probe.test.ts > exports PrestaShop des thèmes à scripts propres > aplat : export non rejeté, aucun script exécutable dans les gabarits, scripts du thème livrés
+AssertionError: expected [ 'dangerous_script' ] to not include 'dangerous_script'
+ ❯ tests/195-exports-script-red-probe.test.ts:34:36
+     32|         const ex = await cmsExport("prestashop", f.spec, libraryLoader…
+     33|         const c = await checkCmsExport("prestashop", ex, f.spec, { pro…
+     34|         expect(c.static.codes).not.toContain("dangerous_script");
+       |                                    ^
+     35|         expect((c.gate.decision as { verdict: string }).verdict).not.t…
+     36|         const z = unzipSync(new Uint8Array(ex.zip));
+ ❯ tests/195-exports-script-red-probe.test.ts:29:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/195-exports-script-red-probe.test.ts > garde-fous conservés > seules les balises des scripts du thème déjà livrés sont retirées ; tout autre script reste et est refusé
+AssertionError: expected '{literal}<div><script src="{/literal}…' not to contain 'table-saison.js'
+
+Expected: "table-saison.js"
+Received: "{literal}<div><script src="{/literal}{$urls.base_url}{literal}themes/theme-genere/assets/es/table-saison.js" defer="defer"></script><script src="{/literal}{$urls.base_url}{literal}themes/theme-genere/assets/es/autre.js"></script><script>alert(1)</script><script type="application/json" id="cfg">{"a":1}</script></div>{/literal}"
+
+ ❯ tests/195-exports-script-red-probe.test.ts:54:21
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/195-exports-script-red-probe.test.ts > garde-fous conservés > APLAT : le formulaire n'emporte plus qu'un bloc de données JSON (démonstration et site publié)
+AssertionError: expected '<script>' to match /type="application\/json"/json"
+
+- Expected:
+/type="application\/json"/
+
++ Received:
+"<script>"
+
+ ❯ tests/195-exports-script-red-probe.test.ts:68:37
+     66|     const tags = [...liquid.matchAll(/<script\b[^>]*>/g)].map((m) => m…
+     67|     expect(tags.length).toBeGreaterThan(0);
+     68|     for (const t of tags) expect(t).toMatch(/type="application\/json"/…
+       |                                     ^
+     69|     const js = fs.readFileSync("theme-base/assets/aplat.js", "utf8");
+     70|     expect(js).toContain("data-ap-form-config");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  06:35:49
+   Duration  74.82s (tests 92%, transform 5%, import 4%)
+
