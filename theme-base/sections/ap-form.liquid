@@ -189,25 +189,12 @@
     {%- endif -%}
   </div>
 </section>
+{%- comment -%} Réglages du formulaire lus par aplat.js : bloc de données inerte, aucun script dans les gabarits (exports
+  WordPress et PrestaShop compris, contrôle « dangerous_script »). {%- endcomment -%}
+<script type="application/json" data-ap-form-config="ApForm-{{ section.id }}">{"demo":{% if demo %}true{% else %}false{% endif %},"sending":{{ s.sending_text | json }}{% if demo %},"done":{{ s.demo_done_text | json }}{% endif %}}</script>
 {%- if demo -%}
-  <script>
-    (function () {
-      var f = document.getElementById('ApForm-{{ section.id }}');
-      if (!f) return;
-      f.setAttribute('data-demo', '');
-      f.setAttribute('data-sending', {{ s.sending_text | json }});
-      f.setAttribute('data-demo-done', {{ s.demo_done_text | json }});
-    })();
-  </script>
   {%- comment -%} Lien réel (adresse réécrite par l'aperçu du studio comme les autres liens) suivi après l'envoi simulé. {%- endcomment -%}
   {%- if s.confirm_link != blank -%}<a href="{{ s.confirm_link }}" id="ApConfirm-{{ section.id }}" data-ap-confirm-link hidden tabindex="-1" aria-hidden="true"></a>{%- endif -%}
-{%- else -%}
-  <script>
-    (function () {
-      var f = document.getElementById('ApForm-{{ section.id }}');
-      if (f) f.setAttribute('data-sending', {{ s.sending_text | json }});
-    })();
-  </script>
 {%- endif -%}
 
 {% schema %}

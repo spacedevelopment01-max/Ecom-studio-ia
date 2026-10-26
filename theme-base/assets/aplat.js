@@ -312,6 +312,15 @@
     }
   }
   function forms() {
+    // Réglages posés par la section (bloc de données JSON) : démonstration, textes de l'envoi.
+    $$("script[type='application/json'][data-ap-form-config]").forEach(function (cfg) {
+      var f = document.getElementById(cfg.getAttribute("data-ap-form-config")), c;
+      if (!f) return;
+      try { c = JSON.parse(cfg.textContent || "{}"); } catch (e) { return; }
+      if (c.demo) f.setAttribute("data-demo", "");
+      if (c.sending) f.setAttribute("data-sending", c.sending);
+      if (c.demo && c.done) f.setAttribute("data-demo-done", c.done);
+    });
     $$("[data-ap-formbox] form").forEach(function (form) {
       var steps = $$("[data-ap-step]", form), demo = form.hasAttribute("data-demo"), submit = $("[type=submit]", form);
       // Retour de la plateforme après un envoi réussi : la confirmation peut alors l'annoncer.

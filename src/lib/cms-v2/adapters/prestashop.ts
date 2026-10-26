@@ -56,9 +56,13 @@ export function topSections(main: string): { type: string; html: string }[] {
  * HTML rendu → gabarit Smarty : texte protégé ({literal}), parties dynamiques de PrestaShop insérées entre les blocs
  * protégés. Les adresses de la boutique (/pages/…, /products/…) restent valides grâce aux routes du module.
  */
-export function toSmarty(html: string, themeName = ""): string {
+export function toSmarty(html: string, themeName = "", bundled: ReadonlySet<string> = new Set()): string {
   const dyn = (expr: string) => `{/literal}${expr}{literal}`;
   let s = html;
+  // Scripts du thème qu'une section appelle elle-même (ex. table-saison.js dans l'en-tête de TABLE SAISON) : leur code
+  // est déjà exécuté par assets/js/es-theme.js et assets/es/<nom> n'est qu'un fichier neutre. La balise est retirée du
+  // contenu (aucun script dans les gabarits, contrôle « dangerous_script ») ; tout autre <script> y reste et sera refusé.
+  s = s.replace(/<script\b[^>]*\bsrc="\/assets\/([A-Za-z0-9_.-]+\.js)"[^>]*>\s*<\/script\s*>/g, (m, f: string) => (bundled.has(f) ? "" : m));
   // Liens et formulaires.
   s = s.replace(/\b(href|action)="\/(?!\/)([^"]*)"/g, (_m, attr: string, rest: string) => {
     const p = `/${rest}`;
@@ -96,6 +100,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   const adaptedHome = adaptFeaturedProduct(spec, (fr, en) => pick(lang, fr, en));
   const files = compileTheme(spec);
   const design = await designLayer(spec, files);
+  const bundled = new Set(design.scripts);
   // L'adaptation introduit un composant V2 même dans un projet historique sans ds_language.
   // Livrer sa dépendance existante ; ne pas modifier les gabarits ou styles sources du studio.
   if (adaptedHome && !design.stylesheets.includes("theme-v2.css")) {
@@ -127,9 +132,9 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   // ------------------------------------------------------------ accueil, en-tête, pied de page (rendus du studio)
   const home = pageZones(await render("/"));
   if (!home.main) issues.push({ code: "empty_home", severity: "blocking", detail: "accueil vide" });
-  put("templates/es/header.tpl", toSmarty(home.header, name));
-  put("templates/es/footer.tpl", toSmarty(home.footer, name));
-  put("templates/es/home.tpl", toSmarty(home.main, name));
+  put("templates/es/header.tpl", toSmarty(home.header, name, bundled));
+  put("templates/es/footer.tpl", toSmarty(home.footer, name, bundled));
+  put("templates/es/home.tpl", toSmarty(home.main, name, bundled));
   const sections = new Set(topSections(home.main).map((x) => x.type));
 
   // ------------------------------------------------------------ pages du site (module : /pages/<adresse>)
@@ -147,16 +152,16 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     }
     const z = pageZones(r.html);
     for (const x of topSections(z.main)) sections.add(x.type);
-    put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(z.main, name));
-    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(z.main, name));
+    put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(z.main, name, bundled));
+    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(z.main, name, bundled));
     pages.push({ handle: p.handle, title: p.title });
   }
   const policies: { handle: string; title: string }[] = [];
   for (const p of spec.store.policies ?? []) {
     const r = await renderPage({ spec, base: "", files, cart: [] }, `/policies/${p.handle}`, new URLSearchParams());
     if (r.status !== 200) continue;
-    put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name));
-    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name));
+    put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name, bundled));
+    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(pageZones(r.html).main, name, bundled));
     policies.push({ handle: p.handle, title: p.title });
   }
   // Sections propres à la fiche produit (caractéristiques, questions) : ajoutées sous la fiche native.
@@ -164,7 +169,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     const pz = pageZones(await render(`/products/${spec.store.product.handle}`));
     const v2 = topSections(pz.main).filter((x) => x.type.startsWith("v2-"));
     if (v2.length) {
-      const extra = toSmarty(v2.map((x) => x.html).join("\n"), name);
+      const extra = toSmarty(v2.map((x) => x.html).join("\n"), name, bundled);
       put(`${mod}/views/templates/hook/product.tpl`, extra);
       put("templates/es/product-extra.tpl", extra);
     }
