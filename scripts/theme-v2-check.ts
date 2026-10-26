@@ -9,12 +9,13 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { unzipSync, strFromU8 } from "fflate";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "../src/lib/theme/shopify-docs";
 import { all } from "@/lib/db";
 import { exportThemeZip } from "@/lib/theme/compile";
 import { libraryLoader } from "@/lib/theme/loader";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { THEME_SCENARIOS } from "../tests/theme-v2-fixtures";
+const { check } = await loadThemeCheck(); // documents Shopify vérifiés, sans téléchargement
 
 if (!process.env.DATA_DIR) throw new Error("DATA_DIR obligatoire (base de démonstration séparée).");
 const args = process.argv.slice(2);

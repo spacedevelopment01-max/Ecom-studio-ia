@@ -1,7 +1,8 @@
 /**
  * Theme Check (outil officiel de Shopify) sur un thème compilé, à l'exécution.
  * Utilisé par le thème entièrement sur mesure : chaque section écrite par l'IA doit passer sans erreur.
- * Sans l'outil installé sur le serveur, le contrôle est simplement signalé comme indisponible.
+ * Sans l'outil installé sur le serveur, le contrôle est simplement signalé comme indisponible. Un document Shopify
+ * illisible (src/lib/theme/shopify-docs.ts) n'est PAS une absence d'outil : l'erreur remonte et arrête la vérification.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -26,6 +27,12 @@ function referencedAssets(spec: ThemeSpec): string[] {
   return [...out];
 }
 
+/** Seule l'absence du module Theme Check sur le serveur rend le contrôle « indisponible ». */
+function isMissingModule(e: unknown) {
+  const err = e as { code?: string; message?: string };
+  return (err?.code === "MODULE_NOT_FOUND" || err?.code === "ERR_MODULE_NOT_FOUND") && /@shopify\/theme-check/.test(err.message ?? "");
+}
+
 export async function themeCheck(spec: ThemeSpec): Promise<ThemeCheckResult> {
   let check: (root: string) => Promise<{ severity: number; check: string; uri: string; message: string; start?: { line: number } }[]>;
   try {
@@ -33,7 +40,8 @@ export async function themeCheck(spec: ThemeSpec): Promise<ThemeCheckResult> {
     const mod = (await loadThemeCheck()) as any;
     check = mod.check;
     if (typeof check !== "function") return { available: false, errors: [] };
-  } catch {
+  } catch (e) {
+    if (!isMissingModule(e)) throw e;
     return { available: false, errors: [] };
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "es-theme-check-"));

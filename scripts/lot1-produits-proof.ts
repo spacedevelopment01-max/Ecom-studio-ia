@@ -9,7 +9,8 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { chromium } from "playwright";
 import { unzipSync, strFromU8 } from "fflate";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "../src/lib/theme/shopify-docs";
+const { check } = await loadThemeCheck(); // documents Shopify vérifiés, sans téléchargement
 if (process.env.DATA_DIR || process.env.DATABASE_FILE) throw new Error("Base configurée refusée : preuve isolée obligatoire.");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-product-proof-"));
 process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";

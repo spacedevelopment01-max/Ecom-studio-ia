@@ -10,7 +10,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { unzipSync } from "fflate";
-import { check } from "@shopify/theme-check-node";
+import { loadThemeCheck } from "../src/lib/theme/shopify-docs";
+const { check } = await loadThemeCheck(); // documents Shopify vérifiés, sans téléchargement
 
 const [root, outFile] = process.argv.slice(2);
 const result: Record<string, { errors: number; warnings: number; detail: string[] }> = {};

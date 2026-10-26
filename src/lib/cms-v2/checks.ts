@@ -15,7 +15,7 @@ import { getAsset } from "../library";
 import { manuallySelectable } from "../quality/usable";
 import type { CriterionKey, Measure } from "./quality";
 import type { CmsPlatform, PlatformExport } from "./types";
-import { loadThemeCheck } from "../theme/shopify-docs";
+import { loadThemeCheck, ShopifyDocsError } from "../theme/shopify-docs";
 
 export type StaticCheck = { measures: Partial<Record<CriterionKey, Measure>>; codes: string[]; issues: string[]; stats: Record<string, number> };
 
@@ -137,7 +137,8 @@ export async function staticChecks(platform: CmsPlatform, exp: PlatformExport, s
         const { check } = await loadThemeCheck();
         offenses = await check(dir);
       } catch (e) {
-        issues.push(`Theme Check indisponible : ${String((e as Error).message).slice(0, 120)}`);
+        // Documents Shopify illisibles ou outil absent : compatibilité NON MESURÉE, avec la vraie cause.
+        issues.push(`${e instanceof ShopifyDocsError ? "Theme Check arrêté" : "Theme Check indisponible"} : ${String((e as Error).message).slice(0, 160)}`);
       }
       if (offenses) {
         const errors = offenses.filter((o) => o.severity === 0);

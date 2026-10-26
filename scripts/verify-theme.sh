@@ -14,10 +14,6 @@ if [ "${1:-}" = "--rapide" ]; then ALL="atelier pop galerie vitrine cinema"; MUL
 
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/verify-theme-XXXX")"
 FAIL=0
-# Documents Shopify de Theme Check figés et servis en local (src/lib/theme/shopify-docs.ts) : plus de téléchargement à
-# chaque cas, ni de cache partagé entre processus parallèles (cause des faux « ValidSchema » intermittents en CI).
-npx tsx scripts/theme-docs-local.ts "$TMP/shopify-docs" || { echo "✗ Documents Shopify de Theme Check illisibles"; rm -rf "$TMP"; exit 1; }
-export SHOPIFY_TLD_ROOT="$TMP/shopify-docs"
 # Cas vérifiés en parallèle (JOBS à la fois, 4 par défaut) ; résultats affichés dans l'ordre à la fin.
 JOBS="${JOBS:-4}"
 N=0
@@ -25,7 +21,7 @@ run() { # numéro, libellé, variables d'environnement…, -- arguments de theme
   local n="$1" label="$2"; shift 2
   local envs=(); while [ "$1" != "--" ]; do envs+=("$1"); shift; done; shift
   local log="$TMP/$n.log" out="$TMP/$n.out"
-  if env "${envs[@]}" XDG_CACHE_HOME="$TMP/cache-$n" npx tsx scripts/theme-check.ts "$@" >"$log" 2>&1; then
+  if env "${envs[@]}" npx tsx scripts/theme-check.ts "$@" >"$log" 2>&1; then
     echo "✓ $label  (aucune erreur, $(grep -o 'Total [0-9]*' "$log" | head -1 | cut -d' ' -f2) avertissement(s))" >"$out"
   else
     touch "$TMP/failed"; { echo "✗ $label"; grep -E "^ERROR|Error|error TS" "$log" | head -20 | sed 's/^/    /'; } >"$out"
@@ -48,7 +44,7 @@ wait
 cat "$TMP"/*.out
 [ -e "$TMP/failed" ] && FAIL=1
 
-if XDG_CACHE_HOME="$TMP/cache-zip" npx tsx scripts/theme-check-zip.ts "$TMP/zip" >"$TMP/zip.log" 2>&1; then echo "✓ ZIP client (section sur mesure)"; else
+if npx tsx scripts/theme-check-zip.ts "$TMP/zip" >"$TMP/zip.log" 2>&1; then echo "✓ ZIP client (section sur mesure)"; else
   FAIL=1; echo "✗ ZIP client"; tail -20 "$TMP/zip.log" | sed 's/^/    /'
   [ -n "${GITHUB_ACTIONS:-}" ] && echo "::error title=Theme Check ZIP client::$(tail -8 "$TMP/zip.log" | tr '\n' '|' | sed 's/%/%25/g' | cut -c1-1500)"
 fi
