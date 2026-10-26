@@ -151,8 +151,10 @@
     "filesSkipped": 1
   },
   "themeCheck": {
-    "validCases": 205,
-    "clientZipValid": true
+    "validCases": 204,
+    "totalChecksIncludingClientZip": 205,
+    "clientZipValid": true,
+    "countBasis": "205 successful check lines in job log including the final client ZIP line"
   },
   "dockerObserved": {
     "worker": "actif",
