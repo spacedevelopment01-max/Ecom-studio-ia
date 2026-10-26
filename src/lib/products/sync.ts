@@ -32,7 +32,7 @@ import { HttpError } from "../auth";
 import { L } from "../i18n-server";
 import { assetData, getAsset, saveAsset } from "../library";
 import { isPublicAppUrl, publicMediaUrl } from "../public-url";
-import { createProduct, findByRemote, findLink, linksOf, listProducts, productFileName, saveLink, setVariantStock, type StudioProduct } from "./catalog";
+import { createProduct, findByRemote, findLink, getProduct, linksOf, listProducts, productFileName, saveLink, setVariantStock, type StudioProduct } from "./catalog";
 import { wooConnector } from "./connectors/woocommerce";
 import { prestaConnector } from "./connectors/prestashop";
 import { shopifyConnector } from "./connectors/shopify";
@@ -224,11 +224,20 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
         const l = vlinks.get(v.id);
         return (l && remote.variants.find((x) => x.id === l.remote_id)) || (v.sku && remote.variants.find((x) => x.sku === v.sku)) || remote.variants.find((x) => key(x.options) === key(v.options)) || undefined;
       };
+      // Stock du studio relu à l'instant de la décision (une autre requête a pu le modifier pendant les appels à la
+      // boutique), puis de nouveau à l'enregistrement : une saisie faite entre-temps est conservée, jamais écrasée.
+      const studioNow = (vid: string) => getProduct(projectId, p.id).variants.find((y) => y.id === vid)?.stock ?? null;
+      const applyStudio = (vid: string, snapshot: number | null, result: number) => {
+        const cur = studioNow(vid);
+        const next = cur === snapshot ? result : cur === null || snapshot === null ? cur : result + (cur - snapshot);
+        if (next !== null && next !== cur) setVariantStock(projectId, vid, next);
+      };
       const decisions = p.variants.map((v) => {
         const rv = remoteVariant(v);
         const vl = vlinks.get(v.id);
         const linked = !!vl && !!rv && vl.remote_id === rv.id;
-        let studio = v.stock;
+        let studio = studioNow(v.id);
+        const read = studio;
         let syncedStock = vl?.synced_stock;
         // Envoi de stock précédent resté sans réponse : jamais rejoué. Confirmé si la boutique montre la quantité visée ;
         // sinon le stock de la boutique est repris (seuls les changements faits au studio depuis restent à envoyer).
@@ -238,7 +247,7 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
             syncedStock = rv.stock;
             if (studio !== null) studio = rv.stock + (studio - op.studio_qty);
             if (rv.stock !== op.target_qty) line.warnings.push(L(`Stock « ${v.options.join(" / ") || p.data.title} » : l'envoi précédent est resté sans réponse sûre. Le stock de la boutique (${rv.stock}) est repris ; vérifiez si le réassort de ${op.target_qty - op.from_qty} a bien eu lieu.`, `Stock "${v.options.join(" / ") || p.data.title}": the previous update got no reliable answer. The store stock (${rv.stock}) was kept; check whether the restock of ${op.target_qty - op.from_qty} happened.`));
-            if (studio !== v.stock && studio !== null) setVariantStock(projectId, v.id, studio);
+            if (studio !== read && studio !== null) setVariantStock(projectId, v.id, studio);
             if (vl) saveLink({ ...vl, synced_stock: syncedStock });
           }
           clearOp(projectId, conn, v.id);
@@ -283,7 +292,7 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
       const settled = new Set<string>();
       const settle = (x: (typeof decisions)[number], q: number) => tx(() => {
         saveVariant(x.v, x.rv, q);
-        if (q !== x.v.stock) setVariantStock(projectId, x.v.id, q);
+        applyStudio(x.v.id, x.studio, q);
         clearOp(projectId, conn, x.v.id);
         x.entry.result = q;
         settled.add(x.v.id);
@@ -304,7 +313,7 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
           const targets = new Map<string, number>();
           for (const x of pending) {
             const current = fresh?.variants.find((y) => y.id === x.rv!.id)?.stock;
-            if (typeof current !== "number") { line.warnings.push(L(`Stock « ${x.entry.variant} » non envoyé : la boutique ne suit plus ce stock.`, `Stock "${x.entry.variant}" not sent: the store no longer tracks it.`)); final.set(x.v.id, x.v.stock); continue; }
+            if (typeof current !== "number") { line.warnings.push(L(`Stock « ${x.entry.variant} » non envoyé : la boutique ne suit plus ce stock.`, `Stock "${x.entry.variant}" not sent: the store no longer tracks it.`)); final.set(x.v.id, x.studio); continue; }
             targets.set(x.v.id, current + x.delta);
           }
           if (targets.size) {
@@ -327,8 +336,8 @@ async function syncProductsNow(projectId: string, conn: StoreConnector, opts: { 
         const q = final.get(x.v.id) ?? null;
         x.entry.result = q;
         if (x.deferred) saveVariant(x.v, x.rv, q);
-        // Le studio reprend le stock retenu (vente ou modification dans la boutique).
-        if (q !== null && q !== x.v.stock) setVariantStock(projectId, x.v.id, q);
+        // Le studio reprend le stock retenu (vente ou modification dans la boutique), saisies postérieures conservées.
+        if (q !== null) applyStudio(x.v.id, x.studio, q);
       }
     } catch (e) {
       line.action = "error";

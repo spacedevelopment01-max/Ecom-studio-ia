@@ -250,6 +250,67 @@ describe("#195 — invariants attendus, aucun fournisseur réel", () => {
     expect(getProduct(pid, product.id).variants[0].stock).toBe(12);
   });
 
+  // Contre-épreuve de Codex (#196, commentaire 6408857860), reprise telle quelle.
+  it("P1 #195 : réassort saisi au Studio pendant vente et ajustement, modification client conservée", async () => {
+    const { pid, product } = fixture();
+    const m = memoryStore({ atomic: true });
+    const initial = await syncProducts(pid, m.conn);
+    const rid = initial.lines[0].remoteId!;
+    setVariantStock(pid, product.variants[0].id, 12);
+    m.onNextUpdate(() => {
+      m.products.get(rid)!.variants[0].stock!--;
+      setVariantStock(pid, product.variants[0].id, 15);
+    });
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock).toBe(11);
+    // Les 3 unités ajoutées au Studio pendant l'attente restent à envoyer : 11 + 3.
+    expect(getProduct(pid, product.id).variants[0].stock).toBe(14);
+    expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+    expect(m.products.get(rid)!.variants[0].stock).toBe(14);
+    expect(getProduct(pid, product.id).variants[0].stock).toBe(14);
+  });
+
+  it("P1 #195 : saisies au Studio pendant l'attente conservées aussi en quantité absolue, sur une vente de la boutique et à la reprise", async () => {
+    // Quantité absolue : la saisie arrive pendant l'écriture de la quantité.
+    {
+      const { pid, product } = fixture(); const m = memoryStore({ quantity: true });
+      const rid = (await syncProducts(pid, m.conn)).lines[0].remoteId!;
+      setVariantStock(pid, product.variants[0].id, 12);
+      m.onNextUpdate(() => setVariantStock(pid, product.variants[0].id, 15));
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(12);
+      expect(getProduct(pid, product.id).variants[0].stock).toBe(15);
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(15);
+    }
+    // Vente dans la boutique (le studio reprend), saisie au studio pendant la lecture du catalogue distant.
+    {
+      const { pid, product } = fixture(); const m = memoryStore();
+      const rid = (await syncProducts(pid, m.conn)).lines[0].remoteId!;
+      m.products.get(rid)!.variants[0].stock = 8; // deux ventes
+      const get = m.conn.get.bind(m.conn);
+      let once = true;
+      m.conn.get = async (id) => { const r = await get(id); if (once) { once = false; setVariantStock(pid, product.variants[0].id, 13); } return r; };
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      // 8 (boutique) + 3 saisis au studio pendant l'attente, qui restent à envoyer.
+      expect(getProduct(pid, product.id).variants[0].stock).toBe(11);
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(11);
+    }
+    // Reprise d'un envoi resté sans réponse, saisie au studio entre-temps : seul le complément part.
+    {
+      const { pid, product } = fixture(); const m = memoryStore({ atomic: true });
+      const rid = (await syncProducts(pid, m.conn)).lines[0].remoteId!;
+      setVariantStock(pid, product.variants[0].id, 12);
+      m.loseNextUpdateResponse();
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(1);
+      setVariantStock(pid, product.variants[0].id, 16);
+      expect((await syncProducts(pid, m.conn)).counts.error).toBe(0);
+      expect(m.products.get(rid)!.variants[0].stock).toBe(16);
+      expect(getProduct(pid, product.id).variants[0].stock).toBe(16);
+    }
+  });
+
   it("P2 : une boutique qui répond 503 ne doit pas être enregistrée active", async () => {
     const { pid } = fixture();
     const upstream503 = (async () => new Response(JSON.stringify({ message: "SIMULATED_UNAVAILABLE" }), { status: 503 })) as typeof fetch;
