@@ -15,7 +15,6 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
 
 type ThemeCheckNode = typeof import("@shopify/theme-check-node");
 type Docs = { revision: string; resources: Map<string, string>; schemas: Map<string, string> };
@@ -25,15 +24,23 @@ export class ShopifyDocsError extends Error {}
 
 const RESOURCES = ["filters", "objects", "tags", "latest", "shopify_system_translations", "manifest_theme", "manifest_theme_app_extension"];
 
-/** Dossier des documents livrés avec la dépendance installée (ou ES_SHOPIFY_DOCS_DIR, réservé aux essais). */
+/**
+ * Dossier des documents livrés avec la dépendance installée (ou ES_SHOPIFY_DOCS_DIR, réservé aux essais). Recherché
+ * dans node_modules depuis le dossier du studio : pas de createRequire, que l'empaquetage de Next réécrit (constaté par
+ * Codex sur le build servi : « Cannot read properties of undefined (reading 'resolve') »).
+ */
 function installedDocsDir() {
   if (process.env.ES_SHOPIFY_DOCS_DIR) return process.env.ES_SHOPIFY_DOCS_DIR;
-  const req = createRequire(path.join(process.cwd(), "package.json"));
-  return path.join(path.dirname(req.resolve("@shopify/theme-check-docs-updater/package.json")), "data");
+  for (let dir = process.cwd(); ; dir = path.dirname(dir)) {
+    const data = path.join(dir, "node_modules", "@shopify", "theme-check-docs-updater", "data");
+    if (fs.existsSync(path.join(data, "latest.json"))) return data;
+    if (path.dirname(dir) === dir) throw new ShopifyDocsError(`Documents Shopify de Theme Check introuvables (node_modules/@shopify/theme-check-docs-updater/data, depuis ${process.cwd()}).`);
+  }
 }
 
 /** Lit et vérifie tous les documents attendus par le module (données, manifestes, schémas cités). */
-export function readShopifyDocs(dir = installedDocsDir()): Docs {
+export function readShopifyDocs(dir?: string): Docs {
+  dir ??= installedDocsDir();
   const read = (file: string) => {
     let text: string;
     try {
