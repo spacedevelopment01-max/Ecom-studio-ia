@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **AVIS TECHNIQUE FAVORABLE AVANT FUSION renouvelé sur `d38b0b7c676e045d103238179e0e4a2d30ad5d05`, base main `0a6aa1dd`. Suite indépendante et CI finale entièrement vertes. Contrôle APRÈS en attente du vrai SHA fusionné par Claude ; CMS, kits privés et studio servi restent partiellement non vérifiés.**
+État au 26 octobre 2026 : **PR196 effectivement fusionnée par Claude ; main = `333bccc8daf97b9746dcf590a9525c830a53915f`. AVANT d38 validé. APRÈS en cours dans une nouvelle copie : arbre identique, build/types réussis ; suite complète et vraie CI main en cours. Aucun verdict APRÈS encore émis.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -14,7 +14,7 @@ Responsabilités : Claude conserve seul la branche d’intégration et la fusion
 | `aec79070dce88666e2b59be3452f7b6b1304bdb9` | Corrige la reprise multi-variante ; saisie client concurrente encore perdue |
 | `7f854218bb7afd08ec8ec2209b55c36ee53011f7` | Candidat intermédiaire ; corrige aussi la saisie concurrente |
 | `3ae89a6d42711c13962571483f55c496d6b3ddaa` | Corrige les faux rejets PrestaShop et la configuration du formulaire APLAT ; 57 contre-épreuves, 17 exports, 38 interactions et suite globale réussis |
-| SHA effectivement fusionné | **EN ATTENTE de Claude ; aucun contrôle après fusion possible à ce stade** |
+| `333bccc8daf97b9746dcf590a9525c830a53915f` | Fusion réellement faite par Claude ; copie neuve en cours de contre-vérification APRÈS |
 
 Copies isolées, SQLite et médias fictifs sous `/tmp/ecs-195-*`. Dépôt de travail initial préservé : branche `codex/lot-2a-themes-reference`, commit `9f8b6c437580490acc52fd165986a1c3a79b394a`, propre. Aucun secret/configuration/base client copié. Garde réseau du lot 9 active pendant les tests natifs ; zéro appel fournisseur réel ou payant. Aucune fusion, publication client, modification du studio réel ou suppression globale Docker.
 
@@ -185,9 +185,22 @@ Preuves : `d38b0b7c-suite-synthese.json` (empreinte du rapport brut et compteurs
 - Native d38 : **3 395 réussis,0échec,31ignorés**,396fichiers réussis/1ignoré, sortie0,1 485,37s ; types et fichier d’affiche6/6 réussis.
 - CI [40289682986](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40289682986) : **tous les jobs et étapes réussis**, types,3 395tests/31ignorés, Theme Check30scénarios, build de production, construction et démarrage Docker. Journaux relus, pas seulement le badge.
 - Checkout CI temporaire `4fa9902faa7a6febd6a114ae542a4b989fde43d4` : parents main0a et candidatd38 ; arbre `b176bc230eed7a8cb6986a2baafc50f6f7b23d78`, identité confrontée à l’arbre d38 par l’API Git. **Ce checkout temporaire n’est toujours pas main fusionné.**
-- D38 ne change que le test d’affiche depuis96ad ; tous les fichiers applicatifs, médias, scripts, verrou et CI sont inchangés depuis3a. Les57contre-épreuves,63Autopilot, migrations45/45/46,64HTTP,38APLATFORM, réouverture éditeur et51exports natifs de3a gardent cette attribution de source, complétés par la suite d38 réellement exécutée. Ils ne sont pas rebaptisés « exécutés après fusion ».
+- D38 ne change que le test d’affiche depuis96ad ; tous les fichiers applicatifs, médias, scripts, verrou et CI sont inchangés depuis3a. Les57contre-épreuves,63Autopilot, migrations45/45/46,64HTTP,38APLAT, réouverture éditeur et51exports natifs de3a gardent cette attribution de source, complétés par la suite d38 réellement exécutée. Ils ne sont pas rebaptisés « exécutés après fusion ».
 - Les13têtes sources relues juste avant ce verdict sont inchangées. Coven191 reste exclu conformément à la décision de Thomas. Main0a n’a pas changé au dernier relevé.
 
 Claude peut poursuivre la fusion déjà autorisée, seul opérateur. Toute modification applicative supplémentaire invalide les contrôles concernés. **Demande : transmettre le vrai SHA main et figer ensuite tous les commits pendant sa CI et notre seconde passe** (la configuration CI annule les runs précédents du même ref lors d’un nouveau push, même documentaire). Le rapport central peut être finalisé après la vérification du code intégré, avec séparation du SHA de code testé et de la révision documentaire.
 
 Cet accord est technique : les31ignorés, CMS réellement installés absents, sept kits privés actifs absents, fournisseurs réels non testés, version du studio client inconnue et suivis P2 restent explicitement ouverts. Il ne vaut pas activation client ou validation visuelle finale de Thomas. **La mission195 n’est pas encore terminée : contrôle APRÈS à exécuter.**
+
+
+## Fusion réelle constatée — seconde passe sur main333bccc8
+
+PR196 `merged=true`, ref distante main et commentaire de Claude confrontés : **`333bccc8daf97b9746dcf590a9525c830a53915f`**, parents main0a et tête d38, méthode merge. Codex n’a pas fusionné. Claude confirme le gel de tous les commits pendant la CI et cette seconde passe, documents compris.
+
+Nouvelle copie `/tmp/ecs-195-main-333bccc8`, détachée sur ce SHA, données propres/fictives. Arbre entier `b176bc230eed7a8cb6986a2baafc50f6f7b23d78` identique à d38 ; 11racines source/tests/thèmes/public/médias/scripts/worker/CI/verrou/CLAUDE confrontées ; aucun fichier suivi modifié et verrou identique aux dépendances installées. Preuve : `main-333bccc8-preservation.json`.
+
+Sur **ce vrai SHA main** : build natif réussi, sortie0,102,07s ; types réussis, sortie0,45,10s. Commandes/processus/garde réseau dans les fichiers `main-333bccc8-*-execution.json`, journaux et sorties publiés. **Suite complète indépendante en cours**, PHPCLI, deux workers, sans navigateur concurrent. Ses résultats ne sont pas encore annoncés.
+
+Vraie CI événement **push/main**, `head_sha=333bccc8…` : [run40295873897](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897). Types réussis, construction/démarrage Docker réussis, tests en cours au relevé. Le raccourci du connecteur « runs par commit » retournait à tort une liste vide pour ce push ; le listing Actions général puis les jobs du run ont été consultés. Aucun run inventé ou relancé pour contourner un rouge. Ce run est distinct des merges temporaires des CI de PR.
+
+Restent à terminer pour le verdict APRÈS : suite locale et CI main, migrations/restaurations, sept jours Autopilot, contre-épreuves ciblées et parcours compilés/navigateur, dont contrôle des pages définies des15démos. Aucun studio réel, clé fournisseur, média privé, achat CMS, paiement ou déploiement touché. La version réellement servie au client reste non vérifiée.

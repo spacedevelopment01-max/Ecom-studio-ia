@@ -1,7 +1,7 @@
 {
-  "codeTestedLatest": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
+  "codeTestedLatest": "333bccc8daf97b9746dcf590a9525c830a53915f",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "BEFORE_D38_TECHNICALLY_FAVORABLE_AFTER_MERGE_PENDING",
+  "state": "AFTER_MAIN_333_NATIVE_BUILD_TYPES_GREEN_SUITE_AND_CI_IN_PROGRESS",
   "realProviderCalls": 0,
   "nativeScreenshots": 101,
   "inspectionBoards": 5,
@@ -509,8 +509,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 11448,
-      "sha256": "dafe2f72d5347d645709cfb9626711522865ce23189b55fb4023db54e3c87687"
+      "bytes": 11780,
+      "sha256": "0ee98fcfd8a5a643611dbedcd3a7ef290b86b2fa05c1e4c27b3529dcfdd4361e"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -906,6 +906,41 @@
       "file": "lot9/parcours.json",
       "bytes": 5093,
       "sha256": "4cea5e92ed5de821353c8dcc883ff0a39261def833e15a201d6a72bd79dfc749"
+    },
+    {
+      "file": "main-333bccc8-build-execution.json",
+      "bytes": 234,
+      "sha256": "d3d6e2401697da70a76ec61430516a05d7f8dee28b57b6756d77de7e89c14bb8"
+    },
+    {
+      "file": "main-333bccc8-build.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "main-333bccc8-build.log.txt",
+      "bytes": 15849,
+      "sha256": "49dd4f423874cc7dbcbc263c4babbcc5feb266cd156edee1e3a14d3c7c96c81a"
+    },
+    {
+      "file": "main-333bccc8-preservation.json",
+      "bytes": 2508,
+      "sha256": "32b09b0f2e78041a8cfc56736733ff2266345ccb6ee987597d5c18627b2cfbe4"
+    },
+    {
+      "file": "main-333bccc8-types-execution.json",
+      "bytes": 234,
+      "sha256": "3f539df18959df206016b0bbf9d665bfa71118171c25874f1c80f8c253f55523"
+    },
+    {
+      "file": "main-333bccc8-types.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "main-333bccc8-types.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "file": "migration-0a6aa1dd-3ae89a6d.exit",
@@ -1388,5 +1423,7 @@
       "sha256": "05dc200cef0070ce116cfbcf28c9a3f31879b0c0f0abfc3e38f62183c122c822"
     }
   ],
-  "applicationSourceUnchangedFrom": "3ae89a6d42711c13962571483f55c496d6b3ddaa"
+  "applicationSourceUnchangedFrom": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "mainMerged": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "candidateApproved": "d38b0b7c676e045d103238179e0e4a2d30ad5d05"
 }

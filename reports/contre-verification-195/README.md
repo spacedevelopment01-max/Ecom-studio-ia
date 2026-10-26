@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-Dernier candidat : `d38b0b7c676e045d103238179e0e4a2d30ad5d05`. **Avis technique favorable AVANT renouvelé : suite indépendante3395/0/31 et CI finale entièrement verte. Contrôle APRÈS en attente du vrai SHA main.** Les preuves plus anciennes gardent leur SHA explicite ; CMS/kits privés/fournisseurs réels restent non vérifiés.
+**État actuel : PR196 fusionnée par Claude, main `333bccc8daf97b9746dcf590a9525c830a53915f`. Contre-vérification APRÈS en cours : build/types réussis, suite et vraie CI main en cours. AVANT d38 validé ; pas encore de verdict APRÈS.**
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 
@@ -109,3 +109,7 @@ Suivi P2 existant : [menu de section masquée, preuve machine](editeur-3ae89a6d/
 ## Accord AVANT final d38
 
 [CI finale, identité du checkout et étapes terminées](d38b0b7c-ci-identite.json), [suite indépendante](d38b0b7c-suite-synthese.json). Le rouge96ad est conservé avec sa cause et la correction contre-vérifiée ; il n’est pas présenté comme un vert. Main réel et contrôle APRÈS encore en attente.
+
+## Seconde passe sur le vrai main333bccc8
+
+[Présence des apports et identité de l’arbre](main-333bccc8-preservation.json), [build natif](main-333bccc8-build-execution.json), [types](main-333bccc8-types-execution.json). Journaux et sorties associés dans ce dossier. [Vraie CI push main40295873897](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897) en cours ; pas encore de verdict APRÈS.
