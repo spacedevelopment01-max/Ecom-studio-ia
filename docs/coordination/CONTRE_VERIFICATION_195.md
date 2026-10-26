@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État au 26 octobre 2026 : **avis AVANT suspendu à la CI finale du correctif de test `d38b0b7c676e045d103238179e0e4a2d30ad5d05`. Le code applicatif reste identique à 3a. CI documentaire96ad rouge (3 394/1/31), cause analysée ci-dessous ; nouveau test ciblé et nouvelle suite indépendante réussis (3 395/0/31), CI finale encore en cours. Aucun contrôle APRÈS fusion.**
+État au 26 octobre 2026 : **AVIS TECHNIQUE FAVORABLE AVANT FUSION renouvelé sur `d38b0b7c676e045d103238179e0e4a2d30ad5d05`, base main `0a6aa1dd`. Suite indépendante et CI finale entièrement vertes. Contrôle APRÈS en attente du vrai SHA fusionné par Claude ; CMS, kits privés et studio servi restent partiellement non vérifiés.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -176,3 +176,18 @@ La CI96ad [40286840876](https://github.com/spacedevelopment01-max/Ecom-studio-ia
 Sur `d38b0b7c676e045d103238179e0e4a2d30ad5d05`, copie neuve, sources et verrou propres : **396 fichiers réussis / 1 ignoré ; 3 395 tests réussis / 0 échec / 31 ignorés**, sortie0, **1 485,37s**. Commande : `vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=<temp>/d38b0b7c-suite.json` ; garde réseau du lot9, PHP8.4CLI isolé, aucun navigateur concurrent. Typecheck explicite réussi ; fichier d’affiche corrigé6/6 confirmé avant la suite. Les assertions/plafonds du pilote, les délais des tests et le code applicatif n’ont pas été modifiés par Codex.
 
 Preuves : `d38b0b7c-suite-synthese.json` (empreinte du rapport brut et compteurs par fichier), journal intégral, fichier de sortie0 et métadonnées d’exécution du processus natif. Les31ignorés restent les mêmes kits privés/CMS absents/films suspendus, sans les compter comme réussites. La CI [40289682986](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40289682986) a passé types/tests et Docker ; **Theme Check en cours au relevé**, build principal encore en attente. **Accord avant fusion toujours retenu jusqu’à sa fin effective.** Les13têtes sources relues à08h16UTC sont inchangées ; le périmètre d’intégration est stable.
+
+
+## Verdict AVANT renouvelé — d38 et sa CI finale effectivement verte
+
+**AVIS TECHNIQUE FAVORABLE sur `d38b0b7c676e045d103238179e0e4a2d30ad5d05`, combinaison avec main `0a6aa1dd6dfa5932a5e42e027cef2a3335e74679`.** La correction de test a été examinée et reproduite ; la suite complète indépendante et la CI ont fini. Les conclusions antérieures, verts comme rouges, restent historiques et ne sont pas effacées. Aucun contournement de CI, aucune relance de la CI rouge96ad pour en masquer le défaut.
+
+- Native d38 : **3 395 réussis,0échec,31ignorés**,396fichiers réussis/1ignoré, sortie0,1 485,37s ; types et fichier d’affiche6/6 réussis.
+- CI [40289682986](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40289682986) : **tous les jobs et étapes réussis**, types,3 395tests/31ignorés, Theme Check30scénarios, build de production, construction et démarrage Docker. Journaux relus, pas seulement le badge.
+- Checkout CI temporaire `4fa9902faa7a6febd6a114ae542a4b989fde43d4` : parents main0a et candidatd38 ; arbre `b176bc230eed7a8cb6986a2baafc50f6f7b23d78`, identité confrontée à l’arbre d38 par l’API Git. **Ce checkout temporaire n’est toujours pas main fusionné.**
+- D38 ne change que le test d’affiche depuis96ad ; tous les fichiers applicatifs, médias, scripts, verrou et CI sont inchangés depuis3a. Les57contre-épreuves,63Autopilot, migrations45/45/46,64HTTP,38APLATFORM, réouverture éditeur et51exports natifs de3a gardent cette attribution de source, complétés par la suite d38 réellement exécutée. Ils ne sont pas rebaptisés « exécutés après fusion ».
+- Les13têtes sources relues juste avant ce verdict sont inchangées. Coven191 reste exclu conformément à la décision de Thomas. Main0a n’a pas changé au dernier relevé.
+
+Claude peut poursuivre la fusion déjà autorisée, seul opérateur. Toute modification applicative supplémentaire invalide les contrôles concernés. **Demande : transmettre le vrai SHA main et figer ensuite tous les commits pendant sa CI et notre seconde passe** (la configuration CI annule les runs précédents du même ref lors d’un nouveau push, même documentaire). Le rapport central peut être finalisé après la vérification du code intégré, avec séparation du SHA de code testé et de la révision documentaire.
+
+Cet accord est technique : les31ignorés, CMS réellement installés absents, sept kits privés actifs absents, fournisseurs réels non testés, version du studio client inconnue et suivis P2 restent explicitement ouverts. Il ne vaut pas activation client ou validation visuelle finale de Thomas. **La mission195 n’est pas encore terminée : contrôle APRÈS à exécuter.**

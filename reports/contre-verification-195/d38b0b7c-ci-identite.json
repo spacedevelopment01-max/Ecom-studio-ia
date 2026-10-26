@@ -1,0 +1,150 @@
+{
+  "capturedAt": "2026-10-26T08:55:04.101Z",
+  "candidate": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
+  "base": "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+  "workflow": 40289682986,
+  "ciCheckout": "4fa9902faa7a6febd6a114ae542a4b989fde43d4",
+  "ciTree": "b176bc230eed7a8cb6986a2baafc50f6f7b23d78",
+  "candidateTree": "b176bc230eed7a8cb6986a2baafc50f6f7b23d78",
+  "treeEqual": true,
+  "ciParents": [
+    "0a6aa1dd6dfa5932a5e42e027cef2a3335e74679",
+    "d38b0b7c676e045d103238179e0e4a2d30ad5d05"
+  ],
+  "jobs": [
+    {
+      "id": 121461544869,
+      "name": "Typecheck, tests, Theme Check, build",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40289682986,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Installation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "ffmpeg",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "V\u00e9rification des types",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Tests (r\u00e9seau fournisseur interdit)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Shopify Theme Check (30 th\u00e8mes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Build de production",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    },
+    {
+      "id": 121461545149,
+      "name": "Image Docker (construction et d\u00e9marrage)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40289682986,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Construction de l'image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "D\u00e9marrage et v\u00e9rifications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Journaux du conteneur",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    }
+  ]
+}

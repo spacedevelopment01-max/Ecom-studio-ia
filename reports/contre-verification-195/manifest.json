@@ -1,7 +1,7 @@
 {
   "codeTestedLatest": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "BEFORE_D38_NATIVE_SUITE_GREEN_FINAL_CI_PENDING",
+  "state": "BEFORE_D38_TECHNICALLY_FAVORABLE_AFTER_MERGE_PENDING",
   "realProviderCalls": 0,
   "nativeScreenshots": 101,
   "inspectionBoards": 5,
@@ -509,8 +509,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 11229,
-      "sha256": "cc7a4cee56c8fd507cf4fadf8c6051701166be261a2af781a036efbb20525efa"
+      "bytes": 11448,
+      "sha256": "dafe2f72d5347d645709cfb9626711522865ce23189b55fb4023db54e3c87687"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -606,6 +606,11 @@
       "file": "d38b0b7c-affiches.log.txt",
       "bytes": 181,
       "sha256": "df2aee8519f7ebadec06a0da3bf1eae2df00779b4138c9fd3e3d835fd9cc6cad"
+    },
+    {
+      "file": "d38b0b7c-ci-identite.json",
+      "bytes": 4004,
+      "sha256": "d23a6a99b6284eb6c702b28f59fe756d4e22e733acb3faeaf6e2057868592aae"
     },
     {
       "file": "d38b0b7c-suite-execution.json",

@@ -1,6 +1,6 @@
 # Preuves de contre-vérification #195
 
-Candidat corrigé contre-vérifié : `3ae89a6d42711c13962571483f55c496d6b3ddaa` ; Next 15.5.28, verrou inchangé. Les captures des quinze accueils et des parcours studio/Higgsfield ci-dessous restent datées du code 7f. **Dernier état : avis AVANT suspendu à la CI finale d38 (correction du seul test d’affiche) ; la CI documentaire96ad a échoué. Les3395 réussites3a restent historiques. Contrôle APRÈS toujours en attente du vrai SHA main.**
+Dernier candidat : `d38b0b7c676e045d103238179e0e4a2d30ad5d05`. **Avis technique favorable AVANT renouvelé : suite indépendante3395/0/31 et CI finale entièrement verte. Contrôle APRÈS en attente du vrai SHA main.** Les preuves plus anciennes gardent leur SHA explicite ; CMS/kits privés/fournisseurs réels restent non vérifiés.
 
 Données fictives exclusivement. Aucun fournisseur réel, paiement, e-mail externe, déploiement ni fusion. Les prix Higgsfield sont simulés et signalés dans les captures. Les pages ci-dessous appartiennent à des projets de recette séparés ; les clichés ne prouvent pas la qualité des kits privés absents.
 
@@ -105,3 +105,7 @@ Suivi P2 existant : [menu de section masquée, preuve machine](editeur-3ae89a6d/
 ## Suite indépendante d38 terminée
 
 [3 395 réussites,0échec,31ignorés — synthèse par fichier](d38b0b7c-suite-synthese.json), [journal](d38b0b7c-suite.log.txt), [processus et commande exacts](d38b0b7c-suite-execution.json). Types réussis. CI finale encore en cours ; ne pas confondre cette réussite locale avec un accord de fusion déjà renouvelé.
+
+## Accord AVANT final d38
+
+[CI finale, identité du checkout et étapes terminées](d38b0b7c-ci-identite.json), [suite indépendante](d38b0b7c-suite-synthese.json). Le rouge96ad est conservé avec sa cause et la correction contre-vérifiée ; il n’est pas présenté comme un vert. Main réel et contrôle APRÈS encore en attente.
