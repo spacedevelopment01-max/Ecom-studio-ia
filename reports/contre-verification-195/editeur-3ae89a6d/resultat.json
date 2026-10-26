@@ -1,0 +1,32 @@
+{
+  "commit": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "syntheticOnly": true,
+  "realProviderCalls": 0,
+  "fixtures": [
+    {
+      "business": "product",
+      "sectionMovedByUi": true,
+      "orderRetainedAfterReload": true,
+      "headerLayoutPicked": "centered",
+      "headerLayoutRetainedAfterReload": true,
+      "allStoreContentUnchanged": true,
+      "previousVersionRetained": true,
+      "initialVersion": "2dlndyiadtoui9mm",
+      "finalVersion": "n4614j26asfoqn47",
+      "mobileHeaderLayoutReopened": true
+    },
+    {
+      "business": "service",
+      "sectionMovedByUi": true,
+      "orderRetainedAfterReload": true,
+      "headerLayoutPicked": "contact",
+      "headerLayoutRetainedAfterReload": true,
+      "allStoreContentUnchanged": true,
+      "previousVersionRetained": true,
+      "initialVersion": "foziagstrypfc51w",
+      "finalVersion": "2fsmdq499oyyhy3s",
+      "mobileHeaderLayoutReopened": true
+    }
+  ],
+  "errors": []
+}

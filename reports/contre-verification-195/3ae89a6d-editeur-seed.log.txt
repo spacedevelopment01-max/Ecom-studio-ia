@@ -1,0 +1,1 @@
+Two isolated native editor fixtures ready; only simulated zero-cost existing fixture receipts.

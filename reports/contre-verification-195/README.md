@@ -83,3 +83,14 @@ Les six nouvelles captures et la vidéo APLAT n’emportent pas les 29 médias p
 - Migrations/restaurations 3a : [dcfc13b1](migration-dcfc13b1-3ae89a6d.json), [d97e0b95](migration-d97e0b95-3ae89a6d.json), [main 0a](migration-0a6aa1dd-3ae89a6d.json).
 
 Tous les éléments sont attribués à leur SHA. Aucun résultat avant fusion ne vaut contrôle après fusion ni mise à jour du studio réel.
+
+## Éditeur natif 3a et réouverture
+
+[Résultat produit/service](editeur-3ae89a6d/resultat.json), [matrice par point et par fichier testé](3ae89a6d-verdict-par-point.json).
+
+| Projet fictif | Ordinateur | Mobile |
+|---|---|---|
+| Théière en grès | [PNG](editeur-3ae89a6d/produit-ordinateur.png) | [PNG](editeur-3ae89a6d/produit-mobile.png) |
+| Cours de tournage | [PNG](editeur-3ae89a6d/service-ordinateur.png) | [PNG](editeur-3ae89a6d/service-mobile.png) |
+
+Suivi P2 existant : [menu de section masquée, preuve machine](editeur-3ae89a6d/menu-section-masquee.json), [capture](editeur-3ae89a6d/menu-section-masquee.png). Les parcours réussis n’annulent pas ce défaut limité aux sections masquées. Les préparations incorrectes du harnais sont conservées dans les journaux, sans modification de l’application ni de la sandbox.

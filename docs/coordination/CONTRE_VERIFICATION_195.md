@@ -61,7 +61,7 @@ Préfixe de sécurité utilisé : `NODE_OPTIONS='--max-old-space-size=1536 --imp
 | 7f | Idem depuis main 0a6aa1dd | **46 contrôles réussis** |
 | aec, avant correctif stock seul de 7f | Huit fichiers Higgsfield/prix, angles, reçus, idempotence et budgets | **138/138**, sortie 0 ; 34,30 s ; fournisseurs simulés |
 | 7f, dépendances partagées préliminaires | Suite complète `npx vitest run --maxWorkers=3` | 391 fichiers réussis, quatre échoués, un ignoré ; 3 355 tests réussis / 15 échoués / 31 ignorés ; sortie 1 ; 1 133,44 s. Les quatre fichiers échoués repassent après restauration des ressources suivies : **32 réussis / 14 ignorés**, sortie 0, 19,15 s. Les 14 ignorés préexistaient et ne pouvaient être collectés avant le rétablissement du JSON. Aucun de ces lancements n’est présenté comme une invocation globale verte. |
-| 7f | Build de production / navigateur natif / exports | **En cours** |
+| 7f | Build de production / navigateur natif / exports | Terminés ; faux rejets PrestaShop corrigés ensuite sur 3a, détails ci-dessous |
 
 Les commandes de migrations, leurs rapports JSON et les journaux sont livrés dans `reports/contre-verification-195/`. Les harnais isolés ajoutés pour les preuves ne modifient pas le moteur applicatif.
 
@@ -85,12 +85,12 @@ Les commandes de migrations, leurs rapports JSON et les journaux sont livrés da
 
 ## Verdict par point et suite
 
-Stocks/reprises/saisies concurrentes : **contre-épreuves ciblées validées sur 7f, connecteurs simulés**. Autopilot, types, migration/restauration : **validés sur 7f**. Catalogue/sections/droits/isolation/exports/Higgsfield/angles : contrôles globaux et navigateur en cours ; précisions finales à ajouter. CMS réel, kits privés et version servie : **non vérifiés**, raisons ci-dessus.
+Les premiers contrôles 7f et leurs limites sont conservés ci-dessous. Le verdict final 3a couvre stocks, catalogue, sections, droits, isolation, exports natifs, Higgsfield et angles, dans la portée des tests et doubles explicités. Le détail par point et par fichier de test exécuté est dans `3ae89a6d-verdict-par-point.json`. CMS réel, kits privés et version servie : **non vérifiés**, raisons ci-dessus.
 
 **AVANT fusion : avis technique favorable sur 3a, suite complète et CI réussies, avec les limites explicites ci-dessous. Aucun verdict APRÈS fusion.** Claude doit publier le SHA final figé et ses résultats ; Codex complétera le contrôle concerné après toute modification. Après fusion par Claude seulement, repartir du SHA main exact dans une autre copie isolée et publier le second verdict dans #194.
 
 
-Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s), build Next 15.5.28 réussi ; `/api/version` relu = `7f854218bb7afd08ec8ec2209b55c36ee53011f7`. Parcours admin Higgsfield natif réussi, cinq captures et vidéo : 810 estimations simulées, approbation groupée de deux modèles, actualisation et reprise, accès anonyme 401, aucun secret renvoyé, aucun débordement mobile ni erreur JavaScript. Ce sont des tarifs simulés. Suite globale du verrou exact et autres parcours navigateur en cours.
+Derniers contrôles sous dépendances exactes : 51/51 ciblés réussis (12,69 s), build Next 15.5.28 réussi ; `/api/version` relu = `7f854218bb7afd08ec8ec2209b55c36ee53011f7`. Parcours admin Higgsfield natif réussi, cinq captures et vidéo : 810 estimations simulées, approbation groupée de deux modèles, actualisation et reprise, accès anonyme 401, aucun secret renvoyé, aucun débordement mobile ni erreur JavaScript. Ce sont des tarifs simulés. Les résultats de cette suite et des parcours navigateur sont détaillés ci-dessous, y compris le dépassement 7f et la suite complète 3a réussie.
 
 
 ## Parcours navigateur et médias : résultats exécutés sur 7f, verrou exact
@@ -147,3 +147,12 @@ La réutilisation des captures 7f est explicitement attribuée : le diff 7f → 
 **Réserve de plateforme stock** : Shopify utilise un ajustement relatif ; WooCommerce et PrestaShop relisent puis écrivent un nombre absolu. Une vente entre leur dernière lecture et leur écriture ne peut pas être garantie par ces API. Le moteur l’indique ; ne pas annoncer une atomicité absolue pour ces plateformes. Suivi P2 de rédaction avant activation client : `src/components/studio/tab-catalogue.tsx` promet encore « jamais écrasé » ; l’aligner sur la limite réelle. Ce point ne remet pas en cause les contre-épreuves corrigées et n’est pas présenté comme une correction déjà faite.
 
 Restent non vérifiés : vraie installation et parcours CMS (Docker VFS plein, aucun accès devstore), complétude photographique des sept kits privés absents, qualité de génération fournisseur réelle, moyens de paiement/e-mail/publication réels et version du studio client. Les doubles ne valent pas recette CMS. Aucun seuil 40 % / 50 %, droit 49/89, protection d’accès, budget ou travail de thème n’a été arbitrairement changé.
+
+
+## Complément pendant l’attente de la CI documentaire : éditeur natif 3a
+
+Deux projets distincts entièrement fictifs (théière en grès, cours individuel de tournage) : **déplacement de section par le vrai menu, disposition d’en-tête par les vignettes natives, rechargement de page et réouverture sur mobile**. Ordre et disposition retrouvés ; comparaison profonde du `store` avant/après identique (textes, produits, pages, médias et contexte commercial inchangés) ; version précédente toujours disponible ; aucun appel ajouté, même simulé ; aucune erreur JS dans le parcours final. Quatre captures ouvertes et inspectées ; les résultats sont dans `editeur-3ae89a6d/resultat.json`. Les captures montrent les médias de la fixture de test, pas une création photographique client.
+
+Les essais de préparation sont conservés : sélecteur de bouton au lieu du rôle `tab` mobile ; initialisation de tutoriel injectée trop largement dans une iframe opaque, corrigée en la limitant à l’hôte. La sécurité de l’iframe n’a pas été affaiblie et les erreurs n’ont pas été filtrées pour obtenir du vert. Ces échecs du harnais ne sont pas des échecs applicatifs ; un autre cas ci-dessous est bien un défaut d’interface.
+
+**P2 existant, reproduit, non régression d’intégration : menu d’une section masquée difficile à cliquer.** Sur le service, section `portfolio` masquée « Réalisations », tutoriel fermé : le centre du menu « Descendre » est intercepté par le bouton d’ajout d’une autre section. Le clic normal expire, aucun clic forcé utilisé. Le parent du menu a `opacity: 0.6`, donc un contexte d’empilement qui laisse les autres lignes au-dessus. `src/components/studio/tab-boutique.tsx` applique l’opacité à la ligne entière et à son menu ; `sortable.tsx` structure ces lignes. Ces deux fichiers sont strictement inchangés de #176 à 3a. Preuve : `editeur-3ae89a6d/menu-section-masquee.json` et PNG, journal de l’essai conservé. Le parcours final réussi porte explicitement sur une section visible non verrouillée ; il ne masque pas ce défaut. À traiter séparément avec le suivi P2 avant activation client ; pas de changement applicatif intercalé dans le candidat figé.

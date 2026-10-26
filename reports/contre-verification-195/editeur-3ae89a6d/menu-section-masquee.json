@@ -1,0 +1,25 @@
+{
+  "candidate": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "syntheticOnly": true,
+  "target": {
+    "type": "portfolio",
+    "disabled": true,
+    "name": "Réalisations"
+  },
+  "tutorialDismissed": true,
+  "geometry": {
+    "pointerReachesItem": false,
+    "hitTag": "BUTTON",
+    "hitAria": "Ajouter une section après « Prestations »",
+    "hitRole": null,
+    "opacityParents": [
+      {
+        "tag": "DIV",
+        "opacity": "0.6"
+      }
+    ]
+  },
+  "pointerClickSucceeded": false,
+  "error": "TimeoutError",
+  "forcedClick": false
+}

@@ -1,0 +1,224 @@
+{
+  "candidate": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
+  "basis": "Executed native full suite, separately complemented by targeted/browser evidence",
+  "realProviderCalls": 0,
+  "groups": [
+    {
+      "point": "budgets_droits",
+      "nativeTests": [
+        {
+          "file": "tests/budget-ia.test.ts",
+          "status": "passed",
+          "passed": 30,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 15968.139892578125
+        },
+        {
+          "file": "tests/budget-ia-visuels.test.ts",
+          "status": "passed",
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 690.55224609375
+        },
+        {
+          "file": "tests/prix-pourcentage-budget.test.ts",
+          "status": "passed",
+          "passed": 20,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 223.47021484375
+        },
+        {
+          "file": "tests/permissions-forfaits.test.ts",
+          "status": "passed",
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 2905.63330078125
+        },
+        {
+          "file": "tests/droits-themes-190.test.ts",
+          "status": "passed",
+          "passed": 4,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 1125.56591796875
+        }
+      ],
+      "scopeAndLimit": "Plafonds 40 % / 50 % et autorisations : code et tests fictifs ; aucun droit 49/89 inventé.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "higgsfield",
+      "nativeTests": [
+        {
+          "file": "tests/higgsfield-pricing.test.ts",
+          "status": "passed",
+          "passed": 31,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 4666.338134765625
+        },
+        {
+          "file": "tests/higgsfield-engine.test.ts",
+          "status": "passed",
+          "passed": 19,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 9755.60791015625
+        }
+      ],
+      "scopeAndLimit": "Import automatique et validation groupée, prix exact par configuration, hausse, réservation, réception, reprise et stockage : transports simulés ; aucun prix réel du compte ni génération réelle vérifiés.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "angles",
+      "nativeTests": [
+        {
+          "file": "tests/angles-sources.test.ts",
+          "status": "passed",
+          "passed": 28,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 6137.189208984375
+        }
+      ],
+      "scopeAndLimit": "Pas de fournisseur ou recherche incomplète : aucun angle inventé ; historique, quotas, comparateur et propriété : dépendances de recherche simulées.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "securite_transversale",
+      "nativeTests": [
+        {
+          "file": "tests/mission171-boundaries.test.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 1923.4296875
+        },
+        {
+          "file": "tests/mission171-public-download.test.ts",
+          "status": "passed",
+          "passed": 5,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 160.010009765625
+        },
+        {
+          "file": "tests/mission171-registration-privacy.test.ts",
+          "status": "passed",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 10133.0537109375
+        },
+        {
+          "file": "tests/mission171-routes-lifecycle.test.ts",
+          "status": "passed",
+          "passed": 23,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 7020.803955078125
+        },
+        {
+          "file": "tests/mission171-scope-inputs.test.ts",
+          "status": "passed",
+          "passed": 26,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 5738.67822265625
+        },
+        {
+          "file": "tests/integration194-isolation-ab.test.ts",
+          "status": "passed",
+          "passed": 16,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 8071.298583984375
+        },
+        {
+          "file": "tests/integration194-securite.test.ts",
+          "status": "passed",
+          "passed": 3,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 13.22998046875
+        }
+      ],
+      "scopeAndLimit": "Suite native complétée par 64 requêtes HTTP avec cookies et SQLite ; aucun transport client réel.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "catalogue_stocks",
+      "nativeTests": [
+        {
+          "file": "tests/contre-verification-195-products.test.ts",
+          "status": "passed",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 195.493896484375
+        },
+        {
+          "file": "tests/produits-studio-190.test.ts",
+          "status": "passed",
+          "passed": 11,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 3133.9365234375
+        }
+      ],
+      "scopeAndLimit": "Connecteurs mémoire/faux transports ; trois contre-épreuves indépendantes supplémentaires exécutées dans le lancement ciblé57, et non ajoutées au compte natif3395 ; courses API absolues restant explicitement limitées.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "rendez_vous",
+      "nativeTests": [
+        {
+          "file": "tests/rendez-vous.test.ts",
+          "status": "passed",
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 1946.684326171875
+        },
+        {
+          "file": "tests/rendez-vous-190.test.ts",
+          "status": "passed",
+          "passed": 7,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 115.2294921875
+        }
+      ],
+      "scopeAndLimit": "Parcours natifs et limites de débit ; réservations dans CMS réellement installé non vérifiées.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    },
+    {
+      "point": "exports",
+      "nativeTests": [
+        {
+          "file": "tests/integration194-exports-scripts.test.ts",
+          "status": "passed",
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 67870.591796875
+        },
+        {
+          "file": "tests/controle-themes-190.test.ts",
+          "status": "passed",
+          "passed": 10,
+          "failed": 0,
+          "skipped": 0,
+          "durationMs": 4726.60205078125
+        }
+      ],
+      "scopeAndLimit": "17 générations PrestaShop natives PROVISIONAL ; aucun certificat de compatibilité CMS ni achat réel.",
+      "verdict": "VERIFIED_WITH_EXPLICIT_TEST_DOUBLES_OR_ISOLATED_DATA"
+    }
+  ]
+}

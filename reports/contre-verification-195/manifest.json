@@ -3,7 +3,7 @@
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
   "state": "BEFORE_MERGE_TECHNICALLY_FAVORABLE_AFTER_PENDING",
   "realProviderCalls": 0,
-  "nativeScreenshots": 96,
+  "nativeScreenshots": 101,
   "inspectionBoards": 5,
   "videos": 3,
   "files": [
@@ -83,6 +83,76 @@
       "sha256": "5721c93822859ade6235ec423af4eaf84d35b1761b831fc69dca5e964e4030ac"
     },
     {
+      "file": "3ae89a6d-editeur-harnais-init-sandbox.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "3ae89a6d-editeur-harnais-init-sandbox.log.txt",
+      "bytes": 2829,
+      "sha256": "a8e8f84b6a971f782c7ac585d4938a132d3e043175d9b0896e3af6c17837d2d6"
+    },
+    {
+      "file": "3ae89a6d-editeur-harnais-menu-mobile.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "3ae89a6d-editeur-harnais-menu-mobile.log.txt",
+      "bytes": 444,
+      "sha256": "67376870dc98512d83e7c6e39793885fb06a06ac74872981a3d5bc5e9a64f1e6"
+    },
+    {
+      "file": "3ae89a6d-editeur-inspection.log.txt",
+      "bytes": 9118,
+      "sha256": "0ab39c143d49b20b751c3d9fdfc8b152ff4460cd14e511430cab8f1edc31fd3b"
+    },
+    {
+      "file": "3ae89a6d-editeur-menu-section-masquee.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "3ae89a6d-editeur-menu-section-masquee.log.txt",
+      "bytes": 9559,
+      "sha256": "a15551ff6776fd8edaccd62bc66ba04a2418bb515070a5cb7717e657bb71cf71"
+    },
+    {
+      "file": "3ae89a6d-editeur-mobile-harnais-role.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "3ae89a6d-editeur-mobile-harnais-role.log.txt",
+      "bytes": 437,
+      "sha256": "78cc1c4a2c50935c4b5a3b785e466344f674c236f8e53c71eab40e55a1414e09"
+    },
+    {
+      "file": "3ae89a6d-editeur-mobile.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-editeur-mobile.log.txt",
+      "bytes": 92,
+      "sha256": "b6fb9eff88dc73d7aa6d7210337d2f9c9fff85c4484707933d9cd80e995baaf0"
+    },
+    {
+      "file": "3ae89a6d-editeur-seed.log.txt",
+      "bytes": 95,
+      "sha256": "454b3e6811abfee37089e30f37a32c4f43ff9770cf6d01fd0972ec5eb7ec237a"
+    },
+    {
+      "file": "3ae89a6d-editeur.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "3ae89a6d-editeur.log.txt",
+      "bytes": 687,
+      "sha256": "865ce16156cbe7288f39ead4921dc499d6e416fbd8cbb40eaff226b699f0992d"
+    },
+    {
       "file": "3ae89a6d-exports-17-prestashop.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -156,6 +226,11 @@
       "file": "3ae89a6d-types.log.txt",
       "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "3ae89a6d-verdict-par-point.json",
+      "bytes": 7014,
+      "sha256": "f3e954a0c63e0e3ebc6f88ad93ff74d76f25d2c0edd6c352fbe156d3f6e5bc56"
     },
     {
       "file": "7f854218-autopilot-7jours.exit",
@@ -394,8 +469,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 9419,
-      "sha256": "520e34e5ab549fd86097fb71710578c266e44874fd5c21f944dfa578d8efb9d4"
+      "bytes": 10260,
+      "sha256": "c11c99ac4498607241e3c76ba5f2d6363db7857f10c6978f1a5f9f295c87e2ad"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -468,6 +543,41 @@
       "sha256": "1fd94a5e9bae8b7aa19b385e097af029b96c067b12ec87dbf69a85042df4c040"
     },
     {
+      "file": "editeur-3ae89a6d/menu-section-masquee.json",
+      "bytes": 549,
+      "sha256": "b4d0e7e9c86cfe596b52d6e7454aa086183d45b13d763439b23561a6bb7d1b35"
+    },
+    {
+      "file": "editeur-3ae89a6d/menu-section-masquee.png",
+      "bytes": 391059,
+      "sha256": "2f81c045bff19fa28b0f085a3ef5d1293d832f2be9991d245c7a525eba677c7f"
+    },
+    {
+      "file": "editeur-3ae89a6d/produit-mobile.png",
+      "bytes": 80615,
+      "sha256": "51063bdaf49bfcb520a418f196db3357676f3c3b178751e0ab73c3e1225155ba"
+    },
+    {
+      "file": "editeur-3ae89a6d/produit-ordinateur.png",
+      "bytes": 410365,
+      "sha256": "273411ad343d829e2f059a8a5da3684d4de6c2b6486e936c87de62921968cbca"
+    },
+    {
+      "file": "editeur-3ae89a6d/resultat.json",
+      "bytes": 958,
+      "sha256": "bd3321c0103fbbf2abe606bf82d8b31c7e494a3c1007c1f43ec8e25263fa91d6"
+    },
+    {
+      "file": "editeur-3ae89a6d/service-mobile.png",
+      "bytes": 76769,
+      "sha256": "bb9fdc1154bb484706a86b4445833a20c76f3482054c343dffd72a948f73f12d"
+    },
+    {
+      "file": "editeur-3ae89a6d/service-ordinateur.png",
+      "bytes": 349643,
+      "sha256": "4fbddeef0c233a5fc6eebbbfc1a865de687317074edfdb5f50eb1d12f5317d91"
+    },
+    {
       "file": "exports-consolides-7f854218.json",
       "bytes": 62063,
       "sha256": "afb02b2bf267f185ceb919a2be42d6b64551952202f2dbba88b1561346bd69f1"
@@ -483,9 +593,29 @@
       "sha256": "29b2271281fbe12e405b2c42ed896c692da2e1790d0cd257370229760c0fb98a"
     },
     {
+      "file": "harnais/3ae89a6d-contre-verification-195-editeur-mobile.mjs.txt",
+      "bytes": 2081,
+      "sha256": "a081b336742ca24084281f3ca4d32c0ef72a2c7cc383a0834ebc1abfc757856d"
+    },
+    {
+      "file": "harnais/3ae89a6d-contre-verification-195-editeur-seed.mjs.txt",
+      "bytes": 1401,
+      "sha256": "81c4f9eb1ff6e0b78e8d2755da8ddcb7e9b101c60704699ef1f677272495aa02"
+    },
+    {
+      "file": "harnais/3ae89a6d-contre-verification-195-editeur.mjs.txt",
+      "bytes": 5099,
+      "sha256": "07748d377ebb154b845bccae44062faf10880a7a9ba9bf665f4bae0e9f31d65e"
+    },
+    {
       "file": "harnais/3ae89a6d-contre-verification-195-exports.ts.txt",
       "bytes": 4297,
       "sha256": "3e38792f7377e1267d0456457802c588d4b1cf049444f2d7ddd173c1199767ea"
+    },
+    {
+      "file": "harnais/3ae89a6d-contre-verification-195-menu-masque.mjs.txt",
+      "bytes": 2573,
+      "sha256": "77ac7b7598b237d494bfa3e521e652d8774e0f7a41cb876b083016a763adac9d"
     },
     {
       "file": "harnais/contre-verification-195-browser.mjs",

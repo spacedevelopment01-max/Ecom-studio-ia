@@ -1,0 +1,477 @@
+[
+  {
+    "text": "",
+    "aria": "Replier le menu",
+    "title": "Replier le menu ([)"
+  },
+  {
+    "text": "Grès & Thé — contrôle éditeur fictif\nMaison & décoration",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "OUTILS AVANCÉS",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Tutoriels vidéo",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Déconnexion",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Aller à…\nCtrl K",
+    "aria": "Recherche rapide (Ctrl+K)",
+    "title": ""
+  },
+  {
+    "text": "Tutoriel",
+    "aria": null,
+    "title": "Comment fonctionne cet onglet ? Vidéo de 1 à 2 minutes"
+  },
+  {
+    "text": "",
+    "aria": "Notifications",
+    "title": ""
+  },
+  {
+    "text": "FR",
+    "aria": null,
+    "title": "Français"
+  },
+  {
+    "text": "EN",
+    "aria": null,
+    "title": "English"
+  },
+  {
+    "text": "EN",
+    "aria": "Switch to English",
+    "title": "English"
+  },
+  {
+    "text": "",
+    "aria": "Passer en mode sombre",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Menu : compte, tutoriels, déconnexion",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Masquer ce repère",
+    "title": "Masquer ce repère"
+  },
+  {
+    "text": " Discussion",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": " Aperçu",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": " Structure",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Crée une ambiance plus haut de gamme pour cette boutique.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Change le header : logo centré et menu en dessous.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Mets la photo de détail dans la première section.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Ajoute une présentation animée du produit au défilement.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Ajoute des lots sur la fiche produit.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Ajoute la livraison estimée 2 à 4 jours.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Mets le prix dans le bouton d'ajout au panier.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Refais cette section dans un style plus élégant.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Reviens à la version précédente.",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Désigner un élément dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Joindre une image de la bibliothèque"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Importer une image ou une capture"
+  },
+  {
+    "text": "",
+    "aria": "Envoyer",
+    "title": ""
+  },
+  {
+    "text": "Pages",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Ordinateur"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Tablette"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Téléphone"
+  },
+  {
+    "text": "Plein écran",
+    "aria": null,
+    "title": "Voir le thème en plein écran"
+  },
+  {
+    "text": "Désigner",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Animations",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Section",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Thèmes",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "Sur mesure",
+    "aria": null,
+    "title": "Thème entièrement sur mesure"
+  },
+  {
+    "text": "Importer mon thème",
+    "aria": null,
+    "title": "Importer le thème de votre boutique Shopify"
+  },
+  {
+    "text": "",
+    "aria": null,
+    "title": "Versions"
+  },
+  {
+    "text": "Plateforme :\nShopify",
+    "aria": null,
+    "title": "Plateforme du site"
+  },
+  {
+    "text": "Exporter et installer",
+    "aria": null,
+    "title": "Exporter pour Shopify"
+  },
+  {
+    "text": "Reprendre l’adaptation avec les contenus acquis",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "En-tête",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « En-tête »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « En-tête »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Bannière d'achat\n\nLe thé prend son temps.",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Bannière d'achat »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Produit en surplomb\n\nL’anse, le couvercle et l’émail",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Produit en surplomb »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Produit en surplomb »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Produit en surplomb »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Cartes de détails\n\nL’anse, le couvercle et l’émail",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Cartes de détails »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Cartes de détails »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Cartes de détails »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Bannière d'achat\n\nRetrouvez Anse sur votre table",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Bannière d'achat »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Utilisation en étapes\n\nMasquée",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Afficher « Utilisation en étapes »",
+    "title": "Afficher"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Utilisation en étapes »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Utilisation en étapes »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Bannière d'achat\n\nUne silhouette accueillante",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Bannière d'achat »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Bannière d'achat »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Journal\n\nL’anse, le couvercle et l’émail",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Journal »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Journal »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « Journal »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "FAQ premium\n\nVos questions",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « FAQ premium »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « FAQ premium »",
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Ajouter une section après « FAQ premium »",
+    "title": ""
+  },
+  {
+    "text": "Ajouter une section",
+    "aria": null,
+    "title": ""
+  },
+  {
+    "text": "",
+    "aria": "Glisser pour déplacer",
+    "title": "Glisser pour déplacer"
+  },
+  {
+    "text": "Pied de page",
+    "aria": null,
+    "title": "Voir cette section dans l'aperçu"
+  },
+  {
+    "text": "",
+    "aria": "Masquer « Pied de page »",
+    "title": "Masquer"
+  },
+  {
+    "text": "",
+    "aria": "Actions pour « Pied de page »",
+    "title": ""
+  },
+  {
+    "text": "Boutique",
+    "aria": null,
+    "title": ""
+  }
+]

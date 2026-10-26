@@ -1,0 +1,116 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('menuitem', { name: 'Descendre', exact: true })[22m
+[2m    - locator resolved to <button role="menuitem" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-paper-2 disabled:opacity-40">…</button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - <div class="flex min-w-0 flex-1 items-center gap-2 lg:block">…</div> from <div data-tuto-nudge="true" class="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">…</div> subtree intercepts pointer events[22m
+[2m  - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    14 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <div class="flex min-w-0 flex-1 items-center gap-2 lg:block">…</div> from <div data-tuto-nudge="true" class="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">…</div> subtree intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m       - waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at <anonymous> (/tmp/ecs-195-candidat-3ae89a6d/scripts/contre-verification-195-editeur.mjs:4:1315) {
+  log: [
+    "  - waiting for getByRole('menuitem', { name: 'Descendre', exact: true })",
+    '    - locator resolved to <button role="menuitem" class="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-paper-2 disabled:opacity-40">…</button>',
+    '  - attempting click action',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events',
+    '  - retrying click action',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - <div class="flex min-w-0 flex-1 items-center gap-2 lg:block">…</div> from <div data-tuto-nudge="true" class="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">…</div> subtree intercepts pointer events',
+    '  - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is visible, enabled and stable',
+    '      - scrolling into view if needed',
+    '      - done scrolling',
+    '      - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    14 × waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms',
+    '       - waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <div class="flex min-w-0 flex-1 items-center gap-2 lg:block">…</div> from <div data-tuto-nudge="true" class="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">…</div> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms',
+    '       - waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms',
+    '       - waiting for element to be visible, enabled and stable',
+    '       - element is visible, enabled and stable',
+    '       - scrolling into view if needed',
+    '       - done scrolling',
+    '       - <button aria-label="Ajouter une section après « Besoins »" class="group -my-1 flex h-4 w-full items-center gap-2 px-3 text-signal opacity-60 hover:opacity-100 focus-visible:opacity-100">…</button> from <li class="relative transition-transform duration-200">…</li> subtree intercepts pointer events',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0
