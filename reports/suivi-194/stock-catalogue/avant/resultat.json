@@ -1,0 +1,16 @@
+[
+ {
+  "largeur": "ordinateur",
+  "garanties": 0,
+  "debordementHorizontal": 0,
+  "texte": "Boutiques connectées\n\nEnvoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Un stock modifié par une vente ou dans la boutique n'est jamais écrasé : les deux changements s'additionnent.\n\nConnecter une boutique\n\nAucune boutique connectée. Les exports restent disponibles dans l'onglet Boutique.",
+  "erreursJavaScript": []
+ },
+ {
+  "largeur": "telephone",
+  "garanties": 0,
+  "debordementHorizontal": 0,
+  "texte": "Boutiques connectées\n\nEnvoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Un stock modifié par une vente ou dans la boutique n'est jamais écrasé : les deux changements s'additionnent.\n\nConnecter une boutique\n\nAucune boutique connectée. Les exports restent disponibles dans l'onglet Boutique.",
+  "erreursJavaScript": []
+ }
+]

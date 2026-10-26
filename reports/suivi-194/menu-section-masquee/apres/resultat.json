@@ -1,0 +1,80 @@
+{
+ "projet": "Atelier Rive",
+ "sectionMasquee": "rive_projects",
+ "resultats": [
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"e83aaxh0nv8xnz1k\",\"number\":2,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"k0kbl3y3ruqn4n71\",\"number\":3,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "ordinateur",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "ordinateur",
+   "erreursJavaScript": []
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [
+    "200 {\"versionId\":\"6blyt8w7k5vjoqs0\",\"number\":4,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 2,
+   "positionApres": 3
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [
+    "200 {\"versionId\":\"0zgj17t0q602mw6v\",\"number\":5,\"applied\":[\"Section rive_projects déplacée\"],\"rejected\":[]}"
+   ],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": true,
+   "positionAvant": 3,
+   "positionApres": 2
+  },
+  {
+   "largeur": "telephone",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "telephone",
+   "erreursJavaScript": []
+  }
+ ]
+}

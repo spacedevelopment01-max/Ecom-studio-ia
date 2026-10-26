@@ -1,0 +1,60 @@
+{
+ "projet": "Atelier Rive",
+ "sectionMasquee": "rive_projects",
+ "resultats": [
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [],
+   "entreeSousLePointeur": false,
+   "elementSousLePointeur": "button Ajouter une section après « Prestations »",
+   "clicNormal": false,
+   "deplacee": false,
+   "positionAvant": 2,
+   "positionApres": 2,
+   "erreur": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [],
+   "entreeSousLePointeur": false,
+   "elementSousLePointeur": "p Prestations",
+   "clicNormal": false,
+   "deplacee": false,
+   "positionAvant": 2,
+   "positionApres": 2,
+   "erreur": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "largeur": "ordinateur",
+   "erreursJavaScript": []
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [],
+   "entreeSousLePointeur": false,
+   "elementSousLePointeur": "nav Espaces du projet",
+   "clicNormal": false,
+   "deplacee": false,
+   "positionAvant": 2,
+   "positionApres": 2,
+   "erreur": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "largeur": "telephone",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "ouvertureDuMenu": false,
+   "erreur": "locator.click: Timeout 8000ms exceeded."
+  },
+  {
+   "largeur": "telephone",
+   "erreursJavaScript": []
+  }
+ ]
+}

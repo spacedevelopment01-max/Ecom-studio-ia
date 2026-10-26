@@ -1,0 +1,16 @@
+[
+ {
+  "largeur": "ordinateur",
+  "garanties": 1,
+  "debordementHorizontal": 0,
+  "texte": "Boutiques connectées\n\nEnvoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Le stock n'est synchronisé qu'à chaque envoi : les ventes et modifications faites dans la boutique depuis le dernier envoi sont reprises, et vos changements du studio s'y ajoutent.\n\nGaranties et limites du stock\nShopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une vente faite au même moment reste déduite.\nWooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la relit juste avant de l'envoyer, mais une vente passée pendant l'envoi lui-même peut ne pas être déduite. Le rapport le signale : vérifiez alors le stock dans la boutique.\nEnvoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait automatiquement. À l'envoi suivant, le studio reprend le stock affiché par la boutique ; s'il diffère de la quantité attendue, le rapport vous demande de vérifier le réassort.\nPremier envoi d'un produit qui existait déjà dans la boutique (même identifiant ou même référence) : le stock de la boutique est conservé et repris dans le studio.\nUne seule synchronisation à la fois par boutique : un second envoi attend la fin du premier, ou vous demande de réessayer quelques minutes plus tard. Il ne crée pas de doublon.\nConnecter une boutique\n\nAucune boutique connectée. Les exports restent disponibles dans l'onglet Boutique.",
+  "erreursJavaScript": []
+ },
+ {
+  "largeur": "telephone",
+  "garanties": 1,
+  "debordementHorizontal": 0,
+  "texte": "Boutiques connectées\n\nEnvoyer crée les produits la première fois, puis les met à jour (jamais de doublon). Le stock n'est synchronisé qu'à chaque envoi : les ventes et modifications faites dans la boutique depuis le dernier envoi sont reprises, et vos changements du studio s'y ajoutent.\n\nGaranties et limites du stock\nShopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une vente faite au même moment reste déduite.\nWooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la relit juste avant de l'envoyer, mais une vente passée pendant l'envoi lui-même peut ne pas être déduite. Le rapport le signale : vérifiez alors le stock dans la boutique.\nEnvoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait automatiquement. À l'envoi suivant, le studio reprend le stock affiché par la boutique ; s'il diffère de la quantité attendue, le rapport vous demande de vérifier le réassort.\nPremier envoi d'un produit qui existait déjà dans la boutique (même identifiant ou même référence) : le stock de la boutique est conservé et repris dans le studio.\nUne seule synchronisation à la fois par boutique : un second envoi attend la fin du premier, ou vous demande de réessayer quelques minutes plus tard. Il ne crée pas de doublon.\nConnecter une boutique\n\nAucune boutique connectée. Les exports restent disponibles dans l'onglet Boutique.",
+  "erreursJavaScript": []
+ }
+]
