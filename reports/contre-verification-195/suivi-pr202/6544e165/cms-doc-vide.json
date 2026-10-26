@@ -1,0 +1,23 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "nativeFunction": "staticChecks",
+  "bundledPresetEmpty": true,
+  "compatibility": null,
+  "unavailableIssue": true,
+  "verdict": "PROVISIONAL",
+  "unmeasured": [
+    "compatibility",
+    "installation",
+    "page_fidelity",
+    "section_fidelity",
+    "typography",
+    "colors",
+    "responsive",
+    "navigation",
+    "buttons",
+    "data_preservation",
+    "ecommerce"
+  ],
+  "realProviderCalls": 0,
+  "realCmsInstall": false
+}

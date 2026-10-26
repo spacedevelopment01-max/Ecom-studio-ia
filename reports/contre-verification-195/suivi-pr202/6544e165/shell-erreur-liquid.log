@@ -1,0 +1,30 @@
+Documents Shopify locaux (révision 40f966fc) : 13 schémas dans /tmp/ecs-202-preuves/6544e165/verify-theme-RGVq/shopify-docs
+✗ atelier (fr)
+    ERROR LiquidSyntaxError file:///tmp/ecs-202-preuves/6544e165/verify-theme-RGVq/fr-atelier/sections/hero-editorial.liquid:0 Syntax error in 'if' tag
+      LiquidSyntaxError: 1,
+::error title=Theme Check atelier (fr)::ERROR LiquidSyntaxError file:///tmp/ecs-202-preuves/6544e165/verify-theme-RGVq/fr-atelier/sections/hero-editorial.liquid:0 Syntax error in 'if' tag|  LiquidSyntaxError: 1,|  RemoteAsset: 1,|  UnclosedHTMLElement: 2,|  LiquidComplexity: 1|}|
+✓ pop (fr)  (aucune erreur, 35 avertissement(s))
+✓ galerie (fr)  (aucune erreur, 35 avertissement(s))
+✓ vitrine (fr)  (aucune erreur, 35 avertissement(s))
+✓ cinema (fr)  (aucune erreur, 35 avertissement(s))
+✓ atelier (en)  (aucune erreur, 35 avertissement(s))
+✓ pop (en)  (aucune erreur, 35 avertissement(s))
+✓ galerie (en)  (aucune erreur, 35 avertissement(s))
+✓ vitrine (en)  (aucune erreur, 35 avertissement(s))
+✓ cinema (en)  (aucune erreur, 35 avertissement(s))
+✓ atelier / multi  (aucune erreur, 35 avertissement(s))
+✓ atelier / niche  (aucune erreur, 35 avertissement(s))
+✓ vitrine / multi  (aucune erreur, 35 avertissement(s))
+✓ vitrine / niche  (aucune erreur, 35 avertissement(s))
+✓ atelier / services (fr)  (aucune erreur, 35 avertissement(s))
+✓ atelier / services (en)  (aucune erreur, 35 avertissement(s))
+✓ pop / services (fr)  (aucune erreur, 35 avertissement(s))
+✓ pop / services (en)  (aucune erreur, 35 avertissement(s))
+✓ galerie / services (fr)  (aucune erreur, 35 avertissement(s))
+✓ galerie / services (en)  (aucune erreur, 35 avertissement(s))
+✓ vitrine / services (fr)  (aucune erreur, 35 avertissement(s))
+✓ vitrine / services (en)  (aucune erreur, 35 avertissement(s))
+✓ cinema / services (fr)  (aucune erreur, 35 avertissement(s))
+✓ cinema / services (en)  (aucune erreur, 35 avertissement(s))
+✓ ZIP client (section sur mesure)
+Thème : des erreurs sont à corriger (détail ci-dessus).

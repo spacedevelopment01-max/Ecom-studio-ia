@@ -1,0 +1,9 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "pid": 374692,
+  "providedDocs": true,
+  "usesDefaultSharedCache": true,
+  "cacheRootDigest": "bc7d1150f9134c85d1589215844c008c775442cf14a45b54cc71c52a4f5cd169",
+  "realProviderCalls": 0,
+  "checkerExecuted": false
+}

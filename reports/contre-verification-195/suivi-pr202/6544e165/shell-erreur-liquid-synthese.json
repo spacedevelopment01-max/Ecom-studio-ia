@@ -1,0 +1,15 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "command": "bash scripts/verify-theme.sh --rapide",
+  "passedCases": 24,
+  "failedCases": 1,
+  "exitCode": 1,
+  "genuineLiquidErrorRetained": true,
+  "githubAnnotationRetained": true,
+  "zipChecked": true,
+  "checkerProcesses": 25,
+  "distinctCacheRoots": 25,
+  "downloadAttempts": 0,
+  "injectedLiquidOnlyOneGeneratedTheme": 1,
+  "realProviderCalls": 0
+}

@@ -1,0 +1,11 @@
+M	scripts/theme-check-zip.ts
+M	scripts/theme-check.ts
+A	scripts/theme-docs-local.ts
+M	scripts/verify-theme.sh
+M	src/lib/cms-v2/checks.ts
+A	src/lib/theme/shopify-docs.ts
+M	src/lib/theme/theme-check.ts
+A	tests/helpers/docs-shopify-limites.cjs
+M	tests/site-reproduce.test.ts
+A	tests/theme-check-docs-locaux.test.ts
+M	tests/theme-v2.test.ts

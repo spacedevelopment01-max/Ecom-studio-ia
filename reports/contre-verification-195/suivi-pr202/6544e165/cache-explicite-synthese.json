@@ -1,0 +1,9 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "distinctProcesses": true,
+  "sameSdkCacheRoot": true,
+  "bothDefaultShared": true,
+  "checkerExecuted": false,
+  "realProviderCalls": 0,
+  "interpretation": "Cache root resolution reproduced; no concurrent cache race or user-cache write attempted."
+}

@@ -10,6 +10,10 @@ if(process.env.PROBE_202_CORRUPT_BUNDLED==='1') {
  const read=fs.readFileSync;
  fs.readFileSync=function(file,...args){if(String(file)===path.join(data,'preset.json')){trace({event:'fake-bundled-preset-empty'});return '';}return read.call(this,file,...args);};
 }
+if(process.env.PROBE_202_INVALID_EXPORT==='1') {
+ const write=fs.writeFileSync;
+ fs.writeFileSync=function(file,content,...args){const f=String(file);if(f.startsWith(base+'/6544e165/verify-theme-')&&f.endsWith('/fr-atelier/sections/hero-editorial.liquid')){trace({event:'fake-invalid-export-liquid',file:f});content='{% if %}broken{% endif %}{% schema %}{"name":"Fixture","settings":[]}{% endschema %}';}return write.call(this,file,content,...args);};
+}
 const fake=async(url)=>{const u=String(url);trace({event:'fake-doc-request',url:u});
  if(mode==='deny'||!u.startsWith('https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/'))throw Error('No remote requests permitted');
  const file=path.basename(new URL(u).pathname);if(!/^[a-zA-Z0-9_-]+\.json$/.test(file))throw Error('Unexpected docs file');

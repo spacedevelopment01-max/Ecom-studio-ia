@@ -1,0 +1,111 @@
+{
+  "source": "6544e165343b4cccfc7686a47839a9b489996c80",
+  "revision": "40f966fc7793462726d9f8573c8d522f8ab44c54",
+  "fileCount": 20,
+  "schemaCount": 13,
+  "allValidJson": true,
+  "allInstalledBytesIdentical": true,
+  "files": [
+    {
+      "relative": "data/filters.json",
+      "sameInstalledBytes": true,
+      "sha256": "c836e1c1214092d3b8b68827f0226eac0af73ac392462baa67da84edfd9e8e5f"
+    },
+    {
+      "relative": "data/latest.json",
+      "sameInstalledBytes": true,
+      "sha256": "a0be047ae785ee70a27369434ada6d51039b03e2d10306121db712bd1a285420"
+    },
+    {
+      "relative": "data/objects.json",
+      "sameInstalledBytes": true,
+      "sha256": "99c0212b4ff82986f0e32f105bb2d93e796460dd4872e30e54fafbf3d727b6a9"
+    },
+    {
+      "relative": "data/shopify_system_translations.json",
+      "sameInstalledBytes": true,
+      "sha256": "c7a2ddf87968295e1ea7cba80bf37890fd57023d95c71bdbcdcf462221d8af2a"
+    },
+    {
+      "relative": "data/tags.json",
+      "sameInstalledBytes": true,
+      "sha256": "85294fbd73d5617616d86a9204338eb834339dce06a8002ab48280a522e01f46"
+    },
+    {
+      "relative": "schemas/manifest_theme.json",
+      "sameInstalledBytes": true,
+      "sha256": "2d00f4aeae62878f431c7954176f60830f3de8cc180baf27316259c221f02645"
+    },
+    {
+      "relative": "schemas/manifest_theme_app_extension.json",
+      "sameInstalledBytes": true,
+      "sha256": "cac2d518332be9b66cb4e7bf1028805d7795d17ca125398015f97becc8aaa73a"
+    },
+    {
+      "relative": "schemas/theme/app_block_entry.json",
+      "sameInstalledBytes": true,
+      "sha256": "4e03c7367cb1c5900bd8fa3f9fb3e20f32e14b4a0e60a4532ee758434d9f440a"
+    },
+    {
+      "relative": "schemas/theme/default_setting_values.json",
+      "sameInstalledBytes": true,
+      "sha256": "5d9b1101343d472400ce4908badc7ea66f9f7e67842a7e20cd5c88454023149b"
+    },
+    {
+      "relative": "schemas/theme/local_block_entry.json",
+      "sameInstalledBytes": true,
+      "sha256": "f0d193fb29f31286ea8027fea69c79e46d08c5d14565c1803722618612b03a81"
+    },
+    {
+      "relative": "schemas/theme/preset.json",
+      "sameInstalledBytes": true,
+      "sha256": "559d3e430669063f6a293d080aa2cda3d9e501670764a516aa632241ed296d56"
+    },
+    {
+      "relative": "schemas/theme/preset_blocks.json",
+      "sameInstalledBytes": true,
+      "sha256": "b46440433a1b414b9048535dd07cb9a5f7969b657b82e732edb043bce80563d1"
+    },
+    {
+      "relative": "schemas/theme/section.json",
+      "sameInstalledBytes": true,
+      "sha256": "de15cc452f3ebe02215c0e3f33296d2a58802163243d9f30c00a099507510f75"
+    },
+    {
+      "relative": "schemas/theme/setting.json",
+      "sameInstalledBytes": true,
+      "sha256": "1e138f77a17c99f38011b6a633d2b8a149e6cb50ea5fe9ed7eca7e24a2974d29"
+    },
+    {
+      "relative": "schemas/theme/settings.json",
+      "sameInstalledBytes": true,
+      "sha256": "8cab3c335dfbca6500d6e4ec2dce86accdcd162560402329c862117b88fb4cfd"
+    },
+    {
+      "relative": "schemas/theme/targetted_block_entry.json",
+      "sameInstalledBytes": true,
+      "sha256": "0d4839a92e3081390068b0976e6273bf46583537b6399e74dc148992e57b22f7"
+    },
+    {
+      "relative": "schemas/theme/theme_block.json",
+      "sameInstalledBytes": true,
+      "sha256": "ddddbf702d99194b690d0bc0f82f289dbf3905a3059f2ebf17b5b06b2990d48f"
+    },
+    {
+      "relative": "schemas/theme/theme_block_entry.json",
+      "sameInstalledBytes": true,
+      "sha256": "9161897503f5cfa012f5b9a02d45a9d6fa60a8ae1ea8ee0dfb16899dd620f91c"
+    },
+    {
+      "relative": "schemas/theme/theme_settings.json",
+      "sameInstalledBytes": true,
+      "sha256": "ba0789f50be233b5fbe6953cc2bb6ab4fce864aaea7db921981630b70d126d7a"
+    },
+    {
+      "relative": "schemas/theme/translations.json",
+      "sameInstalledBytes": true,
+      "sha256": "74aca2945ed34769c2bc6eea34806c72b75f99a3d7939f2db3a1c2eef4a958ab"
+    }
+  ],
+  "realProviderCalls": 0
+}
