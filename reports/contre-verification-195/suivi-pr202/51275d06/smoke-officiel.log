@@ -1,0 +1,19 @@
+{
+ "projet": "nuev00f039vro4uh",
+ "version": {
+  "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "source": "compiled-build"
+ },
+ "export": {
+  "statut": 200,
+  "type": "application/zip",
+  "octets": 8498068,
+  "debut": null
+ },
+ "controle": {
+  "themeCheckErrors": 0,
+  "themeCheckWarnings": 35,
+  "problemesThemeCheck": []
+ }
+}
+RÉUSSI : Theme Check a tourné dans le build compilé, 0 erreur.

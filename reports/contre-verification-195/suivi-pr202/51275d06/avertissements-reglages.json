@@ -1,0 +1,183 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "settingsWarningCount": 25,
+  "allReportedCountsMatchSource": true,
+  "thresholdOrigin": "SDK3.30.1 recommended warning threshold, calibrated above reference themes; not a verified Shopify platform installation limit",
+  "files": [
+    {
+      "file": "theme-base/sections/an-account.liquid",
+      "settingsWithId": 45,
+      "reportedCount": 45,
+      "threshold": 40,
+      "sourceBlobSha256": "7c398c3b3b6be4ae165e7960e2fa933abc1b30909f256d8eaa0b61138715c35d"
+    },
+    {
+      "file": "theme-base/sections/an-booking.liquid",
+      "settingsWithId": 64,
+      "reportedCount": 64,
+      "threshold": 40,
+      "sourceBlobSha256": "941c44e85c34d9b6c97ee65d1aeffdaeba6113c493512f234e0260e96f68fe06"
+    },
+    {
+      "file": "theme-base/sections/an-salon.liquid",
+      "settingsWithId": 45,
+      "reportedCount": 45,
+      "threshold": 40,
+      "sourceBlobSha256": "5d7a922b6631204e0148a2f09138301cba82382b736a1885554ec2a38eecd53a"
+    },
+    {
+      "file": "theme-base/sections/ap-footer.liquid",
+      "settingsWithId": 48,
+      "reportedCount": 48,
+      "threshold": 40,
+      "sourceBlobSha256": "3894bca235bf18dfaa171a56c4090d3ccf81b3752f2906ea28e6764c23d14926"
+    },
+    {
+      "file": "theme-base/sections/ap-form.liquid",
+      "settingsWithId": 58,
+      "reportedCount": 58,
+      "threshold": 40,
+      "sourceBlobSha256": "c9d9b3bfe6b07cd6e44071f83f019857656309c278ff94d111a434955f63a6ad"
+    },
+    {
+      "file": "theme-base/sections/ap-hero.liquid",
+      "settingsWithId": 46,
+      "reportedCount": 46,
+      "threshold": 40,
+      "sourceBlobSha256": "b5dba74240972dbb74dfb475c6792796c79dea774a480a5db3380e70dedde810"
+    },
+    {
+      "file": "theme-base/sections/cv-banner.liquid",
+      "settingsWithId": 41,
+      "reportedCount": 41,
+      "threshold": 40,
+      "sourceBlobSha256": "b3b3129740061a15a1fc6201ac6859cfd90c10b949e9c9368ff7f298274f661d"
+    },
+    {
+      "file": "theme-base/sections/demo-account.liquid",
+      "settingsWithId": 52,
+      "reportedCount": 52,
+      "threshold": 40,
+      "sourceBlobSha256": "77be585cdc0bb606918d8bb827e8ed413c4be3ea9604cc81be98b9ba5bf04bcc"
+    },
+    {
+      "file": "theme-base/sections/demo-order.liquid",
+      "settingsWithId": 58,
+      "reportedCount": 58,
+      "threshold": 40,
+      "sourceBlobSha256": "5fbc1b2d01c6e5dd6d0a802cae784c40d67029ba9b807ac4e08c8fb4d3c6067d"
+    },
+    {
+      "file": "theme-base/sections/fg-checkout.liquid",
+      "settingsWithId": 68,
+      "reportedCount": 68,
+      "threshold": 40,
+      "sourceBlobSha256": "52b53b38dcf49f2d911152105537d369ea15c85aa5afee6f3ae8c86f06e93232"
+    },
+    {
+      "file": "theme-base/sections/fg-header.liquid",
+      "settingsWithId": 65,
+      "reportedCount": 65,
+      "threshold": 40,
+      "sourceBlobSha256": "9b9cdaa13e6739cf5f85fc6681a568ef62a80b879d6b22d1073f97a7cf1b110f"
+    },
+    {
+      "file": "theme-base/sections/main-cart.liquid",
+      "settingsWithId": 43,
+      "reportedCount": 43,
+      "threshold": 40,
+      "sourceBlobSha256": "d0018c7cbd10e9a587f2ca2ea87b74d11a742af0eb9496c4e2ba6de749fdff26"
+    },
+    {
+      "file": "theme-base/sections/on-banner.liquid",
+      "settingsWithId": 63,
+      "reportedCount": 63,
+      "threshold": 40,
+      "sourceBlobSha256": "940eb961a16f86be761747e7ecde837720928e4ba4ad0868bb9dd0fd058c3199"
+    },
+    {
+      "file": "theme-base/sections/on-checkout.liquid",
+      "settingsWithId": 68,
+      "reportedCount": 68,
+      "threshold": 40,
+      "sourceBlobSha256": "88d264b84e6f444a078283456b8b4d525f17009fac92690a5d9926e1ed7559b9"
+    },
+    {
+      "file": "theme-base/sections/on-help.liquid",
+      "settingsWithId": 49,
+      "reportedCount": 49,
+      "threshold": 40,
+      "sourceBlobSha256": "8d7db86b6b915cff6ddf5f1d2777c60311eb8cc74a592b938460b01ceaacaf18"
+    },
+    {
+      "file": "theme-base/sections/on-product.liquid",
+      "settingsWithId": 44,
+      "reportedCount": 44,
+      "threshold": 40,
+      "sourceBlobSha256": "1611418cb12e850776ca14336c328860dd06769c4823c4351abf5bfa2fccab15"
+    },
+    {
+      "file": "theme-base/sections/pa-booking.liquid",
+      "settingsWithId": 85,
+      "reportedCount": 85,
+      "threshold": 40,
+      "sourceBlobSha256": "b9039936af772c8d68890bdff4b6a6b23318c2a6e285fe8cd28840cfc8d35f17"
+    },
+    {
+      "file": "theme-base/sections/pa-cabinet.liquid",
+      "settingsWithId": 46,
+      "reportedCount": 46,
+      "threshold": 40,
+      "sourceBlobSha256": "0eed956123ca49747df904b9432cf4c0ed123ae3de7cafb455febac613b7b0e8"
+    },
+    {
+      "file": "theme-base/sections/ph-contact.liquid",
+      "settingsWithId": 44,
+      "reportedCount": 44,
+      "threshold": 40,
+      "sourceBlobSha256": "064c059fd6c96884192f1e74e19f2a6f4a85828f079be8093c70a91e4f70454e"
+    },
+    {
+      "file": "theme-base/sections/ph-header.liquid",
+      "settingsWithId": 48,
+      "reportedCount": 48,
+      "threshold": 40,
+      "sourceBlobSha256": "38d64709b69aef6d22f430c3d7cdb80071caee5edce37e26048f43ce40b3bf0d"
+    },
+    {
+      "file": "theme-base/sections/ph-hero.liquid",
+      "settingsWithId": 67,
+      "reportedCount": 67,
+      "threshold": 40,
+      "sourceBlobSha256": "d955877d0c0827719fa7609d21c5fb96efe82e5cb42833f21594df4a9f298fca"
+    },
+    {
+      "file": "theme-base/sections/ph-quote.liquid",
+      "settingsWithId": 64,
+      "reportedCount": 64,
+      "threshold": 40,
+      "sourceBlobSha256": "63909dcf09f00d0ad86911a82721108bdb61e4313408a13b0e4086b89b595744"
+    },
+    {
+      "file": "theme-base/sections/sv-checkout.liquid",
+      "settingsWithId": 71,
+      "reportedCount": 71,
+      "threshold": 40,
+      "sourceBlobSha256": "af8351b08ad27521b9291a10b2f1c5ab85689f999507f161f68486deae692d6f"
+    },
+    {
+      "file": "theme-base/sections/sv-header.liquid",
+      "settingsWithId": 57,
+      "reportedCount": 57,
+      "threshold": 40,
+      "sourceBlobSha256": "5fd470c121f7e49d54349ca2fb85ac1acf1da17f71e711e843041951ad30225c"
+    },
+    {
+      "file": "theme-base/sections/ts-booking.liquid",
+      "settingsWithId": 62,
+      "reportedCount": 62,
+      "threshold": 40,
+      "sourceBlobSha256": "75579ec311285a08d6c35d6d8adb24e2babf9635e818e87268a76e2ac06a44d5"
+    }
+  ]
+}

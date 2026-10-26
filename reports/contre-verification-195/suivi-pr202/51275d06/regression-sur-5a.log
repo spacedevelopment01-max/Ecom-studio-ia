@@ -1,0 +1,21 @@
+{
+ "projet": "co2uupu6fc0f1mgr",
+ "version": {
+  "commit": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "source": "compiled-build"
+ },
+ "export": {
+  "statut": 200,
+  "type": "application/zip",
+  "octets": 8498068,
+  "debut": null
+ },
+ "controle": {
+  "themeCheckErrors": null,
+  "themeCheckWarnings": null,
+  "problemesThemeCheck": [
+   "Theme Check indisponible : Cannot read properties of undefined (reading 'resolve')"
+  ]
+ }
+}
+ÉCHEC

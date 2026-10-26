@@ -1,0 +1,25 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "served": {
+    "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "source": "compiled-build"
+  },
+  "exportHttp": 200,
+  "themeCheckErrors": 0,
+  "themeCheckWarnings": 35,
+  "issues": [
+    "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée."
+  ],
+  "unmeasured": [
+    "installation",
+    "page_fidelity",
+    "section_fidelity",
+    "typography",
+    "colors",
+    "responsive",
+    "navigation",
+    "buttons",
+    "ecommerce"
+  ],
+  "verdict": "PROVISIONAL"
+}

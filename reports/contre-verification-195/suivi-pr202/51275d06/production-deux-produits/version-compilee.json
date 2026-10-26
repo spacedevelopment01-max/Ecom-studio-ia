@@ -1,0 +1,8 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "stage": "before_merge_candidate",
+  "served": {
+    "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "source": "compiled-build"
+  }
+}

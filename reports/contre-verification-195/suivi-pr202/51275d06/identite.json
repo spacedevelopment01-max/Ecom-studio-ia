@@ -1,0 +1,55 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "tree": "6595cd464bb129dc28df11195d1c1e68c6fd9569",
+  "baseMain": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "changesFrom5a": [
+    ".github/workflows/ci.yml",
+    "scripts/export-shopify-build-check.ts",
+    "src/lib/theme/shopify-docs.ts"
+  ],
+  "preserved": [
+    {
+      "path": "theme-base",
+      "blobOrTree": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "public",
+      "blobOrTree": "e8d0e1b91a3e7b9a5b9b905128f5fe4e56068e78",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-boutique.tsx",
+      "blobOrTree": "672b30da890f15a83772cfdb67cf51ecdc608c26",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/components/studio/tab-catalogue.tsx",
+      "blobOrTree": "bbea2cc4da2fd4c9a96cebb2b9d0c7900e6edefe",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "src/lib/theme/theme-check.ts",
+      "blobOrTree": "2e7a94baa23fe5139b19cc1998d33c808f6b086c",
+      "unchangedFrom": "5a372b6c"
+    },
+    {
+      "path": "src/lib/cms-v2/checks.ts",
+      "blobOrTree": "8e3dd956910c33f3ae0c6f90d14d69e5a3315350",
+      "unchangedFrom": "5a372b6c"
+    },
+    {
+      "path": "scripts/verify-theme.sh",
+      "blobOrTree": "2c7341cf063ad878fa4b5edc52b207a9461064aa",
+      "unchangedFrom": "d2fb63ee"
+    },
+    {
+      "path": "package-lock.json",
+      "blobOrTree": "ea1b57764aea004c3095c241a6afd6386c551889",
+      "unchangedFrom": "d2fb63ee"
+    }
+  ],
+  "trackedClean": true,
+  "status": "NATIVE_SUITE_AND_CI_PENDING",
+  "realProviderCalls": 0
+}

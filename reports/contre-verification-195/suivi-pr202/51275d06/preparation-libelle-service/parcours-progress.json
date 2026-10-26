@@ -1,0 +1,31 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "served": {
+    "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "source": "compiled-build"
+  },
+  "results": [
+    {
+      "scenario": "cosmetic",
+      "business": "products",
+      "studioOpenedAtWidths": [
+        1440,
+        390
+      ],
+      "exportHttp": 200,
+      "savedDownloadHttp": 200,
+      "sameSavedZip": true,
+      "zipBytes": 1792095,
+      "zipFileCount": 506,
+      "zipSha256": "715957fd8ba2b281937a530d7779d12b3af8bbc9791f15167141059976e8f8e8",
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "verdict": "PROVISIONAL",
+      "scope": "static",
+      "originalSpecPreserved": true,
+      "versionsPreserved": true,
+      "javascriptErrors": []
+    }
+  ],
+  "complete": false
+}

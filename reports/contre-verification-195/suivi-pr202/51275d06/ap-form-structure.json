@@ -1,0 +1,73 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "cases": [
+    {
+      "fixture": "ap-form-contact-rempli.html",
+      "nativeRenderer": "renderPage",
+      "kind": "contact",
+      "populated": true,
+      "forms": 1,
+      "fieldsets": 4,
+      "columns": [],
+      "rawDivFormFieldsetBalanced": true,
+      "browserRepairUsed": false,
+      "htmlSha256": "28cdf04427a49c0f9c10907269981a9df840350eac48ecd43ebab2ded1514721"
+    },
+    {
+      "fixture": "ap-form-contact-vide.html",
+      "nativeRenderer": "renderPage",
+      "kind": "contact",
+      "populated": false,
+      "forms": 1,
+      "fieldsets": 0,
+      "columns": [],
+      "rawDivFormFieldsetBalanced": true,
+      "browserRepairUsed": false,
+      "htmlSha256": "13a04d7f84430ef5be2b470a1d09d801cbe56bd4d8b230b916aae3a734780283"
+    },
+    {
+      "fixture": "ap-form-quote-rempli.html",
+      "nativeRenderer": "renderPage",
+      "kind": "quote",
+      "populated": true,
+      "forms": 1,
+      "fieldsets": 4,
+      "columns": [
+        {
+          "class": "ap-form__col ap-form__col--1",
+          "nestedInOtherColumn": false
+        },
+        {
+          "class": "ap-form__col ap-form__col--2",
+          "nestedInOtherColumn": false
+        }
+      ],
+      "rawDivFormFieldsetBalanced": true,
+      "browserRepairUsed": false,
+      "htmlSha256": "0293061ac2f5842a48106c4bfae538c2ed0358cc39bdfee126b5385709833883"
+    },
+    {
+      "fixture": "ap-form-quote-vide.html",
+      "nativeRenderer": "renderPage",
+      "kind": "quote",
+      "populated": false,
+      "forms": 1,
+      "fieldsets": 0,
+      "columns": [
+        {
+          "class": "ap-form__col ap-form__col--1",
+          "nestedInOtherColumn": false
+        },
+        {
+          "class": "ap-form__col ap-form__col--2",
+          "nestedInOtherColumn": false
+        }
+      ],
+      "rawDivFormFieldsetBalanced": true,
+      "browserRepairUsed": false,
+      "htmlSha256": "2933fef7a02edd79c29c2fbc67fc3ab98d675509f8bbebdceba041dce07b25e7"
+    }
+  ],
+  "conclusion": "Balanced raw markup in four tested branches; static branch-correlation warning not a reproduced malformed form. Real Shopify installation not tested.",
+  "realProviderCalls": 0
+}

@@ -1,0 +1,26 @@
+{
+  "scriptSource": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "oldCompiledBuild": {
+    "commit": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+    "source": "compiled-build"
+  },
+  "oldOutcome": "EXPECTED_FAIL_EXIT1",
+  "oldCheck": {
+    "themeCheckErrors": null,
+    "themeCheckWarnings": null,
+    "problemesThemeCheck": [
+      "Theme Check indisponible : Cannot read properties of undefined (reading 'resolve')"
+    ]
+  },
+  "newCompiledBuild": {
+    "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "source": "compiled-build"
+  },
+  "newOutcome": "SUCCESS_EXIT0",
+  "newCheck": {
+    "themeCheckErrors": 0,
+    "themeCheckWarnings": 35,
+    "problemesThemeCheck": []
+  },
+  "realProviderCalls": 0
+}

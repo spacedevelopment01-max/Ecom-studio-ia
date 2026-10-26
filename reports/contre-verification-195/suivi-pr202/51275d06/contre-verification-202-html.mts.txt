@@ -1,0 +1,7 @@
+import fs from 'node:fs';import {sampleSpec} from '../tests/fixtures';import {renderPage} from '../src/lib/theme/render';
+for(const kind of ['contact','quote'])for(const populated of [false,true]){
+ const spec=sampleSpec('atelier');const blocks=populated?Object.fromEntries([1,2,3,4].map(g=>['f'+g,{type:'field',settings:{group:String(g),kind:'text',name:'field'+g,label:'Champ '+g,placeholder:'Valeur de test'}}])):{};
+ spec.templates.index={order:['warning-form'],sections:{'warning-form':{type:'ap-form',settings:{kind,heading:'Formulaire fictif',form_label:'Test',group1_title:'Groupe1',group2_title:'Groupe2',group3_title:'Groupe3',group4_title:'Groupe4'},blocks,block_order:Object.keys(blocks)}}};
+ const r=await renderPage({spec,base:'',cart:[]},'/',new URLSearchParams());if(r.status!==200)throw Error('native rendering failed');fs.writeFileSync('/tmp/ecs-202-preuves/51275d06/ap-form-'+kind+'-'+(populated?'rempli':'vide')+'.html',r.html);
+}
+console.log('Four native renders completed, no provider.');

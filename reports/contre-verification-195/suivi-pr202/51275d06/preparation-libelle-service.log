@@ -1,0 +1,15 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: actual Studio must be visible after intro
+    at <anonymous> (/tmp/ecs-202-candidat-51275d06/scripts/contre-verification-202-parcours.mts:73:14) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,50 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "served": {
+    "commit": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "source": "compiled-build"
+  },
+  "results": [
+    {
+      "scenario": "cosmetic",
+      "studioOpenedAtWidths": [
+        1440,
+        390
+      ],
+      "exportHttp": 200,
+      "savedDownloadHttp": 200,
+      "sameSavedZip": true,
+      "zipBytes": 1792097,
+      "zipFileCount": 506,
+      "zipSha256": "327b92524c304d829c67a0b993aad789e7b3e0ac8a9a13f50b7390ed4cc3acd4",
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "verdict": "PROVISIONAL",
+      "scope": "static",
+      "originalSpecPreserved": true,
+      "versionsPreserved": true,
+      "javascriptErrors": []
+    },
+    {
+      "scenario": "saas",
+      "studioOpenedAtWidths": [
+        1440,
+        390
+      ],
+      "exportHttp": 200,
+      "savedDownloadHttp": 200,
+      "sameSavedZip": true,
+      "zipBytes": 1861843,
+      "zipFileCount": 507,
+      "zipSha256": "ecddd945d92b17a1f94eb50331b91fed16837b03d447fc62dd0a37b61c2e1301",
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35,
+      "verdict": "PROVISIONAL",
+      "scope": "static",
+      "originalSpecPreserved": true,
+      "versionsPreserved": true,
+      "javascriptErrors": []
+    }
+  ],
+  "complete": false
+}
