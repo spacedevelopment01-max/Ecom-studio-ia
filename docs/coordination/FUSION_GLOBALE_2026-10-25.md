@@ -12,7 +12,7 @@ réel, appel IA payant, paiement, envoi réel ni publication.
 | `main` avant (base observée et relue) | `0a6aa1dd6dfa5932a5e42e027cef2a3335e74679` |
 | Branche d'intégration | `claude/integration-fusion-globale` — PR #196 |
 | Candidats successifs | `2dbdc050` (refusé par Codex : P1 multi-variante) → `aec79070` (refusé : P1 saisie pendant l'attente) → `7f854218` (refusé : faux rejet des exports PrestaShop) → **`3ae89a6d42711c13962571483f55c496d6b3ddaa`** (code contrôlé, § 6, **feu vert de Codex**) ; les commits suivants n'ajoutent que ce rapport et ses preuves |
-| `main` après fusion | voir § 7 |
+| `main` après fusion | **`333bccc8daf97b9746dcf590a9525c830a53915f`** (commit de fusion de la PR #196, parents `0a6aa1dd` et `d38b0b7c`) |
 
 ## 2. Registre des apports (têtes relues sur GitHub)
 
@@ -181,11 +181,32 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
 | Candidat transmis | `2dbdc050ef57bd6c74a44699f158e00d19c92208` ([#194](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6405720106), [#195](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/195#issuecomment-6405720253)) |
 | Refus successifs | `2dbdc050` (P1 multi-variante), `aec79070` (P1 saisie pendant l'attente), `7f854218` (exports PrestaShop rejetés) : chaque défaut reproduit, corrigé, testé (§ 5, points 11 à 13) |
 | Verdict Codex avant fusion | **FEU VERT TECHNIQUE** sur `3ae89a6d` ([#196 commentaire 6410664191](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6410664191)) : suite indépendante 3 395 réussis / 0 échec, 57 contre-épreuves ciblées, 63 Autopilot, migrations 45/45/46, 64 contrôles HTTP A/B/administrateur/visiteur, 17 exports PrestaShop PROVISIONAL, 38 interactions APLAT, CI verte. [Rapport de contre-vérification de Codex](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/01ede95b6096d6e42befa7502b230b5c97b6659b/docs/coordination/CONTRE_VERIFICATION_195.md) (branche séparée `codex/contre-verification-195-integration`, preuves en 101 PNG et 3 vidéos sur données fictives) |
-| Fusion | FUSION |
+| Feu vert renouvelé | sur `d38b0b7c` après la correction du test aléatoire des affiches ([#196 commentaire 6412069139](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6412069139)) ; code applicatif identique à `3ae89a6d` |
+| Fusion | 26 octobre 2026, 08 h 57 UTC : PR #196 fusionnée par Claude (commit de fusion, tête imposée `d38b0b7c`, aucune protection contournée) → **`main` = `333bccc8daf97b9746dcf590a9525c830a53915f`** |
+| Verdict Codex APRÈS fusion | **AVIS TECHNIQUE FAVORABLE À L'INTÉGRATION, réserves explicites** ([#194 commentaire 6413484638](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6413484638)) : suite indépendante 3 395 / 0 / 31 sur `333bccc8`, CI push `main` verte, 57 contre-épreuves, 63 Autopilot, migrations 45/45/46, 64 contrôles HTTP, 51 exports natifs PROVISIONAL (17 par CMS), 38 interactions APLAT, 694 vues des 15 thèmes. **Aucune validation visuelle globale ni activation client.** [Preuves APRÈS de Codex](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/42aef5554a4667ba507e390de61fd61ccb4c4db5/reports/contre-verification-195/apres-main-333bccc8/README.md), [rapport complet](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/42aef5554a4667ba507e390de61fd61ccb4c4db5/docs/coordination/CONTRE_VERIFICATION_195.md) |
 
 ## 8. Contrôles APRÈS fusion
 
-À compléter.
+Sur le SHA réel **`333bccc8`**, dans une copie séparée de `main`
+([preuves](../../reports/fusion-globale/apres-fusion/)).
+
+| Contrôle | Résultat |
+|---|---|
+| Apports présents (ancêtres de `main`) | #170, #173, #168, #166, #174, #176, #193 et la chaîne #178 → #181 → #184 → #186 : tous présents |
+| Exclusion | #191 (Coven, `1b6b5555`) absent, comme décidé par Thomas |
+| Arbre | identique à la tête validée `d38b0b7c` |
+| Types | OK |
+| Suite complète, garde réseau du lot 9 | **396 fichiers ; 3 395 réussis, 0 échec**, 31 ignorés (mêmes causes qu'au § 6) |
+| Build de production | réussi (58 pages) |
+| Migrations, 3 bases historiques synthétiques | 45 / 45 / 46 contrôles réussis |
+| Pilote sur 7 jours | 7/7 |
+| CI push `main` ([run 40295873897](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40295873897)) | verte : types, tests, Theme Check, build, Docker |
+
+Transparence : un premier passage de la suite, du build et des migrations a échoué faute d'espace disque dans le
+conteneur de Claude (`ENOSPC`, aucune erreur de code,
+[journal](../../reports/fusion-globale/apres-fusion/premier-passage-disque-plein.txt)) ; espace libéré (copie de
+référence #176 et fichiers temporaires des scripts de Claude), tout rejoué sur le même SHA
+([second passage](../../reports/fusion-globale/apres-fusion/second-passage.txt)).
 
 ## 9. Ce qui n'est pas vérifié ici (accès manquants) — à ne pas confondre avec une réussite
 
@@ -207,6 +228,13 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
   **Décision à prendre par Thomas** : garder cet envoi avec la limite annoncée (état actuel) ou le refuser.
 - Kit FRAISE V2 (sept planches) absent de cet environnement : ses 14 contrôles de démonstration restent ignorés.
   ONDE, APLAT et MAISON & HORIZON ont été rejoués avec les kits privés liés temporairement (rien d'ajouté au dépôt).
+- **Défaut visuel préexistant (relevé par Codex après fusion, non régression)** : FRAISE sur téléphone, pages article
+  et informations légales illisibles — `.fg-article .fg-c` et `.fg-legal .fg-c` gardent 260 px de marge de chaque côté
+  à 390 px (`theme-base/assets/fraise.css`, lignes 1012 et 1379), largeur utile nulle, titres tronqués. Fichier identique
+  dans #176 ; un compteur « aucun débordement » vert ne valide pas ces pages. **Suivi dédié à faire.**
+- **Défaut d'interface préexistant (relevé par Codex)** : dans l'onglet Boutique, le menu d'action d'une section masquée
+  est difficile à cliquer (la ligne entière, à 60 % d'opacité, passe sous le bouton d'ajout de la section suivante ;
+  `tab-boutique.tsx`, `sortable.tsx`, inchangés depuis #176). **Suivi dédié à faire.**
 - Captures #190 restées dans l'espace de travail de la session qui a produit #176 (demande de Codex) : hors de cette
   session, non traitées ici.
 - **Suivi P2 signalé par Codex, non bloquant pour l'intégration, à traiter avant l'activation chez un client** :
@@ -219,4 +247,18 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
 
 ## 10. Tableau final
 
-À compléter après la fusion.
+| Point de la mission #194 | État |
+|---|---|
+| Registre des PR, branches et SHA, classés | **FAIT** (§ 2) |
+| Branche et PR d'intégration isolées, sans force ni « ours/theirs » global | **FAIT** (`claude/integration-fusion-globale`, PR #196) |
+| Divergences connues : test du pilote, `ad-campaigns` #168/#170, protections #173 sur toutes les nouvelles routes, règles #190 (familles, aucune attribution inventée 49/89 €) | **FAIT** (§ 3, § 5 points 1 à 4, 7 et 8) |
+| Défauts trouvés en cours d'intégration (aperçu JSON, démos non produites, 6 défauts de synchronisation ou d'export relevés par Codex) | **FAIT**, chacun reproduit, corrigé et testé (§ 5) |
+| Contrôles AVANT fusion sur le SHA exact | **FAIT** (§ 6) ; comparaison visuelle des 17 démos sur `2dbdc050`, formulaire APLAT revérifié après sa modification |
+| Contre-vérification Codex avant fusion | **FAIT** : feu vert sur `3ae89a6d` puis `d38b0b7c` |
+| Fusion | **FAIT** : `main` = `333bccc8` |
+| Contrôles APRÈS fusion (Claude) et seconde passe Codex | **FAIT** : tout vert ; avis favorable de Codex avec réserves |
+| Le Coven des Charmes (#191) | **HORS FUSION** (décision de Thomas) ; branche intacte, raccordement dédié avec Codex à venir |
+| Validation visuelle complète des 15 thèmes | **PARTIEL** : aucune régression due à la fusion ; FRAISE mobile (articles, légal) défectueux, préexistant ; 7 kits privés incomplets |
+| Installation, achat et réservation dans de vrais CMS | **BLOQUÉ** : aucun CMS de test accessible ; 51 exports natifs PROVISIONAL seulement |
+| Données réelles, fournisseurs, prix réels, version servie | **NON VÉRIFIÉ** (§ 9) |
+| Suivis avant activation client | **À FAIRE** : FRAISE responsive ; menu d'une section masquée ; libellé « jamais écrasé » de l'onglet Catalogue ; décision de Thomas sur l'envoi de stock vers WooCommerce/PrestaShop |

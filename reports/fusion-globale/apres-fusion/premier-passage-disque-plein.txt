@@ -1,0 +1,30 @@
+main = 333bccc8daf97b9746dcf590a9525c830a53915f
+== Apports présents (ancêtres de main)
+#170 46738852 : présent
+#173 30e95aad : présent
+#168 dbfc05ad : présent
+#166 27777896 : présent
+#174 c52e212f : présent
+#176 0af6fe1f : présent
+#193 3fbf4e1b : présent
+#178 5404a2c6 : présent
+#181 d8aaf63b : présent
+#184 fac0bed0 : présent
+#186 e0637775 : présent
+candidat 2dbdc050 : présent
+rapport 6ad96753 : présent
+== Exclu
+#191 1b6b5555 : absent (attendu)
+== Arbre de main comparé au dernier commit de la branche d'intégration
+(vide = identique)
+tsc exit 0
+vitest exit 1
+build exit 1
+essais exit 128
+error: unable to write file reports/logo-quality/studio-reel/essai-7-restaurant-vegetarien/preuves.json
+error: unable to write file reports/logo-quality/studio-reel/essai-7-restaurant-vegetarien/resultat-apres-rechargement.png
+error: unable to write file reports/logo-sans-resultat.md
+fatal: cannot create directory at 'reports/lot1': No space left on device
+recette exit 0
+jours OK : 7
+FIN
