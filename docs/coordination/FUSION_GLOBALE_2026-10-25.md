@@ -149,6 +149,8 @@ produite (correction 9) ; toute la comparaison a été refaite sur le candidat f
 
 ## 7. Contre-vérification Codex et fusion
 
+Rapport indépendant et preuves #195 : [CONTRE_VERIFICATION_195.md](https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/codex/contre-verification-195-integration/docs/coordination/CONTRE_VERIFICATION_195.md). Les verdicts AVANT/APRÈS et SHA effectivement contrôlés y sont distingués ; les échanges de correction restent dans #194. Cette référence documentaire ne constitue pas un feu vert.
+
 | Étape | Détail |
 |---|---|
 | Contre-épreuves préparatoires de Codex sur #176 | 4 défauts reproduits ([6403952034](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6403952034)), matrice et inventaire ([6404002831](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/194#issuecomment-6404002831)) ; défauts corrigés (§ 5, point 6) |

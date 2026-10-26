@@ -1,0 +1,1400 @@
+{
+  "commit": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
+  "nativeProduction": true,
+  "realProviderCalls": 0,
+  "simulatedFixtures": true,
+  "demos": [
+    {
+      "theme": "fraise",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "01-un-flacon-detoure.webp",
+        "02-deux-flacons-detoures.webp",
+        "03-trois-flacons-detoures.webp",
+        "04-accueil-flacon-fraises.webp",
+        "05-fiche-flacon-principal.webp",
+        "06-flacon-ouvert-plongee.webp",
+        "07-macro-gummies-texture.webp",
+        "08-macro-etiquette-bouchon.webp",
+        "09-recette-composition-fraise.webp",
+        "10-recette-gummies-fraises.webp",
+        "11-histoire-composition-flacon.webp",
+        "12-scene-cuisine.webp",
+        "13-scene-jardin.webp",
+        "14-scene-bureau.webp",
+        "15-offre-deux-flacons.webp",
+        "16-offre-trois-flacons.webp",
+        "17-journal-petit-rituel.webp",
+        "18-journal-gout-fraise.webp",
+        "19-journal-pause-cuisine.webp",
+        "20-journal-flacon-angles.webp",
+        "21-journal-lire-etiquette.webp",
+        "22-flacon-format-portrait.webp",
+        "23-article-conservation.webp",
+        "24-fraises-detail-saveur.webp",
+        "logo-proposition.png"
+      ],
+      "title": "FRAISE GUMMIES | Votre rituel, côté fraise",
+      "h1": [
+        "Votre rituel, côté fraise."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2055,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "fraise",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "01-un-flacon-detoure.webp",
+        "02-deux-flacons-detoures.webp",
+        "03-trois-flacons-detoures.webp",
+        "04-accueil-flacon-fraises.webp",
+        "05-fiche-flacon-principal.webp",
+        "06-flacon-ouvert-plongee.webp",
+        "07-macro-gummies-texture.webp",
+        "08-macro-etiquette-bouchon.webp",
+        "09-recette-composition-fraise.webp",
+        "10-recette-gummies-fraises.webp",
+        "11-histoire-composition-flacon.webp",
+        "12-scene-cuisine.webp",
+        "13-scene-jardin.webp",
+        "14-scene-bureau.webp",
+        "15-offre-deux-flacons.webp",
+        "16-offre-trois-flacons.webp",
+        "17-journal-petit-rituel.webp",
+        "18-journal-gout-fraise.webp",
+        "19-journal-pause-cuisine.webp",
+        "20-journal-flacon-angles.webp",
+        "21-journal-lire-etiquette.webp",
+        "22-flacon-format-portrait.webp",
+        "23-article-conservation.webp",
+        "24-fraises-detail-saveur.webp",
+        "logo-proposition.png"
+      ],
+      "title": "FRAISE GUMMIES | Votre rituel, côté fraise",
+      "h1": [
+        "Votre rituel, côté fraise."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3543,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "onde",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "logo-fonce.webp",
+        "logo.webp",
+        "logo-mot.webp",
+        "logo-contour.png",
+        "logo-contour-lime.png",
+        "c01-casque-detoure-trois-quarts.webp",
+        "c02-casque-detoure-profil.webp",
+        "c03-produit-fond-clair.webp",
+        "c04-accueil-grande-ouverture.webp",
+        "c05-detail-coussinet.webp",
+        "c06-detail-arceau.webp",
+        "c07-detail-commandes.webp",
+        "c08-detail-finition.webp",
+        "c09-scene-maison.webp",
+        "c10-scene-deplacement-train.webp",
+        "c11-scene-studio.webp",
+        "c12-journal-bureau-parenthese.webp",
+        "c13-boutique-sous-tous-les-angles.webp",
+        "c14-experience-entrez-dans-votre-bulle.webp",
+        "c15-experience-contact-matiere.webp",
+        "c16-marque-propre-frequence.webp",
+        "c18-journal-details-ligne.webp",
+        "c19-journal-entretien-coussinets.webp",
+        "c20-journal-casque-quotidien.webp",
+        "04-detail-coussinet.webp",
+        "05-detail-arceau.webp"
+      ],
+      "title": "ONDE AUDIO | Votre monde. Votre fréquence. – ONDE Audio",
+      "h1": [
+        "Votre monde.\nVotre fréquence."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2880,
+      "brokenImages": [
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-fonce.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-contour.png",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c01-casque-detoure-trois-quarts.webp",
+          "alt": "Casque ONDE graphite et lime de trois quarts."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c03-produit-fond-clair.webp",
+          "alt": "Casque ONDE graphite et lime de trois quarts."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c01-casque-detoure-trois-quarts.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": "Casque ONDE posé sur une table en bois à côté d'un chiffon gris."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-mot.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo.webp",
+          "alt": "ONDE Audio"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "onde",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "logo-fonce.webp",
+        "logo.webp",
+        "logo-mot.webp",
+        "logo-contour.png",
+        "logo-contour-lime.png",
+        "c01-casque-detoure-trois-quarts.webp",
+        "c02-casque-detoure-profil.webp",
+        "c03-produit-fond-clair.webp",
+        "c04-accueil-grande-ouverture.webp",
+        "c05-detail-coussinet.webp",
+        "c06-detail-arceau.webp",
+        "c07-detail-commandes.webp",
+        "c08-detail-finition.webp",
+        "c09-scene-maison.webp",
+        "c10-scene-deplacement-train.webp",
+        "c11-scene-studio.webp",
+        "c12-journal-bureau-parenthese.webp",
+        "c13-boutique-sous-tous-les-angles.webp",
+        "c14-experience-entrez-dans-votre-bulle.webp",
+        "c15-experience-contact-matiere.webp",
+        "c16-marque-propre-frequence.webp",
+        "c18-journal-details-ligne.webp",
+        "c19-journal-entretien-coussinets.webp",
+        "c20-journal-casque-quotidien.webp",
+        "04-detail-coussinet.webp",
+        "05-detail-arceau.webp"
+      ],
+      "title": "ONDE AUDIO | Votre monde. Votre fréquence. – ONDE Audio",
+      "h1": [
+        "Votre monde.\nVotre fréquence."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4411,
+      "brokenImages": [
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-fonce.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-contour.png",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c01-casque-detoure-trois-quarts.webp",
+          "alt": "Casque ONDE graphite et lime de trois quarts."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c03-produit-fond-clair.webp",
+          "alt": "Casque ONDE graphite et lime de trois quarts."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-c01-casque-detoure-trois-quarts.webp",
+          "alt": ""
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-04-detail-coussinet.webp",
+          "alt": "Casque ONDE posé sur une table en bois à côté d'un chiffon gris."
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo-mot.webp",
+          "alt": "ONDE Audio"
+        },
+        {
+          "src": "/preview/m27opytwdz7v7ola/v/current~REDACTED_FIXTURE/assets/onde-logo.webp",
+          "alt": "ONDE Audio"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "rive",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "Atelier Rive | Un intérieur pensé pour votre façon de vivre",
+      "h1": [
+        "Enfin chez vous."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3485,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=c221553bc955a9a5daf125b34dd910527dd62f1a96694551fd228929d352bd7d; chars=270610",
+          "alt": "Cuisine en bois avec un grand îlot en marbre veiné et des tabourets."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "rive",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "Atelier Rive | Un intérieur pensé pour votre façon de vivre",
+      "h1": [
+        "Enfin chez vous."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4561,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=99d5069fc72a1814a2e29af5467840afe9093b437257b1f71e7a666a1db766c8; chars=563510",
+          "alt": "Conseil"
+        },
+        {
+          "src": "embedded; sha256=ae4d69535c46704f43beb507e8deb0fe093bb55b9a0286e58706732a86f7a87d; chars=67218",
+          "alt": "Aménagement"
+        },
+        {
+          "src": "embedded; sha256=d6b49179dc50bfd772e8c273b22b49aa1647e1be22b7ee6a7711e7ef946112b9; chars=381882",
+          "alt": "Accompagnement"
+        },
+        {
+          "src": "embedded; sha256=2e5550cf42f80c3534b300dfd155dc4e5c99f5dbd6d09e8547252041e3ba82fd; chars=399462",
+          "alt": "Plan d'aménagement dessiné à la main, échantillons de bois, de pierre et de tissu, branche d'olivier."
+        },
+        {
+          "src": "embedded; sha256=c221553bc955a9a5daf125b34dd910527dd62f1a96694551fd228929d352bd7d; chars=270610",
+          "alt": "Cuisine en bois avec un grand îlot en marbre veiné et des tabourets."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "sillon",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "SILLON V2 | L'espresso nomade",
+      "h1": [
+        "Prenezla tangente."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2429,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=026b8c9e292ec0cb5b5794eaedb2966467a946f7443b47d9e61259a40785b713; chars=432650",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=52c834731390c2ecc1354a7a1c71063d54e1da566763c316715553638ef3dfba; chars=235402",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=26d4ca1c5db8eea34a88efcfc2c3d21019a0a1f4c43d6f6df8d4e077504c6c74; chars=206934",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=fcf60d81185ec22398db0cce5b77d65f6bf01567c087233f99eb5e1f9864f3dc; chars=307362",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "sillon",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "SILLON V2 | L'espresso nomade",
+      "h1": [
+        "Prenezla tangente."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4941,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=026b8c9e292ec0cb5b5794eaedb2966467a946f7443b47d9e61259a40785b713; chars=432650",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=52c834731390c2ecc1354a7a1c71063d54e1da566763c316715553638ef3dfba; chars=235402",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=52c834731390c2ecc1354a7a1c71063d54e1da566763c316715553638ef3dfba; chars=235402",
+          "alt": "Le couvercle et le bouton cuivre de la machine, en plein air."
+        },
+        {
+          "src": "embedded; sha256=26d4ca1c5db8eea34a88efcfc2c3d21019a0a1f4c43d6f6df8d4e077504c6c74; chars=206934",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=26d4ca1c5db8eea34a88efcfc2c3d21019a0a1f4c43d6f6df8d4e077504c6c74; chars=206934",
+          "alt": "L'espresso coule de la machine SILLON dans le verre, sur une pierre."
+        },
+        {
+          "src": "embedded; sha256=fcf60d81185ec22398db0cce5b77d65f6bf01567c087233f99eb5e1f9864f3dc; chars=307362",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=fcf60d81185ec22398db0cce5b77d65f6bf01567c087233f99eb5e1f9864f3dc; chars=307362",
+          "alt": "Un espresso à la crème épaisse dans un verre, sur une pierre."
+        },
+        {
+          "src": "embedded; sha256=e14ec7b7d04df155b87c01b1d3611ddfcbf3f4e65924dccb1edd8fc46f17463c; chars=217442",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=d9c983d96473d8dda0962a2e7173c109ee98ac3bae8d282c75536ea231619cd9; chars=206914",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "noctil",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "NOCTIL | Un petit monde. Un ciel immense.",
+      "h1": [
+        "Un petit monde.\nUn ciel immense."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4223,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=c82fc7ac7357967ab26b7816b35710d95ff4ee7f6a3d012d0c7ee4032a09bd85; chars=188970",
+          "alt": "Étagère de livres d'enfant, fusée et astronaute jouets, lune lumineuse sous un ciel étoilé."
+        },
+        {
+          "src": "embedded; sha256=118548b724c5543a524bb29b2b08b5c99125d42121627d35c3ede4e8eb6966cc; chars=334366",
+          "alt": "Créer un rituel du soir magique"
+        },
+        {
+          "src": "embedded; sha256=8616e8bbcd8bc0cde38f9253cf9947b450566613ba731c940784f0f1a89a52e4; chars=140082",
+          "alt": "Histoires d'étoiles : 3 contes à inventer"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "noctil",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "NOCTIL | Un petit monde. Un ciel immense.",
+      "h1": [
+        "Un petit monde.\nUn ciel immense."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4776,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=9fc804259f89e5b171f7a70c026e7e986c0b74139fb06da72226dc2ca125c7dd; chars=254214",
+          "alt": "Détail du socle NOCTIL : nom et bouton éclairé de violet."
+        },
+        {
+          "src": "embedded; sha256=118548b724c5543a524bb29b2b08b5c99125d42121627d35c3ede4e8eb6966cc; chars=334366",
+          "alt": "Chambre d'enfant rose à baldaquin, lapin en peluche et galaxie violette au plafond."
+        },
+        {
+          "src": "embedded; sha256=c82fc7ac7357967ab26b7816b35710d95ff4ee7f6a3d012d0c7ee4032a09bd85; chars=188970",
+          "alt": "Étagère de livres d'enfant, fusée et astronaute jouets, lune lumineuse sous un ciel étoilé."
+        },
+        {
+          "src": "embedded; sha256=118548b724c5543a524bb29b2b08b5c99125d42121627d35c3ede4e8eb6966cc; chars=334366",
+          "alt": "Créer un rituel du soir magique"
+        },
+        {
+          "src": "embedded; sha256=8616e8bbcd8bc0cde38f9253cf9947b450566613ba731c940784f0f1a89a52e4; chars=140082",
+          "alt": "Histoires d'étoiles : 3 contes à inventer"
+        },
+        {
+          "src": "embedded; sha256=1127d8989519fce75dcbc1e885c1c7ed5e1283395dd62bffb80d730b0d36844d; chars=278826",
+          "alt": "Décorer une chambre qui fait rêver"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "traverse",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "TRAVERSE | Fermez l'ordi. Ouvrez le week-end.",
+      "h1": [
+        "FERMEZ L'ORDI.\nOUVREZ LE WEEK-END."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3234,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=e355034a699fcb662e0b235f7d0f6f6390897e7c83b3ec4f88674f1df0bad76e; chars=507454",
+          "alt": "Lac de montagne entouré de forêts de sapins, un train longe la rive."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "traverse",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "TRAVERSE | Fermez l'ordi. Ouvrez le week-end.",
+      "h1": [
+        "FERMEZ L'ORDI.\nOUVREZ LE WEEK-END."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4127,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=e355034a699fcb662e0b235f7d0f6f6390897e7c83b3ec4f88674f1df0bad76e; chars=507454",
+          "alt": "Lac de montagne entouré de forêts de sapins, un train longe la rive."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "heuren",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "HEUREN | Une montre bleu nuit à offrir, pour marquer un moment",
+      "h1": [
+        "MARQUEZ CE MOMENT."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4397,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=a4b4356cecf18d69262786e2af928f4f02d7957abcd6b39d23d79a72de2aa270; chars=109234",
+          "alt": "HEUREN Bleu nuit"
+        },
+        {
+          "src": "embedded; sha256=ef13064832103f5162c65fddb46c1c445843a0da98f8a11060f6d6acebdc06ae; chars=113030",
+          "alt": "HEUREN Bleu nuit"
+        },
+        {
+          "src": "embedded; sha256=ebaad92829437e2bba77b3be9c861ae1bae67f538f3e6e48b4d202f3d8f08d8c; chars=184826",
+          "alt": "Montre HEUREN près d'un paquet cadeau au ruban bleu nuit, lumières de la ville le soir."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "heuren",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "HEUREN | Une montre bleu nuit à offrir, pour marquer un moment",
+      "h1": [
+        "MARQUEZ CE MOMENT."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4391,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=a4b4356cecf18d69262786e2af928f4f02d7957abcd6b39d23d79a72de2aa270; chars=109234",
+          "alt": "HEUREN Bleu nuit"
+        },
+        {
+          "src": "embedded; sha256=ef13064832103f5162c65fddb46c1c445843a0da98f8a11060f6d6acebdc06ae; chars=113030",
+          "alt": "HEUREN Bleu nuit"
+        },
+        {
+          "src": "embedded; sha256=ebaad92829437e2bba77b3be9c861ae1bae67f538f3e6e48b4d202f3d8f08d8c; chars=184826",
+          "alt": "Montre HEUREN près d'un paquet cadeau au ruban bleu nuit, lumières de la ville le soir."
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "museau-club",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "MUSEAU CLUB | Le bonheur est au bout de la laisse",
+      "h1": [
+        "LE BONHEUR\nEST AU BOUT\nDE LA LAISSE."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4912,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=6d13342a7ad494a954182f9fa3f7682095987173d3bbbfde58e2e0a29572b450; chars=338418",
+          "alt": "Au parc"
+        },
+        {
+          "src": "embedded; sha256=5fa98d3217c1e3fc4e92ff90155ac00f7827d8efd391fbc214c16dc3e28c6c6d; chars=545498",
+          "alt": "Dans l'herbe"
+        },
+        {
+          "src": "embedded; sha256=8ae97ca8b835832ee5292a12da97ea57416c64aadf80c21d31642d84b002ac65; chars=240082",
+          "alt": "Avant de partir"
+        },
+        {
+          "src": "embedded; sha256=4d510c3553c99e195c4623bf2100cee3109aa04b73a7dde81eb62157af4d6c3b; chars=249338",
+          "alt": "Beagle assis portant le collier MUSEAU CLUB bleu cobalt, devant un mur bleu clair."
+        },
+        {
+          "src": "embedded; sha256=5fa98d3217c1e3fc4e92ff90155ac00f7827d8efd391fbc214c16dc3e28c6c6d; chars=545498",
+          "alt": "Les petits rituels des grandes balades"
+        },
+        {
+          "src": "embedded; sha256=8ae97ca8b835832ee5292a12da97ea57416c64aadf80c21d31642d84b002ac65; chars=240082",
+          "alt": "Préparer son sac pour la balade"
+        },
+        {
+          "src": "embedded; sha256=82130598059af7ff3cfb48eb6322d275b000e1b3df2e5e25980ef83bf9feace5; chars=293738",
+          "alt": "Choisir la taille de son harnais"
+        },
+        {
+          "src": "embedded; sha256=818bfbbb9314da412442b86d55d97918ea12db69c0ac1247bf60a71ae89714a3; chars=301910",
+          "alt": "Harnais et pochette MUSEAU CLUB posés sur un sol à damier bleu et crème."
+        },
+        {
+          "src": "embedded; sha256=20173df5fb51a6993bbea2df8b683639cf07f2cbf600e54908ee0fb2a9f5b793; chars=291578",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "museau-club",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "MUSEAU CLUB | Le bonheur est au bout de la laisse",
+      "h1": [
+        "LE BONHEUR\nEST AU BOUT\nDE LA LAISSE."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 6705,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=b008429adbbfc7c7111b2184e3f906ef6610bce33869450e0a7783a53a076db2; chars=312954",
+          "alt": "Gros plan de la maille crème du harnais et de son liseré bleu cobalt."
+        },
+        {
+          "src": "embedded; sha256=46968befe486b08a03fd7a094ede416490899a6dabfa31c697cebc030d323591; chars=250146",
+          "alt": "Gros plan d'une boucle noire du harnais sur sa sangle bleu cobalt, maille crème autour."
+        },
+        {
+          "src": "embedded; sha256=2ee4dcc4ac71ef6aac466312b66baba07dedd71f989ee750a5b3e24b3cae40c9; chars=220290",
+          "alt": "Collection MUSEAU CLUB sur des socles bleu poudré : harnais, collier, pochette et laisse bleu cobalt."
+        },
+        {
+          "src": "embedded; sha256=6d13342a7ad494a954182f9fa3f7682095987173d3bbbfde58e2e0a29572b450; chars=338418",
+          "alt": "Au parc"
+        },
+        {
+          "src": "embedded; sha256=5fa98d3217c1e3fc4e92ff90155ac00f7827d8efd391fbc214c16dc3e28c6c6d; chars=545498",
+          "alt": "Dans l'herbe"
+        },
+        {
+          "src": "embedded; sha256=8ae97ca8b835832ee5292a12da97ea57416c64aadf80c21d31642d84b002ac65; chars=240082",
+          "alt": "Avant de partir"
+        },
+        {
+          "src": "embedded; sha256=4d510c3553c99e195c4623bf2100cee3109aa04b73a7dde81eb62157af4d6c3b; chars=249338",
+          "alt": "Beagle assis portant le collier MUSEAU CLUB bleu cobalt, devant un mur bleu clair."
+        },
+        {
+          "src": "embedded; sha256=5fa98d3217c1e3fc4e92ff90155ac00f7827d8efd391fbc214c16dc3e28c6c6d; chars=545498",
+          "alt": "Les petits rituels des grandes balades"
+        },
+        {
+          "src": "embedded; sha256=8ae97ca8b835832ee5292a12da97ea57416c64aadf80c21d31642d84b002ac65; chars=240082",
+          "alt": "Préparer son sac pour la balade"
+        },
+        {
+          "src": "embedded; sha256=82130598059af7ff3cfb48eb6322d275b000e1b3df2e5e25980ef83bf9feace5; chars=293738",
+          "alt": "Choisir la taille de son harnais"
+        },
+        {
+          "src": "embedded; sha256=818bfbbb9314da412442b86d55d97918ea12db69c0ac1247bf60a71ae89714a3; chars=301910",
+          "alt": "Harnais et pochette MUSEAU CLUB posés sur un sol à damier bleu et crème."
+        },
+        {
+          "src": "embedded; sha256=20173df5fb51a6993bbea2df8b683639cf07f2cbf600e54908ee0fb2a9f5b793; chars=291578",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "souple",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "SOUPLE | Du mouvement. À votre rythme.",
+      "h1": [
+        "Du mouvement.\nÀ votre rythme."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 4639,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=412280b1a18ad09db3addfe8730fcaa795fb061b0da5417e75ab3acb56527dc1; chars=334634",
+          "alt": "Explorer avec des accessoires"
+        },
+        {
+          "src": "embedded; sha256=96c59218a9ac0f65db8a5dfb87c28b4b32bffbdadd3024337dbc2aeedeeb02fb; chars=57714",
+          "alt": "Composer son espace"
+        },
+        {
+          "src": "embedded; sha256=f06ae61f3e61f601ff3018ed16189fc9c87644a4739ce2c6988e16e3c599ebf2; chars=251698",
+          "alt": "Rituel du matin : 5 minutes pour soi"
+        },
+        {
+          "src": "embedded; sha256=6feecfa122e93f45123ae88de5ae0ab4a0a41e2c7945b3ecbe6d1cb1c96d0986; chars=204970",
+          "alt": "Trouver l'équilibre dans un quotidien actif"
+        },
+        {
+          "src": "embedded; sha256=c02fa78407d8d632a01c0cfba9f0f8b19daa1c2078cd8fd5541bfb5ce5a85da7; chars=312150",
+          "alt": "Les essentiels pour votre pratique"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "souple",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "SOUPLE | Du mouvement. À votre rythme.",
+      "h1": [
+        "Du mouvement.\nÀ votre rythme."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 5021,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=adbbf44a9500b67c26938674cb2e56f7fc5022ed95874b5734223ad362e8e88a; chars=278850",
+          "alt": "Tapis SOUPLE roulé, brique en liège, sangle et anneau prune côte à côte sur un parquet clair."
+        },
+        {
+          "src": "embedded; sha256=412280b1a18ad09db3addfe8730fcaa795fb061b0da5417e75ab3acb56527dc1; chars=334634",
+          "alt": "Explorer avec des accessoires"
+        },
+        {
+          "src": "embedded; sha256=96c59218a9ac0f65db8a5dfb87c28b4b32bffbdadd3024337dbc2aeedeeb02fb; chars=57714",
+          "alt": "Composer son espace"
+        },
+        {
+          "src": "embedded; sha256=f06ae61f3e61f601ff3018ed16189fc9c87644a4739ce2c6988e16e3c599ebf2; chars=251698",
+          "alt": "Rituel du matin : 5 minutes pour soi"
+        },
+        {
+          "src": "embedded; sha256=6feecfa122e93f45123ae88de5ae0ab4a0a41e2c7945b3ecbe6d1cb1c96d0986; chars=204970",
+          "alt": "Trouver l'équilibre dans un quotidien actif"
+        },
+        {
+          "src": "embedded; sha256=c02fa78407d8d632a01c0cfba9f0f8b19daa1c2078cd8fd5541bfb5ce5a85da7; chars=312150",
+          "alt": "Les essentiels pour votre pratique"
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "table-saison",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "TABLE SAISON — cuisine de saison, esprit bistrot (démonstration)",
+      "h1": [
+        "Le goût des bonnes choses. Le plaisir d'être ensemble."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3485,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=fa46907fb2c663558cc818c3f03b98a2702d0a6af1f624cdb59eaa88164d9e42; chars=292202",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=339a63732e815319929245f7d603b8d62fa69e93f723af83c8579ad59c8be8f2; chars=154922",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "table-saison",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [],
+      "title": "TABLE SAISON — cuisine de saison, esprit bistrot (démonstration)",
+      "h1": [
+        "Le goût des bonnes choses. Le plaisir d'être ensemble."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 5920,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=724392c670d74d1f0b0ac5185d362c2640592226af736108f586e46f307bbf62; chars=338054",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=cbfcebf1d713dcea5ca124579e1d3e1f4589ae01fae020060ace763b420bef2d; chars=195386",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=f5f2cbcc0e27e05b06c5869d53a3b3415d0609fcfa1908c31ee9f0957a3b9615; chars=250234",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=67f8b558505795417f57228c7767b3459cf1dadca39d081e6a6cce6207cab575; chars=188466",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=ab38f440cc32a3874395b78a7a84cf672a8ee10d8a57d056c977502303c94d21; chars=275562",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=fed8e8df62478acb010fd742e88ed2b063381ae182eb281b7a6cf6b97f5389fd; chars=302826",
+          "alt": "Artichauts violets"
+        },
+        {
+          "src": "embedded; sha256=ec3fee22c9d47ddfac0f4b6e5f10c37de0629feb3304ba003cc6bf1937066ed8; chars=307706",
+          "alt": "Carottes de couleurs"
+        },
+        {
+          "src": "embedded; sha256=b26fc87e9feb933df76951c900d53cc14b62010a58e2a8f779fbd4fc14fd225f; chars=317194",
+          "alt": "Girolles"
+        },
+        {
+          "src": "embedded; sha256=3edec2b61c7cb9a855a0c0fc290878c25a026190e4b26b265f6723554a5dfeb9; chars=364802",
+          "alt": "Herbes fraîches"
+        },
+        {
+          "src": "embedded; sha256=04eae82d41be8770fd039b13bb7b3decaa20109a01292f9a5cd05dd80c132ccc; chars=188830",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=034ee42da08fbfadb78324e7708ce4b4f2a1efd4813885f80ae2dc82ad344f7c; chars=174366",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=fa46907fb2c663558cc818c3f03b98a2702d0a6af1f624cdb59eaa88164d9e42; chars=292202",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=339a63732e815319929245f7d603b8d62fa69e93f723af83c8579ad59c8be8f2; chars=154922",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "atelier-nuance",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "reservation-confirmation.webp",
+        "salon-bandeau.webp"
+      ],
+      "title": "ATELIER NUANCE — salon de coiffure (démonstration)",
+      "h1": [
+        "Une nouvelle coupe.\nUne nouvelle énergie."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3117,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "atelier-nuance",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "reservation-confirmation.webp",
+        "salon-bandeau.webp"
+      ],
+      "title": "ATELIER NUANCE — salon de coiffure (démonstration)",
+      "h1": [
+        "Une nouvelle coupe.\nUne nouvelle énergie."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3409,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=a677708c4f0147b0a6d111fc8746c51d5f1e075fb98ee6e850f51554cb8165d3; chars=231034",
+          "alt": "Vasque en travertin et robinetterie dorée"
+        },
+        {
+          "src": "embedded; sha256=1d09ffed23accd0922c485adb41b0df4f13801f08ec295cf2de7b50a2f5ff703; chars=331950",
+          "alt": "Espace d'attente : fauteuils arrondis et plantes"
+        },
+        {
+          "src": "embedded; sha256=070bca38c5cde4a12a2345b64cd2acd5829ef8610422d289d606b834eae6f4f2; chars=219210",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "parenthese",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "05-vase-livres.webp",
+        "06-fauteuil-individuel.webp",
+        "07-atelier-coussins.webp",
+        "08-cabinet-panorama.webp",
+        "09-approche-bureau.webp",
+        "10-soleil-feuillage.webp",
+        "11-fleurs-sechees.webp"
+      ],
+      "title": "Parenthèse",
+      "h1": [
+        "Un temps\npour souffler.\nUne place pour vous."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3376,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=fca00d6ff2c48679370b9abba01dc0aee7305623fd201b38116bc577504143c9; chars=622906",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=1510f4bf225217ad399f1e1b2d81ed1ed64870be32679ec5ddd81cde47b5c744; chars=155502",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=460529cbd2d53201ac429e4dc0dcb8777d43ad2891cb500fe12ada2966e02ac2; chars=137658",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=10465ace9403a62a530b495c85e0dd467041b7e3ec41d7e1f484a0796d14d00d; chars=148998",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "parenthese",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "05-vase-livres.webp",
+        "06-fauteuil-individuel.webp",
+        "07-atelier-coussins.webp",
+        "08-cabinet-panorama.webp",
+        "09-approche-bureau.webp",
+        "10-soleil-feuillage.webp",
+        "11-fleurs-sechees.webp"
+      ],
+      "title": "Parenthèse",
+      "h1": [
+        "Un temps\npour souffler.\nUne place pour vous."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3744,
+      "brokenImages": [
+        {
+          "src": "embedded; sha256=05db3aaaa0f93495a16dcd2b13ece47d6b8f04ff21d0413007d2e59d8befe30a; chars=225970",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=a21ec7178a6411c85b12bdbf45725a837eceb6b844a3b08e0a8960fcbd5952f6; chars=338370",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=823ece4ecd1235d69f1af39a9b289004857e1edf34b8af95cc2202e6fb4adba5; chars=211126",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=fca00d6ff2c48679370b9abba01dc0aee7305623fd201b38116bc577504143c9; chars=622906",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=1510f4bf225217ad399f1e1b2d81ed1ed64870be32679ec5ddd81cde47b5c744; chars=155502",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=460529cbd2d53201ac429e4dc0dcb8777d43ad2891cb500fe12ada2966e02ac2; chars=137658",
+          "alt": ""
+        },
+        {
+          "src": "embedded; sha256=10465ace9403a62a530b495c85e0dd467041b7e3ec41d7e1f484a0796d14d00d; chars=148998",
+          "alt": ""
+        }
+      ],
+      "liquidError": false
+    },
+    {
+      "theme": "phase",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "01_accueil_hero.webp",
+        "02_installation_renovation.webp",
+        "03_tableau_electrique.webp",
+        "04_eclairage_interieur.webp",
+        "05_depannage.webp",
+        "06_renovation_appartement.webp",
+        "07_cuisine_contemporaine.webp",
+        "08_salle_de_bain.webp",
+        "09_tableau_renove.webp",
+        "10_eclairage_exterieur.webp",
+        "11_chambre_eclairage.webp",
+        "12_sejour_renove.webp",
+        "13_couloir_eclaire.webp",
+        "14_maison_installation.webp",
+        "15_projet_avant.webp",
+        "16_projet_ambiance.webp",
+        "17_entreprise_hero.webp",
+        "18_installation_neuve.webp",
+        "19_extension_habitation.webp",
+        "20_spots_plafond.webp",
+        "21_prise_interrupteur.webp",
+        "22_pilotage_confort.webp",
+        "23_conseils_hero.webp",
+        "24_article_eclairage.webp",
+        "25_besoins_plans.webp",
+        "26_renovation_conseil.webp"
+      ],
+      "title": "PHASE ÉLECTRICITÉ | Le courant passe. La confiance aussi.",
+      "h1": [
+        "Le courant passe. La confiance aussi."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 3244,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "phase",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "01_accueil_hero.webp",
+        "02_installation_renovation.webp",
+        "03_tableau_electrique.webp",
+        "04_eclairage_interieur.webp",
+        "05_depannage.webp",
+        "06_renovation_appartement.webp",
+        "07_cuisine_contemporaine.webp",
+        "08_salle_de_bain.webp",
+        "09_tableau_renove.webp",
+        "10_eclairage_exterieur.webp",
+        "11_chambre_eclairage.webp",
+        "12_sejour_renove.webp",
+        "13_couloir_eclaire.webp",
+        "14_maison_installation.webp",
+        "15_projet_avant.webp",
+        "16_projet_ambiance.webp",
+        "17_entreprise_hero.webp",
+        "18_installation_neuve.webp",
+        "19_extension_habitation.webp",
+        "20_spots_plafond.webp",
+        "21_prise_interrupteur.webp",
+        "22_pilotage_confort.webp",
+        "23_conseils_hero.webp",
+        "24_article_eclairage.webp",
+        "25_besoins_plans.webp",
+        "26_renovation_conseil.webp"
+      ],
+      "title": "PHASE ÉLECTRICITÉ | Le courant passe. La confiance aussi.",
+      "h1": [
+        "Le courant passe. La confiance aussi."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3541,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "maison-horizon",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "404-village.webp",
+        "accueil-agence.webp",
+        "accueil-hero.webp",
+        "acheter.webp",
+        "agence-hero.webp",
+        "agence-piscine.webp",
+        "alerte-maison.webp",
+        "article-cuisine.webp",
+        "article-escalier.webp",
+        "article-hero.webp",
+        "article-location.webp",
+        "article-terrasse.webp",
+        "article-vente.webp",
+        "bandeau-proprietaires.webp",
+        "compte-interieur.webp",
+        "conseil-achat.webp",
+        "conseil-location.webp",
+        "conseil-luberon.webp",
+        "conseils-hero.webp",
+        "contact-hero.webp",
+        "contact-village.webp",
+        "espace-recherche.webp",
+        "espace-visite.webp",
+        "estimation-hero.webp",
+        "estimation-salon.webp",
+        "estimation-terrasse.webp",
+        "favori-appartement.webp",
+        "favori-villa.webp",
+        "footer-interieur.webp",
+        "legal-plaque.webp",
+        "location-balcon.webp",
+        "location-carte-1.webp",
+        "location-carte-2.webp",
+        "location-carte-3.webp",
+        "location-carte-4.webp",
+        "location-carte-5.webp",
+        "location-carte-6.webp",
+        "location-chambre.webp",
+        "location-cour.webp",
+        "location-cuisine.webp",
+        "location-parc.webp",
+        "location-salle-bain.webp",
+        "location-salon.webp",
+        "location-similaire-1.webp",
+        "location-similaire-2.webp",
+        "location-similaire-3.webp",
+        "location-similaire-4.webp",
+        "location-vue.webp",
+        "louer.webp",
+        "mas-alpilles.webp",
+        "mise-location-balcon.webp",
+        "mise-location-chambre.webp",
+        "mise-location-hero.webp",
+        "mise-location-salon.webp",
+        "recherche-achat-hero.webp",
+        "recherche-carte-hero.webp",
+        "recherche-location-hero.webp",
+        "secteur-aix.webp",
+        "secteur-luberon.webp",
+        "secteur-marseille.webp",
+        "secteur-paris.webp",
+        "vedette-maison.webp",
+        "vedette-paris.webp",
+        "vedette-villa.webp",
+        "vendre-hero.webp",
+        "vendre-maison.webp",
+        "vendre-olivier.webp",
+        "vendre-village.webp",
+        "vente-carte-1.webp",
+        "vente-carte-2.webp",
+        "vente-carte-3.webp",
+        "vente-carte-4.webp",
+        "vente-carte-5.webp",
+        "vente-carte-6.webp",
+        "vente-cuisine.webp",
+        "vente-jardin.webp",
+        "vente-quartier-parc.webp",
+        "vente-quartier-rhone.webp",
+        "vente-quartier-rue.webp",
+        "vente-salon.webp",
+        "vente-similaire-appartement.webp",
+        "vente-similaire-maison.webp",
+        "vente-similaire-vue.webp",
+        "vente-terrasse.webp",
+        "village.webp",
+        "carte-reference.png",
+        "vente-plan-illustratif.png"
+      ],
+      "title": "Maison & Horizon | Acheter, vendre, louer une maison ou un appartement",
+      "h1": [
+        "Un lieu à vous.\nUne nouvelle histoire."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2841,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "maison-horizon",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "404-village.webp",
+        "accueil-agence.webp",
+        "accueil-hero.webp",
+        "acheter.webp",
+        "agence-hero.webp",
+        "agence-piscine.webp",
+        "alerte-maison.webp",
+        "article-cuisine.webp",
+        "article-escalier.webp",
+        "article-hero.webp",
+        "article-location.webp",
+        "article-terrasse.webp",
+        "article-vente.webp",
+        "bandeau-proprietaires.webp",
+        "compte-interieur.webp",
+        "conseil-achat.webp",
+        "conseil-location.webp",
+        "conseil-luberon.webp",
+        "conseils-hero.webp",
+        "contact-hero.webp",
+        "contact-village.webp",
+        "espace-recherche.webp",
+        "espace-visite.webp",
+        "estimation-hero.webp",
+        "estimation-salon.webp",
+        "estimation-terrasse.webp",
+        "favori-appartement.webp",
+        "favori-villa.webp",
+        "footer-interieur.webp",
+        "legal-plaque.webp",
+        "location-balcon.webp",
+        "location-carte-1.webp",
+        "location-carte-2.webp",
+        "location-carte-3.webp",
+        "location-carte-4.webp",
+        "location-carte-5.webp",
+        "location-carte-6.webp",
+        "location-chambre.webp",
+        "location-cour.webp",
+        "location-cuisine.webp",
+        "location-parc.webp",
+        "location-salle-bain.webp",
+        "location-salon.webp",
+        "location-similaire-1.webp",
+        "location-similaire-2.webp",
+        "location-similaire-3.webp",
+        "location-similaire-4.webp",
+        "location-vue.webp",
+        "louer.webp",
+        "mas-alpilles.webp",
+        "mise-location-balcon.webp",
+        "mise-location-chambre.webp",
+        "mise-location-hero.webp",
+        "mise-location-salon.webp",
+        "recherche-achat-hero.webp",
+        "recherche-carte-hero.webp",
+        "recherche-location-hero.webp",
+        "secteur-aix.webp",
+        "secteur-luberon.webp",
+        "secteur-marseille.webp",
+        "secteur-paris.webp",
+        "vedette-maison.webp",
+        "vedette-paris.webp",
+        "vedette-villa.webp",
+        "vendre-hero.webp",
+        "vendre-maison.webp",
+        "vendre-olivier.webp",
+        "vendre-village.webp",
+        "vente-carte-1.webp",
+        "vente-carte-2.webp",
+        "vente-carte-3.webp",
+        "vente-carte-4.webp",
+        "vente-carte-5.webp",
+        "vente-carte-6.webp",
+        "vente-cuisine.webp",
+        "vente-jardin.webp",
+        "vente-quartier-parc.webp",
+        "vente-quartier-rhone.webp",
+        "vente-quartier-rue.webp",
+        "vente-salon.webp",
+        "vente-similaire-appartement.webp",
+        "vente-similaire-maison.webp",
+        "vente-similaire-vue.webp",
+        "vente-terrasse.webp",
+        "village.webp",
+        "carte-reference.png",
+        "vente-plan-illustratif.png"
+      ],
+      "title": "Maison & Horizon | Acheter, vendre, louer une maison ou un appartement",
+      "h1": [
+        "Un lieu à vous.\nUne nouvelle histoire."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 4427,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "aplat",
+      "device": "ordinateur",
+      "status": 200,
+      "missingSourceMedia": [
+        "00_logo_aplat_original.png",
+        "01_accueil_chantier_mixte.webp",
+        "02_piece_avant.webp",
+        "03_piece_apres.webp",
+        "04_ossature_cloisons.webp",
+        "05_enduit_lisseuse.webp",
+        "06_rouleau_mur_bleu.webp",
+        "07_texture_enduit.webp",
+        "08_jonction_plafond.webp",
+        "09_raccord_bleu_blanc.webp",
+        "10_preparation_murs.webp",
+        "11_ponceuse_supports.webp",
+        "12_nuancier_echantillons.webp",
+        "13_piece_protegee.webp",
+        "14_combles.webp",
+        "15_couloir.webp",
+        "16_seau_bac_rouleau.webp",
+        "17_plans_crayon.webp",
+        "18_fenetre_lumiere.webp",
+        "19_outils_preparation.webp",
+        "20_mur_bleu_soleil.webp",
+        "21_eventail_couleurs.webp",
+        "22_plans_metre.webp",
+        "23_appareil_photo_chantier.webp",
+        "24_plafond_joints.webp",
+        "25_doublage_isolation.webp",
+        "26_masquage_plinthe.webp",
+        "27_angle_prise_mur.webp",
+        "28_enduit_spatule_verticale.webp"
+      ],
+      "title": "APLAT | Plâtrerie, préparation et peinture intérieure",
+      "h1": [
+        "Des murs justes.\nDes espaces qui changent.Des murs justes.\nDes espaces\nqui changent."
+      ],
+      "width": 1440,
+      "scrollWidth": 1440,
+      "height": 2358,
+      "brokenImages": [],
+      "liquidError": false
+    },
+    {
+      "theme": "aplat",
+      "device": "mobile",
+      "status": 200,
+      "missingSourceMedia": [
+        "00_logo_aplat_original.png",
+        "01_accueil_chantier_mixte.webp",
+        "02_piece_avant.webp",
+        "03_piece_apres.webp",
+        "04_ossature_cloisons.webp",
+        "05_enduit_lisseuse.webp",
+        "06_rouleau_mur_bleu.webp",
+        "07_texture_enduit.webp",
+        "08_jonction_plafond.webp",
+        "09_raccord_bleu_blanc.webp",
+        "10_preparation_murs.webp",
+        "11_ponceuse_supports.webp",
+        "12_nuancier_echantillons.webp",
+        "13_piece_protegee.webp",
+        "14_combles.webp",
+        "15_couloir.webp",
+        "16_seau_bac_rouleau.webp",
+        "17_plans_crayon.webp",
+        "18_fenetre_lumiere.webp",
+        "19_outils_preparation.webp",
+        "20_mur_bleu_soleil.webp",
+        "21_eventail_couleurs.webp",
+        "22_plans_metre.webp",
+        "23_appareil_photo_chantier.webp",
+        "24_plafond_joints.webp",
+        "25_doublage_isolation.webp",
+        "26_masquage_plinthe.webp",
+        "27_angle_prise_mur.webp",
+        "28_enduit_spatule_verticale.webp"
+      ],
+      "title": "APLAT | Plâtrerie, préparation et peinture intérieure",
+      "h1": [
+        "Des murs justes.\nDes espaces qui changent.Des murs justes.\nDes espaces\nqui changent."
+      ],
+      "width": 390,
+      "scrollWidth": 390,
+      "height": 3831,
+      "brokenImages": [],
+      "liquidError": false
+    }
+  ],
+  "holdouts": [
+    {
+      "kind": "product",
+      "savedAndReopened": true,
+      "status": 200,
+      "productTitles": [
+        "Cartouche de filtration",
+        "Support de filtration — contre-épreuve 195"
+      ]
+    },
+    {
+      "kind": "service",
+      "catalogueDistinction": true,
+      "bookingPageAccessible": true
+    },
+    {
+      "kind": "product-preview",
+      "status": "rendered"
+    },
+    {
+      "kind": "service-preview",
+      "status": "rendered"
+    }
+  ],
+  "errors": [],
+  "deniedOrigins": [],
+  "measurementNote": "Initial sample before forced eager decoding. See controle-medias-cadrage.json for follow-up; unloaded lazy images are not automatically broken."
+}

@@ -1,0 +1,8 @@
+/tmp/ecs-195-candidat-7f854218/scripts/lot9/contre-verification-195-studio-proof.mts:11
+const product=await kitProject(user.id,'noctil');grantProjectPlan(product.pid,'dominer');product.spec.store.product.price=6900;for(const v of product.spec.store.product.variants)v.price=6900;saveThemeVersion(product.pid,product.spec,'Régression sécurité : composition de la base livrée, sans intégration #167','system');
+                    ^
+
+TypeError: kitProject is not a function
+    at <anonymous> (/tmp/ecs-195-candidat-7f854218/scripts/lot9/contre-verification-195-studio-proof.mts:11:21)
+
+Node.js v24.19.0

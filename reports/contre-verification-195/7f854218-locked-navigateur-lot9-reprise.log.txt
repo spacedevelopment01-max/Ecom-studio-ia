@@ -1,0 +1,14 @@
+NATIVE_STANDALONE_CART {"status":200,"readable":true}
+NATIVE_STANDALONE_CART {"status":200,"readable":true}
+Recette interrompue ; journal local privé : /tmp/ecs-lot9-browser-DtWQDm/next.log
+/tmp/ecs-195-candidat-7f854218/scripts/lot9/contre-verification-195-studio-proof.mts:40
+}catch(e){console.error(`Recette interrompue ; journal local privé : ${root}/next.log`);const clean=String(e).replace(/jeton=[\w%-]+/g,'jeton=REDACTED_FIXTURE');throw new Error(clean);}finally{await browser.close();web.kill('SIGTERM');await new Promise<void>(r=>smtp.close(()=>r()));fs.closeSync(log);}
+                                                                                                                                                                       ^
+
+Error: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+1 !== 0
+
+    at <anonymous> (/tmp/ecs-195-candidat-7f854218/scripts/lot9/contre-verification-195-studio-proof.mts:40:168)
+
+Node.js v24.19.0

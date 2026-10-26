@@ -1,0 +1,12 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.evaluate: TypeError: r.status is not a function
+    at eval (eval at evaluate (:311:30), <anonymous>:1:138)
+    at async <anonymous>:337:30
+    at /tmp/ecs-195-candidat-7f854218/scripts/contre-verification-195-browser.mjs:46:28 {
+  log: []
+}
+
+Node.js v24.19.0

@@ -2,6 +2,9 @@
   "codeTested": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
   "state": "CORRECTION_REQUIRED_PRESTASHOP_BOOKING_EXPORTS",
   "realProviderCalls": 0,
+  "nativeScreenshots": 90,
+  "inspectionBoards": 5,
+  "videos": 2,
   "files": [
     {
       "file": "176-vers-7f854218-themes-medias-cms.txt",
@@ -39,6 +42,16 @@
       "sha256": "9444120d758f8cde221ce29c6466be3616a61a9750d7c087b02cfecb74428eea"
     },
     {
+      "file": "7f854218-locked-autopilot-7jours.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "7f854218-locked-autopilot-7jours.log.txt",
+      "bytes": 382,
+      "sha256": "c280d5ed8e4f5c7972aa7671cade64ac11755c77d3813a2acfe1d391a6d83c9e"
+    },
+    {
       "file": "7f854218-locked-build.exit",
       "bytes": 2,
       "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
@@ -67,6 +80,76 @@
       "file": "7f854218-locked-exports-bookings.log.txt",
       "bytes": 978,
       "sha256": "1295c0e52930ab023d6b4a29d8ae719555f5e3fde057b6a83ed7032520d9d1c3"
+    },
+    {
+      "file": "7f854218-locked-medias-cadrage.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "7f854218-locked-medias-cadrage.log.txt",
+      "bytes": 7235,
+      "sha256": "fd3b052d17daaed1a8ea6d9075262cc200e1b6b6e125de4eec943ccb6d27f93c"
+    },
+    {
+      "file": "7f854218-locked-navigateur-higgsfield.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "7f854218-locked-navigateur-higgsfield.log.txt",
+      "bytes": 76,
+      "sha256": "d21f9a4da952666be019a5a3fdb395e6e0c3417ba6f3c0c0f063bc9e8f2ee728"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9-final.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9-final.log.txt",
+      "bytes": 4115,
+      "sha256": "176a0b8571c8d9abf5823ddf1b3a3a8aa60f3d78c76d7d5a9afa3579fb99c12a"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9-reprise.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9-reprise.log.txt",
+      "bytes": 971,
+      "sha256": "f45bc896cd45485245fbf7c32f9f20d7ff87ff3907e6557ba68677337e319589"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "7f854218-locked-navigateur-lot9.log.txt",
+      "bytes": 607,
+      "sha256": "acbab1d50d1f94b89dbcc00507f2951bda4d31c130226c510b5096c16381b2ac"
+    },
+    {
+      "file": "7f854218-locked-navigateur-studio-reprise.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "7f854218-locked-navigateur-studio-reprise.log.txt",
+      "bytes": 1122,
+      "sha256": "975706a9698d06c8ea2377f754283e8af822d7afabe9bd1f3faa67349068e68f"
+    },
+    {
+      "file": "7f854218-locked-navigateur-studio.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "7f854218-locked-navigateur-studio.log.txt",
+      "bytes": 337,
+      "sha256": "6356a8575a3b051fc9a45bd59dcec5e4e4d6a9bdae2df8188e4647fd48e55559"
     },
     {
       "file": "7f854218-npm-ci-cpu.log.txt",
@@ -124,6 +207,11 @@
       "sha256": "12612ebbc7b0e277dc6b9b4c66c8d1804fc71856fb7028c783758ad5730ee725"
     },
     {
+      "file": "README.md",
+      "bytes": 6803,
+      "sha256": "6b7253781f20e05790f2ff2747217252bf93eb16dd3c4d2f99b7cbc59d8bc38a"
+    },
+    {
       "file": "aec79070-cibles-independants.log.txt",
       "bytes": 179,
       "sha256": "21f1ce9021f7a4e7296aaeb582da493b1ae630bc8133a9bdabcd9aa818cc5d66"
@@ -169,14 +257,19 @@
       "sha256": "1e2c94c57bc7dd5ced90f650cd448e2e4916e7de248a60edc16882bb80279fcc"
     },
     {
+      "file": "harnais/contre-verification-195-medias.mjs",
+      "bytes": 3720,
+      "sha256": "cd8831563a5cf7e0539da772f3c6b59316baa81ce96488cf0e1aa44060ab0d79"
+    },
+    {
       "file": "harnais/contre-verification-195-seed.mjs",
       "bytes": 2678,
       "sha256": "0a0e832dba3e1e911933469a3d365753ef7bcc236b63bb1701c5c8a4f2382d42"
     },
     {
       "file": "harnais/contre-verification-195-studio-proof.mts.txt",
-      "bytes": 16360,
-      "sha256": "e3c06fb26d4b48bc5d37d8a12ea86ae0a3614fe8bdff767f9b3fe2b96052ea8e"
+      "bytes": 16805,
+      "sha256": "1a25608eb9474928abea2364e1d4d8344489b15903efae2a552c8af4c6c62b6e"
     },
     {
       "file": "higgsfield/01-admin-avant-import-simule.png",
@@ -214,9 +307,144 @@
       "sha256": "630232c59988ac37564e4ad0679b35a581d7b1436a7aef0dd35ef93634b00001"
     },
     {
+      "file": "lot9/01-inscription-confirmation-demandee-mobile.png",
+      "bytes": 52939,
+      "sha256": "ccfa69013d1d165c32ce2b93e5f96ff4b2baa53937a85e0095e50b38c5dd6d85"
+    },
+    {
+      "file": "lot9/01-inscription-confirmation-demandee-ordinateur.png",
+      "bytes": 95956,
+      "sha256": "d1db250bc89da6953bee07abbe9419aa57b0338641046d62bb3cf7432e00e13e"
+    },
+    {
+      "file": "lot9/02-confirmation-adresse-mobile.png",
+      "bytes": 30649,
+      "sha256": "51bad69e8a60e0acdb65c0297fae00214932f50e8351e5bfecb37088eb8d53be"
+    },
+    {
+      "file": "lot9/02-confirmation-adresse-ordinateur.png",
+      "bytes": 37152,
+      "sha256": "7332c47568e5df7a56420186da9efb9d61c535bea812f73f2679e43b42936fca"
+    },
+    {
+      "file": "lot9/03-donnees-personnelles-mobile.png",
+      "bytes": 55135,
+      "sha256": "a16c067d27817e83f31077287ed85ff44db80cf7c16f9bf2de02f9cc8ba27041"
+    },
+    {
+      "file": "lot9/03-donnees-personnelles-ordinateur.png",
+      "bytes": 73859,
+      "sha256": "eabdf0594c627a25fb6445add6c953491ca2e49330ea41af05f020f5bd4c4f82"
+    },
+    {
+      "file": "lot9/04-demande-effacement-en-attente-mobile.png",
+      "bytes": 61594,
+      "sha256": "58dcf9b9d347efecd568a6c174b2bb547db0ebdfe2b692ca0410c5587cfd33b0"
+    },
+    {
+      "file": "lot9/04-demande-effacement-en-attente-ordinateur.png",
+      "bytes": 83210,
+      "sha256": "eb3a0dc82e113ce2230e82a84323a3f938c167def82fe9c42940448fa02b726d"
+    },
+    {
+      "file": "lot9/05-apercu-produit-base-noctil-mobile.png",
+      "bytes": 113327,
+      "sha256": "4d71c3fb70b0a6b187faa962acd016195a774b5e6b2aa313b19aeab1e492dafd"
+    },
+    {
+      "file": "lot9/05-apercu-produit-base-noctil-ordinateur.png",
+      "bytes": 612011,
+      "sha256": "665dcdde13a05e5ce3f6be1a45277ed60670bfd100655bdc8b9a523cebdcd991"
+    },
+    {
+      "file": "lot9/05-apercu-service-donnees-synthetiques-mobile.png",
+      "bytes": 106781,
+      "sha256": "19dc9d96d2be714584f582c501621e651f57978108c4139c9c6c148259e1df67"
+    },
+    {
+      "file": "lot9/05-apercu-service-donnees-synthetiques-ordinateur.png",
+      "bytes": 381329,
+      "sha256": "904f1df0d6db2235e57f30d1a301f6a26096ac61d7638bfc3fb17965d0278cd5"
+    },
+    {
+      "file": "lot9/06-produit-base-noctil-accueil-mobile.png",
+      "bytes": 1199289,
+      "sha256": "08d75ea1a5ecee615bb505312074bcae493773d68bc43b739e30aa07c8cb510b"
+    },
+    {
+      "file": "lot9/06-produit-base-noctil-accueil-ordinateur.png",
+      "bytes": 4150769,
+      "sha256": "241f40feb1d68d2a2f38db6418ec401959819aa286ecd6a0d5c29bfc72f18ebc"
+    },
+    {
+      "file": "lot9/06-produit-base-noctil-detail-mobile.png",
+      "bytes": 1191188,
+      "sha256": "fd364d3deb377ae9f67416e7ddc356550c1a922cba01c51798c6873c486d6925"
+    },
+    {
+      "file": "lot9/06-produit-base-noctil-detail-ordinateur.png",
+      "bytes": 3058081,
+      "sha256": "db310ed710437a080d6b617d425c72361da66ec7481dc6b998c23d09ad0fabfb"
+    },
+    {
+      "file": "lot9/06-service-donnees-synthetiques-accueil-mobile.png",
+      "bytes": 395832,
+      "sha256": "ca32482dcafa4e0b9504537542bf3eb2d6998b6faf18b1f464480def6375aceb"
+    },
+    {
+      "file": "lot9/06-service-donnees-synthetiques-accueil-ordinateur.png",
+      "bytes": 1060973,
+      "sha256": "bc4fe0f16b514e30c7c76b04016418f9b4f3d8cab45d1ce178b0d7724df448fd"
+    },
+    {
+      "file": "lot9/06-service-donnees-synthetiques-detail-mobile.png",
+      "bytes": 251796,
+      "sha256": "3261d60443266f74a1dd1cf0ea57aad2dbd892271be5694224c69a87c483e1bc"
+    },
+    {
+      "file": "lot9/06-service-donnees-synthetiques-detail-ordinateur.png",
+      "bytes": 332161,
+      "sha256": "aaafd5e83f25f319206010d3b06784e57f92c4705c19f197c276db33d84d750f"
+    },
+    {
+      "file": "lot9/parcours.json",
+      "bytes": 5093,
+      "sha256": "4cea5e92ed5de821353c8dcc883ff0a39261def833e15a201d6a72bd79dfc749"
+    },
+    {
+      "file": "migration-0a6aa1dd-7f854218-locked.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-0a6aa1dd-7f854218-locked.json",
+      "bytes": 14547,
+      "sha256": "d287d14295eb2fa7041b6dcf9cbac5296edd73c36874a627a41a3461a4b786e2"
+    },
+    {
+      "file": "migration-0a6aa1dd-7f854218-locked.log.txt",
+      "bytes": 2646,
+      "sha256": "7a202da1786de58b4a1fdfd90840c77caa14fec114187be117d2d5d6ce665063"
+    },
+    {
       "file": "migration-0a6aa1dd-7f854218.json",
       "bytes": 14547,
       "sha256": "1e60e25d0c5efb904ef4f54447529f2fccc592aaa796442db2827edd22556d3b"
+    },
+    {
+      "file": "migration-d97e0b95-7f854218-locked.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-d97e0b95-7f854218-locked.json",
+      "bytes": 13257,
+      "sha256": "fafe743ed645dbd69b414325c6d335d3bd019a958666cdab057977d37f35dd05"
+    },
+    {
+      "file": "migration-d97e0b95-7f854218-locked.log.txt",
+      "bytes": 2422,
+      "sha256": "765677ec33ecac93e2d8e61fe83f002c1f95c6f15bf594434891a4d4688dbada"
     },
     {
       "file": "migration-d97e0b95-7f854218.json",
@@ -224,9 +452,389 @@
       "sha256": "c22a5c16ea5ead1626b16c80829e6ed3102769ccf3351e77b249ed23d1bf9cea"
     },
     {
+      "file": "migration-dcfc13b1-7f854218-locked.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "migration-dcfc13b1-7f854218-locked.json",
+      "bytes": 13074,
+      "sha256": "8a96afa6f1d3b35debd917a3e2b9441ee320add2e170da08b9a5eac8d0dbe065"
+    },
+    {
+      "file": "migration-dcfc13b1-7f854218-locked.log.txt",
+      "bytes": 2426,
+      "sha256": "fd854e2619ba864fb66279ea5b3cf70395b9f6ec2536b7b1e3b922c83f0c2095"
+    },
+    {
       "file": "migration-dcfc13b1-7f854218.json",
       "bytes": 13074,
       "sha256": "970c1b333132d55408bdcea9990a521068589fe3b86361670bf3874a547113b8"
+    },
+    {
+      "file": "navigateur/aplat-mobile-premier-ecran.png",
+      "bytes": 57549,
+      "sha256": "13a26a76f1f5e5314513ea3b24f7c6ef452ce035f0b96f943803d7bacc75c2fa"
+    },
+    {
+      "file": "navigateur/aplat-mobile.png",
+      "bytes": 237482,
+      "sha256": "c997296d5c503d34d7792aa8de6290b0c8cc836ccb86912c3e82e929a7cc705d"
+    },
+    {
+      "file": "navigateur/aplat-ordinateur-premier-ecran.png",
+      "bytes": 106700,
+      "sha256": "4874adc222295f1f9b1cbb6ac186ebe092ffde4a59df2f6e0f5d1cfaf35ea593"
+    },
+    {
+      "file": "navigateur/aplat-ordinateur.png",
+      "bytes": 295459,
+      "sha256": "32792803e014657a85f349c0f7a5645125b72a7f27cf048bb105d1775f84e5e9"
+    },
+    {
+      "file": "navigateur/atelier-nuance-mobile-premier-ecran.png",
+      "bytes": 262040,
+      "sha256": "b29cfcdddd7d05855babe2ffdf9174c86e84ad90f56c39b60191618b2583254d"
+    },
+    {
+      "file": "navigateur/atelier-nuance-mobile.png",
+      "bytes": 644197,
+      "sha256": "fb61f816d930596b194c1bc7a9e873a010dbb41b15c20ef1bef3df7a0b0ed66b"
+    },
+    {
+      "file": "navigateur/atelier-nuance-ordinateur-premier-ecran.png",
+      "bytes": 1538122,
+      "sha256": "e130d9410ab150968e83f458c7c96ad21b668e85228725d80375a000d1b42fdd"
+    },
+    {
+      "file": "navigateur/atelier-nuance-ordinateur.png",
+      "bytes": 3011323,
+      "sha256": "1419d870782f0cf198e465767dbb6b79eced5a7b232193ed24135ca6890f867c"
+    },
+    {
+      "file": "navigateur/client-produit-apercu.png",
+      "bytes": 414600,
+      "sha256": "5fd6fb1d7b8e36d029b5dd49df0c729c885b30e843ad3f7dbe3d918699a4a111"
+    },
+    {
+      "file": "navigateur/client-produit-catalogue-reouvert.png",
+      "bytes": 171467,
+      "sha256": "486ad30fca8bfca86c6b7d6e181adc6a76f68ecae2bc3b8ba1c9f8e1e648091c"
+    },
+    {
+      "file": "navigateur/client-service-apercu.png",
+      "bytes": 413429,
+      "sha256": "2a241ca6b112ea7fa7f3d99740ec21daabc569e66efa11cf7a0a28442d08db53"
+    },
+    {
+      "file": "navigateur/client-service-catalogue.png",
+      "bytes": 104399,
+      "sha256": "19f96a73769ba05da39d5069f6930e3b94358e78b83110eeb74766a43ca957fd"
+    },
+    {
+      "file": "navigateur/client-service-rendez-vous.png",
+      "bytes": 110898,
+      "sha256": "c4641c82da44a198b605f425b971b76b8a434c9986ceef6f2adfcdfbcfc5c4e5"
+    },
+    {
+      "file": "navigateur/controle-medias-cadrage.json",
+      "bytes": 95073,
+      "sha256": "07cc4337514a05bff1a583dc63a1e1c80ee0acbcce535dec757478bca2f7d89f"
+    },
+    {
+      "file": "navigateur/fraise-mobile-premier-ecran.png",
+      "bytes": 52635,
+      "sha256": "4a430cb360665fa0d675368bb6d4b83a64f8c28753fa0732b01e7ca565d9cb69"
+    },
+    {
+      "file": "navigateur/fraise-mobile.png",
+      "bytes": 242409,
+      "sha256": "bf247b51f3e8f6854c8842ef88f6370ba535bfc2560d98fd54764e7cf26c0ab0"
+    },
+    {
+      "file": "navigateur/fraise-ordinateur-premier-ecran.png",
+      "bytes": 152589,
+      "sha256": "bc7472942447898364854d15f36a46c405a7e5c2ea69569994254e84e949a42f"
+    },
+    {
+      "file": "navigateur/fraise-ordinateur.png",
+      "bytes": 376928,
+      "sha256": "6ed6adeef4d8b3427c6bf5520a01727bd550e31820f3a36294fcfea8f777e0d1"
+    },
+    {
+      "file": "navigateur/heuren-mobile-premier-ecran.png",
+      "bytes": 413919,
+      "sha256": "8b69f1819aa59772697c75998d79a02d526a94d9c958075094a5d9be682f57bb"
+    },
+    {
+      "file": "navigateur/heuren-mobile.png",
+      "bytes": 1483438,
+      "sha256": "d04baa21d186f64666b3d874c1cc95c693a86f6901a72f71c1801dbcf37732ad"
+    },
+    {
+      "file": "navigateur/heuren-ordinateur-premier-ecran.png",
+      "bytes": 1353155,
+      "sha256": "49e3b5d8d7c653fd7bbcf3d9045a2ca8f740131fd89b7954d5e1df4066f1536a"
+    },
+    {
+      "file": "navigateur/heuren-ordinateur.png",
+      "bytes": 5258001,
+      "sha256": "daff47126c328e345e6191cf61fb50e5677a5fdd60189cb04ff3790740e0cad0"
+    },
+    {
+      "file": "navigateur/maison-horizon-mobile-premier-ecran.png",
+      "bytes": 92030,
+      "sha256": "9a86233b779f7ca7927e33fa2bb766321917ea75730f913c13058cc81baaa7f2"
+    },
+    {
+      "file": "navigateur/maison-horizon-mobile.png",
+      "bytes": 353762,
+      "sha256": "2b20a5fd77d47183c281e351a6db8a30421e752c3a6172e35bf64445f950c3ec"
+    },
+    {
+      "file": "navigateur/maison-horizon-ordinateur-premier-ecran.png",
+      "bytes": 359397,
+      "sha256": "16deee871309c48cc26f9573b31972e56ee771226ce29560b4baad76e2ba90cd"
+    },
+    {
+      "file": "navigateur/maison-horizon-ordinateur.png",
+      "bytes": 731978,
+      "sha256": "dc2079fa839076d7d757c258751ff266908ec170927d6f8cf6439470a40f03c9"
+    },
+    {
+      "file": "navigateur/museau-club-mobile-premier-ecran.png",
+      "bytes": 294645,
+      "sha256": "14e8426b9a66c5a9edc4061ae257658a72295df18937c1def464cb8deecd152b"
+    },
+    {
+      "file": "navigateur/museau-club-mobile.png",
+      "bytes": 1685417,
+      "sha256": "5d53bdcef8d99445bf8c559112b941903c724be492694a2be17eefde18f20b04"
+    },
+    {
+      "file": "navigateur/museau-club-ordinateur-premier-ecran.png",
+      "bytes": 1296045,
+      "sha256": "0fd3d44f24dddef411370b612dd3f5ce955f2eb10ace1960fa55416538c4eedc"
+    },
+    {
+      "file": "navigateur/museau-club-ordinateur.png",
+      "bytes": 4784692,
+      "sha256": "48f1aa2247f896dabf4f198905f9e16f9af95453c48b3fa75eb2ef5e236eae5a"
+    },
+    {
+      "file": "navigateur/noctil-mobile-premier-ecran.png",
+      "bytes": 340460,
+      "sha256": "14020f2a01606da2af750e7806431d9dd2c09c7bd18976a15faf018e895fbb50"
+    },
+    {
+      "file": "navigateur/noctil-mobile.png",
+      "bytes": 1211254,
+      "sha256": "ace8f0f18fdcb982b1430bf9686e0001d4712bbe5fc94103f9487f883c713df7"
+    },
+    {
+      "file": "navigateur/noctil-ordinateur-premier-ecran.png",
+      "bytes": 1215621,
+      "sha256": "6399ffe4bf38ecafcc786e2cf765dfc09c38ff32b995fb5c748ee3d996c89806"
+    },
+    {
+      "file": "navigateur/noctil-ordinateur.png",
+      "bytes": 4181615,
+      "sha256": "292dcd17be87e9c6415901d55ed386f67b08ea1fd4777f87c41e6cf525afa36d"
+    },
+    {
+      "file": "navigateur/onde-mobile-premier-ecran.png",
+      "bytes": 38641,
+      "sha256": "37f291f8c59c3bc501cf5e932975ef26825c0d06ad6b1ae243db0b2ebd639f12"
+    },
+    {
+      "file": "navigateur/onde-mobile.png",
+      "bytes": 227918,
+      "sha256": "ced73cad9640ab9a42f22f80b03ccad15095dbc7a06c5be133fa6a2224a04503"
+    },
+    {
+      "file": "navigateur/onde-ordinateur-premier-ecran.png",
+      "bytes": 80484,
+      "sha256": "5edf70b0142c087adec1b72ecea85059a0ddcca9c7a76d99ba9994dcc2008739"
+    },
+    {
+      "file": "navigateur/onde-ordinateur.png",
+      "bytes": 318444,
+      "sha256": "ba81e38ec53d05929f150e22fbe0a61d5b58ed27664e9bf592ece2002f257e1e"
+    },
+    {
+      "file": "navigateur/parcours-studio-apercus.webm",
+      "bytes": 9760043,
+      "sha256": "5ab75cd4dea6e81b98cb021bdc5d9e58ed09339d0fa3c897953736ed39096278"
+    },
+    {
+      "file": "navigateur/parenthese-mobile-premier-ecran.png",
+      "bytes": 406426,
+      "sha256": "ac49fcd61e4429ae9883f8a04af1907e4035b6e7d1ae9b5bca81fb55eac5e2c6"
+    },
+    {
+      "file": "navigateur/parenthese-mobile.png",
+      "bytes": 854978,
+      "sha256": "101572971f04eccbe39b4df79e9b9a58438f799a16bddb7588c1543f1b3514dc"
+    },
+    {
+      "file": "navigateur/parenthese-ordinateur-premier-ecran.png",
+      "bytes": 1594405,
+      "sha256": "76de3324f7e4a83f2ade6a9d2bf1844790b6edc900edaf9d2caf8c400f736cae"
+    },
+    {
+      "file": "navigateur/parenthese-ordinateur.png",
+      "bytes": 3441833,
+      "sha256": "cc536ea460baa7bbf1155ac479f11368da45efb6dda9b095bd9dfb275ad69284"
+    },
+    {
+      "file": "navigateur/phase-mobile-premier-ecran.png",
+      "bytes": 43953,
+      "sha256": "851f92d8243eaf8f41d37c55b732283bdef48769a8c0bb827ed89b22bdf2943f"
+    },
+    {
+      "file": "navigateur/phase-mobile.png",
+      "bytes": 216927,
+      "sha256": "9067c527c031ffe3250bf13d471b1db8e836c0f8c7f190d4297142342f5e110b"
+    },
+    {
+      "file": "navigateur/phase-ordinateur-premier-ecran.png",
+      "bytes": 92589,
+      "sha256": "aab042e2250ced33b232b8c54deb5a0109e4fafa265dedc3eeebb9bb5ba7541c"
+    },
+    {
+      "file": "navigateur/phase-ordinateur.png",
+      "bytes": 378757,
+      "sha256": "d4f6e19fbae876e243c8c81d7cc8d8837955c2ccf152500c00b4f0c9faa67ec5"
+    },
+    {
+      "file": "navigateur/planches/01-accueils.png",
+      "bytes": 1088832,
+      "sha256": "1bfc5d2114d69d687f58fd78133e6be31a80b58cd40f2dc1b69e0d5aefb4ca7c"
+    },
+    {
+      "file": "navigateur/planches/02-accueils.png",
+      "bytes": 2851405,
+      "sha256": "3662f03327a626152dd9fa916547d0a1f87571f08cff42299c8dd8ee8653ab80"
+    },
+    {
+      "file": "navigateur/planches/03-accueils.png",
+      "bytes": 2507752,
+      "sha256": "17a099a046d1f6fdfa803066a8bab46eea23ecdec25bd298f4c26504afa12ce9"
+    },
+    {
+      "file": "navigateur/planches/04-accueils.png",
+      "bytes": 2810683,
+      "sha256": "b6e1718f1f66458393e62fafa722fcbe69d3b4d55b3ec5c416f7e0f42a23bfa2"
+    },
+    {
+      "file": "navigateur/planches/05-accueils.png",
+      "bytes": 491695,
+      "sha256": "5744a65630c2f335018204c55370bd021a8458ce3efa328bc088feb3634d9a03"
+    },
+    {
+      "file": "navigateur/resultat.json",
+      "bytes": 48429,
+      "sha256": "60cb8b2fdfc6d749d2bd910cbebb44db6dd72d3c43b95e0413f2a234a23ff79d"
+    },
+    {
+      "file": "navigateur/rive-mobile-premier-ecran.png",
+      "bytes": 361513,
+      "sha256": "ac0c97ea6c2b83d39a1c27b07bce28c45471c1600ca6da6dfbc0e2914b0a73d7"
+    },
+    {
+      "file": "navigateur/rive-mobile.png",
+      "bytes": 1121626,
+      "sha256": "7f57f3b374dcb3f9d00ec840b52e87567e33124b8f645a582854a3a60f98475a"
+    },
+    {
+      "file": "navigateur/rive-ordinateur-premier-ecran.png",
+      "bytes": 1172867,
+      "sha256": "92ec275d1651d916c18b3fd5796f7f1d1b4f6592943e46b9904126b9e789341c"
+    },
+    {
+      "file": "navigateur/rive-ordinateur.png",
+      "bytes": 3398066,
+      "sha256": "1eceb8d01021490e8a14a83e44655e7510bcfe040c18179eac1ed2ca96bad864"
+    },
+    {
+      "file": "navigateur/sillon-mobile-premier-ecran.png",
+      "bytes": 359236,
+      "sha256": "8513868c604b705edb5c3f47f704d0ef7580507aaf5fcb0c64e42cab65bc32ae"
+    },
+    {
+      "file": "navigateur/sillon-mobile.png",
+      "bytes": 1371917,
+      "sha256": "fa775c990a6f215be8310be33de6f85bb82d5cb39834a725c147948393db5392"
+    },
+    {
+      "file": "navigateur/sillon-ordinateur-premier-ecran.png",
+      "bytes": 1298626,
+      "sha256": "3fbeb8e61fc72bbcff9c2327a0d1ed758454b6732044e30f1aaa96897c16fd58"
+    },
+    {
+      "file": "navigateur/sillon-ordinateur.png",
+      "bytes": 2494953,
+      "sha256": "e6ca7abb24c0960b98e8fb462562f1b1e9e58ca260b15375f58fafdbd111abcb"
+    },
+    {
+      "file": "navigateur/souple-mobile-premier-ecran.png",
+      "bytes": 259312,
+      "sha256": "58acc78bfa1a7156d33b77ed32cd2ea825f427b7f84382922d75a1c1259481d3"
+    },
+    {
+      "file": "navigateur/souple-mobile.png",
+      "bytes": 1204339,
+      "sha256": "4e48ca4b68c2a7b1bf79dc62c8ca518aee725c87e33994ec6a39a892109dbff6"
+    },
+    {
+      "file": "navigateur/souple-ordinateur-premier-ecran.png",
+      "bytes": 1320828,
+      "sha256": "d6a3d52e0915dfdcc3132dfb699cacd1479747c330e130fe5699be89f9de651f"
+    },
+    {
+      "file": "navigateur/souple-ordinateur.png",
+      "bytes": 4569978,
+      "sha256": "5166d8181145f9c966f2557f41f5f433863faa7df7695276aeca4972acb291f8"
+    },
+    {
+      "file": "navigateur/table-saison-mobile-premier-ecran.png",
+      "bytes": 230017,
+      "sha256": "bdc649981c3056d156f3dad91f0754454b085298b3fe7b5e04b2f5d0bd7002a1"
+    },
+    {
+      "file": "navigateur/table-saison-mobile.png",
+      "bytes": 1827097,
+      "sha256": "b1f752c4719b9268a9f4a1c4b223f4b66d9dd503a147c3db47f814d30f7cd5b9"
+    },
+    {
+      "file": "navigateur/table-saison-ordinateur-premier-ecran.png",
+      "bytes": 1542640,
+      "sha256": "dac96bae3cec532e555887b5a808538eac08e572883e6b9869da2b77a8fecb86"
+    },
+    {
+      "file": "navigateur/table-saison-ordinateur.png",
+      "bytes": 4470627,
+      "sha256": "6b9792171eb4ceda6d09a7d19d78f4ae45187ac4907ed36e7f41c11865537eaa"
+    },
+    {
+      "file": "navigateur/traverse-mobile-premier-ecran.png",
+      "bytes": 387490,
+      "sha256": "5bdfbda539bebd220d90f9acc8b67c9f561f83e35a10e1b1b20ecf3148d47e78"
+    },
+    {
+      "file": "navigateur/traverse-mobile.png",
+      "bytes": 975836,
+      "sha256": "dbfa80ed81c46b1f92769be695295b4c7ac3dda15711b5000144488f49fe0ccd"
+    },
+    {
+      "file": "navigateur/traverse-ordinateur-premier-ecran.png",
+      "bytes": 1689992,
+      "sha256": "189dfb7382bb8148051786afed82594cc0fbd33871b06e59967c040abc8770df"
+    },
+    {
+      "file": "navigateur/traverse-ordinateur.png",
+      "bytes": 3800521,
+      "sha256": "d84a0894378f4003cf2736868da2ecc4a3d300cde9eb95ec5303368b22c85433"
     },
     {
       "file": "probe-modification-client.txt",
