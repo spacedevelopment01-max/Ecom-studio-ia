@@ -1,0 +1,72 @@
+{%- comment -%}
+  FRAISE : les formats du même produit (planches 01, 02, 04, 05) — une carte par lot : photo de la bonne quantité, badge
+  d'offre et « Meilleure offre » calculés, prix TOTAL du lot en grand, comparaison barrée annoncée, prix par unité en
+  secondaire, économie, ajout direct du BON lot au panier. Dispositions : accueil (titre à gauche, trois cartes),
+  boutique (grandes cartes), réduite (fiche) ; au téléphone : lignes horizontales (accueil) ou cartes empilées.
+  Chaque bloc choisit le format (rang de la variante) et sa photo ; prix et calculs viennent des variantes du produit.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = all_products[s.product]
+  if p == blank
+    assign p = collections.all.products.first
+  endif
+-%}
+<section class="fg fg-offers fg-offers--{{ s.layout }}" aria-labelledby="fg-offers-t-{{ section.id }}" id="formats">
+  <div class="fg-c">
+    <span class="fg-offers__deco" aria-hidden="true">{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch' %}{% render 'fg-art', name: 'petals', class: 'fg-offers__petals' %}{% render 'fg-art', name: 'leaf-branch', class: 'fg-offers__branch2' %}{% render 'fg-art', name: 'sprigs', class: 'fg-offers__sprigs' %}</span>
+    <div class="fg-offers__head">
+      {%- assign tid = 'fg-offers-t-' | append: section.id -%}
+      {% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-offers__title', id: tid %}
+      {%- if s.heading_mobile != blank -%}{% render 'fg-title', text: s.heading_mobile, tag: 'p', class: 'fg-offers__title fg-offers__title--m' %}{%- endif -%}
+      {%- if s.text != blank -%}<div class="fg-offers__lead">{{ s.text }}</div>{%- endif -%}
+    </div>
+    {%- if p != blank -%}
+      <div class="fg-offers__grid">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign idx = block.settings.variant_index | minus: 1
+            assign v = p.variants[idx]
+          -%}
+          {%- if v -%}
+            <div class="fg-offers__cell fg-offers__cell--{{ forloop.index }}" {{ block.shopify_attributes }}>
+              {% render 'fg-offer', product: p, variant: v, mode: 'card', image: block.settings.image, image_asset: block.settings.image_asset, alt: block.settings.alt, show_compare: s.show_compare, show_last: s.show_last, show_per: s.show_per, show_save: s.show_save, button: s.button_label, button_icon: s.button_icon, index: forloop.index %}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+      {%- if s.show_note and settings.offer_note != blank -%}<p class="fg-offers__note">{{ settings.offer_note }}</p>{%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Formats et offres",
+  "class": "fg-offers-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil : titre à gauche, trois cartes" }, { "value": "shop", "label": "Boutique : grandes cartes" }, { "value": "compact", "label": "Réduite (fiche du produit)" }] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Choisissez\n[i]votre format.[/i]", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone", "info": "Vide : le titre ci-dessus." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "checkbox", "id": "show_compare", "label": "Prix des mêmes unités à l'unité (barré)", "default": true },
+    { "type": "checkbox", "id": "show_last", "label": "Prix de la dernière unité", "default": true },
+    { "type": "select", "id": "show_per", "label": "Prix par unité", "default": "all", "options": [{ "value": "all", "label": "Sur chaque format" }, { "value": "no_last", "label": "Sauf quand le prix de la dernière unité est affiché" }, { "value": "none", "label": "Jamais" }] },
+    { "type": "checkbox", "id": "show_save", "label": "Économie", "default": true },
+    { "type": "checkbox", "id": "show_note", "label": "Note sous les offres", "default": true },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Ajouter au panier" },
+    { "type": "checkbox", "id": "button_icon", "label": "Pictogramme du panier dans le bouton", "default": false }
+  ],
+  "blocks": [
+    { "type": "offer", "name": "Format", "settings": [
+      { "type": "range", "id": "variant_index", "label": "Variante (rang)", "min": 1, "max": 6, "step": 1, "default": 1 },
+      { "type": "image_picker", "id": "image", "label": "Photo de la quantité (détourée)" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "alt", "label": "Description de la photo" }
+    ] }
+  ],
+  "presets": [{ "name": "Formats et offres" }]
+}
+{% endschema %}

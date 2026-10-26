@@ -1,7 +1,6 @@
 /**
  * Outils du Video Engine V2 : rédaction du script (IA), contrôle des plans et de la vidéo (IA de vision), images
- * (Image Engine V2), génération des plans (Router V2 → Veo / fal.ai, avec leurs barrières de coût), voix (aucun
- * fournisseur de synthèse vocale dans le studio aujourd'hui : null, dit clairement), inventaire de la bibliothèque.
+ * (Image Engine V2), génération des plans (Router V2 → Veo / fal.ai, avec leurs barrières de coût), voix OpenAI choisie explicitement (Kokoro historique conservé), inventaire de la bibliothèque.
  * Injectables : le studio et le benchmark utilisent `realVideoDeps` ; les tests, des outils simulés (aucun appel).
  */
 import { skillReference } from "../ai/skills";
@@ -13,7 +12,7 @@ import { tmpDir,storagePath } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
-import { aiClip,wanTextClip } from "../ai/media-providers";
+import { aiClip,wanTextClip,higgsfieldClip } from "../ai/media-providers";
 import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
 import { all, json,run } from "../db";
 import type { JobContext } from "../jobs";
@@ -30,6 +29,7 @@ import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewS
 import type { Inventory } from "./storyboard";
 import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
 import { projectVoice, voiceAvailable, synthLine } from "./voice";
+import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { loadCreativeMemory } from "./creative-memory";
 import type { ShotReview, VideoReview } from "./types";
 
@@ -49,7 +49,7 @@ export type VideoV2Deps = {
   generateClip: (req: ClipRequest, key: string) => Promise<Buffer>;
   /** Voix off : null quand aucun fournisseur de synthèse vocale n'est configuré (cas actuel du studio). */
   voiceId?:string|null;
-  voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string }>);
+  voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string; assetId?:string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
   /** Modèle préféré selon l'usage du plan (vidéo produit, ou UGC quand une personne est à l'image). */
@@ -134,15 +134,15 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
-      if(!req.image){if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
-      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      if(!req.image){if(req.provider==='higgsfield'&&!req.people)return higgsfieldClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:'text_video'});if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
+      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba" || req.provider === "higgsfield") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
-    // Aucun fournisseur de synthèse vocale branché dans le studio (vérifié) : la voix reste à enregistrer ou à
-    // brancher (phase 7B) ; le message passe par les sous-titres et le texte à l'écran.
-    voiceId: chosenVoice ? `kokoro:${chosenVoice}` : null,
+    // Choix explicite uniquement : nouveaux timbres OpenAI ou synthèse locale historique.
+    voiceId: chosenVoice ? isOpenAIVoice(chosenVoice) ? chosenVoice : `kokoro:${chosenVoice}` : null,
     voice: chosenVoice ? async(text,_id,key)=>{
-      if(!voiceAvailable()) throw new Error("Voix du projet non installée ; aucun rendu sans la voix demandée.");
+      if(!voiceAvailable(chosenVoice)) throw new Error("Voix du projet indisponible ; aucun rendu sans la voix demandée.");
+      if(isOpenAIVoice(chosenVoice)){const asset=await acquiredVoice(base,text,{voice:chosenVoice,lang:p.settings?.language==="en"?"en":"fr",speed:1});return {data:assetData(asset),mime:"audio/wav",assetId:asset.id};}
       const voice=chosenVoice;
       const dir=tmpDir("voice-v2");
       try {const out=path.join(dir,"voice.wav");await synthLine(text,out,{voice,lang:p.settings?.language==="en"?"en":"fr",speed:1});return {data:fs.readFileSync(out),mime:"audio/wav"};}

@@ -1,0 +1,150 @@
+{
+  "schema": "lot9-verifications-1",
+  "capturedAt": "2026-10-23T17:02:48.059817+00:00",
+  "codeCommit": "c67d0656c577381fcd50d36f25b5dba684969a00",
+  "baseCommit": "46738852498ea24092be9dae639930438bcdba6d",
+  "branch": "codex/171-securite-comptes-donnees",
+  "node": "v24.19.0",
+  "realProviderCalls": 0,
+  "realSpendEur": 0,
+  "realPayments": 0,
+  "externalEmailDelivery": false,
+  "merged": false,
+  "deployed": false,
+  "tests": {
+    "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=4",
+    "exitCode": 0,
+    "filesPassed": 363,
+    "testsPassed": 2993,
+    "testsSkipped": 22,
+    "testsTotal": 3015,
+    "durationSeconds": 870.06,
+    "source": "tests-complets.log",
+    "network": "NODE_OPTIONS appends scripts/lot9/network-guard.mjs; no external TCP; HTTP/DNS doubles local only",
+    "workers": 4,
+    "heapLimitMbPerNode": 1536,
+    "skippedGroups": [
+      {
+        "count": 11,
+        "reason": "PHP interpreter unavailable locally",
+        "files": [
+          "tests/calendrier-reservation.test.ts",
+          "tests/cms-v2.test.ts",
+          "tests/lot2a-php-export.test.ts"
+        ]
+      },
+      {
+        "count": 9,
+        "reason": "private ONDE kit unavailable",
+        "files": [
+          "tests/onde.test.ts"
+        ]
+      },
+      {
+        "count": 2,
+        "reason": "legacy film checks explicitly skipped in existing source",
+        "files": [
+          "tests/films-accueil.test.ts"
+        ]
+      }
+    ]
+  },
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit",
+    "exitCode": 0,
+    "source": "types.log"
+  },
+  "build": {
+    "command": "node node_modules/next/dist/bin/next build",
+    "exitCode": 0,
+    "source": "build.log",
+    "isolatedData": true,
+    "ephemeralTestSecretNotExported": true,
+    "heapLimitMbPerNode": 2048
+  },
+  "themeCheck": {
+    "command": "JOBS=2 scripts/verify-theme.sh --rapide",
+    "exitCode": 0,
+    "casesPassed": 25,
+    "errors": 0,
+    "warningsPresent": true,
+    "source": "theme-check.log",
+    "allThirtyDirectionsLocal": false
+  },
+  "browser": {
+    "command": "node --import tsx scripts/lot9/studio-proof.mts",
+    "exitCode": 0,
+    "productionLocal": true,
+    "source": "parcours.json",
+    "screenshots": 20,
+    "checks": 15,
+    "realCodespaceVerified": false,
+    "latestClaude167Integrated": false
+  },
+  "sensitiveContent": {
+    "command": "node --import tsx scripts/lot9/sensitive-copy-proof.mts (network guard active)",
+    "exitCode": 0,
+    "projects": 3,
+    "renderedPages": 22,
+    "source": "separation-contenus.json"
+  },
+  "dependencyAudit": {
+    "command": "npm_config_cache=/tmp/lot9-audit-cache npm audit --json",
+    "exitCode": 0,
+    "knownAdvisories": 0,
+    "scope": "dependency lock; package-lock SHA-256 supplied",
+    "lockSha256": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf"
+  },
+  "beforeAfter": {
+    "boundaryCasesBefore": {
+      "commit": "46738852498ea24092be9dae639930438bcdba6d",
+      "expectedFailures": 10,
+      "exitCode": 1,
+      "method": "same boundary test copied to isolated baseline checkout, removing only the unavailable new download-double mock; file removed afterwards"
+    },
+    "mediaBindingBefore": {
+      "commit": "9515bcabe3351ca19942950328b531b4d16579b7",
+      "expectedFailures": 1,
+      "otherCasesPassed": 16,
+      "exitCode": 1
+    },
+    "imageTransportBefore": {
+      "codeCommit": "b981b4169e511faa1bacfe04cb598e86f973df93",
+      "nativeBrowserFailed": true,
+      "cause": "overlapping resource replacement left width query after data URI"
+    },
+    "standaloneCartBefore": {
+      "codeCommit": "f1fbdf25ea81b26458560413a9a8cf8b2a39ab16",
+      "nativeBrowserFailed": true,
+      "cause": "credentialed CORS response missing for valid signed standalone preview"
+    }
+  },
+  "intermediateRuns": [
+    "Early whole-suite diagnostic runs had failing old MIME/video fixtures and stricter-preview expectations; corrected without removing negative scenarios.",
+    "Incomplete concurrent runs affected by memory pressure were stopped and excluded from validation.",
+    "A 1536 MB build heap failed TypeScript; final build passed separately with 2048 MB.",
+    "Dev browser HMR/routing and fixture-init storage errors are excluded; final browser is production and has zero page errors."
+  ],
+  "ci": {
+    "location": "pull request Checks and final delivery comment",
+    "policy": "inspect actual final delivery head; no result presumed before its completion",
+    "providerNetworkGuardEnabled": true
+  },
+  "limitations": [
+    "No real provider authentication, generation, quality or invoice verification.",
+    "No production data, real account erasure, real payment, external SMTP, CMS installation, merge or deployment.",
+    "Automatic personal-data export is partial; real erasure disabled pending retention decisions.",
+    "Backup/provider erasure and crash/restore retention unverified; contracts/regions/licenses not certified.",
+    "Current Claude themes and Maison & Horizon require integration tests; fixtures here preserve the base compositions.",
+    "Full local screenshots are actual browser pixels; no creative-quality or legal certification."
+  ],
+  "secretScan": {
+    "command": "node scripts/lot9/scan-secrets.mjs",
+    "exitCode": 0,
+    "files": 3471,
+    "missingFiles": 0,
+    "source": "scan-secrets.json",
+    "valuesPrinted": false,
+    "unresolvedRealSecrets": 0
+  }
+}

@@ -3,7 +3,7 @@
  * chacun avec UNE phrase qui dit à quoi il sert, et les outils avancés (prompts, fichiers, connexions) rangés à part,
  * repliés tant qu'on ne s'en sert pas. Toutes les fonctions restent accessibles : rien n'est supprimé, seulement rangé.
  */
-export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
+export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
 export type SpaceGroup = "projet" | "creer" | "diffuser" | "avance";
 type Business = "products" | "services" | undefined;
 type T2 = [fr: string, en: string];
@@ -21,6 +21,9 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
   { id: "strategie", group: "creer", purpose: ["Comparer les cinq angles et choisir la stratégie commune au projet.", "Compare five angles and choose the strategy shared across the project."] },
   { id: "marque", group: "creer", purpose: ["Nom, logo, couleurs et polices : l'identité de toute la marque.", "Name, logo, colours and fonts: the identity of the whole brand."] },
   { id: "boutique", group: "creer", purpose: ["Votre boutique en ligne : aperçu, retouches et mise en ligne.", "Your online store: preview, edits and going live."], purposeServices: ["Votre site : aperçu, retouches et mise en ligne.", "Your website: preview, edits and going live."] },
+  { id: "catalogue", group: "creer", purpose: ["Vos produits : photos, prix, variantes, références et stock, saisis une fois ; la boutique, les exports et vos boutiques connectées s'en servent.", "Your products: photos, prices, variants, SKUs and stock, entered once; the store, the exports and your connected stores use them."] },
+  { id: "biens", group: "creer", purpose: ["Vos biens à vendre et à louer : une fiche par bien, ses photos, sa publication. Le site les affiche tout seul.", "Your properties for sale and rent: one listing each, its photos, its publication. The website shows them by itself."] },
+  { id: "rendez-vous", group: "creer", purpose: ["Vos prestations, horaires, intervenants et réservations : tout le planning du site au même endroit.", "Your services, hours, staff and bookings: the whole website schedule in one place."] },
   { id: "images", group: "creer", purpose: ["Votre banque d'images, sans texte : vos photos, photos libres et images créées.", "Your image bank, no text: your photos, royalty-free photos and created images."] },
   { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },
   { id: "publications", group: "diffuser", purpose: ["Stratégie, création, calendrier et validation de vos publications : rien ne part sans votre accord.", "Strategy, creation, calendar and approval of your posts: nothing goes out without your approval."] },

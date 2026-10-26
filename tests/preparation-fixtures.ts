@@ -186,10 +186,11 @@ export const simulatedDependencies: Dependencies = {
           platform: null,
         }) as any,
     );
-    return {
-      ...r,
-      sources: r.sources.map((s) => ({ ...s, provenance: "simulation" })),
-    };
+    // The collector intentionally supplies NO angles. The injected AI response is explicit test data.
+    const keys=['usage','transparence','accompagnement','adequation','continuite'];
+    const audiences=['Cyclistes urbains transportant outils et vêtements','Acheteurs méthodiques comparant informations garanties conditions','Débutants curieux cherchant conseils vocabulaire orientation','Passionnés décoration harmonisant textures ambiances couleurs','Voyageurs anticipant entretien stockage habitudes saisonnières'];
+    const motivations=['Organiser le trajet domicile bureau avec affaires choisies','Examiner les caractéristiques documentées pour évaluer les différences','Apprendre les premiers gestes sans connaissances préalables','Composer des associations personnelles adaptées à son intérieur','Prévoir le rangement après utilisation pendant les périodes inactives'];
+    return {...r,angles:keys.map((id,i)=>({id,title:`Approche simulée ${id}`,audience:audiences[i],positioning:motivations[i],motivation:motivations[i],message:audiences[i],arguments:[],objections:[{objection:audiences[i],answer:'Réponse du double uniquement'}],reason:'Double de test uniquement',sourceIds:r.sources.filter(s=>s.status==='consulted').map(s=>s.id),hypothesis:true})),recommendedId:'usage',recommendation:'Maquette — non issue d’une recherche réelle',sources:r.sources.map(s=>({...s,provenance:'simulation' as const}))};
   },
   async contents(p, _ctx, _paid, options) {
     const plan = sitePlan(p);

@@ -1,0 +1,88 @@
+{%- comment -%}
+  Simulation avant/après d'APLAT : deux photos de la même pièce, même point de vue, superposées ; le curseur se déplace
+  au pointeur, au toucher et au clavier (curseur natif, flèches). Étiquette « Simulation avant/après » conservée,
+  caractère illustratif rappelé. Dispositions : side (titre à gauche, accueil), top (titre au-dessus, peinture, détail).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ap-s ap-compare ap-compare--{{ s.layout }}{% if s.desktop_span != blank and s.desktop_span != '12' %} ap-span ap-span-{{ s.desktop_span }}{% endif %}{% if s.mobile_order > 0 %} ap-mo ap-mo-{{ s.mobile_order }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}" aria-labelledby="ApV-{{ section.id }}">
+  <div class="ap-compare__inner ap-wrap">
+    <header class="ap-compare__head">
+      {%- if s.eyebrow != blank -%}<p class="ap-eyebrow ap-only-d">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      <h2 class="ap-compare__title{% if s.mobile_eyebrow != blank %} ap-compare__title--m-eyebrow{% endif %}" id="ApV-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_eyebrow, title: true -%}</h2>
+      {%- if s.text != blank -%}<p class="ap-compare__text{% if s.mobile_eyebrow != blank %} ap-only-d{% endif %}">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+    </header>
+    <div class="ap-compare__frame" data-ap-compare style="--ap-pos:{{ s.start }}%;">
+      <div class="ap-compare__after">{%- render 'ap-img', img: s.after, asset: s.after_asset, alt: s.after_alt, fx: s.focus_x, fy: s.focus_y, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, width: 1600 -%}</div>
+      <div class="ap-compare__before">{%- render 'ap-img', img: s.before, asset: s.before_asset, alt: s.before_alt, fx: s.focus_x, fy: s.focus_y, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, width: 1600 -%}</div>
+      <span class="ap-compare__line" aria-hidden="true"></span>
+      <span class="ap-compare__handle" aria-hidden="true">{% render 'ap-icon', name: 'swap' %}</span>
+      {%- if s.before_label != blank -%}<span class="ap-compare__tag ap-compare__tag--before" aria-hidden="true">{{ s.before_label | escape }}</span>{%- endif -%}
+      {%- if s.after_label != blank -%}<span class="ap-compare__tag ap-compare__tag--after" aria-hidden="true">{{ s.after_label | escape }}</span>{%- endif -%}
+      <input class="ap-compare__range" type="range" min="0" max="100" step="1" value="{{ s.start }}" aria-label="{{ s.range_label | escape }}">
+    </div>
+    {%- if s.before_note != blank or s.after_note != blank -%}
+      <div class="ap-compare__notes" aria-hidden="true">
+        <p><strong>{{ s.before_label | escape }}</strong>{{ s.before_note | escape }}</p>
+        <p><strong>{{ s.after_label | escape }}</strong>{{ s.after_note | escape }}</p>
+      </div>
+    {%- endif -%}
+    {%- if s.note != blank -%}<p class="ap-compare__note">{{ s.note | escape }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Avant/après APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition", "default": "side",
+      "options": [ { "value": "side", "label": "Titre à gauche" }, { "value": "top", "label": "Titre au-dessus" } ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    {
+      "type": "select", "id": "desktop_span", "label": "Largeur sur ordinateur", "default": "12",
+      "options": [
+        { "value": "12", "label": "Pleine largeur" },
+        { "value": "8", "label": "Deux tiers" },
+        { "value": "7", "label": "Un peu plus de la moitié" },
+        { "value": "6", "label": "Moitié" },
+        { "value": "6r2", "label": "Moitié, sur deux rangées" },
+        { "value": "5", "label": "Un peu moins de la moitié" },
+        { "value": "4", "label": "Un tiers" }
+      ]
+    },
+    { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 5, "step": 1, "default": 0 },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "mobile_eyebrow", "label": "Titre sur téléphone (en surtitre)" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Simulation avant/après" },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "before", "label": "Photo « avant »" },
+    { "type": "text", "id": "before_asset", "label": "Photo « avant » (fichier du thème)" },
+    { "type": "text", "id": "before_alt", "label": "Photo « avant » : texte alternatif" },
+    { "type": "image_picker", "id": "after", "label": "Photo « après »" },
+    { "type": "text", "id": "after_asset", "label": "Photo « après » (fichier du thème)" },
+    { "type": "text", "id": "after_alt", "label": "Photo « après » : texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal (les deux photos)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical (les deux photos)", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "start", "label": "Position de départ du curseur", "min": 5, "max": 95, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "before_label", "label": "Étiquette « avant »", "default": "Avant" },
+    { "type": "text", "id": "after_label", "label": "Étiquette « après »", "default": "Après" },
+    { "type": "text", "id": "before_note", "label": "Précision « avant » (sous la photo)" },
+    { "type": "text", "id": "after_note", "label": "Précision « après » (sous la photo)" },
+    { "type": "text", "id": "note", "label": "Mention sous le comparateur" },
+    { "type": "text", "id": "range_label", "label": "Curseur (lecteurs d'écran)", "default": "Comparer avant et après : faites glisser ou utilisez les flèches" }
+  ],
+  "presets": [ { "name": "Avant/après APLAT" } ]
+}
+{% endschema %}

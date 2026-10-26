@@ -1,0 +1,97 @@
+{%- comment -%}
+  Confirmation de demande d'APLAT (planches 04 et 09) : grand cercle et coche, titre, sous-titre, texte, récapitulatif
+  des informations saisies (repris du formulaire dans ce navigateur), boutons, « Et maintenant ? » et photo.
+  Statut honnête : en démonstration, la page dit qu'aucune demande n'a été envoyée ; sur le site publié, le texte de
+  réception ne s'affiche qu'après un envoi réussi depuis ce navigateur (sinon le texte « aucune demande récente »).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign rows = section.blocks | where: 'type', 'row'
+-%}
+<section class="ap-s ap-confirm" aria-labelledby="ApCf-{{ section.id }}" data-ap-confirm{% if shop.es_demo %} data-demo{% endif %}>
+  {%- if s.texture != blank or s.texture_asset != blank -%}{%- render 'ap-img', img: s.texture, asset: s.texture_asset, alt: '', cls: 'ap-confirm__texture', width: 1600 -%}{%- endif -%}
+  <div class="ap-confirm__inner ap-wrap">
+    <span class="ap-confirm__check" aria-hidden="true">{% render 'ap-icon', name: 'check' %}</span>
+    <h1 class="ap-confirm__title" id="ApCf-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading -%}</h1>
+    {%- if s.subtitle != blank -%}<p class="ap-confirm__sub ap-only-d">{{ s.subtitle | escape }}</p>{%- endif -%}
+    <span class="ap-rule ap-only-d" aria-hidden="true"></span>
+    {%- if shop.es_demo -%}
+      <p class="ap-confirm__text ap-confirm__demo" role="status">{{ s.demo_text | escape | newline_to_br }}</p>
+    {%- else -%}
+      <p class="ap-confirm__text" data-ap-confirm-ok hidden>{{ s.text | escape | newline_to_br }}</p>
+      <p class="ap-confirm__text" data-ap-confirm-none>{{ s.none_text | escape | newline_to_br }}</p>
+    {%- endif -%}
+    {%- if s.mobile_text != blank -%}<p class="ap-confirm__mtext ap-only-m">{{ s.mobile_text | escape | newline_to_br }}</p>{%- endif -%}
+    <div class="ap-confirm__card">
+      <span class="ap-confirm__card-icon ap-only-m" aria-hidden="true">{% render 'ap-icon', name: 'doc' %}</span>
+      <h2 class="ap-confirm__card-title">{%- render 'ap-dm', d: s.recap_title, m: s.mobile_recap_title -%}</h2>
+      {%- if s.mobile_recap_text != blank -%}<p class="ap-confirm__card-text ap-only-m">{{ s.mobile_recap_text | escape | newline_to_br }}</p>{%- endif -%}
+      <dl class="ap-confirm__rows ap-only-d">
+        {%- for b in rows -%}
+          <div {{ b.shopify_attributes }}>
+            <dt><span class="ap-confirm__icon" aria-hidden="true">{% render 'ap-icon', name: b.settings.icon %}</span>{{ b.settings.label | escape }}</dt>
+            <dd data-ap-sum-out="{{ b.settings.key }}" data-template="{{ b.settings.template | escape }}">{{ b.settings.empty | escape | newline_to_br }}</dd>
+          </div>
+        {%- endfor -%}
+      </dl>
+      <div class="ap-confirm__actions">
+        {%- if s.button_label != blank -%}<a class="ap-btn ap-btn--outline" href="{{ s.button_link | default: routes.root_url }}">{{ s.button_label | escape }}<span class="ap-only-m">{% render 'ap-icon', name: 'arrow' %}</span></a>{%- endif -%}
+        {%- if s.button2_label != blank -%}<a class="ap-btn ap-btn--petrol" href="{{ s.button2_link | default: routes.root_url }}">{{ s.button2_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+      </div>
+    </div>
+  </div>
+  {%- if s.next_title != blank -%}
+    <div class="ap-confirm__next ap-wrap ap-only-d">
+      <div><h2 class="ap-confirm__next-title">{{ s.next_title | escape }}</h2>{%- if s.next_text != blank -%}<p>{{ s.next_text | escape | newline_to_br }}</p>{%- endif -%}</div>
+      {%- render 'ap-img', img: s.next_image, asset: s.next_image_asset, alt: '', fx: s.next_focus_x, fy: s.next_focus_y, cls: 'ap-confirm__next-img', width: 1000 -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Confirmation APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "image_picker", "id": "texture", "label": "Matière d'enduit (fond)" },
+    { "type": "text", "id": "texture_asset", "label": "Matière d'enduit (fichier du thème)" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Merci pour votre demande." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    { "type": "text", "id": "subtitle", "label": "Sous-titre" },
+    { "type": "textarea", "id": "text", "label": "Texte après un envoi réussi" },
+    { "type": "textarea", "id": "none_text", "label": "Texte sans demande récente", "default": "Aucune demande récente n'a été trouvée depuis ce navigateur." },
+    { "type": "textarea", "id": "demo_text", "label": "Texte en démonstration", "default": "Démonstration — demande non envoyée : aucune information n'a été transmise." },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sous le titre (téléphone)" },
+    { "type": "text", "id": "recap_title", "label": "Récapitulatif : titre", "default": "Récapitulatif de votre demande" },
+    { "type": "text", "id": "mobile_recap_title", "label": "Encart téléphone : titre" },
+    { "type": "textarea", "id": "mobile_recap_text", "label": "Encart téléphone : texte" },
+    { "type": "text", "id": "button_label", "label": "Bouton 1", "default": "Retour à l'accueil" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton 1" },
+    { "type": "text", "id": "button2_label", "label": "Bouton 2" },
+    { "type": "url", "id": "button2_link", "label": "Lien du bouton 2" },
+    { "type": "text", "id": "next_title", "label": "Et maintenant : titre" },
+    { "type": "textarea", "id": "next_text", "label": "Et maintenant : texte" },
+    { "type": "image_picker", "id": "next_image", "label": "Et maintenant : photo" },
+    { "type": "text", "id": "next_image_asset", "label": "Et maintenant : photo (fichier du thème)" },
+    { "type": "range", "id": "next_focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "next_focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 }
+  ],
+  "blocks": [
+    {
+      "type": "row", "name": "Ligne du récapitulatif",
+      "settings": [
+        {
+          "type": "select", "id": "icon", "label": "Icône", "default": "user",
+          "options": [ { "value": "user", "label": "Personne" }, { "value": "pin", "label": "Lieu" }, { "value": "camera", "label": "Photos" }, { "value": "doc", "label": "Document" }, { "value": "clock", "label": "Calendrier" } ]
+        },
+        { "type": "text", "id": "label", "label": "Libellé" },
+        { "type": "text", "id": "key", "label": "Champ repris du formulaire", "info": "Ex. : projet, commune, photos" },
+        { "type": "text", "id": "template", "label": "Modèle (photos)", "info": "[n] est remplacé par le nombre de photos." },
+        { "type": "textarea", "id": "empty", "label": "Texte sans information", "default": "Renseignements du formulaire" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Confirmation APLAT" } ]
+}
+{% endschema %}

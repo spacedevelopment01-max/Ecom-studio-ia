@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Garde-fou budgétaire de l'IA (correctifs post-audit) — aucun appel réel :
  *  - budget = 40 % du prix mensuel HT du forfait (annuel compris), sans enveloppe de création en plus ;

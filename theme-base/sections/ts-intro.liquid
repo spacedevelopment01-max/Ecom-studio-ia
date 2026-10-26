@@ -1,0 +1,31 @@
+{%- comment -%}
+  TABLE SAISON : grand titre de page sur l'ivoire (Galerie, Nous rendre visite, Questions fréquentes, Mentions…),
+  avec lien de retour facultatif.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-intro ts-intro--{{ s.color }}" style="padding-top: {{ s.padding_top }}px; padding-bottom: {{ s.padding_bottom }}px;">
+  <div class="ts-wrap">
+    {%- if s.back_label != blank -%}<a class="ts-intro__back" href="{{ s.back_link | default: '/' }}">{% render 'ts-icon', name: 'arrow-left' %}{{ s.back_label }}</a>{%- endif -%}
+    {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <h1 class="ts-title">{{ s.heading | newline_to_br }}</h1>
+    {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Titre de page",
+  "class": "ts-intro-section",
+  "settings": [
+    { "type": "text", "id": "back_label", "label": "Texte du lien de retour" },
+    { "type": "url", "id": "back_link", "label": "Lien de retour" },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Questions fréquentes" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "select", "id": "color", "label": "Couleur du titre", "default": "ink", "options": [{ "value": "ink", "label": "Encre" }, { "value": "wine", "label": "Bordeaux" }] },
+    { "type": "range", "id": "padding_top", "label": "Marge en haut", "min": 0, "max": 120, "step": 2, "default": 54, "unit": "px" },
+    { "type": "range", "id": "padding_bottom", "label": "Marge en bas", "min": 0, "max": 120, "step": 2, "default": 34, "unit": "px" }
+  ],
+  "presets": [{ "name": "Titre de page" }]
+}
+{% endschema %}

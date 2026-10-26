@@ -1,0 +1,32 @@
+{
+  "code": "/tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/essais-7/travail/code-d97e0b95",
+  "commit": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+  "out": "/tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/essais-7/travail/base-d97e0b95",
+  "inserted": {
+    "users": 4,
+    "projects": 6,
+    "memory": 6,
+    "folders": 6,
+    "assets": 18,
+    "asset_usages": 6,
+    "theme_versions": 12,
+    "chat_messages": 6,
+    "subscriptions": 3,
+    "wallets": 2,
+    "ledger": 6,
+    "quota_usage": 2,
+    "pack_balances": 1,
+    "pack_purchases": 1,
+    "payments": 4,
+    "jobs": 5,
+    "content_plans": 1,
+    "posts": 3,
+    "connections": 1,
+    "project_connections": 1,
+    "blog_articles": 1,
+    "settings": 2,
+    "notifications": 1
+  },
+  "angles": false,
+  "synthetic": true
+}

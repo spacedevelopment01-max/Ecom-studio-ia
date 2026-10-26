@@ -1,0 +1,169 @@
+{
+ "demo": "rive",
+ "origin": "studio Next.js de développement, base temporaire",
+ "steps": [
+  {
+   "step": "forfait « dominer » : fonctions proposées",
+   "ok": true,
+   "offered": [
+    "Présentation de l'activité",
+    "Étude de cas",
+    "Engagements de service",
+    "Qualifications et assurances",
+    "Témoignages clients",
+    "Références professionnelles",
+    "Réalisations",
+    "Avant / après",
+    "Équipe et expertises",
+    "Histoire de l'entreprise",
+    "Questions fréquentes",
+    "Conseils et actualités",
+    "Tarifs et formules",
+    "Contact et prise de rendez-vous",
+    "Prestations proposées",
+    "Détail d'une prestation",
+    "Besoins accompagnés",
+    "Méthode de travail",
+    "Moyens et équipements",
+    "Zone d'intervention et accès",
+    "Article (corps)",
+    "Bandeau d'annonce",
+    "En-tête",
+    "Blog (corps)",
+    "Boutique (corps)",
+    "Boutique fermée (corps)",
+    "Fiche produit (corps)",
+    "Liste des collections (corps)",
+    "Page de contenu (corps)",
+    "Page introuvable (corps)",
+    "Page panier (corps)",
+    "Panier latéral",
+    "Pied de page",
+    "Recherche (corps)"
+   ]
+  },
+  {
+   "step": "galerie : « Présentation de l'activité › banner » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Besoins accompagnés › row » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Réalisations › asym » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Prestations proposées › thumbs » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Prestations proposées › illustrated » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Méthode de travail › columns » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Histoire de l'entreprise › band » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Histoire de l'entreprise › stacked » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Questions fréquentes › side » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Étude de cas › detail » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Contact et prise de rendez-vous › band-split » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Contact et prise de rendez-vous › card » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "galerie : « Contact et prise de rendez-vous › form-image » avec aperçu",
+   "ok": true
+  },
+  {
+   "step": "ajout de la galerie de projets asymétrique depuis la galerie",
+   "ok": true,
+   "section": "portfolio_1"
+  },
+  {
+   "step": "titre, texte du lien, filtres masqués et schéma de couleurs modifiés dans le panneau",
+   "ok": true
+  },
+  {
+   "step": "section dupliquée (copie modifiable)",
+   "ok": true,
+   "copy": "portfolio_2"
+  },
+  {
+   "step": "section déplacée",
+   "ok": true,
+   "from": 8,
+   "to": 7
+  },
+  {
+   "step": "rechargement : ajout, réglages, copie et ordre conservés",
+   "ok": true,
+   "structure": [
+    "ed-opening",
+    "fs-needs",
+    "portfolio",
+    "services-list",
+    "timeline",
+    "ed-scene",
+    "faq",
+    "portfolio",
+    "cta-banner",
+    "portfolio"
+   ]
+  }
+ ],
+ "date": "2026-10-23T00:18:28.691Z",
+ "forfait_vendre": [
+  {
+   "step": "forfait « vendre » : fonctions réservées non proposées",
+   "ok": true,
+   "offered": [
+    "Présentation de l'activité",
+    "Engagements de service",
+    "Réalisations",
+    "Avant / après",
+    "Questions fréquentes",
+    "Tarifs et formules",
+    "Contact et prise de rendez-vous",
+    "Prestations proposées",
+    "Détail d'une prestation",
+    "Besoins accompagnés",
+    "Méthode de travail",
+    "Zone d'intervention et accès",
+    "Article (corps)",
+    "Bandeau d'annonce",
+    "Blog (corps)",
+    "Boutique (corps)",
+    "Boutique fermée (corps)",
+    "Fiche produit (corps)",
+    "En-tête",
+    "Liste des collections (corps)",
+    "Page de contenu (corps)",
+    "Page introuvable (corps)",
+    "Page panier (corps)",
+    "Panier latéral",
+    "Pied de page",
+    "Recherche (corps)"
+   ]
+  }
+ ]
+}

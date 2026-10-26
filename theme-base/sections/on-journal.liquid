@@ -1,0 +1,139 @@
+{%- comment -%}
+  Journal d'ONDE (maquettes du 24 octobre) :
+  - row : titre, texte et bouton à gauche, articles en cartes à droite (accueil) ;
+  - page : titre, texte et filtres par thème à gauche, article principal à droite sur un visuel, puis les articles en
+    cartes avec flèche (page Journal). Les filtres masquent les cartes d'un autre thème (sans rechargement).
+  Chaque article : photo, thème, titre, texte, lien vers sa page.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'row'
+  assign posts = section.blocks | where: 'type', 'article'
+  assign featured = nil
+  for b in posts
+    if b.settings.featured and featured == nil
+      assign featured = b
+    endif
+  endfor
+  assign has_visual = false
+  if layout == 'page'
+    if s.image != blank or s.image_asset != blank
+      assign has_visual = true
+    endif
+  endif
+  assign tags = ''
+  for b in posts
+    if b.settings.tag != blank
+      unless tags contains b.settings.tag
+        assign tags = tags | append: b.settings.tag | append: '|'
+      endunless
+    endif
+  endfor
+  assign tag_list = tags | split: '|'
+-%}
+<section{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} class="on-journal on-journal--{{ layout }} on-tone--{{ s.tone }}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-card-h:{{ s.card_height }}px;--on-card-hm:{{ s.mobile_card_height }}px;--on-head-h:{{ s.head_height }}px;--on-head-hm:{{ s.mobile_head_height }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;--on-fx:{{ s.focus_x }}%;--on-fy:{{ s.focus_y }}%;--on-zoom:{{ s.image_zoom | divided_by: 100.0 }};"{% if layout == 'page' %} data-on-filter{% endif %}>
+  {%- if has_visual -%}
+    <div class="on-journal__visual" aria-hidden="true">{%- if s.image != blank -%}{{ s.image | image_url: width: 1800 | image_tag: loading: 'eager', alt: '' }}{%- else -%}<img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="" loading="eager" decoding="async">{%- endif -%}</div>
+  {%- endif -%}
+  {%- if layout == 'page' and s.wave -%}<div class="on-journal__wave" aria-hidden="true">{% render 'on-wave', bars: 56, shape: 'burst' %}</div>{%- endif -%}
+  <div class="on-journal__inner on-container">
+    <div class="on-journal__head">
+      {%- if s.heading != blank -%}<{{ s.heading_tag | default: 'h2' }} class="on-title on-journal__title">{{ s.heading | escape | newline_to_br }}</{{ s.heading_tag | default: 'h2' }}>{%- endif -%}
+      {%- if s.text != blank -%}<div class="on-text on-journal__text">{{ s.text | replace: '<br>', ' <br>' }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="on-button on-button--{{ s.button_style }} on-journal__button" href="{{ s.button_link | default: '#' }}">{{ s.button_label | escape }}{% render 'icon', name: 'arrow-up-right' %}</a>{%- endif -%}
+      {%- if layout == 'page' and s.filters and tag_list.size > 0 -%}
+        <div class="on-chips" role="group" aria-label="{{ s.filters_label | escape }}">
+          <button type="button" class="on-chip is-active" data-on-chip="" aria-pressed="true">{{ s.all_label | escape }}</button>
+          {%- for t in tag_list -%}{%- if t != blank -%}<button type="button" class="on-chip" data-on-chip="{{ t | handleize }}" aria-pressed="false">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- if layout == 'page' and featured != blank -%}
+      {%- assign f = featured.settings -%}
+      <article class="on-feature" {{ featured.shopify_attributes }}>
+        {%- if s.featured_label != blank -%}<p class="on-feature__label">{{ s.featured_label | escape }}</p>{%- endif -%}
+        {%- if f.image_asset != blank or f.image != blank -%}<div class="on-feature__media">{%- if f.image != blank -%}{{ f.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: f.image_alt }}{%- else -%}<img width="1200" height="1200" src="{{ f.image_asset | asset_url }}" alt="{{ f.image_alt | escape }}" loading="lazy" decoding="async">{%- endif -%}</div>{%- endif -%}
+        <h2 class="on-feature__title"><a href="{{ f.link | default: '#' }}">{{ f.title | escape | newline_to_br }}</a></h2>
+        {%- if f.text != blank -%}<p class="on-feature__text">{{ f.text | escape }}</p>{%- endif -%}
+        <span class="on-round on-feature__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span>
+      </article>
+    {%- endif -%}
+    <ul class="on-journal__list" role="list">
+      {%- for b in posts -%}
+        {%- if layout == 'page' and b.settings.featured and s.featured_in_grid == false -%}{%- continue -%}{%- endif -%}
+        {%- assign c = b.settings -%}
+        <li class="on-post" data-on-tag="{{ c.tag | handleize }}" {{ b.shopify_attributes }}>
+          <a class="on-post__hit" href="{{ c.link | default: '#' }}" aria-label="{{ c.title | strip_newlines | escape }}"></a>
+          <div class="on-post__media" style="--on-fx:{{ c.focus_x }}%;--on-fy:{{ c.focus_y }}%;">{%- if c.image != blank -%}{{ c.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: c.image_alt }}{%- elsif c.image_asset != blank -%}<img width="1200" height="1200" src="{{ c.image_asset | asset_url }}" alt="{{ c.image_alt | escape }}" loading="lazy" decoding="async">{%- endif -%}</div>
+          <div class="on-post__body">
+            <h3 class="on-post__title">{{ c.title | escape | newline_to_br }}</h3>
+            {%- if c.text != blank -%}<p class="on-post__text">{{ c.text | escape | newline_to_br }}</p>{%- endif -%}
+          </div>
+          <span class="on-round on-post__arrow" aria-hidden="true">{% render 'icon', name: 'arrow' %}</span>
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if layout == 'page' -%}<p class="on-journal__empty" data-on-filter-empty hidden>{{ s.empty_text | escape }}</p>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Journal ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre (lien vers cette section)" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "row", "options": [
+      { "value": "row", "label": "Texte à gauche, articles en ligne" },
+      { "value": "page", "label": "Page journal : filtres, article principal, cartes" }
+    ] },
+    { "type": "select", "id": "tone", "label": "Couleurs", "default": "white", "options": [
+      { "value": "dark", "label": "Graphite" },
+      { "value": "light", "label": "Gris clair" },
+      { "value": "white", "label": "Blanc" }
+    ] },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Journal" },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [ { "value": "h1", "label": "Titre de page (H1)" }, { "value": "h2", "label": "Titre de section (H2)" } ] },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "outline", "options": [ { "value": "outline", "label": "Contour" }, { "value": "lime", "label": "Lime" }, { "value": "dark", "label": "Graphite" } ] },
+    { "type": "checkbox", "id": "filters", "label": "Filtres par thème (page journal)", "default": true },
+    { "type": "text", "id": "filters_label", "label": "Nom des filtres (lecteurs d'écran)", "default": "Thèmes du journal" },
+    { "type": "text", "id": "all_label", "label": "Filtre « tout »", "default": "Tout" },
+    { "type": "text", "id": "featured_label", "label": "Étiquette de l'article principal", "default": "Article principal" },
+    { "type": "checkbox", "id": "featured_in_grid", "label": "Répéter l'article principal dans les cartes", "default": false },
+    { "type": "text", "id": "empty_text", "label": "Message quand aucun article ne correspond", "default": "Aucun article dans ce thème pour l'instant." },
+    { "type": "image_picker", "id": "image", "label": "Visuel de l'en-tête (page journal)" },
+    { "type": "text", "id": "image_asset", "label": "Visuel de l'en-tête (fichier du thème)" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement du visuel", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "checkbox", "id": "wave", "label": "Onde sonore dans l'en-tête", "default": false },
+    { "type": "range", "id": "head_height", "label": "Hauteur de l'en-tête (page journal)", "min": 0, "max": 900, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "mobile_head_height", "label": "Hauteur de l'en-tête sur téléphone", "min": 0, "max": 900, "step": 2, "unit": "px", "default": 0 },
+    { "type": "range", "id": "card_height", "label": "Hauteur des photos", "min": 80, "max": 600, "step": 2, "unit": "px", "default": 220 },
+    { "type": "range", "id": "mobile_card_height", "label": "Hauteur des photos sur téléphone", "min": 60, "max": 500, "step": 2, "unit": "px", "default": 180 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 18, "max": 120, "step": 1, "unit": "px", "default": 40 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 28 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 48 }
+  ],
+  "blocks": [
+    { "type": "article", "name": "Article", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Photo" },
+      { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+      { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+      { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+      { "type": "text", "id": "tag", "label": "Thème", "info": "Ex. : Écoute, Design, Entretien." },
+      { "type": "textarea", "id": "title", "label": "Titre", "default": "Titre de l'article" },
+      { "type": "textarea", "id": "text", "label": "Texte" },
+      { "type": "url", "id": "link", "label": "Lien vers l'article" },
+      { "type": "checkbox", "id": "featured", "label": "Article principal (page journal)", "default": false }
+    ] }
+  ],
+  "presets": [ { "name": "Journal ONDE", "blocks": [ { "type": "article" }, { "type": "article" }, { "type": "article" } ] } ]
+}
+{% endschema %}

@@ -28,7 +28,7 @@ it.each([false,true])('un devis, une tâche, deux versions acquises avant activa
  expect(calls).toBe(2);expect(r.bundle.status).toBe('prepared');expect(activeStrategy(f.pid)?.id).toBe(a.id);expect(getStrategyState(f.pid).alignment.filter(c=>r.bundle.items.some(i=>i.outputIds?.includes(c.contentId)))).toHaveLength(0);
  completeJob(job.id,r);activateStrategy(f.pid,{angleId:'expression',preparationId:f.prep.id,idempotencyKey:id(),confirmed:true});expect(activeStrategy(f.pid)?.angleId).toBe('expression');
  expect(getStrategyState(f.pid).alignment.filter(c=>r.bundle.items.some(i=>i.outputIds?.includes(c.contentId))).every(c=>c.aligned)).toBe(true);
- expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('échec au second élément : ancien ensemble actif, premier acquis réutilisé, une seule reprise explicite',async()=>{
  const f=await fixture();const a=activeStrategy(f.pid)!;const q=quoteStrategyBundle(f.pid,f.prep.id,f.old.map(x=>({module:'asset',contentId:x.id})));const b=confirmStrategyBundle(f.pid,q.id,true);const job=claimNext(['strategy.prepare'])!;
@@ -55,9 +55,9 @@ it('archives, retouches et autre compte : aucune inclusion abusive dans un devis
 });
 
 it('création rédactionnelle : moteur IA complet, textes exacts conservés et points de reprise séparés',async()=>{
- const f=await fixture();const original=enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{projectId:f.pid,request:{as:'ad',format:'portrait',headline:'Mon texte exact',subject:{kind:'product',key:'main'},sourceAssetId:'ancien',expectedCopyKey:'ancien-contexte'}}});
+ const f=await fixture();const original=enqueue({userId:f.user.id,projectId:f.pid,type:'image.ai_post',payload:{projectId:f.pid,request:{as:'ad',format:'portrait',headline:'Mon texte exact',subject:{kind:'product',key:'main'},sourceAssetId:f.old[1].id,expectedCopyKey:'ancien-contexte'}}});
  run("UPDATE jobs SET status='done',result=? WHERE id=?",JSON.stringify({assetId:f.old[0].id}),original.id);run('UPDATE assets SET role=?,meta=? WHERE id=?','ad',JSON.stringify({aiAd:true,aiPost:{},finalImage:{},aspect:'4:5'}),f.old[0].id);
  const q=quoteStrategyBundle(f.pid,f.prep.id,[{module:'asset',contentId:f.old[0].id}]);expect(q.items[0].type).toBe('image.ai_post');expect(q.items[0].request.headline).toBe('Mon texte exact');expect(q.items[0].request).not.toHaveProperty('sourceAssetId');expect(q.items[0].request).not.toHaveProperty('expectedCopyKey');
  const b=confirmStrategyBundle(f.pid,q.id,true);const ctx=new JobContext(getJob(b.jobId!)!);const first=creativeRevisionContext(ctx,b.items[0],1000),second=creativeRevisionContext(ctx,{...b.items[0],oldId:f.old[1].id},1000);
- first.save('ai-post',{assetId:'acquis-1'});expect(second.checkpoint['ai-post']).toBeUndefined();second.save('ai-post',{assetId:'acquis-2'});expect(first.checkpoint['ai-post']).toEqual({assetId:'acquis-1'});expect(first.payload.costCapMicro).toBeLessThanOrEqual(1000);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);
+ first.save('ai-post',{assetId:'acquis-1'});expect(second.checkpoint['ai-post']).toBeUndefined();second.save('ai-post',{assetId:'acquis-2'});expect(first.checkpoint['ai-post']).toEqual({assetId:'acquis-1'});expect(first.payload.costCapMicro).toBeLessThanOrEqual(1000);expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });

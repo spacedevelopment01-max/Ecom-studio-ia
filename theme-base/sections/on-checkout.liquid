@@ -1,0 +1,205 @@
+{%- comment -%}
+  Commande d'ONDE (planches 03 et 06 du 24 octobre), parcours de DÉMONSTRATION :
+  - steps : Informations → Livraison → Paiement, frise numérotée, titre propre à chaque étape, formulaire vérifié (message
+    sous le champ, focus sur le premier en erreur), retour sans perte, récapitulatif lu dans le vrai panier (repliable sur
+    téléphone, carte graphite sur ordinateur). Le paiement est un exemple : aucun champ de carte, aucune donnée bancaire,
+    aucun débit ; la validation demande l'accord aux conditions et ouvre la confirmation d'exemple ;
+  - confirmation : coche lime, titre, texte, visuel, récapitulatif de la commande d'exemple, aide et retour boutique.
+  Rien n'est envoyé : la saisie reste dans l'onglet (sessionStorage). Sur une vraie boutique, la commande et sa
+  confirmation sont des pages de la plateforme (Shopify Checkout).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign layout = s.layout | default: 'steps'
+  assign fp = all_products[s.product] | default: s.product
+-%}
+{%- capture lines_fallback -%}
+  {%- if fp != blank -%}
+    <li class="on-sumline"><span class="on-sumline__media">{%- if s.line_image_asset != blank -%}<img width="1200" height="1200" src="{{ s.line_image_asset | asset_url }}" alt="" loading="lazy" decoding="async">{%- elsif fp.featured_media -%}{{ fp.featured_media | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}{%- endif -%}</span><span class="on-sumline__info"><strong>{{ fp.title | escape }}</strong><span>{{ s.line_note | escape }}</span></span><span class="on-sumline__price">{% if settings.price_trim_zeros %}{{ fp.price | money_without_trailing_zeros }}{% else %}{{ fp.price | money }}{% endif %}</span></li>
+  {%- endif -%}
+{%- endcapture -%}
+<section class="on-checkout on-checkout--{{ layout }}{% if layout == 'confirmation' %} on-tone--dark{% else %} on-tone--white{% endif %}" style="--on-title:{{ s.title_size }}px;--on-title-m:{{ s.mobile_title_size }}px;--on-pt:{{ s.padding_top }}px;--on-pb:{{ s.padding_bottom }}px;" data-on-checkout="{{ layout }}" data-shop="{{ shop.name | handleize }}" data-money="{{ shop.money_format | escape }}" data-line-image="{% if s.line_image_asset != blank %}{{ s.line_image_asset | asset_url }}{% endif %}" data-line-note="{{ s.line_note | escape }}" data-confirm="{{ s.confirm_link }}" data-qty-label="{{ s.qty_label | escape }}">
+  {%- if layout == 'confirmation' -%}
+    <div class="on-checkout__deco" aria-hidden="true">{%- if s.image_asset != blank -%}<img width="1200" height="1200" src="{{ s.image_asset | asset_url }}" alt="" loading="eager" decoding="async" style="object-position:{{ s.focus_x }}% {{ s.focus_y }}%;">{%- endif -%}</div>
+    <div class="on-checkout__inner on-container">
+      <div class="on-confirm__head">
+        <span class="on-confirm__check" aria-hidden="true">{% render 'icon', name: 'check' %}</span>
+        <div>
+          {%- if s.eyebrow != blank -%}<p class="on-eyebrow on-confirm__eyebrow">{{ s.eyebrow | escape }}</p>{%- endif -%}
+          <h1 class="on-title on-checkout__title">{{ s.heading | escape | newline_to_br }}</h1>
+        </div>
+      </div>
+      {%- if s.text != blank -%}<div class="on-checkout__text">{{ s.text }}</div>{%- endif -%}
+      <div class="on-confirm__card">
+        <div class="on-confirm__row">
+          <span class="on-confirm__icon">{% render 'icon', name: 'order' %}</span>
+          <div class="on-confirm__body"><p class="on-confirm__label">{{ s.summary_title | escape }}</p><ul class="on-sumlines" role="list" data-on-lines>{{ lines_fallback }}</ul>{%- if s.order_number != blank -%}<p class="on-confirm__meta">{{ s.order_number | escape }}</p>{%- endif -%}</div>
+        </div>
+        <div class="on-confirm__row">
+          <span class="on-confirm__icon">{% render 'icon', name: 'truck' %}</span>
+          <div class="on-confirm__body"><p class="on-confirm__label">{{ s.shipping_title | escape }}</p><p data-on-confirm-address data-empty="{{ s.address_empty | escape }}">{{ s.address_empty | escape }}</p>{%- if s.shipping_text != blank -%}<p class="on-confirm__muted">{{ s.shipping_text | escape }}</p>{%- endif -%}</div>
+        </div>
+        <div class="on-confirm__row">
+          <span class="on-confirm__icon">{% render 'icon', name: 'help' %}</span>
+          <div class="on-confirm__body"><p class="on-confirm__label">{{ s.help_title | escape }}</p><p class="on-confirm__muted">{{ s.help_text | escape }}</p></div>
+        </div>
+        {%- if s.button_label != blank -%}<a class="on-button on-button--lime on-confirm__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">{{ s.button_label | escape }}{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+        {%- if s.note != blank -%}<p class="on-checkout__fine">{{ s.note | escape }}</p>{%- endif -%}
+      </div>
+    </div>
+  {%- else -%}
+    <div class="on-checkout__inner on-container">
+      <a class="on-checkout__back" href="{{ s.cart_link | default: routes.cart_url }}" data-on-back data-cart-href="{{ s.cart_link | default: routes.cart_url }}">{% render 'icon', name: 'arrow-left' %}<span data-on-back-label data-labels="{{ s.cart_label | escape }}|{{ s.info_title | escape }}|{{ s.ship_title | escape }}">{{ s.cart_label | escape }}</span></a>
+      <ol class="on-stepper" role="list">
+        {%- assign titles = s.info_title | append: '|' | append: s.ship_title | append: '|' | append: s.pay_title | split: '|' -%}
+        {%- for t in titles -%}<li class="on-stepper__item{% if forloop.first %} is-current{% endif %}" data-on-dot="{{ forloop.index }}"{% if forloop.first %} aria-current="step"{% endif %}><span class="on-stepper__n"><span>{{ forloop.index }}</span>{% render 'icon', name: 'check' %}</span><span class="on-stepper__label">{{ t | escape }}</span></li>{%- endfor -%}
+      </ol>
+      {%- assign heads = s.info_heading | append: '|' | append: s.ship_heading | append: '|' | append: s.pay_heading | split: '|' -%}
+      <h1 class="on-title on-checkout__title" data-on-step-title data-titles="{{ heads | join: '|' | escape }}">{{ heads[0] | escape | newline_to_br }}</h1>
+      <div class="on-checkout__grid">
+        <details class="on-mini-sum" data-on-minisum>
+          <summary><span class="on-mini-sum__media" data-on-mini-media></span><span class="on-mini-sum__label"><strong>{{ s.summary_title | escape }}</strong><span data-on-count></span></span><span class="on-mini-sum__total" data-on-subtotal>—</span>{% render 'icon', name: 'chevron-down' %}</summary>
+          <ul class="on-sumlines" role="list" data-on-lines>{{ lines_fallback }}</ul>
+        </details>
+        <form class="on-checkout__form" action="#" novalidate data-on-form>
+          <p class="on-checkout__demo">{{ s.demo_notice | escape }}</p>
+          <p class="on-checkout__empty" data-on-empty hidden>{{ s.empty_text | escape }} <a href="{{ routes.all_products_collection_url }}">{{ s.empty_link_label | escape }}</a></p>
+          <fieldset class="on-step" data-on-step="1">
+            <legend class="visually-hidden">{{ s.info_title | escape }}</legend>
+            <label class="on-field on-field--full"><span>{{ s.email_label | escape }} *</span><input type="email" name="email" autocomplete="email" required data-msg="{{ s.email_error | escape }}"><small data-error hidden></small></label>
+            <label class="on-field on-field--full"><span>{{ s.first_name_label | escape }} *</span><input type="text" name="first_name" autocomplete="given-name" required data-msg="{{ s.required_error | escape }}"><small data-error hidden></small></label>
+            <label class="on-field on-field--full"><span>{{ s.last_name_label | escape }} *</span><input type="text" name="last_name" autocomplete="family-name" required data-msg="{{ s.required_error | escape }}"><small data-error hidden></small></label>
+            <label class="on-field on-field--full"><span>{{ s.address_label | escape }} *</span><input type="text" name="address" autocomplete="address-line1" required data-msg="{{ s.required_error | escape }}"><small data-error hidden></small></label>
+            {%- if s.address2_label != blank -%}<label class="on-field on-field--full on-field--extra"><span>{{ s.address2_label | escape }}</span><input type="text" name="address2" autocomplete="address-line2"></label>{%- endif -%}
+            <label class="on-field"><span>{{ s.zip_label | escape }} *</span><input type="text" name="zip" autocomplete="postal-code" inputmode="numeric" required pattern="[0-9A-Za-z \-]{3,10}" data-msg="{{ s.zip_error | escape }}"><small data-error hidden></small></label>
+            <label class="on-field"><span>{{ s.city_label | escape }} *</span><input type="text" name="city" autocomplete="address-level2" required data-msg="{{ s.required_error | escape }}"><small data-error hidden></small></label>
+            <label class="on-field on-field--full on-field--select"><span>{{ s.country_label | escape }} *</span><select name="country" autocomplete="country-name">{%- assign countries = s.countries | split: ',' -%}{%- for c in countries -%}<option>{{ c | strip | escape }}</option>{%- endfor -%}</select>{% render 'icon', name: 'chevron-down' %}</label>
+          </fieldset>
+          <fieldset class="on-step" data-on-step="2" hidden>
+            <legend class="visually-hidden">{{ s.ship_title | escape }}</legend>
+            <div class="on-infobox"><span class="on-infobox__icon">{% render 'icon', name: 'pin' %}</span><div><p class="on-infobox__title">{{ s.address_title | escape }}</p><p class="on-infobox__text" data-on-address data-empty="{{ s.address_empty | escape }}">{{ s.address_empty | escape }}</p></div></div>
+            <label class="on-option"><input type="radio" name="shipping" value="standard" checked required data-msg="{{ s.required_error | escape }}"><span class="on-option__icon">{% render 'icon', name: 'truck' %}</span><span><strong>{{ s.ship_option_label | escape }}</strong><span>{{ s.ship_option_text | escape }}</span></span></label>
+            <small data-error hidden></small>
+            <button type="button" class="on-link-back" data-on-prev>{% render 'icon', name: 'arrow-left' %}<span>{{ s.edit_label | escape }}</span></button>
+          </fieldset>
+          <fieldset class="on-step" data-on-step="3" hidden>
+            <legend class="visually-hidden">{{ s.pay_title | escape }}</legend>
+            <div class="on-infobox on-infobox--plain"><span class="on-infobox__icon">{% render 'icon', name: 'lock' %}</span><div><p class="on-infobox__title">{{ s.pay_box_title | escape }}</p><p class="on-infobox__text">{{ s.pay_box_text | escape }}</p></div></div>
+            <dl class="on-totals">
+              <div><dt>{{ s.subtotal_label | escape }}</dt><dd data-on-subtotal>—</dd></div>
+              <div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.shipping_value | escape }}</dd></div>
+              <div class="on-totals__total"><dt>{{ s.total_label | escape }}</dt><dd>{{ s.total_value | escape }}</dd></div>
+            </dl>
+            <label class="on-consent"><input type="checkbox" name="terms" required data-msg="{{ s.terms_error | escape }}"><span>{{ s.terms_text }}</span></label>
+            <small data-error hidden></small>
+          </fieldset>
+          <button type="submit" class="on-button on-button--lime on-checkout__next" data-on-next data-labels="{{ s.info_button | escape }}|{{ s.ship_button | escape }}|{{ s.pay_button | escape }}">{{ s.info_button | escape }}{% render 'icon', name: 'arrow' %}</button>
+          <p class="on-checkout__fine" data-on-fine data-texts="{{ s.info_note | escape }}||{{ s.pay_note | escape }}" data-html>{{ s.info_note }}</p>
+          <p class="on-checkout__status" role="status" aria-live="polite" data-on-status></p>
+        </form>
+        <aside class="on-sumcard" aria-label="{{ s.summary_title | escape }}">
+          <div class="on-sumcard__media" data-on-card-media>{%- if s.line_image_asset != blank -%}<img width="1200" height="1200" src="{{ s.line_image_asset | asset_url }}" alt="" loading="eager" decoding="async">{%- elsif fp.featured_media -%}{{ fp.featured_media | image_url: width: 600 | image_tag: loading: 'eager', alt: '' }}{%- endif -%}</div>
+          <p class="on-sumcard__name" data-on-card-name>{{ fp.title | escape }}</p>
+          <p class="on-sumcard__note">{{ s.line_note | escape }}</p>
+          <p class="on-sumcard__price" data-on-subtotal>{% if fp != blank %}{% if settings.price_trim_zeros %}{{ fp.price | money_without_trailing_zeros }}{% else %}{{ fp.price | money }}{% endif %}{% endif %}</p>
+          <p class="on-sumcard__count" data-on-count></p>
+          <dl class="on-sumcard__rows"><div><dt>{{ s.shipping_label | escape }}</dt><dd>{{ s.shipping_short | escape }}</dd></div></dl>
+        </aside>
+      </div>
+      {%- if section.blocks.size > 0 -%}
+        <ul class="on-checkout__help" role="list">
+          {%- for b in section.blocks -%}<li {{ b.shopify_attributes }}><a href="{{ b.settings.link | default: '#' }}"><span class="on-cart__help-icon">{% render 'icon', name: 'help' %}</span><span><strong>{{ b.settings.title | escape }}</strong><span>{{ b.settings.text | escape }}</span></span></a></li>{%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Commande ONDE",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    { "type": "paragraph", "content": "Parcours de démonstration : rien n'est envoyé ni payé, aucune carte n'est demandée. Sur une vraie boutique, la commande et sa confirmation sont des pages de la plateforme." },
+    { "type": "select", "id": "layout", "label": "Page", "default": "steps", "options": [ { "value": "steps", "label": "Commande en étapes" }, { "value": "confirmation", "label": "Confirmation d'exemple" } ] },
+    { "type": "product", "id": "product", "label": "Produit du récapitulatif de secours" },
+    { "type": "text", "id": "line_image_asset", "label": "Miniature du récapitulatif (fichier du thème)" },
+    { "type": "text", "id": "line_note", "label": "Ligne sous le nom du produit" },
+    { "type": "text", "id": "qty_label", "label": "Mot « produit » du récapitulatif", "default": "produit|produits" },
+    { "type": "text", "id": "summary_title", "label": "Titre du récapitulatif", "default": "Votre commande" },
+    { "type": "text", "id": "demo_notice", "label": "Mention de démonstration" },
+    { "type": "text", "id": "empty_text", "label": "Message panier vide", "default": "Votre panier est vide." },
+    { "type": "text", "id": "empty_link_label", "label": "Lien du message panier vide", "default": "Découvrir la boutique" },
+    { "type": "header", "content": "Étapes" },
+    { "type": "text", "id": "cart_label", "label": "Lien de retour (étape 1)", "default": "Panier" },
+    { "type": "url", "id": "cart_link", "label": "Lien du panier" },
+    { "type": "text", "id": "info_title", "label": "Étape 1 : nom", "default": "Informations" },
+    { "type": "text", "id": "ship_title", "label": "Étape 2 : nom", "default": "Livraison" },
+    { "type": "text", "id": "pay_title", "label": "Étape 3 : nom", "default": "Paiement" },
+    { "type": "text", "id": "info_heading", "label": "Étape 1 : titre", "default": "Encore un instant." },
+    { "type": "text", "id": "ship_heading", "label": "Étape 2 : titre", "default": "Votre livraison." },
+    { "type": "text", "id": "pay_heading", "label": "Étape 3 : titre", "default": "Finaliser votre commande." },
+    { "type": "text", "id": "info_button", "label": "Étape 1 : bouton", "default": "Continuer vers la livraison" },
+    { "type": "text", "id": "ship_button", "label": "Étape 2 : bouton", "default": "Continuer vers le paiement" },
+    { "type": "text", "id": "pay_button", "label": "Étape 3 : bouton", "default": "Valider le paiement d'exemple" },
+    { "type": "inline_richtext", "id": "info_note", "label": "Étape 1 : mention sous le bouton" },
+    { "type": "text", "id": "pay_note", "label": "Étape 3 : mention sous le bouton", "default": "Paiement simulé : aucun débit, aucune donnée bancaire." },
+    { "type": "text", "id": "edit_label", "label": "Lien « modifier mes informations »", "default": "Modifier mes informations" },
+    { "type": "text", "id": "email_label", "label": "E-mail", "default": "E-mail" },
+    { "type": "text", "id": "first_name_label", "label": "Prénom", "default": "Prénom" },
+    { "type": "text", "id": "last_name_label", "label": "Nom", "default": "Nom" },
+    { "type": "text", "id": "address_label", "label": "Adresse", "default": "Adresse" },
+    { "type": "text", "id": "address2_label", "label": "Complément d'adresse", "default": "Complément d'adresse (facultatif)" },
+    { "type": "text", "id": "zip_label", "label": "Code postal", "default": "Code postal" },
+    { "type": "text", "id": "city_label", "label": "Ville", "default": "Ville" },
+    { "type": "text", "id": "country_label", "label": "Pays", "default": "Pays" },
+    { "type": "text", "id": "countries", "label": "Pays proposés (séparés par des virgules)", "default": "France, Belgique, Suisse, Luxembourg" },
+    { "type": "text", "id": "required_error", "label": "Erreur : champ obligatoire", "default": "Ce champ est obligatoire." },
+    { "type": "text", "id": "email_error", "label": "Erreur : e-mail", "default": "Saisissez une adresse e-mail valide." },
+    { "type": "text", "id": "zip_error", "label": "Erreur : code postal", "default": "Saisissez un code postal valide." },
+    { "type": "text", "id": "terms_error", "label": "Erreur : conditions", "default": "Cochez la case pour continuer." },
+    { "type": "text", "id": "address_title", "label": "Livraison : titre de l'adresse", "default": "Adresse de livraison" },
+    { "type": "text", "id": "address_empty", "label": "Livraison : adresse non saisie", "default": "Adresse à renseigner à l'étape précédente." },
+    { "type": "text", "id": "ship_option_label", "label": "Livraison : mode", "default": "Livraison à domicile" },
+    { "type": "text", "id": "ship_option_text", "label": "Livraison : texte du mode", "default": "Frais et délais à confirmer." },
+    { "type": "text", "id": "pay_box_title", "label": "Paiement : titre de l'encadré", "default": "Paiement d'exemple" },
+    { "type": "text", "id": "pay_box_text", "label": "Paiement : texte de l'encadré" },
+    { "type": "inline_richtext", "id": "terms_text", "label": "Paiement : accord aux conditions", "default": "J'accepte les Conditions de vente et la Politique de confidentialité." },
+    { "type": "text", "id": "subtotal_label", "label": "Sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_value", "label": "Livraison : valeur", "default": "À calculer" },
+    { "type": "text", "id": "shipping_short", "label": "Livraison : valeur courte (carte)", "default": "À calculer" },
+    { "type": "text", "id": "total_label", "label": "Total", "default": "Total" },
+    { "type": "text", "id": "total_value", "label": "Total : valeur", "default": "À confirmer selon la livraison" },
+    { "type": "url", "id": "confirm_link", "label": "Page de confirmation d'exemple" },
+    { "type": "header", "content": "Confirmation" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Exemple de confirmation" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Merci pour\nvotre commande." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "order_number", "label": "Numéro d'exemple" },
+    { "type": "text", "id": "shipping_title", "label": "Bloc livraison : titre", "default": "Livraison" },
+    { "type": "text", "id": "shipping_text", "label": "Bloc livraison : texte" },
+    { "type": "text", "id": "help_title", "label": "Bloc aide : titre", "default": "Aide" },
+    { "type": "text", "id": "help_text", "label": "Bloc aide : texte", "default": "Une question ? Nous sommes à votre écoute." },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Retour à la boutique" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "note", "label": "Mention du bas", "default": "Écran illustratif de confirmation." },
+    { "type": "text", "id": "image_asset", "label": "Visuel (fichier du thème)" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical du visuel", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre", "min": 24, "max": 200, "step": 1, "unit": "px", "default": 120 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone", "min": 20, "max": 80, "step": 1, "unit": "px", "default": 38 },
+    { "type": "range", "id": "padding_top", "label": "Espace au-dessus", "min": 0, "max": 300, "step": 2, "unit": "px", "default": 130 },
+    { "type": "range", "id": "padding_bottom", "label": "Espace en dessous", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 48 }
+  ],
+  "blocks": [
+    { "type": "help", "name": "Accès d'aide", "limit": 2, "settings": [
+      { "type": "text", "id": "title", "label": "Titre", "default": "Une question ?" },
+      { "type": "text", "id": "text", "label": "Texte", "default": "Consultez notre FAQ." },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "presets": [ { "name": "Commande ONDE" } ]
+}
+{% endschema %}

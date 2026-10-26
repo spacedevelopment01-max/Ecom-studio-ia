@@ -1,0 +1,127 @@
+{%- comment -%}
+  PHASE : questions fréquentes en accordéons accessibles (bouton natif « details/summary », + et −) des planches 01 à 10.
+  - list : en-tête (sur-titre, titre, texte à droite) puis questions pleine largeur (prestations) ;
+  - aside : questions à gauche et encadré jaune « Vous avez un projet ? » à droite (installation, tableau) ;
+  - page : questions numérotées, filtrées par catégorie (pastilles de l'ouverture), photo et encadré « Une autre
+    question ? » à droite (page Questions fréquentes) ;
+  - split : titre et texte à gauche, questions à droite (contact).
+  Une catégorie vide affiche un message explicite ; aucune question n'est inventée par le thème.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign lay = s.layout
+-%}
+<section class="ph ph-faq ph-faq--{{ lay }}{% if s.hide_text_mobile %} m-no-text{% endif %} ph-faq--m-{{ s.layout_mobile }} ph-bg--{{ s.background }} ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }}; --ph-ts: {{ s.title_size }}; --ph-ts-m: {{ s.title_size_mobile }};{% if s.box_width > 0 %} --ph-bw: {{ s.box_width }};{% endif %}" data-ph-faq{% if s.open_first %} data-ph-open-first{% endif %}>
+  <div class="ph-c">
+    {%- capture ph_head -%}
+    {%- if s.eyebrow != blank or s.heading != blank or s.text != blank or s.text_mobile != blank -%}
+        <div class="ph-head">
+          <div class="ph-head__main">
+            {%- if s.eyebrow != blank -%}<p class="ph-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+            {% render 'ph-title', text: s.heading, tag: 'h2', class: 'ph-head__title' %}
+            {%- if s.heading_mobile != blank -%}{% render 'ph-title', text: s.heading_mobile, tag: 'p', class: 'ph-head__title ph-head__title--m' %}{%- endif -%}
+          </div>
+          {%- if s.text != blank -%}<div class="ph-head__text{% if s.text_mobile != blank %} ph-txt-d{% endif %}">{{ s.text }}</div>{%- endif -%}
+          {%- if s.text_mobile != blank -%}<div class="ph-head__text ph-txt-m">{{ s.text_mobile }}</div>{%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endcapture -%}
+    {%- unless lay == 'aside' -%}{{ ph_head }}{%- endunless -%}
+    <div class="ph-faq__body">
+      <div class="ph-faq__list" data-ph-list="faq">
+        {%- if lay == 'aside' -%}{{ ph_head }}{%- endif -%}
+        {%- for b in section.blocks -%}
+          {%- assign q = b.settings -%}
+          {%- capture ph_cats -%}{%- assign ph_cl = q.category | split: ',' -%}{%- for x in ph_cl -%}{{ x | strip | handleize }} {% endfor -%}{%- endcapture -%}
+          <details class="ph-faq__item{% if q.show == 'desktop' %} ph-only-d{% elsif q.show == 'mobile' %} ph-only-m{% endif %}" data-ph-cat="{{ ph_cats | strip }}"{% if forloop.first and s.open_first %} open{% endif %} {{ b.shopify_attributes }}>
+            <summary class="ph-faq__q">
+              {%- if s.numbered -%}<span class="ph-faq__num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>{%- endif -%}
+              <span class="ph-faq__text"><span class="ph-txt-d">{{ q.question }}</span>{%- if q.question_mobile != blank -%}<span class="ph-txt-m">{{ q.question_mobile }}</span>{%- endif -%}</span>
+              <span class="ph-faq__sign" aria-hidden="true">{% render 'ph-icon', name: 'plus', class: 'ph-faq__plus', stroke: 2 %}{% render 'ph-icon', name: 'moins', class: 'ph-faq__minus', stroke: 2 %}</span>
+            </summary>
+            <div class="ph-faq__a">{{ q.answer }}</div>
+          </details>
+        {%- endfor -%}
+        <p class="ph-faq__empty" role="status" hidden data-ph-empty>{{ s.empty_label }}</p>
+        {%- if s.more_label != blank and s.more_link != blank -%}<a class="ph-faq__more" href="{{ s.more_link }}"><span>{{ s.more_label }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.2 %}</a>{%- endif -%}
+      </div>
+      {%- if lay == 'aside' or lay == 'page' -%}
+        <aside class="ph-faq__aside">
+          {%- if s.image_asset != blank or s.image != blank -%}
+            {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, zoom: s.image_zoom, class: 'ph-faq__img', sizes: '30vw' %}
+          {%- endif -%}
+          <div class="ph-faq__box">
+            {%- if s.box_eyebrow != blank -%}<p class="ph-faq__box-eyebrow">{{ s.box_eyebrow }}</p>{%- endif -%}
+            {%- if s.box_title != blank -%}{% render 'ph-title', text: s.box_title, tag: 'h3', class: 'ph-faq__box-title' %}{%- endif -%}
+            {%- if s.box_text != blank -%}<p class="ph-faq__box-text">{{ s.box_text | newline_to_br }}</p>{%- endif -%}
+            {%- if s.box_button != blank -%}<a class="ph-btn ph-btn--navy ph-faq__box-btn" href="{{ s.box_link | default: routes.root_url }}">{%- if s.box_icon != blank -%}{% render 'ph-icon', name: s.box_icon, class: 'ph-faq__box-ico', stroke: 2 %}{%- endif -%}<span>{{ s.box_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+            {%- if s.box_circuit -%}{% render 'ph-art', name: 'box' %}{%- endif -%}
+          </div>
+        </aside>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Questions PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition (ordinateur)", "default": "list", "options": [
+      { "value": "list", "label": "En-tête puis questions" },
+      { "value": "aside", "label": "Questions et encadré jaune" },
+      { "value": "page", "label": "Questions numérotées, photo et encadré" },
+      { "value": "split", "label": "Titre à gauche, questions à droite" }
+    ] },
+    { "type": "select", "id": "layout_mobile", "label": "Disposition (téléphone)", "default": "list", "options": [
+      { "value": "list", "label": "Questions empilées" },
+      { "value": "boxed", "label": "Questions dans des cadres" }
+    ] },
+    { "type": "select", "id": "background", "label": "Fond", "default": "white", "options": [{ "value": "white", "label": "Blanc" }, { "value": "soft", "label": "Gris clair" }] },
+    { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre" },
+    { "type": "textarea", "id": "heading", "label": "Titre" },
+    { "type": "textarea", "id": "heading_mobile", "label": "Titre au téléphone (facultatif)" },
+    { "type": "range", "id": "title_size", "label": "Taille du titre (repère 1440 px)", "min": 24, "max": 100, "step": 1, "default": 44 },
+    { "type": "range", "id": "title_size_mobile", "label": "Taille du titre (téléphone, repère 390 px)", "min": 16, "max": 48, "step": 0.5, "default": 24 },
+    { "type": "richtext", "id": "text", "label": "Texte à droite du titre" },
+    { "type": "richtext", "id": "text_mobile", "label": "Texte au téléphone (facultatif)" },
+    { "type": "checkbox", "id": "hide_text_mobile", "label": "Masquer le texte au téléphone", "default": false },
+    { "type": "checkbox", "id": "numbered", "label": "Questions numérotées", "default": false },
+    { "type": "checkbox", "id": "open_first", "label": "Première question ouverte", "default": false },
+    { "type": "text", "id": "empty_label", "label": "Message si aucune question", "default": "Aucune question dans cette catégorie pour le moment." },
+    { "type": "text", "id": "more_label", "label": "Lien sous les questions" },
+    { "type": "url", "id": "more_link", "label": "Adresse du lien" },
+    { "type": "header", "content": "Encadré" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 300, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "box_eyebrow", "label": "Sur-titre de l'encadré" },
+    { "type": "textarea", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "textarea", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "box_button", "label": "Bouton de l'encadré" },
+    { "type": "url", "id": "box_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "box_icon", "label": "Pictogramme du bouton (nom)" },
+    { "type": "number", "id": "box_width", "label": "Largeur de l'encadré (repère 1440 px, 0 = selon la disposition)", "default": 0 },
+    { "type": "checkbox", "id": "box_circuit", "label": "Trait de circuit dans l'encadré", "default": true },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 60 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 60 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 28 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 28 }
+  ],
+  "blocks": [
+    { "type": "question", "name": "Question", "settings": [
+      { "type": "text", "id": "question", "label": "Question" },
+      { "type": "text", "id": "question_mobile", "label": "Question au téléphone (facultatif)" },
+      { "type": "richtext", "id": "answer", "label": "Réponse" },
+      { "type": "text", "id": "category", "label": "Catégories (filtre, séparées par des virgules)" },
+      { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] }
+    ] }
+  ],
+  "max_blocks": 20,
+  "presets": [{ "name": "Questions PHASE" }]
+}
+{% endschema %}

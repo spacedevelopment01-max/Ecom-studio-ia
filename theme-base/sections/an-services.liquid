@@ -1,0 +1,74 @@
+{%- comment -%}
+  ATELIER NUANCE : prestations et tarifs (planche 05). Filtres Coupe / Couleur / Coiffage / Soins, lignes avec photo,
+  description, durée, prix (« à partir de » explicite) et bouton Réserver qui préremplit la prise de rendez-vous.
+  Prix et durées suivent la source unique des « Réglages du salon » (identifiant de prestation).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-services" data-an-filter-root>
+  <div class="an-wrap">
+    {%- if s.show_filters -%}
+      <div class="an-tabs" role="group" aria-label="{{ s.filters_label | escape }}">
+        {%- assign cats = 'coupe|couleur|coiffage|soin' | split: '|' -%}
+        {%- assign labels = s.filter_labels | split: ',' -%}
+        {%- for c in cats -%}
+          <button type="button" class="an-tabs__btn" aria-pressed="false" data-an-filter="{{ c }}">{{ labels[forloop.index0] | strip | default: c }}</button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+    <ul class="an-services__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="an-services__row" data-an-cat="{{ b.category }}" data-an-svc="{{ b.service_id | escape }}" {{ block.shopify_attributes }}>
+          <a class="an-services__img" href="{{ b.link | default: '#' }}" tabindex="-1" aria-hidden="true">{% render 'an-img', image: b.image, asset: b.image_asset, alt: '', pos: b.image_position %}</a>
+          <div class="an-services__body">
+            <h2 class="an-services__name">{% if b.link != blank %}<a href="{{ b.link }}">{{ b.name }}</a>{% else %}{{ b.name }}{% endif %}</h2>
+            {%- if b.text != blank -%}<p class="an-services__text">{{ b.text }}</p>{%- endif -%}
+          </div>
+          <p class="an-services__dur">{% render 'an-icon', name: 'clock' %}<span data-an-f="duration">{{ b.duration }}</span></p>
+          <p class="an-services__price"><span class="an-services__from" data-an-f="from">{% if b.from %}{{ s.from_label }}{% endif %}</span><strong data-an-f="amount">{{ b.price }}</strong>{%- if s.note != blank -%}<small data-an-demo-note>{{ s.note }}</small>{%- endif -%}</p>
+          <a class="an-btn an-btn--terra an-btn--sm an-services__book" href="{{ s.book_link | default: '/pages/prendre-rendez-vous' }}" data-an-book="{{ b.service_id | escape }}">{{ s.button_label }}<span class="visually-hidden"> — {{ b.name }}</span></a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <p class="an-services__empty" data-an-filter-empty hidden>{{ s.empty_label }}</p>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Prestations et tarifs",
+  "class": "an-services-section",
+  "max_blocks": 30,
+  "settings": [
+    { "type": "checkbox", "id": "show_filters", "label": "Afficher les filtres par catégorie", "default": true },
+    { "type": "text", "id": "filters_label", "label": "Nom du groupe de filtres (lecteurs d'écran)", "default": "Filtrer les prestations" },
+    { "type": "text", "id": "filter_labels", "label": "Noms des filtres", "default": "Coupe, Couleur, Coiffage, Soins", "info": "Dans l'ordre : coupe, couleur, coiffage, soin." },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Réserver" },
+    { "type": "url", "id": "book_link", "label": "Page de prise de rendez-vous" },
+    { "type": "text", "id": "from_label", "label": "Mention « à partir de »", "default": "À partir de" },
+    { "type": "text", "id": "note", "label": "Mention sous les prix", "default": "Tarifs de démonstration" },
+    { "type": "text", "id": "empty_label", "label": "Texte sans prestation", "default": "Aucune prestation dans cette catégorie pour le moment." }
+  ],
+  "blocks": [
+    {
+      "type": "service", "name": "Prestation",
+      "settings": [
+        { "type": "text", "id": "service_id", "label": "Identifiant de la prestation", "info": "Le prix et la durée suivent alors les « Réglages du salon »." },
+        { "type": "select", "id": "category", "label": "Catégorie", "default": "coupe", "options": [{ "value": "coupe", "label": "Coupe" }, { "value": "couleur", "label": "Couleur" }, { "value": "coiffage", "label": "Coiffage" }, { "value": "soin", "label": "Soins" }] },
+        { "type": "text", "id": "name", "label": "Nom", "default": "Prestation" },
+        { "type": "textarea", "id": "text", "label": "Description" },
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "duration", "label": "Durée affichée" },
+        { "type": "text", "id": "price", "label": "Prix affiché" },
+        { "type": "checkbox", "id": "from", "label": "Prix « à partir de »", "default": false },
+        { "type": "url", "id": "link", "label": "Fiche de la prestation" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Prestations et tarifs" }]
+}
+{% endschema %}

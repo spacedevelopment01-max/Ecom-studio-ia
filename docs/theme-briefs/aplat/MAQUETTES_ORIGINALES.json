@@ -1,0 +1,122 @@
+[
+  {
+    "file": "maquettes/01_ordinateur_accueil_prestations.png",
+    "source_name": "Maquettes web APLAT : plâtrerie & peinture.png",
+    "pages": "01 Accueil ; 02 Prestations",
+    "size": 2091091,
+    "sha256": "a6b98f1fdd4b6fa2a4c33256d7fdbe8c2649065e68c0606e4e62860563736593",
+    "git_blob": "7640f8b1f8d1eafc9996890c6685e6cf07ca6f72",
+    "dimensions": [
+      1312,
+      1199
+    ]
+  },
+  {
+    "file": "maquettes/02_ordinateur_metiers_realisations.png",
+    "source_name": "Planche web APLAT, plâtrerie et peinture.png",
+    "pages": "03 Plâtrerie ; 04 Peinture ; 05 Réalisations ; 06 Détail chantier",
+    "size": 2051795,
+    "sha256": "a363468293eac03a74d64dc058e011714cf217e1ea07f8a901bc7aa1bdfe9675",
+    "git_blob": "a5d5ea368e4fe418e3d914ec2964cfe98a4129ef",
+    "dimensions": [
+      1295,
+      1215
+    ]
+  },
+  {
+    "file": "maquettes/03_ordinateur_approche_faq_contact_devis.png",
+    "source_name": "Planche de maquettes web APLAT.png",
+    "pages": "07 Notre approche ; 08 FAQ ; 09 Contact ; 10 Devis",
+    "size": 1890608,
+    "sha256": "60a8d49f1ed00f20200e1ba8654ac2dfe9aa52acec2747431ef2950c0bf47e18",
+    "git_blob": "8f14b63a5105a8f4450f92294273ea933046a5c4",
+    "dimensions": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "file": "maquettes/04_ordinateur_enduits_conseils_confirmation.png",
+    "source_name": "Planche de maquettes web APLAT(1).png",
+    "pages": "11 Enduits ; 12 Conseils ; 13 Article ; 14 Confirmation",
+    "size": 2148541,
+    "sha256": "d371635fbca83d69012ad6a669b2051705f2fe55ddf25b3ba18e741cdf9939ce",
+    "git_blob": "d555c889b66ea706c21ae4b0bb55500d499454da",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/05_ordinateur_legal_cookies_404_etats.png",
+    "source_name": "Planche de maquettes web APLAT(2).png",
+    "pages": "15 Mentions légales ; 16 Confidentialité ; 17 Cookies ; 18 404 ; erreurs formulaire et ajout photo",
+    "size": 1901584,
+    "sha256": "a8397b8aead50249cb6d1db765455446ede4e16503e25d1214896b51e15c2078",
+    "git_blob": "c28cc11ad0d022a1b2203d012d360ef544642634",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/06_mobile_accueil_prestations.png",
+    "source_name": "Maquette web APLAT, desktop et mobile.png",
+    "pages": "Accueil 1/2 et 2/2 ; Prestations 1/2 et 2/2",
+    "size": 2103247,
+    "sha256": "2bd96342f4f929eb7fc50f7af62c45f855358e2510f0780db407e9c3e500e37d",
+    "git_blob": "c13a5c3f4da02ba8d1464ea2c2169408a565627c",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/07_mobile_metiers_realisations.png",
+    "source_name": "Maquettes web APLAT, plâtrerie & peinture.png",
+    "pages": "03 Plâtrerie ; 04 Peinture ; 05 Réalisations ; 06 Détail chantier",
+    "size": 1973914,
+    "sha256": "bb839d1a35a2efc35946975cf947275ef756d4b19a216d423b37a68c6f2c7f5a",
+    "git_blob": "7db56f24b39e29b377a76be678f6d0dc40bf2678",
+    "dimensions": [
+      1536,
+      1024
+    ]
+  },
+  {
+    "file": "maquettes/08_mobile_approche_faq_contact_devis_menu.png",
+    "source_name": "Maquettes mobiles APLAT, plâtrerie et peinture.png",
+    "pages": "07 Notre approche ; 08 FAQ ; 09 Contact ; 10 Devis 2 étapes ; Menu",
+    "size": 1870841,
+    "sha256": "6d17b0f6d2e9a79771a4479332e056805bd0daab294f42a0c9c9c1ccd32827d3",
+    "git_blob": "9e42aa65cd1f2565645659f872c45b59886e54fe",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/09_mobile_enduits_conseils_confirmation.png",
+    "source_name": "Maquettes web APLAT, desktop et mobile.png",
+    "pages": "11 Enduits ; 12 Conseils ; 13 Article ; 14 Confirmation",
+    "size": 2091418,
+    "sha256": "b976f8323cc04830b5b6dcdb8c5968f8c4785b1e5c76097013cfbffaeb8955ed",
+    "git_blob": "0f972ec777b9b4bafcefa22909073829c81e3a2a",
+    "dimensions": [
+      1024,
+      1536
+    ]
+  },
+  {
+    "file": "maquettes/10_mobile_legal_cookies_404_etats.png",
+    "source_name": "Maquettes APLAT, plâtrerie et peinture.png",
+    "pages": "15 Mentions ; 16 Confidentialité ; 17 Cookies ; 18 404 ; Validation/photos ; Préférences cookies",
+    "size": 2006919,
+    "sha256": "b3142751a5947710a89ea2e9ac3902000bac67af9fd2e68dc648917ab5ec26c8",
+    "git_blob": "d39d8ee90454ec31eac9e0c6659143de0a7371be",
+    "dimensions": [
+      1536,
+      1024
+    ]
+  }
+]

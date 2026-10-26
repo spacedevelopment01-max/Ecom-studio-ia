@@ -1,5 +1,5 @@
 /**
- * Musique composée par le studio (aucun droit tiers, aucun appel payant) : un vrai petit morceau, pas une nappe.
+ * Musique composée localement par le studio (aucun appel payant ; licences des ressources à vérifier selon le moteur utilisé) : un vrai petit morceau, pas une nappe.
  * Progression majeure lumineuse, piano électrique doux, basse ronde, arpège léger et batterie discrète (humeur
  * « pulse ») ou piano et nappe seuls (humeur « calm »), réverbération, entrée et sortie en fondu. Aucun souffle ni
  * bruit blanc aux coupes : les changements de plan se font en musique, pas avec un effet qui surprend.

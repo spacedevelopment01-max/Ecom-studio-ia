@@ -543,7 +543,7 @@ function proposeNames(sector: string, seed: string): string[] {
 export function localBrand(p: ProductProfile, providedBrand?: string, biz?: BusinessInfo | null): { brand: Brand; strategy: Strategy; logoSpec: Omit<LogoSpec, "color"> } {
   const services = isServicesBusiness(biz);
   const sector = (p.sector ?? "maison") as SectorId;
-  const direction: DirectionId = services ? "rive" : ((biz as { storeType?: string } | null | undefined)?.storeType === "multi" ? "orbe" : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison);
+  const direction: DirectionId = services ? "rive" : ((biz as { storeType?: string } | null | undefined)?.storeType === "multi" ? "souple" : SECTOR_DIRECTION[sector] ?? SECTOR_DIRECTION.maison);
   const d = DIRECTIONS.find((x) => x.id === direction)!;
   const seed = p.visual.colors.map((c) => c.hex).join("") + (p.name ?? "");
   const proposals = services ? serviceNames(p, seed) : proposeNames(sector, seed);
@@ -583,10 +583,7 @@ export function localBrand(p: ProductProfile, providedBrand?: string, biz?: Busi
     },
     strategy: {
       audience: [],
-      angles: C(
-        [{ title: "Le produit en détail", idea: "Montrer les détails réels de l'objet." }, { title: "Usage", idea: "Le produit dans son contexte." }],
-        [{ title: "The product up close", idea: "Show the object's real details." }, { title: "In use", idea: "The product in its everyday context." }],
-      ),
+      angles: [],
       pillars: C(["Produit", "Usage", "Coulisses"], ["Product", "In use", "Behind the scenes"]),
       keyMessages: [],
       platform: localPlatform(p),
@@ -641,16 +638,7 @@ function localServiceBrand(p: ProductProfile, biz: BusinessInfo, name: string, p
   ].filter(Boolean);
   // Positionnement écrit à partir de ce que le client a donné (au moins 3 éléments), sinon à définir avec lui.
   const positioning = parts.length >= 3 ? `${parts.join(". ")}.` : "";
-  const angles: Strategy["angles"] = [
-    ...offer.slice(0, 2).map((x) => ({ title: x.name, idea: x.description?.trim() || C("Présenter cette prestation : pour qui, comment elle se déroule, ce qu'il faut prévoir.", "Present this service: who it's for, how it works, what to plan for.") })),
-    C({ title: "Le savoir-faire en action", idea: "Montrer le vrai travail : gestes, outils, coulisses d'une prestation." }, { title: "Skills in action", idea: "Show the real work: techniques, tools, behind the scenes of a job." }),
-    showcase
-      ? C({ title: "Avant / après", idea: "Uniquement de vraies réalisations, photographiées avec l'accord des clients." }, { title: "Before and after", idea: "Real projects only, photographed with the clients' consent." })
-      : C({ title: "Comment se passe un rendez-vous", idea: "Expliquer simplement le déroulé, du premier contact à la fin de la prestation." }, { title: "What an appointment looks like", idea: "Explain the process simply, from first contact to the end of the service." }),
-    C({ title: "Conseils d'expert", idea: "Partager des conseils utiles du métier, sans promesse de résultat." }, { title: "Expert tips", idea: "Share useful tips from the trade, without promising results." }),
-    C({ title: "L'équipe", idea: "Présenter les personnes qui accueillent ou interviennent, avec leur accord." }, { title: "Meet the team", idea: "Introduce the people clients will meet, with their consent." }),
-    C({ title: "Prise de rendez-vous", idea: `Rappeler simplement comment réserver (« ${cta} »), la zone et les horaires.` }, { title: "Easy booking", idea: `Remind people how to get in touch ("${cta}"), the area covered and the opening hours.` }),
-  ];
+  const angles: Strategy["angles"] = [];
   const keyMessages = [
     offer.length ? C(`Prestations : ${offer.slice(0, 4).map((x) => x.name).join(", ")}`, `Services: ${offer.slice(0, 4).map((x) => x.name).join(", ")}`) : "",
     profile?.area?.trim() ? C(`Zone d'intervention : ${profile.area.trim()}`, `Service area: ${profile.area.trim()}`) : profile?.address?.trim() ? C(`Adresse : ${profile.address.trim()}`, `Address: ${profile.address.trim()}`) : "",

@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Guide créatif vidéo branché sur le moteur réellement utilisé (vidéo en scènes) : règles chargées et modifiables,
@@ -120,7 +121,7 @@ describe("Guide créatif vidéo", async () => {
         clip: async () => Buffer.from(""),
         stock: async (p: any, k: number, _t: string, _a: string, _s: number, _e: Set<string>, _key: string, step?: unknown) => {
           steps.push(step);
-          const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: { stock: { source: "pixabay", id: 100 + k, page: `https://pixabay.com/videos/id-${100 + k}/`, license: "Pixabay Content License" } } });
+          const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: { stock: { source: "pixabay", id: 100 + k, page: `https://pixabay.com/videos/id-${100 + k}/`, license: "Pixabay Content License" } } });
           return { assetId: asset.id, durationS: 8 };
         },
         spentMicro: () => 0,
@@ -158,7 +159,7 @@ describe("Guide créatif vidéo", async () => {
     await expect(runThreeScenes(null, a.id, { as: "ad", scenes: 3, totalS: 15, aspect: "9:16" }, {
       keyframe: async () => Buffer.from(""),
       clip: async () => Buffer.from(""),
-      stock: async (p: any, k: number) => (k === 1 ? null : { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
+      stock: async (p: any, k: number) => (k === 1 ? null : { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "v"),
     })).rejects.toThrow(/Scène 2/);
@@ -172,7 +173,7 @@ describe("Guide créatif vidéo", async () => {
       visualCheck: false,
       keyframe: async () => Buffer.from(""),
       clip: async () => Buffer.from(""),
-      stock: async (p: any, k: number) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`v${k}`), name: `v${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
+      stock: async (p: any, k: number) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `v${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "v"),
     });

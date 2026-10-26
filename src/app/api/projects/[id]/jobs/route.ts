@@ -7,7 +7,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
   const type = new URL(req.url).searchParams.get("type");
   const rows = type
-    ? all<Job>("SELECT * FROM jobs WHERE project_id = ? AND type LIKE ? ORDER BY created_at DESC LIMIT 30", p.id, `${type}%`)
-    : all<Job>("SELECT * FROM jobs WHERE project_id = ? ORDER BY created_at DESC LIMIT 40", p.id);
+    ? all<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? AND type LIKE ? ORDER BY created_at DESC LIMIT 30", p.id,p.userId, `${type}%`)
+    : all<Job>("SELECT * FROM jobs WHERE project_id = ? AND user_id=? ORDER BY created_at DESC LIMIT 40", p.id,p.userId);
   return ok({ jobs: rows.map(publicJob) });
 });

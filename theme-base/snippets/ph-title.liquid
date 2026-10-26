@@ -1,0 +1,52 @@
+{%- comment -%}
+  PHASE : titre à plusieurs lignes — une ligne par retour à la ligne (mêmes césures que les planches) ; [y]…[/y] : mots
+  en jaune électrique (sur fond sombre) ; [b]…[/b] : mots en bleu nuit (sur fond jaune). Une couleur ouverte sur une
+  ligne et fermée plus loin est reportée sur chaque ligne (le balisage reste valide).
+  Paramètres : text, tag (h1, h2, h3, p), class, id.
+{%- endcomment -%}
+{%- liquid
+  assign ph_tag = tag | default: 'h2'
+  assign ph_src = text | escape | newline_to_br
+  assign ph_lines = ph_src | split: '<br />'
+  assign ph_y = false
+  assign ph_b = false
+-%}
+{%- if text != blank -%}
+<{{ ph_tag }} class="ph-title {{ class }}"{% if id != blank %} id="{{ id }}"{% endif %}>
+  {%- for l in ph_lines -%}
+    {%- liquid
+      assign ln = l | strip
+      if ph_y
+        assign ln = '[y]' | append: ln
+      endif
+      if ph_b
+        assign ln = '[b]' | append: ln
+      endif
+      assign ph_y = false
+      assign ph_b = false
+      assign ph_parts = ln | split: '[y]'
+      assign ph_last = ph_parts | last
+      if ln contains '[y]'
+        unless ph_last contains '[/y]'
+          assign ph_y = true
+        endunless
+      endif
+      if ph_y
+        assign ln = ln | append: '[/y]'
+      endif
+      assign ph_parts = ln | split: '[b]'
+      assign ph_last = ph_parts | last
+      if ln contains '[b]'
+        unless ph_last contains '[/b]'
+          assign ph_b = true
+        endunless
+      endif
+      if ph_b
+        assign ln = ln | append: '[/b]'
+      endif
+      assign ln = ln | replace: '[y]', '<span class="ph-y">' | replace: '[/y]', '</span>' | replace: '[b]', '<span class="ph-b">' | replace: '[/b]', '</span>'
+    -%}
+    <span class="ph-ln">{{ ln }}</span>{% unless forloop.last %} {% endunless %}
+  {%- endfor -%}
+</{{ ph_tag }}>
+{%- endif -%}

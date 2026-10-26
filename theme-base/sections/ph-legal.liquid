@@ -1,0 +1,59 @@
+{%- comment -%}
+  PHASE : mentions légales (planches 05 et 10) — lignes « intitulé / valeur » (« À renseigner » tant que le client ne les
+  a pas remplies : rien n'est inventé, ni identité, ni SIRET, ni hébergeur), photo à droite, encadré « Crédits et
+  propriété intellectuelle ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-legal ph-pad" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    <div class="ph-legal__body">
+      <dl class="ph-legal__rows">
+        {%- for b in section.blocks -%}
+          <div class="ph-legal__row" {{ b.shopify_attributes }}><dt><span{% if b.settings.label_mobile != blank %} class="ph-txt-d"{% endif %}>{{ b.settings.label }}</span>{%- if b.settings.label_mobile != blank -%}<span class="ph-txt-m">{{ b.settings.label_mobile }}</span>{%- endif -%}</dt><dd>{{ b.settings.value }}{%- if b.settings.hint != blank -%}<span class="ph-legal__hint ph-only-m">{{ b.settings.hint }}</span>{%- endif -%}</dd></div>
+        {%- endfor -%}
+      </dl>
+      {% render 'ph-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, class: 'ph-legal__img', sizes: '(min-width: 1080px) 25vw, 100vw', caption: s.caption %}
+    </div>
+    {%- if s.credits_title != blank -%}
+      <div class="ph-legal__credits">
+        <h2 class="ph-legal__credits-title"><span{% if s.credits_title_mobile != blank %} class="ph-txt-d"{% endif %}>{{ s.credits_title }}</span>{%- if s.credits_title_mobile != blank -%}<span class="ph-txt-m">{{ s.credits_title_mobile }}</span>{%- endif -%}</h2>
+        <div class="ph-legal__credits-text{% if s.credits_text_mobile != blank %} ph-txt-d{% endif %}">{{ s.credits_text }}</div>
+        {%- if s.credits_text_mobile != blank -%}<div class="ph-legal__credits-text ph-txt-m">{{ s.credits_text_mobile }}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Mentions légales PHASE",
+  "class": "ph-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+    { "type": "text", "id": "caption", "label": "Légende sur la photo" },
+    { "type": "text", "id": "credits_title", "label": "Titre de l'encadré", "default": "Crédits et propriété intellectuelle" },
+    { "type": "richtext", "id": "credits_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "credits_title_mobile", "label": "Titre de l'encadré au téléphone (facultatif)" },
+    { "type": "richtext", "id": "credits_text_mobile", "label": "Texte de l'encadré au téléphone (facultatif)" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 30 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 50 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 16 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "blocks": [
+    { "type": "row", "name": "Mention", "settings": [
+      { "type": "text", "id": "label", "label": "Intitulé", "default": "Éditeur" },
+      { "type": "text", "id": "value", "label": "Valeur", "default": "À renseigner" },
+      { "type": "text", "id": "label_mobile", "label": "Intitulé au téléphone (facultatif)" },
+      { "type": "text", "id": "hint", "label": "Précision sous la valeur (téléphone)" }
+    ] }
+  ],
+  "max_blocks": 12,
+  "presets": [{ "name": "Mentions légales PHASE" }]
+}
+{% endschema %}

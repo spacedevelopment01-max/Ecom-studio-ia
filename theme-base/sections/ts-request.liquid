@@ -1,0 +1,63 @@
+{%- comment -%}
+  TABLE SAISON : demande de renseignements pour un groupe (date, nombre de personnes, e-mail, message), photo à droite
+  et encadré « Conditions ». En démonstration, l'envoi est simulé et le dit ; avec le service réel, la demande est
+  enregistrée par le studio avant d'afficher la page « Votre demande a bien été reçue ». Sans JavaScript : formulaire de
+  contact Shopify.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section">
+  <div class="ts-wrap">
+    <div class="ts-form-split">
+      <div>
+        {%- if s.heading != blank -%}<h2 class="ts-title">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="ts-text ts-muted" style="margin: 6px 0 22px">{{ s.text }}</div>{%- endif -%}
+        <div data-ts-request="group">
+        {%- form 'contact', class: 'ts-form' -%}
+          <input type="hidden" name="contact[kind]" value="group">
+          <div class="ts-form__row">
+            <label class="ts-field"><span>{{ s.label_date }} <span class="ts-req" aria-hidden="true">*</span></span><input class="ts-input" type="date" name="contact[date]" required data-ts-future></label>
+            <label class="ts-field"><span>{{ s.label_party }} <span class="ts-req" aria-hidden="true">*</span></span><input class="ts-input" type="number" name="contact[party]" min="{{ s.min_party }}" max="200" required placeholder="{{ s.placeholder | escape }}" inputmode="numeric"></label>
+          </div>
+          <label class="ts-field"><span>{{ s.label_email }} <span class="ts-req" aria-hidden="true">*</span></span><input class="ts-input" type="email" name="contact[email]" required autocomplete="email" placeholder="{{ s.placeholder | escape }}"></label>
+          <label class="ts-field"><span>{{ s.label_message }}</span><textarea class="ts-input" name="contact[body]" rows="4" placeholder="{{ s.placeholder_message | escape }}"></textarea></label>
+          <p class="ts-status" role="status" aria-live="polite" hidden data-ts-status></p>
+          <button type="submit" class="ts-btn ts-btn--block">{{ s.button_label }}</button>
+        {%- endform -%}
+        </div>
+      </div>
+      <div class="ts-form-split__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, sizes: '(min-width: 750px) 30vw, 100vw' %}</div>
+    </div>
+    {%- if s.conditions_title != blank -%}
+      <div class="ts-conditions">
+        <h2 class="ts-title">{{ s.conditions_title }}</h2>
+        <span class="ts-rule" aria-hidden="true"></span>
+        <div class="ts-text">{{ s.conditions_text }}</div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Demande de groupe",
+  "class": "ts-request-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Demande de renseignements" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "label_date", "label": "Libellé de la date", "default": "Date souhaitée" },
+    { "type": "text", "id": "label_party", "label": "Libellé du nombre de personnes", "default": "Nombre de personnes" },
+    { "type": "range", "id": "min_party", "label": "Personnes au minimum", "min": 2, "max": 40, "step": 1, "default": 8 },
+    { "type": "text", "id": "label_email", "label": "Libellé de l'e-mail", "default": "Votre e-mail" },
+    { "type": "text", "id": "label_message", "label": "Libellé du message", "default": "Votre message" },
+    { "type": "text", "id": "placeholder", "label": "Texte d'exemple des champs", "default": "À renseigner" },
+    { "type": "text", "id": "placeholder_message", "label": "Texte d'exemple du message", "default": "Précisez votre événement, vos besoins…" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Envoyer ma demande" },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "conditions_title", "label": "Titre de l'encadré", "default": "Conditions" },
+    { "type": "richtext", "id": "conditions_text", "label": "Texte de l'encadré" }
+  ],
+  "presets": [{ "name": "Demande de groupe" }]
+}
+{% endschema %}

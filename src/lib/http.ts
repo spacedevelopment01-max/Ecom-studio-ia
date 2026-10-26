@@ -6,23 +6,31 @@ import { UserFacingError } from "./jobs";
 import { logError } from "./db";
 import { redact } from "./redact";
 import { L, langFromRequest, runWithLang } from "./i18n-server";
+import { withAccessScope } from "./access-scope";
+import { getSetting } from "./settings";
 
 export function ok(data: unknown = { ok: true }, init?: ResponseInit) {
-  return NextResponse.json(data, init);
+  const headers = new Headers(init?.headers);
+  headers.set("Cache-Control", "private, no-store");
+  return NextResponse.json(data, { ...init, headers });
 }
 
 export function fail(status: number, message: string, code?: string) {
-  return NextResponse.json({ error: message, code }, { status });
+  return ok({ error: message, code }, { status });
 }
 
-export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
+export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response>, options?: { allowOpaqueOrigin?: (req: Request) => boolean }) {
   return async (...args: A): Promise<Response> => {
     const req = args[0] instanceof Request ? args[0] : null;
-    return runWithLang(req ? langFromRequest(req) : {}, () => run(...args));
+    return withAccessScope({kind:"http"}, () => runWithLang(req ? langFromRequest(req) : {}, () => run(...args)));
   };
   async function run(...args: A): Promise<Response> {
     try {
-      return await fn(...args);
+      const req = args[0] instanceof Request ? args[0] : null;
+      if (req && !(req.headers.get("origin") === "null" && options?.allowOpaqueOrigin?.(req))) assertMutationOrigin(req);
+      const response = await fn(...args);
+      try { response.headers.set("Cache-Control", "private, no-store");return response; }
+      catch { const headers=new Headers(response.headers);headers.set("Cache-Control","private, no-store");return new Response(response.body,{status:response.status,statusText:response.statusText,headers}); }
     } catch (e) {
       if (e instanceof HttpError) return fail(e.status, e.message, e.code);
       // Refus clair d'une fonction du studio (limite atteinte, IA indisponible…) : son message est montré tel quel,
@@ -40,6 +48,45 @@ export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response
   }
 }
 
+/** Les cookies SameSite ne remplacent pas le contrôle de l'origine des mutations. */
+export function assertMutationOrigin(req: Request) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return;
+  const origin = req.headers.get("origin");
+  const allowed = new Set([new URL(req.url).origin]);
+  // Même source de vérité que les liens du studio, y compris derrière un proxy privé.
+  // Ne jamais déduire une origine autorisée d'un en-tête Forwarded fourni par l'appelant.
+  const configuredUrl = getSetting("app.url") || process.env.APP_URL;
+  if (configuredUrl) {
+    try { allowed.add(new URL(configuredUrl).origin); } catch { /* configuration invalide : aucun droit ajouté */ }
+  }
+  if ((origin && !allowed.has(origin)) || (!origin && req.headers.get("sec-fetch-site") === "cross-site")) {
+    throw new HttpError(403, L("Origine de la requête refusée.", "Request origin refused."), "request_origin");
+  }
+}
+
+/** Limite les octets effectivement reçus, y compris avec une longueur mensongère ou absente. */
+export async function boundedBody(req: Request, maxBytes: number): Promise<Uint8Array> {
+  const declared = Number(req.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > maxBytes) throw new HttpError(413, L("Envoi trop volumineux.", "Upload too large."));
+  const reader = req.body?.getReader();
+  if (!reader) return new Uint8Array();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) {
+        await reader.cancel();
+        throw new HttpError(413, L("Envoi trop volumineux.", "Upload too large."));
+      }
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  return Buffer.concat(chunks, size);
+}
+
 /**
  * Lecture d'un envoi de fichiers (multipart) avec une taille MAXIMALE vérifiée AVANT la lecture : sans cela, le
  * serveur charge tout le corps en mémoire avant de pouvoir refuser un fichier trop gros (épuisement de la mémoire).
@@ -50,14 +97,16 @@ export async function readForm(req: Request, maxBytes: number): Promise<FormData
   if (!Number.isFinite(declared) || declared <= 0) {
     if (req.headers.get("transfer-encoding")) throw new HttpError(411, L("Envoi sans taille annoncée refusé.", "Upload without a declared size refused."));
   } else if (declared > maxBytes) throw new HttpError(413, L(`Envoi trop volumineux (${mb} Mo au maximum).`, `Upload too large (${mb} MB maximum).`));
-  return req.formData();
+  const bytes = await boundedBody(req, maxBytes);
+  return new Response(bytes as BodyInit, { headers: { "Content-Type": req.headers.get("content-type") ?? "" } }).formData();
 }
 
 export async function body<T>(req: Request, schema: ZodType<T>): Promise<T> {
   let raw: unknown;
   try {
-    raw = await req.json();
-  } catch {
+    raw = JSON.parse(Buffer.from(await boundedBody(req, 2 * 1048576)).toString("utf8"));
+  } catch (e) {
+    if (e instanceof HttpError) throw e;
     throw new HttpError(400, L("Corps de requête JSON attendu.", "JSON request body expected."));
   }
   return schema.parse(raw);

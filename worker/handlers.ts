@@ -2,6 +2,8 @@ import { jobStrategy, withStrategyScope, strategyStamp } from "../src/lib/strate
 import { HttpError } from "../src/lib/auth";
 import { assertRepairableConversation } from "../src/lib/theme/plan-access";
 import { assertJobEntitlements } from "../src/lib/job-entitlements";
+import { assertJobScope } from "../src/lib/project-security";
+import { withAccessScope } from "../src/lib/access-scope";
 /** Gestionnaires des tâches d'arrière-plan. */
 import { isAutoUsable } from "../src/lib/quality/usable";
 import { projectKind } from "@/lib/theme/project-kind";
@@ -32,6 +34,11 @@ import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } fro
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
 import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { hasStudioProducts, withStudioProducts } from "../src/lib/products/catalog";
+import { syncProducts } from "../src/lib/products/sync";
+import { decrypt } from "../src/lib/secrets";
+import { getSetting } from "../src/lib/settings";
+import { shopifyConnector } from "../src/lib/products/connectors/shopify";
 import { renderCreative, FORMATS } from "../src/lib/media/compose";
 import { brandTypo, palette, ensureCutouts, latestAsset } from "../src/lib/engine/images";
 import { cutoutSummary, redoCutout } from "../src/lib/engine/cutouts";
@@ -431,7 +438,7 @@ export const handlers: Record<string, Handler> = {
     const projectId = ctx.payload.projectId;
     const p = loadProject(projectId);
     const folders = listFolders(projectId).filter((f) => f.system_key);
-    const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId);
+    const loose = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND user_id=? AND folder_id IS NULL AND deleted_at IS NULL LIMIT 60", projectId,p.userId);
     if (!loose.length) return { moved: 0 };
     const rules: [RegExp, string][] = [
       [/logo/, "brand.logos"],
@@ -490,12 +497,19 @@ export const handlers: Record<string, Handler> = {
     // n'est jamais envoyé vers la boutique réelle.
     const checked = await ctx.step("cms-v2-check", async () => {
       const { exportAndRecord } = await import("../src/lib/cms-v2/record");
-      const r = await exportAndRecord({ id: projectId, userId: ctx.job.user_id }, { spec: cur.spec, number: cur.version.number, id: cur.version.id }, "shopify", contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
+      const r = await exportAndRecord({ id: projectId, userId: ctx.job.user_id }, { spec: withStudioProducts(cur.spec, projectId), number: cur.version.number, id: cur.version.id }, "shopify", contentLang() === "en" ? "en" : "fr", { jobId: ctx.job.id });
       return { verdict: r.verdict, message: r.message, issues: r.issues };
     });
     if (checked.verdict === "REJECTED") throw new PermanentError(`${L("Envoi bloqué par le contrôle de l'export Shopify : ", "Sending blocked by the Shopify export check: ")}${checked.message}`);
     const out: Record<string, unknown> = { cmsCheck: checked.verdict };
-    if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
+    // Produits du Studio (onglet « Catalogue ») : envoi avec toutes les variantes, références et stocks, correspondances
+    // conservées (mise à jour sans doublon, stock vendu dans la boutique jamais écrasé). Sinon, le produit de la boutique.
+    if (parts.includes("product") && hasStudioProducts(projectId)) out.catalog = await ctx.step("catalog", async () => {
+      ctx.progress(0.1, L("Envoi des produits du Studio vers Shopify", "Sending the Studio products to Shopify"));
+      const r = await syncProducts(projectId, shopifyConnector({ shop: c.external_id, token: decrypt(c.access_token) ?? "", apiVersion: getSetting("shopify.apiVersion") || undefined }));
+      return r.counts;
+    });
+    else if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
     // SEO des fiches : envoyé / accepté / refusé / inconnu, jamais présenté comme vérifié.
@@ -513,4 +527,16 @@ export const HANDLER_TYPES = Object.keys(handlers);
 for (const action of Object.keys(ACTION_STEPS)) if (handlers[action]) handlers[action] = orchestrated(action, handlers[action]);
 
 // Recheck current rights even for jobs queued before a downgrade.
-for (const action of Object.keys(handlers)) { const execute=handlers[action];handlers[action]=async ctx=>{assertJobEntitlements(action,ctx.job.project_id,ctx.payload);const pid=ctx.job.project_id;const selected=pid?jobStrategy(pid,action,ctx.payload,true):null;const stamp=selected;if(pid&&Object.hasOwn(ctx.payload,"strategyVersion")&&ctx.payload.strategyVersion!==(stamp?.id??null)&&!ctx.payload.strategyAwaitingChoice)throw new HttpError(409,"L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.","strategy_changed");return pid?withStrategyScope(pid,()=>execute(ctx),selected):execute(ctx);}; }
+for (const action of Object.keys(handlers)) {
+  const execute = handlers[action];
+  handlers[action] = async ctx => withAccessScope({ userId: ctx.job.user_id, projectId: ctx.job.project_id ?? undefined, kind:"worker" }, async () => {
+    assertJobScope({ userId: ctx.job.user_id, projectId: ctx.job.project_id, payload: ctx.payload, parentId: ctx.job.parent_id, dependsOn: json<string[]>(ctx.job.depends_on, []) });
+    assertJobEntitlements(action, ctx.job.project_id, ctx.payload);
+    const pid = ctx.job.project_id;
+    const selected = pid ? jobStrategy(pid, action, ctx.payload, true) : null;
+    if (pid && Object.hasOwn(ctx.payload, "strategyVersion") && ctx.payload.strategyVersion !== (selected?.id ?? null) && !ctx.payload.strategyAwaitingChoice) {
+      throw new HttpError(409, "L’angle actif a changé. Vérifiez et confirmez cette tâche avant une nouvelle exécution.", "strategy_changed");
+    }
+    return pid ? withStrategyScope(pid, () => execute(ctx), selected) : execute(ctx);
+  });
+}

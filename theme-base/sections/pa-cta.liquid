@@ -1,0 +1,47 @@
+{%- comment -%}
+  PARENTHÈSE : appels à l'action.
+  - photo : bandeau photo voilé de vert, titre, texte et bouton abricot à droite (« Et si vous vous offriez… », 02) ;
+  - sage : aplat sauge centré, bouton blanc (« Prêt(e) à vous offrir une parenthèse ? », 01) ;
+  - right : photo, voile vert à droite, texte aligné à droite, bouton blanc fléché (visioconférence, 01) ;
+  - soft : photo douce, texte centré, bouton blanc (« Envie d'échanger ? », 05) ;
+  - leaves : aplat sauge à feuillage, texte à gauche (« Parcours & formation », 05).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-cta pa-cta--{{ s.layout }}">
+  <div class="{% if s.contained %}pa-wrap{% else %}pa-cta__full{% endif %}">
+    <div class="pa-cta__box">
+      {%- if s.layout != 'sage' and s.layout != 'leaves' -%}{% render 'pa-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, pos_mobile: s.image_position_mobile, class: 'pa-cta__img' %}{%- endif -%}
+      {%- if s.layout == 'leaves' -%}{% render 'pa-ornament', name: 'leaves', class: 'pa-cta__leaves' %}{%- endif -%}
+      <div class="pa-cta__inner">
+        <div class="pa-cta__copy">
+          <h2 class="pa-cta__title">{{ s.heading | escape | newline_to_br }}</h2>
+          {%- if s.text != blank -%}<div class="pa-cta__text">{{ s.text }}</div>{%- endif -%}
+        </div>
+        {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--{{ s.button_style }}" href="{{ s.button_link | default: '/pages/prendre-rendez-vous' }}"{% if s.book_kind != blank %} data-pa-book="{{ s.book_kind }}"{% endif %}><span>{{ s.button_label }}</span>{% if s.button_arrow %}{% render 'pa-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Appel au rendez-vous",
+  "class": "pa-cta-section",
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "photo", "options": [{ "value": "photo", "label": "Bandeau photo vert" }, { "value": "sage", "label": "Aplat sauge centré" }, { "value": "right", "label": "Photo, texte à droite" }, { "value": "soft", "label": "Photo douce centrée" }, { "value": "leaves", "label": "Aplat sauge à feuillage" }] },
+    { "type": "checkbox", "id": "contained", "label": "Dans la largeur du contenu", "default": false },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Et si vous vous offriez un temps pour vous ?" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Prendre rendez-vous" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "text", "id": "book_kind", "label": "Réservation préparée", "info": "Ex. « seance:premiere:visio »." },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "apricot", "options": [{ "value": "apricot", "label": "Abricot" }, { "value": "white", "label": "Blanc" }, { "value": "forest", "label": "Vert forêt" }] },
+    { "type": "checkbox", "id": "button_arrow", "label": "Flèche dans le bouton", "default": false }
+  ],
+  "presets": [{ "name": "Appel au rendez-vous" }]
+}
+{% endschema %}

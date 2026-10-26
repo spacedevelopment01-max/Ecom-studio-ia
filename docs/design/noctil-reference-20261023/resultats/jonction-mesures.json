@@ -1,0 +1,58 @@
+{
+ "1440": {
+  "heroBottom": 621,
+  "imgTop": 509,
+  "visibleTop": 558,
+  "imgW": 563,
+  "overlap": 63,
+  "riseOn": "1",
+  "zIndex": "3",
+  "overflowY": "visible",
+  "buttonClickable": true,
+  "buttonBottom": 477,
+  "scrollW": 1440,
+  "menu": null
+ },
+ "390": {
+  "heroBottom": 541,
+  "imgTop": 441,
+  "visibleTop": 465,
+  "imgW": 262,
+  "overlap": 76,
+  "riseOn": "1",
+  "zIndex": "3",
+  "overflowY": "visible",
+  "buttonClickable": true,
+  "buttonBottom": 369,
+  "scrollW": 390,
+  "menu": "menu au-dessus"
+ },
+ "360": {
+  "heroBottom": 522,
+  "imgTop": 431,
+  "visibleTop": 452,
+  "imgW": 240,
+  "overlap": 70,
+  "riseOn": "1",
+  "zIndex": "3",
+  "overflowY": "visible",
+  "buttonClickable": true,
+  "buttonBottom": 364,
+  "scrollW": 360,
+  "menu": "menu au-dessus"
+ },
+ "430": {
+  "heroBottom": 566,
+  "imgTop": 455,
+  "visibleTop": 481,
+  "imgW": 292,
+  "overlap": 85,
+  "riseOn": "1",
+  "zIndex": "3",
+  "overflowY": "visible",
+  "buttonClickable": true,
+  "buttonBottom": 377,
+  "scrollW": 430,
+  "menu": "menu au-dessus"
+ }
+}

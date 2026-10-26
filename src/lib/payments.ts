@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import { all, id, logError, now, one, run, tx } from "./db";
 import { alignPeriod, creditPackBudget, creditTopup, getSubscription, syncAllowance } from "./billing";
 import { HttpError } from "./auth";
-import { PACKS, PLANS, packPrice, type Billing, type PackId, type PlanId } from "./plans";
+import { PACKS, PACKS_FOR_SALE, PLANS, packPrice, type Billing, type PackId, type PlanId } from "./plans";
 import { creditPack, launchPackBought, userPlan } from "./quotas";
 import { appUrl, getSetting, setSetting } from "./settings";
 import { L, uiLang } from "./i18n-server";
@@ -24,9 +24,11 @@ export function paymentsLive(): boolean {
 export async function stripe(path: string, params: Record<string, string>, idempotencyKey?: string) {
   const { secret } = stripeKeys();
   if (!secret) throw new Error(L("Paiement en ligne non configuré.", "Online payment is not configured."));
-  const r = await fetch(`https://api.stripe.com/v1/${path}`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) }, body: new URLSearchParams(params) });
+  let r:Response;
+  try { r = await fetch(`https://api.stripe.com/v1/${path}`, { method: "POST", headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/x-www-form-urlencoded", ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) }, body: new URLSearchParams(params), signal:AbortSignal.timeout(20_000) }); }
+  catch { throw new HttpError(503,L('La réponse du service de paiement n’est pas disponible. Ne créez pas un autre achat : vérifiez votre paiement ou reprenez la même demande.','The payment service response is unavailable. Do not start another purchase: check the payment or resume the same request.'),'payment_uncertain'); }
   const j: any = await r.json();
-  if (!r.ok) throw new Error(L(`Stripe : ${j.error?.message ?? r.status}`, `Stripe: ${j.error?.message ?? r.status}`));
+  if (!r.ok) throw new HttpError(r.status===402?402:502,r.status===402?L('Le paiement demande une authentification ou a été refusé. Vos nouveaux droits ne sont pas activés ; vérifiez le paiement avec l’assistance.','The payment needs authentication or was declined. New access has not been enabled; check the payment with support.'):L('Le service de paiement n’a pas confirmé cette action. Vérifiez son état avant de recommencer.','The payment service did not confirm this action. Check its status before trying again.'),r.status===402?'payment_not_completed':'payment_unavailable');
   return j;
 }
 
@@ -35,7 +37,7 @@ export async function stripeGet(path: string): Promise<any | null> {
   const { secret } = stripeKeys();
   if (!secret) return null;
   try {
-    const r = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { Authorization: `Bearer ${secret}` } });
+    const r = await fetch(`https://api.stripe.com/v1/${path}`, { headers: { Authorization: `Bearer ${secret}` },signal:AbortSignal.timeout(20_000) });
     if (!r.ok) return null;
     return await r.json();
   } catch {
@@ -154,6 +156,7 @@ export async function planCheckout(user: { id: string; email: string }, planId: 
 
 /** Achat d'un pack (paiement unique), remise du forfait comprise. Réservé aux abonnés. */
 export async function packCheckout(user: { id: string; email: string }, packId: PackId) {
+  if(!PACKS_FOR_SALE.includes(packId))throw new HttpError(410,L('Ces anciens packs ne sont plus en vente. Vos achats déjà acquis sont conservés.','These older packs are no longer sold. Existing purchases are preserved.'),'pack_retired');
   const plan = userPlan(user.id);
   if (!plan) throw new HttpError(402, L("Les packs s'ajoutent à un forfait : choisissez d'abord un forfait.", "Packs are added to a plan: choose a plan first."));
   if (PACKS[packId].once && launchPackBought(user.id)) throw new HttpError(409, L("Le pack Lancement ne s'achète qu'une fois.", "The Launch pack can only be bought once."));
@@ -183,7 +186,7 @@ export function verifyStripeSignature(payload: string, header: string | null): b
   const parts = Object.fromEntries(header.split(",").map((kv) => kv.split("=") as [string, string]));
   const t = parts.t;
   const v1 = header.split(",").filter((x) => x.startsWith("v1=")).map((x) => x.slice(3));
-  if (!t || !v1.length || Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;
+  if (!t || !/^\d+$/.test(t) || !Number.isSafeInteger(Number(t)) || !v1.length || Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;
   const expected = crypto.createHmac("sha256", webhookSecret).update(`${t}.${payload}`).digest("hex");
   return v1.some((sig) => sig.length === expected.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected)));
 }
@@ -209,11 +212,19 @@ export const ENDED = new Set(["canceled", "incomplete_expired"]);
  * Une erreur remonte au webhook (réponse 500) : Stripe relivrera l'événement, qui n'est pas marqué traité.
  */
 export async function handleStripeEvent(evt: any): Promise<void> {
-  setSetting("stripe.verifiedAt", String(now()));
-  if (evt?.id && one("SELECT 1 FROM stripe_events WHERE id = ?", evt.id)) return;
-  await applyStripeEvent(evt);
-  if (evt?.id) run("INSERT OR IGNORE INTO stripe_events (id, type, created, processed_at) VALUES (?,?,?,?)", evt.id, String(evt.type ?? ""), Number(evt.created) || 0, now());
+  if(typeof evt?.id!=='string'||!evt.id||evt.id.length>200||typeof evt.type!=='string'||!evt.data?.object)throw new Error('Invalid Stripe event');
+  const mode=paymentMode();
+  if(typeof evt.livemode==='boolean'&&((mode==='test'&&evt.livemode)||(mode==='live'&&!evt.livemode)))throw new Error('Stripe event mode mismatch');
+  if(one('SELECT 1 FROM stripe_events WHERE id=?',evt.id))return;
+  const owner=id();
+  const claimed=tx(()=>{run('INSERT OR IGNORE INTO stripe_event_claims(id,owner,lease_until) VALUES(?,?,0)',evt.id,owner);return run('UPDATE stripe_event_claims SET owner=?,lease_until=?,attempts=attempts+1 WHERE id=? AND lease_until<=?',owner,now()+180_000,evt.id,now()).changes;});
+  if(!claimed)throw new Error('Stripe event already being processed; retry later');
+  try{await applyStripeEvent(evt);tx(()=>{run('INSERT OR IGNORE INTO stripe_events(id,type,created,processed_at) VALUES(?,?,?,?)',evt.id,evt.type,Number(evt.created)||0,now());run('DELETE FROM stripe_event_claims WHERE id=? AND owner=?',evt.id,owner);setSetting('stripe.verifiedAt',String(now()));});}
+  catch(e){run('UPDATE stripe_event_claims SET lease_until=0 WHERE id=? AND owner=?',evt.id,owner);throw e;}
 }
+
+/** Mode observable sans exporter de clé ; « paymentsLive » signifie disponibilité, pas mode réel. */
+export function paymentMode():'test'|'live'|'unconfigured'|'unknown'{const k=stripeKeys().secret;return !k?'unconfigured':/^(sk|rk)_test_/.test(k)?'test':/^(sk|rk)_live_/.test(k)?'live':'unknown';}
 
 async function applyStripeEvent(evt: any) {
   // Forfaits V2 (abonnement par projet, recharges par projet, rendez-vous) : traités à part.
@@ -229,11 +240,13 @@ async function applyStripeEvent(evt: any) {
       const paid = o.payment_status === "paid" || o.payment_status === "no_payment_required";
       if (!paid) return;
       if (o.metadata?.kind === "topup") {
-        const amount = Number(o.metadata.amount_eur);
-        run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "topup", amount * 100, "paid", o.id, now());
-        creditTopup(userId, amount, `stripe:${o.id}`);
+        const cents=Number(o.amount_total);
+        if(!Number.isSafeInteger(cents)||cents<=0||(o.currency&&o.currency!=='eur'))throw new Error('Invalid legacy paid top-up amount or currency');
+        tx(()=>{run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, created_at) VALUES (?,?,?,?,?,?,?)", id(), userId, "topup", cents, "paid", o.id, now());
+        creditTopup(userId,cents/100,`stripe:${o.id}`);});
       }
       if (o.metadata?.kind === "pack" && o.metadata.pack in PACKS) {
+        tx(()=>{
         const pack = o.metadata.pack as PackId;
         run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "pack", o.amount_total ?? 0, "paid", o.id, pack, now());
         const credited = creditPack(userId, pack, `stripe:${o.id}`);
@@ -243,6 +256,7 @@ async function applyStripeEvent(evt: any) {
           logError("stripe:pack", new Error(`Pack ${pack} déjà acheté : second paiement ${o.id} non crédité`), { userId });
           notifyAdmins("Pack acheté deux fois", `Le compte ${userId} a payé une seconde fois le pack « ${PACKS[pack].name.fr} », qui ne s'achète qu'une fois (paiement ${o.id}). Il n'a pas été crédité : remboursez ce paiement dans Stripe.`);
         }
+        });
       }
       if (o.metadata?.kind === "subscription") await activateSubscription(userId, evt, o);
       return;
@@ -264,7 +278,7 @@ async function activateSubscription(userId: string, evt: any, o: any) {
     run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), userId, "subscription", o.amount_total ?? 0, "paid", o.id, `${plan}:${billing}`, now());
 
   // Déjà appliquée (relivraison) : rien à refaire.
-  if (newId && sub.stripe_subscription_id === newId) return void recordPayment();
+  if (newId && sub.stripe_subscription_id === newId) return void tx(()=>{recordPayment();syncAllowance(userId);});
 
   // Session plus ancienne que celle de l'abonnement en cours (rejeu d'un ancien paiement, ou deux paiements ouverts
   // en parallèle) : l'abonnement en cours n'est pas touché. Si l'abonnement de cette ancienne session vit encore
@@ -304,9 +318,9 @@ async function activateSubscription(userId: string, evt: any, o: any) {
     );
     // Quotas et budget : la période suit la facturation dès l'activation (pas de seconde période quelques jours après).
     alignPeriod(userId, period.start ?? now(), billing === "month" ? period.end : null);
+    recordPayment();
+    syncAllowance(userId);
   });
-  recordPayment();
-  syncAllowance(userId);
 
   // Changement de forfait : l'ancien abonnement (celui en cours avant ce paiement, et celui que la session remplace) est arrêté.
   const replaced = new Set([previous, typeof o.metadata?.replaces === "string" ? o.metadata.replaces : null].filter((x): x is string => !!x && x !== newId));
@@ -320,20 +334,22 @@ async function updateSubscription(evt: any, o: any) {
   const cur = getSubscription(userId);
   // Seul l'abonnement en cours compte (un ancien abonnement arrêté lors d'un changement de forfait est sans effet).
   if (!o.id || cur.stripe_subscription_id !== o.id) return;
+  if(cur.status==='canceled'&&evt.type!=='customer.subscription.deleted')return;
   const at = Number(evt.created) || 0;
   // Ordre de livraison non garanti : un état plus ancien que le dernier appliqué est ignoré.
   if (cur.stripe_event_at && at && at < cur.stripe_event_at) return;
   let state = o;
   if (evt.type !== "customer.subscription.deleted" && cur.stripe_event_at && at === cur.stripe_event_at) {
     // Même seconde : impossible de les départager, l'état réel est relu chez Stripe.
-    state = (await stripeGet(`subscriptions/${encodeURIComponent(o.id)}`)) ?? o;
+    state = await stripeGet(`subscriptions/${encodeURIComponent(o.id)}`);
+    if(!state)throw new Error('Stripe legacy state ambiguous in the same second; retry later');
   }
   const s = String(state.status ?? "");
   const status = evt.type === "customer.subscription.deleted" || ENDED.has(s) ? "canceled" : s === "active" || s === "trialing" ? "active" : s === "past_due" || s === "unpaid" || s === "incomplete" || s === "paused" ? "past_due" : "canceled";
   const plan = state.metadata?.plan in PLANS ? state.metadata.plan : null;
   const billing = state.metadata?.billing === "year" ? "year" : state.metadata?.billing === "month" ? "month" : null;
   const period = periodOf(state);
-  run(
+  tx(()=>{run(
     "UPDATE subscriptions SET status = ?, plan = COALESCE(?, plan), billing = COALESCE(?, billing), current_period_start = COALESCE(?, current_period_start), current_period_end = COALESCE(?, current_period_end), stripe_event_at = MAX(COALESCE(stripe_event_at, 0), ?), updated_at = ? WHERE user_id = ? AND stripe_subscription_id = ?",
     status,
     plan,
@@ -346,4 +362,5 @@ async function updateSubscription(evt: any, o: any) {
     o.id,
   );
   syncAllowance(userId);
+  });
 }

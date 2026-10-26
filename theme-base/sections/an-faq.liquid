@@ -1,0 +1,107 @@
+{%- comment -%}
+  ATELIER NUANCE : questions fréquentes en accordéons accessibles.
+  - home : questions à gauche, photo et carte « Besoin d'un conseil ? » à droite (planche 04) ;
+  - service : questions à gauche, carte photo « Un moment pour vous » à droite (fiche, planche 05) ;
+  - page : catégories (Réservation, Prestations, Votre visite) à gauche, carte « Une autre question ? » (planche 06).
+  Réponses éditables, sans engagement inexistant.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign cats = ''
+  for block in section.blocks
+    if block.settings.category != blank
+      unless cats contains block.settings.category
+        assign cats = cats | append: block.settings.category | append: '|'
+      endunless
+    endif
+  endfor
+  assign cat_list = cats | split: '|'
+-%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-faq an-faq--{{ s.layout }}" data-an-faq>
+  <div class="an-wrap an-faq__grid">
+    {%- if s.layout == 'page' and cat_list.size > 0 -%}
+      <div class="an-faq__side">
+        <div class="an-faq__cats" role="tablist" aria-label="{{ s.heading | default: 'FAQ' | escape }}">
+          {%- for c in cat_list -%}
+            <button type="button" role="tab" class="an-faq__cat" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-an-faq-cat="{{ c | handleize }}">{{ c }}</button>
+          {%- endfor -%}
+        </div>
+        {%- if s.aside_heading != blank -%}
+          <div class="an-faq__help">
+            <h2 class="an-faq__help-title">{{ s.aside_heading }}</h2>
+            {%- if s.aside_text != blank -%}<p>{{ s.aside_text }}</p>{%- endif -%}
+            {%- if s.aside_button_label != blank -%}<a class="an-btn an-btn--dark an-btn--sm" href="{{ s.aside_link | default: '/pages/contact' }}"><span>{{ s.aside_button_label }}</span>{% render 'an-icon', name: 'arrow' %}</a>{%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="an-faq__main">
+      {%- if s.eyebrow != blank -%}<p class="an-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.layout == 'service' -%}
+      <details class="an-faq__fold" data-an-collapse open>
+        <summary><h2 class="an-title an-title--xs">{{ s.heading }}</h2><span class="an-faq__fold-sign" aria-hidden="true">{% render 'an-icon', name: 'plus' %}</span></summary>
+      {%- elsif s.heading != blank and s.layout != 'page' -%}<h2 class="an-title an-title--sm">{{ s.heading }}</h2>{%- endif -%}
+      <div class="an-faq__items">
+        {%- for block in section.blocks -%}
+          {%- assign b = block.settings -%}
+          {%- assign open = false -%}
+          {%- if s.layout == 'page' and forloop.first -%}{%- assign open = true -%}{%- endif -%}
+          <div class="an-faq__item" data-an-faq-in="{{ b.category | handleize }}" {{ block.shopify_attributes }}>
+            <h3 class="an-faq__q">
+              <button type="button" aria-expanded="{{ open }}" aria-controls="an-faq-{{ section.id }}-{{ forloop.index }}" id="an-faq-q-{{ section.id }}-{{ forloop.index }}" data-an-acc>
+                <span>{{ b.question }}</span>
+                <span class="an-faq__sign" aria-hidden="true">{% render 'an-icon', name: 'plus', class: 'an-ico--plus' %}{% render 'an-icon', name: 'minus', class: 'an-ico--minus' %}</span>
+              </button>
+            </h3>
+            <div class="an-faq__a" id="an-faq-{{ section.id }}-{{ forloop.index }}" role="region" aria-labelledby="an-faq-q-{{ section.id }}-{{ forloop.index }}"{% unless open %} hidden{% endunless %}>{{ b.answer }}</div>
+          </div>
+        {%- endfor -%}
+      </div>
+      {%- if s.layout == 'service' -%}</details>{%- endif -%}
+    </div>
+    {%- if s.layout != 'page' and s.aside_heading != blank -%}
+      <div class="an-faq__aside an-faq__aside--{{ s.layout }}">
+        {% render 'an-img', image: s.aside_image, asset: s.aside_image_asset, alt: '', pos: s.aside_image_position %}
+        <div class="an-faq__card">
+          <h2 class="an-faq__card-title">{{ s.aside_heading | escape | newline_to_br }}</h2>
+          {%- if s.aside_text != blank -%}<p>{{ s.aside_text }}</p>{%- endif -%}
+          {%- if s.aside_button_label != blank -%}<a class="an-btn {% if s.layout == 'home' %}an-btn--line{% else %}an-btn--peach an-btn--sm{% endif %}" href="{{ s.aside_link | default: '/pages/contact' }}">{{ s.aside_button_label }}</a>{%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Questions du salon",
+  "class": "an-faq-section",
+  "max_blocks": 30,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "home", "options": [{ "value": "home", "label": "Accueil (avec carte conseil)" }, { "value": "service", "label": "Fiche (avec carte photo)" }, { "value": "page", "label": "Page (par catégorie)" }] },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Vos questions" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Foire aux questions" },
+    { "type": "header", "content": "Carte à côté des questions" },
+    { "type": "image_picker", "id": "aside_image", "label": "Image" },
+    { "type": "text", "id": "aside_image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "aside_image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "textarea", "id": "aside_heading", "label": "Titre de la carte" },
+    { "type": "textarea", "id": "aside_text", "label": "Texte de la carte" },
+    { "type": "text", "id": "aside_button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "aside_link", "label": "Lien du bouton" }
+  ],
+  "blocks": [
+    {
+      "type": "question", "name": "Question",
+      "settings": [
+        { "type": "text", "id": "category", "label": "Catégorie (page)", "info": "Ex. Réservation, Prestations, Votre visite." },
+        { "type": "text", "id": "question", "label": "Question", "default": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Réponse", "default": "<p>Réponse à compléter.</p>" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Questions du salon" }]
+}
+{% endschema %}

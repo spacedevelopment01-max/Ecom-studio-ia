@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-25T19:22:32.342195+00:00",
+  "authenticationSent": false,
+  "generationRequests": 0,
+  "results": [
+    {
+      "url": "https://open.higgsfield.ai/explore",
+      "exitCode": 56,
+      "proxyConnectStatus": "403",
+      "originHttpStatus": "000",
+      "originReached": false
+    },
+    {
+      "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+      "exitCode": 56,
+      "proxyConnectStatus": "403",
+      "originHttpStatus": "000",
+      "originReached": false
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 import { REQUIRED_LOGO_MODEL } from "@/lib/ai/logo-policy";
 /** Politique propriétaire du 18/10 : un seul modèle logo, aucun relais. Fournisseurs simulés. */
 import { beforeEach, describe, expect, it, vi } from "vitest";

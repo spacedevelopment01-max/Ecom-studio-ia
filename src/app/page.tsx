@@ -20,6 +20,7 @@ import { directionById, directionCards } from "@/lib/theme/directions";
 import { PLANS, REFUND_DAYS, TOPUP_PRICE_EUR } from "@/lib/plans";
 import { demos, localizeDemo } from "@/lib/demo-content";
 import { CompareTable, PricingCards } from "@/components/pricing";
+import { loadThemeRights } from "@/lib/theme/theme-rights-store";
 import { paymentsLive } from "@/lib/payments";
 import { currentUser } from "@/lib/auth";
 import { SECTORS } from "@/lib/project-types";
@@ -113,6 +114,7 @@ export default async function Home() {
   // Accueil : seuls les visuels créés par l'IA et vérifiés sans défaut (demo-curation.ts) ; aucun gabarit du studio.
   const list = raw.map((d) => (rawEn.includes(d) ? d : localizeDemo(d, lang))).map(curateForHome).map(webp);
   const user = await currentUser();
+  const themeRights = { plans: loadThemeRights().plans };
   const live = paymentsLive();
   const cta = user ? "/studio" : "/inscription";
   const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview.replace(/\.en\.jpg$/, ".jpg"))) }));
@@ -664,14 +666,14 @@ export default async function Home() {
         <section id="offre" className="hp-band scroll-mt-20 border-y border-line py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <Head center eyebrow={T("Tarifs", "Pricing")} title={T("Quatre offres claires,", "Four clear offers,")} accent={T("1 projet par abonnement.", "1 project per subscription.")} lead={T("Découvrez gratuitement, puis choisissez le forfait de chaque projet. Prix TTC.", "Discover for free, then choose each project's plan. Prices incl. VAT.")} />
-            <div className="reveal mt-12"><PricingCards loggedIn={!!user} withDiscovery /></div>
+            <div className="reveal mt-12"><PricingCards loggedIn={!!user} withDiscovery themeRights={themeRights} /></div>
             <p className="reveal mx-auto mt-6 max-w-2xl text-center text-[15px] text-ink-2">{T("Vous gérez plusieurs activités ? Souscrivez un abonnement par projet et retrouvez toutes vos activités dans un seul compte E-COM STUDIO IA.", "Running several businesses? Take out one subscription per project and find all your businesses in a single E-COM STUDIO IA account.")}</p>
             <ul className="reveal mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-ink-2">
               <li className="flex items-center gap-2"><ShieldCheck className="size-4 text-signal" aria-hidden /> {T(`Satisfait ou remboursé ${REFUND_DAYS} jours`, `${REFUND_DAYS}-day money-back guarantee`)}</li>
               <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Sans engagement en mensuel", "No commitment on monthly billing")}</li>
               <li className="flex items-center gap-2"><Check className="size-4 text-signal" aria-hidden /> {T("Résiliable à tout moment, projet par projet", "Cancel anytime, project by project")}</li>
             </ul>
-            <CompareTable className="reveal mt-8" />
+            <CompareTable className="reveal mt-8" themeRights={themeRights} />
             {!live && <p className="mt-4 text-center text-xs text-muted">{T("Le paiement en ligne ouvre bientôt : vous pouvez déjà créer votre compte et ouvrir le studio de démonstration.", "Online payment opens soon: you can already create your account and open the demo studio.")}</p>}
 
             <div id="packs" className="reveal mt-16 grid scroll-mt-24 gap-4 sm:grid-cols-2">

@@ -16,6 +16,7 @@ import { cloneSpec, storeProducts, themeLang, type SectionInstance, type Templat
 import { applyOps } from "./ops";
 import { projectKind } from "./project-kind";
 import { familyTypes, isStructuralType, type FamilyId } from "./section-families";
+import { isOwnSectionOf } from "./theme-own-sections";
 import { resolveLibraryType } from "./family-gallery";
 import { sectionIncompatibility } from "./section-compat";
 import { mediaPools, withProjectMedia } from "./section-defaults";
@@ -344,7 +345,9 @@ const MODEL_REMAP: Record<FamilyId, Record<string, string | string[] | null>> = 
   services: { reassurance: "services.commitments~grid", "features-grid": "services.commitments~grid", "v2-benefits": "services.commitments~grid", "video-showcase": null, "hero-split": "services.hero~journal", "v2-hero": "services.hero~journal", "gallery-mosaic": "services.portfolio~grid", "image-with-text": "services.history~statement", "alternating-content": "services.needs~scene", situations: "services.needs~cards", "specs-list": "services.detail~columns", "comparison-table": null, "cta-banner": "services.contact~band" },
 };
 function familyRow(row: Row, family: FamilyId, spec: ThemeSpec): Row | null {
-  if (familyTypes(family).has(row.type) || isStructuralType(row.type)) return row;
+  // Équivalent choisi selon l'usage du projet (préférence de style, pas une restriction : toute la bibliothèque reste
+  // ajoutable ensuite depuis la galerie).
+  if (familyTypes(family).has(row.type) || isStructuralType(row.type) || isOwnSectionOf(spec.direction, row.type)) return row;
   const ids = MODEL_REMAP[family][row.type];
   if (ids === null) return null;
   // Première disposition que le thème installé sait rendre ; thème ancien sans équivalent : la section d'origine reste.

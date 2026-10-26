@@ -1,6 +1,10 @@
 {%- comment -%}
 Journal (e-commerce) / actualités et conseils (services) : les derniers articles d'un blog, ou des articles choisis à
   la main (blocs). Mise en page éditoriale (un article en avant), grille, ou liste.
+  MUSEAU CLUB (maquettes du 23 octobre) : rangée de petites cartes (vignette, titre, lien), filtres en pastilles tirés
+  des catégories des articles, catégorie en pastille sur la photo.
+  NOCTIL (maquettes du 23 octobre) : pagination des articles choisis (n par page, numéros et « Suivant »), combinée aux
+  filtres ; sans JavaScript, tous les articles restent visibles.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
@@ -17,13 +21,20 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
   <div class="{% if prof == 'ed' %}ed-shell{% else %}es-container{% endif %} fs__inner">
     {%- render 'fs-head', prof: prof, eyebrow: s.eyebrow, heading: s.heading, accent: s.heading_accent, text: s.text, align: s.align, effect: fx, button_label: s.button_label, button_link: s.button_link -%}
     {%- assign limit = s.limit | default: 3 -%}
+    {%- if s.filters and section.blocks.size > 0 -%}
+      {%- assign tag_list = section.blocks | map: 'settings' | map: 'tag' | uniq | compact -%}
+      <div class="fs-journal__filters" role="group" aria-label="{{ s.filters_label | default: s.heading | escape }}" data-chip-filters>
+        <button type="button" class="fs-chip-filter is-active" aria-pressed="true" data-chip-filter="">{{ s.all_label | default: 'Tous' | escape }}</button>
+        {%- for t in tag_list -%}{%- if t != blank -%}<button type="button" class="fs-chip-filter" aria-pressed="false" data-chip-filter="{{ t | handleize }}">{{ t | escape }}</button>{%- endif -%}{%- endfor -%}
+      </div>
+    {%- endif -%}
     {%- capture items -%}
       {%- if section.blocks.size > 0 -%}
         {%- for block in section.blocks -%}{%- if s.stagger -%}{%- assign ix = forloop.index0 -%}{%- else -%}{%- assign ix = '' -%}{%- endif -%}
-          <li class="fs-post{% if s.layout != 'list' %} {{ cards }}{% endif %}{% if s.layout == 'editorial' and forloop.first %} fs-post--lead{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} {{ block.shopify_attributes }}>
+          <li class="fs-post{% if s.layout != 'list' %} {{ cards }}{% endif %}{% if s.layout == 'editorial' and forloop.first %} fs-post--lead{% endif %}"{% render 'fs-reveal', effect: fx, index: ix %} data-chip-item="{{ block.settings.tag | handleize }}" {{ block.shopify_attributes }}>
             <a class="fs-post__link" href="{{ block.settings.link | default: '#' }}">
-              {%- if s.layout != 'list' or block.settings.image != blank or block.settings.image_asset != blank -%}<span class="fs-post__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, role_label: 'Image de l’article' %}</span>{%- endif -%}
-              <span class="fs-post__copy">{% if block.settings.tag != blank or block.settings.date_text != blank and s.show_date %}<span class="fs-meta">{{ block.settings.tag | escape }}{% if block.settings.tag != blank and block.settings.date_text != blank and s.show_date %} · {% endif %}{% if s.show_date %}{{ block.settings.date_text | escape }}{% endif %}</span>{% endif %}<span class="fs-item__title">{{ block.settings.title | escape }}</span>{% if s.show_excerpt and block.settings.text != blank %}<span class="fs-item__text">{{ block.settings.text | strip_html | truncate: 160 }}</span>{% endif %}<span class="fs-link">{{ s.link_label | default: 'Lire' | escape }}</span></span>
+              {%- if s.layout != 'list' or block.settings.image != blank or block.settings.image_asset != blank -%}<span class="fs-post__media">{% render 'ed-media', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.title, role_label: 'Image de l’article' %}{% if s.tag_on_image and block.settings.tag != blank %}<span class="fs-post__tag">{{ block.settings.tag | escape }}</span>{% endif %}</span>{%- endif -%}
+              <span class="fs-post__copy">{% if s.tag_on_image == false and block.settings.tag != blank or block.settings.date_text != blank and s.show_date %}<span class="fs-meta">{{ block.settings.tag | escape }}{% if block.settings.tag != blank and block.settings.date_text != blank and s.show_date %} · {% endif %}{% if s.show_date %}{{ block.settings.date_text | escape }}{% endif %}</span>{% endif %}<span class="fs-item__title">{{ block.settings.title | escape }}</span>{% if s.show_excerpt and block.settings.text != blank %}<span class="fs-item__text">{{ block.settings.text | strip_html | truncate: 160 }}</span>{% endif %}<span class="fs-link">{{ s.link_label | default: 'Lire' | escape }}</span></span>
             </a>
           </li>
         {%- endfor -%}
@@ -40,7 +51,8 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
       {%- endif -%}
     {%- endcapture -%}
     {%- if items != blank -%}
-      <ul class="fs-journal__list fs-journal__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--3{% endif %}" role="list">{{ items }}</ul>
+      <ul class="fs-journal__list fs-journal__list--{{ s.layout }}{% if s.layout == 'grid' %} fs-grid fs-grid--3{% endif %}" role="list"{% if s.per_page > 0 and section.blocks.size > s.per_page %} data-paginate="{{ s.per_page }}"{% endif %}>{{ items }}</ul>
+      {%- if s.per_page > 0 and section.blocks.size > s.per_page -%}<nav class="fs-pager" data-pager aria-label="{{ 'general.pagination' | t }}" data-page-label="{{ 'general.page' | t }}" data-next-label="{{ 'general.next' | t }}"></nav>{%- endif -%}
     {%- elsif request.host == 'apercu' -%}
       <div class="ed-media ed-media--pending fs-pending"><p>{{ 'editorial.pending_media' | t }}</p></div>
     {%- endif -%}
@@ -113,9 +125,32 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
         {
           "value": "list",
           "label": "Liste"
+        },
+        {
+          "value": "row",
+          "label": "Rangée de petites cartes"
         }
       ],
       "default": "editorial"
+    },
+    {
+      "type": "checkbox",
+      "id": "filters",
+      "label": "Filtres par catégorie",
+      "info": "Pastilles tirées des catégories des articles choisis.",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "all_label",
+      "label": "Libellé « tous »",
+      "default": "Tous"
+    },
+    {
+      "type": "checkbox",
+      "id": "tag_on_image",
+      "label": "Catégorie en pastille sur la photo",
+      "default": false
     },
     {
       "type": "blog",
@@ -130,6 +165,16 @@ Journal (e-commerce) / actualités et conseils (services) : les derniers article
       "max": 9,
       "step": 1,
       "default": 3
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Articles par page",
+      "info": "0 : tous les articles choisis sur une seule page. Au-delà, des numéros de page apparaissent sous la liste.",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "default": 0
     },
     {
       "type": "checkbox",

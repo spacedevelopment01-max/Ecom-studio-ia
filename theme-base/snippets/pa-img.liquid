@@ -1,0 +1,19 @@
+{%- comment -%}
+  PARENTHÈSE : photo d'une section (image choisie dans l'éditeur, sinon fichier du thème), cadrée par object-position.
+  Paramètres : image, asset, alt, pos (cadrage ordinateur, ex. « 50% 40% »), pos_mobile, loading, sizes, class.
+  Sans photo : rien (jamais un gabarit ni un cadre vide) ; la section décide de se masquer.
+{%- endcomment -%}
+{%- liquid
+  assign img_loading = loading | default: 'lazy'
+  assign img_pos = pos | default: '50% 50%'
+  assign img_pos_m = pos_mobile | default: img_pos
+-%}
+{%- if image != blank or asset != blank -%}
+  <div class="pa-img {{ class }}" style="--pos: {{ img_pos }}; --pos-m: {{ img_pos_m }};">
+    {%- if image != blank -%}
+      {{ image | image_url: width: 2400 | image_tag: loading: img_loading, sizes: sizes | default: '100vw', widths: '400, 750, 1100, 1600, 2400', alt: alt }}
+    {%- else -%}
+      <img src="{{ asset | asset_url }}" alt="{{ alt | escape }}" loading="{{ img_loading }}" decoding="async"{% if img_loading == 'eager' %} fetchpriority="high"{% endif %} width="1600" height="1067">
+    {%- endif -%}
+  </div>
+{%- endif -%}

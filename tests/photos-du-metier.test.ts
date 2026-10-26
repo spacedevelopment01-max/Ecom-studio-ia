@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Photos libres du bon métier : un plâtrier peintre n'a jamais un mur de briques nu. Les recherches nomment le geste
  * du métier, et sans contrôle visuel seules les photos dont la description cite le métier sont gardées.

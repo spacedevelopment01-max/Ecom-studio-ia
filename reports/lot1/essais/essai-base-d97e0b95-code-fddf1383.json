@@ -1,0 +1,557 @@
+{
+  "date": "2026-10-23T15:35:13.842Z",
+  "synthetique": true,
+  "fabrication": {
+    "code": "/tmp/claude-0/-home-user-Ecom-studio-ia/7838ad77-7e61-5d53-bd57-0ac749f6e64f/scratchpad/lot1/run2/code-d97e0b95",
+    "commit": "d97e0b9577128eeb39b403dae281da6bd835fc65",
+    "out": "/tmp/claude-0/-home-user-Ecom-studio-ia/7838ad77-7e61-5d53-bd57-0ac749f6e64f/scratchpad/lot1/run2/base-d97e0b95",
+    "inserted": {
+      "users": 4,
+      "projects": 6,
+      "memory": 6,
+      "folders": 6,
+      "assets": 18,
+      "asset_usages": 6,
+      "theme_versions": 12,
+      "chat_messages": 6,
+      "subscriptions": 3,
+      "wallets": 2,
+      "ledger": 6,
+      "quota_usage": 2,
+      "pack_balances": 1,
+      "pack_purchases": 1,
+      "payments": 4,
+      "jobs": 5,
+      "content_plans": 1,
+      "posts": 3,
+      "connections": 1,
+      "project_connections": 1,
+      "blog_articles": 1,
+      "settings": 2,
+      "notifications": 1
+    },
+    "angles": false,
+    "synthetic": true
+  },
+  "codeTeste": {
+    "dossier": "/home/user/wt-integration",
+    "commit": "fddf13832e5e592c90c58f9d23c2bf509dd7c0e8"
+  },
+  "sauvegarde": {
+    "baseSha256": "dd00a1b9cde313c0d2e2d58e88dbcef8c9038da7d403a36b79d9897a3358d4fe",
+    "schemaSha256": "f527cadc4f0b2ea6da5c50c7ead9e5169738c67969f32b2e22d8dc62c7099393",
+    "migreeV2": true,
+    "medias": 36,
+    "referencesMedias": 36,
+    "manquants": 0,
+    "comptages": {
+      "ad_documents": 0,
+      "admin_claims": 0,
+      "ai_calls": 0,
+      "ai_reservations": 0,
+      "asset_usages": 6,
+      "assets": 18,
+      "blog_articles": 1,
+      "brand_versions": 0,
+      "call_bookings": 0,
+      "call_slots": 0,
+      "campaigns": 0,
+      "chat_messages": 6,
+      "checkout_sessions": 0,
+      "connections": 1,
+      "content_documents": 0,
+      "content_plans": 1,
+      "content_runs": 0,
+      "content_target_locks": 0,
+      "error_log": 0,
+      "expenses": 0,
+      "folders": 6,
+      "image_candidates": 0,
+      "jobs": 5,
+      "ledger": 6,
+      "memory": 6,
+      "notifications": 1,
+      "oauth_states": 0,
+      "pack_balances": 1,
+      "pack_purchases": 1,
+      "password_resets": 0,
+      "payments": 4,
+      "post_attempts": 0,
+      "post_metrics": 0,
+      "posts": 3,
+      "project_connections": 1,
+      "projects": 6,
+      "prompt_favorites": 0,
+      "prompt_ideas": 0,
+      "quality_checks": 0,
+      "quota_events": 0,
+      "quota_usage": 2,
+      "rate_events": 0,
+      "recurring_charges": 0,
+      "sessions": 0,
+      "settings": 3,
+      "social_automations": 0,
+      "social_autopilot_log": 0,
+      "social_memory": 0,
+      "social_settings": 0,
+      "stripe_cancellations": 0,
+      "stripe_events": 0,
+      "subscriptions": 3,
+      "task_plans": 0,
+      "theme_versions": 12,
+      "usage_events": 0,
+      "user_prompts": 0,
+      "users": 4,
+      "video_documents": 0,
+      "video_shots": 0,
+      "wallets": 2,
+      "worker_heartbeat": 0,
+      "workflows": 0
+    }
+  },
+  "migration": {
+    "schemaApres": "4a1c0d64abb482051597ac9eedd1b076345741afbc44c14f9620e887d35a58fc",
+    "lignesAjoutees": {},
+    "tablesAjoutees": [
+      "billing_mutations",
+      "checkout_intents",
+      "social_edit_undo",
+      "stripe_event_claims",
+      "support_messages",
+      "support_tickets"
+    ],
+    "sauvegardeAutomatique": [],
+    "comptagesApres": {
+      "ad_documents": 0,
+      "admin_claims": 0,
+      "ai_calls": 0,
+      "ai_reservations": 0,
+      "asset_usages": 6,
+      "assets": 18,
+      "billing_mutations": 0,
+      "blog_articles": 1,
+      "brand_versions": 0,
+      "call_bookings": 0,
+      "call_slots": 0,
+      "campaigns": 0,
+      "chat_messages": 6,
+      "checkout_intents": 0,
+      "checkout_sessions": 0,
+      "connections": 1,
+      "content_documents": 0,
+      "content_plans": 1,
+      "content_runs": 0,
+      "content_target_locks": 0,
+      "error_log": 0,
+      "expenses": 0,
+      "folders": 6,
+      "image_candidates": 0,
+      "jobs": 5,
+      "ledger": 6,
+      "memory": 6,
+      "notifications": 1,
+      "oauth_states": 0,
+      "pack_balances": 1,
+      "pack_purchases": 1,
+      "password_resets": 0,
+      "payments": 4,
+      "post_attempts": 0,
+      "post_metrics": 0,
+      "posts": 3,
+      "project_connections": 1,
+      "projects": 6,
+      "prompt_favorites": 0,
+      "prompt_ideas": 0,
+      "quality_checks": 0,
+      "quota_events": 0,
+      "quota_usage": 2,
+      "rate_events": 0,
+      "recurring_charges": 0,
+      "sessions": 0,
+      "settings": 3,
+      "social_automations": 0,
+      "social_autopilot_log": 0,
+      "social_edit_undo": 0,
+      "social_memory": 0,
+      "social_settings": 0,
+      "stripe_cancellations": 0,
+      "stripe_event_claims": 0,
+      "stripe_events": 0,
+      "subscriptions": 3,
+      "support_messages": 0,
+      "support_tickets": 0,
+      "task_plans": 0,
+      "theme_versions": 12,
+      "usage_events": 0,
+      "user_prompts": 0,
+      "users": 4,
+      "video_documents": 0,
+      "video_shots": 0,
+      "wallets": 2,
+      "worker_heartbeat": 0,
+      "workflows": 0
+    }
+  },
+  "projets": [
+    {
+      "id": "p-a-archive",
+      "user_id": "u-historique-a",
+      "hidden": 0,
+      "archived": 1
+    },
+    {
+      "id": "p-a-catalogue",
+      "user_id": "u-historique-a",
+      "hidden": 0,
+      "archived": 0
+    },
+    {
+      "id": "p-a-mono",
+      "user_id": "u-historique-a",
+      "hidden": 0,
+      "archived": 0
+    },
+    {
+      "id": "p-a-services",
+      "user_id": "u-historique-a",
+      "hidden": 0,
+      "archived": 0
+    },
+    {
+      "id": "p-b-unique",
+      "user_id": "u-historique-b",
+      "hidden": 0,
+      "archived": 0
+    },
+    {
+      "id": "p-c-decouverte",
+      "user_id": "u-decouverte-c",
+      "hidden": 0,
+      "archived": 0
+    }
+  ],
+  "abonnements": [
+    {
+      "user_id": "s-a-mono",
+      "owner_user_id": "u-historique-a",
+      "project_id": "p-a-mono",
+      "status": "active",
+      "plan": "vendre"
+    },
+    {
+      "user_id": "s-a-services",
+      "owner_user_id": "u-historique-a",
+      "project_id": "p-a-services",
+      "status": "active",
+      "plan": "creer"
+    },
+    {
+      "user_id": "s-b-unique",
+      "owner_user_id": "u-historique-b",
+      "project_id": "p-b-unique",
+      "status": "active",
+      "plan": "dominer"
+    }
+  ],
+  "vues": [
+    {
+      "user": "u-admin",
+      "projetsVisibles": [],
+      "projetsMasques": [],
+      "forfaits": {},
+      "abonnements": []
+    },
+    {
+      "user": "u-decouverte-c",
+      "projetsVisibles": [
+        "p-c-decouverte"
+      ],
+      "projetsMasques": [],
+      "forfaits": {
+        "p-c-decouverte": null
+      },
+      "abonnements": []
+    },
+    {
+      "user": "u-historique-a",
+      "projetsVisibles": [
+        "p-a-archive",
+        "p-a-catalogue",
+        "p-a-mono",
+        "p-a-services"
+      ],
+      "projetsMasques": [],
+      "forfaits": {
+        "p-a-archive": null,
+        "p-a-catalogue": null,
+        "p-a-mono": "vendre",
+        "p-a-services": "creer"
+      },
+      "abonnements": [
+        {
+          "projet": "p-a-mono",
+          "forfait": "vendre",
+          "statut": "active"
+        },
+        {
+          "projet": "p-a-services",
+          "forfait": "creer",
+          "statut": "active"
+        }
+      ]
+    },
+    {
+      "user": "u-historique-b",
+      "projetsVisibles": [
+        "p-b-unique"
+      ],
+      "projetsMasques": [],
+      "forfaits": {
+        "p-b-unique": "dominer"
+      },
+      "abonnements": [
+        {
+          "projet": "p-b-unique",
+          "forfait": "dominer",
+          "statut": "active"
+        }
+      ]
+    }
+  ],
+  "strategies": {
+    "p-a-archive": null,
+    "p-a-catalogue": null,
+    "p-a-mono": null,
+    "p-a-services": null,
+    "p-b-unique": null,
+    "p-c-decouverte": null
+  },
+  "budgets": {
+    "avant": [
+      {
+        "user_id": "s-a-mono",
+        "monthly_allowance": 2000000,
+        "monthly_used": 500000,
+        "topup_balance": 500000
+      },
+      {
+        "user_id": "s-b-unique",
+        "monthly_allowance": 2000000,
+        "monthly_used": 500000,
+        "topup_balance": 3000000
+      }
+    ],
+    "apres": [
+      {
+        "user_id": "s-a-mono",
+        "monthly_allowance": 29666666,
+        "monthly_used": 0,
+        "topup_balance": 500000
+      },
+      {
+        "user_id": "s-b-unique",
+        "monthly_allowance": 35833333,
+        "monthly_used": 0,
+        "topup_balance": 0
+      }
+    ],
+    "baisses": [
+      "s-b-unique"
+    ]
+  },
+  "restauration": {
+    "comptes": 4,
+    "projets": 6
+  },
+  "neutralisation": {
+    "jobsEnPause": 2,
+    "calendriersEnPause": 1,
+    "secretsRetires": 1,
+    "connexionsCoupees": 1
+  },
+  "controles": [
+    {
+      "name": "sauvegarde — manifeste intact",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — empreinte de la base",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — intégrité SQLite",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — clés étrangères",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — schéma identique",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — tables identiques (62)",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — médias (36 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — video-receipts (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — preview-contact-tests (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "sauvegarde — références médias de l'instantané",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — empreinte de la base",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — intégrité SQLite",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — clés étrangères",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — schéma identique",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — tables identiques (62)",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — médias (36 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — video-receipts (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — preview-contact-tests (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "copie de migration — références médias de l'instantané",
+      "ok": true
+    },
+    {
+      "name": "migration 1 — intégrité SQLite",
+      "ok": true
+    },
+    {
+      "name": "migration 1 — clés étrangères",
+      "ok": true
+    },
+    {
+      "name": "migration 1 — chaque ligne d'origine retrouvée à l'identique",
+      "ok": true
+    },
+    {
+      "name": "rattachement — chaque abonnement a son compte",
+      "ok": true
+    },
+    {
+      "name": "rattachement — un projet n'a jamais deux abonnements",
+      "ok": true
+    },
+    {
+      "name": "rattachement — chaque abonnement pointe un projet du même compte",
+      "ok": true
+    },
+    {
+      "name": "aucun projet supprimé (un projet par abonnement non imposé par suppression)",
+      "ok": true
+    },
+    {
+      "name": "migration 1 — repère « forfaits V2 migrés » présent",
+      "ok": true
+    },
+    {
+      "name": "migration 2 — schéma identique au premier passage",
+      "ok": true
+    },
+    {
+      "name": "migration 2 — toutes les tables identiques au premier passage",
+      "ok": true
+    },
+    {
+      "name": "médias inchangés par la migration",
+      "ok": true
+    },
+    {
+      "name": "budgets — toute baisse des crédits hors forfait est inscrite au relevé",
+      "ok": true,
+      "detail": "[\"s-b-unique\"]"
+    },
+    {
+      "name": "restauration — empreinte de la base",
+      "ok": true
+    },
+    {
+      "name": "restauration — intégrité SQLite",
+      "ok": true
+    },
+    {
+      "name": "restauration — clés étrangères",
+      "ok": true
+    },
+    {
+      "name": "restauration — schéma identique",
+      "ok": true
+    },
+    {
+      "name": "restauration — tables identiques (62)",
+      "ok": true
+    },
+    {
+      "name": "restauration — médias (36 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "restauration — video-receipts (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "restauration — preview-contact-tests (0 fichiers)",
+      "ok": true
+    },
+    {
+      "name": "restauration — références médias de l'instantané",
+      "ok": true
+    },
+    {
+      "name": "restauration — comptes et projets retrouvés avec leur propriétaire",
+      "ok": true
+    },
+    {
+      "name": "restauration refusée dans un dossier non vide",
+      "ok": true
+    },
+    {
+      "name": "recette — plus aucune tâche prête à partir",
+      "ok": true,
+      "detail": "{\"jobsEnPause\":2,\"calendriersEnPause\":1,\"secretsRetires\":1,\"connexionsCoupees\":1}"
+    },
+    {
+      "name": "recette — aucun secret ni jeton dans la copie",
+      "ok": true
+    },
+    {
+      "name": "source jamais modifiée",
+      "ok": true
+    }
+  ],
+  "reussi": true
+}

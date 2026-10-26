@@ -15,7 +15,7 @@ import type { ContentContext } from "./section-content";
 type Blocks = { type: string; settings?: Record<string, unknown> }[];
 
 /** Sections dont les blocs portent des images (galeries, cartes) : on les illustre aussi. */
-const BLOCK_IMAGES = new Set(["cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-ingredients", "gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative", "cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-stories"]);
+const BLOCK_IMAGES = new Set(["cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-ingredients", "gallery-mosaic", "horizontal-gallery", "stack-cards", "story-circles", "routine-steps", "situations", "portfolio", "ref-narrative", "cv-cards", "cv-alternating", "cv-steps", "cv-gallery", "cv-stories", "v2-faq"]);
 /** Sections « Services » sans photo de produit imposée (portraits d'équipe, cartes de contact, tarifs). */
 const NO_SECTION_IMAGE = new Set(["team", "booking", "booking-calendar", "practical-info", "pricing", "services-list"]);
 
@@ -81,6 +81,8 @@ function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string
   } else if (type === "before-after") {
     if (empty("image_before_asset")) out.image_before_asset = p.cutout[0] ?? nextPhoto();
     if (empty("image_after_asset")) out.image_after_asset = p.life[0] ?? nextPhoto();
+  } else if (type === "cta-banner" && out.style === "split") {
+    // Bandeau partagé : aplat de couleur, titre à gauche, texte et bouton à droite ; aucune photo de fond.
   } else if (NO_SECTION_IMAGE.has(type)) {
     // Rien à illustrer d'office : les portraits et photos de prestations viennent du marchand.
   } else if (empty("image_asset")) {
@@ -107,5 +109,9 @@ function projectMediaOnly(spec: ThemeSpec, type: string, settings: Record<string
       return { type: b.type, settings: s };
     });
   }
+  // Détail de projet (Atelier Rive) : seules les photos de détail reçoivent une photo du projet, pas les parties du récit.
+  // Essentiels (TRAVERSE) : seuls les gros plans légendés reçoivent une photo du projet, pas les icônes.
+  if (type === "cv-feature") outBlocks = outBlocks.map((b) => (b.type === "detail" && !b.settings?.image_asset ? { type: b.type, settings: { ...(b.settings ?? {}), image_asset: nextPhoto() ?? "" } } : b));
+  if (type === "fs-case") outBlocks = outBlocks.map((b) => (b.type === "photo" && !b.settings?.image_asset ? { type: b.type, settings: { ...(b.settings ?? {}), image_asset: nextPhoto() ?? "" } } : b));
   return { settings: out, blocks: outBlocks.length ? outBlocks : blocks };
 }

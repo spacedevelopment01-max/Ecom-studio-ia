@@ -21,26 +21,12 @@ import { createSubscription } from "./project-subscriptions";
 import { appUrl } from "./settings";
 import { L, uiLang } from "./i18n-server";
 import { ENDED, periodOf, stripe, stripeGet, subId } from "./payments";
+import { checkoutSession } from './checkout-intents';
+import {stripeMutation,pendingMutations,finishMutation} from './billing-mutations';
 
 const logStripe = (scope: string, err: Error, userId: string) => logError(scope, err, { userId });
 
-/** Une session ouverte depuis moins de ce délai est réutilisée (Stripe expire les sessions après 24 h). */
-const SESSION_REUSE_MS = 23 * 3600_000;
-
-type SessionKind = "subscription" | "reactivate" | "topup";
-
-function openSession(userId: string, kind: SessionKind, plan: string | null, billing: string | null, projectId: string | null): string | null {
-  const row = one<{ url: string }>(
-    "SELECT url FROM checkout_sessions WHERE user_id = ? AND kind = ? AND COALESCE(plan,'') = ? AND COALESCE(billing,'') = ? AND COALESCE(project_id,'') = ? AND status = 'open' AND created_at > ? ORDER BY created_at DESC LIMIT 1",
-    userId,
-    kind,
-    plan ?? "",
-    billing ?? "",
-    projectId ?? "",
-    now() - SESSION_REUSE_MS,
-  );
-  return row?.url ?? null;
-}
+function assertOwner(userId:string,projectId:string){if(!one('SELECT 1 FROM projects WHERE id=? AND user_id=?',projectId,userId))throw new HttpError(404,L('Projet introuvable.','Project not found.'));}
 
 const planLine = (plan: PlanId, billing: Billing, prefix: Record<string, string>) => ({
   "line_items[0][quantity]": "1",
@@ -61,12 +47,11 @@ const planLine = (plan: PlanId, billing: Billing, prefix: Record<string, string>
  */
 export async function subscriptionCheckout(user: { id: string; email: string }, plan: PlanId, billing: Billing, projectId: string | null = null) {
   if (projectId) {
+    assertOwner(user.id,projectId);
     const sub = subscriptionOfProject(projectId);
     if (sub && (PAID_STATUSES as readonly string[]).includes(sub.status)) throw new HttpError(409, L("Ce projet a déjà un abonnement actif : changez son forfait au lieu d'en souscrire un autre.", "This project already has an active subscription: change its plan instead of subscribing again."));
   }
-  const kind: SessionKind = projectId ? "reactivate" : "subscription";
-  const reuse = openSession(user.id, kind, plan, billing, projectId);
-  if (reuse) return { url: reuse, reused: true };
+  const kind = projectId ? "reactivate" : "subscription";
   const meta = { kind: projectId ? "reactivate_v2" : "subscription_v2", plan, billing, user_id: user.id, ...(projectId ? { project_id: projectId } : {}) };
   const params: Record<string, string> = {
     mode: "subscription",
@@ -79,19 +64,15 @@ export async function subscriptionCheckout(user: { id: string; email: string }, 
     locale: uiLang(),
     ...planLine(plan, billing, {}),
   };
-  const s = await stripe("checkout/sessions", params, `ck:${user.id}:${kind}:${plan}:${billing}:${projectId ?? "new"}:${Math.floor(now() / 60_000)}`);
-  run("INSERT OR IGNORE INTO checkout_sessions (id, user_id, kind, plan, billing, project_id, url, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)", s.id, user.id, kind, plan, billing, projectId, s.url, "open", now());
-  return { url: s.url as string, reused: false };
+  return checkoutSession({userId:user.id,kind,plan,billing,projectId},params);
 }
 
 /** Session de paiement d'une recharge IA de 10 € pour UN projet (abonnement actif requis). */
 export async function topupCheckout(user: { id: string; email: string }, projectId: string) {
+  assertOwner(user.id,projectId);
   const sub = subscriptionOfProject(projectId);
   if (!sub || !(PAID_STATUSES as readonly string[]).includes(sub.status)) throw new HttpError(402, L("Les recharges IA s'ajoutent à l'abonnement actif d'un projet.", "AI top-ups are added to a project's active subscription."));
-  const reuse = openSession(user.id, "topup", null, null, projectId);
-  if (reuse) return { url: reuse, reused: true };
-  const s = await stripe(
-    "checkout/sessions",
+  return checkoutSession({userId:user.id,kind:'topup',projectId},
     {
       mode: "payment",
       customer_email: user.email,
@@ -108,10 +89,7 @@ export async function topupCheckout(user: { id: string; email: string }, project
       "line_items[0][price_data][tax_behavior]": "inclusive",
       "line_items[0][price_data][product_data][name]": L("E-COM STUDIO IA — recharge IA (projet)", "E-COM STUDIO IA — AI top-up (project)"),
     },
-    `ck:${user.id}:topup:${projectId}:${Math.floor(now() / 60_000)}`,
   );
-  run("INSERT OR IGNORE INTO checkout_sessions (id, user_id, kind, project_id, url, status, created_at) VALUES (?,?,?,?,?,?,?)", s.id, user.id, "topup", projectId, s.url, "open", now());
-  return { url: s.url as string, reused: false };
 }
 
 function stripeSubOf(projectId: string): ProjectSubscription & { stripe_subscription_id: string } {
@@ -125,50 +103,50 @@ function stripeSubOf(projectId: string): ProjectSubscription & { stripe_subscrip
  * Changement de forfait d'UN projet (hausse ou baisse) : son abonnement Stripe est mis à jour (proratisation par
  * Stripe) ; aucun nouveau projet n'est créé, les autres projets ne changent pas. Une hausse est facturée tout de suite.
  */
-export async function changeProjectPlan(projectId: string, plan: PlanId, billing: Billing) {
-  const sub = stripeSubOf(projectId);
-  if ((sub.plan ?? "creer") === plan && (sub.billing ?? "month") === billing) return sub;
-  const remote = await stripeGet(`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`);
-  const item = remote?.items?.data?.[0];
-  if (!item?.id || !item?.price?.product) throw new HttpError(502, L("Stripe ne répond pas : réessayez dans un instant.", "Stripe isn't responding: try again in a moment."));
-  const upgrade = PLANS[plan].price.month > PLANS[(sub.plan as PlanId) ?? "creer"].price.month;
-  const updated = await stripe(
-    `subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`,
-    {
-      "items[0][id]": item.id,
-      "items[0][price_data][currency]": "eur",
-      "items[0][price_data][product]": String(typeof item.price.product === "string" ? item.price.product : item.price.product.id),
-      "items[0][price_data][unit_amount]": String(Math.round(PLANS[plan].price[billing] * 100)),
-      "items[0][price_data][tax_behavior]": "inclusive",
-      "items[0][price_data][recurring][interval]": billing,
-      proration_behavior: upgrade ? "always_invoice" : "create_prorations",
-      "metadata[plan]": plan,
-      "metadata[billing]": billing,
-    },
-    `chg:${sub.user_id}:${plan}:${billing}:${Math.floor(now() / 60_000)}`,
-  );
-  // Réponse authentifiée de Stripe (appel serveur) : le forfait du projet change, budget IA au prorata.
-  const period = periodOf(updated);
-  run(
-    "UPDATE subscriptions SET plan = ?, billing = ?, price_cents = ?, current_period_start = COALESCE(?, current_period_start), current_period_end = COALESCE(?, current_period_end), updated_at = ? WHERE user_id = ?",
-    plan,
-    billing,
-    Math.round(PLANS[plan].price[billing] * 100),
-    period.start,
-    period.end,
-    now(),
-    sub.user_id,
-  );
-  syncAllowance(sub.user_id);
-  return subscriptionOfProject(projectId)!;
+function paidRemote(o:any){return ['active','trialing'].includes(o?.status)&&!o?.pending_update;}
+function desiredRemote(o:any,plan:PlanId,billing:Billing){return paidRemote(o)&&o.metadata?.plan===plan&&o.metadata?.billing===billing&&Number(o.items?.data?.[0]?.price?.unit_amount)===Math.round(PLANS[plan].price[billing]*100);}
+function saveRemotePlan(sub:ProjectSubscription,remote:any,plan:PlanId,billing:Billing){
+ if(!paidRemote(remote))throw new HttpError(402,L('Le paiement du changement n’est pas finalisé. Votre forfait précédent est conservé ; vérifiez le paiement avec l’assistance.','Payment for the change is not complete. Your previous plan is preserved; check the payment with support.'),'payment_not_completed');
+ const period=periodOf(remote);
+ run('UPDATE subscriptions SET plan=?,billing=?,price_cents=?,current_period_start=COALESCE(?,current_period_start),current_period_end=COALESCE(?,current_period_end),updated_at=? WHERE user_id=?',plan,billing,Math.round(PLANS[plan].price[billing]*100),period.start,period.end,now(),sub.user_id);
+ syncAllowance(sub.user_id);
 }
-
-/** Résiliation à la fin de la période payée (ou annulation de cette résiliation) pour UN projet. */
-export async function setProjectCancellation(projectId: string, cancel: boolean) {
-  const sub = stripeSubOf(projectId);
-  await stripe(`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`, { cancel_at_period_end: cancel ? "true" : "false" }, `cancel:${sub.user_id}:${cancel}:${Math.floor(now() / 60_000)}`);
-  run("UPDATE subscriptions SET cancel_at_period_end = ?, updated_at = ? WHERE user_id = ?", cancel ? 1 : 0, now(), sub.user_id);
-  return subscriptionOfProject(projectId)!;
+function saveRemoteCancellation(sub:ProjectSubscription,remote:any){
+ run('UPDATE subscriptions SET cancel_at_period_end=?,status=CASE WHEN ? THEN ? ELSE status END,updated_at=? WHERE user_id=?',remote.cancel_at_period_end?1:0,ENDED.has(remote.status)?1:0,'canceled',now(),sub.user_id);syncAllowance(sub.user_id);
+}
+export async function changeProjectPlan(projectId:string,plan:PlanId,billing:Billing){
+ const sub=stripeSubOf(projectId);
+ if(sub.plan===plan&&sub.billing===billing)return sub;
+ const remote=await stripeGet(`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`),item=remote?.items?.data?.[0];
+ if(!item?.id||!item?.price?.product)throw new HttpError(502,L('Le service de paiement ne répond pas : vérifiez plus tard, sans nouvel achat.','The payment service is not responding: check later without a new purchase.'));
+ const params:Record<string,string>={
+  'items[0][id]':item.id,'items[0][price_data][currency]':'eur','items[0][price_data][product]':String(typeof item.price.product==='string'?item.price.product:item.price.product.id),
+  'items[0][price_data][unit_amount]':String(Math.round(PLANS[plan].price[billing]*100)),'items[0][price_data][tax_behavior]':'inclusive','items[0][price_data][recurring][interval]':billing,
+  proration_behavior:PLANS[plan].price.month>PLANS[(sub.plan as PlanId)??'creer'].price.month?'always_invoice':'create_prorations',payment_behavior:'error_if_incomplete','metadata[plan]':plan,'metadata[billing]':billing,
+ };
+ await stripeMutation(sub.owner_user_id??sub.user_id,`sub:${sub.user_id}`,`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`,params,o=>saveRemotePlan(sub,o,plan,billing),desiredRemote(remote,plan,billing)?remote:undefined);
+ return subscriptionOfProject(projectId)!;
+}
+/** Résiliation/reprise explicites : une identité distincte par action, conservée lors de sa reprise. */
+export async function setProjectCancellation(projectId:string,cancel:boolean){
+ const sub=stripeSubOf(projectId),path=`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`,remote=await stripeGet(path);
+ if(!remote)throw new HttpError(502,L('Le service de paiement est indisponible : vérifiez plus tard.','The payment service is unavailable: check later.'));
+ await stripeMutation(sub.owner_user_id??sub.user_id,`sub:${sub.user_id}`,path,{cancel_at_period_end:cancel?'true':'false'},o=>saveRemoteCancellation(sub,o),!!remote.cancel_at_period_end===cancel?remote:undefined);
+ return subscriptionOfProject(projectId)!;
+}
+/** Rapprochement serveur des écritures interrompues : lecture seule chez Stripe, jamais de nouvel achat. */
+export async function reconcileSubscriptionMutations(userId:string){
+ const result={checked:0,confirmed:0,pending:0,unavailable:0};
+ for(const row of pendingMutations(userId)){
+  result.checked++;const sub=one<ProjectSubscription>('SELECT * FROM subscriptions WHERE user_id=? AND owner_user_id=?',row.scope.replace(/^sub:/,''),userId);
+  if(!sub?.stripe_subscription_id){result.unavailable++;continue;}
+  const remote=await stripeGet(`subscriptions/${encodeURIComponent(sub.stripe_subscription_id)}`);if(!remote){result.unavailable++;continue;}
+  const params=JSON.parse(row.params_json),plan=params['metadata[plan]'] as PlanId,billing=params['metadata[billing]'] as Billing;
+  if(plan in PLANS&&desiredRemote(remote,plan,billing)){finishMutation(row,remote,o=>saveRemotePlan(sub,o,plan,billing));result.confirmed++;}
+  else if('cancel_at_period_end' in params&&!!remote.cancel_at_period_end===(params.cancel_at_period_end==='true')){finishMutation(row,remote,o=>saveRemoteCancellation(sub,o));result.confirmed++;}
+  else result.pending++;
+ }
+ return result;
 }
 
 // ------------------------------------------------------------------ webhooks
@@ -182,11 +160,29 @@ export async function applyV2Event(evt: any): Promise<boolean> {
   const o = evt?.data?.object ?? {};
   const kind = o.metadata?.kind;
   switch (evt?.type) {
+    case 'invoice.paid':
+    case 'invoice.payment_failed': {
+      const sid=subId(o.subscription??o.parent?.subscription_details?.subscription);
+      const row=sid?one<ProjectSubscription & {stripe_event_at:number|null}>('SELECT * FROM subscriptions WHERE stripe_subscription_id=?',sid):null;
+      if(!row)return false;
+      const remote=await stripeGet(`subscriptions/${encodeURIComponent(sid!)}`);
+      if(!remote)throw new Error('Invoice subscription state unavailable; retry later');
+      await applySubscriptionState(row,{...evt,type:'customer.subscription.updated'},remote);
+      if(evt.type==='invoice.paid'){
+       const cents=Number(o.amount_paid);if(!Number.isSafeInteger(cents)||cents<0)throw new Error('Invalid invoice amount');
+       run("INSERT OR IGNORE INTO payments(id,user_id,kind,amount_cents,status,stripe_id,label,project_id,account_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",id(),row.owner_user_id??row.user_id,'subscription',cents,'paid',o.id,`${row.plan}:${row.billing}`,row.project_id,row.user_id,now());
+      }
+      return true;
+    }
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded": {
       if (!["subscription_v2", "reactivate_v2", "topup_v2", "call_v2"].includes(kind)) return false;
       const userId = o.metadata?.user_id ?? o.client_reference_id;
       if (!userId || !one("SELECT 1 FROM users WHERE id = ?", userId)) return true;
+      if(o.client_reference_id&&o.client_reference_id!==userId)throw new Error('Stripe checkout owner mismatch');
+      const local=one<{user_id:string;kind:string;plan:string|null;billing:string|null;project_id:string|null}>('SELECT * FROM checkout_sessions WHERE id=?',o.id);
+      const localKind=kind==='subscription_v2'?'subscription':kind==='reactivate_v2'?'reactivate':kind==='topup_v2'?'topup':'appointment';
+      if(local&&(local.user_id!==userId||local.kind!==localKind||(local.plan&&local.plan!==o.metadata.plan)||(local.billing&&local.billing!==o.metadata.billing)||(local.project_id&&local.project_id!==o.metadata.project_id)))throw new Error('Stripe checkout does not match the saved request');
       // Paiement différé (SEPA…) : rien tant que le paiement n'est pas confirmé.
       if (!paidSession(o)) return true;
       if (kind === "topup_v2") applyTopup(userId, o);
@@ -205,19 +201,21 @@ export async function applyV2Event(evt: any): Promise<boolean> {
       const row = o.id ? one<ProjectSubscription & { stripe_event_at: number | null }>("SELECT * FROM subscriptions WHERE stripe_subscription_id = ?", o.id) : null;
       // Anciens abonnements (un par compte, avant les forfaits V2) : ancien traitement.
       if (!row || (row.source === "legacy" && row.user_id === row.owner_user_id && !o.metadata?.kind)) return false;
-      applySubscriptionState(row, evt, o);
+      await applySubscriptionState(row, evt, o);
       return true;
     }
     case "charge.refunded": {
       const pi = subId(o.payment_intent);
       const pay = pi ? one<{ id: string; account_key: string | null; kind: string; amount_cents: number; refunded_cents: number }>("SELECT * FROM payments WHERE payment_intent = ?", pi) : null;
       if (!pay) return false;
-      const refunded = Math.min(pay.amount_cents, Number(o.amount_refunded) || 0);
-      const delta = refunded - (pay.refunded_cents ?? 0);
-      if (delta <= 0) return true;
-      run("UPDATE payments SET refunded_cents = ? WHERE id = ?", refunded, pay.id);
-      // Recharge remboursée : son budget IA est retiré (dans la limite de ce qu'il en reste).
-      if (pay.kind === "topup" && pay.account_key) revokeTopupBudget(pay.account_key, delta / 100, `refund:${o.id}:${refunded}`, L("Recharge IA remboursée", "AI top-up refunded"));
+      tx(()=>{
+       const fresh=one<typeof pay>('SELECT * FROM payments WHERE id=?',pay.id)!;
+       const refunded=Math.min(fresh.amount_cents,Math.max(0,Number(o.amount_refunded)||0));
+       const delta=refunded-(fresh.refunded_cents??0);if(delta<=0)return;
+       if(fresh.kind==='topup'&&fresh.account_key)revokeTopupBudget(fresh.account_key,delta/100,`refund:${o.id}:${refunded}`,L('Recharge IA remboursée','AI top-up refunded'));
+       run('UPDATE payments SET refunded_cents=? WHERE id=?',refunded,fresh.id);
+       if(fresh.kind==='call'&&refunded>=fresh.amount_cents)run('UPDATE call_bookings SET refunded=1,updated_at=? WHERE payment_intent=?',now(),pi);
+      });
       return true;
     }
   }
@@ -232,8 +230,10 @@ function applyTopup(userId: string, o: any) {
     logStripe("stripe:topup", new Error(`Recharge ${o.id} : projet ${projectId} introuvable ou d'un autre compte — non créditée`), userId);
     return;
   }
-  const amount = Number(o.amount_total) || Math.round(TOPUP_PRICE_EUR * 100);
-  const inserted = run(
+  const amount = Number(o.amount_total);
+  if(!Number.isSafeInteger(amount)||amount<=0||(o.currency&&o.currency!=='eur'))throw new Error('Invalid paid top-up amount or currency');
+  tx(()=>{
+  run(
     "INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, project_id, account_key, payment_intent, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
     id(),
     userId,
@@ -248,20 +248,30 @@ function applyTopup(userId: string, o: any) {
     now(),
   );
   // Une seule fois par paiement (relivraison du webhook, deux événements pour la même session).
-  if (inserted.changes) creditPackBudget(sub.user_id, amount / 100, `stripe:${o.id}`, L("Recharge IA", "AI top-up"));
+  const receipt=one<{user_id:string;account_key:string|null;amount_cents:number;refunded_cents:number}>('SELECT * FROM payments WHERE stripe_id=?',o.id)!;
+  if(receipt.user_id!==userId||receipt.account_key!==sub.user_id||receipt.amount_cents!==amount)throw new Error('Saved top-up receipt mismatch');
+  // Répare aussi un reçu sans crédit issu de l'ancien code, sur preuve de paiement et hors remboursement.
+  if(!one("SELECT 1 FROM ledger WHERE type='topup' AND ref=?",`stripe:${o.id}`)){
+   if(receipt.refunded_cents>0)throw new Error('Historical refunded top-up needs reconciliation before credit');
+   creditPackBudget(sub.user_id,amount/100,`stripe:${o.id}`,L('Recharge IA','AI top-up'));
+  }
+  });
 }
 
 async function applySubscriptionSession(userId: string, projectId: string | null, evt: any, o: any) {
   const stripeSub = subId(o.subscription);
   const plan: PlanId = o.metadata?.plan in PLANS ? o.metadata.plan : "creer";
+  if(!(o.metadata?.plan in PLANS))throw new Error('Unknown paid subscription plan');
   const billing: Billing = o.metadata?.billing === "year" ? "year" : "month";
   const recordPayment = (key: string, pid: string | null) =>
     run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, project_id, account_key, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)", id(), userId, "subscription", Number(o.amount_total) || 0, "paid", o.id, `${plan}:${billing}`, pid, key, now());
   // Déjà appliquée (relivraison, événements en double) : jamais un second abonnement ni un second projet.
   const existing = stripeSub ? one<ProjectSubscription>("SELECT * FROM subscriptions WHERE stripe_subscription_id = ?", stripeSub) : null;
-  if (existing) return void recordPayment(existing.user_id, existing.project_id);
+  if(existing){if((existing.owner_user_id??existing.user_id)!==userId)throw new Error('Stripe subscription owner mismatch');return void tx(()=>{syncAllowance(existing.user_id);recordPayment(existing.user_id,existing.project_id);});}
   const remote = stripeSub ? await stripeGet(`subscriptions/${encodeURIComponent(stripeSub)}`) : null;
+  if(!remote)throw new Error('Stripe subscription unavailable; retry event without granting access');
   if (remote && ENDED.has(remote.status)) return;
+  if(!['active','trialing'].includes(remote.status))throw new Error('Stripe subscription not active; no access granted');
   const period = periodOf(remote);
   const priceCents = Math.round(PLANS[plan].price[billing] * 100);
   if (projectId) {
@@ -287,12 +297,13 @@ async function applySubscriptionSession(userId: string, projectId: string | null
         now(),
         sub.user_id,
       );
+      alignPeriod(sub.user_id, period.start ?? now(), billing === "month" ? period.end : null);
+      syncAllowance(sub.user_id);
+      recordPayment(sub.user_id, projectId);
     });
-    alignPeriod(sub.user_id, period.start ?? now(), billing === "month" ? period.end : null);
-    syncAllowance(sub.user_id);
-    recordPayment(sub.user_id, projectId);
     return;
   }
+  tx(()=>{
   let key: string;
   try {
     key = createSubscription(userId, { plan, billing, status: "active", source: "stripe", stripeCustomerId: subId(o.customer), stripeSubscriptionId: stripeSub, periodStart: period.start, periodEnd: billing === "month" ? period.end : null, priceCents });
@@ -302,13 +313,21 @@ async function applySubscriptionSession(userId: string, projectId: string | null
     if (!again) throw e;
     key = again.user_id;
   }
+  syncAllowance(key);
   recordPayment(key, null);
+  });
 }
 
-function applySubscriptionState(row: ProjectSubscription & { stripe_event_at: number | null }, evt: any, o: any) {
+async function applySubscriptionState(row: ProjectSubscription & { stripe_event_at: number | null }, evt: any, o: any) {
   const at = Number(evt.created) || 0;
   // Ordre de livraison non garanti : un état plus ancien que le dernier appliqué est ignoré.
   if (row.stripe_event_at && at && at < row.stripe_event_at) return;
+  if(row.status==='canceled'&&evt.type!=='customer.subscription.deleted')return;
+  if(row.stripe_event_at===at&&evt.type!=='customer.subscription.deleted'){
+    const remote=await stripeGet(`subscriptions/${encodeURIComponent(o.id)}`);
+    if(!remote)throw new Error('Stripe state ambiguous in the same second; retry event');
+    o=remote;
+  }
   const status = evt.type === "customer.subscription.deleted" || ENDED.has(String(o.status)) ? "canceled" : statusOf(String(o.status ?? ""));
   const plan = o.metadata?.plan in PLANS ? o.metadata.plan : null;
   const billing = o.metadata?.billing === "year" ? "year" : o.metadata?.billing === "month" ? "month" : null;
@@ -316,7 +335,7 @@ function applySubscriptionState(row: ProjectSubscription & { stripe_event_at: nu
   // Nouveau prix (ancien abonné passé au nouveau tarif, ou changement de forfait) : pris en compte au renouvellement.
   const unit = Number(o.items?.data?.[0]?.price?.unit_amount) || null;
   const renewed = period.start && row.current_period_start && period.start > row.current_period_start;
-  run(
+  tx(()=>{run(
     "UPDATE subscriptions SET status = ?, plan = COALESCE(?, plan), billing = COALESCE(?, billing), current_period_start = COALESCE(?, current_period_start), current_period_end = COALESCE(?, current_period_end), cancel_at_period_end = ?, price_cents = CASE WHEN ? THEN COALESCE(?, price_cents) ELSE price_cents END, stripe_event_at = MAX(COALESCE(stripe_event_at, 0), ?), updated_at = ? WHERE user_id = ?",
     status,
     plan,
@@ -331,6 +350,7 @@ function applySubscriptionState(row: ProjectSubscription & { stripe_event_at: nu
     row.user_id,
   );
   syncAllowance(row.user_id);
+  });
 }
 
 // ------------------------------------------------------------------ anciens abonnés : nouveau prix au renouvellement
@@ -406,10 +426,7 @@ export async function callCheckout(user: { id: string; email: string }, bookingI
   const { attachCallSession, PAYMENT_HOLD_MS } = await import("./appointments");
   const b = one<{ id: string; status: string; price_cents: number; project_id: string; stripe_session: string | null; created_at: number }>("SELECT * FROM call_bookings WHERE id = ? AND user_id = ?", bookingId, user.id);
   if (!b || b.status !== "pending_payment" || b.created_at < now() - PAYMENT_HOLD_MS) throw new HttpError(409, L("Cette réservation a expiré : choisissez de nouveau un créneau.", "This booking has expired: pick a slot again."));
-  const reuse = b.stripe_session ? one<{ url: string }>("SELECT url FROM checkout_sessions WHERE id = ? AND status = 'open'", b.stripe_session) : null;
-  if (reuse) return { url: reuse.url, reused: true };
-  const s = await stripe(
-    "checkout/sessions",
+  return checkoutSession({userId:user.id,kind:'appointment',projectId:b.project_id,ref:b.id},
     {
       mode: "payment",
       customer_email: user.email,
@@ -429,17 +446,16 @@ export async function callCheckout(user: { id: string; email: string }, bookingI
       "line_items[0][price_data][tax_behavior]": "inclusive",
       "line_items[0][price_data][product_data][name]": L("E-COM STUDIO IA — rendez-vous téléphonique (60 min)", "E-COM STUDIO IA — phone appointment (60 min)"),
     },
-    `ck:${user.id}:call:${b.id}`,
+    (sessionId)=>attachCallSession(b.id,sessionId),
   );
-  attachCallSession(b.id, s.id);
-  run("INSERT OR IGNORE INTO checkout_sessions (id, user_id, kind, project_id, ref, url, status, created_at) VALUES (?,?,?,?,?,?,?,?)", s.id, user.id, "appointment", b.project_id, b.id, s.url, "open", now());
-  return { url: s.url as string, reused: false };
 }
 
 /** Remboursement d'un rendez-vous annulé dans les délais (appel serveur à Stripe). */
 export async function refundCall(bookingId: string, paymentIntent: string, cents: number) {
-  await stripe("refunds", { payment_intent: paymentIntent, amount: String(cents), "metadata[booking_id]": bookingId }, `refund:call:${bookingId}`);
-  run("UPDATE call_bookings SET refunded = 1, updated_at = ? WHERE id = ?", now(), bookingId);
+  const receipt=await stripe("refunds", { payment_intent: paymentIntent, amount: String(cents), "metadata[booking_id]": bookingId }, `refund:call:${bookingId}`);
+  if(receipt.status==='succeeded'){run("UPDATE call_bookings SET refunded = 1, updated_at = ? WHERE id = ?", now(), bookingId);return 'done' as const;}
+  if(['pending','requires_action'].includes(receipt.status))return 'pending' as const;
+  throw new Error('Refund not confirmed by Stripe');
 }
 
 async function applyCallSession(userId: string, o: any) {
@@ -450,6 +466,7 @@ async function applyCallSession(userId: string, o: any) {
     logStripe("stripe:call", new Error(`Rendez-vous ${bookingId} introuvable pour le paiement ${o.id}`), userId);
     return;
   }
+  if(!Number.isSafeInteger(Number(o.amount_total))||Number(o.amount_total)!==b.price_cents)throw new Error('Call payment amount does not match the booking');
   run("INSERT OR IGNORE INTO payments (id, user_id, kind, amount_cents, status, stripe_id, label, project_id, payment_intent, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)", id(), userId, "call", Number(o.amount_total) || b.price_cents, "paid", o.id, "call", o.metadata?.project_id ?? null, subId(o.payment_intent), now());
   if (confirmPaidCall(bookingId, subId(o.payment_intent)) === "lost") {
     // Payé trop tard et le créneau a été repris entre-temps : remboursement automatique, l'équipe est prévenue.

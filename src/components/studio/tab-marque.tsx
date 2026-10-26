@@ -296,10 +296,10 @@ export default function TabMarque() {
       {routes.length > 0 && <SocialKit tick={kitTick} />}
       {data.strategy && (
         <Card className="p-5 sm:p-7">
-          <SectionTitle title={t("Stratégie", "Strategy")}>{t("Angles et messages réutilisés pour les publications et les campagnes.", "Angles and messages reused for posts and campaigns.")}</SectionTitle>
+          <SectionTitle title={t("Éléments de stratégie enregistrés", "Saved strategy material")}>{t("Historique conservé en lecture : ces axes ne prouvent pas une recherche Internet. Seul le comparateur présente les nouvelles propositions sourcées.", "Read-only history: these directions do not prove web research. New sourced proposals are shown only in the comparison tool.")}</SectionTitle>
           <div className="grid gap-6 md:grid-cols-3">
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Messages clés", "Key messages")}</p><ul className="mt-2 grid gap-1.5 text-sm">{data.strategy.keyMessages.map((m) => <li key={m} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" />{m}</li>)}</ul></div>
-            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Angles", "Angles")}</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong>{t(" : ", ": ")}<span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
+            <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Axes enregistrés — non validés par cette recherche", "Saved directions — not validated by this research")}</p><ul className="mt-2 grid gap-2 text-sm">{data.strategy.angles.map((a) => <li key={a.title}><strong>{a.title}</strong>{t(" : ", ": ")}<span className="text-ink-2">{a.idea}</span></li>)}</ul></div>
             <div><p className="text-xs font-medium uppercase tracking-wider text-muted">{t("Piliers", "Pillars")}</p><div className="mt-2 flex flex-wrap gap-1.5">{data.strategy.pillars.map((p) => <Badge key={p}>{p}</Badge>)}</div></div>
           </div>
           {data.strategy.platform && (

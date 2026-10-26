@@ -7,16 +7,19 @@ import type { Lang } from "../i18n";
 import { L } from "../i18n-server";
 import { importedSectionSchema, openThemeZip, parseThemeJson, schemaTranslator, type ImportedTheme, type ThemeArchive } from "./import";
 import type { SectionSchema, SettingSchema } from "./spec";
+import { assertAssetScope } from "../project-security";
 
 type Localized = { schemas: Map<string, SectionSchema | null>; settings: { name: string; settings?: SettingSchema[] }[]; tr: (v: unknown) => unknown };
 type Loaded = { arc: ThemeArchive; langs: Map<Lang, Localized> };
 const cache = new Map<string, Loaded>();
 
 function openArchive(imp: ImportedTheme): Loaded {
-  const hit = cache.get(imp.archive);
-  if (hit) return hit;
   const a = getAsset(imp.archive);
   if (!a) throw new Error(L("Le fichier du thème importé est introuvable dans la bibliothèque.", "The imported theme file can't be found in the library."));
+  assertAssetScope(a);
+  const hit = cache.get(imp.archive);
+  if (hit && !a.deleted_at) return hit;
+  if (a.deleted_at) throw new Error(L("Thème introuvable.", "Theme not found."));
   const loaded: Loaded = { arc: openThemeZip(new Uint8Array(assetData(a))), langs: new Map() };
   if (cache.size > 12) cache.delete(cache.keys().next().value!);
   cache.set(imp.archive, loaded);

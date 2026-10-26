@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Barrière de qualité des logos (phase 1B) : une piste de l'IA notée 4,4 ou 5,9 n'est jamais proposée ni appliquée ;
  * la version du studio sert de remplacement technique PROVISOIRE (ni planche de mises en situation, ni kit réseaux

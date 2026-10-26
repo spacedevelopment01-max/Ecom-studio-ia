@@ -20,6 +20,7 @@ import { themeLang } from "@/lib/theme/spec";
 import { sectionSchema, type ThemeSpec } from "@/lib/theme/spec";
 import { previewCsp, previewSegment } from "@/lib/theme/preview-access";
 import { resolveLibraryType } from "@/lib/theme/family-gallery";
+import { portablePreview } from "@/lib/theme/preview-transport";
 
 export const runtime = "nodejs";
 
@@ -31,11 +32,11 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   const cur = currentTheme(p.id);
   if (!cur) throw new HttpError(409, L("Aucune boutique.", "No store yet."));
   const asked = new URL(req.url).searchParams.get("type") ?? "";
-  // Élément de galerie par famille (« fam:<fonction>~<disposition> ») : section du thème et réglages de la disposition.
-  const lib = /^fam:[a-z]+\.[a-z0-9-]+(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked) : { type: asked, settings: {} as Record<string, unknown> };
+  // Élément de galerie (« fam:<fonction>~<disposition> » ou « own:<section>~<disposition> ») : section et réglages.
+  const lib: ReturnType<typeof resolveLibraryType> = /^(fam:[a-z]+\.[a-z0-9-]+|own:[a-z0-9-]+)(~[a-z0-9-]+)?$/.test(asked) ? resolveLibraryType(asked, (t) => sectionSchema(cur.spec, t, uiLang()), uiLang()) : { type: asked, settings: {} };
   const type = lib.type;
   if (!/^[\w-]{1,80}$/.test(type) || !sectionSchema(cur.spec, type)) throw new HttpError(404, L("Section inconnue.", "Unknown section."));
-  // Même bibliothèque que la galerie : une section d'une autre famille (ou retirée) n'a pas d'aperçu.
+  // Même bibliothèque que la galerie : une section d'un autre thème (ou retirée) n'a pas d'aperçu.
   const outside = sectionIncompatibility(cur.spec, type, projectKind(p), uiLang());
   if (outside) throw new HttpError(404, outside);
   const targetTemplate = new URL(req.url).searchParams.get("template") ?? "index";
@@ -47,7 +48,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
   let html = process.env.NODE_ENV === "production" ? cache.get(key) : undefined;
   if (!html) {
     const cctx = sectionContentContext(p, cur.spec, true, targetTemplate);
-    const filled = withProjectMedia(cur.spec, type, { ...lib.settings }, undefined, cctx);
+    const filled = withProjectMedia(cur.spec, type, { ...lib.settings }, lib.blocks, cctx);
     // Séparateurs : rendus entre deux sections voisines factices, sinon on ne voit qu'une bande.
     const around = sectionSchema(cur.spec, "rich-text") ? previewNeighbors(type, filled.settings, sectionSchema(cur.spec, type)!, cctx, cur.spec) : null;
     const res = applyOps(cur.spec, [
@@ -61,6 +62,8 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     index.order = index.order.slice(0, res.applied.length);
     index.sections = Object.fromEntries(index.order.map((id) => [id, index.sections[id]]));
     for (const g of Object.values(spec.groups)) for (const s of Object.values(g.sections)) (s as { disabled?: boolean }).disabled = true;
+    // Bandeau de cookies du thème masqué : il cacherait la section montrée.
+    spec.settings = { ...spec.settings, cookie_banner: false };
     const r = await renderPage({ spec, base, cart: [], designMode: PREVIEW_DESIGN_MODE.has(type) }, "/", new URLSearchParams());
     // Aperçu non interactif (pas de navigation), animations d'apparition jouées tout de suite.
     // Bandeau discret : l'aperçu montre des contenus d'exemple (avis, logos…) que le marchand remplacera.
@@ -70,7 +73,7 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
     cache.set(key, html);
   }
   // Rendu mis en mémoire sans clé (elle expire) : la clé du moment est ajoutée à chaque envoi.
-  const out = html.split(`${base}/`).join(`${keyed}/`);
+  const out = await portablePreview(html.split(`${base}/`).join(`${keyed}/`), cur.spec, keyed, new URL(req.url).origin);
   // Bac à sable : le JavaScript des sections ne peut rien faire avec la session du client.
   return new Response(out, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", "X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": previewCsp("allow-scripts"), "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff" } });
 });

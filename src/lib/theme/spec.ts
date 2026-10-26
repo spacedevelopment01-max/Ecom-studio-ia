@@ -143,7 +143,23 @@ export type ThemeSpec = {
     pages: StorePage[];
     menus: Record<string, { title: string; links: MenuLink[] }>;
     policies: { handle: string; title: string; body_html: string }[];
+    /**
+     * Biens immobiliers visibles (Maison & Horizon) : injectés depuis l'onglet « Biens » au moment de l'aperçu, de
+     * l'export ou de la démonstration (src/lib/biens.ts, withBiens) ; jamais enregistrés dans une version du thème.
+     */
+    biens?: StoreBien[];
   };
+};
+
+/** Un bien prêt pour le thème (métaobjet « bien » dans Shopify, page /pages/bien/<adresse>). */
+export type StoreBien = {
+  ref: string; handle: string; transaction: "vente" | "location"; status: string; type: string; title: string; headline?: string; summary: string; description: string;
+  city: string; postalCode: string; sector: string; address: string; price: number | null; rent: number | null; charges: number | null; deposit: number | null;
+  fees: string; surface: number | null; land: number | null; rooms: number | null; bedrooms: number | null; floor: string; furnished: boolean | null;
+  exteriors: string[]; pool: boolean; features: string[]; availability: string; dpe: string | null; ges: string | null; propertyTax: string;
+  photos: { file: string; alt: string }[]; plan: { file: string; alt: string } | null;
+  neighborhood: { text: string; photos: { file: string; alt: string }[]; places: { label: string; detail: string }[] };
+  map: { x: number; y: number } | null; featured: boolean; exceptional: boolean; demo: boolean;
 };
 
 export const TEMPLATE_KEYS = [

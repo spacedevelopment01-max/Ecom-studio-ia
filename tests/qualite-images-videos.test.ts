@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Qualité des images et des vidéos : contrôles de fidélité des images et plans générés par IA (réponses
  * réalistes et défaillantes), cadrage (produit jamais coupé ni sous le texte), netteté (pas d'agrandissement

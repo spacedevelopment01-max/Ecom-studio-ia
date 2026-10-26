@@ -62,7 +62,7 @@ it('choix explicite et double clic : une tâche, une version, acquisition sans f
     expect(listThemeVersions(f.pid)).toHaveLength(1);
     expect(one<{
         n: number;
-    }>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=?', f.pid)?.n).toBe(0);
+    }>('SELECT COUNT(*) n FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)?.n).toBe(0);
 });
 it('préparation exacte, isolation, budget réellement insuffisant et changement de contexte bloquent avant toute génération', async () => {
     const f = await clientFixture({ incomplete: true });
@@ -83,11 +83,11 @@ it('préparation exacte, isolation, budget réellement insuffisant et changement
     const value = balance(f.subscription);
     run('UPDATE wallets SET monthly_used=monthly_allowance,topup_balance=0 WHERE user_id=?', f.subscription);
     expect(() => assertCanSpend(f.user.id, 1000, f.pid)).toThrow();
-    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0);
     saveProduct(f.pid, { ...loadProject(f.pid).product, summary: 'Contexte corrigé par le client.' });
     expect(() => placementRequest(f.pid, data.themePlacement)).toThrow(/changé/);
     expect((await fr(() => images(post({ action: 'generate', request: { themePlacement: data.themePlacement, kind: 'usage_scene', allowGenerate: true } }), ctx(f.pid)))).status).toBe(409);
-    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0);
     expect(value.available).toBeGreaterThan(0);
 });
 it('média acquis par le moteur simulé puis réutilisé : une seule génération, emplacement exact repris sans écraser une retouche', async () => {
@@ -114,15 +114,21 @@ it('média acquis par le moteur simulé puis réutilisé : une seule génératio
 });
 it.each(['creer', 'vendre'] as const)('%s : baisse après mise en file et publicité directe restent refusées sans dépense', async (plan) => {
     const f = await clientFixture();
-    const job = enqueue({ userId: f.user.id, projectId: f.pid, type: 'shop.direction', payload: { projectId: f.pid, direction: 'traverse' } }); // TRAVERSE : Dominer seulement (NOCTIL s'ouvre dès Développer depuis l'intégration #159/#161).
+    // Mission #190 : droits par thème et par forfait réglés par l'administration — ici TRAVERSE réservé à Dominer.
+    const { saveThemeRights } = await import('@/lib/theme/theme-rights-store');
+    const { MAQUETTE_THEMES } = await import('@/lib/theme/theme-fit');
+    const others = MAQUETTE_THEMES.filter((t) => t !== 'traverse');
+    saveThemeRights({ plans: { creer: others, vendre: others } }, 'test');
+    const job = enqueue({ userId: f.user.id, projectId: f.pid, type: 'shop.direction', payload: { projectId: f.pid, direction: 'traverse' } });
     grantProjectPlan(f.pid, plan);
     const claimed = claimNext()!;
     expect(claimed.id).toBe(job.id);
     await expect(fr(() => handlers[job.type](new JobContext(claimed)))).rejects.toThrow(/forfait/);
     expect(() => assertJobEntitlements('image.v2', f.pid, { request: { kind: 'ad_image' } })).toThrow(/Dominer/);
-    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0);
+    saveThemeRights({ plans: {} }, 'test');
 });
-it('média acquis pendant la préparation : réutilisé dans le thème sans nouvelle génération', async () => { const f = await clientFixture({ incomplete: true }); const mock = mockDeps({ reference: assetData(getAsset(f.assets[0].id)!), generate: () => clientPhoto('opening', 47) }); const result = await fr(() => runImageEngineV2(null, f.pid, { kind: 'usage_scene', aspect: '16:9', allowGenerate: true, noStock: true, references: [f.assets[0].id], peopleAllowed: false, instructions: 'Montrer la théière fournie sur une table, sans texte ni personne.', slot: 'preparation:home:hero' }, mock.deps)); const assetId = result.outcomes[0].assetId; expect(assetId, JSON.stringify(result)).toBeTruthy(); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const s = currentTheme(f.pid)!.spec; expect(s.meta!.adaptation!.slots.some(x => x.assetId === assetId)).toBe(true); expect(mock.log.generations).toHaveLength(1); expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0); });
+it('média acquis pendant la préparation : réutilisé dans le thème sans nouvelle génération', async () => { const f = await clientFixture({ incomplete: true }); const mock = mockDeps({ reference: assetData(getAsset(f.assets[0].id)!), generate: () => clientPhoto('opening', 47) }); const result = await fr(() => runImageEngineV2(null, f.pid, { kind: 'usage_scene', aspect: '16:9', allowGenerate: true, noStock: true, references: [f.assets[0].id], peopleAllowed: false, instructions: 'Montrer la théière fournie sur une table, sans texte ni personne.', slot: 'preparation:home:hero' }, mock.deps)); const assetId = result.outcomes[0].assetId; expect(assetId, JSON.stringify(result)).toBeTruthy(); await fr(() => buildShop(null, f.pid, { direction: 'traverse', useAi: false })); const s = currentTheme(f.pid)!.spec; expect(s.meta!.adaptation!.slots.some(x => x.assetId === assetId)).toBe(true); expect(mock.log.generations).toHaveLength(1); expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0); });
 
 it('deux reprises successives : pages de référence actualisées et retouches client conservées à travers les compositions automatiques', async () => {
     const f = await clientFixture();
@@ -149,5 +155,5 @@ it('deux reprises successives : pages de référence actualisées et retouches c
         expect(current.store.pages.some(p => p.template_suffix?.startsWith('kept-'))).toBe(false);
     }
     expect(listThemeVersions(f.pid)).toHaveLength(4);
-    expect(all('SELECT id FROM ai_calls WHERE project_id=?', f.pid)).toHaveLength(0);
+    expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'', f.pid)).toHaveLength(0);
 }, 90000);

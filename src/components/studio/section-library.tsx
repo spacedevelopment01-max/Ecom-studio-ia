@@ -202,7 +202,7 @@ function PreviewPane({ item, projectId, versionId, template, onAdd, adding, disa
             title={t(`Aperçu : ${item.name}`, `Preview: ${item.name}`)}
             src={src}
             loading="lazy"
-            sandbox={sameOrigin ? "allow-scripts allow-same-origin" : "allow-scripts"}
+            sandbox="allow-scripts"
             onLoad={() => setLoaded(true)}
             className={cx("absolute left-0 top-0 origin-top-left border-0 transition-opacity duration-300", loaded ? "opacity-100" : "opacity-0")}
             style={{ width: FRAME_W, height: Math.min(height, FRAME_H * 1.6), transform: `scale(${scale})` }}
@@ -278,7 +278,7 @@ function GeneratePane({ aiAvailable, onGenerate, locked }: { aiAvailable: boolea
         {locked ? (
           <div className="mt-4 grid gap-2 text-center">
             <Button className="w-full" disabled icon={<Lock className="size-4" />}>{t("Inclus dans le forfait Dominer", "Included in the Dominate plan")}</Button>
-            <p className="text-xs text-muted">{t("Avec votre forfait, ajoutez les 20 sections de la bibliothèque de votre type de projet et toutes leurs dispositions. Les sections sur mesure écrites par l'IA sont incluses dans le forfait Dominer.", "With your plan, add the 20 library sections for your kind of project and all their layouts. Custom sections written by AI are included in the Dominate plan.")}</p>
+            <p className="text-xs text-muted">{t("Les sections de votre thème (d'après ses maquettes) et celles de la bibliothèque commune que votre forfait ouvre, avec leurs dispositions. Les sections sur mesure écrites par l'IA sont incluses dans le forfait Dominer.", "Your theme's sections (from its mockups) and the shared library sections your plan includes, with their layouts. Custom sections written by AI are included in the Dominate plan.")}</p>
             <a href="/studio/compte#forfaits" className="text-xs font-medium text-signal underline underline-offset-2">{t("Voir les forfaits dans « Mon compte »", "See the plans in “My account”")}</a>
           </div>
         ) : aiAvailable ? (

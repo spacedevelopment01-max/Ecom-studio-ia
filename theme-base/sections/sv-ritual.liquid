@@ -1,0 +1,77 @@
+{%- comment -%}
+  SILLON V2 : rituel en trois gestes reliés par un chemin cuivre —
+  - ligne claire (planche 01, accueil) : titre et phrase à gauche, puis 01 / 02 / 03 en grands chiffres (cuivre, sombre,
+    cuivre), photo arrondie, étiquette à chasse fixe et texte court ;
+  - bloc sombre (planche 01, fiche) : titre et phrase à gauche, chiffres cuivre et étiquettes au-dessus de chaque photo,
+    texte sous la photo.
+  Blocs : « Geste » (trois).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="sv sv-ritual sv-ritual--{{ s.layout }}">
+  <div class="sv-c">
+    <div class="sv-ritual__inner">
+      <div class="sv-ritual__head">
+        <h2 class="sv-display sv-ritual__title">{{ s.heading }}</h2>
+        {%- if s.text != blank -%}<p class="sv-ritual__text">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}
+      </div>
+      {%- if s.layout == 'row' -%}
+        {% render 'sv-route', d: 'M0 4C50 0 60 40 80 90S120 150 140 110 170 60 200 90 300 120 420 100 520 60 640 110 760 140 880 120', vb: '0 0 880 150', dots: '72,74 494,82 818,128', dot: 'solid', class: 'sv-ritual__route' %}
+      {%- else -%}
+        {% render 'sv-route', d: 'M0 150C80 150 120 120 160 70S220 0 300 20 440 120 520 90 620 0 700 20 860 110 960 60', vb: '0 0 960 160', dots: '', class: 'sv-ritual__route' %}
+        {%- comment -%} Téléphone (planche 04, fiche) : chemin cuivre qui relie les trois gestes, courbes de niveau. {%- endcomment -%}
+        <span class="sv-topo sv-topo--corner sv-ritual__mtopo" aria-hidden="true"></span>
+        {% render 'sv-route', d: 'M-14 145C0 145 8 124 32 122S66 138 78 150M268 299C268 325 240 330 205 334S165 345 155 362M74 348C40 348 8 370 4 404S12 565 43 582L74 584', vb: '0 0 368 778', dots: '4,145 268,299 4,404 43,582', class: 'sv-ritual__mroute', width: 2.4 %}
+      {%- endif -%}
+      <ol class="sv-ritual__steps" role="list">
+        {%- for block in section.blocks limit: 3 -%}
+          {%- assign b = block.settings -%}
+          <li class="sv-ritual__step sv-ritual__step--{{ forloop.index }}" {{ block.shopify_attributes }}>
+            <span class="sv-display sv-ritual__num">{{ b.number }}</span>
+            {%- if s.layout != 'row' -%}<span class="sv-mono sv-ritual__label">{{ b.title }}</span>{%- endif -%}
+            {% render 'sv-img', image: b.image, asset: b.image_asset, alt: b.image_alt, pos: b.image_position, zoom: b.image_zoom, class: 'sv-ritual__img', pos_mobile: b.image_position_mobile, zoom_mobile: b.image_zoom_mobile, place_w: b.image_place_w, place_x: b.image_place_x, place_y: b.image_place_y %}
+            <div class="sv-ritual__body">
+              {%- if s.layout == 'row' -%}<p class="sv-mono sv-ritual__label">{% render 'sv-lines', text: b.title, mobile: b.title_mobile %}</p>{%- endif -%}
+              {%- if b.text != blank -%}<p class="sv-ritual__desc">{% render 'sv-lines', text: b.text, mobile: b.text_mobile %}</p>{%- endif -%}
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Rituel en trois gestes",
+  "class": "sv-ritual-section",
+  "max_blocks": 3,
+  "settings": [
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "row", "options": [{ "value": "row", "label": "Ligne claire" }, { "value": "dark", "label": "Bloc sombre" }] },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Le rituel" },
+    { "type": "textarea", "id": "text", "label": "Phrase", "default": "Trois gestes.\nUn grand ailleurs." }
+  ],
+  "blocks": [
+    {
+      "type": "step", "name": "Geste",
+      "settings": [
+        { "type": "text", "id": "number", "label": "Numéro", "default": "01" },
+        { "type": "text", "id": "title", "label": "Nom du geste", "default": "Allumer" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "text", "id": "title_mobile", "label": "Nom du geste au téléphone", "info": "Vide : le nom ci-dessus." },
+        { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone", "info": "Vide : le texte ci-dessus." },
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "text", "id": "image_alt", "label": "Description" },
+        { "type": "text", "id": "image_position", "label": "Cadrage", "default": "50% 50%" },
+        { "type": "text", "id": "image_position_mobile", "label": "Cadrage au téléphone", "info": "Vide : le même cadrage." },
+        { "type": "range", "id": "image_zoom_mobile", "label": "Agrandissement au téléphone", "min": 100, "max": 300, "step": 2, "unit": "%", "default": 100 },
+        { "type": "number", "id": "image_place_w", "label": "Téléphone : largeur posée de la photo (px)", "info": "Repère : écran de 390 px. 0 : la photo remplit le cadre." },
+        { "type": "number", "id": "image_place_x", "label": "Téléphone : position à gauche (px)" },
+        { "type": "number", "id": "image_place_y", "label": "Téléphone : position en haut (px)" },
+        { "type": "range", "id": "image_zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Rituel en trois gestes", "blocks": [{ "type": "step" }, { "type": "step", "settings": { "number": "02", "title": "Extraire" } }, { "type": "step", "settings": { "number": "03", "title": "Savourer" } }] }]
+}
+{% endschema %}

@@ -1,0 +1,158 @@
+{%- comment -%}
+  Pages légales d'APLAT (planches 05 et 10) : sommaire à ancres à gauche (et photo), encart « à compléter », puis :
+  - mentions : rubriques en tableaux « libellé / valeur » ; sur téléphone, libellés et valeurs en encarts ;
+  - privacy : rubriques à icône, texte et mention « à définir » ; sur téléphone, rubriques repliables ;
+  - cookies : choix réels (essentiels toujours actifs, mesure d'audience et contenus externes désactivés par défaut),
+    prestataires à renseigner, « Tout refuser », « Enregistrer mes choix », « Tout accepter » (assets/aplat.js).
+  Rien n'est inventé : toute information manquante reste « À renseigner ».
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign navs = section.blocks | where: 'type', 'nav'
+  assign parts = section.blocks | where: 'type', 'part'
+-%}
+<section class="ap-s ap-legal ap-legal--{{ s.kind }}" aria-label="{{ s.label | escape }}"{% if s.mobile_image_height > 0 %} style="--ap-lmh:{{ s.mobile_image_height }}px;"{% endif %}>
+  <div class="ap-legal__inner ap-wrap">
+    <aside class="ap-legal__aside ap-only-d">
+      {%- if navs.size > 0 -%}
+        <nav class="ap-legal__nav" aria-label="{{ s.nav_label | escape }}">
+          <ul role="list">{%- for b in navs -%}<li {{ b.shopify_attributes }}><a href="#{{ b.settings.anchor | handle }}"{% if forloop.first %} aria-current="true"{% endif %}>{{ b.settings.label | escape }}</a></li>{%- endfor -%}</ul>
+        </nav>
+      {%- endif -%}
+      {%- if s.image != blank or s.image_asset != blank -%}{%- render 'ap-img', img: s.image, asset: s.image_asset, alt: '', fx: s.focus_x, fy: s.focus_y, cls: 'ap-legal__img', width: 600 -%}{%- endif -%}
+    </aside>
+    <div class="ap-legal__main">
+      {%- if s.notice_title != blank -%}
+        <div class="ap-legal__notice ap-only-d" id="{{ s.notice_anchor | handle }}">
+          {% render 'ap-icon', name: 'info' %}
+          <div><p class="ap-legal__notice-title">{{ s.notice_title | escape }}</p>{%- if s.notice_text != blank -%}<p>{{ s.notice_text | escape | newline_to_br }}</p>{%- endif -%}</div>
+        </div>
+      {%- endif -%}
+      {%- if s.intro != blank -%}<div class="ap-legal__intro ap-only-m">{{ s.intro }}</div>{%- endif -%}
+      {%- case s.kind -%}
+        {%- when 'cookies' -%}
+          <div class="ap-legal__consent" id="{{ s.choices_anchor | handle }}">
+            {%- render 'ap-consent', s: s, id: 'page', page: true -%}
+          </div>
+        {%- else -%}
+          <div class="ap-legal__parts" data-ap-acc-group>
+            {%- for b in parts -%}
+              {%- assign bs = b.settings -%}
+              <section class="ap-legal__part ap-acc" id="{{ bs.anchor | default: b.id | handle }}" aria-labelledby="ApLg-{{ b.id }}"{% if bs.mobile_order > 0 %} style="--ap-o:{{ bs.mobile_order }};"{% endif %} {{ b.shopify_attributes }}>
+                {%- if bs.icon != 'none' -%}<span class="ap-legal__icon" aria-hidden="true">{% render 'ap-icon', name: bs.icon %}</span>{%- endif -%}
+                <div class="ap-legal__part-body">
+                  <h2 class="ap-legal__part-title" id="ApLg-{{ b.id }}">
+                    <span class="ap-only-d">{{ bs.title | escape }}</span>
+                    {%- if s.kind == 'privacy' -%}
+                      <button type="button" class="ap-acc__btn ap-only-m" data-ap-acc aria-expanded="false" aria-controls="ApLgA-{{ b.id }}"><span class="ap-acc__label">{{ bs.mobile_title | default: bs.title | escape }}{%- assign mn = bs.mobile_note | default: bs.note -%}{%- if mn != blank -%}<small>{{ mn | escape }}</small>{%- endif -%}</span><span class="ap-acc__sign" aria-hidden="true">{% render 'ap-icon', name: 'chevron-down' %}</span></button>
+                    {%- else -%}
+                      <span class="ap-only-m">{{ bs.mobile_title | default: bs.title | escape }}</span>
+                    {%- endif -%}
+                  </h2>
+                  {%- if s.kind == 'privacy' -%}
+                    <div class="ap-legal__part-text ap-only-d">{{ bs.text }}</div>
+                    {%- if bs.note != blank -%}<p class="ap-legal__part-note ap-only-d">{{ bs.note | escape }}</p>{%- endif -%}
+                    <div class="ap-acc__a ap-only-m" id="ApLgA-{{ b.id }}" hidden>{{ bs.text }}</div>
+                  {%- else -%}
+                    {%- if bs.text != blank -%}<div class="ap-legal__part-text">{{ bs.text }}</div>{%- endif -%}
+                    {%- if bs.items != blank -%}
+                      <dl class="ap-legal__rows{% if bs.mobile_items != blank %} ap-only-d{% endif %}">
+                        {%- assign lines = bs.items | newline_to_br | split: '<br />' -%}
+                        {%- for line in lines -%}{%- assign kv = line | strip | split: ':' -%}{%- if kv.size > 1 -%}<div><dt>{{ kv[0] | strip | escape }}</dt><dd>{{ line | strip | remove_first: kv[0] | remove_first: ':' | strip | escape }}</dd></div>{%- endif -%}{%- endfor -%}
+                      </dl>
+                    {%- endif -%}
+                    {%- if bs.mobile_items != blank and bs.mobile_plain -%}
+                      <div class="ap-legal__plain ap-only-m"><p class="ap-legal__plain-title">{{ bs.mobile_title | default: bs.title | escape }}</p><p>{{ bs.mobile_items | escape | newline_to_br }}</p></div>
+                    {%- elsif bs.mobile_items != blank -%}
+                      <dl class="ap-legal__rows ap-only-m">
+                        {%- assign lines = bs.mobile_items | newline_to_br | split: '<br />' -%}
+                        {%- for line in lines -%}{%- assign kv = line | strip | split: ':' -%}{%- if kv.size > 1 -%}<div><dt>{{ kv[0] | strip | escape }}</dt><dd>{{ line | strip | remove_first: kv[0] | remove_first: ':' | strip | escape }}</dd></div>{%- endif -%}{%- endfor -%}
+                      </dl>
+                    {%- endif -%}
+                  {%- endif -%}
+                </div>
+              </section>
+            {%- endfor -%}
+          </div>
+      {%- endcase -%}
+    </div>
+  </div>
+  {%- if s.mobile_image != blank or s.mobile_image_asset != blank -%}{%- render 'ap-img', img: s.mobile_image, asset: s.mobile_image_asset, alt: '', fx: s.mobile_focus_x, fy: s.mobile_focus_y, cls: 'ap-legal__mimg ap-only-m', width: 800 -%}{%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Page légale APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "kind", "label": "Page", "default": "mentions",
+      "options": [ { "value": "mentions", "label": "Mentions légales" }, { "value": "privacy", "label": "Confidentialité" }, { "value": "cookies", "label": "Cookies et préférences" } ]
+    },
+    { "type": "text", "id": "label", "label": "Nom de la section (lecteurs d'écran)", "default": "Informations légales" },
+    { "type": "text", "id": "nav_label", "label": "Sommaire (lecteurs d'écran)", "default": "Sommaire de la page" },
+    { "type": "image_picker", "id": "image", "label": "Photo sous le sommaire" },
+    { "type": "text", "id": "image_asset", "label": "Photo sous le sommaire (fichier du thème)" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "image_picker", "id": "mobile_image", "label": "Photo en bas de page (téléphone)" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Photo en bas de page (fichier du thème)" },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_image_height", "label": "Hauteur de la photo sur téléphone (0 : selon la disposition)", "min": 0, "max": 500, "step": 10, "unit": "px", "default": 0 },
+    { "type": "text", "id": "notice_title", "label": "Encart : titre" },
+    { "type": "textarea", "id": "notice_text", "label": "Encart : texte" },
+    { "type": "text", "id": "notice_anchor", "label": "Encart : ancre" },
+    { "type": "richtext", "id": "intro", "label": "Introduction (téléphone)" },
+    { "type": "header", "content": "Cookies" },
+    { "type": "text", "id": "choices_anchor", "label": "Choix : ancre", "default": "mes-choix" },
+    { "type": "text", "id": "consent_essential_title", "label": "Cookies essentiels : titre", "default": "Cookies essentiels" },
+    { "type": "text", "id": "consent_essential_text", "label": "Cookies essentiels : texte", "default": "Nécessaires au bon fonctionnement du site." },
+    { "type": "text", "id": "consent_essential_mobile_text", "label": "Cookies essentiels : texte sur téléphone" },
+    { "type": "text", "id": "consent_badge", "label": "Badge « toujours activés »", "default": "Toujours activés" },
+    { "type": "text", "id": "consent_audience_title", "label": "Mesure d'audience : titre", "default": "Mesure d'audience" },
+    { "type": "text", "id": "consent_audience_text", "label": "Mesure d'audience : texte", "default": "À préciser selon le fonctionnement réel du site." },
+    { "type": "text", "id": "consent_audience_mobile_text", "label": "Mesure d'audience : texte sur téléphone" },
+    { "type": "text", "id": "consent_external_title", "label": "Contenus externes : titre", "default": "Contenus externes" },
+    { "type": "text", "id": "consent_external_text", "label": "Contenus externes : texte", "default": "À préciser selon le fonctionnement réel du site." },
+    { "type": "text", "id": "consent_external_mobile_text", "label": "Contenus externes : texte sur téléphone" },
+    { "type": "text", "id": "consent_on_label", "label": "État activé", "default": "Activé" },
+    { "type": "text", "id": "consent_off_label", "label": "État désactivé", "default": "Désactivé" },
+    { "type": "text", "id": "consent_always_label", "label": "État toujours actif", "default": "Toujours actif" },
+    { "type": "text", "id": "consent_info_title", "label": "Prestataires : titre", "default": "Prestataires (à renseigner)" },
+    { "type": "textarea", "id": "consent_info_text", "label": "Prestataires : texte", "default": "La liste des prestataires sera à compléter selon les outils réellement utilisés sur le site." },
+    { "type": "textarea", "id": "consent_info_list", "label": "Prestataires : liste", "info": "Une ligne par prestataire." },
+    { "type": "text", "id": "consent_info_list_title", "label": "Prestataires : titre de la liste", "default": "À renseigner :" },
+    { "type": "text", "id": "consent_info_anchor", "label": "Prestataires : ancre", "default": "prestataires" },
+    { "type": "text", "id": "consent_refuse_label", "label": "Bouton tout refuser", "default": "Tout refuser" },
+    { "type": "text", "id": "consent_accept_label", "label": "Bouton tout accepter", "default": "Tout accepter" },
+    { "type": "text", "id": "consent_save_label", "label": "Bouton enregistrer", "default": "Enregistrer mes choix" },
+    { "type": "text", "id": "consent_saved_label", "label": "Message après enregistrement", "default": "Vos choix sont enregistrés." },
+    { "type": "text", "id": "consent_none_label", "label": "Message sans outil installé", "default": "Aucun outil de mesure ni contenu externe n'est installé pour l'instant : vos choix seront appliqués dès qu'un outil le sera." }
+  ],
+  "blocks": [
+    { "type": "nav", "name": "Lien du sommaire", "settings": [ { "type": "text", "id": "label", "label": "Libellé" }, { "type": "text", "id": "anchor", "label": "Ancre" } ] },
+    {
+      "type": "part", "name": "Rubrique",
+      "settings": [
+        {
+          "type": "select", "id": "icon", "label": "Icône", "default": "none",
+          "options": [ { "value": "none", "label": "Aucune" }, { "value": "doc", "label": "Document" }, { "value": "image", "label": "Photo" }, { "value": "gear", "label": "Réglages" }, { "value": "clock", "label": "Durée" }, { "value": "users", "label": "Personnes" }, { "value": "mail", "label": "E-mail" } ]
+        },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "text", "id": "mobile_title", "label": "Titre sur téléphone" },
+        { "type": "text", "id": "anchor", "label": "Ancre" },
+        { "type": "richtext", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "items", "label": "Lignes « libellé : valeur »", "info": "Une ligne par information." },
+        { "type": "textarea", "id": "mobile_items", "label": "Lignes sur téléphone (facultatif)" },
+        { "type": "checkbox", "id": "mobile_plain", "label": "Sur téléphone : titre et texte simple (sans encadré)", "default": false },
+        { "type": "range", "id": "mobile_order", "label": "Place sur téléphone (0 : même ordre)", "min": 0, "max": 9, "step": 1, "default": 0 },
+        { "type": "text", "id": "note", "label": "Mention « à définir »" },
+        { "type": "text", "id": "mobile_note", "label": "Mention sur téléphone" }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Page légale APLAT" } ]
+}
+{% endschema %}

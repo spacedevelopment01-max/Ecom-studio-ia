@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Phase 3B — orchestrateur branché sur les vrais parcours (tout est simulé : aucun appel payant).
  */

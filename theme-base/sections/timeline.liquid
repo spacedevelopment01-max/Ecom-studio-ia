@@ -1,4 +1,34 @@
-{%- comment -%} Frise d'étapes : la ligne se remplit et le texte s'allume au défilement. {%- endcomment -%}
+{%- comment -%} Frise d'étapes : la ligne se remplit et le texte s'allume au défilement. Disposition « colonnes »
+  (maquette Atelier Rive) : les étapes numérotées côte à côte, une photo ou un encart de contact à droite. {%- endcomment -%}
+{%- if section.settings.layout == 'columns' -%}
+<section class="es-section es-timeline es-timeline--columns color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
+  <div class="es-container es-timeline__cols-wrap{% if section.settings.image != blank or section.settings.image_asset != blank %} es-timeline__cols-wrap--media{% elsif section.settings.aside_heading != blank %} es-timeline__cols-wrap--aside{% endif %}">
+    <div class="es-timeline__main">
+      {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2 es-timeline__heading">{{ section.settings.heading }}{% if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif %}</h2>{%- endif -%}
+      <ol class="es-timeline__cols" role="list">
+        {%- for block in section.blocks -%}
+          <li class="es-timeline__col" {{ block.shopify_attributes }}>
+            <span class="es-timeline__num" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <h3 class="es-heading es-h4 es-timeline__col-title">{{ block.settings.title }}</h3>
+            <div class="es-rte">{{ block.settings.text }}</div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+    {%- if section.settings.image != blank or section.settings.image_asset != blank -%}
+      {%- assign side_alt = section.settings.image_alt | default: section.settings.heading -%}
+      <div class="es-timeline__side es-timeline__side--media">{% render 'es-image', image: section.settings.image, asset: section.settings.image_asset, alt: side_alt, sizes: '(min-width: 990px) 40vw, 100vw', class: 'es-cover' %}</div>
+    {%- elsif section.settings.aside_heading != blank -%}
+      <aside class="es-timeline__side es-timeline__side--aside">
+        <h3 class="es-heading es-h4">{{ section.settings.aside_heading }}</h3>
+        {%- if section.settings.aside_text != blank -%}<p class="es-timeline__aside-text">{{ section.settings.aside_text }}</p>{%- endif -%}
+        {%- if section.settings.aside_button_label != blank -%}<a class="es-button" href="{{ section.settings.aside_button_link | default: routes.root_url }}">{{ section.settings.aside_button_label }}</a>{%- endif -%}
+      </aside>
+    {%- endif -%}
+  </div>
+</section>
+{%- else -%}
 <section class="es-section es-timeline color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;">
   <div class="es-container es-timeline__inner">
     {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow es-timeline__eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
@@ -19,8 +49,24 @@
     </ol>
   </div>
 </section>
+{%- endif -%}
 
 {% stylesheet %}
+.es-timeline__cols-wrap { display: grid; gap: clamp(28px, 4vw, 56px); }
+.es-timeline__cols { list-style: none; margin: clamp(20px, 3vw, 36px) 0 0; padding: 0; display: grid; gap: 24px; }
+.es-timeline__col .es-timeline__num { margin-bottom: .6rem; }
+.es-timeline__col-title { margin: 0 0 .5em; }
+.es-timeline__col .es-rte { font-size: .92rem; line-height: 1.55; color: color-mix(in srgb, var(--c-text) 74%, var(--c-bg)); }
+.es-timeline__side--media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; }
+.es-timeline__side--media .es-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.es-timeline__side--aside { display: grid; gap: 10px; align-content: start; }
+.es-timeline__side--aside .es-button { justify-self: start; margin-top: 8px; }
+@media (min-width: 750px) { .es-timeline__cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 990px) {
+  .es-timeline__cols-wrap--media { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); align-items: center; }
+  .es-timeline__cols-wrap--aside { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); align-items: center; }
+  .es-timeline__cols-wrap--aside .es-timeline__side--aside { padding-left: clamp(24px, 3vw, 48px); border-left: 1px solid rgba(var(--c-text-rgb), .16); }
+}
 .es-timeline .es-timeline__eyebrow { text-align: center; margin-bottom: .8rem; }
 .es-timeline .es-timeline__num { display: block; margin-bottom: .45rem; font-size: .74rem; letter-spacing: .2em; font-weight: var(--font-body-weight-bold); color: var(--c-accent); font-variant-numeric: tabular-nums; }
 .es-timeline .es-timeline__step .es-h3 { margin-bottom: .35em; }
@@ -48,8 +94,15 @@
     { "type": "text", "id": "eyebrow", "label": "Surtitre" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Chaque étape compte" },
     { "type": "text", "id": "heading_accent", "label": "Fin du titre mise en valeur" },
+    { "type": "select", "id": "layout", "label": "Disposition", "default": "line", "options": [{ "value": "line", "label": "Frise verticale" }, { "value": "columns", "label": "Étapes en colonnes, photo ou encart à droite" }] },
     { "type": "image_picker", "id": "image", "label": "Image d'ouverture" },
     { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description de l'image" },
+    { "type": "header", "content": "Encart à droite (étapes en colonnes, sans photo)" },
+    { "type": "text", "id": "aside_heading", "label": "Titre de l'encart" },
+    { "type": "text", "id": "aside_text", "label": "Texte de l'encart" },
+    { "type": "text", "id": "aside_button_label", "label": "Bouton de l'encart" },
+    { "type": "url", "id": "aside_button_link", "label": "Lien du bouton de l'encart" },
     { "type": "color_scheme", "id": "color_scheme", "label": "Schéma de couleurs", "default": "scheme-1" },
     { "type": "range", "id": "padding_top", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge haute", "default": 96 },
     { "type": "range", "id": "padding_bottom", "min": 0, "max": 200, "step": 8, "unit": "px", "label": "Marge basse", "default": 96 }

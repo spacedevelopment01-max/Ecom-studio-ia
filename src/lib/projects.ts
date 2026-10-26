@@ -1,3 +1,5 @@
+import {assertSafeThemeContent} from "./theme/content-security";
+import {assertProjectScope} from "./project-security";
 /** Accès aux projets : produit, marque, mémoire, versions du thème. */
 import { recordBrandVersion } from "./brand-versions";
 import { all, id, json, now, one, run, tx } from "./db";
@@ -35,6 +37,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
 };
 
 export function loadProject(projectId: string): Project {
+  assertProjectScope(projectId);
   const row = one<ProjectRow>("SELECT * FROM projects WHERE id = ?", projectId);
   if (!row) throw new Error(L("Projet introuvable.", "Project not found."));
   const brand = json<Brand | null>(row.brand_json, null);
@@ -184,13 +187,15 @@ function insertMemory(projectId: string, m: { kind: string; key: string; value: 
 export type ThemeVersion = { id: string; project_id: string; number: number; spec: string; summary: string; author: string; parent_id: string | null; qc: string | null; created_at: number };
 
 export function currentTheme(projectId: string): { version: ThemeVersion; spec: ThemeSpec } | null {
+  assertProjectScope(projectId);
   const p = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
   if (!p?.current_theme_version_id) return null;
-  const v = one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ?", p.current_theme_version_id);
+  const v = one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ? AND project_id=?", p.current_theme_version_id,projectId);
   return v ? { version: { ...v, summary: storedText(v.summary, uiLang()) }, spec: JSON.parse(v.spec) } : null;
 }
 
 export function themeVersion(projectId: string, versionId: string): { version: ThemeVersion; spec: ThemeSpec } | null {
+  assertProjectScope(projectId);
   const v = one<ThemeVersion>("SELECT * FROM theme_versions WHERE id = ? AND project_id = ?", versionId, projectId);
   return v ? { version: { ...v, summary: storedText(v.summary, uiLang()) }, spec: JSON.parse(v.spec) } : null;
 }
@@ -203,8 +208,10 @@ export class ThemeConflict extends Error { }
  * modification est passée entre-temps, rien n'est écrit (ThemeConflict) au lieu d'écraser silencieusement.
  */
 export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: string, author: "ai" | "user" | "system", qc?: unknown, expectedParent?: string | null, options: { activate?: boolean } = {}): ThemeVersion {
+  assertProjectScope(projectId);
   // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué à tous les textes du site enregistré.
   spec = applyWordingDeep(spec, loadWordingRules(projectId));
+  assertSafeThemeContent(spec);
   return tx(() => {
     const cur = one<{ current_theme_version_id: string | null }>("SELECT current_theme_version_id FROM projects WHERE id = ?", projectId);
     const gate = (qc as { gate?: { verdict?: string; checked?: boolean } } | null)?.gate;
@@ -230,6 +237,7 @@ export function saveThemeVersion(projectId: string, spec: ThemeSpec, summary: st
 }
 
 export function listThemeVersions(projectId: string) {
+  assertProjectScope(projectId);
   // Résumés enregistrés en deux langues (ou texte ancien) : rendus dans la langue de l'interface.
   return all<Omit<ThemeVersion, "spec">>("SELECT id, project_id, number, summary, author, parent_id, qc, created_at FROM theme_versions WHERE project_id = ? ORDER BY number DESC LIMIT 100", projectId).map((v) => ({ ...v, summary: storedText(v.summary, uiLang()) }));
 }

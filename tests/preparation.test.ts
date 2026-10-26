@@ -119,7 +119,7 @@ describe("Parcours amont — moteur réel, fournisseurs injectés et données is
       expect(ready.clientBrief.description).toBe(f.input.description);
       expect(ready.clientBrief.constraints).toBe(f.input.constraints);
       expect(ready.strategy.angles[0].title).toBe(
-        "Décider sur des éléments vérifiables",
+        "Approche simulée transparence",
       );
       expect(
         ready.pages.every((p) => (p.kind !== "contact" ? !!p.docKey : true)),

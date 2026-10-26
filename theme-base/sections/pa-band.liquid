@@ -1,0 +1,44 @@
+{%- comment -%}
+  PARENTHÈSE : photo et panneau de couleur côte à côte.
+  - forest : panneau vert forêt, titre clair, bouton (« Un cadre pour ralentir », « Des formats adaptés à vos besoins ») ;
+  - sage : panneau sauge arrondi, filet court (« Le confort de chez vous, la même qualité d'accompagnement »).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-band pa-band--{{ s.style }}{% if s.image_side == 'right' %} pa-band--flip{% endif %}" style="--split: {{ s.split }}%;">
+  <div class="{% if s.full_width %}pa-band__full{% else %}pa-wrap{% endif %}">
+    <div class="pa-band__grid">
+      {% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, pos_mobile: s.image_position_mobile, class: 'pa-band__img' %}
+      <div class="pa-band__panel">
+        {%- if s.heading != blank -%}<h2 class="pa-band__title">{{ s.heading | escape | newline_to_br }}</h2>{%- endif -%}
+        {%- if s.text != blank -%}<div class="pa-band__text">{{ s.text }}</div>{%- endif -%}
+        {%- if s.style == 'sage' -%}<span class="pa-rule" aria-hidden="true"></span>{%- endif -%}
+        {%- if s.button_label != blank -%}<a class="pa-btn pa-btn--{{ s.button_style }}" href="{{ s.button_link }}">{{ s.button_label }}</a>{%- endif -%}
+        {%- if s.style == 'forest' -%}{% render 'pa-ornament', name: 'curve', class: 'pa-band__curve' %}{%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Photo et panneau coloré",
+  "class": "pa-band-section",
+  "settings": [
+    { "type": "select", "id": "style", "label": "Panneau", "default": "forest", "options": [{ "value": "forest", "label": "Vert forêt" }, { "value": "sage", "label": "Sauge arrondi" }] },
+    { "type": "select", "id": "image_side", "label": "Côté de la photo", "default": "left", "options": [{ "value": "left", "label": "Gauche" }, { "value": "right", "label": "Droite" }] },
+    { "type": "checkbox", "id": "full_width", "label": "Pleine largeur", "default": true },
+    { "type": "range", "id": "split", "label": "Part de la photo", "min": 35, "max": 70, "step": 1, "unit": "%", "default": 65 },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Un cadre pour ralentir" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "button_style", "label": "Style du bouton", "default": "ghost", "options": [{ "value": "ghost", "label": "Contour clair" }, { "value": "white", "label": "Blanc" }, { "value": "apricot", "label": "Abricot" }, { "value": "forest", "label": "Vert forêt" }] }
+  ],
+  "presets": [{ "name": "Photo et panneau coloré" }]
+}
+{% endschema %}

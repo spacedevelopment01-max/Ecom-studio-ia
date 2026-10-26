@@ -25,7 +25,19 @@ PAYSAGISTE_VIDEO/titres/anim/
 # Démonstrations (issue #137) : visuels du kit privé de Thomas, jamais dans le dépôt (livrés dans le ZIP, à copier ici) ;
 # vignettes des thèmes rendues avec ces visuels (scripts/theme-previews.ts), donc privées aussi.
 public/demo/fraise/
+public/demo/phase/
 public/demo/onde/
 public/demo/orbe/
 public/demo/rive/
 public/demo/directions/
+public/demo/maison-horizon/
+public/demo/aplat/
+
+# Projets clients dédiés (clients/<clé>/) : médias, kits et aperçus du client, jamais dans le dépôt.
+clients/*/prive/
+clients/*/apercu/
+clients/*/**/*.heic
+clients/*/**/*.jpg
+clients/*/**/*.jpeg
+clients/*/**/*.png
+clients/*/**/*.webp

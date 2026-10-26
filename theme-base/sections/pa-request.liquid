@@ -1,0 +1,53 @@
+{%- comment -%}
+  PARENTHÈSE : « Demande d'information » des entreprises (planche 03) : organisation, e-mail, date souhaitée
+  (facultative), nombre de participants (estimation), message ; validation, erreurs et réponse honnêtes : en
+  démonstration rien n'est envoyé ; avec le service réel, le message est enregistré pour le cabinet.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-request" id="demande">
+  <div class="pa-wrap">
+    <div class="pa-request__head">
+      <h2 class="pa-title pa-title--md">{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<p>{{ s.text }}</p>{%- endif -%}
+    </div>
+    <form class="pa-form pa-request__form" novalidate data-pa-request="entreprise">
+      <div class="pa-form__row">
+        <div class="pa-field"><label for="pa-org-{{ section.id }}">{{ s.org_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-org-{{ section.id }}" name="organisation" autocomplete="organization" required placeholder="{{ s.org_placeholder | escape }}"><p class="pa-field__error" data-pa-err="organisation" hidden>{{ s.error_required }}</p></div>
+        <div class="pa-field"><label for="pa-oemail-{{ section.id }}">{{ s.email_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-oemail-{{ section.id }}" name="email" type="email" autocomplete="email" required placeholder="votre@email.fr"><p class="pa-field__error" data-pa-err="email" hidden>{{ s.error_email }}</p></div>
+      </div>
+      <div class="pa-form__row">
+        <div class="pa-field"><label for="pa-odate-{{ section.id }}">{{ s.date_label }}</label><input id="pa-odate-{{ section.id }}" name="date" type="date"></div>
+        <div class="pa-field"><label for="pa-opeople-{{ section.id }}">{{ s.people_label }}</label><input id="pa-opeople-{{ section.id }}" name="participants" type="number" min="1" max="500" inputmode="numeric" placeholder="{{ s.people_placeholder | escape }}"><p class="pa-field__error" data-pa-err="participants" hidden>{{ s.error_people }}</p></div>
+      </div>
+      <div class="pa-field"><label for="pa-omsg-{{ section.id }}">{{ s.message_label }} <span class="pa-req" aria-hidden="true">*</span></label><textarea id="pa-omsg-{{ section.id }}" name="message" rows="3" required placeholder="{{ s.message_placeholder | escape }}"></textarea><p class="pa-field__error" data-pa-err="message" hidden>{{ s.error_required }}</p></div>
+      <div class="pa-form__foot">
+        <p class="pa-form__status" role="status" aria-live="polite" data-pa-status hidden></p>
+        <button type="submit" class="pa-btn pa-btn--forest" data-pa-submit>{{ s.submit_label }}</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Demande des entreprises",
+  "class": "pa-request-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Demande d'information" },
+    { "type": "text", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "org_label", "label": "Champ organisation", "default": "Organisation" },
+    { "type": "text", "id": "org_placeholder", "label": "Exemple d'organisation", "default": "Nom de votre organisation" },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "E-mail" },
+    { "type": "text", "id": "date_label", "label": "Champ date", "default": "Date souhaitée (optionnel)" },
+    { "type": "text", "id": "people_label", "label": "Champ participants", "default": "Nombre de participants (estimation)" },
+    { "type": "text", "id": "people_placeholder", "label": "Exemple de participants", "default": "Ex. : 10" },
+    { "type": "text", "id": "message_label", "label": "Champ message", "default": "Votre message" },
+    { "type": "text", "id": "message_placeholder", "label": "Exemple de message", "default": "Décrivez votre projet, vos besoins ou toute question…" },
+    { "type": "text", "id": "submit_label", "label": "Bouton d'envoi", "default": "Envoyer ma demande" },
+    { "type": "text", "id": "error_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "error_people", "label": "Erreur : participants", "default": "Indiquez un nombre entre 1 et 500." }
+  ],
+  "presets": [{ "name": "Demande des entreprises" }]
+}
+{% endschema %}

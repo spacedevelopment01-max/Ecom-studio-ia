@@ -1,0 +1,65 @@
+{%- comment -%}
+  PHASE : « Préparer votre demande » (dépannage, planches 02 et 07) — liste de repères (pictogramme, titre, texte) à
+  gauche et encadré gris à droite : pictogramme, titre, texte, mention (ex. « Disponibilités à confirmer ») et bouton.
+  Aucun délai ni disponibilité n'est promis par le thème : la mention se règle ici.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<section class="ph ph-prepare ph-pad{% if s.show == 'desktop' %} ph-only-d{% elsif s.show == 'mobile' %} ph-only-m{% endif %}" style="--ph-pad-t: {{ s.pad_top }}; --ph-pad-b: {{ s.pad_bottom }}; --ph-pad-t-m: {{ s.pad_top_mobile }}; --ph-pad-b-m: {{ s.pad_bottom_mobile }};">
+  <div class="ph-c">
+    {%- if s.eyebrow != blank -%}<p class="ph-eyebrow ph-prepare__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    <div class="ph-prepare__body">
+      <ul class="ph-prepare__list" role="list">
+        {%- for b in section.blocks -%}
+          <li class="ph-prepare__item" {{ b.shopify_attributes }}>
+            {%- if b.settings.icon != blank -%}<span class="ph-prepare__icon" aria-hidden="true">{% render 'ph-icon', name: b.settings.icon %}</span>{%- endif -%}
+            <span class="ph-prepare__title">{{ b.settings.title }}</span>
+            <span class="ph-prepare__text">{{ b.settings.text }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+      {%- if s.box_title != blank -%}
+        <aside class="ph-prepare__box">
+          {%- if s.box_icon != blank -%}<span class="ph-prepare__box-icon" aria-hidden="true">{% render 'ph-icon', name: s.box_icon, stroke: 1.4 %}</span>{%- endif -%}
+          <div class="ph-prepare__box-copy">
+            <h2 class="ph-prepare__box-title">{{ s.box_title }}</h2>
+            {%- if s.box_text != blank -%}<p class="ph-prepare__box-text">{{ s.box_text | newline_to_br }}</p>{%- endif -%}
+            {%- if s.box_note != blank -%}<p class="ph-prepare__box-note">{% render 'ph-icon', name: 'horloge', stroke: 1.8 %}<span>{{ s.box_note }}</span></p>{%- endif -%}
+          </div>
+          {%- if s.box_button != blank -%}<a class="ph-btn ph-btn--yellow ph-prepare__btn" href="{{ s.box_link | default: routes.root_url }}"><span>{{ s.box_button }}</span>{% render 'ph-icon', name: 'fleche-droite', stroke: 2.4 %}</a>{%- endif -%}
+        </aside>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Préparer une demande",
+  "class": "ph-section",
+  "settings": [
+    { "type": "select", "id": "show", "label": "Affichage", "default": "all", "options": [{ "value": "all", "label": "Ordinateur et téléphone" }, { "value": "desktop", "label": "Ordinateur seulement" }, { "value": "mobile", "label": "Téléphone seulement" }] },
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Préparer votre demande" },
+    { "type": "text", "id": "box_icon", "label": "Pictogramme de l'encadré (nom)", "default": "bulle" },
+    { "type": "text", "id": "box_title", "label": "Titre de l'encadré" },
+    { "type": "textarea", "id": "box_text", "label": "Texte de l'encadré" },
+    { "type": "text", "id": "box_note", "label": "Mention (horloge)", "default": "Disponibilités à confirmer" },
+    { "type": "text", "id": "box_button", "label": "Bouton" },
+    { "type": "url", "id": "box_link", "label": "Lien du bouton" },
+    { "type": "range", "id": "pad_top", "label": "Marge haute (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_bottom", "label": "Marge basse (repère 1440 px)", "min": 0, "max": 200, "step": 2, "default": 40 },
+    { "type": "range", "id": "pad_top_mobile", "label": "Marge haute (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 },
+    { "type": "range", "id": "pad_bottom_mobile", "label": "Marge basse (téléphone)", "min": 0, "max": 100, "step": 1, "default": 24 }
+  ],
+  "blocks": [
+    { "type": "item", "name": "Repère", "settings": [
+      { "type": "text", "id": "icon", "label": "Pictogramme (nom)", "default": "lieu-repere" },
+      { "type": "text", "id": "title", "label": "Titre" },
+      { "type": "text", "id": "text", "label": "Texte" }
+    ] }
+  ],
+  "max_blocks": 8,
+  "presets": [{ "name": "Préparer une demande" }]
+}
+{% endschema %}

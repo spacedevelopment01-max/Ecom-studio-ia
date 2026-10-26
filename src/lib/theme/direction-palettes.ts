@@ -46,7 +46,7 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   lancement: { primary: "#0A0A0F", secondary: "#B3ABD9", accent: "#7B5CFF", light: "#F1F0F7", dark: "#050508" }, // nuit, violet électrique
   // Thèmes de référence (issue #137) : couleurs de repli ; un projet garde ses propres rôles de couleur.
   fraise: { primary: "#C4312A", secondary: "#F9E1DB", accent: "#E4473F", light: "#FBF7F2", dark: "#141414" }, // rouge fraise (principal assombri : 5,1:1 sur le crème), rose pâle en fond doux, crème
-  onde: { primary: "#257A10", secondary: "#E6F6DF", accent: "#4ECD01", light: "#FFFFFF", dark: "#1F1F1F" }, // vert vif en accent, vert profond lisible en principal (5,4:1 sur blanc), vert pâle en fond doux, anthracite
+  onde: { primary: "#3A403C", secondary: "#F1F2F1", accent: "#C2F94A", light: "#FDFDFD", dark: "#0B0D0C" }, // graphite des coques, gris clair, lime et graphite profond des planches du 24 octobre (distinct du noir et citron de « brut »)
   orbe: { primary: "#9B4F36", secondary: "#D8CCB9", accent: "#9B4F36", light: "#F4F0E8", dark: "#29251F" }, // terre cuite, crème
   sillon: { primary: "#9C5A2C", secondary: "#E7D8C6", accent: "#3B1C0C", light: "#F4EDE3", dark: "#24140C" }, // cuivre (lisible sur ivoire), brun du logo, ivoire chaud
   noctil: { primary: "#4B3BB8", secondary: "#ECE8FA", accent: "#8E6CF0", light: "#ECE8FA", dark: "#0D0B26" }, // indigo lisible sur lavande, violet du halo, nuit profonde
@@ -54,7 +54,13 @@ export const DIRECTION_PALETTES: Record<DirectionId, DirectionPalette> = {
   heuren: { primary: "#15233E", secondary: "#D9DDE3", accent: "#C0C6D0", light: "#F7F5F0", dark: "#0D1526" }, // bleu nuit du cadran, argent brumeux, argent des index et du boîtier, ivoire
   "museau-club": { primary: "#1636C9", secondary: "#EFE6D2", accent: "#F2C14E", light: "#FBF7EE", dark: "#0B1B5E" }, // bleu cobalt des sangles, crème de la maille, jaune du socle, marine du logo
   souple: { primary: "#5A1B36", secondary: "#E8CFCB", accent: "#B4637A", light: "#FBF3F0", dark: "#2B0E1C" }, // prune de la sangle et de l'anneau, rose poudré du tapis, rose mauve des poignées de l'anneau, ivoire rosé, prune profond (le liège porte le quatrième fond du thème)
+  "maison-horizon": { primary: "#163A2C", secondary: "#E7DCC8", accent: "#AC4E2A", light: "#F7F2EA", dark: "#16241C" }, // vert profond, ivoire et terre cuite (maquettes du 23 octobre)
   alcove: { primary: "#A14225", secondary: "#EEE8E1", accent: "#D9A07E", light: "#F6F0E8", dark: "#2B1A12" }, // terre cuite du logo et du tissu, sable, abricot des lumières du soir
+  "table-saison": { primary: "#6E1F2D", secondary: "#E8DFCF", accent: "#6E1F2D", light: "#F6F0E5", dark: "#2A2421" }, // bordeaux des boutons et du pied, lin, ivoire, encre chaude (issue #175)
+  "atelier-nuance": { primary: "#985A42", secondary: "#EADFD2", accent: "#F3C6AC", light: "#F8F3ED", dark: "#2E211C" }, // terracotta des boutons (assombri pour la lisibilité des liens), travertin, pêche des appels, ivoire, chocolat du pied (issue #177)
+  parenthese: { primary: "#22362B", secondary: "#DCDFCD", accent: "#F2C9A9", light: "#F8F3EB", dark: "#1A241D" }, // vert forêt des boutons, sauge des panneaux, abricot des appels, ivoire chaud
+  phase: { primary: "#17244E", secondary: "#F4F6F9", accent: "#F2F55C", light: "#FFFFFF", dark: "#141B30" }, // bleu nuit (un ton plus bleu que le fond de l'en-tête, pour rester distinct de Brut) de l'en-tête et des boutons, gris clair des cadres, jaune électrique des appels, blanc
+  aplat: { primary: "#04567B", secondary: "#E0EEF5", accent: "#0A3F8F", light: "#FFFFFF", dark: "#0E1B3D" }, // bleu pétrole des aplats, bleu clair des encarts, bleu des légendes, blanc enduit, bleu nuit des titres (planches du 25 octobre)
   rive: { primary: "#243B32", secondary: "#B7C2AE", accent: "#243B32", light: "#EEEAE2", dark: "#1B2B25" }, // vert profond, papier
 };
 

@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Moteur publicitaire V3 (outils simulés : aucun appel réel, aucune dépense) : une direction artistique par

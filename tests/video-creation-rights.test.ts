@@ -1,3 +1,5 @@
+import {videoByteFixture} from "./video-byte-fixture";
+import {jpegByteFixture} from "./image-byte-fixture";
 import { describe, expect, it, vi } from "vitest";
 import {chooseGeneralistForTest} from './strategy-choice-fixture';
 import {grantProjectPlan} from './communication-choice-fixture';
@@ -25,7 +27,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     const scenario=localScenePlan(p,null,request);scenario.scenes[0].title="Titre conservé";
     const j=enqueue({userId:u.id,projectId:pid,type:"video.scenario",label:"Scénario simulé",payload:{request}});
     expect(claimNext(["video.scenario"])?.id).toBe(j.id);completeJob(j.id,{scenario,scope:videoScope(p,sceneApprovalRequest(request))});
-    const photo=await saveAsset({projectId:pid,userId:u.id,data:Buffer.from("photo simulée"),name:"source.jpg",mime:"image/jpeg",role:"scene",origin:"upload"});
+    const photo=await saveAsset({projectId:pid,userId:u.id,data:jpegByteFixture(),name:"source.jpg",mime:"image/jpeg",role:"scene",origin:"upload"});
     // A scene photo is not a stable original product reference: it changes only the selected image.
     const response=await route.POST(new Request("http://localhost",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"plan",...request,generation:"staged",sceneImages:[{assetId:photo.id,use:"reuse"}],draftPlan:scenario,scenarioJobId:j.id})}),{params:Promise.resolve({id:pid})});
     const next=await response.json();expect(response.status,JSON.stringify(next)).toBe(200);expect(next.scenario.scenes[0].title).toBe("Titre conservé");expect(next.approvalToken).toBeTruthy();
@@ -63,7 +65,7 @@ describe("Création vidéo guidée : droits natifs, sans fournisseur", async () 
     approvalToken=(await(await route.POST(req("plan"),ctx)).json()).approvalToken;
     expect((await route.POST(req("create"), ctx)).status).toBe(200);
     expect(all("SELECT id FROM jobs WHERE project_id = ? AND type='video.scenes'", pid)).toHaveLength(1);
-    await saveAsset({ projectId: pid, userId: u.id, data: Buffer.from("fichier simulé, aucun encodage testé ici"), name: "simulation.mp4", mime: "video/mp4", role: "video", origin: "import", status: "review", meta: { scenes: { as: "ad" }, creative: { notes: ["Voix indisponible"] }, finalCheck: { summary: { unchecked: ["Fidélité produit"], issues: [{ detail: "Scènes trop proches" }] } } } });
+    await saveAsset({ projectId: pid, userId: u.id, data: videoByteFixture(), name: "simulation.mp4", mime: "video/mp4", role: "video", origin: "import", status: "review", meta: { scenes: { as: "ad" }, creative: { notes: ["Voix indisponible"] }, finalCheck: { summary: { unchecked: ["Fidélité produit"], issues: [{ detail: "Scènes trop proches" }] } } } });
     const listed = await (await route.GET(new Request(`http://localhost/api/projects/${pid}/creative/video`), ctx)).json();
     expect(listed.videos[0]).toMatchObject({ reviewRequired: true });
     expect(listed.videos[0].warnings).toEqual(expect.arrayContaining(["Voix indisponible", "Scènes trop proches", "Non vérifié : Fidélité produit"]));
@@ -79,5 +81,5 @@ it('devis injecté, budget natif épuisé après accord : refus serveur avant to
  injectedQuote=true; // Devis injecté seulement ; les droits, l’accord signé et le budget restent natifs.
  const req={as:'ad' as const,generation:'direct' as const,scenes:2,totalS:10};const ctx={params:Promise.resolve({id:pid})};const post=(data:unknown)=>route.POST(new Request('http://localhost',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}),ctx);
  const quotation=await(await post({action:'quote',...req})).json();expect(quotation.allowed,quotation.reason).toBe(true);const plan=await(await post({action:'plan',...req,draftPlan:localScenePlan(loadProject(pid),null,req)})).json();expect(plan.approvalToken).toBeTruthy();
- const held=reserve(u.id,balance(accountKeyFor(u.id,pid)).available,{task:'test-isolated-budget-hold',provider:'alibaba',model:'fixture',projectId:pid});try{const response=await post({action:'create',...req,approvalToken:plan.approvalToken,approvedEstimateMicro:quotation.estimateMicro});expect(response.status).toBe(422);expect((await response.json()).error).toMatch(/100|budget|épuisé/i);expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);expect(all('SELECT id FROM ai_calls WHERE project_id=?',pid)).toHaveLength(0);}finally{release(held);injectedQuote=false;}
+ const held=reserve(u.id,balance(accountKeyFor(u.id,pid)).available,{task:'test-isolated-budget-hold',provider:'alibaba',model:'fixture',projectId:pid});try{const response=await post({action:'create',...req,approvalToken:plan.approvalToken,approvedEstimateMicro:quotation.estimateMicro});expect(response.status).toBe(422);expect((await response.json()).error).toMatch(/100|budget|épuisé/i);expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',pid)).toHaveLength(0);}finally{release(held);injectedQuote=false;}
 });

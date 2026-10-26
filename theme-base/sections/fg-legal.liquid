@@ -1,0 +1,27 @@
+{%- comment -%}
+  FRAISE : pages légales (mentions, conditions de vente, confidentialité, cookies) — titre, texte ; identité légale et
+  textes à compléter par la boutique (« [À compléter : …] »). La page Cookies permet de rouvrir le choix des cookies.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="fg fg-legal" aria-labelledby="fg-legal-t-{{ section.id }}">
+  <div class="fg-c">
+    {%- assign tid = 'fg-legal-t-' | append: section.id -%}
+    {% render 'fg-title', text: s.heading, tag: 'h1', class: 'fg-legal__title', id: tid %}
+    <div class="fg-legal__body">{{ s.body }}</div>
+    {%- if s.show_cookies_button -%}<button type="button" class="fg-btn fg-btn--red fg-legal__btn" data-fg-cookies-open>{{ s.cookies_button }}</button>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page légale",
+  "class": "fg-legal-section",
+  "settings": [
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Une ligne par retour à la ligne ; [i]italique[/i], [r]rouge[/r]." },
+    { "type": "richtext", "id": "body", "label": "Texte" },
+    { "type": "checkbox", "id": "show_cookies_button", "label": "Bouton « Gérer mes cookies »", "default": false },
+    { "type": "text", "id": "cookies_button", "label": "Texte du bouton", "default": "Gérer mes cookies" }
+  ],
+  "presets": [{ "name": "Page légale" }]
+}
+{% endschema %}

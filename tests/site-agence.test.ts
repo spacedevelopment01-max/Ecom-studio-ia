@@ -41,6 +41,17 @@ describe("Sites niveau agence", async () => {
     expect(main.settings.sticky_bar).toBe(true);
     const handle = hightech.spec.store.product.handle;
     const html = (await fr(() => renderPage({ spec: hightech.spec, base: "/p", files: compileTheme(hightech.spec), cart: [] }, `/products/${handle}`, new URLSearchParams()))).html;
+    // Thème à fiche propre (ONDE : « on-product », la section Produit commune reste présente, masquée) : mêmes fonctions.
+    const own = Object.values(prod.sections).find((s) => s.type === "on-product");
+    if (own) {
+      expect(main.disabled).toBe(true);
+      expect(own.settings.sticky_bar).toBe(true);
+      expect(html).toContain("on-product__thumbs");
+      expect(html).toMatch(/class="on-product__zoom"[^>]+data-on-zoom/);
+      expect(html).toContain('<dialog class="on-lightbox"');
+      expect(html).toContain("data-on-sticky");
+      return;
+    }
     expect(html).toContain("es-product__thumbs");
     expect(html).toMatch(/data-zoom-open[^>]+data-zoom-src=/);
     expect(html).toContain("<dialog class=\"es-zoom\"");

@@ -1,4 +1,12 @@
+import { publicDownload } from "../public-download";
+import {higgsfieldMessage} from './higgsfield/errors';
+import {defaultConfiguration,requestBody} from './higgsfield/catalog';
+import {checkedQuote} from './higgsfield/pricing';
+import {uploadImage,downloadVideo} from './higgsfield/media';
+import {submit as higgsSubmit,poll as higgsPoll,UnchargedTerminal,type Receipt as HiggsReceipt} from './higgsfield/lifecycle';
+import {HiggsfieldHttpError} from './higgsfield/http';
 import { assertStrategyInputsCurrent } from "../strategy-consumption";
+import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
 import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
@@ -16,7 +24,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import sharp from "sharp";
-import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
+import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -76,7 +84,7 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
           if (receipt.usage) recordMedia(receipt.usage);
           else if (previous.status === "uncertain" || previous.status === "held") operationPending();
           else t.recorded = true;
-          const response = await providerFetch(receipt.downloadUrl);
+          const response = await publicDownload(receipt.downloadUrl);
           if (!response.ok) throw new PermanentError(L("Le média acquis n'a pas pu être récupéré. Il est conservé chez le fournisseur ; aucune nouvelle génération lancée.", "The acquired media could not be retrieved. It is kept at the provider; no new generation was started."));
           const file = `ai-results/${previous.id}.bin`, data = Buffer.from(await response.arrayBuffer());
           putFile(file, data);
@@ -252,7 +260,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertUnderCostCap(max);
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: t.requestHash });
-  const priced = requirePrice(provider, model);
+  const priced = provider==="higgsfield"?{unit:"video_second"}:requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
   // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
   if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
@@ -264,8 +272,12 @@ function sent() {
   if (t) t.sent = true;
 }
 const providerFetch: typeof fetch = (input, init) => {
+  const url=new URL(typeof input==="string"?input:input instanceof URL?input.href:input.url);
+  const headers=new Headers(init?.headers??(input instanceof Request?input.headers:undefined));
+  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
+  if(/^Key /i.test(headers.get("authorization")??"")&&url.origin!=="https://queue.fal.run")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   sent();
-  return fetch(input, init);
+  return fetch(input, {...init,redirect:"error"});
 };
 /** Refus explicite du fournisseur (clé, requête, quota) : rien n'a été produit, la réservation est rendue. */
 function refusal<E extends Error>(e: E): E {
@@ -1013,7 +1025,7 @@ async function falClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; sec
   if (!q) {
     if (trace.previous) operationPending();
     const dataUri = `data:image/jpeg;base64,${(await sharp(input.image).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
-    const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify({ prompt: input.prompt, image_url: dataUri, duration: String(seconds) }) });
+    const r = await providerFetch(`https://queue.fal.run/${model}`, { method: "POST", headers, body: JSON.stringify(falVideoRequest(model,{prompt:input.prompt,image:dataUri,seconds})) });
     if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(falRefusal(r.status, await r.text().catch(() => ""))));
     if (!r.ok) {
       const err = new PermanentError(L("fal.ai a refusé la demande : ", "fal.ai rejected the request: ") + (await r.text()).slice(0, 300));
@@ -1046,7 +1058,7 @@ async function falDownload(out: any): Promise<Buffer> {
   if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune vidéo.", "fal.ai returned no video."));
   let data: Buffer;
   try {
-    const v = await providerFetch(url);
+    const v = await publicDownload(url);
     if (!v.ok) throw new Error(`HTTP ${v.status}`);
     data = Buffer.from(await v.arrayBuffer());
   } catch (e) {
@@ -1092,7 +1104,7 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
       if (!url) throw new PermanentError(L("fal.ai n'a renvoyé aucune image.", "fal.ai returned no image."));
       recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "fal", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
       saveProviderReceipt(trace.reservation!, { downloadUrl: url });
-      const img = await providerFetch(url);
+      const img = await publicDownload(url);
       if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible. Une reprise récupérera ce résultat sans nouvelle génération.", "Image produced but download failed. A retry will retrieve it without generating again."));
       return Buffer.from(await img.arrayBuffer());
     }
@@ -1128,7 +1140,7 @@ async function alibabaImage(ctx: Ctx, model: string, prompt: string, refs: Buffe
   const usage = { userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "alibaba", model, unit: "image" as const, quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey };
   saveProviderReceipt(mediaTrace.getStore()!.reservation!, { downloadUrl: url, usage });
   recordMedia(usage);
-  const img = await providerFetch(url);
+  const img = await publicDownload(url);
   if (!img.ok) throw new PermanentError(L(`Image produite par Alibaba Cloud mais impossible à télécharger (${img.status}).`, `Image produced by Alibaba Cloud but could not be downloaded (${img.status}).`));
   return Buffer.from(await img.arrayBuffer());
 }
@@ -1168,7 +1180,7 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
   const prev: Saved | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
   gate(ctx, cost("alibaba", model, { seconds }).micro, "video", "alibaba", model);
   const download = async (url: string) => {
-    const v = await providerFetch(url);
+    const v = await publicDownload(url);
     if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez Alibaba Cloud mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer (adresse valable environ 24 h).`, `Video finished at Alibaba Cloud but could not be downloaded (${v.status}). A retry will fetch it without paying again (address valid about 24 h).`));
     return Buffer.from(await v.arrayBuffer());
   };
@@ -1220,7 +1232,7 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
  */
 export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
   const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
-  const run = (p: string, model?: string) => (p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
+  const run = (p: string, model?: string) => (p === "higgsfield" ? higgsfieldClip(ctx,{...input,usage,model},onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {
@@ -1311,3 +1323,33 @@ export const wanClip = traced("video_generation", wanClipImpl);
 /** Texte vers vidéo Wan (vidéo publicitaire, motion design) : prêt pour les moteurs, aucune image de départ. */
 export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; aspect?:"16:9"|"9:16";seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });
+
+/** Higgsfield uses the same reservation, access, idempotency and permanent project storage as existing media. */
+async function higgsfieldClipImpl(ctx:Ctx,input:{image?:Buffer;prompt:string;aspect?:'16:9'|'9:16';seconds?:number;people?:boolean;model?:string;usage?:MediaUsage},onWait?:(message:string)=>void):Promise<Buffer>{
+ if(input.people)throw new PermanentError(L('Higgsfield : personnages sans référence non autorisés.','Higgsfield: people without a reference are not allowed.'));
+ const trace=mediaTrace.getStore()!;
+ const model=input.model??pickModel('higgsfield','video');
+ let receipt:HiggsReceipt|null=trace.previous?.provider_receipt?JSON.parse(trace.previous.provider_receipt):null;
+ if(receipt&&receipt.model!==model)operationPending();
+ if(!receipt){
+  assertAiAllowed(ctx.userId,ctx.projectId);assertStrategyInputsCurrent(ctx.projectId);
+  const config=defaultConfiguration(model,input.seconds??5,input.aspect??'16:9');
+  // Validate approved exact pricing BEFORE upload; re-estimate the actual reference/body BEFORE reservation.
+  const {approvedQuote}=await import('./higgsfield/pricing');try{approvedQuote(config);}catch(e){throw new PermanentError(higgsfieldMessage((e as Error).message));}
+  const imageUrl=input.image?await uploadImage(await sharp(input.image).jpeg({quality:90}).toBuffer()):undefined;
+  const body=requestBody(config,`${input.prompt} Preserve the exact reference product, proportions, label, colors and logo. Do not invent people, claims, text or watermarks.`,imageUrl);
+  const quote=await checkedQuote(config,body).catch(e=>{throw new PermanentError(higgsfieldMessage((e as Error).message));});
+  gate(ctx,quote.micro,'video','higgsfield',model);
+  sent();
+  let id:string;
+  try{id=await higgsSubmit(model,body,trace.reservation!);}catch(e){if(e instanceof HiggsfieldHttpError&&e.status>=400&&e.status<500&&e.status!==408)throw refusal(new PermanentError(`HIGGSFIELD_SUBMISSION_REFUSED_${e.status}`));throw e;}
+  receipt={requestId:id,model,body,quoteMicro:quote.micro,quotedUsd:quote.currentUsd,fx:quote.fx,revision:quote.revision,seconds:config.seconds};
+  saveProviderReceipt(trace.reservation!,receipt);
+ }else gate(ctx,receipt.quoteMicro,'video','higgsfield',model);
+ let url:string;
+ try{url=await higgsPoll(receipt.requestId,status=>onWait?.(status==='queued'?L('Plan en attente chez Higgsfield.','Shot queued at Higgsfield.'):status==='completed'?L('Plan produit ; récupération en cours.','Shot generated; downloading.'):L('Plan en cours chez Higgsfield.','Shot processing at Higgsfield.')));}catch(e){if(e instanceof UnchargedTerminal){if(trace.previous?.status==='uncertain')reconcileReservation(trace.reservation!,0);throw refusal(new PermanentError(e.message));}throw new PermanentError(L('Suivi Higgsfield interrompu : reçu conservé, aucun nouveau plan envoyé.','Higgsfield tracking interrupted: receipt kept, no new shot sent.'));}
+ // Status endpoint does not provide an invoice amount: preserve estimated=true, never claim a measured cost.
+ recordMedia({userId:ctx.userId,projectId:ctx.projectId,jobId:ctx.jobId,task:'video_generation',provider:'higgsfield',model,unit:'request',quantity:1,costMicro:receipt.quoteMicro,estimated:true,idempotencyKey:ctx.usageKey});
+ return downloadVideo(url);
+}
+export const higgsfieldClip=traced('video_generation',higgsfieldClipImpl);

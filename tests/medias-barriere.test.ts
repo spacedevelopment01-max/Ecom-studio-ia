@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Barrière de qualité des médias (phase 1B) : une image refusée, à vérifier (contrôle en panne) ou provisoire n'est
  * jamais reprise automatiquement (boutique, publications, vidéos) ; photo libre hors métier refusée avant tout

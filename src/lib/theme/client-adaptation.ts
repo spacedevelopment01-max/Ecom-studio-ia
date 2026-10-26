@@ -135,6 +135,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
     const onlyFiles: Record<string, string> = {};
     const nativeTemplates = spec.templates;
     const occurrences = new Map<string, number>();
+    // Arguments du client pour les bandeaux successifs de NOCTIL (caractéristiques, puis étapes), sans doublon.
+    const bannerEntries = [...copy.features.items.map(x => ({ title: x.title, text: x.text })), ...copy.story.steps.map(x => ({ title: x.title, text: x.text }))]
+        .filter(x => genuine(x.title) && genuine(x.text))
+        .filter((x, i, all) => all.findIndex(v => v.title.trim().toLocaleLowerCase() === x.title.trim().toLocaleLowerCase()) === i);
     for (const [template, layout] of Object.entries(shape.templates)) {
         if (p.business === 'services' && template.startsWith('product'))
             continue;
@@ -154,6 +158,45 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             const binding = bindClientCopy(spec, p, copy, sh.type, sh.settings, role, n, role === 'home' ? opening : undefined);
             let section = binding.section;
             binding.missing.forEach(c => pageIssues(sid, c));
+            // NOCTIL (profil « astral ») : ses pages intérieures enchaînent plusieurs bandeaux photo. Le premier bandeau d'une page
+            // porte le titre de la page ; les bandeaux suivants (et, sur l'accueil, ceux qui suivent l'appel à l'achat) prennent
+            // chacun un argument différent du client ; faute d'argument, le bandeau reste masqué (jamais le même titre répété).
+            if (sh.type === 'cv-banner' && spec.settings.conversion_profile === 'astral') {
+                const pageTitle = spec.store.pages.find(x => `page.${x.template_suffix}` === template)?.title ?? labels[role];
+                // Rang parmi les bandeaux « suivants » : après l'ouverture et l'appel à l'achat sur l'accueil, après le bandeau
+                // d'ouverture (titre principal H1) ailleurs.
+                const heroFirst = role !== 'home' && layout.order.map(x => layout.sections[x]).find(x => x.type === 'cv-banner')?.settings.heading_tag === 'h1';
+                const later = n - (role === 'home' ? 2 : heroFirst ? 1 : 0);
+                if (heroFirst && n === 0 && pageTitle)
+                    section.settings = { ...section.settings, eyebrow: p.brand?.name ?? p.name, heading: pageTitle, text: role === 'contact' && genuine(copy.contact.text) ? paragraph(copy.contact.text) : '' };
+                else if (later >= 0 && ['details', 'shipping', 'faq', 'contact'].includes(role))
+                    // Pages d'aide : l'encart « Une question ? » renvoie vers le contact du client.
+                    section.settings = { ...section.settings, eyebrow: '', heading: t('Une question ?', 'A question?'), text: genuine(copy.contact.text) ? paragraph(copy.contact.text) : '', button_label: t('Nous contacter', 'Contact us'), button_link: contactUrl };
+                else if (later >= 0) {
+                    const entry = bannerEntries[later];
+                    if (entry)
+                        section.settings = { ...section.settings, eyebrow: '', heading: entry.title, text: paragraph(entry.text) };
+                    else
+                        pageIssues(sid, 'information_required');
+                }
+            }
+            // ONDE : sur la fiche, les bandeaux qui suivent la carte d'achat prennent chacun un argument différent du client
+            // (jamais le nom du produit répété) ; faute d'argument, le bandeau reste masqué. Le bandeau d'appel final garde le
+            // nom du produit et son ajout au panier.
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && template.startsWith('product') && sh.settings.layout !== 'cta') {
+                const entry = bannerEntries[n];
+                if (entry)
+                    section.settings = { ...section.settings, eyebrow: '', heading: entry.title, text: paragraph(entry.text), button_label: '', button_link: '' };
+                else
+                    pageIssues(sid, 'information_required');
+            }
+            // ONDE : les hauteurs sur téléphone des ouvertures et cercles servaient à cadrer les vues propres à la démonstration
+            // (détourages, photos verticales) ; chez un client, la hauteur suit son contenu.
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && ['split', 'orbit'].includes(String(sh.settings.layout)))
+                section.settings = { ...section.settings, mobile_min_height: 80 };
+            // Bande « grand mot » : le mot et la carte du produit seulement, sans titre (comme sur la planche).
+            if (sh.type === 'on-banner' && spec.settings.conversion_profile === 'onde' && sh.settings.layout === 'wordmark')
+                section.settings = { ...section.settings, heading: '', text: '' };
             const schema = sectionSchema(spec, sh.type);
             if (sh.type === 'main-product') {
                 const native = Object.values(nativeTemplates[template]?.sections ?? {}).find(s => s.type === 'main-product');
@@ -174,7 +217,10 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 const candidates = pool.filter(a => !a.placement && (!a.subject || a.subject === 'product:main' || p.business === 'services'));
                 // The opening image is never left empty while the project has a fitting view of its own product: the
                 // requested role first, then another product view (no hotspot position or demo media is reused).
-                const asset = explicit ?? chooseClientMedium(candidates, wanted, used, frame)
+                // « Produit en surplomb » (NOCTIL) : le détourage du client (fond transparent) d'abord ; une photo à fond plein
+                // ne remonte jamais sur la photo du dessus (voir plus bas).
+                const cutout = sh.type === 'cv-rise' && field === 'image_asset' && !block ? candidates.find(a => a.role === 'packshot' && /cutout/.test(a.sourceRole) && /\.(png|webp|avif|svg)$/.test(a.file) && !used.has(a.id)) : undefined;
+                const asset = explicit ?? cutout ?? chooseClientMedium(candidates, wanted, used, frame)
                     ?? (opening && !block ? (['packshot', 'detail', 'opening'] as MediaRole[]).filter(r => r !== wanted).map(r => chooseClientMedium(candidates, r, used, frame)).find(Boolean) : undefined);
                 const slot: ContentSlot = { key: desiredKey, page: template, section: sid, ...(block ? { block } : {}), field, role: wanted, aspect: targetAspect, alignment: asset?.reviewed ? 'declared' : asset ? 'to_review' : 'missing' };
                 plan.slots.push(slot);
@@ -185,6 +231,16 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 }
                 used.add(asset.id);
                 settings[field] = asset.file;
+                if (sh.type === 'cv-rise' && field === 'image_asset' && !block && !/cutout/.test(asset.sourceRole))
+                    Object.assign(settings, { overlap: 'none', decor: false, curve: false });
+                // Détourage du client : la remontée compte à partir du haut VISIBLE du produit. Une marge transparente plus haute
+                // que celle du détourage de la démonstration (8,85 % de sa hauteur) est ajoutée à la remontée, sans dépasser 50 %.
+                if (sh.type === 'cv-rise' && field === 'image_asset' && !block && /cutout/.test(asset.sourceRole) && asset.alphaTop !== undefined) {
+                    const extra = Math.max(0, asset.alphaTop - .0885) * (asset.height / asset.width) * 100;
+                    for (const key of ['rise', 'mobile_rise'])
+                        if (typeof settings[key] === 'number')
+                            settings[key] = Math.min(50, Math.round((settings[key] as number) + extra));
+                }
                 onlyFiles[asset.file] = asset.id;
                 Object.assign(slot, { assetId: asset.id, file: asset.file, description: asset.description });
                 const defs = block ? schema?.blocks.find(x => x.type === section.blocks?.[block]?.type)?.settings : schema?.settings;
@@ -270,6 +326,38 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 if (!provided)
                     pageIssues(sid, 'legal_information_required');
             }
+            // TRAVERSE : livraison et pages légales en notes « À compléter ». Le bandeau porte le titre ; les rubriques sont celles
+            // du client (texte fourni) ou un encadré à compléter, jamais les rubriques ni la rédaction d'une autre page.
+            const legalNotes = sh.type === 'fs-commitments' && section.settings.layout === 'notes' && ['privacy', 'terms', 'legal', 'shipping'].includes(role);
+            if (legalNotes) {
+                const page = spec.store.pages.find(x => `page.${x.template_suffix}` === template);
+                const body = role === 'shipping' ? copy.shipping.body_html : page?.body_html ?? '';
+                const provided = genuine(plain(body)) && !/à compléter|to complete|placeholder/i.test(plain(body));
+                const todoBox = { box_title: t('À compléter', 'To complete'), box_text: t('Ces informations doivent être fournies et vérifiées par le professionnel avant publication.', 'The business must provide and verify this information before publication.') };
+                const item = (title: string, icon: string, text: string, box: boolean) => ({ type: 'item', settings: { icon, title, text, proof_label: '', proof_link: '', ...(box ? todoBox : { box_title: '', box_text: '' }) } });
+                section.settings = { ...section.settings, eyebrow: '', heading: '', heading_accent: '', text: '', button_label: '', button_link: '', note: '' };
+                section.blocks = role === 'shipping'
+                    ? { shipping: item(t('Livraison', 'Shipping'), 'truck', provided ? body : '', !provided), returns: item(t('Retours et échanges', 'Returns and exchanges'), 'box', '', true) }
+                    : { client_part: item(provided ? (page?.title ?? labels[role]) : t('Informations à fournir', 'Information to provide'), 'none', provided ? body : '', !provided) };
+                section.block_order = Object.keys(section.blocks);
+                if (!provided)
+                    pageIssues(sid, 'legal_information_required');
+            }
+            // Essentiels (TRAVERSE) : chaque icône et chaque gros plan reçoit une caractéristique confirmée du produit, dans
+            // l'ordre ; une icône sans caractéristique est retirée (aucun libellé inventé).
+            if (sh.type === 'cv-feature' && section.settings.layout === 'essentials' && section.blocks) {
+                const facts = p.product.facts.filter(f => genuine(f.label) && genuine(f.value));
+                let i = 0, j = 0;
+                for (const bid of [...(section.block_order ?? [])]) {
+                    const b = section.blocks[bid];
+                    if (b?.type === 'point') {
+                        const f = facts[i++];
+                        if (f) b.settings = { ...b.settings, title: f.label, text: '' };
+                        else { delete section.blocks[bid]; section.block_order = section.block_order!.filter(x => x !== bid); }
+                    }
+                    if (b?.type === 'detail') b.settings = { ...b.settings, caption: facts[j++]?.label ?? '' };
+                }
+            }
             // An opening is never a dated offer: campaign name, dates or conditions the client did not give stay empty.
             if (opening)
                 for (const [k, v] of Object.entries(section.settings))
@@ -288,11 +376,32 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
                 pageIssues(sid, 'information_required');
             if (sh.type === 'main-product' && p.business === 'services')
                 pageIssues(sid, 'product_page_not_for_services');
-            const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code));
-            section.disabled = blocked && !opening && sh.type !== 'legal-page';
+            // La photo à côté des étapes en colonnes (Atelier Rive) accompagne la méthode : sans elle, les étapes du client
+            // restent publiées en pleine largeur et l'image manquante reste signalée.
+            const decorative = (i: { code: string; field?: string }) => i.code === 'media_missing' && sh.type === 'timeline' && i.field === 'image_asset';
+            const blocked = plan.issues.some(i => i.page === template && i.section === sid && !/to_review$/.test(i.code) && !decorative(i));
+            section.disabled = blocked && !opening && sh.type !== 'legal-page' && !legalNotes;
+            // Thème à fiche propre (ONDE : « on-product ») : la section Produit commune reste présente mais masquée.
+            if (sh.type === 'main-product' && sh.initiallyHidden && layout.order.some(x => layout.sections[x].type === 'on-product'))
+                section.disabled = true;
             sections[sid] = section;
             page.sections.push({ id: sid, type: sh.type, visible: !section.disabled, purpose: sectionPurpose(sh.type) });
         }
+        // Une page dont la section titrée (H1) reste masquée faute de contenu authentique (galerie de projets d'Atelier Rive
+        // sans réalisation du client) garde son titre : le titre de page, éteint pour éviter un double H1, se rallume.
+        const h1 = (sid: string) => sections[sid].settings.heading_tag === 'h1';
+        // Une page intérieure dont le titre de page est éteint par la composition (TRAVERSE : le bandeau porte le titre)
+        // garde le H1 de référence sur ce bandeau resté visible ; sinon la page n'aurait aucun titre principal.
+        // ONDE : ses pages n'ont pas de section de titre ; le bandeau d'ouverture porte le titre principal.
+        const titleOff = layout.order.some(sid => sections[sid].type === 'main-page' && sections[sid].settings.show_title === false) || (template.startsWith('page.') && !layout.order.some(sid => sections[sid].type === 'main-page' || sections[sid].type === 'page-title'));
+        if (titleOff && !layout.order.some(sid => !sections[sid].disabled && h1(sid))) {
+            const carrier = layout.order.find(sid => !sections[sid].disabled && layout.sections[sid].settings.heading_tag === 'h1');
+            if (carrier) sections[carrier].settings.heading_tag = 'h1';
+        }
+        if (layout.order.some(sid => sections[sid].disabled && h1(sid)) && !layout.order.some(sid => !sections[sid].disabled && h1(sid)))
+            for (const sid of layout.order)
+                if (sections[sid].type === 'main-page' && sections[sid].settings.show_title === false)
+                    sections[sid].settings.show_title = true;
         spec.templates[template] = { sections, order: [...layout.order] };
     }
     // Chrome is part of the chosen composition, not the rotating initial-store variant.
@@ -337,6 +446,13 @@ export async function adaptClientReference(spec: ThemeSpec, p: Project, copy: Sh
             for (const k of Object.keys(section.settings))
                 if (mediaKey(k) || k === 'logo_asset')
                     section.settings[k] = k === 'logo_asset' ? groupLogo?.file ?? '' : '';
+            // En-tête et pied ONDE : version claire du logo du client pour les fonds graphite (sinon le thème éclaircit son
+            // logo), son logo pour le fond lime ; le grand logo de la démonstration n'est jamais repris.
+            for (const [k, a] of [['logo_light_asset', logoLight], ['logo_dark_asset', logo], ['logo_wordmark_asset', undefined]] as const)
+                if (k in section.settings) {
+                    section.settings[k] = a?.file ?? '';
+                    if (a) onlyFiles[a.file] = a.id;
+                }
             for (const b of Object.values(section.blocks ?? {}))
                 for (const k of Object.keys(b.settings))
                     if (mediaKey(k))

@@ -1,3 +1,5 @@
+import {vi} from "vitest";
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** « Désactiver » un fournisseur dans l'administration coupe vraiment ses appels, même avec une clé venant de l'environnement. */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { setSetting } from "@/lib/settings";

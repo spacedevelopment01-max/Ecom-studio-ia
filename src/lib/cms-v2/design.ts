@@ -41,7 +41,10 @@ export async function designLayer(spec: ThemeSpec, files: ThemeFiles = compileTh
   // Profils graphiques (« conversion » : FRAISE, ONDE, SILLON, NOCTIL, TRAVERSE ; « éditorial » : ORBE, Atelier Rive, HEUREN, ALCÔVE) : attributs du <body>
   // dans Shopify, classes du <body> dans WordPress et PrestaShop (aucun des deux ne permet d'y poser un attribut).
   for (const name of ["conversion", "editorial"]) classes.push(`es-${name}-${attr(bodyTag, `data-${name}`) || "none"}`);
-  const stylesheets = [...head.matchAll(/<link href="\/assets\/([^"]+\.css)"/g)].map((m) => m[1]);
+  // Feuilles de la mise en page (en-tête) puis celles qu'une section appelle elle-même (ex. sillon.css, phase.css posées
+  // par l'en-tête du thème) : sans elles, le thème exporté s'affichait sans sa mise en forme (constaté à l'installation
+  // dans WordPress et PrestaShop, mission #190).
+  const stylesheets = [...new Set([...r.html.matchAll(/<link href="\/assets\/([^"]+\.css)"/g)].map((m) => m[1]))];
   const scripts = [...new Set([...r.html.matchAll(/<script src="\/assets\/([^"]+\.js)"/g)].map((m) => m[1]))];
   return { css, body: { ds: attr(bodyTag, "data-ds") || "none", density: attr(bodyTag, "data-density") || "balanced", classes }, fonts: [...fonts], stylesheets, scripts };
 }

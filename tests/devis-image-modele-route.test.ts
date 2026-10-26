@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Devis d'une image : il suit le modèle d'images réellement routé (Qwen-Image 3.0 Pro), pas la route texte « OpenAI »
  * de la tâche image_generation (qui annonçait ~0,69 € pour 2 essais au lieu de ~0,15 €).

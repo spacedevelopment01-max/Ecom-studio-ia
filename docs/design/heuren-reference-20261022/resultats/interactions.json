@@ -1,0 +1,352 @@
+[
+ {
+  "name": "ordinateur : navigation au clavier",
+  "ok": true,
+  "detail": "A"
+ },
+ {
+  "name": "ordinateur : question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : question repliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : aucune largeur qui déborde (accueil)",
+  "ok": true,
+  "detail": "1440px"
+ },
+ {
+  "name": "ordinateur : miniature choisie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : zoom ouvert",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : zoom fermé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : quantité 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : compteur du panier",
+  "ok": true,
+  "detail": "2"
+ },
+ {
+  "name": "ordinateur : panier rempli (1 ligne, 2 montres, 380 €)",
+  "ok": true,
+  "detail": "1 ligne(s), total 380,00 €"
+ },
+ {
+  "name": "ordinateur : bouton + du panier, total 570 €",
+  "ok": true,
+  "detail": "570,00 €"
+ },
+ {
+  "name": "ordinateur : bouton − du panier, total 380 €",
+  "ok": true,
+  "detail": "380,00 €"
+ },
+ {
+  "name": "ordinateur : quantité ramenée à 1, total 190 €",
+  "ok": true,
+  "detail": "190,00 €"
+ },
+ {
+  "name": "ordinateur : suppression, panier vide",
+  "ok": true,
+  "detail": "Votre panier attend son premier moment."
+ },
+ {
+  "name": "ordinateur : formulaire vide refusé (champs obligatoires)",
+  "ok": true,
+  "detail": "4 champs signalés"
+ },
+ {
+  "name": "ordinateur : 3 thèmes et 9 questions",
+  "ok": true,
+  "detail": "9 questions"
+ },
+ {
+  "name": "ordinateur : accueil sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : produit sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : boutique sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : page-notre-histoire sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : page-conseils sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : page-contact sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : page-livraison-retours sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : panier sans débordement ni image cassée",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s)"
+ },
+ {
+  "name": "ordinateur : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu ouvert au toucher",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : liens du menu",
+  "ok": true,
+  "detail": "La montre | Notre histoire | Conseils & FAQ | Contact"
+ },
+ {
+  "name": "telephone : menu fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : question repliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : aucune largeur qui déborde (accueil)",
+  "ok": true,
+  "detail": "390px"
+ },
+ {
+  "name": "telephone : miniature choisie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : zoom ouvert",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : zoom fermé",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : quantité 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : compteur du panier",
+  "ok": true,
+  "detail": "2"
+ },
+ {
+  "name": "telephone : barre d'achat fixe visible après le bouton",
+  "ok": true,
+  "detail": "{\"visible\":true,\"top\":778.609375,\"h\":65.390625}"
+ },
+ {
+  "name": "telephone : la barre ne recouvre pas le bas de page",
+  "ok": true,
+  "detail": "barre masquée en bas de page"
+ },
+ {
+  "name": "telephone : panier rempli (1 ligne, 2 montres, 380 €)",
+  "ok": true,
+  "detail": "1 ligne(s), total 380,00 €"
+ },
+ {
+  "name": "telephone : bouton + du panier, total 570 €",
+  "ok": true,
+  "detail": "570,00 €"
+ },
+ {
+  "name": "telephone : bouton − du panier, total 380 €",
+  "ok": true,
+  "detail": "380,00 €"
+ },
+ {
+  "name": "telephone : quantité ramenée à 1, total 190 €",
+  "ok": true,
+  "detail": "190,00 €"
+ },
+ {
+  "name": "telephone : suppression, panier vide",
+  "ok": true,
+  "detail": "Votre panier attend son premier moment."
+ },
+ {
+  "name": "telephone : formulaire vide refusé (champs obligatoires)",
+  "ok": true,
+  "detail": "4 champs signalés"
+ },
+ {
+  "name": "telephone : 3 thèmes et 9 questions",
+  "ok": true,
+  "detail": "9 questions"
+ },
+ {
+  "name": "telephone : accueil sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : produit sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : boutique sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : page-notre-histoire sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : page-conseils sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : page-contact sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : page-livraison-retours sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : panier sans débordement ni image cassée",
+  "ok": true,
+  "detail": "390px, 0 cassée(s)"
+ },
+ {
+  "name": "telephone : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "360 px : accueil",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : produit",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : boutique",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : page-notre-histoire",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : page-conseils",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : page-contact",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : page-livraison-retours",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "360 px : panier",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : accueil",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : produit",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : boutique",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : page-notre-histoire",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : page-conseils",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : page-contact",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : page-livraison-retours",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "430 px : panier",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1"
+ }
+]

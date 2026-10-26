@@ -34,6 +34,7 @@ export type Brief = {
   services: ServiceProfile;
   missing: string[];
   provenance: "client" | "local" | "provider" | "simulation";
+  documentStamp?: string;
   source?: Source;
   observations?: string[];
   execution?: ApiEvidence;
@@ -59,6 +60,9 @@ export type Angle = {
   audience: string;
   /** Absents des anciennes recherches à trois angles ; jamais inventés par migration. */
   motivation?: string;
+  communicationChange?: string;
+  tone?: string;
+  visualDirection?: string;
   message?: string;
   arguments: string[];
   objections: { objection: string; answer: string }[];
@@ -67,7 +71,8 @@ export type Angle = {
   hypothesis: boolean;
 };
 export type Research = {
-  formatVersion?: 2;
+  formatVersion?: 2 | 3;
+  offerDigest?: string;
   coverage?: { target: number; consulted: number; status: "partial" | "covered"; missingCategories: string[]; limits: string[] };
   execution?: ApiEvidence;
   sources: Source[];
@@ -75,6 +80,7 @@ export type Research = {
   angles: Angle[];
   recommendedId: string;
   recommendation: string;
+  recommendationSourceIds?: string[];
   selectedId?: string;
   legalAvailability: "not_checked";
 };

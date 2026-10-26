@@ -1,0 +1,54 @@
+{%- comment -%}
+  PARENTHÈSE : « Retrouver mon rendez-vous » (planche 06) : référence ET e-mail de réservation, « Recevoir un lien
+  d'accès », encadré « Vos données sont confidentielles ». Réponse toujours neutre : aucun détail de rendez-vous n'est
+  affiché sur cette page ; le lien sécurisé part par e-mail (service réel). En démonstration, aucun e-mail n'est envoyé :
+  un lien simulé est proposé seulement pour un rendez-vous de démonstration de ce navigateur.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-lookup">
+  <div class="pa-lookup__media">{% render 'pa-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, loading: 'eager' %}</div>
+  <div class="pa-wrap pa-lookup__grid">
+    <div class="pa-lookup__intro">
+      {%- if s.eyebrow != blank -%}<p class="pa-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h1 class="pa-hero__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if s.text != blank -%}<div class="pa-hero__text">{{ s.text }}</div>{%- endif -%}
+    </div>
+    <form class="pa-form pa-lookup__form" novalidate data-pa-lookup data-done="{{ s.done_text | escape }}" data-demo="{{ s.demo_text | escape }}" data-demo-link="{{ s.demo_link_label | escape }}">
+      <div class="pa-field"><label for="pa-lref-{{ section.id }}">{{ s.ref_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-lref-{{ section.id }}" name="reference" autocomplete="off" required placeholder="{{ s.ref_placeholder | escape }}" maxlength="40"><p class="pa-field__error" data-pa-err="reference" hidden>{{ s.error_ref }}</p></div>
+      <div class="pa-field"><label for="pa-lemail-{{ section.id }}">{{ s.email_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-lemail-{{ section.id }}" name="email" type="email" autocomplete="email" required placeholder="votre@email.fr"><p class="pa-field__error" data-pa-err="email" hidden>{{ s.error_email }}</p></div>
+      <button type="submit" class="pa-btn pa-btn--forest pa-btn--block" data-pa-submit>{% render 'pa-icon', name: 'send' %}{{ s.button_label }}</button>
+      <div class="pa-lookup__done" role="status" aria-live="polite" data-pa-status hidden></div>
+    </form>
+    <div class="pa-lookup__privacy">
+      {% render 'pa-icon', name: 'lock' %}
+      <div><p class="pa-lookup__privacy-title">{{ s.privacy_title }}</p><p>{{ s.privacy_text }}</p></div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Retrouver un rendez-vous",
+  "class": "pa-lookup-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit titre", "default": "Mon rendez-vous" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Retrouver mon\nrendez-vous" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "ref_label", "label": "Champ référence", "default": "Référence de rendez-vous" },
+    { "type": "text", "id": "ref_placeholder", "label": "Exemple de référence", "default": "Ex. : P-0001" },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "E-mail de réservation" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "Recevoir un lien d'accès" },
+    { "type": "text", "id": "error_ref", "label": "Erreur : référence", "default": "Indiquez la référence reçue lors de la réservation." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "textarea", "id": "done_text", "label": "Réponse (toujours la même)", "default": "Si une réservation correspond à ces informations, un lien d'accès sécurisé vient d'être envoyé à l'adresse indiquée." },
+    { "type": "text", "id": "demo_text", "label": "Réponse de démonstration", "default": "Démonstration : aucun e-mail n'est envoyé." },
+    { "type": "text", "id": "demo_link_label", "label": "Lien simulé (démonstration)", "default": "Ouvrir le lien d'accès simulé" },
+    { "type": "text", "id": "privacy_title", "label": "Encadré : titre", "default": "Vos données sont confidentielles" },
+    { "type": "textarea", "id": "privacy_text", "label": "Encadré : texte", "default": "Pour des raisons de confidentialité, aucun détail de rendez-vous n'est affiché sur cette page. Vous recevez un lien sécurisé par e-mail." }
+  ],
+  "presets": [{ "name": "Retrouver un rendez-vous" }]
+}
+{% endschema %}

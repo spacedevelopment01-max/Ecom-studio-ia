@@ -27,9 +27,7 @@ export type Plan = {
   featured?: boolean;
   /** Limites en nombre par mois (seul le blog compte encore ; images et vidéos : budget IA du projet). */
   quotas: Record<QuotaKey, number>;
-  /** Thèmes accessibles par famille (catalogue cible de cinq). */
-  themes: number;
-  /** Fonctions de section de la bibliothèque par famille, jamais une limite de blocs/page. */
+  /** Niveau de la bibliothèque de sections (8 essentielles, 12 avec les avancées, 20 = toutes), en plus des sections du thème. */
   librarySections: number;
   themeEditing: "basic" | "advanced" | "custom";
   /** Propositions initiales de direction artistique (sous réserve du budget IA). */
@@ -81,7 +79,6 @@ export const PLANS: Record<PlanId, Plan> = {
     cta: { fr: "Créer mon e-commerce", en: "Build my e-commerce" },
     price: { month: 49, year: 490 },
     quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 0 },
-    themes: 1,
     librarySections: 8,
     themeEditing: "basic",
     artDirections: 1,
@@ -116,7 +113,6 @@ export const PLANS: Record<PlanId, Plan> = {
     price: { month: 89, year: 890 },
     featured: true,
     quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 5 },
-    themes: 3,
     librarySections: 12,
     themeEditing: "advanced",
     artDirections: 3,
@@ -150,7 +146,6 @@ export const PLANS: Record<PlanId, Plan> = {
     cta: { fr: "Accéder au studio complet", en: "Get the complete studio" },
     price: { month: 129, year: 1290 },
     quotas: { visuals: 0, aiVideos: 0, ugc: 0, blog: 10 },
-    themes: 5,
     librarySections: 20,
     themeEditing: "custom",
     artDirections: 5,
@@ -294,6 +289,7 @@ export type BillingView = {
   /** Le pack Lancement a déjà été acheté (achat unique). */
   launchPackBought: boolean;
   paymentsLive: boolean;
+  paymentMode?: 'test'|'live'|'unconfigured'|'unknown';
   /** Utilisation de l'IA en % seulement : forfait du mois et crédits achetés (null s'il n'y en a pas) ; null sans forfait. */
   ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean; pending?: boolean; /** Base des % de coût (jamais affichée). */ baseMicro?: number } | null;
   /** Derniers paiements (abonnement, packs). */

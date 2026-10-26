@@ -40,7 +40,7 @@ const { renderPage } = await import("../src/lib/theme/render");
 type ThemeSpec = import("../src/lib/theme/spec").ThemeSpec;
 type Check = { id: string; label: string; run: string };
 /** Élément de chaque contrôle (défilé jusqu'à lui, puis capturé). */
-const TARGET: Record<string, string> = { "cv-hotspot": "[data-cv-hotspots]", "cv-gallery": "[data-cv-gallery]", "nomade": ".cv-hero", "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]", astral: ".cv-hero", itineraire: ".cv-banner", cadran: "[data-fs-hotspots]", arrondi: "[data-fs-hotspots]", "cv-gallery-carousel": "[data-cv-gallery]" };
+const TARGET: Record<string, string> = { "cv-hotspot": "[data-cv-hotspots]", "cv-gallery": "[data-cv-gallery]", "nomade": ".cv-hero", "fs-compare": "[data-fs-compare]", "fs-hotspot": "[data-fs-hotspots]", "cv-reviews": "[data-cv-reviews]", ctabs: "[data-ctabs]", ctable: "[data-ctable]", "fs-carousel": "[data-fs-carousel]", astral: ".cv-rise", "cv-rise": ".cv-rise", itineraire: ".cv-banner", cadran: "[data-fs-hotspots]", arrondi: "[data-fs-hotspots]", "cv-gallery-carousel": "[data-cv-gallery]" };
 
 const OLD_SCRIPTS = ["theme.js", "reference-interactions.js", "purchase-offers.js", "editorial.js"];
 const commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -92,11 +92,11 @@ const PLANS: Plan[] = [
       { id: "cv-hotspot", label: "Repères sur le produit (thème SILLON)", run: HOTSPOT("data-cv-hotspot") },
       { id: "cv-gallery", label: "Visionneuse de la mosaïque (thème SILLON)", run: LIGHTBOX },
     ] },
-  { demo: "noctil", family: "specialty", label: "NOCTIL (boutique spécialisée, issue #152)", add: [],
+  { demo: "noctil", family: "specialty", label: "NOCTIL (boutique spécialisée, maquettes du 23 octobre)", add: [],
     checks: [
-      { id: "astral", label: "Profil graphique « astral » appliqué", run: PROFILE("astral", "18px") },
-      { id: "cv-gallery-carousel", label: "Carrousel des pièces (thème NOCTIL)", run: CAROUSEL("[data-cv-gallery]") },
-      { id: "cv-gallery", label: "Visionneuse du carrousel (thème NOCTIL)", run: LIGHTBOX },
+      { id: "astral", label: "Profil graphique « astral » appliqué", run: PROFILE("astral", "14px") },
+      // Le produit détouré remonte sur l'ouverture : débordement actif derrière la grande photo, aucun clic capté.
+      { id: "cv-rise", label: "Produit en surplomb de l'ouverture (thème NOCTIL)", run: `(() => { const r = document.querySelector('.cv-rise'); if (!r) return 'section absente'; const on = getComputedStyle(r).getPropertyValue('--rise-on').trim(); const m = r.querySelector('.cv-rise__media'); if (on !== '1') return 'débordement inactif (--rise-on = ' + on + ')'; return getComputedStyle(m).pointerEvents === 'none' && parseFloat(getComputedStyle(m).marginTop) < 0 ? true : 'produit sans débordement'; })()` },
     ] },
   { demo: "traverse", family: "specialty", label: "TRAVERSE (boutique spécialisée, issue #152)", add: [],
     checks: [

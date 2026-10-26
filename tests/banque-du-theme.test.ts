@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 /**
  * Banque du THÈME (création du projet) : 15 images libres de droits, 3 vidéos pour un service, 1 pour un produit
  * seulement si une vidéo vraiment liée existe. Ces médias alimentent le site, jamais les publications ni les publicités
@@ -15,7 +16,7 @@ describe("Banque du thème", async () => {
   const { localRender } = await import("@/lib/social-v2/deps");
   const jpg = (c: string) => sharp({ create: { width: 800, height: 600, channels: 3, background: c } }).jpeg().toBuffer();
   const stockImage = async (p: { id: string; userId: string }, k: number) => (await saveAsset({ projectId: p.id, userId: p.userId, data: await jpg("#88aa66"), name: `stock-${k}.jpg`, mime: "image/jpeg", role: "lifestyle", folderKey: "images.scenes", origin: "import", status: "ready", meta: { stock: { source: "pixabay", id: `${k}`, page: "", author: "a", license: "pixabay" } } })).id;
-  const stockVideo = async (p: { id: string; userId: string }, k: number) => (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`v${k}`), name: `v${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: { stock: { source: "pixabay", id: `v${k}` } } })).id;
+  const stockVideo = async (p: { id: string; userId: string }, k: number) => (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `v${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: { stock: { source: "pixabay", id: `v${k}` } } })).id;
 
   async function project(kind: "restaurant" | "hightech") {
     const u = await createUser(`bt-${Date.now()}-${Math.random()}@test.fr`, "motdepasse-test", "P");

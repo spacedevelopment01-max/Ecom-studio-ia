@@ -18,7 +18,8 @@ export const POST = handle(async (req: Request, ctx: { params: Promise<{ id: str
   const { refund } = cancelBooking(user.id, id);
   if (refund) {
     try {
-      await refundCall(id, refund.paymentIntent, refund.cents);
+      const state=await refundCall(id, refund.paymentIntent, refund.cents);
+      return ok({canceled:true,refund:state});
     } catch (e) {
       logError("stripe:call-refund", e, { userId: user.id });
       notifyAdmins("Remboursement de rendez-vous à faire", `Le rendez-vous ${id} a été annulé dans les délais mais le remboursement automatique a échoué : remboursez-le dans Stripe.`);

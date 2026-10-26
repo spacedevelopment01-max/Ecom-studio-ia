@@ -1,0 +1,109 @@
+{%- comment -%}
+  SILLON V2 : pieds de page des planches, une seule source de contenu.
+  - sombre (accueil, fiche — planche 01) : signature fine cuivre, menu, phrase, inscription, liens d'aide, courbes ;
+  - clair (rituel, marque, carnet, article — planche 02) : très grand nom condensé, phrase à chasse fixe, courbes,
+    menu et flèche en cercle ;
+  - liens légaux seuls (achat et aide — planche 03) ; au téléphone, les pages d'aide (variante « aide ») ont un pied
+    sombre à rubriques dépliables, les pages d'achat un pied clair réduit aux liens légaux (planches mobiles).
+  Chaque page choisit sa variante avec la section « Réglages de la page » ; sans réglage : pied sombre.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign menu = linklists[s.menu]
+  assign help = linklists[s.help_menu]
+  assign legal = linklists[s.legal_menu]
+  assign legal_short = linklists[s.dark_legal_menu]
+  assign legal_m = linklists[s.legal_menu_mobile]
+  assign menu_m = linklists[s.menu_mobile]
+  assign help_m = linklists[s.help_menu_mobile]
+  assign brand = s.wordmark | default: shop.name
+-%}
+<footer class="sv sv-footer" data-sv-footer>
+  <div class="sv-footer__v sv-footer__v--dark">
+    <div class="sv-footer__dark">
+      <span class="sv-topo sv-topo--rings sv-footer__topo" aria-hidden="true"></span>
+      <a class="sv-footer__thin" href="{{ routes.root_url }}">{{ brand }}</a>
+      {%- if s.col_explore != blank -%}<p class="sv-footer__h sv-footer__h--1">{{ s.col_explore }}</p>{%- endif -%}
+      {%- if s.col_help != blank -%}<p class="sv-footer__h sv-footer__h--2">{{ s.col_help }}</p>{%- endif -%}
+      {%- if s.col_info != blank -%}<p class="sv-footer__h sv-footer__h--3">{{ s.col_info }}</p>{%- endif -%}
+      {%- if menu.links.size > 0 -%}<ul class="sv-footer__links{% if menu_m.links.size > 0 %} sv-only-d{% endif %}" role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+      {%- if menu_m.links.size > 0 -%}<ul class="sv-footer__links sv-only-m" role="list">{%- for link in menu_m.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+      {%- if help_m.links.size > 0 -%}<ul class="sv-footer__links sv-footer__links--help sv-only-m" role="list">{%- for link in help_m.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+      {%- if s.tagline != blank -%}<p class="sv-footer__tagline">{{ s.tagline | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.show_newsletter -%}
+        {%- form 'customer', class: 'sv-footer__news', data-sv-news: '' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <label class="visually-hidden" for="sv-news-{{ section.id }}">{{ s.newsletter_label }}</label>
+          <input id="sv-news-{{ section.id }}" type="email" name="contact[email]" placeholder="{{ s.newsletter_placeholder | escape }}" autocomplete="email" required>
+          <button type="submit" aria-label="{{ s.newsletter_label | escape }}">{% render 'sv-icon', name: 'arrow' %}</button>
+          <p class="sv-footer__news-status" role="status" data-sv-status hidden></p>
+          {%- if form.posted_successfully? -%}<p class="sv-footer__news-status" role="status">{{ s.newsletter_done }}</p>{%- endif -%}
+        {%- endform -%}
+      {%- endif -%}
+      {%- if legal_short.links.size > 0 -%}<div class="sv-footer__short"><p>© {{ brand }} — {{ s.copyright }}</p><ul role="list">{%- for link in legal_short.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}<li><button type="button" class="sv-footer__cookies" data-sv-cookies-open>{{ s.cookies_label }}</button></li></ul></div>{%- endif -%}
+      {%- if help.links.size > 0 -%}<ul class="sv-footer__links sv-footer__links--help{% if help_m.links.size > 0 %} sv-only-d{% endif %}" role="list">{%- for link in help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+    </div>
+  </div>
+  <div class="sv-footer__v sv-footer__v--light">
+    <div class="sv-footer__light">
+      <a class="sv-footer__giant" href="{{ routes.root_url }}">{{ brand }}</a>
+      {%- if s.light_tagline != blank -%}<p class="sv-footer__mono">{{ s.light_tagline | escape | newline_to_br }}</p>{%- endif -%}
+      <span class="sv-topo sv-topo--field sv-footer__topo2" aria-hidden="true"></span>
+      {%- if menu.links.size > 0 -%}<ul class="sv-footer__links sv-footer__links--light" role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+      <a class="sv-circle sv-footer__arrow" href="{{ s.light_link | default: routes.root_url }}" aria-label="{{ s.light_link_label | escape }}">{% render 'sv-icon', name: 'arrow' %}</a>
+    </div>
+  </div>
+  {%- comment -%} Pages d'aide, téléphone (planche mobile 09-12) : nom, rubriques dépliables, liens légaux. {%- endcomment -%}
+  <div class="sv-footer__v sv-footer__v--help">
+    <div class="sv-footer__help">
+      <span class="sv-topo sv-topo--rings sv-footer__topo" aria-hidden="true"></span>
+      <a class="sv-footer__bold" href="{{ routes.root_url }}">{{ brand }}</a>
+      {%- if menu.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_explore | default: 'Menu' }}{% render 'sv-icon', name: 'chevron' %}</summary><ul role="list">{%- for link in menu.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
+      {%- if help.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_help | default: 'Aide' }}{% render 'sv-icon', name: 'chevron' %}</summary><ul role="list">{%- for link in help.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul></details>{%- endif -%}
+      {%- if s.tagline != blank or legal.links.size > 0 -%}<details class="sv-footer__acc"><summary>{{ s.col_info | default: 'Informations' }}{% render 'sv-icon', name: 'chevron' %}</summary>{%- if s.tagline != blank -%}<p>{{ s.tagline | escape | newline_to_br }}</p>{%- endif -%}{%- if s.note != blank -%}<p>{{ s.note }}</p>{%- endif -%}</details>{%- endif -%}
+    </div>
+  </div>
+  <div class="sv-footer__legal">
+    {%- if legal_m.links.size > 0 -%}<ul class="sv-footer__legal-m" role="list">{%- for link in legal_m.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}</ul>{%- endif -%}
+    {%- if s.copyright != blank -%}<p class="sv-footer__copy">© {{ brand }} — {{ s.copyright }}</p>{%- endif -%}
+    {%- if legal.links.size > 0 -%}
+      <ul class="sv-footer__legal-links" role="list">{%- for link in legal.links -%}<li><a href="{{ link.url }}">{{ link.title }}</a></li>{%- endfor -%}<li><button type="button" class="sv-footer__cookies" data-sv-cookies-open>{{ s.cookies_label }}</button></li></ul>
+    {%- endif -%}
+    {%- if s.note != blank -%}<p class="sv-footer__note">{{ s.note }}</p>{%- endif -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Pied de page SILLON",
+  "class": "sv-footer-section",
+  "settings": [
+    { "type": "text", "id": "wordmark", "label": "Nom affiché", "info": "Vide : le nom de la boutique." },
+    { "type": "link_list", "id": "menu", "label": "Menu principal", "default": "main-menu" },
+    { "type": "link_list", "id": "help_menu", "label": "Menu d'aide", "default": "footer" },
+    { "type": "link_list", "id": "legal_menu", "label": "Liens légaux" },
+    { "type": "link_list", "id": "legal_menu_mobile", "label": "Liens du pied clair (téléphone, achat)" },
+    { "type": "link_list", "id": "menu_mobile", "label": "Menu du pied sombre (téléphone)", "info": "Vide : le menu principal." },
+    { "type": "link_list", "id": "help_menu_mobile", "label": "Menu d'aide du pied sombre (téléphone)", "info": "Vide : le menu d'aide." },
+    { "type": "link_list", "id": "dark_legal_menu", "label": "Liens légaux du pied sombre (téléphone)" },
+    { "type": "header", "content": "Pied sombre" },
+    { "type": "textarea", "id": "tagline", "label": "Phrase", "default": "Une autre façon\nde prendre la route." },
+    { "type": "checkbox", "id": "show_newsletter", "label": "Inscription par e-mail", "default": true },
+    { "type": "text", "id": "newsletter_label", "label": "Nom du champ (lecteurs d'écran)", "default": "S'inscrire avec votre e-mail" },
+    { "type": "text", "id": "newsletter_placeholder", "label": "Exemple dans le champ", "default": "Votre e-mail" },
+    { "type": "text", "id": "newsletter_done", "label": "Message après inscription", "default": "Merci, votre inscription est enregistrée." },
+    { "type": "text", "id": "col_explore", "label": "Titre de la colonne du menu (téléphone)", "default": "Explorer" },
+    { "type": "text", "id": "col_help", "label": "Titre de la colonne d'aide (téléphone)", "default": "Aide" },
+    { "type": "text", "id": "col_info", "label": "Titre de la colonne d'informations (téléphone)", "default": "Informations" },
+    { "type": "text", "id": "copyright", "label": "Mention de droits (téléphone)", "default": "Tous droits réservés." },
+    { "type": "header", "content": "Pied clair" },
+    { "type": "textarea", "id": "light_tagline", "label": "Phrase à chasse fixe", "default": "Le café\nvous mène\nplus loin." },
+    { "type": "url", "id": "light_link", "label": "Lien de la flèche" },
+    { "type": "text", "id": "light_link_label", "label": "Nom de la flèche (lecteurs d'écran)", "default": "Découvrir la machine" },
+    { "type": "header", "content": "Liens légaux" },
+    { "type": "text", "id": "cookies_label", "label": "Bouton des cookies", "default": "Cookies" },
+    { "type": "text", "id": "note", "label": "Mention" }
+  ],
+  "presets": [{ "name": "Pied de page SILLON" }]
+}
+{% endschema %}

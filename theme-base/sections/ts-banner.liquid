@@ -1,0 +1,40 @@
+{%- comment -%}
+  TABLE SAISON : bandeau photo avec texte centré (événements privés, dernier appel à réserver) ou aligné à droite
+  (« Une autre question ? » de la page FAQ).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-banner ts-banner--{{ s.align }}" style="--ts-banner-h: {{ s.height }}px; --ts-banner-h-mobile: {{ s.height_mobile }}px; --ts-overlay: {{ s.overlay | divided_by: 100.0 }};">
+  {%- if s.image != blank or s.image_asset != blank -%}
+    <div class="ts-banner__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: '', pos: s.image_position, pos_mobile: s.image_position_mobile %}</div>
+  {%- endif -%}
+  <div class="ts-banner__shade" aria-hidden="true"></div>
+  <div class="ts-wrap ts-banner__inner">
+    {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="ts-title">{{ s.heading | newline_to_br }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+    {%- if s.button_label != blank -%}<a class="ts-btn" href="{{ s.button_link | default: '/pages/reserver' }}">{{ s.button_label }}</a>{%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau photo",
+  "class": "ts-banner-section",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "image_position_mobile", "label": "Cadrage sur téléphone" },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "À votre table ?" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "select", "id": "align", "label": "Alignement", "default": "center", "options": [{ "value": "center", "label": "Centré" }, { "value": "right", "label": "À droite" }] },
+    { "type": "range", "id": "overlay", "label": "Assombrissement de la photo", "min": 0, "max": 80, "step": 5, "default": 50, "unit": "%" },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 160, "max": 640, "step": 10, "default": 210, "unit": "px" },
+    { "type": "range", "id": "height_mobile", "label": "Hauteur sur téléphone", "min": 180, "max": 560, "step": 10, "default": 280, "unit": "px" }
+  ],
+  "presets": [{ "name": "Bandeau photo" }]
+}
+{% endschema %}

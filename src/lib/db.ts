@@ -33,6 +33,16 @@ CREATE TABLE IF NOT EXISTS sessions (
   expires_at INTEGER NOT NULL,
   created_at INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS pending_registrations (
+  email TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at INTEGER NOT NULL,
+  language TEXT NOT NULL,
+  next_path TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -53,6 +63,22 @@ CREATE TABLE IF NOT EXISTS projects (
   updated_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS projects_user ON projects(user_id);
+CREATE TABLE IF NOT EXISTS project_link_versions (
+  project_id TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+  version INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS privacy_requests (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending_policy',
+  created_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS asset_cache_entries (
+  cache_key TEXT PRIMARY KEY,
+  asset_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL
+);
 
 -- Mémoire du projet : faits, décisions, corrections, préférences, objectifs.
 CREATE TABLE IF NOT EXISTS memory (
@@ -629,6 +655,62 @@ CREATE TABLE IF NOT EXISTS stripe_events (
   created INTEGER NOT NULL DEFAULT 0, -- horodatage Stripe de l'événement (secondes)
   processed_at INTEGER NOT NULL
 );
+-- Verrou reprenable des webhooks : aucune donnée de carte, aucun secret ni message fournisseur.
+CREATE TABLE IF NOT EXISTS stripe_event_claims (
+  id TEXT PRIMARY KEY,
+  owner TEXT NOT NULL,
+  lease_until INTEGER NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0
+);
+-- L'identité et les paramètres d'une ouverture Checkout survivent à une coupure réseau.
+CREATE TABLE IF NOT EXISTS checkout_intents (
+  id TEXT PRIMARY KEY,
+  signature TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  params_json TEXT NOT NULL,
+  lease_until INTEGER NOT NULL DEFAULT 0,
+  session_id TEXT,
+  created_at INTEGER NOT NULL,
+  closed_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS checkout_intents_open ON checkout_intents(signature) WHERE closed_at IS NULL;
+CREATE TABLE IF NOT EXISTS billing_mutations (
+  id TEXT PRIMARY KEY,
+  scope TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  path TEXT NOT NULL,
+  params_json TEXT NOT NULL,
+  response_json TEXT,
+  outcome TEXT,
+  lease_until INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  applied_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS billing_mutations_pending ON billing_mutations(scope) WHERE applied_at IS NULL;
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id TEXT,
+  subject TEXT NOT NULL,
+  category TEXT NOT NULL,
+  job_id TEXT,
+  status TEXT NOT NULL DEFAULT 'open',
+  request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(user_id, request_key)
+);
+CREATE INDEX IF NOT EXISTS support_tickets_owner ON support_tickets(user_id, updated_at);
+CREATE TABLE IF NOT EXISTS support_messages (
+  id TEXT PRIMARY KEY,
+  ticket_id TEXT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  staff INTEGER NOT NULL DEFAULT 0,
+  body TEXT NOT NULL,
+  request_key TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(ticket_id, user_id, request_key)
+);
 -- Arrêt des anciens abonnements Stripe (changement de forfait) : réessayé par le worker jusqu'à confirmation.
 CREATE TABLE IF NOT EXISTS stripe_cancellations (
   subscription_id TEXT PRIMARY KEY,
@@ -887,6 +969,25 @@ CREATE TABLE IF NOT EXISTS social_edit_undo (
   created TEXT NOT NULL DEFAULT '[]',
   after TEXT NOT NULL DEFAULT '{}'
 );
+
+-- Biens immobiliers d'un projet (thème Maison & Horizon, issue #172) : une fiche par bien, saisie une seule fois dans
+-- l'onglet « Biens » ; elle alimente l'accueil, les listes, la carte, la fiche, les favoris et l'export. Jamais effacée :
+-- « archivé » la retire de tout affichage. Référence unique dans le projet ; toutes les valeurs saisies dans data_json.
+CREATE TABLE IF NOT EXISTS biens (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  ref TEXT NOT NULL,
+  transaction_type TEXT NOT NULL,          -- vente | location
+  status TEXT NOT NULL DEFAULT 'draft',    -- draft | published | withdrawn | sold | rented | archived
+  position INTEGER NOT NULL DEFAULT 0,
+  data_json TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  published_at INTEGER
+);
+CREATE UNIQUE INDEX IF NOT EXISTS biens_ref ON biens(project_id, ref);
+CREATE INDEX IF NOT EXISTS biens_project ON biens(project_id, status, position);
 
 CREATE TABLE IF NOT EXISTS content_runs (
   project_id TEXT NOT NULL,

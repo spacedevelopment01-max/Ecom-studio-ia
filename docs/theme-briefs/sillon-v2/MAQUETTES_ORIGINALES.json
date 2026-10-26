@@ -1,0 +1,32 @@
+[
+  {
+    "fichier": "maquettes/01-accueil-machine.png",
+    "nom_source": "SILLON V2, l’espresso nomade.png",
+    "dimensions": [
+      1415,
+      1112
+    ],
+    "octets": 2466003,
+    "sha256": "1969bcc0d9c52c084edb71c35363a07dedf4c992cab2cb894eb6598838b8c2af"
+  },
+  {
+    "fichier": "maquettes/02-rituel-marque-carnet-article.png",
+    "nom_source": "Sillon V2, carnet d’échappées café.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 2362197,
+    "sha256": "74f4fb258099f5b8c33e025d41f8a63b607c9800a464ae90c796a7c42fff661b"
+  },
+  {
+    "fichier": "maquettes/03-achat-aide-mobile.png",
+    "nom_source": "Sillon V2, carnet d’expédition numérique.png",
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "octets": 2216801,
+    "sha256": "d9a0d6198bb701cc2f7583ac3ab4370c6600de36784acc95c54236d091c1fc0c"
+  }
+]

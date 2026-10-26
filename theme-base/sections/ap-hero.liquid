@@ -1,0 +1,187 @@
+{%- comment -%}
+  Ouverture d'APLAT (planches du 25 octobre). Dispositions sur ordinateur :
+  - home : photo de chantier pleine largeur, grand aplat bleu pétrole à décrochement portant titre, texte et deux boutons ;
+  - fade : enduit blanc à gauche qui se fond dans la photo à droite (prestations, métiers, réalisations, approche, FAQ,
+    contact, devis, légal), fil d'Ariane, titre à mots en bleu pétrole (*mot*), filet, texte, encarts à droite ;
+  - box : photo pleine largeur et panneau bleu pétrole à gauche (enduits, conseils) ;
+  - notfound : enduit, grand « 404 » au trait, photo à droite (page introuvable).
+  Sur téléphone : stack (photo puis aplat qui la chevauche), text (texte puis photo), overlay (texte sur la photo
+  fondue), card (carte blanche sur la photo). Textes propres au téléphone facultatifs (sinon les mêmes).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign tag = s.heading_tag | default: 'h1'
+  assign has_m_text = false
+  if s.mobile_text != blank
+    assign has_m_text = true
+  endif
+-%}
+<section class="ap-s ap-hero ap-hero--{{ s.layout }} ap-hero--m-{{ s.mobile_layout }}{% if s.style != blank and s.style != 'normal' %} ap-hero--{{ s.style }}{% endif %}{% if s.show_on != 'all' %} ap-only-{{ s.show_on | slice: 0 }}{% endif %}{% if s.mobile_hide_buttons %} ap-hero--m-nobtn{% endif %}{% if s.mobile_hide_text %} ap-hero--m-notext{% endif %}" style="--ap-h:{{ s.height }}px;--ap-hm:{{ s.mobile_height }}px;{% if s.title_size > 0 %}--ap-ts:{{ s.title_size }}px;{% endif %}{% if s.mobile_title_size > 0 %}--ap-tsm:{{ s.mobile_title_size }}px;{% endif %}{% if s.layout == 'box' %}--ap-bw:{{ s.box_width }}px;--ap-bl:{{ s.box_left }}px;--ap-bt:{{ s.box_top }}px;--ap-bp:{{ s.box_padding }}px;{% endif %}{% if s.layout == 'box' or s.mobile_layout == 'box' %}--ap-mbr:{{ s.mobile_box_right }}px;--ap-mbb:{{ s.mobile_box_bottom }}px;{% endif %}" aria-labelledby="ApH-{{ section.id }}">
+  {%- if s.texture != blank or s.texture_asset != blank -%}{%- render 'ap-img', img: s.texture, asset: s.texture_asset, alt: '', cls: 'ap-hero__texture', width: 1400 -%}{%- endif -%}
+  <div class="ap-hero__media">
+    {%- render 'ap-img', img: s.image, asset: s.image_asset, alt: s.image_alt, fx: s.focus_x, fy: s.focus_y, zoom: s.zoom, mimg: s.mobile_image, masset: s.mobile_image_asset, mfx: s.mobile_focus_x, mfy: s.mobile_focus_y, cls: 'ap-hero__photo', eager: true, width: 2000 -%}
+  </div>
+  <div class="ap-hero__body ap-wrap">
+    {%- assign crumbs = section.blocks | where: 'type', 'crumb' -%}
+    {%- if crumbs.size > 0 -%}
+      <nav class="ap-crumbs{% unless s.mobile_crumbs %} ap-only-d{% endunless %}" aria-label="{{ s.crumbs_label | escape }}">
+        <ol role="list">
+          {%- for b in crumbs -%}<li {{ b.shopify_attributes }}>{%- if b.settings.link != blank and forloop.last == false -%}<a href="{{ b.settings.link }}">{{ b.settings.label | escape }}</a>{%- else -%}<span{% if forloop.last %} aria-current="page"{% endif %}>{{ b.settings.label | escape }}</span>{%- endif -%}</li>{%- endfor -%}
+        </ol>
+      </nav>
+    {%- endif -%}
+    <div class="ap-hero__copy">
+      {%- if s.notfound_text != blank -%}<p class="ap-hero__404" aria-hidden="true">{{ s.notfound_text | escape }}</p>{%- endif -%}
+      {%- if s.eyebrow != blank or s.mobile_eyebrow != blank -%}<p class="ap-eyebrow{% if s.eyebrow == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.eyebrow, m: s.mobile_eyebrow -%}</p>{%- endif -%}
+      <{{ tag }} class="ap-hero__title" id="ApH-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</{{ tag }}>
+      {%- if s.subtitle != blank -%}<p class="ap-hero__subtitle">{{ s.subtitle | escape | newline_to_br }}</p>{%- endif -%}
+      {%- if s.show_rule -%}<span class="ap-rule ap-hero__rule" aria-hidden="true"></span>{%- endif -%}
+      {%- if s.text != blank or has_m_text -%}<p class="ap-hero__text{% if s.text == blank %} ap-only-m{% endif %}">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+      {%- if s.button_label != blank or s.mobile_button_label != blank or s.button2_label != blank -%}
+        <div class="ap-hero__actions{% if s.button_label == blank and s.button2_label == blank %} ap-only-m{% endif %}">
+          {%- if s.button_label != blank or s.mobile_button_label != blank -%}<a class="ap-btn ap-hero__b1{% if s.button_label == blank %} ap-only-m{% endif %}" href="{{ s.button_link | default: routes.root_url }}">{%- render 'ap-dm', d: s.button_label, m: s.mobile_button_label -%}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+          {%- if s.button2_label != blank -%}<a class="ap-btn ap-hero__b2" href="{{ s.button2_link | default: routes.root_url }}">{%- render 'ap-dm', d: s.button2_label, m: s.mobile_button2_label -%}<span class="ap-hero__b2-icon">{% render 'ap-icon', name: 'arrow' %}</span></a>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- for b in section.blocks -%}
+      {%- if b.type == 'aside' -%}
+        {%- assign bs = b.settings -%}
+        <aside class="ap-hero__aside ap-hero__aside--{{ bs.style }}{% if bs.show_on != 'all' %} ap-only-{{ bs.show_on | slice: 0 }}{% endif %}" {{ b.shopify_attributes }}>
+          {%- if bs.title != blank -%}<p class="ap-hero__aside-title">{{ bs.title | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if bs.text != blank -%}<p class="ap-hero__aside-text">{{ bs.text | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if bs.items != blank -%}
+            <dl class="ap-hero__facts">
+              {%- assign lines = bs.items | newline_to_br | split: '<br />' -%}
+              {%- for line in lines -%}{%- assign kv = line | strip | split: ':' -%}{%- if kv.size > 1 -%}<div><dt>{{ kv[0] | strip | escape }}</dt><dd>{{ line | strip | remove_first: kv[0] | remove_first: ':' | strip | escape }}</dd></div>{%- endif -%}{%- endfor -%}
+            </dl>
+          {%- endif -%}
+          {%- if bs.button_label != blank -%}<a class="ap-btn ap-btn--petrol ap-btn--sm" href="{{ bs.button_link | default: routes.root_url }}">{{ bs.button_label | escape }}{% render 'ap-icon', name: 'arrow' %}</a>{%- endif -%}
+        </aside>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Ouverture APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "layout", "label": "Disposition sur ordinateur", "default": "home",
+      "options": [
+        { "value": "home", "label": "Photo et aplat bleu pétrole" },
+        { "value": "fade", "label": "Enduit fondu dans la photo" },
+        { "value": "box", "label": "Photo et panneau bleu à gauche" },
+        { "value": "notfound", "label": "Page introuvable" }
+      ]
+    },
+    {
+      "type": "select", "id": "mobile_layout", "label": "Disposition sur téléphone", "default": "stack",
+      "options": [
+        { "value": "stack", "label": "Photo puis aplat qui la chevauche" },
+        { "value": "text", "label": "Texte puis photo" },
+        { "value": "overlay", "label": "Texte sur la photo fondue" },
+        { "value": "card", "label": "Carte blanche sur la photo" },
+        { "value": "box", "label": "Titre et texte dans l'aplat bleu" }
+      ]
+    },
+    {
+      "type": "select", "id": "style", "label": "Variante", "default": "normal",
+      "options": [ { "value": "normal", "label": "Normale" }, { "value": "legal", "label": "Page d'information (grands titres)" } ]
+    },
+    {
+      "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+      "options": [
+        { "value": "all", "label": "Ordinateur et téléphone" },
+        { "value": "desktop", "label": "Ordinateur seulement" },
+        { "value": "mobile", "label": "Téléphone seulement" }
+      ]
+    },
+    { "type": "range", "id": "height", "label": "Hauteur sur ordinateur", "min": 300, "max": 900, "step": 2, "unit": "px", "default": 448 },
+    { "type": "range", "id": "mobile_height", "label": "Hauteur de la photo sur téléphone", "min": 160, "max": 800, "step": 2, "unit": "px", "default": 440 },
+    { "type": "range", "id": "title_size", "label": "Taille du titre sur ordinateur (0 : selon la disposition)", "min": 0, "max": 96, "step": 1, "unit": "px", "default": 0 },
+    { "type": "range", "id": "mobile_title_size", "label": "Taille du titre sur téléphone (0 : selon la disposition)", "min": 0, "max": 56, "step": 1, "unit": "px", "default": 0 },
+    { "type": "range", "id": "box_width", "label": "Panneau bleu : largeur", "min": 360, "max": 800, "step": 2, "unit": "px", "default": 670 },
+    { "type": "range", "id": "box_left", "label": "Panneau bleu : marge à gauche", "min": 0, "max": 120, "step": 1, "unit": "px", "default": 4 },
+    { "type": "range", "id": "box_top", "label": "Panneau bleu : marge en haut", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 60 },
+    { "type": "range", "id": "box_padding", "label": "Panneau bleu : retrait du texte", "min": 20, "max": 120, "step": 1, "unit": "px", "default": 70 },
+    { "type": "range", "id": "mobile_box_right", "label": "Panneau bleu sur téléphone : marge à droite", "min": 0, "max": 160, "step": 1, "unit": "px", "default": 46 },
+    { "type": "range", "id": "mobile_box_bottom", "label": "Panneau bleu sur téléphone : marge en bas", "min": 0, "max": 160, "step": 1, "unit": "px", "default": 0 },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "zoom", "label": "Agrandissement", "min": 100, "max": 200, "step": 2, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "mobile_image", "label": "Photo sur téléphone (facultative)" },
+    { "type": "text", "id": "mobile_image_asset", "label": "Photo sur téléphone (fichier du thème)" },
+    { "type": "range", "id": "mobile_focus_x", "label": "Téléphone : cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "mobile_focus_y", "label": "Téléphone : cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "image_picker", "id": "texture", "label": "Matière d'enduit (fond)" },
+    { "type": "text", "id": "texture_asset", "label": "Matière d'enduit (fichier du thème)" },
+    { "type": "checkbox", "id": "mobile_crumbs", "label": "Fil d'Ariane aussi sur téléphone", "default": false },
+    { "type": "text", "id": "crumbs_label", "label": "Fil d'Ariane (lecteurs d'écran)", "default": "Fil d'Ariane" },
+    { "type": "text", "id": "notfound_text", "label": "Grand texte au trait (page introuvable)" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre" },
+    { "type": "text", "id": "mobile_eyebrow", "label": "Surtitre sur téléphone" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Les mots entre astérisques sont en bleu pétrole : *volumes.*", "default": "Des murs justes.\nDes espaces qui changent." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    {
+      "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h1",
+      "options": [ { "value": "h1", "label": "Titre de la page (h1)" }, { "value": "h2", "label": "Titre de section (h2)" } ]
+    },
+    { "type": "textarea", "id": "subtitle", "label": "Sous-titre" },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": false },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+    { "type": "text", "id": "button_label", "label": "Bouton principal" },
+    { "type": "text", "id": "mobile_button_label", "label": "Bouton principal sur téléphone" },
+    { "type": "checkbox", "id": "mobile_hide_buttons", "label": "Masquer les boutons sur téléphone", "default": false },
+    { "type": "checkbox", "id": "mobile_hide_text", "label": "Masquer le sous-titre et le texte sur téléphone", "default": false },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton principal" },
+    { "type": "text", "id": "button2_label", "label": "Second bouton" },
+    { "type": "text", "id": "mobile_button2_label", "label": "Second bouton sur téléphone" },
+    { "type": "url", "id": "button2_link", "label": "Lien du second bouton" }
+  ],
+  "blocks": [
+    {
+      "type": "crumb", "name": "Fil d'Ariane",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Libellé" },
+        { "type": "url", "id": "link", "label": "Lien" }
+      ]
+    },
+    {
+      "type": "aside", "name": "Encart",
+      "settings": [
+        {
+          "type": "select", "id": "style", "label": "Style", "default": "box",
+          "options": [
+            { "value": "box", "label": "Aplat bleu pétrole" },
+            { "value": "card", "label": "Carte claire avec bouton" },
+            { "value": "info", "label": "Informations (libellé : valeur)" },
+            { "value": "strip", "label": "Bande d'informations" }
+          ]
+        },
+        { "type": "textarea", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "items", "label": "Informations", "info": "Une ligne par information, « Libellé : valeur »." },
+        { "type": "text", "id": "button_label", "label": "Bouton" },
+        { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Ouverture APLAT" } ]
+}
+{% endschema %}

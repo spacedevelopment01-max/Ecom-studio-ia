@@ -136,7 +136,7 @@ export function MediaRoutingPanel({ data, post }: { data: MediaRoutingData; post
                       {m.durations && <span className="block text-muted">{t("Durées", "Lengths")} : {m.durations.length > 3 ? `${m.durations[0]}–${m.durations[m.durations.length - 1]} s` : m.durations.map((d) => `${d} s`).join(", ")}</span>}
                     </td>
                     <td className="max-w-[200px] pr-2 text-xs">
-                      {priceText(m.price) ? <span className="font-mono">{priceText(m.price)}</span> : <Badge tone="warn">{t("à renseigner", "to enter")}</Badge>}
+                      {m.provider==="higgsfield" ? <Badge tone={m.confirmed?"ok":"warn"}>{m.confirmed?t("Tarifs par configuration confirmés","Configuration prices approved"):t("Import et confirmation groupée requis","Bulk import and approval required")}</Badge> : priceText(m.price) ? <span className="font-mono">{priceText(m.price)}</span> : <Badge tone="warn">{t("à renseigner", "to enter")}</Badge>}
                       {m.typicalEur != null && <span className="block text-muted">≈ {m.typicalEur.toLocaleString("fr-FR")} € · {m.typicalLabel}</span>}
                       <span className="block text-muted">{m.priceNote}</span>
                       {m.observed && <span className="block text-muted">{t("Observé", "Observed")} : {m.observed.calls} · {m.observed.failures} {t("échecs", "failures")}{m.observed.avgScore != null ? ` · ${t("note", "score")} ${m.observed.avgScore}` : ""}</span>}
@@ -147,13 +147,13 @@ export function MediaRoutingPanel({ data, post }: { data: MediaRoutingData; post
                     </td>
                     <td className="whitespace-nowrap">
                       <div className="flex flex-col gap-1.5">
-                        {!isPrimary && <Button size="sm" variant="secondary" disabled={!m.confirmed || !m.price || !m.adapter} onClick={() => post({ mediaPrimary: { kind: k.kind, key: m.key } }, t("Principal enregistré.", "Primary saved."))}>{t("Choisir comme principal", "Set as primary")}</Button>}
+                        {!isPrimary && <Button size="sm" variant="secondary" disabled={!m.confirmed || (!m.price && m.provider!=="higgsfield") || !m.adapter} onClick={() => post({ mediaPrimary: { kind: k.kind, key: m.key } }, t("Principal enregistré.", "Primary saved."))}>{t("Choisir comme principal", "Set as primary")}</Button>}
                         {!isPrimary && (isBackup ? (
                           <Button size="sm" variant="ghost" onClick={() => post({ mediaBackup: { kind: k.kind, key: null } }, t("Secours retiré.", "Backup removed."))}>{t("Retirer le secours", "Remove backup")}</Button>
                         ) : (
                           <Button size="sm" variant="ghost" disabled={!m.usable} onClick={() => post({ mediaBackup: { kind: k.kind, key: m.key } }, t("Secours enregistré.", "Backup saved."))}>{t("Choisir comme secours", "Set as backup")}</Button>
                         ))}
-                        {(!(m.verified.id && m.verified.price) || m.adminConfirm) && (m.confirmed ? (
+                        {m.provider!=="higgsfield" && (!(m.verified.id && m.verified.price) || m.adminConfirm) && (m.confirmed ? (
                           <Button size="sm" variant="ghost" onClick={() => post({ mediaModel: { key: m.key, confirm: false } }, t("Confirmation retirée.", "Confirmation removed."))}>{t("Retirer la confirmation", "Remove confirmation")}</Button>
                         ) : (
                           <Button size="sm" variant="ghost" onClick={() => confirm(t(`Confirmez-vous avoir vérifié l'identifiant et le tarif de ${m.label} sur la page officielle du fournisseur ?`, `Do you confirm you've checked ${m.label}'s ID and price on the provider's official page?`)) && post({ mediaModel: { key: m.key, confirm: true } }, t("Modèle confirmé.", "Model confirmed."))}>{t("Confirmer", "Confirm")}</Button>

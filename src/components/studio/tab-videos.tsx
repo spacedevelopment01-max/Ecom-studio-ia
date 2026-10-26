@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Clapperboard, Download, Search, Upload, Wand2 } from "lucide-react";
 import { api, Button, Card, cx, Empty, Field, Input, Modal, Select, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
+import {PLANS,type PlanId} from '@/lib/plans';
 import { JobProgress, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
 import { useLang, useT } from "../i18n";
@@ -31,6 +32,7 @@ export default function TabVideos() {
   const t = useT();
   const toast = useToast();
   const locked = useCreationLocked();
+  const aiLocked=locked||!data?.plan||!(data.plan in PLANS)||PLANS[data.plan as PlanId].videos==='none';
   const active = useActive(["video.bank"]);
   const { data: list, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=${BANK_VIDEO_ROLES.join(",")}`);
   const [source, setSource] = useState<Source | "">("");
@@ -78,9 +80,10 @@ export default function TabVideos() {
           <input ref={fileRef} type="file" accept="video/mp4,video/quicktime,video/webm" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
           <Button variant="ghost" icon={<Upload className="size-4" />} loading={uploading} onClick={() => fileRef.current?.click()} data-bank-upload>{t("Importer", "Upload")}</Button>
           <Button variant="secondary" icon={<Search className="size-4" />} disabled={locked} onClick={() => setDialog("search")} data-bank-search>{t("Chercher des plans libres", "Find royalty-free clips")}</Button>
-          <Button icon={<Wand2 className="size-4" />} disabled={locked} onClick={() => setDialog("ai")} data-bank-create>{t("Créer un plan avec l'IA", "Create a clip with AI")}</Button>
+          <Button icon={<Wand2 className="size-4" />} disabled={aiLocked} onClick={() => setDialog("ai")} data-bank-create>{t("Créer un plan avec l'IA", "Create a clip with AI")}</Button>
         </div>
         {locked && <div className="sm:basis-full"><PlanRequired what="videos" /></div>}
+        {!locked&&aiLocked&&<p className="text-sm text-ink-2 sm:basis-full" data-video-plan-lock>{t('Les plans filmés par l’IA sont disponibles avec Développer ou Dominer. Vos imports et la recherche de plans libres restent disponibles.','AI-filmed clips require Grow or Dominate. Your uploads and royalty-free clip search remain available.')} <a href="/studio/compte" className="underline">{t('Voir mon forfait','View my plan')}</a></p>}
       </Card>
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div>

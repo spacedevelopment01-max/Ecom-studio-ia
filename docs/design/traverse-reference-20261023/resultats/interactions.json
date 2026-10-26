@@ -1,0 +1,497 @@
+[
+ {
+  "name": "ordinateur : navigation de l'en-tête",
+  "ok": true,
+  "detail": "Le sac→produit.html, En route→page-en-route.html, Notre approche→page-notre-approche.html, Aide→page-faq.html"
+ },
+ {
+  "name": "ordinateur : liens de l'accueil vers des pages existantes (12)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : quantité passée à 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : prix de démonstration 129 € annoncé comme tel",
+  "ok": true,
+  "detail": "129 €"
+ },
+ {
+  "name": "ordinateur : ajout de 2 sacs, tiroir ouvert, sous-total 258 €",
+  "ok": true,
+  "detail": "258 €, pastille 2"
+ },
+ {
+  "name": "ordinateur : panier plein, quantité 2, total 258 €",
+  "ok": true,
+  "detail": "258 € / 2"
+ },
+ {
+  "name": "ordinateur : « + » au panier : 3 sacs, 387 €",
+  "ok": true,
+  "detail": "387 €"
+ },
+ {
+  "name": "ordinateur : « − » au panier : retour à 258 €",
+  "ok": true,
+  "detail": "258 €"
+ },
+ {
+  "name": "ordinateur : « Supprimer » vide le panier (titre du panier vide, pastille masquée)",
+  "ok": true,
+  "detail": "VOTRE PANIER EST VIDE."
+ },
+ {
+  "name": "ordinateur : page FAQ, question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "ordinateur : carte du carnet « page-deux-jours-un-autre-decor.html#choisir » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "ordinateur : carte du carnet « page-deux-jours-un-autre-decor.html#trajet » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "ordinateur : carte du carnet « page-deux-jours-un-autre-decor.html#preparer » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "ordinateur : formulaire vide, erreurs et focus sur le premier champ",
+  "ok": true,
+  "detail": "3 messages, focus contact[name]"
+ },
+ {
+  "name": "ordinateur : adresse e-mail incomplète signalée",
+  "ok": true,
+  "detail": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr)."
+ },
+ {
+  "name": "ordinateur : envoi en cours affiché",
+  "ok": true,
+  "detail": "Envoi en cours…"
+ },
+ {
+  "name": "ordinateur : succès seulement après la réponse, formulaire remplacé",
+  "ok": true,
+  "detail": "Merci, nous revenons vers vous rapidement. Démonstration : aucun message n’est réellement envoyé."
+ },
+ {
+  "name": "ordinateur : échec simulé, message et formulaire conservés",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "ordinateur : accueil.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : produit.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : boutique.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-en-route.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-deux-jours-un-autre-decor.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-notre-approche.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-faq.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-contact.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-livraison-retours.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-mentions-legales.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-confidentialite.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : page-cgv.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : panier.html",
+  "ok": true,
+  "detail": "1440px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "ordinateur : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : menu ouvert avec les quatre entrées",
+  "ok": true,
+  "detail": "Le sac | En route | Notre approche | Aide"
+ },
+ {
+  "name": "telephone : menu fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : liens de l'accueil vers des pages existantes (12)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : question de l'accueil dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : vignette 3 sélectionnée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : photo agrandie",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : agrandissement fermé par Échap",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : quantité passée à 2",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : prix de démonstration 129 € annoncé comme tel",
+  "ok": true,
+  "detail": "129 €"
+ },
+ {
+  "name": "telephone : ajout de 2 sacs, tiroir ouvert, sous-total 258 €",
+  "ok": true,
+  "detail": "258 €, pastille 2"
+ },
+ {
+  "name": "telephone : panier plein, quantité 2, total 258 €",
+  "ok": true,
+  "detail": "258 € / 2"
+ },
+ {
+  "name": "telephone : « + » au panier : 3 sacs, 387 €",
+  "ok": true,
+  "detail": "387 €"
+ },
+ {
+  "name": "telephone : « − » au panier : retour à 258 €",
+  "ok": true,
+  "detail": "258 €"
+ },
+ {
+  "name": "telephone : « Supprimer » vide le panier (titre du panier vide, pastille masquée)",
+  "ok": true,
+  "detail": "VOTRE PANIER EST VIDE."
+ },
+ {
+  "name": "telephone : page FAQ, question dépliée",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "telephone : carte du carnet « page-deux-jours-un-autre-decor.html#choisir » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "telephone : carte du carnet « page-deux-jours-un-autre-decor.html#trajet » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "telephone : carte du carnet « page-deux-jours-un-autre-decor.html#preparer » mène à l'étape",
+  "ok": true,
+  "detail": "90"
+ },
+ {
+  "name": "telephone : formulaire vide, erreurs et focus sur le premier champ",
+  "ok": true,
+  "detail": "3 messages, focus contact[name]"
+ },
+ {
+  "name": "telephone : adresse e-mail incomplète signalée",
+  "ok": true,
+  "detail": "Cette adresse e-mail semble incomplète (exemple : nom@domaine.fr)."
+ },
+ {
+  "name": "telephone : envoi en cours affiché",
+  "ok": true,
+  "detail": "Envoi en cours…"
+ },
+ {
+  "name": "telephone : succès seulement après la réponse, formulaire remplacé",
+  "ok": true,
+  "detail": "Merci, nous revenons vers vous rapidement. Démonstration : aucun message n’est réellement envoyé."
+ },
+ {
+  "name": "telephone : échec simulé, message et formulaire conservés",
+  "ok": true,
+  "detail": "L'envoi n'a pas abouti. Vérifiez votre connexion puis réessayez."
+ },
+ {
+  "name": "telephone : accueil.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : produit.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : boutique.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-en-route.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-deux-jours-un-autre-decor.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-notre-approche.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-faq.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-contact.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-livraison-retours.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-mentions-legales.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-confidentialite.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : page-cgv.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : panier.html",
+  "ok": true,
+  "detail": "390px, 0 cassée(s), 1 H1"
+ },
+ {
+  "name": "telephone : aucune erreur de script",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "360 px : accueil.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : produit.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : boutique.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-en-route.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-deux-jours-un-autre-decor.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-notre-approche.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-faq.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-contact.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : page-cgv.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "360 px : panier.html",
+  "ok": true,
+  "detail": "360px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : accueil.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : produit.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : boutique.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-en-route.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-deux-jours-un-autre-decor.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-notre-approche.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-faq.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-contact.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-livraison-retours.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-mentions-legales.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-confidentialite.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : page-cgv.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ },
+ {
+  "name": "430 px : panier.html",
+  "ok": true,
+  "detail": "430px, 0 cassée(s), 1 H1, coupé(s) : "
+ }
+]

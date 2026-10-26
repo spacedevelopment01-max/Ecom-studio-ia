@@ -1,0 +1,53 @@
+{%- comment -%}
+  TABLE SAISON : texte et photo côte à côte (philosophie, le lieu, une cuisine de saison). Photo à droite ou à gauche,
+  pleine hauteur ; variante « encadrée » (page Le lieu) ; ornement botanique au trait ; sur téléphone : photo sous le
+  titre, photo encadrée ou texte seul selon le réglage.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign link_class = 'ts-link'
+  if s.link_style == 'button'
+    assign link_class = 'ts-btn'
+  elsif s.link_style == 'olive'
+    assign link_class = 'ts-btn ts-btn--olive'
+  endif
+-%}
+<section class="ts-section ts-split ts-split--{{ s.image_side }} ts-split--{{ s.background }} ts-split--mobile-{{ s.mobile }}{% if s.boxed %} ts-split--boxed{% endif %}" style="--ts-split: {{ s.columns }}; --ts-split-h: {{ s.min_height }}px;">
+  <div class="ts-split__text">
+    {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="ts-title ts-title--l">{{ s.heading | newline_to_br }}</h2>{%- endif -%}
+    {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+    {%- if s.link_label != blank -%}<a class="{{ link_class }}" href="{{ s.link | default: '/' }}">{{ s.link_label }}{% if s.link_style == 'link' %} {% render 'ts-icon', name: 'arrow' %}{% endif %}</a>{%- endif -%}
+    {%- if s.ornament == 'left' -%}{% render 'ts-ornament', name: 'sprig', class: 'ts-ornament--left' %}{%- elsif s.ornament == 'corner' -%}{% render 'ts-ornament', name: 'leaves', class: 'ts-ornament--corner' %}{%- endif -%}
+  </div>
+  {%- if s.image != blank or s.image_asset != blank -%}
+    <div class="ts-split__media">{% render 'ts-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, sizes: '(min-width: 750px) 50vw, 100vw' %}</div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Texte et photo",
+  "class": "ts-split-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Une cuisine de saison." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "link_label", "label": "Texte du lien" },
+    { "type": "url", "id": "link", "label": "Lien" },
+    { "type": "select", "id": "link_style", "label": "Style du lien", "default": "link", "options": [{ "value": "link", "label": "Lien souligné avec flèche" }, { "value": "button", "label": "Bouton" }, { "value": "olive", "label": "Bouton olive" }] },
+    { "type": "image_picker", "id": "image", "label": "Image" },
+    { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Description de l'image" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "select", "id": "image_side", "label": "Position de la photo", "default": "left", "options": [{ "value": "left", "label": "Photo à droite" }, { "value": "right", "label": "Photo à gauche" }] },
+    { "type": "text", "id": "columns", "label": "Proportions texte / photo", "default": "1fr 1fr" },
+    { "type": "range", "id": "min_height", "label": "Hauteur minimale", "min": 160, "max": 640, "step": 10, "default": 270, "unit": "px" },
+    { "type": "select", "id": "background", "label": "Fond", "default": "ivory", "options": [{ "value": "ivory", "label": "Ivoire" }, { "value": "olive", "label": "Olive" }] },
+    { "type": "select", "id": "ornament", "label": "Ornement", "default": "none", "options": [{ "value": "none", "label": "Aucun" }, { "value": "left", "label": "Petit rameau en bas à gauche" }, { "value": "corner", "label": "Branche dans l'angle" }] },
+    { "type": "checkbox", "id": "boxed", "label": "Encadré dans la page", "default": false },
+    { "type": "select", "id": "mobile", "label": "Sur téléphone", "default": "image", "options": [{ "value": "image", "label": "Photo sous le texte" }, { "value": "inset", "label": "Photo encadrée" }, { "value": "text-only", "label": "Texte seul" }] }
+  ],
+  "presets": [{ "name": "Texte et photo" }]
+}
+{% endschema %}

@@ -14,17 +14,18 @@
   endfor
   assign tag_list = tags | remove_first: '|' | split: '|'
 -%}
-<section class="es-section es-folio es-folio--{{ section.settings.layout }} color-{{ section.settings.color_scheme }}" style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-folio>
+{%- assign htag = section.settings.heading_tag | default: 'h2' -%}
+<section class="es-section es-folio es-folio--{{ section.settings.layout }} es-folio--count-{{ section.blocks.size | at_most: 4 }} es-folio--n{{ section.blocks.size }}{% if section.settings.link_style == 'arrow' %} es-folio--arrows{% endif %}{% if section.settings.caption_style == 'kicker' %} es-folio--kicker{% endif %} color-{{ section.settings.color_scheme }}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %} style="--pt: {{ section.settings.padding_top }}px; --pb: {{ section.settings.padding_bottom }}px;" data-folio>
   <div class="es-container">
     <header class="es-folio__head">
       <div>
         {%- if section.settings.eyebrow != blank -%}<p class="es-eyebrow" data-reveal="up">{{ section.settings.eyebrow }}</p>{%- endif -%}
-        {%- if section.settings.heading != blank -%}<h2 class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</h2>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<{{ htag }} class="es-heading es-h2" data-reveal="words">{{ section.settings.heading }}</{{ htag }}>{%- endif -%}
         {%- if section.settings.text != blank -%}<div class="es-rte es-lead" data-reveal="up">{{ section.settings.text }}</div>{%- endif -%}
       </div>
-      {%- if tag_list.size > 1 -%}
+      {%- if tag_list.size > 1 and section.settings.show_filters != false -%}
         <div class="es-folio__filters" role="group" aria-label="{{ 'sections.portfolio.filter' | t }}" data-reveal="up">
-          <button type="button" class="es-folio__filter is-active" aria-pressed="true" data-folio-filter="">{{ 'sections.portfolio.all' | t }}</button>
+          <button type="button" class="es-folio__filter is-active" aria-pressed="true" data-folio-filter="">{% if section.settings.all_label != blank %}{{ section.settings.all_label | escape }}{% else %}{{ 'sections.portfolio.all' | t }}{% endif %}</button>
           {%- for t in tag_list -%}<button type="button" class="es-folio__filter" aria-pressed="false" data-folio-filter="{{ t | handleize }}">{{ t }}</button>{%- endfor -%}
         </div>
       {%- endif -%}
@@ -53,10 +54,10 @@
               {%- endif -%}
             </div>
             <figcaption class="es-folio__caption">
-              {%- if block.settings.tag != blank -%}<span class="es-folio__tag">{{ block.settings.tag }}</span>{%- endif -%}
+              {%- if block.settings.tag != blank and section.settings.show_tags != false -%}<span class="es-folio__tag">{{ block.settings.tag }}</span>{%- endif -%}
               <span class="es-heading es-h4 es-folio__title">{{ block.settings.title }}</span>
               {%- if block.settings.caption != blank -%}<span class="es-folio__text">{{ block.settings.caption }}</span>{%- endif -%}
-              {%- if block.settings.link != blank -%}<a class="es-folio__link" href="{{ block.settings.link }}">{{ 'sections.portfolio.see_project' | t }}<span class="visually-hidden"> — {{ block.settings.title }}</span>{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
+              {%- if block.settings.link != blank -%}<a class="es-folio__link" href="{{ block.settings.link }}"><span{% if section.settings.link_style == 'arrow' %} class="visually-hidden"{% endif %}>{% if section.settings.link_label != blank %}{{ section.settings.link_label | escape }}{% else %}{{ 'sections.portfolio.see_project' | t }}{% endif %}</span><span class="visually-hidden"> — {{ block.settings.title }}</span>{% render 'icon', name: 'arrow' %}</a>{%- endif -%}
             </figcaption>
           </figure>
         </li>
@@ -107,6 +108,34 @@
 .es-folio__link { display: inline-flex; align-items: center; gap: 8px; margin-top: 6px; width: fit-content; font-weight: var(--font-body-weight-bold); font-size: .92rem; text-decoration: none; border-bottom: 1px solid rgba(var(--c-text-rgb), .22); }
 .es-folio__link .es-icon { width: 15px; height: 15px; }
 @media (prefers-reduced-motion: reduce) { .es-folio__media .es-cover { transition: none; } }
+/* Galerie asymétrique (maquettes de services du 23 octobre) : un grand projet sur deux rangées, les autres empilés ;
+   en-tête titre à gauche, texte à droite ; filtrée, la galerie redevient une grille régulière. */
+.es-folio--asym .es-folio__item { display: flex; }
+.es-folio--asym .es-folio__figure { display: flex; flex-direction: column; width: 100%; margin: 0; }
+.es-folio--asym .es-folio__media { aspect-ratio: 16 / 8.5; }
+.es-folio--asym .es-folio__caption { grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: start; padding-top: 12px; }
+.es-folio--asym .es-folio__caption > :not(.es-folio__link) { grid-column: 1; }
+.es-folio--asym .es-folio__link { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; border: 0; font-weight: inherit; font-size: .85rem; white-space: nowrap; }
+.es-folio--kicker .es-folio__text { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
+@media (min-width: 750px) {
+  .es-folio--asym .es-folio__head { grid-template-columns: 1fr; align-items: start; }
+  .es-folio--asym .es-folio__grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, .95fr); grid-auto-flow: row dense; }
+  .es-folio--asym.es-folio--count-3 .es-folio__grid, .es-folio--asym.es-folio--count-2 .es-folio__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+  .es-folio--asym .es-folio__item:nth-child(4n + 1) { grid-column: 1; grid-row: span 2; }
+  .es-folio--asym.es-folio--count-4 .es-folio__item:nth-child(4n + 2), .es-folio--asym.es-folio--count-4 .es-folio__item:nth-child(4n + 3) { grid-column: 2; }
+  .es-folio--asym.es-folio--count-4 .es-folio__item:nth-child(4n) { grid-column: 3; grid-row: span 2; }
+  .es-folio--asym .es-folio__item:nth-child(4n + 1) .es-folio__media, .es-folio--asym.es-folio--count-4 .es-folio__item:nth-child(4n) .es-folio__media { aspect-ratio: auto; flex: 1; min-height: 260px; }
+  /* Deux projets après un groupe de quatre : un grand en largeur, un à droite (aucun trou dans la grille). */
+  .es-folio--asym.es-folio--n6 .es-folio__item:nth-child(5) { grid-column: 1 / span 2; grid-row: auto; }
+  .es-folio--asym.es-folio--n6 .es-folio__item:nth-child(6) { grid-column: 3; grid-row: auto; }
+  .es-folio--asym.es-folio--n6 .es-folio__item:nth-child(5) .es-folio__media { flex: none; min-height: 0; aspect-ratio: 16 / 6.4; }
+  .es-folio--asym.es-folio--n6 .es-folio__item:nth-child(6) .es-folio__media { aspect-ratio: 4 / 3.06; }
+  .es-folio--asym .es-folio__head > div:first-child { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 0 clamp(32px, 5vw, 72px); align-items: start; }
+  .es-folio--asym .es-folio__head > div:first-child > .es-lead { grid-column: 2; grid-row: 1 / span 3; margin: 0; }
+  .es-folio--asym.is-filtered .es-folio__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .es-folio--asym.is-filtered .es-folio__item { grid-row: auto !important; }
+  .es-folio--asym.is-filtered .es-folio__media { aspect-ratio: 4 / 3 !important; flex: none !important; min-height: 0 !important; }
+}
 {% endstylesheet %}
 
 {% javascript %}
@@ -122,6 +151,7 @@
     var tag = b.getAttribute('data-folio-filter');
     root.querySelectorAll('[data-folio-filter]').forEach(function (x) { var on = x === b; x.classList.toggle('is-active', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     root.querySelectorAll('[data-folio-tag]').forEach(function (it) { it.hidden = !!tag && it.getAttribute('data-folio-tag') !== tag; });
+    root.classList.toggle('is-filtered', !!tag);
   });
 })();
 {% endjavascript %}
@@ -132,10 +162,18 @@
   "tag": "div",
   "class": "es-section-wrapper",
   "settings": [
+    { "type": "text", "id": "anchor", "label": "Ancre de navigation", "info": "Ex. « projets » : un bouton vers « #projets » descend jusqu'ici." },
     { "type": "text", "id": "eyebrow", "label": "Surtitre", "default": "Réalisations" },
     { "type": "text", "id": "heading", "label": "Titre", "default": "Quelques projets récents" },
     { "type": "richtext", "id": "text", "label": "Introduction" },
-    { "type": "select", "id": "layout", "label": "Mise en page", "default": "grid", "options": [{ "value": "grid", "label": "Grille régulière" }, { "value": "editorial", "label": "Composition éditoriale" }] },
+    { "type": "select", "id": "heading_tag", "label": "Niveau du titre", "default": "h2", "options": [{ "value": "h2", "label": "Titre de section" }, { "value": "h1", "label": "Titre principal de la page" }] },
+    { "type": "select", "id": "layout", "label": "Mise en page", "default": "grid", "options": [{ "value": "grid", "label": "Grille régulière" }, { "value": "editorial", "label": "Composition éditoriale" }, { "value": "asym", "label": "Galerie asymétrique" }] },
+    { "type": "checkbox", "id": "show_filters", "label": "Filtres par catégorie", "default": true },
+    { "type": "text", "id": "all_label", "label": "Libellé du filtre « tous »", "info": "Vide : « Tous »." },
+    { "type": "checkbox", "id": "show_tags", "label": "Afficher la catégorie sur chaque projet", "default": true },
+    { "type": "select", "id": "caption_style", "label": "Style de la légende", "default": "text", "options": [{ "value": "text", "label": "Phrase" }, { "value": "kicker", "label": "Petites capitales (lieu, type)" }] },
+    { "type": "select", "id": "link_style", "label": "Lien de chaque projet", "default": "label", "options": [{ "value": "label", "label": "Texte et flèche" }, { "value": "arrow", "label": "Flèche seule" }] },
+    { "type": "text", "id": "link_label", "label": "Texte du lien", "info": "Vide : « Voir le projet »." },
     { "type": "text", "id": "label_before", "label": "Libellé « avant »", "default": "Avant" },
     { "type": "text", "id": "label_after", "label": "Libellé « après »", "default": "Après" },
     { "type": "text", "id": "button_label", "label": "Bouton (facultatif)" },

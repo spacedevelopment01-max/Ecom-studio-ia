@@ -1,0 +1,54 @@
+{%- comment -%}
+  ATELIER NUANCE : l'équipe, représentée par des INITIALES (jamais un faux portrait).
+  - light : titre à gauche, membres en ligne (accueil, planche 04) ;
+  - dark : section chocolat centrée « Notre équipe » (Le salon, planche 03).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-team an-team--{{ s.style }}">
+  <div class="an-wrap">
+    <div class="an-team__head">
+      {%- if s.eyebrow != blank -%}<p class="an-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="an-title an-title--md">{{ s.heading }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<p class="an-team__intro">{{ s.text }}</p>{%- endif -%}
+    </div>
+    <ul class="an-team__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <li class="an-team__member" {{ block.shopify_attributes }}>
+          <span class="an-initial" aria-hidden="true">{{ b.initial | default: b.name | slice: 0 }}</span>
+          <div>
+            <h3 class="an-team__name">{{ b.name }}</h3>
+            {%- if b.title != blank -%}<p class="an-team__role">{{ b.title | escape | newline_to_br }}</p>{%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Équipe à initiales",
+  "class": "an-team-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "select", "id": "style", "label": "Style", "default": "light", "options": [{ "value": "light", "label": "Clair, en ligne" }, { "value": "dark", "label": "Chocolat, centré" }] },
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Notre équipe" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Des expertises complémentaires." },
+    { "type": "text", "id": "text", "label": "Texte" }
+  ],
+  "blocks": [
+    {
+      "type": "member", "name": "Membre de l'équipe",
+      "settings": [
+        { "type": "text", "id": "initial", "label": "Initiale affichée" },
+        { "type": "text", "id": "name", "label": "Prénom", "default": "Prénom" },
+        { "type": "textarea", "id": "title", "label": "Spécialité" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Équipe à initiales" }]
+}
+{% endschema %}

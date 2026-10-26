@@ -6,7 +6,7 @@ import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
 import { estimateMicro } from "@/lib/ai/estimate";
 import { videoProviderAvailable } from "@/lib/ai/media-providers";
-import { requireCreationPlan } from "@/lib/plan-gates";
+import { requireCreationPlan,requirePlan,projectRights } from "@/lib/plan-gates";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { checkedPlacementRequest } from "@/lib/theme/placement-request";
 
@@ -15,7 +15,8 @@ export const runtime = "nodejs";
 /** Prix d'un plan filmé par l'IA, affiché avant ; IA du projet active ou non. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { project: p } = await projectFromCtx(ctx);
-  return ok({ ai: aiActiveFor(p.userId, p.id) && !!videoProviderAvailable("product_video"), clipEstimateMicro: estimateMicro("video-clip") });
+  const rights=projectRights(p.id),entitlement=!!rights&&rights.videos!=='none';
+  return ok({ entitlement,ai: entitlement&&aiActiveFor(p.userId, p.id) && !!videoProviderAvailable("product_video"), clipEstimateMicro: estimateMicro("video-clip") });
 });
 
 const Req = z.discriminatedUnion("action", [
@@ -26,12 +27,13 @@ const Req = z.discriminatedUnion("action", [
 /** Compléter la banque : plans libres de droits (gratuit) ou un plan filmé par l'IA (payant, prix accepté). */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  requireCreationPlan(user, p.id, "videos");
+  requirePlan(user,p.id);
   const b = await body(req, Req);
   if (b.action === "stock") {
     const job = enqueue({ userId: user.id, projectId: p.id, type: "video.bank.stock", label: L("Plans libres de droits", "Royalty-free clips"), payload: { projectId: p.id, request: { topic: b.topic, aspect: b.aspect, count: b.count, broad: b.broad, silhouettes: b.silhouettes } } });
     return ok({ jobId: job.id });
   }
+  requireCreationPlan(user,p.id,'videos');
   if (b.themePlacement) {
     const {request}=await checkedPlacementRequest(p.id,b.themePlacement);
     if(request.kind!=="video"||!request.referenceAssetIds.includes(b.imageId))throw new HttpError(409,L("Choisissez l’une des références de cet emplacement vidéo.","Choose a reference for this video placement."));

@@ -1,0 +1,75 @@
+{%- comment -%}
+  PARENTHÈSE : page Contact (planche 06) : petit titre, grand titre et texte sur l'ivoire, photo à droite ; carte du
+  formulaire (nom, e-mail, sujet, message ; validation et réponse honnêtes) ; adresse et horaires configurables
+  (« [À renseigner] » tant qu'ils manquent), rameau au trait. Aucune incitation à confier des informations médicales.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-contact">
+  <div class="pa-contact__media">{% render 'pa-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: s.image_position, loading: 'eager', class: 'pa-contact__img' %}</div>
+  <div class="pa-wrap pa-contact__grid">
+    <div class="pa-contact__intro">
+      {%- if s.eyebrow != blank -%}<p class="pa-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h1 class="pa-hero__title">{{ s.heading | escape | newline_to_br }}</h1>
+      {%- if s.text != blank -%}<div class="pa-hero__text">{{ s.text }}</div>{%- endif -%}
+    </div>
+    <form class="pa-form pa-contact__form" novalidate data-pa-request="contact">
+      <div class="pa-field"><label for="pa-cname-{{ section.id }}">{{ s.name_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-cname-{{ section.id }}" name="name" autocomplete="name" required placeholder="{{ s.name_placeholder | escape }}"><p class="pa-field__error" data-pa-err="name" hidden>{{ s.error_required }}</p></div>
+      <div class="pa-field"><label for="pa-cemail-{{ section.id }}">{{ s.email_label }} <span class="pa-req" aria-hidden="true">*</span></label><input id="pa-cemail-{{ section.id }}" name="email" type="email" autocomplete="email" required placeholder="votre@email.fr"><p class="pa-field__error" data-pa-err="email" hidden>{{ s.error_email }}</p></div>
+      <div class="pa-field pa-field--select"><label for="pa-csubject-{{ section.id }}">{{ s.subject_label }} <span class="pa-req" aria-hidden="true">*</span></label>
+        <select id="pa-csubject-{{ section.id }}" name="subject" required>
+          <option value="">{{ s.subject_placeholder }}</option>
+          {%- assign subjects = s.subjects | newline_to_br | split: '<br />' -%}
+          {%- for sub in subjects -%}{%- assign t = sub | strip -%}{%- if t != blank -%}<option>{{ t }}</option>{%- endif -%}{%- endfor -%}
+        </select>
+        <p class="pa-field__error" data-pa-err="subject" hidden>{{ s.error_subject }}</p>
+      </div>
+      <div class="pa-field"><label for="pa-cmsg-{{ section.id }}">{{ s.message_label }} <span class="pa-req" aria-hidden="true">*</span></label><textarea id="pa-cmsg-{{ section.id }}" name="message" rows="4" required placeholder="{{ s.message_placeholder | escape }}"></textarea><p class="pa-field__hint">{{ s.message_hint }}</p><p class="pa-field__error" data-pa-err="message" hidden>{{ s.error_required }}</p></div>
+      <p class="pa-form__status" role="status" aria-live="polite" data-pa-status hidden></p>
+      <button type="submit" class="pa-btn pa-btn--forest pa-btn--block" data-pa-submit>{{ s.submit_label }}</button>
+    </form>
+    <div class="pa-contact__info">
+      <p>{% render 'pa-icon', name: 'pin' %}<span><strong>{{ s.address_title }}</strong>{% if s.address != blank %}{{ s.address | escape | newline_to_br }}{% else %}{{ s.todo_label }}{% endif %}</span></p>
+      <p>{% render 'pa-icon', name: 'clock' %}<span><strong>{{ s.hours_title }}</strong>{% if s.hours != blank %}{{ s.hours | escape | newline_to_br }}{% else %}{{ s.hours_todo }}{% endif %}</span></p>
+      {%- if s.phone != blank -%}<p>{% render 'pa-icon', name: 'phone' %}<span><strong>{{ s.phone_title }}</strong><a href="tel:{{ s.phone | remove: ' ' }}">{{ s.phone }}</a></span></p>{%- endif -%}
+      {% render 'pa-ornament', name: 'sprig', class: 'pa-contact__sprig' %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contact Parenthèse",
+  "class": "pa-contact-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit titre", "default": "Contact" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Échangeons sur\nvotre demande" },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "image_picker", "id": "image", "label": "Photo" },
+    { "type": "text", "id": "image_asset", "label": "Photo fournie avec le thème" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif de la photo" },
+    { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+    { "type": "text", "id": "name_label", "label": "Champ nom", "default": "Nom" },
+    { "type": "text", "id": "name_placeholder", "label": "Exemple de nom", "default": "Votre nom" },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail", "default": "E-mail" },
+    { "type": "text", "id": "subject_label", "label": "Champ sujet", "default": "Sujet" },
+    { "type": "text", "id": "subject_placeholder", "label": "Sujet : choix vide", "default": "Sélectionnez un sujet" },
+    { "type": "textarea", "id": "subjects", "label": "Sujets (un par ligne)", "default": "Les séances individuelles\nLes ateliers collectifs\nMon rendez-vous\nAutre demande" },
+    { "type": "text", "id": "message_label", "label": "Champ message", "default": "Message" },
+    { "type": "text", "id": "message_placeholder", "label": "Exemple de message", "default": "Votre message…" },
+    { "type": "text", "id": "message_hint", "label": "Aide du message", "default": "Évitez de partager des informations médicales dans ce formulaire." },
+    { "type": "text", "id": "submit_label", "label": "Bouton d'envoi", "default": "Envoyer mon message" },
+    { "type": "text", "id": "error_required", "label": "Erreur : champ requis", "default": "Ce champ est requis." },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." },
+    { "type": "text", "id": "error_subject", "label": "Erreur : sujet", "default": "Choisissez un sujet." },
+    { "type": "text", "id": "address_title", "label": "Titre de l'adresse", "default": "Adresse du cabinet" },
+    { "type": "textarea", "id": "address", "label": "Adresse" },
+    { "type": "text", "id": "hours_title", "label": "Titre des horaires", "default": "Horaires" },
+    { "type": "textarea", "id": "hours", "label": "Horaires" },
+    { "type": "text", "id": "phone_title", "label": "Titre du téléphone", "default": "Téléphone" },
+    { "type": "text", "id": "phone", "label": "Téléphone" },
+    { "type": "text", "id": "todo_label", "label": "Mention d'une information manquante", "default": "[À renseigner]" },
+    { "type": "text", "id": "hours_todo", "label": "Mention d'horaires manquants", "default": "[À confirmer]" }
+  ],
+  "presets": [{ "name": "Contact Parenthèse" }]
+}
+{% endschema %}

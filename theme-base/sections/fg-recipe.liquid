@@ -1,0 +1,106 @@
+{%- comment -%}
+  FRAISE : corps de « La recette » (planches 02 et 05) — grande photo (bulle manuscrite « Le plaisir du détail ! »), deux
+  photos empilées, informations dépliables à pictogrammes (composition, valeurs nutritionnelles, conseils d'utilisation,
+  conservation : renvoi à l'étiquette, « [À compléter : …] », rien d'inventé) et carte du produit (format à une unité,
+  ajout au panier). FRAISE est une confiserie : aucune promesse de santé.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = all_products[s.product]
+  if p == blank
+    assign p = collections.all.products.first
+  endif
+  assign v = p.selected_or_first_available_variant
+  for x in p.variants
+    assign xn = x.option1 | split: ' ' | first | plus: 0
+    if xn == 1
+      assign v = x
+      break
+    endif
+  endfor
+-%}
+<section class="fg fg-recipe" aria-label="{{ s.label | escape }}" id="{{ s.anchor | default: 'informations' }}">
+  <div class="fg-c">
+    {%- if s.heading != blank -%}<div class="fg-recipe__mhead">{% render 'fg-title', text: s.heading, tag: 'h2', class: 'fg-recipe__mtitle' %}{%- if s.text != blank -%}<p class="fg-recipe__mtext">{{ s.text | escape | newline_to_br }}</p>{%- endif -%}</div>{%- endif -%}
+    <div class="fg-recipe__big">
+      {% render 'fg-img', image: s.image_1, asset: s.image_1_asset, alt: s.image_1_alt, pos: s.image_1_position, zoom: s.image_1_zoom, class: 'fg-recipe__img' %}
+      {%- if s.bubble != blank -%}<p class="fg-recipe__bubble"><span class="fg-hand">{{ s.bubble | escape | newline_to_br }}</span></p>{%- endif -%}
+    </div>
+    <div class="fg-recipe__small fg-recipe__small--1">{% render 'fg-img', image: s.image_2, asset: s.image_2_asset, alt: s.image_2_alt, pos: s.image_2_position, zoom: s.image_2_zoom, pos_mobile: s.image_2_position_mobile, zoom_mobile: s.image_2_zoom_mobile, class: 'fg-recipe__img' %}</div>
+    <div class="fg-recipe__small fg-recipe__small--2">{% render 'fg-img', image: s.image_3, asset: s.image_3_asset, alt: s.image_3_alt, pos: s.image_3_position, zoom: s.image_3_zoom, pos_mobile: s.image_3_position_mobile, zoom_mobile: s.image_3_zoom_mobile, class: 'fg-recipe__img' %}</div>
+    <div class="fg-recipe__side">
+      <div class="fg-recipe__list">
+        {%- for block in section.blocks -%}
+          <details class="fg-recipe__row" {{ block.shopify_attributes }}>
+            <summary>{% render 'fg-icon', name: block.settings.icon, class: 'fg-recipe__ico' %}<span class="fg-recipe__rt"><span class="fg-recipe__label">{{ block.settings.label }}</span><span class="fg-recipe__short">{{ block.settings.short }}</span></span>{% render 'fg-icon', name: 'plus', class: 'fg-recipe__plus' %}</summary>
+            <div class="fg-recipe__body">{{ block.settings.body }}</div>
+          </details>
+        {%- endfor -%}
+      </div>
+      {%- if p != blank and s.show_card -%}
+        <div class="fg-recipe__card">
+          <span class="fg-recipe__thumb">{% render 'fg-img', asset: s.card_image_asset, alt: '', class: 'fg-cut' %}</span>
+          <div>
+            <p class="fg-recipe__name">{{ s.card_title | default: p.title }}</p>
+            {%- if s.card_subtitle != blank -%}<p class="fg-recipe__sub">{{ s.card_subtitle }}</p>{%- endif -%}
+            <p class="fg-recipe__price">{{ v.price | money }}</p>
+            {%- form 'product', p, class: 'fg-recipe__form', data-fg-quick-add: '' -%}
+              <input type="hidden" name="id" value="{{ v.id }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="fg-btn fg-btn--red fg-recipe__add"{% unless v.available %} disabled{% endunless %}>{{ s.card_button }}</button>
+            {%- endform -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Recette en détail",
+  "class": "fg-recipe-section",
+  "max_blocks": 6,
+  "settings": [
+    { "type": "text", "id": "label", "label": "Nom (lecteurs d'écran)", "default": "La recette en détail" },
+    { "type": "text", "id": "anchor", "label": "Ancre", "default": "informations" },
+    { "type": "textarea", "id": "heading", "label": "Titre (téléphone)" },
+    { "type": "textarea", "id": "text", "label": "Texte (téléphone)" },
+    { "type": "textarea", "id": "bubble", "label": "Bulle manuscrite", "default": "Le plaisir\ndu détail !" },
+    { "type": "image_picker", "id": "image_1", "label": "Grande photo" },
+    { "type": "text", "id": "image_1_asset", "label": "Grande photo (fichier du thème)" },
+    { "type": "text", "id": "image_1_alt", "label": "Description de la grande photo" },
+    { "type": "text", "id": "image_1_position", "label": "Cadrage de la grande photo", "default": "50% 50%" },
+    { "type": "range", "id": "image_1_zoom", "label": "Agrandissement de la grande photo", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_2", "label": "Photo du haut" },
+    { "type": "text", "id": "image_2_asset", "label": "Photo du haut (fichier du thème)" },
+    { "type": "text", "id": "image_2_alt", "label": "Description de la photo du haut" },
+    { "type": "text", "id": "image_2_position", "label": "Cadrage de la photo du haut", "default": "50% 50%" },
+    { "type": "range", "id": "image_2_zoom", "label": "Agrandissement de la photo du haut", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_2_position_mobile", "label": "Cadrage de la photo du haut (téléphone)" },
+    { "type": "range", "id": "image_2_zoom_mobile", "label": "Agrandissement de la photo du haut (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "image_picker", "id": "image_3", "label": "Photo du bas" },
+    { "type": "text", "id": "image_3_asset", "label": "Photo du bas (fichier du thème)" },
+    { "type": "text", "id": "image_3_alt", "label": "Description de la photo du bas" },
+    { "type": "text", "id": "image_3_position", "label": "Cadrage de la photo du bas", "default": "50% 50%" },
+    { "type": "range", "id": "image_3_zoom", "label": "Agrandissement de la photo du bas", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "text", "id": "image_3_position_mobile", "label": "Cadrage de la photo du bas (téléphone)" },
+    { "type": "range", "id": "image_3_zoom_mobile", "label": "Agrandissement de la photo du bas (téléphone)", "min": 100, "max": 400, "step": 5, "unit": "%", "default": 100 },
+    { "type": "checkbox", "id": "show_card", "label": "Carte du produit", "default": true },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "text", "id": "card_image_asset", "label": "Photo détourée (fichier du thème)" },
+    { "type": "text", "id": "card_title", "label": "Nom affiché" },
+    { "type": "text", "id": "card_subtitle", "label": "Sous-titre" },
+    { "type": "text", "id": "card_button", "label": "Bouton", "default": "Ajouter au panier" }
+  ],
+  "blocks": [
+    { "type": "row", "name": "Information", "settings": [
+      { "type": "select", "id": "icon", "label": "Pictogramme", "default": "leaf", "options": [{ "value": "leaf", "label": "Feuilles" }, { "value": "doc", "label": "Document" }, { "value": "bowl", "label": "Bol" }, { "value": "box", "label": "Boîte" }, { "value": "strawberry", "label": "Fraise" }, { "value": "jar", "label": "Flacon" }] },
+      { "type": "text", "id": "label", "label": "Titre" },
+      { "type": "text", "id": "short", "label": "Résumé" },
+      { "type": "richtext", "id": "body", "label": "Détail" }
+    ] }
+  ],
+  "presets": [{ "name": "Recette en détail" }]
+}
+{% endschema %}

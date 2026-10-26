@@ -1,0 +1,21 @@
+{%- comment -%}
+  Diagnostics énergétiques d'un bien (DPE et GES, classes A à G). Sans classe saisie : « À renseigner », jamais deviné.
+  layout : 'scales' (deux échelles), 'text' (encadré avec phrase d'attente ou classes).
+{%- endcomment -%}
+{%- assign dpe = bien.dpe.value -%}{%- assign ges = bien.ges.value -%}
+{%- assign letters = 'A,B,C,D,E,F,G' | split: ',' -%}
+{%- if layout == 'text' and dpe == blank and ges == blank -%}
+  <p class="re-muted">Les informations relatives à la performance énergétique de ce bien sont en cours de renseignement.</p>
+{%- else -%}
+<div class="re-energy">
+  {%- for kind in (1..2) -%}
+    {%- if kind == 1 -%}{%- assign value = dpe -%}{%- assign name = 'DPE' -%}{%- assign tone = 'dpe' -%}{%- else -%}{%- assign value = ges -%}{%- assign name = 'GES' -%}{%- assign tone = 'ges' -%}{%- endif -%}
+    <div class="re-energy__card">
+      <ol class="re-energy__scale re-energy__scale--{{ tone }}" aria-hidden="true">
+        {%- for l in letters -%}<li class="re-energy__bar re-energy__bar--{{ forloop.index }}{% if l == value %} is-current{% endif %}">{{ l }}</li>{%- endfor -%}
+      </ol>
+      <p><strong>{{ name }}</strong><span>{% if value != blank %}Classe {{ value }}{% else %}À renseigner{% endif %}</span></p>
+    </div>
+  {%- endfor -%}
+</div>
+{%- endif -%}

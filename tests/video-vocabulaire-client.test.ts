@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Démo montre ARVEN : la vidéo disait « Voici Chronographe… » alors que le client a demandé « montre », jamais
@@ -29,8 +30,8 @@ describe("vidéo : vocabulaire du client appliqué", async () => {
       frames: async()=>[Buffer.from("image de contrôle simulée")],
         reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
         keyframe: async () => png(),
-      clip: async () => Buffer.from("mp4"),
-      stock: async (_p: unknown, k: number) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`c${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
+      clip: async () => videoByteFixture(),
+      stock: async (_p: unknown, k: number) => ({ assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
       spentMicro: () => 0,
       render: async (_p: unknown, _k: string, doc: unknown) => ((rendered = doc), "video-1"),
       // Plan « écrit par l'IA » qui reprend le mauvais mot.

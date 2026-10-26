@@ -1,0 +1,33 @@
+{%- comment -%}
+  TABLE SAISON : dernière ligne du pied de page (mention d'exemple éventuelle et liens légaux : mentions légales,
+  confidentialité, cookies), sur le fond bordeaux du pied.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<div class="ts-footer ts-footnote">
+  <div class="ts-wrap ts-footer__bottom">
+    {%- if s.note != blank -%}<span>{{ s.note }}</span>{%- endif -%}
+    {%- for i in (1..3) -%}
+      {%- assign lk = 'link' | append: i | append: '_label' -%}
+      {%- assign ll = 'link' | append: i -%}
+      {%- if s[lk] != blank -%}<span class="ts-footer__sep" aria-hidden="true">|</span><a href="{{ s[ll] | default: '/' }}">{{ s[lk] }}</a>{%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Mentions du pied de page",
+  "class": "ts-footnote-section",
+  "settings": [
+    { "type": "text", "id": "note", "label": "Mention", "info": "Ex. « Exemple de restaurant — tarifs et disponibilités de démonstration. » Laissez vide sur le site réel." },
+    { "type": "text", "id": "link1_label", "label": "Lien 1", "default": "Mentions légales" },
+    { "type": "url", "id": "link1", "label": "Adresse du lien 1" },
+    { "type": "text", "id": "link2_label", "label": "Lien 2", "default": "Politique de confidentialité" },
+    { "type": "url", "id": "link2", "label": "Adresse du lien 2" },
+    { "type": "text", "id": "link3_label", "label": "Lien 3", "default": "Cookies" },
+    { "type": "url", "id": "link3", "label": "Adresse du lien 3" }
+  ],
+  "enabled_on": { "groups": ["footer"] },
+  "presets": [{ "name": "Mentions du pied de page" }]
+}
+{% endschema %}

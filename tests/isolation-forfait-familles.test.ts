@@ -136,11 +136,15 @@ describe("isolation des familles et forfait Dominer (issue #145)", async () => {
     }
   }, 180_000);
 
-  it("aperçu de section et menu de disposition : alignés sur la bibliothèque de la famille", async () => {
+  it("aperçu de section et menu de disposition : alignés sur la galerie du thème (mission #190 : plus de familles)", async () => {
     const d = await demo(user.id, "rive");
     await login(user.id);
-    const outside = await fr(() => previewGet(new Request(`http://x/api/projects/${d.pid}/theme/section-preview?type=fs-results`), ctx(d.pid)));
+    // Section propre à un autre thème (PHASE) : jamais d'aperçu dans Atelier Rive.
+    const outside = await fr(() => previewGet(new Request(`http://x/api/projects/${d.pid}/theme/section-preview?type=ph-hero`), ctx(d.pid)));
     expect(outside.status).toBe(404);
+    // Fonction d'une ancienne autre famille (« Résultats ») : désormais dans la bibliothèque commune.
+    const shared = await fr(() => previewGet(new Request(`http://x/api/projects/${d.pid}/theme/section-preview?type=fs-results`), ctx(d.pid)));
+    expect(shared.status).toBe(200);
     const inside = await fr(() => previewGet(new Request(`http://x/api/projects/${d.pid}/theme/section-preview?type=${encodeURIComponent("fam:services.faq")}`), ctx(d.pid)));
     expect(inside.status).toBe(200);
     const theme = await (await fr(() => themeGet(new Request(`http://x/api/projects/${d.pid}/theme`), ctx(d.pid)))).json() as { current: { structure: { template: string; sections: { type: string; layout?: unknown }[] }[] } };

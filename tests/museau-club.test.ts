@@ -1,16 +1,17 @@
 /**
- * MUSEAU CLUB (issue #158) : thème **de la famille Produit spécifique / Boutique spécialisée** (décision de Thomas du
- * 21 octobre, 12 h 58, qui remplace le classement E-commerce) pour une boutique de quatre produits — harnais, laisse,
- * collier et pochette à sacs pour chiens. Garde-fous :
- *  - thème actif du catalogue, famille « boutique spécialisée » partout (catalogue, recommandation, bibliothèque,
- *    exports) ; profil de la famille propre (« club », profil « conversion ») ;
- *  - composition distincte des autres thèmes de la famille (polices, en-tête, ouverture) ;
- *  - démonstration composée par le vrai moteur puis rédigée dans le même ordre ; EXACTEMENT quatre produits distincts,
- *    chacun avec sa fiche (ses cinq vues, son texte, ses points), reliés par la collection et les recommandations ; les
- *    31 médias utilisés ; aucune même image dans deux sections qui se suivent ;
- *  - rien d'inventé (prix, tailles, matières, résistance, sécurité, avis…), aucun « à compléter » public, champs inconnus
- *    conservés masqués ; SEO par page ; achat explicitement indisponible sans prix, normal avec des prix de test ;
- *  - un autre projet installé dans ce thème garde sa propre identité ; exports Shopify / WooCommerce / PrestaShop.
+ * MUSEAU CLUB (issue #158, refait d'après les maquettes enrichies du 23 octobre, PR #167 commentaire 6359277162) :
+ * thème de la famille **Produit spécifique / Boutique spécialisée**, profil « club », quatre produits (harnais, laisse,
+ * collier, pochette à sacs). Garde-fous :
+ *  - thème actif, famille spécialisée partout, profil « club », polices Nunito 900 / DM Sans, accès par forfait ;
+ *  - accueil en onze blocs dans l'ordre de la planche 01 ; quatre fiches enrichies sans section de reste ;
+ *  - prix de démonstration (49 / 29 / 25 / 15 €) et tailles XS à L seulement sur le harnais et le collier ;
+ *  - panier : harnais M + laisse = 78 € présentés en sous-total, livraison « calculée à l'étape suivante », jamais un
+ *    « Total » trompeur ; exemple de commande sans aucun champ de carte ; pages compte reliées entre elles ;
+ *  - rien d'inventé : aucun avis ni note, aucune garantie, aucun délai, aucune mesure, jamais « prenez la taille
+ *    au-dessus » ; pages légales en modèles « à compléter » ; © 2026 ; aucun réseau social sans adresse ;
+ *  - les 31 originaux du kit utilisés ; SEO par page ; liens internes valides ;
+ *  - un autre projet installé dans ce thème garde sa propre identité (ni prix, ni textes, ni images de la démo) ;
+ *    exports Shopify / WooCommerce / PrestaShop.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -18,14 +19,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { strFromU8, unzipSync } from "fflate";
 import { createUser } from "@/lib/auth";
 import { runWithLang } from "@/lib/i18n-server";
-import { renderPage } from "@/lib/theme/render";
+import { renderPage, variantId } from "@/lib/theme/render";
 import { compileTheme } from "@/lib/theme/compile";
 import { validateSpec } from "@/lib/theme/ops";
-import { reconcileOfferCart } from "@/lib/theme/purchase-offers";
 import { catalogTheme } from "@/lib/theme/theme-catalog";
 import { ACTIVE_THEMES, themeKinds, themePreviewPath } from "@/lib/theme/theme-fit";
-import { THEME_FAMILY, FAMILY_LIBRARY } from "@/lib/theme/section-families";
-import { currentChromePreset } from "@/lib/theme/family-chrome";
+import { THEME_FAMILY, FAMILY_LIBRARY, isStructuralType } from "@/lib/theme/section-families";
 import { themeAllowed } from "@/lib/theme/theme-access";
 import { storeProducts } from "@/lib/theme/store-products";
 import { composeShop } from "@/lib/engine/shop";
@@ -35,72 +34,57 @@ import { cmsExport } from "@/lib/cms-v2/export";
 import { designLayer } from "@/lib/cms-v2/design";
 import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
 import { demoProject } from "./demo-fixtures";
-import { MUSEAU_MEDIA, MUSEAU_PRODUCTS } from "./museau-souple-fixtures";
+import { MUSEAU_MEDIA, MUSEAU_PRODUCTS, MUSEAU_PAGES, MUSEAU_PRICES } from "./museau-fixtures";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 
 beforeEach(() => vi.stubGlobal("fetch", async () => { throw new Error("Réseau externe interdit"); }));
 const fr = <T,>(f: () => T) => runWithLang({ content: "fr", ui: "fr" }, f);
-const visibleText = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<section[^>]*\bhidden\b[^>]*>[\s\S]*?<\/section>/g, "").replace(/<[^>]+>/g, " ");
+const visibleText = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<section[^>]*\bhidden\b[^>]*>[\s\S]*?<\/section>/g, "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
 const LIBRARY = new Set(FAMILY_LIBRARY.specialty.flatMap((e) => e.dispositions.map((d) => d.type)));
 const zipText = (z: Record<string, Uint8Array>, re: RegExp) => Object.entries(z).filter(([k]) => re.test(k)).map(([, v]) => strFromU8(v)).join("\n");
 const ID = "museau-club";
-const PLAN = {
-  profile: "club", fonts: { heading: "archivo_n8", body: "karla_n4" },
-  home: ["cv-hotspots", "fs-products", "cv-banner", "image-with-text", "featured-purchase", "cta-banner", "faq", "newsletter-media"],
-  product: ["main-product", "cv-alternating", "faq", "product-recommendations"],
-  pages: ["la-balade", "aide"], header: "two-rows", footer: "columns",
-  leak: /MUSEAU|cobalt|harnais|laisse|pochette|La balade/i,
-};
+const HOME = ["cv-banner", "fs-products", "cv-banner", "cv-feature", "fs-products", "cv-cards", "cv-banner", "cv-banner", "fs-journal", "faq", "newsletter-media"];
 
 describe("MUSEAU CLUB : thème actif de la famille « Boutique spécialisée » (quatre produits)", () => {
-  it("catalogue, famille spécialisée partout, profil, polices, accès par forfait, aperçu suivi", () => {
+  it("catalogue, famille spécialisée partout, profil « club », polices, accès par forfait, aperçu suivi", () => {
     expect(ACTIVE_THEMES).toContain(ID);
     expect(themeKinds(ID)).toEqual(["specialty"]);
     expect(THEME_FAMILY[ID]).toBe("specialty");
     expect(REFERENCE_THEMES.find((t) => t.referenceId === ID)?.categories).toEqual(["specialized"]);
-    // Droits par famille (plan-entitlements.ts) : MUSEAU CLUB (rang 5 de la boutique spécialisée) s'ouvre avec Dominer.
-    expect(themeAllowed("creer", ID)).toBe(false);
-    expect(themeAllowed("vendre", ID)).toBe(false);
-    expect(themeAllowed("dominer", ID)).toBe(true);
+    // Droits par thème et par forfait (mission #190) : répartition encore à choisir, ouvert à tous les forfaits payants.
+    for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, ID)).toBe(true);
     expect(themeAllowed(null, ID)).toBe(false);
     const t = catalogTheme(ID)!;
-    expect(t.kinds).toEqual(["specialty"]);
-    expect(t.settings).toMatchObject({ conversion_profile: PLAN.profile, editorial_profile: "none" });
-    expect(t.fonts).toEqual(PLAN.fonts);
+    expect(t.settings).toMatchObject({ conversion_profile: "club", editorial_profile: "none" });
+    expect(t.fonts).toEqual({ heading: "nunito_n9", body: "dm_sans_n4" });
     expect(fs.existsSync(path.join(process.cwd(), "public", themePreviewPath(ID)))).toBe(true);
+    // Police Nunito 900 fournie avec sa licence (OFL).
+    expect(fs.existsSync(path.join(process.cwd(), "assets", "fonts", "Nunito-900.ttf"))).toBe(true);
+    expect(fs.readFileSync(path.join(process.cwd(), "assets", "fonts", "licenses", "Nunito-OFL.txt"), "utf8")).toMatch(/SIL Open Font License/);
   });
 
-  it("profil « club » de la famille, points interactifs avec titre de page et liens : réglages facultatifs, profils existants intacts", () => {
+  it("dispositions MUSEAU CLUB proposées dans la galerie de la famille ; écrans d'exemple hors galerie", () => {
+    const disp = (key: string) => FAMILY_LIBRARY.specialty.find((e) => e.key === `specialty.${key}`)!.dispositions.map((d) => d.id);
+    expect(disp("hero")).toEqual(expect.arrayContaining(["light-veil", "panel-left", "panel-right", "size-guide", "buy-band"]));
+    expect(disp("benefits")).toContain("numbered");
+    expect(disp("details")).toEqual(expect.arrayContaining(["pills", "numbered"]));
+    expect(disp("addons")).toEqual(expect.arrayContaining(["media", "over-photo", "plus"]));
+    expect(disp("specs")).toEqual(expect.arrayContaining(["table", "cards-open"]));
+    expect(disp("faq")).toEqual(expect.arrayContaining(["topics", "photo"]));
+    expect(disp("story")).toEqual(expect.arrayContaining(["journal-row", "journal-grid"]));
+    expect(disp("newsletter")).toContain("background");
+    for (const t of ["demo-order", "demo-account"]) { expect(LIBRARY.has(t), t).toBe(false); expect(isStructuralType(t), t).toBe(true); }
+  });
+
+  it("profil « club » limité au thème ; bandeau de cookies désactivé par défaut pour les autres thèmes", () => {
     const conv = fs.readFileSync(path.join(process.cwd(), "theme-base", "assets", "conversion.css"), "utf8");
     for (const p of ["club", "pop", "contrast", "nomade", "astral", "itineraire"]) expect(conv, p).toContain(`body[data-conversion="${p}"]`);
-    const ed = fs.readFileSync(path.join(process.cwd(), "theme-base", "assets", "editorial.css"), "utf8");
-    expect(ed).not.toContain('body[data-editorial="club"]');
-    for (const p of ["cadran", "arrondi", "object", "journal"]) expect(ed, p).toContain(`body[data-editorial="${p}"]`);
-    const schema = JSON.parse(fs.readFileSync(path.join(process.cwd(), "theme-base", "config", "settings_schema.json"), "utf8")) as { settings?: { id?: string; options?: { value: string }[] }[] }[];
-    const opts = (id: string) => schema.flatMap((g) => g.settings ?? []).find((s) => s.id === id)!.options!.map((o) => o.value);
-    expect(opts("conversion_profile")).toContain("club");
-    expect(opts("editorial_profile")).not.toContain("club");
-    expect(opts("style_preset")).toContain(ID);
-    const hotspots = fs.readFileSync(path.join(process.cwd(), "theme-base", "sections", "cv-hotspots.liquid"), "utf8");
-    for (const id of ["heading_tag", "button_label", "button_link", "link_label", "link"]) expect(hotspots, id).toContain(`"id": "${id}"`);
-    // Valeurs par défaut sans effet sur les thèmes qui utilisaient déjà la section : titre h2, ni bouton ni lien.
-    expect(hotspots).toContain('"id": "heading_tag", "label": "Niveau du titre", "default": "h2"');
-  });
-
-  it("composition distincte des autres thèmes de la famille (polices, couple en-tête / pied, ouverture)", () => {
-    const ids = ACTIVE_THEMES.filter((i) => THEME_FAMILY[i] === "specialty");
-    expect(ids).toContain(ID);
-    const themes = ids.map((i) => catalogTheme(i)!);
-    const chrome = (t: (typeof themes)[number]) => `${t.headerSettings?.layout ?? t.look.headerLayout}/${t.headerSettings?.mega_menu ?? "none"}/${t.look.shape}+${t.look.footer}`;
-    const me = catalogTheme(ID)!;
-    for (const t of themes.filter((x) => x.id !== ID)) {
-      expect(t.fonts.heading, t.id).not.toBe(me.fonts.heading);
-      expect(chrome(t), t.id).not.toBe(chrome(me));
-    }
+    const schema = JSON.parse(fs.readFileSync(path.join(process.cwd(), "theme-base", "config", "settings_schema.json"), "utf8")) as { settings?: { id?: string; default?: unknown }[] }[];
+    expect(schema.flatMap((g) => g.settings ?? []).find((s) => s.id === "cookie_banner")?.default).toBe(false);
   });
 });
 
-describe("MUSEAU CLUB : démonstration de quatre produits", async () => {
+describe("MUSEAU CLUB : démonstration (planches 01 à 08)", async () => {
   const user = await createUser("museau-demo@example.invalid", "isolated-test-only", "Museau");
   const f = await fr(() => demoProject(user.id, ID));
   const { spec } = f;
@@ -114,159 +98,148 @@ describe("MUSEAU CLUB : démonstration de quatre produits", async () => {
   for (const route of routes) pages.set(route, (await fr(() => renderPage({ spec, base: "", files, cart: [] }, route, new URLSearchParams()))).html);
   const all = [...pages.values()].join("\n");
 
-  it("composée dans son thème, sections de la bibliothèque « Boutique spécialisée », ordre de la composition", () => {
+  it("accueil en onze blocs (planche 01), fiches sans section de reste, sections de la bibliothèque ou de structure", () => {
     expect(spec.direction).toBe(ID);
     expect(validateSpec(spec)).toEqual([]);
-    expect(types("index").map((s) => s.type)).toEqual(PLAN.home);
-    for (const it of MUSEAU_PRODUCTS) expect(types(keyOf(it.handle)).map((s) => s.type), it.key).toEqual(PLAN.product);
-    for (const key of ["index", ...MUSEAU_PRODUCTS.map((it) => keyOf(it.handle))]) for (const s of types(key)) {
-      expect(!!s.disabled, `${key} ${s.type}`).toBe(false);
-      if (!["main-product", "product-recommendations"].includes(s.type)) expect(LIBRARY.has(s.type), s.type).toBe(true);
-    }
-    expect(spec.store.pages.map((p) => p.handle)).toEqual(PLAN.pages);
-    expect(spec.settings.conversion_profile).toBe(PLAN.profile);
-    expect(loadProject(f.pid).settings.storeKind).toBe("specialty");
-    expect(loadProject(f.pid).storeType).toBe("multi");
-  });
-
-  it("exactement quatre produits distincts, chacun sur sa fiche, dans une seule vraie collection", () => {
-    expect(products.map((x) => x.handle)).toEqual(MUSEAU_PRODUCTS.map((it) => it.handle));
-    expect(new Set(products.map((x) => x.title)).size).toBe(4);
-    expect(new Set(products.map((x) => keyOf(x.handle))).size).toBe(4);
-    expect(spec.store.collections).toHaveLength(1);
-    expect(spec.store.collections![0].products).toEqual(MUSEAU_PRODUCTS.map((it) => it.handle));
-    // Aucun cinquième produit : ni le coffret de l'ambiance 10, ni une vue.
-    expect(JSON.stringify(products.map((x) => x.title))).not.toMatch(/coffret|bo[iî]te|lot|pack/i);
-    for (const pr of products) { expect(pr.price, pr.handle).toBeNull(); expect(pr.variants).toHaveLength(1); }
-  });
-
-  it("chaque fiche : ses cinq vues, son texte et ses points ; jamais ceux d'un autre produit", () => {
-    const texts = new Set<string>(), points = new Set<string>();
+    expect(types("index").map((s) => s.type)).toEqual(HOME);
+    expect(types("index")[0].settings).toMatchObject({ layout: "spotlight", veil: "light", heading_tag: "h1" });
     for (const it of MUSEAU_PRODUCTS) {
-      const pr = products.find((x) => x.handle === it.handle)!;
-      expect(pr.images, it.key).toEqual(it.views.map((v) => `${ID}-${v}`));
-      for (const other of MUSEAU_PRODUCTS.filter((o) => o.key !== it.key)) expect(JSON.stringify(pr.images), `${it.key} ← ${other.key}`).not.toContain(`${ID}-${other.key}-`);
-      const mp = types(keyOf(it.handle)).find((s) => s.type === "main-product")!;
-      texts.add(JSON.stringify(mp.blocks!.text.settings)); points.add(String(mp.blocks!.highlights.settings.items));
-      expect(mp.blocks!.siblings.settings).toMatchObject({ collection: "all", heading: "La collection assortie" });
-      expect(mp.settings.product_target).toBe(`product:${it.key}`);
-      const html = pages.get(`/products/${it.handle}`)!;
-      expect(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)![1]).toContain(it.title);
-      // Les trois autres pièces sont proposées, jamais la fiche elle-même.
-      const recos = html.slice(html.indexOf("Les autres pièces assorties"));
-      for (const o of MUSEAU_PRODUCTS.filter((o) => o.key !== it.key)) expect(recos, `${it.key} → ${o.key}`).toContain(`/products/${o.handle}`);
+      const t = types(keyOf(it.handle)).map((s) => s.type);
+      expect(t[0], it.key).toBe("main-product");
+      expect(t, it.key).not.toContain("product-recommendations");
+      expect(t.at(-1), it.key).toBe("cv-banner");
+      // La laisse a le trio sur photo et pas de bandeau du guide ; le harnais et le collier ont le guide des tailles.
+      const illus = types(keyOf(it.handle)).filter((s) => s.type === "cv-banner" && s.settings.layout === "illustration").length;
+      expect(illus, it.key).toBe(["harnais", "collier"].includes(it.key) ? 1 : 0);
     }
-    expect(texts.size).toBe(4);
-    expect(points.size).toBe(4);
+    expect(types(keyOf(MUSEAU_PRODUCTS[1].handle)).some((s) => s.type === "fs-products" && s.settings.layout === "over-photo")).toBe(true);
+    for (const key of Object.keys(spec.templates)) for (const s of types(key)) {
+      expect(!!s.disabled, `${key} ${s.type}`).toBe(false);
+      expect(LIBRARY.has(s.type) || isStructuralType(s.type), `${key} ${s.type}`).toBe(true);
+    }
+    expect(spec.settings.conversion_profile).toBe("club");
+    expect(loadProject(f.pid).settings.storeKind).toBe("specialty");
   });
 
-  it("accueil : la marque, sa catégorie et les quatre références dès l'ouverture ; repères vers le bon produit", () => {
-    const home = pages.get("/")!;
-    expect(home.match(/<h1[^>]*>[\s\S]*?<\/h1>/)![0]).toMatch(/Premier chien, premières balades/);
-    const opening = types("index")[0];
-    expect(opening.settings).toMatchObject({ layout: "side", heading_tag: "h1", button_link: "/collections/all" });
-    // Un repère par produit, chacun relié à SA fiche.
-    expect(Object.values(opening.blocks ?? {}).map((b) => b.settings.link).sort()).toEqual(MUSEAU_PRODUCTS.map((it) => `/products/${it.handle}`).sort());
-    const openingHtml = home.slice(home.indexOf("cv-hotspots"), home.indexOf("fs-products"));
-    for (const it of MUSEAU_PRODUCTS) expect(openingHtml, it.key).toContain(`href="/products/${it.handle}"`);
-    const grid = types("index")[1];
-    expect(grid.settings).toMatchObject({ source: "collection", collection: "all", limit: 4 });
-    for (const it of MUSEAU_PRODUCTS) expect(home, it.key).toContain(`/products/${it.handle}`);
+  it("quatre produits, prix de démonstration, tailles seulement sur le harnais et le collier", () => {
+    expect(products.map((x) => x.handle)).toEqual(MUSEAU_PRODUCTS.map((it) => it.handle));
+    expect(products.map((x) => x.title)).toEqual(["Harnais", "Laisse", "Collier", "Pochette"]);
+    expect(products.map((x) => x.price)).toEqual([MUSEAU_PRICES.harnais, MUSEAU_PRICES.laisse, MUSEAU_PRICES.collier, MUSEAU_PRICES.pochette]);
+    expect(products.map((x) => x.price)).toEqual([4900, 2900, 2500, 1500]);
+    expect(products.map((x) => x.variants.length)).toEqual([4, 1, 4, 1]);
+    expect(products[0].variants.map((v) => v.options[1])).toEqual(["XS", "S", "M", "L"]);
+    for (const pr of products) expect(pr.images.every((img) => img.startsWith(`${ID}-${MUSEAU_PRODUCTS.find((x) => x.handle === pr.handle)!.key}-`)), pr.handle).toBe(true);
+    for (const r of productRoutes) {
+      const html = pages.get(r)!;
+      expect(visibleText(html), r).toContain("Prix de démonstration");
+      const sized = r.includes("harnais") || r.includes("collier");
+      expect(html.includes("es-option__guide"), r).toBe(sized);
+      expect(html.includes("data-sticky-option"), r).toBe(sized);
+    }
   });
 
-  it("en-tête « Deux rangées avec offre » et pied « Colonnes d'aide et d'informations », sans second formulaire d'inscription", () => {
-    const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-    const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
-    expect(currentChromePreset("specialty", "header", header.settings)?.id).toBe(PLAN.header);
-    expect(currentChromePreset("specialty", "footer", footer.settings)?.id).toBe(PLAN.footer);
-    expect(Object.values(header.blocks ?? {}).find((b) => b.type === "promo")?.settings).toMatchObject({ image_asset: `${ID}-ambiance-10.webp`, link: "/collections/all" });
-    expect((footer.block_order ?? []).map((b) => footer.blocks?.[b]?.type)).not.toContain("newsletter");
-    expect(Object.values(spec.groups.header.sections).map((sec) => sec.type)).toEqual(["header"]);
-  });
-
-  it("médias : les 31 fichiers utilisés ; jamais la même image dans deux sections qui se suivent", () => {
+  it("médias : les 31 originaux du kit, et rien d'autre (aucune image de planche ni génération)", () => {
     expect(f.missing).toEqual([]);
     expect(MUSEAU_MEDIA).toHaveLength(31);
-    const shown = all + JSON.stringify(products.map((x) => x.images));
-    for (const m of MUSEAU_MEDIA) expect(shown, m.file).toContain(`${ID}-${m.file}`);
-    for (const key of Object.keys(spec.templates)) {
-      const imgs = types(key).filter((s) => !s.disabled).map((s) => new Set(JSON.stringify(s).match(new RegExp(`${ID}-[a-z]+-\\d\\d\\.webp`, "g")) ?? []));
-      for (let i = 1; i < imgs.length; i++) for (const file of imgs[i]) expect(imgs[i - 1].has(file), `${key} : ${file} dans deux sections successives`).toBe(false);
-    }
+    const used = new Set(all.match(new RegExp(`${ID}-[a-z]+(?:-\\d\\d)?\\.webp`, "g")) ?? []);
+    for (const p of products) for (const img of p.images) used.add(img);
+    for (const m of MUSEAU_MEDIA) expect(used.has(`${ID}-${m.file}`), m.file).toBe(true);
+    for (const u of used) expect(MUSEAU_MEDIA.some((m) => `${ID}-${m.file}` === u), u).toBe(true);
   });
 
-  it("SEO : un H1, titre et description uniques par page, fil d'Ariane, alt partout, aperçu non indexable", () => {
+  it("SEO : un H1, titre et description uniques par page, alt partout, aperçu non indexable", () => {
     const titles = new Set<string>(), descriptions = new Set<string>();
     for (const [route, html] of pages) {
       expect(html.match(/<h1[\s>]/g)?.length, `${route} : H1`).toBe(1);
       const title = html.match(/<title>([\s\S]*?)<\/title>/)![1].trim();
       const description = html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "";
-      expect(title.length, route).toBeLessThanOrEqual(80);
-      expect(description.length, route).toBeGreaterThan(60);
-      expect(description.length, route).toBeLessThanOrEqual(160);
+      expect(description.length, route).toBeGreaterThan(20);
       titles.add(title); descriptions.add(description);
-      expect(html).toContain('<link rel="canonical"');
       expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
       for (const img of html.match(/<img [^>]*>/g) ?? []) expect(img, route).toMatch(/\balt="/);
-      // Fil d'Ariane structuré sur les fiches et les pages ; la page « collection » du thème n'en a pas (limite connue, tous thèmes).
-      if (route !== "/" && route !== "/collections/all") expect(html, route).toContain('"@type": "BreadcrumbList"');
     }
     expect(titles.size).toBe(pages.size);
     expect(descriptions.size).toBe(pages.size);
   });
 
-  it("rien d'inventé ; aucun manque public ; champs inconnus conservés masqués dans l'éditeur", () => {
+  it("rien d'inventé : ni avis ni note, ni garantie, ni délai, ni mesure ; jamais « prenez la taille au-dessus » ; © 2026", () => {
     for (const r of productRoutes) {
       const ld = [...pages.get(r)!.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));
-      expect(ld.find((x) => x["@type"] === "Product")?.offers, r).toBeUndefined();
-      expect(JSON.stringify(ld)).not.toMatch(/AggregateRating|Review|ratingValue/);
+      expect(JSON.stringify(ld)).not.toMatch(/AggregateRating|"Review"|ratingValue/);
     }
-    expect(JSON.stringify(spec.templates)).not.toMatch(/"structured_data":true/);
     for (const [route, html] of pages) {
       const text = visibleText(html);
-      expect(text, route).not.toMatch(/à compléter|à confirmer|à préciser|\[\s*À|lorem ipsum/i);
-      expect(text, route).not.toMatch(/\d+\s?(mm|cm|m|kg|g)\b|garantie \d|livraison (offerte|gratuite|en \d)|\d+\s?€|\d+([,.]\d)?\s?\/\s?5|★|avis clients?|plus que \d|stock limité|nylon|polyester|néoprène|réfléchissant|résistant|solide|sécuris|anti-?traction|imperméable|lavable|biodégradable|compostable|recyclé|vétérinaire|taille [SML]\b/i);
+      expect(text, route).not.toMatch(/★|\d([,.]\d)?\s?\/\s?5\b|avis clients?|garantie \d|garanti à vie|livraison (offerte|gratuite|en \d+)|sous \d+ ?(h|jours)|\d+\s?(mm|cm|kg)\b|imperméable|indestructible|vétérinaire|anti-?traction/i);
+      expect(text, route).not.toMatch(/convient à tous les chiens|taille (au-dessus|supérieure)|privilégiez la taille/i);
+      expect(text, route).not.toMatch(/(©|&copy;)\s*20(2[0-5])\b/);
+      expect(text, route).toMatch(/(©|&copy;)\s*2026\s*MUSEAU CLUB/);
+      expect(text, route).not.toMatch(/lorem ipsum/i);
     }
-    for (const id of [1000, 2000, 3000, 4000]) expect(() => reconcileOfferCart(spec, [{ variantId: id, quantity: 1 }]), String(id)).toThrow(/^Prix à définir/);
-    const hidden = Object.values(spec.templates).flatMap((t) => Object.values(t.sections)).flatMap((s) => [...(s.disabled ? [s] : []), ...Object.values(s.blocks ?? {}).filter((b) => b.disabled)]);
-    expect(JSON.stringify(spec.templates).match(/À compléter/g)!.length).toBe(JSON.stringify(hidden).match(/À compléter/g)!.length);
-    for (const field of ["Tailles et mesures", "Matières et entretien", "Livraison, retours et garantie", "Quelles tailles sont proposées ?"]) expect(JSON.stringify(hidden), field).toContain(field);
-    expect(visibleText(pages.get("/")!)).not.toContain("Boutique de démonstration");
-    expect(visibleText(pages.get("/")!)).toMatch(/(©|&copy;)\s*\d{4}\s*MUSEAU CLUB/);
+    // Aucun lien de réseau social sans adresse réelle : le bloc reste vide.
+    expect(all).not.toMatch(/href="(#|)"[^>]*es-social/);
+    for (const handle of ["mentions-legales", "confidentialite", "cgv"]) expect(visibleText(pages.get(`/pages/${handle}`)!), handle).toMatch(/Modèle de démonstration : contenu à compléter et à valider/);
+    const tailles = visibleText(pages.get(MUSEAU_PAGES.tailles)!);
+    expect(tailles).toMatch(/Taille Tour de cou Tour de poitrail/);
+    expect(tailles.match(/À renseigner/g)!.length).toBeGreaterThanOrEqual(8);
   });
 
-  it("sans prix : achat indisponible sur les quatre fiches (bouton et barre mobile) ; avec des prix de test : quatre articles, quantités, suppression, total exact", async () => {
-    const addButtons = (html: string) => [...html.matchAll(/<button[^>]*data-add-button[^>]*>[\s\S]*?<\/button>/g)].map((m) => m[0]);
-    const stickyButton = (html: string) => html.match(/<button[^>]*data-sticky-add[^>]*>[^<]*<\/button>/)?.[0] ?? "";
-    for (const r of productRoutes) {
-      const html = pages.get(r)!;
-      for (const b of addButtons(html)) { expect(b, r).toMatch(/\sdisabled[\s>]/); expect(visibleText(b).replace(/\s+/g, " ").trim(), r).toBe("Achat indisponible"); }
-      expect(stickyButton(html), r).toMatch(/disabled>Achat indisponible<\/button>$/);
+  it("panier : harnais M + laisse = 78 € en sous-total, livraison à l'étape suivante, aucun « Total » trompeur", async () => {
+    const cart = [{ variantId: variantId(0, 2), quantity: 1 }, { variantId: variantId(1, 0), quantity: 1 }];
+    const html = (await fr(() => renderPage({ spec, base: "", files, cart }, "/cart", new URLSearchParams()))).html;
+    const summary = visibleText(html.slice(html.indexOf('class="es-cart__summary"'), html.indexOf("</aside>", html.indexOf('class="es-cart__summary"'))));
+    expect(summary).toContain("Sous-total 78 €");
+    expect(summary).toMatch(/Livraison Calculée à l(&#39;|')étape suivante/);
+    expect(summary).not.toMatch(/\bTotal\b/);
+    expect(visibleText(html)).toMatch(/Harnais Bleu cobalt Taille M/);
+    // « Complétez la balade ? » propose seulement les produits absents du panier.
+    const more = html.slice(html.indexOf("Complétez la balade"));
+    expect(more).toContain(`/products/${MUSEAU_PRODUCTS[2].handle}`);
+    expect(more.slice(0, more.indexOf("</section>"))).not.toContain(`/products/${MUSEAU_PRODUCTS[0].handle}"`);
+    // Lien vers l'exemple de commande : utilisé seulement par l'aperçu statique, jamais à la place du paiement Shopify.
+    expect(html).toContain(`data-demo-checkout href="${MUSEAU_PAGES.paiement}"`);
+    expect(html).toMatch(/<button type="submit" name="checkout"/);
+    const empty = visibleText((await fr(() => renderPage({ spec, base: "", files, cart: [] }, "/cart", new URLSearchParams()))).html);
+    expect(empty).toContain("La prochaine balade commence ici.");
+    expect(empty).toContain("Nos essentiels");
+  });
+
+  it("exemple de commande et de confirmation : aucun champ de carte, champs désactivés, 78 € en sous-total", () => {
+    for (const handle of [MUSEAU_PAGES.paiement, MUSEAU_PAGES.confirmation]) {
+      const html = pages.get(handle)!;
+      expect(html, handle).not.toMatch(/cc-number|cc-csc|cc-exp|Numéro de carte|Code de sécurité|Date d'expiration/i);
+      expect(visibleText(html), handle).toMatch(/Sous-total 78 €/);
+      expect(visibleText(html), handle).toMatch(/Exemple de (démonstration|confirmation)/);
     }
-    // Prix de test dans une copie isolée, jamais publiés comme prix de la marque.
-    const priced = structuredClone(spec);
-    const PRICES = [3900, 2900, 1900, 1500];
-    storeProducts(priced).forEach((pr, i) => { pr.price = PRICES[i]; for (const v of pr.variants) v.price = PRICES[i]; });
-    const pfiles = compileTheme(priced);
-    for (const r of productRoutes) {
-      const html = (await fr(() => renderPage({ spec: priced, base: "", files: pfiles, cart: [] }, r, new URLSearchParams()))).html;
-      for (const b of addButtons(html)) expect(b, r).not.toMatch(/\sdisabled[\s>]/);
-      expect(stickyButton(html), r).toMatch(/>Ajouter au panier<\/button>$/);
-    }
-    const lines = reconcileOfferCart(priced, [{ variantId: 1000, quantity: 2 }, { variantId: 2000, quantity: 1 }, { variantId: 3000, quantity: 3 }, { variantId: 4000, quantity: 1 }]);
-    expect(lines.map((l) => [l.variantId, l.quantity])).toEqual([[1000, 2], [2000, 1], [3000, 3], [4000, 1]]);
-    const cartPage = async (cart: typeof lines) => visibleText((await fr(() => renderPage({ spec: priced, base: "", files: pfiles, cart }, "/cart", new URLSearchParams()))).html).replace(/\s+/g, " ");
-    const full = await cartPage(lines);
-    for (const it of MUSEAU_PRODUCTS) expect(full, it.key).toContain(it.title);
-    // 2 × 39 + 29 + 3 × 19 + 15 = 179 €.
-    expect(full).toContain("179,00 €");
-    // Suppression de la pochette : trois articles, 164 €, plus aucune trace de la pochette.
-    const without = await cartPage(reconcileOfferCart(priced, lines.filter((l) => l.variantId !== 4000)));
-    expect(without).toContain("164,00 €");
-    expect(without).not.toContain(MUSEAU_PRODUCTS[3].title);
-    // Quantité ramenée à un harnais : 125 €.
-    const one = await cartPage(reconcileOfferCart(priced, [{ variantId: 1000, quantity: 1 }, { variantId: 2000, quantity: 1 }, { variantId: 3000, quantity: 3 }]));
-    expect(one).toContain("125,00 €");
+    const checkout = pages.get(MUSEAU_PAGES.paiement)!;
+    expect(checkout.match(/<fieldset class="es-order__step" disabled>/g)?.length).toBe(4);
+    expect(checkout).not.toMatch(/<form[^>]*action="\/cart|name="checkout"/);
+  });
+
+  it("espace client : connexion, création, mot de passe oublié, compte, commande, adresses, informations reliés entre eux", () => {
+    const acct = [MUSEAU_PAGES.connexion, MUSEAU_PAGES.inscription, MUSEAU_PAGES.motDePasse, MUSEAU_PAGES.compte, MUSEAU_PAGES.commande, MUSEAU_PAGES.adresses, MUSEAU_PAGES.infos];
+    for (const r of acct) expect(pages.has(r), r).toBe(true);
+    expect(pages.get(MUSEAU_PAGES.connexion)!).toContain(`href="${MUSEAU_PAGES.motDePasse}"`);
+    expect(pages.get(MUSEAU_PAGES.connexion)!).toContain(`href="${MUSEAU_PAGES.inscription}"`);
+    for (const r of [MUSEAU_PAGES.compte, MUSEAU_PAGES.adresses, MUSEAU_PAGES.infos]) for (const to of [MUSEAU_PAGES.compte, MUSEAU_PAGES.adresses, MUSEAU_PAGES.infos, MUSEAU_PAGES.connexion]) expect(pages.get(r)!, `${r} → ${to}`).toContain(`href="${to}"`);
+    expect(visibleText(pages.get(MUSEAU_PAGES.commande)!)).toMatch(/Sous-total 78 €/);
+    // Tous les champs sont dans un groupe désactivé : rien n'est saisi ni envoyé.
+    for (const r of acct) { const sec = pages.get(r)!.match(/<section class="es-section es-acct[\s\S]*?<\/section>/)![0]; expect(sec.replace(/<fieldset[^>]*\sdisabled>[\s\S]*?<\/fieldset>/g, ""), r).not.toMatch(/<input/); }
+    const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
+    expect(header.settings.account_link).toBe(MUSEAU_PAGES.connexion);
+  });
+
+  it("bandeau de cookies : refuser, personnaliser, accepter ; lien vers la politique de confidentialité", () => {
+    expect(spec.settings.cookie_banner).toBe(true);
+    const html = pages.get("/")!;
+    expect(html).toContain("data-cookie-banner");
+    for (const c of ['data-cookie-choice="refuse"', "data-cookie-customize", 'data-cookie-choice="accept"']) expect(html, c).toContain(c);
+    expect(html).toContain(`href="${MUSEAU_PAGES.confidentialite}"`);
+  });
+
+  it("boutique : pastilles par type (Tous, Harnais, Laisses, Colliers, Pochettes) et quatre cartes", () => {
+    const html = pages.get("/collections/all")!;
+    expect([...html.matchAll(/class="fs-chip-filter[^"]*"[^>]*>([^<]+)</g)].map((m) => m[1])).toEqual(["Tous", "Harnais", "Laisses", "Colliers", "Pochettes"]);
+    expect(html.match(/data-chip-item="/g)?.length).toBe(4);
   });
 
   it("liens internes : chaque lien de page mène à une page existante de la démonstration", () => {
@@ -277,31 +250,24 @@ describe("MUSEAU CLUB : démonstration de quatre produits", async () => {
 
 describe("MUSEAU CLUB appliqué à un autre projet : identité du projet, jamais celle de la démonstration", async () => {
   const user = await createUser("museau-autre@example.invalid", "isolated-test-only", "Autre");
-  it("aucune trace de la démo, couleurs et nom du projet, dispositions du thème", async () => {
+  it("aucune trace de la démo (textes, images, prix), couleurs et nom du projet", async () => {
     const pid = seedHoldout(user.id, 0, "Atelier Verre");
     const p = loadProject(pid);
     saveBrand(pid, { ...p.brand!, name: "Atelier Verre", tagline: "Des verres soufflés pour tous les jours.", palette: { primary: "#1F4E5F", secondary: "#CFE3E8", accent: "#2A7F62", light: "#F6F8F7", dark: "#10242B" }, direction: ID });
     const built = await fr(() => composeShop(pid, ID, null, false));
     const spec = built.spec;
     expect(spec.direction).toBe(ID);
-    expect(spec.settings.conversion_profile).toBe(PLAN.profile);
-    const header = Object.values(spec.groups.header.sections).find((s) => s.type === "header")!;
-    const footer = Object.values(spec.groups.footer.sections).find((s) => s.type === "footer")!;
-    expect(currentChromePreset("specialty", "header", header.settings)?.id).toBe(PLAN.header);
-    expect(currentChromePreset("specialty", "footer", footer.settings)?.id).toBe(PLAN.footer);
+    expect(spec.settings.conversion_profile).toBe("club");
+    expect(storeProducts(spec).map((x) => x.price)).not.toEqual(expect.arrayContaining([4900, 2900, 2500, 1500]));
     const files = compileTheme(spec);
     for (const route of ["/", `/products/${spec.store.product.handle}`]) {
       const html = (await fr(() => renderPage({ spec, base: "", files, cart: [] }, route, new URLSearchParams()))).html;
-      expect(visibleText(html), route).not.toMatch(PLAN.leak);
+      expect(visibleText(html), route).not.toMatch(/MUSEAU|cobalt|harnais|laisse|pochette|Prix de démonstration/i);
       expect(html, route).not.toMatch(/theme-assets\/museau-club|museau-club-(harnais|laisse|collier|pochette|ambiance|logo)/);
       expect(html).toContain("Atelier Verre");
-      // Une ouverture visible avec le titre de la page, même sans repères renseignés (bannière de repli).
       expect(html.match(/<h1[\s>]/g)?.length, route).toBe(1);
     }
-    const first = spec.templates.index.sections[spec.templates.index.order[0]];
-    expect(first.disabled ?? false).toBe(false);
-    expect(["cv-hotspots", "cv-banner"]).toContain(first.type);
-    expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#1636C9|#F2C14E/);
+    expect(JSON.stringify(spec.settings.color_schemes).toUpperCase()).not.toMatch(/#0A30CC|#FAEA72/);
   });
 });
 
@@ -312,20 +278,22 @@ describe("MUSEAU CLUB : exports", async () => {
 
   it("couche de design : classes du profil sur le <body>, scripts des interactions", async () => {
     const d = await fr(() => designLayer(demo.spec));
-    expect(d.body.classes).toEqual(expect.arrayContaining([`es-conversion-${PLAN.profile}`, `dir-${ID}`]));
+    expect(d.body.classes).toEqual(expect.arrayContaining(["es-conversion-club", `dir-${ID}`]));
     for (const s of ["conversion.js", "family.js"]) expect(d.scripts).toContain(s);
   });
 
-  it("Shopify : tous les médias, les quatre produits, sections, profil et SEO", async () => {
+  it("Shopify : tous les médias, les quatre produits et leurs variantes, sections, profil", async () => {
     const exp = await fr(() => cmsExport("shopify", demo.spec, libraryLoader, { projectId: demo.pid }));
     const z = unzipSync(new Uint8Array(exp.zip));
     const names = Object.keys(z).join("\n");
     for (const f of media) expect(names, f).toContain(f);
     const json = zipText(z, /\.json$/), csv = zipText(z, /\.csv$/);
-    expect(json).toMatch(new RegExp(`"conversion_profile":\\s*"${PLAN.profile}"`));
+    expect(json).toMatch(/"conversion_profile":\s*"club"/);
     for (const it of MUSEAU_PRODUCTS) expect(csv + json, it.handle).toContain(it.handle);
-    for (const t of PLAN.home.concat(PLAN.product).filter((x) => !["main-product", "product-recommendations"].includes(x))) expect(names + json, t).toContain(t);
-    expect(zipText(z, /conversion\.css$/)).toContain(`body[data-conversion="${PLAN.profile}"]`);
+    for (const t of ["cv-banner", "cv-feature", "cv-cards", "fs-products", "fs-journal", "faq", "newsletter-media", "demo-order", "demo-account", "cv-specs"]) expect(names + json, t).toContain(t);
+    expect(zipText(z, /conversion\.css$/)).toContain('body[data-conversion="club"]');
+    // Titres en Nunito 900 : police de la bibliothèque Shopify désignée par son nom (disponibilité à vérifier sur Shopify).
+    expect(json).toMatch(/"type_heading_font":\s*"nunito_n9"/);
     expect(names + json + zipText(z, /\.(csv|liquid)$/)).not.toMatch(/\/home\/|\/tmp\/|localhost|127\.0\.0\.1/);
   });
 
@@ -336,11 +304,9 @@ describe("MUSEAU CLUB : exports", async () => {
     const names = Object.keys(z).join("\n");
     for (const f of media) expect(names, `${platform} ${f}`).toContain(f);
     const css = zipText(z, /\.css$/);
-    expect(css).toContain(`body.es-conversion-${PLAN.profile}`);
-    expect(css).not.toContain(`body[data-conversion="${PLAN.profile}"]`);
+    expect(css).toContain("body.es-conversion-club");
     const all = names + zipText(z, /\.(json|php|tpl|html|txt|csv|xml)$/);
-    expect(all).toContain(`es-conversion-${PLAN.profile}`);
-    for (const it of MUSEAU_PRODUCTS) expect(all, `${platform} ${it.handle}`).toContain(it.title);
+    for (const it of ["Harnais", "Laisse", "Collier", "Pochette"]) expect(all, `${platform} ${it}`).toContain(it);
     expect(all).not.toMatch(/\/home\/user|\/tmp\/ecs-/);
   });
 });

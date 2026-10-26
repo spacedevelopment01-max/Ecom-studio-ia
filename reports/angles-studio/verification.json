@@ -1,0 +1,547 @@
+{
+  "schema": "angles-studio-verification-1",
+  "capturedAt": "2026-10-22T20:29:03.251891+00:00",
+  "baseCommit": "894b0ce98398411bf1598bada59d0a0aa80bc85f",
+  "codeCommit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+  "sourceHashesSha256": {
+    "src/lib/marketing-strategy/understanding.ts": "8338bdccc5ed144a1640e02f4fc89a0115e38bc7328f8818b7f7666b9dc21163",
+    "tests/angles-sources.test.ts": "0f31a34eb9611c33af60c3eabe30cded005fa59e868c5124fb4d94d592255ee5",
+    "scripts/angles/studio-proof.mts": "b99c918e7880ac1e6ac225d2683b7d028b075bd665c0e836bbdaf03d966ac58e",
+    "scripts/angles/studio-simulated-providers.ts": "09ddea3f5f167c777202699ee766930929e804b30bddd181028e621f4767128a"
+  },
+  "suiteFreeze": "Application and business tests fixed during full suite. Capture harness adjusted only for existing introduction preferences and viewport framing, then typechecked and rerun after final code commit and production build.",
+  "commands": [
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "codeCommit": "289b7d4bcf4c53e852add08f558410c219d153ea"
+    },
+    {
+      "command": "npx tsc --noEmit",
+      "exitCode": 0
+    },
+    {
+      "command": "npx vitest run tests/angles-sources.test.ts tests/mission160-api.test.ts tests/mission160-consumers.test.ts tests/mission160-service-scopes.test.ts",
+      "exitCode": 0,
+      "files": 4,
+      "passed": 61,
+      "durationSeconds": 27.85
+    },
+    {
+      "command": "npx vitest run --shard=1/3",
+      "exitCode": 0,
+      "files": 119,
+      "passed": 1028,
+      "skipped": 0,
+      "durationSeconds": 341.88
+    },
+    {
+      "command": "npx vitest run --shard=2/3",
+      "exitCode": 0,
+      "files": 119,
+      "passed": 942,
+      "skipped": 11,
+      "durationSeconds": 294.36
+    },
+    {
+      "command": "npx vitest run --shard=3/3",
+      "exitCode": 0,
+      "files": 119,
+      "passed": 924,
+      "skipped": 11,
+      "durationSeconds": 247.2
+    },
+    {
+      "command": "npx tsx scripts/angles/studio-proof.mts",
+      "exitCode": 0,
+      "checks": 11,
+      "captures": 33,
+      "codeCommit": "289b7d4bcf4c53e852add08f558410c219d153ea"
+    }
+  ],
+  "fullSuite": {
+    "files": 357,
+    "passed": 2894,
+    "skipped": 22,
+    "exitCodes": [
+      0,
+      0,
+      0
+    ]
+  },
+  "nativeWorkflow": {
+    "schema": "angles-studio-workflow-1",
+    "commit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+    "workingTree": false,
+    "served": {
+      "commit": "289b7d4bcf4c53e852add08f558410c219d153ea",
+      "source": "compiled-build"
+    },
+    "providerCalls": 0,
+    "blockedExternalRequests": 0,
+    "providerDoubles": true,
+    "realNextServer": true,
+    "realWorker": true,
+    "onboarding": "Existing seen preferences set in test browser only; no UI code or CSS overrides",
+    "checks": [
+      {
+        "step": "full studio workflow",
+        "passed": true,
+        "scope": "Real Next production, login, HTTP routes, native worker, persistent SQLite; provider execution simulated"
+      },
+      {
+        "step": "uploaded image and existing client text",
+        "passed": true,
+        "originalImageUnchanged": true,
+        "existingTextUnchanged": true
+      },
+      {
+        "step": "persistent plan quota",
+        "plan": "creer",
+        "limit": 1,
+        "used": 1,
+        "extraChoiceStatus": 402,
+        "reselectionConsumesNoSlot": true,
+        "subscriptionReplacementPreservesHistory": true
+      },
+      {
+        "step": "persistent plan quota",
+        "plan": "vendre",
+        "limit": 2,
+        "used": 2,
+        "extraChoiceStatus": 402,
+        "reselectionConsumesNoSlot": true,
+        "subscriptionReplacementPreservesHistory": true
+      },
+      {
+        "step": "persistent plan quota",
+        "plan": "dominer",
+        "limit": 5,
+        "used": 5,
+        "extraChoiceStatus": 400,
+        "reselectionConsumesNoSlot": true,
+        "subscriptionReplacementPreservesHistory": true
+      },
+      {
+        "step": "service whole business versus communication angle",
+        "passed": true,
+        "serviceCount": 2,
+        "communicationAngle": "reassurance",
+        "siteAngle": "generalist",
+        "usedAngleCount": 1,
+        "serviceProfileUnchanged": true,
+        "themeGenerated": false
+      },
+      {
+        "step": "refusal without invented angle",
+        "scenario": "absent",
+        "passed": true,
+        "newAngles": 0,
+        "lastTaskStatus": "done",
+        "lastTaskProgress": 1,
+        "resultPresent": true,
+        "researchTasks": 0
+      },
+      {
+        "step": "refusal without invented angle",
+        "scenario": "failed",
+        "passed": true,
+        "newAngles": 0,
+        "lastTaskStatus": "failed",
+        "lastTaskProgress": 0.05,
+        "resultPresent": false,
+        "researchTasks": 1
+      },
+      {
+        "step": "refusal without invented angle",
+        "scenario": "partial",
+        "passed": true,
+        "newAngles": 0,
+        "lastTaskStatus": "failed",
+        "lastTaskProgress": 0.05,
+        "resultPresent": false,
+        "researchTasks": 1
+      },
+      {
+        "step": "transmission to modules without generation",
+        "business": "products",
+        "activeAngle": "usage",
+        "modules": [
+          "ads",
+          "social",
+          "video",
+          "logo",
+          "brand",
+          "image",
+          "stock",
+          "theme",
+          "shop_copy",
+          "seo",
+          "blog",
+          "social",
+          "advertising",
+          "video",
+          "qc"
+        ],
+        "passed": true
+      },
+      {
+        "step": "transmission to modules without generation",
+        "business": "services",
+        "activeAngle": "reassurance",
+        "modules": [
+          "ads",
+          "social",
+          "video",
+          "logo",
+          "brand",
+          "image",
+          "stock",
+          "theme",
+          "shop_copy",
+          "seo",
+          "blog",
+          "social",
+          "advertising",
+          "video",
+          "qc"
+        ],
+        "passed": true
+      }
+    ],
+    "captures": [
+      "02-renseignements-desktop.png",
+      "02-renseignements-mobile.png",
+      "02-renseignements-lecture-desktop.png",
+      "02-renseignements-lecture-mobile.png",
+      "03-comprehension-simulee-desktop.png",
+      "03-comprehension-simulee-mobile.png",
+      "04-recherche-simulee-desktop.png",
+      "04-recherche-simulee-mobile.png",
+      "05-angles-simules-desktop.png",
+      "05-angles-simules-mobile.png",
+      "05-angles-simules-lecture-desktop.png",
+      "05-angles-simules-lecture-mobile.png",
+      "06-confirmation-desktop.png",
+      "06-confirmation-mobile.png",
+      "07-choix-sauvegarde-desktop.png",
+      "07-choix-sauvegarde-mobile.png",
+      "08-session-rouverte.png",
+      "09-forfait-1-desktop.png",
+      "09-forfait-1-mobile.png",
+      "09-forfait-2-desktop.png",
+      "09-forfait-2-mobile.png",
+      "09-forfait-5-desktop.png",
+      "09-forfait-5-mobile.png",
+      "10-services-activite-complete-desktop.png",
+      "10-services-activite-complete-mobile.png",
+      "10-services-activite-complete-lecture-desktop.png",
+      "10-services-activite-complete-lecture-mobile.png",
+      "11-blocage-absent-desktop.png",
+      "11-blocage-absent-mobile.png",
+      "11-blocage-failed-desktop.png",
+      "11-blocage-failed-mobile.png",
+      "11-blocage-partial-desktop.png",
+      "11-blocage-partial-mobile.png"
+    ]
+  },
+  "captures": [
+    {
+      "path": "00-reprise-avant-correction.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "075bfe33bd8fcb2efeb174820d284906f1872390d2976da6bfc7c2a8955e81a2",
+      "bytes": 36075
+    },
+    {
+      "path": "01-reprise-corrigee.png",
+      "width": 1440,
+      "height": 2573,
+      "sha256": "adf9be87748e4b9776e30947c50bd1fd113e4ab787937c354118ca84cb102bc2",
+      "bytes": 250518
+    },
+    {
+      "path": "02-renseignements-desktop.png",
+      "width": 1440,
+      "height": 2659,
+      "sha256": "2c7fb5295305cca21a5d82e66072da2276b520fb2885435289ae35a19f066b0c",
+      "bytes": 264131
+    },
+    {
+      "path": "02-renseignements-lecture-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "c9872451b40353639477af8a3066e9cac5f73957dadc820a5b14bea3afab6bcc",
+      "bytes": 119538
+    },
+    {
+      "path": "02-renseignements-lecture-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "358968d63d7e577f17ac8420e7b7fd4bc15c299b20a5dde272cc0332014ee7ab",
+      "bytes": 63229
+    },
+    {
+      "path": "02-renseignements-mobile.png",
+      "width": 390,
+      "height": 3405,
+      "sha256": "a1fdce84a468b40f57ea9109976e4a8ca378d8e88416fa169ccb4f07478b19d4",
+      "bytes": 213779
+    },
+    {
+      "path": "03-comprehension-simulee-desktop.png",
+      "width": 1440,
+      "height": 2715,
+      "sha256": "de6e8d7b535b4f10311f66261370fbc859ef812c13810222b553a86b164efc73",
+      "bytes": 273034
+    },
+    {
+      "path": "03-comprehension-simulee-mobile.png",
+      "width": 390,
+      "height": 3521,
+      "sha256": "05af36f91ab63ec8d7fe9b66000d3ede62a0071d63486a35b77412d5d3be8f34",
+      "bytes": 220442
+    },
+    {
+      "path": "04-recherche-simulee-desktop.png",
+      "width": 1440,
+      "height": 3021,
+      "sha256": "b4d8b0f21c7095b467a02bc8a71c968876f138399927bd2316849bd503f1e1ad",
+      "bytes": 425026
+    },
+    {
+      "path": "04-recherche-simulee-mobile.png",
+      "width": 390,
+      "height": 4633,
+      "sha256": "b063805ce76a79e213224287555e1a22e377f8652076fbe1896f5e743522933b",
+      "bytes": 375259
+    },
+    {
+      "path": "05-angles-simules-desktop.png",
+      "width": 1440,
+      "height": 1715,
+      "sha256": "92da05ebb1240093d50b4c226326a61518836fc66aea3764a7675c35ebea9ff1",
+      "bytes": 280559
+    },
+    {
+      "path": "05-angles-simules-lecture-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "8375b22cf991cf25f832563bf093137ecec69d1d2b6b9bcbb8d82321f240d5df",
+      "bytes": 209075
+    },
+    {
+      "path": "05-angles-simules-lecture-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "35131e1482ac1040214e57e3638932399f9315b0b31df06044cc0c8f58016cb4",
+      "bytes": 78654
+    },
+    {
+      "path": "05-angles-simules-mobile.png",
+      "width": 390,
+      "height": 3499,
+      "sha256": "517bc256c6fed4944e9c66bfefe254b37d6e75faef6ef36d5aa49be792ce41a5",
+      "bytes": 257621
+    },
+    {
+      "path": "06-confirmation-desktop.png",
+      "width": 1440,
+      "height": 2161,
+      "sha256": "91c4508887f2093eb8deadac786b3e189612f025571745ce4ac81b801113ac73",
+      "bytes": 358251
+    },
+    {
+      "path": "06-confirmation-mobile.png",
+      "width": 390,
+      "height": 4397,
+      "sha256": "7cd640555538b8ffa796928377524cef3b893bb9ff93be1c36a18bf885834076",
+      "bytes": 340079
+    },
+    {
+      "path": "07-choix-sauvegarde-desktop.png",
+      "width": 1440,
+      "height": 1857,
+      "sha256": "1304cbf67c939015f2c2bbd121884a4b81e39792bde0e52460f15815b416c5d8",
+      "bytes": 292437
+    },
+    {
+      "path": "07-choix-sauvegarde-mobile.png",
+      "width": 390,
+      "height": 3661,
+      "sha256": "187bef40d0809ea685e39cc51baf3d58320ce86c0e8e75418d35c80bffe87156",
+      "bytes": 265121
+    },
+    {
+      "path": "08-session-rouverte.png",
+      "width": 1440,
+      "height": 1857,
+      "sha256": "938876afc707b5508409fae7173de8b7f6678fdb51b6b6db44ee43c262ac2fe6",
+      "bytes": 291222
+    },
+    {
+      "path": "09-forfait-1-desktop.png",
+      "width": 1440,
+      "height": 1857,
+      "sha256": "58790c95b1786a142011b298748c644feb68dccca780848a6ab9f2b671e0e0f0",
+      "bytes": 294588
+    },
+    {
+      "path": "09-forfait-1-mobile.png",
+      "width": 390,
+      "height": 3661,
+      "sha256": "98c07f095ee71ff5897ecbfa275a7092f1d5d0ecda559d1bfe06d610f51a100d",
+      "bytes": 271081
+    },
+    {
+      "path": "09-forfait-2-desktop.png",
+      "width": 1440,
+      "height": 1857,
+      "sha256": "5cf2e730bd3811ebca0a366ef98677733f37c8a7d63206479244915817f0713b",
+      "bytes": 291353
+    },
+    {
+      "path": "09-forfait-2-mobile.png",
+      "width": 390,
+      "height": 3661,
+      "sha256": "8f9e99938754b3b890e20ea2613930cd6eb4a5aee7ae649d8c167993e835a0a1",
+      "bytes": 267104
+    },
+    {
+      "path": "09-forfait-5-desktop.png",
+      "width": 1440,
+      "height": 1857,
+      "sha256": "da73d3883e114c6533f049d8a1df559a684f581e404efdb21f079815ef698132",
+      "bytes": 295233
+    },
+    {
+      "path": "09-forfait-5-mobile.png",
+      "width": 390,
+      "height": 3661,
+      "sha256": "217e84c1f4bc30fb14116757f1a29c0798e4943485fe6d8428dc74e1b2835da7",
+      "bytes": 271544
+    },
+    {
+      "path": "10-services-activite-complete-desktop.png",
+      "width": 1440,
+      "height": 1950,
+      "sha256": "9679a9c859fd124a278390761f86d4949fc90e0957ca5315dd588473fe8339ff",
+      "bytes": 309298
+    },
+    {
+      "path": "10-services-activite-complete-lecture-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "2a26fcef2c9ec7b136d8049b3e15443da675740318a091c800d0a7028ddd6c59",
+      "bytes": 193833
+    },
+    {
+      "path": "10-services-activite-complete-lecture-mobile.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "98a12d15bc30a1080f9c4398026e311361c9f0af0a09c57ae8649106ce861d1e",
+      "bytes": 75079
+    },
+    {
+      "path": "10-services-activite-complete-mobile.png",
+      "width": 390,
+      "height": 3809,
+      "sha256": "9acbcb61fe333ae16a1786a018e629bf067fb0b3c2c5cdb818ac063416b9d2f0",
+      "bytes": 283251
+    },
+    {
+      "path": "11-blocage-absent-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "ad8f4a9f7040d522641ceaa8dc244852a1fb9e8fa71750a5d3ae4f8a99eefbdb",
+      "bytes": 116714
+    },
+    {
+      "path": "11-blocage-absent-mobile.png",
+      "width": 390,
+      "height": 1027,
+      "sha256": "5e6a5a7c5b4b67577ee0dec7639b0d9b8c8bb79f2d022356c3bcadfd1dded7c9",
+      "bytes": 73702
+    },
+    {
+      "path": "11-blocage-failed-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "08b03a370d91a17880ff41555e674c31d0a78bfd91168c69abeeb60ae33dff86",
+      "bytes": 117394
+    },
+    {
+      "path": "11-blocage-failed-mobile.png",
+      "width": 390,
+      "height": 1027,
+      "sha256": "eb1a4a7a481c8dccc43f1ce60572556c1152cf1bbeda85d464b52135f43c7015",
+      "bytes": 75327
+    },
+    {
+      "path": "11-blocage-partial-desktop.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "7a3851a40300af8d7f6fa1191929a1e44465f45de7551dbde65015ca94c3e240",
+      "bytes": 129807
+    },
+    {
+      "path": "11-blocage-partial-mobile.png",
+      "width": 390,
+      "height": 1158,
+      "sha256": "2dfcbd1bb1f80a48aa470276eca2025567e502b2d0722144978ec9b6364867ac",
+      "bytes": 88627
+    }
+  ],
+  "localExecutionLogFingerprints": {
+    "angles-studio-build-final.log": {
+      "sha256": "22ab48f836c7e4b4dfa56b558f74c8108af1a57745a0e82bbf866110260e9402",
+      "bytes": 13827
+    },
+    "angles-studio-types-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "angles-studio-targeted.log": {
+      "sha256": "93eeaefd7bcf3d3e20be4aaa7a75264617e65d5ada50614959511294674cbee1",
+      "bytes": 170
+    },
+    "angles-studio-full-shard-1.log": {
+      "sha256": "670c8f349251e2a9eeccd2fb8cd3edaad9a2a7fcfb1545d4dad0c5a626bb0443",
+      "bytes": 178
+    },
+    "angles-studio-full-shard-2.log": {
+      "sha256": "d4af59bfcfb71dff902708609a52ec1a5e28ba664bafbefe57928f2726a287a0",
+      "bytes": 189
+    },
+    "angles-studio-full-shard-3.log": {
+      "sha256": "6d6170931f312d4213478e93e15d186e928995a92859809999a0302e13e0b641",
+      "bytes": 488
+    },
+    "angles-studio-browser-final.log": {
+      "sha256": "0ba2397982a706b04b089c3a427ccb5b0538fb064182da94b579328c8ee9f022",
+      "bytes": 538
+    }
+  },
+  "previousCI": {
+    "runId": 39828935820,
+    "commit": "894b0ce98398411bf1598bada59d0a0aa80bc85f",
+    "initial": "Main job cancelled during tests; not validation",
+    "relaunchObserved": "Typecheck, tests, Theme Check, build and Docker successful at 2026-10-22 20:16 UTC",
+    "doesNotValidateNewHead": true
+  },
+  "finalCI": "See final PR #168 description/comment for exact final pushed SHA, concluded run and job links. No pending run declared successful here.",
+  "realProviderCalls": 0,
+  "externalRequestAttempts": 0,
+  "creativeQualityProven": false,
+  "liveCustomerStudioVerified": false,
+  "merged": false,
+  "deployed": false,
+  "limitations": [
+    "Synthetic sources and image; provider execution simulated, not real AI or source relevance validation.",
+    "Services preparation through native APIs followed by studio screen, not a second complete UI input workflow.",
+    "Downstream native context consumers read without content generation; not GUI end-to-end generation tests.",
+    "Quota 5 exercised all five existing IDs and unknown sixth gives 400, not a quota 402; plans 1/2 reject an available additional ID with 402.",
+    "Mobile viewport 390x844, not physical device.",
+    "Customer studio/CMS untouched."
+  ]
+}

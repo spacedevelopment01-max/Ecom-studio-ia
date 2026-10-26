@@ -41,6 +41,9 @@ import { buildCreativeBrief, type CreativeBrief } from "./creative-brief";
 import { buildStoryboard, usable, type Storyboard } from "./ad-storyboard";
 import { allowedBrands, brandIssuesInTexts } from "./brand-guard";
 import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia } from "./creative-memory";
+import { execTool } from "../exec-tool";
+import { requireCreationPlan } from "../plan-gates";
+import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice } from "./voice";
 import { brainView } from "../brain/facade";
 import { storagePath, tmpDir } from "../storage";
@@ -141,7 +144,7 @@ export type ThreeScenesDeps = {
   writePlan?: (p: Project, s: SubjectOption | null, req: ThreeScenesRequest, key: string, ctx?: PlanContext) => Promise<ScenePlan | null>;
   keyframe: (prompt: string, aspect: SceneAspect, reference: Buffer | null, key: string) => Promise<Buffer>;
   directClip?: (image:Buffer|null,prompt:string,aspect:SceneAspect,seconds:number,key:string,generation:SceneGeneration)=>Promise<Buffer>;
-  clip: (image: Buffer, prompt: string, aspect: SceneAspect, seconds: number, key: string) => Promise<Buffer>;
+  clip: (image: Buffer, prompt: string, aspect: SceneAspect, seconds: number, key: string,generation?:SceneGeneration) => Promise<Buffer>;
   stock: (p: Project, index: number, topic: string, aspect: SceneAspect, seconds: number, exclude: Set<string>, key: string, step?: { queries: string[]; must: string[] }) => Promise<{ assetId: string; durationS: number } | null>;
   spentMicro: (keyPrefix: string) => number;
   /** Les plans libres sont-ils regardés par l'IA (contrôle visuel) ? Faux : seuls leurs mots-clés sont connus. */
@@ -455,7 +458,8 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   if (plan.voiceEnd && !usable(plan.voiceEnd)) plan.voiceEnd = "";
 
   if(req.purpose!=="site"&&projectVoice(memory.preferences)) {const max=Math.floor((timing.showS-.3)*2.4);const long=plan.scenes.findIndex((s,k)=>countWords(`${s.voice??""} ${k===n-1?plan.voiceEnd??"":""}`)>max);if(long>=0) throw new UserFacingError(`Voix de la scène ${long+1} trop longue : adaptez le scénario ou la durée avant les médias. Aucun texte supprimé.`);}
-  if(req.purpose!=="site"&&projectVoice(memory.preferences) && !voiceAvailable()) throw new UserFacingError("La voix du projet n’est pas installée : aucun média payant lancé.");
+  if(req.purpose!=="site"&&isOpenAIVoice(projectVoice(memory.preferences)??"")){requireCreationPlan(null,projectId,"videos");if(!req.approval)throw new UserFacingError("Voix payante : scénario et devis à valider avant lancement.");}
+  if(req.purpose!=="site"&&memory.preferences.voice==="on"&&(!projectVoice(memory.preferences)||!voiceAvailable(projectVoice(memory.preferences)))) throw new UserFacingError("La voix du projet est indisponible : aucun média payant lancé.");
   const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
   // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
   const kept: number[] = [];
@@ -481,7 +485,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
           const prior=savedScene(k,"clip");if(prior&&isAutoUsable(prior)&&assetMeta<any>(prior).gate?.checked)return prior.id;
           preserveClientVersion();ctx?.progress(.1+k*.65/n,`Scène ${k+1} : clip IA, sans image intermédiaire`);
           const text=[scene.still,scene.motion,`Illustration imaginée pour ${p.brand?.name}. Ne pas présenter comme réalisation du client.`,"Aucune personne, main, visage, silhouette ni corps. Aucun texte, logo ni marque généré ; ils seront ajoutés au montage.",reference?"Conserver fidèlement la forme, les couleurs, les matières et le point de vue documenté de la référence ; aucune partie cachée inventée.":"Ne pas inventer de caractéristique commerciale."].join("\n");
-          const mp4=prior?assetData(prior):await videoReceipt(projectId,`${assetKey(k,"clip")}:direct:${k}`,()=>deps.directClip!(reference,text,aspect,timing.clipS,`${assetKey(k,"clip")}:direct:${k}`,req.generation!));
+          const mp4=prior?assetData(prior):await videoReceipt(projectId,`${assetKey(k,"clip")}:direct:${k}`,()=>deps.directClip!(reference,text,aspect,timing.clipS,`${assetKey(k,"clip")}:direct:${k}`,req.generation!),{readOnlyRecovery:true});
           const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey,origin:"generated",status:"review",sourceAssetId:photo?.id??(reference?refId:null),meta:{scenes:{key:assetKey(k,"clip"),rootKey:key,index:k,as:req.as,generation:req.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
           const duration=await(deps.duration??sceneClipDuration)(mp4);
           if(duration+.05<timing.showS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
@@ -533,7 +537,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
         const savedClipId = await step(`${key}:clip-asset-${k}`, async()=>{
         const prior=savedScene(k,"clip");if(prior) return prior.id;
         preserveClientVersion();ctx?.progress(.1+k*.65/n);
-        const mp4 = await videoReceipt(projectId,`${assetKey(k,"clip")}:clip:${k}`,()=>deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${assetKey(k,"clip")}:clip:${k}`));
+        const mp4 = await videoReceipt(projectId,`${assetKey(k,"clip")}:clip:${k}`,()=>deps.clip(still, motionPrompt(scene), aspect, timing.clipS, `${assetKey(k,"clip")}:clip:${k}`,req.generation),{readOnlyRecovery:true});
         const a = await saveAsset({ projectId, userId: p.userId, data: mp4, name: `scene-${k + 1}.mp4`, mime: "video/mp4", role: "clip", folderKey, origin: "generated", status: "review", sourceAssetId: stillAsset.id, meta: { gate:{verdict:"PROVISIONAL",checked:false,fatal:false,reason:"Plan à contrôler",provisional:{use:"manual"}}, scenes: { key:assetKey(k,"clip"),rootKey:key, index: k, as: req.as, motion: scene.motion, model: SCENE_VIDEO_MODEL } } });
         return a.id;
         });
@@ -600,7 +604,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = req.purpose==="site"?null:projectVoice(memory.preferences);
   if(chosenVoice) {
-    if(!voiceAvailable()) throw new UserFacingError("La voix choisie n'est pas installée : vidéo incomplète, médias conservés. Activez la voix sur le serveur ou choisissez explicitement sans voix.");
+    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie est indisponible : vidéo incomplète, médias conservés. Vérifiez sa configuration ou choisissez explicitement sans voix.");
     brief.voice.kokoroVoice=chosenVoice;
     await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s);
     notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
@@ -642,7 +646,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
 
 /** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
 export async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number], synth = synthLine) {
-  const lang = C("fr","en") === "en" ? "en" : "fr";
+  const lang: "fr" | "en" = C("fr","en") === "en" ? "en" : "fr";
   const lines = doc.clips.map((clip,k)=>({clip,text:[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim()}));
   const dir=tmpDir("voice");
   const pending:VideoDocument["audio"]["voice"]=[];
@@ -651,13 +655,16 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
     for(const [k,l] of lines.entries()) {
       if(!l.text) continue;
       const wav=path.join(dir,`v-${k}.wav`);
-      const durationS=await synth(l.text,wav,{voice:brief.voice.kokoroVoice,speed:brief.voice.speed,lang});
+      const options={voice:brief.voice.kokoroVoice,speed:brief.voice.speed,lang};
+      const acquired=synth===synthLine&&isOpenAIVoice(options.voice)?await acquiredVoice({projectId,userId},l.text,options):null;
+      if(acquired)fs.writeFileSync(wav,assetData(acquired));
+      const durationS=acquired?Number((await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",wav])).stdout.trim()):await synth(l.text,wav,options);
       if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
-      const a=await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
+      const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
       cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
     }
-    doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
+    doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=isOpenAIVoice(brief.voice.kokoroVoice)?brief.voice.kokoroVoice:`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 }
 
@@ -700,16 +707,17 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       return realVideoDeps(ctx,loadProject(base.projectId),true).reviewShot(frames,{product:reference.length?reference:null,character:null},text,key);
     } : undefined,
     async directClip(image,prompt,aspect,seconds,key,generation){
-      const route=sceneGenerationRoute(generation,seconds);if(!route.allowed)throw new UserFacingError(route.reason);
-      const {wanTextClip,aiClip}=await import("../ai/media-providers");
+      const route=sceneGenerationRoute(generation,seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);
+      const {wanTextClip,aiClip,higgsfieldClip}=await import("../ai/media-providers");
       const context={...base,jobId,usageKey:key};
-      return image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):wanTextClip(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
+      return image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):(route.provider==='higgsfield'?higgsfieldClip:wanTextClip)(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
     },
     async keyframe(prompt, aspect, reference, key) {
       const { aiPostImage } = await import("../ai/media-providers");
       return aiPostImage({ ...base, jobId, usageKey: key }, { prompt, aspect, reference, logo: null,photoOnly:true });
     },
-    async clip(image, prompt, aspect, seconds, key) {
+    async clip(image, prompt, aspect, seconds, key, generation) {
+      if(generation==="staged"){const route=sceneGenerationRoute("staged",seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);{const {aiClip}=await import("../ai/media-providers");return aiClip(route.provider,{...base,jobId,usageKey:key},{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false},m=>ctx?.progress(.5,m));}}
       const { aiClip } = await import("../ai/media-providers");
       // Wan suit les proportions de l'image de départ (carré et 4:5 compris) ; ce paramètre ne sert qu'aux autres modèles.
       return aiClip("alibaba", { ...base, jobId, usageKey: key }, { image, prompt, aspect: aspect === "16:9" ? "16:9" : "9:16", seconds, model: SCENE_VIDEO_MODEL, usage: "product_video" }, (m) => ctx?.progress(0.5, m));

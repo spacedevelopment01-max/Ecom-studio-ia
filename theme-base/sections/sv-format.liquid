@@ -1,0 +1,50 @@
+{%- comment -%}
+  SILLON V2 : « Petit format. Grande échappée. » (planche 01, accueil) — titre sur deux lignes (sombre puis cuivre),
+  texte, flèche en cercle et lien, produit détouré qui chevauche la jonction avec l'ouverture, cercle cuivre derrière,
+  trois mots à chasse fixe et courbes de niveau. Le produit et son lien suivent le produit choisi (sinon le premier).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign p = s.product | default: collections.all.products.first
+  assign link = s.link | default: p.url | default: routes.all_products_collection_url
+-%}
+<section class="sv sv-format">
+  <div class="sv-c">
+    <div class="sv-format__inner">
+      <span class="sv-topo sv-topo--field sv-format__topo" aria-hidden="true"></span>
+      <span class="sv-topo sv-topo--corner sv-format__topo2" aria-hidden="true"></span>
+      <h2 class="sv-display sv-format__title"><span>{{ s.heading }}</span>{%- if s.heading_accent != blank -%}<span class="sv-format__accent">{{ s.heading_accent }}</span>{%- endif -%}</h2>
+      {%- if s.text != blank -%}<p class="sv-format__text">{% render 'sv-lines', text: s.text, mobile: s.text_mobile %}</p>{%- endif -%}
+      <a class="sv-circle sv-circle--copper-line sv-format__arrow" href="{{ link }}" tabindex="-1" aria-hidden="true">{% render 'sv-icon', name: 'arrow-ne' %}</a>
+      {%- if s.link_label != blank -%}<a class="sv-link sv-link--dark sv-format__link" href="{{ link }}">{{ s.link_label }}{% render 'sv-icon', name: 'arrow-ne' %}</a>{%- endif -%}
+        {%- if s.show_price and p != blank -%}<p class="sv-format__price">— {{ p.price | money_without_trailing_zeros }}</p>{%- endif -%}
+      <span class="sv-format__circle" aria-hidden="true"></span>
+      {% render 'sv-img', image: s.image, asset: s.image_asset, alt: s.image_alt, pos: '50% 50%', class: 'sv-format__product sv-cut' %}
+      {%- if s.words != blank -%}
+        <div class="sv-format__words"><span class="sv-format__rule" aria-hidden="true"></span><p class="sv-mono">{{ s.words | escape | newline_to_br }}</p></div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Produit en surplomb",
+  "class": "sv-format-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre (sombre)", "default": "Petit format." },
+    { "type": "text", "id": "heading_accent", "label": "Suite du titre (cuivre)", "default": "Grande échappée." },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "text_mobile", "label": "Texte au téléphone (coupe des lignes)", "info": "Vide : le texte ci-dessus." },
+    { "type": "text", "id": "link_label", "label": "Lien", "default": "Découvrir la machine" },
+    { "type": "url", "id": "link", "label": "Adresse du lien", "info": "Vide : la fiche du produit." },
+    { "type": "product", "id": "product", "label": "Produit" },
+    { "type": "checkbox", "id": "show_price", "label": "Prix du produit sous le lien (téléphone)", "default": true },
+    { "type": "image_picker", "id": "image", "label": "Produit détouré (fond transparent)" },
+    { "type": "text", "id": "image_asset", "label": "Produit détouré (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Description du produit" },
+    { "type": "textarea", "id": "words", "label": "Mots à chasse fixe", "default": "Compacte\nÉlégante\nToujours partante" }
+  ],
+  "presets": [{ "name": "Produit en surplomb" }]
+}
+{% endschema %}

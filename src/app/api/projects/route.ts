@@ -41,14 +41,14 @@ export const GET = handle(async () => {
       palette: b.palette ?? null,
       brand: b.name ?? null,
       logo: b.logo?.chosen ? `/api/projects/${r.id}/brand/logo` : null,
-      subscription: sub ? { id: sub.user_id, plan: sub.plan ?? "creer", status: sub.status, billing: sub.billing, periodEnd: sub.current_period_end, cancelAtPeriodEnd: !!sub.cancel_at_period_end } : null,
+      subscription: sub ? { id: sub.user_id, plan: sub.plan ?? "creer", status: sub.status, billing: sub.billing, priceCents: sub.price_cents, periodEnd: sub.current_period_end, cancelAtPeriodEnd: !!sub.cancel_at_period_end } : null,
       ai: sub ? aiUsage(user.id, r.id) : null,
     };
   };
   return ok({
     projects: rows.filter((r) => !r.hidden).map(card),
     hidden: rows.filter((r) => r.hidden).map((r) => ({ id: r.id, name: r.name, updatedAt: r.updated_at })),
-    pending: pendingSubscriptions(user.id).map((s) => ({ id: s.user_id, plan: s.plan ?? "creer", billing: s.billing, status: s.status, createdAt: s.created_at })),
+    pending: pendingSubscriptions(user.id).map((s) => ({ id: s.user_id, plan: s.plan ?? "creer", billing: s.billing, priceCents: s.price_cents, status: s.status, createdAt: s.created_at })),
     subscriptions: subscriptionsOf(user.id).length,
   });
 });

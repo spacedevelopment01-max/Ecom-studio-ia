@@ -78,7 +78,10 @@ describe("Affiches de publication", async () => {
     expect(meta.poster.backgroundAssetId).toBe(photo.id);
     const d = latestDoc(pid, meta.poster.docKey)!;
     const roles = d.doc.layers.map((l) => l.role);
-    expect(roles).toEqual(expect.arrayContaining(["background", "title", "cta"]));
+    expect(roles).toEqual(expect.arrayContaining(["title", "cta"]));
+    // La photo du projet est portée par un calque modifiable : en fond plein cadre ou encadrée, selon la mise en page
+    // que l'identifiant de la publication désigne (l'identifiant change à chaque exécution du test).
+    expect(d.doc.layers.some((l) => (l.role === "background" || l.role === "image") && l.kind === "image" && l.assetId === photo.id)).toBe(true);
     expect(d.doc.layers.find((l) => l.role === "title" && "text" in l && l.text === "Votre atelier, sans attendre")).toBeTruthy();
     out("publication.jpg", (await import("@/lib/library")).assetData(a));
     // L'onglet Publicités ne liste pas les affiches de publications ; elles se retrouvent avec ?kind=post.

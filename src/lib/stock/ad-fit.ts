@@ -1,3 +1,4 @@
+import {publicDownload} from "../public-download";
 /**
  * Choix de LA meilleure photo libre (Pixabay d'abord) pour une publicité ou une publication : parmi les photos
  * pertinentes (description qui cite le produit ou le métier, ordre de rankStock), on regarde leurs vignettes et on
@@ -72,7 +73,7 @@ export async function adFitOrder<T extends StockPhoto>(found: T[], aspect: strin
   if (top < 2) return found;
   const ratio = ratioOf(aspect);
   const head = found.slice(0, top);
-  const fits = await Promise.all(head.map((p) => fitOf(p, ratio, opts.fetcher ?? fetch)));
+  const fits = await Promise.all(head.map((p) => fitOf(p, ratio, opts.fetcher ?? ((input)=>publicDownload(String(input),{maxBytes:5_000_000,accept:"image/*",timeoutMs:8000})))));
   // Aucune vignette lisible (hors ligne) : la pertinence décide seule.
   if (!fits.some((f) => f.ok)) return found;
   const maxPop = Math.max(0, ...head.map((p) => p.popularity ?? 0));

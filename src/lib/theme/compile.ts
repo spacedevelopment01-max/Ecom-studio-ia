@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { zipSync, strToU8 } from "fflate";
-import { DATA_DIR } from "../db";
+import { DATA_DIR, one, run } from "../db";
 import { elementStylesCss, THEME_BASE, themeLang, type ThemeSpec } from "./spec";
 import { importedArchive } from "./imported";
 import { L } from "../i18n-server";
@@ -17,6 +17,9 @@ import { localizeSectionLiquid, localizeSettingsSchema } from "./schema-i18n";
 import { guardPurchaseExport, purchaseExportManifest, purchaseTargetHandles, sharedPurchaseSection } from "./purchase-offers";
 import { storeProducts } from "./store-products";
 import { productTemplateAssignments, productTemplateManifest } from "./product-templates";
+import { assertSafeThemeContent } from "./content-security";
+import { assertStaticSvg } from "../upload-security";
+import { assertImportedExportAccess } from "./import-export-access";
 
 export type ThemeFiles = Map<string, string>; // chemin → contenu texte (assets binaires exclus)
 
@@ -85,6 +88,7 @@ function cleanTemplate(t: { sections: Record<string, any>; order: string[]; layo
 
 /** Fichiers texte du thème (sans les médias binaires du dossier assets). */
 export function compileTheme(spec: ThemeSpec): ThemeFiles {
+  assertSafeThemeContent(spec);
   // Thème importé : ses propres fichiers servent de base (les gabarits JSON et réglages viennent du spec).
   const imp = spec.imported;
   const lang = themeLang(spec);
@@ -142,9 +146,14 @@ export async function themeAssetBinary(spec: ThemeSpec, filename: string, load: 
   const src = load(assetId);
   if (!src) return null;
   const ext = filename.split(".").pop()!.toLowerCase();
-  // « r2 » : version de la conversion (logos SVG convertis en PNG depuis la phase 10A) — les anciens fichiers en cache ne servent plus.
-  const key = crypto.createHash("sha1").update(`r2:${assetId}:${filename}:${src.updated}:${src.data.length}`).digest("hex");
+  // Valider aussi les anciens fichiers avant le cache et avant toute conversion.
+  if(ext==="svg"||src.mime==="image/svg+xml")assertStaticSvg(src.data);
+  const digest=crypto.createHash("sha256").update(src.data).digest("hex");
+  // r3 : identité des octets, pas seulement leur longueur ; aucun ancien cache actif réutilisé.
+  const key = crypto.createHash("sha1").update(`r3:${assetId}:${filename}:${src.updated}:${digest}`).digest("hex");
   const cached = path.join(ASSET_CACHE, `${key}.${ext}`);
+  const owner=one<{project_id:string;user_id:string}>("SELECT project_id,user_id FROM assets WHERE id=?",assetId);
+  if(owner)run("INSERT INTO asset_cache_entries(cache_key,asset_id,project_id,user_id) VALUES(?,?,?,?) ON CONFLICT(cache_key) DO NOTHING",`${key}.${ext}`,assetId,owner.project_id,owner.user_id);
   const mimeByExt: Record<string, string> = { webp: "image/webp", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", mp4: "video/mp4", svg: "image/svg+xml", gif: "image/gif" };
   const mime = mimeByExt[ext] ?? src.mime;
   if (fs.existsSync(cached)) return { data: fs.readFileSync(cached), mime };
@@ -165,6 +174,7 @@ export async function themeAssetBinary(spec: ThemeSpec, filename: string, load: 
 // ---------------------------------------------------------------- export ZIP
 
 export async function exportThemeZip(spec: ThemeSpec, load: AssetLoader): Promise<{ zip: Buffer; files: string[]; skipped: string[] }> {
+  assertImportedExportAccess(spec);
   const purchaseRules = purchaseExportManifest(spec);
   const guarded = guardPurchaseExport(spec);
   spec = guarded.spec;

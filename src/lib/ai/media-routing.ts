@@ -1,3 +1,5 @@
+import {approvedQuote} from "./higgsfield/pricing";
+import {defaultConfiguration} from "./higgsfield/catalog";
 /**
  * Routage des générations IMAGES et VIDÉOS entre fournisseurs spécialisés (OpenAI, Google, fal.ai).
  *
@@ -187,6 +189,7 @@ export const shutDown = (m: MediaModel, now = Date.now()) => !!m.shutdown && Dat
  */
 export function mediaStatus(m: MediaModel, admin: Record<string, MediaAdmin> = mediaAdmin()): MediaStatus {
   const key = `${m.provider}:${m.model}`;
+  if(m.provider==='higgsfield'){let ready=false;try{approvedQuote(defaultConfiguration(m.model));ready=true;}catch{}return {key,usable:ready,confirmed:ready,enabled:ready && (admin[key]?.enabled??true),connected:!!activeProviderKey('higgsfield'),reasons:ready?[]:[L('Tarifs Higgsfield exacts à récupérer et confirmer (ou confirmation expirée).','Retrieve and approve exact Higgsfield prices (or approval expired).')]};}
   const a = admin[key] ?? {};
   const reasons: string[] = [];
   const connected = !!activeProviderKey(m.provider);
@@ -235,6 +238,7 @@ export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
 
 /** Coût d'une génération typique (micro-euros) au tarif de l'administration, null si inconnu. */
 export function typicalCostMicro(m: Pick<MediaModel, "provider" | "model" | "kind" | "typical">): number | null {
+  if(m.provider==='higgsfield'){try{return approvedQuote(defaultConfiguration(m.model,m.typical.seconds??5)).micro;}catch{return null;}}
   const p = priceFor(m.provider, m.model);
   if (!p || !priceValid(p)) return null;
   let usd: number;

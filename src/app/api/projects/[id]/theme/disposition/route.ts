@@ -12,7 +12,7 @@ import { chromePresets } from "@/lib/theme/family-chrome";
 import { withProjectMedia } from "@/lib/theme/section-defaults";
 import { sectionContentContext } from "@/lib/theme/section-content";
 import { pickT } from "@/lib/theme/section-families";
-import { themeLang } from "@/lib/theme/spec";
+import { containerOf, sectionSchema, themeLang } from "@/lib/theme/spec";
 
 /**
  * Changement de disposition (issue #141), depuis le panneau « Réglages » :
@@ -51,8 +51,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const r = dispositionOps(cur.spec, kind, b.template, b.section, b.disposition, (type) => withProjectMedia(cur.spec, type, {}, undefined, cctx) as never);
     if ("error" in r) throw new HttpError(400, L(r.error.fr, r.error.en));
     ops = r.ops;
-    const label = r.entry.dispositions.find((x) => x.id === r.dispositionId)!.label;
-    summary = L(`${pickT(r.entry.name, "fr")} : disposition « ${label.fr} »`, `${pickT(r.entry.name, "en")}: “${label.en}” layout`);
+    if (r.entry) {
+      const label = r.entry.dispositions.find((x) => x.id === r.dispositionId)!.label;
+      summary = L(`${pickT(r.entry.name, "fr")} : disposition « ${label.fr} »`, `${pickT(r.entry.name, "en")}: “${label.en}” layout`);
+    } else {
+      // Section propre au thème : une de ses dispositions déclarées.
+      const s = containerOf(cur.spec, b.template)?.sections[b.section];
+      const name = sectionSchema(cur.spec, s?.type ?? "", uiLang())?.name ?? s?.type ?? "";
+      summary = L(`${name} : autre disposition`, `${name}: another layout`);
+    }
     targeted = new Set([`${b.template}:${b.section}`]);
   }
   assertThemeOperations(p.id,cur.spec,ops);

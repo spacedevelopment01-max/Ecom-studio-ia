@@ -1,0 +1,38 @@
+{%- comment -%}
+  PARENTHÈSE : « Recevez les nouveaux articles » (journal, planche 05) : aplat sauge, feuillage, champ e-mail et bouton.
+  Réponse honnête : en démonstration aucune inscription n'est transmise ; avec le service réel, la demande est
+  enregistrée pour le cabinet (aucun envoi automatique de lettre d'information).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="pa-section pa-newsletter">
+  <div class="pa-wrap">
+    <div class="pa-newsletter__box">
+      {% render 'pa-ornament', name: 'leaves', class: 'pa-newsletter__leaves' %}
+      <h2 class="pa-title pa-title--md">{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<p>{{ s.text }}</p>{%- endif -%}
+      <form class="pa-newsletter__form" novalidate data-pa-request="newsletter">
+        <label class="visually-hidden" for="pa-nl-{{ section.id }}">{{ s.email_label }}</label>
+        <input id="pa-nl-{{ section.id }}" name="email" type="email" autocomplete="email" required placeholder="{{ s.placeholder | escape }}">
+        <button type="submit" class="pa-btn pa-btn--forest" data-pa-submit>{{ s.button_label }}</button>
+        <p class="pa-field__error" data-pa-err="email" hidden>{{ s.error_email }}</p>
+        <p class="pa-form__status" role="status" aria-live="polite" data-pa-status hidden></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inscription aux articles",
+  "class": "pa-newsletter-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Recevez les nouveaux articles" },
+    { "type": "text", "id": "text", "label": "Texte", "default": "Des inspirations et des conseils bien-être, directement dans votre boîte mail." },
+    { "type": "text", "id": "email_label", "label": "Champ e-mail (lecteurs d'écran)", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "placeholder", "label": "Exemple d'adresse", "default": "Votre adresse e-mail" },
+    { "type": "text", "id": "button_label", "label": "Bouton", "default": "S'inscrire" },
+    { "type": "text", "id": "error_email", "label": "Erreur : e-mail", "default": "Indiquez une adresse e-mail valide." }
+  ],
+  "presets": [{ "name": "Inscription aux articles" }]
+}
+{% endschema %}

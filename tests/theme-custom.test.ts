@@ -195,7 +195,7 @@ describe("thème entièrement sur mesure (IA simulée)", () => {
     const again = await buildCustomTheme(new JobContext((await import("@/lib/jobs")).getJob(job.id)!), pid, { review: false });
     expect(calls).toHaveLength(0);
     expect(again.written).toBe(5);
-  });
+  }, 180_000); // Theme Check à chaque correction, sur tout le thème (270 sections) : plus d'une minute.
 
   it("refuse le thème entièrement sur mesure hors forfait Dominer (402) et au-delà de 2 par mois", async () => {
     const { customThemeAccess, assertFullyCustomTheme, CUSTOM_THEMES_PER_MONTH } = await import("@/lib/theme/custom-access");

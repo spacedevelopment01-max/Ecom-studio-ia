@@ -21,32 +21,24 @@ describe("droits des forfaits, vérifiés côté serveur", async () => {
     return { u, pid };
   };
 
-  it("catalogue actif (consigne 6264783184) : les onze thèmes de référence selon le forfait et leur famille ; les 30 anciens restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
+  it("catalogue proposé (mission #190) : thèmes sur maquettes ouverts par droits par thème et par forfait, sans famille ; les anciens et ORBE / ALCÔVE restent lisibles mais jamais sélectionnables ; rien sans forfait", async () => {
     expect(themeOrderComplete()).toBe(true);
-    expect(THEME_ORDER).toHaveLength(41);
-    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]);
-    expect([PLANS.creer.themes, PLANS.vendre.themes, PLANS.dominer.themes]).toEqual([1, 3, 5]);
-    // Premier forfait qui ouvre chaque thème (rang dans sa famille, plan-entitlements.ts) : boutique spécialisée
-    // fraise, sillon, noctil, traverse, museau-club ; E-commerce orbe, onde, heuren, alcove, souple ; services rive.
-    const first: Record<string, "creer" | "vendre" | "dominer"> = { fraise: "creer", orbe: "creer", rive: "creer", sillon: "vendre", noctil: "vendre", onde: "vendre", heuren: "vendre", traverse: "dominer", "museau-club": "dominer", alcove: "dominer", souple: "dominer" };
-    const rank = { creer: 0, vendre: 1, dominer: 2 };
-    for (const id of ["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple"]) {
+    expect(THEME_ORDER).toHaveLength(47);
+    expect(THEME_ORDER.slice(30)).toEqual(["fraise", "onde", "orbe", "rive", "sillon", "noctil", "traverse", "heuren", "alcove", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
+    // Répartition par forfait encore à choisir (Thomas) : tout thème proposé est ouvert à tout forfait payant.
+    for (const id of ["fraise", "onde", "rive", "sillon", "noctil", "traverse", "heuren", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]) {
       expect(themeAllowed(null, id)).toBe(false);
-      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(rank[plan] >= rank[first[id]]);
-      expect(planForTheme(id)).toBe(first[id]);
+      for (const plan of ["creer", "vendre", "dominer"] as const) expect(themeAllowed(plan, id)).toBe(true);
+      expect(planForTheme(id)).toBe("creer");
     }
-    // Intégration #159 / #161 : la famille du forfait de chaque thème est sa catégorie de projet (theme-fit.ts).
-    const { PLAN_THEME_ORDER } = await import("@/lib/plan-entitlements");
-    const { REFERENCE_THEMES, themeKinds } = await import("@/lib/theme/theme-fit");
-    for (const themeId of REFERENCE_THEMES) {
-      const family = (Object.keys(PLAN_THEME_ORDER) as (keyof typeof PLAN_THEME_ORDER)[]).find((k) => PLAN_THEME_ORDER[k].includes(themeId));
-      expect(family, themeId).toBeDefined();
-      expect(themeKinds(themeId), themeId).toEqual([family]);
-    }
+    for (const id of ["orbe", "alcove"]) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }
     // Ancien catalogue : retiré pour toute nouvelle sélection, même avec le forfait le plus large.
     for (const id of THEME_ORDER.slice(0, 30)) { expect(themeAllowed("dominer", id)).toBe(false); expect(planForTheme(id)).toBeNull(); }
     const creer = await projectWith("creer");
-    expect(() => gates.assertThemeAllowed(creer.pid, "orbe")).not.toThrow();
+    expect(() => gates.assertThemeAllowed(creer.pid, "phase")).not.toThrow();
+    expect(() => gates.assertThemeAllowed(creer.pid, "orbe")).toThrow(/retiré du catalogue le 25 octobre/);
+    // Un projet qui utilise déjà ORBE le garde.
+    expect(() => gates.assertThemeAllowed(creer.pid, "orbe", "orbe")).not.toThrow();
     expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[15])).toThrow(/retiré du catalogue/);
     // Un projet qui utilise déjà un ancien thème le garde (recomposition autorisée), mais n'en choisit pas un autre.
     expect(() => gates.assertThemeAllowed(creer.pid, THEME_ORDER[25], THEME_ORDER[25])).not.toThrow();

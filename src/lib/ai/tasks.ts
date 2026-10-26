@@ -7,7 +7,8 @@
 import { STRATEGY_JARGON } from "../copy-voice";
 import { projectKind } from "../theme/project-kind";
 import { compatibleSectionTypes, sectionIncompatibility } from "../theme/section-compat";
-import { FAMILY_LABEL, FAMILY_LIBRARY, familyOf } from "../theme/section-families";
+import { ALL_ENTRIES } from "../theme/section-families";
+import { isOwnSectionOf, ownDispositions } from "../theme/theme-own-sections";
 import { chromePresets } from "../theme/family-chrome";
 import type { StoreKind } from "../theme/store-kind";
 import { skillReference, type SkillIntent } from "./skills";
@@ -20,7 +21,8 @@ import { FactSchema, QuestionSchema } from "../project-schemas";
 import { ShopCopySchema, type ShopCopy } from "../theme/copy";
 import { ACTIVE_DIRECTIONS, DIRECTIONS, type DirectionId } from "../theme/directions";
 import { OpSchema, outline, type ThemeOp } from "../theme/ops";
-import type { ThemeSpec } from "../theme/spec";
+import { sectionSchema, type ThemeSpec } from "../theme/spec";
+import { themeKinds } from "../theme/theme-fit";
 import { FONT_HANDLES } from "../theme/render";
 import { CANVAS_FONTS } from "../media/fonts";
 import type { VideoSpec } from "../media/video";
@@ -181,8 +183,8 @@ const BrandSchema = z.object({
   // Palette absente : celle des couleurs mesurées du produit est appliquée par l'appelant.
   palette: z.object({ primary: hex("#3A3F4B"), secondary: hex("#E6E2DC"), accent: hex("#B5714A"), light: hex("#F7F5F2"), dark: hex("#16181D") }).optional().catch(undefined),
   fonts: z.object({ heading: str, body: str }).catch({ heading: "", body: "" }),
-  // Catalogue actif seulement (consigne 6264783184) ; une réponse hors catalogue retombe sur ORBE, puis l'appelant corrige par catégorie.
-  direction: z.enum(ACTIVE_DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("orbe"),
+  // Catalogue proposé seulement (thèmes sur maquettes) ; une réponse hors catalogue retombe sur SOUPLE, puis l'appelant corrige par catégorie.
+  direction: z.enum(ACTIVE_DIRECTIONS.map((d) => d.id) as [DirectionId, ...DirectionId[]]).catch("souple"),
   directionReason: str,
   logo: z
     .object({
@@ -788,19 +790,25 @@ Demande du client : <demande>${input.message}</demande>`,
 }
 
 const OPS_HELP = `Forme exacte : « ops » est une liste d'objets, chacun avec sa clé « op », ex. {"op":"replace_section","template":"index","section":"…","type":"…","settings":{…}}.
-Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?,scale?} (couleurs ou taille — scale 0,8 à 1,6 — d'UN seul élément désigné : reprends exactement son chemin ; tous les boutons du site : set_global button_scale en %), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, duplicate_section{template,section,position?} (copie juste après), replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid}, lock{template,section,locked}.
+Opérations : set_setting{template,section,block?,key,value}, set_global{key,value}, set_scheme_color{scheme,key,value} (TOUT le site : chaque section sur ce schéma change), section_colors{template,section,colors{background?,text?,accent?,…}} (couleurs d'UNE seule section, schéma dédié), element_style{template,section,path,role,text,color?,background?,scale?} (couleurs ou taille — scale 0,8 à 1,6 — d'UN seul élément désigné : reprends exactement son chemin ; tous les boutons du site : set_global button_scale en %), add_section{template,type,settings,blocks,position{after|before|index}}, remove_section, move_section{position}, toggle_section{disabled}, duplicate_section{template,section,position?} (copie juste après), replace_section{template,section,type,settings,blocks} (refaire une section dans un autre style en gardant ses contenus), add_block, remove_block, move_block, use_media{template,section,block?,key,assetId}, custom_section{type,name,liquid} (HTML/Liquid et animations CSS uniquement ; aucun JavaScript libre, événement on*, iframe ou URL active. Les scripts natifs restent gérés par le thème), lock{template,section,locked}.
 Le gabarit d'une section du groupe d'en-tête est « group:header », du pied de page « group:footer ».`;
 
 /**
- * Bibliothèque de la famille du projet (issue #141) : les 20 fonctions et, pour chacune, la section du thème et les
- * réglages de chaque disposition. L'IA choisit une fonction puis une disposition, jamais une ancienne section.
+ * Bibliothèque du thème installé (mission #190 : plus de familles) : ses sections propres (d'après ses maquettes) avec
+ * leurs dispositions, puis les fonctions de la bibliothèque commune qu'il sait rendre. L'IA choisit une fonction puis
+ * une disposition, jamais une ancienne section ni une section d'un autre thème.
  */
 function familyGuide(spec: ThemeSpec, kind: StoreKind | null): string {
-  const family = familyOf(kind, spec.direction);
-  if (!family) return "";
-  const lines = FAMILY_LIBRARY[family].map((e) => `${e.n}. ${e.name.fr} — ${e.dispositions.map((d) => `${d.label.fr} : ${d.type}${d.settings && Object.keys(d.settings).length ? ` ${JSON.stringify(d.settings)}` : ""}`).join(" | ")}`);
-  const chrome = (part: "header" | "footer") => chromePresets(family, part).map((x) => `${x.label.fr} ${JSON.stringify(x.settings)}`).join(" | ");
-  return `Bibliothèque « ${FAMILY_LABEL[family].fr} » (20 fonctions ; une fonction = une section, ses dispositions sont des réglages) :\n${lines.join("\n")}\nEn-tête (réglages de la section header, 5 dispositions) : ${chrome("header")}\nPied de page (réglages de la section footer, 5 dispositions) : ${chrome("footer")}\nNe reprends jamais le nom, les textes, les images ni les couleurs d'une démonstration (FRAISE, ONDE, ORBE, Atelier Rive) : seulement l'identité et les contenus de ce projet ; une information absente s'écrit « [À compléter : …] ».`;
+  const ok = new Set(compatibleSectionTypes(spec, kind));
+  const own = [...ok].filter((t) => isOwnSectionOf(spec.direction, t)).map((t) => {
+    const schema = sectionSchema(spec, t, "fr");
+    const disps = ownDispositions(schema as never, "fr");
+    return `${t} (${schema?.name ?? t})${disps.length > 1 ? ` — dispositions : ${disps.map((d) => `${d.label}${Object.keys(d.settings).length ? ` ${JSON.stringify(d.settings)}` : ""}`).join(" | ")}` : ""}`;
+  });
+  const lines = ALL_ENTRIES.map((e) => ({ e, d: e.dispositions.filter((d) => ok.has(d.type)) })).filter((x) => x.d.length).map(({ e, d }) => `${e.name.fr} — ${d.map((x) => `${x.label.fr} : ${x.type}${x.settings && Object.keys(x.settings).length ? ` ${JSON.stringify(x.settings)}` : ""}`).join(" | ")}`);
+  const prefer = kind ?? themeKinds(spec.direction)[0] ?? null;
+  const chrome = (part: "header" | "footer") => chromePresets(prefer, part).map((x) => `${x.label.fr} ${JSON.stringify(x.settings)}`).join(" | ");
+  return `${own.length ? `Sections propres au thème (dessinées d'après ses maquettes) :\n${own.join("\n")}\n` : ""}Bibliothèque commune (une fonction = une section, ses dispositions sont des réglages) :\n${lines.join("\n")}\nEn-tête (réglages de la section header) : ${chrome("header")}\nPied de page (réglages de la section footer) : ${chrome("footer")}`;
 }
 
 /** Référence stable du thème (mise en cache entre les appels) : sections, réglages, couleurs, opérations. */

@@ -52,16 +52,28 @@ const feature: CopyFn = (ctx, base) => {
       heading: real(angle?.title) ? angle!.title : inUse ? tr(ctx, "En situation", "In use") : tr(ctx, "Le produit en détail", "The product up close"), heading_accent: "",
       text: html(inUse ? positioning || story || ctx.product.summary : story || positioning || ctx.product.summary), button_label: buyLabel(ctx), button_link: productLink(ctx), image_alt: ctx.product.name, guarantee_text: "",
     }),
-    blocks: base.blocks?.some((b) => b.settings?.text || b.settings?.title) ? base.blocks : lines.map((text) => ({ type: "pill", settings: { text } })),
+    blocks: base.blocks?.some((b) => b.settings?.text || b.settings?.title || b.settings?.caption) ? base.blocks : base.settings.layout === "essentials" && base.blocks?.length ? essentials(ctx, base.blocks) : lines.map((text) => ({ type: "pill", settings: { text } })),
     samples: false,
   };
+};
+
+/** Essentiels (TRAVERSE) : icônes et gros plans de la disposition gardés ; leurs libellés viennent des caractéristiques
+ * confirmées du produit, dans l'ordre. Une icône sans caractéristique est retirée (aucun libellé inventé). */
+const essentials = (ctx: ContentContext, blocks: NonNullable<Parameters<CopyFn>[1]["blocks"]>) => {
+  const f = facts(ctx);
+  let i = 0, j = 0;
+  return blocks.flatMap((b) => {
+    if (b.type === "point") { const x = f[i++]; return x ? [{ type: b.type, settings: { ...b.settings, title: x.label, text: "" } }] : []; }
+    if (b.type === "detail") { const x = f[j++]; return [{ type: b.type, settings: { ...b.settings, caption: x?.label ?? "", image_alt: ctx.product.name } }]; }
+    return [b];
+  });
 };
 
 const cards: CopyFn = (ctx, base) => {
   const f = facts(ctx).slice(0, 3);
   return {
     settings: fill(base.settings, { heading: ctx.product.name || heading(ctx), heading_accent: tr(ctx, "en détail", "in detail"), text: html(ctx.product.summary) }),
-    blocks: base.blocks?.some((b) => b.settings?.title) ? base.blocks : f.length >= 2 ? f.map((x) => ({ type: "card", settings: { title: x.label, text: html(x.value) } })) : [{ type: "card", settings: { title: todo(ctx, "un détail du produit", "a product detail"), text: "" } }],
+    blocks: base.blocks?.some((b) => b.settings?.title) ? base.blocks : f.length >= 2 ? f.map((x, i) => ({ type: "card", settings: { ...(base.blocks?.[i]?.settings ?? {}), title: x.label, text: html(x.value) } })) : [{ type: "card", settings: { title: todo(ctx, "un détail du produit", "a product detail"), text: "" } }],
     samples: false,
   };
 };

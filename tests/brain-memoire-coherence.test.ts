@@ -101,7 +101,7 @@ describe("Project Brain 2B — mémoire et cohérence", async () => {
     it("média écarté par le client (route fichiers) → refus du scope images (visuels et photos), pas un fait", async () => {
       const pid = project();
       const aid = id();
-      run("INSERT INTO assets (id, project_id, user_id, name, kind, role, mime, size, storage_key, origin, meta, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", aid, pid, u.id, "mur-vide.jpg", "image", "lifestyle", "image/jpeg", 1, "k", "import", JSON.stringify({ subject: "mur vide", stock: { source: "pexels" } }), "ready", now());
+      run("INSERT INTO assets (id, project_id, user_id, name, kind, role, mime, size, storage_key, origin, meta, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", aid, pid, u.id, "mur-vide.jpg", "image", "lifestyle", "image/jpeg", 1, `${u.id}/${pid}/${aid}.jpg`, "import", JSON.stringify({ subject: "mur vide", stock: { source: "pexels" } }), "ready", now());
       await session();
       const { PATCH } = await import("@/app/api/files/[fid]/route");
       const res = await PATCH(new Request(`http://x/api/files/${aid}`, { method: "PATCH", body: JSON.stringify({ status: "rejected" }) }), { params: Promise.resolve({ fid: aid }) });

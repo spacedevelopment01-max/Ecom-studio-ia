@@ -89,10 +89,11 @@
     if (!header) return;
     var y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 40);
-    // En-tête transparent fixé : il reste sous le bandeau d'annonce tant que celui-ci est visible.
+    // En-tête transparent fixé : il reste sous le bandeau d'annonce (et sous toute barre posée au-dessus de la page,
+    // marquée data-es-top-bar, comme la mention d'un aperçu de démonstration) tant qu'ils sont visibles.
     if (header.classList.contains('es-header--transparent')) {
-      var ann = $('.es-announcement-section');
-      var annBottom = ann ? ann.getBoundingClientRect().bottom : 0;
+      var annBottom = 0;
+      Array.prototype.forEach.call(document.querySelectorAll('.es-announcement-section, [data-es-top-bar]'), function (el) { annBottom = Math.max(annBottom, el.getBoundingClientRect().bottom); });
       header.style.setProperty('--es-hoff', Math.max(0, annBottom) + 'px');
     }
     if (header.classList.contains('es-header--sticky')) header.classList.toggle('is-hidden', y > 300 && y > lastY && !document.body.classList.contains('menu-open'));
@@ -225,6 +226,31 @@
     });
   }
 
+  /* ---------- Ajout direct hors fiche (carte produit, gros plan, barre d'achat) ---------- */
+  /* Formulaire produit placé hors du bloc d'achat de la fiche : ajout sans quitter la page et ouverture du panier
+     latéral ; sans panier latéral, le formulaire part normalement vers le panier de la plateforme. */
+  function initQuickAdd() {
+    document.addEventListener('submit', function (e) {
+      var form = e.target;
+      if (!form || !form.matches || !form.matches('form[data-product-form]') || form.closest('[data-product-buy]')) return;
+      if (settings.cartType !== 'drawer' || !drawerEl() || !routes.cart_add) return;
+      e.preventDefault();
+      var btn = $('[data-add-button]', form) || $('button[type="submit"]', form);
+      if (btn) { btn.setAttribute('aria-busy', 'true'); btn.disabled = true; }
+      var fd = new FormData(form);
+      fd.append('sections', 'cart-drawer'); fd.append('sections_url', window.location.pathname);
+      fetch(routes.cart_add, { method: 'POST', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+        .then(function (res) {
+          if (!res.ok || res.body.status) { if (btn) btn.setAttribute('title', res.body.description || res.body.message || strings.error); return; }
+          if (res.body.sections) renderDrawer(res.body.sections['cart-drawer']);
+          return fetch(routes.cart + '.js', { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); }).then(function (cart) { updateCount(cart.item_count); openDrawer(); });
+        })
+        .catch(function () { HTMLFormElement.prototype.submit.call(form); })
+        .finally(function () { if (btn) { btn.removeAttribute('aria-busy'); btn.disabled = false; } });
+    });
+  }
+
   /* ---------- Lots (compose ton panier) et abonnement ---------- */
   function initOffers(root) {
     $$('[data-bundles]', root).forEach(function (box) {
@@ -336,6 +362,17 @@
     section.addEventListener('click', function (e) { if (e.target.closest('.es-bundle, [data-qty-step]')) setTimeout(stickySummary, 0); });
     section.addEventListener('input', function (e) { if (e.target.name === 'quantity') stickySummary(); });
     stickySummary();
+    // Option (taille) choisie dans la barre : coche la même valeur dans le formulaire principal, et inversement.
+    var opt = $('[data-sticky-option]', stickyBuy);
+    if (opt) {
+      opt.addEventListener('change', function () {
+        var idx = opt.getAttribute('data-sticky-option');
+        var input = Array.prototype.find.call(section.querySelectorAll('#MainBuy [data-option-index="' + idx + '"]'), function (i) { return i.value === opt.value; });
+        if (input && input.tagName === 'SELECT') { input.value = opt.value; input.dispatchEvent(new Event('change', { bubbles: true })); }
+        else if (input) { input.checked = true; input.dispatchEvent(new Event('change', { bubbles: true })); }
+      });
+      section.addEventListener('change', function (e) { var t = e.target; if (t && t.closest && t.closest('#MainBuy') && t.getAttribute('data-option-index') === opt.getAttribute('data-sticky-option') && (t.checked || t.tagName === 'SELECT')) opt.value = t.value; });
+    }
     var btn = $('[data-sticky-add]', stickyBuy);
     btn && btn.addEventListener('click', function () {
       var form = $('[data-product-form]', mainBuy);
@@ -359,7 +396,7 @@
     else if (q > 1) parts.push(q + ' ×');
     if (v.title && v.title !== 'Default Title') parts.push(v.title);
     var meta = $('[data-sticky-meta]', stickyBuy); if (meta) meta.textContent = parts.join(' · ') + (parts.length ? ' ·' : '');
-    var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) total.textContent = formatMoney(Math.round(v.price * q * (100 - discount) / 100));
+    var total = $('[data-sticky-total]', stickyBuy); if (total && v.price != null) { var m = formatMoney(Math.round(v.price * q * (100 - discount) / 100)); total.textContent = total.hasAttribute('data-trim-zeros') ? m.replace(/[.,]00(?=\D|$)/, '') : m; }
     var btn = $('[data-sticky-add]', stickyBuy);
     if (btn) { btn.disabled = !v.available || v.price == null; btn.textContent = v.price == null ? strings.notForSale : strings.addToCart; }
   }
@@ -780,6 +817,7 @@
     initMenu();
     initCart();
     initBuy(document);
+    initQuickAdd();
     initOffers(document);
     initEta(document);
     initGallery();
@@ -798,4 +836,27 @@
 
   /* Éditeur de thème Shopify : réinitialise les sections rechargées. */
   document.addEventListener('shopify:section:load', function (e) { initBookingCal(e.target); initNarrative(e.target); initWords(e.target); initCounters(e.target); initCompare(e.target); initGlow(e.target); initScrollEffects(); initReveal(e.target); initBuy(e.target); initOffers(e.target); initEta(e.target); initStory(); initRoutine(); initHGallery(); initParallax(); initVideos(); initGallery(); });
+})();
+
+/* Bandeau de préférences de cookies (réglage du thème « Cookies ») : choix gardé dans le navigateur et transmis à
+   l'API de confidentialité des clients de Shopify si elle est chargée ; un lien vers « #cookies » rouvre le bandeau. */
+(function () {
+  var box = document.querySelector('[data-cookie-banner]'); if (!box) return;
+  var KEY = 'es-cookie-consent';
+  function read() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
+  function send(v) { try { if (window.Shopify && Shopify.customerPrivacy && Shopify.customerPrivacy.setTrackingConsent) Shopify.customerPrivacy.setTrackingConsent({ analytics: v.analytics, marketing: v.marketing, preferences: v.analytics, sale_of_data: v.marketing }, function () {}); } catch (e) { /* API absente */ } }
+  var prefs = box.querySelector('[data-cookie-prefs]'), custom = box.querySelector('[data-cookie-customize]'), saveBtn = box.querySelector('[data-cookie-choice="save"]');
+  function open() { box.hidden = false; var v = read(); if (v && prefs) { try { v = JSON.parse(v); prefs.analytics.checked = !!v.analytics; prefs.marketing.checked = !!v.marketing; } catch (e) { /* choix illisible */ } } }
+  function close(v) { save(v); send(v); box.hidden = true; }
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b === custom) { var on = prefs.hidden; prefs.hidden = !on; saveBtn.hidden = !on; custom.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) prefs.querySelector('input').focus(); return; }
+    var c = b.getAttribute('data-cookie-choice');
+    if (c === 'accept') close({ analytics: true, marketing: true });
+    else if (c === 'refuse') close({ analytics: false, marketing: false });
+    else if (c === 'save') close({ analytics: prefs.analytics.checked, marketing: prefs.marketing.checked });
+  });
+  document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('a[href$="#cookies"]'); if (!a) return; e.preventDefault(); open(); });
+  if (!read()) open();
 })();

@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /** Vrai moteur/stockage/charte, fournisseurs et verdicts INJECTÉS. Aucune qualité créative réelle démontrée. */
 import { describe, it, expect, vi } from "vitest";
 const control = vi.hoisted(() => ({ accepted: ["t1"] as string[], draws: [] as string[], copiedPalettes: false, failAt: null as null | string, uncertain: false, relayCalls: 0, enableRelay: false }));

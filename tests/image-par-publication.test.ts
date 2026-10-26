@@ -1,3 +1,4 @@
+vi.mock("@/lib/public-download",()=>import("./public-download-double"));
 /**
  * Calendrier d'une activité de services : avec l'IA, chaque publication reçoit sa propre image, faite d'après
  * son sujet ; sans fournisseur d'images (Découverte, IA coupée) ou sans contrôle visuel possible, rien n'est

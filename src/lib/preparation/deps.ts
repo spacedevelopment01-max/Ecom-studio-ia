@@ -1,3 +1,5 @@
+import {documentsMatch} from "./documents";
+import {analyzed} from "./evidence";
 import { redact } from "../redact";
 import { placementHash, receiptFor } from "./media-context";
 import { stableHash } from "../brain/hash";
@@ -67,8 +69,10 @@ export type Dependencies = {
 export const realDependencies: Dependencies = {
   inspect: inspectBrief,
   async research(p, b, ctx, paid) {
-    const r = await researchProject(p, b);
-    return paid ? analyzeResearch(p, ctx, r) : r;
+    if(!paid||!analyzed(b)||b.missing.length||!documentsMatch(p.id,b.documentStamp))throw new Error("Compréhension IA validée et fournisseur autorisé nécessaires avant toute recherche ; aucun angle local de remplacement.");
+    const r = await ctx.step("research-pages-v3",()=>researchProject(p, b));
+    remember(p.id,{kind:"artifact",key:"marketing.research.pages",value:JSON.stringify(r),source:"local"});
+    return analyzeResearch(p, ctx, r);
   },
   async identity(p, ctx, paid) {
     const provided = stateOf(p.id)?.stages.brief?.data.input.brandName;

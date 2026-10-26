@@ -1,0 +1,48 @@
+{%- comment -%}
+  ATELIER NUANCE : « Des détails qui font la différence. » Rangée de photos du lieu bord à bord sur ordinateur,
+  carrousel avec flèches sur téléphone (planche 04).
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if section.blocks.size > 0 -%}
+<section class="an-section an-details" data-an-carousel>
+  <div class="an-wrap">
+    {%- if s.eyebrow != blank -%}<p class="an-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+    {%- if s.heading != blank -%}<h2 class="an-title an-title--md">{{ s.heading }}</h2>{%- endif -%}
+  </div>
+  <div class="an-details__viewport">
+    <ul class="an-details__track" role="list" data-an-track aria-label="{{ s.heading | escape }}">
+      {%- for block in section.blocks -%}
+        <li class="an-details__item" {{ block.shopify_attributes }}>{% render 'an-img', image: block.settings.image, asset: block.settings.image_asset, alt: block.settings.alt, pos: block.settings.image_position %}</li>
+      {%- endfor -%}
+    </ul>
+    <button type="button" class="an-details__nav an-details__nav--prev" data-an-prev aria-label="{{ s.prev_label }}">{% render 'an-icon', name: 'prev' %}</button>
+    <button type="button" class="an-details__nav an-details__nav--next" data-an-next aria-label="{{ s.next_label }}">{% render 'an-icon', name: 'next' %}</button>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Détails du lieu",
+  "class": "an-details-section",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "Un lieu d'exception" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Des détails qui font la différence." },
+    { "type": "text", "id": "prev_label", "label": "Bouton précédent (lecteurs d'écran)", "default": "Photo précédente" },
+    { "type": "text", "id": "next_label", "label": "Bouton suivant (lecteurs d'écran)", "default": "Photo suivante" }
+  ],
+  "blocks": [
+    {
+      "type": "photo", "name": "Photo",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+        { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+        { "type": "text", "id": "alt", "label": "Texte alternatif de l'image" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Détails du lieu" }]
+}
+{% endschema %}

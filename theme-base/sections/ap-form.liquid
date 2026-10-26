@@ -1,0 +1,363 @@
+{%- comment -%}
+  Formulaires d'APLAT (planches 03, 05, 08 et 10) :
+  - contact : présentation et liens à gauche, formulaire « Envoyez-nous un message » au centre, photo et coordonnées
+    à droite (ordinateur) ; sur téléphone : formulaire, deux liens et coordonnées ;
+  - quote : demande de devis en quatre blocs sur une page (ordinateur : projet, chantier, photos, coordonnées) et en
+    deux étapes sur téléphone (« Votre projet » puis « Vos coordonnées »), champs conservés entre les étapes.
+  Champs, listes et photos d'exemple : blocs modifiables. Contrôle des champs, erreurs près des champs et résumé
+  accessible, double envoi bloqué, photos JPG/PNG de 10 Mo au plus (miniature, nom, retrait, erreur) : assets/aplat.js.
+  Envoi : formulaire de contact de la boutique. Démonstration : envoi simulé et annoncé, rien n'est transmis. Les photos
+  ne passent pas par le formulaire de contact de la plateforme : sur le site publié, le bloc photos affiche la mention
+  prévue tant qu'aucun service d'envoi de fichiers n'est relié (aucun faux succès).
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+  assign demo = false
+  if shop.es_demo
+    assign demo = true
+  endif
+  assign fields = section.blocks | where: 'type', 'field'
+  assign links = section.blocks | where: 'type', 'link'
+  assign examples = section.blocks | where: 'type', 'example'
+  assign form_id = 'ApForm-' | append: section.id
+  assign quote = false
+  if s.kind == 'quote'
+    assign quote = true
+  endif
+-%}
+<section class="ap-s ap-form ap-form--{{ s.kind }}" aria-labelledby="ApFo-{{ section.id }}">
+  <div class="ap-form__inner ap-wrap">
+    <div class="ap-form__intro">
+      {%- if s.eyebrow != blank -%}<p class="ap-eyebrow ap-only-m">{{ s.eyebrow | escape }}</p>{%- endif -%}
+      <h1 class="ap-form__title" id="ApFo-{{ section.id }}">{%- render 'ap-dm', d: s.heading, m: s.mobile_heading, title: true -%}</h1>
+      {%- if s.show_rule -%}<span class="ap-rule" aria-hidden="true"></span>{%- endif -%}
+      {%- if s.text != blank -%}<p class="ap-form__text">{%- render 'ap-dm', d: s.text, m: s.mobile_text -%}</p>{%- endif -%}
+      {%- if s.image != blank or s.image_asset != blank -%}
+        <div class="ap-form__visual">
+          {%- render 'ap-img', img: s.image, asset: s.image_asset, alt: s.image_alt, fx: s.focus_x, fy: s.focus_y, cls: 'ap-form__photo', width: 900 -%}
+          {%- if s.visual_title != blank -%}<div class="ap-form__visual-box"><p class="ap-form__visual-title">{{ s.visual_title | escape | newline_to_br }}</p>{%- if s.visual_text != blank -%}<p>{{ s.visual_text | escape | newline_to_br }}</p>{%- endif -%}</div>{%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+    {%- if links.size > 0 -%}
+      <ul class="ap-form__links" role="list">
+        {%- for b in links -%}
+          <li class="{% if b.settings.show_on != 'all' %}ap-only-{{ b.settings.show_on | slice: 0 }}{% endif %}" {{ b.shopify_attributes }}><a href="{{ b.settings.link | default: routes.root_url }}">{%- if b.settings.icon != 'none' -%}<span class="ap-form__link-icon">{% render 'ap-icon', name: b.settings.icon %}</span>{%- endif -%}<span class="ap-form__link-body"><strong>{{ b.settings.title | escape }}</strong>{%- if b.settings.text != blank -%}<span>{%- render 'ap-dm', d: b.settings.text, m: b.settings.mobile_text -%}</span>{%- endif -%}</span>{% render 'ap-icon', name: 'arrow' %}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+    <div class="ap-form__panel" data-ap-formbox data-kind="{{ s.kind }}">
+      {%- form 'contact', class: 'ap-form__form', id: form_id, novalidate: 'novalidate' -%}
+        <input type="hidden" name="contact[formulaire]" value="{{ s.form_label | default: s.kind | escape }}">
+        {%- if quote -%}
+          <ol class="ap-stepper ap-only-m" data-ap-stepper role="list" aria-label="{{ s.steps_label | escape }}">
+            <li data-n="1"><span class="ap-stepper__dot" aria-hidden="true"><span>1</span>{% render 'ap-icon', name: 'check' %}</span>{{ s.step1_label | escape }}</li>
+            <li data-n="2"><span class="ap-stepper__dot" aria-hidden="true"><span>2</span>{% render 'ap-icon', name: 'check' %}</span>{{ s.step2_label | escape }}</li>
+          </ol>
+        {%- endif -%}
+        <div class="ap-form__summary" data-ap-summary tabindex="-1" role="alert" hidden>
+          <p class="ap-form__summary-title">{% render 'ap-icon', name: 'alert' %}{{ s.summary_title | escape }}</p>
+          <ul></ul>
+        </div>
+        {%- if form.errors -%}<div class="ap-form__summary" role="alert"><p class="ap-form__summary-title">{% render 'ap-icon', name: 'alert' %}{{ s.fail_text | escape }}</p></div>{%- endif -%}
+        {%- if form.posted_successfully? -%}<p class="ap-form__ok" role="status">{{ s.success_text | escape }}{%- if s.confirm_link != blank -%} <a href="{{ s.confirm_link }}">{{ s.confirm_link_label | escape }}</a>{%- endif -%}</p>{%- endif -%}
+        {%- assign groups = '1,2,3,4' | split: ',' -%}
+        {%- if quote -%}<div class="ap-form__col ap-form__col--1">{%- endif -%}
+        {%- for g in groups -%}
+          {%- if quote and g == '3' -%}
+              <div class="ap-form__nav ap-only-m" data-ap-step="1">
+                <button type="button" class="ap-btn ap-btn--petrol ap-form__next" data-ap-next>{{ s.continue_label | escape }}{% render 'ap-icon', name: 'arrow' %}</button>
+                <div class="ap-form__aside"><a class="ap-form__back" href="{{ routes.root_url }}">{% render 'ap-icon', name: 'arrow-left' %}{{ s.back_site_label | escape }}</a>{%- if demo -%}<span>{{ s.demo_note | escape }}</span>{%- endif -%}</div>
+              </div>
+            </div>
+            <div class="ap-form__col ap-form__col--2">
+          {%- endif -%}
+          {%- assign gcount = 0 -%}
+          {%- assign gexcount = 0 -%}
+          {%- for b in section.blocks -%}{%- if b.settings.group == g -%}{%- if b.type == 'field' -%}{%- assign gcount = gcount | plus: 1 -%}{%- elsif b.type == 'example' -%}{%- assign gexcount = gexcount | plus: 1 -%}{%- endif -%}{%- endif -%}{%- endfor -%}
+          {%- if gcount > 0 or gexcount > 0 -%}
+            {%- liquid
+              assign gtitle = ''
+              case g
+                when '1'
+                  assign gtitle = s.group1_title
+                when '2'
+                  assign gtitle = s.group2_title
+                when '3'
+                  assign gtitle = s.group3_title
+                when '4'
+                  assign gtitle = s.group4_title
+              endcase
+              assign step = 1
+              if g == '3' or g == '4'
+                assign step = 2
+              endif
+            -%}
+            {%- if quote and g == '1' -%}<div class="ap-step-head ap-only-m" data-ap-step="1"><h2 class="ap-step-head__title">{{ s.step1_heading | escape }}</h2><p>{{ s.step1_text | escape }}</p></div>{%- endif -%}
+            {%- if quote and g == '3' -%}<div class="ap-step-head ap-only-m" data-ap-step="2"><h2 class="ap-step-head__title">{{ s.step2_heading | escape }}</h2><p>{{ s.step2_text | escape }}</p></div>{%- endif -%}
+            <fieldset class="ap-group ap-group--{{ g }}"{% if quote %} data-ap-step="{{ step }}"{% endif %}>
+              {%- if gtitle != blank -%}<legend class="ap-group__title">{%- if quote -%}<span class="ap-group__num" aria-hidden="true">{{ g }}</span>{%- endif -%}{{ gtitle | escape }}</legend>{%- endif -%}
+              <div class="ap-group__grid">
+                {%- for b in fields -%}
+                  {%- if b.settings.group != g -%}{%- continue -%}{%- endif -%}
+                  {%- liquid
+                    assign f = b.settings
+                    assign fid = 'ApF-' | append: section.id | append: '-' | append: b.id
+                    assign fname = 'contact[' | append: f.name | append: ']'
+                    assign label_text = f.label
+                  -%}
+                  {%- capture field_attrs -%}{% if f.required %} required aria-required="true"{% endif %}{% if f.summary != blank %} data-ap-sum="{{ f.summary }}"{% endif %}{%- endcapture -%}
+                  <div class="ap-field ap-field--{{ f.kind }} ap-field--w-{{ f.width }}{% if f.show_on != 'all' %} ap-only-{{ f.show_on | slice: 0 }}{% endif %}" data-error="{{ f.error | escape }}" data-error-format="{{ f.error_format | escape }}"{% if f.kind == 'text' or f.kind == 'email' or f.kind == 'tel' %} data-check{% endif %} {{ b.shopify_attributes }}>
+                    {%- case f.kind -%}
+                      {%- when 'choice' -%}
+                        {%- assign opts = f.options | newline_to_br | split: '<br />' -%}
+                        <p class="ap-field__label" id="{{ fid }}-l">{%- render 'ap-dm', d: label_text, m: f.mobile_label -%}{% if f.required %} <span aria-hidden="true">*</span>{% endif %}{% if f.hint != blank %} <span class="ap-field__hint">{{ f.hint | escape }}</span>{% endif %}</p>
+                        <div class="ap-choices" role="radiogroup" aria-labelledby="{{ fid }}-l">
+                          {%- for o in opts -%}{%- assign ov = o | strip -%}{%- if ov != blank -%}<label class="ap-choice"><input type="radio" id="{{ fid }}{% if forloop.first %}{% else %}-{{ forloop.index }}{% endif %}" name="{{ fname }}" value="{{ ov | escape }}" data-label="{{ ov | escape }}"{{ field_attrs }}{% if f.preselect and forloop.first %} checked{% endif %}><span>{{ ov | escape }}</span></label>{%- endif -%}{%- endfor -%}
+                        </div>
+                      {%- when 'consent' -%}
+                        <label class="ap-consent-check" for="{{ fid }}"><input type="checkbox" id="{{ fid }}" name="{{ fname }}" value="oui"{{ field_attrs }}><span>{{ label_text | escape }}{%- if f.link_label != blank -%} <a href="{{ f.link | default: routes.root_url }}">{{ f.link_label | escape }}</a>{%- endif -%}</span></label>
+                      {%- when 'photos' -%}
+                        {%- if demo or s.photos_live -%}
+                          <div class="ap-photos" data-ap-photos data-max-mb="{{ s.photo_max_mb }}" data-error-type="{{ s.photo_error_type | escape }}" data-error-size="{{ s.photo_error_size | escape }}" data-remove-label="{{ s.photo_remove_label | escape }}" data-removed-label="{{ s.photo_removed_label | escape }}">
+                            <label class="ap-photos__drop" data-ap-drop for="{{ fid }}">
+                              {% render 'ap-icon', name: 'image' %}
+                              <strong>{%- render 'ap-dm', d: label_text, m: f.mobile_label -%}</strong>
+                              <span>{%- render 'ap-dm', d: f.placeholder, m: f.mobile_placeholder -%}</span>
+                              {%- if f.hint != blank -%}<span class="ap-photos__hint">{{ f.hint | escape | newline_to_br }}</span>{%- endif -%}
+                              {%- if f.button_label != blank -%}<span class="ap-btn ap-btn--petrol ap-btn--sm ap-photos__pick ap-only-d" aria-hidden="true">{{ f.button_label | escape }}</span>{%- endif -%}
+                              <input class="ap-sr" type="file" id="{{ fid }}" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple>
+                            </label>
+                            <ul class="ap-photos__list" data-ap-photo-list role="list" aria-live="polite"></ul>
+                            <div class="ap-photos__error" data-ap-photo-error hidden role="alert">
+                              <span class="ap-photos__error-thumb" aria-hidden="true">{% render 'ap-icon', name: 'image' %}</span>
+                              <p><span data-ap-photo-error-msg></span><span class="ap-photos__error-name" data-ap-photo-error-name></span></p>
+                              <button type="button" class="ap-btn ap-btn--petrol ap-btn--sm" data-ap-photo-retry>{{ s.photo_retry_label | escape }}</button>
+                            </div>
+                            <p class="ap-sr" data-ap-photo-status role="status"></p>
+                          </div>
+                        {%- else -%}
+                          <p class="ap-photos__off">{{ s.photos_off_text | escape }}</p>
+                        {%- endif -%}
+                      {%- else -%}
+                        <label class="ap-field__label" for="{{ fid }}">{%- render 'ap-dm', d: label_text, m: f.mobile_label -%}{% if f.required %} <span aria-hidden="true">*</span>{% endif %}{% if f.hint != blank %} <span class="ap-field__hint">{{ f.hint | escape }}</span>{% endif %}</label>
+                        <div class="ap-field__control">
+                          {%- case f.kind -%}
+                            {%- when 'textarea' -%}<textarea id="{{ fid }}" name="{{ fname }}" rows="{{ f.rows | default: 4 }}" placeholder="{{ f.placeholder | escape }}"{% if f.mobile_placeholder != blank %} data-ph-m="{{ f.mobile_placeholder | escape }}"{% endif %}{{ field_attrs }}></textarea>
+                            {%- when 'select' -%}
+                              {%- assign opts = f.options | newline_to_br | split: '<br />' -%}
+                              <select id="{{ fid }}" name="{{ fname }}"{% if f.mobile_placeholder != blank %} data-ph-m="{{ f.mobile_placeholder | escape }}"{% endif %}{{ field_attrs }}><option value="">{{ f.placeholder | escape }}</option>{%- for o in opts -%}{%- assign ov = o | strip -%}{%- if ov != blank -%}<option value="{{ ov | escape }}">{{ ov | escape }}</option>{%- endif -%}{%- endfor -%}</select>
+                              {% render 'ap-icon', name: 'chevron-down' %}
+                            {%- else -%}<input id="{{ fid }}" type="{{ f.kind }}" name="{{ fname }}" placeholder="{{ f.placeholder | escape }}"{% if f.kind == 'email' %} autocomplete="email"{% elsif f.kind == 'tel' %} autocomplete="tel" inputmode="tel"{% elsif f.name == 'name' %} autocomplete="name"{% elsif f.pattern != blank %} inputmode="numeric" pattern="{{ f.pattern }}"{% endif %}{% if f.mobile_placeholder != blank %} data-ph-m="{{ f.mobile_placeholder | escape }}"{% endif %}{{ field_attrs }}>
+                              <span class="ap-field__ok" aria-hidden="true">{% render 'ap-icon', name: 'check' %}</span>
+                          {%- endcase -%}
+                        </div>
+                    {%- endcase -%}
+                    <p class="ap-field__error" hidden>{% render 'ap-icon', name: 'info' %}<span class="ap-field__error-text"></span></p>
+                  </div>
+                {%- endfor -%}
+              </div>
+              {%- if gexcount > 0 -%}
+                <div class="ap-examples">
+                  {%- if s.examples_title != blank -%}<p class="ap-examples__title">{{ s.examples_title | escape }}</p>{%- endif -%}
+                  <ul class="ap-examples__list" role="list" data-ap-photo-examples>
+                    {%- for e in examples -%}{%- if e.settings.group != g -%}{%- continue -%}{%- endif -%}<li {{ e.shopify_attributes }}>{%- render 'ap-img', img: e.settings.image, asset: e.settings.image_asset, alt: '', fx: e.settings.focus_x, fy: e.settings.focus_y, cls: 'ap-examples__img', width: 500 -%}{%- if e.settings.caption != blank -%}<span>{{ e.settings.caption | escape | newline_to_br }}</span>{%- endif -%}</li>{%- endfor -%}
+                  </ul>
+                  {%- if s.examples_note != blank -%}<p class="ap-examples__note ap-only-m">{{ s.examples_note | escape }}</p>{%- endif -%}
+                </div>
+              {%- endif -%}
+            </fieldset>
+
+          {%- endif -%}
+        {%- endfor -%}
+        <div class="ap-form__submit"{% if quote %} data-ap-step="2"{% endif %}>
+          <div class="ap-form__fail" data-ap-fail tabindex="-1" role="alert" hidden>{% render 'ap-icon', name: 'alert' %}<span>{{ s.fail_text | escape }}</span></div>
+          <button type="submit" class="ap-btn ap-btn--petrol ap-form__send">{%- render 'ap-dm', d: s.submit_label, m: s.mobile_submit_label -%}{% render 'ap-icon', name: 'arrow' %}</button>
+          <p class="ap-form__status" data-ap-status tabindex="-1" role="status" aria-live="polite" hidden></p>
+          {%- if s.submit_note != blank -%}<p class="ap-form__note">{{ s.submit_note | escape }}</p>{%- endif -%}
+          {%- if quote -%}<div class="ap-form__aside ap-only-m"><button type="button" class="ap-form__back" data-ap-prev>{% render 'ap-icon', name: 'arrow-left' %}{{ s.back_label | escape }}</button>{%- if demo -%}<span>{{ s.demo_note | escape }}</span>{%- endif -%}</div>{%- endif -%}
+          {%- if demo -%}<p class="ap-form__demo{% if quote %} ap-only-d{% endif %}">{{ s.demo_note | escape }}</p>{%- endif -%}
+        </div>
+        {%- if quote -%}</div>{%- endif -%}
+      {%- endform -%}
+    </div>
+    {%- if s.side_image != blank or s.side_image_asset != blank or s.info_title != blank -%}
+      <div class="ap-form__side">
+        {%- if s.side_image != blank or s.side_image_asset != blank -%}{%- render 'ap-img', img: s.side_image, asset: s.side_image_asset, alt: s.side_image_alt, fx: s.side_focus_x, fy: s.side_focus_y, cls: 'ap-form__side-img', width: 900 -%}{%- endif -%}
+        {%- if s.info_title != blank -%}<div class="ap-form__info">{% render 'ap-icon', name: 'pin' %}<p class="ap-form__info-title">{{ s.info_title | escape }}</p>{%- if s.info_text != blank -%}<p class="ap-form__info-text">{{ s.info_text | escape | newline_to_br }}</p>{%- endif -%}{%- if s.info_phone != blank -%}<p class="ap-form__info-phone"><a href="tel:{{ s.info_phone | remove: ' ' | remove: '.' | escape }}">{{ s.info_phone | escape }}</a></p>{%- endif -%}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+{%- comment -%} Réglages du formulaire lus par aplat.js : bloc de données inerte, aucun script dans les gabarits (exports
+  WordPress et PrestaShop compris, contrôle « dangerous_script »). {%- endcomment -%}
+<script type="application/json" data-ap-form-config="ApForm-{{ section.id }}">{"demo":{% if demo %}true{% else %}false{% endif %},"sending":{{ s.sending_text | json }}{% if demo %},"done":{{ s.demo_done_text | json }}{% endif %}}</script>
+{%- if demo -%}
+  {%- comment -%} Lien réel (adresse réécrite par l'aperçu du studio comme les autres liens) suivi après l'envoi simulé. {%- endcomment -%}
+  {%- if s.confirm_link != blank -%}<a href="{{ s.confirm_link }}" id="ApConfirm-{{ section.id }}" data-ap-confirm-link hidden tabindex="-1" aria-hidden="true"></a>{%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Formulaire APLAT",
+  "tag": "div",
+  "class": "es-section-wrapper",
+  "settings": [
+    {
+      "type": "select", "id": "kind", "label": "Formulaire", "default": "contact",
+      "options": [ { "value": "contact", "label": "Contact" }, { "value": "quote", "label": "Demande de devis (deux étapes sur téléphone)" } ]
+    },
+    { "type": "text", "id": "form_label", "label": "Nom du formulaire (dans le message reçu)" },
+    { "type": "text", "id": "eyebrow", "label": "Surtitre (téléphone)" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "info": "Les mots entre astérisques sont en bleu pétrole." },
+    { "type": "textarea", "id": "mobile_heading", "label": "Titre sur téléphone" },
+    { "type": "checkbox", "id": "show_rule", "label": "Filet sous le titre", "default": false },
+    { "type": "textarea", "id": "text", "label": "Texte" },
+    { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+    { "type": "image_picker", "id": "image", "label": "Photo sous le texte" },
+    { "type": "text", "id": "image_asset", "label": "Photo sous le texte (fichier du thème)" },
+    { "type": "text", "id": "image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "textarea", "id": "visual_title", "label": "Encart sur la photo : titre" },
+    { "type": "textarea", "id": "visual_text", "label": "Encart sur la photo : texte" },
+    { "type": "header", "content": "Blocs du formulaire" },
+    { "type": "text", "id": "group1_title", "label": "Bloc 1" },
+    { "type": "text", "id": "group2_title", "label": "Bloc 2" },
+    { "type": "text", "id": "group3_title", "label": "Bloc 3" },
+    { "type": "text", "id": "group4_title", "label": "Bloc 4" },
+    { "type": "text", "id": "examples_title", "label": "Photos d'exemple : titre" },
+    { "type": "text", "id": "examples_note", "label": "Photos d'exemple : mention (téléphone)" },
+    { "type": "header", "content": "Étapes sur téléphone (devis)" },
+    { "type": "text", "id": "steps_label", "label": "Étapes (lecteurs d'écran)", "default": "Étapes de la demande" },
+    { "type": "text", "id": "step1_label", "label": "Étape 1", "default": "Votre projet" },
+    { "type": "text", "id": "step2_label", "label": "Étape 2", "default": "Vos coordonnées" },
+    { "type": "text", "id": "step1_heading", "label": "Étape 1 : titre" },
+    { "type": "text", "id": "step1_text", "label": "Étape 1 : texte" },
+    { "type": "text", "id": "step2_heading", "label": "Étape 2 : titre" },
+    { "type": "text", "id": "step2_text", "label": "Étape 2 : texte" },
+    { "type": "text", "id": "continue_label", "label": "Bouton continuer", "default": "Continuer" },
+    { "type": "text", "id": "back_label", "label": "Retour à l'étape 1", "default": "Modifier mon projet" },
+    { "type": "text", "id": "back_site_label", "label": "Retour au site", "default": "Retour au site" },
+    { "type": "header", "content": "Envoi" },
+    { "type": "text", "id": "submit_label", "label": "Bouton d'envoi", "default": "Envoyer ma demande" },
+    { "type": "text", "id": "mobile_submit_label", "label": "Bouton d'envoi sur téléphone" },
+    { "type": "text", "id": "submit_note", "label": "Mention sous le bouton" },
+    { "type": "text", "id": "summary_title", "label": "Résumé des erreurs : titre", "default": "Vérifiez les champs suivants :" },
+    { "type": "text", "id": "sending_text", "label": "Message pendant l'envoi", "default": "Envoi en cours…" },
+    { "type": "text", "id": "fail_text", "label": "Message d'échec", "default": "La demande n'a pas été envoyée. Réessayez." },
+    { "type": "text", "id": "success_text", "label": "Message après envoi (site publié)", "default": "Votre demande a bien été transmise." },
+    { "type": "url", "id": "confirm_link", "label": "Page de confirmation" },
+    { "type": "text", "id": "confirm_link_label", "label": "Lien vers la confirmation", "default": "Voir le récapitulatif" },
+    { "type": "text", "id": "demo_note", "label": "Mention de démonstration", "default": "Démonstration — demande non envoyée" },
+    { "type": "text", "id": "demo_done_text", "label": "Message après envoi simulé", "default": "Démonstration — demande non envoyée : vos informations ont été vérifiées, rien n'a été transmis." },
+    { "type": "header", "content": "Photos" },
+    { "type": "checkbox", "id": "photos_live", "label": "Envoi de photos relié à la boutique", "info": "À cocher seulement si un service d'envoi de fichiers est installé ; sinon la mention ci-dessous s'affiche.", "default": false },
+    { "type": "text", "id": "photos_off_text", "label": "Mention sans envoi de photos", "default": "L'envoi de photos n'est pas encore relié à ce site : vous pourrez les transmettre lors de l'échange sur votre projet." },
+    { "type": "range", "id": "photo_max_mb", "label": "Taille maximale par photo", "min": 1, "max": 20, "step": 1, "unit": "Mo", "default": 10 },
+    { "type": "text", "id": "photo_error_type", "label": "Erreur de format", "default": "Ce fichier n'a pas été ajouté. Choisissez une image JPG ou PNG." },
+    { "type": "text", "id": "photo_error_size", "label": "Erreur de taille", "default": "Ce fichier n'a pas été ajouté : il dépasse 10 Mo." },
+    { "type": "text", "id": "photo_retry_label", "label": "Bouton réessayer", "default": "Choisir un fichier" },
+    { "type": "text", "id": "photo_remove_label", "label": "Bouton retirer (lecteurs d'écran)", "default": "Retirer" },
+    { "type": "text", "id": "photo_removed_label", "label": "Annonce après retrait", "default": "Photo retirée." },
+    { "type": "header", "content": "Colonne de droite (contact)" },
+    { "type": "image_picker", "id": "side_image", "label": "Photo" },
+    { "type": "text", "id": "side_image_asset", "label": "Photo (fichier du thème)" },
+    { "type": "text", "id": "side_image_alt", "label": "Texte alternatif" },
+    { "type": "range", "id": "side_focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "side_focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+    { "type": "text", "id": "info_title", "label": "Coordonnées : titre" },
+    { "type": "textarea", "id": "info_text", "label": "Coordonnées : texte" },
+    { "type": "text", "id": "info_phone", "label": "Coordonnées : téléphone (lien d'appel)" }
+  ],
+  "blocks": [
+    {
+      "type": "field", "name": "Champ",
+      "settings": [
+        {
+          "type": "select", "id": "kind", "label": "Type", "default": "text",
+          "options": [
+            { "value": "text", "label": "Texte court" },
+            { "value": "email", "label": "E-mail" },
+            { "value": "tel", "label": "Téléphone" },
+            { "value": "textarea", "label": "Texte long" },
+            { "value": "select", "label": "Liste déroulante" },
+            { "value": "choice", "label": "Choix unique (boutons)" },
+            { "value": "consent", "label": "Case de consentement" },
+            { "value": "photos", "label": "Photos" }
+          ]
+        },
+        { "type": "text", "id": "label", "label": "Libellé" },
+        { "type": "text", "id": "mobile_label", "label": "Libellé sur téléphone" },
+        { "type": "text", "id": "hint", "label": "Précision après le libellé", "info": "Ex. : (facultatif)" },
+        { "type": "text", "id": "name", "label": "Identifiant du champ", "info": "Sans espace. Ex. : commune" },
+        { "type": "text", "id": "placeholder", "label": "Texte indicatif" },
+        { "type": "text", "id": "mobile_placeholder", "label": "Texte indicatif sur téléphone" },
+        { "type": "textarea", "id": "options", "label": "Choix", "info": "Un choix par ligne (listes et boutons)." },
+        { "type": "checkbox", "id": "preselect", "label": "Premier choix coché", "default": false },
+        { "type": "checkbox", "id": "required", "label": "Obligatoire", "default": false },
+        { "type": "text", "id": "pattern", "label": "Format attendu (expression)", "info": "Ex. : [0-9]{5} pour un code postal." },
+        { "type": "text", "id": "error", "label": "Message si vide", "default": "Veuillez renseigner ce champ." },
+        { "type": "text", "id": "error_format", "label": "Message si mal saisi" },
+        { "type": "text", "id": "link_label", "label": "Lien après le texte (consentement)" },
+        { "type": "url", "id": "link", "label": "Adresse du lien" },
+        { "type": "text", "id": "button_label", "label": "Bouton (photos)" },
+        { "type": "range", "id": "rows", "label": "Hauteur (texte long)", "min": 2, "max": 8, "step": 1, "default": 4 },
+        {
+          "type": "select", "id": "group", "label": "Bloc", "default": "1",
+          "options": [ { "value": "1", "label": "Bloc 1" }, { "value": "2", "label": "Bloc 2" }, { "value": "3", "label": "Bloc 3" }, { "value": "4", "label": "Bloc 4" } ]
+        },
+        {
+          "type": "select", "id": "width", "label": "Largeur", "default": "full",
+          "options": [ { "value": "full", "label": "Toute la ligne" }, { "value": "half", "label": "Moitié" }, { "value": "wide", "label": "Deux tiers" }, { "value": "narrow", "label": "Un tiers" } ]
+        },
+        { "type": "text", "id": "summary", "label": "Repris dans le récapitulatif sous le nom", "info": "Ex. : commune" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "example", "name": "Photo d'exemple",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo" },
+        { "type": "text", "id": "image_asset", "label": "Photo (fichier du thème)" },
+        { "type": "range", "id": "focus_x", "label": "Cadrage horizontal", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Cadrage vertical", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "textarea", "id": "caption", "label": "Légende" },
+        {
+          "type": "select", "id": "group", "label": "Bloc", "default": "3",
+          "options": [ { "value": "1", "label": "Bloc 1" }, { "value": "2", "label": "Bloc 2" }, { "value": "3", "label": "Bloc 3" }, { "value": "4", "label": "Bloc 4" } ]
+        }
+      ]
+    },
+    {
+      "type": "link", "name": "Lien utile",
+      "settings": [
+        {
+          "type": "select", "id": "icon", "label": "Icône", "default": "none",
+          "options": [ { "value": "none", "label": "Aucune" }, { "value": "doc", "label": "Document" }, { "value": "chats", "label": "Question" }, { "value": "image", "label": "Photo" } ]
+        },
+        { "type": "text", "id": "title", "label": "Titre" },
+        { "type": "textarea", "id": "text", "label": "Texte" },
+        { "type": "textarea", "id": "mobile_text", "label": "Texte sur téléphone" },
+        { "type": "url", "id": "link", "label": "Lien" },
+        {
+          "type": "select", "id": "show_on", "label": "Afficher sur", "default": "all",
+          "options": [
+            { "value": "all", "label": "Ordinateur et téléphone" },
+            { "value": "desktop", "label": "Ordinateur seulement" },
+            { "value": "mobile", "label": "Téléphone seulement" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [ { "name": "Formulaire APLAT" } ]
+}
+{% endschema %}

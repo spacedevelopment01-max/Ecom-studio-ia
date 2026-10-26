@@ -1,0 +1,43 @@
+fichier,emplacement,largeur_px,hauteur_px,maquette
+01-accueil-salon.png,Accueil — grand bandeau,1672,941,2
+02-pause-carnet.png,Accueil — Faire une pause,1536,1024,2
+03-stress-tasse.png,Accueil — Apprivoiser le stress,1536,1024,2
+04-preparer-carnet.png,Accueil — Se préparer à un moment important,1536,1024,2
+05-vase-livres.png,Accueil — La sophrologie simplement,1536,1024,2
+06-fauteuil-individuel.png,Accueil et séances — fauteuil,1122,1402,2
+07-atelier-coussins.png,Accueil — Atelier en groupe,1536,1024,2
+08-cabinet-panorama.png,Accueil — Un cadre pour ralentir,1672,941,2
+09-approche-bureau.png,Accueil — Mon approche,1536,1024,2
+10-soleil-feuillage.png,Journal — Mieux respirer,1672,940,2
+11-fleurs-sechees.png,Journal — Rituel et gratitude,1536,1024,5
+12-seances-fauteuil-fenetre.png,Séances — bannière,1672,941,1
+13-cabinet-entretien.png,Séances — Au cabinet et première séance,1536,1024,1
+14-visio-ordinateur.png,Visioconférence — bannière,1672,940,1
+15-carnet-calme.png,Séances — Qu’est-ce que la sophrologie,1536,1024,1
+16-plante-ombres.png,Première séance — À son rythme,1536,1024,1
+17-visio-tasse-carnet.png,Visioconférence — Le confort de chez vous,1254,1254,1
+18-visio-bandeau.png,Visioconférence — Réservation,1672,941,1
+19-atelier-salle-vide.png,Ateliers — bannière,1672,941,3
+20-atelier-plateau-the.png,Ateliers — Une pause dans la semaine,1536,1024,3
+21-atelier-carnet-tisane.png,Ateliers — Découvrir la relaxation,1536,1024,3
+22-atelier-coussin-beige.png,Ateliers — Un moment pour ralentir,1536,1024,3
+23-atelier-cercle-fauteuils.png,Atelier — fiche détaillée,1672,941,3
+24-bol-sonore.png,Atelier — programme,1122,1402,3
+25-entreprise-salle.png,Entreprises — bannière,1672,941,3
+26-entreprise-table.png,Entreprises — formats,1536,1024,3
+27-reservation-premiere.png,Réservation — première séance,1536,1024,4
+28-reservation-suivi.png,Réservation — suivi,1536,1024,4
+29-reservation-groupe.png,Réservation — groupe,1536,1024,4
+30-reservation-cabinet-vertical.png,Réservation — fond cabinet,1024,1536,4
+31-journal-fleurs-carnet.png,Journal — bannière et article,1672,941,5
+32-journal-sentier.png,Journal — faire une pause,1536,1024,5
+33-journal-feuilles.png,Journal — se reconnecter,1536,1024,5
+34-journal-fauteuil-plaid.png,Journal — espace calme,1536,1024,5
+35-journal-fenetre-saisons.png,Journal — saisons au cabinet,1536,1024,5
+36-console-cabinet.png,Approche et cabinet — console,1122,1402,5
+37-fleurs-blanches.png,Approche — fleurs et bandeau,1672,941,5
+38-cabinet-accueil.png,Approche et contact — salon,1536,1024,5
+39-jardin-entree.png,"Cabinet, pages légales et 404 — extérieur",1672,941,6
+40-faq-carnet-tasse.png,FAQ — bannière,1536,1024,6
+41-rendezvous-olivier.png,Retrouver un rendez-vous — bannière,1536,1024,6
+42-rendezvous-fauteuil-abricot.png,Gérer un rendez-vous — bannière,1536,1024,6

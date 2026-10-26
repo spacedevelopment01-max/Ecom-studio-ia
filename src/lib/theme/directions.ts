@@ -12,10 +12,13 @@ import type { ServiceProfile } from "../project-types";
 import { servicesPlan } from "./services-site";
 import { bookingCalendar, bookingNeed } from "./booking-need";
 import { tidyComposition } from "./tidy";
-import { planForTheme, themeRank } from "./theme-access";
-import { isActiveThemeId, themePreviewPath } from "./theme-fit";
+import { planForTheme, plansForTheme, themeRank } from "./theme-access";
+import { DEFAULT_THEME_RIGHTS, type ThemeRights } from "./theme-rights";
+import { isActiveThemeId, isReferenceThemeId, themePreviewPath } from "./theme-fit";
 import { CATALOG_THEMES, catalogTheme, type CatalogThemeId, type Kit, type PaletteKit, type Row } from "./theme-catalog";
 import { isReferenceTheme, referenceHomeRows } from "./reference-composition";
+import { addRealEstateSite } from "./real-estate-site";
+import { addAplatSite } from "./aplat-site";
 
 /** Onze directions d'origine, puis les thèmes du catalogue (theme-catalog.ts) : trente compositions distinctes. */
 export type BaseDirectionId = "atelier" | "clinique" | "brut" | "terroir" | "nocturne" | "pop" | "galerie" | "elan" | "flux" | "joaillerie" | "gourmand";
@@ -156,6 +159,12 @@ export const DIRECTIONS: Direction[] = [
  * Marque, IA, commandes locales, recommandation, découverte, vignettes) part de cette liste.
  */
 export const ACTIVE_DIRECTIONS: Direction[] = DIRECTIONS.filter((d) => isActiveThemeId(d.id));
+/**
+ * Thèmes de référence (composition du catalogue, moteur V1), y compris ceux retirés du catalogue proposé le 25 octobre
+ * (ORBE, ALCÔVE) : un projet qui les utilise se recompose toujours dans son thème. Le choix d'un NOUVEAU thème reste
+ * limité au catalogue proposé (plan-gates.ts, assertThemeAllowed).
+ */
+export const REFERENCE_DIRECTIONS: Direction[] = DIRECTIONS.filter((d) => isReferenceThemeId(d.id));
 /** Thème retiré du catalogue (défini, mais plus proposé) ; false pour un thème actif ou inconnu. */
 export const isRetiredDirection = (id: string) => !isActiveThemeId(id) && DIRECTIONS.some((d) => d.id === id);
 
@@ -253,6 +262,7 @@ export function colorSchemes(direction: DirectionId, p: BrandPalette): Record<st
       filled,
       onLight,
       onDark,
+      accentOn: (bg: string) => brandAccent(bg, p.accent, p.primary, p.dark),
       night: (l: number, sat = 0.5) => withLightness(deep, l, sat),
       light,
       tint: (c: string, l: number, sat = 1) => withLightness(c, l, sat),
@@ -554,7 +564,7 @@ export function directionPreview(id: string): string {
  * Cartes des thèmes proposés : les thèmes actifs, plus (`include`) le thème déjà installé par le projet s'il est retiré
  * du catalogue — affiché comme « thème actuel, retiré », jamais proposé à un autre projet.
  */
-export function directionCards(lang: Lang = "fr", include: readonly string[] = []) {
+export function directionCards(lang: Lang = "fr", include: readonly string[] = [], rights: ThemeRights = DEFAULT_THEME_RIGHTS) {
   const cl = CHROME_LABEL[lang];
   const rank = (id: string) => themeRank(id) ?? 99;
   const list = [...ACTIVE_DIRECTIONS, ...DIRECTIONS.filter((d) => include.includes(d.id) && !isActiveThemeId(d.id))];
@@ -568,7 +578,9 @@ export function directionCards(lang: Lang = "fr", include: readonly string[] = [
     // Une seule capture par direction (les « .en.jpg » n'existent pas) : jamais d'image cassée en anglais.
     preview: directionPreview(d.id),
     chrome: [cl.shape[CHROME[d.id].shape], cl.footer[CHROME[d.id].footer], cl.ann[CHROME[d.id].ann], cl.card[CHROME[d.id].card]],
-    plan: planForTheme(d.id),
+    /** Forfaits qui ouvrent ce thème (droits par thème, mission #190) ; `plan` = le moins cher d'entre eux. */
+    plans: plansForTheme(d.id, rights),
+    plan: planForTheme(d.id, rights),
   }));
 }
 export type DirectionCard = ReturnType<typeof directionCards>[number];
@@ -1098,10 +1110,13 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       ? [{ type: "reassurance", settings: { item1: c.product.reassurance[0] ?? "", icon1: "truck", item2: c.product.reassurance[1] ?? "", icon2: "return", item3: c.product.reassurance[2] ?? "", icon3: "shield" } }]
       : []),
   ];
-  const mainProductRow: Row = ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96, ...(cat?.mainProduct ?? {}) }, productBlocks];
+  // Thème qui dessine sa propre fiche (ONDE : section « on-product ») : la section Produit commune reste présente
+  // (validation, outils du studio, exports), masquée.
+  const mainProductRow: Row = ["main-product", { gallery_layout: gallery, sticky_bar: true, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 96, ...(cat?.mainProduct ?? {}) }, productBlocks, cat?.ownProductBody ? { disabled: true } : undefined];
+  const recommendationsOn = !cat?.ownProductBody;
   const recommendationsRow: Row = ["product-recommendations", { heading: t("Vous aimerez aussi", "You may also like"), limit: 4, color_scheme: "scheme-1", padding_top: 64, padding_bottom: 96 }];
   // Thème de référence : sa propre suite de sections sous le corps de la fiche (avis, arguments, caractéristiques, FAQ).
-  const productTpl = tpl(ids, distinctCopy(cat?.product ? [mainProductRow, ...flat(cat.product(kit)), recommendationsRow] : [
+  const productTpl = tpl(ids, distinctCopy(cat?.product ? [mainProductRow, ...flat(cat.product(kit)), ...(recommendationsOn ? [recommendationsRow] : [])] : [
     mainProductRow,
     ["product-reviews", { heading: t("Avis des clients", "Customer reviews"), anchor: reviewsAnchor, color_scheme: "scheme-1", padding_top: 32, padding_bottom: 32 }],
     story(2),
@@ -1177,14 +1192,14 @@ export function buildSpec(input: BuildInput): ThemeSpec {
     name: t("Groupe en-tête", "Header group"),
     ...tpl(ids, [
       ...(annItems.length ? [["announcement-bar", { style: CHROME[d.id].ann, color_scheme: "scheme-3" }, annItems.map((t) => ({ type: "announcement", settings: { text: t, link: "" } }))] as Row] : []),
-      ["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }],
+      ...(((!svc || cat?.chromeForServices) && cat?.headerRow ? [cat.headerRow(kit)] : [["header", { menu: "main-menu", layout: headerLayout, shape: CHROME[d.id].shape, icons: CHROME[d.id].icons, mobile_menu: CHROME[d.id].menu, sticky: true, transparent_on_home: index[0]?.[0] === "hero-fullbleed", show_search: !svc && !cat?.headerCta, color_scheme: "scheme-1", ...(!svc && cat?.headerCta ? { cta_label: t(cat.headerCta.fr, cat.headerCta.en), cta_link: productUrl, cta_icon: cat.headerCta.icon } : {}), ...(!svc ? cat?.headerSettings ?? {} : {}), ...(svc ? { show_cart: false, cta_label: svc.headerCta.label, cta_link: svc.headerCta.link, cta_icon: svc.headerCta.icon, phone: svc.phone } : {}) }]]) as Row[]),
     ]),
   };
   const footer: GroupJson = {
     type: "footer",
     name: t("Groupe pied de page", "Footer group"),
     ...tpl(ids, [
-      ["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: !svc, show_payment: !svc, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, svc
+      ...(((!svc || cat?.chromeForServices) && cat?.footerRow ? [cat.footerRow(kit)] : [["footer", { style: CHROME[d.id].footer, logo_asset: img(im.logoLight ?? im.logo), show_wordmark: d.id !== "clinique", show_policies: !svc, show_payment: !svc, color_scheme: darkTheme ? "scheme-2" : "scheme-3" }, svc
         ? [
             { type: "text", settings: { heading: input.shopName, text: p(c.footer.about) } },
             { type: "links", settings: { heading: t("Le site", "Site"), menu: "main-menu" } },
@@ -1196,7 +1211,7 @@ export function buildSpec(input: BuildInput): ThemeSpec {
         { type: "links", settings: { heading: t("Boutique", "Shop"), menu: "main-menu" } },
         { type: "links", settings: { heading: t("Aide", "Help"), menu: "footer" } },
         { type: "newsletter", settings: { heading: t("Restons en contact", "Let's stay in touch"), text: c.footer.newsletter } },
-      ]],
+      ]]]) as Row[]),
     ]),
   };
 
@@ -1326,6 +1341,20 @@ export function buildSpec(input: BuildInput): ThemeSpec {
       section.settings.gallery_layout = "carousel";
       for (const block of Object.values(section.blocks ?? {})) if (block.type === "buy_buttons") block.settings.show_dynamic_checkout = false;
     }
+  }
+  // Finition propre au thème du catalogue (TABLE SAISON, ATELIER NUANCE… : réglages du lieu, pages du salon, page introuvable).
+  if (cat?.finish) {
+    const sv = input.services;
+    cat.finish(result, { kit, lang, services: !!svc, shopName: input.shopName, address: sv?.address.trim() ?? "", phone: sv?.phone.trim() ?? "", email: sv?.email.trim() ?? "", hours: sv?.hours.trim() ?? "", contactUrl: svc ? svc.urls.contact : "/pages/contact", bookingLabel: svc ? svc.headerCta.label : t("Nous contacter", "Contact us"), bookingLink: svc ? svc.headerCta.link || svc.urls.contact : "/pages/contact", legalUrl: svc ? svc.urls.legal : "/policies/legal-notice", offers: svc ? sv?.services ?? [] : [] });
+  }
+  // Maison & Horizon (issue #172) : pages de recherche, fiche d'un bien et favoris pour les biens de l'onglet « Biens ».
+  if (d.id === "maison-horizon" && svc) addRealEstateSite(result, lang);
+  // APLAT (PR #187) : accueil et pages des planches, remplis avec les prestations, la méthode, les questions et les
+  // photos du projet ; aucune photo ni coordonnée de démonstration.
+  if (d.id === "aplat" && svc && input.services) {
+    const hero = im.lifestyle ?? im.hero ?? im.scene1 ?? "";
+    const photos = [im.scene1, im.scene2, im.scene3, im.lifestyle2, im.detail1, im.detail2, im.hero].filter((x, i, a): x is string => !!x && a.indexOf(x) === i);
+    addAplatSite(result, { lang, shopName: input.shopName, profile: input.services, copy: c, plan: svc, images: { hero, photos, byService: im.byService } });
   }
   return result;
 }

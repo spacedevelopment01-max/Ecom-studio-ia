@@ -1,0 +1,166 @@
+{
+  "schema": "lot9-rendered-copy-1",
+  "codeCommit": "c67d0656c577381fcd50d36f25b5dba684969a00",
+  "simulatedDataOnly": true,
+  "realProviderCalls": 0,
+  "creativeQualityCertified": false,
+  "scope": "Visible text and own-media lineage, not a legal or factual certification of every claim",
+  "results": [
+    {
+      "direction": "fraise",
+      "simulatedClientInput": true,
+      "ownMediaOnly": true,
+      "pages": [
+        {
+          "page": "/",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/products/theiere-anse",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/a-propos",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/listicle",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/advertorial",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/sections",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/contact",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/faq",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/livraison-retours",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/mentions-legales",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/confidentialite",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/conditions-generales",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        }
+      ],
+      "aiCalls": 0
+    },
+    {
+      "direction": "noctil",
+      "simulatedClientInput": true,
+      "ownMediaOnly": true,
+      "pages": [
+        {
+          "page": "/",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/products/theiere-anse",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/univers",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/aide",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        }
+      ],
+      "aiCalls": 0
+    },
+    {
+      "direction": "rive",
+      "simulatedClientInput": true,
+      "ownMediaOnly": true,
+      "pages": [
+        {
+          "page": "/",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/prestations",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/a-propos",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/contact",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/faq",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        },
+        {
+          "page": "/pages/mentions-legales",
+          "status": 200,
+          "sensitiveDemoCopyFound": false,
+          "demoMediaFound": false
+        }
+      ],
+      "aiCalls": 0
+    }
+  ]
+}

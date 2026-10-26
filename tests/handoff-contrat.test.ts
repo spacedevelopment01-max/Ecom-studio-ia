@@ -48,7 +48,7 @@ describe("Contrat amont → thème", async () => {
   };
   remember(pid, { kind: "artifact", key: READY_CONTRACT_KEY, value: JSON.stringify(contract), source: "import" });
 
-  it("recommandation : lue depuis le contrat, filtrée par la catégorie du projet, motifs et alternatives conservés", () => {
+  it("recommandation : lue depuis le contrat, motifs et alternatives conservés ; plus de filtre par famille (mission #190)", () => {
     const p = loadProject(pid);
     const r = themeRecommendation(p, "fr");
     expect(r.source).toBe("preparation");
@@ -56,10 +56,11 @@ describe("Contrat amont → thème", async () => {
     expect(r.category.kind).toBe("specialty");
     expect(r.category.source).toBe("preparation");
     expect(r.recommended).toBe("fraise");
-    expect(r.alternatives.map((a) => a.id)).toEqual(["sillon"]); // « rive » (prestations) exclu de la catégorie
-    expect(r.eligible).toEqual(["fraise", "sillon", "noctil", "traverse", "museau-club"]); // catalogue actif seulement : jamais l'ancien catalogue en repli
-    expect(r.eligible).not.toContain("rive");
-    expect(r.excluded.find((x) => x.id === "orbe")?.reason).toMatch(/e-commerce/);
+    // Plus de familles : « rive », conçu pour les prestations, reste une alternative possible ; tous les thèmes proposés
+    // (sur maquettes) sont éligibles, jamais l'ancien catalogue ni ORBE / ALCÔVE en repli.
+    expect(r.alternatives.map((a) => a.id)).toEqual(["sillon", "rive"]);
+    expect(r.eligible).toEqual(["fraise", "onde", "rive", "sillon", "noctil", "traverse", "heuren", "museau-club", "souple", "table-saison", "atelier-nuance", "parenthese", "phase", "maison-horizon", "aplat"]);
+    expect(r.excluded).toEqual([]);
     expect(projectStoreKind(p)).toMatchObject({ kind: "specialty", source: "preparation" });
   });
 
@@ -68,9 +69,12 @@ describe("Contrat amont → thème", async () => {
     remember(pid2, { kind: "artifact", key: READY_CONTRACT_KEY, value: JSON.stringify({ revision: 1, provenance: "simulation", category: "ecommerce", recommendation: { recommendedReferenceId: "orbe", alternativesReferenceIds: ["fraise", "vitrine"], status: "proposal" } }), source: "import" });
     const r = themeRecommendation(loadProject(pid2), "fr");
     expect(r.category).toMatchObject({ kind: "catalog", source: "preparation" });
-    expect(r.recommended).toBe("orbe");
-    expect(r.alternatives).toEqual([]); // fraise : boutique spécialisée, hors catégorie ; vitrine : retiré du catalogue
+    // ORBE (créé avant les maquettes) et vitrine (ancien catalogue) sont retirés : signalés, jamais appliqués ; FRAISE,
+    // conçu pour une boutique spécialisée, reste une alternative possible (plus de familles).
+    expect(r.recommended).toBeNull();
+    expect(r.alternatives.map((a) => a.id)).toEqual(["fraise"]);
     expect(r.warnings.some((w) => /vitrine/.test(w))).toBe(true);
+    expect(r.warnings.some((w) => /orbe/.test(w))).toBe(true);
   });
 
   it("intégration bornée : référence Atelier Rive et catégorie confirmée du contrat amont reconnues",()=>{
@@ -99,6 +103,7 @@ describe("Contrat amont → thème", async () => {
     const packFile = files.find(([, id]) => id === pack.id)![0];
     expect(json).toContain(packFile);
     expect(spec.direction).toBe("fraise");
-    expect(spec.settings.conversion_profile).toBe("pop");
+    // FRAISE (sept planches) : habillage propre au thème, aucun profil global.
+    expect(spec.settings.theme_kit).toBe("fraise");
   });
 });

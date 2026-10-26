@@ -1,3 +1,4 @@
+import {videoByteFixture} from "./video-byte-fixture";
 import { grantProjectPlan } from "./communication-choice-fixture";
 /**
  * Vidéo en scènes (création guidée et création du projet) : produit = une image Qwen + un plan Wan 2.6 par scène,
@@ -30,8 +31,8 @@ describe("Vidéo en scènes", async () => {
         frames: async()=>[Buffer.from("image de contrôle simulée")],
         reviewMedia: async()=>({score:9,sameProduct:true,productAltered:false,characterConsistent:null,offTopic:false,artifacts:false,personVisible:false,issues:[]}),
         keyframe: async (prompt: string) => (calls.keyframe.push(prompt), png()),
-        clip: async (_i: Buffer, _p: string, _a: string, seconds: number) => (calls.clip.push(seconds), Buffer.from("mp4")),
-        stock: async (_p: unknown, k: number) => (calls.stock++, { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(`clip${k}`), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
+        clip: async (_i: Buffer, _p: string, _a: string, seconds: number) => (calls.clip.push(seconds), videoByteFixture()),
+        stock: async (_p: unknown, k: number) => (calls.stock++, { assetId: (await saveAsset({ projectId: p.id, userId: p.userId, data: videoByteFixture(), name: `c${k}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "import", status: "ready", meta: {} })).id, durationS: 8 }),
         spentMicro: () => 0,
         render: async (_p: unknown, _k: string, doc: unknown) => ((calls.rendered = doc), "video-1"),
       },

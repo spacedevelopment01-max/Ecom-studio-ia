@@ -1,0 +1,51 @@
+{%- comment -%}
+  TABLE SAISON : bandeau olive « La carte » : texte, bouton et trois vignettes de catégories (Entrées, Plats, Desserts)
+  qui mènent aux rubriques de la carte.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+<section class="ts-section ts-teaser">
+  {%- if s.ornament -%}{% render 'ts-ornament', name: 'leaves' %}{%- endif -%}
+  <div class="ts-wrap ts-teaser__grid">
+    <div>
+      {%- if s.eyebrow != blank -%}<p class="ts-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      {%- if s.heading != blank -%}<h2 class="ts-title ts-title--l">{{ s.heading | newline_to_br }}</h2>{%- endif -%}
+      {%- if s.text != blank -%}<div class="ts-text">{{ s.text }}</div>{%- endif -%}
+      {%- if s.button_label != blank -%}<a class="ts-btn" href="{{ s.button_link | default: '/pages/la-carte' }}">{{ s.button_label }}</a>{%- endif -%}
+    </div>
+    <div class="ts-teaser__tiles">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.label == blank -%}{%- continue -%}{%- endif -%}
+        <a class="ts-tile" href="{{ block.settings.link | default: '/pages/la-carte' }}" {{ block.shopify_attributes }}>
+          {% render 'ts-img', image: block.settings.image, asset: block.settings.image_asset, alt: '', pos: block.settings.image_position, sizes: '(min-width: 750px) 18vw, 33vw' %}
+          <span class="ts-tile__label">{{ block.settings.label }} {% render 'ts-icon', name: 'arrow' %}</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Bandeau de la carte",
+  "class": "ts-teaser-section",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Petit texte au-dessus", "default": "La carte" },
+    { "type": "textarea", "id": "heading", "label": "Titre", "default": "Une carte qui évolue au fil des saisons." },
+    { "type": "richtext", "id": "text", "label": "Texte" },
+    { "type": "text", "id": "button_label", "label": "Texte du bouton", "default": "Découvrir la carte" },
+    { "type": "url", "id": "button_link", "label": "Lien du bouton" },
+    { "type": "checkbox", "id": "ornament", "label": "Ornement botanique", "default": true }
+  ],
+  "blocks": [
+    { "type": "tile", "name": "Catégorie", "settings": [
+      { "type": "image_picker", "id": "image", "label": "Image" },
+      { "type": "text", "id": "image_asset", "label": "Image fournie avec le thème" },
+      { "type": "text", "id": "image_position", "label": "Cadrage de la photo", "default": "50% 50%" },
+      { "type": "text", "id": "label", "label": "Nom de la catégorie" },
+      { "type": "url", "id": "link", "label": "Lien" }
+    ] }
+  ],
+  "presets": [{ "name": "Bandeau de la carte" }]
+}
+{% endschema %}
