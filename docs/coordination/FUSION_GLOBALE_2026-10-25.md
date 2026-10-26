@@ -11,7 +11,7 @@ réel, appel IA payant, paiement, envoi réel ni publication.
 |---|---|
 | `main` avant (base observée et relue) | `0a6aa1dd6dfa5932a5e42e027cef2a3335e74679` |
 | Branche d'intégration | `claude/integration-fusion-globale` — PR #196 |
-| Candidat figé (code) | `2dbdc050ef57bd6c74a44699f158e00d19c92208` (contrôles § 6) ; le commit suivant n'ajoute que ce rapport et ses preuves (`docs/`, `reports/`) |
+| Candidats successifs | `2dbdc050` (refusé par Codex : P1 multi-variante) → `aec79070` (refusé : P1 saisie pendant l'attente) → **`7f854218bb7afd08ec8ec2209b55c36ee53011f7`** (code contrôlé, § 6) ; les commits suivants n'ajoutent que ce rapport et ses preuves |
 | `main` après fusion | voir § 7 |
 
 ## 2. Registre des apports (têtes relues sur GitHub)
@@ -114,23 +114,39 @@ d'une intervention dédiée avec Codex, sans modifier les protections générale
    identiques à #176 au pixel.
 10. **Limite de durée du job principal de CI relevée de 45 à 75 min** (`.github/workflows/ci.yml`) : la suite fusionnée
     a été coupée deux fois pendant le Theme Check, sans échec. Aucun contrôle n'est retiré ni allégé.
+11. **Synchronisation : chaque variante acquise enregistrée aussitôt** (`aec79070`, défaut relevé par Codex,
+    [#196 commentaire 6408750773](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6408750773),
+    reproduit : 14 au lieu de 12). Variante A ajustée, variante B refusée : le journal de A était effacé avant que son
+    point de synchronisation soit enregistré, la reprise renvoyait le réassort de A. Désormais chaque variante est
+    enregistrée d'un bloc dès la réponse de la boutique (point de synchronisation, stock du studio, journal effacé) ;
+    un refus n'abandonne que l'opération de la variante refusée. Tests : cas de Codex, même cas en quantité absolue
+    (refus, réponse perdue), arrêt du processus après la réponse de la boutique.
+12. **Synchronisation : saisies du studio faites pendant l'attente conservées** (`7f854218`, défaut relevé par Codex,
+    [#196 commentaire 6408857860](https://github.com/spacedevelopment01-max/Ecom-studio-ia/pull/196#issuecomment-6408857860),
+    reproduit : 11 au lieu de 14 ; cas voisin trouvé en ajoutant les tests : 8 au lieu de 11). Le stock du studio est relu
+    à la décision puis à l'enregistrement ; le stock acquis devient le point de synchronisation et toute saisie
+    postérieure s'y ajoute, envoyée une seule fois ensuite. Tests : cas de Codex ; quantité absolue ; vente de la
+    boutique ; reprise d'un envoi resté sans réponse.
 
 ## 6. Contrôles AVANT fusion
 
-Candidat figé : **`2dbdc050ef57bd6c74a44699f158e00d19c92208`**. Premiers contrôles sur `1ed7b817`
-(candidat provisoire), puis tout rejoué sur le candidat figé après les corrections 5 à 9.
+Code contrôlé : **`7f854218bb7afd08ec8ec2209b55c36ee53011f7`**. Premiers contrôles sur `1ed7b817` (candidat provisoire),
+tout rejoué sur `2dbdc050` après les corrections 5 à 9, puis sur `7f854218` après les corrections 11 et 12 (seul
+`src/lib/products/sync.ts` et son test changent entre `2dbdc050` et `7f854218`, en plus de `ci.yml` et du rapport :
+la comparaison visuelle des démos, faite sur `2dbdc050`, reste valable, aucun fichier de thème, d'aperçu ni d'export
+n'ayant changé).
 
 | Contrôle | SHA | Résultat | Preuve |
 |---|---|---|---|
-| Types (`tsc --noEmit`) | `2dbdc050` | OK | local + CI |
-| Suite complète, garde réseau du lot 9 comme la CI | `2dbdc050` | **395 fichiers, 3 384 réussis, 0 échec**, 31 ignorés (ci-dessous) | journal local ; CI |
-| Pilote sur les 7 jours de la semaine (32 fichiers) | `2dbdc050` | 7 × 244/244 | [`recette-7-jours-2dbdc050.txt`](../../reports/fusion-globale/recette-7-jours-2dbdc050.txt) |
-| Migrations depuis 3 bases historiques synthétiques (`dcfc13b1`, `d97e0b95`, `0a6aa1dd`), 2ᵉ passage sans changement, sauvegarde, restauration dans une autre copie, copie de recette neutralisée | `2dbdc050` | 3 essais réussis (45, 45, 46 contrôles) | [`essais/`](../../reports/fusion-globale/essais/) |
-| Isolation A/B/administrateur/visiteur (routes du lot 9 et routes arrivées après) | `2dbdc050` | réussie (suite : `mission171-*`, `integration194-isolation-ab`, `integration194-securite`) | suite |
-| Contre-épreuves Codex #195 (synchronisation des boutiques) | `2dbdc050` | 13/13 | `tests/contre-verification-195-products.test.ts` |
-| Build de production | `1ed7b817` local (58 pages, 6 Go de tas : le tas par défaut de ce conteneur, 2 Go, est dépassé par la vérification des types de Next) ; `2dbdc050` en CI | réussi | CI de la PR #196 |
-| Image Docker (construction et démarrage) | `2dbdc050` | réussie | CI de la PR #196 |
-| CI complète (types, tests, Theme Check des thèmes, build) | `2dbdc050` | **réussie** au 2ᵉ essai (run 40247116214) ; le 1ᵉʳ essai a été coupé par la limite de 45 min du job pendant le Theme Check, sur une machine plus lente (tests 20,9 min au lieu de 14,3), sans aucun échec. Marge à surveiller : environ 35 min sur 45 en temps normal | CI de la PR #196 |
+| Types (`tsc --noEmit`) | `7f854218` | OK | local + CI |
+| Suite complète, garde réseau du lot 9 comme la CI | `7f854218` | **395 fichiers, 3 389 réussis, 0 échec**, 31 ignorés (ci-dessous) | journal local ; CI |
+| Pilote sur les 7 jours de la semaine (32 fichiers) | `7f854218` | 7 jours sur 7 réussis | [`recette-7-jours-7f854218.txt`](../../reports/fusion-globale/recette-7-jours-7f854218.txt) |
+| Migrations depuis 3 bases historiques synthétiques (`dcfc13b1`, `d97e0b95`, `0a6aa1dd`), 2ᵉ passage sans changement, sauvegarde, restauration dans une autre copie, copie de recette neutralisée | `7f854218` | 3 essais réussis (45, 45, 46 contrôles) | [`essais/`](../../reports/fusion-globale/essais/) |
+| Isolation A/B/administrateur/visiteur (routes du lot 9 et routes arrivées après) | `7f854218` | réussie (suite : `mission171-*`, `integration194-isolation-ab`, `integration194-securite`) | suite |
+| Contre-épreuves Codex #195/#196 (synchronisation des boutiques) | `7f854218` | 18/18 (dont les 2 nouvelles contre-épreuves de Codex, reprises telles quelles) | `tests/contre-verification-195-products.test.ts` |
+| Build de production | `1ed7b817` local (58 pages, 6 Go de tas : le tas par défaut de ce conteneur, 2 Go, est dépassé par la vérification des types de Next) ; `7f854218` en CI | réussi | CI de la PR #196 |
+| Image Docker (construction et démarrage) | `7f854218` | réussie | CI de la PR #196 |
+| CI complète (types, tests, Theme Check des thèmes, build) | `7f854218` | **réussie** (run 40273960432, limite 75 min). Sur `2dbdc050`, réussie au 2ᵉ essai après une coupure à 45 min sans échec (correction 10) | CI de la PR #196 |
 | Démos intégrales des 17 démonstrations (15 thèmes + FRAISE, ONDE) : candidat comparé à #176 seul, captures 1440 et 390 px de chaque page | `2dbdc050` vs `0af6fe1f` | **aucune régression constatée** : les 17 démos sont produites des deux côtés, avec le même nombre de pages et d'états du panier ; 884 captures. Au premier passage, 51 pages dépassent 1 ; au second passage, 47 retombent à 1 ou moins. Les 4 restantes sont instables d'elles-mêmes : la référence capturée deux fois diffère d'autant (RIVE atelier 42,4/42,4 ; SOUPLE accueil 3,2/3,2 ; NOCTIL journal 8,8/10,0 ; ALCÔVE accueil téléphone 3,1, où deux captures de la référence ont aussi donné 3,1 lors d'un nouvel essai, image identique au bit près) | [`demos-visuel-176-vs-candidat.txt`](../../reports/fusion-globale/demos-visuel-176-vs-candidat.txt), [`demos-visuel-second-passage.txt`](../../reports/fusion-globale/demos-visuel-second-passage.txt) |
 | Panier tiroir d'une démo exportée (ONDE, servie en HTTP local) | `2dbdc050` vs `0af6fe1f` | identique : article, prix, image chargée, aucune erreur JavaScript ni ressource manquante | — |
 
