@@ -1,0 +1,21 @@
+{
+  "branches": {
+    "pr198": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+    "pr199": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+    "pr200": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48"
+  },
+  "trackedSourceClean": true,
+  "dependenciesLockUnchanged": true,
+  "testsWithNetworkGuard": true,
+  "realProviderCalls": 0,
+  "isolatedFictitiousData": true,
+  "sharedPublicFiles": "Hard-linked immutable tracked public bytes; public tree identical to333bccc8; missing private kit not fabricated",
+  "preparationLimits": [
+    "Incomplete sparse metadata restored; initial failed logs retained",
+    "Typecheck heap1.5GiB insufficient, succeeded3GiB; no test assertion or deadline relaxed",
+    "First FRAISE comparison started before export completed; final comparison uses both finished exports",
+    "First geometry read before repaint was stale; final measurements await two animation frames before/after resize",
+    "First menu server stopped, no successful move; isolated replay succeeds with server logs",
+    "Initial stock harness mistakenly selected service fixture, which correctly hides product catalogue; replay uses native product fixture"
+  ]
+}

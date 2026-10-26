@@ -1,0 +1,106 @@
+[
+  {
+    "file": "page-contact.html",
+    "stage": "before",
+    "width": 390,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-contact.html",
+    "stage": "before",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-contact.html",
+    "stage": "after",
+    "width": 390,
+    "sameSourceRepeatDiffBox": [
+      26,
+      389,
+      29,
+      566
+    ],
+    "changedPixels": 30
+  },
+  {
+    "file": "page-contact.html",
+    "stage": "after",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": [
+      1008,
+      431,
+      1370,
+      476
+    ],
+    "changedPixels": 25
+  },
+  {
+    "file": "page-faq.html",
+    "stage": "before",
+    "width": 390,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-faq.html",
+    "stage": "before",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-faq.html",
+    "stage": "after",
+    "width": 390,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-faq.html",
+    "stage": "after",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "stage": "before",
+    "width": 390,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "stage": "before",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": [
+      865,
+      491,
+      1159,
+      496
+    ],
+    "changedPixels": 40
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "stage": "after",
+    "width": 390,
+    "sameSourceRepeatDiffBox": null,
+    "changedPixels": 0
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "stage": "after",
+    "width": 1440,
+    "sameSourceRepeatDiffBox": [
+      865,
+      491,
+      1159,
+      496
+    ],
+    "changedPixels": 40
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "file": "page-conditions-de-vente.html",
+  "stage": 1,
+  "width": 360,
+  "viewport": 360,
+  "scrollWidth": 360,
+  "geometry": {
+    "width": 520,
+    "contentWidth": 0,
+    "paddingLeft": 260,
+    "bodyFont": 10.8611,
+    "titleX": 260,
+    "titleRight": 260,
+    "titleScrollWidth": 220,
+    "titleClientWidth": 0
+  }
+}

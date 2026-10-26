@@ -1,0 +1,15 @@
+{
+  "source": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "tests/stock-libelle-fidele.test.ts",
+    "tests/produits-studio-190.test.ts",
+    "tests/contre-verification-195-products.test.ts",
+    "--maxWorkers=1"
+  ],
+  "exitCode": 0,
+  "seconds": 7.3,
+  "networkGuard": true,
+  "realProviderCalls": 0
+}

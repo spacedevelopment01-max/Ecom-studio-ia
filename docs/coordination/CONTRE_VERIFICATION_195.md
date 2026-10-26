@@ -1,6 +1,6 @@
 # Contre-vérification indépendante #195 — intégration #194 / PR #196
 
-État final au 26 octobre 2026 : **AVANT d38 et APRÈS le vrai main `333bccc8daf97b9746dcf590a9525c830a53915f` contrôlés. Avis technique favorable à l'intégration avec réserves explicites ; suite native3395/0/31 et vraie CI main vertes. Validation visuelle globale retenue : défaut FRAISE mobile préexistant, médias privés incomplets et autres suivisP2 ouverts. Aucun CMS réel, fournisseur réel ou studio utilisateur déployé/vérifié.**
+État du suivi au 26 octobre 2026 : **PR198/44546ab9, PR200/e005414c et PR199/d63bba11 : ACCORD POUR FUSION après contrôles indépendants et CI verte. Le main333bccc8 antérieur reste validé dans sa portée historique ; contrôle du main final après ces trois corrections EN ATTENTE des fusions de Claude.**
 
 Responsabilités : Claude conserve seul la branche d’intégration et la fusion. Codex teste des copies séparées et publie ici ses preuves. Famille de modèle indiquée par la session : GPT-6 / Codex ; identifiant exact et réglage d’effort non exposés. Effort élevé demandé et examen approfondi effectué.
 
@@ -256,3 +256,20 @@ Deux échecs de préparation APRÈS sont conservés : FFmpeg de Playwright absen
 [Index APRÈS complet et liens directs](../../reports/contre-verification-195/apres-main-333bccc8/README.md) : **814PNG nouveaux (794captures natives+20planches),3vidéos navigateur**, JSON, journaux, processus et harnais distincts du code applicatif. Total historique de cette branche :920PNG (895natifs+25planches),6vidéos. Manifestes SHA256, références volumineuses compactées et capacités signées expurgées ; aucune base/session/configuration/clé ou donnée client publiée. Rapport brut natif de suite conservé localement, empreinte publiée ; comptes par fichier et journal intégral fournis.
 
 Les données initiales du dépôt et la configuration client sont préservées. Zéro IA/fournisseur réel, paiement, message externe, connexion CMS, déploiement ou redémarrage du studio réel. La branche documentaire de preuves ne doit pas être fusionnée comme branche applicative. Claude peut finaliser par sa PR documentaire le rapport central après ce verdict ; si un nouveau correctif applicatif est demandé, il requiert sa propre contre-vérification. La présente conclusion porte exactement sur333bccc8 et sur les limites ci-dessus.
+
+
+## Suivi des réserves — accords AVANT sur198/199/200
+
+Têtes relues et inchangées juste avant le verdict :198 `44546ab98b44fac4823e41eccbb4c4b034979f51`,200 `e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48`,199 **nouvelle tête** `d63bba1127a8487c426d5b2259ff36a9bbfaba06`. Main relevé53ecf5bb,qui contient le diagnosticCI201 mais aucune de ces corrections. **FAVORABLE, accord pour fusion PR par PR ; Claude seul opérateur.**
+
+Preuves : [index indépendant du suivi](../../reports/contre-verification-195/suivi-pr198-199-200/README.md),[SHA/bases/checkouts/CI](../../reports/contre-verification-195/suivi-pr198-199-200/sha-et-ci.json).
+
+- 198 :8tests réussis,dont3régressions mobiles,14ignorés kit absent ; types0. Vrai moteur avant333/après445,26HTML,184captures et52comparaisons.10pages visées lisibles sur360/390/430,contrôles749/750/1440. Les10pages ciblées sont pixel-identiques sur ordinateur ;10changements mobiles attendus. Trois différences de10à40pixels sur des contrôles hors cible,non présentées comme du zéro pixel ; rejeu à source identique documenté,aucun changement de composition visible. Corps ordinateur11,5px et médias privés absents restent des limites conservées.
+- 200 :33tests réussis,dont4libellé,types0. Code du stock et connecteurs relus : calcul trois points,ajustementShopify,quantité absolueWoo/Presta,journal incertain et verrou ; aucun changement de comportement. Vrai studio produit FR/EN,1440/390,bloc fermé/ouvert,8PNG,aucune erreurJS/débordement. Pas de boutique réelle.
+- 199 :3tests réussis,types0 ; studio natif,données fictives,4largeurs1440/390/360/768,8clics normaux avec hit-testetordreDB2→3→2,4témoins7/7,0erreurJS. Premier serveur de test arrêté pendant le parcours,aucun succès compté ; échec conservé, cause non établie, rejeu seul réussi. Recherche des autres listes sans autre menu dans une ligne entière rendue translucide retrouvé ; pas de test manuel de tous les menus.
+
+Trois vraiesCI terminées vertes,journaux relus :198/40307621221 (3398/31),200/40312590161 (3399/31),199/d63/40334225760 (3398/31),types,ThemeCheck,build,Docker. Les anciens rouges199/865 etmainbe488 sont expliqués par `ValidSchema` : JSON de schémasShopify distant impossible à parser(offset0). #201 rend ces erreurs lisibles mais ne corrige pas encore la dépendance réseau intermittente ; risque maintenu,sans retirer les contrôles.
+
+Sources suivies propres,dépendances exactes,gardes réseau et requêtes navigateur externes refusées,données fictives,aucun appel fournisseur réel. Harnais et journaux de préparation explicitement séparés : omissions du checkout partiel restaurées,types avec tas1,5GiB insuffisant puis3GiB,export pas encore fini lors de la première comparaison,mesure avant repaint corrigée dans le harnais,compte produit repris après choix erroné d'une fixture service. Aucune assertion ou délai relâchés.
+
+**Le verdict APRÈS sur le main final reste à exécuter après les fusions par Claude.** Ne pas confondre ces accords avec la version servie ou une recette fournisseur/CMS. Aucun déploiement ni redémarrage du studio réel.

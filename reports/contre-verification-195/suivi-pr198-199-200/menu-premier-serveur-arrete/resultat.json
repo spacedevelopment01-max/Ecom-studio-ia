@@ -1,0 +1,45 @@
+{
+ "codeCommit": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+ "syntheticOnly": true,
+ "realProviderCalls": 0,
+ "nativeHarnessAdaptations": "External browser requests blocked; STORAGE_DIR rejected; extra360/768 widths; assertions unchanged",
+ "projet": "Atelier Rive",
+ "sectionMasquee": "rive_projects",
+ "resultats": [
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Descendre",
+   "appels": [],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Descendre",
+   "clicNormal": true,
+   "deplacee": false,
+   "positionAvant": 2,
+   "positionApres": 2,
+   "erreur": "aucune réponse de /theme/ops"
+  },
+  {
+   "largeur": "ordinateur",
+   "section": "Actions pour « Réalisations »",
+   "action": "Monter",
+   "appels": [],
+   "entreeSousLePointeur": true,
+   "elementSousLePointeur": "button Monter",
+   "clicNormal": true,
+   "deplacee": false,
+   "positionAvant": 2,
+   "positionApres": 2,
+   "erreur": "aucune réponse de /theme/ops"
+  },
+  {
+   "largeur": "ordinateur",
+   "temoin": "Actions pour « Ouverture photographique »",
+   "entreesAccessibles": "7/7"
+  },
+  {
+   "largeur": "ordinateur",
+   "erreursJavaScript": []
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+  "source": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "tests/fraise-articles-legal-mobile.test.ts",
+    "tests/fraise-theme.test.ts",
+    "--maxWorkers=1"
+  ],
+  "exitCode": 1,
+  "seconds": 6.28,
+  "networkGuard": true,
+  "realProviderCalls": 0
+}

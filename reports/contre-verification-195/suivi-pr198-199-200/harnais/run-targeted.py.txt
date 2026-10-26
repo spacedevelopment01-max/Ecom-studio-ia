@@ -1,0 +1,13 @@
+import subprocess,os,json,time
+from pathlib import Path
+base=Path('/tmp/ecs-195-reprise');out=base/'preuves'
+for name,files in [('pr200',['stock-libelle-fidele.test.ts','produits-studio-190.test.ts','contre-verification-195-products.test.ts']),('pr199',['section-masquee-menu.test.ts'])]:
+ root=base/name;env=os.environ.copy();env.update(APP_SECRET='countercheck-195-fictitious-secret-not-live',NODE_OPTIONS=f'--max-old-space-size=1536 --import={root}/scripts/lot9/network-guard.mjs',PATH='/tmp/ecs-195-php84-complet/bin:'+env['PATH'])
+ for key in ['DATA_DIR','DATABASE_FILE','STORAGE_DIR']:env.pop(key,None)
+ for label,cmd in [('tests',['node_modules/.bin/vitest','run',*['tests/'+f for f in files],'--maxWorkers=1']),('types',['node_modules/.bin/tsc','--noEmit'])]:
+  env['NODE_OPTIONS']=f'--max-old-space-size={3072 if label=="types" else 1536} --import={root}/scripts/lot9/network-guard.mjs';st=time.time();log=out/(name+'-'+label+'.log');print('START',name,label,flush=True)
+  with log.open('w') as f:r=subprocess.run(cmd,cwd=root,env=env,stdout=f,stderr=subprocess.STDOUT)
+  (out/(name+'-'+label+'.exit')).write_text(str(r.returncode)+'\n')
+  (out/(name+'-'+label+'-execution.json')).write_text(json.dumps({'source':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'command':cmd,'exitCode':r.returncode,'seconds':round(time.time()-st,2),'networkGuard':True,'realProviderCalls':0},indent=2)+'\n')
+  print('END',name,label,r.returncode,flush=True)
+  if r.returncode:raise RuntimeError(name+' '+label)

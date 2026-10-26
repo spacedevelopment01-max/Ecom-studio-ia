@@ -1,0 +1,11 @@
+{
+  "source": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+  "command": [
+    "node_modules/.bin/tsc",
+    "--noEmit"
+  ],
+  "exitCode": -6,
+  "seconds": 34.99,
+  "networkGuard": true,
+  "realProviderCalls": 0
+}

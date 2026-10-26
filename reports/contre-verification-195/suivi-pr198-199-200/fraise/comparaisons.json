@@ -1,0 +1,314 @@
+[
+  {
+    "file": "404.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "404.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "accueil.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "accueil.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "boutique.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "boutique.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-commande.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-commande.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-conditions-de-vente.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-conditions-de-vente.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-confidentialite.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-confidentialite.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-contact.html",
+    "width": 390,
+    "changed": true,
+    "targeted": false
+  },
+  {
+    "file": "page-contact.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-cookies.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-cookies.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-faq.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-faq.html",
+    "width": 1440,
+    "changed": true,
+    "targeted": false
+  },
+  {
+    "file": "page-journal-conserver-son-flacon.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-conserver-son-flacon.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-le-flacon-sous-tous-les-angles.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-le-flacon-sous-tous-les-angles.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-le-gout-fraise-en-images.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-le-gout-fraise-en-images.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-les-details-d-un-petit-rituel.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-les-details-d-un-petit-rituel.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-lire-une-etiquette.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-lire-une-etiquette.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-une-pause-cote-cuisine.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-journal-une-pause-cote-cuisine.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-journal.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-journal.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-la-recette.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-la-recette.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-livraison-et-retours.html",
+    "width": 1440,
+    "changed": true,
+    "targeted": false
+  },
+  {
+    "file": "page-mentions-legales.html",
+    "width": 390,
+    "changed": true,
+    "targeted": true
+  },
+  {
+    "file": "page-mentions-legales.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": true
+  },
+  {
+    "file": "page-notre-histoire.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-notre-histoire.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-suivi-de-commande.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "page-suivi-de-commande.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "panier.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "panier.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "produit.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "produit.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche-aucun.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche-aucun.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche-resultat.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche-resultat.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche.html",
+    "width": 390,
+    "changed": false,
+    "targeted": false
+  },
+  {
+    "file": "recherche.html",
+    "width": 1440,
+    "changed": false,
+    "targeted": false
+  }
+]

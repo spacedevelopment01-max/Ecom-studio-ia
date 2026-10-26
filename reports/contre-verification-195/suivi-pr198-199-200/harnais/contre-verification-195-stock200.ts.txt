@@ -1,0 +1,58 @@
+/**
+ * Suivi #194 (constat de Codex) : dans l'onglet Boutique, le menu « … » d'une section MASQUÉE doit être utilisable
+ * comme celui d'une section visible. Studio réel (Next.js en développement, base temporaire, aucune IA, aucun réseau),
+ * démonstration Atelier Rive, une section de l'accueil masquée. Clic normal (jamais forcé) sur « Descendre » puis
+ * « Monter », à l'ordinateur et au téléphone ; l'élément sous le pointeur doit être l'entrée du menu. Captures à chaque
+ * étape et résumé JSON.
+ *
+ *   npx tsx scripts/section-masquee-studio-check.ts <dossier-captures>
+ */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { chromium, type Page } from "playwright";
+if (process.env.DATA_DIR || process.env.DATABASE_FILE || process.env.STORAGE_DIR) throw new Error("Base existante refusée");
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), "ecs-masquee-")); process.env.DATA_DIR = temp; process.env.STOCK_OFFLINE = "1";
+const out = path.resolve(process.argv[2] ?? "reports/section-masquee"); fs.mkdirSync(out, { recursive: true });
+const PORT = 4100 + Math.floor(Math.random() * 300), origin = `http://127.0.0.1:${PORT}`;
+const { demoProject } = await import("../tests/demo-fixtures");
+const { createUser } = await import("../src/lib/auth"); const { saveThemeVersion } = await import("../src/lib/projects"); const { runWithLang } = await import("../src/lib/i18n-server");
+const password = "masquee-" + Math.random().toString(36).slice(2), email = "masquee-studio@example.invalid";
+const user = await createUser(email, password, "Vérification section masquée");
+const f = await runWithLang({ content: "fr", ui: "fr" }, () => demoProject(user.id, "sillon"));
+// Une section de l'accueil, ni la première ni la dernière, est masquée (comme « Réalisations » chez Codex).
+const index = f.spec.templates.index;
+const hiddenId = index.order[2];
+index.sections[hiddenId].disabled = true;
+saveThemeVersion(f.pid, f.spec, "Vérification : section masquée", "user");
+const { run } = await import("../src/lib/db");
+run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active',?,?,?,'admin',?,?)", `masquee-${f.pid}`, "dominer", user.id, f.pid, Date.now(), Date.now());
+const dev = spawn("npx", ["next", "dev", "-p", String(PORT), "-H", "127.0.0.1"], { env: { ...process.env, DATA_DIR: temp, STOCK_OFFLINE: "1", NEXT_TELEMETRY_DISABLED: "1", APP_URL: origin }, stdio: ["ignore", "pipe", "pipe"], detached: true });
+const stopDev = () => { try { process.kill(-dev.pid!, "SIGTERM"); } catch { /* arrêté */ } }; process.on("exit", stopDev);
+let log = ""; dev.stdout.on("data", (d) => { log += d; }); dev.stderr.on("data", (d) => { log += d; });
+const started = Date.now();
+for (;;) { if (Date.now() - started > 240000) throw new Error("Studio non démarré :\n" + log.slice(-2000)); try { const r = await fetch(`${origin}/connexion`); if (r.ok) break; } catch { /* pas prêt */ } await new Promise((r) => setTimeout(r, 1500)); }
+
+const browser = await chromium.launch({executablePath:"/usr/bin/chromium",args:["--no-sandbox"]});
+const results:any[]=[];
+try {for(const lang of ["fr","en"])for(const width of [1440,390]) {
+ const c=await browser.newContext({viewport:{width,height:1000},locale:lang==="fr"?"fr-FR":"en-GB"});
+ await c.route("**/*",r=>{const u=new URL(r.request().url());return u.origin===origin||["data:","blob:"].includes(u.protocol)?r.continue():r.abort();});
+ await c.addCookies([{name:"ecs-lang",value:lang,url:origin}]);
+ const login=await c.request.post(origin+"/api/auth/login",{data:{email,password}});if(!login.ok())throw Error("login");
+ const p=await c.newPage(),errors:string[]=[];p.on("pageerror",e=>errors.push(e.message));
+ await p.goto(`${origin}/studio/${f.pid}/catalogue`,{waitUntil:"networkidle",timeout:240000});
+ const details=p.locator("[data-stock-guarantees]");await details.waitFor({timeout:120000});await details.scrollIntoViewIfNeeded();
+ await p.screenshot({path:path.join(out,`${lang}-${width}-ferme.png`),fullPage:true});
+ await details.locator("summary").click();
+ const text=await details.innerText();
+ if(lang==="fr"&&!text.includes("pendant l'envoi lui-même peut ne pas être déduite"))throw Error("missing FR limitation");
+ if(lang==="en"&&!text.includes("during the send itself may not be deducted"))throw Error("missing EN limitation");
+ if(/jamais écrasé|never overwritten/.test(await p.locator("body").innerText()))throw Error("absolute promise remains");
+ const g=await p.evaluate(()=>({viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth}));if(g.scrollWidth>width+1||errors.length)throw Error("render error");
+ await p.screenshot({path:path.join(out,`${lang}-${width}-ouvert.png`),fullPage:true});
+ results.push({lang,width,...g,detailsOpened:await details.getAttribute("open")!==null,text,errors});await c.close();
+ }
+}finally {await browser.close();stopDev();fs.writeFileSync(path.join(out,"resultat.json"),JSON.stringify({codeCommit:"e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48",syntheticOnly:true,realProviderCalls:0,results},null,2));}
+console.log(JSON.stringify({views:results.length,passed:true}));

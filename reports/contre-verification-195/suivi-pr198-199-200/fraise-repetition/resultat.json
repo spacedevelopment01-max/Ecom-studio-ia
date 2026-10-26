@@ -1,0 +1,121 @@
+{
+  "base": "333bccc8daf97b9746dcf590a9525c830a53915f",
+  "candidate": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+  "nativeStaticExports": true,
+  "sourceMediaMissing": 25,
+  "realProviderCalls": 0,
+  "errors": [],
+  "pages": [
+    {
+      "file": "page-contact.html",
+      "views": [
+        {
+          "stage": "before",
+          "width": 390,
+          "png": "avant-390-page-contact.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "before",
+          "width": 1440,
+          "png": "avant-1440-page-contact.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 390,
+          "png": "apres-390-page-contact.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 1440,
+          "png": "apres-1440-page-contact.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        }
+      ]
+    },
+    {
+      "file": "page-faq.html",
+      "views": [
+        {
+          "stage": "before",
+          "width": 390,
+          "png": "avant-390-page-faq.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "before",
+          "width": 1440,
+          "png": "avant-1440-page-faq.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 390,
+          "png": "apres-390-page-faq.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 1440,
+          "png": "apres-1440-page-faq.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        }
+      ]
+    },
+    {
+      "file": "page-livraison-et-retours.html",
+      "views": [
+        {
+          "stage": "before",
+          "width": 390,
+          "png": "avant-390-page-livraison-et-retours.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "before",
+          "width": 1440,
+          "png": "avant-1440-page-livraison-et-retours.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 390,
+          "png": "apres-390-page-livraison-et-retours.png",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "geometry": null
+        },
+        {
+          "stage": "after",
+          "width": 1440,
+          "png": "apres-1440-page-livraison-et-retours.png",
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "geometry": null
+        }
+      ]
+    }
+  ]
+}

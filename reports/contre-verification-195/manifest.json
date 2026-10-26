@@ -1,9 +1,9 @@
 {
   "codeTestedLatest": "333bccc8daf97b9746dcf590a9525c830a53915f",
   "previousSource": "7f854218bb7afd08ec8ec2209b55c36ee53011f7",
-  "state": "BEFORE_D38_AND_AFTER_MAIN_333_TECHNICALLY_VERIFIED_WITH_EXPLICIT_LIMITS_VISUAL_VALIDATION_WITHHELD",
+  "state": "FOLLOWUP_198_199_200_APPROVED_BEFORE_MERGE_FINAL_MAIN_PENDING",
   "realProviderCalls": 0,
-  "nativeScreenshots": 895,
+  "nativeScreenshots": null,
   "inspectionBoards": 25,
   "videos": 6,
   "files": [
@@ -509,8 +509,8 @@
     },
     {
       "file": "README.md",
-      "bytes": 11938,
-      "sha256": "4a44fa252ebca3d7c6a14499291f6b74ba9abd78d939a605454cb9c39bd7f3f2"
+      "bytes": 12132,
+      "sha256": "6f79348a830b3c2e0c91eae294479081182b0a66391bdf877d57a976d1b66822"
     },
     {
       "file": "aec79070-cibles-independants.log.txt",
@@ -6066,9 +6066,1995 @@
       "file": "probe-modification-client.txt",
       "bytes": 947,
       "sha256": "05dc200cef0070ce116cfbcf28c9a3f31879b0c0f0abfc3e38f62183c122c822"
+    },
+    {
+      "file": "suivi-pr198-199-200/README.md",
+      "bytes": 9086,
+      "sha256": "b2d3a7c4da8e374fffd9ba2cdd62854fa1d2195d6f32756f6f558a1854057bc8"
+    },
+    {
+      "file": "suivi-pr198-199-200/base333-statique.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/base333-statique.log",
+      "bytes": 1010,
+      "sha256": "6914298747c6067f3a9596730caba2b4869c1b453122b96448e7b337c315ff5c"
+    },
+    {
+      "file": "suivi-pr198-199-200/ci-199-86525ca9-rouge.txt",
+      "bytes": 5661,
+      "sha256": "de2aa20fe0c85f2fecee91df28e173d478359a8d1ab7805ff79b69b8b0b6a90f"
+    },
+    {
+      "file": "suivi-pr198-199-200/ci-main-be488de1-rouge.txt",
+      "bytes": 11398,
+      "sha256": "9c145b0d630e394164419d8d55d0b22f98168c8f21686052e18f899e614d5cfb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-404.png",
+      "bytes": 143366,
+      "sha256": "ac6cd0e07f244fe3bb705d3e6fe928586188394c9a1eeba55d90849d0b0beaaa"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-accueil.png",
+      "bytes": 150724,
+      "sha256": "4cd292837115b12a36daf3ad1eb5b2cf78fc9f9a4b319aaa2bb6274ed7e20847"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-boutique.png",
+      "bytes": 190470,
+      "sha256": "64e905abca0777c16590aae98c2af916a87b8f5905570c7ef0f5aa6bdfe4e21f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-commande.png",
+      "bytes": 135467,
+      "sha256": "629134f5f313f02caa6dfe8ad3ff721aeabf3871274b574956f3672379d40b1e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-conditions-de-vente.png",
+      "bytes": 130656,
+      "sha256": "1d56678e08144fee44899e64a5b96a436738b791321a53d75a697789822ed503"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-confidentialite.png",
+      "bytes": 127083,
+      "sha256": "3121daa4936a1187a6cc997d6252018a4a684f68d83ecb4aa926dab14d8d3b05"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-contact.png",
+      "bytes": 113551,
+      "sha256": "fc86eb78d522dee523523ed5f2a34d00c5e3a9729ba593fcabaed55a66d238da"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-cookies.png",
+      "bytes": 120151,
+      "sha256": "ca3902edd6966c511ebd7930b5ad9c56c2105f365bfccf6416ee10de251e6124"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-faq.png",
+      "bytes": 141732,
+      "sha256": "c96f51ad068a40424fd394f48873e9dba0e921758e2dd035e15ef883259503a5"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-conserver-son-flacon.png",
+      "bytes": 124511,
+      "sha256": "8e8d35c8f1448eb20b61005198360e780feff423ff9cd4bac891c80c221038a7"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 129379,
+      "sha256": "7fc8fafde8fa699d0ff43d1191a10cdb5b34da644d4909898fe0dda9bc24de97"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 128121,
+      "sha256": "e7438ea2e20304e13dbf30abfbe3e9f3ac3367b8ffeec6405a36db275305f3dd"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 127184,
+      "sha256": "bffb043cfe1ba7cda2957aa52ba04720882b0bbdcc1c441381a7dbe33267b56c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-lire-une-etiquette.png",
+      "bytes": 126670,
+      "sha256": "3e74d7f194258243944411b7621216f56bafa948d55f39640d7430c082c8a6e6"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 127385,
+      "sha256": "14f4f5ac1bde1a0a5b6ae23a41c953732967eec28207092d1f1b46d672b67f32"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-journal.png",
+      "bytes": 156350,
+      "sha256": "0c49beff98c127f1e66b9022efe3cac94431022eb7298dcfdad66bf32eda8869"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-la-recette.png",
+      "bytes": 165623,
+      "sha256": "8231261c57a62009fa873719dcd300e8e19dfd96447c0e7357528cbc8b4c8afb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-livraison-et-retours.png",
+      "bytes": 170105,
+      "sha256": "0f7e6816648fdca6530689117e66fc70a07f3d83926c3dc2762ba80b4b81a103"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-mentions-legales.png",
+      "bytes": 122050,
+      "sha256": "95f2f9ad626994457ee035183fee4cb938c6b3b69af025809e1ce0635cf70056"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-notre-histoire.png",
+      "bytes": 170604,
+      "sha256": "e99a7e50aacc64b860e3f083660c9fb731810edd4ccc027b5fb5d77b562e4630"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-page-suivi-de-commande.png",
+      "bytes": 115284,
+      "sha256": "922cb1ddf5703ebab38926d2053ca12496e43d2c207c408533758fc10b94be66"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-panier.png",
+      "bytes": 126507,
+      "sha256": "561e65088dc83d60369ef17bdb817833e543c1da8e109eab79ad9b9a8b61241d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-produit.png",
+      "bytes": 145755,
+      "sha256": "c1b98dd05371e327bae9f7cfe2a47d5a519c9bd0c2d532c3e7aa88106581ed48"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-recherche-aucun.png",
+      "bytes": 90938,
+      "sha256": "8822ed759f4484d25d4d7e9f1d4340c0f8efdedc5ab1d8c6f5e1d8908a40c9c9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-recherche-resultat.png",
+      "bytes": 77049,
+      "sha256": "0ef27078318f94e13a12282d7e624bfb2008b5107eb691987f30d0cc590d524f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-1440-recherche.png",
+      "bytes": 89142,
+      "sha256": "1cfd85c1c11d1f189a9c122662f7bdb8df3e157207456c24c8c8a3092e86d79b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-conditions-de-vente.png",
+      "bytes": 89587,
+      "sha256": "7df5eaf44482f495470f8f969de71bb00d85fefb88a81b8299b036ce4dfde0ad"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-confidentialite.png",
+      "bytes": 83370,
+      "sha256": "44c5b03e59ef3d6b432fc4204f61702da1f9e53549be3c9dc894a82e0a281ede"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-cookies.png",
+      "bytes": 81702,
+      "sha256": "a6326d30751504e438c5f9109724c0e0ee9f013d11c093a1109a2be4eab8c36d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-conserver-son-flacon.png",
+      "bytes": 83574,
+      "sha256": "c5a0b537f32232fbfc7f237e6b6ffa1174ce5a9b22b608aca2dadcd735e77fae"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 87804,
+      "sha256": "d1ebc282b38befa15ee31f47e3a8c803e6af4ddc5bffb6f4e9409d7b2c774c5b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 86898,
+      "sha256": "827af67d6f29b6df0872e50f41398b3a4db97dac6b53b26f5e30575500c987cf"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 85327,
+      "sha256": "3034f894e959dcb56c817dfdb60acbf94af86c66221b00c8a94f96069296ea13"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-lire-une-etiquette.png",
+      "bytes": 80817,
+      "sha256": "3ce77588763c5a8ea87996768e6df67a2f891b2aba9fc88b5f1ece498e2cfa51"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 85175,
+      "sha256": "190d8f1259f3ffd70ed335f0fcd457133435189982b5e5a21ff1529c310419cd"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-360-page-mentions-legales.png",
+      "bytes": 79376,
+      "sha256": "6acb5f41c9879ded0f656955827fda734379328400bbad57f3a98d7f344f4078"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-404.png",
+      "bytes": 61516,
+      "sha256": "2460db6941db37fc61f80679ee79aa3604528df9aa581fd11048cb4d39c0380c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-accueil.png",
+      "bytes": 64547,
+      "sha256": "92c7accd24033bd761b57ffe24aa0118d8989ddf40061d0db7959fdb18cf6c3f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-boutique.png",
+      "bytes": 60160,
+      "sha256": "62bead2402b905bb54199fa1828d7bcffa3430c8c977bb33777410b1fa7de5c9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-commande.png",
+      "bytes": 69789,
+      "sha256": "c3639e9176ade7e3964cfbc805c597a892c90684482feb784c4eeb2480a9d65b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-conditions-de-vente.png",
+      "bytes": 94061,
+      "sha256": "db0dba9536329eb552cc86f65e4d59da8b8795fe0146042869257ab9d2b04f1e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-confidentialite.png",
+      "bytes": 87035,
+      "sha256": "d71cd534c96026fc4509fed519c43818f1b2a12a37c168d77c99b52efcba4a07"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-contact.png",
+      "bytes": 66392,
+      "sha256": "db431e9b6d5a5acbcef57e59ea6d65fffb2d259f64db4cf9127e6cc41689a55d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-cookies.png",
+      "bytes": 85302,
+      "sha256": "8db512f1945fb2834848702c76170bef0151b726643425d3c8ae7585abf6efdf"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-faq.png",
+      "bytes": 88992,
+      "sha256": "53ea4e9d362e24bfa4f963051af56fc81a52758568f2358db47356cbe0de0c85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-conserver-son-flacon.png",
+      "bytes": 80262,
+      "sha256": "2ca53c84b3545e092bff8eb734ea8f59b663f6fc2ddd0813c745929ec353d759"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 85241,
+      "sha256": "6cd55ed611ea922dfde682367b40bb089aae029725fc7e2e09abbc81ce14e176"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 84283,
+      "sha256": "fceee71246c03679f1a2785d7fd6a206f394a8ace58bac79e946e8e60456ea92"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 83939,
+      "sha256": "f685e205b7eed8b982f4bd0c652b188823d5825c6260e2926f023d7803a52670"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-lire-une-etiquette.png",
+      "bytes": 81234,
+      "sha256": "71c57c75c3bf56821a590cc572f8e80485be3bd538033833530613b58ce2ff02"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 86265,
+      "sha256": "a7d41def902bfe0536ec7e76ada8f0b6ef5ef47e391e0ea8637bc4270ea70746"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-journal.png",
+      "bytes": 76449,
+      "sha256": "3d7d7a8e674ae85238351a21491cc25a967b1abb3f1027169d01d84f4d5f1016"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-la-recette.png",
+      "bytes": 67379,
+      "sha256": "15fa1cf67d53be4a51f7d0f30dbf76bc92c665e4e2ea949a2ad2210662ae660b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-livraison-et-retours.png",
+      "bytes": 92382,
+      "sha256": "844db5ca99b6e479e3308722af6159ba6bb96cea57fe0e45e673b8ab0982c075"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-mentions-legales.png",
+      "bytes": 84807,
+      "sha256": "263bebc9c069eb346fc858ad11ff55f35baae9b552ee9641e924c50812d803cb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-notre-histoire.png",
+      "bytes": 74595,
+      "sha256": "5c3f9711bccec45e1151e24085b2ceecf44ce70563c5518f005f0590b1521863"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-page-suivi-de-commande.png",
+      "bytes": 63467,
+      "sha256": "eb5fc21d80a365a1e968ea91854c3bb49f7bd1660752041b2b6cc127f8319a85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-panier.png",
+      "bytes": 58088,
+      "sha256": "e557cfa4ca480007a83ed6ebbc706a40fdc3f9e6d9010fba72e2bb2c68aeb31f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-produit.png",
+      "bytes": 58895,
+      "sha256": "5834322f21067c2e56e45e56f600d067518f28faa081b5f9bc691e869de4ca41"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-recherche-aucun.png",
+      "bytes": 75760,
+      "sha256": "e599ac04212ccf64fb2a01f1de440b0f424140ee8d4c40d87fcce34a79914ab1"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-recherche-resultat.png",
+      "bytes": 59605,
+      "sha256": "5a005460e0e83765690b43ebdf1f2790aa38d3a5bb92555404c53599941b3625"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-390-recherche.png",
+      "bytes": 78476,
+      "sha256": "8073dc0d8e2d3bebe8d24246ab35a7a96d144c697eb4933f7165485b84b59cd0"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-conditions-de-vente.png",
+      "bytes": 106474,
+      "sha256": "0d8443ccf96e54a453429cb507060994da068ebd154a2791ca00e7e0447b9614"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-confidentialite.png",
+      "bytes": 98024,
+      "sha256": "0dec1d5fdc2a7033fddde42247c50834b739098356817342cfc22569f4edf558"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-cookies.png",
+      "bytes": 93466,
+      "sha256": "8f788281c26640d46d9b11e65781c5bf6d1a795b9efa56209ed401e8b1bb7959"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-conserver-son-flacon.png",
+      "bytes": 90419,
+      "sha256": "66c9d440e02330b1ab7e95f679d7f1c24b1f4f127032d9b65280f31b03fc0ed2"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 102216,
+      "sha256": "14d4d0b8ef2e8813185edc7f391fba6f31f7571570ce2831b1b295c44e405bcb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 99955,
+      "sha256": "fd8d692b9cf6fbc81debd93cc8cfca9144894ad9b0e06a0e36cd6165ae7a2faf"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 99339,
+      "sha256": "1a8253bdff3c821cbd811281ebf615edb678c7cd25bd02c382aea88b2c22d274"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-lire-une-etiquette.png",
+      "bytes": 95104,
+      "sha256": "98ffea14b2727bfe522641ff0deff7e755e96f4adbe81631817c6b88add03402"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 95170,
+      "sha256": "62c449d7dee4b278d293c056d092bf0a7ce66b11acf45312debdf498756332dc"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-430-page-mentions-legales.png",
+      "bytes": 92901,
+      "sha256": "a70925103b4b407500d986c1a01b0bd5ddf47b5356bcb64d686c3e834ff9c01f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-conditions-de-vente.png",
+      "bytes": 120657,
+      "sha256": "9b67cc6487bf8b1c1901521bdc3567008ac7f1fff6f2ab4511da2202880b2407"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-confidentialite.png",
+      "bytes": 105083,
+      "sha256": "82fc0cda259d288bc8edbc99c77ffef82536cafcf7d644cbbc80035e917651da"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-cookies.png",
+      "bytes": 106003,
+      "sha256": "93d948ffc6ebd0f76474b3bd1a97cdff2f3ad5e10726bd6043b7457fadbb829d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-conserver-son-flacon.png",
+      "bytes": 93277,
+      "sha256": "45ed043ce7a2a970d7e30f17387858abf0b7fa5627eb057ebad8fe88f84b6d0c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 94978,
+      "sha256": "f570d8819c3f5cfefc0aa98c41d89c5dc53272285b3e7202b3694be4fb8de1e7"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 96181,
+      "sha256": "bb1741ab046382bb1988baec1cc16c625044c694c2255f034611fab61422f8d3"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 96426,
+      "sha256": "2fd1c1824a0ab4559f72c2a3938bc3d9d354bb33fe881e9306bda43fef1fa4c0"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-lire-une-etiquette.png",
+      "bytes": 90879,
+      "sha256": "32f47e30db475a9f22393ccbb944dc2e969ba17ad05743302f28518ddf17da13"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 93150,
+      "sha256": "9b887b0c99f8d13fee38bb6a0290035336c67591fb0791e906b1062a57c5bf9e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-749-page-mentions-legales.png",
+      "bytes": 97656,
+      "sha256": "908a4bfeb563c5623c453101da801ff26a219c534fe0bb55921358c72fde8640"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-conditions-de-vente.png",
+      "bytes": 77017,
+      "sha256": "adcb4e25d8014310f9fa5f8a6ffb95ff9f6dc79c36c9273bc3d77f18ee610a88"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-confidentialite.png",
+      "bytes": 75727,
+      "sha256": "c1d278d6416f6d0d0786641f8a87d2ae87145725176d4ecbd58d70d81339e9f9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-cookies.png",
+      "bytes": 72823,
+      "sha256": "350db908ebe25d171af89722486eff468fbc2528d4bf8baf557d7b108d76ca4f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-conserver-son-flacon.png",
+      "bytes": 73901,
+      "sha256": "a59e4335d5e783f83ef57fa075c4aea0b0e53316c4cfc480966ed33d95199369"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 76498,
+      "sha256": "e11d186174bc0bbbd34b3a76e80cd79ab2c4cde9bc94ce235cf620d2a57878ff"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 75894,
+      "sha256": "22fa8e3e63c665b84d24eb9b13ff08e0ca8482afa91cf723fb38ffba3752a896"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 82921,
+      "sha256": "0a051040ccaee8bdf5ff93f9d8e4f9ce451a455a52f6be2fdf48431ffbd34ebe"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-lire-une-etiquette.png",
+      "bytes": 83560,
+      "sha256": "8352ccabcab913f2a53f8f39a712b927b3f0d0b3221256479b60c964ff9f0316"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 84127,
+      "sha256": "7dc953da14e01e34bf8c7e13fe684aad9417fd5d9a377f553dad72c2d2190ebd"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/apres-750-page-mentions-legales.png",
+      "bytes": 73584,
+      "sha256": "cb481c34ab25b1a5bf816b04522d7c98bf6727428c55100fa157fccd5441b814"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-404.png",
+      "bytes": 143366,
+      "sha256": "ac6cd0e07f244fe3bb705d3e6fe928586188394c9a1eeba55d90849d0b0beaaa"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-accueil.png",
+      "bytes": 150724,
+      "sha256": "4cd292837115b12a36daf3ad1eb5b2cf78fc9f9a4b319aaa2bb6274ed7e20847"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-boutique.png",
+      "bytes": 190470,
+      "sha256": "64e905abca0777c16590aae98c2af916a87b8f5905570c7ef0f5aa6bdfe4e21f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-commande.png",
+      "bytes": 135467,
+      "sha256": "629134f5f313f02caa6dfe8ad3ff721aeabf3871274b574956f3672379d40b1e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-conditions-de-vente.png",
+      "bytes": 130656,
+      "sha256": "1d56678e08144fee44899e64a5b96a436738b791321a53d75a697789822ed503"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-confidentialite.png",
+      "bytes": 127083,
+      "sha256": "3121daa4936a1187a6cc997d6252018a4a684f68d83ecb4aa926dab14d8d3b05"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-contact.png",
+      "bytes": 113551,
+      "sha256": "fc86eb78d522dee523523ed5f2a34d00c5e3a9729ba593fcabaed55a66d238da"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-cookies.png",
+      "bytes": 120151,
+      "sha256": "ca3902edd6966c511ebd7930b5ad9c56c2105f365bfccf6416ee10de251e6124"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-faq.png",
+      "bytes": 141731,
+      "sha256": "96b068240dcfcc85ac6c87e47baa1d0dbefd2fa1b0a8172e65d49c393ec5407a"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-conserver-son-flacon.png",
+      "bytes": 124511,
+      "sha256": "8e8d35c8f1448eb20b61005198360e780feff423ff9cd4bac891c80c221038a7"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 129379,
+      "sha256": "7fc8fafde8fa699d0ff43d1191a10cdb5b34da644d4909898fe0dda9bc24de97"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 128121,
+      "sha256": "e7438ea2e20304e13dbf30abfbe3e9f3ac3367b8ffeec6405a36db275305f3dd"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 127184,
+      "sha256": "bffb043cfe1ba7cda2957aa52ba04720882b0bbdcc1c441381a7dbe33267b56c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-lire-une-etiquette.png",
+      "bytes": 126670,
+      "sha256": "3e74d7f194258243944411b7621216f56bafa948d55f39640d7430c082c8a6e6"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 127385,
+      "sha256": "14f4f5ac1bde1a0a5b6ae23a41c953732967eec28207092d1f1b46d672b67f32"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-journal.png",
+      "bytes": 156350,
+      "sha256": "0c49beff98c127f1e66b9022efe3cac94431022eb7298dcfdad66bf32eda8869"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-la-recette.png",
+      "bytes": 165623,
+      "sha256": "8231261c57a62009fa873719dcd300e8e19dfd96447c0e7357528cbc8b4c8afb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-livraison-et-retours.png",
+      "bytes": 170119,
+      "sha256": "485ad0e161db3c97394b4c7d64f4fb5ee11e551c6cd025e6457c1523c258a05c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-mentions-legales.png",
+      "bytes": 122050,
+      "sha256": "95f2f9ad626994457ee035183fee4cb938c6b3b69af025809e1ce0635cf70056"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-notre-histoire.png",
+      "bytes": 170604,
+      "sha256": "e99a7e50aacc64b860e3f083660c9fb731810edd4ccc027b5fb5d77b562e4630"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-page-suivi-de-commande.png",
+      "bytes": 115284,
+      "sha256": "922cb1ddf5703ebab38926d2053ca12496e43d2c207c408533758fc10b94be66"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-panier.png",
+      "bytes": 126507,
+      "sha256": "561e65088dc83d60369ef17bdb817833e543c1da8e109eab79ad9b9a8b61241d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-produit.png",
+      "bytes": 145755,
+      "sha256": "c1b98dd05371e327bae9f7cfe2a47d5a519c9bd0c2d532c3e7aa88106581ed48"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-recherche-aucun.png",
+      "bytes": 90938,
+      "sha256": "8822ed759f4484d25d4d7e9f1d4340c0f8efdedc5ab1d8c6f5e1d8908a40c9c9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-recherche-resultat.png",
+      "bytes": 77049,
+      "sha256": "0ef27078318f94e13a12282d7e624bfb2008b5107eb691987f30d0cc590d524f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-1440-recherche.png",
+      "bytes": 89142,
+      "sha256": "1cfd85c1c11d1f189a9c122662f7bdb8df3e157207456c24c8c8a3092e86d79b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-conditions-de-vente.png",
+      "bytes": 54518,
+      "sha256": "271a0f5366335988a0b46ee10f0d30fc289b34a6c035b0bbb8947c42cb17153c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-confidentialite.png",
+      "bytes": 51076,
+      "sha256": "e82389c317fa56d29e952949b17e487b8e6ad3c2858a773de82d1e950348cf93"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-cookies.png",
+      "bytes": 49947,
+      "sha256": "8e6c7d11f3d35ed5f061c6295aaf448bc07c945bcb7b8741c1f7d8357aaa4585"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-conserver-son-flacon.png",
+      "bytes": 53179,
+      "sha256": "fb4a40c75afef91d0377921bcaf834997f6a65e3ea154313ef2cd936d148f6a5"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 51302,
+      "sha256": "01833717cb131a8a10ad806da7bd04cc6fc707519a98c61efcc87a9b1d2455ba"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 51298,
+      "sha256": "aaed5ac3ee95fe558d17815b7982209b70b9e0c78c42751c6e4722ed3561bb4e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 50661,
+      "sha256": "381323d2d24c58e0b5475effd7ebc8435e8ef40c6084daa341bfc9511bad62a8"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-lire-une-etiquette.png",
+      "bytes": 52514,
+      "sha256": "c85049c3e15a362b0004c8bcd1b701225f8382ea1f3be2cf3f73f62912816857"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 53934,
+      "sha256": "791a2d8f84cd6e6592d4d40d40a66c1d0a45da8e78b2e348086bf08c7d78edcf"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-360-page-mentions-legales.png",
+      "bytes": 51191,
+      "sha256": "b95a3d5e96d4e94a16e0d8091ffa403912c9fe32c3c225d783ed731d50facabe"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-404.png",
+      "bytes": 61516,
+      "sha256": "2460db6941db37fc61f80679ee79aa3604528df9aa581fd11048cb4d39c0380c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-accueil.png",
+      "bytes": 64547,
+      "sha256": "92c7accd24033bd761b57ffe24aa0118d8989ddf40061d0db7959fdb18cf6c3f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-boutique.png",
+      "bytes": 60160,
+      "sha256": "62bead2402b905bb54199fa1828d7bcffa3430c8c977bb33777410b1fa7de5c9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-commande.png",
+      "bytes": 69789,
+      "sha256": "c3639e9176ade7e3964cfbc805c597a892c90684482feb784c4eeb2480a9d65b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-conditions-de-vente.png",
+      "bytes": 56868,
+      "sha256": "7c3931d0cf786a2bdd96cd7334bfb3aa0528f1fb28ee9af865d105afb505244a"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-confidentialite.png",
+      "bytes": 52701,
+      "sha256": "cdac37207ddd26c8e4f6d0dd358e0137ba9b67b944113afe9f17d99712c268a2"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-contact.png",
+      "bytes": 66377,
+      "sha256": "0a83e29e7cf8acc74f891e7a6bf167f807bfa87b141b6fec45c18f94a19fd093"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-cookies.png",
+      "bytes": 53178,
+      "sha256": "796192b8eccfa1cc6c8eb3b83b546088da599dfaa294496a03e705962cffdd0c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-faq.png",
+      "bytes": 88992,
+      "sha256": "53ea4e9d362e24bfa4f963051af56fc81a52758568f2358db47356cbe0de0c85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-conserver-son-flacon.png",
+      "bytes": 55137,
+      "sha256": "c0bb7ea765ca4c21f34fa40d00280dd2ce1e6534ba265efd5bfa0335f313038f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 51795,
+      "sha256": "eaa70ec27bfebba13f3e0df01d478bad491ea4bb0a8e8c9bd1b04bd7d72f4360"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 52315,
+      "sha256": "d839f2983b53c00e43f448a17eb9fcad80fea902fde8c0b1c8d63202486ef0a4"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 52411,
+      "sha256": "5d6b719def1182c91e6581afc4399781ee178bf0207b59a45d7b6afc5b68908f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-lire-une-etiquette.png",
+      "bytes": 53405,
+      "sha256": "f6e4057d9cdaa91a216790ba002d1eb4be24deaaccf90e3dacdb1a0b83870235"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 55232,
+      "sha256": "df84ab0a743a714e63b8d03b66003e9c37eec36af0cd1f48d82709bf0d522004"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-journal.png",
+      "bytes": 76449,
+      "sha256": "3d7d7a8e674ae85238351a21491cc25a967b1abb3f1027169d01d84f4d5f1016"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-la-recette.png",
+      "bytes": 67379,
+      "sha256": "15fa1cf67d53be4a51f7d0f30dbf76bc92c665e4e2ea949a2ad2210662ae660b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-livraison-et-retours.png",
+      "bytes": 92382,
+      "sha256": "844db5ca99b6e479e3308722af6159ba6bb96cea57fe0e45e673b8ab0982c075"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-mentions-legales.png",
+      "bytes": 53846,
+      "sha256": "f71dc8ec99e4819a15fe62c7e5d78ff146b59bb2818cf3b5b17b77feda2863cb"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-notre-histoire.png",
+      "bytes": 74595,
+      "sha256": "5c3f9711bccec45e1151e24085b2ceecf44ce70563c5518f005f0590b1521863"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-page-suivi-de-commande.png",
+      "bytes": 63467,
+      "sha256": "eb5fc21d80a365a1e968ea91854c3bb49f7bd1660752041b2b6cc127f8319a85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-panier.png",
+      "bytes": 58088,
+      "sha256": "e557cfa4ca480007a83ed6ebbc706a40fdc3f9e6d9010fba72e2bb2c68aeb31f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-produit.png",
+      "bytes": 58895,
+      "sha256": "5834322f21067c2e56e45e56f600d067518f28faa081b5f9bc691e869de4ca41"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-recherche-aucun.png",
+      "bytes": 75760,
+      "sha256": "e599ac04212ccf64fb2a01f1de440b0f424140ee8d4c40d87fcce34a79914ab1"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-recherche-resultat.png",
+      "bytes": 59605,
+      "sha256": "5a005460e0e83765690b43ebdf1f2790aa38d3a5bb92555404c53599941b3625"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-390-recherche.png",
+      "bytes": 78476,
+      "sha256": "8073dc0d8e2d3bebe8d24246ab35a7a96d144c697eb4933f7165485b84b59cd0"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-conditions-de-vente.png",
+      "bytes": 59472,
+      "sha256": "c9b81bfcee2906bf369ddb86ee6ae943b544c292c052bd4862e8372b33528aea"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-confidentialite.png",
+      "bytes": 54683,
+      "sha256": "e584d4bdd8ef71d958f6a3d8d8127c5282a6643c4a2dd8851e943204232b7bac"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-cookies.png",
+      "bytes": 55634,
+      "sha256": "33cb3c8e3f481803e42be4c98f61e7be0eddcc395fbbfbfea25a14be9fe08d8a"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-conserver-son-flacon.png",
+      "bytes": 58058,
+      "sha256": "af84146b1cd903a7cc3a28dd3c40271b96ceb88c529a861b4eece7d23762ff5e"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 54384,
+      "sha256": "ca42dac13e73eb35eec5e5999c686273df92c3e5d56ee8b285b834f6aee2cb9c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 55084,
+      "sha256": "1d7719c200b7e965063c64b9a033b1de450aac60e43def900647738b36624fa8"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 54488,
+      "sha256": "82c3c2bf4e9d11ceb4ca90ed97285af7a198c74c51b3a0ea963afcd5048ecf9b"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-lire-une-etiquette.png",
+      "bytes": 55052,
+      "sha256": "3b91add88c84d79d5d6d27bb0bf602f9c2c7f401c276e4d7439c1cebcc04085c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 58471,
+      "sha256": "f4e6146f20ef32af2cf04fb8bf5093bd97f14d700818b67206c79cb9daac26ea"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-430-page-mentions-legales.png",
+      "bytes": 57033,
+      "sha256": "ee58f9b978b1719d9cbf77069f7c70ecd8f49dbca187123e084c47ddcff2d3b3"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-conditions-de-vente.png",
+      "bytes": 70017,
+      "sha256": "e219bb2dd633bcd29063a9d8cfe6c8c80baff8a402c55a616bf560fa2f8c0d2d"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-confidentialite.png",
+      "bytes": 64260,
+      "sha256": "836839e2c2504408af3c09c38134946f5f9e7dda456c16bd945bdac2158123c3"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-cookies.png",
+      "bytes": 65009,
+      "sha256": "19ad9f2e2707df5bbc74132d9148dd843ba0d05fce20f03f887ef1596a4ef244"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-conserver-son-flacon.png",
+      "bytes": 62822,
+      "sha256": "b9370465059b5c72d38b3664b5198b513c8df8a6fdee7c7e3375215081bbd22f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 60542,
+      "sha256": "42893f0d410fb4c7a3a017a05e9997b43c21623980dbdfc31e4271d573f36691"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 60968,
+      "sha256": "5091176d98c683fe81abeffb7f4c6cfe749edec81ddd6e44788bb0bcdd4e89d7"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 61402,
+      "sha256": "5daea55847c8bba4e74d34020ae0308adb1cecf8e28d05c2574fece3919f86b2"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-lire-une-etiquette.png",
+      "bytes": 60316,
+      "sha256": "0cfc8294a655a8a50a2329d418af8284bcc042ed09439bae97b550650c79b089"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 62817,
+      "sha256": "c01576df9603e2614a72943419d81fba2c6e25aaa58b5256343d044271433166"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-749-page-mentions-legales.png",
+      "bytes": 66681,
+      "sha256": "924ae9fb9bf8c2d207490ecba19db17cecc791bbc7d6f704bbf12b4530565c15"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-conditions-de-vente.png",
+      "bytes": 77017,
+      "sha256": "adcb4e25d8014310f9fa5f8a6ffb95ff9f6dc79c36c9273bc3d77f18ee610a88"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-confidentialite.png",
+      "bytes": 75727,
+      "sha256": "c1d278d6416f6d0d0786641f8a87d2ae87145725176d4ecbd58d70d81339e9f9"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-cookies.png",
+      "bytes": 72823,
+      "sha256": "350db908ebe25d171af89722486eff468fbc2528d4bf8baf557d7b108d76ca4f"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-conserver-son-flacon.png",
+      "bytes": 73901,
+      "sha256": "a59e4335d5e783f83ef57fa075c4aea0b0e53316c4cfc480966ed33d95199369"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-le-flacon-sous-tous-les-angles.png",
+      "bytes": 76498,
+      "sha256": "e11d186174bc0bbbd34b3a76e80cd79ab2c4cde9bc94ce235cf620d2a57878ff"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-le-gout-fraise-en-images.png",
+      "bytes": 75894,
+      "sha256": "22fa8e3e63c665b84d24eb9b13ff08e0ca8482afa91cf723fb38ffba3752a896"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-les-details-d-un-petit-rituel.png",
+      "bytes": 82921,
+      "sha256": "0a051040ccaee8bdf5ff93f9d8e4f9ce451a455a52f6be2fdf48431ffbd34ebe"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-lire-une-etiquette.png",
+      "bytes": 83560,
+      "sha256": "8352ccabcab913f2a53f8f39a712b927b3f0d0b3221256479b60c964ff9f0316"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-journal-une-pause-cote-cuisine.png",
+      "bytes": 84127,
+      "sha256": "7dc953da14e01e34bf8c7e13fe684aad9417fd5d9a377f553dad72c2d2190ebd"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/avant-750-page-mentions-legales.png",
+      "bytes": 73584,
+      "sha256": "cb481c34ab25b1a5bf816b04522d7c98bf6727428c55100fa157fccd5441b814"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/comparaisons.json",
+      "bytes": 5774,
+      "sha256": "0a88c46475d3cd732f563688dfa87184319d51f25ffabb238bce4289a8b37bce"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-after-1440-page-faq.html.png",
+      "bytes": 147591,
+      "sha256": "573f3620c92c608d3c63544aa8afb2779e5d11c52467c06f330f8976b8794ca2"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-after-1440-page-livraison-et-retours.html.png",
+      "bytes": 177971,
+      "sha256": "35f1e04d0094bf727e6fc448b116095bf4195518816b8702440873c633f6d8fc"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-after-390-page-contact.html.png",
+      "bytes": 70360,
+      "sha256": "d5cefa3e12a3a827890b14d8b4d87ac484aa0ae9f04337c4353fa36472acef94"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-before-1440-page-faq.html.png",
+      "bytes": 147588,
+      "sha256": "f388ea3de8fdbdaed0d9d455bf9f001ddcfb7fc9a9ec8d5fc38c7dbd7cc5cb66"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-before-1440-page-livraison-et-retours.html.png",
+      "bytes": 177981,
+      "sha256": "917826c80a0bae1aedb96154bc21b8cf832efb1ed166a1dd54e8b5c72cf08190"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/inspect-before-390-page-contact.html.png",
+      "bytes": 70345,
+      "sha256": "99c9a5e7b589f7a9b705468c550bc577bbb411f89fe37b76e7295e13d69268d5"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/mesure-avant-repaint.json",
+      "bytes": 324,
+      "sha256": "35572bfdae2abacb6248c58fd1998f1ca7a1106fec6ac37fdf62a35017da4cb0"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/mesure-courante.json",
+      "bytes": 124,
+      "sha256": "09064b3f3f7539e3c3bc6c47f80b37306d05121a85cf775141dfbd229388d282"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise/resultat.json",
+      "bytes": 75846,
+      "sha256": "6996b389886921decb075441d4c59f7df350fe568573fc29d5bf5459f546f3ed"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-browser.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-browser.log",
+      "bytes": 54,
+      "sha256": "3db9ffe067e9ec8d90d2eeb733a9efd7f64bf59f9bc079ca935d003990c94aa0"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-1440-page-contact.png",
+      "bytes": 113598,
+      "sha256": "360041906875eb3eeeefbf884d3c96fd37dbef75c81372cc125eac87450a6c14"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-1440-page-faq.png",
+      "bytes": 141732,
+      "sha256": "c96f51ad068a40424fd394f48873e9dba0e921758e2dd035e15ef883259503a5"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-1440-page-livraison-et-retours.png",
+      "bytes": 170119,
+      "sha256": "485ad0e161db3c97394b4c7d64f4fb5ee11e551c6cd025e6457c1523c258a05c"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-390-page-contact.png",
+      "bytes": 66377,
+      "sha256": "0a83e29e7cf8acc74f891e7a6bf167f807bfa87b141b6fec45c18f94a19fd093"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-390-page-faq.png",
+      "bytes": 88992,
+      "sha256": "53ea4e9d362e24bfa4f963051af56fc81a52758568f2358db47356cbe0de0c85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/apres-390-page-livraison-et-retours.png",
+      "bytes": 92382,
+      "sha256": "844db5ca99b6e479e3308722af6159ba6bb96cea57fe0e45e673b8ab0982c075"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-1440-page-contact.png",
+      "bytes": 113551,
+      "sha256": "fc86eb78d522dee523523ed5f2a34d00c5e3a9729ba593fcabaed55a66d238da"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-1440-page-faq.png",
+      "bytes": 141731,
+      "sha256": "96b068240dcfcc85ac6c87e47baa1d0dbefd2fa1b0a8172e65d49c393ec5407a"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-1440-page-livraison-et-retours.png",
+      "bytes": 170105,
+      "sha256": "0f7e6816648fdca6530689117e66fc70a07f3d83926c3dc2762ba80b4b81a103"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-390-page-contact.png",
+      "bytes": 66377,
+      "sha256": "0a83e29e7cf8acc74f891e7a6bf167f807bfa87b141b6fec45c18f94a19fd093"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-390-page-faq.png",
+      "bytes": 88992,
+      "sha256": "53ea4e9d362e24bfa4f963051af56fc81a52758568f2358db47356cbe0de0c85"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/avant-390-page-livraison-et-retours.png",
+      "bytes": 92382,
+      "sha256": "844db5ca99b6e479e3308722af6159ba6bb96cea57fe0e45e673b8ab0982c075"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/comparaison-meme-source.json",
+      "bytes": 1945,
+      "sha256": "9d650d1b68ac5ff697a7401fb5d761acb93a67e67db2cd21d49d351a3f7ba0f7"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/mesure-courante.json",
+      "bytes": 140,
+      "sha256": "e2e2c269bcacdb92d10a28d442e97e7848f0929345eb0afb1958a588193caf5a"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition/resultat.json",
+      "bytes": 2972,
+      "sha256": "5862158b8928910c2f45e0466f229e8c5a8c5d584eb7c23afa7a7fc4945a2649"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/fraise-repetition.log",
+      "bytes": 51,
+      "sha256": "e2a0c73782c3191af32dc5acf19ddf4b3d411e00d2d4670c33eefafbb4d0e5a2"
+    },
+    {
+      "file": "suivi-pr198-199-200/harnais/contre-verification-195-fraise198-repetition.mjs.txt",
+      "bytes": 4160,
+      "sha256": "3f11161364b7991149e7adcc07bda928f6b8bf568097579da0511ab8d4e965a7"
+    },
+    {
+      "file": "suivi-pr198-199-200/harnais/contre-verification-195-fraise198.mjs.txt",
+      "bytes": 4181,
+      "sha256": "485be6390d61aa115c0039cd89d97f147d6e8d34a483fb4ea5a1fb8e14e36034"
+    },
+    {
+      "file": "suivi-pr198-199-200/harnais/contre-verification-195-menu199.ts.txt",
+      "bytes": 10292,
+      "sha256": "17d1e20cf9a1257dc0aa637f4ae1a67494a49a148a9fdec27ab5dee203cb48cb"
+    },
+    {
+      "file": "suivi-pr198-199-200/harnais/contre-verification-195-stock200.ts.txt",
+      "bytes": 5258,
+      "sha256": "63ea611aa318437cebd435d1fb4b692c84b7ba4ce5500477aa4861526251b86c"
+    },
+    {
+      "file": "suivi-pr198-199-200/harnais/run-targeted.py.txt",
+      "bytes": 1535,
+      "sha256": "4663259390fed724caa074796a59e8375023fb019602aed2979125f6e267a3a9"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-00-ouverture.png",
+      "bytes": 409254,
+      "sha256": "1d9e00a4bd1e809e7ed04cb0f4d84b638af064cdf76730206caa72e882ce72ec"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-descendre-apres.png",
+      "bytes": 411697,
+      "sha256": "df97af3f5bae16e46b7a0c47fa8be0143769039ece6e47c6219c44d524fc4a46"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-descendre-menu-ouvert.png",
+      "bytes": 416528,
+      "sha256": "78d684250dfaac8e4d037ae58b4582bb7ea4c4617c18cde6d7f5ac5f72ab7c6d"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-monter-apres.png",
+      "bytes": 384890,
+      "sha256": "8a05aef383f4a2e7f66e3f83d9a9ebda43e68f87d40c897162a54c308969c64d"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-monter-menu-ouvert.png",
+      "bytes": 412544,
+      "sha256": "bccd2fbc7887178eab56b2188ce6b21ac2a5e0ed057e060a401beb7124719bdd"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/ordinateur-temoin-section-visible.png",
+      "bytes": 413772,
+      "sha256": "52844e2f4dc0b9c059f6a5a24be08abb8fd2df1cd0648fe04e0389d503e4519f"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-00-ouverture.png",
+      "bytes": 63808,
+      "sha256": "3eb6a4137a8e3b453fb187e03bd8a1ace956ced291adf6f454a541cd97523197"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-descendre-apres.png",
+      "bytes": 57402,
+      "sha256": "4d2a23bac1cd5ad8c0a14e5deb45deb55f4fc8a023fe8d907c1c3a4c65d57c4a"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-descendre-menu-ouvert.png",
+      "bytes": 62221,
+      "sha256": "2c7fcb31f3218161a6ec8c848a6b09da559fed91354313f9976821092a47dc04"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-monter-apres.png",
+      "bytes": 57907,
+      "sha256": "987bb4ee42822c5cf18ce3bf617a6011884328d0f5d03583058a5026c5b5fdd4"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-monter-menu-ouvert.png",
+      "bytes": 61546,
+      "sha256": "3a7c403e03d900189fd82a5ce4384f0843264402edc6a3a1114588a850b5864c"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/petit-telephone-temoin-section-visible.png",
+      "bytes": 65362,
+      "sha256": "57fa3fde199e98d289e91da7d8a06aefcf4bb14318aaa6aa90624e167a70c7ba"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/resultat.json",
+      "bytes": 4523,
+      "sha256": "066db37dd668ce0078dda1bfe09356aa06583f1c22d5082c6c0f5bc3d479043d"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/serveur.log",
+      "bytes": 8036,
+      "sha256": "cea661711d3a9179a32eee42725cf5fab6817374c1071e9d532ac17e759b03ee"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-00-ouverture.png",
+      "bytes": 90196,
+      "sha256": "55dff3ace272f851cccec9de21004146b93964aa4e67b68495bef9d0bba1f608"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-descendre-apres.png",
+      "bytes": 98442,
+      "sha256": "b0bacf45aac96092f3b9e8055cff4c97618b0e0a39d4209a86835b73dbe70e39"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-descendre-menu-ouvert.png",
+      "bytes": 113365,
+      "sha256": "1086b03f08db7da6db1d9fb00130f22dc796d17bae00db8d77290f401ad34792"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-monter-apres.png",
+      "bytes": 98561,
+      "sha256": "afdd909f4d5dcce6ae62e1d914efb6bafac553ebbdcdf2d080645491a9ad9151"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-monter-menu-ouvert.png",
+      "bytes": 113637,
+      "sha256": "11cff7dcd5b554fc4f81b7b40b712ceeeb1c5c52f5b71057dc29f5836b41beb4"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/tablette-temoin-section-visible.png",
+      "bytes": 113571,
+      "sha256": "103e111ce77c341b19103bf80e52667c08a01e80df094f33f9a56018e4a9f4aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-00-ouverture.png",
+      "bytes": 83121,
+      "sha256": "d8b806f94952f65e1eb8e4973824f85e1dda92525c602a6fcda23e1cee42692f"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-descendre-apres.png",
+      "bytes": 66660,
+      "sha256": "6cc5035c04ecaf7470125ea1f9c89fa7091255b828aad917a1efe7efb6f1d034"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-descendre-menu-ouvert.png",
+      "bytes": 75512,
+      "sha256": "3bd5770bc9447b6886e87acb947bd525091fcfca9f788e68d3c6da3dcaa84b7a"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-monter-apres.png",
+      "bytes": 67036,
+      "sha256": "9f52fa91a959d4ba6b6c4ce20fa7355fa65f86c7b970bd5b6fce02d8f31997de"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-monter-menu-ouvert.png",
+      "bytes": 76139,
+      "sha256": "3edf53602f04ffe910e15136ad97ee191b392440c1f72de2587effaef8111484"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu/telephone-temoin-section-visible.png",
+      "bytes": 80797,
+      "sha256": "501de7b7ce9b0d01e8a8ae77dcb494a9d2095b3ff75f9defb88c18e5b0dad9d0"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-browser.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-browser.log",
+      "bytes": 4063,
+      "sha256": "c993dba7834c72a61c783a1370333d92e01620645f3e83386f84676573bebe73"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-00-ouverture.png",
+      "bytes": 410303,
+      "sha256": "aa09164c8572479812cee9a570e5c59b13746a58ce862398fa51c8c860614b8c"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-descendre-apres.png",
+      "bytes": 410057,
+      "sha256": "4c8c0f4a35a015f08b13becc0b0e9f604d8d76526cfa848472af8719b753adb8"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-descendre-menu-ouvert.png",
+      "bytes": 415738,
+      "sha256": "d77106f4d75afa9e67402fb13319731c2baafeee92c93fda158bed4de396a98f"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-monter-apres.png",
+      "bytes": 410436,
+      "sha256": "887ca167dcb1163ed073e4f17d82b4882f2023759dcf0dd6a805c960e8cdff7c"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-monter-menu-ouvert.png",
+      "bytes": 416604,
+      "sha256": "0f8b981b5e509cdaa47947929983d96aba5e9f81a524d84d42d084aeebf28770"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/ordinateur-temoin-section-visible.png",
+      "bytes": 412240,
+      "sha256": "7dcc810e6c94e07f180b67cb61c5558be7dbd9dee17f1eaf65c87083da9aeb4f"
+    },
+    {
+      "file": "suivi-pr198-199-200/menu-premier-serveur-arrete/resultat.json",
+      "bytes": 1203,
+      "sha256": "18bcada23e32db0175446bdca68b3ce4d7cf6dd9091bc54c834e0f031f340dcf"
+    },
+    {
+      "file": "suivi-pr198-199-200/mesure-avant-repaint-fraise-browser.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/mesure-avant-repaint-fraise-browser.log",
+      "bytes": 428,
+      "sha256": "f8c896d9def7e6e298a5c9eb084ccef1ef0f97e6091393ee14a68ea693d549da"
+    },
+    {
+      "file": "suivi-pr198-199-200/mesure-initiale-fraise-browser.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/mesure-initiale-fraise-browser.log",
+      "bytes": 428,
+      "sha256": "91bef9491e73ae881e904e5732b38ff19ce0bcbe3adf764061f8e1c0a043774b"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-statique.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-statique.log",
+      "bytes": 1010,
+      "sha256": "0559ba0efcfb46a0879f26bb9231e4c5976718b9c432a2cd43f21bcf702ef439"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-tests-execution.json",
+      "bytes": 313,
+      "sha256": "2cb3a5389771e8306873a25d8ec455bcc074c80476256ff611ae3edd7d1c8a64"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-tests.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-tests.log",
+      "bytes": 444,
+      "sha256": "ef6b4832672919f721e02f8dd7ded6ad97eccdd63fe4ce23ca029a5a7671028e"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-types.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr198-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-tests-execution.json",
+      "bytes": 271,
+      "sha256": "b22a0bc45137f7da0d6701b526e49977be9f1f2cdae81d4af38f976903861b84"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-tests.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-tests.log",
+      "bytes": 214,
+      "sha256": "19b542b689c3957ca384a8e601def4aec800411e3d33339f41be218aa7709034"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-types-execution.json",
+      "bytes": 210,
+      "sha256": "a605459e46333257deffaac62e45e5a6ed499391a2d0139e2cdfdbb9488ac31a"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-types.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr199-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-tests-execution.json",
+      "bytes": 365,
+      "sha256": "ec82b1dfb31266ae847438a6d61676967529043ed2b6102aa243d54452d09611"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-tests.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-tests.log",
+      "bytes": 188,
+      "sha256": "f02b4d38d4990226786234a137c1a78b251724b7ab61ef1b3d81618f0f081b43"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-types-execution.json",
+      "bytes": 210,
+      "sha256": "1c6aafcdeff6a3f713f37ff7db854380f98ae13f99fd0405f486f3c2f1e45cee"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-types.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/pr200-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "suivi-pr198-199-200/premier-serveur-arrete-menu-browser.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/premier-serveur-arrete-menu-browser.log",
+      "bytes": 981,
+      "sha256": "2a56149d33082c3f70bbc60594419c10cd006d3904de022071df7e9da305d78b"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-export-incomplet-fraise-browser.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-export-incomplet-fraise-browser.log",
+      "bytes": 2334,
+      "sha256": "6d9a699f41fb62e7f7ab62787e94e935c0800d72a7b115d7526b069b92a2bb96"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-heap-public-pr198-statique.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-heap-public-pr198-statique.log",
+      "bytes": 888,
+      "sha256": "ab0ce103d2f1540abe7841d96019881fcca65736c8f6d393b7f5aa714256a1d8"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-heap-public-pr198-types-execution.json",
+      "bytes": 211,
+      "sha256": "81807e7f9d6a2ee4581ef1a466b88f8432c001b6781ce1d8293e30dc667f2b04"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-heap-public-pr198-types.exit",
+      "bytes": 3,
+      "sha256": "d7b906a85360766ca93a7f2a3391ddc205bb248d2ec6e045769e67889fc1ebd5"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-heap-public-pr198-types.log",
+      "bytes": 838,
+      "sha256": "0dbf64b223e933d4677a135fb188ff76ca3cd951758a99d3f3612882795e7b31"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-projet-service-stock-browser.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-projet-service-stock-browser.log",
+      "bytes": 429,
+      "sha256": "78bbd62f8fd2c27b42e8553155625049722fba5e074f0afb22f476afb94686fb"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-sparse-pr198-statique.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-sparse-pr198-statique.log",
+      "bytes": 1026,
+      "sha256": "b3aa37ecb9b0079d636f8c5329ddeec4b9c86000fce932d26ddd7a7df8d0eadf"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-sparse-pr198-tests-execution.json",
+      "bytes": 313,
+      "sha256": "bb2208733f2abdb48b877f829190350c20b44ff07e6d708da101fcc8f958e896"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-sparse-pr198-tests.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "file": "suivi-pr198-199-200/preparation-sparse-pr198-tests.log",
+      "bytes": 1245,
+      "sha256": "5ddf3b5bfb55ec789ecf82e1c7300a64fd668dea5d133cbb91406d3b3466f677"
+    },
+    {
+      "file": "suivi-pr198-199-200/proprete-et-environnement.json",
+      "bytes": 1155,
+      "sha256": "12756fe2ebfa44a9cccb4d6d48917a6d8af7044e1ca042a54e48e18523de3d72"
+    },
+    {
+      "file": "suivi-pr198-199-200/sha-et-ci.json",
+      "bytes": 12923,
+      "sha256": "82845094017fb8193ce668a231985df58e7f72ce16412a72711c5a1208d5b096"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/en-1440-ferme.png",
+      "bytes": 874728,
+      "sha256": "7dff9bb9845b6dc3acbbd522f4f880449a695c870f67800a1096c9679b75acf1"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/en-1440-ouvert.png",
+      "bytes": 301460,
+      "sha256": "1e5162c8f5bcfd7700076515f40ba69626ab1619f2b56f4e9ef3dc8cf17bff5d"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/en-390-ferme.png",
+      "bytes": 293873,
+      "sha256": "c9ef6a3c8607c3096b429e53bb2c50093488a260ad3aff87ab84391b8efdc4f0"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/en-390-ouvert.png",
+      "bytes": 167134,
+      "sha256": "5185056e722973467765351a93f865a2e6a6f2d37a16b6773af618addde9967c"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/fr-1440-ferme.png",
+      "bytes": 180652,
+      "sha256": "fc1310b2e51c2dc9b867c7939c1f60e0833495e10de8e2fcae8516fd76891814"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/fr-1440-ouvert.png",
+      "bytes": 240870,
+      "sha256": "183630989a07d839c5d298806963b302fbe2f4f58513a9821ac8d087a5f14b46"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/fr-390-ferme.png",
+      "bytes": 289033,
+      "sha256": "a41d6f95991199554c3858886fc8bae6120b469b5138eac9cf01a6ed01a8b53c"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/fr-390-ouvert.png",
+      "bytes": 174505,
+      "sha256": "4484ba03423489df17db9834b0370c55977224c1c680af18ba2f38be83ca7c13"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock/resultat.json",
+      "bytes": 4680,
+      "sha256": "0183b8d3f5dbba777284273e0633de1d77b504901d4019bfbb75aac4b3b28f29"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock-browser.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "file": "suivi-pr198-199-200/stock-browser.log",
+      "bytes": 26,
+      "sha256": "123f94e74c4df7b3f34c94ce29773aa9a7e2548aa573b7e6cba1f11daf28d62d"
     }
   ],
   "applicationSourceUnchangedFrom": "3ae89a6d42711c13962571483f55c496d6b3ddaa",
   "mainMerged": "333bccc8daf97b9746dcf590a9525c830a53915f",
-  "candidateApproved": "d38b0b7c676e045d103238179e0e4a2d30ad5d05"
+  "candidateApproved": "d38b0b7c676e045d103238179e0e4a2d30ad5d05",
+  "pngFiles": 1160,
+  "countingNote": "PNG files include repeated captures and inspection copies;184 final FRAISE frames,12same-source repeats,menus and stock specified in follow-up index; older895native frames remain attributed to historical SHAs.",
+  "followupHeads": [
+    {
+      "pr": 198,
+      "sha": "44546ab98b44fac4823e41eccbb4c4b034979f51",
+      "base": "333bccc8daf97b9746dcf590a9525c830a53915f",
+      "run": 40307621221,
+      "checkout": "7befcb76e3b09851bb8e9a8795df912ab3a4087e",
+      "tests": 3398,
+      "ci": [
+        {
+          "id": 121563090057,
+          "name": "Image Docker (construction et démarrage)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40307621221,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Construction de l'image",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Démarrage et vérifications",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Journaux du conteneur",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        },
+        {
+          "id": 121563090205,
+          "name": "Typecheck, tests, Theme Check, build",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40307621221,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Installation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "ffmpeg",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Vérification des types",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Tests (réseau fournisseur interdit)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Build de production",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pr": 199,
+      "sha": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+      "base": "53ecf5bb15ac27527bfce3e432031eb664603d26",
+      "run": 40334225760,
+      "checkout": "3d867d631719393ed9ba5413198b1faa1b925ab7",
+      "tests": 3398,
+      "ci": [
+        {
+          "id": 121611358283,
+          "name": "Typecheck, tests, Theme Check, build",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40334225760,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Installation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "ffmpeg",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Vérification des types",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Tests (réseau fournisseur interdit)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Build de production",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        },
+        {
+          "id": 121611358657,
+          "name": "Image Docker (construction et démarrage)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40334225760,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Construction de l'image",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Démarrage et vérifications",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Journaux du conteneur",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pr": 200,
+      "sha": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48",
+      "base": "be488de1f700b1fbfe638fbcba9a9174ec22e360",
+      "run": 40312590161,
+      "checkout": "c42373f0a40dfbba0c43bc8226a41a5acb9a5038",
+      "tests": 3399,
+      "ci": [
+        {
+          "id": 121574793907,
+          "name": "Typecheck, tests, Theme Check, build",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40312590161,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Installation",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "ffmpeg",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Vérification des types",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Tests (réseau fournisseur interdit)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7
+            },
+            {
+              "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Build de production",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 18
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 19
+            }
+          ]
+        },
+        {
+          "id": 121574794715,
+          "name": "Image Docker (construction et démarrage)",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 40312590161,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Construction de l'image",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Démarrage et vérifications",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Journaux du conteneur",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

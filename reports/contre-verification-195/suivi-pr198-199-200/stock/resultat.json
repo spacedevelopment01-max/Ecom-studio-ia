@@ -1,0 +1,43 @@
+{
+  "codeCommit": "e005414cb8edbe9fa85faa2bdbc0b0c5011fcc48",
+  "syntheticOnly": true,
+  "realProviderCalls": 0,
+  "results": [
+    {
+      "lang": "fr",
+      "width": 1440,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "detailsOpened": true,
+      "text": "Garanties et limites du stock\nShopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une vente faite au même moment reste déduite.\nWooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la relit juste avant de l'envoyer, mais une vente passée pendant l'envoi lui-même peut ne pas être déduite. Le rapport le signale : vérifiez alors le stock dans la boutique.\nEnvoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait automatiquement. À l'envoi suivant, le studio reprend le stock affiché par la boutique ; s'il diffère de la quantité attendue, le rapport vous demande de vérifier le réassort.\nPremier envoi d'un produit qui existait déjà dans la boutique (même identifiant ou même référence) : le stock de la boutique est conservé et repris dans le studio.\nUne seule synchronisation à la fois par boutique : un second envoi attend la fin du premier, ou vous demande de réessayer quelques minutes plus tard. Il ne crée pas de doublon.",
+      "errors": []
+    },
+    {
+      "lang": "fr",
+      "width": 390,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "detailsOpened": true,
+      "text": "Garanties et limites du stock\nShopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une vente faite au même moment reste déduite.\nWooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la relit juste avant de l'envoyer, mais une vente passée pendant l'envoi lui-même peut ne pas être déduite. Le rapport le signale : vérifiez alors le stock dans la boutique.\nEnvoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait automatiquement. À l'envoi suivant, le studio reprend le stock affiché par la boutique ; s'il diffère de la quantité attendue, le rapport vous demande de vérifier le réassort.\nPremier envoi d'un produit qui existait déjà dans la boutique (même identifiant ou même référence) : le stock de la boutique est conservé et repris dans le studio.\nUne seule synchronisation à la fois par boutique : un second envoi attend la fin du premier, ou vous demande de réessayer quelques minutes plus tard. Il ne crée pas de doublon.",
+      "errors": []
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "detailsOpened": true,
+      "text": "Stock guarantees and limits\nShopify: the studio sends an adjustment (+3, −2…) rather than a quantity; a sale made at the same moment is still deducted.\nWooCommerce and PrestaShop only accept a total quantity: the studio re-reads it just before sending, but a sale made during the send itself may not be deducted. The report says so: then check the stock in the store.\nSend left without an answer (outage, timeout): it is never repeated automatically. On the next send, the studio takes the stock shown by the store; if it differs from the expected quantity, the report asks you to check the restock.\nFirst send of a product that already existed in the store (same handle or same SKU): the store stock is kept and copied into the studio.\nOne synchronisation at a time per store: a second send waits for the first to finish, or asks you to try again a few minutes later. It does not create a duplicate.",
+      "errors": []
+    },
+    {
+      "lang": "en",
+      "width": 390,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "detailsOpened": true,
+      "text": "Stock guarantees and limits\nShopify: the studio sends an adjustment (+3, −2…) rather than a quantity; a sale made at the same moment is still deducted.\nWooCommerce and PrestaShop only accept a total quantity: the studio re-reads it just before sending, but a sale made during the send itself may not be deducted. The report says so: then check the stock in the store.\nSend left without an answer (outage, timeout): it is never repeated automatically. On the next send, the studio takes the stock shown by the store; if it differs from the expected quantity, the report asks you to check the restock.\nFirst send of a product that already existed in the store (same handle or same SKU): the store stock is kept and copied into the studio.\nOne synchronisation at a time per store: a second send waits for the first to finish, or asks you to try again a few minutes later. It does not create a duplicate.",
+      "errors": []
+    }
+  ]
+}

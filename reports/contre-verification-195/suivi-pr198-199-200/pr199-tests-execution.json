@@ -1,0 +1,13 @@
+{
+  "source": "d63bba1127a8487c426d5b2259ff36a9bbfaba06",
+  "command": [
+    "node_modules/.bin/vitest",
+    "run",
+    "tests/section-masquee-menu.test.ts",
+    "--maxWorkers=1"
+  ],
+  "exitCode": 0,
+  "seconds": 0.75,
+  "networkGuard": true,
+  "realProviderCalls": 0
+}
