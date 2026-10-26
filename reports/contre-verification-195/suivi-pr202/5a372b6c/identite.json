@@ -72,10 +72,5 @@
   "approved198199200FilesUnchanged": true,
   "shellWrapperIdenticalToMain": true,
   "packageLockSha256": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf",
-  "realProviderCalls": 0,
-  "tree": "c67f3e1d8c532fc1ffeaa1855aa357556456f14c",
-  "ciRun": 40353362722,
-  "ciCheckout": "726d3508efa0efece3c95e4de618c4531bda81ac",
-  "ciCheckoutTreeEqualsCandidate": true,
-  "status": "PENDING_FULL_MATRIX_AND_CI"
+  "realProviderCalls": 0
 }

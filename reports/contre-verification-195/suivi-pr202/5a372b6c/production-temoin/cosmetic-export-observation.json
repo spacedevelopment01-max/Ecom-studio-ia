@@ -1,0 +1,26 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "served": {
+    "commit": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+    "source": "compiled-build"
+  },
+  "exportHttp": 200,
+  "themeCheckErrors": null,
+  "issues": [
+    "Shopify : le ZIP et le CSV seuls n'affectent pas les gabarits aux produits. Suivre assets/es-product-templates.json : choisir puis enregistrer le modèle de chaque produit dans Shopify. Installation réelle non vérifiée.",
+    "Theme Check indisponible : Cannot read properties of undefined (reading 'resolve')"
+  ],
+  "unmeasured": [
+    "compatibility",
+    "installation",
+    "page_fidelity",
+    "section_fidelity",
+    "typography",
+    "colors",
+    "responsive",
+    "navigation",
+    "buttons",
+    "ecommerce"
+  ],
+  "verdict": "PROVISIONAL"
+}

@@ -1,0 +1,9 @@
+{
+  "onlyOwnCompletedSuccessfulCases": true,
+  "directoriesRemoved": 138,
+  "bytesReleased": 865842105,
+  "logsAndOutputPreserved": true,
+  "sha256ManifestOfEveryCompiledFilePreserved": true,
+  "unfinishedCasesUntouched": true,
+  "nativeChecksOrAssertionsModified": false
+}

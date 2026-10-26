@@ -1,0 +1,83 @@
+/** Technical production-build probe, isolated fictitious product/service, no provider or installed CMS. */
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {execFileSync,spawn} from 'node:child_process';
+import {randomUUID,createHash} from 'node:crypto';
+import {chromium} from 'playwright';
+import {unzipSync} from 'fflate';
+
+if(process.env.DATA_DIR||process.env.DATABASE_FILE)throw Error('Existing database refused');
+const out=path.resolve(process.argv[2]??'');
+assert.ok(out.startsWith('/tmp/ecs-202-preuves/'));
+fs.mkdirSync(out,{recursive:true});
+const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+assert.equal(source,process.env.PROBE_EXPECTED_COMMIT);
+const data=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-202-main-fictif-'));
+process.env.DATA_DIR=data;process.env.STOCK_OFFLINE='1';process.env.NODE_ENV='production';
+process.env.APP_SECRET='countercheck-only-fictitious-production-secret';
+const {createUser}=await import('../src/lib/auth');
+const {seedThemeScenario}=await import('../tests/theme-v2-fixtures');
+const {composeThemeV2}=await import('../src/lib/theme-v2/engine');
+const {saveThemeVersion,currentTheme}=await import('../src/lib/projects');
+const {run,all}=await import('../src/lib/db');
+const {runWithLang}=await import('../src/lib/i18n-server');
+const email='countercheck-'+randomUUID()+'@example.invalid',password=randomUUID();
+const user=await createUser(email,password,'Compte client fictif de contre-vérification');
+assert.equal(user.role,'client');
+const projects=[];
+for(const scenario of ['cosmetic','saas'] as const){
+  const id=await seedThemeScenario(user.id,scenario);
+  run("INSERT INTO subscriptions (user_id,status,plan,owner_user_id,project_id,source,created_at,updated_at) VALUES (?,'active',?,?,?,'admin',?,?)",'test-'+id,'dominer',user.id,id,Date.now(),Date.now());
+  const result=await runWithLang({ui:'fr',content:'fr'},()=>composeThemeV2(id));
+  saveThemeVersion(id,result.spec,'Version fictive conservée pendant export','user');
+  projects.push({id,scenario,spec:JSON.stringify(currentTheme(id)!.spec),versions:all('SELECT id,number FROM theme_versions WHERE project_id=? ORDER BY number',id)});
+}
+const origin='http://127.0.0.1:3887';
+const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p','3887','-H','127.0.0.1'],{env:{...process.env,APP_URL:origin,NEXT_TELEMETRY_DISABLED:'1'},stdio:['ignore','pipe','pipe'],detached:true});
+const stop=()=>{try{process.kill(-child.pid!,'SIGTERM');}catch{}};
+process.on('exit',stop);
+child.stdout.on('data',d=>fs.appendFileSync(path.join(out,'serveur.log'),d));
+child.stderr.on('data',d=>fs.appendFileSync(path.join(out,'serveur.log'),d));
+let ready=false;
+for(let n=0;n<60;n++){
+  try{if((await fetch(origin+'/api/version')).ok){ready=true;break;}}catch{}
+  await new Promise(r=>setTimeout(r,1000));
+}
+assert.ok(ready,'compiled server not ready');
+const served=await(await fetch(origin+'/api/version')).json();
+assert.equal(served.commit,source);assert.equal(served.source,'compiled-build');fs.writeFileSync(path.join(out,'version-compilee.json'),JSON.stringify({source,stage:process.env.PROBE_STAGE,served},null,2));
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+const results=[];
+try{
+  const context=await browser.newContext({viewport:{width:1440,height:900},locale:'fr-FR'});
+  await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===origin||['data:','blob:'].includes(u.protocol)?route.continue():route.abort();});
+  const login=await context.request.post(origin+'/api/auth/login',{data:{email,password}});assert.equal(login.status(),200);
+  for(const p of projects){
+    const errors=[] as string[];
+    const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+    for(const width of [1440,390]){
+      await page.setViewportSize({width,height:width===1440?900:844});
+      await page.goto(origin+'/studio/'+p.id+'/boutique',{waitUntil:'networkidle',timeout:120000});
+      await page.screenshot({path:path.join(out,p.scenario+'-'+width+'.png')});
+    }
+    const response=await context.request.get(origin+'/api/projects/'+p.id+'/theme/export?platform=shopify',{timeout:180000});
+    const body=await response.body();
+    assert.equal(response.status(),200,'export rejected: '+body.toString('utf8').slice(0,600));
+    const entries=unzipSync(new Uint8Array(body));assert.ok(Object.keys(entries).some(f=>f.startsWith('sections/')&&f.endsWith('.liquid')));
+    const rows=all<{id:string,meta:string}>('SELECT id,meta FROM assets WHERE project_id=? AND role=? ORDER BY created_at',p.id,'theme-export');assert.equal(rows.length,1);
+    const meta=JSON.parse(rows[0].meta);fs.writeFileSync(path.join(out,p.scenario+'-export-observation.json'),JSON.stringify({source,served,exportHttp:response.status(),themeCheckErrors:meta.stats.themeCheckErrors??null,issues:meta.issues,unmeasured:meta.unmeasured,verdict:response.headers()['x-es-verdict']},null,2));assert.equal(meta.stats.themeCheckErrors,0);
+    assert.notEqual(response.headers()['x-es-verdict'],'FINAL');
+    const saved=await context.request.get(origin+'/api/files/'+rows[0].id+'?download=1');assert.equal(saved.status(),200);
+    const savedBytes=await saved.body();assert.equal(createHash('sha256').update(savedBytes).digest('hex'),createHash('sha256').update(body).digest('hex'));
+    assert.equal(JSON.stringify(currentTheme(p.id)!.spec),p.spec);
+    assert.deepEqual(all('SELECT id,number FROM theme_versions WHERE project_id=? ORDER BY number',p.id),p.versions);
+    assert.deepEqual(errors,[]);
+    results.push({scenario:p.scenario,studioOpenedAtWidths:[1440,390],exportHttp:response.status(),savedDownloadHttp:saved.status(),sameSavedZip:true,zipBytes:body.length,zipFileCount:Object.keys(entries).length,zipSha256:createHash('sha256').update(body).digest('hex'),themeCheckErrors:meta.stats.themeCheckErrors,themeCheckWarnings:meta.stats.themeCheckWarnings,verdict:response.headers()['x-es-verdict'],scope:response.headers()['x-es-scope'],originalSpecPreserved:true,versionsPreserved:true,javascriptErrors:errors});
+    await page.close();
+  }
+  const calls=all<{n:number}>('SELECT COUNT(*) AS n FROM ai_calls')[0].n;assert.equal(calls,0);
+  fs.writeFileSync(path.join(out,'parcours-production.json'),JSON.stringify({source,stage:process.env.PROBE_STAGE,served,compiledProduction:true,isolatedFictitiousData:true,userRole:user.role,plan:'dominer_test_only',results,recordedAiCalls:calls,realProviderCalls:0,realCmsInstall:false},null,2));
+  console.log(JSON.stringify({source,scenarios:results.length,allPassed:true,realProviderCalls:0}));
+}finally{await browser.close();stop();}

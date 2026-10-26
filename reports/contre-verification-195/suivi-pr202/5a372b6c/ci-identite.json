@@ -1,0 +1,161 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "tree": "c67f3e1d8c532fc1ffeaa1855aa357556456f14c",
+  "run": 40353362722,
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "success",
+  "head": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "checkout": "726d3508efa0efece3c95e4de618c4531bda81ac",
+  "checkoutTreeEqualsCandidate": true,
+  "mainMerged": false,
+  "jobs": [
+    {
+      "id": 121679249692,
+      "name": "Typecheck, tests, Theme Check, build",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40353362722,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Installation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "ffmpeg",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Vérification des types",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Tests (réseau fournisseur interdit)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Build de production",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    },
+    {
+      "id": 121679250222,
+      "name": "Image Docker (construction et démarrage)",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 40353362722,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Construction de l'image",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Démarrage et vérifications",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Journaux du conteneur",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11
+        }
+      ]
+    }
+  ],
+  "observedInLogs": {
+    "passedTests": 3409,
+    "failedTests": 0,
+    "skippedTests": 31,
+    "filesPassed": 400,
+    "filesSkipped": 1,
+    "themeChecksIncludingZip": 205,
+    "buildPages": 58,
+    "dockerWorkerActive": true,
+    "homeHttp": 200,
+    "registrationHttp": 200,
+    "ffmpeg": true
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "compiledFile": ".next/server/chunks/3845.js",
+  "sha256": "7ed3ae173543aba197b9a7904a35dc57052265d0a8b299e0c8e1eabd90b8e64d",
+  "excerpt": "t_theme\",\"manifest_theme_app_extension\"],j=null,k=null;function l(){return k??=(async()=>{let a=function(a=process.env.ES_SHOPIFY_DOCS_DIR?process.env.ES_SHOPIFY_DOCS_DIR:g().join(g().dirname((void 0).resolve(\"@shopify/theme-check-docs-updater/package.json\")),\"data\")){let b=b=>{let c;try{c=e().readFileSync(g().join(a,b),\"utf8\"),JSON.parse(c)}catch(a){throw new h(`Document Shopify de Theme Check illisible (",
+  "buildSucceeded": true,
+  "webpackEmittedUndefinedRequire": true,
+  "confirmation": "COMPILED_CODE_AND_REAL_PRODUCTION_EXPORT",
+  "nativeCliAndCiGreenDoNotCoverCompiledPath": true
+}

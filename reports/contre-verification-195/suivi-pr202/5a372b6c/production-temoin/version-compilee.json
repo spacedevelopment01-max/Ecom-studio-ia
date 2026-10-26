@@ -1,0 +1,8 @@
+{
+  "source": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+  "stage": "before_merge_without_documentary_double",
+  "served": {
+    "commit": "5a372b6c87b899bdbf1473386160bed7ff20c847",
+    "source": "compiled-build"
+  }
+}
