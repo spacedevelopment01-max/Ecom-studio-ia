@@ -1,0 +1,10 @@
+/tmp/ecs-202-candidat-02fff770/src/lib/theme/library-fill.ts:37
+    brand: { name: input.shopName, tagline: real(c.statement.heading) ? c.statement.heading : "", story: real(c.about.intro) ? c.about.intro : "", positioning: "", audience: "", personality: [], values: c.about.values },
+                                                   ^
+
+TypeError: Cannot read properties of undefined (reading 'statement')
+    at contentFromInput (/tmp/ecs-202-candidat-02fff770/src/lib/theme/library-fill.ts:37:52)
+    at build (/tmp/ecs-202-candidat-02fff770/tests/fixtures.ts:31:100)
+    at <anonymous> (/tmp/ecs-202-candidat-02fff770/scripts/contre-verification-202-runtime.ts:4:12)
+
+Node.js v24.19.0

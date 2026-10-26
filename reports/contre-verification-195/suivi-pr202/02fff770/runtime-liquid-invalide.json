@@ -1,0 +1,21 @@
+{
+  "source": "02fff7705bb213c8237a7374109879852e09afa0",
+  "nativeRuntimeFunction": "src/lib/theme/theme-check.ts:themeCheck",
+  "realProviderCalls": 0,
+  "fakeDocsMode": "deny",
+  "invalidTheme": "liquid",
+  "available": true,
+  "errors": 1,
+  "validSchemaErrors": 0,
+  "checks": [
+    "LiquidSyntaxError"
+  ],
+  "sample": [
+    {
+      "file": "sections/hero-editorial.liquid",
+      "check": "LiquidSyntaxError",
+      "message": "Syntax error in 'if' tag",
+      "line": 1
+    }
+  ]
+}

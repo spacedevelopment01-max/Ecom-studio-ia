@@ -1,0 +1,15 @@
+{
+  "source": "02fff7705bb213c8237a7374109879852e09afa0",
+  "baseMain": "d2fb63ee99bf799927bb24f65e03fc0c6fb5cee5",
+  "worktree": "detached_separate_copy",
+  "trackedClean": true,
+  "realProviderCalls": 0,
+  "files": {
+    "scripts/theme-docs-local.mjs": "5b465af81887b535ec216af257a51d66556d457cc1a33d6fc29a464b65d79c44",
+    "scripts/verify-theme.sh": "f362f00242905d2c6f1cf8c720a68048b2840349e0f935511b1218c1c7ec0087",
+    "src/lib/theme/theme-check.ts": "f7aeae26ac10dd568bc077bfbb314b2cdb4f62fc27c81dc88ffcf53a63f4a10f",
+    "src/lib/engine/custom-theme.ts": "8ef580c92591b45824ad3516bdc09e1b86c70ab56eb956c17abe78dab8393455",
+    "package-lock.json": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf"
+  },
+  "matrix": "IN_PROGRESS_NOT_YET_VALIDATED"
+}

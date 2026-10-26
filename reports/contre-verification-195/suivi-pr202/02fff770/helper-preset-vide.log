@@ -1,0 +1,12 @@
+<anonymous_script>:1
+
+
+SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at read (file:///tmp/ecs-202-preuves/helper-isole/scripts/theme-docs-local.mjs:25:8)
+    at file:///tmp/ecs-202-preuves/helper-isole/scripts/theme-docs-local.mjs:40:47
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.19.0

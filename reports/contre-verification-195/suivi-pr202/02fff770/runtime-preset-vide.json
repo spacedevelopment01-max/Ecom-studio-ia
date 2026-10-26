@@ -1,0 +1,33 @@
+{
+  "source": "02fff7705bb213c8237a7374109879852e09afa0",
+  "nativeRuntimeFunction": "src/lib/theme/theme-check.ts:themeCheck",
+  "realProviderCalls": 0,
+  "fakeDocsMode": "empty-preset",
+  "invalidTheme": null,
+  "available": true,
+  "errors": 354,
+  "validSchemaErrors": 354,
+  "checks": [
+    "ValidSchema"
+  ],
+  "sample": [
+    {
+      "file": "sections/announcement-bar.liquid",
+      "check": "ValidSchema",
+      "message": "Unable to parse content from 'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/preset.json': Parse error at offset 0.",
+      "line": 30
+    },
+    {
+      "file": "sections/ed-contact.liquid",
+      "check": "ValidSchema",
+      "message": "Unable to parse content from 'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/preset.json': Parse error at offset 0.",
+      "line": 21
+    },
+    {
+      "file": "sections/ed-diptych.liquid",
+      "check": "ValidSchema",
+      "message": "Unable to parse content from 'https://raw.githubusercontent.com/Shopify/theme-liquid-docs/main/schemas/theme/preset.json': Parse error at offset 0.",
+      "line": 5
+    }
+  ]
+}
