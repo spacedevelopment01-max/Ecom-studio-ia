@@ -1,0 +1,78 @@
+{
+  "verdict": "FAVORABLE_AVANT_FUSION",
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "tree": "6595cd464bb129dc28df11195d1c1e68c6fd9569",
+  "scope": "PR202 compiled Shopify Theme Check; prior corrections preserved",
+  "localFullSuite": {
+    "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "exitCode": 0,
+    "passed": 3409,
+    "failed": 0,
+    "skipped": 31,
+    "total": 3440,
+    "filesPassed": 400,
+    "filesSkipped": 1,
+    "fileReports": 401,
+    "jsonSha256": "96d8214c7f7d2255ba60c69037d76c07c9a87fcfa752e376a5c0ae2a4bd14ba9",
+    "nativeNetworkGuard": true,
+    "fetchFakeInjected": false,
+    "realProviderCalls": 0
+  },
+  "ci": {
+    "head": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+    "ciRun": 40362506971,
+    "event": "pull_request",
+    "syntheticCheckout": "d50cd5f0f3e4f1ed30f0e325a86eab553e8d7e7f",
+    "candidateTree": "6595cd464bb129dc28df11195d1c1e68c6fd9569",
+    "checkoutTree": "6595cd464bb129dc28df11195d1c1e68c6fd9569",
+    "treeIdentical": true,
+    "bothJobs": "success",
+    "newCompiledExportStep": "success",
+    "newCompiledExport": {
+      "versionCommit": "d50cd5f0f3e4f1ed30f0e325a86eab553e8d7e7f",
+      "versionSource": "compiled-build",
+      "httpStatus": 200,
+      "themeCheckErrors": 0,
+      "themeCheckWarnings": 35
+    },
+    "realProviderCallsInIndependentProbes": 0,
+    "nativeMatrix": {
+      "cases": 204,
+      "zip": 1,
+      "total": 205,
+      "allSuccessful": true,
+      "warningsPerCase": 35
+    },
+    "tests": {
+      "passed": 3409,
+      "failed": 0,
+      "skipped": 31,
+      "filesPassed": 400,
+      "filesSkipped": 1,
+      "totalFiles": 401
+    },
+    "buildPages": 58,
+    "docker": {
+      "build": "success",
+      "worker": "actif",
+      "home": 200,
+      "registration": 200,
+      "ffmpeg": "available"
+    }
+  },
+  "officialCompiledExport": "SUCCESS_EXIT0",
+  "negativeControlOld5a": "EXPECTED_FAIL_EXIT1",
+  "independentProductionProjects": [
+    "products: cosmetic",
+    "services: rive"
+  ],
+  "sdkErrors": 0,
+  "sdkWarnings": 35,
+  "warningsExaminedAndRetained": true,
+  "sourceFilesUnchanged": true,
+  "afterMergeMain": "NOT_YET_EXISTS_OR_VERIFIED",
+  "cmsInstallReal": false,
+  "userStudioUpdated": false,
+  "realProviderCalls": 0,
+  "codexMerge": false
+}

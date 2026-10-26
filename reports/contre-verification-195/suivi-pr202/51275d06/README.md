@@ -1,52 +1,62 @@
-# PR202 — candidat gelé51275d06 : exports compilés vérifiés
+# PR #202 — verdict favorable sur le candidat gelé 51275d06
 
-**Source exacte : `51275d063b6ee93301ea20438a9ee6100515e3f5`**, dans une nouvelle copie détachée, base de données et médias de test séparés. Main au début de la passe : d2fb63ee. [Identité et préservation des fichiers](identite.json). Aucun code applicatif suivi modifié par cette contre-vérification.
+**SHA contrôlé : `51275d063b6ee93301ea20438a9ee6100515e3f5`. Arbre : `6595cd464bb129dc28df11195d1c1e68c6fd9569`. Verdict : FAVORABLE AVANT FUSION**, dans le périmètre de #202. Le défaut de résolution de Theme Check dans le Studio compilé est corrigé et reproduit comme tel. La fusion appartient à Claude ; **le futur main devra être contrôlé séparément**. [Verdict structuré](verdict.json), [identité et fichiers conservés](identite.json), [commandes et attribution](COMMANDES.md).
 
-**Statut de cette publication : parcours compilés réussis ; accord global encore en attente de la suite locale complète et de la fin de la CI.** Aucun verdict après fusion ne peut être déduit de ce candidat.
+## Résultats réellement obtenus sur cette version
 
-## Le défaut de bundling est réellement corrigé
+| Vérification | Résultat et preuve |
+|---|---|
+| Suite locale exhaustive, garde réseau native, 2 workers | **3 409 réussis, 0 échec, 31 ignorés ; sortie 0.** 400 fichiers réussis / 1 ignoré, 401 rapports de fichiers. [Synthèse et empreinte](suite-synthese.json), [JSON brut](suite-complete.json), [journal](suite-complete.log). Les compteurs de suites imbriquées du JSON ne sont pas un nombre de fichiers. |
+| Build local de production | **Réussi**, 58 pages ; plus d'avertissement `module.createRequire failed parsing argument`. Le build comprend la vérification des types. [Journal](build.log), [sortie](build.exit). |
+| Nouveau test officiel sur ce build compilé | **Réussi**, version servie 51275/compiled-build, export HTTP 200, **Theme Check mesuré : 0 erreur, 35 avertissements**, aucune indisponibilité. [Résultat](smoke-officiel/resultat.json), [journal](smoke-officiel.log). |
+| Même nouveau test sur l'ancien build 5a | **Échec attendu, sortie 1** : compteur absent et `undefined.resolve`. Le test ajouté distingue donc bien le défaut qui échappait auparavant à la CI. [Comparaison](smoke-comparaison.json), [témoin négatif](regression-sur-5a/resultat.json). |
+| Parcours compilés indépendants, produit et véritable service | **Deux réussis**, compte client fictif, 1440/390, export réel local et téléchargement sauvegardé identique, versions et ThemeSpec conservés. [Résultat](production/parcours-production.json), [version servie](production/version-compilee.json), [captures](production). |
+| CI GitHub du candidat | **Entièrement SUCCESS** : types, 3 409/0/31, **205 contrôles Theme Check** (204 cas + ZIP), build, **nouvelle étape d'export compilé**, Docker et démarrage. [Identité](ci-identite.json), [journal principal](ci-principale.log), [Docker](ci-docker.log). |
 
-La recherche des documents dans `node_modules` remplace le `createRequire` détruit par Webpack. Les trois seules différences depuis5a sont ce résolveur, le script de test d'export compilé et son ajout après build dans la CI. Les contrôles et compositions restent inchangés.
+CI [40362506971](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40362506971) : le checkout synthétique est `d50cd5f0f3e4f1ed30f0e325a86eab553e8d7e7f`, **arbre strictement identique** à 51275. Son export post-build sert bien ce checkout compilé et mesure 0 erreur / 35 avertissements. Les 205 cas de cette version sont attribués à cette CI indépendante, pas rebaptisés comme une nouvelle matrice locale. Les anciens résultats 5a restent dans leur propre dossier.
 
-- Build local réussi,58 pages ; le message `module.createRequire failed parsing argument` a disparu. [Journal](build.log), [sortie](build.exit).
-- **Nouveau script officiel** exécuté sur ce build : version servie51275d06/compiled-build, exportShopifyHTTP200, **ThemeCheckErrors=0,35avertissements,aucune indisponibilité**. [Résultat](smoke-officiel/resultat.json), [journal](smoke-officiel.log).
-- **Même script exécuté sur l'ancien build5a : échec attendu**, HTTP200 mais mesure absente et erreur `undefined.resolve`. [Comparaison positive/négative](smoke-comparaison.json), [ancien résultat](regression-sur-5a/resultat.json). Le test détecte donc le défaut précédemment manqué par la CI.
+## Theme Check s'exécute réellement dans le moteur
 
-## Vérification indépendante sur un produit et un service
+La recherche des documents dans `node_modules` remplace le `createRequire` détruit par Webpack. Les trois seules différences depuis 5a concernent le résolveur, le test d'export compilé et son ajout après build dans la CI. `theme-base`, `public`, le verrou des dépendances, le wrapper complet et les corrections précédentes restent préservés.
 
-Vrai serveur `next start` de51275d06, compte **client** fictif, abonnement de test ; navigateur local1440/390 après fermeture de l'introduction par clic normal. Sur mobile, ouverture normale de l'ongletAperçu. Deux activités : produit cosmétique de test et site de servicesAtelierRive. Le type `products/services` est explicitement vérifié dans le harnais.
+Le SDK officiel est **3.30.1**, révision documentaire **40f966fc7793462726d9f8573c8d522f8ab44c54**. Les **7 ressources et 13 schémas** ont été relus : tous valides JSON et strictement identiques aux documents livrés dans la dépendance. [Empreintes](docs-validation.json).
 
-Pour **chaque projet** :
+La suite complète comprend les quatre tests natifs du Studio : thème valide et appels simultanés ; vrais défauts Liquid et ValidSchema toujours détectés ; document embarqué illisible rejeté avec `ShopifyDocsError`, sans faux succès ni fausse indisponibilité. Le wrapper `verify-theme.sh` reste inchangé. Aucune règle, assertion ou section n'est retirée pour faire passer les contrôles.
 
-1. Ouverture du Studio compilé et captures réellement inspectées ; aucunJavaScriptError.
-2. Appel de la **route locale réelle** d'exportShopify : HTTP200, compteur **ThemeCheckErrors=0**,35avertissements, compatibilité mesurée (absente des critères non mesurés), métadonnées liées à la version demandée.
-3. Téléchargement du ZIP rangé en bibliothèque via la route de fichiers : HTTP200 et **SHA256 identique** à l'export reçu.
-4. **ThemeSpec complet et liste des versions strictement inchangés**,0appelIA enregistré.
+Les traces des sondes indépendantes montrent l'import du vérificateur et **0 requête documentaire / 0 accès à l'ancien cache SDK**, avec ces accès explicitement interdits dans le harnais. [Synthèse](traces-synthese.json). Les résultats natifs et les métadonnées des vrais exports compilés concordent ; la seule réponse HTTP 200 n'est jamais considérée suffisante.
 
-[Résultat complet produit/services](production/parcours-production.json), [version réellement servie](production/version-compilee.json), [captures](production), [trace du chargeur](production-finale-trace.jsonl), [harnais récupérable](contre-verification-202-parcours.mts.txt).
+## Produit et service : parcours jusqu'au fichier sauvegardé
 
-Le verdict d'export reste **PROVISIONAL / static** : aucune boutiqueShopify réelle n'a été installée ou testée. Les requêtes ci-dessus sont celles du Studio local sur données fictives, jamais un fournisseur ni un CMS distant. Aucune nouvelle connexion ni génération payante.
+Vrai serveur `next start` de 51275, écoute loopback, compte **client** fictif, abonnement de test. Produit cosmétique (`products`) et Atelier Rive (`services`), type d'activité affirmé dans le harnais. Introduction fermée par clic normal ; sur mobile, ouverture normale de l'onglet Aperçu. Les quatre captures ont été réellement ouvertes et inspectées après l'introduction ; aucun JavaScriptError.
 
-## Examen des35 avertissements
+Pour chaque projet : route locale d'export Shopify HTTP 200, `stats.themeCheckErrors === 0`, 35 avertissements, compatibilité mesurée, métadonnées liées à la version demandée. Téléchargement en bibliothèque via la route de fichiers HTTP 200 et **SHA256 du ZIP identique** à la réponse d'export. Sérialisation complète du ThemeSpec et liste complète des versions inchangées. **0 appel IA enregistré**. [Harnais récupérable](contre-verification-202-parcours.mts.txt).
 
-**[Analyse complète et suites recommandées](AVERTISSEMENTS.md)**. Inventaire :25ExcessiveSettingsCount,6UnusedAssign,2UnclosedHTMLElement,1RemoteAsset,1LiquidComplexity. Les35 lignes sont identiques au témoin d2fb avec les mêmes documents locaux et le même SDK.
+Le verdict d'export reste honnêtement **PROVISIONAL / static** : aucune boutique Shopify réelle installée ni validée. Les requêtes concernent uniquement le Studio local sur des données fictives ; aucun fournisseur ni CMS distant.
 
-- Les25 nombres de réglages ont été recalculés dans les schémas :41 à85, pour un seuil d'avertissement recommandé40. Ce n'est pas une limite d'installationShopify démontrée ici. Le suivi principal est l'ergonomie des gros blocs, sans supprimer de champs.
-- Les2 signauxHTML portent sur une fermeture/ouverture de colonnes entre conditionsLiquid dans `ap-form`. Quatre rendus natifs contact/devis, vides/remplis : balises signalées équilibrées et colonnes sœurs, **sans réparation par un navigateur**. Cela ne certifie pas tout leHTML ni une installationCMS.
-- Les6 variables inutilisées sont des affectations non consommées ; l'image signalée est l'image cachée de zoomFRAISE initialement vide puis renseignée parJavaScript ; la complexité121/120 est un indice statique, pas une mesure de latence.
+## Examen des 35 avertissements
 
-Tous ces avertissements restent visibles. Aucun seuil, règle, composant ou fichier vérifié supprimé pour verdir la sortie. Les bibliothèques sont présentes dans les ZIP même quand toutes leurs sections ne sont pas affichées sur la page courante ;35avertissements ne signifie pas35pannes visibles. L'absence d'erreur ne prouve ni la qualité créative ni la compatibilité réelle du CMS.
+**[Analyse complète, fichiers et suites recommandées](AVERTISSEMENTS.md)**. [Inventaire des 35 lignes](avertissements-inventaire.json), toutes identiques au témoin d2fb avec les mêmes documents locaux et le même SDK :
 
-## Préparations conservées, pas confondues avec des réussites
+- **25 ExcessiveSettingsCount** : 41 à 85 réglages, seuil heuristique recommandé 40. Les 25 nombres ont été recalculés dans les schémas. Ce constat ne prouve pas une limite d'installation Shopify ; suivi d'ergonomie de l'éditeur, sans supprimer les champs.
+- **6 UnusedAssign** : affectations non consommées ; dette de maintenance, sans perte de contenu démontrée.
+- **2 UnclosedHTMLElement** dans `ap-form` : ouvertures/fermetures de colonnes conditionnelles. Quatre rendus natifs contact/devis, vides/remplis : balises signalées équilibrées et colonnes sœurs, sur **HTML brut sans réparation navigateur**. Pas une certification générale du HTML ni de Shopify.
+- **1 RemoteAsset** : image cachée de zoom FRAISE initialement `src=""`, renseignée par JavaScript avant affichage. Aucun domaine tiers littéral à cet emplacement ; zoom/CDN sur Shopify réel non vérifié ici.
+- **1 LiquidComplexity** : indice statique 121/120 ; suivi de maintenance, pas une mesure de performance.
 
-- Premier passage mobile : le harnais cherchait l'export alors que le panneauDiscussion était actif ; attente expirée. Le vrai gesteAperçu est ajouté, délai et assertion de contrôle conservés. [Journal](preparation-mobile.log).
-- Le jeuSaaS est classé `products` dans le modèle du studio : ses deux parcours réussis sont conservés comme **produits supplémentaires**, pas comptés comme service. Le passage final utilise le vrai type `services` deRive et l'affirme explicitement.
-- Le titre du service est `Site`, pas `Boutique` : un garde visuel trop spécifique a arrêté la préparation, sans défaut applicatif. Le garde vérifie désormais le libellé propre au type d'activité ; l'assertion de validation ThemeCheck reste0. [Journal](preparation-libelle-service.log).
+Tous restent visibles, avec leur sévérité officielle WARNING. Aucun seuil relevé, aucune règle désactivée, aucun thème recomposé. Le ZIP inclut aussi des sections non affichées sur la page courante : 35 lignes ne signifient pas 35 pannes visibles. Elles ne sont pas assimilées à une validation de qualité professionnelle.
 
-Les données et médias fictifs restent isolés ; bases, sessions et ZIP non publiés. Les captures sont techniques, pas de nouvelles créations client. Aucun média client, aucune clé ni configuration d'exploitation copiée.
+## Préparations et limites conservées
 
-## À terminer avant l'accord puis après fusion
+Les premières préparations restent séparées : attente de l'export sur mobile alors que Discussion était actif ; titre `Boutique` attendu à tort sur un service nommé `Site` ; jeu SaaS classé `products`, conservé comme produit supplémentaire, jamais compté comme service. Seuls les gestes et gardes du harnais ont été ajustés ; l'assertion Theme Check reste stricte. Le témoin ancien 5a en sortie 1 est un contrôle négatif attendu.
 
-Suite locale complète sous garde réseau en cours à cette publication. CI de cette tête : [40362506971](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40362506971), nouvelle étape d'export compilé comprise ; son résultat final sera relu avant accord.
+Les 31 tests ignorés gardent leurs raisons prévues dans la suite (dont kits privés incomplets et périmètres films/CMS) ; ils ne sont pas présentés comme réussis. Les données et médias fictifs sont isolés ; bases, sessions et ZIP ne sont pas publiés. Aucun média ou configuration d'exploitation client copié.
 
-Après fusion par **Claude seul**, relever le vrai SHA main, repartir d'une autre copie, contrôler son identité, ses vérifications et ses exports compilés, puis publier le verdictAPRÈS dans194/195. Les résultats5a ou512 ne seront pas rebaptisés comme résultats de ce futur main. Le studio utilisateur n'est pas déployé ni redémarré par cette mission.
+Pour la capacité de travail, seuls des caches de build de mes copies ont été libérés et des fichiers binaires de tests terminés/publics identiques ont été reliés après vérification des octets ; chemins et contenus préservés, aucune base ou donnée utilisateur modifiée. Relevés `espace-*.json` et `cache-build-libere.json`.
+
+**Hors validation réelle** : authentification/tarifs/qualité des fournisseurs IA, génération payante, installation et transactions CMS, qualité créative générale, kits privés absents, version effectivement servie dans le Codespace utilisateur. Docker est contrôlé par la CI pour sa construction et son démarrage ; le parcours d'export indépendant vise le build Next local, pas une installation Shopify ni un déploiement Docker de production.
+
+## Suite de coordination
+
+**Accord explicite pour Claude sur la fusion du seul candidat 51275**, CI comprise. Après fusion par Claude, relever et geler le **vrai SHA final de main**, refaire les contrôles concernés dans une autre copie et publier un verdict APRÈS dans #194 et #195. Une validation de 51275 ou de l'ancien main d2fb ne suffit pas pour le nouveau main.
+
+Aucune fusion Codex, aucun déploiement/redémarrage du studio utilisateur, aucun appel fournisseur réel. Le présent verdict n'annonce pas encore une validation après fusion.

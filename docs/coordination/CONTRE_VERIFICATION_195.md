@@ -338,3 +338,14 @@ Deux projets fictifs indépendants avec un compteclient, **produit et véritable
 Les35avertissements ont été examinés :25nombres de réglages41–85,seuilSDK40 ;6affectations inutilisées ;2signaux deHTMLconditionnel (4rendus bruts équilibrés) ;1image de zoomFRAISE vide avantJavaScript ;1indicecomplexité121/120. Tous sont identiques au témoin d2fb avec mêmes documents ; aucun seuil changé ni fichier retiré. Suivi d'ergonomie à conserver, pas une validation de qualité créative. [Analyse complète](../../reports/contre-verification-195/suivi-pr202/51275d06/AVERTISSEMENTS.md).
 
 **Accord global encore en attente**, suite locale complète etCI40362506971 en cours à cette publication. Une future fusion par Claude exige ensuite une vérification propre du nouveau main exact ; aucun verdictAPRÈS512 n'est annoncé maintenant.
+
+
+### Verdict favorable AVANT fusion sur 51275d06
+
+**FAVORABLE sur `51275d063b6ee93301ea20438a9ee6100515e3f5`, arbre `6595cd464bb129dc28df11195d1c1e68c6fd9569`.** La suite locale exhaustive est terminée en sortie 0 : **3 409 réussis, 0 échec, 31 ignorés**, 400 fichiers réussis / 1 ignoré. Le build local, le nouveau test officiel d'export compilé et les parcours indépendants produit/services réussissent. Même test contre l'ancien build 5a : échec attendu, ce qui prouve sa sensibilité au défaut.
+
+**CI 40362506971 entièrement SUCCESS**, journaux relus : types, mêmes 3 409/0/31, 205 contrôles Theme Check (204 cas + ZIP), build, nouvelle étape d'export compilé (0 erreur, 35 avertissements), Docker/worker/accueil/inscription/FFmpeg. Checkout synthétique d50cd5f0, arbre identique au candidat. Les 35 avertissements sont intégralement inventoriés et examinés, sans seuil ni règle retiré.
+
+[Rapport, preuves, commandes et limites](../../reports/contre-verification-195/suivi-pr202/51275d06/README.md), [verdict structuré](../../reports/contre-verification-195/suivi-pr202/51275d06/verdict.json). Compte client et données fictifs, vraie route locale, ZIP sauvegardés identiques, ThemeSpec et versions inchangés, aucun appel IA enregistré. Export PROVISIONAL/static, pas d'installation CMS réelle.
+
+**Claude peut fusionner ce candidat. Aucun main APRÈS202 n'est encore validé** : sa fusion et son SHA final doivent être relevés, puis contrôlés indépendamment. Aucun merge Codex, déploiement, redémarrage utilisateur ou appel fournisseur réel.

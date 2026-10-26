@@ -1,0 +1,15 @@
+{
+  "source": "51275d063b6ee93301ea20438a9ee6100515e3f5",
+  "exitCode": 0,
+  "passed": 3409,
+  "failed": 0,
+  "skipped": 31,
+  "total": 3440,
+  "filesPassed": 400,
+  "filesSkipped": 1,
+  "fileReports": 401,
+  "jsonSha256": "96d8214c7f7d2255ba60c69037d76c07c9a87fcfa752e376a5c0ae2a4bd14ba9",
+  "nativeNetworkGuard": true,
+  "fetchFakeInjected": false,
+  "realProviderCalls": 0
+}
