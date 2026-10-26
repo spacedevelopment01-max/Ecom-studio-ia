@@ -25,6 +25,10 @@ run() { # numéro, libellé, variables d'environnement…, -- arguments de theme
     echo "✓ $label  (aucune erreur, $(grep -o 'Total [0-9]*' "$log" | head -1 | cut -d' ' -f2) avertissement(s))" >"$out"
   else
     touch "$TMP/failed"; { echo "✗ $label"; grep -E "^ERROR|Error|error TS" "$log" | head -20 | sed 's/^/    /'; } >"$out"
+    # Sur GitHub Actions, le cas en échec devient aussi une annotation (lisible sur la PR et par l'API, sans le journal).
+    if [ -n "${GITHUB_ACTIONS:-}" ]; then
+      echo "::error title=Theme Check ${label}::$( (grep -E "^ERROR|Error|error TS" "$log" | head -8; tail -4 "$log") | tr '\n' '|' | sed 's/%/%25/g' | cut -c1-1500)" >>"$out"
+    fi
   fi
 }
 spawn() {
@@ -40,7 +44,10 @@ wait
 cat "$TMP"/*.out
 [ -e "$TMP/failed" ] && FAIL=1
 
-if npx tsx scripts/theme-check-zip.ts "$TMP/zip" >"$TMP/zip.log" 2>&1; then echo "✓ ZIP client (section sur mesure)"; else FAIL=1; echo "✗ ZIP client"; tail -20 "$TMP/zip.log" | sed 's/^/    /'; fi
+if npx tsx scripts/theme-check-zip.ts "$TMP/zip" >"$TMP/zip.log" 2>&1; then echo "✓ ZIP client (section sur mesure)"; else
+  FAIL=1; echo "✗ ZIP client"; tail -20 "$TMP/zip.log" | sed 's/^/    /'
+  [ -n "${GITHUB_ACTIONS:-}" ] && echo "::error title=Theme Check ZIP client::$(tail -8 "$TMP/zip.log" | tr '\n' '|' | sed 's/%/%25/g' | cut -c1-1500)"
+fi
 
 rm -rf "$TMP"
 if [ $FAIL = 0 ]; then echo "Thème : tout est valide."; else echo "Thème : des erreurs sont à corriger (détail ci-dessus)."; fi
