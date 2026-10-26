@@ -6,7 +6,7 @@
 
 ## Blocage de production — cause confirmée dans le JavaScript servi
 
-**REPRODUIT deux fois, avec puis SANS double documentaire**, sous garde réseau. Compte client fictif, forfait de test, projet produit isolé, vrai serveur `next start` issu du build5a, Studio réellement ouvert à1440/390. Version réellement servie **5a372b6c/compiled-build**, [JSON témoin](production-temoin/version-compilee.json).
+**REPRODUIT deux fois, avec puis SANS double documentaire**, sous garde réseau. Compte client fictif, forfait de test, projet produit isolé, vrai serveur `next start` issu du build5a, URL du Studio ouverte à1440/390. Version réellement servie **5a372b6c/compiled-build**, [JSON témoin](production-temoin/version-compilee.json). L'introduction recouvrait les premières captures : aucune validation visuelle de l'éditeur ne peut en être déduite. Le contrôleHTTP réel de l'export reste indépendant de cet écran ; le harnais suivant ferme l'introduction par clic normal avant capture.
 
 L'exportShopify répond200 et sauvegarde un ZIP **PROVISIONAL** ; sa compatibilité reste **non mesurée**. Le compteur `stats.themeCheckErrors` est absent, raison enregistrée : **« Theme Check indisponible : Cannot read properties of undefined (reading 'resolve') »**. [Observation réelle du second passage sans double](production-temoin/cosmetic-export-observation.json). L'assertion `meta.stats.themeCheckErrors===0` échoue et reste inchangée. Le parcours service n'est pas exécuté après cet arrêt ; aucune réussite complète produit+service revendiquée.
 
@@ -37,7 +37,7 @@ Le wrapper `scripts/verify-theme.sh` est **bit-identique au main d2fb** : cas, r
 
 La [CI40353362722](https://github.com/spacedevelopment01-max/Ecom-studio-ia/actions/runs/40353362722) est **terminée entièrement SUCCESS**, journaux relus : **3409réussis/0échec/31ignorés**,400fichiers réussis/1ignoré,types,205ThemeCheck,build58pages,Dockerworkeractif/accueil200/inscription200/FFmpeg. [Identité finale](ci-identite.json), [journal principal](ci-principal.log), [Docker](ci-docker.log). Son checkout réel de PR est la fusion synthétique GitHub `726d3508efa0efece3c95e4de618c4531bda81ac`, **arbre identique au candidat** ; ce n'est pas un main fusionné. **Ces verts ne couvrent pas l'export sur le build réellement servi**, dont le défaut bloque ce verdict.
 
-Le **build local** est également réussi,58pages ; ses avertissementsWebpack ne sont pas masqués. [Sortie0](build.exit). Quatre captures natives du premier projet (deux passages,1440/390) sont jointes dans les dossiers de production ; il s'agit de fixtures techniques, pas de créations professionnelles ou de données client. Les ZIP, bases et sessions fictives restent locaux.
+Le **build local** est également réussi,58pages ; ses avertissementsWebpack ne sont pas masqués. [Sortie0](build.exit). Les premières captures montrent l'introduction et sont conservées comme préparation, pas comme preuve visuelle du Studio. La première série est également copiée dans `production-premier/` : ce doublon ne constitue pas une exécution supplémentaire. Il s'agit de fixtures techniques, pas de créations professionnelles ou de données client. Les ZIP, bases et sessions fictives restent locaux.
 
 ## Préparations, limites et suite
 
