@@ -1,0 +1,11 @@
+vitest exit 0
+ Test Files  396 passed | 1 skipped (397)
+      Tests  3395 passed | 31 skipped (3426)
+/dev/vda        252G   37G  2.8G  93% /
+build exit 0
+   Generating static pages (43/58) 
+ ✓ Generating static pages (58/58)
+essais exit 0
+Essai réussi (45 contrôles).
+Essai réussi (45 contrôles).
+Essai réussi (46 contrôles).
