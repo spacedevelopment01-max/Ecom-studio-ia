@@ -84,7 +84,7 @@ export function ensureProductTables() {
   run("CREATE UNIQUE INDEX IF NOT EXISTS studio_variants_key ON studio_variants(product_id, option_key)");
   run("CREATE UNIQUE INDEX IF NOT EXISTS studio_variants_sku ON studio_variants(project_id, sku) WHERE sku != ''");
   // Correspondances avec les boutiques connectées : un produit ou une variante du studio ↔ son identifiant distant.
-  // Stock et empreinte du dernier envoi : base des règles de synchronisation (jamais d'écrasement d'une vente).
+  // Stock et empreinte du dernier envoi : base des règles de synchronisation (une vente faite dans la boutique est reprise dans le calcul).
   run(`CREATE TABLE IF NOT EXISTS product_links (
     project_id TEXT NOT NULL, platform TEXT NOT NULL, store TEXT NOT NULL, kind TEXT NOT NULL, local_id TEXT NOT NULL,
     remote_id TEXT NOT NULL, remote_parent TEXT, synced_hash TEXT, synced_stock INTEGER, synced_at INTEGER NOT NULL,

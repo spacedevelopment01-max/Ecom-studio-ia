@@ -27,7 +27,7 @@ Légende des statuts du tableau :
 5. **Produits dans le Studio** (onglet **Catalogue**) : fiche complète (nom, description, photos, prix, prix barré,
    options et variantes avec référence, prix et stock, catégories, étiquettes, marque, type, code-barres, poids,
    référencement, mise en page de la fiche). Connexion **WooCommerce, PrestaShop, Shopify** ; correspondances conservées
-   (aucun doublon), stock d'une vente jamais écrasé, import des produits existants (`docs/EXPORTS-PLATEFORMES-190.md`).
+   (aucun doublon), ventes de la boutique reprises dans le calcul du stock (limites WooCommerce/PrestaShop indiquées), import des produits existants (`docs/EXPORTS-PLATEFORMES-190.md`).
 6. **Exports natifs** installés et contrôlés dans WordPress 6.5.5 / WooCommerce 8.9.3 et PrestaShop 8.1.7 ; ZIP Shopify
    contrôlés par Theme Check. Versions, dépendances et étapes manuelles : `docs/EXPORTS-PLATEFORMES-190.md`.
 7. **Rubrique « Rendez-vous »** centralisée (prestations, durées, horaires, fermetures, intervenants, réservations,
