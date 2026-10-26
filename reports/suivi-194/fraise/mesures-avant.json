@@ -1,0 +1,182 @@
+[
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-1440.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-768.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 430,
+  "utile": 0,
+  "marges": "286.667px/286.667px",
+  "titre": {
+   "w": 0,
+   "h": 277,
+   "fs": "70.5641px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "19.8462px"
+  },
+  "scrollW": 430,
+  "horsCadre": 4,
+  "capture": "page-journal-lire-une-etiquette-430.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 390,
+  "utile": 0,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 0,
+   "h": 251,
+   "fs": "64px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "18px"
+  },
+  "scrollW": 390,
+  "horsCadre": 4,
+  "capture": "page-journal-lire-une-etiquette-390.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 360,
+  "utile": 0,
+  "marges": "240px/240px",
+  "titre": {
+   "w": 0,
+   "h": 232,
+   "fs": "59.0769px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "16.6154px"
+  },
+  "scrollW": 360,
+  "horsCadre": 4,
+  "capture": "page-journal-lire-une-etiquette-360.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 85,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "10.8611px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-1440.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 46,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "5.79284px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-768.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 430,
+  "utile": 0,
+  "marges": "286.667px/286.667px",
+  "titre": {
+   "w": 0,
+   "h": 148,
+   "fs": "70.5641px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "18.7436px"
+  },
+  "scrollW": 430,
+  "horsCadre": 2,
+  "capture": "page-mentions-legales-430.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 390,
+  "utile": 0,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 0,
+   "h": 135,
+   "fs": "64px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "17px"
+  },
+  "scrollW": 390,
+  "horsCadre": 2,
+  "capture": "page-mentions-legales-390.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 360,
+  "utile": 0,
+  "marges": "240px/240px",
+  "titre": {
+   "w": 0,
+   "h": 125,
+   "fs": "59.0769px"
+  },
+  "corps": {
+   "w": 0,
+   "fs": "15.6923px"
+  },
+  "scrollW": 360,
+  "horsCadre": 2,
+  "capture": "page-mentions-legales-360.png"
+ }
+]

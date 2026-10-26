@@ -1,0 +1,902 @@
+[
+ {
+  "page": "page-conditions-de-vente.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 85,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "10.8611px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-conditions-de-vente-1440.png"
+ },
+ {
+  "page": "page-conditions-de-vente.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 46,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "5.79284px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-conditions-de-vente-768.png"
+ },
+ {
+  "page": "page-conditions-de-vente.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 86,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.0897px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-conditions-de-vente-430.png"
+ },
+ {
+  "page": "page-conditions-de-vente.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 77,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "15.5px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-conditions-de-vente-390.png"
+ },
+ {
+  "page": "page-conditions-de-vente.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 72,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.3077px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-conditions-de-vente-360.png"
+ },
+ {
+  "page": "page-confidentialite.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 85,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "10.8611px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-confidentialite-1440.png"
+ },
+ {
+  "page": "page-confidentialite.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 46,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "5.79284px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-confidentialite-768.png"
+ },
+ {
+  "page": "page-confidentialite.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 86,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.0897px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-confidentialite-430.png"
+ },
+ {
+  "page": "page-confidentialite.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 77,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "15.5px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-confidentialite-390.png"
+ },
+ {
+  "page": "page-confidentialite.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 72,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.3077px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-confidentialite-360.png"
+ },
+ {
+  "page": "page-cookies.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 42,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "10.8611px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-cookies-1440.png"
+ },
+ {
+  "page": "page-cookies.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 22,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "5.79284px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-cookies-768.png"
+ },
+ {
+  "page": "page-cookies.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 41,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.0897px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-cookies-430.png"
+ },
+ {
+  "page": "page-cookies.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 37,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "15.5px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-cookies-390.png"
+ },
+ {
+  "page": "page-cookies.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 35,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.3077px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-cookies-360.png"
+ },
+ {
+  "page": "page-journal-conserver-son-flacon.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-conserver-son-flacon-1440.png"
+ },
+ {
+  "page": "page-journal-conserver-son-flacon.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-conserver-son-flacon-768.png"
+ },
+ {
+  "page": "page-journal-conserver-son-flacon.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-conserver-son-flacon-430.png"
+ },
+ {
+  "page": "page-journal-conserver-son-flacon.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-conserver-son-flacon-390.png"
+ },
+ {
+  "page": "page-journal-conserver-son-flacon.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-conserver-son-flacon-360.png"
+ },
+ {
+  "page": "page-journal-le-flacon-sous-tous-les-angles.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-le-flacon-sous-tous-les-angles-1440.png"
+ },
+ {
+  "page": "page-journal-le-flacon-sous-tous-les-angles.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-le-flacon-sous-tous-les-angles-768.png"
+ },
+ {
+  "page": "page-journal-le-flacon-sous-tous-les-angles.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-le-flacon-sous-tous-les-angles-430.png"
+ },
+ {
+  "page": "page-journal-le-flacon-sous-tous-les-angles.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-le-flacon-sous-tous-les-angles-390.png"
+ },
+ {
+  "page": "page-journal-le-flacon-sous-tous-les-angles.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-le-flacon-sous-tous-les-angles-360.png"
+ },
+ {
+  "page": "page-journal-le-gout-fraise-en-images.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-le-gout-fraise-en-images-1440.png"
+ },
+ {
+  "page": "page-journal-le-gout-fraise-en-images.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-le-gout-fraise-en-images-768.png"
+ },
+ {
+  "page": "page-journal-le-gout-fraise-en-images.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-le-gout-fraise-en-images-430.png"
+ },
+ {
+  "page": "page-journal-le-gout-fraise-en-images.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-le-gout-fraise-en-images-390.png"
+ },
+ {
+  "page": "page-journal-le-gout-fraise-en-images.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-le-gout-fraise-en-images-360.png"
+ },
+ {
+  "page": "page-journal-les-details-d-un-petit-rituel.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-les-details-d-un-petit-rituel-1440.png"
+ },
+ {
+  "page": "page-journal-les-details-d-un-petit-rituel.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-les-details-d-un-petit-rituel-768.png"
+ },
+ {
+  "page": "page-journal-les-details-d-un-petit-rituel.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-les-details-d-un-petit-rituel-430.png"
+ },
+ {
+  "page": "page-journal-les-details-d-un-petit-rituel.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-les-details-d-un-petit-rituel-390.png"
+ },
+ {
+  "page": "page-journal-les-details-d-un-petit-rituel.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-les-details-d-un-petit-rituel-360.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-1440.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-768.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-430.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-390.png"
+ },
+ {
+  "page": "page-journal-lire-une-etiquette.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-lire-une-etiquette-360.png"
+ },
+ {
+  "page": "page-journal-une-pause-cote-cuisine.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 80,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "11.5px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-journal-une-pause-cote-cuisine-1440.png"
+ },
+ {
+  "page": "page-journal-une-pause-cote-cuisine.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 43,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "6.13359px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-journal-une-pause-cote-cuisine-768.png"
+ },
+ {
+  "page": "page-journal-une-pause-cote-cuisine.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 83,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.641px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-journal-une-pause-cote-cuisine-430.png"
+ },
+ {
+  "page": "page-journal-une-pause-cote-cuisine.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 75,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "16px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-journal-une-pause-cote-cuisine-390.png"
+ },
+ {
+  "page": "page-journal-une-pause-cote-cuisine.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 69,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.7692px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-journal-une-pause-cote-cuisine-360.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 1440,
+  "utile": 920,
+  "marges": "260px/260px",
+  "titre": {
+   "w": 920,
+   "h": 85,
+   "fs": "40.8889px"
+  },
+  "corps": {
+   "w": 920,
+   "fs": "10.8611px"
+  },
+  "scrollW": 1440,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-1440.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 768,
+  "utile": 491,
+  "marges": "138.667px/138.667px",
+  "titre": {
+   "w": 491,
+   "h": 46,
+   "fs": "21.8083px"
+  },
+  "corps": {
+   "w": 491,
+   "fs": "5.79284px"
+  },
+  "scrollW": 768,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-768.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 430,
+  "utile": 390,
+  "marges": "19.8462px/19.8462px",
+  "titre": {
+   "w": 390,
+   "h": 86,
+   "fs": "39.6923px"
+  },
+  "corps": {
+   "w": 390,
+   "fs": "17.0897px"
+  },
+  "scrollW": 430,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-430.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 390,
+  "utile": 354,
+  "marges": "18px/18px",
+  "titre": {
+   "w": 354,
+   "h": 77,
+   "fs": "36px"
+  },
+  "corps": {
+   "w": 354,
+   "fs": "15.5px"
+  },
+  "scrollW": 390,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-390.png"
+ },
+ {
+  "page": "page-mentions-legales.html",
+  "w": 360,
+  "utile": 327,
+  "marges": "16.6154px/16.6154px",
+  "titre": {
+   "w": 327,
+   "h": 72,
+   "fs": "33.2308px"
+  },
+  "corps": {
+   "w": 327,
+   "fs": "14.3077px"
+  },
+  "scrollW": 360,
+  "horsCadre": 0,
+  "capture": "page-mentions-legales-360.png"
+ }
+]
