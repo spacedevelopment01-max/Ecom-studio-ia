@@ -1,6 +1,6 @@
 {
   "source_voix": "Kokoro v1.0 (ff_siwis, vitesse 0.94)",
-  "duree": 65.841,
+  "duree": 66.641,
   "ips": 30,
   "phrases": {
     "p01": {
@@ -100,44 +100,44 @@
       "avant": "composition d'ensemble des trois supports, puis l'écran de modification"
     },
     "p09": {
-      "debut": 52.93,
-      "fin": 54.241,
+      "debut": 53.73,
+      "fin": 55.041,
       "texte": "Moins d'outils à gérer.",
       "fichier": "audio/phrases/p09.wav",
       "mots": {},
-      "avant": "le support se met à jour, sortie du bâtiment"
+      "avant": "le support se met à jour (résultat tenu), sortie du bâtiment"
     },
     "p10": {
-      "debut": 54.741,
-      "fin": 56.314,
+      "debut": 55.541,
+      "fin": 57.114,
       "texte": "Une image plus cohérente.",
       "fichier": "audio/phrases/p10.wav",
       "mots": {},
       "avant": ""
     },
     "p11": {
-      "debut": 56.814,
-      "fin": 58.484,
+      "debut": 57.614,
+      "fin": 59.284,
       "texte": "Plus de temps pour votre métier.",
       "fichier": "audio/phrases/p11.wav",
       "mots": {},
       "avant": ""
     },
     "p12": {
-      "debut": 59.484,
-      "fin": 60.792,
+      "debut": 60.284,
+      "fin": 61.592,
       "texte": "E-COM STUDIO IA.",
       "fichier": "audio/phrases/p12.wav",
       "mots": {},
       "avant": "les volumes s'alignent autour du nom"
     },
     "p13": {
-      "debut": 61.192,
-      "fin": 63.241,
+      "debut": 61.992,
+      "fin": 64.041,
       "texte": "Votre activité, mise en lumière.",
       "fichier": "audio/phrases/p13.wav",
       "mots": {
-        "lumière": 62.632
+        "lumière": 63.432
       },
       "avant": ""
     }

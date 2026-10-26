@@ -12,29 +12,39 @@ const IPS = 30, DE = Number(arg("de", 0)), A = Number(arg("a", TL.duree)), POSTE
 const TOTAL = Math.round((A - DE) * IPS);
 const DOSSIER = path.join(P, "rendu"); fs.mkdirSync(DOSSIER, { recursive: true });
 
-async function tranche(n, i0, i1, url) {
-  const sortie = path.join(DOSSIER, `tranche-${n}.mp4`);
-  const ff = spawn("ffmpeg", ["-v", "error", "-y", "-f", "image2pipe", "-framerate", String(IPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-r", String(IPS), sortie], { stdio: ["pipe", "inherit", "inherit"] });
+// Le film est découpé en morceaux de 5 s : chaque morceau terminé est gardé (rendu/morceau-NNN.mp4), un rendu
+// interrompu reprend là où il s'était arrêté.
+const MORCEAU = 150;
+async function poste(n, file, url) {
   const b = await chromium.launch({ args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
   const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  p.on("pageerror", (e) => { console.log("ERREUR:", e.message); process.exit(1); });
+  let erreur = null; p.on("pageerror", (e) => { erreur = e; });
   await p.goto(url + "/scene/film.html"); await p.waitForFunction(() => window.ready, null, { timeout: 300000 });
-  const t0 = Date.now();
-  for (let i = i0; i < i1; i++) {
-    await p.evaluate((t) => window.renderAt(t), DE + i / IPS);
-    const img = await p.screenshot({ type: "jpeg", quality: 94 });
-    if (!ff.stdin.write(img)) await new Promise((r) => ff.stdin.once("drain", r));
-    if ((i - i0) % 60 === 0) console.log(`poste ${n} : image ${i - i0}/${i1 - i0} (${((Date.now() - t0) / Math.max(1, i - i0) / 1000).toFixed(2)} s/image)`);
+  while (file.length) {
+    const k = file.shift(), i0 = k * MORCEAU, i1 = Math.min(TOTAL, i0 + MORCEAU);
+    const fin = path.join(DOSSIER, `morceau-${String(k).padStart(3, "0")}.mp4`), tmp = fin + ".tmp.mp4";
+    const ff = spawn("ffmpeg", ["-v", "error", "-y", "-f", "image2pipe", "-framerate", String(IPS), "-c:v", "mjpeg", "-i", "-", "-c:v", "libx264", "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-r", String(IPS), tmp], { stdio: ["pipe", "inherit", "inherit"] });
+    const t0 = Date.now();
+    for (let i = i0; i < i1; i++) {
+      await p.evaluate((t) => window.renderAt(t), DE + i / IPS);
+      if (erreur) throw erreur;
+      const img = await p.screenshot({ type: "jpeg", quality: 94 });
+      if (!ff.stdin.write(img)) await new Promise((r) => ff.stdin.once("drain", r));
+    }
+    ff.stdin.end(); await new Promise((r) => ff.on("close", r)); fs.renameSync(tmp, fin);
+    console.log(`poste ${n} : morceau ${k} terminé (${((Date.now() - t0) / (i1 - i0) / 1000).toFixed(2)} s/image)`);
   }
-  ff.stdin.end(); await new Promise((r) => ff.on("close", r)); await b.close();
-  return sortie;
+  await b.close();
 }
 
 (async () => {
   const { server, url } = await serve();
-  const part = Math.ceil(TOTAL / POSTES);
-  const tranches = await Promise.all([...Array(POSTES)].map((_, n) => tranche(n, n * part, Math.min(TOTAL, (n + 1) * part), url)));
+  const nb = Math.ceil(TOTAL / MORCEAU), nom = (k) => path.join(DOSSIER, `morceau-${String(k).padStart(3, "0")}.mp4`);
+  const file = [...Array(nb).keys()].filter((k) => !fs.existsSync(nom(k)));
+  console.log(`${nb - file.length}/${nb} morceaux déjà rendus`);
+  await Promise.all([...Array(POSTES)].map((_, n) => poste(n, file, url)));
   server.close();
+  const tranches = [...Array(nb).keys()].map(nom);
   fs.writeFileSync(path.join(DOSSIER, "liste.txt"), tranches.map((f) => `file '${f}'`).join("\n"));
   execFileSync("ffmpeg", ["-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", path.join(DOSSIER, "liste.txt"), "-c", "copy", path.join(DOSSIER, "image.mp4")]);
   // son : normalisation en deux passes

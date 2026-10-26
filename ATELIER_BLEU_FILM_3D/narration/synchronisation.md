@@ -1,6 +1,6 @@
 # Synchronisation voix / image
 
-Voix : Kokoro v1.0 (ff_siwis, vitesse 0.94) — durée du film : 65.841 s (30 images/s).
+Voix : Kokoro v1.0 (ff_siwis, vitesse 0.94) — durée du film : 66.641 s (30 images/s).
 
 | Phrase | Début → fin (s) | Mots-clés (s) | À l'image |
 |---|---|---|---|
@@ -12,11 +12,11 @@ Voix : Kokoro v1.0 (ff_siwis, vitesse 0.94) — durée du film : 65.841 s (30 im
 | Vous construisez ensuite un site qui explique vos services, présente vos réalisations et indique comment vous contacter. | 30.02 → 36.63 | site 31.77, services 32.85, réalisations 33.95, contacter 35.93 | Le bâtiment se déplie verticalement et révèle le site. Gros plans : la prestation « Murs et plafonds » (« services »), la réalisation avant/après (« réalisations »), la zone puis le bouton « Nous contacter » (« contacter »). |
 | À partir de cette même identité, préparez vos visuels, vos publications et vos publicités. | 38.63 → 43.85 | identité 40.13, visuels 41.25, publications 41.87, publicités 43.06 | Plongée dans la photo de la réalisation, qui devient la pièce en 3D. Les pans du mur pivotent : publication (« visuels »), story (« publications »), publicité (« publicités »), puis composition d'ensemble. |
 | Vous gardez la main sur les contenus et les ajustez à votre entreprise. | 46.45 → 50.33 | main 47.30, ajustez 48.56 | Écran « Modifier la publicité » au-dessus de la publicité : « à Lyon » est tapé dans le titre, « Valider », puis la publicité se met à jour. |
-| Moins d'outils à gérer. | 52.93 → 54.24 | — | Sortie du bâtiment : structure complète, volumes nommés Identité, Site, Communication. |
-| Une image plus cohérente. | 54.74 → 56.31 | — | Les volumes glissent et se transforment pour devenir les bras d'un « E ». |
-| Plus de temps pour votre métier. | 56.81 → 58.48 | — | Le « E » est formé sur la colonne du bâtiment. |
-| E-COM STUDIO IA. | 59.48 → 60.79 | — | Le carré sombre et le point bleu se posent : le pictogramme E-COM STUDIO IA ; le nom s'affiche. |
-| Votre activité, mise en lumière. | 61.19 → 63.24 | lumière 62.63 | La phrase finale s'affiche ; balayage de lumière sur « lumière » ; tenue du plan. |
+| Moins d'outils à gérer. | 53.73 → 55.04 | — | Sortie du bâtiment : structure complète, volumes nommés Identité, Site, Communication. |
+| Une image plus cohérente. | 55.54 → 57.11 | — | Les volumes glissent et se transforment pour devenir les bras d'un « E ». |
+| Plus de temps pour votre métier. | 57.61 → 59.28 | — | Le « E » est formé sur la colonne du bâtiment. |
+| E-COM STUDIO IA. | 60.28 → 61.59 | — | Le carré sombre et le point bleu se posent : le pictogramme E-COM STUDIO IA ; le nom s'affiche. |
+| Votre activité, mise en lumière. | 61.99 → 64.04 | lumière 63.43 | La phrase finale s'affiche ; balayage de lumière sur « lumière » ; tenue du plan. |
 
 ## Repères de l'image (transitions)
 
@@ -43,6 +43,6 @@ Voix : Kokoro v1.0 (ff_siwis, vitesse 0.94) — durée du film : 65.841 s (30 im
 | frappe | 48.36 |
 | valider | 49.88 |
 | maj | 50.38 |
-| sortie | 51.48 |
-| alignement | 58.48 |
-| fin | 65.84 |
+| sortie | 52.28 |
+| alignement | 59.28 |
+| fin | 66.64 |

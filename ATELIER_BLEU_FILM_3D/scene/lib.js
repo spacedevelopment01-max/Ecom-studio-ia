@@ -225,7 +225,8 @@ export class Ecran {
       // balayage lumineux (mise à jour d'un support)
       const g = x.createLinearGradient(0, 0, this.cw, this.ch * 0.4);
       const p = spec.lumiere;
-      g.addColorStop(Math.max(0, p - 0.12), "rgba(255,255,255,0)"); g.addColorStop(p, "rgba(255,255,255,0.55)"); g.addColorStop(Math.min(1, p + 0.12), "rgba(255,255,255,0)");
+      const c01 = (v) => Math.min(1, Math.max(0, v));
+      g.addColorStop(c01(p - 0.12), "rgba(255,255,255,0)"); g.addColorStop(c01(p), "rgba(255,255,255,0.55)"); g.addColorStop(c01(p + 0.12), "rgba(255,255,255,0)");
       x.fillStyle = g; x.fillRect(0, 0, this.cw, this.ch);
     }
     this.tex.needsUpdate = true;

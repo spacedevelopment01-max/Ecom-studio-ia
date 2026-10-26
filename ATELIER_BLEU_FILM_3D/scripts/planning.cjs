@@ -16,7 +16,7 @@ const AVANT = {
   p06: [3.6, "composition Logo / Couleurs / Typographie, résultat sur l'enseigne et les documents, le bâtiment se déplie"],
   p07: [2.0, "fin de lecture du site, plongée dans la photo de la réalisation"],
   p08: [2.6, "composition d'ensemble des trois supports, puis l'écran de modification"],
-  p09: [2.6, "le support se met à jour, sortie du bâtiment"],
+  p09: [3.4, "le support se met à jour (résultat tenu), sortie du bâtiment"],
   p10: [0.5, ""],
   p11: [0.5, ""],
   p12: [1.0, "les volumes s'alignent autour du nom"],
