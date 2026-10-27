@@ -1,4 +1,5 @@
 import { assertAnalysisRoute } from "./evidence";
+import { analysisCostPlan } from "./inspect";
 /** Devis local en % ; le garde-fou final reste la réservation native de chaque moteur. */
 import { id, json, now, one } from "../db";
 import { loadProject, remember } from "../projects";
@@ -69,6 +70,7 @@ export function createQuote(
     );
   if (action === "analyze" && paid) assertAnalysisRoute(!!s.stages.brief?.data.input.photoIds.length);
   let capMicro = 0;
+  let estimateMicro: number | null = null;
   if (paid) {
     if ((action === "image" || action === "logo") && !aiAvailability().image)
       throw new HttpError(
@@ -76,7 +78,13 @@ export function createQuote(
         "Fournisseur d’images indisponible. Votre projet et ses versions restent enregistrés ; aucun appel n’a été lancé.",
       );
     assertAiAllowed(p.userId, p.id);
-    capMicro =
+    // Compréhension (#204) : plafond = pire cas réel de la demande (route, entrée, limites de sortie, reprises de
+    // llmJson), plus jamais la formule des contenus ; estimation = un appel au déroulé habituel.
+    const analysis = action === "analyze" ? analysisCostPlan(p, s.stages.brief!.data) : null;
+    if (action === "analyze" && !analysis)
+      throw new HttpError(409, "Le coût de cette analyse ne peut pas être encadré (tarif ou limites du modèle inconnus). Aucun appel n’a été lancé.");
+    if (analysis) estimateMicro = analysis.estimateMicro;
+    capMicro = analysis ? analysis.maxMicro :
       action === "logo"
         ? logoSeriesQuote().maxMicro
         : action === "image" || action === "collect"
@@ -93,6 +101,7 @@ export function createQuote(
     assertCanSpend(p.userId, capMicro, p.id);
   }
   const pct = paid ? budgetPctOf(p.userId, capMicro, p.id) : 0;
+  const estimatePct = paid && estimateMicro != null ? budgetPctOf(p.userId, estimateMicro, p.id) : null;
   if (paid && (pct == null || !Number.isFinite(pct)))
     throw new HttpError(
       409,
@@ -119,9 +128,12 @@ export function createQuote(
     id: q.id,
     paid,
     maxBudgetPct: pct,
+    estimateBudgetPct: estimatePct,
     mode: paid ? "provider" : "local",
     note: paid
-      ? "Plafond de cet essai, contrôles et reprises internes compris. Aucune relance automatique en cas d’échec incertain."
+      ? estimatePct != null
+        ? "Pris sur le budget IA inclus dans votre abonnement (aucun nouvel achat). L’estimation est la consommation habituelle ; le maximum ne peut pas être dépassé, reprises internes comprises. Seule la consommation constatée est retirée du budget ; aucune relance automatique en cas d’échec incertain."
+        : "Plafond de cet essai, contrôles et reprises internes compris. Aucune relance automatique en cas d’échec incertain."
       : "Préparation locale gratuite, explicitement signalée ; aucune génération IA simulée.",
   };
 }

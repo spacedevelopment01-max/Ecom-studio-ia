@@ -48,6 +48,8 @@ export type LlmCall = {
   prompt: string;
   images?: LlmImage[];
   maxTokens?: number;
+  /** llmJson : limite de sortie au-delà de laquelle une réponse coupée n'est plus relancée plus longue (défaut 64 000). */
+  maxOutputTokens?: number;
   /** Clé d'idempotence de la consommation (reprise sans double débit). */
   usageKey?: string;
   /** Nom du prompt système (trace) ; à défaut, la tâche. Le texte du prompt n'est jamais enregistré. */
@@ -560,6 +562,87 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
 const MAX_OUTPUT_TOKENS = 64000;
 
+/** Nombre maximal d'appels de llmJson pour une même demande (réponses coupées, une réparation de format). */
+export const JSON_ATTEMPTS = 4;
+/** Jetons ajoutés par la consigne de réparation (liste des écarts, au plus cinq) : borne large. */
+const JSON_FIX_PROMPT_TOKENS = 600;
+
+/**
+ * Suite de llmJson après une réponse non exploitable, null = abandon. Règle unique, partagée par l'exécution et par
+ * le devis (jsonCallBounds) : une réponse coupée est redemandée avec deux fois plus de place tant que la limite `cap`
+ * n'est pas atteinte (sans renvoyer le texte coupé) ; sinon UNE réparation, qui renvoie la réponse précédente.
+ */
+export function jsonRetry(s: { attempt: number; budget: number; fixes: number }, cut: boolean, cap: number): { attempt: number; budget: number; fixes: number; resend: boolean } | null {
+  if (s.attempt + 1 >= JSON_ATTEMPTS) return null;
+  if (cut && s.budget < cap) return { attempt: s.attempt + 1, budget: Math.min(cap, s.budget * 2), fixes: s.fixes, resend: false };
+  if (s.fixes >= 1) return null;
+  return { attempt: s.attempt + 1, budget: s.budget, fixes: s.fixes + 1, resend: true };
+}
+
+/**
+ * Toutes les suites d'appels possibles d'un llmJson (pire cas compris) : pour chaque appel, sa limite de sortie et
+ * les jetons d'entrée ajoutés par les réparations (réponse renvoyée + consigne).
+ */
+export function jsonCallPaths(maxTokens: number, cap: number): { budget: number; extraInput: number }[][] {
+  const out: { budget: number; extraInput: number }[][] = [];
+  const go = (s: { attempt: number; budget: number; fixes: number }, extra: number, done: { budget: number; extraInput: number }[]) => {
+    const seq = [...done, { budget: s.budget, extraInput: extra }];
+    out.push(seq);
+    for (const cut of [true, false]) {
+      const n = jsonRetry(s, cut, cap);
+      if (n) go(n, n.resend ? extra + s.budget + JSON_FIX_PROMPT_TOKENS : extra, seq);
+    }
+  };
+  go({ attempt: 0, budget: maxTokens, fixes: 0 }, 0, []);
+  return out;
+}
+
+/**
+ * Coût MAXIMAL (micro-euros, coefficient compris) d'un appel dont l'entrée ne dépasse pas `inputTokens`, avec les
+ * mêmes règles que la réservation faite avant l'envoi (maxCostMicro, otherMaxCostMicro). null : tarif ou limites
+ * inconnus, coût impossible à encadrer.
+ */
+export function callCostBoundMicro(provider: string, model: string, inputTokens: number, maxTokens: number, effort: string | null): number | null {
+  const p = priceFor(provider, model);
+  if (!p || p.unit !== "tokens") return null;
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  const inTok = Math.ceil(inputTokens * INPUT_MARGIN.ratio) + INPUT_MARGIN.tokens;
+  if (provider === "anthropic") {
+    if (!TEXT_MODEL_LIMITS[model]) return null;
+    const out = model === "claude-haiku-4-5" ? maxTokens : Math.max(maxTokens, 8000);
+    return Math.ceil(((inTok * 1.25 * p.inputPerM + out * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+  }
+  const m = textModel(provider as "openai" | "google", model);
+  if (!m) return null;
+  const out = Math.min(m.limits.maxOutput, Math.max(maxTokens, 4000)) + (thinkingOutsideMaxOutput(provider as "openai" | "google") && effort ? m.limits.maxOutput : 0);
+  return Math.ceil(((inTok * p.inputPerM + out * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+}
+
+/** Estimation (pas un plafond) d'un appel au déroulé habituel : jetons donnés, tarif et coefficient, sans marges. */
+export function estimateCallMicro(provider: string, model: string, inputTokens: number, outputTokens: number): number | null {
+  const p = priceFor(provider, model);
+  if (!p || p.unit !== "tokens") return null;
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  return Math.ceil(((inputTokens * p.inputPerM + outputTokens * p.outputPerM) / 1e6) * usdToEur() * EUR * markup);
+}
+
+/** Pire cas d'un llmJson : maximum, sur toutes les suites possibles, de la somme des coûts maximaux de ses appels. */
+export function jsonCallMaxMicro(provider: string, model: string, inputTokens: number, maxTokens: number, cap: number, effort: string | null): { maxMicro: number; maxCalls: number } | null {
+  let maxMicro = 0;
+  let maxCalls = 0;
+  for (const seq of jsonCallPaths(maxTokens, Math.min(MAX_OUTPUT_TOKENS, cap))) {
+    let sum = 0;
+    for (const c of seq) {
+      const one = callCostBoundMicro(provider, model, inputTokens + c.extraInput, c.budget, effort);
+      if (one == null) return null;
+      sum += one;
+    }
+    maxMicro = Math.max(maxMicro, sum);
+    maxCalls = Math.max(maxCalls, seq.length);
+  }
+  return { maxMicro, maxCalls };
+}
+
 /** Also covers specialized calls which do not yet request a Brain view. */
 export function withSelectedStrategy(call: LlmCall): LlmCall {
   if (!call.projectId) return call;
@@ -596,33 +679,37 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." },
   ];
   let last = "";
-  let budget = call.maxTokens ?? 32000;
-  let fixes = 0;
   let lastIssue = "";
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const r = await rawCall({ ...call, maxTokens: budget }, messages, undefined, attempt ? `:fix${attempt}` : "", attempt);
+  const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
+  let step = { attempt: 0, budget: call.maxTokens ?? 32000, fixes: 0 };
+  for (;;) {
+    const r = await rawCall({ ...call, maxTokens: step.budget }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
     last = r.text;
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
-    // sans renvoyer le début tronqué au modèle.
-    if (r.stop === "max_tokens" && budget < MAX_OUTPUT_TOKENS) {
-      budget = Math.min(MAX_OUTPUT_TOKENS, budget * 2);
-      continue;
+    // sans renvoyer le début tronqué au modèle (jsonRetry).
+    const cut = r.stop === "max_tokens";
+    let issue = "";
+    if (!(cut && step.budget < cap)) {
+      const parsed = call.prepare ? call.prepare(extractJson(r.text)) : extractJson(r.text);
+      const res = schema.safeParse(parsed);
+      if (res.success) return res.data;
+      // Écarts de forme (liste trop longue, texte trop long, valeur hors liste, nombre en texte) : réparés ici,
+      // gratuitement, plutôt que de repayer une réponse ou de faire échouer l'étape.
+      const saved = salvage(schema as z.ZodType<z.output<S>>, parsed);
+      if (saved.ok) {
+        console.info(`[ia] ${call.task} : réponse réparée sans nouvel appel (${saved.fixes.slice(0, 5).join(" ; ")})`);
+        return saved.data;
+      }
+      lastIssue = res.error.issues.slice(0, 3).map((i) => `${i.path.join(".") || "racine"} : ${i.message}`).join(" ; ");
+      issue = res.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
     }
-    const parsed = call.prepare ? call.prepare(extractJson(r.text)) : extractJson(r.text);
-    const res = schema.safeParse(parsed);
-    if (res.success) return res.data;
-    // Écarts de forme (liste trop longue, texte trop long, valeur hors liste, nombre en texte) : réparés ici,
-    // gratuitement, plutôt que de repayer une réponse ou de faire échouer l'étape.
-    const saved = salvage(schema as z.ZodType<z.output<S>>, parsed);
-    if (saved.ok) {
-      console.info(`[ia] ${call.task} : réponse réparée sans nouvel appel (${saved.fixes.slice(0, 5).join(" ; ")})`);
-      return saved.data;
+    const next = jsonRetry(step, cut, cap);
+    if (!next) break;
+    if (next.resend) {
+      messages.push({ role: "assistant", content: r.text || "{}" });
+      messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
     }
-    lastIssue = res.error.issues.slice(0, 3).map((i) => `${i.path.join(".") || "racine"} : ${i.message}`).join(" ; ");
-    if (fixes++ >= 1) break;
-    const issue = res.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
-    messages.push({ role: "assistant", content: r.text || "{}" });
-    messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
+    step = next;
   }
   // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
   console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);

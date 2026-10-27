@@ -40,6 +40,11 @@ import {
   type ThemeRecommendation,
 } from "@/lib/preparation/types";
 import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
+import { ContactModePicker } from "./services-editor";
+import { contactModesOf } from "@/lib/project-types";
+/** Pourcentage du budget IA lisible : « moins de 0,1 % » plutôt que « 0.0 % ». */
+const pctText = (n: number, lang: "fr" | "en") =>
+  n > 0 && n < 0.1 ? (lang === "fr" ? "moins de 0,1 %" : "less than 0.1%") : lang === "fr" ? `${n.toFixed(1).replace(".", ",")} %` : `${n.toFixed(1)}%`;
 function Button(props: ComponentProps<typeof BaseButton>) {
   return (
     <BaseButton
@@ -140,6 +145,7 @@ export default function TabPreparation() {
     id: string;
     paid: boolean;
     maxBudgetPct: number | null;
+    estimateBudgetPct?: number | null;
     note: string;
   } | null>(null);
   const resumed = useRef(false);
@@ -427,7 +433,7 @@ export default function TabPreparation() {
             </Select>
           </Field>
           <Field
-            label={t(
+            label={form.business === "services" ? t("Nom de l’activité (facultatif : votre marque sera créée plus tard)", "Business name (optional: your brand is created later)") : t(
               "Nom du produit ou de l’activité",
               "Product or business name",
             )}
@@ -465,15 +471,34 @@ export default function TabPreparation() {
               busy || working || JSON.stringify(raw) !== JSON.stringify(form)
             }
             onClick={() => prepare("brief", "analyze")}
+            data-brief-analyze
           >
-            {t(
-              "Analyser mes informations et mes photos par l’IA",
-              "Analyze my information and photos with AI",
-            )}
+            {form.business === "services"
+              ? t("Comprendre mon activité", "Understand my business")
+              : t(
+                  "Analyser mes informations et mes photos par l’IA",
+                  "Analyze my information and photos with AI",
+                )}
           </Button>
+          {form.business === "services" && (
+            <p className="-mt-2 text-sm text-muted">
+              {t(
+                "L’IA analyse votre description et vos éventuelles photos pour identifier vos prestations et les informations à compléter.",
+                "The AI reads your description and any photos to identify your services and the information still to complete.",
+              )}
+            </p>
+          )}
           {state.stages.brief?.data.observations && (
             <div className="rounded-xl border border-line p-3">
-              <p className="font-semibold">Proposition d’analyse à vérifier</p>
+              <p className="font-semibold">{t("Proposition d’analyse à vérifier", "Analysis proposal to check")}</p>
+              {state.stages.brief.data.execution?.spentPct != null && (
+                <p className="text-xs text-muted" data-spent>
+                  {t(
+                    `Consommation constatée : ${pctText(state.stages.brief.data.execution.spentPct, "fr")} du budget IA de ce projet (${state.stages.brief.data.execution.calls ?? 1} appel(s)).`,
+                    `Recorded usage: ${pctText(state.stages.brief.data.execution.spentPct, "en")} of this project’s AI budget (${state.stages.brief.data.execution.calls ?? 1} call(s)).`,
+                  )}
+                </p>
+              )}
               <p>
                 {state.stages.brief.data.profile.name} ·{" "}
                 {state.stages.brief.data.profile.category}
@@ -525,6 +550,39 @@ export default function TabPreparation() {
                   "Your services and contact",
                 )}
               </h3>
+              {(() => {
+                const brief = state.stages.brief?.data;
+                const analyzedBrief = brief?.provenance === "provider" || brief?.provenance === "simulation";
+                const found = brief?.services.services ?? [];
+                if (!analyzedBrief && !form.services.services.length)
+                  return (
+                    <p className="rounded-xl bg-paper-2 p-3 text-sm" data-services-pending>
+                      {t(
+                        "Facultatif : vos prestations seront identifiées à partir de votre description par « Comprendre mon activité », puis proposées ici à votre validation.",
+                        "Optional: your services will be identified from your description by “Understand my business”, then shown here for you to confirm.",
+                      )}
+                    </p>
+                  );
+                if (analyzedBrief && !form.services.services.length && found.length)
+                  return (
+                    <div className="grid gap-2 rounded-xl border border-line p-3" data-services-found>
+                      <p className="text-sm font-semibold">{t("Prestations identifiées par l’analyse, à vérifier", "Services identified by the analysis, to check")}</p>
+                      <ul className="grid gap-1 text-sm">
+                        {found.map((x, i) => (
+                          <li key={i}>
+                            <span className="font-medium">{x.name}</span>
+                            {x.description ? ` — ${x.description}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-xs text-muted">{t("Rien n’est ajouté en dehors de votre description. « Confirmer ces informations » les retient telles quelles.", "Nothing is added beyond your description. “Confirm this information” keeps them as they are.")}</p>
+                      <Button variant="secondary" onClick={() => field("services", { ...form.services, services: found.map((x) => ({ ...x })) })}>
+                        {t("Corriger ces prestations", "Edit these services")}
+                      </Button>
+                    </div>
+                  );
+                return null;
+              })()}
               {form.services.services.map((service, i) => (
                 <div
                   key={i}
@@ -584,8 +642,8 @@ export default function TabPreparation() {
                         area: t("Zone ou adresse", "Area or address"),
                         hours: t("Horaires", "Opening hours"),
                         bookingUrl: t(
-                          "Lien de rendez-vous, si disponible",
-                          "Booking link, if available",
+                          "Lien de votre outil de rendez-vous (facultatif)",
+                          "Link to your booking tool (optional)",
                         ),
                       }[key]
                     }
@@ -602,33 +660,25 @@ export default function TabPreparation() {
                   </Field>
                 ),
               )}
-              <Field
-                label={t(
-                  "Prochaine étape pour vos visiteurs",
-                  "Next step for your visitors",
-                )}
-              >
-                <Select
-                  value={form.services.contactMode}
-                  onChange={(e) =>
+              <Field label={t("Comment vos clients vous contactent", "How customers get in touch")}>
+                <ContactModePicker
+                  value={form.services.contactModes ?? contactModesOf(form.services)}
+                  onChange={(v) =>
                     field("services", {
                       ...form.services,
-                      contactMode: e.target.value,
-                      contactModes: [e.target.value],
+                      contactMode: v[0] ?? form.services.contactMode,
+                      contactModes: v,
                     })
                   }
-                >
-                  <option value="form">Contact</option>
-                  <option value="quote">Devis</option>
-                  <option value="call">Appel</option>
-                  <option value="booking">Rendez-vous</option>
-                </Select>
+                />
               </Field>
             </div>
           )}
           <div className="flex flex-wrap gap-3">
             <a href={`/studio/${id}/produit`} className="text-sm underline">
-              {t("Ajouter des photos dans Produit", "Add photos in Product")}
+              {form.business === "services"
+                ? t("Ajouter des photos de votre activité (facultatif)", "Add photos of your business (optional)")
+                : t("Ajouter des photos dans Produit", "Add photos in Product")}
             </a>
             <Button
               variant="secondary"
@@ -689,7 +739,7 @@ export default function TabPreparation() {
             </p>
           )}
           <div className="flex flex-wrap gap-3">
-            <Button onClick={saveBrief} loading={busy} data-save-brief>
+            <Button onClick={saveBrief} loading={busy} disabled={form.business === "services" && form.services.contactModes?.length === 0} data-save-brief>
               {t("Enregistrer mes informations", "Save my information")}
             </Button>
             <Button
@@ -1271,10 +1321,17 @@ export default function TabPreparation() {
                 "Coût indisponible : cet essai ne peut pas être confirmé.",
                 "Cost unavailable: this attempt cannot be confirmed.",
               )
-              : t(
-                `Plafond : ${quote.maxBudgetPct.toFixed(1)} % du budget IA de ce projet.`,
-                `Cap: ${quote.maxBudgetPct.toFixed(1)}% of this project’s AI budget.`,
-              )}
+              : quote.estimateBudgetPct != null
+                ? (
+                  <span className="grid gap-1" data-quote-split>
+                    <span>{t(`Estimation de consommation : ${pctText(quote.estimateBudgetPct, "fr")} du budget IA de ce projet.`, `Estimated usage: ${pctText(quote.estimateBudgetPct, "en")} of this project’s AI budget.`)}</span>
+                    <span>{t(`Maximum autorisé pour cet essai : ${pctText(quote.maxBudgetPct, "fr")}.`, `Maximum allowed for this attempt: ${pctText(quote.maxBudgetPct, "en")}.`)}</span>
+                  </span>
+                )
+                : t(
+                  `Plafond : ${quote.maxBudgetPct.toFixed(1)} % du budget IA de ce projet.`,
+                  `Cap: ${quote.maxBudgetPct.toFixed(1)}% of this project’s AI budget.`,
+                )}
           </p>
           <p className="mt-2 text-sm text-muted">{quote.note}</p>
           <div className="mt-4 flex gap-3">

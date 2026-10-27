@@ -39,7 +39,7 @@ export type Brief = {
   observations?: string[];
   execution?: ApiEvidence;
 };
-export type ApiEvidence = { provider: string; model: string; usageKey: string; vision: boolean; at: number };
+export type ApiEvidence = { provider: string; model: string; usageKey: string; vision: boolean; at: number; calls?: number; spentMicro?: number; spentPct?: number | null };
 export type Source = {
   id: string;
   url: string;

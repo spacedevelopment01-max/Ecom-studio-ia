@@ -7,7 +7,7 @@ import { api, Badge, Button, Card, Field, Input, Select, Textarea, useApi, useTo
 import { useProject } from "./project-context";
 import { AssetThumb, EngineNotice, JobProgress, SectionTitle, useActive, type AssetView } from "./common";
 import { FromSiteBadge } from "./existing-site";
-import { cleanServices, ContactModePicker, missingActivity, ServicesEditor } from "./services-editor";
+import { BOOKING_HINT, cleanServices, ContactModePicker, missingActivity, ServicesEditor } from "./services-editor";
 import { contactModesOf, emptyServiceProfile, type Fact, type ServiceProfile } from "@/lib/project-types";
 import { useT } from "../i18n";
 
@@ -133,9 +133,9 @@ export default function TabActivite() {
             </div>
             <div className="mt-5 grid gap-2">
               <p className="text-sm font-medium">{t("Comment vos clients vous contactent", "How customers get in touch")}</p>
-              <ContactModePicker value={contactModesOf(offer)} onChange={(v) => (setOffer({ ...offer, contactMode: v[0], contactModes: v }), setDirty(true))} />
-              {(contactModesOf(offer).includes("booking") || offer.bookingUrl) && (
-                <Field label={t("Lien de prise de rendez-vous", "Booking link")} htmlFor="act-booking" hint={t("Calendly, Planity, Doctolib… Le bouton « Prendre rendez-vous » du site y mène.", "Calendly, Fresha, Acuity… The site's “Book an appointment” button leads there.")}>
+              <ContactModePicker value={offer.contactModes ?? contactModesOf(offer)} onChange={(v) => (setOffer({ ...offer, contactMode: v[0] ?? offer.contactMode, contactModes: v }), setDirty(true))} />
+              {((offer.contactModes ?? contactModesOf(offer)).includes("booking") || offer.bookingUrl) && (
+                <Field label={t("Lien de votre outil de rendez-vous (facultatif)", "Link to your booking tool (optional)")} htmlFor="act-booking" hint={BOOKING_HINT(t)}>
                   <Input id="act-booking" type="url" value={offer.bookingUrl} maxLength={500} onChange={(e) => change("bookingUrl", e.target.value)} placeholder="https://…" />
                 </Field>
               )}
@@ -143,8 +143,8 @@ export default function TabActivite() {
           </Card>
 
           <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-2 rounded-3xl border border-line bg-card/95 p-3 shadow-soft backdrop-blur">
-            <Button onClick={save} loading={busy === "save"} disabled={!dirty || !!busy} icon={<Save className="size-4" />}>{t("Enregistrer", "Save")}</Button>
-            <Button variant="secondary" onClick={rebuild} loading={busy === "rebuild"} disabled={!!busy || !data.brand} icon={<Store className="size-4" />}>{dirty ? t("Enregistrer et mettre à jour le site", "Save and update the website") : t("Mettre à jour le site", "Update the website")}</Button>
+            <Button onClick={save} loading={busy === "save"} disabled={!dirty || !!busy || offer.contactModes?.length === 0} icon={<Save className="size-4" />}>{t("Enregistrer", "Save")}</Button>
+            <Button variant="secondary" onClick={rebuild} loading={busy === "rebuild"} disabled={!!busy || !data.brand || offer.contactModes?.length === 0} icon={<Store className="size-4" />}>{dirty ? t("Enregistrer et mettre à jour le site", "Save and update the website") : t("Mettre à jour le site", "Update the website")}</Button>
             <p className="min-w-0 flex-1 text-xs text-muted">{dirty ? t("Modifications non enregistrées.", "Unsaved changes.") : !data.brand ? t("Le site pourra être mis à jour une fois la marque créée.", "The website can be updated once the brand exists.") : t("Tout est enregistré.", "Everything is saved.")}</p>
           </div>
         </div>

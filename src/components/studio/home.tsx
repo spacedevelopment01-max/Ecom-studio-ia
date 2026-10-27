@@ -14,25 +14,26 @@ import { PLANS, type Billing, type PlanId } from "@/lib/plans";
 import { NewSubscription } from "./new-subscription";
 import { ProjectSubscriptionDialog, SUB_STATUS } from "./project-subscription";
 import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type PlatformId } from "./platform-picker";
-import { cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
+import { BOOKING_HINT, cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 import { DeleteProjectButton } from "./delete-project";
 import { AiDescription } from "./ai-description";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
 
 /** Formulaire de départ. Sans « projectId » : crée un projet ; avec : démarre la création d'un projet existant. */
-export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness = "products", initialPlatform, initialServices, subscription, plan }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string; initialServices?: Partial<ServiceProfile>; /** Nouveau projet : abonnement payé (encore libre) qui lui sera rattaché. */ subscription?: string | null; plan?: PlanId | null }) {
+export function NewProject({ onDone, compact, projectId, existingPhotos = 0, initialBusiness, initialPlatform, initialServices, subscription, plan }: { onDone?: (id: string) => void; compact?: boolean; projectId?: string; existingPhotos?: number; initialBusiness?: BusinessType; initialPlatform?: string; initialServices?: Partial<ServiceProfile>; /** Nouveau projet : abonnement payé (encore libre) qui lui sera rattaché. */ subscription?: string | null; plan?: PlanId | null }) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
   const router = useRouter();
-  const [business, setBusiness] = useState<BusinessType>(initialBusiness);
+  // Nouveau projet : aucun type imposé (#204) ; le client choisit boutique ou services. Projet existant : son type est repris.
+  const [business, setBusiness] = useState<BusinessType | null>(initialBusiness ?? null);
   // « J'ai déjà mon site et mon logo » : le studio lit le site ; plateforme et type d'activité sont détectés.
   const [existing, setExisting] = useState(false);
   const [siteUrl, setSiteUrl] = useState("");
   const [owner, setOwner] = useState(false);
   const [siteErr, setSiteErr] = useState<{ url?: string; owner?: string }>({});
-  const [platform, setPlatform] = useState<PlatformId>(isPlatform(initialPlatform) ? initialPlatform : recommendedPlatform(initialBusiness));
+  const [platform, setPlatform] = useState<PlatformId>(isPlatform(initialPlatform) ? initialPlatform : recommendedPlatform(initialBusiness ?? "products"));
   const [platformTouched, setPlatformTouched] = useState(isPlatform(initialPlatform));
   const [photos, setPhotos] = useState<File[]>([]);
   const [mode, setMode] = useState<"photo" | "link" | "text">("photo");
@@ -80,6 +81,8 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
   };
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!existing && !business) return toast("bad", t("Choisissez d'abord ce que vous voulez créer : une boutique ou le site de votre entreprise de services.", "First choose what you want to create: an online store or your services business website."));
+    if (svc && !existing && !contactModes.length) return toast("bad", t("Cochez au moins une façon d'être contacté.", "Tick at least one way to be contacted."));
     if (existing) {
       const err: { url?: string; owner?: string } = {};
       if (!/^(https?:\/\/)?[^\s/]+\.[^\s]+$/i.test(siteUrl.trim())) err.url = t("Indiquez l'adresse de votre site, par exemple www.mon-site.fr.", "Enter your website address, for example www.my-site.com.");
@@ -171,7 +174,7 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
       className="grid gap-6"
       noValidate
     >
-      <input type="hidden" name="businessType" value={business} />
+      <input type="hidden" name="businessType" value={business ?? ""} />
       {existing && <input type="hidden" name="existingSite" value="1" />}
       <fieldset>
         <legend className="mb-2.5 font-display text-xl font-semibold">{t("Que voulez-vous créer ?", "What do you want to create?")}</legend>
@@ -194,6 +197,10 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           })}
         </div>
       </fieldset>
+      {!existing && !business ? (
+        <p className="rounded-xl bg-paper-2 p-3 text-sm" data-choose-business>{t("Choisissez ci-dessus ce que vous voulez créer : le formulaire s'adapte à une boutique ou à une entreprise de services.", "Choose above what you want to create: the form adapts to an online store or a services business.")}</p>
+      ) : (
+      <>
       {existing ? (
         <ExistingSiteFields url={siteUrl} onUrl={(v) => (setSiteUrl(v), siteErr.url && setSiteErr({ ...siteErr, url: undefined }))} owner={owner} onOwner={(v) => (setOwner(v), v && setSiteErr({ ...siteErr, owner: undefined }))} errors={siteErr} showLanguage={!projectId} />
       ) : (
@@ -249,11 +256,11 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
           </fieldset>
           <fieldset className="grid gap-2">
             <legend className="mb-1 text-sm font-medium">{t("Comment vos clients vous contactent", "How customers get in touch")}</legend>
-            <input type="hidden" name="contactMode" value={contactModes[0]} />
+            <input type="hidden" name="contactMode" value={contactModes[0] ?? ""} />
             <input type="hidden" name="contactModes" value={contactModes.join(",")} />
             <ContactModePicker value={contactModes} onChange={(v) => { setContactModes(contactTouched || v.length < 2 ? v : v.slice(1)); setContactTouched(true); }} />
             {contactModes.includes("booking") && (
-              <Field label={t("Lien de prise de rendez-vous", "Booking link")} htmlFor="bookingUrl" hint={t("Calendly, Planity, Doctolib… Le bouton « Prendre rendez-vous » du site y mènera.", "Calendly, Fresha, Acuity… The site's “Book an appointment” button will lead there.")}>
+              <Field label={t("Lien de votre outil de rendez-vous (facultatif)", "Link to your booking tool (optional)")} htmlFor="bookingUrl" hint={BOOKING_HINT(t)}>
                 <Input id="bookingUrl" name="bookingUrl" type="url" placeholder="https://…" maxLength={500} />
               </Field>
             )}
@@ -318,6 +325,8 @@ export function NewProject({ onDone, compact, projectId, existingPhotos = 0, ini
         {!existing && !svc && !projectId && !hasInput && <p className="text-sm text-muted">{t("La préparation sera enregistrée : vous pourrez compléter votre offre dans le Pilote.", "Preparation will be saved: you can complete your offer in the Pilot.")}</p>}
         {!existing && svc && !hasInput && <p className="text-sm text-muted">{t("Quelques lignes sur votre activité suffisent pour démarrer.", "A few lines about your business are enough to get started.")}</p>}
       </div>
+      </>
+      )}
     </form>
   );
 }

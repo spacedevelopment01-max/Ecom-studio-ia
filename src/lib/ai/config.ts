@@ -31,7 +31,7 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
   higgsfield: provider({fr:"Higgsfield officiel",en:"Official Higgsfield"},{fr:"Plans vidéo produit — tarifs automatiques et approbation groupée",en:"Product video shots — automatic pricing and bulk approval"},{fr:"Identifiant et secret dans la carte dédiée",en:"Key ID and secret in the dedicated card"},"https://docs.higgsfield.ai/docs"),
   anthropic: provider(
     { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
-    { fr: "Analyse visuelle, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Visual analysis, strategy, copywriting, theme code, quality control" },
+    { fr: "Compréhension de l’offre, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Offer understanding, strategy, copywriting, theme code, quality control" },
     { fr: "Clé API de la console Anthropic (sk-ant-…)", en: "API key from the Anthropic Console (sk-ant-…)" },
     "https://platform.claude.com/",
   ),
@@ -104,7 +104,8 @@ const task = (fr: string, en: string, kind: "llm" | "image" | "video") => ({
 
 /** Tâches et libellés (dans la langue de l'interface, évalués à la lecture). */
 export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "image" | "video" }> = {
-  vision_analysis: task("Analyse visuelle du produit", "Product visual analysis", "llm"),
+  // Commun aux produits et aux services (#204) : lecture de la description, du lien et des photos éventuelles.
+  vision_analysis: task("Compréhension de l’offre (texte et photos)", "Offer understanding (text and photos)", "llm"),
   strategy: task("Direction de marque et stratégie", "Brand direction and strategy", "llm"),
   copywriting: task("Rédaction (fiches, pages, marque)", "Copywriting (product pages, pages, brand)", "llm"),
   theme_design: task("Conception du thème boutique", "Store theme design", "llm"),

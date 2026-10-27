@@ -1,5 +1,7 @@
 import { localAnalysis, localServiceAnalysis } from "../engine/local";
 import type { Brief, Input } from "./types";
+/** Prestations introuvables dans la description : question précise, rien n'est inventé. */
+export const SERVICES_UNKNOWN = "Quelles prestations proposez-vous ? L’analyse n’a pas pu les identifier dans votre description : ajoutez-les dans « Vos prestations et votre contact ».";
 export function analyzeLocally(input: Input): Brief {
   const numeric = input.price.replace(/[^0-9,.-]/g, "");
   const price =
@@ -32,17 +34,16 @@ export function analyzeLocally(input: Input): Brief {
           services: input.services,
         }).services
       : input.services;
+  // Services (#204) : ni le nom commercial (créé à l'étape Marque) ni la liste des prestations (identifiées par
+  // « Comprendre mon activité », puis proposées à validation) ne sont exigés avant l'analyse.
   const missing = [
-    !profile.name.trim() || profile.nameStatus === "unknown"
+    input.business !== "services" && (!profile.name.trim() || profile.nameStatus === "unknown")
       ? "Précisez le nom du produit ou de l’activité."
       : "",
     !input.description.trim()
       ? "Décrivez ce qui est proposé ; une photo seule ne confirme pas les caractéristiques."
       : "",
     !input.target.trim() ? "À qui cette offre s’adresse-t-elle ?" : "",
-    input.business === "services" && !services.services.length
-      ? "Indiquez au moins une prestation."
-      : "",
   ].filter(Boolean);
   return { input, profile, services, missing, provenance: "local" };
 }
