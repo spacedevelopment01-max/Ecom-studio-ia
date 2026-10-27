@@ -65,6 +65,36 @@
       }
     },
     {
+      "fixture": "service-historique",
+      "basicContext": {
+        "estimateMicro": 63637,
+        "maxMicro": 1288415,
+        "estimateBudgetPct": 0.21450674639341005,
+        "maxBudgetPct": 4.342972007707236,
+        "maxCalls": 3,
+        "inputTokensMax": 6122,
+        "fingerprint": "b2d42f3ba28a4b71"
+      },
+      "completeContext": {
+        "estimateMicro": 66492,
+        "maxMicro": 1308490,
+        "estimateBudgetPct": 0.2241303421152886,
+        "maxBudgetPct": 4.410640548553721,
+        "maxCalls": 3,
+        "inputTokensMax": 7575,
+        "fingerprint": "480f9ae97c03e45d"
+      },
+      "completeContextAndCorrection": {
+        "estimateMicro": 66571,
+        "maxMicro": 1309058,
+        "estimateBudgetPct": 0.22439663425610415,
+        "maxBudgetPct": 4.4125551553383175,
+        "maxCalls": 3,
+        "inputTokensMax": 7616,
+        "fingerprint": "1483865662feeffc"
+      }
+    },
+    {
       "fixture": "produit",
       "basicContext": {
         "estimateMicro": 61824,
