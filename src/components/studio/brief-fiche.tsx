@@ -253,7 +253,8 @@ export function BriefFiche({ brief, busy, send, onEditServices, spent }: { brief
           <Rubric key={g.topic} topic={g.topic} state={worst(states) ?? "unknown"}>
             {r.facts.map((f) => <FactLine key={f.key} fact={f} busy={busy} send={send} />)}
             {r.questions.map((q) => <QuestionForm key={q.id} q={q} services={services} busy={busy} send={send} />)}
-            {!r.facts.length && !r.questions.length && <GuidedForm g={g} busy={busy} send={send} />}
+            {/* Question guidée tant que la rubrique n'a ni question de l'analyse ni réponse à ce sujet précis. */}
+            {!r.questions.length && !r.facts.some((f) => f.key === g.key) && <GuidedForm g={g} busy={busy} send={send} />}
           </Rubric>
         );
       })}
