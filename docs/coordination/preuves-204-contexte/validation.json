@@ -1,0 +1,52 @@
+{
+  "schema": "studio-client-context-validation-1",
+  "simulation": true,
+  "baseCommit": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+  "testedCodeCommit": "ec974a0e11279443b2fbdddde3de39b4c7f809af",
+  "node": "24.19.0",
+  "typecheck": "passed",
+  "vitest": {
+    "passed": 3466,
+    "skipped": 45,
+    "failed": 0,
+    "filesPassed": 408,
+    "filesSkipped": 1,
+    "durationSeconds": 654.07
+  },
+  "targeted": {
+    "passed": 54,
+    "files": 8
+  },
+  "engineRegressionTests": 19,
+  "productionBuild": "passed",
+  "browserCases": 6,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "mobile": true
+    }
+  ],
+  "pngCount": 18,
+  "horizontalOverflow": 0,
+  "javascriptErrors": 0,
+  "clientAdminTraceAccess": 403,
+  "quoteConfirmations": 0,
+  "newProviderCalls": 0,
+  "newDebitMicro": 0,
+  "existingRealAnalyses": {
+    "countReportedByMission": 2,
+    "databaseRead": false,
+    "reset": false
+  },
+  "limits": [
+    "Synthetic providers and inputs only; no real creative response validated.",
+    "PHP absent, private kits absent, live CMS checks disabled; inherited skip conditions unchanged.",
+    "Screenshots show the clean compiled code commit; later delivery commit adds proofs and capture stabilization only.",
+    "No merge, deployment, real project write or step 2 in the browser recipe."
+  ]
+}

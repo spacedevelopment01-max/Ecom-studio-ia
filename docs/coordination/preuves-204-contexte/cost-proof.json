@@ -1,0 +1,99 @@
+{
+  "simulation": true,
+  "realProviderCalls": 0,
+  "recordedUsageEntries": 0,
+  "newDebitMicro": 0,
+  "rows": [
+    {
+      "fixture": "service-reprise",
+      "basicContext": {
+        "estimateMicro": 63637,
+        "maxMicro": 1288415,
+        "estimateBudgetPct": 0.21450674639341005,
+        "maxBudgetPct": 4.342972007707236,
+        "maxCalls": 3,
+        "inputTokensMax": 6122,
+        "fingerprint": "b2d42f3ba28a4b71"
+      },
+      "completeContext": {
+        "estimateMicro": 66492,
+        "maxMicro": 1308490,
+        "estimateBudgetPct": 0.2241303421152886,
+        "maxBudgetPct": 4.410640548553721,
+        "maxCalls": 3,
+        "inputTokensMax": 7575,
+        "fingerprint": "480f9ae97c03e45d"
+      },
+      "completeContextAndCorrection": {
+        "estimateMicro": 66571,
+        "maxMicro": 1309058,
+        "estimateBudgetPct": 0.22439663425610415,
+        "maxBudgetPct": 4.4125551553383175,
+        "maxCalls": 3,
+        "inputTokensMax": 7616,
+        "fingerprint": "1483865662feeffc"
+      }
+    },
+    {
+      "fixture": "service-limite",
+      "basicContext": {
+        "estimateMicro": 63637,
+        "maxMicro": 1288415,
+        "estimateBudgetPct": 0.21450674639341005,
+        "maxBudgetPct": 4.342972007707236,
+        "maxCalls": 3,
+        "inputTokensMax": 6122,
+        "fingerprint": "b2d42f3ba28a4b71"
+      },
+      "completeContext": {
+        "estimateMicro": 66492,
+        "maxMicro": 1308490,
+        "estimateBudgetPct": 0.2241303421152886,
+        "maxBudgetPct": 4.410640548553721,
+        "maxCalls": 3,
+        "inputTokensMax": 7575,
+        "fingerprint": "480f9ae97c03e45d"
+      },
+      "completeContextAndCorrection": {
+        "estimateMicro": 66571,
+        "maxMicro": 1309058,
+        "estimateBudgetPct": 0.22439663425610415,
+        "maxBudgetPct": 4.4125551553383175,
+        "maxCalls": 3,
+        "inputTokensMax": 7616,
+        "fingerprint": "1483865662feeffc"
+      }
+    },
+    {
+      "fixture": "produit",
+      "basicContext": {
+        "estimateMicro": 61824,
+        "maxMicro": 3265909,
+        "estimateBudgetPct": 0.20839551030102269,
+        "maxBudgetPct": 11.00868226985803,
+        "maxCalls": 3,
+        "inputTokensMax": 5201,
+        "fingerprint": "b0426363f168f102"
+      },
+      "completeContext": {
+        "estimateMicro": 62777,
+        "maxMicro": 3272587,
+        "estimateBudgetPct": 0.21160786992377237,
+        "maxBudgetPct": 11.031192382723425,
+        "maxCalls": 3,
+        "inputTokensMax": 5685,
+        "fingerprint": "6bff272457550ad5"
+      },
+      "completeContextAndCorrection": {
+        "estimateMicro": 62856,
+        "maxMicro": 3273155,
+        "estimateBudgetPct": 0.21187416206458792,
+        "maxBudgetPct": 11.033106989508022,
+        "maxCalls": 3,
+        "inputTokensMax": 5726,
+        "fingerprint": "bce8cfcec73f2ef8"
+      }
+    }
+  ],
+  "limits": "Local route/tariff configuration and fictitious input only. The two previously acquired real analyses are not read, reset or recosted."
+}

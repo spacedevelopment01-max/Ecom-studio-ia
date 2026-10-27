@@ -31,13 +31,14 @@ try {
     const action = page.locator("[data-brief-analyze]");
     const shot = async (suffix: string) => {
       const file = `${c.slug}-${mobile ? "mobile" : "ordinateur"}-${suffix}.png`;
-      await page.screenshot({ path: path.join(out, file), fullPage: true });
+      await page.screenshot({ path: path.join(out, file), fullPage: true, animations: "disabled" });
       return file;
     };
-    const images = [await shot("fiche")];
+    const images: string[] = [];
     await page.locator("[data-analysis-retry]").scrollIntoViewIfNeeded();
+    await page.evaluate(async () => { await document.fonts.ready; await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r()))); });
     const focus = `${c.slug}-${mobile ? "mobile" : "ordinateur"}-action.png`;
-    await page.screenshot({ path: path.join(out, focus) }); images.push(focus);
+    await page.screenshot({ path: path.join(out, focus), animations: "disabled" }); images.push(focus, await shot("fiche"));
     if (c.slug !== "produit") {
       assert.equal(await page.locator('[data-fiche-question="changed_process"]').count(), 0);
       assert.equal(await page.locator('[data-fiche-question="changed_custom"]').count(), 0);

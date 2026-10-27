@@ -2,7 +2,11 @@
 
 Mission : [complément 6452744138](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/204#issuecomment-6452744138). Travail sur une copie séparée et la branche `codex/204-contexte-reanalyse-client`, depuis `70204a7ff83eb2382835a27a37a8465c0851a70a` (#207). Corrections #206/#207 conservées. Aucun thème, forfait, accueil public ou moteur de facturation modifié.
 
-**Statut : contrôles locaux réussis ; build du commit et preuves définitives en préparation avant publication.** Suite complète : **3 466 tests réussis, 45 ignorés, 0 échec** (408 fichiers réussis, 1 ignoré), durée 654,07 s ; types vérifiés. Les 54 régressions ciblées et les 19 tests du moteur passent également. Aucun résultat simulé ne valide le prochain essai réel.
+**Livraison pour revue uniquement ; aucune fusion ni mise en service autorisée.** Code testé et compilé : [`ec974a0e11279443b2fbdddde3de39b4c7f809af`](https://github.com/spacedevelopment01-max/Ecom-studio-ia/commit/ec974a0e11279443b2fbdddde3de39b4c7f809af). Le commit de preuves ajoute le présent relevé et stabilise uniquement la prise des captures ; le code applicatif reste identique.
+
+Types et build de production réussis. Suite complète : **3 466 tests réussis, 45 ignorés, 0 échec** (408 fichiers réussis, 1 ignoré), durée 654,07 s. **54 régressions ciblées** et **19 tests du moteur** réussis (inclus dans le total). **Six parcours navigateur** sur le build exact, **18 captures**, aucun débordement horizontal ni erreur JavaScript. L'accès administratif est refusé aux comptes clients (403). Voir le [dossier de preuves](preuves-204-contexte/README.md) et le [relevé structuré](preuves-204-contexte/validation.json).
+
+Les 45 contrôles ignorés dépendent des conditions existantes : PHP absent dans cette machine, kits privés absents de la copie, boutiques CMS réelles non activées, anciens films déjà désactivés. Aucun contrôle ni délai de test n'a été supprimé ou assoupli par cette PR. Les contrôles CI du SHA livré sont accessibles sur la PR ; leur verdict sera confirmé dans le commentaire de livraison après exécution. Aucun résultat simulé ne valide le prochain essai réel.
 
 ## Causes et corrections
 
@@ -36,7 +40,7 @@ Commandes réellement exécutées :
 
 ```sh
 npx tsc --noEmit
-NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npm test
+NODE_OPTIONS='--import=/workspace/reviews/ecom-204/scripts/lot9/network-guard.mjs' npm test
 NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npx vitest run tests/preparation-analysis.test.ts tests/preparation-analyse-reprise.test.ts tests/preparation-analysis-request.test.ts tests/preparation-client-context.test.ts tests/preparation-analysis-history.test.ts tests/preparation-initial-counts.test.ts tests/recette-vans-fiche-questions.test.ts tests/recette-vans-comprehension.test.ts
 npm run build
 ```
@@ -45,7 +49,7 @@ Les **54 tests ciblés (8 fichiers) passent** sur le correctif stabilisé. Les n
 
 Un premier contrôle large a signalé une priorité de diagnostic dégradée (offre modifiée hors parcours masquée par une tâche en cours) : les deux protections sont conservées, avec le contrôle de fraîcheur en premier ; les 19 tests du moteur repassent. Les exécutions intermédiaires interrompues pendant la finalisation ne sont pas comptées comme suites globales réussies.
 
-Harnais navigateur reproductible : `scripts/preparation/client-context-{seed,browser,costs}.ts`, uniquement avec un `DATA_DIR` temporaire commençant par `ecs-preparation-test-204-`. Serveur compilé isolé en boucle locale, **sans worker**, réseau fournisseur interdit. Configuration de recette et jetons de sessions temporaires gardés hors dépôt. Les captures finales et le JSON de contrôle seront joints sous `preuves-204-contexte/`.
+Harnais navigateur reproductible : `scripts/preparation/client-context-{seed,browser,costs}.ts`, uniquement avec un `DATA_DIR` temporaire commençant par `ecs-preparation-test-204-`. Serveur compilé isolé en boucle locale, **sans worker**, réseau fournisseur interdit. Configuration de recette et jetons de sessions temporaires gardés hors dépôt. Les captures finales et le JSON de contrôle sont joints sous `preuves-204-contexte/`. Les vues natives ont été ouvertes et inspectées ; polices et peintures navigateur stabilisées avant capture, sans modifier le moteur ni ses animations en usage normal.
 
 ## Devis et dépenses
 
