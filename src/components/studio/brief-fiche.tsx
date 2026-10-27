@@ -9,7 +9,7 @@ import { Badge, Button as BaseButton, Input, Textarea } from "../ui";
 import { useT } from "../i18n";
 import type { Brief } from "@/lib/preparation/types";
 import type { BriefTopic, Fact, Question, ServiceItem } from "@/lib/project-types";
-import { blocking, factState, factTopic, GUIDED, questionTopic, STATE_LABEL, TOPIC_LABEL, type FicheState } from "@/lib/preparation/fiche";
+import { blocking, factState, factTopic, GUIDED, needsGuidedQuestion, questionTopic, STATE_LABEL, TOPIC_LABEL, type FicheState } from "@/lib/preparation/fiche";
 
 /** Libellés longs sur téléphone : le bouton s'agrandit au lieu de couper le texte. */
 const Button = (props: ComponentProps<typeof BaseButton>) => <BaseButton {...props} className={`h-auto min-h-9 whitespace-normal py-1.5 ${props.className ?? ""}`} />;
@@ -253,8 +253,8 @@ export function BriefFiche({ brief, busy, send, onEditServices, spent }: { brief
           <Rubric key={g.topic} topic={g.topic} state={worst(states) ?? "unknown"}>
             {r.facts.map((f) => <FactLine key={f.key} fact={f} busy={busy} send={send} />)}
             {r.questions.map((q) => <QuestionForm key={q.id} q={q} services={services} busy={busy} send={send} />)}
-            {/* Question guidée tant que la rubrique n'a ni question de l'analyse ni réponse à ce sujet précis. */}
-            {!r.questions.length && !r.facts.some((f) => f.key === g.key) && <GuidedForm g={g} busy={busy} send={send} />}
+            {/* Une réponse ou un report reste acquis, même sous une clé différente choisie par l'IA. */}
+            {needsGuidedQuestion(brief, g) && <GuidedForm g={g} busy={busy} send={send} />}
           </Rubric>
         );
       })}

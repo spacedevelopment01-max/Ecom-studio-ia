@@ -76,6 +76,20 @@ export const GUIDED: { topic: "customization" | "process" | "quote"; key: string
     prompt: ["De quelles informations avez-vous besoin pour établir un devis ?", "What information do you need to prepare a quote?"],
   },
 ];
+
+/**
+ * La question générique complète seulement une rubrique encore inexplorée. Une question de l'analyse couvre déjà
+ * cette rubrique, qu'elle soit ouverte, répondue ou reportée : sa factKey n'est pas imposée à l'IA. Une information
+ * explicitement rattachée à la rubrique est aussi traitée par son propre champ (confirmation, correction ou report).
+ * Un ancien fait classé par sa clé seule (ex. « devis gratuit ») ne répond pas forcément à cette question précise.
+ */
+export function needsGuidedQuestion(b: Pick<Brief, "profile">, g: (typeof GUIDED)[number]): boolean {
+  if (b.profile.questions.some((q) => questionTopic(q) === g.topic)) return false;
+  return !b.profile.facts.some(
+    (f) => f.key === g.key || (f.topic === g.topic && (f.later || (f.status !== "unknown" && !!f.value.trim()))),
+  );
+}
+
 export const TOPIC_LABEL: Record<BriefTopic, [string, string]> = {
   activity: ["Présentation de l’activité", "About the business"],
   services: ["Prestations", "Services"],
