@@ -1,8 +1,8 @@
 /**
  * Recette VANS, étape 1 (#204) : défauts relevés sur le studio servi à Thomas.
  *  - /api/version annonçait « compiled-build » en dur, alors que le serveur tournait en mode développement ;
- *  - kit privé de démonstration absent (public/demo/…, hors dépôt) : l'accueil gardait FRAISE en vedette avec des
- *    images vides (cinq alertes React « src vide », badge rouge de Next) ; l'inscription décrivait un visuel absent ;
+ *  - kit privé de démonstration absent (public/demo/…, hors dépôt) : images vides sur l'accueil (cinq alertes React
+ *    « src vide », badge rouge de Next), visuel absent à l'inscription ; réparation = copier le kit, puis redémarrer ;
  *  - « npm run studio » : construction arrêtée faute de mémoire JavaScript dans un Codespace de 8 Go.
  */
 import fs from "node:fs";
@@ -46,19 +46,22 @@ describe("/api/version : version et mode réellement exécutés", () => {
   });
 });
 
-describe("Kit privé de démonstration absent", () => {
-  const page = read("src/app/page.tsx");
+describe("Kit privé de démonstration : contrôle des chemins lus par l'accueil et l'inscription", () => {
+  const check = read("scripts/theme-kit-check.ts");
 
-  it("accueil : la vedette sans détourage est une démonstration dont le logo et la photo sont installés", () => {
-    expect(page).toMatch(/\?\? productDemos\.find\(\(d\) => d\.logo && d\.photo\) \?\? productDemos\[0\]/);
+  it("le contrôle lit le manifeste avant le filtre qui vide les chemins absents, et le visuel de l'inscription", () => {
+    expect(check).toMatch(/manifest\.json/);
+    expect(check).toMatch(/\/demo\/onde\/07-scene-salon\.webp/);
+    expect(read("src/app/inscription/page.tsx")).toMatch(/"demo", "onde", "07-scene-salon\.webp"/);
   });
 
-  it("accueil : l'atelier de marque ne liste que les démonstrations avec logo et photo", () => {
-    expect(page).toMatch(/const brands: BrandDemo\[\] = list\.filter\(\(d\) => d\.logo && d\.photo\)/);
+  it("le contrôle rappelle qu'un studio compilé doit être redémarré après la copie du kit", () => {
+    expect(check).toMatch(/il ne sert que les fichiers de public\/ présents à son démarrage/);
   });
 
-  it("inscription : la légende du visuel n'apparaît qu'avec le visuel", () => {
-    expect(read("src/components/auth-form.tsx")).toMatch(/\{background && <p className="mt-3 text-sm text-white\/75">/);
+  it("aucun changement de composition : l'accueil et l'inscription restent ceux de main", () => {
+    expect(read("src/app/page.tsx")).toMatch(/\?\? productDemos\[0\] \?\? list\[0\];/);
+    expect(read("src/components/auth-form.tsx")).toMatch(/<p className="mt-3 text-sm text-white\/75">\{t\("Visuel de démonstration/);
   });
 });
 

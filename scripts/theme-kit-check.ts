@@ -33,5 +33,20 @@ try {
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
-if (incomplete) console.log("\nCopier le kit reçu de Thomas dans public/demo/<id>/ (dossiers fraise, onde, orbe, rive, directions), puis relancer ce contrôle. Les démos de la galerie se préparent ensuite d'elles-mêmes.");
+
+// Accueil et inscription (recette VANS, #204) : chemins lus par la page d'accueil (manifeste des démonstrations, avant
+// le filtre onlyPresentFiles qui les vide en silence) et visuel de l'inscription.
+const { DEMO_IDS } = await import("../src/lib/demo-content");
+const manifest = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public", "demo", "manifest.json"), "utf8")) as { demos: Record<string, unknown>[] };
+const pages: [string, string[]][] = manifest.demos
+  .filter((d) => (DEMO_IDS as readonly string[]).includes(d.id as string))
+  .map((d) => [`accueil · démonstration ${d.id}`, [d.logo, d.photo, d.shopDesktop, d.shopMobile, d.video, d.videoPoster, ...((d.images as { src: string }[]) ?? []).map((x) => x.src), ...((d.posts as string[]) ?? [])].filter((s): s is string => typeof s === "string" && !!s)]);
+pages.push(["inscription et connexion · visuel", ["/demo/onde/07-scene-salon.webp"]]);
+for (const [label, files] of pages) {
+  const lacks = files.filter((f) => !fs.existsSync(path.join(process.cwd(), "public", f.replace(/^\//, ""))));
+  if (lacks.length) incomplete++;
+  console.log(`${lacks.length ? "MANQUE" : "complet"}  ${label}${lacks.length ? ` — ${lacks.length} absent(s) : ${lacks.join(", ")}` : ""}`);
+}
+if (incomplete) console.log("\nCopier le kit reçu de Thomas dans public/demo/<id>/ (dossiers fraise, onde, orbe, rive, directions…), puis relancer ce contrôle. Les démos de la galerie se préparent ensuite d'elles-mêmes.");
+console.log("Studio compilé (« npm run studio ») : il ne sert que les fichiers de public/ présents à son démarrage. Après une copie du kit, le redémarrer (« npm run maj » ou Ctrl+C puis « npm run studio »).");
 process.exit(incomplete ? 1 : 0);

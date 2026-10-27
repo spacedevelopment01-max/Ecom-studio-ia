@@ -120,11 +120,10 @@ export default async function Home() {
   const themes = directionCards(lang).map((c) => ({ ...c, preview: W(M(c.preview.replace(/\.en\.jpg$/, ".jpg"))) }));
 
   // Projet de démonstration qui traverse le parcours (détourage, packshot, scènes, éditeur de publicité) : la première
-  // boutique de produits dont la photo a pu être détourée, sinon la première dont le logo et la photo sont installés
-  // (kit privé absent : chemins vides, voir onlyPresentFiles), sinon la première boutique de produits.
+  // boutique de produits dont la photo a pu être détourée, sinon la première boutique de produits.
   const productDemos = list.filter((d) => d.business !== "services");
   const serviceDemos = list.filter((d) => d.business === "services");
-  const hero = productDemos.find((d) => d.images.some((x) => /détourage|cutout/i.test(x.label))) ?? productDemos.find((d) => d.logo && d.photo) ?? productDemos[0] ?? list[0];
+  const hero = productDemos.find((d) => d.images.some((x) => /détourage|cutout/i.test(x.label))) ?? productDemos[0] ?? list[0];
   const fontsOf = (d: Demo) => directionById(d.direction).previewFonts;
   // Images du parcours : uniquement les vraies créations de la démonstration, chacune sous sa vraie nature.
   const media = hero ? storyMedia(hero) : null;
@@ -188,8 +187,7 @@ export default async function Home() {
     { key: "social", label: T("Réseaux sociaux", "Social media"), title: T("Un calendrier que vous validez.", "A calendar you approve."), text: T("Publications préparées pour chaque réseau, réparties dans la semaine. Vous approuvez une par une ou en lot ; rien ne part sans vous.", "Posts prepared for each network, spread across the week. You approve one by one or in bulk; nothing goes out without you."), points: ["Instagram", "Facebook", "TikTok", "Pinterest"] },
   ];
 
-  // Atelier de marque : seulement les démonstrations dont le logo et la photo de départ sont installés.
-  const brands: BrandDemo[] = list.filter((d) => d.logo && d.photo).map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: fontsOf(d) }));
+  const brands: BrandDemo[] = list.map((d) => ({ id: d.id, brand: d.brand, sector: d.sector, direction: directionById(d.direction).name, palette: d.palette, logo: d.logo, photo: d.photo, fonts: fontsOf(d) }));
   // Équilibre voulu par le propriétaire : chaque vitrine commence par une démo différente (produits et services mêlés).
   const startAt = <X extends { id: string }>(xs: X[], id: string) => {
     const k = xs.findIndex((x) => x.id === id);
