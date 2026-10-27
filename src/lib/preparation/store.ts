@@ -4,10 +4,11 @@ import { remember } from "../projects";
 import { HttpError } from "../auth";
 import { stableHash as brainHash } from "../brain/hash";
 const stableHash = (data: unknown) => brainHash("preparation", data);
+import { refreshBrief } from "./fiche";
 import { STEPS, type State, type Step, type Data, type Stage } from "./types";
 export const CURRENT = "preparation.current";
 export function stateOf(projectId: string): State | null {
-  return json(
+  const s = json<State | null>(
     one<{ value: string }>(
       "SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",
       projectId,
@@ -15,6 +16,10 @@ export function stateOf(projectId: string): State | null {
     )?.value,
     null,
   );
+  // Brouillons antérieurs aux règles actuelles (#204) : points bloquants recalculés à la lecture, rien d'autre ne change.
+  const brief = s?.stages.brief;
+  if (brief) brief.data = refreshBrief(brief.data, brief.status === "approved");
+  return s;
 }
 export function historyOf(projectId: string) {
   return all<{ value: string }>(

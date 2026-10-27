@@ -41,6 +41,8 @@ import {
 } from "@/lib/preparation/types";
 import { REFERENCE_THEMES } from "@/lib/project-handoff/categories";
 import { ContactModePicker } from "./services-editor";
+import { BriefFiche } from "./brief-fiche";
+import { blocking, factState, STATE_LABEL } from "@/lib/preparation/fiche";
 import { contactModesOf } from "@/lib/project-types";
 /** Pourcentage du budget IA lisible : « moins de 0,1 % » plutôt que « 0.0 % ». */
 const pctText = (n: number, lang: "fr" | "en") =>
@@ -488,29 +490,49 @@ export default function TabPreparation() {
               )}
             </p>
           )}
-          {state.stages.brief?.data.observations && (
-            <div className="rounded-xl border border-line p-3">
-              <p className="font-semibold">{t("Proposition d’analyse à vérifier", "Analysis proposal to check")}</p>
-              {state.stages.brief.data.execution?.spentPct != null && (
-                <p className="text-xs text-muted" data-spent>
-                  {t(
-                    `Consommation constatée : ${pctText(state.stages.brief.data.execution.spentPct, "fr")} du budget IA de ce projet (${state.stages.brief.data.execution.calls ?? 1} appel(s)).`,
-                    `Recorded usage: ${pctText(state.stages.brief.data.execution.spentPct, "en")} of this project’s AI budget (${state.stages.brief.data.execution.calls ?? 1} call(s)).`,
-                  )}
-                </p>
-              )}
-              <p>
-                {state.stages.brief.data.profile.name} ·{" "}
-                {state.stages.brief.data.profile.category}
+          {(() => {
+            const brief = state.stages.brief?.data;
+            if (!brief?.observations) return null;
+            const spent = brief.execution?.spentPct != null && (
+              <p className="text-xs text-muted" data-spent>
+                {t(
+                  `Consommation constatée : ${pctText(brief.execution.spentPct, "fr")} du budget IA de ce projet (${brief.execution.calls ?? 1} appel(s)).`,
+                  `Recorded usage: ${pctText(brief.execution.spentPct, "en")} of this project’s AI budget (${brief.execution.calls ?? 1} call(s)).`,
+                )}
               </p>
-              {state.stages.brief.data.observations.map((x, i) => (
-                <p key={i} className="mt-2 text-sm">
-                  {x}
+            );
+            if (brief.input.business === "services")
+              return (
+                <BriefFiche
+                  brief={brief}
+                  busy={busy || working}
+                  send={send}
+                  spent={spent}
+                  onEditServices={() => {
+                    if (!form.services.services.length)
+                      field("services", { ...form.services, services: brief.services.services.map((x) => ({ name: x.name, description: x.description, ...(x.price ? { price: x.price } : {}), ...(x.duration ? { duration: x.duration } : {}) })) });
+                    document.querySelector("[data-services-editor]")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                />
+              );
+            return (
+              <div className="rounded-xl border border-line p-3">
+                <p className="font-semibold">{t("Proposition d’analyse à vérifier", "Analysis proposal to check")}</p>
+                {spent}
+                <p>
+                  {brief.profile.name} · {brief.profile.category}
                 </p>
-              ))}
-            </div>
-          )}
-          {state.stages.brief?.data.profile.questions.filter(q => q.required && !q.answer?.trim()).map(q => <Field key={q.id} label={q.question}><form onSubmit={event => { event.preventDefault(); const input = new FormData(event.currentTarget).get("answer"); if (typeof input === "string") send({ action: "answer", questionId: q.id, answer: input }); }} className="grid gap-2"><p className="text-sm text-muted">{q.why}</p><Input name="answer" required maxLength={3000} /><Button disabled={busy || working} type="submit">{t("Enregistrer ma réponse", "Save my answer")}</Button></form></Field>)}
+                <p className="mt-2 text-sm">{brief.profile.summary}</p>
+                {brief.profile.facts.map((f) => (
+                  <p key={f.key} className="mt-2 flex flex-wrap items-start justify-between gap-2 text-sm">
+                    <span className="min-w-0">{f.label} : {f.value || t("à compléter", "to complete")}</span>
+                    <Badge tone={factState(f) === "provided" ? "ok" : factState(f) === "check" ? "info" : "warn"}>{t(...STATE_LABEL[factState(f)])}</Badge>
+                  </p>
+                ))}
+              </div>
+            );
+          })()}
+          {state.stages.brief?.data.input.business !== "services" && state.stages.brief?.data.profile.questions.filter(blocking).map(q => <Field key={q.id} label={q.question}><form onSubmit={event => { event.preventDefault(); const input = new FormData(event.currentTarget).get("answer"); if (typeof input === "string") send({ action: "answer", questionId: q.id, answer: input }); }} className="grid gap-2"><p className="text-sm text-muted">{q.why}</p><Input name="answer" required maxLength={3000} /><Button disabled={busy || working} type="submit">{t("Enregistrer ma réponse", "Save my answer")}</Button></form></Field>)}
           <Field
             label={t("À qui s’adresse cette offre ?", "Who is this offer for?")}
           >
@@ -543,7 +565,7 @@ export default function TabPreparation() {
           )}
           {form.business === "products" && <div className="grid gap-3"><h3 className="font-semibold">{t("Coordonnées publiques pour la page Contact", "Public contact details for the Contact page")}</h3>{(["email", "phone", "address", "hours"] as const).map(key => <Field key={key} label={({ email: t("E-mail", "Email"), phone: t("Téléphone", "Phone"), address: t("Adresse", "Address"), hours: t("Horaires", "Hours") })[key]}><Input value={form.services[key]} onChange={e => field("services", { ...form.services, [key]: e.target.value })} /></Field>)}</div>}
           {form.business === "services" && (
-            <div className="grid gap-3">
+            <div className="grid gap-3" data-services-editor>
               <h3 className="font-semibold">
                 {t(
                   "Vos prestations et votre contact",
@@ -565,21 +587,12 @@ export default function TabPreparation() {
                   );
                 if (analyzedBrief && !form.services.services.length && found.length)
                   return (
-                    <div className="grid gap-2 rounded-xl border border-line p-3" data-services-found>
-                      <p className="text-sm font-semibold">{t("Prestations identifiées par l’analyse, à vérifier", "Services identified by the analysis, to check")}</p>
-                      <ul className="grid gap-1 text-sm">
-                        {found.map((x, i) => (
-                          <li key={i}>
-                            <span className="font-medium">{x.name}</span>
-                            {x.description ? ` — ${x.description}` : ""}
-                          </li>
-                        ))}
-                      </ul>
-                      <p className="text-xs text-muted">{t("Rien n’est ajouté en dehors de votre description. « Confirmer ces informations » les retient telles quelles.", "Nothing is added beyond your description. “Confirm this information” keeps them as they are.")}</p>
-                      <Button variant="secondary" onClick={() => field("services", { ...form.services, services: found.map((x) => ({ ...x })) })}>
-                        {t("Corriger ces prestations", "Edit these services")}
-                      </Button>
-                    </div>
+                    <p className="rounded-xl bg-paper-2 p-3 text-sm" data-services-found>
+                      {t(
+                        "Les prestations identifiées par l’analyse sont dans votre fiche d’activité, à vérifier. « Modifier ou ajouter des prestations » les reprend ici pour les corriger.",
+                        "The services identified by the analysis are in your business profile, to check. “Edit or add services” brings them here so you can correct them.",
+                      )}
+                    </p>
                   );
                 return null;
               })()}

@@ -10,7 +10,8 @@ import { factsFromDescription, mergeServiceProfile } from "../engine/local";
 import type { JobContext } from "../jobs";
 import type { Project } from "../projects";
 import type { Brief } from "./types";
-import { analyzeLocally, SERVICES_UNKNOWN } from "./brief";
+import { analyzeLocally } from "./brief";
+import { briefMissing, factState, STATE_LABEL } from "./fiche";
 /** Texte transmis à l'analyse (description, documents, cible, consignes, réponses) : même source pour l'appel et le devis. */
 function analysisText(p: Project, b: Brief, link: { url: string; text: string; data: unknown } | null) {
   const input = b.input;
@@ -197,32 +198,35 @@ export async function inspectBrief(
       analyzedBy: "ai",
     };
   }
-  // Une nouvelle lecture ne peut effacer une réponse ni un fait explicitement confirmé par le client.
-  const answered = b.profile.questions.filter(q => q.answer?.trim());
+  // Une nouvelle lecture ne peut effacer une réponse, un point reporté ni ce que le client a lui-même corrigé
+  // (faits, présentation, description de ses prestations).
+  const kept = b.profile.questions.filter(q => q.answer?.trim() || q.later);
   result.profile.questions = [
     ...result.profile.questions.map(q => {
-      const prior = answered.find(a => a.id === q.id || (a.factKey && a.factKey === q.factKey));
-      return prior ? { ...q, answer: prior.answer } : q;
+      const prior = kept.find(a => a.id === q.id || (a.factKey && a.factKey === q.factKey));
+      // Un report ne vaut pas pour une question devenue indispensable : elle redevient à répondre.
+      return prior ? { ...q, ...(prior.answer?.trim() ? { answer: prior.answer } : q.required ? {} : { later: true }) } : q;
     }),
-    ...answered.filter(a => !result.profile.questions.some(q => q.id === a.id || (a.factKey && a.factKey === q.factKey))),
+    ...kept.filter(a => !result.profile.questions.some(q => q.id === a.id || (a.factKey && a.factKey === q.factKey))),
   ];
-  const confirmed = b.profile.facts.filter(f => f.source === "user" && f.status === "confirmed");
+  const confirmed = b.profile.facts.filter(f => f.source === "user" && (f.status === "confirmed" || f.later));
   result.profile.facts = [...confirmed, ...result.profile.facts.filter(f => !confirmed.some(c => c.key === f.key))];
+  if (b.profile.summaryStatus === "provided") Object.assign(result.profile, { summary: b.profile.summary, summaryStatus: "provided" });
+  if (input.business === "services") {
+    // Liste saisie dans le formulaire : fournie par le client ; sinon proposée par l'analyse, à vérifier.
+    const origin = input.services.services.length ? ("client" as const) : ("analysis" as const);
+    const own = b.services.services.filter(x => x.source === "client");
+    result.services.services = [
+      ...result.services.services.map(x => own.find(o => o.name.trim().toLowerCase() === x.name.trim().toLowerCase()) ?? { ...x, source: x.source ?? origin }),
+      ...own.filter(o => !result.services.services.some(x => x.name.trim().toLowerCase() === o.name.trim().toLowerCase())),
+    ];
+  }
   result.execution = apiEvidence(p.id, base.usageKey, photos.length > 0);
-  result.missing = [
-    ...result.profile.questions.filter(q => q.required && !q.answer?.trim()).map(q => q.question),
-    input.business !== "services" && (!result.profile.name.trim() || result.profile.nameStatus === "unknown")
-      ? "Précisez le nom de cette offre."
-      : "",
-    !input.target.trim() ? "À qui cette offre s’adresse-t-elle ?" : "",
-    input.business === "services" && !result.services.services.length
-      ? SERVICES_UNKNOWN
-      : "",
-  ].filter(Boolean);
+  result.missing = briefMissing(result);
   result.observations = [
     result.profile.summary,
     ...result.profile.facts.map(
-      (f) => `${f.label} : ${f.value || "à confirmer"} (${f.status})`,
+      (f) => `${f.label} : ${f.value || "à compléter"} (${STATE_LABEL[factState(f)][0].toLowerCase()})`,
     ),
   ];
   return result;

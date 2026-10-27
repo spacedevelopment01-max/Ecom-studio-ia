@@ -139,7 +139,7 @@ describe("Prestations : facultatives avant l'analyse, proposées puis corrigeabl
 
   it("prestations introuvables : question précise, rien d'inventé", () => {
     expect(SERVICES_UNKNOWN).toMatch(/^Quelles prestations proposez-vous \?/);
-    expect(read("src/lib/preparation/inspect.ts")).toMatch(/\? SERVICES_UNKNOWN/);
+    expect(read("src/lib/preparation/fiche.ts")).toMatch(/out\.push\(SERVICES_UNKNOWN\)/);
   });
 });
 
