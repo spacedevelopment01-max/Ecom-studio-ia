@@ -9,6 +9,7 @@ import { getJob, publicJob } from "@/lib/jobs";
 import {
   restoreForReview,
   answerBriefQuestion,
+  editBriefFiche,
   chooseRecommendedTheme,
   moveMedia,
   setPeopleConsent,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/preparation/engine";
 import { createQuote, quoteOf } from "@/lib/preparation/quote";
 import { STEPS, type Input } from "@/lib/preparation/types";
+import { BRIEF_TOPICS, type BriefTopic } from "@/lib/project-types";
 import { isAutoUsable } from "@/lib/quality/usable";
 import type { Asset } from "@/lib/library";
 import {
@@ -134,6 +136,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       action: z.enum([
         "edit-brief",
         "answer",
+        "fiche",
         "references",
         "quote",
         "generate",
@@ -154,6 +157,15 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       urls: z.array(z.url().max(1000)).max(12).optional(),
       questionId: z.string().max(100).optional(),
       answer: z.string().trim().min(1).max(3000).optional(),
+      later: z.boolean().optional(),
+      items: z.array(z.object({ name: z.string().trim().max(160), detail: z.string().trim().max(1000) })).max(20).optional(),
+      fiche: z
+        .discriminatedUnion("kind", [
+          z.object({ kind: z.literal("summary"), value: z.string().trim().min(1).max(2000) }),
+          z.object({ kind: z.literal("fact"), key: z.string().max(80), label: z.string().max(200), topic: z.enum(BRIEF_TOPICS as [BriefTopic, ...BriefTopic[]]).nullable(), value: z.string().trim().min(1).max(3000) }),
+          z.object({ kind: z.literal("later"), key: z.string().max(80), label: z.string().max(200), topic: z.enum(BRIEF_TOPICS as [BriefTopic, ...BriefTopic[]]).nullable() }),
+        ])
+        .optional(),
       placement: z.object({ pageKey: z.string().max(200), sectionKey: z.string().max(200) }).optional(),
       choiceId: z.string().max(100).optional(),
       logoId: z.string().max(100).optional(),
@@ -201,8 +213,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     editBrief(p.id, b.revision, b.input as Input);
   }
   if (b.action === "answer") {
-    if (!b.questionId || !b.answer) throw new HttpError(400, "Question et réponse requises.");
-    answerBriefQuestion(p.id, b.revision, b.questionId, b.answer);
+    if (!b.questionId || (!b.answer && !b.later && !b.items?.length)) throw new HttpError(400, "Question et réponse requises.");
+    answerBriefQuestion(p.id, b.revision, b.questionId, { answer: b.answer, later: b.later, items: b.items });
+  }
+  if (b.action === "fiche") {
+    if (!b.fiche) throw new HttpError(400, "Correction manquante.");
+    editBriefFiche(p.id, b.revision, b.fiche);
   }
   if (b.action === "theme-choice") {
     if (!b.choiceId) throw new HttpError(400, "Choix de thème requis.");

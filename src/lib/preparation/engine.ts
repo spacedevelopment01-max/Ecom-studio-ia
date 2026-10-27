@@ -37,7 +37,8 @@ import { assertCanSpend } from "../billing";
 import { withTrace } from "../ai/trace";
 import { redact } from "../redact";
 import { L } from "../i18n-server";
-import { analyzeLocally, SERVICES_UNKNOWN } from "./brief";
+import { analyzeLocally } from "./brief";
+import { applyAnswer, applyFicheChange, briefMissing, type AnswerItem, type FicheChange } from "./fiche";
 import { realDependencies, type Dependencies } from "./deps";
 import {
   commitState,
@@ -542,30 +543,31 @@ export function editBrief(projectId: string, revision: number, input: Input) {
       const services = analyzedOnce
         ? { ...mergeServiceProfile(input.services, old.services), contactMode: input.services.contactMode, contactModes: contactModesOf(input.services) }
         : old.services;
-      const next = {
-        ...structuredClone(old),
-
-        input,
-        services,
-        missing: old.missing.filter((x) => !x.includes("À qui cette offre") && !(services.services.length && x === SERVICES_UNKNOWN)),
-      };
-      if (!input.target.trim())
-        next.missing.push("À qui cette offre s’adresse-t-elle ?");
+      const next = { ...structuredClone(old), input, services };
+      next.missing = briefMissing(next);
       draft(s, "brief", next);
     } else draft(s, "brief", analyzeLocally(input));
   });
 }
-/** Une réponse client complète le brief analysé sans repayer sa lecture ni effacer les observations. */
-export function answerBriefQuestion(projectId: string, revision: number, questionId: string, answer: string) {
+/**
+ * Une réponse client complète la rubrique concernée de la fiche (#204) sans repayer sa lecture ni effacer les
+ * observations ; « À préciser plus tard » laisse le point explicitement inconnu.
+ */
+export function answerBriefQuestion(projectId: string, revision: number, questionId: string, a: string | { answer?: string; later?: boolean; items?: AnswerItem[] }) {
   return commitState(projectId, revision, s => {
     const st = stageOf(s, "brief"), b = st.data;
-    const q = b.profile.questions.find(x => x.id === questionId);
-    if (!q || !answer.trim()) throw new HttpError(400, "Question existante et réponse explicite requises.");
-    q.answer = answer.trim();
-    const existing = b.profile.facts.find(f => f.key === q.factKey);
-    if (existing) Object.assign(existing, { value: answer.trim(), status: "confirmed", source: "user" });
-    else b.profile.facts.push({ key: q.factKey, label: q.question, value: answer.trim(), status: "confirmed", source: "user" });
-    b.missing = b.missing.filter(m => m !== q.question);
+    try { applyAnswer(b, questionId, typeof a === "string" ? { answer: a } : a); } catch (e) { throw new HttpError(400, (e as Error).message); }
+    b.missing = briefMissing(b);
+    st.status = "draft"; invalidateAfter(s, "brief");
+  });
+}
+/** Correction directe du récapitulatif (présentation, rubrique, point reporté) : enregistrée sans aucun appel IA. */
+export function editBriefFiche(projectId: string, revision: number, change: FicheChange) {
+  return commitState(projectId, revision, s => {
+    const st = stageOf(s, "brief"), b = st.data;
+    if (b.provenance !== "provider" && b.provenance !== "simulation") throw new HttpError(409, "Lancez d’abord la compréhension de votre activité.");
+    try { applyFicheChange(b, change); } catch (e) { throw new HttpError(400, (e as Error).message); }
+    b.missing = briefMissing(b);
     st.status = "draft"; invalidateAfter(s, "brief");
   });
 }

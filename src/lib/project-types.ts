@@ -42,8 +42,17 @@ export const sectorLabel = (id?: string | null, lang: "fr" | "en" = "fr") => {
 
 // Types seulement : les schémas de validation (zod) sont dans project-schemas.ts, côté serveur — ce fichier est aussi
 // lu par l'interface, qui n'a pas à embarquer la bibliothèque de validation (≈ 25 Ko compressés).
-export type Fact = { key: string; label: string; value: string; status: "confirmed" | "inferred" | "unknown"; source: "user" | "photo" | "link" | "ai" | "description" };
-export type Question = { id: string; question: string; why: string; required: boolean; factKey: string; answer?: string };
+/**
+ * Rubrique de la fiche d'activité (#204) à laquelle se rattache un fait ou une question : présentation, prestations,
+ * personnalisation, déroulement d'une demande, besoins du devis, ou informations pratiques (coordonnées, horaires),
+ * qui peuvent attendre les étapes de livraison.
+ */
+export type BriefTopic = "activity" | "services" | "customization" | "process" | "quote" | "practical";
+export const BRIEF_TOPICS: BriefTopic[] = ["activity", "services", "customization", "process", "quote", "practical"];
+/** `later` : point laissé « à préciser plus tard » par le client ; il reste inconnu, jamais affirmé. */
+export type Fact = { key: string; label: string; value: string; status: "confirmed" | "inferred" | "unknown"; source: "user" | "photo" | "link" | "ai" | "description"; topic?: BriefTopic; later?: boolean };
+/** `label` : intitulé court du champ de la fiche que la réponse complète (« Travaux réalisés »), distinct de la question. */
+export type Question = { id: string; question: string; why: string; required: boolean; factKey: string; answer?: string; topic?: BriefTopic; label?: string; later?: boolean };
 
 export type ProductProfile = {
   contentAliases?: string[];
@@ -52,6 +61,8 @@ export type ProductProfile = {
   category: string;
   sector: SectorId | null;
   summary: string;
+  /** « provided » : présentation corrigée par le client ; sinon proposition de l'analyse, à vérifier. */
+  summaryStatus?: "proposed" | "provided";
   facts: Fact[];
   visual: {
     colors: { hex: string; name: string; share: number }[];
@@ -158,7 +169,8 @@ export type BrandPlatform = {
  * l'activité (nom, résumé, secteur, faits confirmés) et `services` détaille l'offre.
  */
 export type BusinessType = "products" | "services";
-export type ServiceItem = { key?: string; contentAliases?: string[]; name: string; description: string; price?: string; duration?: string };
+/** `source` : « client » quand le client a lui-même décrit la prestation ; « analysis » pour une proposition à vérifier. */
+export type ServiceItem = { key?: string; contentAliases?: string[]; name: string; description: string; price?: string; duration?: string; source?: "client" | "analysis" };
 export type ServiceProfile = {
   /** Prestations proposées (texte fourni par le client ; prix et durées seulement s'il les donne). */
   services: ServiceItem[];
