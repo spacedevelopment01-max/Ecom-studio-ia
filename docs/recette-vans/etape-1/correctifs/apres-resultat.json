@@ -1,0 +1,119 @@
+{
+ "version": {
+  "commit": "0c8da4dba7f0e2e24e7eced21f399318444d832d",
+  "commitOrigin": "build",
+  "mode": "production",
+  "tree": "clean",
+  "source": "compiled-build"
+ },
+ "pages": [
+  {
+   "nom": "ordinateur",
+   "page": "accueil",
+   "imagesTotal": 51,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/demo/directions/fraise.jpg",
+    "/demo/directions/onde.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/demo/directions/fraise.jpg",
+    "/demo/directions/onde.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.jpg",
+    "/demo/directions/aplat.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.jpg",
+    "/demo/directions/aplat.jpg"
+   ],
+   "consoleErreurs": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "http": [
+    "404 /demo/directions/fraise.jpg",
+    "404 /demo/directions/onde.jpg",
+    "404 /demo/directions/aplat.jpg"
+   ],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "ordinateur",
+   "page": "inscription",
+   "imagesTotal": 0,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [],
+   "legende": 0
+  },
+  {
+   "nom": "telephone",
+   "page": "accueil",
+   "imagesTotal": 51,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/demo/directions/fraise.jpg",
+    "/demo/directions/onde.jpg",
+    "/theme-assets/rive/apercu-theme.jpg",
+    "/theme-assets/sillon/apercu-theme.jpg",
+    "/theme-assets/noctil/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/demo/directions/fraise.jpg",
+    "/demo/directions/onde.jpg",
+    "/theme-assets/rive/apercu-theme.jpg",
+    "/theme-assets/sillon/apercu-theme.jpg",
+    "/theme-assets/noctil/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/table-saison/apercu-theme.jpg",
+    "/theme-assets/atelier-nuance/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.jpg",
+    "/demo/directions/aplat.jpg",
+    "/theme-assets/table-saison/apercu-theme.jpg",
+    "/theme-assets/atelier-nuance/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.jpg",
+    "/demo/directions/aplat.jpg"
+   ],
+   "consoleErreurs": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "http": [
+    "404 /demo/directions/fraise.jpg",
+    "404 /demo/directions/onde.jpg",
+    "404 /demo/directions/aplat.jpg"
+   ],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "telephone",
+   "page": "inscription",
+   "imagesTotal": 0,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [],
+   "legende": 0
+  }
+ ]
+}
