@@ -65,7 +65,10 @@ const stamp = codeStamp();
 const built = fs.existsSync(path.resolve(".next", "BUILD_ID")) && fs.existsSync(stampFile) && fs.readFileSync(stampFile, "utf8") === stamp;
 if (!built) {
   console.log("\n▶ Construction du studio (2 à 4 minutes, seulement après une mise à jour)…");
-  const r = spawnSync(bin("next"), ["build"], { stdio: "inherit" });
+  // Codespace de 8 Go (26 octobre, suivi #204) : la construction s'arrêtait faute de mémoire JavaScript avec la limite
+  // par défaut de Node. 4 Go lui suffisent ; un NODE_OPTIONS qui fixe déjà cette limite est respecté.
+  const nodeOptions = /--max-old-space-size=/.test(process.env.NODE_OPTIONS || "") ? process.env.NODE_OPTIONS : `${process.env.NODE_OPTIONS || ""} --max-old-space-size=4096`.trim();
+  const r = spawnSync(bin("next"), ["build"], { stdio: "inherit", env: { ...process.env, NODE_OPTIONS: nodeOptions } });
   if (r.status !== 0) {
     console.error("\n✗ La construction a échoué : le studio n'est pas lancé. Copiez les lignes rouges ci-dessus pour le support.");
     process.exit(1);

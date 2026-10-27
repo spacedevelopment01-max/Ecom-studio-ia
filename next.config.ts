@@ -3,11 +3,13 @@ import type { NextConfig } from "next";
 
 // Version du code compilé, jamais le HEAD mouvant d’un serveur déjà démarré.
 const buildCommit=(()=>{try{return execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8",stdio:["ignore","pipe","ignore"]}).trim();}catch{return process.env.GITHUB_SHA??"";}})();
+// Fichiers suivis modifiés au même moment (les fichiers non suivis, comme les kits privés, ne comptent pas) : « unknown » sans git.
+const buildTree=(()=>{try{return execFileSync("git",["status","--porcelain","--untracked-files=no"],{encoding:"utf8",stdio:["ignore","pipe","ignore"]}).trim()?"modified":"clean";}catch{return "unknown";}})();
 const nextConfig: NextConfig = {
   // Vitrine statique GitHub Pages (scripts/pages-snapshot.mjs) : publiée sous /<dépôt>, construite à part.
   ...(process.env.PAGES_BASE_PATH ? { basePath: process.env.PAGES_BASE_PATH, distDir: ".next-pages" } : {}),
   // Vitrine statique : le sélecteur de langue change de page (/ ↔ /en/) au lieu de recharger depuis le serveur.
-  env: { STUDIO_BUILD_COMMIT:/^[0-9a-f]{40}$/.test(buildCommit)?buildCommit:"", NEXT_PUBLIC_STATIC_PAGES: process.env.PAGES_BASE_PATH ?? "" },
+  env: { STUDIO_BUILD_COMMIT:/^[0-9a-f]{40}$/.test(buildCommit)?buildCommit:"", STUDIO_BUILD_TREE:buildTree, NEXT_PUBLIC_STATIC_PAGES: process.env.PAGES_BASE_PATH ?? "" },
   serverExternalPackages: [
     "better-sqlite3",
     "sharp",
