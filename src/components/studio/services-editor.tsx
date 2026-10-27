@@ -40,30 +40,59 @@ export function ServicesEditor({ value, onChange, idPrefix = "svc" }: { value: S
  * Façons dont le client prend contact (plusieurs possibles) : rendez-vous en ligne, devis, appel, formulaire.
  * La première choisie est la principale (bouton principal du site) ; au moins une reste cochée.
  */
+/** Rendez-vous (#204) : un lien externe n'est jamais obligatoire pour exprimer ce besoin ; rien n'est mis en ligne ici. */
+export const BOOKING_HINT = (t: (fr: string, en: string) => string) =>
+  t(
+    "Vous utilisez déjà un outil de réservation (Calendly, Planity, Doctolib…) ? Collez son lien : le bouton « Prendre rendez-vous » du site y mènera. Sinon, laissez vide : votre besoin est noté et vous choisirez plus tard comment recevoir les demandes (onglet Rendez-vous du studio avec les thèmes qui le proposent, ou un outil externe). Aucun agenda n'est ouvert à cette étape.",
+    "Already using a booking tool (Calendly, Fresha, Acuity…)? Paste its link: the site's “Book an appointment” button will lead there. Otherwise leave it empty: your need is noted and you'll choose later how to receive requests (the studio's Bookings tab with themes that offer it, or an external tool). No calendar is opened at this step.",
+  );
+
+/**
+ * Façons d'être contacté (cases à cocher) et bouton principal du site (choix explicite parmi les cases cochées).
+ * L'ordre de `value` porte le principal en tête (contactMode = value[0]) ; aucune dépendance à l'ordre des clics :
+ * cocher ajoute en complément, décocher le principal le passe au suivant, et toute case peut être décochée (le
+ * client n'est jamais bloqué sur la valeur par défaut ; une liste vide est signalée, jamais complétée en silence).
+ */
 export function ContactModePicker({ value, onChange }: { value: ContactMode[]; onChange: (v: ContactMode[]) => void }) {
   const t = useT();
-  const toggle = (id: ContactMode) => onChange(value.includes(id) ? (value.length > 1 ? value.filter((m) => m !== id) : value) : [...value, id]);
+  const toggle = (id: ContactMode) => onChange(value.includes(id) ? value.filter((m) => m !== id) : [...value, id]);
+  const makeMain = (id: ContactMode) => onChange([id, ...value.filter((m) => m !== id)]);
   const modes: [ContactMode, typeof Phone, string][] = [
-    ["booking", CalendarCheck, t("Rendez-vous en ligne", "Online booking")],
+    ["booking", CalendarCheck, t("Rendez-vous", "Appointments")],
     ["quote", FileText, t("Demande de devis", "Quote request")],
     ["call", Phone, t("Appel", "Phone call")],
     ["form", MessageSquare, t("Formulaire de contact", "Contact form")],
   ];
+  const label = (id: ContactMode) => modes.find((m) => m[0] === id)![2];
   return (
-    <div className="grid gap-1.5">
+    <div className="grid gap-2">
       <div role="group" aria-label={t("Façons de vous contacter", "Ways to get in touch")} className="grid grid-cols-2 gap-2">
-        {modes.map(([id, Icon, label]) => {
+        {modes.map(([id, Icon, text]) => {
           const on = value.includes(id);
           return (
-            <button key={id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(id)} className={cx("flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px] transition", on ? "border-signal bg-signal-soft font-medium" : "border-line bg-card hover:border-ink")}>
+            <button key={id} type="button" role="checkbox" aria-checked={on} onClick={() => toggle(id)} data-contact-mode={id} className={cx("flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-[13px] transition", on ? "border-signal bg-signal-soft font-medium" : "border-line bg-card hover:border-ink")}>
               {on ? <Check className="size-4 shrink-0" aria-hidden /> : <Icon className="size-4 shrink-0" aria-hidden />}
-              <span className="min-w-0 flex-1">{label}</span>
-              {on && value[0] === id && value.length > 1 && <span className="shrink-0 rounded-full bg-card px-2 py-0.5 text-[10px] font-semibold text-muted">{t("Principal", "Main")}</span>}
+              <span className="min-w-0 flex-1">{text}</span>
             </button>
           );
         })}
       </div>
-      <p className="text-xs text-muted">{t("Cochez-en autant que vous voulez. La première cochée devient le bouton principal du site.", "Tick as many as you like. The first one ticked becomes the site's main button.")}</p>
+      {value.length ? (
+        <fieldset className="grid gap-1.5" data-contact-main>
+          <legend className="mb-1 text-[13px] font-medium">{t("Bouton principal du site", "Main button of the website")}</legend>
+          <div className="flex flex-wrap gap-2">
+            {value.map((id) => (
+              <label key={id} className={cx("flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-[13px]", value[0] === id ? "border-ink bg-ink text-paper" : "border-line bg-card")}>
+                <input type="radio" name="contact-main" className="sr-only" checked={value[0] === id} onChange={() => makeMain(id)} />
+                {label(id)}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-muted">{t("Les autres façons cochées restent proposées en complément sur le site.", "The other ticked ways stay available on the website as extras.")}</p>
+        </fieldset>
+      ) : (
+        <p role="alert" className="text-xs text-warn">{t("Cochez au moins une façon d'être contacté.", "Tick at least one way to be contacted.")}</p>
+      )}
     </div>
   );
 }

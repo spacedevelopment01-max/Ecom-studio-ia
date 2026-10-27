@@ -37,7 +37,7 @@ import { assertCanSpend } from "../billing";
 import { withTrace } from "../ai/trace";
 import { redact } from "../redact";
 import { L } from "../i18n-server";
-import { analyzeLocally } from "./brief";
+import { analyzeLocally, SERVICES_UNKNOWN } from "./brief";
 import { realDependencies, type Dependencies } from "./deps";
 import {
   commitState,
@@ -59,7 +59,8 @@ import {
   type Step,
   type VisualSlot,
 } from "./types";
-import type { Strategy } from "../project-types";
+import { contactModesOf, type Strategy } from "../project-types";
+import { mergeServiceProfile } from "../engine/local";
 export { stateOf, historyOf };
 export function initialize(projectId: string, input: Input) {
   if (stateOf(projectId)) throw new HttpError(409, "Le parcours existe déjà.");
@@ -528,16 +529,25 @@ export function approve(
 export function editBrief(projectId: string, revision: number, input: Input) {
   return commitState(projectId, revision, (s) => {
     const old = stageOf(s, "brief").data;
+    // Prestations et contact (#204) : après la compréhension IA, les corrections du client (prestations proposées,
+    // bouton principal, coordonnées) complètent le brief analysé sans l'effacer ni faire repayer sa lecture.
+    const analyzedOnce = old.provenance === "provider" || old.provenance === "simulation";
     const offer = (x: Input) => {
       const { target, constraints, referenceUrls, ...data } = x;
-      return data;
+      if (!analyzedOnce) return data;
+      const { services, ...rest } = data;
+      return rest;
     };
     if (stableHash(offer(old.input)) === stableHash(offer(input))) {
+      const services = analyzedOnce
+        ? { ...mergeServiceProfile(input.services, old.services), contactMode: input.services.contactMode, contactModes: contactModesOf(input.services) }
+        : old.services;
       const next = {
         ...structuredClone(old),
 
         input,
-        missing: old.missing.filter((x) => !x.includes("À qui cette offre")),
+        services,
+        missing: old.missing.filter((x) => !x.includes("À qui cette offre") && !(services.services.length && x === SERVICES_UNKNOWN)),
       };
       if (!input.target.trim())
         next.missing.push("À qui cette offre s’adresse-t-elle ?");
@@ -850,7 +860,7 @@ export function queuePreparation(
       userId: p.userId,
       projectId,
       type: "project.prepare",
-      label: `Préparation : ${step}`,
+      label: action === "analyze" ? (p.business === "services" ? "Compréhension de votre activité" : "Analyse de votre produit") : `Préparation : ${step}`,
       payload: {
         projectId,
         step,
