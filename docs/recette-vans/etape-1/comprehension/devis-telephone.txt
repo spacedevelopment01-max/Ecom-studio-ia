@@ -1,0 +1,9 @@
+Avant de lancer
+
+Estimation de consommation : 0,2 % du budget IA de ce projet.
+Maximum autorisé pour cet essai : 4,2 %.
+
+Pris sur le budget IA inclus dans votre abonnement (aucun nouvel achat). L’estimation est la consommation habituelle ; le maximum ne peut pas être dépassé, reprises internes comprises. Seule la consommation constatée est retirée du budget ; aucune relance automatique en cas d’échec incertain.
+
+Confirmer cet essai
+Annuler

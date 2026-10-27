@@ -1,0 +1,2 @@
+cases : booking=true ; quote=true ; call=false ; form=false
+principal : Demande de devis=true ; Rendez-vous=false
