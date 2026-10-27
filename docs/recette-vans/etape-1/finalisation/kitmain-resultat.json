@@ -1,0 +1,100 @@
+{
+ "version": {
+  "commit": "a2d00fcbc5c2bdf7d7712a8d34373854dc953619",
+  "source": "compiled-build"
+ },
+ "pages": [
+  {
+   "nom": "ordinateur",
+   "page": "accueil",
+   "imagesTotal": 53,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.webp",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.webp"
+   ],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "ordinateur",
+   "page": "inscription",
+   "imagesTotal": 1,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [
+    {
+     "src": "/demo/onde/07-scene-salon.webp",
+     "naturalWidth": 1254,
+     "shown": true
+    }
+   ],
+   "legende": 1
+  },
+  {
+   "nom": "telephone",
+   "page": "accueil",
+   "imagesTotal": 53,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/theme-assets/rive/apercu-theme.jpg",
+    "/theme-assets/sillon/apercu-theme.jpg",
+    "/theme-assets/noctil/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/rive/apercu-theme.jpg",
+    "/theme-assets/sillon/apercu-theme.jpg",
+    "/theme-assets/noctil/apercu-theme.jpg",
+    "/theme-assets/traverse/apercu-theme.jpg",
+    "/theme-assets/heuren/apercu-theme.jpg",
+    "/theme-assets/museau-club/apercu-theme.jpg",
+    "/theme-assets/table-saison/apercu-theme.jpg",
+    "/theme-assets/atelier-nuance/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.webp",
+    "/theme-assets/table-saison/apercu-theme.jpg",
+    "/theme-assets/atelier-nuance/apercu-theme.jpg",
+    "/theme-assets/parenthese/apercu-theme.jpg",
+    "/demo/directions/phase.jpg",
+    "/demo/directions/maison-horizon.webp"
+   ],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "telephone",
+   "page": "inscription",
+   "imagesTotal": 1,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [
+    {
+     "src": "/demo/onde/07-scene-salon.webp",
+     "naturalWidth": 1254,
+     "shown": false
+    }
+   ],
+   "legende": 1
+  }
+ ]
+}

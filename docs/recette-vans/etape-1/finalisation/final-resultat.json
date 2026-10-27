@@ -1,0 +1,81 @@
+{
+ "version": {
+  "commit": "33c0d015d126d83edfa3f59e69c22caa3184be58",
+  "commitOrigin": "build",
+  "mode": "production",
+  "tree": "clean",
+  "source": "compiled-build"
+ },
+ "pages": [
+  {
+   "nom": "ordinateur",
+   "page": "accueil",
+   "imagesTotal": 53,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/demo/directions/phase.jpg",
+    "/demo/directions/phase.jpg"
+   ],
+   "consoleErreurs": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "http": [
+    "404 /demo/directions/phase.jpg"
+   ],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "ordinateur",
+   "page": "inscription",
+   "imagesTotal": 1,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [
+    {
+     "src": "/demo/onde/07-scene-salon.webp",
+     "naturalWidth": 1254,
+     "shown": true
+    }
+   ],
+   "legende": 1
+  },
+  {
+   "nom": "telephone",
+   "page": "accueil",
+   "imagesTotal": 53,
+   "imagesSansSource": [],
+   "imagesEnEchec": [
+    "/demo/directions/phase.jpg",
+    "/demo/directions/phase.jpg"
+   ],
+   "consoleErreurs": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "http": [
+    "404 /demo/directions/phase.jpg"
+   ],
+   "authImg": null,
+   "legende": null
+  },
+  {
+   "nom": "telephone",
+   "page": "inscription",
+   "imagesTotal": 1,
+   "imagesSansSource": [],
+   "imagesEnEchec": [],
+   "consoleErreurs": [],
+   "http": [],
+   "authImg": [
+    {
+     "src": "/demo/onde/07-scene-salon.webp",
+     "naturalWidth": 1254,
+     "shown": false
+    }
+   ],
+   "legende": 1
+  }
+ ]
+}
