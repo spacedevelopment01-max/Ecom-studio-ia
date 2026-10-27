@@ -841,7 +841,7 @@ export function queuePreparation(
     if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };
     const analysis = action === "analyze" ? analysisAttempts(projectId, stageOf(s, "brief").data, hash) : null;
     const attempts = analysis?.attempts ?? (one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0);
-    const problem = attemptProblem(attempts, opts.correction);
+    const problem = attemptProblem(attempts, opts.correction, analysis?.historyIncomplete);
     if (problem) throw new HttpError(409, problem);
     const p = loadProject(projectId);
     if (opts.paid) {

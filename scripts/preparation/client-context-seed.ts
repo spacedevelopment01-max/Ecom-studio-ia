@@ -16,7 +16,7 @@ const { enqueue } = await import("../../src/lib/jobs");
 const { run, now, all } = await import("../../src/lib/db");
 const { syncAllowance } = await import("../../src/lib/billing");
 const cases: { slug: string; pid: string; token: string; width: number }[] = [];
-for (const width of [1440, 390]) for (const [slug, business, attempts] of [["service-reprise", "services", 1], ["service-limite", "services", 2], ["produit", "products", 0]] as const) {
+for (const width of [1440, 390]) for (const [slug, business, attempts] of [["service-reprise", "services", 1], ["service-limite", "services", 2], ["service-historique", "services", 2], ["produit", "products", 0]] as const) {
   const f = await fixture(business); f.input.photoIds = [];
   run("UPDATE users SET name='Recette fictive — aucun appel IA' WHERE id=?", f.uid);
   run("UPDATE subscriptions SET plan='vendre' WHERE user_id=?", f.uid); syncAllowance(f.uid);
@@ -49,7 +49,7 @@ for (const width of [1440, 390]) for (const [slug, business, attempts] of [["ser
   for (let i = 0; i < attempts; i++) {
     const s = stateOf(f.pid)!;
     const j = enqueue({ userId: f.uid, projectId: f.pid, type: "project.prepare", payload: { step: "brief", action: "analyze", inputHash: requestHash(s, "brief", "analyze"), revision: s.revision }, label: "Ancien essai fictif (aucun fournisseur)" });
-    run("UPDATE jobs SET status='done',finished_at=? WHERE id=?", now(), j.id);
+    run("UPDATE jobs SET status='done',finished_at=?,result=? WHERE id=?", now(), JSON.stringify({ revision: slug === "service-historique" ? 999999 : s.revision }), j.id);
   }
   const token = crypto.randomBytes(32).toString("base64url");
   run("INSERT INTO sessions(id,user_id,expires_at,created_at) VALUES(?,?,?,?)", crypto.createHash("sha256").update(token).digest("hex"), f.uid, now() + 86400000, now());

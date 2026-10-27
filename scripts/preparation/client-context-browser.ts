@@ -47,7 +47,7 @@ try {
       assert.match(await page.locator('[data-fiche-fact="quote_price_old"]').innerText(), /À préciser plus tard/);
       assert.equal(await action.isDisabled(), true);
       await page.locator("[data-analysis-retry] textarea").fill("Préserver toutes les réponses et ne demander que les informations encore absentes.");
-      assert.equal(await action.isDisabled(), c.slug === "service-limite");
+      assert.equal(await action.isDisabled(), ["service-limite", "service-historique"].includes(c.slug));
       if (c.slug === "service-reprise") {
         const [response] = await Promise.all([page.waitForResponse(r => r.url().endsWith(`/api/projects/${c.pid}/preparation`) && r.request().method() === "POST"), action.click()]);
         assert.equal(response.status(), 200, await response.text());
@@ -66,6 +66,10 @@ try {
       await page.reload({ waitUntil: "networkidle" });
       await page.locator("[data-analysis-retry]").waitFor();
       assert.match(await page.locator('[data-fiche-fact="quote_inputs"]').innerText(), /Photos, dimensions, usage souhaité/);
+      if (c.slug === "service-historique") {
+        assert.match(await page.locator("[data-analysis-preflight]").innerText(), /preuve historique manque/);
+        assert.equal(await page.locator("[data-brief-analyze]").isDisabled(), true);
+      } else assert.equal(await page.locator("[data-brief-analyze]").isDisabled(), false);
       images.push(await shot("reouverture"));
     } else assert.equal(await action.isDisabled(), false);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);

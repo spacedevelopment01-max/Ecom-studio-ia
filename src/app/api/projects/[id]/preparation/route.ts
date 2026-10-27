@@ -93,9 +93,11 @@ function view(projectId: string) {
   const state = stateOf(projectId);
   const trackedId = state?.pending?.jobId ?? state?.error?.jobId;
   const pending = trackedId ? getJob(trackedId) : null;
+  const attempts = state?.stages.brief ? analysisAttempts(projectId, state.stages.brief.data, requestHash(state, "brief", "analyze")) : null;
   return {
     state,
-    analysisAttempts: state?.stages.brief ? analysisAttempts(projectId, state.stages.brief.data, requestHash(state, "brief", "analyze")).attempts : 0,
+    analysisAttempts: attempts?.attempts ?? 0,
+    analysisHistoryIncomplete: attempts?.historyIncomplete ?? false,
     selectedMarketingAngleId:activeStrategy(projectId)?.angleId??null,
     job: pending?.project_id === projectId ? publicJob(pending) : null,
     recoverable: !!recoverablePreparation(projectId, state),

@@ -86,7 +86,8 @@ export function createQuote(
   if (action === "analyze" && paid) assertAnalysisRoute(!!s.stages.brief?.data.input.photoIds.length);
   const hash = requestHash(s, step, action, slot);
   if (action === "analyze") {
-    const problem = attemptProblem(analysisAttempts(projectId, s.stages.brief!.data, hash).attempts, correction);
+    const attempts = analysisAttempts(projectId, s.stages.brief!.data, hash);
+    const problem = attemptProblem(attempts.attempts, correction, attempts.historyIncomplete);
     if (problem) throw new HttpError(409, problem);
   }
   let analysisFingerprint: string | undefined;

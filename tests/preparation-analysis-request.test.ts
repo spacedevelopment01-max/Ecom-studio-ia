@@ -64,7 +64,7 @@ it("les deux anciens essais restent comptés malgré la migration ; la correctio
   for (let i = 0; i < 2; i++) {
     if (i) editBriefFiche(f.pid, state().revision, { kind: "fact", key: "customization", label: "Personnalisation", topic: "customization", value: "Étude selon chaque besoin." });
     const job = enqueue({ userId: f.uid, projectId: f.pid, type: "project.prepare", payload: { action: "analyze", inputHash: hash, revision: state().revision } });
-    run("UPDATE jobs SET status='done' WHERE id=?", job.id);
+    run("UPDATE jobs SET status='done',result=? WHERE id=?", JSON.stringify({ revision: state().revision }), job.id);
   }
   expect(analysisAttempts(f.pid, state().stages.brief!.data, hash).attempts).toBe(2);
   expect(() => fr(() => createQuote(f.pid, "brief", "analyze", undefined, "Nouvelle correction seulement."))).toThrow(/Deux essais/);
@@ -72,6 +72,58 @@ it("les deux anciens essais restent comptés malgré la migration ; la correctio
   expect(calls).not.toHaveBeenCalled();
   editBriefFiche(f.pid, state().revision, { kind: "fact", key: "quote_needs", label: "Informations pour le devis", topic: "quote", value: "Photos, dimensions et usages." });
   expect(analysisAttempts(f.pid, state().stages.brief!.data, hash).attempts).toBe(0);
+});
+
+it("les anciens faits reformulés par l'IA après chaque analyse ne rendent pas un troisième essai disponible", async () => {
+  const f = await fixture("services"); initializeSynthetic(f.pid, f.input);
+  const state = () => stateOf(f.pid)!;
+  const hash = requestHash(state(), "brief", "analyze");
+  for (let i = 0; i < 2; i++) {
+    const j = enqueue({ userId: f.uid, projectId: f.pid, type: "project.prepare", payload: { action: "analyze", inputHash: hash, revision: state().revision } });
+    const result = commitState(f.pid, state().revision, s => {
+      // Ancienne version : le modèle pouvait annoncer source=user. Ce n'est pas une nouvelle saisie client.
+      s.stages.brief!.data.profile.facts.push({ key: `legacy_generated_${i}`, label: "Clientèle reformulée", value: "Petites entreprises locales", status: "confirmed", source: "user" });
+    });
+    run("UPDATE jobs SET status='done',result=? WHERE id=?", JSON.stringify({ revision: result.revision }), j.id);
+  }
+  expect(analysisAttempts(f.pid, state().stages.brief!.data, hash).attempts).toBe(2);
+  expect(() => fr(() => createQuote(f.pid, "brief", "analyze", undefined, "Préserver les réponses."))).toThrow(/Deux essais/);
+  expect(calls).not.toHaveBeenCalled();
+});
+
+it.each(["result", "checkpoint"])("les nouvelles tâches relient leurs entrées/sorties sur deux analyses (%s), sans remise à zéro", async receipt => {
+  const f = await fixture("services"); initializeSynthetic(f.pid, f.input);
+  const state = () => stateOf(f.pid)!;
+  for (let i = 0; i < 2; i++) {
+    const queued = queuePreparation(f.pid, state().revision, "brief", "analyze", { paid: false, capMicro: 0, correction: i ? "Préciser uniquement les informations absentes." : undefined });
+    const result = await runForUser(f.uid, () => runPreparation(new JobContext(queued.job!), {
+      ...simulatedDependencies,
+      async inspect(_p, b) {
+        const next = structuredClone(b);
+        next.profile.facts.push({ key: `renamed_${i}`, label: "Clientèle reformulée", value: "Public déclaré", source: "user", status: "confirmed" });
+        return next;
+      },
+    }), "normal", f.pid);
+    run("UPDATE jobs SET status=?,result=? WHERE id=?", receipt === "result" ? "done" : "failed", receipt === "result" ? JSON.stringify(result) : null, queued.job!.id);
+    expect(analysisAttempts(f.pid, state().stages.brief!.data, requestHash(state(), "brief", "analyze")).attempts).toBe(i + 1);
+  }
+  expect(() => queuePreparation(f.pid, state().revision, "brief", "analyze", { paid: false, capMicro: 0, correction: "Une troisième reformulation." })).toThrow(/Deux essais/);
+  editBriefFiche(f.pid, state().revision, { kind: "fact", key: "quote_needs", label: "Informations pour le devis", topic: "quote", value: "Dimensions et documents à fournir." });
+  expect(analysisAttempts(f.pid, state().stages.brief!.data, requestHash(state(), "brief", "analyze")).attempts).toBe(0);
+  expect(calls).not.toHaveBeenCalled();
+});
+
+it("une preuve de résultat historique absente conserve le compteur de l'ancien brief", async () => {
+  const f = await fixture("services"); initializeSynthetic(f.pid, f.input);
+  const state = () => stateOf(f.pid)!;
+  for (let i = 0; i < 2; i++) {
+    const j = enqueue({ userId: f.uid, projectId: f.pid, type: "project.prepare", payload: { action: "analyze", inputHash: requestHash(state(), "brief", "analyze"), revision: state().revision } });
+    run("UPDATE jobs SET status='done',result=? WHERE id=?", JSON.stringify({ revision: 999999 }), j.id);
+  }
+  editBriefFiche(f.pid, state().revision, { kind: "fact", key: "process", label: "Déroulement", topic: "process", value: "Étude avant devis." });
+  expect(analysisAttempts(f.pid, state().stages.brief!.data, requestHash(state(), "brief", "analyze")).attempts).toBe(2);
+  expect(() => fr(() => createQuote(f.pid, "brief", "analyze", undefined, "Revoir les questions."))).toThrow(/preuve historique manque/);
+  expect(calls).not.toHaveBeenCalled();
 });
 
 it("la correction exigée est refusée avant le devis et l'envoi ; les tarifs changés invalident un devis", async () => {

@@ -91,6 +91,7 @@ type AssetView = {
 };
 type View = {
   analysisAttempts?: number;
+  analysisHistoryIncomplete?: boolean;
   selectedMarketingAngleId?:string|null;
   state: State;
   job: JobView | null;
@@ -473,7 +474,7 @@ export default function TabPreparation() {
               onChange={(e) => field("offerUrl", e.target.value)}
             />
           </Field>
-          <AnalysisRetry business={form.business} attempts={data.analysisAttempts ?? 0} correction={correction} onCorrection={value => { setCorrection(value); setQuote(null); }} disabled={busy || working || briefDirty} onAnalyze={() => prepare("brief", "analyze")} />
+          <AnalysisRetry business={form.business} attempts={data.analysisAttempts ?? 0} historyIncomplete={data.analysisHistoryIncomplete} correction={correction} onCorrection={value => { setCorrection(value); setQuote(null); }} disabled={busy || working || briefDirty} onAnalyze={() => prepare("brief", "analyze")} />
           {form.business === "services" && (
             <p className="-mt-2 text-sm text-muted">
               {t(

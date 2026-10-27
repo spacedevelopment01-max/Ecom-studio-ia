@@ -106,6 +106,13 @@ describe("Contexte client, fusion et réouverture", () => {
 });
 
 describe("Précontrôle effectivement rendu près du bouton", () => {
+  it("explique la preuve historique manquante sans inviter à contourner le compteur", () => {
+    const html = renderToStaticMarkup(createElement(AnalysisRetry, { business: "services", attempts: 2, historyIncomplete: true, correction: "Correction renseignée.", disabled: false, onCorrection: () => {}, onAnalyze: () => {} }));
+    expect(html).toContain("une preuve historique manque");
+    expect(html).toContain("vos acquis et votre budget restent conservés");
+    expect(html).not.toContain("Modifiez réellement votre fiche");
+    expect(html).toMatch(/<button[^>]*\sdisabled=""/);
+  });
   const renderRetry = (attempts: number, correction: string, disabled = false) => renderToStaticMarkup(createElement(AnalysisRetry, { business: "services", attempts, correction, disabled, onCorrection: () => {}, onAnalyze: () => {} }));
   it("autorise la première demande, exige la correction avant le second devis et bloque le troisième", () => {
     expect(renderRetry(0, "")).not.toMatch(/<button[^>]*\sdisabled=""/);
