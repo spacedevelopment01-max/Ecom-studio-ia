@@ -1,4 +1,5 @@
 "use client";
+import { AnalysisRetry } from "./analysis-retry";
 import { MarketingStrategy } from "./marketing-strategy";
 import {GuidedVideo} from "./guided-video";
 import { LogoV2Panel } from "./logo-v2-panel";
@@ -89,6 +90,7 @@ type AssetView = {
   url: string;
 };
 type View = {
+  analysisAttempts?: number;
   selectedMarketingAngleId?:string|null;
   state: State;
   job: JobView | null;
@@ -149,6 +151,7 @@ export default function TabPreparation() {
     maxBudgetPct: number | null;
     estimateBudgetPct?: number | null;
     note: string;
+    correction?: string;
   } | null>(null);
   const resumed = useRef(false);
   const state = data?.state;
@@ -233,10 +236,11 @@ export default function TabPreparation() {
           step,
           runAction,
           slot,
+          correction,
           revision: state.revision,
         },
       });
-      if (r.quote.paid) setQuote(r.quote);
+      if (r.quote.paid) setQuote({ ...r.quote, correction });
       else await send({ action: "generate", quoteId: r.quote.id, correction });
     } catch (e) {
       setError((e as Error).message);
@@ -311,8 +315,10 @@ export default function TabPreparation() {
     setForm({ ...form, [key]: value });
   return (
     <div className="grid gap-5" data-preparation>
-      <InitialCreatives onChange={reload}/>
-      <InitialAuthorization/>
+      {approved("brief") && <details className="rounded-xl border border-line p-4" data-future-creatives>
+        <summary className="cursor-pointer font-semibold">{t("Plus tard : vos créations pour les réseaux", "Later: your social creations")}</summary>
+        <div className="mt-3 grid gap-3"><InitialCreatives onChange={reload}/><InitialAuthorization/></div>
+      </details>}
       {approved("brief") && <MarketingStrategy projectId={id} onChange={reload}/> }
       {(active === 'content' || active === 'media') && <PreparationHandoff onChange={reload}/>}
       <Card className="p-5 sm:p-7">
@@ -467,21 +473,7 @@ export default function TabPreparation() {
               onChange={(e) => field("offerUrl", e.target.value)}
             />
           </Field>
-          <Button
-            variant="secondary"
-            disabled={
-              busy || working || JSON.stringify(raw) !== JSON.stringify(form)
-            }
-            onClick={() => prepare("brief", "analyze")}
-            data-brief-analyze
-          >
-            {form.business === "services"
-              ? t("Comprendre mon activité", "Understand my business")
-              : t(
-                  "Analyser mes informations et mes photos par l’IA",
-                  "Analyze my information and photos with AI",
-                )}
-          </Button>
+          <AnalysisRetry business={form.business} attempts={data.analysisAttempts ?? 0} correction={correction} onCorrection={value => { setCorrection(value); setQuote(null); }} disabled={busy || working || briefDirty} onAnalyze={() => prepare("brief", "analyze")} />
           {form.business === "services" && (
             <p className="-mt-2 text-sm text-muted">
               {t(
@@ -496,8 +488,8 @@ export default function TabPreparation() {
             const spent = brief.execution?.spentPct != null && (
               <p className="text-xs text-muted" data-spent>
                 {t(
-                  `Consommation constatée : ${pctText(brief.execution.spentPct, "fr")} du budget IA de ce projet (${brief.execution.calls ?? 1} appel(s)).`,
-                  `Recorded usage: ${pctText(brief.execution.spentPct, "en")} of this project’s AI budget (${brief.execution.calls ?? 1} call(s)).`,
+                  `Dernière analyse : ${pctText(brief.execution.spentPct, "fr")} du budget IA de ce projet (${brief.execution.calls ?? 1} appel(s)).`,
+                  `Last analysis: ${pctText(brief.execution.spentPct, "en")} of this project’s AI budget (${brief.execution.calls ?? 1} call(s)).`,
                 )}
               </p>
             );
@@ -1296,7 +1288,7 @@ export default function TabPreparation() {
           </Button>
         </Card>
       )}
-      <Card className="grid gap-3 p-5">
+      {active !== "brief" && <Card className="grid gap-3 p-5">
         <Field
           label={t(
             "Défaut précis à corriger pour un nouvel essai",
@@ -1305,7 +1297,7 @@ export default function TabPreparation() {
         >
           <Textarea
             value={correction}
-            onChange={(e) => setCorrection(e.target.value)}
+            onChange={(e) => { setCorrection(e.target.value); setQuote(null); }}
             placeholder={t(
               "Ex. : conserver le nom exact et corriger la hiérarchie du texte.",
               "E.g.: keep the exact name and correct text hierarchy.",
@@ -1318,7 +1310,7 @@ export default function TabPreparation() {
             "At most two requests for the same inputs. A paid retry has its own quote; failures are never retried automatically.",
           )}
         </p>
-      </Card>
+      </Card>}
       {quote && (
         <Card
           className="border-signal p-5"
@@ -1347,13 +1339,14 @@ export default function TabPreparation() {
                 )}
           </p>
           <p className="mt-2 text-sm text-muted">{quote.note}</p>
+          {quote.correction?.trim() && <p className="mt-2 whitespace-pre-line text-sm" data-quoted-correction>{t("Correction comprise dans ce devis : ", "Correction included in this quote: ")}{quote.correction}</p>}
           <div className="mt-4 flex gap-3">
             <Button
               disabled={busy || quote.maxBudgetPct == null}
               onClick={async () => {
                 const q = quote;
                 setQuote(null);
-                await send({ action: "generate", quoteId: q.id, correction });
+                await send({ action: "generate", quoteId: q.id, correction: q.correction });
               }}
             >
               {t("Confirmer cet essai", "Confirm this attempt")}

@@ -1,8 +1,10 @@
+import { clientAnalysisContext, reconcileAnalysis, reviewGeneratedFact } from "./analysis-context";
+import { stableHash } from "../brain/hash";
 import {readClientDocuments,documentStamp} from "./documents";
 import { apiEvidence, assertAnalysisRoute } from "./evidence";
 /** Analyse réelle de la description, du lien et des originaux. Proposition conservée avant validation client. */
 import { aiAnalyzeProduct, aiAnalyzeService, productAnalysisRequest, serviceAnalysisRequest } from "../ai/tasks";
-import { estimateCallMicro, jsonCallMaxMicro, routeLlm, systemText } from "../ai/llm";
+import { estimateCallMicro, jsonCallMaxMicro, routeLlm, systemText, withSelectedStrategy } from "../ai/llm";
 import { assertAiAllowed } from "../ai/access";
 import { assetData, getAsset } from "../library";
 import { importLink } from "../engine/import-link";
@@ -13,7 +15,7 @@ import type { Brief } from "./types";
 import { analyzeLocally } from "./brief";
 import { briefMissing, factState, STATE_LABEL } from "./fiche";
 /** Texte transmis à l'analyse (description, documents, cible, consignes, réponses) : même source pour l'appel et le devis. */
-function analysisText(p: Project, b: Brief, link: { url: string; text: string; data: unknown } | null) {
+function analysisText(p: Project, b: Brief, link: { url: string; text: string; data: unknown } | null, correction?: string) {
   const input = b.input;
   const documents = readClientDocuments(p.id);
   return {
@@ -25,6 +27,8 @@ function analysisText(p: Project, b: Brief, link: { url: string; text: string; d
       `Consignes exactes : ${input.constraints}`,
       `Réponses déjà données par le client (à préserver) : ${JSON.stringify(b.profile.questions.filter(q => q.answer?.trim()))}`,
     ].join("\n"),
+    clientContext: clientAnalysisContext(b),
+    correction: correction?.trim() || undefined,
     providedName: input.offerName,
     providedBrand: input.brandName,
   };
@@ -43,22 +47,23 @@ const TYPICAL_OUTPUT_TOKENS = 3000;
  * internes possibles de llmJson. `maxMicro` est le plafond réservable (jamais dépassé) ; `estimateMicro`, une
  * estimation d'un seul appel au déroulé habituel. null : coût impossible à encadrer (tarif ou limites inconnus).
  */
-export function analysisCostPlan(p: Project, b: Brief): { provider: string; model: string; effort: string | null; maxMicro: number; estimateMicro: number; maxCalls: number; inputTokensMax: number } | null {
+export function analysisCostPlan(p: Project, b: Brief, correction?: string): { fingerprint: string; provider: string; model: string; effort: string | null; maxMicro: number; estimateMicro: number; maxCalls: number; inputTokensMax: number } | null {
   const input = b.input;
   const photoCount = input.photoIds.length;
   const placeholder = input.offerUrl ? { url: input.offerUrl, text: "x".repeat(18000), data: "y".repeat(6000) } : null;
-  const text = analysisText(p, b, placeholder);
+  const text = analysisText(p, b, placeholder, correction);
   const req = input.business === "services"
     ? serviceAnalysisRequest({ ...text, known: input.services, photoCount })
     : productAnalysisRequest({ ...text, price: input.price, colors: "" });
   const route = routeLlm({ task: "vision_analysis", userId: p.userId, ...(photoCount ? { images: [{ data: Buffer.alloc(1), label: "devis" }] } : {}) });
   if (route.mode !== "llm" || !route.provider || !route.model) return null;
-  const chars = systemText({ system: req.system }).length + req.prompt.length + 200;
+  const selected = withSelectedStrategy({ task: "vision_analysis", userId: p.userId, projectId: p.id, ...req });
+  const chars = systemText(selected).length + req.prompt.length + (selected.context?.length ?? 0) + (selected.volatile?.length ?? 0) + 200;
   const inputTokensMax = Math.ceil(chars / CHARS_PER_TOKEN_MIN) + photoCount * PHOTO_TOKENS_MAX;
   const worst = jsonCallMaxMicro(route.provider, route.model, inputTokensMax, req.maxTokens, req.maxOutputTokens, route.effort ?? null);
   const estimateMicro = estimateCallMicro(route.provider, route.model, Math.ceil(chars / 3.5) + photoCount * 1600, TYPICAL_OUTPUT_TOKENS);
   if (!worst || estimateMicro == null) return null;
-  return { provider: route.provider, model: route.model, effort: route.effort ?? null, maxMicro: worst.maxMicro, estimateMicro, maxCalls: worst.maxCalls, inputTokensMax };
+  return { fingerprint: stableHash("analysis-request-v2", { request: { ...req, system: systemText(selected), context: selected.context ?? null, volatile: selected.volatile ?? null }, route, worst, estimateMicro, documentStamp: documentStamp(p.id), photoIds: input.photoIds }), provider: route.provider, model: route.model, effort: route.effort ?? null, maxMicro: worst.maxMicro, estimateMicro, maxCalls: worst.maxCalls, inputTokensMax };
 }
 
 export async function inspectBrief(
@@ -66,6 +71,7 @@ export async function inspectBrief(
   b: Brief,
   ctx: JobContext,
   paid: boolean,
+  options?: { correction?: string },
 ): Promise<Brief> {
   if (!paid)
     throw new Error(
@@ -110,7 +116,7 @@ export async function inspectBrief(
     jobId: ctx.job.id,
     usageKey: `${ctx.job.id}:brief`,
   };
-  const common = { photos, ...analysisText(p, b, link) };
+  const common = { photos, ...analysisText(p, b, link, options?.correction) };
   const local = analyzeLocally(input);
   const result: Brief = {
     ...local,
@@ -146,13 +152,7 @@ export async function inspectBrief(
         ...local.profile.facts,
         ...r.facts
           .filter((f) => !local.profile.facts.some((u) => u.key === f.key))
-          .map((f) => ({
-            ...f,
-            status:
-              f.status === "confirmed" && ["ai", "photo"].includes(f.source)
-                ? ("inferred" as const)
-                : f.status,
-          })),
+          .map((f) => reviewGeneratedFact(b, f)),
       ],
       questions: r.questions,
       claimsToAvoid: r.claimsToAvoid,
@@ -183,13 +183,7 @@ export async function inspectBrief(
         ...user,
         ...r.facts
           .filter((f) => !user.some((u) => u.key === f.key))
-          .map((f) => ({
-            ...f,
-            status:
-              f.status === "confirmed" && ["ai", "photo"].includes(f.source)
-                ? ("inferred" as const)
-                : f.status,
-          })),
+          .map((f) => reviewGeneratedFact(b, f)),
       ],
       visual: { ...local.profile.visual, ...r.visual },
       variants: r.variants,
@@ -200,17 +194,6 @@ export async function inspectBrief(
   }
   // Une nouvelle lecture ne peut effacer une réponse, un point reporté ni ce que le client a lui-même corrigé
   // (faits, présentation, description de ses prestations).
-  const kept = b.profile.questions.filter(q => q.answer?.trim() || q.later);
-  result.profile.questions = [
-    ...result.profile.questions.map(q => {
-      const prior = kept.find(a => a.id === q.id || (a.factKey && a.factKey === q.factKey));
-      // Un report ne vaut pas pour une question devenue indispensable : elle redevient à répondre.
-      return prior ? { ...q, ...(prior.answer?.trim() ? { answer: prior.answer } : q.required ? {} : { later: true }) } : q;
-    }),
-    ...kept.filter(a => !result.profile.questions.some(q => q.id === a.id || (a.factKey && a.factKey === q.factKey))),
-  ];
-  const confirmed = b.profile.facts.filter(f => f.source === "user" && (f.status === "confirmed" || f.later));
-  result.profile.facts = [...confirmed, ...result.profile.facts.filter(f => !confirmed.some(c => c.key === f.key))];
   if (b.profile.summaryStatus === "provided") Object.assign(result.profile, { summary: b.profile.summary, summaryStatus: "provided" });
   if (input.business === "services") {
     // Liste saisie dans le formulaire : fournie par le client ; sinon proposée par l'analyse, à vérifier.
@@ -221,6 +204,7 @@ export async function inspectBrief(
       ...own.filter(o => !result.services.services.some(x => x.name.trim().toLowerCase() === o.name.trim().toLowerCase())),
     ];
   }
+  reconcileAnalysis(b, result);
   result.execution = apiEvidence(p.id, base.usageKey, photos.length > 0);
   result.missing = briefMissing(result);
   result.observations = [
