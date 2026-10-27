@@ -1,0 +1,25 @@
+{
+ "missingBefore": [
+  "Quels travaux réalisez-vous concrètement dans un aménagement (isolation, électricité, mobilier, eau, chauffage, gaz…) ?"
+ ],
+ "approveDisabledBefore": true,
+ "rawStatuses": false,
+ "missingAfter": [],
+ "approveDisabledAfter": false,
+ "afterReload": {
+  "services": [
+   "Aménagement complet de fourgon\nFourni par vous\nConception de l’agencement, mobilier, couchage, cuisine et rangements ; eau et électricité selon l’étude du projet.",
+   "Aménagement partiel de fourgon\nFourni par vous\nUne partie choisie par le client, par exemple le couchage, la cuisine ou les rangements."
+  ],
+  "process": "Déroulement d’une demande\nFourni par vous\n\nDéroulement d’une demande : Un premier échange à distance, puis un rendez-vous à l’atelier selon le besoin, avant le devis.\n\nFourni par vous\nCorriger",
+  "quote": "Informations utiles pour le devis\nÀ compléter\n\nDevis gratuit\n\nÀ compléter\nCompléter\nÀ préciser plus tard\n\nInformations utiles pour le devis\n\nÀ préciser plus tard\nCompléter",
+  "main": [
+   "Rendez-vous=true",
+   "Demande de devis=false"
+  ],
+  "missing": [],
+  "approveDisabled": false,
+  "rawStatuses": false
+ },
+ "consoleErrors": []
+}

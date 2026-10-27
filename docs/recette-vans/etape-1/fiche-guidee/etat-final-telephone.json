@@ -1,0 +1,73 @@
+{
+ "q": [
+  [
+   "travaux",
+   "Aménagement complet de fourgon : Conception de l’agencement, mobilier, couchage, cuisine et rangements ; eau et électricité selon l’étude du projet.\nAménagement partiel de fourgon : Une partie choisie par le client, par exemple le couchage, la cuisine ou les rangements.",
+   null
+  ],
+  [
+   "contact",
+   null,
+   null
+  ]
+ ],
+ "services": [
+  [
+   "Aménagement complet de fourgon",
+   "client",
+   "Conception de l’agencement, mobilier, couchage, cuisine et rangements ; eau et électricité selon l’étude du projet."
+  ],
+  [
+   "Aménagement partiel de fourgon",
+   "client",
+   "Une partie choisie par le client, par exemple le couchage, la cuisine ou les rangements."
+  ]
+ ],
+ "facts": [
+  [
+   "free_quote",
+   "unknown",
+   null,
+   ""
+  ],
+  [
+   "lead_time",
+   "unknown",
+   null,
+   ""
+  ],
+  [
+   "certification",
+   "unknown",
+   null,
+   ""
+  ],
+  [
+   "works",
+   "confirmed",
+   null,
+   "Aménagement complet de fourgon : Conception de l’agencement,"
+  ],
+  [
+   "request_process",
+   "confirmed",
+   null,
+   "Un premier échange à distance, puis un rendez-vous à l’ateli"
+  ],
+  [
+   "quote_needs",
+   "unknown",
+   true,
+   ""
+  ]
+ ],
+ "missing": [],
+ "provenance": "simulation",
+ "contact": [
+  "booking",
+  [
+   "booking",
+   "quote"
+  ]
+ ]
+}

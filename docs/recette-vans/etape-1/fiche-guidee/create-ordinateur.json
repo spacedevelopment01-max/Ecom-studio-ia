@@ -1,0 +1,9 @@
+{
+ "url": "http://127.0.0.1:3912/studio/2qlck3uv8rze4ygp/pilote",
+ "pid": "2qlck3uv8rze4ygp",
+ "consoleErrors": [],
+ "requests": [
+  "200 POST /api/auth/login ",
+  "200 POST /api/projects?subscription=3hd99g54f32yozp4 {\"id\":\"2qlck3uv8rze4ygp\",\"jobId\":null,\"started\":true,\"preparation\":true}"
+ ]
+}

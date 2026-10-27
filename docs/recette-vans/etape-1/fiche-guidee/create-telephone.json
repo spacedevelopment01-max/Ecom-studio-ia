@@ -1,0 +1,9 @@
+{
+ "url": "http://127.0.0.1:3912/studio/lhtk09u3ddz84bja/pilote",
+ "pid": "lhtk09u3ddz84bja",
+ "consoleErrors": [],
+ "requests": [
+  "200 POST /api/auth/login ",
+  "200 POST /api/projects?subscription=hzuqzy3k59uuu7wu {\"id\":\"lhtk09u3ddz84bja\",\"jobId\":null,\"started\":true,\"preparation\":true}"
+ ]
+}
