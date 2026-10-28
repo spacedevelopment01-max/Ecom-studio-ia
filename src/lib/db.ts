@@ -197,6 +197,31 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 CREATE INDEX IF NOT EXISTS chat_project ON chat_messages(project_id, thread, created_at);
 
+-- Lot A #209 : échanges uniquement ; les données d'un projet restent dans sa préparation et sa mémoire.
+-- Un brouillon avant création ne crée pas de projet et ne consomme aucun abonnement.
+CREATE TABLE IF NOT EXISTS agent_conversations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id TEXT UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL DEFAULT 0,
+  state_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS agent_one_draft ON agent_conversations(user_id) WHERE project_id IS NULL;
+CREATE TABLE IF NOT EXISTS agent_conversation_turns (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  request_id TEXT NOT NULL,
+  request_hash TEXT NOT NULL,
+  request_json TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(conversation_id, revision),
+  UNIQUE(conversation_id, request_id)
+);
+
 CREATE TABLE IF NOT EXISTS user_prompts (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
