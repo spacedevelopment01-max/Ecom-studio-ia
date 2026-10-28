@@ -1,0 +1,152 @@
+{
+  "code": "974d2b9e6956a0a5ecde150c27e921488d964ca4",
+  "version": {
+    "commit": "974d2b9e6956a0a5ecde150c27e921488d964ca4",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fullSuite": {
+    "passed": 3628,
+    "skipped": 45,
+    "filesPassed": 420,
+    "filesSkipped": 1,
+    "seconds": 669.67,
+    "command": "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run",
+    "logSha256": "fa5a8a2ea56cd99b611de2b4d418ba734abc6812bfe27c3319aaca35f79f662b",
+    "scope": "Application, backend and tests frozen throughout the complete run; file hashes matched before and after."
+  },
+  "targeted": {
+    "passed": 92,
+    "files": 6,
+    "seconds": 12.07,
+    "logSha256": "7140319294296646a32deaf02d08f431eaee3e40b7e75ca57722126949b1e4e8"
+  },
+  "typecheck": "passed",
+  "build": "passed clean production",
+  "browser": {
+    "schema": "agent211-D2-browser-proof-1",
+    "realBrowser": true,
+    "provider": "simulated-local-http",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "produit-avant-retouche.png",
+          "produit-devis-local-avant-apres.png",
+          "produit-recu-version.png",
+          "produit-apres-retouche-visible.png",
+          "produit-reprise-sans-nouvel-appel.png",
+          "produit-annulation-a-confirmer.png",
+          "produit-annulation-enregistree.png",
+          "produit-version-initiale-restauree.png",
+          "produit-image-devis-vrais-visuels.png",
+          "produit-image-remplacee-visible.png",
+          "produit-image-annulation-a-confirmer.png",
+          "produit-image-initiale-restauree.png",
+          "produit-annulation-360.png"
+        ],
+        "checks": {
+          "exactClientText": true,
+          "aiSelectedNativeOps": true,
+          "separateQuoteAndConsent": true,
+          "freeApplication": true,
+          "actualRenderedHeading": "Vos ruches, vos décisions.",
+          "unchangedOtherFields": "asserted in native inspection",
+          "explicitUndo": true,
+          "threeNativeVersions": true,
+          "reloginWithoutNewModel": true,
+          "csrf": 403,
+          "forged": 400,
+          "foreign": 404,
+          "noOverflow360": true,
+          "jsErrors": []
+        },
+        "imageVerified": true,
+        "totalNativeVersions": 5,
+        "simulatedCalls": 2,
+        "simulatedMicro": 15824,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "theme-videos/produit.webm"
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "service-avant-retouche.png",
+          "service-devis-local-avant-apres.png",
+          "service-recu-version.png",
+          "service-apres-retouche-visible.png",
+          "service-reprise-sans-nouvel-appel.png",
+          "service-annulation-a-confirmer.png",
+          "service-annulation-enregistree.png",
+          "service-version-initiale-restauree.png",
+          "service-annulation-360.png"
+        ],
+        "checks": {
+          "exactClientText": true,
+          "aiSelectedNativeOps": true,
+          "separateQuoteAndConsent": true,
+          "freeApplication": true,
+          "actualRenderedHeading": "Votre instrument, une histoire à poursuivre.",
+          "unchangedOtherFields": "asserted in native inspection",
+          "explicitUndo": true,
+          "threeNativeVersions": true,
+          "reloginWithoutNewModel": true,
+          "csrf": 403,
+          "forged": 400,
+          "foreign": 404,
+          "noOverflow360": true,
+          "jsErrors": []
+        },
+        "imageVerified": false,
+        "totalNativeVersions": 3,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "theme-videos/service.webm"
+      }
+    ]
+  },
+  "api": {
+    "csrf": 403,
+    "foreign": 404,
+    "forged": 400,
+    "reconnect": true,
+    "reuseWithoutCall": true,
+    "doneWithoutProof": "unit tested, result_missing",
+    "recordedWithoutClosedJob": "unit tested, separate state"
+  },
+  "simulationTotals": {
+    "providerHttpCalls": 6,
+    "calls": 6,
+    "usage": 6,
+    "simulatedMicro": 47472
+  },
+  "limits": [
+    "No real creative/model qualification",
+    "No real client data",
+    "No actual CMS installation",
+    "Chromium automated, not physical phone/Safari"
+  ],
+  "targetedDelivery": {
+    "passed": 92,
+    "files": 6,
+    "seconds": 11.27,
+    "command": "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run tests/conversation211-theme-tools.test.ts tests/conversation211-tools.test.ts tests/conversation211-intelligence.test.ts tests/conversation211-native-billing.test.ts tests/conversation211-request-bounds.test.ts tests/theme.test.ts",
+    "logSha256": "caa1bb9fd91276c149dce3602f9e8a7df018e7e96e3e00dda05ac7ece3068521"
+  }
+}
