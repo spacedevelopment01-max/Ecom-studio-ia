@@ -43,4 +43,4 @@ export function bindAgentJob(bid:string,user:string,jid:string,role:string){
     run('INSERT INTO agent_request_jobs(bound_id,job_id,role,depth) VALUES(?,?,?,?)',bid,jid,role,depth);
   });
 }
-export function boundPublic(bid:string){const b=one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=?',bid);if(!b)return null;const u=boundUsage(bid);return{maxCalls:b.max_calls,remainingCalls:Math.max(0,b.max_calls-u.calls),maxDepth:b.max_depth,maxRetries:b.max_retries,deadlineAt:b.deadline_at,httpAttempts:b.http_attempts};}
+export function boundPublic(bid:string){const b=one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=?',bid);if(!b)return null;const u=boundUsage(bid),tasks=one<{n:number}>('SELECT COUNT(*) n FROM agent_request_jobs WHERE bound_id=?',bid)!.n;return{maxCalls:b.max_calls,remainingCalls:Math.max(0,b.max_calls-Math.max(u.calls,tasks)),maxDepth:b.max_depth,maxRetries:b.max_retries,deadlineAt:b.deadline_at,httpAttempts:b.http_attempts};}

@@ -82,15 +82,20 @@ export function createCognitiveQuote(user: User, cid: string, input: { revision:
       if (estimatePct == null || maximumPct == null || !Number.isFinite(maximumPct)) throw new HttpError(409, 'conversation_budget_unavailable');
       const qid = id(), at = now();
       run('INSERT INTO agent_conversation_quotes(id,conversation_id,revision,project_revision,billing_key,plan_json,created_at) VALUES(?,?,?,?,?,?,?)', qid, cid, c.revision, current.revision, key, JSON.stringify(plan), at);
-      return { id: qid, estimatePct, maximumPct, expiresAt: at + expires, confirmationRequired: true, maxCalls: 1, actionsExecuted: false,...(specialistsEnabled()?{role:plan.role,requestBounds:boundPublic(plan.boundId!)}:{}) };
+      const requestBounds=plan.boundId?boundPublic(plan.boundId):null;
+      return { id: qid, estimatePct, maximumPct, expiresAt: Math.min(at+expires,requestBounds?.deadlineAt??Infinity), confirmationRequired: true, maxCalls: 1, actionsExecuted: false,...(specialistsEnabled()?{role:plan.role,requestBounds}:{}) };
     });
   });
 }
 function activeJob(jid: string) { return one<Job>("SELECT * FROM jobs WHERE id=? AND status IN ('queued','running','paused','blocked')", jid); }
-function checkedQuote(user: User, cid: string, qid: string, refresh = true) {
+function checkedQuote(user: User, cid: string, qid: string, refresh = true,acceptedJob?:Job) {
   const c = ownedConversation(user, cid), q = one<QuoteRow>('SELECT * FROM agent_conversation_quotes WHERE id=? AND conversation_id=?', qid, cid);
   if (!q) throw new HttpError(404, L('Devis introuvable.', 'Quote not found.'));
-  if (now() - q.created_at > expires || c.revision !== q.revision || currentBrief(c).revision !== q.project_revision) throw new HttpError(409, L('Ce devis a expiré ou son contexte a changé.', 'This quote expired or its context changed.'), 'conversation_quote_stale');
+  // La validité pour accepter le devis n'est pas le délai de traitement d'un accord déjà reçu.
+  // Seul le job serveur lié, créé pendant la validité, peut commencer dans les 15 min de cet accord.
+  const accepted=acceptedJob&&q.job_id===acceptedJob.id&&acceptedJob.user_id===user.id&&acceptedJob.project_id===c.project_id&&acceptedJob.type==='agent.reason'&&acceptedJob.created_at>=q.created_at&&acceptedJob.created_at<=q.created_at+expires;
+  const validUntil=accepted?acceptedJob.created_at+expires:q.created_at+expires;
+  if (now()>validUntil || c.revision !== q.revision || currentBrief(c).revision !== q.project_revision) throw new HttpError(409, L('Ce devis a expiré ou son contexte a changé.', 'This quote expired or its context changed.'), 'conversation_quote_stale');
   const key = account(c, user, q.billing_key), saved = JSON.parse(q.plan_json) as Plan;
   if (key !== q.billing_key) throw new HttpError(409, 'conversation_billing_changed');
   if (refresh) scoped(c, user.id, key, () => {
@@ -161,7 +166,7 @@ export async function runCognitiveJob(ctx: JobContext) {
     const acquired = !!one("SELECT 1 FROM ai_reservations WHERE job_id=? AND project_id IS ? AND task='agent_conversation' AND result IS NOT NULL AND status IN ('settled','reconciled')", ctx.job.id, owned.project_id);
     const { c, q, plan, key } = acquired && savedQuote
       ? { c: owned, q: savedQuote, plan: JSON.parse(savedQuote.plan_json) as Plan, key: account(owned, user, savedQuote.billing_key) }
-      : checkedQuote(user, input.conversationId, input.quoteId);
+      : checkedQuote(user, input.conversationId, input.quoteId,true,ctx.job);
     if (q.job_id !== ctx.job.id || c.project_id !== ctx.job.project_id) throw new HttpError(409, 'conversation_job_binding');
     ctx.progress(.15, L('Lecture du brief et de votre demande', 'Reading your brief and request'));
     if(plan.boundId&&!specialistsEnabled()&&!acquired)throw new HttpError(404,'conversation_specialists_disabled');

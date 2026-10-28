@@ -142,4 +142,16 @@ describe('#211 C — rôles à la demande et budget natif partagé (SDK simulé)
     await expect(runCognitiveJob(new JobContext(job))).rejects.toThrow('incertain');run("UPDATE jobs SET status='failed' WHERE id=?",job.id);
     const v=conversationView(user,cid);expect(()=>createCognitiveQuote(user,cid,{revision:v.revision,projectRevision:v.projectRevision,role:'quality'})).toThrow('limite');expect(fake.calls).toBe(1);
   });
+  it('le devis indique la vraie échéance restante de la demande commune',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid}=await setup();await oneReply(user,cid);
+    const deadline=Date.now()+60000;run('UPDATE agent_request_bounds SET deadline_at=? WHERE conversation_id=?',deadline,cid);
+    const v=conversationView(user,cid),q=createCognitiveQuote(user,cid,{revision:v.revision,projectRevision:v.projectRevision,role:'quality'});
+    expect(q.expiresAt).toBe(deadline);expect(q.requestBounds?.remainingCalls).toBe(3);
+  });
+  it.each([false,true])('un accord reçu à temps reste traitable après attente du worker (bornes %s)',async enabled=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS',enabled?'1':'0');const {user,cid,q}=await setup(),at=Date.now();
+    run('UPDATE agent_conversation_quotes SET created_at=? WHERE id=?',at-14*60000,q.id);
+    confirmCognitiveQuote(user,cid,q.id,id());const clock=vi.spyOn(Date,'now').mockReturnValue(at+2*60000);
+    try{const job=claimNext(['agent.reason'])!;await runCognitiveJob(new JobContext(job));expect(fake.calls).toBe(1);expect(conversationView(user,cid).intelligence?.reply).toBeTruthy();}finally{clock.mockRestore();}
+  });
 });
