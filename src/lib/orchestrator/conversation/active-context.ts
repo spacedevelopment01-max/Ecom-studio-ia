@@ -9,7 +9,8 @@ import {L} from '../../i18n-server';
 import {stableHash} from '../../brain/hash';
 import {ActiveContextSchema,type ActiveContext} from './active-context-contract';
 import type {ConversationRow} from './contract';
-export const activeContextEnabled=()=>process.env.STUDIO_CONVERSATION_LOT_A==='1'&&process.env.STUDIO_CONVERSATION_AI==='1'&&process.env.STUDIO_CONVERSATION_CONTEXT==='1';
+import {conversationContextEnabled} from './tool-flags';
+export const activeContextEnabled=conversationContextEnabled;
 const missing=()=>new HttpError(404,L('Cette cible est introuvable dans ce projet. Rien n’a été modifié.','This target was not found in this project. Nothing changed.'),'conversation_target_not_found');
 export function resolveActiveContext(c:ConversationRow,raw:unknown){
  const selected=ActiveContextSchema.parse(raw),target=selected.target;

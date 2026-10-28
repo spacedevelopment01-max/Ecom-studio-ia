@@ -232,7 +232,7 @@ export default function TabImages() {
   const services = data?.business === "services";
   const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
-  const agentUi=useAgentUi(),{setFocus:setAgentFocus}=useAgentFocus();
+  const agentUi=useAgentUi()&&data?.conversationContext===true,{setFocus:setAgentFocus}=useAgentFocus();
   useEffect(()=>{if(agentUi&&viewer)setAgentFocus({projectId:id,tab:'images',label:viewer.name,target:{kind:'asset',assetId:viewer.id,version:viewer.version}});},[agentUi,id,viewer,setAgentFocus]);
   const [dialog, setDialog] = useState<"search" | "create" | null>(null);
   const [themePreparation,setThemePreparation]=useState<ThemeImagePreparation|null>(null);
