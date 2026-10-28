@@ -38,7 +38,7 @@ const fake=http.createServer(async(req,res)=>{
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
-    const text=JSON.stringify(bad?{...fixture,businessEvidence:{sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}}:fixture);
+    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});

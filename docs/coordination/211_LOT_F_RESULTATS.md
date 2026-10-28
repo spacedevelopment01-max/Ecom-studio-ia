@@ -82,3 +82,17 @@ UI : `conversation-panel.tsx`, `agent-ui-context.tsx`, `home.tsx`, `shell.tsx`, 
 | CI finale, fusion et activation | CI finale à consulter séparément ; aucune autorisation de fusion ou de mise en service donnée par ce rapport |
 
 Les thèmes validés, les projets VANS/Contretemps et les autres données clients, médias, budgets et historiques restent hors de cette recette isolée. La suite des lots D/E/F se poursuit dans les incréments autorisés ; cette livraison répond spécifiquement aux compléments F1 et SYNA de #214.
+
+## Complément : échec CI du harnais C et correction ciblée (28 octobre, après livraison F1)
+
+La CI `40683690282` de `9ac907c` a échoué dans le job `122800873879`, étape « Rôles bornés lot C sur le build compilé ». Docker, types/tests, Theme Check, build et recettes B/F précédentes avaient réussi ; l’export Shopify compilé suivant n’a pas été exécuté dans ce run. Le journal constate `done != failed` dans le scénario de citation forgée. Ce run n’est donc pas annoncé vert.
+
+Cause vérifiée : le faux fournisseur ne corrompait que `businessEvidence`, mais la fixture du spécialiste avait `business=null`, donc cette preuve de type d’activité n’était pas utilisée. Le test n’avait pas construit le fait client invalide qu’il prétendait tester. Le harnais propose maintenant un changement de champ citant une source inexistante : ce contrôle est exécuté quel que soit le type d’activité. L’assertion exigeant l’échec reste présente, aucun contrôle n’est retiré. Correctif identique à celui déjà vérifié et publié dans D1 #215 ; aucun code applicatif, budget, maquette, capture ou donnée n’est modifié.
+
+Commande rejouée avec succès :
+
+```bash
+STUDIO_CONVERSATION_SPECIALISTS=1 NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx tsx scripts/verify-agent211-build.ts /tmp/ecom211-F-ci-recheck --specialists
+```
+
+[Preuve HTTP/SDK/worker de cette contre-vérification](preuves-211-F/ci-c-specialists-proof.json) : même application compilée propre `ad41f4301052a79dfe4e2e735ba8f6a40b5de476`, sources applicatives identiques à la livraison F1 `9ac907c` ; seul le harnais lu par Node est corrigé. Quatre appels locaux simulés, quatre usages / 31 648 micro simulés ; rejet effectif de la citation, état failed avant 100 %, pas de retry automatique. Coût réel nul. Les 33 captures et trois vidéos précédentes restent les preuves de cette même application. La nouvelle CI après publication de ce correctif doit être suivie séparément ; sa réussite n’est pas présumée. Aucun merge ou déploiement.
