@@ -5,7 +5,8 @@ import { stableHash } from '../../brain/hash';
 import { currentBrief, metaOf } from './store';
 import type { ConversationRow } from './contract';
 import { L } from '../../i18n-server';
-import {conversationToolsEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled} from './tool-flags';
+import {themeToolContext} from './theme-tool-context';
 
 /** Sources internes exactes. Une capacité présente dans un onglet n'est pas un outil raccordé au chat. */
 export function studioKnowledge() {
@@ -38,6 +39,7 @@ export function cognitiveContext(c: ConversationRow) {
     revision: c.revision, projectRevision: revision, business: meta.business, businessSource: meta.businessSource,
     brief: { ...brief, clientStatements: brief.clientStatements?.map(s => ({ id: `client.${s.id}`, source: s.source })) }, preparationStatus: status, sources: uniqueSources, knowledge,
     tools: [{ id: 'brief.update', mode: 'deterministic_client_confirmed' }, { id: 'understand-offer', mode: conversationToolsEnabled()&&c.project_id?'native_analysis_after_separate_quote_and_confirmation':'quote_only_separate_native_workflow',effect:'Analyse native de l’offre conservée pour relecture, jamais validation ni passage à l’étape suivante. Les droits, verrous et essais sont revérifiés sur le serveur.' }],
+    ...(conversationThemeToolsEnabled()&&c.project_id?{theme:themeToolContext(c.project_id),themeTool:{id:'theme.edit',mode:'native_exact_ops_after_free_quote_and_confirmation',rules:'Si le client demande une retouche avec un texte exact, proposer themePlan avec versionId et ops issus des cibles présentes. Chaque value doit être un extrait exact d’une source client. Sinon demander le texte précis ; le copywriting libre n’est pas raccordé à D2. Une image doit appartenir à media. Ne jamais annoncer la modification avant son reçu natif.'}}:{}),
     lastQuestion: meta.intelligence?.lastReply?.question ?? null,
   };
   const serialized = JSON.stringify(context);
