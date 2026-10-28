@@ -17,6 +17,7 @@ import { isPlatform, platformInfo, PlatformCards, recommendedPlatform, type Plat
 import { BOOKING_HINT, cleanServices, ContactModePicker, ServicesEditor } from "./services-editor";
 import { DeleteProjectButton } from "./delete-project";
 import { AiDescription } from "./ai-description";
+import { ConversationPanel } from "./conversation-panel";
 
 type ProjectCard = { id: string; name: string; status: string; sector: string | null; platform: string; business: BusinessType; updatedAt: number; cover: string | null; palette: Record<string, string> | null; brand: string | null; logo: string | null; subscription: { id: string; plan: PlanId; status: string; billing: Billing | null; periodEnd: number | null; cancelAtPeriodEnd: boolean } | null; ai: { plan: { used: number }; credits: { used: number } | null; paused: boolean } | null };
 
@@ -408,7 +409,7 @@ function useStudioParams() {
   return p;
 }
 
-export function StudioHome() {
+export function StudioHome({agentEnabled=false}:{agentEnabled?:boolean}) {
   const t = useT();
   const { lang } = useLang();
   const toast = useToast();
@@ -416,6 +417,7 @@ export function StudioHome() {
   const { data, error, reload: reloadProjects } = useApi<{ projects: ProjectCard[]; pending: Pending[]; hidden: Hidden[]; subscriptions: number }>("/api/projects", { poll: 8000 });
   const { data: me } = useApi<{ user: { role: string; name: string } }>("/api/me");
   const [creating, setCreating] = useState(false);
+  const [manual, setManual] = useState(false);
   const [useSub, setUseSub] = useState<string | null>(null);
   const [manage, setManage] = useState<ProjectCard | null>(null);
   const { billing } = useBilling({ poll: 60000 });
@@ -487,8 +489,8 @@ export function StudioHome() {
             </div>
           </div>
         ) : showNew && freeSub ? (
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
-            <div>
+          <div className={cx('grid gap-8',agentEnabled&&!manual?'mx-auto max-w-3xl':'lg:grid-cols-[1fr_1.2fr]')}>
+            <div className={cx(agentEnabled&&!manual&&'hidden')}>
               <p className="text-sm font-medium uppercase tracking-[.18em] text-signal">{t("Nouveau projet", "New project")}</p>
               <h1 className="mt-3 font-display text-4xl font-semibold leading-[0.95] sm:text-5xl">{t("Une boutique ou le site de votre activité.", "An online store, or your business website.")}</h1>
               <p className="mt-4 max-w-md text-lg text-ink-2">{t("Vous vendez des produits, ou vous proposez des services (artisan, coach, salon, cabinet, agence, restaurant…) : le studio vous accompagne dans la préparation de l’offre, la recherche, la marque, les textes et les visuels. Vos choix et vos versions sont conservés avant la construction du thème.", "Whether you sell products or offer services (trades, coaching, salon, practice, agency, restaurant…), the studio guides your offer, research, brand, copy and visuals. Your choices and versions are kept before theme construction.")}</p>
@@ -503,7 +505,7 @@ export function StudioHome() {
               </div>
               {projects.length > 0 && <Button variant="ghost" className="mt-6" onClick={() => setCreating(false)}>{t("← Retour à mes projets", "← Back to my projects")}</Button>}
             </div>
-            <Card className="p-5 sm:p-7"><NewProject key={freeSub.id} subscription={freeSub.id} plan={freeSub.plan} onDone={() => reloadProjects()} /></Card>
+            {agentEnabled&&!manual?<div><div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs"><span>{t('Abonnement sélectionné','Selected subscription')} : {PLANS[freeSub.plan].name[lang]}</span>{pending.length>1&&<Select aria-label={t('Abonnement à utiliser','Subscription to use')} value={freeSub.id} onChange={e=>setUseSub(e.target.value)}>{pending.map(s=><option key={s.id} value={s.id}>{PLANS[s.plan].name[lang]}</option>)}</Select>}</div><Card className="overflow-hidden"><ConversationPanel subscriptionKey={freeSub.id} onCreated={()=>reloadProjects()}/></Card><div className="mt-4 flex flex-wrap justify-center gap-3"><Button variant="ghost" onClick={()=>setManual(true)}>{t('Utiliser le formulaire manuel','Use the manual form')}</Button>{projects.length>0&&<Button variant="ghost" onClick={()=>setCreating(false)}>{t('Mes projets','My projects')}</Button>}</div></div>:<div><Card className="p-5 sm:p-7"><NewProject key={freeSub.id} subscription={freeSub.id} plan={freeSub.plan} onDone={() => reloadProjects()} /></Card>{agentEnabled&&<Button variant="ghost" className="mt-4" onClick={()=>setManual(false)}>{t('Revenir à la conversation','Return to conversation')}</Button>}</div>}
           </div>
         ) : creating || discovery ? (
           <div>

@@ -1,0 +1,65 @@
+/** Vrai Chromium sur le Studio compilé et son worker ; seul le fournisseur est simulé en loopback. */
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'node:fs';
+type Account={id:string;email:string};
+type Fixture={origin:string;out:string;account:()=>Promise<Account>;login:(user:any)=>Promise<{cookie:string}>;counts:()=>{providerHttpCalls:number};setFixture:(reply:Record<string,unknown>)=>void};
+export async function verifyAgentBrowser(f:Fixture){
+  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--disable-background-networking','--no-sandbox']});
+  const report:{scenario:string;viewport:{width:number;height:number};captures:string[];checks:Record<string,unknown>}[]=[];
+  const shots=path.join(f.out,'captures');fs.mkdirSync(shots,{recursive:true});
+  try{
+    for(const [index,scene]of [
+      {name:'produit',business:'products',text:'Je conçois plusieurs capteurs pour les ruches. Aucun chiffre de performance n’est confirmé.',target:'Apiculteurs professionnels',viewport:{width:1440,height:960}},
+      {name:'service',business:'services',text:'Je répare les instruments que les musiciens apportent à mon atelier. Je souhaite des devis et des rendez-vous, sans vente d’instruments.',target:'Musiciens et conservatoires',viewport:{width:390,height:844}},
+    ].entries()){
+      const user=await f.account(),session=await f.login(user),ctx=await browser.newContext({viewport:scene.viewport,reducedMotion:'reduce',recordVideo:{dir:path.join(f.out,'videos'),size:scene.viewport}});
+      await ctx.addCookies(session.cookie.split('; ').map(raw=>{const at=raw.indexOf('=');return{name:raw.slice(0,at),value:raw.slice(at+1),url:f.origin};}));
+      await ctx.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===f.origin||u.protocol==='data:'||u.protocol==='blob:'?route.continue():route.abort();});
+      const page=await ctx.newPage(),errors:string[]=[],captures:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+      const capture=async(name:string)=>{const file=`${index+1}-${scene.name}-${name}.png`;await page.screenshot({path:path.join(shots,file),fullPage:true});captures.push(file);};
+      await page.goto(f.origin+'/studio');await page.getByRole('heading',{name:'Quel projet souhaitez-vous créer ?'}).waitFor();
+      const entry=page.locator('[data-agent-conversation]');assert.equal(await entry.locator('select').count(),0);assert.equal(await entry.locator('input[type="radio"]').count(),0);
+      await capture('entree');const before=f.counts().providerHttpCalls;
+      await page.getByRole('button',{name:'Utiliser le formulaire manuel'}).click();await page.getByRole('button',{name:'Revenir à la conversation'}).waitFor();await capture('manuel-conserve');
+      await page.getByRole('button',{name:'Revenir à la conversation'}).click();
+      await entry.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question'}).fill(scene.text);
+      await entry.getByRole('button',{name:'Enregistrer',exact:true}).click();await entry.getByText(scene.text,{exact:true}).first().waitFor();assert.equal(f.counts().providerHttpCalls,before);
+      await page.reload();await entry.getByText(scene.text,{exact:true}).first().waitFor();
+      f.setFixture({message:'Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?',status:'question',business:scene.business,businessEvidence:{sourceId:'brief.description',quote:scene.text},question:{id:'clients-prioritaires',field:'target',title:'À qui souhaitez-vous vous adresser ?',why:'La clientèle guide les textes sans inventer de promesse.',multiple:true,choices:[{id:'professionnels',label:scene.target},{id:'other',label:'Autre / préciser'}]},proposedChanges:[],knowledgeSourceIds:[],proposedTools:[],actionsExecuted:false});
+      await entry.getByRole('button',{name:'Voir le devis de la réponse IA'}).click();await page.getByLabel('Devis de la réponse IA',{exact:true}).waitFor();assert.equal(f.counts().providerHttpCalls,before);
+      assert.ok(!(await page.getByLabel('Devis de la réponse IA',{exact:true}).innerText()).includes('€'));await capture('devis');
+      await entry.getByRole('button',{name:'J’accepte ce coût, répondre'}).click();await entry.getByRole('group',{name:'À qui souhaitez-vous vous adresser ?'}).waitFor({timeout:45000});assert.equal(f.counts().providerHttpCalls,before+1);
+      await entry.getByRole('button',{name:'Pourquoi cette question ?'}).click();await entry.getByRole('status').filter({hasText:'La clientèle guide'}).waitFor();
+      await capture('question');await page.setViewportSize({width:360,height:800});await capture('question-360');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.setViewportSize(scene.viewport);
+      await entry.getByRole('checkbox',{name:scene.target,exact:true}).check();await entry.getByRole('checkbox',{name:'Autre / préciser',exact:true}).check();await entry.getByRole('textbox',{name:'Votre réponse, avec vos mots'}).fill('Écoles spécialisées');await entry.getByRole('button',{name:'Enregistrer ma réponse',exact:true}).click();
+      await page.getByRole('status').filter({hasText:'Réponse exacte conservée'}).waitFor();assert.equal(f.counts().providerHttpCalls,before+1);
+      await entry.locator('summary').filter({hasText:'Votre fiche commune'}).click();await entry.getByText(scene.target+' ; Écoles spécialisées',{exact:true}).last().waitFor();await capture('memoire');
+      await entry.getByRole('button',{name:'Revoir / corriger'}).click();await entry.getByRole('button',{name:'Je ne sais pas encore'}).click();
+      await page.reload();await entry.getByRole('button',{name:'Voir le devis de la réponse IA'}).waitFor();await entry.locator('summary').filter({hasText:'Votre fiche commune'}).click();assert.ok((await entry.innerText()).includes('À qui souhaitez-vous vous adresser ?'));assert.equal(f.counts().providerHttpCalls,before+1);
+      await entry.getByRole('checkbox',{name:'J’ai relu ma fiche et je confirme ce rattachement.'}).check();await entry.getByRole('button',{name:'Créer mon projet',exact:true}).click();await page.waitForURL(/\/studio\/[^/]+\/pilote/,{timeout:30000});
+      const projectPath=page.url().slice(f.origin.length);await page.getByRole('button',{name:'Mon agent',exact:true}).click();await page.getByRole('dialog',{name:'Agent du projet',exact:true}).waitFor();await page.getByRole('dialog').getByText(scene.text,{exact:true}).first().waitFor();await capture('projet-repris');
+      await page.keyboard.press('Escape');assert.equal(await page.getByRole('dialog',{name:'Agent du projet',exact:true}).count(),0);assert.equal(await page.getByRole('button',{name:'Mon agent',exact:true}).evaluate(el=>el===document.activeElement),true);
+      const pid=projectPath.split('/')[2];await page.goto(f.origin+`/studio/${pid}/images`);await page.getByRole('button',{name:'Mon agent',exact:true}).click();await page.getByRole('dialog').getByText(scene.text,{exact:true}).first().waitFor();await capture('autre-onglet-meme-memoire');
+      assert.equal(f.counts().providerHttpCalls,before+1);assert.deepEqual(errors,[]);
+      report.push({scenario:scene.name,viewport:scene.viewport,captures,checks:{naturalEntry:true,manualPreserved:true,reopened:true,quoteBeforeCall:true,explicitConsent:true,why:true,multipleAndFree:true,unknownSaved:true,sameMemoryAcrossTabs:true,keyboardEscapeAndFocus:true,noOverflow360:true,jsErrors:errors,realProviderCalls:0,simulatedProviderCalls:1,video:`videos/${scene.name}.webm`}});const video=page.video();await ctx.close();if(video)fs.renameSync(await video.path(),path.join(f.out,'videos',`${scene.name}.webm`));
+    }
+    // La création réussit côté serveur, mais sa réponse n'arrive pas au navigateur.
+    // Le client retrouve son projet par sa carte normale et rattache le brouillon conservé.
+    const user=await f.account(),session=await f.login(user),ctx=await browser.newContext({viewport:{width:390,height:844},recordVideo:{dir:path.join(f.out,'videos'),size:{width:390,height:844}}});
+    await ctx.addCookies(session.cookie.split('; ').map(raw=>{const at=raw.indexOf('=');return{name:raw.slice(0,at),value:raw.slice(at+1),url:f.origin};}));
+    await ctx.route('**/*',route=>new URL(route.request().url()).origin===f.origin?route.continue():route.abort());
+    const page=await ctx.newPage(),text='Je fabrique des capteurs de ruches. Ce brouillon doit rester disponible après une coupure réseau.',before=f.counts().providerHttpCalls;
+    await page.goto(f.origin+'/studio');const entry=page.locator('[data-agent-conversation]');await entry.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question'}).fill(text);await entry.getByRole('button',{name:'Enregistrer',exact:true}).click();await entry.getByText(text,{exact:true}).first().waitFor();
+    f.setFixture({message:'Votre activité reste conservée.',status:'summary',business:'products',businessEvidence:{sourceId:'brief.description',quote:text},question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:[],actionsExecuted:false});
+    await entry.getByRole('button',{name:'Voir le devis de la réponse IA'}).click();await entry.getByRole('button',{name:'J’accepte ce coût, répondre'}).click();await entry.getByRole('checkbox',{name:'J’ai relu ma fiche et je confirme ce rattachement.'}).check();
+    let created='';await page.route('**/api/projects?subscription=*',async route=>{const response=await route.fetch();assert.equal(response.status(),200);created=(await response.json()).id;await route.abort();},{times:1});
+    await entry.getByRole('button',{name:'Créer mon projet',exact:true}).click();await entry.getByRole('alert').waitFor();assert.ok(created);assert.equal(f.counts().providerHttpCalls,before+1);
+    await page.reload();await page.locator(`a[href^="/studio/${created}"]`).first().click();await page.getByRole('button',{name:'Mon agent',exact:true}).click();
+    await page.getByRole('button',{name:'Reprendre ce brouillon dans ce projet'}).click();await page.getByRole('dialog').getByText(text,{exact:true}).first().waitFor();
+    await page.screenshot({path:path.join(shots,'3-reprise-apres-reponse-perdue-390.png'),fullPage:true});assert.equal(f.counts().providerHttpCalls,before+1);
+    report.push({scenario:'reponse-creation-perdue',viewport:{width:390,height:844},captures:['3-reprise-apres-reponse-perdue-390.png'],checks:{creationSucceededBeforeNetworkLoss:true,realBrowserRecovery:true,sameDraftImported:true,noExtraProviderCall:true,realProviderCalls:0,video:'videos/reprise.webm'}});const recoveryVideo=page.video();await ctx.close();if(recoveryVideo)fs.renameSync(await recoveryVideo.path(),path.join(f.out,'videos','reprise.webm'));
+    return{schema:'agent211-F-browser-proof-1',realBrowser:true,provider:'simulated-local-http',realProviderCalls:0,report};
+  }finally{await browser.close();}
+}

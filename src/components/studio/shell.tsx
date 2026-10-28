@@ -14,6 +14,7 @@ import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
 import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
 import { projectProgress } from "@/lib/project-progress";
+import { ConversationDock } from "./conversation-panel";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass },
@@ -610,6 +611,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         </main>
       </div>
       <MobileNav projectId={projectId} tab={tab} business={data?.business} badge={badge} />
+      <ConversationDock projectId={projectId} />
     </div>
   );
 }
