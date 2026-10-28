@@ -7,6 +7,7 @@ import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Repl
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
+import {previewSelectionScope} from '@/lib/conversation-presentation';
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -245,8 +246,7 @@ export default function TabBoutique() {
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
-        const address=String(d.path).match(/^\/preview\/([^/]+)\/v\/([^/]+)(\/.*)?$/);
-        if(address?.[1]===id)loadedSelectionScope.current={versionId:address[2],page:address[3]||'/'};
+        loadedSelectionScope.current=previewSelectionScope(String(d.path),id);
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
         // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
         // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
