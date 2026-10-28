@@ -37,7 +37,7 @@ const fake=http.createServer(async(req,res)=>{
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
-    const text=JSON.stringify(bad?{...fixture,businessEvidence:{sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}}:fixture);
+    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Public inventé',sourceId:'source-inexistante',quote:'Public inventé'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -95,13 +95,23 @@ try{
     (proof.cases as unknown[]).push({business:scene.business,exchanges,quote:q,job:{status:job.status,progress:job.progress},reservation:reservations[0],reconnected:true,createdProjectWithoutAnalysis:true,csrf:403,foreign:404,forgedProvider:400});
     sessions[i]=fresh;
   }
+  let specialistCalls=0;
+  if(process.argv.includes('--specialists')){
+    assert.equal(process.env.STUDIO_CONVERSATION_SPECIALISTS,'1');const s=sessions[0],c=one<{id:string}>('SELECT id FROM agent_conversations WHERE user_id=?',s.u.id)!,route=`/api/studio-agent/conversations/${c.id}`;
+    const v:View=await call(s,route);fixture={message:'Les informations non confirmées restent à préciser. Aucun avis ni résultat commercial ne peut être déduit de cette recette.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:['studio.conversation'],proposedTools:[],actionsExecuted:false};
+    const q=await call(s,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision,role:'quality'});assert.equal(q.role,'quality');assert.equal(q.maxCalls,1);
+    const before=counts(),j=await call(s,route+'/intelligence',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const job=await finished(s,j.jobId);assert.equal(job.status,'done',JSON.stringify(job));
+    const result:View=await call(s,route);assert.equal(result.intelligence?.lastRole,'quality');assert.equal(counts().providerHttpCalls,before.providerHttpCalls+1);
+    const plan=one<{status:string;steps_json:string}>('SELECT status,steps_json FROM task_plans WHERE project_id=?',v.projectId!)!;assert.equal(plan.status,'done');assert.equal(JSON.parse(plan.steps_json).length,1);
+    proof.specialist={role:'quality',calls:1,jobStatus:job.status,planner:plan,requestBounds:result.intelligence!.requestBounds,simulatedOnly:true};specialistCalls=1;
+  }
   // Une citation forgée (JSON valide) est facturée en simulation, mais jamais annoncée comme une réponse réussie.
   const s=sessions[0],c=one<{id:string}>('SELECT id FROM agent_conversations WHERE user_id=?',s.u.id)!,route=`/api/studio-agent/conversations/${c.id}`;let v:View=await call(s,route);
   v=await call(s,route,{revision:v.revision,projectRevision:v.projectRevision,requestId:id(),action:'message',text:'Quels sont les formats d’export du Studio ?'});
   bad=true;const q=await call(s,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision});const j=await call(s,route+'/intelligence',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const failed=await finished(s,j.jobId);assert.equal(failed.status,'failed');
   v=await call(s,route);assert.equal(v.intelligence?.state,'failed');assert.ok(failed.progress<1);const afterFailure=counts();await new Promise(r=>setTimeout(r,1700));assert.deepEqual(counts(),afterFailure);proof.failure={status:failed.status,progress:failed.progress,conversationState:v.intelligence!.state,priorReplyPreserved:!!v.intelligence!.reply,noAutomaticRetry:true};
   const exported=await call(s,'/api/me/data-export');assert.ok(!JSON.stringify(exported).includes(sessions[1].u.email));proof.accountExportIsolated=true;
-  proof.simulatedTotals={...counts(),tokenCounts};assert.equal(providerCalls,3);assert.equal(counts().calls,3);assert.equal(counts().usage,3);
+  proof.simulatedTotals={...counts(),tokenCounts};assert.equal(providerCalls,3+specialistCalls);assert.equal(counts().calls,3+specialistCalls);assert.equal(counts().usage,3+specialistCalls);
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   proof.finishedAt=new Date().toISOString();proof.success=true;
 }finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}

@@ -17,6 +17,7 @@ import { currentBrief, metaOf, ownedConversation, turnsOf } from "./store";
 import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
+import {clearConversationAnswer} from './answer-state';
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
 
@@ -63,12 +64,7 @@ function setUnknown(b: Brief, m: ConversationState, key: QuestionKey) {
   const factKey = `conversation.${key}`;
   const label = questionFor(key, b, m).title;
   b.profile.facts = [...b.profile.facts.filter(f => f.key !== factKey), { key: factKey, label, value: "", status: "unknown", source: "user", later: true }];
-  if (key === "business") { m.business = null; m.businessSource = "unknown"; }
-  if (key === "target") b.input.target = "";
-  if (key === "goals" && b.input.business === "services") {
-    b.input.services.contactMode = b.services.contactMode = "form";
-    b.input.services.contactModes = b.services.contactModes = [];
-  }
+  clearConversationAnswer(b,m,key);
   m.deferred = [...new Set([...m.deferred, key])];
 }
 function answer(b: Brief, m: ConversationState, cmd: Extract<Command, { action: "answer" }>) {
@@ -270,6 +266,8 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       if (!c.project_id) m.draft = b;
     }
     const next = c.revision + 1;
+    // Lire une explication ou rouvrir une carte ne périme pas une proposition aux données inchangées.
+    if(!changed&&['explain','summary','back-ai','back'].includes(cmd.action)&&m.intelligence?.sourceRevision===c.revision&&(m.intelligence.sourceProjectRevision??null)===revision)m.intelligence.sourceRevision=next;
     run("UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?", next, JSON.stringify(m), now(), c.id, c.revision);
     if (c.project_id && changed) remember(c.project_id, { kind: "artifact", key: `conversation.turn.${next}`, value: JSON.stringify({ conversationId: c.id, turn: next, action: cmd.action, field: cmd.action === "edit" ? cmd.field : cmd.action === "answer" ? cmd.question : null, preparationRevision: currentBrief({ ...c, state_json: JSON.stringify(m) }).revision }), status:"inferred",source: "local", origin: "system" });
     const response = conversationView(user, c.id);
