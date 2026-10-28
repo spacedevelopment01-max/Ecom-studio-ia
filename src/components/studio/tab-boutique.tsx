@@ -638,6 +638,25 @@ export default function TabBoutique() {
     </div>
   );
 
+  const SecondaryTools = (<>
+        <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? t("Cliquez un élément", "Click an element") : t("Désigner", "Select")}</button>
+        {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
+{!full && (
+          <>
+{layoutSections.length > 0 && (
+            <button onClick={() => { const open = !layoutOpen; setLayoutOpen(open); if (open && window.innerWidth < 1024) setView("structure"); }} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", layoutOpen ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={layoutOpen} aria-controls="layout-panel" data-layout-open>
+              <PanelTop className="size-3.5" /> {theme.v2 ? t("Disposition", "Layout") : t("En-tête et pied de page", "Header & footer")}
+            </button>
+          )}
+<button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
+                <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> {t("Thèmes", "Themes")}</button>
+                <CustomThemeButton projectId={id} status={custom.data} reload={custom.reload} onDone={() => (reload(), reloadProject())} />
+                <button onClick={() => setImportOpen("upload")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" title={t("Importer le thème de votre boutique Shopify", "Import your Shopify store theme")}><Upload className="size-3.5" /> {t("Importer mon thème", "Import my theme")}</button>
+                {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title={t("Analyse de votre thème importé", "Analysis of your imported theme")}><Layers className="size-3.5" /> {cur.imported.name} · {t("analyse", "analysis")}</button>}
+          </>
+        )}
+  </>);
+
   const Preview = (
     <div className="relative flex h-full min-h-0 flex-col">
       {layoutOpen && !full && layoutSections.length > 0 && (
@@ -665,22 +684,7 @@ export default function TabBoutique() {
         <button onClick={() => setFull(!full)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", full ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={full} title={full ? t("Quitter le plein écran (Échap)", "Exit full screen (Esc)") : t("Voir le thème en plein écran", "View the theme full screen")} data-preview-full>
           {full ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />} {full ? t("Quitter", "Exit") : t("Plein écran", "Full screen")}
         </button>
-        <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? t("Cliquez un élément", "Click an element") : t("Désigner", "Select")}</button>
-        {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
-{!full && (
-          <>
-{layoutSections.length > 0 && (
-            <button onClick={() => { const open = !layoutOpen; setLayoutOpen(open); if (open && window.innerWidth < 1024) setView("structure"); }} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", layoutOpen ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={layoutOpen} aria-controls="layout-panel" data-layout-open>
-              <PanelTop className="size-3.5" /> {theme.v2 ? t("Disposition", "Layout") : t("En-tête et pied de page", "Header & footer")}
-            </button>
-          )}
-<button onClick={() => setLibTarget({ template: pageTemplate(page, theme), label: t("En bas de la page", "At the bottom of the page") })} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink"><Plus className="size-3.5" /> {t("Section", "Section")}</button>
-                <button onClick={() => setGalleryOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-signal px-3.5 text-xs font-semibold text-signal-ink"><Palette className="size-3.5" /> {t("Thèmes", "Themes")}</button>
-                <CustomThemeButton projectId={id} status={custom.data} reload={custom.reload} onDone={() => (reload(), reloadProject())} />
-                <button onClick={() => setImportOpen("upload")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" title={t("Importer le thème de votre boutique Shopify", "Import your Shopify store theme")}><Upload className="size-3.5" /> {t("Importer mon thème", "Import my theme")}</button>
-                {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title={t("Analyse de votre thème importé", "Analysis of your imported theme")}><Layers className="size-3.5" /> {cur.imported.name} · {t("analyse", "analysis")}</button>}
-          </>
-        )}
+        {agentUi?<details className="relative" data-site-tools><summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs"><SlidersHorizontal className="size-3.5"/>{t("Outils du site", "Website tools")}</summary><div className="fixed inset-x-3 top-24 z-[45] flex max-h-[calc(100dvh-8rem)] flex-wrap gap-2 overflow-y-auto rounded-2xl border border-line bg-card p-3 shadow-soft xl:absolute xl:inset-x-auto xl:right-0 xl:top-full xl:mt-2 xl:w-[560px]">{SecondaryTools}<button type="button" className="min-h-9 rounded-full border border-line px-3 text-xs" onClick={event=>event.currentTarget.closest("details")?.removeAttribute("open")}>{t("Fermer les outils", "Close tools")}</button></div></details>:SecondaryTools}
         <div className={cx("ml-auto flex items-center gap-1.5", full && "hidden")}>
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? t(" (consultation)", " (viewing)") : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Versions", "Versions")}><History className="size-4" /></button>
@@ -721,7 +725,7 @@ export default function TabBoutique() {
   );
 
   return (
-    <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
+    <div className={cx("-mx-4 sm:-mx-6 lg:-mx-8",!agentUi&&"-my-6")}>
       {theme.quality && theme.quality.verdict !== "FINAL" && <div className="m-3 rounded-xl border border-line bg-paper-2 p-3 text-sm"><p className="font-medium">{t("Thème enregistré, à vérifier avant utilisation", "Theme saved, review before use")}</p><p className="mt-1 text-muted">{theme.quality.reason}</p></div>}
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
       {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}

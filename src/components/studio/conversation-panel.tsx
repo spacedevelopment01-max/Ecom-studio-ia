@@ -5,23 +5,13 @@ import {ArrowRight,Check,History,Loader2,MessageCircle,Paperclip,Send,ShieldChec
 import {api,Button,cx,Textarea} from '../ui';
 import {useLang,useT} from '../i18n';
 import {formatPct} from '@/lib/budget-pct';
-import {conversationQuestionState,displayMaximumPct} from '@/lib/conversation-presentation';
+import {conversationClientText as clientText,conversationQuestionState,displayMaximumPct} from '@/lib/conversation-presentation';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import type {CognitiveQuestion} from '@/lib/orchestrator/conversation/intelligence-contract';
 import {useAgentPanel,useAgentUi} from './agent-ui-context';
 
 type Quote={id:string;estimatePct:number;maximumPct:number;expiresAt:number;confirmationRequired:true};
 const requestId=()=>crypto.randomUUID();
-/** Affiche des données texte du serveur : jamais HTML ou outil exécutable fourni par un modèle. */
-function clientText(request:unknown):string {
-  const r=request as Record<string,unknown>|null;
-  if(!r)return '';
-  if(r.action==='agent-reply')return '';
-  if(typeof r.text==='string'&&r.text)return r.text;
-  if(typeof r.clientAnswer==='string')return r.clientAnswer;
-  if(typeof r.value==='string')return r.value;
-  return '';
-}
 function Question({q,busy,onAnswer,onWhy,onBack}:{q:CognitiveQuestion;busy:boolean;onAnswer:(choices:string[],text:string,unknown:boolean)=>Promise<void>;onWhy:()=>void;onBack:()=>void}){
   const t=useT(),field=useId();const[choices,setChoices]=useState<string[]>([]),[text,setText]=useState('');
   useEffect(()=>{setChoices([]);setText('');},[q.id]);

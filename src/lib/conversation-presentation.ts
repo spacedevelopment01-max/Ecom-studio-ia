@@ -2,6 +2,12 @@
 export function displayMaximumPct(value:number){if(!Number.isFinite(value)||value<0)throw Error('invalid_quote_maximum');return value<10?Math.ceil(value*10)/10:Math.ceil(value);}
 
 import type {ConversationView} from './orchestrator/conversation/contract';
+export function conversationClientText(request:unknown):string{
+  const r=request as Record<string,unknown>|null;if(!r||r.action==='agent-reply')return '';
+  if(r.action==='answer-ai'&&typeof r.clientAnswer==='string')return r.clientAnswer;
+  if(typeof r.text==='string'&&r.text)return r.text;
+  return typeof r.value==='string'?r.value:'';
+}
 /** Une réponse active reste visible et corrigible sans présenter de nouveau la même question. */
 export function conversationQuestionState(view:ConversationView,history=view.history){
   const q=view.intelligence?.reply?.question;if(!q)return null;
