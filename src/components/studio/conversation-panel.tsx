@@ -10,6 +10,7 @@ import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import type {CognitiveQuestion} from '@/lib/orchestrator/conversation/intelligence-contract';
 import {useAgentPanel,useAgentUi} from './agent-ui-context';
 import {ConversationTools} from './conversation-tools';
+import {ConversationRenderTools} from './conversation-render-tools';
 import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
 
@@ -92,6 +93,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}
       {v?.exportExecution?.enabled&&projectId&&<ConversationExportTools view={v}/>}
+      {v?.renderExecution?.enabled&&projectId&&<ConversationRenderTools view={v}/>}
       {!loading&&(!projectId||v)&&<form onSubmit={e=>{e.preventDefault();void submit();}} className="rounded-2xl border border-line bg-card p-3 shadow-soft">
         <label htmlFor={inputId} className="sr-only">{t('Décrivez votre projet ou posez votre question à SYNA','Describe your project or ask SYNA a question')}</label>
         <Textarea id={inputId} value={text} onChange={e=>setText(e.target.value)} maxLength={8000} rows={compact?3:4} disabled={busy} placeholder={t('Votre idée, votre activité, ce qui compte pour vous…','Your idea, your business, what matters to you…')} className="resize-y border-0 bg-transparent shadow-none focus-visible:ring-0"/>

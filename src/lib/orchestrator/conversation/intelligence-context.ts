@@ -5,11 +5,12 @@ import { stableHash } from '../../brain/hash';
 import { currentBrief, metaOf } from './store';
 import type { ConversationRow } from './contract';
 import { L } from '../../i18n-server';
-import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled} from './tool-flags';
 import {currentTheme,loadProject} from '../../projects';
 import {projectKind} from '../../theme/project-kind';
 import {compositionCatalog,compactCompositionCatalog} from '../../theme/composition/catalog';
 import {compositionContext} from '../../theme/composition/server';
+import {renderRegistry} from './render-tool-execution';
 import {nativeExportsRegistry} from './export-tool-execution';
 import {themeToolContext} from './theme-tool-context';
 
@@ -49,6 +50,7 @@ export function cognitiveContext(c: ConversationRow) {
     ...(conversationThemeToolsEnabled()&&c.project_id?{theme:themeToolContext(c.project_id),themeTool:{id:'theme.edit',mode:'native_exact_ops_after_free_quote_and_confirmation',rules:'Si le client demande une retouche avec un texte exact, proposer themePlan avec versionId et ops issus des cibles présentes. Chaque value doit être un extrait exact d’une source client. Sinon demander le texte précis ; le copywriting libre n’est pas raccordé à D2. Une image doit appartenir à media. Ne jamais annoncer la modification avant son reçu natif.'}}:{}),
     ...(conversationCompositionEnabled()&&c.project_id?{composition:scopedComposition(c),compositionTool:{id:'theme.compose',rules:'Proposer compositionPlan pour adapter ou composer librement les pages avec composants natifs, sources exactes du contexte et médias du projet. Ne pas inventer de texte ni média. Les champs des composants renvoient aux définitions intégrales dans fieldDefinitions : les lire par leur ID. Chaque binding.source désigne une source entière, avec le scope de la même page. Les champs longs non affichés ne sont pas lus ici : le devis les montre intégralement. Garder les sections fonctionnelles/verrouillées et leurs positions. Mode original non raccordé : ne pas le promettre. Un plan enregistré n’est ni un contrôle visuel réussi ni une installation CMS. Devis et confirmation locaux séparés, quality=not_measured.'}}:{}),
     ...(conversationExportsEnabled()&&c.project_id?{exports:nativeExportsRegistry(one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,c.id),exportTool:{id:'theme.export',rules:'Exporter le Site actuel dans un fichier de la bibliothèque, après devis local à 0 % et accord distinct. exportPlan contient uniquement tool, versionId actuelle et platform du registre. Un reçu delivered prouve le ZIP local identifié, pas son installation CMS. Réutiliser le fichier acquis de la même source ; ne pas créer de doublon. Aucun envoi externe, stock, paiement ou publication.'}}:{}),
+    ...(conversationRenderEnabled()&&c.project_id?{renderEvidence:(()=>{const r=renderRegistry(one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,c.id);return{available:r.available,currentVersion:r.currentVersion,paths:r.paths,imagesProvidedToModel:false,receipts:r.receipts.map(p=>({id:p.id,state:p.state,delivered:p.delivered,version:p.version,creative:p.creative,technical:p.technical,files:p.files.map(f=>({id:f.id,path:f.metrics.path,width:f.metrics.width,pageHeight:f.metrics.pageHeight,horizontalOverflow:f.metrics.horizontalOverflow,brokenImages:f.metrics.brokenImageIndexes.length,potentialCrops:f.metrics.potentialCrops.length}))}))};})(),renderTool:{id:'theme.inspect-render',rules:'Captures natives ordinateur/téléphone de 1 ou 2 pages réellement rendues. renderPlan contient tool, versionId actuelle et paths de la liste. Devis local 0 %, accord distinct, aucun Site modifié. Les métriques sont techniques ; les images ne sont PAS transmises à ce modèle. Ne jamais prétendre les voir ni attribuer une note esthétique. Un reçu captured prouve les fichiers, pas la qualité créative, les formulaires, RDV, panier ou CMS.'}}:{}),
     lastQuestion: meta.intelligence?.lastReply?.question ?? null,
   };
   const serialized = JSON.stringify(context);

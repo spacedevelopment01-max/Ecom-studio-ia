@@ -119,3 +119,21 @@ export async function snapshotTheme(spec: ThemeSpec, pathname = "/", opts: { des
     await browser.close();
   }
 }
+
+/** Native render evidence for an explicitly selected, owned Site version. No AI judgment or CMS delivery. */
+export type ThemeRenderEvidence={path:string;width:number;height:number;pageHeight:number;scrollWidth:number;horizontalOverflow:boolean;imageCount:number;brokenImageIndexes:number[];potentialCrops:{index:number;naturalWidth:number;naturalHeight:number;width:number;height:number;objectFit:string}[];pageErrors:string[];jpeg:Buffer};
+export async function captureThemeEvidence(spec:ThemeSpec,paths:string[],opts:{widths?:(1440|390)[]}={}):Promise<ThemeRenderEvidence[]>{
+  const executablePath=chromiumPath();if(!executablePath)throw new Error('theme_capture_browser_unavailable');
+  if(paths.length<1||paths.length>2||paths.some(p=>!p.startsWith('/')||p.startsWith('//')||p.includes('?')||p.includes('#')||p.length>300))throw new Error('theme_capture_paths_invalid');
+  const widths=opts.widths??[1440,390];if(!widths.length||widths.length>2||widths.some(w=>w!==1440&&w!==390))throw new Error('theme_capture_widths_invalid');
+  const {chromium}=await import('playwright');const browser=await chromium.launch({executablePath,args:['--no-sandbox','--disable-dev-shm-usage','--disable-background-networking']});const shots:ThemeRenderEvidence[]=[];
+  try{for(const pathname of paths)for(const width of widths){
+    const {context,url}=await themeContext(browser,spec,{width,height:width===390?844:960},width===390);
+    try{const page=await context.newPage(),pageErrors:string[]=[];page.on('pageerror',e=>pageErrors.push(e.message));const response=await page.goto(url(pathname),{waitUntil:'load',timeout:45000});if(!response||response.status()>=400)throw new Error('theme_capture_page_unavailable');
+      await page.evaluate(async()=>{await document.fonts.ready;for(let y=0;y<document.documentElement.scrollHeight;y+=Math.round(innerHeight*.8)){if(y>20000)throw Error('theme_capture_page_too_long');scrollTo({top:y,behavior:'instant'});await new Promise(r=>setTimeout(r,60));}scrollTo({top:0,behavior:'instant'});await Promise.all(Array.from(document.images).map(i=>i.decode().catch(()=>{})));});
+      await page.waitForTimeout(250);const metrics=await page.evaluate(()=>{const imgs=Array.from(document.images),pageHeight=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);return{pageHeight,scrollWidth:Math.max(document.body.scrollWidth,document.documentElement.scrollWidth),imageCount:imgs.length,brokenImageIndexes:imgs.flatMap((i,index)=>i.currentSrc&&(!i.complete||i.naturalWidth===0)?[index]:[]),potentialCrops:imgs.flatMap((i,index)=>{const b=i.getBoundingClientRect(),objectFit=getComputedStyle(i).objectFit;return objectFit==='cover'&&b.width>0&&b.height>0&&i.naturalWidth>0&&Math.abs(i.naturalWidth/i.naturalHeight-b.width/b.height)>.05?[{index,naturalWidth:i.naturalWidth,naturalHeight:i.naturalHeight,width:b.width,height:b.height,objectFit}]:[];})};});
+      if(metrics.pageHeight>20000)throw new Error('theme_capture_page_too_long');const jpeg=await page.screenshot({fullPage:true,type:'jpeg',quality:88,animations:'disabled'});if(!jpeg.length)throw new Error('theme_capture_empty');
+      shots.push({path:pathname,width,height:width===390?844:960,...metrics,horizontalOverflow:metrics.scrollWidth>width+1,pageErrors,jpeg});
+    }finally{await context.close();}
+  }}finally{await browser.close();}return shots;
+}

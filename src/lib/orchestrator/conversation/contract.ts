@@ -69,6 +69,7 @@ export type ConversationView = {
   execution?: {enabled:true};
   themeExecution?: {enabled:true};
   exportExecution?: {enabled:true};
+  renderExecution?: {enabled:true};
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;
   question: ChoiceCard | null;

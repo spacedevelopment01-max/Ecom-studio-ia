@@ -35,7 +35,7 @@ function resolve(user:User,projectId:string){
    read(instance.settings,schema.settings);for(const bid of instance.block_order??[])if(!instance.blocks![bid].disabled)read(instance.blocks![bid].settings,schema.blocks.find(b=>b.type===instance.blocks![bid].type)?.settings??[],bid);
   }
  }
- const media=all<{id:string}>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND deleted_at IS NULL AND status!='rejected' ORDER BY created_at,id LIMIT 40",projectId);
+ const media=all<{id:string}>("SELECT id FROM assets WHERE project_id=? AND kind='image' AND COALESCE(role,'')!='theme-render-capture' AND deleted_at IS NULL AND status!='rejected' ORDER BY created_at,id LIMIT 40",projectId);
  for(const row of media){const a=getAsset(row.id);if(a)add({kind:'media',assetId:a.id,filename:themeFileName(a,a.role??'media'),scope:'site',provenance:{kind:a.origin==='upload'?'client':'acquired',ref:`asset.${a.id}`}});}
  const liveMedia=(assetId:string)=>{const a=getAsset(assetId);return a&&a.project_id===projectId&&a.user_id===user.id&&a.kind==='image'&&!a.deleted_at&&a.status!=='rejected'?{filename:themeFileName(a,a.role??'media')}:null;};
  return{current,sources,descriptors,liveMedia};
