@@ -5,16 +5,27 @@ import { stableHash } from '../../brain/hash';
 import { currentBrief, metaOf } from './store';
 import type { ConversationRow } from './contract';
 import { L } from '../../i18n-server';
-import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
 import {currentTheme,loadProject} from '../../projects';
 import {projectKind} from '../../theme/project-kind';
 import {compositionCatalog,compactCompositionCatalog} from '../../theme/composition/catalog';
 import {compositionContext} from '../../theme/composition/server';
+import {researchRegistry} from './research-tool-execution';
 import {renderRegistry} from './render-tool-execution';
 import {nativeExportsRegistry} from './export-tool-execution';
 import {themeToolContext} from './theme-tool-context';
 
 function scopedComposition(c:ConversationRow){if(!c.project_id)return null;const u=one<User>('SELECT * FROM users WHERE id=?',c.user_id);if(!u)return null;try{const context=compositionContext(u,c.project_id),theme=currentTheme(c.project_id)!;return{available:true,...context,...compactCompositionCatalog(compositionCatalog(theme.spec,c.project_id,projectKind(loadProject(c.project_id))))};}catch(e){if(e instanceof HttpError&&[402,404,409].includes(e.status))return{available:false,reason:e.message};throw e;}}
+
+function researchContext(c:ConversationRow){
+ const r=researchRegistry(one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,c.id),a=r.acquired?.result;
+ return {available:r.available,limits:r.limits,acquired:a?{revision:a.revision,isCurrentInput:a.isCurrentInput,provenance:a.provenance,
+  // Explicit index, not a silent truncation or a claim to have read the complete documents.
+  readingScope:'index_and_exact_observations_only',fullNativeResultHref:r.href,excludedFields:['source.excerpt','source.relevance.reason','angle.positioning','angle.arguments','angle.objections','angle.reason','angle.tone','angle.visualDirection','angle.communicationChange'],
+  coverage:a.content.coverage,sources:a.content.sources.map(s=>({id:s.id,url:s.url,title:s.title,status:s.status,provenance:s.provenance,category:s.category})),observations:a.content.observations,
+  angles:a.content.angles.map(v=>({id:v.id,title:v.title,audience:v.audience,motivation:v.motivation,message:v.message,sourceIds:v.sourceIds,hypothesis:v.hypothesis})),recommendation:a.content.recommendation,recommendedId:a.content.recommendedId,
+ }:null,receipts:r.receipts.map(p=>({id:p.id,state:p.state,delivered:p.delivered,clientApproved:p.clientApproved,revision:p.result?.revision??null}))};
+}
 
 /** Sources internes exactes. Une capacité présente dans un onglet n'est pas un outil raccordé au chat. */
 export function studioKnowledge() {
@@ -37,7 +48,7 @@ export function cognitiveContext(c: ConversationRow) {
     ...brief.profile.facts.filter(f => f.source === 'user' && f.status === 'confirmed').map(f => ({ id: `fact.${f.key}`, text: f.value })),
     ...(brief.clientStatements ?? []).map(s => ({ id: `client.${s.id}`, text: s.text })),
     // Corrections exactes données pour les outils, dans la mémoire native du même projet/conversation.
-    ...(c.project_id?all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.tool.%' ORDER BY created_at,rowid",c.project_id).map(r=>json<{id?:string;conversationId?:string;correction?:string}>(r.value,{})).filter(m=>m.conversationId===c.id&&m.id&&m.correction?.trim()).map(m=>({id:`tool.${m.id}.correction`,text:m.correction!})):[]),
+    ...(c.project_id?all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND (key LIKE 'agent.tool.%' OR key LIKE 'agent.research.tool.%') ORDER BY created_at,rowid",c.project_id).map(r=>json<{id?:string;conversationId?:string;correction?:string}>(r.value,{})).filter(m=>m.conversationId===c.id&&m.id&&m.correction?.trim()).map(m=>({id:`tool.${m.id}.correction`,text:m.correction!})):[]),
     ...turns.map(t => { const r = json<Record<string, unknown>>(t.request_json, {}); return { id: `turn.${t.revision}`, text: String(r.text ?? r.value ?? r.clientAnswer ?? '') }; }).filter(x => x.text),
   ];
   // Une même parole n'est pas recopiée comme note ET comme historique ; seuls les IDs utiles sont exposés.
@@ -51,6 +62,7 @@ export function cognitiveContext(c: ConversationRow) {
     ...(conversationCompositionEnabled()&&c.project_id?{composition:scopedComposition(c),compositionTool:{id:'theme.compose',rules:'Proposer compositionPlan pour adapter ou composer librement les pages avec composants natifs, sources exactes du contexte et médias du projet. Ne pas inventer de texte ni média. Les champs des composants renvoient aux définitions intégrales dans fieldDefinitions : les lire par leur ID. Chaque binding.source désigne une source entière, avec le scope de la même page. Les champs longs non affichés ne sont pas lus ici : le devis les montre intégralement. Garder les sections fonctionnelles/verrouillées et leurs positions. Mode original non raccordé : ne pas le promettre. Un plan enregistré n’est ni un contrôle visuel réussi ni une installation CMS. Devis et confirmation locaux séparés, quality=not_measured.'}}:{}),
     ...(conversationExportsEnabled()&&c.project_id?{exports:nativeExportsRegistry(one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,c.id),exportTool:{id:'theme.export',rules:'Exporter le Site actuel dans un fichier de la bibliothèque, après devis local à 0 % et accord distinct. exportPlan contient uniquement tool, versionId actuelle et platform du registre. Un reçu delivered prouve le ZIP local identifié, pas son installation CMS. Réutiliser le fichier acquis de la même source ; ne pas créer de doublon. Aucun envoi externe, stock, paiement ou publication.'}}:{}),
     ...(conversationRenderEnabled()&&c.project_id?{renderEvidence:(()=>{const r=renderRegistry(one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,c.id);return{available:r.available,currentVersion:r.currentVersion,paths:r.paths,imagesProvidedToModel:false,receipts:r.receipts.map(p=>({id:p.id,state:p.state,delivered:p.delivered,version:p.version,creative:p.creative,technical:p.technical,files:p.files.map(f=>({id:f.id,path:f.metrics.path,width:f.metrics.width,pageHeight:f.metrics.pageHeight,horizontalOverflow:f.metrics.horizontalOverflow,brokenImages:f.metrics.brokenImageIndexes.length,potentialCrops:f.metrics.potentialCrops.length}))}))};})(),renderTool:{id:'theme.inspect-render',rules:'Captures natives ordinateur/téléphone de 1 ou 2 pages réellement rendues. renderPlan contient tool, versionId actuelle et paths de la liste. Devis local 0 %, accord distinct, aucun Site modifié. Les métriques sont techniques ; les images ne sont PAS transmises à ce modèle. Ne jamais prétendre les voir ni attribuer une note esthétique. Un reçu captured prouve les fichiers, pas la qualité créative, les formulaires, RDV, panier ou CMS.'}}:{}),
+    ...(conversationResearchEnabled()&&c.project_id?{research:researchContext(c),researchTool:{id:'research',rules:'Proposer research uniquement pour une recherche native explicitement demandée. Compréhension validée obligatoire, sources/forfaits/devis/plafonds revérifiés. Le devis recherche et son accord sont distincts de cette réponse. Aucun angle approuvé, choix stratégique consommé, marque, texte ou thème automatique. Les hypothèses restent à relire ; ne pas annoncer une source externe consultée sans son résultat natif. Le contexte est un index avec observations exactes, pas les documents complets : respecter readingScope et excludedFields. Le résultat intégral reste dans la carte SYNA et Préparation. Ne pas déduire de contenu des champs exclus ni traiter une source simulation comme une vraie consultation Internet.'}}:{}),
     lastQuestion: meta.intelligence?.lastReply?.question ?? null,
   };
   const serialized = JSON.stringify(context);
