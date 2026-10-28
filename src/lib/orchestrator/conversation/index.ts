@@ -22,6 +22,7 @@ import {activeContextEnabled,resolveActiveContext,observedActiveContext} from '.
 import {studioKnowledgeEnabled,captureStudioObservation} from './studio-observation';
 import {studioOperationCatalogue} from './studio-operations';
 import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
+import {strategyChoicesEnabled,strategyChoicesView,applyStrategyChoice} from "./strategy-choices";
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
 
@@ -68,6 +69,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     view.message = view.intelligence.message;
     view.progress = !b.input.description ? 'describe' : m.business ? 'collect' : 'clarify';
   }
+  if(c.project_id&&strategyChoicesEnabled())view.strategyChoices=strategyChoicesView(c,m);
   if(includeStudioHelp&&studioKnowledgeEnabled())view.studioHelp={observation:captureStudioObservation(c),capabilities:studioOperationCatalogue(c.project_id,!readOnlyReason)};
   return view;
 }
@@ -276,6 +278,7 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       changed = result.changed; message = result.message;
     }
     if (cmd.action === 'explain' && intelligenceEnabled() && m.intelligence?.lastReply?.question) message = m.intelligence.lastReply.question.why;
+    if (["open-strategy-comparison","compare-strategy-options","decide-strategy-option","undo-strategy-preference","accept-strategy-preference"].includes(cmd.action)) message=applyStrategyChoice(c,m,cmd);
     if (changed) {
       saveBrief(c, b, user, revision);
       if (!c.project_id) m.draft = b;

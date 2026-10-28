@@ -15,6 +15,7 @@ import { requirePlan } from '../../plan-gates';
 import { L } from '../../i18n-server';
 import { currentBrief, metaOf, ownedConversation } from './store';
 import { assertBriefWritable, saveBrief } from './tools';
+import {validateStrategyChoiceProposal} from './strategy-choices';
 import { COGNITIVE_SYSTEM, cognitiveContext } from './intelligence-context';
 import { CognitiveReplySchema, type CognitiveReply, type IntelligenceView } from './intelligence-contract';
 import type { ConversationRow } from './contract';
@@ -147,6 +148,7 @@ function validateReply(reply: CognitiveReply, c: ConversationRow, context: Retur
     if (!reply.businessEvidence) throw new Error('conversation_business_evidence_missing');
     evidence(reply.businessEvidence.sourceId, reply.businessEvidence.quote);
   }
+  if(reply.strategyChoice){validateStrategyChoiceProposal(reply.strategyChoice,c,metaOf(c));evidence(reply.strategyChoice.sourceId,reply.strategyChoice.quote);}
   for (const change of reply.proposedChanges) evidence(change.sourceId, change.quote, change.value);
   if (reply.knowledgeSourceIds.some(id => !context.knowledge.some(k => k.id === id))) throw new Error('conversation_unknown_knowledge_source');
   if (reply.question) {

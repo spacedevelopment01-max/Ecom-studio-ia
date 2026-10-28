@@ -8,12 +8,18 @@ export const QUESTION_KEYS = ["business", "goals", "target"] as const;
 export type QuestionKey = (typeof QUESTION_KEYS)[number];
 export const EDIT_FIELDS = ["description", "target", "offerName", "brandName", "constraints", "services", "customization", "process", "quote"] as const;
 export type EditField = (typeof EDIT_FIELDS)[number];
+import {ANGLE_IDS} from "../../marketing-strategy/types";
 const base = z.object({
   revision: z.number().int().min(0),
   requestId: z.string().min(8).max(80).regex(/^[a-zA-Z0-9_-]+$/),
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("open-strategy-comparison"),comparisonId:z.string().min(1).max(100)}).strict(),
+  base.extend({action:z.literal("compare-strategy-options"),angleIds:z.array(z.enum(ANGLE_IDS)).min(2).max(5).optional(),sourceComparisonId:z.string().min(1).max(100).optional(),sourceVersion:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict(),
+  base.extend({action:z.literal("decide-strategy-option"),comparisonId:z.string().min(1).max(100),version:z.string().regex(/^[a-f0-9]{64}$/),angleId:z.enum(ANGLE_IDS),decision:z.enum(["prefer","reject"]),reason:z.string().trim().min(1).max(1200)}).strict(),
+  base.extend({action:z.literal("undo-strategy-preference"),decisionId:z.string().min(1).max(100)}).strict(),
+  base.extend({action:z.literal("accept-strategy-preference"),receiptId:z.string().min(1).max(100)}).strict(),
   base.extend({ action: z.literal("message"), text: z.string().trim().min(1).max(8000), context:ActiveContextSchema.optional(), referenceUrls: z.array(z.url().max(1000)).max(12).optional(), photoIds: z.array(z.string().min(1).max(80)).max(12).optional() }).strict(),
   base.extend({ action: z.literal("answer"), question: z.enum(QUESTION_KEYS), choices: z.array(z.string().max(60)).max(5).default([]), text: z.string().trim().max(1200).default(""), unknown: z.boolean().default(false) }).strict(),
   base.extend({ action: z.literal("edit"), field: z.enum(EDIT_FIELDS), value: z.string().trim().min(1).max(8000) }).strict(),
@@ -38,6 +44,7 @@ export type ConversationState = {
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
   activeContext?: ActiveContext;
+  strategyChoices?:import("./strategy-choices").StrategyChoicesState;
   studioObservation?:import('./studio-observation').StudioObservation;
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
@@ -75,6 +82,7 @@ export type ConversationView = {
   renderExecution?: {enabled:true};
   researchExecution?: {enabled:true};
   activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
+  strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;
   studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;

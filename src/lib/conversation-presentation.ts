@@ -4,6 +4,7 @@ export function displayMaximumPct(value:number){if(!Number.isFinite(value)||valu
 import type {ConversationView} from './orchestrator/conversation/contract';
 export function conversationClientText(request:unknown):string{
   const r=request as Record<string,unknown>|null;if(!r||r.action==='agent-reply')return '';
+  if(r.action==='decide-strategy-option'&&typeof r.reason==='string')return r.reason;
   if(r.action==='answer-ai'&&typeof r.clientAnswer==='string')return r.clientAnswer;
   if(typeof r.text==='string'&&r.text)return r.text;
   return typeof r.value==='string'?r.value:'';

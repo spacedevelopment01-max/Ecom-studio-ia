@@ -1,0 +1,206 @@
+{
+  "fidelite-video.json": {
+    "sha256": "49e87707b7c58c9a5ae7ef4cb99675e6c9bb585b5b2f3d2e3499dd3aab0711d0",
+    "size": 1522
+  },
+  "chronologie.json": {
+    "sha256": "f53963dc871feaeb74d3fe9205b25a66fc01f6de6fe67d8c3a5553bd34de0e5d",
+    "size": 2552
+  },
+  "choices-produit-mono-native.json": {
+    "sha256": "c4a1127b8d3b657bfeaa90da22270386675b97673715490691a24efaf53a1b7d",
+    "size": 79765
+  },
+  "verifications.json": {
+    "sha256": "82049e55e30c18911bccdb536625715128084b42fecdf4e5c44ae5609321ad0b",
+    "size": 16047
+  },
+  "README.md": {
+    "sha256": "9fde3f5027cbd7e0bdfa6ddedab3c5d9efbdebc66237885c7b6a32e983b1ec6a",
+    "size": 4179
+  },
+  "choices-produit-multi-native.json": {
+    "sha256": "8f86c0a11df3c00dfc301fd2983d7b5f4bf856a421760dc540973ac1c72748e6",
+    "size": 79765
+  },
+  "choices-service-native.json": {
+    "sha256": "46332b927e8d5050d11c6b1700eb43589e302bc15c61062b11ea3cea3e8fcdde",
+    "size": 80011
+  },
+  "logs/D7-types-qualified.txt": {
+    "sha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b",
+    "size": 208
+  },
+  "logs/D7-browser-first.txt": {
+    "sha256": "49504add55be8fb287d2294f4c6f6e52bf8bf375944fa0d9d27b7ed4619d0276",
+    "size": 575
+  },
+  "logs/D7-target-last-request.txt": {
+    "sha256": "f5a79c8a6da53646298740347dab54b7074994f3f4323e72cc1b2ab555d7388c",
+    "size": 656
+  },
+  "logs/D7-build-clean.txt": {
+    "sha256": "eedde494acddd1c21939672fb900438c72a5b43647ea0f7ba0e770f2c3e5be1d",
+    "size": 17627
+  },
+  "logs/D7-full-qualified.txt": {
+    "sha256": "f461a20a839a25533a6d006ffa1e1ea8ede2b4cca7a6ad90eeaf4cfbdfdc2b6a",
+    "size": 261858
+  },
+  "videos/produit-mono.mp4": {
+    "sha256": "ded824fc9f35a5e4c9480d2fe8eeb25b8994b870d7ce9bd2d4cfcd6e15a1f489",
+    "size": 1427110
+  },
+  "videos/produit-multi.mp4": {
+    "sha256": "7a395896af993011f80e44393c301eaa574d64eaec751756e7a10e08b9e1c334",
+    "size": 1235074
+  },
+  "videos/service.mp4": {
+    "sha256": "4734c60ba7a9beec8d6b5af6db9647493735f5828c966e188abf178e860ea931",
+    "size": 807545
+  },
+  "planches/produit-multi-3.jpg": {
+    "sha256": "27632452043e6e732e71507413a2b264b0927d19a4947fd502086531e3e57b6d",
+    "size": 173006
+  },
+  "planches/produit-mono-3.jpg": {
+    "sha256": "98af6b69e236af905305832faa38da6fb44a9cdf7fe499b1585d1c4c9a4dcc97",
+    "size": 132579
+  },
+  "planches/produit-mono-1.jpg": {
+    "sha256": "197008d44899d694c20761e6fef7ce80f2ffd9b617faca7784684618c0476794",
+    "size": 135829
+  },
+  "planches/service-2.jpg": {
+    "sha256": "8291eb085eceb6bc6237a2e259dd03018b75e60ecf8323b58ea49a6ce58da1b8",
+    "size": 136306
+  },
+  "planches/produit-multi-2.jpg": {
+    "sha256": "c6417ba055a90e46491bafb69c7a2c5e757f1105710835ea46d6fcb8b156fa4f",
+    "size": 178872
+  },
+  "planches/service-1.jpg": {
+    "sha256": "49932531d9f53f3acae0d7ad1b7fb2f7194f1e59d5b5644bbe7c00bd205563ee",
+    "size": 129165
+  },
+  "planches/service-3.jpg": {
+    "sha256": "234af63ca5ed2b6c20348c184c270f4b5dd5313aef6dca90052d83bf28e0cb5e",
+    "size": 139624
+  },
+  "planches/produit-mono-2.jpg": {
+    "sha256": "c344d2efdff120f265dcf7b8e74f707ab8a26e0de3a221895996bcefe3d75e8b",
+    "size": 137656
+  },
+  "planches/produit-multi-1.jpg": {
+    "sha256": "f5b60d61e313c0e06d5a662e27b3ededaecea6a6186fa4e4c237c0231899a52b",
+    "size": 173557
+  },
+  "captures/service-annulation-native.png": {
+    "sha256": "7bccb3c990eb424cdca747c8bb5b921df128d6bcdb86e326a2d9a93bd843d867",
+    "size": 64760
+  },
+  "captures/service-devis-distinct-du-choix.png": {
+    "sha256": "abef9f19933448f640424fab1b1230e56e8613fc54702ba423408273c0d3d4f3",
+    "size": 57488
+  },
+  "captures/service-rejet-explicite.png": {
+    "sha256": "2d403977000eaec608ea78196d1f9984dcf4344bedc0907b1c5b5237b6a8eb09",
+    "size": 66270
+  },
+  "captures/service-deux-options-exactes.png": {
+    "sha256": "66c8ddea5d33681412a00a54c7df2f7f30973566c1ecbc0675d32c1e197feee0",
+    "size": 73875
+  },
+  "captures/produit-multi-reprise-historique-perime.png": {
+    "sha256": "c0ba2d7c64a9273af32ecff585fb8ee4909fa565b16049e03b3ba50aeb7b5ffd",
+    "size": 199027
+  },
+  "captures/produit-multi-confirmation-preferee-sans-activation.png": {
+    "sha256": "d9e7f76b6d0b5d917b307bdd807b9b3a935d251c91b254469c5e806ec60b1d21",
+    "size": 205027
+  },
+  "captures/produit-mono-reprise-historique-perime.png": {
+    "sha256": "7698b4471b58f47a8eb37d12cd0b773f0cb8fa7d78cafde4925be95ae3cd0ab0",
+    "size": 227532
+  },
+  "captures/service-reprise-historique-perime.png": {
+    "sha256": "a00e857a6f7d0ea55c37f7f16de3b4eb7e0cd7df3274bc682e9b4c8a273ed536",
+    "size": 78013
+  },
+  "captures/produit-mono-preference-et-raison.png": {
+    "sha256": "bf77061baefce80539ce31878becb323748b9ac767ac3fecba0e804e1723f159",
+    "size": 243027
+  },
+  "captures/produit-mono-confirmation-preferee-sans-activation.png": {
+    "sha256": "1b4fa69e2365a3e12d4777795b01470298f471b896c5e0b8ce521c46bb240349",
+    "size": 239373
+  },
+  "captures/produit-multi-annulation-native.png": {
+    "sha256": "9e850ec57cf1bef87fb674460e78e378cc28b9b74ae13bce4a0ba7dbfae95b85",
+    "size": 196146
+  },
+  "captures/service-cinq-options-acquises.png": {
+    "sha256": "62df5bdcbd00fc87411533fe701fce1a15904bccb001e4c339b3762eb672bc36",
+    "size": 67845
+  },
+  "captures/produit-multi-rejet-explicite.png": {
+    "sha256": "641f8eea3134753e9d5ac17e27753883e41aa45955880df1857332d1354d1698",
+    "size": 198550
+  },
+  "captures/produit-mono-deux-options-exactes.png": {
+    "sha256": "72722904e9654d244e0fd94cc46ad4932f022ad9662e6ee63c41885c10cf5269",
+    "size": 246776
+  },
+  "captures/service-conseil-simule-source.png": {
+    "sha256": "8add2bd256762a8ec644f43ec54a2411a3ff3c0e1096cdb458ebb5590a8387c1",
+    "size": 74275
+  },
+  "captures/produit-multi-devis-distinct-du-choix.png": {
+    "sha256": "61b294c6dc6706ea609242907d9dc153f77de3ad9bea63efb797899637a6d659",
+    "size": 187974
+  },
+  "captures/produit-multi-cinq-options-acquises.png": {
+    "sha256": "f98ac3b060d5a2ef9b40e204102a895962d841d83507a6d1443da47d6ab3dc23",
+    "size": 198233
+  },
+  "captures/produit-mono-conseil-simule-source.png": {
+    "sha256": "998c3a1e2c193f12d417474273abe83abe435065bd481522d1a92ef6eab62450",
+    "size": 250110
+  },
+  "captures/produit-mono-cinq-options-acquises.png": {
+    "sha256": "b9bf92dde4c47e0f47aeb85c789c8518d5be35ec573b9dc6ddd1af1cb823a9d3",
+    "size": 242666
+  },
+  "captures/produit-multi-preference-et-raison.png": {
+    "sha256": "1d55d9abb82d0af51cab089f162be36fe2d49b9f169d57522f6a2697d403b04b",
+    "size": 198174
+  },
+  "captures/service-preference-et-raison.png": {
+    "sha256": "f8cf474ce9465a37e47874d3bf3d15105395dfcc9f97171dd321ab7b128458b1",
+    "size": 65843
+  },
+  "captures/service-confirmation-preferee-sans-activation.png": {
+    "sha256": "b67950f3de5504751139fc6992c296bcd965ec910f5256cde79f9f11f95e9e09",
+    "size": 66053
+  },
+  "captures/produit-mono-annulation-native.png": {
+    "sha256": "755bf3df7736097fe2d4472aab04241306ee465ae0164e5151570f706afaf64b",
+    "size": 240754
+  },
+  "captures/produit-multi-deux-options-exactes.png": {
+    "sha256": "df2f99e502748968cc918c2aeb6dbd28caf920d05fa7a01fe56997e7750a4347",
+    "size": 204175
+  },
+  "captures/produit-mono-rejet-explicite.png": {
+    "sha256": "7b2af970fb461591ccbd08904e8023391965b80fd7251132b8e8b994d5f07c12",
+    "size": 243430
+  },
+  "captures/produit-mono-devis-distinct-du-choix.png": {
+    "sha256": "7303792a84d3c80d705d5b4792478ea64221907303db6ebca979037aa664b9dd",
+    "size": 230583
+  },
+  "captures/produit-multi-conseil-simule-source.png": {
+    "sha256": "2f26ebf3987c765a4e5873003a93e49e99d68f77b9347063679775820b70e107",
+    "size": 206913
+  }
+}
