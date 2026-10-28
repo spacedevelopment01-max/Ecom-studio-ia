@@ -1,0 +1,48 @@
+{
+  "code": "54daf754e313f4335a3b2fdc8df4d1a2ec1051b8",
+  "data": "isolated fictitious only",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "full": {
+    "passed": 3648,
+    "skipped": 45,
+    "filesPassed": 422,
+    "filesSkipped": 1,
+    "seconds": 810.25,
+    "command": "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs XDG_CACHE_HOME=/tmp/ecom209-font-cache npx vitest run",
+    "logSha256": "5dfa89bbc0a152bd0ccf495bb526a5e41ad7e1bdb59768366ad24b672aaf6a5e"
+  },
+  "targeted": {
+    "passed": 20,
+    "files": 2,
+    "command": "npx vitest run tests/composition211-plan.test.ts tests/composition211-server.test.ts",
+    "logSha256": "20869ee58525efe090f4dff0cad692c8967a3d068e57dfdc15494ac5bd7875b8"
+  },
+  "types": "passed before build and after clean build",
+  "build": {
+    "status": "passed",
+    "tree": "clean",
+    "logSha256": "77bd98c3203f6b6976e9211fdfaaf24e94cc6f5ce4ae25be7c434c96de1c2624"
+  },
+  "themeCheck": {
+    "command": "bash scripts/verify-theme.sh --rapide",
+    "cases": 24,
+    "zipClient": true,
+    "errors": 0,
+    "warningsPerCase": 35,
+    "logSha256": "9e7f527e1942a2bd72d270f211d65d8763204185dddfb712df1773ca8ef9d040"
+  },
+  "scope": [
+    "Strict schemas, scopes and full text preservation",
+    "Native operations, library gates and ownership",
+    "Actual native renderPage and exportThemeZip assertions for mono/multi/services",
+    "No new theme UI in E1; E2 owns the browser composition flow"
+  ],
+  "limits": [
+    "No real LLM interpretation or creative quality measured",
+    "Unit ZIP loader intentionally returns null: image bytes not qualified by this test",
+    "No CMS installation, external publication or client data",
+    "original and imported composition explicitly unavailable",
+    "No connection of new copywriting generation in E1"
+  ]
+}

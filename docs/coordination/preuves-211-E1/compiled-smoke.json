@@ -1,0 +1,16 @@
+{
+  "version": {
+    "commit": "54daf754e313f4335a3b2fdc8df4d1a2ec1051b8",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "loginStatus": 200,
+  "realProviderCalls": 0,
+  "workerStarted": false,
+  "readOnlyRoutes": [
+    "/api/version",
+    "/connexion"
+  ]
+}

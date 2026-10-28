@@ -1,0 +1,42 @@
+{
+  "code": "54daf754e313f4335a3b2fdc8df4d1a2ec1051b8",
+  "files": [
+    {
+      "path": "src/lib/theme/spec.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/src/lib/theme/spec.ts",
+      "sha256": "fe8714905b382ec2620dbd6299c925ab393c4e1e9492f8f65ae38f80e594aac2",
+      "gitBlob": "8b4abbffcbb584592c36e7418761802619f842ce"
+    },
+    {
+      "path": "src/lib/theme/composition/assemble.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/src/lib/theme/composition/assemble.ts",
+      "sha256": "600820ad432d9064427215d511c2d28af87ed76fe45c3eb6d70f090cb300a0f2",
+      "gitBlob": "f369b83405c23a2f13e971746a32157ce29f4045"
+    },
+    {
+      "path": "src/lib/theme/composition/contract.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/src/lib/theme/composition/contract.ts",
+      "sha256": "fcf86cf88807a38d87388b035817f7410695c2430992cadea3c9b898348ec516",
+      "gitBlob": "ec06bcfee0738e86bcaa2bb62fa2a9389500d4fe"
+    },
+    {
+      "path": "src/lib/theme/composition/server.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/src/lib/theme/composition/server.ts",
+      "sha256": "d3ccc90d201686879cc210f3cfee1a795f614926ca1d8972264e85da0cc2f4e9",
+      "gitBlob": "a8f1e2ca479ba3a76bb73a6db3a3141e8ac3d98a"
+    },
+    {
+      "path": "tests/composition211-plan.test.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/tests/composition211-plan.test.ts",
+      "sha256": "1bfb0131b5213b94a22bedd6d5e844109c5551303cee30bd13ea976803972af5",
+      "gitBlob": "e1da4424fb0f6597e1aaf00aa9e721138cdc773c"
+    },
+    {
+      "path": "tests/composition211-server.test.ts",
+      "abs": "/workspace/reviews/ecom-211-lot-e1-composition/tests/composition211-server.test.ts",
+      "sha256": "9367e804b156a38bb70f0224260690104c46d3dfb99ec090030c3ef3a5b32299",
+      "gitBlob": "7c6b4cf26dcf33c9fa698d08068495ffde1d8ed5"
+    }
+  ],
+  "frozenDuringFullSuite": true
+}
