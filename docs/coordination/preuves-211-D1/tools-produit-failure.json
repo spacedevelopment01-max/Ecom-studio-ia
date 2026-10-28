@@ -1,0 +1,422 @@
+{
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0,
+  "registry": {
+    "projectId": "6v5bonhqu1g5x48i",
+    "revision": 6,
+    "tools": [
+      {
+        "id": "project.inspect",
+        "state": "available",
+        "executionEnabled": true,
+        "cost": "free",
+        "effect": "Lire les acquis et leur provenance, sans modification."
+      },
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "cost": "free",
+        "commandEndpoint": "/api/studio-agent/conversations/47tf7vvrzj1s4ubg",
+        "effect": "Corrections explicites par les commandes natives du brief, avec versions et verrous."
+      },
+      {
+        "id": "understand-offer",
+        "state": "quote_only",
+        "executionEnabled": false,
+        "connected": true,
+        "availability": "checked_on_quote",
+        "cost": "native_quote",
+        "effect": "Compréhension native de cette offre, après vérification des droits, fournisseur, tarifs et devis. Proposition à relire ; aucun passage à l’étape suivante."
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "services",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "connections",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "publish",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "send",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "delete",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "purchase",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "payment",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      }
+    ],
+    "acquired": {
+      "jobId": "0cwt356ci4zapzr1",
+      "result": {
+        "projectId": "6v5bonhqu1g5x48i",
+        "revision": 4,
+        "step": "brief",
+        "provenance": "provider",
+        "fingerprint": "378f0823c6f85dd0",
+        "awaitingClientReview": true,
+        "content": {
+          "name": "",
+          "category": "Capteurs pour ruches",
+          "summary": "Je fabrique des capteurs de ruches pour les apiculteurs. Aucun chiffre de performance n’est confirmé. Analyse mon offre, sans créer de marque ni de thème.",
+          "facts": [],
+          "questions": [],
+          "contactModes": []
+        }
+      }
+    },
+    "receipts": [
+      {
+        "id": "f4fn5u0zio9e21lw",
+        "tool": "understand-offer",
+        "sourceReceiptId": null,
+        "state": "failed",
+        "delivered": false,
+        "clientApproved": false,
+        "result": null,
+        "job": {
+          "id": "msau3z0j4rooq3mt",
+          "type": "project.prepare",
+          "label": "Analyse de votre produit",
+          "status": "failed",
+          "progress": 0.05,
+          "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "error": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "attempts": 1,
+          "parentId": null,
+          "result": null,
+          "createdAt": 1793191056701,
+          "updatedAt": 1793191056932,
+          "finishedAt": 1793191056932,
+          "startedAt": 1793191056701,
+          "alive": false,
+          "idleMs": 1564
+        },
+        "href": "/studio/6v5bonhqu1g5x48i/pilote",
+        "message": "Le reçu ne prouve pas encore la livraison du résultat demandé."
+      },
+      {
+        "id": "9ira8xzntu3ywey6",
+        "tool": "understand-offer",
+        "sourceReceiptId": "r36alttrw632o65g",
+        "state": "review",
+        "delivered": true,
+        "clientApproved": false,
+        "result": {
+          "projectId": "6v5bonhqu1g5x48i",
+          "revision": 4,
+          "step": "brief",
+          "provenance": "provider",
+          "fingerprint": "378f0823c6f85dd0",
+          "awaitingClientReview": true,
+          "content": {
+            "name": "",
+            "category": "Capteurs pour ruches",
+            "summary": "Je fabrique des capteurs de ruches pour les apiculteurs. Aucun chiffre de performance n’est confirmé. Analyse mon offre, sans créer de marque ni de thème.",
+            "facts": [],
+            "questions": [],
+            "contactModes": []
+          }
+        },
+        "job": {
+          "id": "0cwt356ci4zapzr1",
+          "type": "project.prepare",
+          "label": "Analyse de votre produit",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "revision": 4,
+            "step": "brief",
+            "action": "analyze",
+            "ready": false,
+            "simulation": false
+          },
+          "createdAt": 1793191052067,
+          "updatedAt": 1793191052233,
+          "finishedAt": 1793191052233,
+          "startedAt": 1793191052067,
+          "alive": false,
+          "idleMs": 6263
+        },
+        "href": "/studio/6v5bonhqu1g5x48i/pilote",
+        "message": "Proposition native acquise, à relire ; aucune étape suivante lancée."
+      }
+    ],
+    "href": "/studio/6v5bonhqu1g5x48i/pilote",
+    "actionsExecuted": false
+  },
+  "native": {
+    "state": {
+      "schemaVersion": 1,
+      "projectId": "6v5bonhqu1g5x48i",
+      "revision": 6,
+      "createdAt": 1793191049716,
+      "updatedAt": 1793191056932,
+      "stages": {
+        "brief": {
+          "data": {
+            "input": {
+              "description": "Je fabrique des capteurs de ruches pour les apiculteurs. Aucun chiffre de performance n’est confirmé. Analyse mon offre, sans créer de marque ni de thème.",
+              "offerName": "",
+              "brandName": "",
+              "target": "",
+              "constraints": "",
+              "business": "products",
+              "photoIds": [],
+              "referenceUrls": [],
+              "price": "",
+              "services": {
+                "services": [],
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form"
+              }
+            },
+            "profile": {
+              "name": "",
+              "nameStatus": "unknown",
+              "category": "Capteurs pour ruches",
+              "sector": "hightech",
+              "summary": "Je fabrique des capteurs de ruches pour les apiculteurs. Aucun chiffre de performance n’est confirmé. Analyse mon offre, sans créer de marque ni de thème.",
+              "facts": [],
+              "visual": {
+                "colors": [],
+                "description": "",
+                "shape": "",
+                "materials": [],
+                "labelText": [],
+                "hasLogo": false
+              },
+              "price": {
+                "amount": null,
+                "currency": "EUR",
+                "status": "unknown"
+              },
+              "variants": [],
+              "questions": [],
+              "claimsToAvoid": [
+                "Aucun avis, prix, certification ou résultat commercial à inventer."
+              ],
+              "sources": [],
+              "analyzedBy": "ai",
+              "summaryStatus": "provided"
+            },
+            "services": {
+              "services": [],
+              "area": "",
+              "address": "",
+              "phone": "",
+              "email": "",
+              "hours": "",
+              "bookingUrl": "",
+              "contactMode": "form"
+            },
+            "missing": [
+              "Précisez le nom de cette offre.",
+              "À qui cette offre s’adresse-t-elle ?"
+            ],
+            "provenance": "provider",
+            "documentStamp": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "execution": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "usageKey": "0cwt356ci4zapzr1:brief",
+              "vision": false,
+              "at": 1793191052232,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            },
+            "observations": [
+              "Je fabrique des capteurs de ruches pour les apiculteurs. Aucun chiffre de performance n’est confirmé. Analyse mon offre, sans créer de marque ni de thème."
+            ]
+          },
+          "inputHash": "ef02c3c296bf5311",
+          "status": "draft",
+          "candidateId": "uma6id3v7xq7okh0"
+        }
+      },
+      "error": {
+        "step": "brief",
+        "jobId": "msau3z0j4rooq3mt",
+        "revision": 6,
+        "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+        "at": 1793191056932
+      }
+    },
+    "versions": [
+      {
+        "key": "preparation.version.1"
+      },
+      {
+        "key": "preparation.version.2"
+      },
+      {
+        "key": "preparation.version.3"
+      },
+      {
+        "key": "preparation.version.4"
+      },
+      {
+        "key": "preparation.version.5"
+      },
+      {
+        "key": "preparation.version.6"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "r36alttrw632o65g",
+        "usage_key": "r36alttrw632o65g:dialogue"
+      },
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "0cwt356ci4zapzr1",
+        "usage_key": "0cwt356ci4zapzr1:brief"
+      },
+      {
+        "status": "error",
+        "cost": 0,
+        "job_id": "msau3z0j4rooq3mt",
+        "usage_key": "msau3z0j4rooq3mt:brief"
+      }
+    ],
+    "jobs": [
+      {
+        "type": "agent.reason",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "failed"
+      }
+    ],
+    "themes": 0
+  },
+  "noAutomaticRetry": true
+}

@@ -1,0 +1,86 @@
+{
+  "videos": [
+    {
+      "scenario": "produit",
+      "source": "produit.webm",
+      "published": "videos/produit.mp4",
+      "sourceProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "350"
+          }
+        ],
+        "format": {
+          "duration": "14.000000"
+        }
+      },
+      "publishedProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "14.000000",
+            "nb_read_frames": "350"
+          }
+        ],
+        "format": {
+          "duration": "14.000000"
+        }
+      },
+      "sourceSha256": "1f66dca54d9f726ca8981b23a74765fe71efda9789296dc975f9d920c9fd6ea4",
+      "publishedSha256": "0658e9f9c3dfc1b4d3393d3922d4f10623ba0f1aa9eab85bec8f9d39d3bb20a5",
+      "operation": "Transcodage seul, aucune coupe ni accélération ; toutes les images conservées."
+    },
+    {
+      "scenario": "service",
+      "source": "service.webm",
+      "published": "videos/service.mp4",
+      "sourceProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "nb_read_frames": "332"
+          }
+        ],
+        "format": {
+          "duration": "13.280000"
+        }
+      },
+      "publishedProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "duration": "13.280000",
+            "nb_read_frames": "332"
+          }
+        ],
+        "format": {
+          "duration": "13.280000"
+        }
+      },
+      "sourceSha256": "3fdcfbdb6bd285bf7a12957ad0c7af66002cc03595acf1b45f2d694b73b2f3fc",
+      "publishedSha256": "54c62be849aa1a0e0fd2956e8460fea1839267ec1d6934b9b3a8eaa74c6a7885",
+      "operation": "Transcodage seul, aucune coupe ni accélération ; toutes les images conservées."
+    }
+  ],
+  "visualInspection": {
+    "completed": true,
+    "method": "Les 18 captures originales parcourues en deux planches ; devis téléphone, échec téléphone et résultat ordinateur ouverts à leur taille native. Six images des deux vidéos inspectées à 20/55/88 % ; tous les frames et durées contrôlés avec ffprobe.",
+    "screens": 18,
+    "sampledVideoFrames": 6,
+    "unchangedVideos": true,
+    "note": "Vidéos automatisées rapides (fournisseur simulé), sans coupe ni accélération. Les planches de contrôle ne remplacent pas les captures originales publiées."
+  }
+}
