@@ -1,0 +1,104 @@
+{
+  "code": "510e54ad6c6020e1011167e47e6847decf8b92b1",
+  "runs": {
+    "F2-before-reproduced": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-image-bank-header.ts",
+        "/workspace/reviews/ecom-211-state/F2-before-reproduced",
+        "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+        "--before"
+      ],
+      "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-image-bank-header.ts": "51f3ad4913230200997b026b0d7c1f17a09bc99ecd6855c1ba3220484fad9817",
+        "tests/image-bank-header-browser.ts": "9b04c392da91dff68e2fe18e7ae521d9c47b31da9cc23c25ffb2558d257aa6a6"
+      },
+      "startedAt": "2026-10-28T22:32:35.835574+00:00",
+      "finishedAt": "2026-10-28T22:32:55.456903+00:00",
+      "logSha256": "bf589e1c13702e659ace7d43e39fe5683f1a073a4c7f4ccdaed1de1f953b4890"
+    },
+    "F2-types-visible-actions": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "35c2688fa0d5f15db18bbd8a772476c719051c1c",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "tests/image-bank-header-browser.ts": "9076265f4e2e2765b1056f51d5c7abd8394a483ed850a4b75ecd5e9ebec48ff9"
+      },
+      "startedAt": "2026-10-28T23:27:49.842781+00:00",
+      "finishedAt": "2026-10-28T23:27:54.821351+00:00",
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "F2-full-final": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-image-bank-header.ts": "51f3ad4913230200997b026b0d7c1f17a09bc99ecd6855c1ba3220484fad9817",
+        "src/components/studio/tab-images.tsx": "554650fbf1e09e140bdb26d0e4f02e3ac3f4001c11c1b8c7b6eb234c8b2de3d3",
+        "tests/image-bank-header-browser.ts": "9b04c392da91dff68e2fe18e7ae521d9c47b31da9cc23c25ffb2558d257aa6a6"
+      },
+      "startedAt": "2026-10-28T22:33:53.708766+00:00",
+      "finishedAt": "2026-10-28T22:58:38.901932+00:00",
+      "logSha256": "283fb9fa013694bc0320bf248819bfbe6fbe4eb65b2b8218b6b96778b3694027"
+    },
+    "F2-build-framing": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "510e54ad6c6020e1011167e47e6847decf8b92b1",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "startedAt": "2026-10-28T23:29:15.961061+00:00",
+      "finishedAt": "2026-10-28T23:30:19.007620+00:00",
+      "logSha256": "7c41ab47aca56b9f870f65239b6eeaa8e6705e07e25817bd4b18c9effc6600c3"
+    },
+    "F2-browser-final": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-image-bank-header.ts",
+        "/workspace/reviews/ecom-211-state/F2-browser-final",
+        "510e54ad6c6020e1011167e47e6847decf8b92b1"
+      ],
+      "head": "510e54ad6c6020e1011167e47e6847decf8b92b1",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "startedAt": "2026-10-28T23:30:58.805092+00:00",
+      "finishedAt": "2026-10-28T23:31:13.790270+00:00",
+      "logSha256": "0c128b6d7cf0e3c55a0f5b6252c2f10f7deb9ae16ddca5af0e8ced1bde151fd3"
+    }
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "nativeCallsJobsUsageAllZero": true,
+  "applicationAndVitestTestsUnchangedSince": "35c2688fa0d5f15db18bbd8a772476c719051c1c",
+  "standaloneBrowserHarnessRefinedAndReplayedSeparately": true,
+  "limits": [
+    "FR only; product fixture, no supplier generation, native file upload or service-specific form submitted.",
+    "Mobile SYNA dialog intentionally overlays the background; closed-dialog captures inspect the main layout.",
+    "Independent Site390x844 issue addressed separately in #227."
+  ]
+}

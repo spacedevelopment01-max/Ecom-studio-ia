@@ -1,0 +1,182 @@
+{
+  "verifications.json": {
+    "size": 3952,
+    "sha256": "a9b036697a2d938954769ae43328d47244ba4832af64027996c394a7745188e8"
+  },
+  "README.md": {
+    "size": 1739,
+    "sha256": "2ee7d74b080f2d1e747b914bbaf60155a8b85dedb6b059fa0a1f1f8089e864b0"
+  },
+  "logs/F2-build-framing.txt": {
+    "size": 17627,
+    "sha256": "7c41ab47aca56b9f870f65239b6eeaa8e6705e07e25817bd4b18c9effc6600c3"
+  },
+  "logs/F2-before-reproduced.txt": {
+    "size": 436,
+    "sha256": "bf589e1c13702e659ace7d43e39fe5683f1a073a4c7f4ccdaed1de1f953b4890"
+  },
+  "logs/F2-full-final.txt": {
+    "size": 261758,
+    "sha256": "283fb9fa013694bc0320bf248819bfbe6fbe4eb65b2b8218b6b96778b3694027"
+  },
+  "logs/F2-browser-final.txt": {
+    "size": 432,
+    "sha256": "0c128b6d7cf0e3c55a0f5b6252c2f10f7deb9ae16ddca5af0e8ced1bde151fd3"
+  },
+  "logs/F2-types-visible-actions.txt": {
+    "size": 208,
+    "sha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+  },
+  "planches/390.jpg": {
+    "size": 147799,
+    "sha256": "fcb1ba8cacae721524c886a1adfb06f5b9d1f14cd700eb7d03300a83c7a30d53"
+  },
+  "planches/360.jpg": {
+    "size": 144240,
+    "sha256": "390d7a4e7b542e950834cb871cdf534daca0ba3d52d45e59b681d47d29fbf603"
+  },
+  "planches/1024.jpg": {
+    "size": 137969,
+    "sha256": "fbd70b4fe7dd24da72d800b8030a887c714e8f23286f15da5a588753729bae08"
+  },
+  "planches/1440.jpg": {
+    "size": 104690,
+    "sha256": "3edcd52d73895fafb314544dac45c0a8bd232e2e658a81524f9e75bd2b484be1"
+  },
+  "avant/360-syna-metrics.json": {
+    "size": 1394,
+    "sha256": "3b213ca2205b7b471e55260c5cee12ffa235a5c03b17305f32ccea2441c26d80"
+  },
+  "avant/1024-syna.png": {
+    "size": 164481,
+    "sha256": "19587acf1ae5d27e9f5b93402d30c51c14df50c466dd303e51a52bc32aecdc8c"
+  },
+  "avant/390-syna.png": {
+    "size": 41656,
+    "sha256": "ef8a0279ffd2412758ffe8bbcd473df15c983313687d0eaafba59ebd9e25f32f"
+  },
+  "avant/1024-manuel-metrics.json": {
+    "size": 1230,
+    "sha256": "6bdfa4aee633b51a8500bddc6073af965333a359f252f2169ae8a66c76ccf0d7"
+  },
+  "avant/390-manuel.png": {
+    "size": 86900,
+    "sha256": "8662375f8517dc5caa0e9474774731fed1f91ce63221c51e2658b28f32a07f99"
+  },
+  "avant/360-manuel.png": {
+    "size": 85675,
+    "sha256": "e61f5b8099f8f44005ccb277e52f6ec1a60377f9481a823d29b1f66c9a73fe52"
+  },
+  "avant/1440-syna-metrics.json": {
+    "size": 1366,
+    "sha256": "f0a249904967787aa8908eb71823a64de0b0739bb28ef8d026739ac9795889a9"
+  },
+  "avant/360-syna.png": {
+    "size": 40890,
+    "sha256": "9b78c535345c418cd8004c45c86d61adb413580c1aa973aeee508dc01c09abfe"
+  },
+  "avant/1024-syna-metrics.json": {
+    "size": 1364,
+    "sha256": "5fcecb073b95afb773e5420e4e4b48e2515564f9d6b806b37d0298a742e13a1c"
+  },
+  "avant/1440-manuel-metrics.json": {
+    "size": 1295,
+    "sha256": "5ad319d1a19c29b818570fea0a0fd20e3c3fecb06c4601b37210f881a006be52"
+  },
+  "avant/1440-manuel.png": {
+    "size": 175631,
+    "sha256": "974c4ccecb4333660093962fc1f97a9d61f036e623e891918d697751c89a5865"
+  },
+  "avant/1440-syna.png": {
+    "size": 201920,
+    "sha256": "fbec1d7f92ca0fcb704bbd25ed0293643869f59d3d752e4ef71be2660fc982b4"
+  },
+  "avant/1024-manuel.png": {
+    "size": 162552,
+    "sha256": "eca1ac5b664b5ff7fb2fa38fae7c193ca545c32f41fd381dae0b297a26f0652e"
+  },
+  "avant/360-manuel-metrics.json": {
+    "size": 1267,
+    "sha256": "a40943e9950958e6067e0f6514f3d61abf576be4cc073b96b1ad501a70eb1ab4"
+  },
+  "avant/390-manuel-metrics.json": {
+    "size": 1267,
+    "sha256": "c937bc9e18371681631540fb9bffdd24b5e5636dda1ae27dfe419685778e1017"
+  },
+  "avant/proof.json": {
+    "size": 17223,
+    "sha256": "58da8a6da7d8be1b53f4555c0da17916bd7ba3be66b7101600b541373f5ea388"
+  },
+  "avant/390-syna-metrics.json": {
+    "size": 1394,
+    "sha256": "4cb1087a952b86f274fa94e1989287b3d09533bf829a3a11b1734fe674544fad"
+  },
+  "apres/360-syna-metrics.json": {
+    "size": 1472,
+    "sha256": "e9083dd194900cc8281ba18bc928af5ace03e11515e926d3010186dc7af470e5"
+  },
+  "apres/1024-syna.png": {
+    "size": 160324,
+    "sha256": "d66c43d35e47d72c9632de8741ddb24e8a8a0493d7213db8fc4d39ec13dc1cfc"
+  },
+  "apres/390-syna.png": {
+    "size": 41656,
+    "sha256": "ef8a0279ffd2412758ffe8bbcd473df15c983313687d0eaafba59ebd9e25f32f"
+  },
+  "apres/1024-manuel-metrics.json": {
+    "size": 1294,
+    "sha256": "e42163e4a935cce3dcf1eaae86b0161e9a2e5763c1682f9bcf9708b2d0710a4c"
+  },
+  "apres/390-manuel.png": {
+    "size": 84045,
+    "sha256": "3a294435b4087f61c6a2c28d2ff99842da282d0410bdf20b505c1684092c2e0a"
+  },
+  "apres/360-manuel.png": {
+    "size": 79676,
+    "sha256": "dec3e7644873a47077053db02326557d5caba2ee067b479e7fe32bed12cde7e7"
+  },
+  "apres/1440-syna-metrics.json": {
+    "size": 1430,
+    "sha256": "21f4ebd85029f4f815b08eea90b93394cbb76002d73423a6421ffd2fd5f48156"
+  },
+  "apres/360-syna.png": {
+    "size": 40890,
+    "sha256": "9b78c535345c418cd8004c45c86d61adb413580c1aa973aeee508dc01c09abfe"
+  },
+  "apres/1024-syna-metrics.json": {
+    "size": 1431,
+    "sha256": "e7743e226aacacca77ab634d3704478a4a5b10dce723e227ded7b96e1cd76258"
+  },
+  "apres/1440-manuel-metrics.json": {
+    "size": 1370,
+    "sha256": "66b0a54839f6867e5c7e150fef99c1f9b4b069300be9cde4c430a2b4e95184bf"
+  },
+  "apres/1440-manuel.png": {
+    "size": 175631,
+    "sha256": "974c4ccecb4333660093962fc1f97a9d61f036e623e891918d697751c89a5865"
+  },
+  "apres/1440-syna.png": {
+    "size": 202423,
+    "sha256": "ecab23c4bf117924df100c0fbfc7f2f8caf8c87f171c8599c026e48cbf4f3cc6"
+  },
+  "apres/1024-manuel.png": {
+    "size": 167597,
+    "sha256": "6d76751f2e535caafd6ff168f97665c3016d3d21f13989a6f12c1b42cbff10c2"
+  },
+  "apres/360-manuel-metrics.json": {
+    "size": 1342,
+    "sha256": "33ef76375e8141245caf5330544fd9b0b6e8472b342a44f908f691b58cba1420"
+  },
+  "apres/390-manuel-metrics.json": {
+    "size": 1342,
+    "sha256": "a226d736332104fcf0c878ec99c345c01a18fea978a3987a73997a3f08b7d4e5"
+  },
+  "apres/proof.json": {
+    "size": 17995,
+    "sha256": "cda153e6a09b167ea6b78cabba7a9454d6d0ee659b6fb57a561779829084ecdb"
+  },
+  "apres/390-syna-metrics.json": {
+    "size": 1472,
+    "sha256": "8cda017cec13104f2dc2053f33c072065799ca7db2abe2f0d9416034c1e03fb2"
+  }
+}

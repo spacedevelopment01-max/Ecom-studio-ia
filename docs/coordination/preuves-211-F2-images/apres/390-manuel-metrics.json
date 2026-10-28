@@ -1,0 +1,73 @@
+{
+  "viewport": 390,
+  "scrollWidth": 390,
+  "heading": {
+    "x": 37,
+    "y": 433.5625,
+    "width": 316,
+    "height": 32,
+    "right": 353,
+    "bottom": 465.5625
+  },
+  "copy": {
+    "x": 37,
+    "y": 433.5625,
+    "width": 316,
+    "height": 116,
+    "right": 353,
+    "bottom": 549.5625
+  },
+  "actions": {
+    "x": 37,
+    "y": 565.5625,
+    "width": 316,
+    "height": 136,
+    "right": 353,
+    "bottom": 701.5625
+  },
+  "buttons": [
+    {
+      "text": "Importer",
+      "rect": {
+        "x": 37,
+        "y": 565.5625,
+        "width": 113.28125,
+        "height": 40,
+        "right": 150.28125,
+        "bottom": 605.5625
+      },
+      "scrollWidth": 113,
+      "clientWidth": 113,
+      "hitTarget": true
+    },
+    {
+      "text": "Chercher des photos libres",
+      "rect": {
+        "x": 37,
+        "y": 613.5625,
+        "width": 238.59375,
+        "height": 40,
+        "right": 275.59375,
+        "bottom": 653.5625
+      },
+      "scrollWidth": 237,
+      "clientWidth": 237,
+      "hitTarget": true
+    },
+    {
+      "text": "Créer une image",
+      "rect": {
+        "x": 37,
+        "y": 661.5625,
+        "width": 166.625,
+        "height": 40,
+        "right": 203.625,
+        "bottom": 701.5625
+      },
+      "scrollWidth": 167,
+      "clientWidth": 167,
+      "hitTarget": true
+    }
+  ],
+  "panel": null
+}
