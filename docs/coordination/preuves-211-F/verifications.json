@@ -1,0 +1,81 @@
+{
+  "schema": "agent211-F-verifications-1",
+  "fullSuite": {
+    "commit": "8df2dddabca3f57135d246b41a129d720d8b130b",
+    "passed": 3594,
+    "skipped": 45,
+    "filesPassed": 418,
+    "filesSkipped": 1,
+    "seconds": 716.29
+  },
+  "postSynaTargeted": {
+    "passed": 132,
+    "filesPassed": 11,
+    "seconds": 10.58,
+    "scope": "Audit Boutique + conversation209 + conversation211"
+  },
+  "types": "passed",
+  "productionBuild": {
+    "commit": "ad41f4301052a79dfe4e2e735ba8f6a40b5de476",
+    "tree": "clean",
+    "result": "passed"
+  },
+  "compiledHttpAndBrowser": {
+    "commit": "ad41f4301052a79dfe4e2e735ba8f6a40b5de476",
+    "result": "passed",
+    "scenarios": 3,
+    "captures": 33,
+    "videos": 3,
+    "desktopViewport": [
+      1440,
+      960
+    ],
+    "phoneViewport": [
+      390,
+      844
+    ],
+    "additionalWidth": 360,
+    "desktopPreviewWidths": {
+      "open": 720,
+      "closed": 1136
+    },
+    "nativeVersionsAfterRestore": 3,
+    "jsPageErrors": []
+  },
+  "themeCheck": {
+    "command": "JOBS=2 NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs scripts/verify-theme.sh --rapide",
+    "casesIncludingZip": 25,
+    "errors": 0,
+    "warningsPerThemeCase": 35
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedProviderCalls": 6,
+  "simulatedCostMicro": 47472,
+  "provider": "local-http-fixture-through-native-SDK",
+  "realModelQualified": false,
+  "commercialChange": false,
+  "deployedOrActivated": false,
+  "earlierFailures": [
+    {
+      "origin": "old CSS source test assumes literal className string",
+      "resolution": "Keeps mobile top/no mobile bottom guards and both desktop offsets; 132 targeted then baseline full pass."
+    },
+    {
+      "origin": "Browser tutorial nudge overlaps agent trigger",
+      "resolution": "Native layout fixed; no forced click or tutorial deletion."
+    },
+    {
+      "origin": "Capture taken during iframe reload or intro overlay",
+      "resolution": "Wait actual iframe paint; click native Passer and wait intro removal; recapture."
+    }
+  ],
+  "commands": [
+    "npx tsc --noEmit",
+    "XDG_CACHE_HOME=/tmp/ecom209-font-cache NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run",
+    "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run tests/audit-onglet-boutique.test.ts tests/conversation211-*.test.ts tests/conversation209-*.test.ts",
+    "JOBS=2 NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs scripts/verify-theme.sh --rapide",
+    "NEXT_TELEMETRY_DISABLED=1 npm run build",
+    "CHROMIUM=/usr/bin/chromium PLAYWRIGHT_BROWSERS_PATH=/tmp/ecom211-playwright XDG_CACHE_HOME=/tmp/ecom209-font-cache NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx tsx scripts/verify-agent211-build.ts /tmp/ecom211-F-browser-syna --ui"
+  ]
+}
