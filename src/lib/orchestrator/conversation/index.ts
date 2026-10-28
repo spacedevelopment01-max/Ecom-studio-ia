@@ -18,7 +18,7 @@ import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
 import {clearConversationAnswer} from './answer-state';
-import {conversationToolsEnabled,conversationThemeToolsEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled} from './tool-flags';
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
 
@@ -48,7 +48,8 @@ export function conversationView(user: User, cid: string, before?: number): Conv
     creation: c.project_id ? null : creationFields(b,m),
     ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationThemeToolsEnabled()?{themeExecution:{enabled:true as const}}:{}),
-    tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","publish","delete","purchase"] as const).map(id=>({id,state:id==="theme"&&conversationThemeToolsEnabled()?"quote_only" as const:"not_connected" as const,executionEnabled:false}))],
+    ...(c.project_id&&conversationExportsEnabled()?{exportExecution:{enabled:true as const}}:{}),
+    tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","publish","delete","purchase"] as const).map(id=>({id,state:(id==="theme"&&conversationThemeToolsEnabled()||id==="export"&&conversationExportsEnabled())?"quote_only" as const:"not_connected" as const,executionEnabled:false}))],
     summary: { description: b.input.description, business: m.business, businessSource: m.businessSource, target: b.input.target, goals: b.profile.facts.find(f => f.key === "conversation.goals" && f.status === "confirmed")?.value ?? "", offerName: b.input.offerName, brandName: b.input.brandName,
       constraints: b.input.constraints, services: b.services.services.map(s=>({name:s.name,description:s.description,source:s.source??"analysis"})), contactModes: b.services.contactModes??[],
       facts: b.profile.facts.filter(f => f.source === "user").map(({ key, label, value, status, source }) => ({ key, label, value, status, source })),

@@ -1,0 +1,1702 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "cases": [
+    {
+      "business": "products",
+      "exchanges": [
+        {
+          "request": {
+            "action": "message",
+            "text": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée."
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "0w2353ehzui45xzg",
+            "projectId": null,
+            "revision": 1,
+            "projectRevision": null,
+            "mode": "ai",
+            "progress": "clarify",
+            "message": "Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": false,
+              "reason": "Précisez l’activité avant la création définitive."
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée.",
+              "business": null,
+              "businessSource": "unknown",
+              "target": "",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "requires_quote",
+              "pendingJobId": null,
+              "reply": null,
+              "proposalId": null,
+              "sourceRevision": null,
+              "sourceProjectRevision": null,
+              "lastReceiptId": null,
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": null,
+              "provenance": null,
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        },
+        {
+          "request": {
+            "action": "answer-ai",
+            "questionId": "premiere-clientele",
+            "choices": [
+              "prioritaire"
+            ]
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "0w2353ehzui45xzg",
+            "projectId": null,
+            "revision": 3,
+            "projectRevision": null,
+            "mode": "ai",
+            "progress": "collect",
+            "message": "Réponse exacte conservée ; la prochaine réflexion IA demande votre accord.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "products",
+                "description": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée.",
+                "productName": "",
+                "brandName": "",
+                "target": "Apiculteurs professionnels",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée.",
+              "business": "products",
+              "businessSource": "ai",
+              "target": "Apiculteurs professionnels",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.ai.premiere-clientele",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Apiculteurs professionnels",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Apiculteurs professionnels",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "stale",
+              "pendingJobId": null,
+              "reply": {
+                "message": "Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+                "status": "question",
+                "business": "products",
+                "businessEvidence": {
+                  "sourceId": "brief.description",
+                  "quote": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée."
+                },
+                "question": {
+                  "id": "premiere-clientele",
+                  "field": "target",
+                  "title": "À qui souhaitez-vous vous adresser ?",
+                  "why": "La clientèle guide les textes sans inventer de promesse.",
+                  "multiple": false,
+                  "choices": [
+                    {
+                      "id": "prioritaire",
+                      "label": "Apiculteurs professionnels"
+                    },
+                    {
+                      "id": "other",
+                      "label": "Autre / préciser"
+                    }
+                  ]
+                },
+                "proposedChanges": [],
+                "knowledgeSourceIds": [],
+                "proposedTools": [],
+                "actionsExecuted": false
+              },
+              "proposalId": null,
+              "sourceRevision": 2,
+              "sourceProjectRevision": null,
+              "lastReceiptId": "z7nzq40ozd1jg3kq",
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": {
+                "maxCalls": 4,
+                "remainingCalls": 3,
+                "maxDepth": 1,
+                "maxRetries": 0,
+                "deadlineAt": 1793205093638,
+                "httpAttempts": 1
+              },
+              "provenance": "provider",
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        },
+        {
+          "request": {
+            "action": "edit",
+            "field": "target",
+            "value": "Apiculteurs professionnels — correction du client"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "0w2353ehzui45xzg",
+            "projectId": "plezfwc3m2vlffvu",
+            "revision": 4,
+            "projectRevision": 3,
+            "mode": "ai",
+            "progress": "collect",
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "execution": {
+              "enabled": true
+            },
+            "themeExecution": {
+              "enabled": true
+            },
+            "exportExecution": {
+              "enabled": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée.",
+              "business": "products",
+              "businessSource": "ai",
+              "target": "Apiculteurs professionnels — correction du client",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.ai.premiere-clientele",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Apiculteurs professionnels",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Apiculteurs professionnels — correction du client",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "stale",
+              "pendingJobId": null,
+              "reply": {
+                "message": "Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+                "status": "question",
+                "business": "products",
+                "businessEvidence": {
+                  "sourceId": "brief.description",
+                  "quote": "Je conçois des capteurs de ruches, sans performance chiffrée confirmée."
+                },
+                "question": {
+                  "id": "premiere-clientele",
+                  "field": "target",
+                  "title": "À qui souhaitez-vous vous adresser ?",
+                  "why": "La clientèle guide les textes sans inventer de promesse.",
+                  "multiple": false,
+                  "choices": [
+                    {
+                      "id": "prioritaire",
+                      "label": "Apiculteurs professionnels"
+                    },
+                    {
+                      "id": "other",
+                      "label": "Autre / préciser"
+                    }
+                  ]
+                },
+                "proposedChanges": [],
+                "knowledgeSourceIds": [],
+                "proposedTools": [],
+                "actionsExecuted": false
+              },
+              "proposalId": null,
+              "sourceRevision": 2,
+              "sourceProjectRevision": null,
+              "lastReceiptId": "z7nzq40ozd1jg3kq",
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": {
+                "maxCalls": 4,
+                "remainingCalls": 3,
+                "maxDepth": 1,
+                "maxRetries": 0,
+                "deadlineAt": 1793205093638,
+                "httpAttempts": 1
+              },
+              "provenance": "provider",
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        }
+      ],
+      "quote": {
+        "id": "j4ci9cno4p0e78k1",
+        "estimatePct": 0.1365372093023256,
+        "maximumPct": 0.534986046511628,
+        "expiresAt": 1793205093594,
+        "confirmationRequired": true,
+        "maxCalls": 1,
+        "actionsExecuted": false,
+        "role": "principal",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 4,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": null,
+          "httpAttempts": 0
+        }
+      },
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reservation": {
+        "status": "settled",
+        "amount": 199744,
+        "actual": 7912
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    },
+    {
+      "business": "services",
+      "exchanges": [
+        {
+          "request": {
+            "action": "message",
+            "text": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous."
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "l4ewfhulmoo87snz",
+            "projectId": null,
+            "revision": 1,
+            "projectRevision": null,
+            "mode": "ai",
+            "progress": "clarify",
+            "message": "Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": false,
+              "reason": "Précisez l’activité avant la création définitive."
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous.",
+              "business": null,
+              "businessSource": "unknown",
+              "target": "",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "requires_quote",
+              "pendingJobId": null,
+              "reply": null,
+              "proposalId": null,
+              "sourceRevision": null,
+              "sourceProjectRevision": null,
+              "lastReceiptId": null,
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": null,
+              "provenance": null,
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        },
+        {
+          "request": {
+            "action": "answer-ai",
+            "questionId": "premiere-clientele",
+            "choices": [
+              "prioritaire"
+            ]
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "l4ewfhulmoo87snz",
+            "projectId": null,
+            "revision": 3,
+            "projectRevision": null,
+            "mode": "ai",
+            "progress": "collect",
+            "message": "Réponse exacte conservée ; la prochaine réflexion IA demande votre accord.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "services",
+                "description": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous.",
+                "productName": "",
+                "brandName": "",
+                "target": "Musiciens et conservatoires",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous.",
+              "business": "services",
+              "businessSource": "ai",
+              "target": "Musiciens et conservatoires",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.ai.premiere-clientele",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Musiciens et conservatoires",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Musiciens et conservatoires",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "stale",
+              "pendingJobId": null,
+              "reply": {
+                "message": "Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+                "status": "question",
+                "business": "services",
+                "businessEvidence": {
+                  "sourceId": "brief.description",
+                  "quote": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous."
+                },
+                "question": {
+                  "id": "premiere-clientele",
+                  "field": "target",
+                  "title": "À qui souhaitez-vous vous adresser ?",
+                  "why": "La clientèle guide les textes sans inventer de promesse.",
+                  "multiple": false,
+                  "choices": [
+                    {
+                      "id": "prioritaire",
+                      "label": "Musiciens et conservatoires"
+                    },
+                    {
+                      "id": "other",
+                      "label": "Autre / préciser"
+                    }
+                  ]
+                },
+                "proposedChanges": [],
+                "knowledgeSourceIds": [],
+                "proposedTools": [],
+                "actionsExecuted": false
+              },
+              "proposalId": null,
+              "sourceRevision": 2,
+              "sourceProjectRevision": null,
+              "lastReceiptId": "pz7a6huzea4hosjx",
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": {
+                "maxCalls": 4,
+                "remainingCalls": 3,
+                "maxDepth": 1,
+                "maxRetries": 0,
+                "deadlineAt": 1793205095152,
+                "httpAttempts": 1
+              },
+              "provenance": "provider",
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        },
+        {
+          "request": {
+            "action": "edit",
+            "field": "target",
+            "value": "Musiciens et conservatoires — correction du client"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "l4ewfhulmoo87snz",
+            "projectId": "rwcbnr367kdqj6jm",
+            "revision": 4,
+            "projectRevision": 3,
+            "mode": "ai",
+            "progress": "collect",
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "execution": {
+              "enabled": true
+            },
+            "themeExecution": {
+              "enabled": true
+            },
+            "exportExecution": {
+              "enabled": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous.",
+              "business": "services",
+              "businessSource": "ai",
+              "target": "Musiciens et conservatoires — correction du client",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.ai.premiere-clientele",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Musiciens et conservatoires",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui souhaitez-vous vous adresser ?",
+                  "value": "Musiciens et conservatoires — correction du client",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null,
+            "intelligence": {
+              "available": true,
+              "state": "stale",
+              "pendingJobId": null,
+              "reply": {
+                "message": "Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+                "status": "question",
+                "business": "services",
+                "businessEvidence": {
+                  "sourceId": "brief.description",
+                  "quote": "Je remets en état des instruments de musique appartenant aux clients. Je souhaite des devis et des rendez-vous."
+                },
+                "question": {
+                  "id": "premiere-clientele",
+                  "field": "target",
+                  "title": "À qui souhaitez-vous vous adresser ?",
+                  "why": "La clientèle guide les textes sans inventer de promesse.",
+                  "multiple": false,
+                  "choices": [
+                    {
+                      "id": "prioritaire",
+                      "label": "Musiciens et conservatoires"
+                    },
+                    {
+                      "id": "other",
+                      "label": "Autre / préciser"
+                    }
+                  ]
+                },
+                "proposedChanges": [],
+                "knowledgeSourceIds": [],
+                "proposedTools": [],
+                "actionsExecuted": false
+              },
+              "proposalId": null,
+              "sourceRevision": 2,
+              "sourceProjectRevision": null,
+              "lastReceiptId": "pz7a6huzea4hosjx",
+              "roles": [
+                {
+                  "id": "principal",
+                  "label": "Agent principal"
+                },
+                {
+                  "id": "strategy",
+                  "label": "Stratégie et marketing"
+                },
+                {
+                  "id": "identity",
+                  "label": "Identité artistique"
+                },
+                {
+                  "id": "media",
+                  "label": "Médias"
+                },
+                {
+                  "id": "site",
+                  "label": "Site et rédaction"
+                },
+                {
+                  "id": "communication",
+                  "label": "Communication et SEO"
+                },
+                {
+                  "id": "quality",
+                  "label": "Contrôle qualité"
+                }
+              ],
+              "lastRole": "principal",
+              "requestBounds": {
+                "maxCalls": 4,
+                "remainingCalls": 3,
+                "maxDepth": 1,
+                "maxRetries": 0,
+                "deadlineAt": 1793205095152,
+                "httpAttempts": 1
+              },
+              "provenance": "provider",
+              "qualification": "real_provider_not_tested",
+              "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+            }
+          }
+        }
+      ],
+      "quote": {
+        "id": "2o0s0hby0kepsjw6",
+        "estimatePct": 0.1368093023255814,
+        "maximumPct": 0.5362046511627907,
+        "expiresAt": 1793205095112,
+        "confirmationRequired": true,
+        "maxCalls": 1,
+        "actionsExecuted": false,
+        "role": "principal",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 4,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": null,
+          "httpAttempts": 0
+        }
+      },
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reservation": {
+        "status": "settled",
+        "amount": 199929,
+        "actual": 7912
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    }
+  ],
+  "version": {
+    "commit": "9841f1ae0c65ec7461b4e9b570a87a88640848e1",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.15,
+    "conversationState": "failed",
+    "priorReplyPreserved": true,
+    "noAutomaticRetry": true
+  },
+  "accountExportIsolated": true,
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736,
+    "tokenCounts": 3
+  },
+  "exportUi": {
+    "schema": "agent211-D3-browser-proof-1",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "business": "products",
+        "captures": [
+          "products-devis-zero.png",
+          "products-fichier-prouve.png",
+          "products-acquis-reutilise.png",
+          "products-cinq-plateformes.png",
+          "products-reprise.png"
+        ],
+        "downloaded": [
+          {
+            "platform": "wix",
+            "sha256": "c1c8dbf56b01a2e4f7cafe02f766e35ecd1e09c4b392c5859e5bd75b61bfe94b",
+            "bytes": 856005,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "q6habo67fwb3whro"
+          },
+          {
+            "platform": "shopify",
+            "sha256": "de5f178b80d5f2053ae565403c1d8c80dff13da298109ff618da597ff04bc790",
+            "bytes": 1672386,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "mhu0odzq11zg9fn6"
+          },
+          {
+            "platform": "woocommerce",
+            "sha256": "5b6ae48d52f9ac9a16b1a446bb411b99472cdcae46a2a153a6911e4e1f8beab4",
+            "bytes": 791548,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "p9zjfu06ne9zepuh"
+          },
+          {
+            "platform": "prestashop",
+            "sha256": "cb29588956619ec6330e4e272fc59636ec1c8ce900027967ddf6d4659ab2ef23",
+            "bytes": 693336,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "t634zuogiwv7445f"
+          },
+          {
+            "platform": "squarespace",
+            "sha256": "b45ddbf414b10714b98e0fbfd4edf24c6176b9fa4a341df214de164c03cf328b",
+            "bytes": 855969,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "59j274iia3b2sziq"
+          }
+        ],
+        "nativeFreeJobs": 5,
+        "freeReservations": 0,
+        "providerCallsSimulated": 1,
+        "realProviderCalls": 0,
+        "reuse": true,
+        "reconnect": true,
+        "csrf": 403,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "pageErrors": []
+      },
+      {
+        "business": "services",
+        "captures": [
+          "services-devis-zero.png",
+          "services-fichier-prouve.png",
+          "services-acquis-reutilise.png",
+          "services-cinq-plateformes.png",
+          "services-reprise.png",
+          "services-fichier-manquant-sans-relance.png"
+        ],
+        "downloaded": [
+          {
+            "platform": "wix",
+            "sha256": "72af0be13142731cba49069728e460ce49154060bd28ba2b349b408a559573ad",
+            "bytes": 857889,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "0zt686wmnifyre6y"
+          },
+          {
+            "platform": "shopify",
+            "sha256": "f6157a4a5c457bae789d48879a5a909b696aceccb9f06e759678c452399de300",
+            "bytes": 1677396,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "cmrdtsuh89f21yfx"
+          },
+          {
+            "platform": "woocommerce",
+            "sha256": "291359324917f17b0ee726a4028a193285c37f60a57fe9788b7f7ff9a9104c64",
+            "bytes": 810792,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "6ohnp9m0r0qok2a1"
+          },
+          {
+            "platform": "prestashop",
+            "sha256": "c1c25b619251b56c02ac26abf55519ebd98def70005c7e893e2ecd447dfc7687",
+            "bytes": 712177,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "49s8z3burouhejj4"
+          },
+          {
+            "platform": "squarespace",
+            "sha256": "74e9996f956d414bd937c7903ec7c42b0f282d6be6a06279a2c53fe203e6700d",
+            "bytes": 857900,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "3lnuhoaq0gfpdchz"
+          }
+        ],
+        "nativeFreeJobs": 5,
+        "freeReservations": 0,
+        "providerCallsSimulated": 1,
+        "realProviderCalls": 0,
+        "reuse": true,
+        "reconnect": true,
+        "csrf": 403,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "pageErrors": []
+      }
+    ]
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "finishedAt": "2026-10-28T16:17:43.990Z",
+  "success": true
+}
