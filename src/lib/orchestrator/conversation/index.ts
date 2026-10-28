@@ -18,6 +18,7 @@ import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
 import {clearConversationAnswer} from './answer-state';
+import {activeContextEnabled,resolveActiveContext,observedActiveContext} from './active-context';
 import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
@@ -46,6 +47,7 @@ export function conversationView(user: User, cid: string, before?: number): Conv
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext)}}:{}),
     ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationThemeToolsEnabled()?{themeExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationExportsEnabled()?{exportExecution:{enabled:true as const}}:{}),
@@ -154,6 +156,10 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
     const { brief: b, revision, meta: m } = effective(c);
     if (revision !== cmd.projectRevision) throw new HttpError(409, L("La fiche a changé dans un autre écran. Relisez la version actuelle.", "The brief changed in another screen. Read the current version."), "conversation_brief_conflict");
     let changed = false, message = "", action: ActionCard | null = null;
+    if(cmd.action==='message'&&cmd.context){
+      if(!activeContextEnabled())throw new HttpError(404,L('Le repère contextuel est indisponible.','Context selection is unavailable.'),'conversation_context_disabled');
+      m.activeContext=resolveActiveContext(c,cmd.context).selection;
+    }
     if (cmd.action === 'message' && intelligenceEnabled()) {
       // Conservation exacte, sans classification locale ni appel facturant implicite.
       let writable = true;

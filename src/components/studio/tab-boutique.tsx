@@ -6,7 +6,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { useAgentUi } from "./agent-ui-context";
+import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
+import {previewSelectionScope} from '@/lib/conversation-presentation';
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -143,6 +144,9 @@ export default function TabBoutique() {
   // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
   const custom = useCustomThemeStatus(id);
   const agentUi=useAgentUi();
+  const contextUi=agentUi&&data?.conversationContext===true;
+  const {setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  const {setOpen:setAgentOpen}=useAgentPanel();
   const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
@@ -173,6 +177,8 @@ export default function TabBoutique() {
   const [picking, setPicking] = useState(false);
   const pickingRef = useRef(false);
   const [selection, setSelection] = useState<Selection>(null);
+  const [selectionScope,setSelectionScope]=useState<{versionId:string;page:string}|null>(null);
+  const loadedSelectionScope=useRef<{versionId:string;page:string}|null>(null);
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -210,7 +216,14 @@ export default function TabBoutique() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const versionId = viewVersion ?? theme?.current?.versionId ?? null;
+  const selectionCurrent=!!selection&&selectionScope?.versionId===versionId&&selectionScope?.page===page;
+  useEffect(()=>{
+    if(!contextUi||!versionId)return;
+    setAgentFocus({projectId:id,tab:'boutique',label:selectionCurrent?[selection!.kind,selection!.text].filter(Boolean).join(' · '):page,target:selectionCurrent?{kind:'theme-section',versionId,template:selection!.template,section:selection!.section,...(selection!.block?{block:selection!.block}:{})}:{kind:'theme-page',versionId,path:page}});
+    if(selection&&!selectionCurrent)setSelection(null);
+  },[contextUi,id,versionId,page,selection,selectionCurrent,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
+  useEffect(()=>{if(!contextUi||!clearSerial)return;setSelection(null);iframe.current?.contentWindow?.postMessage({source:'es-studio',type:'unpick'},'*');},[contextUi,clearSerial]);
 
   // Messages de l'aperçu (désignation, défilement, chargement).
   useEffect(() => {
@@ -219,16 +232,21 @@ export default function TabBoutique() {
       // Seulement l'aperçu affiché (cloisonné : origine opaque, on vérifie donc la fenêtre émettrice).
       if (!d || d.source !== "es-preview" || e.source !== iframe.current?.contentWindow) return;
       if (d.type === "selected") {
+        if(contextUi&&(!versionId||loadedSelectionScope.current?.versionId!==versionId||loadedSelectionScope.current?.page!==page)){
+          setPicking(false);toast('info',t('L’aperçu se met à jour. Désignez l’élément lorsqu’il est chargé.','The preview is updating. Select the element once it has loaded.'));return;
+        }
+        if(versionId)setSelectionScope({versionId,page});
         setSelection(d.selection);
         setPicking(false);
         // Élément désigné : retour à la discussion pour écrire la demande.
         setFull(false);
-        setView("chat");
+        if(contextUi){setView("preview");setAgentOpen(true);}else setView("chat");
       }
       if (d.type === "pick-cancel") setPicking(false);
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
+        loadedSelectionScope.current=previewSelectionScope(String(d.path),id);
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
         // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
         // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
@@ -242,7 +260,7 @@ export default function TabBoutique() {
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [page]);
+  }, [page,contextUi,setAgentOpen,versionId,id,t,toast]);
   useEffect(() => {
     pickingRef.current = picking;
     iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: picking }, "*");

@@ -137,6 +137,8 @@ export function intelligenceView(c: ConversationRow): IntelligenceView {
 }
 
 function validateReply(reply: CognitiveReply, c: ConversationRow, context: ReturnType<typeof cognitiveContext>) {
+  const focus=context.context.activeContext;
+  if((reply.themePlan||reply.compositionPlan||reply.exportPlan||reply.renderPlan)&&focus&&(focus.state==='unavailable'||('isCurrent' in focus&&focus.isCurrent===false)))throw new Error('conversation_target_requires_clarification');
   const evidence = (sourceId: string, quote: string, value?: string) => {
     const source = context.sources.find(s => s.id === sourceId);
     if (!source || !source.text.includes(quote) || value && !quote.includes(value)) throw new Error('conversation_unsupported_client_fact');

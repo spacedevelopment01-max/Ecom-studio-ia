@@ -589,9 +589,9 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
 
       <div className="min-w-0">
         <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
-          <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6">
+          <div className="flex min-h-16 flex-wrap items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6">
             <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes projets", "My projects")}><Logo compact /></Link>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-[min(10rem,100%)] flex-1">
               <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
               {data ? <p className="truncate text-xs text-muted">{data.brand?.name ?? data.project.name}</p> : <span className="skeleton mt-1 block h-3 w-28 rounded" aria-hidden />}
             </div>

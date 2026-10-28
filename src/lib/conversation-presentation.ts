@@ -18,3 +18,11 @@ export function conversationQuestionState(view:ConversationView,history=view.his
   const canonical=q.field==='target'?view.summary.target:q.field==='offerName'?view.summary.offerName:q.field==='brandName'?view.summary.brandName:q.field==='goals'?view.summary.goals:q.field==='business'?view.summary.business:null;
   return {show:reopened||!fact&&!canonical,answer:canonical||fact?.value||'',unknown:fact?.status==='unknown'&&!canonical,question:q};
 }
+/** Métadonnées seulement : le serveur vérifie déjà la capacité de lecture de l'aperçu. */
+export function previewSelectionScope(pathname:string,projectId:string):{versionId:string;page:string}|null{
+ const address=pathname.match(/^\/preview\/([^/]+)\/v\/([^/]+)(\/.*)?$/);
+ if(!address||address[1]!==projectId||/[?#\\]/.test(pathname))return null;
+ // Le suffixe ~capacité n'est ni un identifiant de version ni une donnée à conserver dans la mémoire.
+ const versionId=address[2].split('~',1)[0];if(!/^[a-zA-Z0-9_-]+$/.test(versionId))return null;
+ return{versionId,page:address[3]||'/'};
+}

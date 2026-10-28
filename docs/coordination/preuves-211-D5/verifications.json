@@ -1,0 +1,631 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "03f376f041fb46d432f10498e593f14e684a7d88",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "activeContextUi": {
+    "schema": "agent211-D5-browser-proof-1",
+    "cases": [
+      {
+        "scene": "produit-mono",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-mono-avant.png",
+          "produit-mono-section-designee.png",
+          "produit-mono-designation-retiree.png",
+          "produit-mono-proposition-exacte.png",
+          "produit-mono-accord-distinct.png",
+          "produit-mono-resultat-visible.png",
+          "produit-mono-annulation-visible.png",
+          "produit-mono-media-exact-sans-generation.png",
+          "produit-mono-reprise-reference.png",
+          "produit-mono-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "ku3a9nawff6kvhx2",
+            "template": "index",
+            "section": "hero_editorial_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "ziqin6zr6fqwvpe0",
+        "restoredVersion": "7k8x4bhpgg2lslnv",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "et8ab0cz6qerqh61",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "et8ab0cz6qerqh61",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "b46f89cb22962b2f"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/produit-mono.webm"
+      },
+      {
+        "scene": "produit-multi",
+        "viewport": {
+          "width": 1024,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-avant.png",
+          "produit-multi-section-designee.png",
+          "produit-multi-designation-retiree.png",
+          "produit-multi-proposition-exacte.png",
+          "produit-multi-accord-distinct.png",
+          "produit-multi-resultat-visible.png",
+          "produit-multi-annulation-visible.png",
+          "produit-multi-media-exact-sans-generation.png",
+          "produit-multi-reprise-reference.png",
+          "produit-multi-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "olbws5kxxks82k58",
+            "template": "index",
+            "section": "hero_editorial_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "hekuquoc4yggr5nj",
+        "restoredVersion": "i9150yl7t3d69ht5",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "p7ervwdoa76c9t69",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "p7ervwdoa76c9t69",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "d0fb7e4dcd79998e"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/produit-multi.webm"
+      },
+      {
+        "scene": "service-inedit",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-inedit-avant.png",
+          "service-inedit-section-designee.png",
+          "service-inedit-designation-retiree.png",
+          "service-inedit-proposition-exacte.png",
+          "service-inedit-accord-distinct.png",
+          "service-inedit-resultat-visible.png",
+          "service-inedit-annulation-visible.png",
+          "service-inedit-media-exact-sans-generation.png",
+          "service-inedit-reprise-reference.png",
+          "service-inedit-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "j55ge1kj7fchykq3",
+            "template": "index",
+            "section": "hero_split_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "a5tufn75oronobj3",
+        "restoredVersion": "hvmjc3hp7uyos9un",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "3rhmqj14u1sy1ppt",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "3rhmqj14u1sy1ppt",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "ccb9a36926b84f51"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/service-inedit.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "creativeQuality": "not_measured",
+    "realProviderCalls": 0
+  },
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736,
+    "tokenCounts": 3
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 6,
+    "calls": 6,
+    "usage": 6,
+    "simulatedMicro": 47472
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "legacyContextUi": {
+    "manualSelectionPreserved": true,
+    "synaClosed": true,
+    "contextClosed": true,
+    "noAutomaticSynaOpening": true,
+    "newProviderCalls": 0
+  },
+  "contextFlagClosed": {
+    "manualSelectionPreserved": true,
+    "synaClosed": false,
+    "contextClosed": true,
+    "noAutomaticSynaOpening": true,
+    "newProviderCalls": 0
+  },
+  "unitSuiteScope": {
+    "applicationAndUnitTestsIdenticalTo": "927c15bd7e1f9a607f415267a50d1dd08310cd41",
+    "onlyStandaloneHarnessChangedDuringSuite": true,
+    "vitestIncludes": "tests/**/*.test.ts",
+    "browserHarnessVerifiedSeparately": true
+  },
+  "runs": {
+    "D5-full-delivery": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "927c15bd7e1f9a607f415267a50d1dd08310cd41",
+      "startedAt": "2026-10-28T20:47:20.637546+00:00",
+      "finishedAt": "2026-10-28T21:07:59.643434+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": false,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "f35f43901b1b184139fb1d3c9aa78f10e6cf491df8f760bd4d5180dbe714fe5f",
+        "scripts/verify-agent211-context-ui.ts": "6246afa7a9d74c318c526a0af0340c9847d7dc5be95c28eb69af8761565623fe"
+      },
+      "logSha256": "8acdbdaba8d066722deacaf381ffb2270880314f0f246666f948cb6abc608557"
+    },
+    "D5-types-final-proof": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "927c15bd7e1f9a607f415267a50d1dd08310cd41",
+      "startedAt": "2026-10-28T21:10:08.707055+00:00",
+      "finishedAt": "2026-10-28T21:10:15.274515+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "f35f43901b1b184139fb1d3c9aa78f10e6cf491df8f760bd4d5180dbe714fe5f",
+        "scripts/verify-agent211-context-ui.ts": "8bd1c28f5c492514d88d497e022f92ba8373950461b6ee311d1d89f36d4f6c8f"
+      },
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "D5-build-delivery": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "03f376f041fb46d432f10498e593f14e684a7d88",
+      "startedAt": "2026-10-28T21:15:05.921799+00:00",
+      "finishedAt": "2026-10-28T21:16:43.246946+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "5031acb54a0b0a88993e196a3b8cdb0ad51ffa2fc756a3b6815726a9bc88af69"
+    },
+    "D5-browser-published-final": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D5-browser-published-final",
+        "--context-ui"
+      ],
+      "head": "03f376f041fb46d432f10498e593f14e684a7d88",
+      "startedAt": "2026-10-28T21:18:13.306535+00:00",
+      "finishedAt": "2026-10-28T21:19:17.766817+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "4a5eff78d016a6b2f06b10a51d53b86d2cb95ccd09ba3eaf1204bbc6dabdb208"
+    }
+  },
+  "mediaMessageVisibility": {
+    "produit-multi-media-visible": {
+      "historyRetained": true,
+      "box": {
+        "x": 621,
+        "y": 461.25,
+        "width": 355,
+        "height": 45.5
+      },
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "nativeRevision": 3
+    },
+    "service-inedit-media-visible": {
+      "historyRetained": true,
+      "box": {
+        "x": 53,
+        "y": 461.5,
+        "width": 305,
+        "height": 45.5
+      },
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "nativeRevision": 3
+    },
+    "produit-mono-media-visible": {
+      "historyRetained": true,
+      "box": {
+        "x": 1077,
+        "y": 461.75,
+        "width": 315,
+        "height": 45.5
+      },
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "nativeRevision": 3
+    }
+  },
+  "manualNativeEvents": {
+    "legacy-native-events-true": [
+      {
+        "main": true,
+        "events": {
+          "events": [
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "ecs-skip",
+              "trusted": true
+            },
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm bg-ink text-paper",
+              "trusted": true
+            },
+            {
+              "event": "click",
+              "tag": "SUMMARY",
+              "cls": "inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "ready"
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "loaded"
+            },
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs border-line bg-card",
+              "trusted": true
+            },
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "min-h-9 rounded-full border border-line px-3 text-xs",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "selected"
+            }
+          ],
+          "hover": [],
+          "picked": []
+        }
+      },
+      {
+        "main": false,
+        "events": {
+          "events": [
+            {
+              "event": "message",
+              "source": "es-studio",
+              "type": "pick",
+              "on": true
+            },
+            {
+              "event": "click",
+              "tag": "SPAN",
+              "cls": "es-hero-edito__line is-in",
+              "section": "index:hero_editorial_1",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-studio",
+              "type": "pick",
+              "on": false
+            }
+          ],
+          "hover": [],
+          "picked": [
+            "H1"
+          ]
+        }
+      }
+    ],
+    "legacy-native-events-false": [
+      {
+        "main": true,
+        "events": {
+          "events": [
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "ecs-skip",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "ready"
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "loaded"
+            },
+            {
+              "event": "click",
+              "tag": "BUTTON",
+              "cls": "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs border-line bg-card",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-preview",
+              "type": "selected"
+            }
+          ],
+          "hover": [],
+          "picked": []
+        }
+      },
+      {
+        "main": false,
+        "events": {
+          "events": [
+            {
+              "event": "message",
+              "source": "es-studio",
+              "type": "pick",
+              "on": true
+            },
+            {
+              "event": "click",
+              "tag": "SPAN",
+              "cls": "es-hero-edito__line is-in",
+              "section": "index:hero_editorial_1",
+              "trusted": true
+            },
+            {
+              "event": "message",
+              "source": "es-studio",
+              "type": "pick",
+              "on": false
+            }
+          ],
+          "hover": [],
+          "picked": [
+            "H1"
+          ]
+        }
+      }
+    ]
+  },
+  "mediaVerification": [
+    {
+      "file": "videos/produit-mono.mp4",
+      "source": {
+        "width": 1440,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "nb_read_frames": "374"
+      },
+      "mp4": {
+        "width": 1440,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "duration": "14.960000",
+        "nb_read_frames": "374"
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "b7a2b4765cc5b96309b487cd83b830ea04ee004b5e3410fe4b18223884e52129",
+      "durationVerification": {
+        "sourceSeconds": 14.96,
+        "mp4Seconds": 14.96,
+        "differenceSeconds": 0.0
+      }
+    },
+    {
+      "file": "videos/produit-multi.mp4",
+      "source": {
+        "width": 1024,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "nb_read_frames": "320"
+      },
+      "mp4": {
+        "width": 1024,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "duration": "12.800000",
+        "nb_read_frames": "320"
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "3d09b24581cb5923a3360cfdc4919f99288814d237930a63f1c0863c83dcba2b",
+      "durationVerification": {
+        "sourceSeconds": 12.8,
+        "mp4Seconds": 12.8,
+        "differenceSeconds": 0.0
+      }
+    },
+    {
+      "file": "videos/service-inedit.mp4",
+      "source": {
+        "width": 390,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "nb_read_frames": "329"
+      },
+      "mp4": {
+        "width": 390,
+        "height": 900,
+        "r_frame_rate": "25/1",
+        "duration": "13.160000",
+        "nb_read_frames": "329"
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "89d8a1eff342d918a302fc1c3408014ca1259530f96ee28b673ff3625e1c3877",
+      "durationVerification": {
+        "sourceSeconds": 13.16,
+        "mp4Seconds": 13.16,
+        "differenceSeconds": 0.0
+      }
+    }
+  ],
+  "completeApiProofKeys": [
+    "schema",
+    "data",
+    "provider",
+    "realProviderCalls",
+    "realCostEur",
+    "worker",
+    "qualification",
+    "cases",
+    "version",
+    "failure",
+    "accountExportIsolated",
+    "simulatedTotals",
+    "activeContextUi",
+    "allSimulatedTotals",
+    "defaultOff",
+    "legacyContextUi",
+    "contextFlagClosed",
+    "finishedAt",
+    "success"
+  ],
+  "noRealModelComprehensionOrCreativeQualityQualified": true
+}

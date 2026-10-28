@@ -9,3 +9,4 @@ export const conversationExportsEnabled=()=>conversationThemeToolsEnabled()&&pro
 export const conversationRenderEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_RENDER==='1';
 
 export const conversationResearchEnabled=()=>conversationToolsEnabled()&&process.env.STUDIO_CONVERSATION_RESEARCH==='1';
+export const conversationContextEnabled=()=>['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_CONTEXT'].every(key=>process.env[key]==='1');
