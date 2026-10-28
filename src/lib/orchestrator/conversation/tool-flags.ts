@@ -5,3 +5,5 @@ export const conversationThemeToolsEnabled=()=>conversationToolsEnabled()&&proce
 export const conversationCompositionEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_COMPOSITION==='1';
 
 export const conversationExportsEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_EXPORTS==='1';
+
+export const conversationRenderEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_RENDER==='1';
