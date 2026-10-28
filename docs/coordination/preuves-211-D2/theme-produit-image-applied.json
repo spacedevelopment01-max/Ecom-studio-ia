@@ -1,0 +1,1347 @@
+{
+  "realProviderCalls": 0,
+  "request": "Remplace uniquement l’image d’ouverture par mon fichier « autre-illustration-test.png ». Ne change ni les textes ni la mise en page.",
+  "uploaded": {
+    "id": "7fv2wtl115hacev3",
+    "name": "autre-illustration-test.png"
+  },
+  "plan": {
+    "tool": "theme.edit",
+    "versionId": "hy521aqle3ghvld9",
+    "summary": "Remplacer uniquement le visuel d’ouverture par le fichier choisi.",
+    "ops": [
+      {
+        "op": "use_media",
+        "template": "index",
+        "section": "hero_editorial_1",
+        "key": "image",
+        "assetId": "7fv2wtl115hacev3"
+      }
+    ]
+  },
+  "registry": {
+    "projectId": "81jc71jd94dn7xfy",
+    "currentVersionId": "usy9s01qd1xpz9el",
+    "available": true,
+    "mode": "exact_client_text_or_owned_media_only",
+    "costPct": 0,
+    "receipts": [
+      {
+        "id": "19cdtfp5e7tsypvs",
+        "kind": "edit",
+        "summary": "Remplacer uniquement le visuel d’ouverture par le fichier choisi.",
+        "sourceReceiptId": "v8c1fn1reoptg8tj",
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "lvc28hpigybf4rk4",
+          "type": "agent.theme.change",
+          "label": "Retouche ciblée du thème",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "usy9s01qd1xpz9el",
+            "number": 4,
+            "fingerprint": "bbb3383a9cd9bfb4",
+            "reused": false
+          },
+          "createdAt": 1793196263945,
+          "updatedAt": 1793196265000,
+          "finishedAt": 1793196265000,
+          "startedAt": 1793196263945,
+          "alive": false,
+          "idleMs": 1252
+        },
+        "costPct": 0,
+        "changes": [
+          {
+            "template": "index",
+            "section": "hero_editorial_1",
+            "key": "image_asset",
+            "before": "es-recette-interface.webp",
+            "after": "es-hero-7fv2wt.png",
+            "media": {
+              "beforeAssetId": "dv3b4ac5ek61rm82",
+              "afterAssetId": "7fv2wtl115hacev3"
+            }
+          }
+        ],
+        "version": {
+          "id": "usy9s01qd1xpz9el",
+          "number": 4,
+          "parentId": "hy521aqle3ghvld9",
+          "fingerprint": "bbb3383a9cd9bfb4",
+          "isCurrent": true
+        },
+        "previewHref": "/preview/81jc71jd94dn7xfy/v/usy9s01qd1xpz9el",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/81jc71jd94dn7xfy/v/usy9s01qd1xpz9el"
+          }
+        ],
+        "siteHref": "/studio/81jc71jd94dn7xfy/boutique",
+        "canUndo": true,
+        "actionsExecuted": true
+      },
+      {
+        "id": "bozpn3l3nlav4idn",
+        "kind": "undo",
+        "summary": "Annuler cette retouche en créant une nouvelle version ; historique conservé.",
+        "sourceReceiptId": null,
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "72ktnj5yg2obm6lx",
+          "type": "agent.theme.change",
+          "label": "Annulation de la retouche",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "hy521aqle3ghvld9",
+            "number": 3,
+            "fingerprint": "3e1e99365ed1257a",
+            "reused": false
+          },
+          "createdAt": 1793196258862,
+          "updatedAt": 1793196260086,
+          "finishedAt": 1793196260086,
+          "startedAt": 1793196258862,
+          "alive": false,
+          "idleMs": 6167
+        },
+        "costPct": 0,
+        "changes": [
+          {
+            "template": "index",
+            "section": "hero_editorial_1",
+            "key": "heading_line1",
+            "before": "Vos ruches,",
+            "after": "Observer la ruche,"
+          },
+          {
+            "template": "index",
+            "section": "hero_editorial_1",
+            "key": "heading_line2",
+            "before": "vos décisions.",
+            "after": "comprendre son rythme."
+          }
+        ],
+        "version": {
+          "id": "hy521aqle3ghvld9",
+          "number": 3,
+          "parentId": "d0kabquv7sdxgklf",
+          "fingerprint": "3e1e99365ed1257a",
+          "isCurrent": false
+        },
+        "previewHref": "/preview/81jc71jd94dn7xfy/v/hy521aqle3ghvld9",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/81jc71jd94dn7xfy/v/hy521aqle3ghvld9"
+          }
+        ],
+        "siteHref": "/studio/81jc71jd94dn7xfy/boutique",
+        "canUndo": false,
+        "actionsExecuted": true
+      },
+      {
+        "id": "0x1x902a90k8zw0j",
+        "kind": "edit",
+        "summary": "Reprendre les mots exacts demandés pour le titre, sans autre changement.",
+        "sourceReceiptId": "t56a0plrh6na3jku",
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "4tk8to0bvhc90n5e",
+          "type": "agent.theme.change",
+          "label": "Retouche ciblée du thème",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "d0kabquv7sdxgklf",
+            "number": 2,
+            "fingerprint": "c5e8fec8ffad7b59",
+            "reused": false
+          },
+          "createdAt": 1793196256296,
+          "updatedAt": 1793196256890,
+          "finishedAt": 1793196256890,
+          "startedAt": 1793196256296,
+          "alive": false,
+          "idleMs": 9363
+        },
+        "costPct": 0,
+        "changes": [
+          {
+            "template": "index",
+            "section": "hero_editorial_1",
+            "key": "heading_line1",
+            "before": "Observer la ruche,",
+            "after": "Vos ruches,"
+          },
+          {
+            "template": "index",
+            "section": "hero_editorial_1",
+            "key": "heading_line2",
+            "before": "comprendre son rythme.",
+            "after": "vos décisions."
+          }
+        ],
+        "version": {
+          "id": "d0kabquv7sdxgklf",
+          "number": 2,
+          "parentId": "ek1ybsuvj7tcrgff",
+          "fingerprint": "c5e8fec8ffad7b59",
+          "isCurrent": false
+        },
+        "previewHref": "/preview/81jc71jd94dn7xfy/v/d0kabquv7sdxgklf",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/81jc71jd94dn7xfy/v/d0kabquv7sdxgklf"
+          }
+        ],
+        "siteHref": "/studio/81jc71jd94dn7xfy/boutique",
+        "canUndo": false,
+        "actionsExecuted": true
+      }
+    ],
+    "siteHref": "/studio/81jc71jd94dn7xfy/boutique"
+  },
+  "native": {
+    "current": {
+      "id": "usy9s01qd1xpz9el",
+      "number": 4,
+      "spec": {
+        "v": 1,
+        "name": "Capteurs de ruches — RECETTE · Atelier",
+        "direction": "atelier",
+        "language": "fr",
+        "settings": {
+          "logo_asset": "",
+          "logo_width": 150,
+          "favicon_asset": "",
+          "color_schemes": {
+            "scheme-1": {
+              "settings": {
+                "background": "#F4F5F2",
+                "surface": "#EAECE9",
+                "text": "#182521",
+                "muted": "#5E6562",
+                "accent": "#254d43",
+                "accent_text": "#FFFFFF",
+                "border": "#D5D8D5"
+              }
+            },
+            "scheme-2": {
+              "settings": {
+                "background": "#EBEEE7",
+                "surface": "#E2E5DE",
+                "text": "#182521",
+                "muted": "#5C625E",
+                "accent": "#254d43",
+                "accent_text": "#FFFFFF",
+                "border": "#CDD2CB"
+              }
+            },
+            "scheme-3": {
+              "settings": {
+                "background": "#131B19",
+                "surface": "#202826",
+                "text": "#F3F4F1",
+                "muted": "#959996",
+                "accent": "#b68a44",
+                "accent_text": "#141414",
+                "border": "#323937"
+              }
+            },
+            "scheme-4": {
+              "settings": {
+                "background": "#E0D4C2",
+                "surface": "#D7CCBB",
+                "text": "#182521",
+                "muted": "#4D5049",
+                "accent": "#182521",
+                "accent_text": "#FFFFFF",
+                "border": "#C4BCAB"
+              }
+            }
+          },
+          "type_heading_font": "playfair_display_n6",
+          "type_body_font": "inter_n4",
+          "type_accent_font": "cormorant_i5",
+          "heading_scale": 104,
+          "body_scale": 100,
+          "heading_case": "none",
+          "heading_tracking": 0,
+          "heading_weight_boost": 0,
+          "page_width": 1320,
+          "spacing_scale": 100,
+          "style_preset": "atelier",
+          "button_radius": 40,
+          "card_radius": 28,
+          "button_style": "solid",
+          "button_uppercase": true,
+          "button_shine": true,
+          "glow_enabled": true,
+          "glow_intensity": 35,
+          "header_shape": "floating",
+          "card_style": "minimal",
+          "motion_enabled": true,
+          "motion_intensity": "expressive",
+          "motion_parallax": true,
+          "fab_back_to_top": true,
+          "fab_contact_link": "/pages/contact",
+          "fab_contact_icon": "chat",
+          "fab_contact_label": "Nous contacter",
+          "cart_type": "drawer",
+          "cart_show_note": false,
+          "cart_reassurance": "",
+          "social_instagram": "",
+          "social_tiktok": "",
+          "social_facebook": "",
+          "social_youtube": "",
+          "social_pinterest": ""
+        },
+        "groups": {
+          "header": {
+            "type": "header",
+            "name": "Groupe en-tête",
+            "sections": {
+              "announcement_bar_1": {
+                "type": "announcement-bar",
+                "settings": {
+                  "style": "static",
+                  "color_scheme": "scheme-3"
+                },
+                "blocks": {
+                  "announcement_1": {
+                    "type": "announcement",
+                    "settings": {
+                      "text": "RECETTE ISOLÉE — site technique fictif, non publié",
+                      "link": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "announcement_1"
+                ]
+              },
+              "header_1": {
+                "type": "header",
+                "settings": {
+                  "menu": "main-menu",
+                  "layout": "logo-center",
+                  "shape": "floating",
+                  "icons": "circles",
+                  "mobile_menu": "fullscreen",
+                  "sticky": true,
+                  "transparent_on_home": false,
+                  "show_search": true,
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "announcement_bar_1",
+              "header_1"
+            ]
+          },
+          "footer": {
+            "type": "footer",
+            "name": "Groupe pied de page",
+            "sections": {
+              "footer_1": {
+                "type": "footer",
+                "settings": {
+                  "style": "wordmark",
+                  "logo_asset": "",
+                  "show_wordmark": true,
+                  "show_policies": true,
+                  "show_payment": true,
+                  "color_scheme": "scheme-3"
+                },
+                "blocks": {
+                  "text_5": {
+                    "type": "text",
+                    "settings": {
+                      "heading": "Capteurs de ruches — RECETTE",
+                      "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>"
+                    }
+                  },
+                  "links_1": {
+                    "type": "links",
+                    "settings": {
+                      "heading": "Boutique",
+                      "menu": "main-menu"
+                    }
+                  },
+                  "links_2": {
+                    "type": "links",
+                    "settings": {
+                      "heading": "Aide",
+                      "menu": "footer"
+                    }
+                  },
+                  "newsletter_2": {
+                    "type": "newsletter",
+                    "settings": {
+                      "heading": "Restons en contact",
+                      "text": "Aucun envoi pendant la recette."
+                    }
+                  }
+                },
+                "block_order": [
+                  "text_5",
+                  "links_1",
+                  "links_2",
+                  "newsletter_2"
+                ]
+              }
+            },
+            "order": [
+              "footer_1"
+            ]
+          }
+        },
+        "templates": {
+          "404": {
+            "sections": {
+              "main_404_1": {
+                "type": "main-404",
+                "settings": {
+                  "heading": "Cette page s'est égarée.",
+                  "text": "Le lien est peut-être ancien. Le reste de la boutique vous attend.",
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_404_1"
+            ]
+          },
+          "index": {
+            "sections": {
+              "hero_editorial_1": {
+                "type": "hero-editorial",
+                "settings": {
+                  "eyebrow": "Capteurs pour les ruches",
+                  "heading_line1": "Observer la ruche,",
+                  "heading_line2": "comprendre son rythme.",
+                  "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+                  "button_label": "Découvrir les capteurs",
+                  "button_link": "/products/offre-recette",
+                  "image_asset": "es-hero-7fv2wt.png",
+                  "image_alt": "Capteur de ruche",
+                  "parallax": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 56,
+                  "padding_bottom": 104
+                }
+              },
+              "image_with_text_2": {
+                "type": "image-with-text",
+                "settings": {
+                  "eyebrow": "Recette de l’interface",
+                  "heading": "Un aperçu natif, une conversation commune.",
+                  "text": "<p>Le diagramme est une illustration technique de test, pas une photographie commerciale.</p>",
+                  "image_asset": "",
+                  "layout": "image-left",
+                  "ratio": "portrait",
+                  "reveal": "zoom",
+                  "parallax": false,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                }
+              },
+              "features_grid_1": {
+                "type": "features-grid",
+                "settings": {
+                  "eyebrow": "",
+                  "heading": "Les repères du projet",
+                  "heading_align": "left",
+                  "columns": 2,
+                  "columns_mobile": "1",
+                  "style": "glow",
+                  "link_label": "",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "feature_1": {
+                    "type": "feature",
+                    "settings": {
+                      "title": "Vos ruches",
+                      "text": "<p>La demande porte sur plusieurs capteurs pour les ruches.</p>",
+                      "icon": "hand",
+                      "link_label": "",
+                      "link": ""
+                    }
+                  },
+                  "feature_2": {
+                    "type": "feature",
+                    "settings": {
+                      "title": "À préciser ensemble",
+                      "text": "<p>Aucune performance ni promesse commerciale inventée.</p>",
+                      "icon": "check",
+                      "link_label": "",
+                      "link": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "feature_1",
+                  "feature_2"
+                ]
+              },
+              "rich_text_2": {
+                "type": "rich-text",
+                "settings": {
+                  "align": "left",
+                  "style": "reveal",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 120,
+                  "padding_bottom": 120
+                },
+                "blocks": {
+                  "eyebrow_3": {
+                    "type": "eyebrow",
+                    "settings": {
+                      "text": "Informations conservées"
+                    }
+                  },
+                  "heading_2": {
+                    "type": "heading",
+                    "settings": {
+                      "text": "Chaque projet commence par une question.",
+                      "size": "h2"
+                    }
+                  },
+                  "text_3": {
+                    "type": "text",
+                    "settings": {
+                      "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "eyebrow_3",
+                  "heading_2",
+                  "text_3"
+                ]
+              },
+              "scroll_story_2": {
+                "type": "scroll-story",
+                "settings": {
+                  "heading": "Construire le projet",
+                  "image_asset": "es-recette-interface.webp",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "step_3": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Vos besoins",
+                      "text": "<p>Les mots du client restent conservés.</p>",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_4": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Les informations manquantes",
+                      "text": "<p>Elles restent à préciser.</p>",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_3",
+                  "step_4"
+                ]
+              },
+              "horizontal_gallery_1": {
+                "type": "horizontal-gallery",
+                "settings": {
+                  "heading": "Illustration technique de recette",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                }
+              },
+              "faq_2": {
+                "type": "faq",
+                "settings": {
+                  "heading": "À préciser",
+                  "style": "cards",
+                  "structured_data": true,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "question_3": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels tarifs ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  },
+                  "question_4": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels délais ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_3",
+                  "question_4"
+                ]
+              },
+              "newsletter_1": {
+                "type": "newsletter",
+                "settings": {
+                  "heading": "Rester en contact",
+                  "text": "<p>Formulaire de recette, aucun envoi.</p>",
+                  "button_label": "S'inscrire",
+                  "legal": "Désinscription possible à tout moment.",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                }
+              }
+            },
+            "order": [
+              "hero_editorial_1",
+              "image_with_text_2",
+              "features_grid_1",
+              "rich_text_2",
+              "scroll_story_2",
+              "horizontal_gallery_1",
+              "faq_2",
+              "newsletter_1"
+            ]
+          },
+          "product": {
+            "sections": {
+              "main_product_1": {
+                "type": "main-product",
+                "settings": {
+                  "gallery_layout": "stack",
+                  "sticky_bar": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 32,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "eyebrow_1": {
+                    "type": "eyebrow",
+                    "settings": {
+                      "text": "Capteurs de ruches — RECETTE"
+                    }
+                  },
+                  "title_1": {
+                    "type": "title",
+                    "settings": {}
+                  },
+                  "rating_1": {
+                    "type": "rating",
+                    "settings": {
+                      "anchor": "avis"
+                    }
+                  },
+                  "price_1": {
+                    "type": "price",
+                    "settings": {}
+                  },
+                  "text_1": {
+                    "type": "text",
+                    "settings": {
+                      "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>"
+                    }
+                  },
+                  "buy_buttons_1": {
+                    "type": "buy_buttons",
+                    "settings": {
+                      "picker": "buttons",
+                      "show_quantity": true,
+                      "show_dynamic_checkout": true
+                    }
+                  }
+                },
+                "block_order": [
+                  "eyebrow_1",
+                  "title_1",
+                  "rating_1",
+                  "price_1",
+                  "text_1",
+                  "buy_buttons_1"
+                ]
+              },
+              "product_reviews_1": {
+                "type": "product-reviews",
+                "settings": {
+                  "heading": "Avis des clients",
+                  "anchor": "avis",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 32,
+                  "padding_bottom": 32
+                }
+              },
+              "scroll_story_1": {
+                "type": "scroll-story",
+                "settings": {
+                  "heading": "Construire le projet",
+                  "image_asset": "es-recette-interface.webp",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "step_1": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Vos besoins",
+                      "text": "<p>Les mots du client restent conservés.</p>",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_2": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Les informations manquantes",
+                      "text": "<p>Elles restent à préciser.</p>",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_1",
+                  "step_2"
+                ]
+              },
+              "specs_list_1": {
+                "type": "specs-list",
+                "settings": {
+                  "heading": "Faits du projet",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "spec_1": {
+                    "type": "spec",
+                    "settings": {
+                      "label": "Activité",
+                      "value": "Capteurs pour ruches"
+                    }
+                  }
+                },
+                "block_order": [
+                  "spec_1"
+                ]
+              },
+              "faq_1": {
+                "type": "faq",
+                "settings": {
+                  "heading": "À préciser",
+                  "style": "cards",
+                  "structured_data": true,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "question_1": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels tarifs ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  },
+                  "question_2": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels délais ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_1",
+                  "question_2"
+                ]
+              },
+              "product_recommendations_1": {
+                "type": "product-recommendations",
+                "settings": {
+                  "heading": "Vous aimerez aussi",
+                  "limit": 4,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 96
+                }
+              }
+            },
+            "order": [
+              "main_product_1",
+              "product_reviews_1",
+              "scroll_story_1",
+              "specs_list_1",
+              "faq_1",
+              "product_recommendations_1"
+            ]
+          },
+          "collection": {
+            "sections": {
+              "main_collection_1": {
+                "type": "main-collection",
+                "settings": {
+                  "per_page": 16,
+                  "columns": 3,
+                  "enable_filters": true,
+                  "enable_sorting": true,
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_collection_1"
+            ]
+          },
+          "list-collections": {
+            "sections": {
+              "main_list_collections_1": {
+                "type": "main-list-collections",
+                "settings": {
+                  "heading": "Catalogue",
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_list_collections_1"
+            ]
+          },
+          "search": {
+            "sections": {
+              "main_search_1": {
+                "type": "main-search",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_search_1"
+            ]
+          },
+          "cart": {
+            "sections": {
+              "main_cart_1": {
+                "type": "main-cart",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_cart_1"
+            ]
+          },
+          "page": {
+            "sections": {
+              "main_page_1": {
+                "type": "main-page",
+                "settings": {
+                  "width": "narrow",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 96
+                }
+              }
+            },
+            "order": [
+              "main_page_1"
+            ]
+          },
+          "page.about": {
+            "sections": {
+              "rich_text_1": {
+                "type": "rich-text",
+                "settings": {
+                  "align": "center",
+                  "style": "statement",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 120,
+                  "padding_bottom": 64
+                },
+                "blocks": {
+                  "eyebrow_2": {
+                    "type": "eyebrow",
+                    "settings": {
+                      "text": "Notre histoire"
+                    }
+                  },
+                  "heading_1": {
+                    "type": "heading",
+                    "settings": {
+                      "text": "Votre projet",
+                      "size": "h1"
+                    }
+                  },
+                  "text_2": {
+                    "type": "text",
+                    "settings": {
+                      "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "eyebrow_2",
+                  "heading_1",
+                  "text_2"
+                ]
+              },
+              "image_with_text_1": {
+                "type": "image-with-text",
+                "settings": {
+                  "eyebrow": "",
+                  "heading": "Les acquis",
+                  "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+                  "image_asset": "",
+                  "layout": "image-left",
+                  "ratio": "portrait",
+                  "reveal": "curtain",
+                  "parallax": false,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                }
+              },
+              "cta_banner_1": {
+                "type": "cta-banner",
+                "settings": {
+                  "heading": "Parlons de votre projet.",
+                  "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+                  "button_label": "Découvrir les capteurs",
+                  "button_link": "/products/offre-recette",
+                  "image_asset": "es-recette-interface.webp",
+                  "overlay": 60,
+                  "style": "center",
+                  "parallax": true,
+                  "color_scheme": "scheme-3",
+                  "padding_top": 152,
+                  "padding_bottom": 152
+                }
+              },
+              "main_page_3": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_3",
+              "rich_text_1",
+              "image_with_text_1",
+              "cta_banner_1"
+            ]
+          },
+          "page.faq": {
+            "sections": {
+              "faq_3": {
+                "type": "faq",
+                "settings": {
+                  "heading": "À préciser",
+                  "text": "",
+                  "style": "cards",
+                  "structured_data": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "question_5": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels tarifs ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  },
+                  "question_6": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels délais ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_5",
+                  "question_6"
+                ]
+              },
+              "contact_form_1": {
+                "type": "contact-form",
+                "settings": {
+                  "heading": "Une autre question ?",
+                  "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                }
+              },
+              "main_page_4": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_4",
+              "faq_3",
+              "contact_form_1"
+            ]
+          },
+          "page.contact": {
+            "sections": {
+              "contact_form_2": {
+                "type": "contact-form",
+                "settings": {
+                  "heading": "Votre demande",
+                  "text": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 120
+                }
+              },
+              "main_page_5": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_5",
+              "contact_form_2"
+            ]
+          },
+          "page.shipping": {
+            "sections": {
+              "main_page_2": {
+                "type": "main-page",
+                "settings": {
+                  "width": "narrow",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 96
+                }
+              },
+              "rich_text_3": {
+                "type": "rich-text",
+                "settings": {
+                  "align": "left",
+                  "style": "plain",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 64,
+                  "padding_bottom": 64
+                },
+                "blocks": {
+                  "heading_3": {
+                    "type": "heading",
+                    "settings": {
+                      "text": "Délais",
+                      "size": "h3"
+                    }
+                  },
+                  "text_4": {
+                    "type": "text",
+                    "settings": {
+                      "text": "<p>À confirmer.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "heading_3",
+                  "text_4"
+                ]
+              }
+            },
+            "order": [
+              "main_page_2",
+              "rich_text_3"
+            ]
+          },
+          "blog": {
+            "sections": {
+              "main_blog_1": {
+                "type": "main-blog",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_blog_1"
+            ]
+          },
+          "article": {
+            "sections": {
+              "main_article_1": {
+                "type": "main-article",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_article_1"
+            ]
+          },
+          "password": {
+            "sections": {
+              "main_password_1": {
+                "type": "main-password",
+                "settings": {
+                  "heading": "Bientôt en ligne"
+                }
+              }
+            },
+            "order": [
+              "main_password_1"
+            ],
+            "layout": "password"
+          }
+        },
+        "customSections": {},
+        "files": {
+          "es-recette-interface.webp": "dv3b4ac5ek61rm82",
+          "es-hero-7fv2wt.png": "7fv2wtl115hacev3"
+        },
+        "locks": [],
+        "store": {
+          "shopName": "Capteurs de ruches — RECETTE",
+          "product": {
+            "title": "Capteur de ruche",
+            "handle": "offre-recette",
+            "vendor": "Capteurs de ruches — RECETTE",
+            "description_html": "<p>Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.</p>",
+            "price": null,
+            "compare_at_price": null,
+            "currency": "EUR",
+            "options": [],
+            "variants": [],
+            "images": [
+              "es-recette-interface.webp"
+            ],
+            "tags": [],
+            "seo": {
+              "title": "Capteurs de ruches — RECETTE",
+              "description": "Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer."
+            }
+          },
+          "pages": [
+            {
+              "handle": "notre-histoire",
+              "title": "Notre histoire",
+              "template_suffix": "about",
+              "body_html": ""
+            },
+            {
+              "handle": "faq",
+              "title": "Questions fréquentes",
+              "template_suffix": "faq",
+              "body_html": ""
+            },
+            {
+              "handle": "contact",
+              "title": "Contact",
+              "template_suffix": "contact",
+              "body_html": ""
+            },
+            {
+              "handle": "livraison-et-retours",
+              "title": "Livraison et retours",
+              "template_suffix": "shipping",
+              "body_html": "<p>Les conditions détaillées figurent ci-dessous.</p>"
+            }
+          ],
+          "menus": {
+            "main-menu": {
+              "title": "Menu principal",
+              "links": [
+                {
+                  "title": "Accueil",
+                  "url": "/"
+                },
+                {
+                  "title": "Boutique",
+                  "url": "/collections/all"
+                },
+                {
+                  "title": "Notre histoire",
+                  "url": "/pages/notre-histoire"
+                },
+                {
+                  "title": "FAQ",
+                  "url": "/pages/faq"
+                },
+                {
+                  "title": "Contact",
+                  "url": "/pages/contact"
+                }
+              ]
+            },
+            "footer": {
+              "title": "Pied de page",
+              "links": [
+                {
+                  "title": "Livraison et retours",
+                  "url": "/pages/livraison-et-retours"
+                },
+                {
+                  "title": "Contact",
+                  "url": "/pages/contact"
+                },
+                {
+                  "title": "Recherche",
+                  "url": "/search"
+                }
+              ]
+            }
+          },
+          "policies": [
+            {
+              "handle": "terms-of-service",
+              "title": "Conditions générales de vente",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            },
+            {
+              "handle": "privacy-policy",
+              "title": "Politique de confidentialité",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            },
+            {
+              "handle": "refund-policy",
+              "title": "Politique de remboursement",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            },
+            {
+              "handle": "legal-notice",
+              "title": "Mentions légales",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            }
+          ]
+        }
+      }
+    },
+    "versions": [
+      {
+        "id": "ek1ybsuvj7tcrgff",
+        "number": 1,
+        "parent_id": null,
+        "author": "system"
+      },
+      {
+        "id": "d0kabquv7sdxgklf",
+        "number": 2,
+        "parent_id": "ek1ybsuvj7tcrgff",
+        "author": "user"
+      },
+      {
+        "id": "hy521aqle3ghvld9",
+        "number": 3,
+        "parent_id": "d0kabquv7sdxgklf",
+        "author": "user"
+      },
+      {
+        "id": "usy9s01qd1xpz9el",
+        "number": 4,
+        "parent_id": "hy521aqle3ghvld9",
+        "author": "user"
+      }
+    ],
+    "jobs": [
+      {
+        "id": "t56a0plrh6na3jku",
+        "type": "agent.reason",
+        "status": "done",
+        "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"7iabo145jbhalhdq\",\"requestId\":\"7db3b3ac-e87f-41b9-81e5-f092d64e8bba\",\"costCapMicro\":369942,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "4tk8to0bvhc90n5e",
+        "type": "agent.theme.change",
+        "status": "done",
+        "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"0x1x902a90k8zw0j\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "72ktnj5yg2obm6lx",
+        "type": "agent.theme.change",
+        "status": "done",
+        "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"bozpn3l3nlav4idn\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "v8c1fn1reoptg8tj",
+        "type": "agent.reason",
+        "status": "done",
+        "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"3w3ez0bi70jv4qvr\",\"requestId\":\"c0aebff6-283a-4644-8558-52e7b6b270bb\",\"costCapMicro\":371775,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "lvc28hpigybf4rk4",
+        "type": "agent.theme.change",
+        "status": "done",
+        "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"19cdtfp5e7tsypvs\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "t56a0plrh6na3jku"
+      },
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "v8c1fn1reoptg8tj"
+      }
+    ],
+    "freeJobReservations": 0,
+    "otherFieldsPreserved": true
+  },
+  "visibleImageFilename": "es-hero-7fv2wt.png"
+}

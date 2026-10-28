@@ -67,6 +67,7 @@ export type ConversationView = {
   mode: "local" | "simulation" | 'ai';
   intelligence?: import('./intelligence-contract').IntelligenceView;
   execution?: {enabled:true};
+  themeExecution?: {enabled:true};
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;
   question: ChoiceCard | null;

@@ -1,0 +1,85 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "freeOperationsCostMicro": 0,
+  "scenarios": [
+    {
+      "scenario": "produit",
+      "fictitiousData": true,
+      "freeJobs": [
+        {
+          "id": "4tk8to0bvhc90n5e",
+          "status": "done",
+          "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"0x1x902a90k8zw0j\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        },
+        {
+          "id": "72ktnj5yg2obm6lx",
+          "status": "done",
+          "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"bozpn3l3nlav4idn\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        },
+        {
+          "id": "lvc28hpigybf4rk4",
+          "status": "done",
+          "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"19cdtfp5e7tsypvs\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        },
+        {
+          "id": "avjateg1boteapqt",
+          "status": "done",
+          "payload": "{\"conversationId\":\"qlbhs8gl90ebwo9z\",\"quoteId\":\"1q2uar6bu7m86apz\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        }
+      ],
+      "freeJobReservations": [],
+      "recordedCognitiveCost": [
+        {
+          "job_id": "t56a0plrh6na3jku",
+          "cost": 7912
+        },
+        {
+          "job_id": "v8c1fn1reoptg8tj",
+          "cost": 7912
+        }
+      ],
+      "wallet": [
+        {
+          "monthly_allowance": 43000000,
+          "monthly_used": 15824,
+          "reserved": 0,
+          "reserved_topup": 0,
+          "topup_balance": 0
+        }
+      ]
+    },
+    {
+      "scenario": "service",
+      "fictitiousData": true,
+      "freeJobs": [
+        {
+          "id": "o7r1gb9v9g017vt5",
+          "status": "done",
+          "payload": "{\"conversationId\":\"k1wqmu6dxts7i52g\",\"quoteId\":\"893esx5x5whdyn3v\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        },
+        {
+          "id": "zemdzoc7leuj2ggk",
+          "status": "done",
+          "payload": "{\"conversationId\":\"k1wqmu6dxts7i52g\",\"quoteId\":\"65zcb1o5vdc7248k\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+        }
+      ],
+      "freeJobReservations": [],
+      "recordedCognitiveCost": [
+        {
+          "job_id": "ih71s5wp4813rf2m",
+          "cost": 7912
+        }
+      ],
+      "wallet": [
+        {
+          "monthly_allowance": 43000000,
+          "monthly_used": 7912,
+          "reserved": 0,
+          "reserved_topup": 0,
+          "topup_balance": 0
+        }
+      ]
+    }
+  ]
+}
