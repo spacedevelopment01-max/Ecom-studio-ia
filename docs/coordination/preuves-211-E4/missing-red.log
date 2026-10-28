@@ -1,0 +1,65 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-e4-textes
+
+ ❯ tests/conversation211-copy-input.test.ts (9 tests | 2 failed) 1027ms
+   ❯ #211 E4 — contenu complet transmis aux correcteurs et aux reprises (9)
+     × refuse un contenu absent avant tout appel (qc) 109ms
+     × refuse un contenu absent avant tout appel (review) 106ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > refuse un contenu absent avant tout appel (qc)
+AssertionError: promise resolved "{ verdict: 'ok', issues: [] }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "issues": [],
++   "verdict": "ok",
+  }
+
+ ❯ tests/conversation211-copy-input.test.ts:20:365
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > refuse un contenu absent avant tout appel (review)
+AssertionError: promise resolved "{ …(3) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "brief": "Double technique, aucune évaluation créative réelle.",
++   "issues": [],
++   "scores": {
++     "benefits": 9,
++     "clarity": 9,
++     "conversion": 9,
++     "objections": 9,
++     "seo": 9,
++     "specificity": 9,
++     "voice": 9,
++   },
+  }
+
+ ❯ tests/conversation211-copy-input.test.ts:20:365
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 7 passed (9)
+   Start at  18:29:57
+   Duration  4.89s (transform 43%, import 34%, tests 22%)
+
+  Transform  transforming modules took 2.03s · 43% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

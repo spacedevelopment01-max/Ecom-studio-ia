@@ -1,0 +1,193 @@
+{
+  "schema": "211-E4-verifications-1",
+  "baseCommit": "c053d5452ea62e56348b14bc9536683702c09d2f",
+  "codeCommit": "dd5dea5f2bcddefb01c32f3a46c4335e94188313",
+  "codeTree": "da2867b81ed208d42e935f0a8fce4442d0c660eb",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "provider": "in_process_sdk_double_no_http",
+  "fullPassed": 3691,
+  "fullSkipped": 45,
+  "targetedPassed": 61,
+  "runs": [
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-copy-input.test.ts",
+        "-t",
+        "transmet|propage"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "c053d5452ea62e56348b14bc9536683702c09d2f",
+      "startedAt": "2026-10-28T18:31:45.895478+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef"
+      },
+      "log": "parent-red.log",
+      "pid": 44887,
+      "processGroup": 44887,
+      "exitCode": 1,
+      "finishedAt": "2026-10-28T18:31:50.232625+00:00",
+      "logSha256": "af08639f3c78a4f9eb86aef69f82e7183395d83390d290e1eccdc8bbefd611ff",
+      "sourceUnchanged": true,
+      "expectedFailure": true
+    },
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-copy-input.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "c053d5452ea62e56348b14bc9536683702c09d2f",
+      "startedAt": "2026-10-28T18:29:57.067603+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "src/lib/ai/tasks.ts": "2e9118ac41ef08b275d1f09dcd27492d0b9b31a31315bee0f55a869a5b723eaa"
+      },
+      "log": "missing-red.log",
+      "pid": 44242,
+      "processGroup": 44242,
+      "exitCode": 1,
+      "finishedAt": "2026-10-28T18:30:02.453646+00:00",
+      "logSha256": "13601c251b5aff7d6e825ee10f563246f167b24b941b07d6daf1af04b86e0ae5",
+      "sourceUnchanged": true,
+      "expectedFailure": true
+    },
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-copy-input.test.ts",
+        "tests/conversation211-copy-sdk.test.ts",
+        "tests/excellence-strategie-redaction.test.ts",
+        "tests/qualite-textes-marque.test.ts",
+        "tests/idempotence-reprise.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "c053d5452ea62e56348b14bc9536683702c09d2f",
+      "startedAt": "2026-10-28T18:30:08.081958+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "src/lib/ai/tasks.ts": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3"
+      },
+      "log": "target-final.log",
+      "pid": 44355,
+      "processGroup": 44355,
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T18:30:13.935575+00:00",
+      "logSha256": "9e3883ac2730ce09577fec045806487b732519f6ea7053000ab69b93eeb4bc74",
+      "sourceUnchanged": true,
+      "expectedFailure": false
+    },
+    {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "c053d5452ea62e56348b14bc9536683702c09d2f",
+      "startedAt": "2026-10-28T18:31:06.703084+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "src/lib/ai/tasks.ts": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3"
+      },
+      "log": "types-final.log",
+      "pid": 44696,
+      "processGroup": 44696,
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T18:31:28.085854+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true,
+      "expectedFailure": false
+    },
+    {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "c053d5452ea62e56348b14bc9536683702c09d2f",
+      "startedAt": "2026-10-28T18:31:57.844023+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "src/lib/ai/tasks.ts": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3"
+      },
+      "log": "full-final.log",
+      "pid": 45021,
+      "processGroup": 45021,
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T18:43:44.162485+00:00",
+      "logSha256": "d7aaf6f7ef77c0327930e2b9740710c169a8ff3ce498431e19383303f6b2832d",
+      "sourceUnchanged": true,
+      "expectedFailure": false
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-e4-textes",
+      "head": "dd5dea5f2bcddefb01c32f3a46c4335e94188313",
+      "startedAt": "2026-10-28T18:45:05.638631+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "build-final.log",
+      "pid": 86851,
+      "processGroup": 86851,
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T18:46:41.877709+00:00",
+      "logSha256": "e14e586bfaf0983fc72d6fe90fb4565bb06c8833606a98ce625de3acfd782204",
+      "sourceUnchanged": true,
+      "expectedFailure": false
+    }
+  ],
+  "files": [
+    {
+      "path": "src/lib/ai/tasks.ts",
+      "sha256": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3",
+      "gitBlob": "54701c8cc8f80cc133b44d3433e6d8d1b6eb2a70"
+    },
+    {
+      "path": "tests/conversation211-copy-input.test.ts",
+      "sha256": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+      "gitBlob": "923f1e122a97c2da92f80e425a8ab9791a625a82"
+    },
+    {
+      "path": "tests/conversation211-copy-sdk.test.ts",
+      "sha256": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+      "gitBlob": "a4f2fd96225e3266718b8b89a82c7352978b2405"
+    },
+    {
+      "path": "tests/copy211-fixtures.ts",
+      "sha256": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+      "gitBlob": "1d2c504525239c137271b9607fdd416631360a57"
+    }
+  ],
+  "limitations": [
+    "Full input transport and accounting only; synthetic creative scores are not an evaluation.",
+    "No UI, live CMS or client instance exercised by this increment."
+  ]
+}

@@ -1,0 +1,13 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-e4-textes
+
+
+ Test Files  5 passed (5)
+      Tests  61 passed (61)
+   Start at  18:30:08
+   Duration  5.47s (import 50%, transform 33%, tests 17%)
+
+  Transform  transforming modules took 4.67s · 33% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
