@@ -5,6 +5,7 @@ import { stableHash } from '../../brain/hash';
 import { currentBrief, metaOf } from './store';
 import type { ConversationRow } from './contract';
 import { L } from '../../i18n-server';
+import {conversationToolsEnabled} from './tool-flags';
 
 /** Sources internes exactes. Une capacité présente dans un onglet n'est pas un outil raccordé au chat. */
 export function studioKnowledge() {
@@ -26,6 +27,8 @@ export function cognitiveContext(c: ConversationRow) {
     ...(['description', 'target', 'offerName', 'brandName', 'constraints'] as const).filter(k => brief.input[k]).map(k => ({ id: `brief.${k}`, text: brief.input[k] })),
     ...brief.profile.facts.filter(f => f.source === 'user' && f.status === 'confirmed').map(f => ({ id: `fact.${f.key}`, text: f.value })),
     ...(brief.clientStatements ?? []).map(s => ({ id: `client.${s.id}`, text: s.text })),
+    // Corrections exactes données pour les outils, dans la mémoire native du même projet/conversation.
+    ...(c.project_id?all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.tool.%' ORDER BY created_at,rowid",c.project_id).map(r=>json<{id?:string;conversationId?:string;correction?:string}>(r.value,{})).filter(m=>m.conversationId===c.id&&m.id&&m.correction?.trim()).map(m=>({id:`tool.${m.id}.correction`,text:m.correction!})):[]),
     ...turns.map(t => { const r = json<Record<string, unknown>>(t.request_json, {}); return { id: `turn.${t.revision}`, text: String(r.text ?? r.value ?? r.clientAnswer ?? '') }; }).filter(x => x.text),
   ];
   // Une même parole n'est pas recopiée comme note ET comme historique ; seuls les IDs utiles sont exposés.
@@ -34,7 +37,7 @@ export function cognitiveContext(c: ConversationRow) {
   const context = {
     revision: c.revision, projectRevision: revision, business: meta.business, businessSource: meta.businessSource,
     brief: { ...brief, clientStatements: brief.clientStatements?.map(s => ({ id: `client.${s.id}`, source: s.source })) }, preparationStatus: status, sources: uniqueSources, knowledge,
-    tools: [{ id: 'brief.update', mode: 'deterministic_client_confirmed' }, { id: 'understand-offer', mode: 'quote_only_separate_native_workflow' }],
+    tools: [{ id: 'brief.update', mode: 'deterministic_client_confirmed' }, { id: 'understand-offer', mode: conversationToolsEnabled()&&c.project_id?'native_analysis_after_separate_quote_and_confirmation':'quote_only_separate_native_workflow',effect:'Analyse native de l’offre conservée pour relecture, jamais validation ni passage à l’étape suivante. Les droits, verrous et essais sont revérifiés sur le serveur.' }],
     lastQuestion: meta.intelligence?.lastReply?.question ?? null,
   };
   const serialized = JSON.stringify(context);

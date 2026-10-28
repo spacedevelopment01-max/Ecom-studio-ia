@@ -18,6 +18,7 @@ import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
 import {clearConversationAnswer} from './answer-state';
+import {conversationToolsEnabled} from './tool-flags';
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
 
@@ -45,6 +46,7 @@ export function conversationView(user: User, cid: string, before?: number): Conv
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","publish","delete","purchase"] as const).map(id=>({id,state:"not_connected" as const,executionEnabled:false}))],
     summary: { description: b.input.description, business: m.business, businessSource: m.businessSource, target: b.input.target, goals: b.profile.facts.find(f => f.key === "conversation.goals" && f.status === "confirmed")?.value ?? "", offerName: b.input.offerName, brandName: b.input.brandName,
       constraints: b.input.constraints, services: b.services.services.map(s=>({name:s.name,description:s.description,source:s.source??"analysis"})), contactModes: b.services.contactModes??[],
