@@ -6,7 +6,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
-import { useAgentUi } from "./agent-ui-context";
+import { useAgentUi,useAgentFocus } from "./agent-ui-context";
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -143,6 +143,7 @@ export default function TabBoutique() {
   // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
   const custom = useCustomThemeStatus(id);
   const agentUi=useAgentUi();
+  const {setFocus:setAgentFocus}=useAgentFocus();
   const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
@@ -210,6 +211,10 @@ export default function TabBoutique() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const versionId = viewVersion ?? theme?.current?.versionId ?? null;
+  useEffect(()=>{
+    if(!agentUi||!versionId)return;
+    setAgentFocus({projectId:id,tab:'boutique',label:selection?[selection.kind,selection.text].filter(Boolean).join(' · '):page,target:selection?{kind:'theme-section',versionId,template:selection.template,section:selection.section,...(selection.block?{block:selection.block}:{})}:{kind:'theme-page',versionId,path:page}});
+  },[agentUi,id,versionId,page,selection,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
 
   // Messages de l'aperçu (désignation, défilement, chargement).

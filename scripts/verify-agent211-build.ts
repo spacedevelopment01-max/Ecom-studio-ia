@@ -18,6 +18,7 @@ process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
 if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
 if(process.argv.includes('--tools-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS'])process.env[key]='1';
+if(process.argv.includes('--context-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS'])process.env[key]='1';
 if(process.argv.includes('--research-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_RESEARCH'])process.env[key]='1';
 if(process.argv.includes('--composition-ui')){for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS','STUDIO_CONVERSATION_COMPOSITION'])process.env[key]='1';}
 if(process.argv.includes('--theme-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS'])process.env[key]='1';
@@ -38,12 +39,13 @@ type View=import('../src/lib/orchestrator/conversation/contract').ConversationVi
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
+let lastInputText='';
 const fake=http.createServer(async(req,res)=>{
   try{
     let bytes='';for await(const chunk of req)bytes+=chunk;
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
-    assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
+    assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;lastInputText=(p.messages??[]).flatMap((m:{content:unknown})=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.map((c:{text?:string})=>c.text??''):[]).join('\n');
     if(failureStatus){res.statusCode=failureStatus;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{type:'api_error',message:'Panne simulée, aucun appel fournisseur réel.'}}));return;}
     const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
@@ -176,6 +178,10 @@ try{
   if(process.argv.includes('--research-ui')){
     const{verifyResearchBrowser}=await import('./verify-agent211-research-ui'),{project}=await import('../tests/conversation209-fixtures'),{seedResearchScene}=await import('./research211-ui-fixtures');
     proof.researchUi=await verifyResearchBrowser({origin,out,account,project,login,counts,seed:seedResearchScene,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},setFailure:n=>{failureStatus=n;},pauseWorker:async()=>{await stop(worker);worker=undefined;},resumeWithSources:(pid,base)=>{const jid=stateOf(pid)!.pending!.jobId;assert.equal(one<{status:string}>('SELECT status FROM jobs WHERE id=?',jid)!.status,'queued');run('UPDATE jobs SET checkpoint=? WHERE id=?',JSON.stringify({'research-pages-v3':base}),jid);worker=child(['--import','tsx','worker/index.ts'],{WORKER_CONCURRENCY:'1'});},inspect:pid=>{const state=stateOf(pid)!;assert.equal(state.stages.research!.status,'draft');assert.deepEqual(Object.keys(state.stages),['brief','research']);assert.equal(one<{n:number}>('SELECT COUNT(*) n FROM theme_versions WHERE project_id=?',pid)!.n,0);return{state,versions:all<{key:string}>("SELECT key FROM memory WHERE project_id=? AND key LIKE 'preparation.version.%'",pid),calls:all('SELECT status,cost,job_id,usage_key FROM ai_calls WHERE project_id=?',pid),jobs:all('SELECT type,status FROM jobs WHERE project_id=?',pid),themes:0};}});proof.allSimulatedTotals=counts();
+  }
+  if(process.argv.includes('--context-ui')){
+    const{verifyActiveContextBrowser}=await import('./verify-agent211-context-ui'),{project}=await import('../tests/conversation209-fixtures'),{seedCompositionSite,COMPOSITION_SCENES}=await import('./composition211-ui-fixtures'),{openProjectConversation}=await import('../src/lib/orchestrator/conversation'),{currentTheme}=await import('../src/lib/projects');
+    proof.activeContextUi=await verifyActiveContextBrowser({origin,out,account,project,login,counts,seed:async(u,pid,index)=>{openProjectConversation(u,pid);const scene=COMPOSITION_SCENES[[0,1,3][index]],seeded=await seedCompositionSite(pid,scene);return{...seeded,asset:one<{id:string;version:number;name:string}>('SELECT id,version,name FROM assets WHERE project_id=?',pid)!};},setFixture:value=>{fixture=value;bad=false;failureStatus=0;lastInputText='';},input:()=>lastInputText,inspect:pid=>currentTheme(pid)!});proof.allSimulatedTotals=counts();
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   proof.finishedAt=new Date().toISOString();proof.success=true;

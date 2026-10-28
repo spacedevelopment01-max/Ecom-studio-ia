@@ -1,5 +1,6 @@
 /** Contrat serveur du lot A ; aucune commande d'exécution, publication ou validation d'étape. */
 import { z } from "zod";
+import {ActiveContextSchema,type ActiveContext} from './active-context-contract';
 import type { Brief } from "../../preparation/types";
 import type { BusinessType } from "../../project-types";
 
@@ -13,7 +14,7 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
-  base.extend({ action: z.literal("message"), text: z.string().trim().min(1).max(8000), referenceUrls: z.array(z.url().max(1000)).max(12).optional(), photoIds: z.array(z.string().min(1).max(80)).max(12).optional() }).strict(),
+  base.extend({ action: z.literal("message"), text: z.string().trim().min(1).max(8000), context:ActiveContextSchema.optional(), referenceUrls: z.array(z.url().max(1000)).max(12).optional(), photoIds: z.array(z.string().min(1).max(80)).max(12).optional() }).strict(),
   base.extend({ action: z.literal("answer"), question: z.enum(QUESTION_KEYS), choices: z.array(z.string().max(60)).max(5).default([]), text: z.string().trim().max(1200).default(""), unknown: z.boolean().default(false) }).strict(),
   base.extend({ action: z.literal("edit"), field: z.enum(EDIT_FIELDS), value: z.string().trim().min(1).max(8000) }).strict(),
   base.extend({ action: z.literal("edit-services"), items: z.array(z.object({ name: z.string().trim().min(1).max(160), description: z.string().trim().max(1000) }).strict()).max(20) }).strict(),
@@ -36,6 +37,7 @@ export type ConversationState = {
   answeredOrder: QuestionKey[];
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
+  activeContext?: ActiveContext;
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -71,6 +73,7 @@ export type ConversationView = {
   exportExecution?: {enabled:true};
   renderExecution?: {enabled:true};
   researchExecution?: {enabled:true};
+  activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;
   question: ChoiceCard | null;

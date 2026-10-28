@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useId,useRef,useState} from 'react';
-import {useRouter} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
 import {ArrowRight,Check,History,Loader2,MessageCircle,Paperclip,Send,ShieldCheck,Sparkles,X} from 'lucide-react';
 import {api,Button,cx,Textarea} from '../ui';
 import {useLang,useT} from '../i18n';
@@ -8,7 +8,8 @@ import {formatPct} from '@/lib/budget-pct';
 import {conversationClientText as clientText,conversationQuestionState,displayMaximumPct} from '@/lib/conversation-presentation';
 import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import type {CognitiveQuestion} from '@/lib/orchestrator/conversation/intelligence-contract';
-import {useAgentPanel,useAgentUi} from './agent-ui-context';
+import {useAgentPanel,useAgentUi,useAgentFocus} from './agent-ui-context';
+import {ActiveTabSchema} from '@/lib/orchestrator/conversation/active-context-contract';
 import {ConversationTools} from './conversation-tools';
 import {ConversationResearchTools} from './conversation-research-tools';
 import {ConversationRenderTools} from './conversation-render-tools';
@@ -36,6 +37,8 @@ function Question({q,busy,onAnswer,onWhy,onBack}:{q:CognitiveQuestion;busy:boole
 }
 export function ConversationPanel({projectId,subscriptionKey,compact=false,onCreated}:{projectId?:string;subscriptionKey?:string;compact?:boolean;onCreated?:(id:string)=>void}){
   const t=useT(),{lang}=useLang(),router=useRouter(),inputId=useId();
+  const pathname=usePathname(),{focus,setFocus}=useAgentFocus(),activeTab=ActiveTabSchema.safeParse(pathname.split('/')[3]);
+  const currentFocus=focus&&focus.projectId===projectId&&activeTab.success&&focus.tab===activeTab.data?focus:null;
   const[v,setView]=useState<ConversationView|null>(null),[text,setText]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[quote,setQuote]=useState<Quote|null>(null),[older,setOlder]=useState<ConversationView['history']>([]),[editField,setEditField]=useState(''),[editText,setEditText]=useState(''),[attachment,setAttachment]=useState(false),[createdId,setCreatedId]=useState<string|null>(null),[creationConsent,setCreationConsent]=useState(false);
   const[recoverableDraft,setRecoverableDraft]=useState<ConversationView|null>(null);
   const mounted=useRef(true),mutation=useRef(false),sequence=useRef(0),lastSubscription=useRef(subscriptionKey),creationSubscription=useRef<string|null>(null);
@@ -51,7 +54,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
   const submit=()=>perform(async()=>{
     if(!text.trim())return;
     let current=v;if(!current)current=await api<ConversationView>(base,{body:{}});
-    await api<ConversationView>(`/api/studio-agent/conversations/${current.id}`,{body:{action:'message',revision:current.revision,projectRevision:current.projectRevision,requestId:requestId(),text}});
+    await api<ConversationView>(`/api/studio-agent/conversations/${current.id}`,{body:{action:'message',revision:current.revision,projectRevision:current.projectRevision,requestId:requestId(),text,...(current.activeContext?.enabled&&activeTab.success?{context:{tab:activeTab.data,target:currentFocus?.target??null}}:{})}});
     const next=await api<ConversationView>(`/api/studio-agent/conversations/${current.id}`);
     if(mounted.current){setView(next);setText('');setQuote(null);setNotice(t('Message enregistré. Demandez le devis pour une réponse de SYNA.','Message saved. Request a quote for a reply from SYNA.'));}
   });
@@ -70,6 +73,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
     onCreated?.(pid);router.push(`/studio/${pid}/pilote`);
   });
   const running=v?.intelligence?.state==='running',q=v?.intelligence?.reply?.question,history=[...older,...(v?.history??[])].filter((x,i,a)=>a.findIndex(y=>y.revision===x.revision)===i);
+  const savedFocus=v?.activeContext?.current;
   const questionState=v?conversationQuestionState(v,history):null;
   const identityTitle=compact?'SYNA':t('Quel projet souhaitez-vous créer ?','What project would you like to create?');
   return <section aria-label={t('Conversation avec SYNA','Conversation with SYNA')} className="min-w-0" data-agent-conversation>
@@ -80,7 +84,9 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted"><ShieldCheck className="size-3.5" aria-hidden/>{t('Vos choix restent les vôtres. Aucune publication automatique.','Your choices stay yours. Nothing is published automatically.')}</p>
     </header>
     <div className={cx('space-y-4',compact?'p-4':'p-5 sm:p-8')}>
+      {v?.activeContext?.enabled&&activeTab.success&&<div className="rounded-xl border border-line bg-paper-2 p-3 text-xs" data-agent-active-context><p>{t('Votre prochain message concerne cet écran :','Your next message concerns this screen:')} <strong>{activeTab.data}</strong></p><p className="mt-1 break-words">{currentFocus?currentFocus.target.kind==='asset'?t('Média désigné · version ','Selected media · version ')+currentFocus.target.version:currentFocus.target.kind==='theme-section'?t('Section désignée : ','Selected section: ')+(currentFocus.label||t('Section','Section')):t('Page désignée : ','Selected page: ')+currentFocus.target.path:t('Aucun objet désigné. SYNA demandera une précision si nécessaire.','No object selected. SYNA will ask for clarification if needed.')}</p>{currentFocus&&<button type="button" className="mt-2 min-h-9 underline" onClick={()=>setFocus(null)}>{t('Retirer la désignation','Clear selection')}</button>}<p className="mt-1 text-muted">{t('Repère seulement : aucune génération ni modification.','Navigation only: no generation or change.')}</p></div>}
       {loading&&<p role="status" className="flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin motion-reduce:animate-none"/>{t('Reprise de votre conversation avec SYNA…','Resuming your conversation with SYNA…')}</p>}
+      {v?.activeContext?.enabled&&!currentFocus&&projectId&&activeTab.success&&savedFocus?.state==='resolved'&&savedFocus.selection.target&&savedFocus.selection.tab===activeTab.data&&<button type="button" className="min-h-11 w-full rounded-xl border border-line p-3 text-left text-xs" onClick={()=>setFocus({projectId,tab:savedFocus.selection.tab,target:savedFocus.selection.target!,label:savedFocus.label})}>{t('Reprendre le repère sauvegardé : ','Resume the saved selection: ')}{savedFocus.label}{'isCurrent' in savedFocus&&!savedFocus.isCurrent?t(' · ancienne version',' · previous version'):''}</button>}
       {!loading&&!v&&projectId&&<div className="rounded-2xl border border-line bg-paper-2 p-4 text-sm"><p>{t('Activer ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée.','Using this conversation is optional. Your work stays in the existing workflow; unavailable migration is reported.')}</p>{recoverableDraft&&<div className="mt-4 border-t border-line pt-3"><p className="font-semibold">{t('Un brouillon de démarrage est sauvegardé','A saved start draft is available')}</p><p className="mt-2 whitespace-pre-wrap break-words text-xs">{recoverableDraft.summary.description}</p><Button className="mt-3" disabled={busy} onClick={()=>void perform(async()=>{const next=await api<ConversationView>(base,{body:{draftId:recoverableDraft.id,draftRevision:recoverableDraft.revision}});setView(next);setRecoverableDraft(null);})}>{t('Reprendre ce brouillon dans ce projet','Resume this draft in this project')}</Button></div>}<Button className="mt-3" variant={recoverableDraft?'ghost':'primary'} disabled={busy} onClick={()=>void perform(async()=>{const next=await api<ConversationView>(base,{body:{}});setView(next);})}>{t('Ouvrir le dialogue de ce projet','Open this project’s conversation')}</Button></div>}
       {v?.readOnlyReason&&<p className="rounded-xl border border-line bg-paper-2 p-3 text-xs leading-relaxed">{v.readOnlyReason}</p>}
       {v?.historyBefore&&<Button size="sm" variant="ghost" disabled={busy} onClick={()=>void perform(async()=>{const page=await api<ConversationView>(route+`?before=${older[0]?.revision??v.historyBefore}`);setOlder(prev=>[...page.history,...prev]);if(!page.historyBefore)setView(old=>old?{...old,historyBefore:null}:old);})}><History className="size-4"/>{t('Échanges précédents','Earlier messages')}</Button>}
