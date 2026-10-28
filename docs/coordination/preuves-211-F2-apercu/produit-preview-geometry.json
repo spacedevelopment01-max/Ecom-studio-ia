@@ -1,0 +1,297 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "closedBox": {
+    "x": 288,
+    "y": 315,
+    "width": 1136,
+    "height": 798.99951171875
+  },
+  "toolbar": {
+    "rect": {
+      "x": 272,
+      "y": 234,
+      "width": 1168,
+      "height": 65,
+      "top": 234,
+      "right": 1440,
+      "bottom": 299,
+      "left": 272
+    },
+    "controls": [
+      {
+        "tag": "SELECT",
+        "text": "AccueilFiche produitCollectionCataloguePanierRechercheNotre histoireQuestions fréquentesContactLivraison et retoursPage 404",
+        "title": null,
+        "rect": {
+          "x": 282,
+          "y": 244,
+          "width": 176,
+          "height": 44,
+          "top": 244,
+          "right": 458,
+          "bottom": 288,
+          "left": 282
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Pages",
+        "title": null,
+        "rect": {
+          "x": 466,
+          "y": 248,
+          "width": 81.09375,
+          "height": 36,
+          "top": 248,
+          "right": 547.09375,
+          "bottom": 284,
+          "left": 466
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "title": "Ordinateur",
+        "rect": {
+          "x": 558.09375,
+          "y": 250,
+          "width": 36,
+          "height": 32,
+          "top": 250,
+          "right": 594.09375,
+          "bottom": 282,
+          "left": 558.09375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "title": "Tablette",
+        "rect": {
+          "x": 594.09375,
+          "y": 250,
+          "width": 36,
+          "height": 32,
+          "top": 250,
+          "right": 630.09375,
+          "bottom": 282,
+          "left": 594.09375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "title": "Téléphone",
+        "rect": {
+          "x": 630.09375,
+          "y": 250,
+          "width": 36,
+          "height": 32,
+          "top": 250,
+          "right": 666.09375,
+          "bottom": 282,
+          "left": 630.09375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Plein écran",
+        "title": "Voir le thème en plein écran",
+        "rect": {
+          "x": 677.09375,
+          "y": 248,
+          "width": 109.140625,
+          "height": 36,
+          "top": 248,
+          "right": 786.234375,
+          "bottom": 284,
+          "left": 677.09375
+        }
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "Outils du site",
+        "title": null,
+        "rect": {
+          "x": 794.234375,
+          "y": 248,
+          "width": 119.59375,
+          "height": 36,
+          "top": 248,
+          "right": 913.828125,
+          "bottom": 284,
+          "left": 794.234375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Désigner",
+        "title": null,
+        "rect": {
+          "x": 366.828125,
+          "y": 305,
+          "width": 96.859375,
+          "height": 36,
+          "top": 305,
+          "right": 463.6875,
+          "bottom": 341,
+          "left": 366.828125
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Animations",
+        "title": null,
+        "rect": {
+          "x": 471.6875,
+          "y": 305,
+          "width": 108.984375,
+          "height": 36,
+          "top": 305,
+          "right": 580.671875,
+          "bottom": 341,
+          "left": 471.6875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Section",
+        "title": null,
+        "rect": {
+          "x": 588.671875,
+          "y": 305,
+          "width": 88.671875,
+          "height": 36,
+          "top": 305,
+          "right": 677.34375,
+          "bottom": 341,
+          "left": 588.671875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Thèmes",
+        "title": null,
+        "rect": {
+          "x": 685.34375,
+          "y": 305,
+          "width": 94.859375,
+          "height": 36,
+          "top": 305,
+          "right": 780.203125,
+          "bottom": 341,
+          "left": 685.34375
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Sur mesure",
+        "title": "Thème entièrement sur mesure",
+        "rect": {
+          "x": 788.203125,
+          "y": 305,
+          "width": 110.953125,
+          "height": 36,
+          "top": 305,
+          "right": 899.15625,
+          "bottom": 341,
+          "left": 788.203125
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": " Importer mon thème",
+        "title": "Importer le thème de votre boutique Shopify",
+        "rect": {
+          "x": 366.828125,
+          "y": 349,
+          "width": 161.390625,
+          "height": 36,
+          "top": 349,
+          "right": 528.21875,
+          "bottom": 385,
+          "left": 366.828125
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Fermer les outils",
+        "title": null,
+        "rect": {
+          "x": 536.21875,
+          "y": 349,
+          "width": 119.6875,
+          "height": 36,
+          "top": 349,
+          "right": 655.90625,
+          "bottom": 385,
+          "left": 536.21875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "title": "Versions",
+        "rect": {
+          "x": 1215.875,
+          "y": 248,
+          "width": 36,
+          "height": 36,
+          "top": 248,
+          "right": 1251.875,
+          "bottom": 284,
+          "left": 1215.875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Plateforme : Shopify ",
+        "title": "Plateforme du site",
+        "rect": {
+          "x": 1257.875,
+          "y": 248,
+          "width": 88.125,
+          "height": 36,
+          "top": 248,
+          "right": 1346,
+          "bottom": 284,
+          "left": 1257.875
+        }
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Exporter et installer",
+        "title": "Exporter pour Shopify",
+        "rect": {
+          "x": 1352,
+          "y": 248,
+          "width": 36,
+          "height": 36,
+          "top": 248,
+          "right": 1388,
+          "bottom": 284,
+          "left": 1352
+        }
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "title": "Ouvrir dans un onglet",
+        "rect": {
+          "x": 1394,
+          "y": 248,
+          "width": 36,
+          "height": 36,
+          "top": 248,
+          "right": 1430,
+          "bottom": 284,
+          "left": 1394
+        }
+      }
+    ]
+  },
+  "unchangedThreshold": "preview.y < viewport.height/2"
+}

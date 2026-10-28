@@ -1,0 +1,7 @@
+{
+  "url": "http://127.0.0.1:46725/studio/a40m6n6apcfisleb/boutique",
+  "error": "AssertionError [ERR_ASSERTION]: Preview must be visible above half the screen",
+  "body": "Site\n\nNouveau projet\n\nTutoriel\nEN\nRepères et prochaine étape\nSite indépendant des campagnes\nDiscussion\nAperçu\nStructure\nAccueil\nFiche produit\nCollection\nCatalogue\nPanier\nRecherche\nPrestations\nÀ propos\nDemande de devis\nQuestions fréquentes\nMentions légales\nPage 404\nPages\nPlein écran\nOutils du site\nv1\nPlateforme :\nShopify\nExporter et installer\nPilote\nImages\nVidéos\nPublications\nSite\nSYNA",
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0
+}

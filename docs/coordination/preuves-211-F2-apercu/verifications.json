@@ -1,0 +1,379 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "e4f3f3b9d7c7c25c72373a4f2845f8348e185c49",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "ui": {
+    "schema": "agent211-F-browser-proof-1",
+    "realBrowser": true,
+    "provider": "simulated-local-http",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "1-produit-entree.png",
+          "1-produit-manuel-conserve.png",
+          "1-produit-devis.png",
+          "1-produit-dialogue-lisible.png",
+          "1-produit-question.png",
+          "1-produit-question-360.png",
+          "1-produit-memoire.png",
+          "1-produit-correction-reouverte.png",
+          "1-produit-projet-repris.png",
+          "1-produit-autre-onglet-meme-memoire.png",
+          "1-produit-site-conseil-premiere-visite.png",
+          "1-produit-site-agent-replie.png",
+          "1-produit-site-outils-conserves.png",
+          "1-produit-site-agent-ouvert.png",
+          "1-produit-site-format-telephone.png",
+          "1-produit-site-version-restauree.png"
+        ],
+        "checks": {
+          "naturalEntry": true,
+          "manualPreserved": true,
+          "reopened": true,
+          "quoteBeforeCall": true,
+          "explicitConsent": true,
+          "why": true,
+          "multipleAndFree": true,
+          "answeredQuestionNotRepeated": true,
+          "unknownClearsActiveTarget": true,
+          "correctionPersists": true,
+          "sameMemoryAcrossTabs": true,
+          "siteAgentOpenAndClosed": true,
+          "previewWidths": {
+            "closed": 1136,
+            "open": 720
+          },
+          "siteVersionEditAndRestore": true,
+          "keyboardEscapeAndFocus": true,
+          "noOverflow360": true,
+          "jsErrors": [],
+          "realProviderCalls": 0,
+          "simulatedProviderCalls": 1,
+          "video": "videos/produit.webm"
+        }
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "2-service-entree.png",
+          "2-service-manuel-conserve.png",
+          "2-service-devis.png",
+          "2-service-dialogue-lisible.png",
+          "2-service-question.png",
+          "2-service-question-360.png",
+          "2-service-memoire.png",
+          "2-service-correction-reouverte.png",
+          "2-service-projet-repris.png",
+          "2-service-autre-onglet-meme-memoire.png",
+          "2-service-site-conseil-premiere-visite.png",
+          "2-service-site-agent-replie.png",
+          "2-service-site-outils-conserves.png",
+          "2-service-site-agent-ouvert.png",
+          "2-service-site-format-telephone.png",
+          "2-service-site-version-restauree.png"
+        ],
+        "checks": {
+          "naturalEntry": true,
+          "manualPreserved": true,
+          "reopened": true,
+          "quoteBeforeCall": true,
+          "explicitConsent": true,
+          "why": true,
+          "multipleAndFree": true,
+          "answeredQuestionNotRepeated": true,
+          "unknownClearsActiveTarget": true,
+          "correctionPersists": true,
+          "sameMemoryAcrossTabs": true,
+          "siteAgentOpenAndClosed": true,
+          "previewWidths": {
+            "closed": 390,
+            "open": 390
+          },
+          "siteVersionEditAndRestore": true,
+          "keyboardEscapeAndFocus": true,
+          "noOverflow360": true,
+          "jsErrors": [],
+          "realProviderCalls": 0,
+          "simulatedProviderCalls": 1,
+          "video": "videos/service.webm"
+        }
+      },
+      {
+        "scenario": "reponse-creation-perdue",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "3-reprise-apres-reponse-perdue-390.png"
+        ],
+        "checks": {
+          "creationSucceededBeforeNetworkLoss": true,
+          "realBrowserRecovery": true,
+          "sameDraftImported": true,
+          "noExtraProviderCall": true,
+          "realProviderCalls": 0,
+          "video": "videos/reprise.webm"
+        }
+      }
+    ]
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 6,
+    "calls": 6,
+    "usage": 6,
+    "simulatedMicro": 47472
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "finishedAt": "2026-10-28T23:09:32.706Z",
+  "success": true,
+  "runs": {
+    "F3-types-corrected": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "dc23f69dbbf9f7b0513fff5d78ebcbf8db2382b6",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-ui.ts": "435985a2c0efff8a7f8879401413afeff8ad3cc5b1df4fec2126f6f3b04feb5d",
+        "src/components/studio/tab-boutique.tsx": "4e4bc01b403dfdd4dcbf017268070043d3d5245b5ddf562a96bc4d8fff0ccb51"
+      },
+      "startedAt": "2026-10-28T22:40:15.938122+00:00",
+      "finishedAt": "2026-10-28T22:40:30.550248+00:00",
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "F3-full-final": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "dc23f69dbbf9f7b0513fff5d78ebcbf8db2382b6",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-ui.ts": "435985a2c0efff8a7f8879401413afeff8ad3cc5b1df4fec2126f6f3b04feb5d",
+        "src/components/studio/tab-boutique.tsx": "4e4bc01b403dfdd4dcbf017268070043d3d5245b5ddf562a96bc4d8fff0ccb51"
+      },
+      "startedAt": "2026-10-28T22:40:17.512065+00:00",
+      "finishedAt": "2026-10-28T23:02:19.248523+00:00",
+      "logSha256": "cdcdce3cf9cfdc9bc894ba23f216b16995edd6604255fce692ee68675a8a9648"
+    },
+    "F3-build-clean": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "e4f3f3b9d7c7c25c72373a4f2845f8348e185c49",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "startedAt": "2026-10-28T23:06:43.239259+00:00",
+      "finishedAt": "2026-10-28T23:07:47.865934+00:00",
+      "logSha256": "ee80b91d90308b694fbc0788e76ba12d49ff23728e9e288495b9a1fd9d55d463"
+    },
+    "F3-browser-after": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/F3-browser-after",
+        "--ui"
+      ],
+      "head": "e4f3f3b9d7c7c25c72373a4f2845f8348e185c49",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "startedAt": "2026-10-28T23:09:02.653435+00:00",
+      "finishedAt": "2026-10-28T23:09:35.779303+00:00",
+      "logSha256": "daf50060550edb53f8fec59cfa75f0f12faec6bc979425169fea83c5c0c5d238"
+    }
+  },
+  "mediaVerification": [
+    {
+      "file": "videos/produit.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "248"
+          }
+        ],
+        "format": {
+          "duration": "9.920000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "248"
+          }
+        ],
+        "format": {
+          "duration": "9.920000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "07de79d8670abae2d7ce688e7bcd8b531276e43fefe8444b71a91a6d4f558873",
+      "decodedRgbSamples": [
+        {
+          "frame": 49,
+          "meanAbsoluteRgbErrorOn255": 0.1266
+        },
+        {
+          "frame": 124,
+          "meanAbsoluteRgbErrorOn255": 0.0078
+        },
+        {
+          "frame": 198,
+          "meanAbsoluteRgbErrorOn255": 0.2484
+        }
+      ]
+    },
+    {
+      "file": "videos/reprise.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "114"
+          }
+        ],
+        "format": {
+          "duration": "4.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "114"
+          }
+        ],
+        "format": {
+          "duration": "4.560000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "3528d45d03b86ce997a826f3329a8f90b2c2b34c8056d3297a4c53067e74707b",
+      "decodedRgbSamples": [
+        {
+          "frame": 22,
+          "meanAbsoluteRgbErrorOn255": 0.3801
+        },
+        {
+          "frame": 57,
+          "meanAbsoluteRgbErrorOn255": 0.3929
+        },
+        {
+          "frame": 91,
+          "meanAbsoluteRgbErrorOn255": 0.343
+        }
+      ]
+    },
+    {
+      "file": "videos/service.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "209"
+          }
+        ],
+        "format": {
+          "duration": "8.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "209"
+          }
+        ],
+        "format": {
+          "duration": "8.360000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "1f3d785b029b5b307aada6b1828ed37cd6f088265fec7a619a5878079fa2fb05",
+      "decodedRgbSamples": [
+        {
+          "frame": 41,
+          "meanAbsoluteRgbErrorOn255": 0.4837
+        },
+        {
+          "frame": 104,
+          "meanAbsoluteRgbErrorOn255": 0.5195
+        },
+        {
+          "frame": 167,
+          "meanAbsoluteRgbErrorOn255": 0.5976
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "FR/browser system; fake provider only, no real advice/vision/creative quality/CMS/client instance qualified.",
+    "Site viewport390x844; question overflow also360, not a full Site360 recipe.",
+    "These cases use technical fixture sites, not customer or Claude demonstration compositions.",
+    "Videos preserve source decoded frames; PNGs remain color reference."
+  ]
+}

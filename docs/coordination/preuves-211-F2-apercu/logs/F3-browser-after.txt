@@ -1,0 +1,6 @@
+{"success":true,"file":"/workspace/reviews/ecom-211-state/F3-browser-after/api-proof.json","version":{"commit":"e4f3f3b9d7c7c25c72373a4f2845f8348e185c49","commitOrigin":"build","mode":"production","tree":"clean","source":"compiled-build"},"totals":{"providerHttpCalls":3,"calls":3,"usage":3,"simulatedMicro":23736,"tokenCounts":3},"temp":"/tmp/ecs-agent-211-zo8nbO"}
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
