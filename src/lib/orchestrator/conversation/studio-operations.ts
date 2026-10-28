@@ -1,0 +1,71 @@
+/** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SYNA. */
+import {stableHash} from '../../brain/hash';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
+import type {SpaceId} from '../../studio-nav';
+type Adapter='brief'|'analysis'|'research'|'theme'|'compose'|'export'|'render'|'none';
+type Definition={id:string;tab:SpaceId;label:[string,string];adapter:Adapter;source:string;sensitive?:boolean};
+const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
+export const STUDIO_OPERATIONS:readonly Definition[]=[
+ op('brief.update','produit','Corriger une fiche encore modifiable','Correct an editable brief','brief'),
+ op('offer.analyse','pilote','Analyser l’offre sans avancer d’étape','Analyze the offer without advancing','analysis'),
+ op('research.generate','strategie','Rechercher et conserver les hypothèses','Research and retain hypotheses','research'),
+ op('research.approve','strategie','Valider un angle dans la préparation','Approve an angle in preparation'),
+ op('proposal.compare','strategie','Comparer des propositions versionnées','Compare versioned proposals'),
+ op('proposal.choose','strategie','Retenir une proposition et ses raisons','Choose a proposal and record reasons'),
+ op('brand.generate','marque','Créer une identité de marque','Create a brand identity'),
+ op('brand.correct','marque','Corriger nom, couleurs et polices','Correct name, colors and fonts'),
+ op('logo.generate','marque','Créer un logo','Create a logo'),
+ op('logo.replace','marque','Choisir un autre logo','Choose another logo'),
+ op('images.upload','images','Importer ses images','Upload images'),
+ op('images.search','images','Chercher des photos libres','Search stock photos'),
+ op('images.generate','images','Créer une image IA','Generate an AI image'),
+ op('images.correct','images','Corriger une image','Revise an image'),
+ op('videos.plan','videos','Préparer une vidéo','Plan a video'),
+ op('videos.generate','videos','Générer une vidéo','Generate a video'),
+ op('videos.edit','videos','Modifier les scènes ou la voix','Edit scenes or voice'),
+ op('catalogue.create','catalogue','Ajouter un produit','Add a product'),
+ op('catalogue.update','catalogue','Modifier un produit et ses variantes','Edit a product and variants'),
+ op('catalogue.stock','catalogue','Modifier les stocks','Edit stock'),
+ op('catalogue.sync','catalogue','Synchroniser une boutique connectée','Sync a connected store','none',true),
+ op('services.update','produit','Modifier les prestations et coordonnées','Edit services and contact details'),
+ op('properties.update','biens','Modifier un bien immobilier','Edit a property listing'),
+ op('appointments.settings','rendez-vous','Modifier les règles de réservation','Edit booking settings'),
+ op('appointments.create','rendez-vous','Réserver un rendez-vous réel','Book a real appointment','none',true),
+ op('appointments.cancel','rendez-vous','Annuler un rendez-vous','Cancel an appointment','none',true),
+ op('theme.select','boutique','Choisir un thème dans la galerie','Choose a gallery theme'),
+ op('theme.exact-edit','boutique','Retoucher un texte exact ou média acquis','Edit exact text or an acquired image','theme'),
+ op('theme.compose','boutique','Composer avec les composants natifs','Compose with native components','compose'),
+ op('theme.original','boutique','Créer un site sans thème de départ','Build without a starting theme'),
+ op('theme.undo','boutique','Annuler une retouche avec son reçu','Undo an edit with its receipt','theme'),
+ op('theme.capture','boutique','Capturer le rendu réel et ses mesures','Capture the actual render and metrics','render'),
+ op('theme.export','boutique','Créer un ZIP natif en bibliothèque','Create a native library ZIP','export'),
+ op('theme.publish','boutique','Publier le site sur un CMS','Publish the site to a CMS','none',true),
+ op('copy.generate','boutique','Rédiger les textes du site','Write website copy'),
+ op('seo.update','blog','Modifier le référencement','Edit SEO'),
+ op('blog.generate','blog','Créer un article','Create an article'),
+ op('blog.publish','blog','Publier un article','Publish an article','none',true),
+ op('social.plan','publications','Préparer les publications','Plan social posts'),
+ op('social.generate','publications','Créer une publication','Create a social post'),
+ op('social.publish','publications','Publier sur un réseau','Publish to a network','none',true),
+ op('calendar.update','calendrier','Déplacer une publication programmée','Reschedule a post','none',true),
+ op('ads.create','publicites','Créer une publicité','Create an ad'),
+ op('ads.launch','publicites','Activer une campagne réelle','Launch a real campaign','none',true),
+ op('prompts.edit','prompts','Modifier les consignes d’un moteur','Edit an engine prompt'),
+ op('files.organize','fichiers','Ranger ou renommer un fichier','Organize or rename a file'),
+ op('files.delete','fichiers','Supprimer un fichier','Delete a file','none',true),
+ op('connections.configure','connexions','Connecter un compte externe','Connect an external account','none',true),
+];
+export function studioOperationCatalogue(projectId:string|null,writableBrief:boolean){
+ const enabled:Record<Adapter,boolean>={brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
+ const rows=STUDIO_OPERATIONS.map(o=>({id:o.id,tab:o.tab,label:o.label,source:o.source,
+  implementation:o.adapter==='none'?'absent_from_syna' as const:'implemented' as const,
+  evidence:o.adapter==='none'?'not_tested' as const:'isolated_simulated_provider' as const,
+  connectionEnabled:o.adapter!=='none'&&enabled[o.adapter]&&(!!projectId||o.adapter==='brief'),
+  nativeAvailability:o.id==='theme.original'?'not_implemented':o.adapter==='none'?'not_verified_for_this_project':'native_checks_on_action',
+  availability:o.adapter==='none'?'not_connected_native_screen_only':!projectId&&o.adapter!=='brief'?'project_required':!enabled[o.adapter]?'disabled_or_locked':o.adapter==='brief'?'native_revision_and_lock_checks':'native_checks_on_each_quote',
+  confirmation:o.adapter==='brief'?'explicit_client_command':o.adapter==='none'?'not_connected':'separate_native_quote_and_confirmation',
+  cost:o.adapter==='brief'?'free':o.adapter==='none'?'unknown_not_quoted':['theme','compose','export','render'].includes(o.adapter)?'free_native_application_reflection_quoted_separately':'native_quote_required',
+  sensitive:!!o.sensitive,href:projectId?`/studio/${projectId}/${o.tab}`:'/studio',
+ }));
+ return{schema:'studio-operation-catalogue-1' as const,version:stableHash('studio-operation-definitions-1',STUDIO_OPERATIONS),scope:'explicit_operations_only_not_exhaustive_ui_control_coverage',notExhaustive:true,realProviderTested:false,clientInstanceTested:false,ownerValidated:false,rows};
+}
