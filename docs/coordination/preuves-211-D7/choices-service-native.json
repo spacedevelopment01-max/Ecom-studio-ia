@@ -1,0 +1,1716 @@
+{
+  "initial": {
+    "schema": "studio-conversation-1",
+    "id": "kel7bv6m6i0cul9p",
+    "projectId": "21zfuwu86teh9q5l",
+    "revision": 1,
+    "projectRevision": 1,
+    "mode": "ai",
+    "progress": "clarify",
+    "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+    "question": null,
+    "correctionFields": [],
+    "readOnlyReason": "Ce projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.",
+    "creation": null,
+    "tools": [
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "understand-offer",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "render",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "publish",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "delete",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "purchase",
+        "state": "not_connected",
+        "executionEnabled": false
+      }
+    ],
+    "summary": {
+      "description": "Entretien de cadrans confiés par les clients, sur devis.",
+      "business": null,
+      "businessSource": "unknown",
+      "target": "Public fictif de recette",
+      "goals": "",
+      "offerName": "Restauration de cadrans de recette",
+      "brandName": "",
+      "constraints": "Simulation explicite, aucune enquête réelle",
+      "services": [],
+      "contactModes": [],
+      "facts": [],
+      "unknown": [],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": true,
+      "preparationStatus": "approved"
+    },
+    "action": null,
+    "history": [
+      {
+        "revision": 1,
+        "request": {
+          "revision": 0,
+          "requestId": "4edec154-4e99-4162-a37f-4ed5dfd1fe09",
+          "projectRevision": 1,
+          "action": "compare-strategy-options"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228745699
+      }
+    ],
+    "historyBefore": null,
+    "intelligence": {
+      "available": true,
+      "state": "requires_quote",
+      "pendingJobId": null,
+      "reply": null,
+      "proposalId": null,
+      "sourceRevision": null,
+      "sourceProjectRevision": null,
+      "lastReceiptId": null,
+      "provenance": null,
+      "qualification": "real_provider_not_tested",
+      "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+    },
+    "strategyChoices": {
+      "schema": "strategy-comparisons-1",
+      "scope": "acquired_marketing_angles_only",
+      "available": true,
+      "nativeHref": "/studio/21zfuwu86teh9q5l/strategie",
+      "message": "Recherche acquise et analysée : les propositions peuvent être reprises sans nouvel appel.",
+      "active": {
+        "id": "fe0ctphjgadaokka",
+        "projectId": "21zfuwu86teh9q5l",
+        "version": "8ab98d74ccc31215181d0976a9a3b0b8e982259a54b5dfbb0509f483c6a2eada",
+        "inputDigest": "c7504f8495db3283b3546277bc0084db65d83663207bfdf120e67cdd0099900b",
+        "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+        "createdAt": 1793228745696,
+        "scope": "service_communication",
+        "options": [
+          {
+            "id": "usage",
+            "title": "Choisir selon son trajet",
+            "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "situation": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+            "notPriority": "",
+            "tension": "Comprendre le rangement en déplacement avant de partir",
+            "motivation": "Comprendre le rangement en déplacement avant de partir",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Concret et pratique",
+            "messages": [
+              "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+            "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+            "examples": {
+              "hero": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+              "subtext": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+              "cta": "",
+              "advertisement": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "reassurance",
+            "title": "Comparer les informations disponibles",
+            "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "situation": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+            "notPriority": "",
+            "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+            "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Précis et documenté",
+            "messages": [
+              "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+            "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+            "examples": {
+              "hero": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+              "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+              "cta": "",
+              "advertisement": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "expression",
+            "title": "Trouver sa place chez soi",
+            "audience": "Amateurs de décoration cherchant harmonie matières couleurs",
+            "situation": "Composer une présentation visuelle centrée sur les associations possibles. Horlogerie",
+            "notPriority": "",
+            "tension": "Imaginer une association personnelle sans engagement prématuré",
+            "motivation": "Imaginer une association personnelle sans engagement prématuré",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Amateurs de décoration cherchant harmonie matières couleurs",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Évocateur et personnel",
+            "messages": [
+              "Une pièce à envisager dans votre univers — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Composer une présentation visuelle centrée sur les associations possibles",
+            "communicationChange": "Composer une présentation visuelle centrée sur les associations possibles",
+            "examples": {
+              "hero": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette",
+              "subtext": "Composer une présentation visuelle centrée sur les associations possibles. Horlogerie",
+              "cta": "",
+              "advertisement": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "discovery",
+            "title": "Découvrir progressivement cette catégorie",
+            "audience": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+            "situation": "Expliquer une notion différente par séquence pédagogique illustrée. Horlogerie",
+            "notPriority": "",
+            "tension": "Acquérir des repères simples dans un univers encore inconnu",
+            "motivation": "Acquérir des repères simples dans un univers encore inconnu",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Découvrir les repères pour commencer — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Pédagogique et progressif",
+            "messages": [
+              "Découvrir les repères pour commencer — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Expliquer une notion différente par séquence pédagogique illustrée",
+            "communicationChange": "Expliquer une notion différente par séquence pédagogique illustrée",
+            "examples": {
+              "hero": "Découvrir les repères pour commencer — Restauration de cadrans de recette",
+              "subtext": "Expliquer une notion différente par séquence pédagogique illustrée. Horlogerie",
+              "cta": "",
+              "advertisement": "Découvrir les repères pour commencer — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "generalist",
+            "title": "Présenter l’ensemble de votre offre",
+            "audience": "Visiteurs explorant librement catalogue prestations possibilités",
+            "situation": "Présenter une vue complète et factuelle de l’offre et de ses limites. Horlogerie",
+            "notPriority": "",
+            "tension": "Parcourir toutes les informations sans privilégier une motivation précise",
+            "motivation": "Parcourir toutes les informations sans privilégier une motivation précise",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Visiteurs explorant librement catalogue prestations possibilités",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Factuel et ouvert",
+            "messages": [
+              "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+            "communicationChange": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+            "examples": {
+              "hero": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette",
+              "subtext": "Présenter une vue complète et factuelle de l’offre et de ses limites. Horlogerie",
+              "cta": "",
+              "advertisement": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          }
+        ],
+        "recommendation": {
+          "angleId": "usage",
+          "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+        },
+        "simulation": true,
+        "marketSourcesVerified": false,
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "isCurrent": true,
+        "preference": {
+          "preferred": null,
+          "rejected": []
+        }
+      },
+      "history": [
+        {
+          "id": "fe0ctphjgadaokka",
+          "version": "8ab98d74ccc31215181d0976a9a3b0b8e982259a54b5dfbb0509f483c6a2eada",
+          "at": 1793228745696,
+          "scope": "service_communication",
+          "optionIds": [
+            "usage",
+            "reassurance",
+            "expression",
+            "discovery",
+            "generalist"
+          ],
+          "isCurrent": true
+        }
+      ],
+      "decisions": [],
+      "cost": {
+        "comparisonPct": 0,
+        "preferencePct": 0,
+        "regeneration": false,
+        "advice": "separate_native_conversation_quote",
+        "activation": "not_authorized_by_discussion_preference"
+      },
+      "coverage": {
+        "logos": false,
+        "images": false,
+        "themes": false,
+        "blending": false,
+        "vision": false,
+        "realProviderTested": false
+      }
+    }
+  },
+  "comparison": {
+    "id": "ntm6odkq2iowiq0w",
+    "projectId": "21zfuwu86teh9q5l",
+    "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+    "inputDigest": "c7504f8495db3283b3546277bc0084db65d83663207bfdf120e67cdd0099900b",
+    "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+    "createdAt": 1793228746299,
+    "scope": "service_communication",
+    "options": [
+      {
+        "id": "usage",
+        "title": "Choisir selon son trajet",
+        "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+        "situation": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+        "notPriority": "",
+        "tension": "Comprendre le rangement en déplacement avant de partir",
+        "motivation": "Comprendre le rangement en déplacement avant de partir",
+        "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+        "promise": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+        "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+        "proofs": [],
+        "objections": [
+          {
+            "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "answer": "Entretien de cadrans confiés par les clients, sur devis."
+          }
+        ],
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "tone": "Concret et pratique",
+        "messages": [
+          "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+        ],
+        "exclusions": [],
+        "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+        "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+        "examples": {
+          "hero": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+          "subtext": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+          "cta": "",
+          "advertisement": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+        },
+        "source": "creative_hypothesis",
+        "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+        "sources": [
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 1",
+            "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+            "date": "2026-10-28T23:05:44.267Z",
+            "ref": "https://source-0.example.test/offre"
+          },
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 3",
+            "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+            "date": "2026-10-28T23:05:44.267Z",
+            "ref": "https://source-2.example.test/offre"
+          }
+        ]
+      },
+      {
+        "id": "reassurance",
+        "title": "Comparer les informations disponibles",
+        "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+        "situation": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+        "notPriority": "",
+        "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+        "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+        "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+        "promise": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+        "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+        "proofs": [],
+        "objections": [
+          {
+            "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "answer": "Entretien de cadrans confiés par les clients, sur devis."
+          }
+        ],
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "tone": "Précis et documenté",
+        "messages": [
+          "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+        ],
+        "exclusions": [],
+        "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+        "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+        "examples": {
+          "hero": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+          "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+          "cta": "",
+          "advertisement": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+        },
+        "source": "creative_hypothesis",
+        "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+        "sources": [
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 1",
+            "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+            "date": "2026-10-28T23:05:44.267Z",
+            "ref": "https://source-0.example.test/offre"
+          },
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 3",
+            "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+            "date": "2026-10-28T23:05:44.267Z",
+            "ref": "https://source-2.example.test/offre"
+          }
+        ]
+      }
+    ],
+    "recommendation": {
+      "angleId": "usage",
+      "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+    },
+    "simulation": true,
+    "marketSourcesVerified": false,
+    "limits": [
+      "Maquette — non issue d’une recherche réelle"
+    ],
+    "isCurrent": true,
+    "preference": {
+      "preferred": null,
+      "rejected": []
+    }
+  },
+  "inspected": {
+    "native": {
+      "active": null,
+      "usedAngleIds": [],
+      "researchStatus": "draft"
+    },
+    "state": {
+      "activeId": "ntm6odkq2iowiq0w",
+      "comparisons": [
+        {
+          "id": "fe0ctphjgadaokka",
+          "projectId": "21zfuwu86teh9q5l",
+          "version": "8ab98d74ccc31215181d0976a9a3b0b8e982259a54b5dfbb0509f483c6a2eada",
+          "inputDigest": "c7504f8495db3283b3546277bc0084db65d83663207bfdf120e67cdd0099900b",
+          "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+          "createdAt": 1793228745696,
+          "scope": "service_communication",
+          "options": [
+            {
+              "id": "usage",
+              "title": "Choisir selon son trajet",
+              "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+              "situation": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+              "notPriority": "",
+              "tension": "Comprendre le rangement en déplacement avant de partir",
+              "motivation": "Comprendre le rangement en déplacement avant de partir",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Concret et pratique",
+              "messages": [
+                "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+              "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+              "examples": {
+                "hero": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+                "subtext": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+                "cta": "",
+                "advertisement": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "reassurance",
+              "title": "Comparer les informations disponibles",
+              "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+              "situation": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+              "notPriority": "",
+              "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+              "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Précis et documenté",
+              "messages": [
+                "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+              "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+              "examples": {
+                "hero": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+                "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+                "cta": "",
+                "advertisement": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "expression",
+              "title": "Trouver sa place chez soi",
+              "audience": "Amateurs de décoration cherchant harmonie matières couleurs",
+              "situation": "Composer une présentation visuelle centrée sur les associations possibles. Horlogerie",
+              "notPriority": "",
+              "tension": "Imaginer une association personnelle sans engagement prématuré",
+              "motivation": "Imaginer une association personnelle sans engagement prématuré",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Amateurs de décoration cherchant harmonie matières couleurs",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Évocateur et personnel",
+              "messages": [
+                "Une pièce à envisager dans votre univers — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Composer une présentation visuelle centrée sur les associations possibles",
+              "communicationChange": "Composer une présentation visuelle centrée sur les associations possibles",
+              "examples": {
+                "hero": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette",
+                "subtext": "Composer une présentation visuelle centrée sur les associations possibles. Horlogerie",
+                "cta": "",
+                "advertisement": "Une pièce à envisager dans votre univers — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "discovery",
+              "title": "Découvrir progressivement cette catégorie",
+              "audience": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+              "situation": "Expliquer une notion différente par séquence pédagogique illustrée. Horlogerie",
+              "notPriority": "",
+              "tension": "Acquérir des repères simples dans un univers encore inconnu",
+              "motivation": "Acquérir des repères simples dans un univers encore inconnu",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Découvrir les repères pour commencer — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Pédagogique et progressif",
+              "messages": [
+                "Découvrir les repères pour commencer — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Expliquer une notion différente par séquence pédagogique illustrée",
+              "communicationChange": "Expliquer une notion différente par séquence pédagogique illustrée",
+              "examples": {
+                "hero": "Découvrir les repères pour commencer — Restauration de cadrans de recette",
+                "subtext": "Expliquer une notion différente par séquence pédagogique illustrée. Horlogerie",
+                "cta": "",
+                "advertisement": "Découvrir les repères pour commencer — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "generalist",
+              "title": "Présenter l’ensemble de votre offre",
+              "audience": "Visiteurs explorant librement catalogue prestations possibilités",
+              "situation": "Présenter une vue complète et factuelle de l’offre et de ses limites. Horlogerie",
+              "notPriority": "",
+              "tension": "Parcourir toutes les informations sans privilégier une motivation précise",
+              "motivation": "Parcourir toutes les informations sans privilégier une motivation précise",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Visiteurs explorant librement catalogue prestations possibilités",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Factuel et ouvert",
+              "messages": [
+                "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+              "communicationChange": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+              "examples": {
+                "hero": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette",
+                "subtext": "Présenter une vue complète et factuelle de l’offre et de ses limites. Horlogerie",
+                "cta": "",
+                "advertisement": "Toutes les informations pour envisager cette offre — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            }
+          ],
+          "recommendation": {
+            "angleId": "usage",
+            "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+          },
+          "simulation": true,
+          "marketSourcesVerified": false,
+          "limits": [
+            "Maquette — non issue d’une recherche réelle"
+          ]
+        },
+        {
+          "id": "ntm6odkq2iowiq0w",
+          "projectId": "21zfuwu86teh9q5l",
+          "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+          "inputDigest": "c7504f8495db3283b3546277bc0084db65d83663207bfdf120e67cdd0099900b",
+          "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+          "createdAt": 1793228746299,
+          "scope": "service_communication",
+          "options": [
+            {
+              "id": "usage",
+              "title": "Choisir selon son trajet",
+              "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+              "situation": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+              "notPriority": "",
+              "tension": "Comprendre le rangement en déplacement avant de partir",
+              "motivation": "Comprendre le rangement en déplacement avant de partir",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Concret et pratique",
+              "messages": [
+                "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+              "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+              "examples": {
+                "hero": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+                "subtext": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+                "cta": "",
+                "advertisement": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "reassurance",
+              "title": "Comparer les informations disponibles",
+              "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+              "situation": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+              "notPriority": "",
+              "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+              "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+              "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+              "promise": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                  "answer": "Entretien de cadrans confiés par les clients, sur devis."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Précis et documenté",
+              "messages": [
+                "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+              "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+              "examples": {
+                "hero": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+                "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+                "cta": "",
+                "advertisement": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:44.267Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            }
+          ],
+          "recommendation": {
+            "angleId": "usage",
+            "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+          },
+          "simulation": true,
+          "marketSourcesVerified": false,
+          "limits": [
+            "Maquette — non issue d’une recherche réelle"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "id": "7jvjof6rdab1ew49",
+          "at": 1793228746831,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": null,
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          }
+        },
+        {
+          "id": "hdlsitfzfhqhj638",
+          "at": 1793228747309,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "reject",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "ntm6odkq2iowiq0w",
+                "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+                "angleId": "reassurance"
+              }
+            ]
+          }
+        },
+        {
+          "id": "2p41ogasm55n0gv8",
+          "at": 1793228747742,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "undo",
+          "angleId": null,
+          "reason": "Annulation de la dernière préférence de discussion.",
+          "reasonSource": "system_undo",
+          "before": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "ntm6odkq2iowiq0w",
+                "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+                "angleId": "reassurance"
+              }
+            ]
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "undoOf": "hdlsitfzfhqhj638"
+        },
+        {
+          "id": "jf7k9p8eo1ri2j23",
+          "at": 1793228751061,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues.",
+          "reasonSource": "provider_proposal_confirmed",
+          "before": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "proposalReceiptId": "dbgcndufp84v424j"
+        }
+      ]
+    }
+  },
+  "saved": {
+    "schema": "studio-conversation-1",
+    "id": "kel7bv6m6i0cul9p",
+    "projectId": "21zfuwu86teh9q5l",
+    "revision": 8,
+    "projectRevision": 1,
+    "mode": "ai",
+    "progress": "clarify",
+    "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+    "question": null,
+    "correctionFields": [],
+    "readOnlyReason": "Ce projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.",
+    "creation": null,
+    "tools": [
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "understand-offer",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "render",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "publish",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "delete",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "purchase",
+        "state": "not_connected",
+        "executionEnabled": false
+      }
+    ],
+    "summary": {
+      "description": "Entretien de cadrans confiés par les clients, sur devis.",
+      "business": null,
+      "businessSource": "unknown",
+      "target": "Public fictif de recette",
+      "goals": "",
+      "offerName": "Restauration de cadrans de recette",
+      "brandName": "",
+      "constraints": "Simulation explicite, aucune enquête réelle",
+      "services": [],
+      "contactModes": [],
+      "facts": [],
+      "unknown": [],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": true,
+      "preparationStatus": "approved"
+    },
+    "action": null,
+    "history": [
+      {
+        "revision": 1,
+        "request": {
+          "revision": 0,
+          "requestId": "4edec154-4e99-4162-a37f-4ed5dfd1fe09",
+          "projectRevision": 1,
+          "action": "compare-strategy-options"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228745699
+      },
+      {
+        "revision": 2,
+        "request": {
+          "revision": 1,
+          "requestId": "eee66c4d-7228-44fd-b9bd-f927d22c474d",
+          "projectRevision": 1,
+          "action": "compare-strategy-options",
+          "angleIds": [
+            "usage",
+            "reassurance"
+          ],
+          "sourceComparisonId": "fe0ctphjgadaokka",
+          "sourceVersion": "8ab98d74ccc31215181d0976a9a3b0b8e982259a54b5dfbb0509f483c6a2eada"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228746301
+      },
+      {
+        "revision": 3,
+        "request": {
+          "revision": 2,
+          "requestId": "4c6a3790-7c9e-4ea2-8e4a-1cf40f82d721",
+          "projectRevision": 1,
+          "action": "decide-strategy-option",
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+          "angleId": "reassurance",
+          "decision": "prefer",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles."
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228746834
+      },
+      {
+        "revision": 4,
+        "request": {
+          "revision": 3,
+          "requestId": "eb9f57bd-62d3-4b6b-a360-98cd9432c4e2",
+          "projectRevision": 1,
+          "action": "decide-strategy-option",
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+          "angleId": "reassurance",
+          "decision": "reject",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles."
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228747312
+      },
+      {
+        "revision": 5,
+        "request": {
+          "revision": 4,
+          "requestId": "942eb697-8d28-4162-926f-a2f763ce4416",
+          "projectRevision": 1,
+          "action": "undo-strategy-preference",
+          "decisionId": "hdlsitfzfhqhj638"
+        },
+        "message": "Préférence de discussion restaurée ; stratégie active inchangée.",
+        "at": 1793228747746
+      },
+      {
+        "revision": 6,
+        "request": {
+          "revision": 5,
+          "requestId": "4ecf3dc6-e847-4aa7-aab7-7d8b28290686",
+          "projectRevision": 1,
+          "action": "message",
+          "text": "Garde la deuxième proposition pour notre discussion, sans activer la stratégie."
+        },
+        "message": "Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.",
+        "at": 1793228748265
+      },
+      {
+        "revision": 7,
+        "request": {
+          "action": "agent-reply",
+          "quoteId": "7w1jq6rdesmyfvyr"
+        },
+        "message": "[Fournisseur simulé — recette isolée] La deuxième option insiste sur les informations disponibles. Je la propose pour cette discussion, avec les réserves acquises. Son efficacité commerciale reste non vérifiée.",
+        "at": 1793228749796
+      },
+      {
+        "revision": 8,
+        "request": {
+          "revision": 7,
+          "requestId": "99ddf620-4ae4-4412-af0b-f9179e37c9d2",
+          "projectRevision": 1,
+          "action": "accept-strategy-preference",
+          "receiptId": "dbgcndufp84v424j"
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228751064
+      }
+    ],
+    "historyBefore": null,
+    "intelligence": {
+      "available": true,
+      "state": "stale",
+      "pendingJobId": null,
+      "reply": {
+        "message": "[Fournisseur simulé — recette isolée] La deuxième option insiste sur les informations disponibles. Je la propose pour cette discussion, avec les réserves acquises. Son efficacité commerciale reste non vérifiée.",
+        "status": "answer",
+        "business": null,
+        "businessEvidence": null,
+        "question": null,
+        "proposedChanges": [],
+        "knowledgeSourceIds": [],
+        "proposedTools": [],
+        "strategyChoice": {
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+          "angleId": "reassurance",
+          "sourceId": "turn.6",
+          "quote": "Garde la deuxième proposition pour notre discussion, sans activer la stratégie.",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues."
+        },
+        "actionsExecuted": false
+      },
+      "proposalId": null,
+      "sourceRevision": 7,
+      "sourceProjectRevision": 1,
+      "lastReceiptId": "dbgcndufp84v424j",
+      "provenance": "provider",
+      "qualification": "real_provider_not_tested",
+      "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+    },
+    "strategyChoices": {
+      "schema": "strategy-comparisons-1",
+      "scope": "acquired_marketing_angles_only",
+      "available": false,
+      "nativeHref": "/studio/21zfuwu86teh9q5l/strategie",
+      "message": "Le contexte a changé ou la recherche est ancienne. Les choix et résultats précédents sont conservés ; préparez une recherche adaptée avant tout nouvel angle.",
+      "active": {
+        "id": "ntm6odkq2iowiq0w",
+        "projectId": "21zfuwu86teh9q5l",
+        "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+        "inputDigest": "c7504f8495db3283b3546277bc0084db65d83663207bfdf120e67cdd0099900b",
+        "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+        "createdAt": 1793228746299,
+        "scope": "service_communication",
+        "options": [
+          {
+            "id": "usage",
+            "title": "Choisir selon son trajet",
+            "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "situation": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+            "notPriority": "",
+            "tension": "Comprendre le rangement en déplacement avant de partir",
+            "motivation": "Comprendre le rangement en déplacement avant de partir",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Concret et pratique",
+            "messages": [
+              "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+            "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+            "examples": {
+              "hero": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette",
+              "subtext": "Montrer la préparation du trajet et les objets transportés. Entretien de cadrans confiés par les clients, sur devis.",
+              "cta": "",
+              "advertisement": "Préparer ses affaires avec des repères concrets — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "reassurance",
+            "title": "Comparer les informations disponibles",
+            "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "situation": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+            "notPriority": "",
+            "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+            "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+            "benefit": "Entretien de cadrans confiés par les clients, sur devis.",
+            "promise": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Restauration de cadrans de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                "answer": "Entretien de cadrans confiés par les clients, sur devis."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Précis et documenté",
+            "messages": [
+              "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+            "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+            "examples": {
+              "hero": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette",
+              "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Horlogerie",
+              "cta": "",
+              "advertisement": "Voir les détails qui comptent pour choisir — Restauration de cadrans de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "0a2264abe93a0f4fd7a8000bdaa9a55516d610cfca31e6b90490ea61b0490456",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Restauration de cadrans de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:44.267Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          }
+        ],
+        "recommendation": {
+          "angleId": "usage",
+          "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+        },
+        "simulation": true,
+        "marketSourcesVerified": false,
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "isCurrent": false,
+        "preference": {
+          "preferred": {
+            "comparisonId": "ntm6odkq2iowiq0w",
+            "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+            "angleId": "reassurance"
+          },
+          "rejected": []
+        }
+      },
+      "history": [
+        {
+          "id": "fe0ctphjgadaokka",
+          "version": "8ab98d74ccc31215181d0976a9a3b0b8e982259a54b5dfbb0509f483c6a2eada",
+          "at": 1793228745696,
+          "scope": "service_communication",
+          "optionIds": [
+            "usage",
+            "reassurance",
+            "expression",
+            "discovery",
+            "generalist"
+          ],
+          "isCurrent": false
+        },
+        {
+          "id": "ntm6odkq2iowiq0w",
+          "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+          "at": 1793228746299,
+          "scope": "service_communication",
+          "optionIds": [
+            "usage",
+            "reassurance"
+          ],
+          "isCurrent": false
+        }
+      ],
+      "decisions": [
+        {
+          "id": "7jvjof6rdab1ew49",
+          "at": 1793228746831,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": null,
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          }
+        },
+        {
+          "id": "hdlsitfzfhqhj638",
+          "at": 1793228747309,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "reject",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "ntm6odkq2iowiq0w",
+                "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+                "angleId": "reassurance"
+              }
+            ]
+          }
+        },
+        {
+          "id": "2p41ogasm55n0gv8",
+          "at": 1793228747742,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "undo",
+          "angleId": null,
+          "reason": "Annulation de la dernière préférence de discussion.",
+          "reasonSource": "system_undo",
+          "before": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "ntm6odkq2iowiq0w",
+                "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+                "angleId": "reassurance"
+              }
+            ]
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "undoOf": "hdlsitfzfhqhj638"
+        },
+        {
+          "id": "jf7k9p8eo1ri2j23",
+          "at": 1793228751061,
+          "comparisonId": "ntm6odkq2iowiq0w",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues.",
+          "reasonSource": "provider_proposal_confirmed",
+          "before": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "ntm6odkq2iowiq0w",
+              "version": "6d6032f34a97651f8ac0405f58289ea07f7de94f06409244710a40a9b8e74550",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "proposalReceiptId": "dbgcndufp84v424j"
+        }
+      ],
+      "cost": {
+        "comparisonPct": 0,
+        "preferencePct": 0,
+        "regeneration": false,
+        "advice": "separate_native_conversation_quote",
+        "activation": "not_authorized_by_discussion_preference"
+      },
+      "coverage": {
+        "logos": false,
+        "images": false,
+        "themes": false,
+        "blending": false,
+        "vision": false,
+        "realProviderTested": false
+      }
+    }
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}
