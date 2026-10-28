@@ -11,7 +11,7 @@ import{createQuote,quoteOf}from'../../preparation/quote';
 import{analysisCostPlan}from'../../preparation/inspect';
 import{getJob,publicJob,type Job}from'../../jobs';
 import{metaOf,ownedConversation}from'./store';
-import{conversationToolsEnabled,conversationThemeToolsEnabled}from'./tool-flags';
+import{conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled}from'./tool-flags';
 import{bindAgentJob,boundPublic,createOrReadBound,type AgentBound}from'../../ai/request-bounds';
 import{run}from'../../db';
 import type{State}from'../../preparation/types';
@@ -48,7 +48,7 @@ export function toolRegistry(user:User,cid:string){const{c,projectId,s}=owned(us
     {id:'project.inspect',state:'available',executionEnabled:true,cost:'free',effect:'Lire les acquis et leur provenance, sans modification.'},
     {id:'brief.update',state:writable?'available':'unavailable',executionEnabled:writable,cost:'free',commandEndpoint:`/api/studio-agent/conversations/${cid}`,effect:'Corrections explicites par les commandes natives du brief, avec versions et verrous.'},
     {id:'understand-offer',state:analysisLocked(s)?'unavailable':'quote_only',executionEnabled:false,connected:true,availability:'checked_on_quote',cost:'native_quote',effect:'Compréhension native de cette offre, après vérification des droits, fournisseur, tarifs et devis. Proposition à relire ; aucun passage à l’étape suivante.'},
-    ...['research','brand','logo','images','videos','products','services','theme','seo','blog','ads','social','calendar','appointments','export','connections'].map(id=>id==='theme'&&conversationThemeToolsEnabled()?{id,state:'quote_only',executionEnabled:false,connected:true,effect:'Retouche de texte exact ou image existante, avec devis local, accord, version et annulation. Les autres opérations Site restent manuelles.'}:{id,state:'not_connected',executionEnabled:false,effect:'Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel.'}),
+    ...['research','brand','logo','images','videos','products','services','theme','seo','blog','ads','social','calendar','appointments','export','connections'].map(id=>id==='theme'&&conversationThemeToolsEnabled()?{id,state:'quote_only',executionEnabled:false,connected:true,effect:conversationCompositionEnabled()?'Composition native de pages avec contenus acquis, ou retouche exacte : devis local, accord, version et annulation. Qualité visuelle non mesurée ; aucun CMS installé.':'Retouche de texte exact ou image existante, avec devis local, accord, version et annulation. Les autres opérations Site restent manuelles.'}:{id,state:'not_connected',executionEnabled:false,effect:'Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel.'}),
     ...['publish','send','delete','purchase','payment'].map(id=>({id,state:'unavailable',executionEnabled:false,effect:'Action sensible non raccordée ; exige un accord spécifique et son contrôle propre.'})),
   ],acquired:latestAcquired(projectId,user.id),receipts:all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.tool.%' ORDER BY created_at DESC,rowid DESC LIMIT 100",projectId).map(row=>json<Meta|null>(row.value,null)).filter((m):m is Meta=>!!m&&m.conversationId===c.id&&typeof m.id==='string'&&!!m.jobId).slice(0,10).map(m=>toolReceipt(user,cid,m.id)),href:`/studio/${projectId}/pilote`,actionsExecuted:false,
 };}

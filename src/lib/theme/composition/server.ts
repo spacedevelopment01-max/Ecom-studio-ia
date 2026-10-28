@@ -1,4 +1,7 @@
 /** Frontière serveur E1 : contexte du propriétaire et contrôles natifs à chaque prévisualisation. */
+import {L} from '../../i18n-server';
+import {UserFacingError} from '../../jobs';
+import {CompositionPlanError} from './contract';
 import {HttpError,ownedProject,type User} from '../../auth';
 import {currentTheme,loadProject} from '../../projects';
 import {requirePlan} from '../../plan-gates';
@@ -42,7 +45,8 @@ export function compositionContext(user:User,projectId:string){
 }
 export function previewNativeComposition(user:User,projectId:string,input:unknown){
  const r=resolve(user,projectId),p=loadProject(projectId);
- const result=assembleComposition(r.current.spec,input,{versionId:r.current.version.id,storeKind:projectKind(p),scope:t=>compositionScope(r.current.spec,t)??'',source:id=>r.sources.get(id),authorize:ops=>assertThemeOperations(projectId,r.current.spec,ops,true),media:r.liveMedia});
+ const assemble=()=>assembleComposition(r.current.spec,input,{versionId:r.current.version.id,storeKind:projectKind(p),scope:t=>compositionScope(r.current.spec,t)??'',source:id=>r.sources.get(id),authorize:ops=>assertThemeOperations(projectId,r.current.spec,ops,true),media:r.liveMedia});
+ let result:ReturnType<typeof assemble>;try{result=assemble();}catch(error){if(error instanceof CompositionPlanError)throw new UserFacingError(L(error.message,error.english),'agent_composition_invalid');throw error;}
  // Native applyOps receives the actual category too when the public adapter is used.
  const kind=projectKind(p);if(!kind)throw new HttpError(409,'Le type du projet doit être confirmé avant composition.');
  result.spec.meta={...result.spec.meta,composition:result.record};

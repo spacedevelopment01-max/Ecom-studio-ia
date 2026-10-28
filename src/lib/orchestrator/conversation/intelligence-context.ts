@@ -1,12 +1,18 @@
-import { all, json } from '../../db';
+import { all, json, one } from '../../db';
 import { PLANS } from '../../plans';
-import { HttpError } from '../../auth';
+import { HttpError,type User } from '../../auth';
 import { stableHash } from '../../brain/hash';
 import { currentBrief, metaOf } from './store';
 import type { ConversationRow } from './contract';
 import { L } from '../../i18n-server';
-import {conversationToolsEnabled,conversationThemeToolsEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled} from './tool-flags';
+import {currentTheme,loadProject} from '../../projects';
+import {projectKind} from '../../theme/project-kind';
+import {compositionCatalog,compactCompositionCatalog} from '../../theme/composition/catalog';
+import {compositionContext} from '../../theme/composition/server';
 import {themeToolContext} from './theme-tool-context';
+
+function scopedComposition(c:ConversationRow){if(!c.project_id)return null;const u=one<User>('SELECT * FROM users WHERE id=?',c.user_id);if(!u)return null;try{const context=compositionContext(u,c.project_id),theme=currentTheme(c.project_id)!;return{available:true,...context,...compactCompositionCatalog(compositionCatalog(theme.spec,c.project_id,projectKind(loadProject(c.project_id))))};}catch(e){if(e instanceof HttpError&&[402,404,409].includes(e.status))return{available:false,reason:e.message};throw e;}}
 
 /** Sources internes exactes. Une capacité présente dans un onglet n'est pas un outil raccordé au chat. */
 export function studioKnowledge() {
@@ -40,6 +46,7 @@ export function cognitiveContext(c: ConversationRow) {
     brief: { ...brief, clientStatements: brief.clientStatements?.map(s => ({ id: `client.${s.id}`, source: s.source })) }, preparationStatus: status, sources: uniqueSources, knowledge,
     tools: [{ id: 'brief.update', mode: 'deterministic_client_confirmed' }, { id: 'understand-offer', mode: conversationToolsEnabled()&&c.project_id?'native_analysis_after_separate_quote_and_confirmation':'quote_only_separate_native_workflow',effect:'Analyse native de l’offre conservée pour relecture, jamais validation ni passage à l’étape suivante. Les droits, verrous et essais sont revérifiés sur le serveur.' }],
     ...(conversationThemeToolsEnabled()&&c.project_id?{theme:themeToolContext(c.project_id),themeTool:{id:'theme.edit',mode:'native_exact_ops_after_free_quote_and_confirmation',rules:'Si le client demande une retouche avec un texte exact, proposer themePlan avec versionId et ops issus des cibles présentes. Chaque value doit être un extrait exact d’une source client. Sinon demander le texte précis ; le copywriting libre n’est pas raccordé à D2. Une image doit appartenir à media. Ne jamais annoncer la modification avant son reçu natif.'}}:{}),
+    ...(conversationCompositionEnabled()&&c.project_id?{composition:scopedComposition(c),compositionTool:{id:'theme.compose',rules:'Proposer compositionPlan pour adapter ou composer librement les pages avec composants natifs, sources exactes du contexte et médias du projet. Ne pas inventer de texte ni média. Les champs des composants renvoient aux définitions intégrales dans fieldDefinitions : les lire par leur ID. Chaque binding.source désigne une source entière, avec le scope de la même page. Les champs longs non affichés ne sont pas lus ici : le devis les montre intégralement. Garder les sections fonctionnelles/verrouillées et leurs positions. Mode original non raccordé : ne pas le promettre. Un plan enregistré n’est ni un contrôle visuel réussi ni une installation CMS. Devis et confirmation locaux séparés, quality=not_measured.'}}:{}),
     lastQuestion: meta.intelligence?.lastReply?.question ?? null,
   };
   const serialized = JSON.stringify(context);

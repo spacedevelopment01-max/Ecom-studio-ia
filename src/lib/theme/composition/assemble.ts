@@ -5,14 +5,14 @@ import {ALL_ENTRIES} from '../section-families';
 import {ownerThemeOf} from '../theme-own-sections';
 import {unsafeContentReason} from '../content-security';
 import {themeTargetPaths} from '../../orchestrator/conversation/theme-tool-context';
-import {CompositionPlanSchema,type CompositionSource,type CompositionRecord} from './contract';
+import {CompositionPlanError,CompositionPlanSchema,type CompositionSource,type CompositionRecord} from './contract';
 const COPY=new Set(['text','textarea','richtext','inline_richtext']);
 const LAYOUT=new Set(['range','select','radio','checkbox','color_scheme']);
 // Ces sections ont des effets métier. Leur structure existante est conservée à l’identique.
 const FUNCTIONAL=/(?:product|purchase|cart|contact|booking|appointment|rendez|reservation|newsletter|account|checkout|form|settings)/i;
 const CONTENT_KEYS=new Set(['url','image_picker','video','product','collection','page','html','liquid']);
-function fail(message:string):never{throw new Error(`composition: ${message}`);}
-function componentAllowed(type:string){return !FUNCTIONAL.test(type)&&!ownerThemeOf(type)&&!type.startsWith('es-custom-')&&ALL_ENTRIES.some(e=>e.dispositions.some(d=>d.type===type));}
+function fail(message:string):never{throw new CompositionPlanError(`composition: ${message}`);}
+export function componentAllowed(type:string){return !FUNCTIONAL.test(type)&&!ownerThemeOf(type)&&!type.startsWith('es-custom-')&&ALL_ENTRIES.some(e=>e.dispositions.some(d=>d.type===type));}
 export type CompositionDependencies={
  versionId:string;storeKind?:import('../store-kind').StoreKind|null;
  /** Exact scope of each target template, resolved from native page/product assignments. */
