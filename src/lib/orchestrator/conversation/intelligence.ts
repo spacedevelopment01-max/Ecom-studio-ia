@@ -128,8 +128,9 @@ export function confirmCognitiveQuote(user: User, cid: string, qid: string, requ
 
 export function intelligenceView(c: ConversationRow): IntelligenceView {
   const s = metaOf(c).intelligence, job = s?.pendingJobId ? one<Pick<Job, 'status' | 'message'>>('SELECT status,message FROM jobs WHERE id=? AND user_id=?', s.pendingJobId, c.user_id) : null;
-  const state = job && ['queued','running','paused','blocked'].includes(job.status) ? 'running' : job?.status === 'failed' ? 'failed' : s?.sourceRevision != null && s.sourceRevision !== c.revision ? 'stale' : s?.lastReply ? 'reply' : c.revision ? 'requires_quote' : 'describe';
+  const state = job && ['queued','running','paused','blocked'].includes(job.status) ? 'running' : job?.status === 'failed' ? 'failed' : s?.lastReply&&(s.sourceRevision!==c.revision||(s.sourceProjectRevision??null)!==currentBrief(c).revision) ? 'stale' : s?.lastReply ? 'reply' : c.revision ? 'requires_quote' : 'describe';
   return { available: intelligenceEnabled(), state, pendingJobId: s?.pendingJobId ?? null, reply: s?.lastReply ?? null, proposalId: s?.proposalId ?? null, sourceRevision: s?.sourceRevision ?? null,
+    sourceProjectRevision:s?.sourceProjectRevision??null,
     ...(specialistsEnabled()?{roles:Object.entries(SPECIALISTS).map(([id,r])=>({id:id as AgentRole,label:r.label})),lastRole:s?.lastRole??'principal',requestBounds:s?.boundId?boundPublic(s.boundId):null}:{}),
     provenance: s?.lastReply ? process.env.NODE_ENV === 'test' ? 'simulation' : 'provider' : null, qualification: 'real_provider_not_tested',
     message: state === 'failed' ? L('La réponse a échoué. Vos acquis sont conservés ; aucune relance automatique payante.', 'The reply failed. Your work is kept; no automatic paid retry.') : state === 'running' ? L('Réponse en préparation, sauvegardée après fermeture.', 'Reply in progress, saved after closing.') : L('Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.', 'AI reasoning requires a quote and consent. No business tool is executed by this reply.') };
@@ -192,7 +193,7 @@ export async function runCognitiveJob(ctx: JobContext) {
     const next = c.revision + 1;
     const businessChange = receipt.reply.business && m.business && receipt.reply.business !== m.business;
     const acquiredPlan=JSON.parse(one<QuoteRow>('SELECT * FROM agent_conversation_quotes WHERE id=?',receipt.quoteId)!.plan_json)as Plan;
-    m.intelligence = { ...m.intelligence,lastRole:acquiredPlan.role??'principal', lastReply: receipt.reply, lastReceiptId: ctx.job.id, pendingJobId: undefined, sourceRevision: next, proposalId: receipt.reply.proposedChanges.length || businessChange ? id() : undefined,
+    m.intelligence = { ...m.intelligence,lastRole:acquiredPlan.role??'principal', lastReply: receipt.reply, lastReceiptId: ctx.job.id, pendingJobId: undefined, sourceRevision: next,sourceProjectRevision:currentBrief(c).revision, proposalId: receipt.reply.proposedChanges.length || businessChange ? id() : undefined,
       questionHistory: [...(m.intelligence?.questionHistory ?? []).filter(q => q.id !== receipt.reply.question?.id), ...(receipt.reply.question ? [receipt.reply.question] : [])].slice(-100) };
     run('UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?', next, JSON.stringify(m), now(), c.id, c.revision);
     run('INSERT INTO agent_conversation_turns(id,conversation_id,revision,request_id,request_hash,request_json,response_json,created_at) VALUES(?,?,?,?,?,?,?,?)', id(), c.id, next, `ai_${ctx.job.id}`, stableHash('cognitive-receipt', receipt), JSON.stringify({ action: 'agent-reply', quoteId: receipt.quoteId }), JSON.stringify({ message: receipt.reply.message, reply: receipt.reply, actionsExecuted: false }), now());

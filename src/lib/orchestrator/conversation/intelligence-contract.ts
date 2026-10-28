@@ -39,6 +39,7 @@ export type CognitiveState = {
   questionHistory?: CognitiveQuestion[];
   proposalId?: string;
   sourceRevision?: number;
+  sourceProjectRevision?:number|null;
 };
 export type IntelligenceView = {
   roles?:{id:AgentRole;label:string}[];
@@ -47,6 +48,7 @@ export type IntelligenceView = {
   available: boolean; state: 'describe' | 'requires_quote' | 'running' | 'reply' | 'failed' | 'stale';
   pendingJobId: string | null; reply: CognitiveReply | null;
   proposalId: string | null; sourceRevision: number | null;
+  sourceProjectRevision?:number|null;
   provenance: 'provider' | 'simulation' | null;
   message: string; qualification: 'real_provider_not_tested';
 };
