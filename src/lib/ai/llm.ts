@@ -34,6 +34,8 @@ export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
   task: TaskId;
+  /** Route consentie par devis serveur : un changement impose un nouveau devis, jamais un repli facturé. */
+  expectedRoute?: { provider: string; model: string; effort?: string };
   /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
   prepare?: (raw: unknown) => unknown;
   userId: string;
@@ -52,6 +54,8 @@ export type LlmCall = {
   maxOutputTokens?: number;
   /** Clé d'idempotence de la consommation (reprise sans double débit). */
   usageKey?: string;
+  /** Serveur uniquement : reprise d'un reçu natif, interdit tout nouvel envoi s'il manque. */
+  acquiredOnly?: boolean;
   /** Nom du prompt système (trace) ; à défaut, la tâche. Le texte du prompt n'est jamais enregistré. */
   promptKey?: string;
   /**
@@ -90,6 +94,22 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     overrides: custom[call.task] && (!auto || pinnedTasks().includes(call.task)) ? { [call.task]: routeFor(call.task) } : undefined,
     auto: auto ? { budgetLeftMicro: call.userId ? budgetLeft(call.userId) : null } : undefined,
   });
+}
+
+/** Entrée d'un dialogue texte strict : même enveloppe/messages/format que rawCall, sans API ni réservation.
+ * La borne utilise les octets UTF-8 (pas une heuristique chars/2) et INCLUT le schéma structuré,
+ * facturé comme entrée par maxCostMicro/otherMaxCostMicro. Images refusées : leur budget est distinct.
+ */
+export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
+  if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
+  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
+  const volatile = brainOf(call).volatile;
+  if (volatile) content.push({ type: 'text', text: volatile });
+  content.push({ type: 'text', text: call.prompt });
+  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content }] });
+  const format = Buffer.byteLength(JSON.stringify(zodOutputFormat(schema as any)), 'utf8');
+  return { maximumTokens: Buffer.byteLength(request, 'utf8') + format + 500, typicalTokens: Math.ceil(request.length / 3.5) + format };
 }
 
 /** Reste disponible du budget IA du client (micro-euros), null si inconnu. */
@@ -273,8 +293,11 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
+  if (call.acquiredOnly) throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
   if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
+  if (call.expectedRoute && (decision.provider !== call.expectedRoute.provider || decision.model !== call.expectedRoute.model || (decision.effort ?? '') !== (call.expectedRoute.effort ?? '')))
+    throw new UserFacingError(L("La route IA a changé : demandez un nouveau devis. Aucun appel envoyé.", "The AI route changed: request a new quote. No request sent."));
   const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
   // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
   if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry, operation);

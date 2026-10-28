@@ -15,6 +15,8 @@ import { CommandSchema, EDIT_FIELDS, type ActionCard, type Command, type Convers
 import { assertBriefWritable, nativeAnalysisQuote, quoteCard, saveBrief, writeFact, type NativeQuote } from "./tools";
 import { currentBrief, metaOf, ownedConversation, turnsOf } from "./store";
 import { creationFields } from "./creation";
+import { intelligenceEnabled, intelligenceView } from "./intelligence";
+import { applyCognitiveCommand } from "./intelligence-commands";
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
 
@@ -24,7 +26,7 @@ function effective(c: ConversationRow) {
   const { brief, revision, status } = currentBrief(c), meta = metaOf(c);
   if (c.project_id && meta.business) meta.business = brief.input.business;
   // Objectifs déjà exprimés dans la description : les lire sans imposer une seconde saisie.
-  if (!brief.profile.facts.some(f => f.key === "conversation.goals")) {
+  if (!intelligenceEnabled() && !brief.profile.facts.some(f => f.key === "conversation.goals")) {
     const goals = explicitGoals(brief.input.description, meta.business);
     if (goals.length) writeFact(brief, "conversation.goals", L("Objectifs indiqués", "Stated goals"), goals.map(c => c.label).join(" ; "));
   }
@@ -36,7 +38,7 @@ export function conversationView(user: User, cid: string, before?: number): Conv
   let readOnlyReason:string|null=null;
   if(c.project_id){try{assertBriefWritable(c,user,revision);}catch(e){if(!(e instanceof HttpError))throw e;readOnlyReason=e.message;}}
   else if(!pendingSubscriptions(user.id).length)readOnlyReason=L("Rattachez le brouillon à votre projet pour le poursuivre.","Link the draft to your project to continue.");
-  return {
+  const view: ConversationView = {
     schema: "studio-conversation-1", id: c.id, projectId: c.project_id, revision: c.revision, projectRevision: revision, mode: "local",
     progress: !b.input.description ? "describe" : !m.business ? "clarify" : key ? "collect" : "review",
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
@@ -50,6 +52,12 @@ export function conversationView(user: User, cid: string, before?: number): Conv
       referenceUrls: b.input.referenceUrls, photoIds: b.input.photoIds, approved: status==="approved", preparationStatus:status },
     action: null, ...turnsOf(c, before),
   };
+  if (intelligenceEnabled()) {
+    view.mode = 'ai'; view.question = null; view.intelligence = intelligenceView(c);
+    view.message = view.intelligence.message;
+    view.progress = !b.input.description ? 'describe' : m.business ? 'collect' : 'clarify';
+  }
+  return view;
 }
 function setUnknown(b: Brief, m: ConversationState, key: QuestionKey) {
   const factKey = `conversation.${key}`;
@@ -115,6 +123,7 @@ function unavailable(tool: string, message: string, c: ConversationRow): ActionC
 /** Cette API n'accepte aucun plan, rôle, permission, coût accepté ou nom d'exécuteur fournis par le client. */
 export async function submitConversation(user: User, cid: string, raw: unknown, tests: TestDependencies = {}): Promise<ConversationView> {
   const cmd = CommandSchema.parse(raw);
+  if (["answer-ai", "accept-ai-changes", "back-ai"].includes(cmd.action) && !intelligenceEnabled()) throw new HttpError(404, "conversation_ai_disabled");
   if (redact(JSON.stringify(cmd)) !== JSON.stringify(cmd)) throw new HttpError(400, L("Ne saisissez pas de clé ou de jeton dans la conversation. Utilisez les réglages sécurisés du Studio.", "Do not enter a key or token in the conversation. Use the Studio's secure settings."), "conversation_secret");
   const hash = stableHash("conversation-request-1", cmd);
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
@@ -128,7 +137,7 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
   else if(!pendingSubscriptions(user.id).length)throw new HttpError(402,L("Rattachez ce brouillon à votre projet avant de le poursuivre.","Link this draft to your project before continuing."),"subscription_required");
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
-  const intent = cmd.action === "message" ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const intent = cmd.action === "message" && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -143,7 +152,20 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
     const { brief: b, revision, meta: m } = effective(c);
     if (revision !== cmd.projectRevision) throw new HttpError(409, L("La fiche a changé dans un autre écran. Relisez la version actuelle.", "The brief changed in another screen. Read the current version."), "conversation_brief_conflict");
     let changed = false, message = "", action: ActionCard | null = null;
-    if (cmd.action === "message") {
+    if (cmd.action === 'message' && intelligenceEnabled()) {
+      // Conservation exacte, sans classification locale ni appel facturant implicite.
+      let writable = true;
+      try { assertBriefWritable(c, user, revision); } catch (e) { if (!(e instanceof HttpError)) throw e; writable = false; }
+      if (writable) {
+        if (!b.input.description) { b.input.description = b.profile.summary = cmd.text; b.profile.summaryStatus = 'provided'; changed = true; }
+        else { b.clientStatements = [...(b.clientStatements ?? []), { id: cmd.requestId, text: cmd.text, source: 'user' }]; changed = true; }
+      }
+      const inlineUrls = [...cmd.text.matchAll(/https?:\/\/[^\s<>«»"']+/g)].map(x => x[0].replace(/[),.;!?]+$/, ''));
+      if (writable && (cmd.referenceUrls?.length || cmd.photoIds?.length || inlineUrls.length)) {
+        validateSources(user, c, { ...cmd, referenceUrls: [...new Set([...(cmd.referenceUrls ?? []), ...inlineUrls])] }, b); changed = true;
+      }
+      message = L('Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.', 'Exact message saved. An AI reply now requires a quote and your consent.');
+    } else if (cmd.action === "message") {
       const scope = requestScope(cmd.text), normalized = normalizeRequest(cmd.text);
       const unknown=/^(je ne sais pas(?: encore)?|je sais pas|aucune idee|i (?:do not|don't) know(?: yet)?|not sure)[.!? ]*$/.test(normalized);
       const sourceOnly=/^(?:(?:la|le|une?|the|a) )?(source|document|citation|exemple|capture)\b/.test(normalized);
@@ -200,7 +222,7 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
         b.input[field] = cmd.value;
         if (field === "description") {
           b.profile.summary = cmd.value; b.profile.summaryStatus = "provided";
-          if(proposedBusiness(cmd.value)&&proposedBusiness(cmd.value)!==m.business)m.editing="business";
+          if(!intelligenceEnabled()&&proposedBusiness(cmd.value)&&proposedBusiness(cmd.value)!==m.business)m.editing="business";
         }
         if (field === "offerName") { b.profile.name = cmd.value; b.profile.nameStatus = "provided"; }
         if (field === "target") { m.deferred = m.deferred.filter(k => k !== "target"); writeFact(b, "conversation.target", L("Clientèle indiquée", "Stated customers"), cmd.value); }
@@ -238,6 +260,11 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
         }
       }
     }
+    if (['answer-ai', 'accept-ai-changes', 'back-ai'].includes(cmd.action)) {
+      const result = applyCognitiveCommand(c, b, m, cmd);
+      changed = result.changed; message = result.message;
+    }
+    if (cmd.action === 'explain' && intelligenceEnabled() && m.intelligence?.lastReply?.question) message = m.intelligence.lastReply.question.why;
     if (changed) {
       saveBrief(c, b, user, revision);
       if (!c.project_id) m.draft = b;

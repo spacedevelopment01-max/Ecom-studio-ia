@@ -21,6 +21,9 @@ export const CommandSchema = z.discriminatedUnion("action", [
   base.extend({ action: z.literal("explain") }).strict(),
   base.extend({ action: z.literal("summary") }).strict(),
   base.extend({ action: z.literal("prepare-action"), tool: z.literal("understand-offer"), correction: z.string().max(1200).optional() }).strict(),
+  base.extend({ action: z.literal('answer-ai'), questionId: z.string().regex(/^[a-z0-9_-]{1,60}$/), choices: z.array(z.string().max(60)).max(5).default([]), text: z.string().trim().max(1200).default(''), unknown: z.boolean().default(false) }).strict(),
+  base.extend({ action: z.literal('accept-ai-changes'), proposalId: z.string().min(1).max(100) }).strict(),
+  base.extend({ action: z.literal('back-ai'), questionId: z.string().regex(/^[a-z0-9_-]{1,60}$/) }).strict(),
 ]);
 export type Command = z.infer<typeof CommandSchema>;
 /** Un seul Brief natif pour le brouillon ; après rattachement, il est retiré et relu via stateOf(projectId). */
@@ -28,10 +31,11 @@ export type ConversationState = {
   schemaVersion: 1;
   draft: Brief | null;
   business: BusinessType | null;
-  businessSource: "client" | "local" | "existing" | "unknown";
+  businessSource: "client" | "local" | "existing" | "unknown" | 'ai';
   deferred: QuestionKey[];
   answeredOrder: QuestionKey[];
   editing?: QuestionKey;
+  intelligence?: import('./intelligence-contract').CognitiveState;
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -60,7 +64,8 @@ export type ConversationView = {
   projectId: string | null;
   revision: number;
   projectRevision: number | null;
-  mode: "local" | "simulation";
+  mode: "local" | "simulation" | 'ai';
+  intelligence?: import('./intelligence-contract').IntelligenceView;
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;
   question: ChoiceCard | null;

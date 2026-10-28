@@ -80,6 +80,8 @@ export function openProjectConversation(user: User, projectId: string, draftId?:
     const p = loadProject(projectId), s = stateOf(projectId);
     if (draftId) {
       const c = ownedConversation(user, draftId), m = metaOf(c);
+      if (m.intelligence?.pendingJobId && one("SELECT 1 FROM jobs WHERE id=? AND user_id=? AND status IN ('queued','running','paused','blocked')", m.intelligence.pendingJobId, user.id))
+        throw new HttpError(409, L('Attendez la réponse IA avant de rattacher le brouillon ; rien n’a été déplacé.', 'Wait for the AI reply before linking the draft; nothing was moved.'), 'conversation_ai_pending');
       if (c.revision !== draftRevision) throw new HttpError(409, L("Le brouillon a changé. Relisez-le avant son rattachement.", "The draft changed. Read it again before linking."), "conversation_conflict");
       if (c.project_id || !m.draft || !m.business || !m.draft.input.description.trim()) throw new HttpError(409, L("Précisez l’activité du brouillon avant son rattachement.", "Clarify the draft activity before linking it."), "conversation_draft_incomplete");
       const nativeStart = !!s && s.revision===1 && Object.keys(s.stages).length===1 && s.stages.brief?.status==="draft" && s.stages.brief.data.provenance==="local" && !s.pending && sameCreationInput(s.stages.brief.data.input,m.draft.input) && sameServiceData(p.services,m.draft.services);

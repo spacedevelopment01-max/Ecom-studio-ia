@@ -29,6 +29,8 @@ export type Input = {
   services: ServiceProfile;
 };
 export type Brief = {
+  /** Paroles client non interprétées, conservées sans devenir automatiquement des faits commerciaux. */
+  clientStatements?: { id: string; text: string; source: 'user' }[];
   input: Input;
   profile: ProductProfile;
   services: ServiceProfile;

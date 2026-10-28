@@ -28,6 +28,7 @@ export const pinnedTasks = (): TaskId[] => getJsonSetting<TaskId[]>("ai.routing.
 
 /** Volume typique d'un appel par tâche (jetons d'entrée / de sortie, réflexion comprise) : estimations du studio. */
 export const TASK_PROFILE: Record<TaskId, { input: number; output: number }> = {
+  agent_conversation: { input: 8000, output: 1800 },
   vision_analysis: { input: 8000, output: 3000 },
   strategy: { input: 10000, output: 6000 },
   copywriting: { input: 9000, output: 3500 },

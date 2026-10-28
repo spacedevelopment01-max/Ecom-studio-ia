@@ -12,7 +12,7 @@ import type { User } from "./auth";
 import { redact } from "./redact";
 
 const excluded = new Set(["sessions","password_resets","admin_claims","oauth_states","pending_registrations","settings","error_log","worker_heartbeat","rate_events","asset_cache_entries","wallets","ledger","ai_reservations","ai_calls","usage_events","billing_mutations","stripe_event_claims","stripe_events","stripe_cancellations"]);
-const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|budgetMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
+const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|capMicro|estimateMicro|budgetMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
 const quote = (name: string) => { if (!/^\w+$/.test(name)) throw new Error("Invalid schema identifier"); return `"${name}"`; };
 const columns = (table: string) => all<{name:string}>(`PRAGMA table_info(${quote(table)})`).map(c=>c.name);
 function withoutCredentials(value:unknown,depth=0):unknown{
@@ -28,7 +28,7 @@ function withoutCredentials(value:unknown,depth=0):unknown{
 export function personalDataInventory() {
   return all<{name:string}>("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").map(({name})=>{
     const fields=columns(name);
-    const scope=name==="support_messages"?"support_ticket":name==="agent_conversation_turns"?"conversation":fields.includes("project_id")?"project":fields.includes("owner_user_id")?"subscription_owner":fields.includes("user_id")?"account":name==="users"?"identity":"manual_review";
+    const scope=name==="support_messages"?"support_ticket":["agent_conversation_turns","agent_conversation_quotes"].includes(name)?"conversation":fields.includes("project_id")?"project":fields.includes("owner_user_id")?"subscription_owner":fields.includes("user_id")?"account":name==="users"?"identity":"manual_review";
     return {table:name,fields,scope,exported:!excluded.has(name)&&scope!=="manual_review"};
   });
 }
@@ -36,7 +36,7 @@ export function personalDataInventory() {
 function whereOwned(table:string, fields:string[], userId:string):{sql:string;args:unknown[]} | null {
   if(table==="users")return{sql:"id=?",args:[userId]};
   if(table==="support_messages")return{sql:"ticket_id IN (SELECT id FROM support_tickets WHERE user_id=?)",args:[userId]};
-  if(table==="agent_conversation_turns")return{sql:"conversation_id IN (SELECT id FROM agent_conversations WHERE user_id=? AND (project_id IS NULL OR project_id IN (SELECT id FROM projects WHERE user_id=?)))",args:[userId,userId]};
+  if(["agent_conversation_turns","agent_conversation_quotes"].includes(table))return{sql:"conversation_id IN (SELECT id FROM agent_conversations WHERE user_id=? AND (project_id IS NULL OR project_id IN (SELECT id FROM projects WHERE user_id=?)))",args:[userId,userId]};
   if(fields.includes("owner_user_id"))return{sql:"owner_user_id=?",args:[userId]};
   const project = "project_id IN (SELECT id FROM projects WHERE user_id=?)";
   if(fields.includes("project_id")&&fields.includes("user_id"))return{sql:`user_id=? AND (project_id IS NULL OR ${project})`,args:[userId,userId]};

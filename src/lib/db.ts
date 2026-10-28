@@ -221,6 +221,17 @@ CREATE TABLE IF NOT EXISTS agent_conversation_turns (
   UNIQUE(conversation_id, revision),
   UNIQUE(conversation_id, request_id)
 );
+CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  project_revision INTEGER,
+  billing_key TEXT NOT NULL,
+  plan_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  job_id TEXT REFERENCES jobs(id)
+);
+CREATE INDEX IF NOT EXISTS agent_quotes_conversation ON agent_conversation_quotes(conversation_id, created_at);
 
 CREATE TABLE IF NOT EXISTS user_prompts (
   id TEXT PRIMARY KEY,
