@@ -195,4 +195,33 @@ describe('#211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette'
     v=await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId!});
     expect(v.summary.constraints).toBe('Aucun avis inventé.\nAucune personne générée.');expect(fake.calls).toBe(1);
   });
+  it('Pourquoi et synthèse conservent une proposition inchangée sans obliger à repayer une réponse',async()=>{
+    const {user,cid,send}=await initial(),note='Clientèle souhaitée : les décorateurs.';await send({action:'message',text:note});
+    const source=cognitiveContext(ownedConversation(user,cid)).sources.find(s=>s.text===note)!;
+    fake.reply=reply({proposedChanges:[{field:'target',value:'les décorateurs',sourceId:source.id,quote:note}]});await execute(user,cid);
+    const proposal=conversationView(user,cid).intelligence!.proposalId!;await send({action:'explain'});await send({action:'summary'});
+    const v=await send({action:'accept-ai-changes',proposalId:proposal});expect(v.summary.target).toBe('les décorateurs');expect(fake.calls).toBe(1);
+  });
+  it('une correction faite dans un autre écran rend la proposition périmée même si la conversation n’a pas changé',async()=>{
+    const user=await account(),pid=project(user),c=openProjectConversation(user,pid),send=sender(user,c.id),text='Je fabrique des capteurs pour les apiculteurs.';await send({action:'message',text});
+    fake.reply=reply({business:null,businessEvidence:null,question:null,status:'summary',proposedChanges:[{field:'target',value:'les apiculteurs',sourceId:'brief.description',quote:text}]});await execute(user,c.id);
+    const proposal=conversationView(user,c.id).intelligence!.proposalId!;const{commitState,stateOf}=await import('@/lib/preparation/store');commitState(pid,stateOf(pid)!.revision,s=>{s.stages.brief!.data.input.target='Clientèle corrigée ailleurs';});
+    expect(conversationView(user,c.id).intelligence?.state).toBe('stale');await expect(send({action:'accept-ai-changes',proposalId:proposal})).rejects.toMatchObject({code:'conversation_proposal_stale'});
+    expect(conversationView(user,c.id).summary.target).toBe('Clientèle corrigée ailleurs');expect(fake.calls).toBe(1);
+  });
+  it('remettre une réponse à inconnu retire le fait actif, conserve l’histoire et ne demande aucun appel',async()=>{
+    const{user,cid,send}=await initial();fake.reply=reply();await execute(user,cid);await send({action:'answer-ai',questionId:'premiere-clientele',choices:['parents']});await send({action:'back-ai',questionId:'premiere-clientele'});
+    await send({action:'answer-ai',questionId:'premiere-clientele',unknown:true});const v=conversationView(user,cid);
+    expect(v.summary.target).toBe('');expect(v.summary.facts.find(f=>f.key==='conversation.target')?.status).toBe('unknown');expect(v.summary.unknown).toContain('À qui souhaitez-vous vous adresser ?');
+    expect(v.history.some(t=>(t.request as {clientAnswer?:string}).clientAnswer==='Parents')).toBe(true);expect(fake.calls).toBe(1);
+  });
+  it('une contrainte supplémentaire inconnue ne retire pas un interdit déjà confirmé',async()=>{
+    const{user,cid,send}=await initial();await send({action:'edit',field:'constraints',value:'Aucun avis inventé.'});fake.reply=reply({question:{id:'autres-contraintes',field:'constraints',title:'Avez-vous d’autres contraintes ?',why:'Préserver vos consignes.',multiple:false,choices:[{id:'oui',label:'Oui'},{id:'other',label:'Autre'}]}});await execute(user,cid);
+    await send({action:'answer-ai',questionId:'autres-contraintes',unknown:true});expect(conversationView(user,cid).summary.constraints).toBe('Aucun avis inventé.');
+  });
+  it('rattacher le même brouillon conserve sa proposition utilisable sans nouvel appel',async()=>{
+    const{user,cid,send}=await initial(),text='Ma cible est les décorateurs.';await send({action:'message',text});const source=cognitiveContext(ownedConversation(user,cid)).sources.find(s=>s.text===text)!;
+    fake.reply=reply({proposedChanges:[{field:'target',value:'les décorateurs',sourceId:source.id,quote:text}]});await execute(user,cid);const v=conversationView(user,cid),pid=project(user);openProjectConversation(user,pid,cid,v.revision);
+    const saved=await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId!});expect(saved.summary.target).toBe('les décorateurs');expect(fake.calls).toBe(1);
+  });
 });

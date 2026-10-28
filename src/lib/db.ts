@@ -232,6 +232,26 @@ CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
   job_id TEXT REFERENCES jobs(id)
 );
 CREATE INDEX IF NOT EXISTS agent_quotes_conversation ON agent_conversation_quotes(conversation_id, created_at);
+CREATE TABLE IF NOT EXISTS agent_request_bounds (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_key TEXT NOT NULL,
+  cap_micro INTEGER NOT NULL,
+  max_calls INTEGER NOT NULL,
+  max_depth INTEGER NOT NULL,
+  max_retries INTEGER NOT NULL,
+  deadline_at INTEGER,
+  http_attempts INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  UNIQUE(conversation_id,request_key)
+);
+CREATE TABLE IF NOT EXISTS agent_request_jobs (
+  bound_id TEXT NOT NULL REFERENCES agent_request_bounds(id) ON DELETE CASCADE,
+  job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  depth INTEGER NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS user_prompts (
   id TEXT PRIMARY KEY,

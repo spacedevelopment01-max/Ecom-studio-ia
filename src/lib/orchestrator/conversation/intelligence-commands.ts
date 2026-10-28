@@ -4,6 +4,7 @@ import { L } from '../../i18n-server';
 import { writeFact } from './tools';
 import type { Brief } from '../../preparation/types';
 import type { Command, ConversationRow, ConversationState } from './contract';
+import {clearConversationAnswer} from './answer-state';
 
 export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: ConversationState, cmd: Command) {
   const a = m.intelligence;
@@ -14,7 +15,7 @@ export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: Conversat
     return { changed: false, message: L('Votre réponse reste conservée jusqu’à sa correction.', 'Your answer stays saved until you correct it.') };
   }
   if (cmd.action === 'accept-ai-changes') {
-    if (!a?.lastReply || a.proposalId !== cmd.proposalId || a.sourceRevision !== c.revision) throw new HttpError(409, L('La proposition est absente ou périmée. Demandez une nouvelle réponse.', 'The proposal is missing or stale. Request a new reply.'), 'conversation_proposal_stale');
+    if (!a?.lastReply || a.proposalId !== cmd.proposalId || a.sourceRevision !== c.revision || (a.sourceProjectRevision??null)!==cmd.projectRevision) throw new HttpError(409, L('La proposition est absente ou son contexte a changé. Relisez vos acquis avant de la reprendre.', 'The proposal is missing or its context changed. Review your work before resuming it.'), 'conversation_proposal_stale');
     if (a.lastReply.business && m.business !== a.lastReply.business) {
       m.business = b.input.business = a.lastReply.business; m.businessSource = 'client';
       const goals = b.profile.facts.find(f => f.key === 'conversation.goals');
@@ -46,7 +47,7 @@ export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: Conversat
   const value = cmd.unknown ? '' : [...q.choices.filter(x => cmd.choices.includes(x.id) && x.id !== 'other').map(x => x.label), cmd.text].filter(Boolean).join(' ; ');
   if (value.length > 1200) throw new HttpError(400, 'conversation_answer_limit');
   const key = `conversation.ai.${q.id}`;
-  if (cmd.unknown) b.profile.facts = [...b.profile.facts.filter(f => f.key !== key), { key, label: q.title, value: '', status: 'unknown', source: 'user', later: true }];
+  if (cmd.unknown) {b.profile.facts = [...b.profile.facts.filter(f => f.key !== key), { key, label: q.title, value: '', status: 'unknown', source: 'user', later: true }];clearConversationAnswer(b,m,q.field);}
   else writeFact(b, key, q.title, value);
   b.profile.questions = [...b.profile.questions.filter(x => x.id !== q.id), { id: q.id, question: q.title, why: q.why, required: false, factKey: key, ...(value ? { answer: value } : { later: true }) }];
   if (!cmd.unknown) {

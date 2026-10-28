@@ -14,6 +14,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
 import { balance, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
@@ -361,6 +362,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     msg = await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
         try {
+          beforeAgentTextAttempt(call.userId,call.jobId,attempt);
           const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
           return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
         } catch (e) {
@@ -373,7 +375,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Seuls les refus nets 4xx hors délai prouvent que l'appel n'a pas produit de résultat.
     const status = (e as { status?: unknown })?.status;
-    const uncertain = !(typeof status === "number" && providerRefused(status));
+    const uncertain = !(e instanceof AgentBoundStop || typeof status === "number" && providerRefused(status));
     if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
     else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
@@ -521,6 +523,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     for (let attempt = 0; ; attempt++) {
       attempts++;
       try {
+        beforeAgentTextAttempt(call.userId,call.jobId,attempt);
         res = await adapter.send(req, key);
         break;
       } catch (e) {
@@ -533,7 +536,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   } catch (e) {
     // Refus net (4xx hors délai) : rien n'a été produit ni facturé, la réservation est rendue. 5xx, délai, coupure :
     // résultat incertain, coût maximal retenu, et l'étape s'arrête (aucune relance par la file de tâches).
-    const uncertain = !(e instanceof ProviderHttpError && providerRefused(e.status));
+    const uncertain = !(e instanceof AgentBoundStop || e instanceof ProviderHttpError && providerRefused(e.status));
     if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
     else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });

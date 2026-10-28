@@ -1,6 +1,6 @@
 # Mission 211 — lot F, premier incrément : interface conversationnelle
 
-Recette navigateur en cours avant verdict. Branche `codex/211-lot-f-interface`, parent #212 `d5012ed62a1df08803455e1d9e9af9e3ba8dee9c`. Aucun merge, mise en service, fournisseur réel ou modification de la vitrine publique.
+Recette navigateur en cours avant verdict. Branche `codex/211-lot-f-interface`, dépendance #213 `f8b1405f037ac73bf5a328a16b71cee76db93e2d`, puis #212/#208/#210. Aucun merge, mise en service, fournisseur réel ou modification de la vitrine publique.
 
 ## Interface développée
 
@@ -29,3 +29,16 @@ Cet incrément fournit le dialogue B dans une vraie interface. Il ne prétend pa
 Un lien est conservé sans consultation automatique ; une photo avant création n’est pas raccordée. Le panneau l’explique et renvoie à l’ajout de fichiers du projet après création. La migration d’un ancien projet sans préparation compatible peut être refusée : ses données restent conservées et son parcours manuel accessible.
 
 La qualification réelle de compréhension/qualité du modèle n’a pas été autorisée. Une simulation ne suffit pas pour promettre une création professionnelle. La recette visuelle de l’éditeur prouve des interactions et dimensions ; elle ne prouve pas la qualité de nouveaux thèmes ni une installation CMS. Le studio client ne sert pas cette branche.
+
+
+## Complément F1 du propriétaire (commentaire 6466986811)
+
+Cette passe se concentre sur la preuve du dialogue dans la vraie interface, puis l’agent ouvert/replié dans Site, sans étendre les moteurs D/E ni activer le Studio réel. Les captures préliminaires ne constituaient pas la livraison demandée.
+
+La première recette Chromium en français a reproduit un défaut : le conseil du tutoriel recouvrait le bouton de l’agent. La carte est déplacée, sans retirer le tutoriel. À partir de 1280 px, l’agent dispose d’une colonne réservée de 400 px : l’aperçu est à côté et s’élargit au repli. En dessous, le panneau est modal avec fermeture Échap et boucle de focus ; les onglets et l’aperçu redeviennent disponibles au repli. Le serveur ne change pas le choix commercial du client.
+
+Une question répondue n’est plus présentée comme nouvelle. Sa réponse active reste consultable, une correction manuelle prime et « Revoir/corriger » rouvre la carte. Les corrections communes de mémoire du lot C sont nécessaires : inconnu remplace l’ancienne cible active, Pourquoi/synthèse ne périment pas un acquis inchangé, une proposition ne peut écraser une fiche modifiée dans un autre onglet, le rattachement exact d’un brouillon préserve sa provenance. Ces sources sont intégrées uniquement pour recette dans la branche F ; aucun parent/main n’est fusionné ou activé.
+
+Le harnais enrichi prévoit deux dialogues natifs produit/service, avec 2 choix, choix multiples et réponse libre, correction/réouverture, reprise dans plusieurs onglets, devis puis accord, et un troisième scénario de réponse HTTP perdue après création. Les messages du faux fournisseur portent explicitement « Fournisseur simulé — recette isolée ». Les conversations exactes seront conservées avec les captures et la version du build. La preuve navigateur finale reste à exécuter à cette rédaction : aucune réussite n’est anticipée.
+
+Le site affiché pendant cette recette est un **site technique fictif**, construit/enregistré par le moteur et les versions natifs, avec textes écrits pour les deux cas et diagramme local déclaré comme illustration technique. Ce n’est ni une création IA ni une recomposition de démonstration validée. Il permet de vérifier l’aperçu, les panneaux, le changement ordinateur/téléphone, une modification manuelle de section et la restauration conservant les trois versions. La composition professionnelle E et la qualité cognitive réelle sont hors de cette preuve F1.

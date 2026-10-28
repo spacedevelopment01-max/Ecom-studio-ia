@@ -89,7 +89,8 @@ export function openProjectConversation(user: User, projectId: string, draftId?:
         throw new HttpError(409, L("Ce projet contient déjà des données. Son contenu reste conservé ; le brouillon ne le remplace pas.", "This project already contains data. Its content is preserved; the draft does not replace it."), "conversation_project_not_empty");
       if(!s)initialize(projectId, m.draft.input);
       // Import du même Brief natif, y compris réponses et inconnues ; aucune approbation ou analyse supplémentaire.
-      commitState(projectId, stateOf(projectId)!.revision, state => draft(state,"brief",structuredClone(m.draft!)));
+      const imported=commitState(projectId, stateOf(projectId)!.revision, state => draft(state,"brief",structuredClone(m.draft!)));
+      if(m.intelligence?.sourceRevision===c.revision&&(m.intelligence.sourceProjectRevision??null)===null)m.intelligence.sourceProjectRevision=imported.revision;
       m.draft = null;
       run("UPDATE agent_conversations SET project_id=?,state_json=?,updated_at=? WHERE id=?", projectId, JSON.stringify(m), now(), c.id);
       return ownedConversation(user, c.id);

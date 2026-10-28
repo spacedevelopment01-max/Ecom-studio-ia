@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { GraduationCap, PlayCircle, X } from "lucide-react";
 import { cx, Modal } from "../ui";
+import { useAgentUi } from "./agent-ui-context";
 import { useLang, useT } from "../i18n";
 import { TUTORIALS, TUTORIAL_IDS, tutorialBusiness, tutorialFile, tutorialFor, type TutorialId, type TutorialTiming } from "@/lib/tutorials";
 
@@ -57,10 +58,11 @@ export function TutorialsMenuLink({ tab, business, folded }: { tab: string; busi
 
 function TutorialNudge({ id, onWatch, onClose }: { id: TutorialId; onWatch: () => void; onClose: () => void }) {
   const t = useT();
+  const agentEnabled = useAgentUi();
   const { lang } = useLang();
   return (
     // Téléphone : carte compacte en haut de l'écran, pour ne jamais recouvrir la zone de saisie (en bas).
-    <div data-tuto-nudge className="fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:bottom-5 lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4">
+    <div data-tuto-nudge className={cx("fixed right-3 top-[calc(4.25rem+env(safe-area-inset-top))] z-[60] flex w-[min(360px,calc(100vw-1.5rem))] items-center gap-3 rounded-2xl border border-line bg-card p-2.5 shadow-soft lg:right-5 lg:top-auto lg:w-[min(360px,calc(100vw-2.5rem))] lg:items-start lg:p-4", agentEnabled ? "lg:bottom-24" : "lg:bottom-5")}>
       <span className="hidden size-9 shrink-0 place-items-center rounded-xl bg-signal-soft text-signal lg:grid"><GraduationCap className="size-5" aria-hidden /></span>
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:block">
         <p className="min-w-0 flex-1 text-sm font-semibold">{t("Première visite ?", "First time here?")}<span className="font-normal text-muted lg:hidden"> {t("Le tutoriel en vidéo.", "The video tutorial.")}</span></p>

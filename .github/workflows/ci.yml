@@ -61,6 +61,17 @@ jobs:
       - name: Interface conversationnelle sur le build compilé (fournisseur HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-F-proof --ui
 
+      - name: Conserver les preuves navigateur fictives, y compris en cas d’échec
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-F-${{ github.sha }}
+          path: /tmp/agent211-F-proof
+          if-no-files-found: ignore
+
+      - name: Rôles bornés lot C sur le build compilé (fournisseur HTTP simulé)
+        run: STUDIO_CONVERSATION_SPECIALISTS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-C-proof --specialists
+
       # Le build compilé peut différer du code source (empaquetage Next) : export Shopify par la vraie route du serveur
       # compilé, Theme Check réellement exécuté et 0 erreur exigée (#202). Base et démonstration fictives, aucune IA.
       - name: Export Shopify contrôlé sur le build compilé
