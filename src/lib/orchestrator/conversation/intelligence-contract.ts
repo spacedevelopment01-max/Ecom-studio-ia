@@ -1,6 +1,7 @@
 /** Lot B : propositions cognitives strictes, jamais des permissions ou des commandes exécutables. */
 import { z } from 'zod';
 import {AgentRoleSchema,type AgentRole} from './specialists';
+import {CompositionPlanSchema} from '../../theme/composition/contract';
 import {ThemeToolPlanSchema} from './theme-tool-contract';
 
 const text = (max: number) => z.string().trim().min(1).max(max);
@@ -26,10 +27,11 @@ export const CognitiveReplySchema = z.object({
     value: text(1200), sourceId: text(120), quote: text(8000),
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
-  proposedTools: z.array(z.enum(['understand-offer', 'brief.update', 'studio.help','theme.edit'])).max(3),
+  proposedTools: z.array(z.enum(['understand-offer', 'brief.update', 'studio.help','theme.edit','theme.compose'])).max(3),
   themePlan:ThemeToolPlanSchema.optional(),
+  compositionPlan:CompositionPlanSchema.optional(),
   actionsExecuted: z.literal(false),
-}).strict();
+}).strict().superRefine((r,ctx)=>{if(r.themePlan&&r.compositionPlan)ctx.addIssue({code:'custom',message:'Une seule opération de thème par proposition.'});});
 export type CognitiveReply = z.infer<typeof CognitiveReplySchema>;
 export type CognitiveQuestion = z.infer<typeof CognitiveQuestionSchema>;
 export type CognitiveState = {

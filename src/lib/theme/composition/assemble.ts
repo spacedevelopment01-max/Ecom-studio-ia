@@ -12,7 +12,7 @@ const LAYOUT=new Set(['range','select','radio','checkbox','color_scheme']);
 const FUNCTIONAL=/(?:product|purchase|cart|contact|booking|appointment|rendez|reservation|newsletter|account|checkout|form|settings)/i;
 const CONTENT_KEYS=new Set(['url','image_picker','video','product','collection','page','html','liquid']);
 function fail(message:string):never{throw new Error(`composition: ${message}`);}
-function componentAllowed(type:string){return !FUNCTIONAL.test(type)&&!ownerThemeOf(type)&&!type.startsWith('es-custom-')&&ALL_ENTRIES.some(e=>e.dispositions.some(d=>d.type===type));}
+export function componentAllowed(type:string){return !FUNCTIONAL.test(type)&&!ownerThemeOf(type)&&!type.startsWith('es-custom-')&&ALL_ENTRIES.some(e=>e.dispositions.some(d=>d.type===type));}
 export type CompositionDependencies={
  versionId:string;storeKind?:import('../store-kind').StoreKind|null;
  /** Exact scope of each target template, resolved from native page/product assignments. */
