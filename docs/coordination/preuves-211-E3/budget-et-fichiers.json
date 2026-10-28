@@ -1,0 +1,182 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedTotals": {
+    "providerHttpCalls": 7,
+    "calls": 7,
+    "usage": 7,
+    "simulatedMicro": 55384
+  },
+  "nativeFreeJobs": [
+    {
+      "id": "srydo1t2i7revvaq",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "type": "agent.theme.capture",
+      "status": "done",
+      "result": "{\"assetIds\":[\"e5b5wo802wti8jqb\",\"5jdf4fj6z2atus9f\"],\"sourceDigest\":\"a21d93a21614b6ef\",\"reused\":false}"
+    },
+    {
+      "id": "s6dmvfrqir5jlytt",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "type": "agent.theme.change",
+      "status": "done",
+      "result": "{\"versionId\":\"zt6qz0l0671xc6p0\",\"number\":3,\"fingerprint\":\"3ad497af19ca3aaa\",\"reused\":false}"
+    },
+    {
+      "id": "j5is3ymg7wltzyqm",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "type": "agent.theme.capture",
+      "status": "done",
+      "result": "{\"assetIds\":[\"no4ublu8qytj91fx\",\"cvaj9qlpl968l1zd\"],\"sourceDigest\":\"b107903b41ec9687\",\"reused\":false}"
+    },
+    {
+      "id": "j7430udu7ba4oj0t",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "type": "agent.theme.export",
+      "status": "done",
+      "result": "{\"assetId\":\"ye8ham3ls3nf9mdj\",\"zipSha256\":\"700bcfafc83b0412ce2ab4c4071c7d9ba3ab4cb95db990629c091d9a5503b6bd\",\"sourceDigest\":\"b107903b41ec9687\",\"reused\":false}"
+    },
+    {
+      "id": "cjjpqqo5shtbg8id",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "type": "agent.theme.capture",
+      "status": "done",
+      "result": "{\"assetIds\":[\"pdzyg02vanf01t38\",\"hhi9oq7a1fkhizvh\"],\"sourceDigest\":\"0d695027cbb78aae\",\"reused\":false}"
+    },
+    {
+      "id": "46de5dfbxooij55z",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "type": "agent.theme.change",
+      "status": "done",
+      "result": "{\"versionId\":\"9bqq0wo2y88lmsln\",\"number\":3,\"fingerprint\":\"50b2ce5338ed4abb\",\"reused\":false}"
+    },
+    {
+      "id": "yb9uw7bl6nm76r9q",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "type": "agent.theme.capture",
+      "status": "done",
+      "result": "{\"assetIds\":[\"75nlxhfzzz0v1c24\",\"z60uwtyb9xyakzi1\"],\"sourceDigest\":\"15e11e586bbe56e7\",\"reused\":false}"
+    },
+    {
+      "id": "c5kmm5i3819opeg3",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "type": "agent.theme.export",
+      "status": "done",
+      "result": "{\"assetId\":\"lzeik3vg1ctg1mzq\",\"zipSha256\":\"6f0897b5e71fdcfc7fedacca6f261069c1f668730944d32ecf9b39f3fd2b2ec9\",\"sourceDigest\":\"15e11e586bbe56e7\",\"reused\":false}"
+    }
+  ],
+  "reservations": [],
+  "nativeAiCalls": [],
+  "assets": [
+    {
+      "id": "e5b5wo802wti8jqb",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "name": "capture-site-v2-1-1440.jpg",
+      "mime": "image/jpeg",
+      "size": 485711,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"d9zk363eik9fo5m9\",\"jobId\":\"srydo1t2i7revvaq\",\"sourceDigest\":\"a21d93a21614b6ef\",\"output\":{\"id\":\"\",\"sha256\":\"12fba9ce649aa66122a17c57ad50b82ef2c579ba6f47f7c77308211765fe3f9f\",\"metrics\":{\"path\":\"/\",\"width\":1440,\"height\":960,\"pageHeight\":7834,\"scrollWidth\":1440,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":568.796875,\"height\":710.984375,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":561.59375,\"height\":701.984375,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "5jdf4fj6z2atus9f",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "name": "capture-site-v2-2-390.jpg",
+      "mime": "image/jpeg",
+      "size": 242855,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"d9zk363eik9fo5m9\",\"jobId\":\"srydo1t2i7revvaq\",\"sourceDigest\":\"a21d93a21614b6ef\",\"output\":{\"id\":\"\",\"sha256\":\"e46677b1e3d0f7beb5333db60ac79438cc39cf61cd58226fe1029ccb765929d4\",\"metrics\":{\"path\":\"/\",\"width\":390,\"height\":844,\"pageHeight\":6486,\"scrollWidth\":390,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "no4ublu8qytj91fx",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "name": "capture-site-v3-1-1440.jpg",
+      "mime": "image/jpeg",
+      "size": 475483,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"lxclirktpu8qkqu0\",\"jobId\":\"j5is3ymg7wltzyqm\",\"sourceDigest\":\"b107903b41ec9687\",\"output\":{\"id\":\"\",\"sha256\":\"802a635e859971159cb871013a21772d683865c4b533fe55b4d7254bd12e3054\",\"metrics\":{\"path\":\"/\",\"width\":1440,\"height\":960,\"pageHeight\":7502,\"scrollWidth\":1440,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":568.796875,\"height\":379.1875,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":561.59375,\"height\":701.984375,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "cvaj9qlpl968l1zd",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "name": "capture-site-v3-2-390.jpg",
+      "mime": "image/jpeg",
+      "size": 236417,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"lxclirktpu8qkqu0\",\"jobId\":\"j5is3ymg7wltzyqm\",\"sourceDigest\":\"b107903b41ec9687\",\"output\":{\"id\":\"\",\"sha256\":\"55bcf7e5a5df54e2fa2f49a324f9fe7766db427edca21f65d599d42b0e66d0aa\",\"metrics\":{\"path\":\"/\",\"width\":390,\"height\":844,\"pageHeight\":6279,\"scrollWidth\":390,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":236,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "ye8ham3ls3nf9mdj",
+      "project_id": "zksj7ebjfwhhtbnw",
+      "name": "filtre-ceramique-recette-shopify-v3.zip",
+      "mime": "application/zip",
+      "size": 1672466,
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"j7430udu7ba4oj0t\",\"zipSha256\":\"700bcfafc83b0412ce2ab4c4071c7d9ba3ab4cb95db990629c091d9a5503b6bd\",\"sourceDigest\":\"b107903b41ec9687\"},\"platform\":\"shopify\",\"delivery\":\"theme\",\"themeVersion\":3,\"versionId\":\"zt6qz0l0671xc6p0\",\"fingerprint\":\"2ab84dae0ce725d3\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.3,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"wau87xovbdw8rq32\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":497,\"zipKb\":1633,\"cssKb\":2179,\"jsKb\":534,\"mediaKb\":59,\"themeCheckErrors\":0,\"themeCheckWarnings\":35},\"message\":\"Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "pdzyg02vanf01t38",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "name": "capture-site-v2-1-1440.jpg",
+      "mime": "image/jpeg",
+      "size": 610402,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"bv9rsofd9bsxpv6n\",\"jobId\":\"cjjpqqo5shtbg8id\",\"sourceDigest\":\"0d695027cbb78aae\",\"output\":{\"id\":\"\",\"sha256\":\"b3e387a4e5886db174171de6d13fc0a3d169c572c0c513f44d3fa9085f574442\",\"metrics\":{\"path\":\"/\",\"width\":1440,\"height\":960,\"pageHeight\":8515,\"scrollWidth\":1440,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":0,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":590.0625,\"height\":737.578125,\"objectFit\":\"cover\"},{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":568.796875,\"height\":710.984375,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "hhi9oq7a1fkhizvh",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "name": "capture-site-v2-2-390.jpg",
+      "mime": "image/jpeg",
+      "size": 342280,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"bv9rsofd9bsxpv6n\",\"jobId\":\"cjjpqqo5shtbg8id\",\"sourceDigest\":\"0d695027cbb78aae\",\"output\":{\"id\":\"\",\"sha256\":\"7d5d5f1db222fcc22711a1bfe750cc196b793a423525a1416b9030c358cf3e50\",\"metrics\":{\"path\":\"/\",\"width\":390,\"height\":844,\"pageHeight\":7991,\"scrollWidth\":390,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":0,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"},{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":390,\"height\":670.09375,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "75nlxhfzzz0v1c24",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "name": "capture-site-v3-1-1440.jpg",
+      "mime": "image/jpeg",
+      "size": 603043,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": 1793205131461,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"immmfllew1kqmhht\",\"jobId\":\"yb9uw7bl6nm76r9q\",\"sourceDigest\":\"15e11e586bbe56e7\",\"output\":{\"id\":\"\",\"sha256\":\"89a5c4a7d7c103722a7a47fb30c6af96ba67f87e04e27212b55ecc68cc837f8c\",\"metrics\":{\"path\":\"/\",\"width\":1440,\"height\":960,\"pageHeight\":8183,\"scrollWidth\":1440,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":0,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":590.0625,\"height\":737.578125,\"objectFit\":\"cover\"},{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":568.796875,\"height\":379.1875,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "z60uwtyb9xyakzi1",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "name": "capture-site-v3-2-390.jpg",
+      "mime": "image/jpeg",
+      "size": 336617,
+      "role": "theme-render-capture",
+      "origin": "site",
+      "deleted_at": null,
+      "meta": "{\"renderProof\":{\"schema\":1,\"quoteId\":\"immmfllew1kqmhht\",\"jobId\":\"yb9uw7bl6nm76r9q\",\"sourceDigest\":\"15e11e586bbe56e7\",\"output\":{\"id\":\"\",\"sha256\":\"91dfb145269f2056e62d4ed5aeaed401878011871d098f8760638e12f3b6da1c\",\"metrics\":{\"path\":\"/\",\"width\":390,\"height\":844,\"pageHeight\":7785,\"scrollWidth\":390,\"imageCount\":3,\"brokenImageIndexes\":[],\"potentialCrops\":[{\"index\":0,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":442.5,\"objectFit\":\"cover\"},{\"index\":1,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":354,\"height\":236,\"objectFit\":\"cover\"},{\"index\":2,\"naturalWidth\":1400,\"naturalHeight\":1000,\"width\":390,\"height\":670.09375,\"objectFit\":\"cover\"}],\"horizontalOverflow\":false,\"pageErrors\":[]}}},\"creativeReview\":\"not_reviewed\",\"cmsInstallation\":\"not_tested\"}"
+    },
+    {
+      "id": "lzeik3vg1ctg1mzq",
+      "project_id": "p2m7d2pa8x52rkiw",
+      "name": "entretien-de-pianos-recette-shopify-v3.zip",
+      "mime": "application/zip",
+      "size": 1677503,
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"c5kmm5i3819opeg3\",\"zipSha256\":\"6f0897b5e71fdcfc7fedacca6f261069c1f668730944d32ecf9b39f3fd2b2ec9\",\"sourceDigest\":\"15e11e586bbe56e7\"},\"platform\":\"shopify\",\"delivery\":\"theme\",\"themeVersion\":3,\"versionId\":\"9bqq0wo2y88lmsln\",\"fingerprint\":\"364d9387b2a4d5fa\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.3,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"12px1ylo9s76ezgd\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"forms\"],\"issues\":[],\"stats\":{\"files\":498,\"zipKb\":1638,\"cssKb\":2179,\"jsKb\":534,\"mediaKb\":59,\"themeCheckErrors\":0,\"themeCheckWarnings\":35},\"message\":\"Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    }
+  ]
+}
