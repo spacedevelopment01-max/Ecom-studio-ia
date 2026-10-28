@@ -15,6 +15,7 @@ import {ConversationResearchTools} from './conversation-research-tools';
 import {ConversationRenderTools} from './conversation-render-tools';
 import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
+import {ConversationStrategyChoices} from './conversation-strategy-choices';
 import {ConversationStudioHelp} from './conversation-studio-help';
 
 type Quote={id:string;estimatePct:number;maximumPct:number;expiresAt:number;confirmationRequired:true};
@@ -99,6 +100,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {error&&<div role="alert" className="rounded-xl border border-bad/40 p-4 text-sm"><p className="break-words">{error}</p><Button variant="ghost" size="sm" disabled={busy} onClick={()=>void reload()}>{t('Actualiser sans relancer SYNA','Refresh without retrying SYNA')}</Button></div>}
       {q&&!running&&(questionState?.show?<Question key={q.id} q={q} busy={busy} onAnswer={(choices,answer,unknown)=>perform(async()=>{await send({action:'answer-ai',questionId:q.id,choices,text:answer,unknown});})} onWhy={()=>void perform(async()=>{await send({action:'explain'});})} onBack={()=>void perform(async()=>{await send({action:'back-ai',questionId:q.id});})}/>:<div className="rounded-2xl border border-line bg-card p-4 text-sm"><p className="font-semibold">{q.title}</p><p className="mt-2 whitespace-pre-wrap break-words">{questionState?.unknown?t('Je ne sais pas encore.','I don’t know yet.'):questionState?.answer}</p><button type="button" disabled={busy} className="mt-2 min-h-9 underline underline-offset-4" onClick={()=>void perform(async()=>{await send({action:'back-ai',questionId:q.id});})}>{t('Revoir / corriger','Review / correct')}</button></div>)}
       {v?.intelligence?.proposalId&&v.intelligence.state!=='stale'&&v.intelligence.sourceRevision===v.revision&&<div className="rounded-2xl border border-line p-4 text-sm"><p className="font-semibold">{t('Propositions à vérifier','Proposals to review')}</p><ul className="mt-2 space-y-2">{v.intelligence.reply?.proposedChanges.map((p,i)=><li key={i}><span className="font-medium">{p.field} :</span> {p.value}<blockquote className="mt-1 border-l-2 border-line pl-3 text-xs text-muted">{p.quote}</blockquote></li>)}</ul><Button className="mt-3" disabled={busy||!!v.readOnlyReason} onClick={()=>void perform(async()=>{await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId});})}>{t('Accepter ces modifications','Accept these changes')}</Button></div>}
+      {v?.strategyChoices&&<ConversationStrategyChoices view={v} busy={busy||!!running} send={async p=>{await perform(async()=>{await send(p);});}}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}

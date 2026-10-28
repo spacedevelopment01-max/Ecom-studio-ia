@@ -6,6 +6,7 @@ import {RenderToolPlanSchema} from './render-tool-contract';
 import {ExportToolPlanSchema} from './export-tool-contract';
 import {ThemeToolPlanSchema} from './theme-tool-contract';
 
+import {StrategyChoiceProposalSchema} from './strategy-choice-contract';
 const text = (max: number) => z.string().trim().min(1).max(max);
 export const CognitiveQuestionSchema = z.object({
   id: text(60).regex(/^[a-z0-9_-]+$/),
@@ -30,6 +31,7 @@ export const CognitiveReplySchema = z.object({
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
   proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render'])).max(3),
+  strategyChoice:StrategyChoiceProposalSchema.optional(),
   themePlan:ThemeToolPlanSchema.optional(),
   compositionPlan:CompositionPlanSchema.optional(),
   exportPlan:ExportToolPlanSchema.optional(),
