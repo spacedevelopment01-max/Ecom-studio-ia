@@ -1,6 +1,6 @@
 /** Fournisseur SDK SIMULÉ ; routeur, devis, réservations, traces, usage et reprise NATIFS. Aucun réseau. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-const fake = vi.hoisted(() => ({ text: '{}', calls: 0, error: false }));
+const fake = vi.hoisted(() => ({ text: '{}', calls: 0, error: false,status:500 }));
 vi.mock('@anthropic-ai/sdk', () => {
   class APIError extends Error { status?: number; }
   class Anthropic {
@@ -10,7 +10,7 @@ vi.mock('@anthropic-ai/sdk', () => {
     constructor(_opts: unknown) {}
     private stream(p: { model: string }) {
       fake.calls++;
-      if (fake.error) { const e = new APIError('Fournisseur SIMULÉ indisponible'); e.status = 500; throw e; }
+      if (fake.error) { const e = new APIError('Fournisseur SIMULÉ indisponible'); e.status = fake.status; throw e; }
       return { finalMessage: async () => ({ model: p.model, stop_reason: 'end_turn', content: [{ type: 'text', text: fake.text }], usage: { input_tokens: 800, output_tokens: 300 } }) };
     }
     messages = { countTokens: async (p: unknown) => ({ input_tokens: Math.ceil(JSON.stringify(p).length / 3) }), stream: (p: {model:string}) => this.stream(p) };
@@ -19,8 +19,8 @@ vi.mock('@anthropic-ai/sdk', () => {
   return { default: Anthropic, Anthropic };
 });
 vi.mock('@/lib/ai/config', async orig => ({ ...(await orig() as object), activeProviderKey: () => 'FOURNISSEUR FICTIF SANS SECRET' }));
-import { account, sender } from './conversation209-fixtures';
-import { openDraft, conversationView } from '@/lib/orchestrator/conversation';
+import { account, project, sender } from './conversation209-fixtures';
+import { openDraft,openProjectConversation, conversationView } from '@/lib/orchestrator/conversation';
 import { createCognitiveQuote, confirmCognitiveQuote, runCognitiveJob } from '@/lib/orchestrator/conversation/intelligence';
 import { claimNext, JobContext, type Job } from '@/lib/jobs';
 import { all, id, one, run } from '@/lib/db';
@@ -28,7 +28,7 @@ import { balance } from '@/lib/billing';
 import { setJsonSetting } from '@/lib/settings';
 import { routeFor } from '@/lib/ai/config';
 
-beforeEach(() => { vi.stubEnv('STUDIO_CONVERSATION_LOT_A','1'); vi.stubEnv('STUDIO_CONVERSATION_AI','1'); fake.calls=0; fake.error=false; vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Aucun réseau #211');})); });
+beforeEach(() => { vi.stubEnv('STUDIO_CONVERSATION_LOT_A','1'); vi.stubEnv('STUDIO_CONVERSATION_AI','1'); fake.calls=0; fake.error=false;fake.status=500; vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Aucun réseau #211');})); });
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 async function setup() {
   const user=await account(), c=openDraft(user), send=sender(user,c.id);
@@ -88,5 +88,58 @@ describe('#211 B — budget natif sous SDK simulé',()=>{
     setJsonSetting('ai.routes',{agent_conversation:{...route,effort:route.effort==='high'?'low':'high'}});
     expect(()=>confirmCognitiveQuote(user,cid,q.id,id())).toThrow('changé'); expect(fake.calls).toBe(0);
     setJsonSetting('ai.routes',{});
+  });
+});
+describe('#211 C — rôles à la demande et budget natif partagé (SDK simulé)',()=>{
+  async function oneReply(user:Awaited<ReturnType<typeof account>>,cid:string,role:'principal'|'quality'|'site'|'identity'='principal'){
+    const v=conversationView(user,cid),q=createCognitiveQuote(user,cid,{revision:v.revision,projectRevision:v.projectRevision,role});
+    confirmCognitiveQuote(user,cid,q.id,id());const job=claimNext(['agent.reason'])!;
+    const result=await runCognitiveJob(new JobContext(job));run("UPDATE jobs SET status='done',result=? WHERE id=?",JSON.stringify(result),job.id);return{q,job,result};
+  }
+  it('compare une réponse principale à un avis spécialisé explicite, sans équipe automatique ni portefeuille séparé',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid}=await setup();
+    const before=balance(user.id).used;await oneReply(user,cid);const single=balance(user.id).used-before;expect(fake.calls).toBe(1);
+    await oneReply(user,cid,'quality');const pair=balance(user.id).used-before;
+    expect(fake.calls).toBe(2);expect(pair).toBe(single*2);expect(conversationView(user,cid).intelligence?.lastRole).toBe('quality');
+    expect(all('SELECT * FROM agent_request_bounds WHERE conversation_id=?',cid)).toHaveLength(1);
+    expect(one<{n:number}>('SELECT COUNT(DISTINCT user_id) n FROM ai_reservations WHERE job_id IN (SELECT job_id FROM agent_request_jobs WHERE bound_id IN (SELECT id FROM agent_request_bounds WHERE conversation_id=?))',cid)!.n).toBe(1);
+    // Montants SIMULÉS : aucune conclusion de gain créatif ou d'efficacité réelle.
+  });
+  it('arrête la cinquième tâche de la même demande, même si chaque appel a son propre accord',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid}=await setup();
+    for(const role of ['principal','quality','site','identity']as const)await oneReply(user,cid,role);
+    await expect(oneReply(user,cid)).rejects.toThrow('limite');expect(fake.calls).toBe(4);
+    expect(conversationView(user,cid).intelligence?.requestBounds?.remainingCalls).toBe(0);
+  });
+  it('la date limite persistante bloque avant envoi ; aucun débit fictif ni repli local',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid,q}=await setup();
+    confirmCognitiveQuote(user,cid,q.id,id());const job=claimNext(['agent.reason'])!,before=balance(user.id).used;
+    run('UPDATE agent_request_bounds SET deadline_at=1 WHERE conversation_id=?',cid);
+    await expect(runCognitiveJob(new JobContext(job))).rejects.toThrow('limite');expect(fake.calls).toBe(0);expect(balance(user.id).used).toBe(before);
+  });
+  it('une saturation ne déclenche aucun deuxième essai HTTP sous cette autorisation',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid,q}=await setup();fake.error=true;fake.status=429;
+    confirmCognitiveQuote(user,cid,q.id,id());const job=claimNext(['agent.reason'])!;
+    await expect(runCognitiveJob(new JobContext(job))).rejects.toThrow('limite');expect(fake.calls).toBe(1);
+    expect(one<{status:string}>('SELECT status FROM ai_reservations WHERE job_id=?',job.id)?.status).toBe('released');
+  });
+  it('refuse le rôle spécialisé quand le drapeau est fermé, sans appel',async()=>{
+    const {user,cid}=await setup(),v=conversationView(user,cid);
+    expect(()=>createCognitiveQuote(user,cid,{revision:v.revision,projectRevision:v.projectRevision,role:'quality'})).toThrow('conversation_specialists_disabled');expect(fake.calls).toBe(0);
+  });
+  it('conserve la vraie étape dans le Planner et la portée Brain du projet, avec un seul reçu',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const user=await account(),pid=project(user,'services'),c=openProjectConversation(user,pid);
+    await sender(user,c.id)({action:'message',text:'Je répare les instruments apportés par les clients.'});
+    fake.text=JSON.stringify({message:'Les tarifs restent à confirmer ; aucune réalisation n’est déduite des exemples.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:[],actionsExecuted:false});
+    const {job}=await oneReply(user,c.id,'quality');const plan=one<{id:string;status:string;steps_json:string}>('SELECT id,status,steps_json FROM task_plans WHERE project_id=?',pid)!;
+    expect(plan.status).toBe('done');expect(JSON.parse(plan.steps_json)).toHaveLength(1);
+    expect(JSON.parse(plan.steps_json)[0]).toMatchObject({kind:'quality_review',task:'agent_conversation',status:'done',attempts:1});
+    expect(one('SELECT plan_id,brain_scope FROM ai_calls WHERE job_id=?',job.id)).toMatchObject({plan_id:plan.id,brain_scope:'qc'});expect(fake.calls).toBe(1);
+  });
+  it('une critique ne peut repartir après un résultat incertain de la même demande',async()=>{
+    vi.stubEnv('STUDIO_CONVERSATION_SPECIALISTS','1');const {user,cid,q}=await setup();fake.error=true;
+    confirmCognitiveQuote(user,cid,q.id,id());const job=claimNext(['agent.reason'])!;
+    await expect(runCognitiveJob(new JobContext(job))).rejects.toThrow('incertain');run("UPDATE jobs SET status='failed' WHERE id=?",job.id);
+    const v=conversationView(user,cid);expect(()=>createCognitiveQuote(user,cid,{revision:v.revision,projectRevision:v.projectRevision,role:'quality'})).toThrow('limite');expect(fake.calls).toBe(1);
   });
 });

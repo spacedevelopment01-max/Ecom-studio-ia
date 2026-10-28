@@ -31,6 +31,7 @@ import { L, userLang } from "./i18n-server";
 import { PLANS, type Billing, type PlanId } from "./plans";
 import { accountKeyFor, isNoPlanKey } from "./project-billing";
 import { assertUnderCostCap, currentTrace } from "./ai/trace";
+import { assertAgentReservation } from "./ai/request-bounds";
 import { currentRunScope } from "./billing-scope";
 import { createHash } from "node:crypto";
 
@@ -439,6 +440,7 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
     if (existingOperation(user, meta)) operationPending();
     // Même verrou que le portefeuille : deux appels parallèles ne peuvent pas engager le même plafond de tâche.
     assertUnderCostCap(amount);
+    assertAgentReservation(user,amount,meta.jobId);
     const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
     const fm = freeMonthly(w);
     const ft = freeTopup(w);
