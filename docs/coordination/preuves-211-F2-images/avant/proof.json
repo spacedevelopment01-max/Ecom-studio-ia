@@ -1,0 +1,677 @@
+{
+  "schema": "agent211-F2-image-header-1",
+  "isolated": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "version": {
+    "commit": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "browser": {
+    "cases": [
+      {
+        "width": 1440,
+        "synaOpen": false,
+        "collapsed": false,
+        "overflow": false,
+        "metrics": {
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "heading": {
+            "x": 325,
+            "y": 402.5625,
+            "width": 511.5,
+            "height": 32,
+            "right": 836.5,
+            "bottom": 434.5625
+          },
+          "copy": {
+            "x": 325,
+            "y": 402.5625,
+            "width": 511.5,
+            "height": 76,
+            "right": 836.5,
+            "bottom": 478.5625
+          },
+          "actions": {
+            "x": 852.5,
+            "y": 420.5625,
+            "width": 534.5,
+            "height": 40,
+            "right": 1387,
+            "bottom": 460.5625
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 852.5,
+                "y": 420.5625,
+                "width": 113.28125,
+                "height": 40,
+                "right": 965.78125,
+                "bottom": 460.5625
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 973.78125,
+                "y": 420.5625,
+                "width": 238.59375,
+                "height": 40,
+                "right": 1212.375,
+                "bottom": 460.5625
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 1220.375,
+                "y": 420.5625,
+                "width": 166.625,
+                "height": 40,
+                "right": 1387,
+                "bottom": 460.5625
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": null
+        },
+        "capture": "1440-manuel.png"
+      },
+      {
+        "width": 1440,
+        "synaOpen": true,
+        "collapsed": true,
+        "overflow": false,
+        "metrics": {
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "heading": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 64,
+            "right": 420.5,
+            "bottom": 561
+          },
+          "copy": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 288,
+            "right": 420.5,
+            "bottom": 785
+          },
+          "actions": {
+            "x": 436.5,
+            "y": 621,
+            "width": 534.5,
+            "height": 40,
+            "right": 971,
+            "bottom": 661
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 436.5,
+                "y": 621,
+                "width": 113.28125,
+                "height": 40,
+                "right": 549.78125,
+                "bottom": 661
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 557.78125,
+                "y": 621,
+                "width": 238.59375,
+                "height": 40,
+                "right": 796.375,
+                "bottom": 661
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 804.375,
+                "y": 621,
+                "width": 166.625,
+                "height": 40,
+                "right": 971,
+                "bottom": 661
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": {
+            "x": 1024,
+            "y": 16,
+            "width": 400,
+            "height": 868,
+            "top": 16,
+            "right": 1424,
+            "bottom": 884,
+            "left": 1024
+          }
+        },
+        "capture": "1440-syna.png"
+      },
+      {
+        "width": 1024,
+        "synaOpen": false,
+        "collapsed": true,
+        "overflow": false,
+        "metrics": {
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "heading": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 64,
+            "right": 420.5,
+            "bottom": 561
+          },
+          "copy": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 288,
+            "right": 420.5,
+            "bottom": 785
+          },
+          "actions": {
+            "x": 436.5,
+            "y": 621,
+            "width": 534.5,
+            "height": 40,
+            "right": 971,
+            "bottom": 661
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 436.5,
+                "y": 621,
+                "width": 113.28125,
+                "height": 40,
+                "right": 549.78125,
+                "bottom": 661
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 557.78125,
+                "y": 621,
+                "width": 238.59375,
+                "height": 40,
+                "right": 796.375,
+                "bottom": 661
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 804.375,
+                "y": 621,
+                "width": 166.625,
+                "height": 40,
+                "right": 971,
+                "bottom": 661
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": null
+        },
+        "capture": "1024-manuel.png"
+      },
+      {
+        "width": 1024,
+        "synaOpen": true,
+        "collapsed": true,
+        "overflow": false,
+        "metrics": {
+          "viewport": 1024,
+          "scrollWidth": 1024,
+          "heading": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 64,
+            "right": 420.5,
+            "bottom": 561
+          },
+          "copy": {
+            "x": 325,
+            "y": 497,
+            "width": 95.5,
+            "height": 288,
+            "right": 420.5,
+            "bottom": 785
+          },
+          "actions": {
+            "x": 436.5,
+            "y": 621,
+            "width": 534.5,
+            "height": 40,
+            "right": 971,
+            "bottom": 661
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 436.5,
+                "y": 621,
+                "width": 113.28125,
+                "height": 40,
+                "right": 549.78125,
+                "bottom": 661
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 557.78125,
+                "y": 621,
+                "width": 238.59375,
+                "height": 40,
+                "right": 796.375,
+                "bottom": 661
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 804.375,
+                "y": 621,
+                "width": 166.625,
+                "height": 40,
+                "right": 971,
+                "bottom": 661
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": {
+            "x": 568,
+            "y": 16,
+            "width": 440,
+            "height": 868,
+            "top": 16,
+            "right": 1008,
+            "bottom": 884,
+            "left": 568
+          }
+        },
+        "capture": "1024-syna.png"
+      },
+      {
+        "width": 390,
+        "synaOpen": false,
+        "collapsed": false,
+        "overflow": false,
+        "metrics": {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "heading": {
+            "x": 37,
+            "y": 666.5625,
+            "width": 316,
+            "height": 32,
+            "right": 353,
+            "bottom": 698.5625
+          },
+          "copy": {
+            "x": 37,
+            "y": 666.5625,
+            "width": 316,
+            "height": 116,
+            "right": 353,
+            "bottom": 782.5625
+          },
+          "actions": {
+            "x": 37,
+            "y": 798.5625,
+            "width": 316,
+            "height": 136,
+            "right": 353,
+            "bottom": 934.5625
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 37,
+                "y": 798.5625,
+                "width": 113.28125,
+                "height": 40,
+                "right": 150.28125,
+                "bottom": 838.5625
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 37,
+                "y": 846.5625,
+                "width": 238.59375,
+                "height": 40,
+                "right": 275.59375,
+                "bottom": 886.5625
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 37,
+                "y": 894.5625,
+                "width": 166.625,
+                "height": 40,
+                "right": 203.625,
+                "bottom": 934.5625
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": null
+        },
+        "capture": "390-manuel.png"
+      },
+      {
+        "width": 390,
+        "synaOpen": true,
+        "collapsed": false,
+        "overflow": false,
+        "metrics": {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "heading": {
+            "x": 37,
+            "y": 666.5625,
+            "width": 316,
+            "height": 32,
+            "right": 353,
+            "bottom": 698.5625
+          },
+          "copy": {
+            "x": 37,
+            "y": 666.5625,
+            "width": 316,
+            "height": 116,
+            "right": 353,
+            "bottom": 782.5625
+          },
+          "actions": {
+            "x": 37,
+            "y": 798.5625,
+            "width": 316,
+            "height": 136,
+            "right": 353,
+            "bottom": 934.5625
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 37,
+                "y": 798.5625,
+                "width": 113.28125,
+                "height": 40,
+                "right": 150.28125,
+                "bottom": 838.5625
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 37,
+                "y": 846.5625,
+                "width": 238.59375,
+                "height": 40,
+                "right": 275.59375,
+                "bottom": 886.5625
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 37,
+                "y": 894.5625,
+                "width": 166.625,
+                "height": 40,
+                "right": 203.625,
+                "bottom": 934.5625
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 900,
+            "top": 0,
+            "right": 390,
+            "bottom": 900,
+            "left": 0
+          }
+        },
+        "capture": "390-syna.png"
+      },
+      {
+        "width": 360,
+        "synaOpen": false,
+        "collapsed": false,
+        "overflow": false,
+        "metrics": {
+          "viewport": 360,
+          "scrollWidth": 360,
+          "heading": {
+            "x": 37,
+            "y": 706.5625,
+            "width": 286,
+            "height": 32,
+            "right": 323,
+            "bottom": 738.5625
+          },
+          "copy": {
+            "x": 37,
+            "y": 706.5625,
+            "width": 286,
+            "height": 116,
+            "right": 323,
+            "bottom": 822.5625
+          },
+          "actions": {
+            "x": 37,
+            "y": 838.5625,
+            "width": 286,
+            "height": 136,
+            "right": 323,
+            "bottom": 974.5625
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 37,
+                "y": 838.5625,
+                "width": 113.28125,
+                "height": 40,
+                "right": 150.28125,
+                "bottom": 878.5625
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 37,
+                "y": 886.5625,
+                "width": 238.59375,
+                "height": 40,
+                "right": 275.59375,
+                "bottom": 926.5625
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 37,
+                "y": 934.5625,
+                "width": 166.625,
+                "height": 40,
+                "right": 203.625,
+                "bottom": 974.5625
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": null
+        },
+        "capture": "360-manuel.png"
+      },
+      {
+        "width": 360,
+        "synaOpen": true,
+        "collapsed": false,
+        "overflow": false,
+        "metrics": {
+          "viewport": 360,
+          "scrollWidth": 360,
+          "heading": {
+            "x": 37,
+            "y": 706.5625,
+            "width": 286,
+            "height": 32,
+            "right": 323,
+            "bottom": 738.5625
+          },
+          "copy": {
+            "x": 37,
+            "y": 706.5625,
+            "width": 286,
+            "height": 116,
+            "right": 323,
+            "bottom": 822.5625
+          },
+          "actions": {
+            "x": 37,
+            "y": 838.5625,
+            "width": 286,
+            "height": 136,
+            "right": 323,
+            "bottom": 974.5625
+          },
+          "buttons": [
+            {
+              "text": "Importer",
+              "rect": {
+                "x": 37,
+                "y": 838.5625,
+                "width": 113.28125,
+                "height": 40,
+                "right": 150.28125,
+                "bottom": 878.5625
+              },
+              "scrollWidth": 113,
+              "clientWidth": 113
+            },
+            {
+              "text": "Chercher des photos libres",
+              "rect": {
+                "x": 37,
+                "y": 886.5625,
+                "width": 238.59375,
+                "height": 40,
+                "right": 275.59375,
+                "bottom": 926.5625
+              },
+              "scrollWidth": 237,
+              "clientWidth": 237
+            },
+            {
+              "text": "Créer une image",
+              "rect": {
+                "x": 37,
+                "y": 934.5625,
+                "width": 166.625,
+                "height": 40,
+                "right": 203.625,
+                "bottom": 974.5625
+              },
+              "scrollWidth": 167,
+              "clientWidth": 167
+            }
+          ],
+          "panel": {
+            "x": 0,
+            "y": 0,
+            "width": 360,
+            "height": 900,
+            "top": 0,
+            "right": 360,
+            "bottom": 900,
+            "left": 0
+          }
+        },
+        "capture": "360-syna.png"
+      }
+    ],
+    "before": true,
+    "nativeDialogsOpenedWithoutSubmitting": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0
+  },
+  "ai_calls": 0,
+  "jobs": 0,
+  "usage_events": 0,
+  "success": true
+}
