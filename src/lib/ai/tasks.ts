@@ -31,7 +31,7 @@ import { brainTraceOf, type BrainTrace } from "../brain/facade";
 import { llmJson, type LlmImage } from "./llm";
 import { charter, DIRECTION_LIST, FONT_LIST, globalSettingsCatalog, placeholder, sectionCatalog, systemPrompts } from "./prompts";
 import { contentLang, L } from "../i18n-server";
-import { JobCancelled, JobPaused } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
 import type { Project } from "../projects";
 import { NO_PEOPLE_EN, peopleAllowed, peopleAllowedFor, personCheckFr } from "../people-policy";
 import { BRIEF_MIN_SCORE, critiqueImageBrief, finalImagePrompt, photoLineText, scenePromptFromLine, type BriefReview, type PhotoLine } from "../engine/photo-line";
@@ -278,6 +278,17 @@ ${BRAND_SHAPE}`,
 
 // ---------------------------------------------------------------- textes
 
+// Le routeur encadre le coût de l’entrée complète. Une limite réelle doit produire un refus explicite,
+// jamais un JSON coupé au milieu ni une relecture limitée au début du texte.
+function fullCopyJson(value: unknown, space?: number): string {
+  const encoded = JSON.stringify(value, null, space);
+  if (encoded === undefined) throw new UserFacingError(
+    L("Contenu manquant : aucune rédaction ou relecture n’a été lancée.", "Missing content: no writing or review was started."),
+    "COPY_INPUT_MISSING",
+  );
+  return encoded;
+}
+
 export async function aiShopCopy(b: Base, p: Project, feedback?: string, previous?: ShopCopy): Promise<ShopCopy> {
   return llmJson(
     {
@@ -292,7 +303,7 @@ export async function aiShopCopy(b: Base, p: Project, feedback?: string, previou
       reference: skillReference("site_copy"),
       prompt: `Rédige l'ensemble des textes de la boutique au format JSON suivant (toutes les clés obligatoires) :
 seo{title,description}, announcement[0-3 annonces factuelles, vide si rien de confirmé], hero{eyebrow,heading,line1,line2 (titre en deux lignes très courtes pour le héros éditorial),text,cta}, statement{eyebrow,heading,text}, features{heading,items[2-6]{title,text,icon parmi sparkle|leaf|drop|hand|shield|truck|return|check}}, story{heading,steps[2-5]{title,text}}, detail{eyebrow,heading,text}, specs{heading,items[]{label,value}}, faq{heading,items[2-12]{q,a}}, marquee[2-6 expressions courtes], gallery{heading,captions[]}, cta{heading,text,button}, newsletter{heading,text}, product{title,short,description_html,highlights[],tabs[]{heading,content_html},reassurance[0-3, seulement engagements confirmés]}, about{heading,intro,blocks[1-4]{heading,text},values[]{title,text}}, shipping{heading,body_html}, contact{heading,text}, footer{about,newsletter}.
-${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${JSON.stringify(previous).slice(0, 24000)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
+${previous ? `\nVersion précédente à reprendre (garde ce qui est juste et fort, réécris ce qui est signalé, renvoie l'ensemble complet) :\n<version_precedente>\n${fullCopyJson(previous)}\n</version_precedente>` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité et le directeur de création (à appliquer impérativement) :\n${feedback}` : ""}`,
       maxTokens: 24000,
     },
     ShopCopySchema,
@@ -315,7 +326,7 @@ export async function aiQcText(b: Base, p: Project, label: string, content: unkn
       usageKey: b.usageKey,
       system: S().qcText,
       context: brainContext(p, "qc"),
-      prompt: `Contrôle ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>`,
+      prompt: `Contrôle ce contenu (${label}) :\n<contenu>\n${fullCopyJson(content, 1)}\n</contenu>`,
       maxTokens: 8000,
     },
     QcSchema,
@@ -524,7 +535,7 @@ export async function aiCopyReview(b: Base, p: Project, label: string, content: 
       usageKey: b.usageKey,
       system: S().copyReview,
       context: brainContext(p, "qc"),
-      prompt: `Relis ce contenu (${label}) :\n<contenu>\n${JSON.stringify(content, null, 1).slice(0, 30000)}\n</contenu>
+      prompt: `Relis ce contenu (${label}) :\n<contenu>\n${fullCopyJson(content, 1)}\n</contenu>
 Réponds { "scores": { ${COPY_CRITERIA.map((k) => `"${k}": 0-10`).join(", ")} }, "issues": [{ "path": "", "severity": "bloquant|mineur", "problem": "", "fix": "" }], "brief": "" }.`,
       maxTokens: 8000,
     },
