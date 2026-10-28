@@ -1,0 +1,70 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-e4-textes
+
+ ❯ tests/conversation211-copy-input.test.ts (9 tests | 7 failed | 2 skipped) 800ms
+   ❯ #211 E4 — contenu complet transmis aux correcteurs et aux reprises (9)
+     × transmet la version précédente entière à la reprise (products) 149ms
+     × transmet le contenu entier au contrôle factuel (products) 108ms
+     × transmet le contenu entier au directeur de rédaction (products) 107ms
+     × transmet la version précédente entière à la reprise (services) 112ms
+     × transmet le contenu entier au contrôle factuel (services) 107ms
+     × transmet le contenu entier au directeur de rédaction (services) 107ms
+     × propage un refus du garde natif, sans tronquer ni produire une fausse relecture réussie 107ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet la version précédente entière à la reprise (products)
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet la version précédente entière à la reprise (services)
+SyntaxError: Unterminated string in JSON at position 24000 (line 1 column 24001)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:16:339
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet le contenu entier au contrôle factuel (products)
+SyntaxError: Unterminated string in JSON at position 30000 (line 106 column 27613)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:17:306
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet le contenu entier au directeur de rédaction (products)
+SyntaxError: Unterminated string in JSON at position 30000 (line 106 column 27613)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:18:302
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet le contenu entier au contrôle factuel (services)
+SyntaxError: Unterminated string in JSON at position 29999 (line 127 column 27032)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:17:306
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > transmet le contenu entier au directeur de rédaction (services)
+SyntaxError: Unterminated string in JSON at position 29999 (line 127 column 27032)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:18:302
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  tests/conversation211-copy-input.test.ts > #211 E4 — contenu complet transmis aux correcteurs et aux reprises > propage un refus du garde natif, sans tronquer ni produire une fausse relecture réussie
+SyntaxError: Unterminated string in JSON at position 29999 (line 127 column 27032)
+ ❯ extracted tests/conversation211-copy-input.test.ts:12:208
+
+ ❯ tests/conversation211-copy-input.test.ts:21:340
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 skipped (9)
+   Start at  18:31:46
+   Duration  3.96s (transform 45%, import 34%, tests 21%)
+
