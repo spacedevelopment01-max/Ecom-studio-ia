@@ -7,3 +7,5 @@ export const conversationCompositionEnabled=()=>conversationThemeToolsEnabled()&
 export const conversationExportsEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_EXPORTS==='1';
 
 export const conversationRenderEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_RENDER==='1';
+
+export const conversationResearchEnabled=()=>conversationToolsEnabled()&&process.env.STUDIO_CONVERSATION_RESEARCH==='1';

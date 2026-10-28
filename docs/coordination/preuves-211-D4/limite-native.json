@@ -1,0 +1,10 @@
+{
+  "confirmedNativeLimitation": {
+    "file": "src/lib/preparation/research-ai.ts",
+    "function": "analyzeResearch",
+    "call": "lintClaims(out.angles,p)",
+    "reproduced": "D4 isolated native worker rejects neutral visualDirection: sans personne ni avis. lintClaims reports avis as review claim, even in prohibition. Also negative guarantee quote in fake arguments flagged.",
+    "constraint": "Do not change frozen D4 app during full tests. Separate targeted followup with mixed-positive/negative claim tests, preserve source guards. Fake output revised to factual marketing arguments + mat\u00e9riel seul; exact client input and source quote unchanged.",
+    "status": "OPEN no global validator fix; do not claim broad real-world research qualification"
+  }
+}

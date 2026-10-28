@@ -29,7 +29,7 @@ export const CognitiveReplySchema = z.object({
     value: text(1200), sourceId: text(120), quote: text(8000),
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
-  proposedTools: z.array(z.enum(['understand-offer', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render'])).max(3),
+  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render'])).max(3),
   themePlan:ThemeToolPlanSchema.optional(),
   compositionPlan:CompositionPlanSchema.optional(),
   exportPlan:ExportToolPlanSchema.optional(),
