@@ -13,7 +13,7 @@
 import { all, now, one, run, tx } from "./db";
 import type { Subscription } from "./billing";
 import type { PlanId } from "./plans";
-import { currentRunScope } from "./billing-scope";
+import { currentRunScope, runScope } from "./billing-scope";
 
 export type ProjectSubscription = Subscription & {
   owner_user_id: string | null;
@@ -147,7 +147,14 @@ export function accountKeyFor(key: string, projectId?: string | null): string {
   if (isNoPlanKey(key)) return key;
   const run = currentRunScope();
   const pid = projectId ?? (run && run.userId === key ? run.projectId : null);
-  if (!pid) return key;
+  if (!pid) {
+    if (run?.userId === key && run.billingKey) {
+      // La portée a été autorisée libre au départ ; si elle est rattachée pendant l'appel, régler la même réserve.
+      const pending = one<ProjectSubscription>("SELECT * FROM subscriptions WHERE user_id=? AND owner_user_id=? AND status IN ('active','manual')", run.billingKey, key);
+      return pending ? pending.user_id : 'noplan:pending-conversation';
+    }
+    return key;
+  }
   const owner = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id = ?", pid);
   // Identifiant qui ne désigne aucun projet (appel interne sans projet réel) : la clé reçue, comme sans projet.
   if (!owner) return key;
@@ -157,4 +164,10 @@ export function accountKeyFor(key: string, projectId?: string | null): string {
     return s && s.user_id === key ? key : `noplan:${pid}`;
   }
   return projectAccountKey(pid);
+}
+
+/** Portée native pour le dialogue AVANT projet ; aucun wallet ni droit nouveau. Jamais un identifiant du modèle. */
+export function runForPendingSubscription<T>(userId: string, subscriptionKey: string, fn: () => T): T {
+  if (!pendingSubscriptions(userId).some(s => s.user_id === subscriptionKey)) throw new NoFreeSubscription();
+  return runScope.run({ userId, projectId: null, scope: 'normal', billingKey: subscriptionKey }, fn);
 }

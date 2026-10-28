@@ -74,6 +74,7 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
 };
 
 export type TaskId =
+  | 'agent_conversation'
   | "vision_analysis"
   | "strategy"
   | "copywriting"
@@ -104,6 +105,7 @@ const task = (fr: string, en: string, kind: "llm" | "image" | "video") => ({
 
 /** Tâches et libellés (dans la langue de l'interface, évalués à la lecture). */
 export const TASKS: Record<TaskId, { readonly label: string; kind: "llm" | "image" | "video" }> = {
+  agent_conversation: task('Dialogue de l’agent central', 'Central assistant conversation', 'llm'),
   // Commun aux produits et aux services (#204) : lecture de la description, du lien et des photos éventuelles.
   vision_analysis: task("Compréhension de l’offre (texte et photos)", "Offer understanding (text and photos)", "llm"),
   strategy: task("Direction de marque et stratégie", "Brand direction and strategy", "llm"),

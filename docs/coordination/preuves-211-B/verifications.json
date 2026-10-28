@@ -1,0 +1,37 @@
+{
+  "schema": "agent211-B-verifications-1",
+  "applicationCodeCommit": "dedaba714b3ed4012f53bb0b02b1f30a94709658",
+  "compiledCodeAndHarnessCommit": "defb4ccf7e96bb43b64880ea64586a5d34ea91f2",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fullSuite": {
+    "passed": 3570,
+    "skipped": 45,
+    "filesPassed": 415,
+    "filesSkipped": 1,
+    "seconds": 679.68,
+    "note": "Sources applicatives identiques au commit compilé ; le correctif suivant concerne seulement le harnais HTTP."
+  },
+  "targetedAfterHarnessFix": {
+    "passed": 27,
+    "files": 2,
+    "seconds": 5.68
+  },
+  "types": "passed",
+  "productionBuild": "passed",
+  "compiledHTTP": "passed",
+  "frontendChanges": false,
+  "cmsInstallTested": false,
+  "realModelQualified": false,
+  "earlyHarnessFailures": [
+    "Collecte : colonne cost_micro inexistante ; corrigée en cost.",
+    "JSON malformé rejeté par le SDK avant remise du reçu : coût incertain conservé, aucune relance. Le cas de qualité de la recette finale utilise une citation forgée dans un JSON valide."
+  ],
+  "commands": [
+    "npx tsc --noEmit",
+    "XDG_CACHE_HOME=/tmp/ecom209-font-cache NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run",
+    "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run tests/conversation211-*.test.ts",
+    "XDG_CONFIG_HOME=/tmp/ecom211-config XDG_CACHE_HOME=/tmp/ecom209-font-cache NEXT_TELEMETRY_DISABLED=1 npm run build",
+    "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx tsx scripts/verify-agent211-build.ts /tmp/ecom211-B-http-code-final"
+  ]
+}

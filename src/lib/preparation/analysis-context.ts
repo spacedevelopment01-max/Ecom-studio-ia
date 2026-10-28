@@ -23,6 +23,8 @@ export function reviewGeneratedFact(b: Brief, f: Fact): Fact {
 export function clientAnalysisContext(b: Brief) {
   return {
     originalInput: b.input,
+    // Notes exactes du dialogue, non promues en faits confirmés par une interprétation de l'IA.
+    clientStatements: b.clientStatements ?? [],
     contact: { primary: b.services.contactMode, choices: b.services.contactModes ?? [] },
     currentServices: b.services,
     correctedSummary: b.profile.summaryStatus === "provided" ? b.profile.summary : null,

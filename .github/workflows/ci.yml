@@ -51,6 +51,10 @@ jobs:
       - name: Conversation lot A sur le build compilé (sans fournisseur)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent209-build.ts
 
+      # Lot B #211 : SDK natif vers un faux serveur loopback, jamais une API fournisseur réelle.
+      - name: Dialogue IA lot B sur le build compilé (fournisseur HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts
+
       # Le build compilé peut différer du code source (empaquetage Next) : export Shopify par la vraie route du serveur
       # compilé, Theme Check réellement exécuté et 0 erreur exigée (#202). Base et démonstration fictives, aucune IA.
       - name: Export Shopify contrôlé sur le build compilé

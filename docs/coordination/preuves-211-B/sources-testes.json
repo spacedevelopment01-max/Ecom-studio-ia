@@ -1,0 +1,30 @@
+{
+  "compiledCommit": "defb4ccf7e96bb43b64880ea64586a5d34ea91f2",
+  "treeAtBuild": "clean",
+  "node": "v24.19.0",
+  "sha256": {
+    "scripts/verify-agent211-build.ts": "5724abb516e4441cb09b159dd8bc85ebddcf7896a9fd27b760a99f0b8e3f546d",
+    "src/app/api/studio-agent/conversations/[cid]/intelligence/route.ts": "02582d131cd46741ace6b95e5393387e56ef2745af7d88d437432f563087e8e0",
+    "src/lib/ai/config.ts": "c93e9a0a36d0b0115d384cbe39aa07d2d0866d78ab08f3906dd6f8fbf0a0df0e",
+    "src/lib/ai/llm.ts": "daddd07117db999d5d55712ace3ccf84d82368513cf6c54df77a66892a22e5ce",
+    "src/lib/billing-scope.ts": "e1166260101497f81ddb080c785eaad48c15caf18bd1b25fdbb4240f3fd0c3f1",
+    "src/lib/db.ts": "b2b4aa998a775f4c1fd8a5a36e4a084e67c4f2d5ffe91a139b9aa55db10952a7",
+    "src/lib/orchestrator/conversation/contract.ts": "e6e46682d9119a9a760dce4d74a241fa968fb9bc45715b4f1d72ffa9117eceb4",
+    "src/lib/orchestrator/conversation/index.ts": "8fa4a3d9db2798b45d2af9e89d8ddc02219c9b973b2b3cf73836a232e1bf21b1",
+    "src/lib/orchestrator/conversation/intelligence-commands.ts": "83eac5d7ded862bbbb5c42c63341d4576979b9f5ad9f38ec91383ad1cf6b59fc",
+    "src/lib/orchestrator/conversation/intelligence-context.ts": "7dc6b3b3d87cb78fd1d63688ee7ffcebf1211a8dd8e2fd9bf35a1c9d4207c1dd",
+    "src/lib/orchestrator/conversation/intelligence-contract.ts": "2c68d6bf9d640928b0b69ec5cef0b4af841dc252bce7da056796fccbe032ff5f",
+    "src/lib/orchestrator/conversation/intelligence.ts": "116f4db67b79aab1d3e287c9e2a2eb9e0755667473b1abea546d419357efe076",
+    "src/lib/orchestrator/conversation/store.ts": "f4bea2f5222557f6d4d5d156e307575881346bc010d39a39656b07c37f23edab",
+    "src/lib/orchestrator/policy.ts": "82128076cb834811bbf4d7644c731fd1db11c3d1fcfdb7302ea2ff74e5df1174",
+    "src/lib/orchestrator/text-routing.ts": "c54ea0c39b0249e48d8df15a9d29711ad2689fb41cdb7ef97274b7e4217b09ad",
+    "src/lib/preparation/analysis-context.ts": "60bd8d11c7076d82485fed244968a9d986cc9c4482d0aa4501dec9a35da4a1aa",
+    "src/lib/preparation/types.ts": "80ca8cc47831b3f9141f0ef57f251040381847c1c56bfdcd4eb575a9c9db73c8",
+    "src/lib/privacy.ts": "0d332959f27abc051a63199cd4a1f2c41d1736f80536cffe754e84463cc61643",
+    "src/lib/project-billing.ts": "d92e5f0c886bdfba2c835ecbf5b351bdf54f823475443c41651fdd58012fdb2c",
+    "tests/conversation211-intelligence.test.ts": "df7c7734867ab88fbeae2d33c84b82ef57e5517c2418a36f958ac5a2ac4edde1",
+    "tests/conversation211-native-billing.test.ts": "4fd228752ca3b9f8d2510423e7838404d8185b32651f46f375fa7b7bfd44ab21",
+    "worker/handlers.ts": "57c1041bde667caa549f6bc4f215df63cf174dc25cea30cae1b27496be38d969"
+  },
+  "realProviderCalls": 0
+}

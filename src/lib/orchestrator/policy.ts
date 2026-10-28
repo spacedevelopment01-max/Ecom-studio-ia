@@ -42,6 +42,7 @@ export const TEXT_MODEL_BY_TIER: Record<Exclude<Tier, "local">, string> = {
 const TEXT: Capability[] = ["text", "structured_output"];
 
 export const DEFAULT_POLICY: Record<TaskId, TaskPolicy> = {
+  agent_conversation: { needs: TEXT, tier: 'strong', effort: 'medium', why: 'cognitive project discovery and contextual guidance; no unqualified local fallback' },
   vision_analysis: { needs: [...TEXT, "vision"], tier: "strong", effort: "medium", why: "vision analysis drives every later step" },
   strategy: { needs: TEXT, tier: "strong", effort: "high", why: "complex creative direction" },
   // Textes de vente (accueil, fiche produit, FAQ) : enjeu direct sur la conversion, réflexion plus poussée.
