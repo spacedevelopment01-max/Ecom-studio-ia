@@ -19,7 +19,7 @@ export async function verifyAgentBrowser(f:Fixture){
       await ctx.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===f.origin||u.protocol==='data:'||u.protocol==='blob:'?route.continue():route.abort();});
       const page=await ctx.newPage(),errors:string[]=[],captures:string[]=[];page.on('pageerror',e=>errors.push(e.message));
       const capture=async(name:string,fullPage=true)=>{const file=`${index+1}-${scene.name}-${name}.png`;await page.screenshot({path:path.join(shots,file),fullPage});captures.push(file);};
-      await page.goto(f.origin+'/studio');await page.getByRole('heading',{name:'Quel projet souhaitez-vous créer ?'}).waitFor();
+      await page.goto(f.origin+'/studio');const splash=page.locator('#ecs-splash');if(await splash.isVisible())await splash.getByRole('button',{name:'Passer',exact:true}).click();await splash.waitFor({state:'hidden'});await page.getByRole('heading',{name:'Quel projet souhaitez-vous créer ?'}).waitFor();
       const entry=page.locator('[data-agent-conversation]');assert.equal(await entry.locator('select').count(),0);assert.equal(await entry.locator('input[type="radio"]').count(),0);
       await capture('entree');const before=f.counts().providerHttpCalls;
       await page.getByRole('button',{name:'Utiliser le formulaire manuel'}).click();await page.getByRole('button',{name:'Revenir à la conversation'}).waitFor();await capture('manuel-conserve');
@@ -70,7 +70,7 @@ export async function verifyAgentBrowser(f:Fixture){
     await ctx.addCookies(session.cookie.split('; ').map(raw=>{const at=raw.indexOf('=');return{name:raw.slice(0,at),value:raw.slice(at+1),url:f.origin};}));
     await ctx.route('**/*',route=>new URL(route.request().url()).origin===f.origin?route.continue():route.abort());
     const page=await ctx.newPage(),text='Je fabrique des capteurs de ruches. Ce brouillon doit rester disponible après une coupure réseau.',before=f.counts().providerHttpCalls;
-    await page.goto(f.origin+'/studio');const entry=page.locator('[data-agent-conversation]');await entry.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question'}).fill(text);await entry.getByRole('button',{name:'Enregistrer',exact:true}).click();await entry.getByText(text,{exact:true}).first().waitFor();
+    await page.goto(f.origin+'/studio');const splash=page.locator('#ecs-splash');if(await splash.isVisible())await splash.getByRole('button',{name:'Passer',exact:true}).click();await splash.waitFor({state:'hidden'});const entry=page.locator('[data-agent-conversation]');await entry.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question'}).fill(text);await entry.getByRole('button',{name:'Enregistrer',exact:true}).click();await entry.getByText(text,{exact:true}).first().waitFor();
     f.setFixture({message:'Votre activité reste conservée.',status:'summary',business:'products',businessEvidence:{sourceId:'brief.description',quote:text},question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:[],actionsExecuted:false});
     await entry.getByRole('button',{name:'Voir le devis de la réponse IA'}).click();await entry.getByRole('button',{name:'J’accepte ce coût, répondre'}).click();await entry.getByRole('checkbox',{name:'J’ai relu ma fiche et je confirme ce rattachement.'}).check();
     let created='';await page.route('**/api/projects?subscription=*',async route=>{const response=await route.fetch();assert.equal(response.status(),200);created=(await response.json()).id;await route.abort();},{times:1});
