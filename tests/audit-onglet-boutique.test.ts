@@ -141,9 +141,12 @@ describe("Onglet Boutique — aucun jargon technique visible, carte du tutoriel 
     expect(tab).not.toContain("moteur V2");
     expect(tab).toContain('t("Pages et style du site", "Website pages and style")');
     const tuto = fs.readFileSync(path.join(process.cwd(), "src/components/studio/tutorial.tsx"), "utf8");
-    const cls = /data-tuto-nudge className="([^"]+)"/.exec(tuto)![1].split(" ");
+    // La classe du bas varie avec l'agent ; conserver les mêmes gardes mobiles, sans imposer une chaîne JSX statique.
+    const nudge = tuto.slice(tuto.indexOf('data-tuto-nudge')).split('>')[0];
+    const cls = [...nudge.matchAll(/"([^"]+)"/g)].flatMap(match => match[1].split(' '));
     expect(cls.some((c) => c.startsWith("top-["))).toBe(true);
     expect(cls.some((c) => c.startsWith("bottom-"))).toBe(false);
     expect(cls).toContain("lg:bottom-5");
+    expect(cls).toContain("lg:bottom-24");
   });
 });

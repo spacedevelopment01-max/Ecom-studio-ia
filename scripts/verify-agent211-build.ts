@@ -16,6 +16,7 @@ if(!fs.existsSync('.next/BUILD_ID'))throw Error('Production build required');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
+if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
 process.env.APP_SECRET=randomBytes(32).toString('hex');
 // Les seules valeurs de fournisseur de ce harnais sont factices et ne sortent pas du loopback.
 for(const k of ['OPENAI_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY','FAL_KEY','FAL_API_KEY','DASHSCOPE_API_KEY','ALIBABA_MODEL_STUDIO_API_KEY','PEXELS_API_KEY','PIXABAY_API_KEY'])process.env[k]='';
@@ -37,7 +38,7 @@ const fake=http.createServer(async(req,res)=>{
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
-    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Public inventé',sourceId:'source-inexistante',quote:'Public inventé'}]}:fixture);
+    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -112,6 +113,12 @@ try{
   v=await call(s,route);assert.equal(v.intelligence?.state,'failed');assert.ok(failed.progress<1);const afterFailure=counts();await new Promise(r=>setTimeout(r,1700));assert.deepEqual(counts(),afterFailure);proof.failure={status:failed.status,progress:failed.progress,conversationState:v.intelligence!.state,priorReplyPreserved:!!v.intelligence!.reply,noAutomaticRetry:true};
   const exported=await call(s,'/api/me/data-export');assert.ok(!JSON.stringify(exported).includes(sessions[1].u.email));proof.accountExportIsolated=true;
   proof.simulatedTotals={...counts(),tokenCounts};assert.equal(providerCalls,3+specialistCalls);assert.equal(counts().calls,3+specialistCalls);assert.equal(counts().usage,3+specialistCalls);
+  if(process.argv.includes('--ui')){
+    const {verifyAgentBrowser}=await import('./verify-agent211-ui');
+    const {seedAgentUiSite}=await import('./agent211-ui-fixtures');
+    proof.ui=await verifyAgentBrowser({origin,out,account,login,counts,seedSite:seedAgentUiSite,setFixture:value=>{fixture={...value,message:'[Fournisseur simulé — recette isolée] '+String(value.message)};bad=false;}});
+    proof.allSimulatedTotals=counts();
+  }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   proof.finishedAt=new Date().toISOString();proof.success=true;
 }finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
