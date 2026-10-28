@@ -38,6 +38,7 @@ export type ConversationState = {
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
   activeContext?: ActiveContext;
+  studioObservation?:import('./studio-observation').StudioObservation;
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -74,6 +75,7 @@ export type ConversationView = {
   renderExecution?: {enabled:true};
   researchExecution?: {enabled:true};
   activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
+  studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};
   progress: "describe" | "clarify" | "collect" | "review";
   message: string;
   question: ChoiceCard | null;

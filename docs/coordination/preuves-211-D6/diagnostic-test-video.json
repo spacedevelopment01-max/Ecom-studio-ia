@@ -1,0 +1,20 @@
+{
+  "sourceRun": "D6-full-index-final",
+  "status": "failed_not_qualified",
+  "failureFile": "tests/video-v2-engine.test.ts",
+  "failureLine": 235,
+  "detector": "global case-insensitive provider-key prefix alternation",
+  "observedMatch": {
+    "path": "audio.voice.2.assetId",
+    "valueLength": 16,
+    "matchLength": 14,
+    "lowercaseNativeAlphabet": true,
+    "canonicalPrefixCaseMatched": false,
+    "fragmentSha256Prefix": "9dfc1f9f2169732a"
+  },
+  "nativeIdSource": "src/lib/db.ts:18",
+  "diagnosis": "Canonical Google-key prefix was compared case-insensitively with lowercase asset ID; no real secret in this matched field",
+  "appSecurityChanged": false,
+  "redRun": "D6-video-secret-red",
+  "greenRun": "D6-video-secret-green"
+}

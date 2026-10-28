@@ -1,0 +1,254 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "studioKnowledgeUi": {
+    "schema": "agent211-D6-knowledge-browser-1",
+    "cases": [
+      {
+        "scene": "produit-multi",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-etat-natif.png",
+          "produit-multi-question-exacte.png",
+          "produit-multi-devis-separe.png",
+          "produit-multi-reponse-sourcee.png",
+          "produit-multi-mode-original-non-disponible.png",
+          "produit-multi-operation-absente-honnete.png",
+          "produit-multi-meme-conversation-autre-onglet.png"
+        ],
+        "sourceStateDeliveredToSdk": true,
+        "providerUsabilityNotClaimed": true,
+        "noAutomaticBusinessAction": true,
+        "foreign": 404,
+        "sameConversationAcrossTabs": true,
+        "refreshWithoutProviderCall": true,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "knowledge-videos/produit-multi.webm"
+      },
+      {
+        "scene": "service",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-etat-natif.png",
+          "service-echec-historique-observe.png",
+          "service-question-exacte.png",
+          "service-devis-separe.png",
+          "service-reponse-sourcee.png",
+          "service-mode-original-non-disponible.png",
+          "service-operation-absente-honnete.png",
+          "service-meme-conversation-autre-onglet.png"
+        ],
+        "sourceStateDeliveredToSdk": true,
+        "providerUsabilityNotClaimed": true,
+        "noAutomaticBusinessAction": true,
+        "foreign": 404,
+        "sameConversationAcrossTabs": true,
+        "refreshWithoutProviderCall": true,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "knowledge-videos/service.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "comprehensionQuality": "not_qualified",
+    "realProviderCalls": 0
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "finishedAt": "2026-10-28T22:09:47.328Z",
+  "success": true,
+  "runs": {
+    "D6-full-secret-final": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "927c15bd7e1f9a607f415267a50d1dd08310cd41",
+      "startedAt": "2026-10-28T21:15:05.457871+00:00",
+      "finishedAt": "2026-10-28T21:27:46.060313+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "6d1a903866f00e74c4cbd557f264ac5e13b4af70ba0f7aaf1333ee2002783af5",
+        "scripts/verify-agent211-knowledge-ui.ts": "52180268eab85c06e2addaba32f42e90e794ed29986e43b8c8ee477a726317fc",
+        "src/components/studio/conversation-panel.tsx": "9a2ed2729dc05708e34e468f0dedc29a65973ba75321f50bd439b0aa0e32c447",
+        "src/components/studio/conversation-studio-help.tsx": "e797bc05c355e69c2629e80d3efb4526c5a404f9dd9a6df916657ab3ddaa56de",
+        "src/lib/orchestrator/conversation/contract.ts": "7d96b0cf19d049a4364e68a88fd271457c5edaf5d204a6b6fdd6a777aed811cd",
+        "src/lib/orchestrator/conversation/index.ts": "53ac56adfa7a6e08098e58f0f2e213bac3974ff4d709852b1f3e8a5d638348f6",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "34ab8ba83844000ba6a8862ea8548638280b729a0093c3690ce9fbbf60d88ba4",
+        "src/lib/orchestrator/conversation/studio-failure-knowledge.ts": "44fdd3f876862430a871d4655a005883fc44d8187a2a911e19e5fcae3eaa8a2a",
+        "src/lib/orchestrator/conversation/studio-observation.ts": "7c4caa0207b2d5b45fbb99db2b3d37f9ae59cd01928fab6c559c3b6189e20a3a",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "c09691d773592ec227472998df8e968f29fc7f2b1f6ed581104b5d96fc1687b2",
+        "tests/conversation211-studio-knowledge.test.ts": "e5f4635792533843a043aa56b02f27e5278e1f7050bea109e178c00d27f4ebf0",
+        "tests/video-v2-engine.test.ts": "73501ebd376f5025f474bf22c8b1d4fad3ce04612050dfb8c94ce1d1505a0fbb"
+      },
+      "logSha256": "f40d685f3d3ec09fd7bc802790d7dde57587b215211f7d3b157d451a49227f51"
+    },
+    "D6-types-expanded": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "1d062bdf77111be3e75f3a03defa8b7dfcf68804",
+      "startedAt": "2026-10-28T22:05:05.253807+00:00",
+      "finishedAt": "2026-10-28T22:05:10.265895+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-knowledge-ui.ts": "fe6910f1d8b80ae5170bb4c300e00e3026af91a038a7ec6760325db4d0098cc9"
+      },
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "D6-build-proof-final": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+      "startedAt": "2026-10-28T22:07:18.372288+00:00",
+      "finishedAt": "2026-10-28T22:08:09.385902+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "c404277408fcfe6e55df175a0ce05b0572f9f036ac48bc074e9452d863d8d4ef"
+    },
+    "D6-browser-published-final": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D6-browser-published-final",
+        "--knowledge-ui"
+      ],
+      "head": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+      "startedAt": "2026-10-28T22:09:26.247688+00:00",
+      "finishedAt": "2026-10-28T22:09:50.385220+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "a115eedb8d7949027cfbbf3350819b5421584f05cb7cbe417f6eec875a192221"
+    }
+  },
+  "mediaVerification": [
+    {
+      "file": "videos/produit-multi.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "153"
+          }
+        ],
+        "format": {
+          "duration": "6.120000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "153"
+          }
+        ],
+        "format": {
+          "duration": "6.120000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "5f646e15eb0c16529060a0d1f06f3c1ceadffa201312c9f168b6f805d11f2964"
+    },
+    {
+      "file": "videos/service.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "148"
+          }
+        ],
+        "format": {
+          "duration": "5.920000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "148"
+          }
+        ],
+        "format": {
+          "duration": "5.920000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "5f9d3132ea105232801421ca0c15f68d8187f846b36137395a168c324504980c"
+    }
+  ],
+  "unitTestScope": {
+    "applicationAndUnitTestsIdenticalTo": "ba023565684767a079ded15f852cc2c8aefc5595",
+    "standaloneHarnessIntegratedAndReplayedSeparately": true
+  },
+  "limitations": [
+    "Simulated responses do not qualify real model comprehension or advice quality.",
+    "Historical image failure inserted already failed into isolated fixture; no image generation executed.",
+    "Provider model configuration values omitted from published snapshots; runtime transport asserted separately.",
+    "48 explicit operations, not exhaustive UI/control coverage."
+  ]
+}

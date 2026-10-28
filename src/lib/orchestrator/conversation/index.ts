@@ -19,6 +19,8 @@ import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
 import {clearConversationAnswer} from './answer-state';
 import {activeContextEnabled,resolveActiveContext,observedActiveContext} from './active-context';
+import {studioKnowledgeEnabled,captureStudioObservation} from './studio-observation';
+import {studioOperationCatalogue} from './studio-operations';
 import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
@@ -35,7 +37,7 @@ function effective(c: ConversationRow) {
   }
   return { brief, revision, meta, status };
 }
-export function conversationView(user: User, cid: string, before?: number): ConversationView {
+export function conversationView(user: User, cid: string, before?: number,includeStudioHelp=true): ConversationView {
   const c = ownedConversation(user, cid), { brief: b, revision, meta: m, status } = effective(c);
   const key = nextQuestion(b, m);
   let readOnlyReason:string|null=null;
@@ -66,6 +68,7 @@ export function conversationView(user: User, cid: string, before?: number): Conv
     view.message = view.intelligence.message;
     view.progress = !b.input.description ? 'describe' : m.business ? 'collect' : 'clarify';
   }
+  if(includeStudioHelp&&studioKnowledgeEnabled())view.studioHelp={observation:captureStudioObservation(c),capabilities:studioOperationCatalogue(c.project_id,!readOnlyReason)};
   return view;
 }
 function setUnknown(b: Brief, m: ConversationState, key: QuestionKey) {
@@ -277,12 +280,15 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       saveBrief(c, b, user, revision);
       if (!c.project_id) m.draft = b;
     }
+    // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
+    if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
     const next = c.revision + 1;
     // Lire une explication ou rouvrir une carte ne périme pas une proposition aux données inchangées.
     if(!changed&&['explain','summary','back-ai','back'].includes(cmd.action)&&m.intelligence?.sourceRevision===c.revision&&(m.intelligence.sourceProjectRevision??null)===revision)m.intelligence.sourceRevision=next;
     run("UPDATE agent_conversations SET revision=?,state_json=?,updated_at=? WHERE id=? AND revision=?", next, JSON.stringify(m), now(), c.id, c.revision);
     if (c.project_id && changed) remember(c.project_id, { kind: "artifact", key: `conversation.turn.${next}`, value: JSON.stringify({ conversationId: c.id, turn: next, action: cmd.action, field: cmd.action === "edit" ? cmd.field : cmd.action === "answer" ? cmd.question : null, preparationRevision: currentBrief({ ...c, state_json: JSON.stringify(m) }).revision }), status:"inferred",source: "local", origin: "system" });
-    const response = conversationView(user, c.id);
+    // La projection vivante et le catalogue ne sont pas recopiés dans chaque reçu de parole.
+    const response = conversationView(user, c.id,undefined,false);
     if (tests.classify || tests.quote) response.mode = "simulation";
     response.message = action?.message || message || L("Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.", "Answer kept. You can add detail, go back or ask why.");
     response.action = action;
