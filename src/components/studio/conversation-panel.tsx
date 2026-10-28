@@ -10,6 +10,7 @@ import type {ConversationView} from '@/lib/orchestrator/conversation/contract';
 import type {CognitiveQuestion} from '@/lib/orchestrator/conversation/intelligence-contract';
 import {useAgentPanel,useAgentUi} from './agent-ui-context';
 import {ConversationTools} from './conversation-tools';
+import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
 
 type Quote={id:string;estimatePct:number;maximumPct:number;expiresAt:number;confirmationRequired:true};
@@ -90,6 +91,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.intelligence?.proposalId&&v.intelligence.state!=='stale'&&v.intelligence.sourceRevision===v.revision&&<div className="rounded-2xl border border-line p-4 text-sm"><p className="font-semibold">{t('Propositions à vérifier','Proposals to review')}</p><ul className="mt-2 space-y-2">{v.intelligence.reply?.proposedChanges.map((p,i)=><li key={i}><span className="font-medium">{p.field} :</span> {p.value}<blockquote className="mt-1 border-l-2 border-line pl-3 text-xs text-muted">{p.quote}</blockquote></li>)}</ul><Button className="mt-3" disabled={busy||!!v.readOnlyReason} onClick={()=>void perform(async()=>{await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId});})}>{t('Accepter ces modifications','Accept these changes')}</Button></div>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}
+      {v?.exportExecution?.enabled&&projectId&&<ConversationExportTools view={v}/>}
       {!loading&&(!projectId||v)&&<form onSubmit={e=>{e.preventDefault();void submit();}} className="rounded-2xl border border-line bg-card p-3 shadow-soft">
         <label htmlFor={inputId} className="sr-only">{t('Décrivez votre projet ou posez votre question à SYNA','Describe your project or ask SYNA a question')}</label>
         <Textarea id={inputId} value={text} onChange={e=>setText(e.target.value)} maxLength={8000} rows={compact?3:4} disabled={busy} placeholder={t('Votre idée, votre activité, ce qui compte pour vous…','Your idea, your business, what matters to you…')} className="resize-y border-0 bg-transparent shadow-none focus-visible:ring-0"/>

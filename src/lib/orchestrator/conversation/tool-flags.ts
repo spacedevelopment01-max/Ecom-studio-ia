@@ -3,3 +3,5 @@ export const conversationToolsEnabled=()=>['STUDIO_CONVERSATION_LOT_A','STUDIO_C
 export const conversationThemeToolsEnabled=()=>conversationToolsEnabled()&&process.env.STUDIO_CONVERSATION_THEME_TOOLS==='1';
 
 export const conversationCompositionEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_COMPOSITION==='1';
+
+export const conversationExportsEnabled=()=>conversationThemeToolsEnabled()&&process.env.STUDIO_CONVERSATION_EXPORTS==='1';
