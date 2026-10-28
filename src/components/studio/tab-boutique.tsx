@@ -686,7 +686,7 @@ export default function TabBoutique() {
           <LayoutPanel sections={layoutSections} onApply={applyLayout} busy={layoutBusy} />
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-2 border-b border-line p-2.5">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-line px-2.5 py-1 sm:gap-y-2 sm:p-2.5" data-preview-toolbar>
         <div className="w-44 shrink-0">
           <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 text-sm" aria-label={t("Page affichée", "Page shown")}>
             {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}

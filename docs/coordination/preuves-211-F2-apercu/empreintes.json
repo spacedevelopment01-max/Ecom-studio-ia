@@ -1,0 +1,250 @@
+{
+  "service-preview-geometry.json": {
+    "size": 6408,
+    "sha256": "2ac14ef578eba37f2d493e872b207bef083125f4666553007cad33e947a73c64"
+  },
+  "verifications.json": {
+    "size": 10940,
+    "sha256": "1eb8280f53839fbfab8b6a974ff8b671947eeefde52aba0e361c4141bb09367a"
+  },
+  "README.md": {
+    "size": 3800,
+    "sha256": "d0b9143a1c68e80b0687f17db6fc7ecbbee434038ae65a24ccbcd5679a6a9c6a"
+  },
+  "produit-preview-geometry.json": {
+    "size": 6508,
+    "sha256": "cbb5f038dc835aab3df7ec2acdd9103f6703b4db3f258c762f209f8d5496dc59"
+  },
+  "logs/F3-types-corrected.txt": {
+    "size": 208,
+    "sha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+  },
+  "logs/F3-full-final.txt": {
+    "size": 261760,
+    "sha256": "cdcdce3cf9cfdc9bc894ba23f216b16995edd6604255fce692ee68675a8a9648"
+  },
+  "logs/F3-browser-after.txt": {
+    "size": 575,
+    "sha256": "daf50060550edb53f8fec59cfa75f0f12faec6bc979425169fea83c5c0c5d238"
+  },
+  "logs/F3-before-native.txt": {
+    "size": 724,
+    "sha256": "58ab545a50493b4adf8078e46ad7651d0b2a9757989ce96e85e66ecbc6279c60"
+  },
+  "logs/F3-build-clean.txt": {
+    "size": 17627,
+    "sha256": "ee80b91d90308b694fbc0788e76ba12d49ff23728e9e288495b9a1fd9d55d463"
+  },
+  "videos/service.mp4": {
+    "size": 906994,
+    "sha256": "18c5a78581c7b00d1438789b1dc2af0b761176f86de35bdba41b085f9d50939f"
+  },
+  "videos/produit.mp4": {
+    "size": 1678233,
+    "sha256": "d27e210369437533f5dc76e74efa4be361cc0073b8adcff1977f2464232629e5"
+  },
+  "videos/reprise.mp4": {
+    "size": 363739,
+    "sha256": "8168a1a6368fa6e3d4928751ad7e0a0d9d923aa4ad1399fe2ffa5e5e9ebe1109"
+  },
+  "planches/3-reprise-1.jpg": {
+    "size": 48565,
+    "sha256": "976e52dd4875bfae362b27f1f8700e874c346505ba6beafda830054c10c2cb47"
+  },
+  "planches/1-produit-5.jpg": {
+    "size": 111081,
+    "sha256": "f1b3ae94f50503a31f0d19e40853c2ec153052a8d37d17caf5f30be74ea3b3a8"
+  },
+  "planches/1-produit-1.jpg": {
+    "size": 102217,
+    "sha256": "39dea32f1d81a38ccea842b3f5ccab7abba0216d13fefd8c738d4bff1f0a08e2"
+  },
+  "planches/2-service-2.jpg": {
+    "size": 112756,
+    "sha256": "75057b74402c0066edd54758f4c136fefa591c3df14a11354b59c6f1f950a7a3"
+  },
+  "planches/2-service-5.jpg": {
+    "size": 136282,
+    "sha256": "8c560f72d9e699e3790a6fca861c390e37ca48818921a77bf583ad2bed0d00fb"
+  },
+  "planches/1-produit-3.jpg": {
+    "size": 80638,
+    "sha256": "b844e94cfe2810da63de5062c7ba74da1f303b801f0a2e16b2a140896b80ba36"
+  },
+  "planches/2-service-6.jpg": {
+    "size": 55596,
+    "sha256": "96689f100d5c8e4e100845debd8b2135d93e31356cab81bba8f4e86384d96d7a"
+  },
+  "planches/1-produit-6.jpg": {
+    "size": 42563,
+    "sha256": "40ddd95629b13b8d68bc2e8de37d61fe6b000ce988b1166faf7869763aa9f441"
+  },
+  "planches/1-produit-4.jpg": {
+    "size": 115885,
+    "sha256": "95d75b9cfe346d87e6ddaebe2df021c38671f7f7df7574c0b45da42dba83e5a0"
+  },
+  "planches/1-produit-2.jpg": {
+    "size": 67308,
+    "sha256": "470a6cb584a587b6f038c613d9fa59c6f0f26aef50d7589d2258ac3ede2483f5"
+  },
+  "planches/2-service-1.jpg": {
+    "size": 77617,
+    "sha256": "3a1e5ac3b3763aff20d1308440b15d326cd5518bf6a25ffa748156fe596f2c79"
+  },
+  "planches/2-service-4.jpg": {
+    "size": 111508,
+    "sha256": "5203e4955e5346e30cfae343d538f551069b35a72e2143edf2e63e179fdf44a4"
+  },
+  "planches/2-service-3.jpg": {
+    "size": 86946,
+    "sha256": "2c0ee8cfcdb7d1496637eb4bc79ba4a86a59209d0419d5ac9b6a8104a352f099"
+  },
+  "avant/local-service390x844.png": {
+    "size": 43730,
+    "sha256": "e51da7a38f9ab1d1a208c86a6bb8c32d37aa816acf333241527cdbf2fec459e3"
+  },
+  "avant/ci.json": {
+    "size": 363,
+    "sha256": "0da8255d0170e859f13f875babbf365aedf01cd0db015ae235e88f511f636a4d"
+  },
+  "avant/ci-service390x844.png": {
+    "size": 79384,
+    "sha256": "9bb1dfbd34bad5cac183564ea9ce5a1359a44938ff7a665d269af66e130a862b"
+  },
+  "avant/erreur-locale.json": {
+    "size": 671,
+    "sha256": "122611b16bbc89d046d38cdd25387a6d6ae2531a630d7a0922e5366436ec0b8d"
+  },
+  "captures/2-service-site-version-restauree.png": {
+    "size": 77137,
+    "sha256": "d39036b34b18869433dba1dcde15a28ec516751caff222a5694a7021ac3bff23"
+  },
+  "captures/1-produit-site-agent-replie.png": {
+    "size": 213651,
+    "sha256": "9841ae5e03dcb385b94b6c6238b65c8248f3b38c09e96d83b6d80890c8672755"
+  },
+  "captures/2-service-entree.png": {
+    "size": 51245,
+    "sha256": "bcb17550bed8e7c440f5c7c531670d5f0df84fad354d5016bb1b6526c70be3be"
+  },
+  "captures/2-service-site-agent-replie.png": {
+    "size": 76955,
+    "sha256": "0407d8188ac34870990e6038d7787c194bc7865db20061baea90b0d1cb9c4331"
+  },
+  "captures/1-produit-entree.png": {
+    "size": 66072,
+    "sha256": "b0224e5e165ce21c0fd9f99c5d86adc16c73acd3514af7896ead60ef3d5c2cf1"
+  },
+  "captures/1-produit-dialogue-lisible.png": {
+    "size": 78189,
+    "sha256": "c793fd6767070c499aba90377d189b35620fdf76925207ab5d76211bdd55ee04"
+  },
+  "captures/1-produit-manuel-conserve.png": {
+    "size": 121348,
+    "sha256": "f20e605f1186a3050902bb2b7f48978199d4089d8632198bda47ab59566f921e"
+  },
+  "captures/1-produit-correction-reouverte.png": {
+    "size": 246333,
+    "sha256": "9e8b0b19bb8ef89384a19b948e509c16ba11a10c29753f62dc9aa596e3fe0777"
+  },
+  "captures/2-service-site-format-telephone.png": {
+    "size": 76943,
+    "sha256": "b3b8247395a8bb4a780a649eaf6e04e67503cd6ad1724238e27e0c1950e1e329"
+  },
+  "captures/1-produit-site-outils-conserves.png": {
+    "size": 212934,
+    "sha256": "b1bfb28d3260dd4fd10f9e257976f64ecf5c0bbc5739187257366ca4f71c4697"
+  },
+  "captures/1-produit-site-format-telephone.png": {
+    "size": 179687,
+    "sha256": "9ca355755bd7a22569c2e913c1f5e82bbe7a9829f7fdb62c8c51e49715260d5a"
+  },
+  "captures/2-service-manuel-conserve.png": {
+    "size": 101834,
+    "sha256": "f225976cb67e9984ae0b981a526423353274aaf0afb8c3b8aa985da5d1248817"
+  },
+  "captures/1-produit-projet-repris.png": {
+    "size": 153705,
+    "sha256": "88941982aaabb4cfcb1788e434e0ea7aea89369c4bbc1991d5571c334d910d54"
+  },
+  "captures/3-reprise-apres-reponse-perdue-390.png": {
+    "size": 49611,
+    "sha256": "05d57900ac7cf5f2bcdd9b6cc4f365409fe1e27298c39e174b784090cf4ac364"
+  },
+  "captures/1-produit-site-agent-ouvert.png": {
+    "size": 258443,
+    "sha256": "47f200a78ed5d4582308e29e005b0e4d20fb3208df08f069b34836ffb4eee262"
+  },
+  "captures/2-service-question-360.png": {
+    "size": 145199,
+    "sha256": "11c7e585251c0a282a737e45fa41b00605d7d5e44ec34a648fa99210df32230a"
+  },
+  "captures/2-service-site-outils-conserves.png": {
+    "size": 82981,
+    "sha256": "9c891a097060d2c790efc1cf5c116260adc7afb1e7e50869220cdee9f1744942"
+  },
+  "captures/2-service-memoire.png": {
+    "size": 188240,
+    "sha256": "78c1a1e952cecbee14e7970393b63370ea4a3b0c28a95e4fd3812fbc71709364"
+  },
+  "captures/1-produit-autre-onglet-meme-memoire.png": {
+    "size": 257502,
+    "sha256": "2fb8c39580556a3a6b9db00583f7ee8cd339391222f29734ab84a3f98a7901e3"
+  },
+  "captures/2-service-devis.png": {
+    "size": 93624,
+    "sha256": "91f6d2698c9076072cc77333a47a89da302b1e4772e90f9b083b16c6fec4e3c1"
+  },
+  "captures/1-produit-site-conseil-premiere-visite.png": {
+    "size": 216815,
+    "sha256": "c8688f6a5ccc8c4667acd912dbbe287d6aec4a99f54f6ddc2f580a8e9cd9cbeb"
+  },
+  "captures/2-service-autre-onglet-meme-memoire.png": {
+    "size": 96183,
+    "sha256": "226fedf004ed682375a1845281e47cb0665cafe5b7b351566185d8401090eac9"
+  },
+  "captures/2-service-correction-reouverte.png": {
+    "size": 219312,
+    "sha256": "9c7187d3db8056f73f026fb63ac1feb32e97b81abe9baf236f247233bb1f51cf"
+  },
+  "captures/1-produit-question.png": {
+    "size": 160528,
+    "sha256": "546d89b757bb2a7c3da41d3f054af108b4e32c4a5c191e1a9a5a360b93db62cb"
+  },
+  "captures/2-service-site-agent-ouvert.png": {
+    "size": 61272,
+    "sha256": "caa5623f43645c9279c3315f482a165ee808706ebe03d97340f2a3970d682d15"
+  },
+  "captures/1-produit-question-360.png": {
+    "size": 143145,
+    "sha256": "90ea19ecdeafd62ab904958433b0db38909ecb26ae69131280a27fce30a3ea78"
+  },
+  "captures/1-produit-memoire.png": {
+    "size": 206285,
+    "sha256": "a5a3d9886b38fba73776a46b6737fb4ad8890972bf91cf48debe92e82fa811c7"
+  },
+  "captures/1-produit-devis.png": {
+    "size": 109164,
+    "sha256": "b943d923deaf35eb848322a5df91b4edd762c0eb62c30f4217650256f1af6088"
+  },
+  "captures/2-service-question.png": {
+    "size": 144766,
+    "sha256": "5735ec34c45fc9aa6630c689c49fb357c38b786033f72d9f15ba124c010009a5"
+  },
+  "captures/2-service-dialogue-lisible.png": {
+    "size": 48670,
+    "sha256": "e53d9840918a414814dfa4031ffeadb53e69d9071e5d2969241b24523c199bd5"
+  },
+  "captures/2-service-site-conseil-premiere-visite.png": {
+    "size": 83435,
+    "sha256": "5fad3615d5cb0a6ca9957d1c329d650b457ce56553c1e4d9c85e574ed0ff516d"
+  },
+  "captures/1-produit-site-version-restauree.png": {
+    "size": 179515,
+    "sha256": "3d8b88de2300ebf1b2186cac6fa7738d04be9eedf35f0eb70e6bea83a3d14fdb"
+  },
+  "captures/2-service-projet-repris.png": {
+    "size": 61920,
+    "sha256": "9cddd76985fae8f5cd327baa1fa0cc4d55987fdc7cd06827443b7b63d0712c79"
+  }
+}

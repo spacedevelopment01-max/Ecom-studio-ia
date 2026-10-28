@@ -1,0 +1,10 @@
+{
+  "run": 40775253509,
+  "job": 123123167457,
+  "head": "dc23f69dbbf9f7b0513fff5d78ebcbf8db2382b6",
+  "compiledCombination": "587dc7dff6538fad7c688e7df3d9406b03797cee",
+  "artifact": 12857245748,
+  "error": "Preview must be visible above half the screen",
+  "localReproductionCompiled": "03f376f041fb46d432f10498e593f14e684a7d88",
+  "thresholdUnchanged": true
+}
