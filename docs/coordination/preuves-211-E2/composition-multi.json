@@ -1,0 +1,3864 @@
+{
+  "scene": {
+    "id": "multi",
+    "business": "products",
+    "name": "Matériel de reliure — RECETTE",
+    "offer": "Outils de reliure",
+    "heading": "Du papier, aux ouvrages.",
+    "description": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.",
+    "color": "#254b63"
+  },
+  "provider": "local-http-simulated",
+  "realProviderCalls": 0,
+  "request": "Compose une section image et texte après l’ouverture, en conservant toutes les sections existantes. Réutilise les textes entiers et mon illustration déjà présents. Montre le plan avant toute modification.",
+  "plan": {
+    "schema": 1,
+    "versionId": "6jc0bbjkupm1qa7k",
+    "mode": "hybrid",
+    "summary": "Une section éditoriale, avec vos textes complets et votre illustration. Toutes les fonctions existantes sont conservées.",
+    "pages": [
+      {
+        "template": "index",
+        "sections": [
+          {
+            "kind": "existing",
+            "section": "hero_editorial_1",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "component",
+            "id": "editorial",
+            "type": "image-with-text",
+            "blocks": [],
+            "layout": [
+              {
+                "key": "layout",
+                "value": "image-left"
+              },
+              {
+                "key": "ratio",
+                "value": "landscape"
+              }
+            ],
+            "bindings": [
+              {
+                "key": "heading",
+                "source": "source.7"
+              },
+              {
+                "key": "text",
+                "source": "source.4"
+              },
+              {
+                "key": "image",
+                "source": "source.49"
+              }
+            ]
+          },
+          {
+            "kind": "existing",
+            "section": "featured_collection_1",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "image_with_text_2",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "features_grid_1",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "rich_text_2",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "horizontal_gallery_1",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "faq_2",
+            "bindings": [],
+            "layout": []
+          },
+          {
+            "kind": "existing",
+            "section": "newsletter_1",
+            "bindings": [],
+            "layout": []
+          }
+        ]
+      }
+    ]
+  },
+  "applied": {
+    "version": {
+      "id": "285tw3hpl96x2htg",
+      "project_id": "iurm2zxwmb0qe709",
+      "number": 2,
+      "spec": "{\"v\":1,\"name\":\"Matériel de reliure — RECETTE · Atelier\",\"direction\":\"atelier\",\"language\":\"fr\",\"settings\":{\"logo_asset\":\"\",\"logo_width\":150,\"favicon_asset\":\"\",\"color_schemes\":{\"scheme-1\":{\"settings\":{\"background\":\"#F9F8F6\",\"surface\":\"#EFEEEC\",\"text\":\"#1B2220\",\"muted\":\"#616563\",\"accent\":\"#254b63\",\"accent_text\":\"#FFFFFF\",\"border\":\"#DADAD8\"}},\"scheme-2\":{\"settings\":{\"background\":\"#F7F5F2\",\"surface\":\"#EDECE9\",\"text\":\"#1B2220\",\"muted\":\"#606461\",\"accent\":\"#254b63\",\"accent_text\":\"#FFFFFF\",\"border\":\"#D8D7D5\"}},\"scheme-3\":{\"settings\":{\"background\":\"#151918\",\"surface\":\"#222625\",\"text\":\"#F4F4F0\",\"muted\":\"#969895\",\"accent\":\"#bba76a\",\"accent_text\":\"#141414\",\"border\":\"#343836\"}},\"scheme-4\":{\"settings\":{\"background\":\"#DDD7C5\",\"surface\":\"#D4CFBE\",\"text\":\"#1B2220\",\"muted\":\"#565851\",\"accent\":\"#1B2220\",\"accent_text\":\"#FFFFFF\",\"border\":\"#C2BEAE\"}}},\"type_heading_font\":\"playfair_display_n6\",\"type_body_font\":\"inter_n4\",\"type_accent_font\":\"cormorant_i5\",\"heading_scale\":104,\"body_scale\":100,\"heading_case\":\"none\",\"heading_tracking\":0,\"heading_weight_boost\":0,\"page_width\":1320,\"spacing_scale\":100,\"style_preset\":\"atelier\",\"button_radius\":40,\"card_radius\":28,\"button_style\":\"solid\",\"button_uppercase\":true,\"button_shine\":true,\"glow_enabled\":true,\"glow_intensity\":35,\"header_shape\":\"floating\",\"card_style\":\"minimal\",\"motion_enabled\":true,\"motion_intensity\":\"expressive\",\"motion_parallax\":true,\"fab_back_to_top\":true,\"fab_contact_link\":\"/pages/contact\",\"fab_contact_icon\":\"chat\",\"fab_contact_label\":\"Nous contacter\",\"cart_type\":\"drawer\",\"cart_show_note\":false,\"cart_reassurance\":\"\",\"social_instagram\":\"\",\"social_tiktok\":\"\",\"social_facebook\":\"\",\"social_youtube\":\"\",\"social_pinterest\":\"\"},\"groups\":{\"header\":{\"type\":\"header\",\"name\":\"Groupe en-tête\",\"sections\":{\"announcement_bar_1\":{\"type\":\"announcement-bar\",\"settings\":{\"style\":\"static\",\"color_scheme\":\"scheme-3\"},\"blocks\":{\"announcement_1\":{\"type\":\"announcement\",\"settings\":{\"text\":\"RECETTE TECHNIQUE — NON PUBLIÉE\",\"link\":\"\"}}},\"block_order\":[\"announcement_1\"]},\"header_1\":{\"type\":\"header\",\"settings\":{\"menu\":\"main-menu\",\"layout\":\"logo-center\",\"shape\":\"floating\",\"icons\":\"circles\",\"mobile_menu\":\"fullscreen\",\"sticky\":true,\"transparent_on_home\":false,\"show_search\":true,\"color_scheme\":\"scheme-1\"}}},\"order\":[\"announcement_bar_1\",\"header_1\"]},\"footer\":{\"type\":\"footer\",\"name\":\"Groupe pied de page\",\"sections\":{\"footer_1\":{\"type\":\"footer\",\"settings\":{\"style\":\"wordmark\",\"logo_asset\":\"\",\"show_wordmark\":true,\"show_policies\":true,\"show_payment\":true,\"color_scheme\":\"scheme-3\"},\"blocks\":{\"text_5\":{\"type\":\"text\",\"settings\":{\"heading\":\"Matériel de reliure — RECETTE\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}},\"links_1\":{\"type\":\"links\",\"settings\":{\"heading\":\"Boutique\",\"menu\":\"main-menu\"}},\"links_2\":{\"type\":\"links\",\"settings\":{\"heading\":\"Aide\",\"menu\":\"footer\"}},\"newsletter_2\":{\"type\":\"newsletter\",\"settings\":{\"heading\":\"Restons en contact\",\"text\":\"Recette technique, aucun envoi réel.\"}}},\"block_order\":[\"text_5\",\"links_1\",\"links_2\",\"newsletter_2\"]}},\"order\":[\"footer_1\"]}},\"templates\":{\"404\":{\"sections\":{\"main_404_1\":{\"type\":\"main-404\",\"settings\":{\"heading\":\"Cette page s'est égarée.\",\"text\":\"Le lien est peut-être ancien. Le reste de la boutique vous attend.\",\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_404_1\"]},\"index\":{\"sections\":{\"hero_editorial_1\":{\"type\":\"hero-editorial\",\"settings\":{\"eyebrow\":\"RECETTE ISOLÉE — CONTENUS FICTIFS\",\"heading_line1\":\"Du papier,\",\"heading_line2\":\"aux ouvrages.\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"button_label\":\"Voir le produit\",\"button_link\":\"/collections/all\",\"image_asset\":\"es-recette-multi.webp\",\"image_alt\":\"Outils de reliure\",\"parallax\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":56,\"padding_bottom\":104}},\"featured_collection_1\":{\"type\":\"featured-collection\",\"settings\":{\"heading\":\"Les incontournables\",\"collection\":\"all\",\"limit\":2,\"columns\":3,\"ratio\":\"portrait\",\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96}},\"image_with_text_2\":{\"type\":\"image-with-text\",\"settings\":{\"eyebrow\":\"Les informations acquises\",\"heading\":\"Outils de reliure\",\"text\":\"\",\"image_asset\":\"\",\"layout\":\"image-left\",\"ratio\":\"portrait\",\"reveal\":\"zoom\",\"parallax\":false,\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}},\"features_grid_1\":{\"type\":\"features-grid\",\"settings\":{\"eyebrow\":\"\",\"heading\":\"Votre projet\",\"heading_align\":\"left\",\"columns\":2,\"columns_mobile\":\"1\",\"style\":\"glow\",\"link_label\":\"\",\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"feature_1\":{\"type\":\"feature\",\"settings\":{\"title\":\"Outils de reliure\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"icon\":\"hand\",\"link_label\":\"\",\"link\":\"\"}},\"feature_2\":{\"type\":\"feature\",\"settings\":{\"title\":\"Ce qui reste à préciser\",\"text\":\"<p>Les caractéristiques non confirmées restent à compléter.</p>\",\"icon\":\"check\",\"link_label\":\"\",\"link\":\"\"}}},\"block_order\":[\"feature_1\",\"feature_2\"]},\"rich_text_2\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"left\",\"style\":\"reveal\",\"color_scheme\":\"scheme-1\",\"padding_top\":120,\"padding_bottom\":120},\"blocks\":{\"eyebrow_3\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Votre besoin\"}},\"heading_2\":{\"type\":\"heading\",\"settings\":{\"text\":\"Outils de reliure\",\"size\":\"h2\"}},\"text_3\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}}},\"block_order\":[\"eyebrow_3\",\"heading_2\",\"text_3\"]},\"horizontal_gallery_1\":{\"type\":\"horizontal-gallery\",\"settings\":{\"heading\":\"Illustration de recette\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}},\"faq_2\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"question_3\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_4\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_3\",\"question_4\"]},\"newsletter_1\":{\"type\":\"newsletter\",\"settings\":{\"heading\":\"Rester en contact\",\"text\":\"<p>Formulaire de recette sans envoi réel.</p>\",\"button_label\":\"S'inscrire\",\"legal\":\"Désinscription possible à tout moment.\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}},\"image_with_text_1\":{\"type\":\"image-with-text\",\"settings\":{\"image\":null,\"image_asset\":\"es-hero-vi8iy4.jpg\",\"eyebrow\":\"\",\"heading\":\"Outils de reliure\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"button_label\":\"\",\"button_link\":\"\",\"layout\":\"image-left\",\"ratio\":\"landscape\"}}},\"order\":[\"hero_editorial_1\",\"image_with_text_1\",\"featured_collection_1\",\"image_with_text_2\",\"features_grid_1\",\"rich_text_2\",\"horizontal_gallery_1\",\"faq_2\",\"newsletter_1\"]},\"product\":{\"sections\":{\"main_product_1\":{\"type\":\"main-product\",\"settings\":{\"gallery_layout\":\"stack\",\"sticky_bar\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":32,\"padding_bottom\":96},\"blocks\":{\"eyebrow_1\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Matériel de reliure — RECETTE\"}},\"title_1\":{\"type\":\"title\",\"settings\":{}},\"rating_1\":{\"type\":\"rating\",\"settings\":{\"anchor\":\"avis\"}},\"price_1\":{\"type\":\"price\",\"settings\":{}},\"text_1\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"product_handle\":\"offre-recette\"}},\"buy_buttons_1\":{\"type\":\"buy_buttons\",\"settings\":{\"picker\":\"buttons\",\"show_quantity\":true,\"show_dynamic_checkout\":true}},\"description_1\":{\"type\":\"description\",\"settings\":{\"hide_for_handle\":\"offre-recette\"}}},\"block_order\":[\"eyebrow_1\",\"title_1\",\"rating_1\",\"price_1\",\"text_1\",\"buy_buttons_1\",\"description_1\"]},\"product_reviews_1\":{\"type\":\"product-reviews\",\"settings\":{\"heading\":\"Avis des clients\",\"anchor\":\"avis\",\"color_scheme\":\"scheme-1\",\"padding_top\":32,\"padding_bottom\":32}},\"scroll_story_1\":{\"type\":\"scroll-story\",\"settings\":{\"heading\":\"Partir de votre besoin.\",\"image_asset\":\"es-recette-multi.webp\",\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"step_1\":{\"type\":\"step\",\"settings\":{\"title\":\"Votre demande\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"image_asset\":\"\"}},\"step_2\":{\"type\":\"step\",\"settings\":{\"title\":\"Les détails à préciser\",\"text\":\"<p>Aucune caractéristique ni promesse commerciale supplémentaire ne sera supposée.</p>\",\"image_asset\":\"\"}}},\"block_order\":[\"step_1\",\"step_2\"]},\"specs_list_1\":{\"type\":\"specs-list\",\"settings\":{\"heading\":\"Les informations du projet\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"spec_1\":{\"type\":\"spec\",\"settings\":{\"label\":\"Offre\",\"value\":\"Outils de reliure\"}}},\"block_order\":[\"spec_1\"]},\"faq_1\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"question_1\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_2\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_1\",\"question_2\"]},\"product_recommendations_1\":{\"type\":\"product-recommendations\",\"settings\":{\"heading\":\"Vous aimerez aussi\",\"limit\":4,\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}}},\"order\":[\"main_product_1\",\"product_reviews_1\",\"scroll_story_1\",\"specs_list_1\",\"faq_1\",\"product_recommendations_1\"]},\"collection\":{\"sections\":{\"main_collection_1\":{\"type\":\"main-collection\",\"settings\":{\"per_page\":16,\"columns\":3,\"enable_filters\":true,\"enable_sorting\":true,\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_collection_1\"]},\"list-collections\":{\"sections\":{\"main_list_collections_1\":{\"type\":\"main-list-collections\",\"settings\":{\"heading\":\"Catalogue\",\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_list_collections_1\"]},\"search\":{\"sections\":{\"main_search_1\":{\"type\":\"main-search\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_search_1\"]},\"cart\":{\"sections\":{\"main_cart_1\":{\"type\":\"main-cart\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_cart_1\"]},\"page\":{\"sections\":{\"main_page_1\":{\"type\":\"main-page\",\"settings\":{\"width\":\"narrow\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}}},\"order\":[\"main_page_1\"]},\"page.about\":{\"sections\":{\"rich_text_1\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"center\",\"style\":\"statement\",\"color_scheme\":\"scheme-1\",\"padding_top\":120,\"padding_bottom\":64},\"blocks\":{\"eyebrow_2\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Notre histoire\"}},\"heading_1\":{\"type\":\"heading\",\"settings\":{\"text\":\"Votre projet\",\"size\":\"h1\"}},\"text_2\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}}},\"block_order\":[\"eyebrow_2\",\"heading_1\",\"text_2\"]},\"image_with_text_1\":{\"type\":\"image-with-text\",\"settings\":{\"eyebrow\":\"\",\"heading\":\"La démarche\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"image_asset\":\"\",\"layout\":\"image-left\",\"ratio\":\"portrait\",\"reveal\":\"curtain\",\"parallax\":false,\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96}},\"cta_banner_1\":{\"type\":\"cta-banner\",\"settings\":{\"heading\":\"Parlons de votre besoin.\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"button_label\":\"Préparer ma demande\",\"button_link\":\"/products/offre-recette\",\"image_asset\":\"es-recette-multi.webp\",\"overlay\":60,\"style\":\"center\",\"parallax\":true,\"color_scheme\":\"scheme-3\",\"padding_top\":152,\"padding_bottom\":152}},\"main_page_3\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_3\",\"rich_text_1\",\"image_with_text_1\",\"cta_banner_1\"]},\"page.faq\":{\"sections\":{\"faq_3\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"text\":\"\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96},\"blocks\":{\"question_5\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_6\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_5\",\"question_6\"]},\"contact_form_1\":{\"type\":\"contact-form\",\"settings\":{\"heading\":\"Une autre question ?\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"color_scheme\":\"scheme-2\",\"padding_top\":96,\"padding_bottom\":96}},\"main_page_4\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_4\",\"faq_3\",\"contact_form_1\"]},\"page.contact\":{\"sections\":{\"contact_form_2\":{\"type\":\"contact-form\",\"settings\":{\"heading\":\"Votre demande\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":120}},\"main_page_5\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_5\",\"contact_form_2\"]},\"page.shipping\":{\"sections\":{\"main_page_2\":{\"type\":\"main-page\",\"settings\":{\"width\":\"narrow\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}},\"rich_text_3\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"left\",\"style\":\"plain\",\"color_scheme\":\"scheme-2\",\"padding_top\":64,\"padding_bottom\":64},\"blocks\":{\"heading_3\":{\"type\":\"heading\",\"settings\":{\"text\":\"Conditions\",\"size\":\"h3\"}},\"text_4\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>À confirmer.</p>\"}}},\"block_order\":[\"heading_3\",\"text_4\"]}},\"order\":[\"main_page_2\",\"rich_text_3\"]},\"blog\":{\"sections\":{\"main_blog_1\":{\"type\":\"main-blog\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_blog_1\"]},\"article\":{\"sections\":{\"main_article_1\":{\"type\":\"main-article\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_article_1\"]},\"password\":{\"sections\":{\"main_password_1\":{\"type\":\"main-password\",\"settings\":{\"heading\":\"Bientôt en ligne\"}}},\"order\":[\"main_password_1\"],\"layout\":\"password\"}},\"customSections\":{},\"files\":{\"es-recette-multi.webp\":\"vi8iy4z80891k13f\",\"es-hero-vi8iy4.jpg\":\"vi8iy4z80891k13f\"},\"locks\":[],\"store\":{\"shopName\":\"Matériel de reliure — RECETTE\",\"product\":{\"title\":\"Outils de reliure\",\"handle\":\"offre-recette\",\"vendor\":\"Matériel de reliure — RECETTE\",\"description_html\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"price\":12900,\"compare_at_price\":null,\"currency\":\"EUR\",\"options\":[\"Format\"],\"variants\":[{\"title\":\"Standard\",\"options\":[\"Standard\"],\"price\":12900,\"available\":true,\"inventory_quantity\":4},{\"title\":\"Grand\",\"options\":[\"Grand\"],\"price\":14900,\"available\":true,\"inventory_quantity\":3}],\"images\":[\"es-recette-multi.webp\"],\"tags\":[\"RECETTE FICTIVE\"],\"seo\":{\"title\":\"Matériel de reliure — RECETTE\",\"description\":\"Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.\"}},\"products\":[{\"title\":\"Poinçon de reliure\",\"handle\":\"poincon-recette\",\"vendor\":\"Matériel de reliure — RECETTE\",\"description_html\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"price\":12900,\"compare_at_price\":null,\"currency\":\"EUR\",\"options\":[],\"variants\":[],\"images\":[\"es-recette-multi.webp\"],\"tags\":[\"RECETTE FICTIVE\"]}],\"collections\":[{\"handle\":\"outils\",\"title\":\"Outils de reliure\",\"description\":\"Catalogue fictif de recette.\",\"products\":[\"offre-recette\",\"poincon-recette\"]}],\"pages\":[{\"handle\":\"notre-histoire\",\"title\":\"Notre histoire\",\"template_suffix\":\"about\",\"body_html\":\"\"},{\"handle\":\"faq\",\"title\":\"Questions fréquentes\",\"template_suffix\":\"faq\",\"body_html\":\"\"},{\"handle\":\"contact\",\"title\":\"Contact\",\"template_suffix\":\"contact\",\"body_html\":\"\"},{\"handle\":\"livraison-et-retours\",\"title\":\"Livraison et retours\",\"template_suffix\":\"shipping\",\"body_html\":\"<p>Les conditions détaillées figurent ci-dessous.</p>\"}],\"menus\":{\"main-menu\":{\"title\":\"Menu principal\",\"links\":[{\"title\":\"Accueil\",\"url\":\"/\"},{\"title\":\"Boutique\",\"url\":\"/collections/all\",\"links\":[{\"title\":\"Outils de reliure\",\"url\":\"/collections/outils\"}]},{\"title\":\"Notre histoire\",\"url\":\"/pages/notre-histoire\"},{\"title\":\"FAQ\",\"url\":\"/pages/faq\"},{\"title\":\"Contact\",\"url\":\"/pages/contact\"}]},\"footer\":{\"title\":\"Pied de page\",\"links\":[{\"title\":\"Livraison et retours\",\"url\":\"/pages/livraison-et-retours\"},{\"title\":\"Contact\",\"url\":\"/pages/contact\"},{\"title\":\"Recherche\",\"url\":\"/search\"}]}},\"policies\":[{\"handle\":\"terms-of-service\",\"title\":\"Conditions générales de vente\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"privacy-policy\",\"title\":\"Politique de confidentialité\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"refund-policy\",\"title\":\"Politique de remboursement\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"legal-notice\",\"title\":\"Mentions légales\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"}]},\"meta\":{\"composition\":{\"schema\":1,\"plan\":{\"schema\":1,\"versionId\":\"6jc0bbjkupm1qa7k\",\"mode\":\"hybrid\",\"summary\":\"Une section éditoriale, avec vos textes complets et votre illustration. Toutes les fonctions existantes sont conservées.\",\"pages\":[{\"template\":\"index\",\"sections\":[{\"kind\":\"existing\",\"section\":\"hero_editorial_1\",\"bindings\":[],\"layout\":[]},{\"kind\":\"component\",\"id\":\"editorial\",\"type\":\"image-with-text\",\"bindings\":[{\"key\":\"heading\",\"source\":\"source.7\"},{\"key\":\"text\",\"source\":\"source.4\"},{\"key\":\"image\",\"source\":\"source.49\"}],\"layout\":[{\"key\":\"layout\",\"value\":\"image-left\"},{\"key\":\"ratio\",\"value\":\"landscape\"}],\"blocks\":[]},{\"kind\":\"existing\",\"section\":\"featured_collection_1\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"image_with_text_2\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"features_grid_1\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"rich_text_2\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"horizontal_gallery_1\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"faq_2\",\"bindings\":[],\"layout\":[]},{\"kind\":\"existing\",\"section\":\"newsletter_1\",\"bindings\":[],\"layout\":[]}]}]},\"parentVersionId\":\"6jc0bbjkupm1qa7k\",\"sourceRefs\":[{\"id\":\"source.7\",\"ref\":\"theme.6jc0bbjkupm1qa7k.index.hero_editorial_1.section.image_alt\",\"kind\":\"copy\"},{\"id\":\"source.4\",\"ref\":\"theme.6jc0bbjkupm1qa7k.index.hero_editorial_1.section.text\",\"kind\":\"copy\"},{\"id\":\"source.49\",\"ref\":\"asset.vi8iy4z80891k13f\",\"kind\":\"media\"}],\"templateSections\":{\"index\":[\"hero_editorial_1\",\"image_with_text_1\",\"featured_collection_1\",\"image_with_text_2\",\"features_grid_1\",\"rich_text_2\",\"horizontal_gallery_1\",\"faq_2\",\"newsletter_1\"]},\"quality\":\"not_measured\",\"platformInstallation\":\"not_tested\"}}}",
+      "summary": "Une section éditoriale, avec vos textes complets et votre illustration. Toutes les fonctions existantes sont conservées.",
+      "author": "user",
+      "parent_id": "6jc0bbjkupm1qa7k",
+      "qc": null,
+      "created_at": 1793202157381
+    },
+    "spec": {
+      "v": 1,
+      "name": "Matériel de reliure — RECETTE · Atelier",
+      "direction": "atelier",
+      "language": "fr",
+      "settings": {
+        "logo_asset": "",
+        "logo_width": 150,
+        "favicon_asset": "",
+        "color_schemes": {
+          "scheme-1": {
+            "settings": {
+              "background": "#F9F8F6",
+              "surface": "#EFEEEC",
+              "text": "#1B2220",
+              "muted": "#616563",
+              "accent": "#254b63",
+              "accent_text": "#FFFFFF",
+              "border": "#DADAD8"
+            }
+          },
+          "scheme-2": {
+            "settings": {
+              "background": "#F7F5F2",
+              "surface": "#EDECE9",
+              "text": "#1B2220",
+              "muted": "#606461",
+              "accent": "#254b63",
+              "accent_text": "#FFFFFF",
+              "border": "#D8D7D5"
+            }
+          },
+          "scheme-3": {
+            "settings": {
+              "background": "#151918",
+              "surface": "#222625",
+              "text": "#F4F4F0",
+              "muted": "#969895",
+              "accent": "#bba76a",
+              "accent_text": "#141414",
+              "border": "#343836"
+            }
+          },
+          "scheme-4": {
+            "settings": {
+              "background": "#DDD7C5",
+              "surface": "#D4CFBE",
+              "text": "#1B2220",
+              "muted": "#565851",
+              "accent": "#1B2220",
+              "accent_text": "#FFFFFF",
+              "border": "#C2BEAE"
+            }
+          }
+        },
+        "type_heading_font": "playfair_display_n6",
+        "type_body_font": "inter_n4",
+        "type_accent_font": "cormorant_i5",
+        "heading_scale": 104,
+        "body_scale": 100,
+        "heading_case": "none",
+        "heading_tracking": 0,
+        "heading_weight_boost": 0,
+        "page_width": 1320,
+        "spacing_scale": 100,
+        "style_preset": "atelier",
+        "button_radius": 40,
+        "card_radius": 28,
+        "button_style": "solid",
+        "button_uppercase": true,
+        "button_shine": true,
+        "glow_enabled": true,
+        "glow_intensity": 35,
+        "header_shape": "floating",
+        "card_style": "minimal",
+        "motion_enabled": true,
+        "motion_intensity": "expressive",
+        "motion_parallax": true,
+        "fab_back_to_top": true,
+        "fab_contact_link": "/pages/contact",
+        "fab_contact_icon": "chat",
+        "fab_contact_label": "Nous contacter",
+        "cart_type": "drawer",
+        "cart_show_note": false,
+        "cart_reassurance": "",
+        "social_instagram": "",
+        "social_tiktok": "",
+        "social_facebook": "",
+        "social_youtube": "",
+        "social_pinterest": ""
+      },
+      "groups": {
+        "header": {
+          "type": "header",
+          "name": "Groupe en-tête",
+          "sections": {
+            "announcement_bar_1": {
+              "type": "announcement-bar",
+              "settings": {
+                "style": "static",
+                "color_scheme": "scheme-3"
+              },
+              "blocks": {
+                "announcement_1": {
+                  "type": "announcement",
+                  "settings": {
+                    "text": "RECETTE TECHNIQUE — NON PUBLIÉE",
+                    "link": ""
+                  }
+                }
+              },
+              "block_order": [
+                "announcement_1"
+              ]
+            },
+            "header_1": {
+              "type": "header",
+              "settings": {
+                "menu": "main-menu",
+                "layout": "logo-center",
+                "shape": "floating",
+                "icons": "circles",
+                "mobile_menu": "fullscreen",
+                "sticky": true,
+                "transparent_on_home": false,
+                "show_search": true,
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "announcement_bar_1",
+            "header_1"
+          ]
+        },
+        "footer": {
+          "type": "footer",
+          "name": "Groupe pied de page",
+          "sections": {
+            "footer_1": {
+              "type": "footer",
+              "settings": {
+                "style": "wordmark",
+                "logo_asset": "",
+                "show_wordmark": true,
+                "show_policies": true,
+                "show_payment": true,
+                "color_scheme": "scheme-3"
+              },
+              "blocks": {
+                "text_5": {
+                  "type": "text",
+                  "settings": {
+                    "heading": "Matériel de reliure — RECETTE",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                },
+                "links_1": {
+                  "type": "links",
+                  "settings": {
+                    "heading": "Boutique",
+                    "menu": "main-menu"
+                  }
+                },
+                "links_2": {
+                  "type": "links",
+                  "settings": {
+                    "heading": "Aide",
+                    "menu": "footer"
+                  }
+                },
+                "newsletter_2": {
+                  "type": "newsletter",
+                  "settings": {
+                    "heading": "Restons en contact",
+                    "text": "Recette technique, aucun envoi réel."
+                  }
+                }
+              },
+              "block_order": [
+                "text_5",
+                "links_1",
+                "links_2",
+                "newsletter_2"
+              ]
+            }
+          },
+          "order": [
+            "footer_1"
+          ]
+        }
+      },
+      "templates": {
+        "404": {
+          "sections": {
+            "main_404_1": {
+              "type": "main-404",
+              "settings": {
+                "heading": "Cette page s'est égarée.",
+                "text": "Le lien est peut-être ancien. Le reste de la boutique vous attend.",
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_404_1"
+          ]
+        },
+        "index": {
+          "sections": {
+            "hero_editorial_1": {
+              "type": "hero-editorial",
+              "settings": {
+                "eyebrow": "RECETTE ISOLÉE — CONTENUS FICTIFS",
+                "heading_line1": "Du papier,",
+                "heading_line2": "aux ouvrages.",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "button_label": "Voir le produit",
+                "button_link": "/collections/all",
+                "image_asset": "es-recette-multi.webp",
+                "image_alt": "Outils de reliure",
+                "parallax": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 56,
+                "padding_bottom": 104
+              }
+            },
+            "featured_collection_1": {
+              "type": "featured-collection",
+              "settings": {
+                "heading": "Les incontournables",
+                "collection": "all",
+                "limit": 2,
+                "columns": 3,
+                "ratio": "portrait",
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "image_with_text_2": {
+              "type": "image-with-text",
+              "settings": {
+                "eyebrow": "Les informations acquises",
+                "heading": "Outils de reliure",
+                "text": "",
+                "image_asset": "",
+                "layout": "image-left",
+                "ratio": "portrait",
+                "reveal": "zoom",
+                "parallax": false,
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            },
+            "features_grid_1": {
+              "type": "features-grid",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Votre projet",
+                "heading_align": "left",
+                "columns": 2,
+                "columns_mobile": "1",
+                "style": "glow",
+                "link_label": "",
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "feature_1": {
+                  "type": "feature",
+                  "settings": {
+                    "title": "Outils de reliure",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "icon": "hand",
+                    "link_label": "",
+                    "link": ""
+                  }
+                },
+                "feature_2": {
+                  "type": "feature",
+                  "settings": {
+                    "title": "Ce qui reste à préciser",
+                    "text": "<p>Les caractéristiques non confirmées restent à compléter.</p>",
+                    "icon": "check",
+                    "link_label": "",
+                    "link": ""
+                  }
+                }
+              },
+              "block_order": [
+                "feature_1",
+                "feature_2"
+              ]
+            },
+            "rich_text_2": {
+              "type": "rich-text",
+              "settings": {
+                "align": "left",
+                "style": "reveal",
+                "color_scheme": "scheme-1",
+                "padding_top": 120,
+                "padding_bottom": 120
+              },
+              "blocks": {
+                "eyebrow_3": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Votre besoin"
+                  }
+                },
+                "heading_2": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Outils de reliure",
+                    "size": "h2"
+                  }
+                },
+                "text_3": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_3",
+                "heading_2",
+                "text_3"
+              ]
+            },
+            "horizontal_gallery_1": {
+              "type": "horizontal-gallery",
+              "settings": {
+                "heading": "Illustration de recette",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            },
+            "faq_2": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "question_3": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_4": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_3",
+                "question_4"
+              ]
+            },
+            "newsletter_1": {
+              "type": "newsletter",
+              "settings": {
+                "heading": "Rester en contact",
+                "text": "<p>Formulaire de recette sans envoi réel.</p>",
+                "button_label": "S'inscrire",
+                "legal": "Désinscription possible à tout moment.",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            },
+            "image_with_text_1": {
+              "type": "image-with-text",
+              "settings": {
+                "image": null,
+                "image_asset": "es-hero-vi8iy4.jpg",
+                "eyebrow": "",
+                "heading": "Outils de reliure",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "button_label": "",
+                "button_link": "",
+                "layout": "image-left",
+                "ratio": "landscape"
+              }
+            }
+          },
+          "order": [
+            "hero_editorial_1",
+            "image_with_text_1",
+            "featured_collection_1",
+            "image_with_text_2",
+            "features_grid_1",
+            "rich_text_2",
+            "horizontal_gallery_1",
+            "faq_2",
+            "newsletter_1"
+          ]
+        },
+        "product": {
+          "sections": {
+            "main_product_1": {
+              "type": "main-product",
+              "settings": {
+                "gallery_layout": "stack",
+                "sticky_bar": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 32,
+                "padding_bottom": 96
+              },
+              "blocks": {
+                "eyebrow_1": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Matériel de reliure — RECETTE"
+                  }
+                },
+                "title_1": {
+                  "type": "title",
+                  "settings": {}
+                },
+                "rating_1": {
+                  "type": "rating",
+                  "settings": {
+                    "anchor": "avis"
+                  }
+                },
+                "price_1": {
+                  "type": "price",
+                  "settings": {}
+                },
+                "text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "product_handle": "offre-recette"
+                  }
+                },
+                "buy_buttons_1": {
+                  "type": "buy_buttons",
+                  "settings": {
+                    "picker": "buttons",
+                    "show_quantity": true,
+                    "show_dynamic_checkout": true
+                  }
+                },
+                "description_1": {
+                  "type": "description",
+                  "settings": {
+                    "hide_for_handle": "offre-recette"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_1",
+                "title_1",
+                "rating_1",
+                "price_1",
+                "text_1",
+                "buy_buttons_1",
+                "description_1"
+              ]
+            },
+            "product_reviews_1": {
+              "type": "product-reviews",
+              "settings": {
+                "heading": "Avis des clients",
+                "anchor": "avis",
+                "color_scheme": "scheme-1",
+                "padding_top": 32,
+                "padding_bottom": 32
+              }
+            },
+            "scroll_story_1": {
+              "type": "scroll-story",
+              "settings": {
+                "heading": "Partir de votre besoin.",
+                "image_asset": "es-recette-multi.webp",
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "step_1": {
+                  "type": "step",
+                  "settings": {
+                    "title": "Votre demande",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "image_asset": ""
+                  }
+                },
+                "step_2": {
+                  "type": "step",
+                  "settings": {
+                    "title": "Les détails à préciser",
+                    "text": "<p>Aucune caractéristique ni promesse commerciale supplémentaire ne sera supposée.</p>",
+                    "image_asset": ""
+                  }
+                }
+              },
+              "block_order": [
+                "step_1",
+                "step_2"
+              ]
+            },
+            "specs_list_1": {
+              "type": "specs-list",
+              "settings": {
+                "heading": "Les informations du projet",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "spec_1": {
+                  "type": "spec",
+                  "settings": {
+                    "label": "Offre",
+                    "value": "Outils de reliure"
+                  }
+                }
+              },
+              "block_order": [
+                "spec_1"
+              ]
+            },
+            "faq_1": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "question_1": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_2": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_1",
+                "question_2"
+              ]
+            },
+            "product_recommendations_1": {
+              "type": "product-recommendations",
+              "settings": {
+                "heading": "Vous aimerez aussi",
+                "limit": 4,
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            }
+          },
+          "order": [
+            "main_product_1",
+            "product_reviews_1",
+            "scroll_story_1",
+            "specs_list_1",
+            "faq_1",
+            "product_recommendations_1"
+          ]
+        },
+        "collection": {
+          "sections": {
+            "main_collection_1": {
+              "type": "main-collection",
+              "settings": {
+                "per_page": 16,
+                "columns": 3,
+                "enable_filters": true,
+                "enable_sorting": true,
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_collection_1"
+          ]
+        },
+        "list-collections": {
+          "sections": {
+            "main_list_collections_1": {
+              "type": "main-list-collections",
+              "settings": {
+                "heading": "Catalogue",
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_list_collections_1"
+          ]
+        },
+        "search": {
+          "sections": {
+            "main_search_1": {
+              "type": "main-search",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_search_1"
+          ]
+        },
+        "cart": {
+          "sections": {
+            "main_cart_1": {
+              "type": "main-cart",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_cart_1"
+          ]
+        },
+        "page": {
+          "sections": {
+            "main_page_1": {
+              "type": "main-page",
+              "settings": {
+                "width": "narrow",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            }
+          },
+          "order": [
+            "main_page_1"
+          ]
+        },
+        "page.about": {
+          "sections": {
+            "rich_text_1": {
+              "type": "rich-text",
+              "settings": {
+                "align": "center",
+                "style": "statement",
+                "color_scheme": "scheme-1",
+                "padding_top": 120,
+                "padding_bottom": 64
+              },
+              "blocks": {
+                "eyebrow_2": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Notre histoire"
+                  }
+                },
+                "heading_1": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Votre projet",
+                    "size": "h1"
+                  }
+                },
+                "text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_2",
+                "heading_1",
+                "text_2"
+              ]
+            },
+            "image_with_text_1": {
+              "type": "image-with-text",
+              "settings": {
+                "eyebrow": "",
+                "heading": "La démarche",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "image_asset": "",
+                "layout": "image-left",
+                "ratio": "portrait",
+                "reveal": "curtain",
+                "parallax": false,
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "cta_banner_1": {
+              "type": "cta-banner",
+              "settings": {
+                "heading": "Parlons de votre besoin.",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "button_label": "Préparer ma demande",
+                "button_link": "/products/offre-recette",
+                "image_asset": "es-recette-multi.webp",
+                "overlay": 60,
+                "style": "center",
+                "parallax": true,
+                "color_scheme": "scheme-3",
+                "padding_top": 152,
+                "padding_bottom": 152
+              }
+            },
+            "main_page_3": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_3",
+            "rich_text_1",
+            "image_with_text_1",
+            "cta_banner_1"
+          ]
+        },
+        "page.faq": {
+          "sections": {
+            "faq_3": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "text": "",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              },
+              "blocks": {
+                "question_5": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_6": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_5",
+                "question_6"
+              ]
+            },
+            "contact_form_1": {
+              "type": "contact-form",
+              "settings": {
+                "heading": "Une autre question ?",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "color_scheme": "scheme-2",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "main_page_4": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_4",
+            "faq_3",
+            "contact_form_1"
+          ]
+        },
+        "page.contact": {
+          "sections": {
+            "contact_form_2": {
+              "type": "contact-form",
+              "settings": {
+                "heading": "Votre demande",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 120
+              }
+            },
+            "main_page_5": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_5",
+            "contact_form_2"
+          ]
+        },
+        "page.shipping": {
+          "sections": {
+            "main_page_2": {
+              "type": "main-page",
+              "settings": {
+                "width": "narrow",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            },
+            "rich_text_3": {
+              "type": "rich-text",
+              "settings": {
+                "align": "left",
+                "style": "plain",
+                "color_scheme": "scheme-2",
+                "padding_top": 64,
+                "padding_bottom": 64
+              },
+              "blocks": {
+                "heading_3": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Conditions",
+                    "size": "h3"
+                  }
+                },
+                "text_4": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>À confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "heading_3",
+                "text_4"
+              ]
+            }
+          },
+          "order": [
+            "main_page_2",
+            "rich_text_3"
+          ]
+        },
+        "blog": {
+          "sections": {
+            "main_blog_1": {
+              "type": "main-blog",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_blog_1"
+          ]
+        },
+        "article": {
+          "sections": {
+            "main_article_1": {
+              "type": "main-article",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_article_1"
+          ]
+        },
+        "password": {
+          "sections": {
+            "main_password_1": {
+              "type": "main-password",
+              "settings": {
+                "heading": "Bientôt en ligne"
+              }
+            }
+          },
+          "order": [
+            "main_password_1"
+          ],
+          "layout": "password"
+        }
+      },
+      "customSections": {},
+      "files": {
+        "es-recette-multi.webp": "vi8iy4z80891k13f",
+        "es-hero-vi8iy4.jpg": "vi8iy4z80891k13f"
+      },
+      "locks": [],
+      "store": {
+        "shopName": "Matériel de reliure — RECETTE",
+        "product": {
+          "title": "Outils de reliure",
+          "handle": "offre-recette",
+          "vendor": "Matériel de reliure — RECETTE",
+          "description_html": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+          "price": 12900,
+          "compare_at_price": null,
+          "currency": "EUR",
+          "options": [
+            "Format"
+          ],
+          "variants": [
+            {
+              "title": "Standard",
+              "options": [
+                "Standard"
+              ],
+              "price": 12900,
+              "available": true,
+              "inventory_quantity": 4
+            },
+            {
+              "title": "Grand",
+              "options": [
+                "Grand"
+              ],
+              "price": 14900,
+              "available": true,
+              "inventory_quantity": 3
+            }
+          ],
+          "images": [
+            "es-recette-multi.webp"
+          ],
+          "tags": [
+            "RECETTE FICTIVE"
+          ],
+          "seo": {
+            "title": "Matériel de reliure — RECETTE",
+            "description": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+          }
+        },
+        "products": [
+          {
+            "title": "Poinçon de reliure",
+            "handle": "poincon-recette",
+            "vendor": "Matériel de reliure — RECETTE",
+            "description_html": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+            "price": 12900,
+            "compare_at_price": null,
+            "currency": "EUR",
+            "options": [],
+            "variants": [],
+            "images": [
+              "es-recette-multi.webp"
+            ],
+            "tags": [
+              "RECETTE FICTIVE"
+            ]
+          }
+        ],
+        "collections": [
+          {
+            "handle": "outils",
+            "title": "Outils de reliure",
+            "description": "Catalogue fictif de recette.",
+            "products": [
+              "offre-recette",
+              "poincon-recette"
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "handle": "notre-histoire",
+            "title": "Notre histoire",
+            "template_suffix": "about",
+            "body_html": ""
+          },
+          {
+            "handle": "faq",
+            "title": "Questions fréquentes",
+            "template_suffix": "faq",
+            "body_html": ""
+          },
+          {
+            "handle": "contact",
+            "title": "Contact",
+            "template_suffix": "contact",
+            "body_html": ""
+          },
+          {
+            "handle": "livraison-et-retours",
+            "title": "Livraison et retours",
+            "template_suffix": "shipping",
+            "body_html": "<p>Les conditions détaillées figurent ci-dessous.</p>"
+          }
+        ],
+        "menus": {
+          "main-menu": {
+            "title": "Menu principal",
+            "links": [
+              {
+                "title": "Accueil",
+                "url": "/"
+              },
+              {
+                "title": "Boutique",
+                "url": "/collections/all",
+                "links": [
+                  {
+                    "title": "Outils de reliure",
+                    "url": "/collections/outils"
+                  }
+                ]
+              },
+              {
+                "title": "Notre histoire",
+                "url": "/pages/notre-histoire"
+              },
+              {
+                "title": "FAQ",
+                "url": "/pages/faq"
+              },
+              {
+                "title": "Contact",
+                "url": "/pages/contact"
+              }
+            ]
+          },
+          "footer": {
+            "title": "Pied de page",
+            "links": [
+              {
+                "title": "Livraison et retours",
+                "url": "/pages/livraison-et-retours"
+              },
+              {
+                "title": "Contact",
+                "url": "/pages/contact"
+              },
+              {
+                "title": "Recherche",
+                "url": "/search"
+              }
+            ]
+          }
+        },
+        "policies": [
+          {
+            "handle": "terms-of-service",
+            "title": "Conditions générales de vente",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "privacy-policy",
+            "title": "Politique de confidentialité",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "refund-policy",
+            "title": "Politique de remboursement",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "legal-notice",
+            "title": "Mentions légales",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          }
+        ]
+      },
+      "meta": {
+        "composition": {
+          "schema": 1,
+          "plan": {
+            "schema": 1,
+            "versionId": "6jc0bbjkupm1qa7k",
+            "mode": "hybrid",
+            "summary": "Une section éditoriale, avec vos textes complets et votre illustration. Toutes les fonctions existantes sont conservées.",
+            "pages": [
+              {
+                "template": "index",
+                "sections": [
+                  {
+                    "kind": "existing",
+                    "section": "hero_editorial_1",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "component",
+                    "id": "editorial",
+                    "type": "image-with-text",
+                    "bindings": [
+                      {
+                        "key": "heading",
+                        "source": "source.7"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4"
+                      },
+                      {
+                        "key": "image",
+                        "source": "source.49"
+                      }
+                    ],
+                    "layout": [
+                      {
+                        "key": "layout",
+                        "value": "image-left"
+                      },
+                      {
+                        "key": "ratio",
+                        "value": "landscape"
+                      }
+                    ],
+                    "blocks": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "featured_collection_1",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "image_with_text_2",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "features_grid_1",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "rich_text_2",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "horizontal_gallery_1",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "faq_2",
+                    "bindings": [],
+                    "layout": []
+                  },
+                  {
+                    "kind": "existing",
+                    "section": "newsletter_1",
+                    "bindings": [],
+                    "layout": []
+                  }
+                ]
+              }
+            ]
+          },
+          "parentVersionId": "6jc0bbjkupm1qa7k",
+          "sourceRefs": [
+            {
+              "id": "source.7",
+              "ref": "theme.6jc0bbjkupm1qa7k.index.hero_editorial_1.section.image_alt",
+              "kind": "copy"
+            },
+            {
+              "id": "source.4",
+              "ref": "theme.6jc0bbjkupm1qa7k.index.hero_editorial_1.section.text",
+              "kind": "copy"
+            },
+            {
+              "id": "source.49",
+              "ref": "asset.vi8iy4z80891k13f",
+              "kind": "media"
+            }
+          ],
+          "templateSections": {
+            "index": [
+              "hero_editorial_1",
+              "image_with_text_1",
+              "featured_collection_1",
+              "image_with_text_2",
+              "features_grid_1",
+              "rich_text_2",
+              "horizontal_gallery_1",
+              "faq_2",
+              "newsletter_1"
+            ]
+          },
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        }
+      }
+    },
+    "versions": [
+      {
+        "id": "6jc0bbjkupm1qa7k",
+        "number": 1,
+        "parent_id": null
+      },
+      {
+        "id": "285tw3hpl96x2htg",
+        "number": 2,
+        "parent_id": "6jc0bbjkupm1qa7k"
+      }
+    ],
+    "freeJobReservations": 0
+  },
+  "restored": {
+    "version": {
+      "id": "58xx3d2jzmtxuazn",
+      "project_id": "iurm2zxwmb0qe709",
+      "number": 3,
+      "spec": "{\"v\":1,\"name\":\"Matériel de reliure — RECETTE · Atelier\",\"direction\":\"atelier\",\"language\":\"fr\",\"settings\":{\"logo_asset\":\"\",\"logo_width\":150,\"favicon_asset\":\"\",\"color_schemes\":{\"scheme-1\":{\"settings\":{\"background\":\"#F9F8F6\",\"surface\":\"#EFEEEC\",\"text\":\"#1B2220\",\"muted\":\"#616563\",\"accent\":\"#254b63\",\"accent_text\":\"#FFFFFF\",\"border\":\"#DADAD8\"}},\"scheme-2\":{\"settings\":{\"background\":\"#F7F5F2\",\"surface\":\"#EDECE9\",\"text\":\"#1B2220\",\"muted\":\"#606461\",\"accent\":\"#254b63\",\"accent_text\":\"#FFFFFF\",\"border\":\"#D8D7D5\"}},\"scheme-3\":{\"settings\":{\"background\":\"#151918\",\"surface\":\"#222625\",\"text\":\"#F4F4F0\",\"muted\":\"#969895\",\"accent\":\"#bba76a\",\"accent_text\":\"#141414\",\"border\":\"#343836\"}},\"scheme-4\":{\"settings\":{\"background\":\"#DDD7C5\",\"surface\":\"#D4CFBE\",\"text\":\"#1B2220\",\"muted\":\"#565851\",\"accent\":\"#1B2220\",\"accent_text\":\"#FFFFFF\",\"border\":\"#C2BEAE\"}}},\"type_heading_font\":\"playfair_display_n6\",\"type_body_font\":\"inter_n4\",\"type_accent_font\":\"cormorant_i5\",\"heading_scale\":104,\"body_scale\":100,\"heading_case\":\"none\",\"heading_tracking\":0,\"heading_weight_boost\":0,\"page_width\":1320,\"spacing_scale\":100,\"style_preset\":\"atelier\",\"button_radius\":40,\"card_radius\":28,\"button_style\":\"solid\",\"button_uppercase\":true,\"button_shine\":true,\"glow_enabled\":true,\"glow_intensity\":35,\"header_shape\":\"floating\",\"card_style\":\"minimal\",\"motion_enabled\":true,\"motion_intensity\":\"expressive\",\"motion_parallax\":true,\"fab_back_to_top\":true,\"fab_contact_link\":\"/pages/contact\",\"fab_contact_icon\":\"chat\",\"fab_contact_label\":\"Nous contacter\",\"cart_type\":\"drawer\",\"cart_show_note\":false,\"cart_reassurance\":\"\",\"social_instagram\":\"\",\"social_tiktok\":\"\",\"social_facebook\":\"\",\"social_youtube\":\"\",\"social_pinterest\":\"\"},\"groups\":{\"header\":{\"type\":\"header\",\"name\":\"Groupe en-tête\",\"sections\":{\"announcement_bar_1\":{\"type\":\"announcement-bar\",\"settings\":{\"style\":\"static\",\"color_scheme\":\"scheme-3\"},\"blocks\":{\"announcement_1\":{\"type\":\"announcement\",\"settings\":{\"text\":\"RECETTE TECHNIQUE — NON PUBLIÉE\",\"link\":\"\"}}},\"block_order\":[\"announcement_1\"]},\"header_1\":{\"type\":\"header\",\"settings\":{\"menu\":\"main-menu\",\"layout\":\"logo-center\",\"shape\":\"floating\",\"icons\":\"circles\",\"mobile_menu\":\"fullscreen\",\"sticky\":true,\"transparent_on_home\":false,\"show_search\":true,\"color_scheme\":\"scheme-1\"}}},\"order\":[\"announcement_bar_1\",\"header_1\"]},\"footer\":{\"type\":\"footer\",\"name\":\"Groupe pied de page\",\"sections\":{\"footer_1\":{\"type\":\"footer\",\"settings\":{\"style\":\"wordmark\",\"logo_asset\":\"\",\"show_wordmark\":true,\"show_policies\":true,\"show_payment\":true,\"color_scheme\":\"scheme-3\"},\"blocks\":{\"text_5\":{\"type\":\"text\",\"settings\":{\"heading\":\"Matériel de reliure — RECETTE\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}},\"links_1\":{\"type\":\"links\",\"settings\":{\"heading\":\"Boutique\",\"menu\":\"main-menu\"}},\"links_2\":{\"type\":\"links\",\"settings\":{\"heading\":\"Aide\",\"menu\":\"footer\"}},\"newsletter_2\":{\"type\":\"newsletter\",\"settings\":{\"heading\":\"Restons en contact\",\"text\":\"Recette technique, aucun envoi réel.\"}}},\"block_order\":[\"text_5\",\"links_1\",\"links_2\",\"newsletter_2\"]}},\"order\":[\"footer_1\"]}},\"templates\":{\"404\":{\"sections\":{\"main_404_1\":{\"type\":\"main-404\",\"settings\":{\"heading\":\"Cette page s'est égarée.\",\"text\":\"Le lien est peut-être ancien. Le reste de la boutique vous attend.\",\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_404_1\"]},\"index\":{\"sections\":{\"hero_editorial_1\":{\"type\":\"hero-editorial\",\"settings\":{\"eyebrow\":\"RECETTE ISOLÉE — CONTENUS FICTIFS\",\"heading_line1\":\"Du papier,\",\"heading_line2\":\"aux ouvrages.\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"button_label\":\"Voir le produit\",\"button_link\":\"/collections/all\",\"image_asset\":\"es-recette-multi.webp\",\"image_alt\":\"Outils de reliure\",\"parallax\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":56,\"padding_bottom\":104}},\"featured_collection_1\":{\"type\":\"featured-collection\",\"settings\":{\"heading\":\"Les incontournables\",\"collection\":\"all\",\"limit\":2,\"columns\":3,\"ratio\":\"portrait\",\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96}},\"image_with_text_2\":{\"type\":\"image-with-text\",\"settings\":{\"eyebrow\":\"Les informations acquises\",\"heading\":\"Outils de reliure\",\"text\":\"\",\"image_asset\":\"\",\"layout\":\"image-left\",\"ratio\":\"portrait\",\"reveal\":\"zoom\",\"parallax\":false,\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}},\"features_grid_1\":{\"type\":\"features-grid\",\"settings\":{\"eyebrow\":\"\",\"heading\":\"Votre projet\",\"heading_align\":\"left\",\"columns\":2,\"columns_mobile\":\"1\",\"style\":\"glow\",\"link_label\":\"\",\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"feature_1\":{\"type\":\"feature\",\"settings\":{\"title\":\"Outils de reliure\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"icon\":\"hand\",\"link_label\":\"\",\"link\":\"\"}},\"feature_2\":{\"type\":\"feature\",\"settings\":{\"title\":\"Ce qui reste à préciser\",\"text\":\"<p>Les caractéristiques non confirmées restent à compléter.</p>\",\"icon\":\"check\",\"link_label\":\"\",\"link\":\"\"}}},\"block_order\":[\"feature_1\",\"feature_2\"]},\"rich_text_2\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"left\",\"style\":\"reveal\",\"color_scheme\":\"scheme-1\",\"padding_top\":120,\"padding_bottom\":120},\"blocks\":{\"eyebrow_3\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Votre besoin\"}},\"heading_2\":{\"type\":\"heading\",\"settings\":{\"text\":\"Outils de reliure\",\"size\":\"h2\"}},\"text_3\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}}},\"block_order\":[\"eyebrow_3\",\"heading_2\",\"text_3\"]},\"horizontal_gallery_1\":{\"type\":\"horizontal-gallery\",\"settings\":{\"heading\":\"Illustration de recette\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}},\"faq_2\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"question_3\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_4\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_3\",\"question_4\"]},\"newsletter_1\":{\"type\":\"newsletter\",\"settings\":{\"heading\":\"Rester en contact\",\"text\":\"<p>Formulaire de recette sans envoi réel.</p>\",\"button_label\":\"S'inscrire\",\"legal\":\"Désinscription possible à tout moment.\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104}}},\"order\":[\"hero_editorial_1\",\"featured_collection_1\",\"image_with_text_2\",\"features_grid_1\",\"rich_text_2\",\"horizontal_gallery_1\",\"faq_2\",\"newsletter_1\"]},\"product\":{\"sections\":{\"main_product_1\":{\"type\":\"main-product\",\"settings\":{\"gallery_layout\":\"stack\",\"sticky_bar\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":32,\"padding_bottom\":96},\"blocks\":{\"eyebrow_1\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Matériel de reliure — RECETTE\"}},\"title_1\":{\"type\":\"title\",\"settings\":{}},\"rating_1\":{\"type\":\"rating\",\"settings\":{\"anchor\":\"avis\"}},\"price_1\":{\"type\":\"price\",\"settings\":{}},\"text_1\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"product_handle\":\"offre-recette\"}},\"buy_buttons_1\":{\"type\":\"buy_buttons\",\"settings\":{\"picker\":\"buttons\",\"show_quantity\":true,\"show_dynamic_checkout\":true}},\"description_1\":{\"type\":\"description\",\"settings\":{\"hide_for_handle\":\"offre-recette\"}}},\"block_order\":[\"eyebrow_1\",\"title_1\",\"rating_1\",\"price_1\",\"text_1\",\"buy_buttons_1\",\"description_1\"]},\"product_reviews_1\":{\"type\":\"product-reviews\",\"settings\":{\"heading\":\"Avis des clients\",\"anchor\":\"avis\",\"color_scheme\":\"scheme-1\",\"padding_top\":32,\"padding_bottom\":32}},\"scroll_story_1\":{\"type\":\"scroll-story\",\"settings\":{\"heading\":\"Partir de votre besoin.\",\"image_asset\":\"es-recette-multi.webp\",\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"step_1\":{\"type\":\"step\",\"settings\":{\"title\":\"Votre demande\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"image_asset\":\"\"}},\"step_2\":{\"type\":\"step\",\"settings\":{\"title\":\"Les détails à préciser\",\"text\":\"<p>Aucune caractéristique ni promesse commerciale supplémentaire ne sera supposée.</p>\",\"image_asset\":\"\"}}},\"block_order\":[\"step_1\",\"step_2\"]},\"specs_list_1\":{\"type\":\"specs-list\",\"settings\":{\"heading\":\"Les informations du projet\",\"color_scheme\":\"scheme-1\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"spec_1\":{\"type\":\"spec\",\"settings\":{\"label\":\"Offre\",\"value\":\"Outils de reliure\"}}},\"block_order\":[\"spec_1\"]},\"faq_1\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-2\",\"padding_top\":104,\"padding_bottom\":104},\"blocks\":{\"question_1\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_2\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_1\",\"question_2\"]},\"product_recommendations_1\":{\"type\":\"product-recommendations\",\"settings\":{\"heading\":\"Vous aimerez aussi\",\"limit\":4,\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}}},\"order\":[\"main_product_1\",\"product_reviews_1\",\"scroll_story_1\",\"specs_list_1\",\"faq_1\",\"product_recommendations_1\"]},\"collection\":{\"sections\":{\"main_collection_1\":{\"type\":\"main-collection\",\"settings\":{\"per_page\":16,\"columns\":3,\"enable_filters\":true,\"enable_sorting\":true,\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_collection_1\"]},\"list-collections\":{\"sections\":{\"main_list_collections_1\":{\"type\":\"main-list-collections\",\"settings\":{\"heading\":\"Catalogue\",\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_list_collections_1\"]},\"search\":{\"sections\":{\"main_search_1\":{\"type\":\"main-search\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_search_1\"]},\"cart\":{\"sections\":{\"main_cart_1\":{\"type\":\"main-cart\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_cart_1\"]},\"page\":{\"sections\":{\"main_page_1\":{\"type\":\"main-page\",\"settings\":{\"width\":\"narrow\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}}},\"order\":[\"main_page_1\"]},\"page.about\":{\"sections\":{\"rich_text_1\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"center\",\"style\":\"statement\",\"color_scheme\":\"scheme-1\",\"padding_top\":120,\"padding_bottom\":64},\"blocks\":{\"eyebrow_2\":{\"type\":\"eyebrow\",\"settings\":{\"text\":\"Notre histoire\"}},\"heading_1\":{\"type\":\"heading\",\"settings\":{\"text\":\"Votre projet\",\"size\":\"h1\"}},\"text_2\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\"}}},\"block_order\":[\"eyebrow_2\",\"heading_1\",\"text_2\"]},\"image_with_text_1\":{\"type\":\"image-with-text\",\"settings\":{\"eyebrow\":\"\",\"heading\":\"La démarche\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"image_asset\":\"\",\"layout\":\"image-left\",\"ratio\":\"portrait\",\"reveal\":\"curtain\",\"parallax\":false,\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96}},\"cta_banner_1\":{\"type\":\"cta-banner\",\"settings\":{\"heading\":\"Parlons de votre besoin.\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"button_label\":\"Préparer ma demande\",\"button_link\":\"/products/offre-recette\",\"image_asset\":\"es-recette-multi.webp\",\"overlay\":60,\"style\":\"center\",\"parallax\":true,\"color_scheme\":\"scheme-3\",\"padding_top\":152,\"padding_bottom\":152}},\"main_page_3\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_3\",\"rich_text_1\",\"image_with_text_1\",\"cta_banner_1\"]},\"page.faq\":{\"sections\":{\"faq_3\":{\"type\":\"faq\",\"settings\":{\"heading\":\"Avant de décider\",\"text\":\"\",\"style\":\"cards\",\"structured_data\":true,\"color_scheme\":\"scheme-1\",\"padding_top\":96,\"padding_bottom\":96},\"blocks\":{\"question_5\":{\"type\":\"question\",\"settings\":{\"question\":\"Quelles conditions ?\",\"answer\":\"<p>Elles sont à confirmer dans le projet.</p>\"}},\"question_6\":{\"type\":\"question\",\"settings\":{\"question\":\"Quels délais ?\",\"answer\":\"<p>Ils restent à confirmer.</p>\"}}},\"block_order\":[\"question_5\",\"question_6\"]},\"contact_form_1\":{\"type\":\"contact-form\",\"settings\":{\"heading\":\"Une autre question ?\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"color_scheme\":\"scheme-2\",\"padding_top\":96,\"padding_bottom\":96}},\"main_page_4\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_4\",\"faq_3\",\"contact_form_1\"]},\"page.contact\":{\"sections\":{\"contact_form_2\":{\"type\":\"contact-form\",\"settings\":{\"heading\":\"Votre demande\",\"text\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":120}},\"main_page_5\":{\"type\":\"main-page\",\"settings\":{\"width\":\"wide\",\"color_scheme\":\"scheme-1\",\"padding_top\":40,\"padding_bottom\":0}}},\"order\":[\"main_page_5\",\"contact_form_2\"]},\"page.shipping\":{\"sections\":{\"main_page_2\":{\"type\":\"main-page\",\"settings\":{\"width\":\"narrow\",\"color_scheme\":\"scheme-1\",\"padding_top\":64,\"padding_bottom\":96}},\"rich_text_3\":{\"type\":\"rich-text\",\"settings\":{\"align\":\"left\",\"style\":\"plain\",\"color_scheme\":\"scheme-2\",\"padding_top\":64,\"padding_bottom\":64},\"blocks\":{\"heading_3\":{\"type\":\"heading\",\"settings\":{\"text\":\"Conditions\",\"size\":\"h3\"}},\"text_4\":{\"type\":\"text\",\"settings\":{\"text\":\"<p>À confirmer.</p>\"}}},\"block_order\":[\"heading_3\",\"text_4\"]}},\"order\":[\"main_page_2\",\"rich_text_3\"]},\"blog\":{\"sections\":{\"main_blog_1\":{\"type\":\"main-blog\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_blog_1\"]},\"article\":{\"sections\":{\"main_article_1\":{\"type\":\"main-article\",\"settings\":{\"color_scheme\":\"scheme-1\"}}},\"order\":[\"main_article_1\"]},\"password\":{\"sections\":{\"main_password_1\":{\"type\":\"main-password\",\"settings\":{\"heading\":\"Bientôt en ligne\"}}},\"order\":[\"main_password_1\"],\"layout\":\"password\"}},\"customSections\":{},\"files\":{\"es-recette-multi.webp\":\"vi8iy4z80891k13f\"},\"locks\":[],\"store\":{\"shopName\":\"Matériel de reliure — RECETTE\",\"product\":{\"title\":\"Outils de reliure\",\"handle\":\"offre-recette\",\"vendor\":\"Matériel de reliure — RECETTE\",\"description_html\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"price\":12900,\"compare_at_price\":null,\"currency\":\"EUR\",\"options\":[\"Format\"],\"variants\":[{\"title\":\"Standard\",\"options\":[\"Standard\"],\"price\":12900,\"available\":true,\"inventory_quantity\":4},{\"title\":\"Grand\",\"options\":[\"Grand\"],\"price\":14900,\"available\":true,\"inventory_quantity\":3}],\"images\":[\"es-recette-multi.webp\"],\"tags\":[\"RECETTE FICTIVE\"],\"seo\":{\"title\":\"Matériel de reliure — RECETTE\",\"description\":\"Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.\"}},\"products\":[{\"title\":\"Poinçon de reliure\",\"handle\":\"poincon-recette\",\"vendor\":\"Matériel de reliure — RECETTE\",\"description_html\":\"<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>\",\"price\":12900,\"compare_at_price\":null,\"currency\":\"EUR\",\"options\":[],\"variants\":[],\"images\":[\"es-recette-multi.webp\"],\"tags\":[\"RECETTE FICTIVE\"]}],\"collections\":[{\"handle\":\"outils\",\"title\":\"Outils de reliure\",\"description\":\"Catalogue fictif de recette.\",\"products\":[\"offre-recette\",\"poincon-recette\"]}],\"pages\":[{\"handle\":\"notre-histoire\",\"title\":\"Notre histoire\",\"template_suffix\":\"about\",\"body_html\":\"\"},{\"handle\":\"faq\",\"title\":\"Questions fréquentes\",\"template_suffix\":\"faq\",\"body_html\":\"\"},{\"handle\":\"contact\",\"title\":\"Contact\",\"template_suffix\":\"contact\",\"body_html\":\"\"},{\"handle\":\"livraison-et-retours\",\"title\":\"Livraison et retours\",\"template_suffix\":\"shipping\",\"body_html\":\"<p>Les conditions détaillées figurent ci-dessous.</p>\"}],\"menus\":{\"main-menu\":{\"title\":\"Menu principal\",\"links\":[{\"title\":\"Accueil\",\"url\":\"/\"},{\"title\":\"Boutique\",\"url\":\"/collections/all\",\"links\":[{\"title\":\"Outils de reliure\",\"url\":\"/collections/outils\"}]},{\"title\":\"Notre histoire\",\"url\":\"/pages/notre-histoire\"},{\"title\":\"FAQ\",\"url\":\"/pages/faq\"},{\"title\":\"Contact\",\"url\":\"/pages/contact\"}]},\"footer\":{\"title\":\"Pied de page\",\"links\":[{\"title\":\"Livraison et retours\",\"url\":\"/pages/livraison-et-retours\"},{\"title\":\"Contact\",\"url\":\"/pages/contact\"},{\"title\":\"Recherche\",\"url\":\"/search\"}]}},\"policies\":[{\"handle\":\"terms-of-service\",\"title\":\"Conditions générales de vente\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"privacy-policy\",\"title\":\"Politique de confidentialité\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"refund-policy\",\"title\":\"Politique de remboursement\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"},{\"handle\":\"legal-notice\",\"title\":\"Mentions légales\",\"body_html\":\"<p>[À compléter dans Shopify : Paramètres › Politiques]</p>\"}]}}",
+      "summary": "Annuler cette retouche en créant une nouvelle version ; historique conservé.",
+      "author": "user",
+      "parent_id": "285tw3hpl96x2htg",
+      "qc": null,
+      "created_at": 1793202174094
+    },
+    "spec": {
+      "v": 1,
+      "name": "Matériel de reliure — RECETTE · Atelier",
+      "direction": "atelier",
+      "language": "fr",
+      "settings": {
+        "logo_asset": "",
+        "logo_width": 150,
+        "favicon_asset": "",
+        "color_schemes": {
+          "scheme-1": {
+            "settings": {
+              "background": "#F9F8F6",
+              "surface": "#EFEEEC",
+              "text": "#1B2220",
+              "muted": "#616563",
+              "accent": "#254b63",
+              "accent_text": "#FFFFFF",
+              "border": "#DADAD8"
+            }
+          },
+          "scheme-2": {
+            "settings": {
+              "background": "#F7F5F2",
+              "surface": "#EDECE9",
+              "text": "#1B2220",
+              "muted": "#606461",
+              "accent": "#254b63",
+              "accent_text": "#FFFFFF",
+              "border": "#D8D7D5"
+            }
+          },
+          "scheme-3": {
+            "settings": {
+              "background": "#151918",
+              "surface": "#222625",
+              "text": "#F4F4F0",
+              "muted": "#969895",
+              "accent": "#bba76a",
+              "accent_text": "#141414",
+              "border": "#343836"
+            }
+          },
+          "scheme-4": {
+            "settings": {
+              "background": "#DDD7C5",
+              "surface": "#D4CFBE",
+              "text": "#1B2220",
+              "muted": "#565851",
+              "accent": "#1B2220",
+              "accent_text": "#FFFFFF",
+              "border": "#C2BEAE"
+            }
+          }
+        },
+        "type_heading_font": "playfair_display_n6",
+        "type_body_font": "inter_n4",
+        "type_accent_font": "cormorant_i5",
+        "heading_scale": 104,
+        "body_scale": 100,
+        "heading_case": "none",
+        "heading_tracking": 0,
+        "heading_weight_boost": 0,
+        "page_width": 1320,
+        "spacing_scale": 100,
+        "style_preset": "atelier",
+        "button_radius": 40,
+        "card_radius": 28,
+        "button_style": "solid",
+        "button_uppercase": true,
+        "button_shine": true,
+        "glow_enabled": true,
+        "glow_intensity": 35,
+        "header_shape": "floating",
+        "card_style": "minimal",
+        "motion_enabled": true,
+        "motion_intensity": "expressive",
+        "motion_parallax": true,
+        "fab_back_to_top": true,
+        "fab_contact_link": "/pages/contact",
+        "fab_contact_icon": "chat",
+        "fab_contact_label": "Nous contacter",
+        "cart_type": "drawer",
+        "cart_show_note": false,
+        "cart_reassurance": "",
+        "social_instagram": "",
+        "social_tiktok": "",
+        "social_facebook": "",
+        "social_youtube": "",
+        "social_pinterest": ""
+      },
+      "groups": {
+        "header": {
+          "type": "header",
+          "name": "Groupe en-tête",
+          "sections": {
+            "announcement_bar_1": {
+              "type": "announcement-bar",
+              "settings": {
+                "style": "static",
+                "color_scheme": "scheme-3"
+              },
+              "blocks": {
+                "announcement_1": {
+                  "type": "announcement",
+                  "settings": {
+                    "text": "RECETTE TECHNIQUE — NON PUBLIÉE",
+                    "link": ""
+                  }
+                }
+              },
+              "block_order": [
+                "announcement_1"
+              ]
+            },
+            "header_1": {
+              "type": "header",
+              "settings": {
+                "menu": "main-menu",
+                "layout": "logo-center",
+                "shape": "floating",
+                "icons": "circles",
+                "mobile_menu": "fullscreen",
+                "sticky": true,
+                "transparent_on_home": false,
+                "show_search": true,
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "announcement_bar_1",
+            "header_1"
+          ]
+        },
+        "footer": {
+          "type": "footer",
+          "name": "Groupe pied de page",
+          "sections": {
+            "footer_1": {
+              "type": "footer",
+              "settings": {
+                "style": "wordmark",
+                "logo_asset": "",
+                "show_wordmark": true,
+                "show_policies": true,
+                "show_payment": true,
+                "color_scheme": "scheme-3"
+              },
+              "blocks": {
+                "text_5": {
+                  "type": "text",
+                  "settings": {
+                    "heading": "Matériel de reliure — RECETTE",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                },
+                "links_1": {
+                  "type": "links",
+                  "settings": {
+                    "heading": "Boutique",
+                    "menu": "main-menu"
+                  }
+                },
+                "links_2": {
+                  "type": "links",
+                  "settings": {
+                    "heading": "Aide",
+                    "menu": "footer"
+                  }
+                },
+                "newsletter_2": {
+                  "type": "newsletter",
+                  "settings": {
+                    "heading": "Restons en contact",
+                    "text": "Recette technique, aucun envoi réel."
+                  }
+                }
+              },
+              "block_order": [
+                "text_5",
+                "links_1",
+                "links_2",
+                "newsletter_2"
+              ]
+            }
+          },
+          "order": [
+            "footer_1"
+          ]
+        }
+      },
+      "templates": {
+        "404": {
+          "sections": {
+            "main_404_1": {
+              "type": "main-404",
+              "settings": {
+                "heading": "Cette page s'est égarée.",
+                "text": "Le lien est peut-être ancien. Le reste de la boutique vous attend.",
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_404_1"
+          ]
+        },
+        "index": {
+          "sections": {
+            "hero_editorial_1": {
+              "type": "hero-editorial",
+              "settings": {
+                "eyebrow": "RECETTE ISOLÉE — CONTENUS FICTIFS",
+                "heading_line1": "Du papier,",
+                "heading_line2": "aux ouvrages.",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "button_label": "Voir le produit",
+                "button_link": "/collections/all",
+                "image_asset": "es-recette-multi.webp",
+                "image_alt": "Outils de reliure",
+                "parallax": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 56,
+                "padding_bottom": 104
+              }
+            },
+            "featured_collection_1": {
+              "type": "featured-collection",
+              "settings": {
+                "heading": "Les incontournables",
+                "collection": "all",
+                "limit": 2,
+                "columns": 3,
+                "ratio": "portrait",
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "image_with_text_2": {
+              "type": "image-with-text",
+              "settings": {
+                "eyebrow": "Les informations acquises",
+                "heading": "Outils de reliure",
+                "text": "",
+                "image_asset": "",
+                "layout": "image-left",
+                "ratio": "portrait",
+                "reveal": "zoom",
+                "parallax": false,
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            },
+            "features_grid_1": {
+              "type": "features-grid",
+              "settings": {
+                "eyebrow": "",
+                "heading": "Votre projet",
+                "heading_align": "left",
+                "columns": 2,
+                "columns_mobile": "1",
+                "style": "glow",
+                "link_label": "",
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "feature_1": {
+                  "type": "feature",
+                  "settings": {
+                    "title": "Outils de reliure",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "icon": "hand",
+                    "link_label": "",
+                    "link": ""
+                  }
+                },
+                "feature_2": {
+                  "type": "feature",
+                  "settings": {
+                    "title": "Ce qui reste à préciser",
+                    "text": "<p>Les caractéristiques non confirmées restent à compléter.</p>",
+                    "icon": "check",
+                    "link_label": "",
+                    "link": ""
+                  }
+                }
+              },
+              "block_order": [
+                "feature_1",
+                "feature_2"
+              ]
+            },
+            "rich_text_2": {
+              "type": "rich-text",
+              "settings": {
+                "align": "left",
+                "style": "reveal",
+                "color_scheme": "scheme-1",
+                "padding_top": 120,
+                "padding_bottom": 120
+              },
+              "blocks": {
+                "eyebrow_3": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Votre besoin"
+                  }
+                },
+                "heading_2": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Outils de reliure",
+                    "size": "h2"
+                  }
+                },
+                "text_3": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_3",
+                "heading_2",
+                "text_3"
+              ]
+            },
+            "horizontal_gallery_1": {
+              "type": "horizontal-gallery",
+              "settings": {
+                "heading": "Illustration de recette",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            },
+            "faq_2": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "question_3": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_4": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_3",
+                "question_4"
+              ]
+            },
+            "newsletter_1": {
+              "type": "newsletter",
+              "settings": {
+                "heading": "Rester en contact",
+                "text": "<p>Formulaire de recette sans envoi réel.</p>",
+                "button_label": "S'inscrire",
+                "legal": "Désinscription possible à tout moment.",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              }
+            }
+          },
+          "order": [
+            "hero_editorial_1",
+            "featured_collection_1",
+            "image_with_text_2",
+            "features_grid_1",
+            "rich_text_2",
+            "horizontal_gallery_1",
+            "faq_2",
+            "newsletter_1"
+          ]
+        },
+        "product": {
+          "sections": {
+            "main_product_1": {
+              "type": "main-product",
+              "settings": {
+                "gallery_layout": "stack",
+                "sticky_bar": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 32,
+                "padding_bottom": 96
+              },
+              "blocks": {
+                "eyebrow_1": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Matériel de reliure — RECETTE"
+                  }
+                },
+                "title_1": {
+                  "type": "title",
+                  "settings": {}
+                },
+                "rating_1": {
+                  "type": "rating",
+                  "settings": {
+                    "anchor": "avis"
+                  }
+                },
+                "price_1": {
+                  "type": "price",
+                  "settings": {}
+                },
+                "text_1": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "product_handle": "offre-recette"
+                  }
+                },
+                "buy_buttons_1": {
+                  "type": "buy_buttons",
+                  "settings": {
+                    "picker": "buttons",
+                    "show_quantity": true,
+                    "show_dynamic_checkout": true
+                  }
+                },
+                "description_1": {
+                  "type": "description",
+                  "settings": {
+                    "hide_for_handle": "offre-recette"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_1",
+                "title_1",
+                "rating_1",
+                "price_1",
+                "text_1",
+                "buy_buttons_1",
+                "description_1"
+              ]
+            },
+            "product_reviews_1": {
+              "type": "product-reviews",
+              "settings": {
+                "heading": "Avis des clients",
+                "anchor": "avis",
+                "color_scheme": "scheme-1",
+                "padding_top": 32,
+                "padding_bottom": 32
+              }
+            },
+            "scroll_story_1": {
+              "type": "scroll-story",
+              "settings": {
+                "heading": "Partir de votre besoin.",
+                "image_asset": "es-recette-multi.webp",
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "step_1": {
+                  "type": "step",
+                  "settings": {
+                    "title": "Votre demande",
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                    "image_asset": ""
+                  }
+                },
+                "step_2": {
+                  "type": "step",
+                  "settings": {
+                    "title": "Les détails à préciser",
+                    "text": "<p>Aucune caractéristique ni promesse commerciale supplémentaire ne sera supposée.</p>",
+                    "image_asset": ""
+                  }
+                }
+              },
+              "block_order": [
+                "step_1",
+                "step_2"
+              ]
+            },
+            "specs_list_1": {
+              "type": "specs-list",
+              "settings": {
+                "heading": "Les informations du projet",
+                "color_scheme": "scheme-1",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "spec_1": {
+                  "type": "spec",
+                  "settings": {
+                    "label": "Offre",
+                    "value": "Outils de reliure"
+                  }
+                }
+              },
+              "block_order": [
+                "spec_1"
+              ]
+            },
+            "faq_1": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-2",
+                "padding_top": 104,
+                "padding_bottom": 104
+              },
+              "blocks": {
+                "question_1": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_2": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_1",
+                "question_2"
+              ]
+            },
+            "product_recommendations_1": {
+              "type": "product-recommendations",
+              "settings": {
+                "heading": "Vous aimerez aussi",
+                "limit": 4,
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            }
+          },
+          "order": [
+            "main_product_1",
+            "product_reviews_1",
+            "scroll_story_1",
+            "specs_list_1",
+            "faq_1",
+            "product_recommendations_1"
+          ]
+        },
+        "collection": {
+          "sections": {
+            "main_collection_1": {
+              "type": "main-collection",
+              "settings": {
+                "per_page": 16,
+                "columns": 3,
+                "enable_filters": true,
+                "enable_sorting": true,
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_collection_1"
+          ]
+        },
+        "list-collections": {
+          "sections": {
+            "main_list_collections_1": {
+              "type": "main-list-collections",
+              "settings": {
+                "heading": "Catalogue",
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_list_collections_1"
+          ]
+        },
+        "search": {
+          "sections": {
+            "main_search_1": {
+              "type": "main-search",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_search_1"
+          ]
+        },
+        "cart": {
+          "sections": {
+            "main_cart_1": {
+              "type": "main-cart",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_cart_1"
+          ]
+        },
+        "page": {
+          "sections": {
+            "main_page_1": {
+              "type": "main-page",
+              "settings": {
+                "width": "narrow",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            }
+          },
+          "order": [
+            "main_page_1"
+          ]
+        },
+        "page.about": {
+          "sections": {
+            "rich_text_1": {
+              "type": "rich-text",
+              "settings": {
+                "align": "center",
+                "style": "statement",
+                "color_scheme": "scheme-1",
+                "padding_top": 120,
+                "padding_bottom": 64
+              },
+              "blocks": {
+                "eyebrow_2": {
+                  "type": "eyebrow",
+                  "settings": {
+                    "text": "Notre histoire"
+                  }
+                },
+                "heading_1": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Votre projet",
+                    "size": "h1"
+                  }
+                },
+                "text_2": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "eyebrow_2",
+                "heading_1",
+                "text_2"
+              ]
+            },
+            "image_with_text_1": {
+              "type": "image-with-text",
+              "settings": {
+                "eyebrow": "",
+                "heading": "La démarche",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "image_asset": "",
+                "layout": "image-left",
+                "ratio": "portrait",
+                "reveal": "curtain",
+                "parallax": false,
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "cta_banner_1": {
+              "type": "cta-banner",
+              "settings": {
+                "heading": "Parlons de votre besoin.",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "button_label": "Préparer ma demande",
+                "button_link": "/products/offre-recette",
+                "image_asset": "es-recette-multi.webp",
+                "overlay": 60,
+                "style": "center",
+                "parallax": true,
+                "color_scheme": "scheme-3",
+                "padding_top": 152,
+                "padding_bottom": 152
+              }
+            },
+            "main_page_3": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_3",
+            "rich_text_1",
+            "image_with_text_1",
+            "cta_banner_1"
+          ]
+        },
+        "page.faq": {
+          "sections": {
+            "faq_3": {
+              "type": "faq",
+              "settings": {
+                "heading": "Avant de décider",
+                "text": "",
+                "style": "cards",
+                "structured_data": true,
+                "color_scheme": "scheme-1",
+                "padding_top": 96,
+                "padding_bottom": 96
+              },
+              "blocks": {
+                "question_5": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quelles conditions ?",
+                    "answer": "<p>Elles sont à confirmer dans le projet.</p>"
+                  }
+                },
+                "question_6": {
+                  "type": "question",
+                  "settings": {
+                    "question": "Quels délais ?",
+                    "answer": "<p>Ils restent à confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "question_5",
+                "question_6"
+              ]
+            },
+            "contact_form_1": {
+              "type": "contact-form",
+              "settings": {
+                "heading": "Une autre question ?",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "color_scheme": "scheme-2",
+                "padding_top": 96,
+                "padding_bottom": 96
+              }
+            },
+            "main_page_4": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_4",
+            "faq_3",
+            "contact_form_1"
+          ]
+        },
+        "page.contact": {
+          "sections": {
+            "contact_form_2": {
+              "type": "contact-form",
+              "settings": {
+                "heading": "Votre demande",
+                "text": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 120
+              }
+            },
+            "main_page_5": {
+              "type": "main-page",
+              "settings": {
+                "width": "wide",
+                "color_scheme": "scheme-1",
+                "padding_top": 40,
+                "padding_bottom": 0
+              }
+            }
+          },
+          "order": [
+            "main_page_5",
+            "contact_form_2"
+          ]
+        },
+        "page.shipping": {
+          "sections": {
+            "main_page_2": {
+              "type": "main-page",
+              "settings": {
+                "width": "narrow",
+                "color_scheme": "scheme-1",
+                "padding_top": 64,
+                "padding_bottom": 96
+              }
+            },
+            "rich_text_3": {
+              "type": "rich-text",
+              "settings": {
+                "align": "left",
+                "style": "plain",
+                "color_scheme": "scheme-2",
+                "padding_top": 64,
+                "padding_bottom": 64
+              },
+              "blocks": {
+                "heading_3": {
+                  "type": "heading",
+                  "settings": {
+                    "text": "Conditions",
+                    "size": "h3"
+                  }
+                },
+                "text_4": {
+                  "type": "text",
+                  "settings": {
+                    "text": "<p>À confirmer.</p>"
+                  }
+                }
+              },
+              "block_order": [
+                "heading_3",
+                "text_4"
+              ]
+            }
+          },
+          "order": [
+            "main_page_2",
+            "rich_text_3"
+          ]
+        },
+        "blog": {
+          "sections": {
+            "main_blog_1": {
+              "type": "main-blog",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_blog_1"
+          ]
+        },
+        "article": {
+          "sections": {
+            "main_article_1": {
+              "type": "main-article",
+              "settings": {
+                "color_scheme": "scheme-1"
+              }
+            }
+          },
+          "order": [
+            "main_article_1"
+          ]
+        },
+        "password": {
+          "sections": {
+            "main_password_1": {
+              "type": "main-password",
+              "settings": {
+                "heading": "Bientôt en ligne"
+              }
+            }
+          },
+          "order": [
+            "main_password_1"
+          ],
+          "layout": "password"
+        }
+      },
+      "customSections": {},
+      "files": {
+        "es-recette-multi.webp": "vi8iy4z80891k13f"
+      },
+      "locks": [],
+      "store": {
+        "shopName": "Matériel de reliure — RECETTE",
+        "product": {
+          "title": "Outils de reliure",
+          "handle": "offre-recette",
+          "vendor": "Matériel de reliure — RECETTE",
+          "description_html": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+          "price": 12900,
+          "compare_at_price": null,
+          "currency": "EUR",
+          "options": [
+            "Format"
+          ],
+          "variants": [
+            {
+              "title": "Standard",
+              "options": [
+                "Standard"
+              ],
+              "price": 12900,
+              "available": true,
+              "inventory_quantity": 4
+            },
+            {
+              "title": "Grand",
+              "options": [
+                "Grand"
+              ],
+              "price": 14900,
+              "available": true,
+              "inventory_quantity": 3
+            }
+          ],
+          "images": [
+            "es-recette-multi.webp"
+          ],
+          "tags": [
+            "RECETTE FICTIVE"
+          ],
+          "seo": {
+            "title": "Matériel de reliure — RECETTE",
+            "description": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+          }
+        },
+        "products": [
+          {
+            "title": "Poinçon de reliure",
+            "handle": "poincon-recette",
+            "vendor": "Matériel de reliure — RECETTE",
+            "description_html": "<p>Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer.</p>",
+            "price": 12900,
+            "compare_at_price": null,
+            "currency": "EUR",
+            "options": [],
+            "variants": [],
+            "images": [
+              "es-recette-multi.webp"
+            ],
+            "tags": [
+              "RECETTE FICTIVE"
+            ]
+          }
+        ],
+        "collections": [
+          {
+            "handle": "outils",
+            "title": "Outils de reliure",
+            "description": "Catalogue fictif de recette.",
+            "products": [
+              "offre-recette",
+              "poincon-recette"
+            ]
+          }
+        ],
+        "pages": [
+          {
+            "handle": "notre-histoire",
+            "title": "Notre histoire",
+            "template_suffix": "about",
+            "body_html": ""
+          },
+          {
+            "handle": "faq",
+            "title": "Questions fréquentes",
+            "template_suffix": "faq",
+            "body_html": ""
+          },
+          {
+            "handle": "contact",
+            "title": "Contact",
+            "template_suffix": "contact",
+            "body_html": ""
+          },
+          {
+            "handle": "livraison-et-retours",
+            "title": "Livraison et retours",
+            "template_suffix": "shipping",
+            "body_html": "<p>Les conditions détaillées figurent ci-dessous.</p>"
+          }
+        ],
+        "menus": {
+          "main-menu": {
+            "title": "Menu principal",
+            "links": [
+              {
+                "title": "Accueil",
+                "url": "/"
+              },
+              {
+                "title": "Boutique",
+                "url": "/collections/all",
+                "links": [
+                  {
+                    "title": "Outils de reliure",
+                    "url": "/collections/outils"
+                  }
+                ]
+              },
+              {
+                "title": "Notre histoire",
+                "url": "/pages/notre-histoire"
+              },
+              {
+                "title": "FAQ",
+                "url": "/pages/faq"
+              },
+              {
+                "title": "Contact",
+                "url": "/pages/contact"
+              }
+            ]
+          },
+          "footer": {
+            "title": "Pied de page",
+            "links": [
+              {
+                "title": "Livraison et retours",
+                "url": "/pages/livraison-et-retours"
+              },
+              {
+                "title": "Contact",
+                "url": "/pages/contact"
+              },
+              {
+                "title": "Recherche",
+                "url": "/search"
+              }
+            ]
+          }
+        },
+        "policies": [
+          {
+            "handle": "terms-of-service",
+            "title": "Conditions générales de vente",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "privacy-policy",
+            "title": "Politique de confidentialité",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "refund-policy",
+            "title": "Politique de remboursement",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          },
+          {
+            "handle": "legal-notice",
+            "title": "Mentions légales",
+            "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+          }
+        ]
+      }
+    },
+    "versions": [
+      {
+        "id": "6jc0bbjkupm1qa7k",
+        "number": 1,
+        "parent_id": null
+      },
+      {
+        "id": "285tw3hpl96x2htg",
+        "number": 2,
+        "parent_id": "6jc0bbjkupm1qa7k"
+      },
+      {
+        "id": "58xx3d2jzmtxuazn",
+        "number": 3,
+        "parent_id": "285tw3hpl96x2htg"
+      }
+    ],
+    "freeJobReservations": 0
+  },
+  "registry": {
+    "projectId": "iurm2zxwmb0qe709",
+    "currentVersionId": "58xx3d2jzmtxuazn",
+    "available": true,
+    "mode": "native_composition_and_exact_edits",
+    "costPct": 0,
+    "receipts": [
+      {
+        "id": "r8kev73ypgok65cf",
+        "kind": "undo",
+        "summary": "Annuler cette retouche en créant une nouvelle version ; historique conservé.",
+        "sourceReceiptId": null,
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "1gqvnz731i8iheoa",
+          "type": "agent.theme.change",
+          "label": "Annulation de la retouche",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "58xx3d2jzmtxuazn",
+            "number": 3,
+            "fingerprint": "2c30622b924aa41a",
+            "reused": false
+          },
+          "createdAt": 1793202173307,
+          "updatedAt": 1793202174095,
+          "finishedAt": 1793202174095,
+          "startedAt": 1793202173307,
+          "alive": false,
+          "idleMs": 687
+        },
+        "costPct": 0,
+        "composition": null,
+        "changes": [
+          {
+            "template": "index",
+            "section": "$page",
+            "key": "$composition",
+            "before": {
+              "kind": "native_page",
+              "sections": [
+                {
+                  "id": "hero_editorial_1",
+                  "name": "Héros éditorial",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "RECETTE ISOLÉE — CONTENUS FICTIFS"
+                    },
+                    {
+                      "label": "Titre, première ligne",
+                      "text": "Du papier,"
+                    },
+                    {
+                      "label": "Titre, seconde ligne",
+                      "text": "aux ouvrages."
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "Voir le produit"
+                    },
+                    {
+                      "label": "Lien du bouton",
+                      "text": "/collections/all"
+                    },
+                    {
+                      "label": "Image détourée du produit",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Texte alternatif de l'image",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_1",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Image",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "featured_collection_1",
+                  "name": "Collection en vedette",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Les incontournables"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_2",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "Les informations acquises"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "features_grid_1",
+                  "name": "Grille d'atouts",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Votre projet"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Ce qui reste à préciser"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Les caractéristiques non confirmées restent à compléter."
+                    }
+                  ]
+                },
+                {
+                  "id": "rich_text_2",
+                  "name": "Texte enrichi",
+                  "fields": [
+                    {
+                      "label": "Texte",
+                      "text": "Votre besoin"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "horizontal_gallery_1",
+                  "name": "Carrousel horizontal",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Illustration de recette"
+                    }
+                  ]
+                },
+                {
+                  "id": "faq_2",
+                  "name": "FAQ premium",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Avant de décider"
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quelles conditions ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Elles sont à confirmer dans le projet."
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quels délais ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Ils restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "newsletter_1",
+                  "name": "Inscription e-mail",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Rester en contact"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Formulaire de recette sans envoi réel."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "S'inscrire"
+                    },
+                    {
+                      "label": "Mention",
+                      "text": "Désinscription possible à tout moment."
+                    }
+                  ]
+                }
+              ]
+            },
+            "after": {
+              "kind": "native_page",
+              "sections": [
+                {
+                  "id": "hero_editorial_1",
+                  "name": "Héros éditorial",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "RECETTE ISOLÉE — CONTENUS FICTIFS"
+                    },
+                    {
+                      "label": "Titre, première ligne",
+                      "text": "Du papier,"
+                    },
+                    {
+                      "label": "Titre, seconde ligne",
+                      "text": "aux ouvrages."
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "Voir le produit"
+                    },
+                    {
+                      "label": "Lien du bouton",
+                      "text": "/collections/all"
+                    },
+                    {
+                      "label": "Image détourée du produit",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Texte alternatif de l'image",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "featured_collection_1",
+                  "name": "Collection en vedette",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Les incontournables"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_2",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "Les informations acquises"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "features_grid_1",
+                  "name": "Grille d'atouts",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Votre projet"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Ce qui reste à préciser"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Les caractéristiques non confirmées restent à compléter."
+                    }
+                  ]
+                },
+                {
+                  "id": "rich_text_2",
+                  "name": "Texte enrichi",
+                  "fields": [
+                    {
+                      "label": "Texte",
+                      "text": "Votre besoin"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "horizontal_gallery_1",
+                  "name": "Carrousel horizontal",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Illustration de recette"
+                    }
+                  ]
+                },
+                {
+                  "id": "faq_2",
+                  "name": "FAQ premium",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Avant de décider"
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quelles conditions ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Elles sont à confirmer dans le projet."
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quels délais ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Ils restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "newsletter_1",
+                  "name": "Inscription e-mail",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Rester en contact"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Formulaire de recette sans envoi réel."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "S'inscrire"
+                    },
+                    {
+                      "label": "Mention",
+                      "text": "Désinscription possible à tout moment."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "version": {
+          "id": "58xx3d2jzmtxuazn",
+          "number": 3,
+          "parentId": "285tw3hpl96x2htg",
+          "fingerprint": "2c30622b924aa41a",
+          "isCurrent": true
+        },
+        "previewHref": "/preview/iurm2zxwmb0qe709/v/58xx3d2jzmtxuazn",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/iurm2zxwmb0qe709/v/58xx3d2jzmtxuazn"
+          }
+        ],
+        "siteHref": "/studio/iurm2zxwmb0qe709/boutique",
+        "canUndo": true,
+        "actionsExecuted": true
+      },
+      {
+        "id": "sgtq7209t8cc6k4j",
+        "kind": "compose",
+        "summary": "Une section éditoriale, avec vos textes complets et votre illustration. Toutes les fonctions existantes sont conservées.",
+        "sourceReceiptId": "wot9vsyoctgoadqu",
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "312isp5msdtdu3yc",
+          "type": "agent.theme.change",
+          "label": "Composition native des pages",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "285tw3hpl96x2htg",
+            "number": 2,
+            "fingerprint": "59bea915d0c12e51",
+            "reused": false
+          },
+          "createdAt": 1793202156837,
+          "updatedAt": 1793202157382,
+          "finishedAt": 1793202157382,
+          "startedAt": 1793202156837,
+          "alive": false,
+          "idleMs": 17401
+        },
+        "costPct": 0,
+        "composition": {
+          "mode": "hybrid",
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        },
+        "changes": [
+          {
+            "template": "index",
+            "section": "$page",
+            "key": "$composition",
+            "before": {
+              "kind": "native_page",
+              "sections": [
+                {
+                  "id": "hero_editorial_1",
+                  "name": "Héros éditorial",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "RECETTE ISOLÉE — CONTENUS FICTIFS"
+                    },
+                    {
+                      "label": "Titre, première ligne",
+                      "text": "Du papier,"
+                    },
+                    {
+                      "label": "Titre, seconde ligne",
+                      "text": "aux ouvrages."
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "Voir le produit"
+                    },
+                    {
+                      "label": "Lien du bouton",
+                      "text": "/collections/all"
+                    },
+                    {
+                      "label": "Image détourée du produit",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Texte alternatif de l'image",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "featured_collection_1",
+                  "name": "Collection en vedette",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Les incontournables"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_2",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "Les informations acquises"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "features_grid_1",
+                  "name": "Grille d'atouts",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Votre projet"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Ce qui reste à préciser"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Les caractéristiques non confirmées restent à compléter."
+                    }
+                  ]
+                },
+                {
+                  "id": "rich_text_2",
+                  "name": "Texte enrichi",
+                  "fields": [
+                    {
+                      "label": "Texte",
+                      "text": "Votre besoin"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "horizontal_gallery_1",
+                  "name": "Carrousel horizontal",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Illustration de recette"
+                    }
+                  ]
+                },
+                {
+                  "id": "faq_2",
+                  "name": "FAQ premium",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Avant de décider"
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quelles conditions ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Elles sont à confirmer dans le projet."
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quels délais ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Ils restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "newsletter_1",
+                  "name": "Inscription e-mail",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Rester en contact"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Formulaire de recette sans envoi réel."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "S'inscrire"
+                    },
+                    {
+                      "label": "Mention",
+                      "text": "Désinscription possible à tout moment."
+                    }
+                  ]
+                }
+              ]
+            },
+            "after": {
+              "kind": "native_page",
+              "sections": [
+                {
+                  "id": "hero_editorial_1",
+                  "name": "Héros éditorial",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "RECETTE ISOLÉE — CONTENUS FICTIFS"
+                    },
+                    {
+                      "label": "Titre, première ligne",
+                      "text": "Du papier,"
+                    },
+                    {
+                      "label": "Titre, seconde ligne",
+                      "text": "aux ouvrages."
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "Voir le produit"
+                    },
+                    {
+                      "label": "Lien du bouton",
+                      "text": "/collections/all"
+                    },
+                    {
+                      "label": "Image détourée du produit",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Texte alternatif de l'image",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_1",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Image",
+                      "assetId": "vi8iy4z80891k13f"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "featured_collection_1",
+                  "name": "Collection en vedette",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Les incontournables"
+                    }
+                  ]
+                },
+                {
+                  "id": "image_with_text_2",
+                  "name": "Image et texte",
+                  "fields": [
+                    {
+                      "label": "Surtitre",
+                      "text": "Les informations acquises"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    }
+                  ]
+                },
+                {
+                  "id": "features_grid_1",
+                  "name": "Grille d'atouts",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Votre projet"
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    },
+                    {
+                      "label": "Titre",
+                      "text": "Ce qui reste à préciser"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Les caractéristiques non confirmées restent à compléter."
+                    }
+                  ]
+                },
+                {
+                  "id": "rich_text_2",
+                  "name": "Texte enrichi",
+                  "fields": [
+                    {
+                      "label": "Texte",
+                      "text": "Votre besoin"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Outils de reliure"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Des outils pour la reliure : plioir et poinçon. Les dimensions et conditions de livraison restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "horizontal_gallery_1",
+                  "name": "Carrousel horizontal",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Illustration de recette"
+                    }
+                  ]
+                },
+                {
+                  "id": "faq_2",
+                  "name": "FAQ premium",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Avant de décider"
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quelles conditions ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Elles sont à confirmer dans le projet."
+                    },
+                    {
+                      "label": "Question",
+                      "text": "Quels délais ?"
+                    },
+                    {
+                      "label": "Réponse",
+                      "text": "Ils restent à confirmer."
+                    }
+                  ]
+                },
+                {
+                  "id": "newsletter_1",
+                  "name": "Inscription e-mail",
+                  "fields": [
+                    {
+                      "label": "Titre",
+                      "text": "Rester en contact"
+                    },
+                    {
+                      "label": "Texte",
+                      "text": "Formulaire de recette sans envoi réel."
+                    },
+                    {
+                      "label": "Bouton",
+                      "text": "S'inscrire"
+                    },
+                    {
+                      "label": "Mention",
+                      "text": "Désinscription possible à tout moment."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "version": {
+          "id": "285tw3hpl96x2htg",
+          "number": 2,
+          "parentId": "6jc0bbjkupm1qa7k",
+          "fingerprint": "59bea915d0c12e51",
+          "isCurrent": false
+        },
+        "previewHref": "/preview/iurm2zxwmb0qe709/v/285tw3hpl96x2htg",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/iurm2zxwmb0qe709/v/285tw3hpl96x2htg"
+          }
+        ],
+        "siteHref": "/studio/iurm2zxwmb0qe709/boutique",
+        "canUndo": false,
+        "actionsExecuted": true
+      }
+    ],
+    "siteHref": "/studio/iurm2zxwmb0qe709/boutique"
+  },
+  "rejectedPlan": null,
+  "rendered": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "broken": []
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "broken": []
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "broken": []
+    },
+    {
+      "width": 360,
+      "scrollWidth": 360,
+      "broken": []
+    }
+  ],
+  "functional": {
+    "variantChanged": true,
+    "quantity": 2,
+    "cartCount": 2,
+    "cartTotalCents": 29800,
+    "checkout": "not_started"
+  },
+  "exportProof": {
+    "platformChecks": [],
+    "status": 200,
+    "verdict": "PROVISIONAL",
+    "scope": "static",
+    "files": [
+      "assets/aplat.css",
+      "assets/aplat.js",
+      "assets/atelier-nuance-core.js",
+      "assets/atelier-nuance.css",
+      "assets/atelier-nuance.js",
+      "assets/conversion.css",
+      "assets/conversion.js",
+      "assets/editorial.css",
+      "assets/editorial.js",
+      "assets/family.css",
+      "assets/family.js",
+      "assets/fraise-fonts.css",
+      "assets/fraise.css",
+      "assets/fraise.js",
+      "assets/horizon.css",
+      "assets/horizon.js",
+      "assets/onde.css",
+      "assets/onde.js",
+      "assets/parenthese-core.js",
+      "assets/parenthese.css",
+      "assets/parenthese.js",
+      "assets/phase-fonts.css",
+      "assets/phase.css",
+      "assets/phase.js",
+      "assets/purchase-offers.css",
+      "assets/purchase-offers.js",
+      "assets/reference-interactions.js",
+      "assets/sillon-topo-corner.svg",
+      "assets/sillon-topo-field.svg",
+      "assets/sillon-topo-rings.svg",
+      "assets/sillon-topo-tall.svg",
+      "assets/sillon.css",
+      "assets/sillon.js",
+      "assets/souple.css",
+      "assets/souple.js",
+      "assets/table-saison-core.js",
+      "assets/table-saison.css",
+      "assets/table-saison.js",
+      "assets/theme-reference.css",
+      "assets/theme-v2.css",
+      "assets/theme.css",
+      "assets/theme.js",
+      "config/settings_schema.json",
+      "layout/password.liquid",
+      "layout/theme.liquid",
+      "locales/en.json",
+      "locales/fr.default.json",
+      "sections/about.liquid",
+      "sections/alternating-content.liquid",
+      "sections/an-account.liquid",
+      "sections/an-article.liquid",
+      "sections/an-banner.liquid",
+      "sections/an-booking.liquid",
+      "sections/an-categories.liquid",
+      "sections/an-contact.liquid",
+      "sections/an-cta.liquid",
+      "sections/an-details.liquid",
+      "sections/an-faq.liquid",
+      "sections/an-featured.liquid",
+      "sections/an-footnote.liquid",
+      "sections/an-hero.liquid",
+      "sections/an-included.liquid",
+      "sections/an-inspirations.liquid",
+      "sections/an-intro.liquid",
+      "sections/an-journal.liquid",
+      "sections/an-legal.liquid",
+      "sections/an-lengths.liquid",
+      "sections/an-lookup.liquid",
+      "sections/an-map.liquid",
+      "sections/an-move.liquid",
+      "sections/an-salon.liquid",
+      "sections/an-services.liquid",
+      "sections/an-split.liquid",
+      "sections/an-state.liquid",
+      "sections/an-steps.liquid",
+      "sections/an-team.liquid",
+      "sections/animated-benefits.liquid",
+      "sections/animated-story.liquid",
+      "sections/animated-text.liquid",
+      "sections/announcement-bar.liquid",
+      "sections/ap-article.liquid",
+      "sections/ap-cards.liquid",
+      "sections/ap-compare.liquid",
+      "sections/ap-confirm.liquid",
+      "sections/ap-cta.liquid",
+      "sections/ap-faq.liquid",
+      "sections/ap-footer.liquid",
+      "sections/ap-form.liquid",
+      "sections/ap-header.liquid",
+      "sections/ap-hero.liquid",
+      "sections/ap-legal.liquid",
+      "sections/ap-split.liquid",
+      "sections/ap-strip.liquid",
+      "sections/apps.liquid",
+      "sections/before-after.liquid",
+      "sections/booking-calendar.liquid",
+      "sections/booking.liquid",
+      "sections/brand-promise.liquid",
+      "sections/cart-drawer.liquid",
+      "sections/collection-list.liquid",
+      "sections/comparison-table.liquid",
+      "sections/contact-form.liquid",
+      "sections/content-tabs.liquid",
+      "sections/countdown.liquid",
+      "sections/creative-divider.liquid",
+      "sections/cta-banner.liquid",
+      "sections/curved-marquee.liquid",
+      "sections/custom-liquid.liquid",
+      "sections/customer-wall.liquid",
+      "sections/cv-alternating.liquid",
+      "sections/cv-article.liquid",
+      "sections/cv-banner.liquid",
+      "sections/cv-cards.liquid",
+      "sections/cv-feature.liquid",
+      "sections/cv-gallery.liquid",
+      "sections/cv-guarantee.liquid",
+      "sections/cv-hero.liquid",
+      "sections/cv-hotspots.liquid",
+      "sections/cv-infos.liquid",
+      "sections/cv-ingredients.liquid",
+      "sections/cv-quote.liquid",
+      "sections/cv-reviews.liquid",
+      "sections/cv-rise.liquid",
+      "sections/cv-specs.liquid",
+      "sections/cv-steps.liquid",
+      "sections/cv-stories.liquid",
+      "sections/day-night.liquid",
+      "sections/demo-account.liquid",
+      "sections/demo-order.liquid",
+      "sections/double-banner.liquid",
+      "sections/ed-contact.liquid",
+      "sections/ed-diptych.liquid",
+      "sections/ed-finishes.liquid",
+      "sections/ed-opening.liquid",
+      "sections/ed-scene.liquid",
+      "sections/ed-statement.liquid",
+      "sections/ed-study.liquid",
+      "sections/editorial-gallery.liquid",
+      "sections/editorial-visual.liquid",
+      "sections/expert-endorsements.liquid",
+      "sections/exploded-view.liquid",
+      "sections/faq.liquid",
+      "sections/featured-blog.liquid",
+      "sections/featured-collection.liquid",
+      "sections/featured-offer.liquid",
+      "sections/featured-product.liquid",
+      "sections/featured-purchase.liquid",
+      "sections/features-grid.liquid",
+      "sections/fg-article.liquid",
+      "sections/fg-band.liquid",
+      "sections/fg-cart.liquid",
+      "sections/fg-checkout.liquid",
+      "sections/fg-contact.liquid",
+      "sections/fg-cta.liquid",
+      "sections/fg-details.liquid",
+      "sections/fg-duo.liquid",
+      "sections/fg-everyday.liquid",
+      "sections/fg-faq.liquid",
+      "sections/fg-faqteaser.liquid",
+      "sections/fg-footer.liquid",
+      "sections/fg-header.liquid",
+      "sections/fg-hero.liquid",
+      "sections/fg-info.liquid",
+      "sections/fg-journal.liquid",
+      "sections/fg-legal.liquid",
+      "sections/fg-news.liquid",
+      "sections/fg-offers.liquid",
+      "sections/fg-page.liquid",
+      "sections/fg-product.liquid",
+      "sections/fg-recipe.liquid",
+      "sections/fg-shipping.liquid",
+      "sections/fg-story.liquid",
+      "sections/fg-strip.liquid",
+      "sections/fg-tabs.liquid",
+      "sections/fg-taste.liquid",
+      "sections/fg-texture.liquid",
+      "sections/fg-track.liquid",
+      "sections/fg-uses.liquid",
+      "sections/floating-scene.liquid",
+      "sections/footer.liquid",
+      "sections/fs-campaign.liquid",
+      "sections/fs-care.liquid",
+      "sections/fs-case.liquid",
+      "sections/fs-collections.liquid",
+      "sections/fs-commitments.liquid",
+      "sections/fs-credentials.liquid",
+      "sections/fs-dimensions.liquid",
+      "sections/fs-equipment.liquid",
+      "sections/fs-journal.liquid",
+      "sections/fs-lookbook.liquid",
+      "sections/fs-making.liquid",
+      "sections/fs-needs.liquid",
+      "sections/fs-press.liquid",
+      "sections/fs-products.liquid",
+      "sections/fs-references.liquid",
+      "sections/fs-results.liquid",
+      "sections/fs-reviews.liquid",
+      "sections/fs-service.liquid",
+      "sections/fs-stores.liquid",
+      "sections/fs-video.liquid",
+      "sections/gallery-mosaic.liquid",
+      "sections/header.liquid",
+      "sections/hero-editorial.liquid",
+      "sections/hero-flex.liquid",
+      "sections/hero-fullbleed.liquid",
+      "sections/hero-split.liquid",
+      "sections/hero.liquid",
+      "sections/horizontal-gallery.liquid",
+      "sections/how-to.liquid",
+      "sections/image-with-text.liquid",
+      "sections/immersive-reviews.liquid",
+      "sections/immersive-video.liquid",
+      "sections/legal-page.liquid",
+      "sections/logo-list.liquid",
+      "sections/main-404.liquid",
+      "sections/main-article.liquid",
+      "sections/main-blog.liquid",
+      "sections/main-cart.liquid",
+      "sections/main-collection.liquid",
+      "sections/main-list-collections.liquid",
+      "sections/main-page.liquid",
+      "sections/main-password.liquid",
+      "sections/main-product.liquid",
+      "sections/main-search.liquid",
+      "sections/marquee.liquid",
+      "sections/media-gallery.liquid",
+      "sections/newsletter-media.liquid",
+      "sections/newsletter.liquid",
+      "sections/on-article.liquid",
+      "sections/on-banner.liquid",
+      "sections/on-cards.liquid",
+      "sections/on-cart.liquid",
+      "sections/on-checkout.liquid",
+      "sections/on-faq.liquid",
+      "sections/on-footer.liquid",
+      "sections/on-header.liquid",
+      "sections/on-help.liquid",
+      "sections/on-journal.liquid",
+      "sections/on-newsletter.liquid",
+      "sections/on-product.liquid",
+      "sections/pa-approach.liquid",
+      "sections/pa-article.liquid",
+      "sections/pa-atelier.liquid",
+      "sections/pa-band.liquid",
+      "sections/pa-booking.liquid",
+      "sections/pa-cabinet.liquid",
+      "sections/pa-cards.liquid",
+      "sections/pa-contact.liquid",
+      "sections/pa-cta.liquid",
+      "sections/pa-faq.liquid",
+      "sections/pa-features.liquid",
+      "sections/pa-footer.liquid",
+      "sections/pa-gallery.liquid",
+      "sections/pa-hero.liquid",
+      "sections/pa-intro.liquid",
+      "sections/pa-legal.liquid",
+      "sections/pa-lookup.liquid",
+      "sections/pa-manage.liquid",
+      "sections/pa-needs.liquid",
+      "sections/pa-newsletter.liquid",
+      "sections/pa-notice.liquid",
+      "sections/pa-offers.liquid",
+      "sections/pa-place.liquid",
+      "sections/pa-posts.liquid",
+      "sections/pa-practical.liquid",
+      "sections/pa-request.liquid",
+      "sections/pa-split.liquid",
+      "sections/pa-steps.liquid",
+      "sections/pa-workshops.liquid",
+      "sections/ph-article.liquid",
+      "sections/ph-cards.liquid",
+      "sections/ph-checklist.liquid",
+      "sections/ph-columns.liquid",
+      "sections/ph-confirm.liquid",
+      "sections/ph-contact.liquid",
+      "sections/ph-cta.liquid",
+      "sections/ph-faq.liquid",
+      "sections/ph-footer.liquid",
+      "sections/ph-gallery.liquid",
+      "sections/ph-header.liquid",
+      "sections/ph-hero.liquid",
+      "sections/ph-legal.liquid",
+      "sections/ph-media.liquid",
+      "sections/ph-page.liquid",
+      "sections/ph-prepare.liquid",
+      "sections/ph-privacy.liquid",
+      "sections/ph-project.liquid",
+      "sections/ph-quote.liquid",
+      "sections/ph-steps.liquid",
+      "sections/ph-triage.liquid",
+      "sections/ph-zone.liquid",
+      "sections/portfolio.liquid",
+      "sections/practical-info.liquid",
+      "sections/precautions.liquid",
+      "sections/pricing.liquid",
+      "sections/product-360.liquid",
+      "sections/product-recommendations.liquid",
+      "sections/product-reviews.liquid",
+      "sections/purchase-offers.liquid",
+      "sections/re-account.liquid",
+      "sections/re-article.liquid",
+      "sections/re-bien.liquid",
+      "sections/re-favorites.liquid",
+      "sections/re-feature.liquid",
+      "sections/re-form.liquid",
+      "sections/re-hero.liquid",
+      "sections/re-legal.liquid",
+      "sections/re-listings.liquid",
+      "sections/re-tiles.liquid",
+      "sections/reassurance.liquid",
+      "sections/ref-editorial.liquid",
+      "sections/ref-hero.liquid",
+      "sections/ref-narrative.liquid",
+      "sections/ref-notes.liquid",
+      "sections/ref-offers.liquid",
+      "sections/rich-text.liquid",
+      "sections/routine-steps.liquid",
+      "sections/scroll-steps.liquid",
+      "sections/scroll-story.liquid",
+      "sections/services-list.liquid",
+      "sections/shipping-journey.liquid",
+      "sections/situations.liquid",
+      "sections/slideshow.liquid",
+      "sections/social-gallery.liquid",
+      "sections/specs-list.liquid",
+      "sections/stack-cards.liquid",
+      "sections/stats.liquid",
+      "sections/story-circles.liquid",
+      "sections/sv-article.liquid",
+      "sections/sv-band.liquid",
+      "sections/sv-banner.liquid",
+      "sections/sv-box.liquid",
+      "sections/sv-buybar.liquid",
+      "sections/sv-care.liquid",
+      "sections/sv-cart.liquid",
+      "sections/sv-checkout.liquid",
+      "sections/sv-collage.liquid",
+      "sections/sv-contact.liquid",
+      "sections/sv-details.liquid",
+      "sections/sv-faq.liquid",
+      "sections/sv-faqlinks.liquid",
+      "sections/sv-footer.liquid",
+      "sections/sv-format.liquid",
+      "sections/sv-header.liquid",
+      "sections/sv-hero.liquid",
+      "sections/sv-info.liquid",
+      "sections/sv-journal.liquid",
+      "sections/sv-legal.liquid",
+      "sections/sv-page.liquid",
+      "sections/sv-posts.liquid",
+      "sections/sv-principles.liquid",
+      "sections/sv-product.liquid",
+      "sections/sv-ritual.liquid",
+      "sections/sv-steps.liquid",
+      "sections/sv-track.liquid",
+      "sections/team.liquid",
+      "sections/testimonials.liquid",
+      "sections/timeline.liquid",
+      "sections/trust-bar.liquid",
+      "sections/ts-404.liquid",
+      "sections/ts-banner.liquid",
+      "sections/ts-booking.liquid",
+      "sections/ts-cards.liquid",
+      "sections/ts-contact.liquid",
+      "sections/ts-dishes.liquid",
+      "sections/ts-faq.liquid",
+      "sections/ts-footnote.liquid",
+      "sections/ts-gallery.liquid",
+      "sections/ts-hero.liquid",
+      "sections/ts-ingredients.liquid",
+      "sections/ts-intro.liquid",
+      "sections/ts-legal.liquid",
+      "sections/ts-manage.liquid",
+      "sections/ts-menu.liquid",
+      "sections/ts-moments.liquid",
+      "sections/ts-panel.liquid",
+      "sections/ts-photos.liquid",
+      "sections/ts-quote.liquid",
+      "sections/ts-request.liquid",
+      "sections/ts-restaurant.liquid",
+      "sections/ts-split.liquid",
+      "sections/ts-teaser.liquid",
+      "sections/v2-band.liquid",
+      "sections/v2-banner.liquid",
+      "sections/v2-benefits.liquid",
+      "sections/v2-cards.liquid",
+      "sections/v2-cta.liquid",
+      "sections/v2-facts.liquid",
+      "sections/v2-faq.liquid",
+      "sections/v2-hero.liquid",
+      "sections/v2-index.liquid",
+      "sections/v2-media.liquid",
+      "sections/v2-specs.liquid",
+      "sections/v2-split.liquid",
+      "sections/v2-steps.liquid",
+      "sections/video-carousel.liquid",
+      "sections/video-reels.liquid",
+      "sections/video-showcase.liquid",
+      "sections/video-stories.liquid",
+      "sections/visual-menu.liquid",
+      "sections/wave-divider.liquid",
+      "snippets/an-hair.liquid",
+      "snippets/an-icon.liquid",
+      "snippets/an-img.liquid",
+      "snippets/ap-consent.liquid",
+      "snippets/ap-dm.liquid",
+      "snippets/ap-icon.liquid",
+      "snippets/ap-img.liquid",
+      "snippets/ap-title.liquid",
+      "snippets/cookie-banner.liquid",
+      "snippets/cv-reveal.liquid",
+      "snippets/demo-account-card.liquid",
+      "snippets/demo-account-menu.liquid",
+      "snippets/dog-measure.liquid",
+      "snippets/ed-media.liquid",
+      "snippets/es-glyph.liquid",
+      "snippets/es-image.liquid",
+      "snippets/es-link-extra.liquid",
+      "snippets/es-media-bg.liquid",
+      "snippets/es-menu-promo.liquid",
+      "snippets/es-premium-media.liquid",
+      "snippets/es-section-media.liquid",
+      "snippets/es-video.liquid",
+      "snippets/fg-art.liquid",
+      "snippets/fg-icon.liquid",
+      "snippets/fg-img.liquid",
+      "snippets/fg-offer.liquid",
+      "snippets/fg-title.liquid",
+      "snippets/floating-actions.liquid",
+      "snippets/fs-button.liquid",
+      "snippets/fs-head.liquid",
+      "snippets/fs-icon.liquid",
+      "snippets/fs-reveal.liquid",
+      "snippets/icon.liquid",
+      "snippets/meta-tags.liquid",
+      "snippets/mh-icon.liquid",
+      "snippets/on-banner-button.liquid",
+      "snippets/on-drawer.liquid",
+      "snippets/on-wave.liquid",
+      "snippets/pa-icon.liquid",
+      "snippets/pa-img.liquid",
+      "snippets/pa-ornament.liquid",
+      "snippets/pagination.liquid",
+      "snippets/ph-art.liquid",
+      "snippets/ph-icon.liquid",
+      "snippets/ph-img.liquid",
+      "snippets/ph-logo.liquid",
+      "snippets/ph-title.liquid",
+      "snippets/planet-illustration.liquid",
+      "snippets/price.liquid",
+      "snippets/product-buy.liquid",
+      "snippets/product-card.liquid",
+      "snippets/product-links.liquid",
+      "snippets/product-tiles.liquid",
+      "snippets/purchase-offers.liquid",
+      "snippets/re-card.liquid",
+      "snippets/re-energy.liquid",
+      "snippets/re-equipment-icon.liquid",
+      "snippets/social-icons.liquid",
+      "snippets/star-illustration.liquid",
+      "snippets/sticky-buy.liquid",
+      "snippets/sv-icon.liquid",
+      "snippets/sv-img.liquid",
+      "snippets/sv-lines.liquid",
+      "snippets/sv-route.liquid",
+      "snippets/ts-icon.liquid",
+      "snippets/ts-img.liquid",
+      "snippets/ts-ornament.liquid",
+      "templates/customers/account.liquid",
+      "templates/customers/activate_account.liquid",
+      "templates/customers/addresses.liquid",
+      "templates/customers/login.liquid",
+      "templates/customers/order.liquid",
+      "templates/customers/register.liquid",
+      "templates/customers/reset_password.liquid",
+      "templates/gift_card.liquid",
+      "templates/404.json",
+      "templates/index.json",
+      "templates/product.json",
+      "templates/collection.json",
+      "templates/list-collections.json",
+      "templates/search.json",
+      "templates/cart.json",
+      "templates/page.json",
+      "templates/page.about.json",
+      "templates/page.faq.json",
+      "templates/page.contact.json",
+      "templates/page.shipping.json",
+      "templates/blog.json",
+      "templates/article.json",
+      "templates/password.json",
+      "sections/header-group.json",
+      "sections/footer-group.json",
+      "config/settings_data.json",
+      "assets/es-recette-multi.webp",
+      "assets/es-hero-vi8iy4.jpg",
+      "assets/es-catalogue.json",
+      "assets/es-studio.json"
+    ],
+    "installation": "not_tested"
+  },
+  "simulatedCalls": 1,
+  "noCreativeQualification": true
+}

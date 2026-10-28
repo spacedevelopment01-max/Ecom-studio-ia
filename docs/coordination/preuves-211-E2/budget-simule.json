@@ -1,0 +1,80 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedTotals": {
+    "providerHttpCalls": 8,
+    "calls": 8,
+    "usage": 8,
+    "simulatedMicro": 63296
+  },
+  "freeOperations": [
+    {
+      "scene": "mono",
+      "jobs": [
+        {
+          "id": "c7qh3zp22xdijvh2",
+          "status": "done",
+          "type": "agent.theme.change"
+        },
+        {
+          "id": "7emw44x4g50bbxws",
+          "status": "done",
+          "type": "agent.theme.change"
+        }
+      ],
+      "reservations": [],
+      "realCostEur": 0
+    },
+    {
+      "scene": "multi",
+      "jobs": [
+        {
+          "id": "312isp5msdtdu3yc",
+          "status": "done",
+          "type": "agent.theme.change"
+        },
+        {
+          "id": "1gqvnz731i8iheoa",
+          "status": "done",
+          "type": "agent.theme.change"
+        }
+      ],
+      "reservations": [],
+      "realCostEur": 0
+    },
+    {
+      "scene": "service",
+      "jobs": [
+        {
+          "id": "d2v1685v7s9t8rob",
+          "status": "done",
+          "type": "agent.theme.change"
+        },
+        {
+          "id": "5kkf3wx18ehpb6ue",
+          "status": "done",
+          "type": "agent.theme.change"
+        }
+      ],
+      "reservations": [],
+      "realCostEur": 0
+    },
+    {
+      "scene": "holdout",
+      "jobs": [
+        {
+          "id": "gorryroj53dtz9xn",
+          "status": "done",
+          "type": "agent.theme.change"
+        },
+        {
+          "id": "qsujpgpgovi9uthl",
+          "status": "done",
+          "type": "agent.theme.change"
+        }
+      ],
+      "reservations": [],
+      "realCostEur": 0
+    }
+  ]
+}
