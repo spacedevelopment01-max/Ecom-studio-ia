@@ -17,6 +17,7 @@ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
 if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
+if(process.argv.includes('--tools-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS'])process.env[key]='1';
 process.env.APP_SECRET=randomBytes(32).toString('hex');
 // Les seules valeurs de fournisseur de ce harnais sont factices et ne sortent pas du loopback.
 for(const k of ['OPENAI_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY','FAL_KEY','FAL_API_KEY','DASHSCOPE_API_KEY','ALIBABA_MODEL_STUDIO_API_KEY','PEXELS_API_KEY','PIXABAY_API_KEY'])process.env[k]='';
@@ -31,14 +32,15 @@ const {stateOf}=await import('../src/lib/preparation/store');
 type View=import('../src/lib/orchestrator/conversation/contract').ConversationView;
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
-let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,providerCalls=0,tokenCounts=0;
+let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
 const fake=http.createServer(async(req,res)=>{
   try{
     let bytes='';for await(const chunk of req)bytes+=chunk;
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
-    const text=JSON.stringify(bad?{...fixture,businessEvidence:{sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}}:fixture);
+    if(failureStatus){res.statusCode=failureStatus;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{type:'api_error',message:'Panne simulée, aucun appel fournisseur réel.'}}));return;}
+    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -106,17 +108,46 @@ try{
     const plan=one<{status:string;steps_json:string}>('SELECT status,steps_json FROM task_plans WHERE project_id=?',v.projectId!)!;assert.equal(plan.status,'done');assert.equal(JSON.parse(plan.steps_json).length,1);
     proof.specialist={role:'quality',calls:1,jobStatus:job.status,planner:plan,requestBounds:result.intelligence!.requestBounds,simulatedOnly:true};specialistCalls=1;
   }
+  let toolCalls=0;
+  if(process.argv.includes('--tools')){
+    assert.equal(process.env.STUDIO_CONVERSATION_TOOLS,'1');
+    const results:unknown[]=[];
+    for(let i=0;i<scenarios.length;i++){
+      const s=sessions[i],other=sessions[1-i],scene=scenarios[i],c=one<{id:string}>('SELECT id FROM agent_conversations WHERE user_id=?',s.u.id)!,route=`/api/studio-agent/conversations/${c.id}`;
+      let v:View=await call(s,route);
+      if(scene.business==='services')v=await call(s,route,{action:'answer',question:'goals',choices:['quote','booking'],revision:v.revision,projectRevision:v.projectRevision,requestId:id()});
+      fixture={name:'',nameStatus:'unknown',category:scene.business==='services'?'Réparation d’instruments':'Capteurs pour ruches',sector:scene.business==='services'?'artisanat':'hightech',summary:scene.text,facts:[],questions:[],claimsToAvoid:['Aucun avis, prix, certification ou résultat commercial à inventer.'],...(scene.business==='services'?{services:[],area:'',address:'',phone:'',email:'',hours:'',bookingUrl:'',contactMode:'unknown'}:{visual:{shape:'',materials:[],labelText:[],hasLogo:false,description:''},variants:[],detailRegions:[]})};
+      const before=counts(),q=await call(s,route+'/tools',{action:'quote',tool:'understand-offer',revision:v.revision,projectRevision:v.projectRevision,correction:'Conserver les réponses et les inconnues. Aucun fait commercial inventé.',requestNew:false});assert.equal(q.kind,'quote');assert.equal(q.confirmationRequired,true);assert.equal(counts().providerHttpCalls,before.providerHttpCalls);
+      await call(other,route+'/tools',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()},404);
+      await call(s,route+'/tools',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()},403,'https://intrus.invalid');
+      await call(s,route+'/tools',{action:'quote',tool:'publish',revision:v.revision,projectRevision:v.projectRevision},400);
+      const receipt=await call(s,route+'/tools',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});assert.equal(receipt.delivered,false);
+      const duplicate=await call(s,route+'/tools',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});assert.equal(receipt.job.id,duplicate.job.id);
+      const job=await finished(s,receipt.job.id);assert.equal(job.status,'done',JSON.stringify(job));const final=await call(s,route+`/tools?receipt=${q.id}`);assert.equal(final.state,'review');assert.equal(final.delivered,true);assert.equal(final.clientApproved,false);assert.equal(final.result.provenance,'provider');
+      const reopened=await call(await login(s.u),route+`/tools?receipt=${q.id}`);assert.equal(reopened.result.fingerprint,final.result.fingerprint);
+      v=await call(s,route);const reused=await call(s,route+'/tools',{action:'quote',tool:'understand-offer',revision:v.revision,projectRevision:v.projectRevision,correction:'',requestNew:false});assert.equal(reused.kind,'acquired');assert.equal(reused.newProviderCalls,0);assert.equal(counts().providerHttpCalls,before.providerHttpCalls+1);
+      const state=stateOf(v.projectId!)!;assert.deepEqual(Object.keys(state.stages),['brief']);if(scene.business==='services')assert.deepEqual(state.stages.brief!.data.services.contactModes,['quote','booking']);
+      results.push({business:scene.business,quote:q,receipt:final,reopened:true,reused,onlyBriefStage:true,csrf:403,foreign:404,forgedTool:400});toolCalls++;
+    }
+    proof.tools=results;
+    fixture={message:'Les faits non confirmés restent à préciser.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:[],actionsExecuted:false};
+  }
   // Une citation forgée (JSON valide) est facturée en simulation, mais jamais annoncée comme une réponse réussie.
   const s=sessions[0],c=one<{id:string}>('SELECT id FROM agent_conversations WHERE user_id=?',s.u.id)!,route=`/api/studio-agent/conversations/${c.id}`;let v:View=await call(s,route);
   v=await call(s,route,{revision:v.revision,projectRevision:v.projectRevision,requestId:id(),action:'message',text:'Quels sont les formats d’export du Studio ?'});
   bad=true;const q=await call(s,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision});const j=await call(s,route+'/intelligence',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const failed=await finished(s,j.jobId);assert.equal(failed.status,'failed');
   v=await call(s,route);assert.equal(v.intelligence?.state,'failed');assert.ok(failed.progress<1);const afterFailure=counts();await new Promise(r=>setTimeout(r,1700));assert.deepEqual(counts(),afterFailure);proof.failure={status:failed.status,progress:failed.progress,conversationState:v.intelligence!.state,priorReplyPreserved:!!v.intelligence!.reply,noAutomaticRetry:true};
   const exported=await call(s,'/api/me/data-export');assert.ok(!JSON.stringify(exported).includes(sessions[1].u.email));proof.accountExportIsolated=true;
-  proof.simulatedTotals={...counts(),tokenCounts};assert.equal(providerCalls,3+specialistCalls);assert.equal(counts().calls,3+specialistCalls);assert.equal(counts().usage,3+specialistCalls);
+  proof.simulatedTotals={...counts(),tokenCounts};assert.equal(providerCalls,3+specialistCalls+toolCalls);assert.equal(counts().calls,3+specialistCalls+toolCalls);assert.equal(counts().usage,3+specialistCalls+toolCalls);
   if(process.argv.includes('--ui')){
     const {verifyAgentBrowser}=await import('./verify-agent211-ui');
     const {seedAgentUiSite}=await import('./agent211-ui-fixtures');
     proof.ui=await verifyAgentBrowser({origin,out,account,login,counts,seedSite:seedAgentUiSite,setFixture:value=>{fixture={...value,message:'[Fournisseur simulé — recette isolée] '+String(value.message)};bad=false;}});
+    proof.allSimulatedTotals=counts();
+  }
+  if(process.argv.includes('--tools-ui')){
+    const{verifyToolsBrowser}=await import('./verify-agent211-tools-ui');const{project}=await import('../tests/conversation209-fixtures');
+    proof.toolsUi=await verifyToolsBrowser({origin,out,account,project,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},setFailure:status=>{failureStatus=status;},inspect:pid=>{const s=stateOf(pid)!;assert.deepEqual(Object.keys(s.stages),['brief']);assert.equal(s.stages.brief!.status,'draft');assert.equal(s.stages.brief!.data.provenance,'provider');return{state:s,versions:all<{key:string}>("SELECT key FROM memory WHERE project_id=? AND key LIKE 'preparation.version.%'",pid),calls:all('SELECT status,cost,job_id,usage_key FROM ai_calls WHERE project_id=?',pid),jobs:all('SELECT type,status FROM jobs WHERE project_id=?',pid),themes:one<{n:number}>('SELECT COUNT(*) n FROM theme_versions WHERE project_id=?',pid)!.n};}});
     proof.allSimulatedTotals=counts();
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};

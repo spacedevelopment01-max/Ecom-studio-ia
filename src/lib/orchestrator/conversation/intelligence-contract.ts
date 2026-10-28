@@ -47,6 +47,7 @@ export type IntelligenceView = {
   requestBounds?:ReturnType<typeof import('../../ai/request-bounds').boundPublic>;
   available: boolean; state: 'describe' | 'requires_quote' | 'running' | 'reply' | 'failed' | 'stale';
   pendingJobId: string | null; reply: CognitiveReply | null;
+  lastReceiptId?:string|null;
   proposalId: string | null; sourceRevision: number | null;
   sourceProjectRevision?:number|null;
   provenance: 'provider' | 'simulation' | null;
