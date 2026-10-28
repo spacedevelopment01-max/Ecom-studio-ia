@@ -37,7 +37,7 @@ const fake=http.createServer(async(req,res)=>{
     const p=JSON.parse(bytes||'{}');
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;
-    const text=bad?'JSON invalide — FOURNISSEUR SIMULÉ':JSON.stringify(fixture);
+    const text=JSON.stringify(bad?{...fixture,businessEvidence:{sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -58,7 +58,7 @@ async function stop(p:ChildProcess|undefined){if(!p?.pid)return;try{process.kill
 process.on('exit',()=>{for(const p of [server,worker])if(p?.pid)try{process.kill(-p.pid,'SIGTERM');}catch{}});
 async function login(u:Session['u']):Promise<Session>{const r=await fetch(origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json',origin},body:JSON.stringify({email:u.email,password:'Mot-de-passe-fictif'})});assert.equal(r.status,200);return{u,cookie:r.headers.getSetCookie().map(x=>x.split(';')[0]).join('; ')};}
 async function call(s:Session,url:string,body?:unknown,expected=200,foreignOrigin?:string){const r=await fetch(origin+url,{method:body==null?'GET':'POST',headers:{cookie:s.cookie,'content-type':'application/json',origin:foreignOrigin??origin},...(body==null?{}:{body:JSON.stringify(body)})});assert.equal(r.status,expected,`${url}: ${r.status===expected?'':await r.clone().text()}`);return r.json();}
-const counts=()=>({providerHttpCalls:providerCalls,calls:one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,usage:one<{n:number}>('SELECT COUNT(*) n FROM usage_events')!.n,simulatedMicro:one<{n:number}>('SELECT COALESCE(SUM(cost_micro),0) n FROM usage_events')!.n});
+const counts=()=>({providerHttpCalls:providerCalls,calls:one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,usage:one<{n:number}>('SELECT COUNT(*) n FROM usage_events')!.n,simulatedMicro:one<{n:number}>('SELECT COALESCE(SUM(cost),0) n FROM usage_events')!.n});
 async function finished(s:Session,jid:string){const end=Date.now()+45000;while(Date.now()<end){const{job}=await call(s,`/api/jobs/${jid}`);if(['done','failed','cancelled','blocked'].includes(job.status))return job;await new Promise(r=>setTimeout(r,150));}throw Error('Worker timeout');}
 const proof:Record<string,unknown>={schema:'agent211-B-compiled-proof-1',data:'fictitious-isolated',provider:'local-http-simulation',realProviderCalls:0,realCostEur:0,worker:'native',qualification:'real_provider_not_tested',cases:[]};
 try{
@@ -95,7 +95,7 @@ try{
     (proof.cases as unknown[]).push({business:scene.business,exchanges,quote:q,job:{status:job.status,progress:job.progress},reservation:reservations[0],reconnected:true,createdProjectWithoutAnalysis:true,csrf:403,foreign:404,forgedProvider:400});
     sessions[i]=fresh;
   }
-  // Une sortie invalide est facturée en simulation, mais jamais annoncée comme une réponse réussie.
+  // Une citation forgée (JSON valide) est facturée en simulation, mais jamais annoncée comme une réponse réussie.
   const s=sessions[0],c=one<{id:string}>('SELECT id FROM agent_conversations WHERE user_id=?',s.u.id)!,route=`/api/studio-agent/conversations/${c.id}`;let v:View=await call(s,route);
   v=await call(s,route,{revision:v.revision,projectRevision:v.projectRevision,requestId:id(),action:'message',text:'Quels sont les formats d’export du Studio ?'});
   bad=true;const q=await call(s,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision});const j=await call(s,route+'/intelligence',{action:'confirm',quoteId:q.id,confirmation:true,requestId:id()});const failed=await finished(s,j.jobId);assert.equal(failed.status,'failed');
