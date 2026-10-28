@@ -1,0 +1,1085 @@
+{
+  "realProviderCalls": 0,
+  "registry": {
+    "available": true,
+    "href": "/studio/wrevgjt9hkah6dpf/pilote",
+    "acquired": {
+      "jobId": "ykkxhezk7ai2uu72",
+      "result": {
+        "projectId": "wrevgjt9hkah6dpf",
+        "revision": 5,
+        "step": "research",
+        "provenance": "provider",
+        "fingerprint": "365a842bf0e6eada",
+        "isCurrentInput": true,
+        "awaitingClientReview": true,
+        "content": {
+          "formatVersion": 3,
+          "sources": [
+            {
+              "id": "offre-fictive",
+              "category": "offer",
+              "title": "Description fictive de l’offre de recette",
+              "excerpt": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti.",
+              "url": "https://source-0.example.invalid/recette-services",
+              "consultedAt": 1793209203062,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "61e8acc10e8935fc6cc8451f65df470c8536914b1d9fbcee019990cb243e20ea",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "comparaison-fictive-a",
+              "category": "competitors",
+              "title": "Comparaison fictive A — aucune entreprise réelle",
+              "excerpt": "Atelier fictif A : un examen du papier précède toute proposition de restauration. Les interventions dépendent de l’état du document confié.",
+              "url": "https://source-1.example.invalid/recette-services",
+              "consultedAt": 1793209203062,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "dc5e883ecc134ec6cb9b80d315325c0e1c830c802fd8f4a6155ce5f63bc3efdb",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "comparaison-fictive-b",
+              "category": "competitors",
+              "title": "Comparaison fictive B — aucune entreprise réelle",
+              "excerpt": "Atelier fictif B : les propriétaires apportent leurs documents anciens pour discuter de leurs attentes. Les limites sont expliquées avant le devis.",
+              "url": "https://source-2.example.invalid/recette-services",
+              "consultedAt": 1793209203062,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "eee8d3e38f35064c3640d81efa7814a6fa42ef6f6d9744c8dad1628ff697d759",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "questions-fictives",
+              "category": "customers",
+              "title": "Questions fictives, aucun avis client",
+              "excerpt": "Question de recette : quelles informations donner lors du dépôt d’une carte ancienne ? Les attentes du propriétaire et l’état du support doivent être discutés.",
+              "url": "https://source-3.example.invalid/recette-services",
+              "consultedAt": 1793209203062,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "66a8d495446494735d40bbfaec219ae029a38662309852a0858fc1ea108f673b",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "guide-fictif",
+              "category": "sector",
+              "title": "Guide sectoriel fictif de recette",
+              "excerpt": "Guide fictif de conservation : décrire le support et ses altérations avant toute intervention. Cette recette ne remplace pas un diagnostic de conservation.",
+              "url": "https://source-4.example.invalid/recette-services",
+              "consultedAt": 1793209203062,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "6ca637812451b5e556708d54ac19d6635d05745386fc9d583912881955a5bae2",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            }
+          ],
+          "observations": [
+            {
+              "sourceId": "offre-fictive",
+              "quote": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti."
+            }
+          ],
+          "angles": [
+            {
+              "id": "usage",
+              "title": "Préparer le dépôt de votre carte",
+              "positioning": "Expliquer comment présenter un document à examiner",
+              "audience": "Propriétaires organisant un premier dépôt",
+              "motivation": "Rassembler les informations avant la visite",
+              "communicationChange": "[Simulation] Expliquer comment présenter un document à examiner.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Décrivons ensemble la carte à examiner.",
+              "arguments": [
+                "Examen préalable des cartes confiées et devis avant intervention."
+              ],
+              "objections": [
+                {
+                  "objection": "Comment transporter mon document ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "reassurance",
+              "title": "Comprendre les limites avant le devis",
+              "positioning": "Séparer examen du support et intervention proposée",
+              "audience": "Collectionneurs attentifs à la conservation",
+              "motivation": "Discuter les possibilités sans résultat promis",
+              "communicationChange": "[Simulation] Séparer examen du support et intervention proposée.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "L’examen précède toute proposition.",
+              "arguments": [
+                "Examen préalable des cartes confiées et devis avant intervention."
+              ],
+              "objections": [
+                {
+                  "objection": "Quelles altérations peuvent rester visibles ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "expression",
+              "title": "Préserver une histoire personnelle",
+              "positioning": "Accueillir le récit associé au document confié",
+              "audience": "Familles attachées à un souvenir cartographique",
+              "motivation": "Expliquer la valeur personnelle de la pièce",
+              "communicationChange": "[Simulation] Accueillir le récit associé au document confié.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Parlons de ce que cette carte représente.",
+              "arguments": [
+                "Examen préalable des cartes confiées et devis avant intervention."
+              ],
+              "objections": [
+                {
+                  "objection": "Puis-je raconter son origine familiale ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "discovery",
+              "title": "Découvrir le regard de l’atelier",
+              "positioning": "Présenter les questions utiles lors du diagnostic",
+              "audience": "Curieux découvrant le métier de conservation",
+              "motivation": "Apprendre à décrire papier et dégradations",
+              "communicationChange": "[Simulation] Présenter les questions utiles lors du diagnostic.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Préparez les éléments de votre demande.",
+              "arguments": [
+                "Examen préalable des cartes confiées et devis avant intervention."
+              ],
+              "objections": [
+                {
+                  "objection": "Quels détails observer avant mon contact ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "generalist",
+              "title": "De l’examen à la proposition",
+              "positioning": "Présenter les prestations et leur déroulement global",
+              "audience": "Particuliers cherchant un accompagnement de restauration",
+              "motivation": "Comprendre les étapes et le contact adapté",
+              "communicationChange": "[Simulation] Présenter les prestations et leur déroulement global.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Découvrez l’approche et demandez un devis.",
+              "arguments": [
+                "Examen préalable des cartes confiées et devis avant intervention."
+              ],
+              "objections": [
+                {
+                  "objection": "Où consulter l’ensemble des prestations ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            }
+          ],
+          "recommendedId": "generalist",
+          "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+          "legalAvailability": "not_checked",
+          "sourceReviews": [
+            {
+              "sourceId": "offre-fictive",
+              "accepted": true,
+              "category": "offer",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "comparaison-fictive-a",
+              "accepted": true,
+              "category": "competitors",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "comparaison-fictive-b",
+              "accepted": true,
+              "category": "competitors",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "questions-fictives",
+              "accepted": true,
+              "category": "customers",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "guide-fictif",
+              "accepted": true,
+              "category": "sector",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            }
+          ],
+          "recommendationSourceIds": [
+            "offre-fictive"
+          ],
+          "offerDigest": "e9423ae8fb3e990611145df6893063f4bda39d7008a054a03f8ae830ae8eeedd",
+          "coverage": {
+            "target": 10,
+            "consulted": 5,
+            "status": "covered",
+            "missingCategories": [],
+            "limits": [
+              "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+            ]
+          },
+          "execution": {
+            "provider": "anthropic",
+            "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+            "usageKey": "ykkxhezk7ai2uu72:research",
+            "vision": false,
+            "at": 1793209208761,
+            "calls": 1,
+            "spentMicro": 7912,
+            "spentPct": 0.0184
+          }
+        }
+      }
+    },
+    "receipts": [
+      {
+        "id": "1umkdlq3bwfh5nb1",
+        "sourceReceiptId": null,
+        "state": "failed",
+        "delivered": false,
+        "clientApproved": false,
+        "result": null,
+        "job": {
+          "id": "x5dpyhc4abv9ca5r",
+          "type": "project.prepare",
+          "label": "Préparation : research",
+          "status": "failed",
+          "progress": 0.05,
+          "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "error": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "attempts": 1,
+          "parentId": null,
+          "result": null,
+          "createdAt": 1793209212590,
+          "updatedAt": 1793209214303,
+          "finishedAt": 1793209214303,
+          "startedAt": 1793209212590,
+          "alive": false,
+          "idleMs": 1130
+        },
+        "href": "/studio/wrevgjt9hkah6dpf/pilote",
+        "message": "Aucun résultat natif prouvé pour cette tâche."
+      },
+      {
+        "id": "zjg6hymf8wiuhqcc",
+        "sourceReceiptId": "3n0mkpxw1u6d7wj5",
+        "state": "review",
+        "delivered": true,
+        "clientApproved": false,
+        "result": {
+          "projectId": "wrevgjt9hkah6dpf",
+          "revision": 5,
+          "step": "research",
+          "provenance": "provider",
+          "fingerprint": "365a842bf0e6eada",
+          "isCurrentInput": true,
+          "awaitingClientReview": true,
+          "content": {
+            "formatVersion": 3,
+            "sources": [
+              {
+                "id": "offre-fictive",
+                "category": "offer",
+                "title": "Description fictive de l’offre de recette",
+                "excerpt": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti.",
+                "url": "https://source-0.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "61e8acc10e8935fc6cc8451f65df470c8536914b1d9fbcee019990cb243e20ea",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-a",
+                "category": "competitors",
+                "title": "Comparaison fictive A — aucune entreprise réelle",
+                "excerpt": "Atelier fictif A : un examen du papier précède toute proposition de restauration. Les interventions dépendent de l’état du document confié.",
+                "url": "https://source-1.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "dc5e883ecc134ec6cb9b80d315325c0e1c830c802fd8f4a6155ce5f63bc3efdb",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-b",
+                "category": "competitors",
+                "title": "Comparaison fictive B — aucune entreprise réelle",
+                "excerpt": "Atelier fictif B : les propriétaires apportent leurs documents anciens pour discuter de leurs attentes. Les limites sont expliquées avant le devis.",
+                "url": "https://source-2.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "eee8d3e38f35064c3640d81efa7814a6fa42ef6f6d9744c8dad1628ff697d759",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "questions-fictives",
+                "category": "customers",
+                "title": "Questions fictives, aucun avis client",
+                "excerpt": "Question de recette : quelles informations donner lors du dépôt d’une carte ancienne ? Les attentes du propriétaire et l’état du support doivent être discutés.",
+                "url": "https://source-3.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "66a8d495446494735d40bbfaec219ae029a38662309852a0858fc1ea108f673b",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "guide-fictif",
+                "category": "sector",
+                "title": "Guide sectoriel fictif de recette",
+                "excerpt": "Guide fictif de conservation : décrire le support et ses altérations avant toute intervention. Cette recette ne remplace pas un diagnostic de conservation.",
+                "url": "https://source-4.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "6ca637812451b5e556708d54ac19d6635d05745386fc9d583912881955a5bae2",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              }
+            ],
+            "observations": [
+              {
+                "sourceId": "offre-fictive",
+                "quote": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti."
+              }
+            ],
+            "angles": [
+              {
+                "id": "usage",
+                "title": "Préparer le dépôt de votre carte",
+                "positioning": "Expliquer comment présenter un document à examiner",
+                "audience": "Propriétaires organisant un premier dépôt",
+                "motivation": "Rassembler les informations avant la visite",
+                "communicationChange": "[Simulation] Expliquer comment présenter un document à examiner.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Décrivons ensemble la carte à examiner.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment transporter mon document ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "reassurance",
+                "title": "Comprendre les limites avant le devis",
+                "positioning": "Séparer examen du support et intervention proposée",
+                "audience": "Collectionneurs attentifs à la conservation",
+                "motivation": "Discuter les possibilités sans résultat promis",
+                "communicationChange": "[Simulation] Séparer examen du support et intervention proposée.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "L’examen précède toute proposition.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quelles altérations peuvent rester visibles ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "expression",
+                "title": "Préserver une histoire personnelle",
+                "positioning": "Accueillir le récit associé au document confié",
+                "audience": "Familles attachées à un souvenir cartographique",
+                "motivation": "Expliquer la valeur personnelle de la pièce",
+                "communicationChange": "[Simulation] Accueillir le récit associé au document confié.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Parlons de ce que cette carte représente.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Puis-je raconter son origine familiale ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "discovery",
+                "title": "Découvrir le regard de l’atelier",
+                "positioning": "Présenter les questions utiles lors du diagnostic",
+                "audience": "Curieux découvrant le métier de conservation",
+                "motivation": "Apprendre à décrire papier et dégradations",
+                "communicationChange": "[Simulation] Présenter les questions utiles lors du diagnostic.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Préparez les éléments de votre demande.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quels détails observer avant mon contact ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "generalist",
+                "title": "De l’examen à la proposition",
+                "positioning": "Présenter les prestations et leur déroulement global",
+                "audience": "Particuliers cherchant un accompagnement de restauration",
+                "motivation": "Comprendre les étapes et le contact adapté",
+                "communicationChange": "[Simulation] Présenter les prestations et leur déroulement global.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Découvrez l’approche et demandez un devis.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Où consulter l’ensemble des prestations ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              }
+            ],
+            "recommendedId": "generalist",
+            "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+            "legalAvailability": "not_checked",
+            "sourceReviews": [
+              {
+                "sourceId": "offre-fictive",
+                "accepted": true,
+                "category": "offer",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-a",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-b",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "questions-fictives",
+                "accepted": true,
+                "category": "customers",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "guide-fictif",
+                "accepted": true,
+                "category": "sector",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            ],
+            "recommendationSourceIds": [
+              "offre-fictive"
+            ],
+            "offerDigest": "e9423ae8fb3e990611145df6893063f4bda39d7008a054a03f8ae830ae8eeedd",
+            "coverage": {
+              "target": 10,
+              "consulted": 5,
+              "status": "covered",
+              "missingCategories": [],
+              "limits": [
+                "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+              ]
+            },
+            "execution": {
+              "provider": "anthropic",
+              "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+              "usageKey": "ykkxhezk7ai2uu72:research",
+              "vision": false,
+              "at": 1793209208761,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            }
+          }
+        },
+        "job": {
+          "id": "ykkxhezk7ai2uu72",
+          "type": "project.prepare",
+          "label": "Préparation : research",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "revision": 5,
+            "step": "research",
+            "action": "generate",
+            "ready": false,
+            "simulation": false
+          },
+          "createdAt": 1793209207122,
+          "updatedAt": 1793209208774,
+          "finishedAt": 1793209208774,
+          "startedAt": 1793209207122,
+          "alive": false,
+          "idleMs": 6660
+        },
+        "href": "/studio/wrevgjt9hkah6dpf/pilote",
+        "message": "Recherche acquise à relire. Ses angles restent des hypothèses ; aucune étape suivante."
+      }
+    ],
+    "limits": "Compréhension validée, sources et droits natifs requis. Devis et accord séparés ; aucune validation d’angle ou génération aval automatique."
+  },
+  "native": {
+    "state": {
+      "schemaVersion": 1,
+      "projectId": "wrevgjt9hkah6dpf",
+      "revision": 7,
+      "createdAt": 1793209203054,
+      "updatedAt": 1793209214302,
+      "stages": {
+        "brief": {
+          "data": {
+            "input": {
+              "offerName": "Cartes préservées",
+              "brandName": "",
+              "description": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti.",
+              "target": "Propriétaires particuliers de cartes anciennes",
+              "constraints": "Aucune vente de cartes, aucun prix ni délai promis. Vouvoiement.",
+              "business": "services",
+              "photoIds": [],
+              "referenceUrls": [],
+              "price": "",
+              "services": {
+                "services": [
+                  {
+                    "name": "Examen préalable",
+                    "description": "Observer la carte confiée avant de proposer un devis."
+                  },
+                  {
+                    "name": "Restauration",
+                    "description": "Intervention définie avec le propriétaire selon l’état du document."
+                  }
+                ],
+                "area": "Rennes",
+                "address": "",
+                "phone": "",
+                "email": "atelier@example.invalid",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "quote"
+              }
+            },
+            "profile": {
+              "name": "Cartes préservées",
+              "nameStatus": "provided",
+              "category": "Restaurant",
+              "sector": "restauration",
+              "summary": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti.",
+              "facts": [],
+              "visual": {
+                "colors": []
+              },
+              "price": {
+                "amount": null,
+                "currency": "EUR",
+                "status": "unknown"
+              },
+              "variants": [],
+              "questions": [],
+              "claimsToAvoid": [],
+              "sources": [],
+              "analyzedBy": "local",
+              "contentAliases": [
+                "Cartes préservées"
+              ]
+            },
+            "services": {
+              "services": [
+                {
+                  "name": "Examen préalable",
+                  "description": "Observer la carte confiée avant de proposer un devis.",
+                  "key": "rue0489sln0hvxdr",
+                  "contentAliases": [
+                    "Examen préalable"
+                  ]
+                },
+                {
+                  "name": "Restauration",
+                  "description": "Intervention définie avec le propriétaire selon l’état du document.",
+                  "key": "g117h4jnitmipg6x",
+                  "contentAliases": [
+                    "Restauration"
+                  ]
+                }
+              ],
+              "area": "Rennes",
+              "address": "",
+              "phone": "",
+              "email": "atelier@example.invalid",
+              "hours": "",
+              "bookingUrl": "",
+              "contactMode": "quote",
+              "contactModes": [
+                "quote"
+              ]
+            },
+            "missing": [],
+            "provenance": "simulation",
+            "observations": [
+              "Analyse injectée de test, aucune API réelle."
+            ]
+          },
+          "inputHash": "04d30c1574dd8f42",
+          "status": "approved",
+          "candidateId": "m3hg4bd3zggb3nj0",
+          "approvedAt": 1793209203061
+        },
+        "research": {
+          "data": {
+            "formatVersion": 3,
+            "sources": [
+              {
+                "id": "offre-fictive",
+                "category": "offer",
+                "title": "Description fictive de l’offre de recette",
+                "excerpt": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti.",
+                "url": "https://source-0.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "61e8acc10e8935fc6cc8451f65df470c8536914b1d9fbcee019990cb243e20ea",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-a",
+                "category": "competitors",
+                "title": "Comparaison fictive A — aucune entreprise réelle",
+                "excerpt": "Atelier fictif A : un examen du papier précède toute proposition de restauration. Les interventions dépendent de l’état du document confié.",
+                "url": "https://source-1.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "dc5e883ecc134ec6cb9b80d315325c0e1c830c802fd8f4a6155ce5f63bc3efdb",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-b",
+                "category": "competitors",
+                "title": "Comparaison fictive B — aucune entreprise réelle",
+                "excerpt": "Atelier fictif B : les propriétaires apportent leurs documents anciens pour discuter de leurs attentes. Les limites sont expliquées avant le devis.",
+                "url": "https://source-2.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "eee8d3e38f35064c3640d81efa7814a6fa42ef6f6d9744c8dad1628ff697d759",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "questions-fictives",
+                "category": "customers",
+                "title": "Questions fictives, aucun avis client",
+                "excerpt": "Question de recette : quelles informations donner lors du dépôt d’une carte ancienne ? Les attentes du propriétaire et l’état du support doivent être discutés.",
+                "url": "https://source-3.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "66a8d495446494735d40bbfaec219ae029a38662309852a0858fc1ea108f673b",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "guide-fictif",
+                "category": "sector",
+                "title": "Guide sectoriel fictif de recette",
+                "excerpt": "Guide fictif de conservation : décrire le support et ses altérations avant toute intervention. Cette recette ne remplace pas un diagnostic de conservation.",
+                "url": "https://source-4.example.invalid/recette-services",
+                "consultedAt": 1793209203062,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "6ca637812451b5e556708d54ac19d6635d05745386fc9d583912881955a5bae2",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              }
+            ],
+            "observations": [
+              {
+                "sourceId": "offre-fictive",
+                "quote": "Restauration de cartes anciennes apportées par leurs propriétaires. Examen préalable et devis. Aucun résultat de restauration garanti."
+              }
+            ],
+            "angles": [
+              {
+                "id": "usage",
+                "title": "Préparer le dépôt de votre carte",
+                "positioning": "Expliquer comment présenter un document à examiner",
+                "audience": "Propriétaires organisant un premier dépôt",
+                "motivation": "Rassembler les informations avant la visite",
+                "communicationChange": "[Simulation] Expliquer comment présenter un document à examiner.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Décrivons ensemble la carte à examiner.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment transporter mon document ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "reassurance",
+                "title": "Comprendre les limites avant le devis",
+                "positioning": "Séparer examen du support et intervention proposée",
+                "audience": "Collectionneurs attentifs à la conservation",
+                "motivation": "Discuter les possibilités sans résultat promis",
+                "communicationChange": "[Simulation] Séparer examen du support et intervention proposée.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "L’examen précède toute proposition.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quelles altérations peuvent rester visibles ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "expression",
+                "title": "Préserver une histoire personnelle",
+                "positioning": "Accueillir le récit associé au document confié",
+                "audience": "Familles attachées à un souvenir cartographique",
+                "motivation": "Expliquer la valeur personnelle de la pièce",
+                "communicationChange": "[Simulation] Accueillir le récit associé au document confié.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Parlons de ce que cette carte représente.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Puis-je raconter son origine familiale ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "discovery",
+                "title": "Découvrir le regard de l’atelier",
+                "positioning": "Présenter les questions utiles lors du diagnostic",
+                "audience": "Curieux découvrant le métier de conservation",
+                "motivation": "Apprendre à décrire papier et dégradations",
+                "communicationChange": "[Simulation] Présenter les questions utiles lors du diagnostic.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Préparez les éléments de votre demande.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quels détails observer avant mon contact ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "generalist",
+                "title": "De l’examen à la proposition",
+                "positioning": "Présenter les prestations et leur déroulement global",
+                "audience": "Particuliers cherchant un accompagnement de restauration",
+                "motivation": "Comprendre les étapes et le contact adapté",
+                "communicationChange": "[Simulation] Présenter les prestations et leur déroulement global.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Découvrez l’approche et demandez un devis.",
+                "arguments": [
+                  "Examen préalable des cartes confiées et devis avant intervention."
+                ],
+                "objections": [
+                  {
+                    "objection": "Où consulter l’ensemble des prestations ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              }
+            ],
+            "recommendedId": "generalist",
+            "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+            "legalAvailability": "not_checked",
+            "sourceReviews": [
+              {
+                "sourceId": "offre-fictive",
+                "accepted": true,
+                "category": "offer",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-a",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-b",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "questions-fictives",
+                "accepted": true,
+                "category": "customers",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "guide-fictif",
+                "accepted": true,
+                "category": "sector",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            ],
+            "recommendationSourceIds": [
+              "offre-fictive"
+            ],
+            "offerDigest": "e9423ae8fb3e990611145df6893063f4bda39d7008a054a03f8ae830ae8eeedd",
+            "coverage": {
+              "target": 10,
+              "consulted": 5,
+              "status": "covered",
+              "missingCategories": [],
+              "limits": [
+                "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+              ]
+            },
+            "execution": {
+              "provider": "anthropic",
+              "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+              "usageKey": "ykkxhezk7ai2uu72:research",
+              "vision": false,
+              "at": 1793209208761,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            }
+          },
+          "inputHash": "af2c4188374a0667",
+          "status": "draft",
+          "candidateId": "sd1xh4z1bpim3t8o"
+        }
+      },
+      "simulation": true,
+      "error": {
+        "step": "research",
+        "jobId": "x5dpyhc4abv9ca5r",
+        "revision": 7,
+        "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+        "at": 1793209214302
+      }
+    },
+    "versions": [
+      {
+        "key": "preparation.version.1"
+      },
+      {
+        "key": "preparation.version.2"
+      },
+      {
+        "key": "preparation.version.3"
+      },
+      {
+        "key": "preparation.version.4"
+      },
+      {
+        "key": "preparation.version.5"
+      },
+      {
+        "key": "preparation.version.6"
+      },
+      {
+        "key": "preparation.version.7"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "3n0mkpxw1u6d7wj5",
+        "usage_key": "3n0mkpxw1u6d7wj5:dialogue"
+      },
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "ykkxhezk7ai2uu72",
+        "usage_key": "ykkxhezk7ai2uu72:research"
+      },
+      {
+        "status": "error",
+        "cost": 0,
+        "job_id": "x5dpyhc4abv9ca5r",
+        "usage_key": "x5dpyhc4abv9ca5r:research"
+      }
+    ],
+    "jobs": [
+      {
+        "type": "agent.reason",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "failed"
+      }
+    ],
+    "themes": 0
+  },
+  "noAutomaticRetry": true
+}
