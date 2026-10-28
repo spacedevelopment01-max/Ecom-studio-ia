@@ -2,6 +2,8 @@
 
 Audit du vrai `main` **70204a7ff83eb2382835a27a37a8465c0851a70a**, avant le code du lot A. Branche/copie indépendantes de #208. Aucun projet réel lu ou modifié, aucun fournisseur interrogé. Les constats ci-dessous sont des **constats de code**, pas une certification de fonctionnement des fournisseurs ou CMS réels.
 
+**Compléments du propriétaire intégrés après la première livraison :** [matrice par domaine et audit Site approfondi](209_AGENT_CENTRAL_COMPLEMENTS.md). L’arbitrage prioritaire retient **l’IA pour la cognition**, le code pour les opérations exactes, et les spécialistes seulement si leur gain est démontré. La proposition locale de type/questions du prototype n’a **pas** de preuve d’équivalence et reste désactivée ; aucune recommandation de bascule client. Le complément distingue capacités réelles, lacunes, contrats futurs, simulations de coûts et qualité non mesurée.
+
 ## Ce qui existe et doit être réutilisé
 
 - `orchestrator/intent.ts` : `understand`, actions connues et règles FR/EN ; classificateur IA injecté seulement en cas ambigu. `request.ts` distingue demande, citations, restrictions, explication et choix versionnés. Une intention n’autorise pas une dépense.

@@ -13,3 +13,12 @@ Les devis positifs et le classement IA injecté sont des **SIMULATIONS dans les 
 Il n’y a **pas de nouvelle interface visuelle dans ce lot**, donc pas de capture prétendant en montrer une. L’accueil, le formulaire et les onglets servis restent inchangés ; l’interface est le travail ultérieur de Claude après validation. Les preuves portent sur le contrat/API et les données, pas sur un nouveau rendu de site.
 
 Reproduction : build propre, puis `npx tsx scripts/verify-agent209-build.ts` (avec le garde réseau documenté dans le rapport). Le script refuse les sélecteurs d’une base existante, crée sa base temporaire, utilise uniquement la boucle locale, ne démarre pas de worker et arrête ses serveurs. Aucun mot de passe, cookie ou secret du harnais n’est publié dans ces preuves.
+
+## Compléments d’architecture du 28 octobre — preuves distinctes
+
+- [Comparaison instrumentée hors ligne](orchestration-study.json) : trois périmètres identiques, mono-agent et principal/spécialistes ; appels, tokens **estimés**, prix théoriques aux valeurs par défaut du dépôt, bornes de reprise et temps synthétiques. Aucun fournisseur réellement appelé, aucun gain qualité prouvé, aucun routeur de production créé. Reproduction : `NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npx tsx scripts/agent209-orchestration-study.ts`.
+- [Sources de l’audit Site et du routage](site-source-audit.json) : 18 fichiers, empreintes, fonctions/branches et lignes avec liens GitHub figés sur `477e47f57612878d001223fafd2b666fd81ac31b`. **Constats de code**, pas inspection de nouveaux rendus ni installation CMS.
+
+Ces fichiers complètent les preuves originales ; ils ne remplacent ni ne requalifient les anciens échanges HTTP. [Architecture, matrice, critères et limites détaillés](../209_AGENT_CENTRAL_COMPLEMENTS.md).
+
+- [Validation du complément](supplement-validation.json) : types et suite complète **3 519 réussis / 45 ignorés / 0 échec**, dont les 14 nouveaux tests ; empreintes des sources de simulation testées. Les résultats CI du nouveau SHA sont publiés dans la PR.

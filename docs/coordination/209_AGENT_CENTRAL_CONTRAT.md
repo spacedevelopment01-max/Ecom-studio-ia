@@ -2,6 +2,8 @@
 
 Lot A technique, **sans refonte visuelle ni remplacement du démarrage servi**. Proposition d’interface pour Claude après validation du propriétaire ; aucun lancement automatique de Claude. Référence : [issue #209](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/209).
 
+**Arbitrage mis à jour :** [contrats d’extension AI-first, spécialistes optionnels et outils Site](209_AGENT_CENTRAL_COMPLEMENTS.md). Les routes ci-dessous restent le contrat **effectivement implémenté du prototype local fermé**, pas une preuve de compréhension IA ni le routage cognitif final. La découverte, les questions adaptatives et les jugements nécessitent une IA appropriée ; aucun remplacement local sans comparaison de qualité démontrée. Pas de six agents déployés ni d’activation dans ce complément. Les contrats Site décrits dans le complément sont **proposés, non raccordés**.
+
 ## Architecture et activation
 
 `src/lib/orchestrator/conversation/` est un adaptateur de conversation de l’orchestrateur existant, pas un second orchestrateur. Il appelle `understand` (Intent Engine), la fiche de préparation, ses versions et son devis natif. Il ne possède ni planner d’exécution, routeur de modèles, worker, facturation ou moteur de création parallèle.
@@ -66,7 +68,7 @@ Schéma `studio-conversation-1`, `mode:local` (ou `simulation` pour les injectio
 - Devis : estimation et maximum en **% du budget IA**, `confirmationRequired:true`, `executionEnabled:false`. Aucun coût interne en euros/dollars ni autorisation reçue du navigateur. Le consentement d’une réponse au chat n’est pas un accord de dépense.
 - Sources : liens mémorisés **sans consultation**, photos **sans analyse**. Photo avant projet non raccordée : refus explicite, pas de remplacement. Après projet, seuls les originaux téléversés de ce projet et de ce compte sont admis. Citations/liens ne commandent pas les outils. Secrets reconnus refusés avant stockage ; ne pas solliciter de clés dans le chat.
 
-L’interprétation de départ est locale et prudente, réutilise `guessSector` et les intentions existantes. Les expressions non comprises, métiers mixtes et paraphrases complexes demandent clarification. Une cible explicitement étiquetée peut être reprise ; « pour chambre d’enfant » ne permet pas d’inventer qui achète ni une certification de sécurité. Cette tranche ne prétend pas remplacer la compréhension linguistique d’un fournisseur réel.
+L’interprétation de départ est locale et prudente, réutilise `guessSector` et les intentions existantes. Les expressions non comprises, métiers mixtes et paraphrases complexes demandent clarification. Une cible explicitement étiquetée peut être reprise ; « pour chambre d’enfant » ne permet pas d’inventer qui achète ni une certification de sécurité. Cette tranche ne prétend pas remplacer la compréhension linguistique d’un fournisseur réel. **Cette logique n’est pas qualifiée pour remplacer la découverte cognitive du produit final.** Le prochain lot de compréhension devra brancher l’IA via les devis/permissions natifs, refuser un repli local inférieur et évaluer le résultat complet avant une bascule.
 
 ## Création définitive : réutiliser le chemin existant
 
