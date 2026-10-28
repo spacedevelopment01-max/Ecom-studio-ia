@@ -1,3 +1,5 @@
+import { analysisAttempts } from "@/lib/preparation/analysis-attempts";
+import { requestHash } from "@/lib/preparation/engine";
 import {activeStrategy} from "@/lib/marketing-strategy";
 import { z } from "zod";
 import { body, handle, ok } from "@/lib/http";
@@ -91,8 +93,11 @@ function view(projectId: string) {
   const state = stateOf(projectId);
   const trackedId = state?.pending?.jobId ?? state?.error?.jobId;
   const pending = trackedId ? getJob(trackedId) : null;
+  const attempts = state?.stages.brief ? analysisAttempts(projectId, state.stages.brief.data, requestHash(state, "brief", "analyze")) : null;
   return {
     state,
+    analysisAttempts: attempts?.attempts ?? 0,
+    analysisHistoryIncomplete: attempts?.historyIncomplete ?? false,
     selectedMarketingAngleId:activeStrategy(projectId)?.angleId??null,
     job: pending?.project_id === projectId ? publicJob(pending) : null,
     recoverable: !!recoverablePreparation(projectId, state),
@@ -232,19 +237,20 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (b.action === "quote") {
     if (!b.step) throw new HttpError(400, "Étape manquante.");
     return ok({
-      quote: createQuote(p.id, b.step, b.runAction ?? "generate", b.slot),
+      quote: createQuote(p.id, b.step, b.runAction ?? "generate", b.slot, b.correction),
     });
   }
   if (b.action === "generate") {
     if (!b.quoteId)
       throw new HttpError(400, "Demandez le devis avant cet essai.");
-    const q = quoteOf(p.id, b.quoteId);
+    const q = quoteOf(p.id, b.quoteId, b.correction);
     return ok({
       ...queuePreparation(p.id, b.revision, q.step, q.action, {
         capMicro: q.capMicro,
         paid: q.paid,
         slot: q.slot,
-        correction: b.correction,
+        correction: q.correction,
+        analysisFingerprint: q.analysisFingerprint,
       }),
       ...view(p.id),
     });

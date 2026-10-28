@@ -1,0 +1,22 @@
+{
+  "schema": "studio-analysis-attempt-regression-1",
+  "simulation": true,
+  "realProviderCalls": 0,
+  "before": {
+    "sourceCommit": "0529aed4a127ea5e8628d0b545a12f52ba7d2455",
+    "test": "les anciens faits reformulés par l’IA après chaque analyse ne rendent pas un troisième essai disponible",
+    "expectedAttempts": 2,
+    "observedAttempts": 0,
+    "result": "REPRODUCED_FAILURE"
+  },
+  "after": {
+    "sourceCommit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+    "legacyResultSnapshots": "passed",
+    "modernResultChain": "passed",
+    "checkpointResultChain": "passed",
+    "missingHistoricalProof": "passed_closed_and_explained",
+    "actualClientChangeAfterKnownResult": "passed_distinct_context",
+    "correctionOnly": "does_not_reset"
+  },
+  "method": "Real isolated SQLite jobs/immutable versions/checkpoints; no provider generation or live project data."
+}

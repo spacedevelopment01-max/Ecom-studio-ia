@@ -1,3 +1,5 @@
+import { analysisAttempts, attemptProblem } from "./analysis-attempts";
+import { analysisCostPlan } from "./inspect";
 import {activeStrategy,currentStrategyInputDigest} from "../marketing-strategy";
 import {researchDigest} from "../marketing-strategy/research";
 import { placementHash, receiptFor } from "./media-context";
@@ -799,7 +801,7 @@ export function queuePreparation(
   revision: number,
   step: Step,
   action: RunAction,
-  opts: { capMicro: number; paid: boolean; slot?: string; correction?: string },
+  opts: { capMicro: number; paid: boolean; slot?: string; correction?: string; analysisFingerprint?: string },
 ) {
   return tx(() => {
     requirePlan(null, projectId);
@@ -837,22 +839,10 @@ export function queuePreparation(
     )
       return { state: s, job: null, reused: true };
     if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };
-    const attempts =
-      one<{ n: number }>(
-        "SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?",
-        projectId,
-        hash,
-      )?.n ?? 0;
-    if (attempts >= 2)
-      throw new HttpError(
-        409,
-        "Deux essais ont déjà été demandés pour ces mêmes données. Corrigez le brief ou le choix en amont avant un nouvel essai.",
-      );
-    if (attempts && (!opts.correction || opts.correction.trim().length < 8))
-      throw new HttpError(
-        409,
-        "Décrivez le défaut à corriger avant un nouvel essai.",
-      );
+    const analysis = action === "analyze" ? analysisAttempts(projectId, stageOf(s, "brief").data, hash) : null;
+    const attempts = analysis?.attempts ?? (one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0);
+    const problem = attemptProblem(attempts, opts.correction, analysis?.historyIncomplete);
+    if (problem) throw new HttpError(409, problem);
     const p = loadProject(projectId);
     if (opts.paid) {
       assertAiAllowed(p.userId, p.id);
@@ -868,11 +858,12 @@ export function queuePreparation(
         step,
         action,
         ...opts,
+        ...(analysis ? { analysisAttemptHash: analysis.hash } : {}),
         ...(action === "logo" ? { expectedSeriesId: currentSeries(projectId)?.id ?? null } : {}),
         inputHash: hash,
         revision: s.revision + 1,
       },
-      idempotencyKey: `prepare:${projectId}:${hash}:${attempts}`,
+      idempotencyKey: `prepare:${projectId}:${analysis?.hash ?? hash}:${attempts}`,
       maxAttempts: 1,
     });
     const next = commitState(projectId, revision, (n) => {
@@ -972,8 +963,16 @@ export async function runPreparation(
             }
             return stageOf(stateOf(projectId)!, "media").data;
           }
-          if (action === "analyze")
-            return deps.inspect(p, stageOf(s, "brief").data, ctx, paid);
+          if (action === "analyze") {
+            if (paid && !deps.simulation && !ctx.payload.analysisFingerprint)
+              throw new UserFacingError("Cet ancien devis ne couvre pas la demande complète : actualisez-le avant une nouvelle analyse. Les résultats déjà acquis restent conservés.");
+            if (ctx.payload.analysisFingerprint) {
+              const plan = analysisCostPlan(p, stageOf(s, "brief").data, ctx.payload.correction);
+              if (!plan || plan.fingerprint !== ctx.payload.analysisFingerprint || plan.maxMicro > capMicro)
+                throw new UserFacingError("La demande, les tarifs ou la route ont changé : actualisez le devis. Aucun nouvel appel lancé.");
+            }
+            return deps.inspect(p, stageOf(s, "brief").data, ctx, paid, { correction: ctx.payload.correction });
+          }
           if (step === "research") {
             const r = await deps.research(p, stageOf(s, "brief").data, ctx, paid);
             return validateResearch(r);

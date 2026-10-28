@@ -1,3 +1,4 @@
+import { analysisAttempts, attemptProblem } from "./analysis-attempts";
 import { assertAnalysisRoute } from "./evidence";
 import { analysisCostPlan } from "./inspect";
 /** Devis local en % ; le garde-fou final reste la réservation native de chaque moteur. */
@@ -24,12 +25,15 @@ export type Quote = {
   capMicro: number;
   paid: boolean;
   createdAt: number;
+  correction?: string;
+  analysisFingerprint?: string;
 };
 export function createQuote(
   projectId: string,
   step: Step,
   action: RunAction,
   slot?: string,
+  correction?: string,
 ) {
   if (
     (action === "collect" && step !== "media") ||
@@ -45,6 +49,17 @@ export function createQuote(
   if (!s) throw new HttpError(409, "Parcours absent.");
   requireUpstream(s, step);
   assertFresh(projectId, s, step);
+  if (one("SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')", projectId))
+    throw new HttpError(409, "Une préparation est déjà en cours.");
+  if (action === "analyze") {
+    const input = s.stages.brief!.data.input;
+    if (input.photoIds.length > 12)
+      throw new HttpError(409, "Sélectionnez au plus douze photos utiles avant analyse. Vos fichiers restent conservés.");
+    if (!input.description.trim() && !input.offerUrl && !input.photoIds.length && !input.services.services.length)
+      throw new HttpError(409, "Décrivez votre offre ou ajoutez une source avant de demander une analyse.");
+    for (const photo of input.photoIds) if (!one("SELECT 1 FROM assets WHERE id=? AND project_id=? AND origin='upload' AND kind='image' AND deleted_at IS NULL AND status!='rejected'", photo, projectId))
+      throw new HttpError(409, "Photo originale introuvable ou refusée : vérifiez vos fichiers avant analyse.");
+  }
   if (
     step === "content" &&
     slot &&
@@ -69,6 +84,13 @@ export function createQuote(
       "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
     );
   if (action === "analyze" && paid) assertAnalysisRoute(!!s.stages.brief?.data.input.photoIds.length);
+  const hash = requestHash(s, step, action, slot);
+  if (action === "analyze") {
+    const attempts = analysisAttempts(projectId, s.stages.brief!.data, hash);
+    const problem = attemptProblem(attempts.attempts, correction, attempts.historyIncomplete);
+    if (problem) throw new HttpError(409, problem);
+  }
+  let analysisFingerprint: string | undefined;
   let capMicro = 0;
   let estimateMicro: number | null = null;
   if (paid) {
@@ -80,10 +102,10 @@ export function createQuote(
     assertAiAllowed(p.userId, p.id);
     // Compréhension (#204) : plafond = pire cas réel de la demande (route, entrée, limites de sortie, reprises de
     // llmJson), plus jamais la formule des contenus ; estimation = un appel au déroulé habituel.
-    const analysis = action === "analyze" ? analysisCostPlan(p, s.stages.brief!.data) : null;
+    const analysis = action === "analyze" ? analysisCostPlan(p, s.stages.brief!.data, correction) : null;
     if (action === "analyze" && !analysis)
       throw new HttpError(409, "Le coût de cette analyse ne peut pas être encadré (tarif ou limites du modèle inconnus). Aucun appel n’a été lancé.");
-    if (analysis) estimateMicro = analysis.estimateMicro;
+    if (analysis) { estimateMicro = analysis.estimateMicro; analysisFingerprint = analysis.fingerprint; }
     capMicro = analysis ? analysis.maxMicro :
       action === "logo"
         ? logoSeriesQuote().maxMicro
@@ -116,6 +138,8 @@ export function createQuote(
     inputHash: requestHash(s, step, action, slot),
     capMicro,
     paid,
+    correction: correction?.trim() || undefined,
+    analysisFingerprint,
     createdAt: now(),
   };
   remember(projectId, {
@@ -137,7 +161,7 @@ export function createQuote(
       : "Préparation locale gratuite, explicitement signalée ; aucune génération IA simulée.",
   };
 }
-export function quoteOf(projectId: string, quoteId: string): Quote {
+export function quoteOf(projectId: string, quoteId: string, correction?: string): Quote {
   const q = json<Quote | null>(
     one<{ value: string }>(
       "SELECT value FROM memory WHERE project_id=? AND key=? AND kind='artifact'",
@@ -158,5 +182,12 @@ export function quoteOf(projectId: string, quoteId: string): Quote {
       409,
       "Le devis n’est plus valable. Actualisez-le après vos modifications.",
     );
+  if ((q.correction || "") !== (correction?.trim() || ""))
+    throw new HttpError(409, "La correction a changé : actualisez le devis avant de confirmer.");
+  if (q.action === "analyze") {
+    const plan = analysisCostPlan(loadProject(projectId), s.stages.brief!.data, q.correction);
+    if (!q.analysisFingerprint || !plan || q.analysisFingerprint !== plan.fingerprint || q.capMicro !== plan.maxMicro)
+      throw new HttpError(409, "La demande, les tarifs ou la route ont changé : actualisez le devis.");
+  }
   return q;
 }

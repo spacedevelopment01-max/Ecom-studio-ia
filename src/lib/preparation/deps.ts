@@ -43,6 +43,7 @@ export type Dependencies = {
     b: Brief,
     ctx: JobContext,
     paid: boolean,
+    options?: { correction?: string },
   ) => Promise<Brief>;
   research: (
     p: Project,
