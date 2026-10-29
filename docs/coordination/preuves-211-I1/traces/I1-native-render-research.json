@@ -1,0 +1,717 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736,
+    "tokenCounts": 3
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 13,
+    "calls": 13,
+    "usage": 11,
+    "simulatedMicro": 87032
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "renderUi": {
+    "schema": "agent211-E3-browser-proof-1",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "business": "products",
+        "captures": [
+          "products-devis-zero.png",
+          "products-recu-avant.png",
+          "products-images-natives-avant.png",
+          "products-correction-visible.png",
+          "products-recapture-nouvelle-version.png",
+          "products-images-natives-apres.png",
+          "products-export-version-corrigee.png",
+          "products-reprise-sans-nouvel-appel.png"
+        ],
+        "initialVersion": "vduk4elz9a0c0st1",
+        "correctedVersion": "1ymfu0ol0ocbycsm",
+        "before": {
+          "id": "rdh23qwsustlkt0j",
+          "sourceReceiptId": "jdhmkybynr3fzazt",
+          "state": "captured",
+          "delivered": true,
+          "reused": false,
+          "costPct": 0,
+          "version": {
+            "id": "vduk4elz9a0c0st1",
+            "number": 2,
+            "isCurrent": true
+          },
+          "job": {
+            "id": "55k422ggzs0rlxdx",
+            "type": "agent.theme.capture",
+            "label": "Capturer les pages du Site",
+            "status": "done",
+            "progress": 1,
+            "message": "Terminé",
+            "error": null,
+            "attempts": 1,
+            "parentId": null,
+            "result": {
+              "assetIds": [
+                "eonhk6piib9x5hua",
+                "vr20r3b6fkfrzsy8"
+              ],
+              "sourceDigest": "7a0f056c71ebbac8",
+              "reused": false
+            },
+            "createdAt": 1793231968547,
+            "updatedAt": 1793231972755,
+            "finishedAt": 1793231972755,
+            "startedAt": 1793231968547,
+            "alive": false,
+            "idleMs": 1249
+          },
+          "files": [
+            {
+              "id": "eonhk6piib9x5hua",
+              "sha256": "12fba9ce649aa66122a17c57ad50b82ef2c579ba6f47f7c77308211765fe3f9f",
+              "href": "/api/files/eonhk6piib9x5hua",
+              "metrics": {
+                "path": "/",
+                "width": 1440,
+                "height": 960,
+                "pageHeight": 7834,
+                "scrollWidth": 1440,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 568.796875,
+                    "height": 710.984375,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 561.59375,
+                    "height": 701.984375,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            },
+            {
+              "id": "vr20r3b6fkfrzsy8",
+              "sha256": "e46677b1e3d0f7beb5333db60ac79438cc39cf61cd58226fe1029ccb765929d4",
+              "href": "/api/files/vr20r3b6fkfrzsy8",
+              "metrics": {
+                "path": "/",
+                "width": 390,
+                "height": 844,
+                "pageHeight": 6486,
+                "scrollWidth": 390,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            }
+          ],
+          "technical": "no_issue_in_measured_checks",
+          "creative": "not_reviewed",
+          "cmsInstallation": "not_tested",
+          "siteModified": false
+        },
+        "after": {
+          "id": "qwyz6vb90on2h24k",
+          "sourceReceiptId": null,
+          "state": "captured",
+          "delivered": true,
+          "reused": false,
+          "costPct": 0,
+          "version": {
+            "id": "1ymfu0ol0ocbycsm",
+            "number": 3,
+            "isCurrent": true
+          },
+          "job": {
+            "id": "0n89ejo7js85pl6a",
+            "type": "agent.theme.capture",
+            "label": "Capturer les pages du Site",
+            "status": "done",
+            "progress": 1,
+            "message": "Terminé",
+            "error": null,
+            "attempts": 1,
+            "parentId": null,
+            "result": {
+              "assetIds": [
+                "416kfklo35nwv0j3",
+                "c8kq5rlumar0l5uy"
+              ],
+              "sourceDigest": "165dba3b3c0a9949",
+              "reused": false
+            },
+            "createdAt": 1793231979012,
+            "updatedAt": 1793231983450,
+            "finishedAt": 1793231983450,
+            "startedAt": 1793231979012,
+            "alive": false,
+            "idleMs": 945
+          },
+          "files": [
+            {
+              "id": "416kfklo35nwv0j3",
+              "sha256": "802a635e859971159cb871013a21772d683865c4b533fe55b4d7254bd12e3054",
+              "href": "/api/files/416kfklo35nwv0j3",
+              "metrics": {
+                "path": "/",
+                "width": 1440,
+                "height": 960,
+                "pageHeight": 7502,
+                "scrollWidth": 1440,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 568.796875,
+                    "height": 379.1875,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 561.59375,
+                    "height": 701.984375,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            },
+            {
+              "id": "c8kq5rlumar0l5uy",
+              "sha256": "55bcf7e5a5df54e2fa2f49a324f9fe7766db427edca21f65d599d42b0e66d0aa",
+              "href": "/api/files/c8kq5rlumar0l5uy",
+              "metrics": {
+                "path": "/",
+                "width": 390,
+                "height": 844,
+                "pageHeight": 6279,
+                "scrollWidth": 390,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 236,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            }
+          ],
+          "technical": "no_issue_in_measured_checks",
+          "creative": "not_reviewed",
+          "cmsInstallation": "not_tested",
+          "siteModified": false
+        },
+        "clientCritique": "Dans la section éditoriale de l’accueil, la légende de mon illustration est coupée. Affiche cette illustration avec le cadrage paysage disponible, sans changer les textes ni les autres sections. Montre ton plan.",
+        "critiqueSource": "explicit_test_client_not_model_vision",
+        "realProviderCalls": 0,
+        "simulatedCalls": 2,
+        "nativeCapturedFiles": 4,
+        "reservations": 0,
+        "reuse": true,
+        "reconnect": true,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "csrf": 403,
+        "pageErrors": [],
+        "creativeQualification": "not_reviewed",
+        "exportCorrectedVersion": {
+          "versionId": "1ymfu0ol0ocbycsm",
+          "sha256": "af6855fdb4d8625f6a41c4221a26c2cae6006d7e4d5f9fd2d2b915adf1338295",
+          "scope": "static",
+          "installation": "not_tested"
+        }
+      },
+      {
+        "business": "services",
+        "captures": [
+          "services-devis-zero.png",
+          "services-recu-avant.png",
+          "services-images-natives-avant.png",
+          "services-correction-visible.png",
+          "services-recapture-nouvelle-version.png",
+          "services-images-natives-apres.png",
+          "services-export-version-corrigee.png",
+          "services-reprise-sans-nouvel-appel.png",
+          "services-capture-manquante-honnete.png"
+        ],
+        "initialVersion": "3j2jle5tonm7b418",
+        "correctedVersion": "vqc1qfw74yzts12y",
+        "before": {
+          "id": "1wvhmn8fjzvnhkcu",
+          "sourceReceiptId": "ialrhttavc8lrf3c",
+          "state": "captured",
+          "delivered": true,
+          "reused": false,
+          "costPct": 0,
+          "version": {
+            "id": "3j2jle5tonm7b418",
+            "number": 2,
+            "isCurrent": true
+          },
+          "job": {
+            "id": "lp3lkpnsvcjwpewt",
+            "type": "agent.theme.capture",
+            "label": "Capturer les pages du Site",
+            "status": "done",
+            "progress": 1,
+            "message": "Terminé",
+            "error": null,
+            "attempts": 1,
+            "parentId": null,
+            "result": {
+              "assetIds": [
+                "qsqc410fgkrm4f4y",
+                "p1mnhltui9ozr36u"
+              ],
+              "sourceDigest": "7ca2ff50db203d59",
+              "reused": false
+            },
+            "createdAt": 1793232001830,
+            "updatedAt": 1793232006760,
+            "finishedAt": 1793232006760,
+            "startedAt": 1793232001830,
+            "alive": false,
+            "idleMs": 507
+          },
+          "files": [
+            {
+              "id": "qsqc410fgkrm4f4y",
+              "sha256": "b3e387a4e5886db174171de6d13fc0a3d169c572c0c513f44d3fa9085f574442",
+              "href": "/api/files/qsqc410fgkrm4f4y",
+              "metrics": {
+                "path": "/",
+                "width": 1440,
+                "height": 960,
+                "pageHeight": 8515,
+                "scrollWidth": 1440,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 0,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 590.0625,
+                    "height": 737.578125,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 568.796875,
+                    "height": 710.984375,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            },
+            {
+              "id": "p1mnhltui9ozr36u",
+              "sha256": "7d5d5f1db222fcc22711a1bfe750cc196b793a423525a1416b9030c358cf3e50",
+              "href": "/api/files/p1mnhltui9ozr36u",
+              "metrics": {
+                "path": "/",
+                "width": 390,
+                "height": 844,
+                "pageHeight": 7991,
+                "scrollWidth": 390,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 0,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 390,
+                    "height": 670.09375,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            }
+          ],
+          "technical": "no_issue_in_measured_checks",
+          "creative": "not_reviewed",
+          "cmsInstallation": "not_tested",
+          "siteModified": false
+        },
+        "after": {
+          "id": "bon5n5t1pqv6rt9n",
+          "sourceReceiptId": null,
+          "state": "captured",
+          "delivered": true,
+          "reused": false,
+          "costPct": 0,
+          "version": {
+            "id": "vqc1qfw74yzts12y",
+            "number": 3,
+            "isCurrent": true
+          },
+          "job": {
+            "id": "du7gwhx7u417ppl9",
+            "type": "agent.theme.capture",
+            "label": "Capturer les pages du Site",
+            "status": "done",
+            "progress": 1,
+            "message": "Terminé",
+            "error": null,
+            "attempts": 1,
+            "parentId": null,
+            "result": {
+              "assetIds": [
+                "tjud22m9yt7nfgw8",
+                "tmn0kpnbkqa1p4tb"
+              ],
+              "sourceDigest": "4e4edcea5b8aaad5",
+              "reused": false
+            },
+            "createdAt": 1793232013284,
+            "updatedAt": 1793232018655,
+            "finishedAt": 1793232018655,
+            "startedAt": 1793232013284,
+            "alive": false,
+            "idleMs": 1111
+          },
+          "files": [
+            {
+              "id": "tjud22m9yt7nfgw8",
+              "sha256": "89a5c4a7d7c103722a7a47fb30c6af96ba67f87e04e27212b55ecc68cc837f8c",
+              "href": "/api/files/tjud22m9yt7nfgw8",
+              "metrics": {
+                "path": "/",
+                "width": 1440,
+                "height": 960,
+                "pageHeight": 8183,
+                "scrollWidth": 1440,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 0,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 590.0625,
+                    "height": 737.578125,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 568.796875,
+                    "height": 379.1875,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            },
+            {
+              "id": "tmn0kpnbkqa1p4tb",
+              "sha256": "91dfb145269f2056e62d4ed5aeaed401878011871d098f8760638e12f3b6da1c",
+              "href": "/api/files/tmn0kpnbkqa1p4tb",
+              "metrics": {
+                "path": "/",
+                "width": 390,
+                "height": 844,
+                "pageHeight": 7785,
+                "scrollWidth": 390,
+                "imageCount": 3,
+                "brokenImageIndexes": [],
+                "potentialCrops": [
+                  {
+                    "index": 0,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 442.5,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 1,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 354,
+                    "height": 236,
+                    "objectFit": "cover"
+                  },
+                  {
+                    "index": 2,
+                    "naturalWidth": 1400,
+                    "naturalHeight": 1000,
+                    "width": 390,
+                    "height": 670.09375,
+                    "objectFit": "cover"
+                  }
+                ],
+                "horizontalOverflow": false,
+                "pageErrors": []
+              }
+            }
+          ],
+          "technical": "no_issue_in_measured_checks",
+          "creative": "not_reviewed",
+          "cmsInstallation": "not_tested",
+          "siteModified": false
+        },
+        "clientCritique": "Dans la section éditoriale de l’accueil, la légende de mon illustration est coupée. Affiche cette illustration avec le cadrage paysage disponible, sans changer les textes ni les autres sections. Montre ton plan.",
+        "critiqueSource": "explicit_test_client_not_model_vision",
+        "realProviderCalls": 0,
+        "simulatedCalls": 2,
+        "nativeCapturedFiles": 4,
+        "reservations": 0,
+        "reuse": true,
+        "reconnect": true,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "csrf": 403,
+        "pageErrors": [],
+        "creativeQualification": "not_reviewed",
+        "exportCorrectedVersion": {
+          "versionId": "vqc1qfw74yzts12y",
+          "sha256": "d818708b92887aa2e827ebbc308e2e8c7fd6dcea467b3cb083d8c8608ec5e057",
+          "scope": "static",
+          "installation": "not_tested"
+        }
+      }
+    ]
+  },
+  "researchUi": {
+    "schema": "agent211-D4-browser-proof-1",
+    "realBrowser": true,
+    "realProviderCalls": 0,
+    "realInternetConsultation": false,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "produit-demande-exacte.png",
+          "produit-action-proposee.png",
+          "produit-devis-plafond-natif.png",
+          "produit-resultat-natif.png",
+          "produit-etat-manuel-actualise.png",
+          "produit-sources-fictives-explicites.png",
+          "produit-hypothese-1-integrale.png",
+          "produit-hypothese-2-integrale.png",
+          "produit-hypothese-3-integrale.png",
+          "produit-hypothese-4-integrale.png",
+          "produit-hypothese-5-integrale.png",
+          "produit-resultat-390.png",
+          "produit-resultat-360.png",
+          "produit-reprise-autre-onglet.png",
+          "produit-echec-acquis-conserve.png",
+          "produit-conversation-reprise-apres-echec.png",
+          "produit-limite-native-sans-nouvel-accord.png"
+        ],
+        "checks": {
+          "nativeQuoteAndConsent": true,
+          "estimateHonestlyUnavailable": true,
+          "immutableResearch": true,
+          "sourceCollectionFictitiousAndPreacquired": true,
+          "realInternetConsultation": false,
+          "nativeSDKWithFakeHTTP": true,
+          "fiveHypothesesNotApproved": true,
+          "allFiveAnglesEntireTextVerified": true,
+          "noBrandMediaTheme": true,
+          "reloginAndReuseNoExtraCall": true,
+          "foreign404": true,
+          "csrf403": true,
+          "noOverflow390And360": true,
+          "failedCorrectionPreservesFirst": true,
+          "freeConversationContinuesAfterFailure": true,
+          "thirdAttemptRefusedBeforeQuoteAndConsent": true,
+          "manualProjectionRefreshed": true,
+          "noAutomaticRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "realProviderCalls": 0,
+        "video": "research-videos/produit.webm"
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "service-demande-exacte.png",
+          "service-action-proposee.png",
+          "service-devis-plafond-natif.png",
+          "service-resultat-natif.png",
+          "service-etat-manuel-actualise.png",
+          "service-sources-fictives-explicites.png",
+          "service-hypothese-1-integrale.png",
+          "service-hypothese-2-integrale.png",
+          "service-hypothese-3-integrale.png",
+          "service-hypothese-4-integrale.png",
+          "service-hypothese-5-integrale.png",
+          "service-resultat-390.png",
+          "service-resultat-360.png",
+          "service-reprise-autre-onglet.png",
+          "service-echec-acquis-conserve.png",
+          "service-conversation-reprise-apres-echec.png",
+          "service-limite-native-sans-nouvel-accord.png"
+        ],
+        "checks": {
+          "nativeQuoteAndConsent": true,
+          "estimateHonestlyUnavailable": true,
+          "immutableResearch": true,
+          "sourceCollectionFictitiousAndPreacquired": true,
+          "realInternetConsultation": false,
+          "nativeSDKWithFakeHTTP": true,
+          "fiveHypothesesNotApproved": true,
+          "allFiveAnglesEntireTextVerified": true,
+          "noBrandMediaTheme": true,
+          "reloginAndReuseNoExtraCall": true,
+          "foreign404": true,
+          "csrf403": true,
+          "noOverflow390And360": true,
+          "failedCorrectionPreservesFirst": true,
+          "freeConversationContinuesAfterFailure": true,
+          "thirdAttemptRefusedBeforeQuoteAndConsent": true,
+          "manualProjectionRefreshed": true,
+          "noAutomaticRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "realProviderCalls": 0,
+        "video": "research-videos/service.webm"
+      }
+    ]
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.15,
+    "conversationState": "failed",
+    "priorReplyPreserved": true,
+    "noAutomaticRetry": true
+  },
+  "accountExportIsolated": true,
+  "finishedAt": "2026-10-29T00:01:07.276Z",
+  "success": true,
+  "baselineCases": [
+    {
+      "business": "products",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    },
+    {
+      "business": "services",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    }
+  ],
+  "completeLocalProofSha256": "c537534f7e5d18b7ebb8c0da52a73b9d45af952635b534bf6219c5da47365e32"
+}

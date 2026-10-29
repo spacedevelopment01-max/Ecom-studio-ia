@@ -1,0 +1,211 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736,
+    "tokenCounts": 3
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "exportUi": {
+    "schema": "agent211-D3-browser-proof-1",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "business": "products",
+        "captures": [
+          "products-devis-zero.png",
+          "products-fichier-prouve.png",
+          "products-acquis-reutilise.png",
+          "products-cinq-plateformes.png",
+          "products-reprise.png"
+        ],
+        "downloaded": [
+          {
+            "platform": "wix",
+            "sha256": "a460db5270d080f268f390f98d96045e9776a37cf0c40472a5635c970e023bc5",
+            "bytes": 856006,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "nxk6lp1s77dmz5xk"
+          },
+          {
+            "platform": "shopify",
+            "sha256": "0664524c76691feb59780cc45ae53cdd67abc85582a8abddde107e7fe2fb0295",
+            "bytes": 1672387,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "sjbqhi8iiudr6rdp"
+          },
+          {
+            "platform": "woocommerce",
+            "sha256": "023023565f96c9095504d30358c860d1b36b990355e67c14f2589ff32051ef07",
+            "bytes": 791550,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "ljanj893yzgpx62x"
+          },
+          {
+            "platform": "prestashop",
+            "sha256": "2a71e838b10ef38747f669ae83c7c4def05aed0036d34a3c32132f6f2b9cb0ee",
+            "bytes": 693335,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "pgmok9be56oxlwhl"
+          },
+          {
+            "platform": "squarespace",
+            "sha256": "a7ac40a91dd0c307705e0bfa14344c64eeb80d4b80b388e7b10d8cdd475f00a3",
+            "bytes": 855970,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "dwma2rmor3wctgdn"
+          }
+        ],
+        "nativeFreeJobs": 5,
+        "freeReservations": 0,
+        "providerCallsSimulated": 1,
+        "realProviderCalls": 0,
+        "reuse": true,
+        "reconnect": true,
+        "csrf": 403,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "pageErrors": []
+      },
+      {
+        "business": "services",
+        "captures": [
+          "services-devis-zero.png",
+          "services-fichier-prouve.png",
+          "services-acquis-reutilise.png",
+          "services-cinq-plateformes.png",
+          "services-reprise.png",
+          "services-fichier-manquant-sans-relance.png"
+        ],
+        "downloaded": [
+          {
+            "platform": "wix",
+            "sha256": "b0a5a1f27aea695b15c172bab61ae0253e99a879247547601724568106787d15",
+            "bytes": 857890,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "dmythx4t1kv6y306"
+          },
+          {
+            "platform": "shopify",
+            "sha256": "1d85fb4d063c490092a47e786ba924c6330d516f04bdabf010db8e7dd40768c7",
+            "bytes": 1677397,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "z2eo0r0mfj9qv6vg"
+          },
+          {
+            "platform": "woocommerce",
+            "sha256": "9c2c60cdf78fe47260fd9c7151f68bf1b92c825bfca5086d38d1f3dd11a429e7",
+            "bytes": 810793,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "rw45zuuow2qlfvar"
+          },
+          {
+            "platform": "prestashop",
+            "sha256": "951ef7cc4b30173ae8103bf30d76b42ad0b65ca207f0a7c9523a00ff55c23af4",
+            "bytes": 712158,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "523e649wqld2hmuk"
+          },
+          {
+            "platform": "squarespace",
+            "sha256": "ecb0394602d9ba3b3fa977637ef3cd6849f2f894cac4387f38cf7f9df04bf54f",
+            "bytes": 857901,
+            "scope": "static",
+            "installation": "not_tested",
+            "publication": false,
+            "assetId": "i6yzvsxs7o895q5q"
+          }
+        ],
+        "nativeFreeJobs": 5,
+        "freeReservations": 0,
+        "providerCallsSimulated": 1,
+        "realProviderCalls": 0,
+        "reuse": true,
+        "reconnect": true,
+        "csrf": 403,
+        "foreign": 404,
+        "foreignDownload": 404,
+        "pageErrors": []
+      }
+    ]
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.15,
+    "conversationState": "failed",
+    "priorReplyPreserved": true,
+    "noAutomaticRetry": true
+  },
+  "accountExportIsolated": true,
+  "finishedAt": "2026-10-29T00:01:19.955Z",
+  "success": true,
+  "baselineCases": [
+    {
+      "business": "products",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    },
+    {
+      "business": "services",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    }
+  ],
+  "completeLocalProofSha256": "799cd4bc1099c6b1022a3216f82ff8c615abcec58fc3c08307857bab00d5eece"
+}

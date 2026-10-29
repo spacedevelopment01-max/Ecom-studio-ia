@@ -272,18 +272,20 @@ export default function TabImages() {
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-image-bank>
       <CopyFailureHistory/>
       {!locked && q && !q.ai && <ImageAiNotice reason={q.reason} />}
-      <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="@container p-5">
+        <div className="flex min-w-0 flex-col gap-4 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
         <div className="min-w-0">
           <h2 className="font-display text-2xl font-semibold">{t("Banque d'images", "Image bank")}</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">{t("Des images neutres, sans texte, réutilisées partout : site, publications, publicités. Les publications avec texte se créent dans Publications.", "Neutral images, no text, reused everywhere: website, posts, ads. Posts with text are created in Posts.")}</p>
         </div>
-        <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+        <div className="flex min-w-0 flex-wrap gap-2 @[60rem]:shrink-0 @[60rem]:justify-end">
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
           <Button variant="ghost" icon={<Upload className="size-4" />} loading={uploading} onClick={() => fileRef.current?.click()} data-bank-upload>{t("Importer", "Upload")}</Button>
           <Button variant="secondary" icon={<Search className="size-4" />} disabled={locked} onClick={() => setDialog("search")} data-bank-search>{t("Chercher des photos libres", "Find royalty-free photos")}</Button>
           <Button icon={<Wand2 className="size-4" />} disabled={locked} onClick={() => setDialog("create")} data-bank-create>{t("Créer une image", "Create an image")}</Button>
         </div>
-        {locked && <div className="sm:basis-full"><PlanRequired what="images" /></div>}
+        </div>
+        {locked && <div className="mt-4"><PlanRequired what="images" /></div>}
       </Card>
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div>

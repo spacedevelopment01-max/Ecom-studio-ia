@@ -1,0 +1,497 @@
+{
+  "schema": "211-isolated-integration-I1-1",
+  "code": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+  "base": "cc2c3144e2e771f8d8ddbb9167ccc3a5dce90e7a",
+  "full": {
+    "passed": 3751,
+    "skipped": 45,
+    "testFilesPassed": 433,
+    "testFilesSkipped": 1,
+    "durationSeconds": 704.4
+  },
+  "runs": {
+    "I1-full": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "cc2c3144e2e771f8d8ddbb9167ccc3a5dce90e7a",
+      "startedAt": "2026-10-28T23:41:08.742900+00:00",
+      "finishedAt": "2026-10-28T23:52:53.873615+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-ui.ts": "435985a2c0efff8a7f8879401413afeff8ad3cc5b1df4fec2126f6f3b04feb5d",
+        "scripts/verify-image-bank-header.ts": "51f3ad4913230200997b026b0d7c1f17a09bc99ecd6855c1ba3220484fad9817",
+        "src/components/studio/tab-boutique.tsx": "4e4bc01b403dfdd4dcbf017268070043d3d5245b5ddf562a96bc4d8fff0ccb51",
+        "src/components/studio/tab-images.tsx": "554650fbf1e09e140bdb26d0e4f02e3ac3f4001c11c1b8c7b6eb234c8b2de3d3",
+        "src/lib/ai/tasks.ts": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3",
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "tests/image-bank-header-browser.ts": "9076265f4e2e2765b1056f51d5c7abd8394a483ed850a4b75ecd5e9ebec48ff9"
+      },
+      "logSha256": "f54da6d1451b065f9b0936ae6f7bf34b23078de48d64110708a88afcbd8b5a33"
+    },
+    "I1-types": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "cc2c3144e2e771f8d8ddbb9167ccc3a5dce90e7a",
+      "startedAt": "2026-10-28T23:41:08.742768+00:00",
+      "finishedAt": "2026-10-28T23:41:55.963272+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-ui.ts": "435985a2c0efff8a7f8879401413afeff8ad3cc5b1df4fec2126f6f3b04feb5d",
+        "scripts/verify-image-bank-header.ts": "51f3ad4913230200997b026b0d7c1f17a09bc99ecd6855c1ba3220484fad9817",
+        "src/components/studio/tab-boutique.tsx": "4e4bc01b403dfdd4dcbf017268070043d3d5245b5ddf562a96bc4d8fff0ccb51",
+        "src/components/studio/tab-images.tsx": "554650fbf1e09e140bdb26d0e4f02e3ac3f4001c11c1b8c7b6eb234c8b2de3d3",
+        "src/lib/ai/tasks.ts": "5e2ac6d0df946f5f7cbfa0898d17272cf3be6adca0ff275b9c909baab2b692b3",
+        "tests/conversation211-copy-input.test.ts": "53e9f5995b8b44c0496ef24e071bfdbc0e97e1c3619465b2cc64f6260096533e",
+        "tests/conversation211-copy-sdk.test.ts": "a9097b448ab4c56b2e775a8a789ffd547fb88f8b94c2f33433e8c22a7847515b",
+        "tests/copy211-fixtures.ts": "416de67a41c6ee93a80d9ba30db04e6a8ffb43e9c4c20f8e50b161d05625a9ef",
+        "tests/image-bank-header-browser.ts": "9076265f4e2e2765b1056f51d5c7abd8394a483ed850a4b75ecd5e9ebec48ff9"
+      },
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "I1-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:53:14.618224+00:00",
+      "finishedAt": "2026-10-28T23:54:19.045673+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "be1763950e76bf7663b66af4f62d2bc4a217adc11b7b3e1ec8ebc0a4c030e07a"
+    },
+    "I1-browser-combined": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/I1-browser-combined",
+        "--ui",
+        "--context-ui",
+        "--choices-ui",
+        "--knowledge-ui"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:54:32.268092+00:00",
+      "finishedAt": "2026-10-28T23:56:34.878821+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "d36d1751053d2e6bec1821c67865c4245254c3a1e5bca3990115c18d1e2d506d"
+    },
+    "I1-images": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-image-bank-header.ts",
+        "/workspace/reviews/ecom-211-state/I1-images",
+        "412f60dd5d3ed079ac46bae61e4b65055f97879e"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:54:32.268232+00:00",
+      "finishedAt": "2026-10-28T23:54:48.443724+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "ec0eaca87f687f8f5a1917a74e837cc2d38b17b016a6890e1de381694fd6fd76"
+    },
+    "I1-shopify-export": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/export-shopify-build-check.ts",
+        "/workspace/reviews/ecom-211-state/I1-shopify-export"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:54:39.773064+00:00",
+      "finishedAt": "2026-10-28T23:54:57.965809+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "351909f615a1db16c2a983f08e342b19d01a042b7543b32dc021c68eb17f4da6"
+    },
+    "I1-shopify-warnings": {
+      "command": [
+        "npx",
+        "tsx",
+        "/workspace/reviews/ecom-211-state/inspect-I1-shopify.mjs"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:55:58.943562+00:00",
+      "finishedAt": "2026-10-28T23:56:07.221714+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "167569bafab5ff61974d506cd4fedb250569c515f563b298491f66494f6942e2"
+    },
+    "I1-native-edit-compose": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/I1-native-edit-compose",
+        "--specialists",
+        "--tools",
+        "--tools-ui",
+        "--theme-ui",
+        "--composition-ui"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-29T00:00:10.419067+00:00",
+      "finishedAt": "2026-10-29T00:03:08.602263+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "f182746d1846121b9214dc46f75c5908f8d0e01a7e742f0b9933e1939d29737d"
+    },
+    "I1-native-render-research": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/I1-native-render-research",
+        "--render-ui",
+        "--research-ui"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-28T23:59:14.608294+00:00",
+      "finishedAt": "2026-10-29T00:01:10.330410+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "d86339128936f55b0d212cb0e27e4a1ad5b4c036298776135dddaa1159240e77"
+    },
+    "I1-native-exports": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/I1-native-exports",
+        "--exports-ui"
+      ],
+      "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+      "startedAt": "2026-10-29T00:00:11.980712+00:00",
+      "finishedAt": "2026-10-29T00:01:23.014393+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "960d1e752a01c6ab01b381eafbdbc0d51e796591f9a5e63580f56fffa90cc7fe"
+    }
+  },
+  "nativeProofs": {
+    "I1-browser-combined": {
+      "file": "traces/I1-browser-combined.json",
+      "success": true,
+      "totals": {
+        "providerHttpCalls": 14,
+        "calls": 17,
+        "usage": 14,
+        "simulatedMicro": 110768
+      }
+    },
+    "I1-native-edit-compose": {
+      "file": "traces/I1-native-edit-compose.json",
+      "success": true,
+      "totals": {
+        "providerHttpCalls": 20,
+        "calls": 20,
+        "usage": 18,
+        "simulatedMicro": 142416
+      }
+    },
+    "I1-native-render-research": {
+      "file": "traces/I1-native-render-research.json",
+      "success": true,
+      "totals": {
+        "providerHttpCalls": 13,
+        "calls": 13,
+        "usage": 11,
+        "simulatedMicro": 87032
+      }
+    },
+    "I1-native-exports": {
+      "file": "traces/I1-native-exports.json",
+      "success": true,
+      "totals": {
+        "providerHttpCalls": 5,
+        "calls": 5,
+        "usage": 5,
+        "simulatedMicro": 39560
+      }
+    }
+  },
+  "costsPerSuccessfulBrowserRun": [
+    {
+      "run": "I1-browser-combined",
+      "providerHttpCalls": 14,
+      "calls": 17,
+      "usage": 14,
+      "simulatedMicro": 110768
+    },
+    {
+      "run": "I1-native-edit-compose",
+      "providerHttpCalls": 20,
+      "calls": 20,
+      "usage": 18,
+      "simulatedMicro": 142416
+    },
+    {
+      "run": "I1-native-render-research",
+      "providerHttpCalls": 13,
+      "calls": 13,
+      "usage": 11,
+      "simulatedMicro": 87032
+    },
+    {
+      "run": "I1-native-exports",
+      "providerHttpCalls": 5,
+      "calls": 5,
+      "usage": 5,
+      "simulatedMicro": 39560
+    }
+  ],
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulationsNotRealInvoices": true,
+  "interruptedRunSimulatedTotals": "not_claimed_complete",
+  "media": [
+    {
+      "file": "videos/interface-service.mp4",
+      "sourceSha256": "e9ab235e2857e4c5e672e589799cbdc1f75febd8e8cb15fa361c7d893b92439a",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "220"
+          }
+        ],
+        "format": {
+          "duration": "8.800000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "220"
+          }
+        ],
+        "format": {
+          "duration": "8.800000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.34273200469882936
+        },
+        {
+          "frame": 110,
+          "meanAbsoluteRgbDifferenceOn255": 0.48359055373273385
+        },
+        {
+          "frame": 219,
+          "meanAbsoluteRgbDifferenceOn255": 0.4401962571393851
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/contexte-service.mp4",
+      "sourceSha256": "42edb8631037835ea0a04f0b4ab87b59cbba8dbea478158caa792fe2afbaed43",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "289"
+          }
+        ],
+        "format": {
+          "duration": "11.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "289"
+          }
+        ],
+        "format": {
+          "duration": "11.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.3278888888888889
+        },
+        {
+          "frame": 144,
+          "meanAbsoluteRgbDifferenceOn255": 0.24774074074074073
+        },
+        {
+          "frame": 288,
+          "meanAbsoluteRgbDifferenceOn255": 0.6146809116809117
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/choix-service.mp4",
+      "sourceSha256": "a7925aa4887de32611142c3af1ba36b1e7c27c4454a1179b46f94e9731839f8b",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "239"
+          }
+        ],
+        "format": {
+          "duration": "9.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "239"
+          }
+        ],
+        "format": {
+          "duration": "9.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.3274558404558405
+        },
+        {
+          "frame": 119,
+          "meanAbsoluteRgbDifferenceOn255": 0.6091918328584995
+        },
+        {
+          "frame": 238,
+          "meanAbsoluteRgbDifferenceOn255": 0.4056353276353276
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/composition-inedite.mp4",
+      "sourceSha256": "e13832f4c0d5b1eaaa3918e61eda9e67452e5b66bbe542175160581f9c49cf76",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "315"
+          }
+        ],
+        "format": {
+          "duration": "12.600000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "315"
+          }
+        ],
+        "format": {
+          "duration": "12.600000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.22778139467592592
+        },
+        {
+          "frame": 157,
+          "meanAbsoluteRgbDifferenceOn255": 0.20799141589506173
+        },
+        {
+          "frame": 314,
+          "meanAbsoluteRgbDifferenceOn255": 0.21724946952160493
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "publishedOriginalPng": 31,
+  "localOriginalPng": 262,
+  "publishedMp4": 4,
+  "limitations": [
+    "Unit and fake-SDK validation, not real cognition, commercial advice, creative quality or vision.",
+    "Acquired D7 research fixtures are generic, not coherent commercial research for these test activities.",
+    "Browser videos preserve their source frames; PNG remains the color reference; capture methods are not calibrated.",
+    "ZIP downloads are not a real CMS installation, publishing, payment or booking.",
+    "35 Theme Check warnings retained and itemized; no theme control removed.",
+    "30-IP-login/10min native guard preserved; first broad run failed429, next over-broad run deliberately stopped, final groups run in separate isolated data roots.",
+    "Only selected original PNG/videos are published; all generated success PNGs are inventoried by hash, remaining originals retained locally.",
+    "No client instance, main, data, media, configuration, budgets, plans or Claude compositions modified; flags not activated.",
+    "D8 Catalogue analysis only, not implemented; generic comparisons and original website mode remain absent/partial."
+  ],
+  "publishedLogFormatting": {
+    "logs/I1-build.txt": {
+      "originalLogSha256": "be1763950e76bf7663b66af4f62d2bc4a217adc11b7b3e1ec8ebc0a4c030e07a",
+      "normalization": "Line endings and trailing whitespace only; all messages retained."
+    }
+  }
+}
