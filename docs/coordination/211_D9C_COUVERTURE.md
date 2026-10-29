@@ -54,3 +54,7 @@ Sous-domaine gratuit et domaine client sur TLD/infra séparés conformément aux
 
 
 Suite finale : 3 926 tests réussis/45 ignorés, types/build/navigateur locaux réussis ; fournisseurs HTTP simulés uniquement. CI du nouveau SHA : en cours au relevé, workflow40932229772 sur378ac552 ; aucun vert global annoncé. Le commit documentaire ultérieur déclenche sa propre vérification. Aucun merge, activation, appel fournisseur réel, achat, déploiement, clé ou client modifié.
+
+## Contre-recette du 29 octobre — retouche héritée
+
+[Complément précis](211_D9C_CONTRE_RECETTE_RETOUCHE.md) : cinq parcours D9b désormais réexécutés sur l’application compilée378ac552, avec le harnais f163b769 ; insertion/aperçu/ZIP/annulation vérifiés, cinq ZIP0erreur/35avertissements, aucune installation CMS. Réponse200malformée à usage connu réglée une seule fois ;503distinct toujours incertain. Suite3926/45 et types réussis. La CI a74 est rouge, nouvelle CI non encore qualifiée ; les mentions précédentes décrivent le relevé antérieur. Aucun nouveau code applicatif, merge, activation ou fournisseur réel.

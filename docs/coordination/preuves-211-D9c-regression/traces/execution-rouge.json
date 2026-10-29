@@ -1,0 +1,27 @@
+{
+  "command": [
+    "env",
+    "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+    "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+    "CHROMIUM=/usr/bin/chromium",
+    "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+    "NEXT_TELEMETRY_DISABLED=1",
+    "npx",
+    "tsx",
+    "scripts/verify-agent211-build.ts",
+    "/workspace/reviews/ecom-211-state/D9c-retouch-regression-red-proof",
+    "--retouches-ui"
+  ],
+  "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+  "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+  "startedAt": "2026-10-29T19:56:59.285100+00:00",
+  "state": "failed",
+  "sources": {},
+  "log": "/workspace/reviews/ecom-211-state/D9c-retouch-regression-red.log",
+  "pid": 1753344,
+  "processGroup": 1753344,
+  "exitCode": 1,
+  "finishedAt": "2026-10-29T19:58:47.201237+00:00",
+  "logSha256": "56ed14c151266379416b4d15e251670ff7406ec079badd8c7857c7a6d52a6f05",
+  "sourceUnchanged": true
+}

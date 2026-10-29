@@ -1,0 +1,16 @@
+{
+  "commit": "f163b7690068398d6e95ebcbab1089c7f9ef0df8",
+  "baseCommit": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+  "files": [
+    {
+      "path": "scripts/verify-agent211-retouch-ui.ts",
+      "bytes": 24497,
+      "sha256": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+      "actualDownloadMatched": true
+    }
+  ],
+  "count": 1,
+  "bytes": 24497,
+  "everyFileActuallyDownloaded": true,
+  "noProviderCalls": true
+}

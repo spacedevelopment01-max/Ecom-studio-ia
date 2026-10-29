@@ -1,0 +1,14 @@
+{
+  "parent": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+  "branch": "codex/211-lot-d9c-identite-syna",
+  "baseTree": "3017749f0f918c26ea8e5d785e5d71dce3537fd3",
+  "treeBeforeCommit": "2a2f8322f79250a34239a78a6edf214e42b86369",
+  "files": {
+    "scripts/verify-agent211-retouch-ui.ts": {
+      "bytes": 24497,
+      "sha256": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+      "blob": "149a194a00f32cfc350c242bcf76093afe67e246",
+      "mode": "100644"
+    }
+  }
+}

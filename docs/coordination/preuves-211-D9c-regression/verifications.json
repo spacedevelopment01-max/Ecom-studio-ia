@@ -1,0 +1,225 @@
+{
+  "applicationBuild": {
+    "commit": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "harnessManifest": "D9c-retouch-regression-manifest.json",
+  "runs": {
+    "D9c-retouch-regression-types": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T20:00:36.701799+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-retouch-regression-types.log",
+      "pid": 1754609,
+      "processGroup": 1754609,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T20:00:41.672383+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D9c-retouch-regression-full": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T20:00:56.543764+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-retouch-regression-full.log",
+      "pid": 1754792,
+      "processGroup": 1754792,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T20:19:05.156524+00:00",
+      "logSha256": "335a829734633fadb153e3f510544ef12927a55067c6865d8e246e90043cd8f8",
+      "sourceUnchanged": true
+    },
+    "D9c-retouch-regression-green": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9c-retouch-regression-green-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T20:00:56.538647+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-retouch-regression-green.log",
+      "pid": 1754785,
+      "processGroup": 1754785,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T20:05:40.285441+00:00",
+      "logSha256": "02bbc0d574189ea9d951ea658b012ee69ec9ee2f208f7b1755d0040cd78581cd",
+      "sourceUnchanged": true
+    }
+  },
+  "cases": 5,
+  "allCapturesLocal": 127,
+  "selectedCapturesPublished": 6,
+  "video": {
+    "source": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "width": 360,
+          "height": 960,
+          "r_frame_rate": "25/1",
+          "nb_read_frames": "1292"
+        }
+      ],
+      "format": {
+        "duration": "51.680000"
+      }
+    },
+    "mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "width": 360,
+          "height": 960,
+          "r_frame_rate": "25/1",
+          "nb_read_frames": "1292"
+        }
+      ],
+      "format": {
+        "duration": "51.680000"
+      }
+    },
+    "samples": [
+      {
+        "frame": 0,
+        "rgbDifferenceOn255": 0.0
+      },
+      {
+        "frame": 646,
+        "rgbDifferenceOn255": 0.13005690586419752
+      },
+      {
+        "frame": 1291,
+        "rgbDifferenceOn255": 0.5964535108024691
+      }
+    ],
+    "noCutOrAcceleration": true
+  },
+  "malformedCompleteReview": {
+    "accounted": {
+      "reservations": [
+        {
+          "status": "settled",
+          "amount": 321457,
+          "actual": 217855
+        },
+        {
+          "status": "settled",
+          "amount": 216102,
+          "actual": 7912
+        }
+      ],
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 217855
+        },
+        {
+          "status": "ok",
+          "cost": 7912
+        }
+      ],
+      "usages": [
+        {
+          "task": "image_generation",
+          "cost": 217855,
+          "billed": 217855,
+          "estimated": 0
+        },
+        {
+          "task": "quality_control",
+          "cost": 7912,
+          "billed": 7912,
+          "estimated": 0
+        }
+      ]
+    },
+    "responseCompleteButStrictlyRejected": true,
+    "exactlyOneReviewCall": true,
+    "noUncertainCost": true,
+    "cause": "required_review_flags_omitted_by_fake_http_supplier",
+    "status": "failed",
+    "progress": 0.9,
+    "delivered": false,
+    "trial": {
+      "assetId": "sdheg4lyv5ou6nfm",
+      "version": 3,
+      "sha256": "bf37da1cd8f620b07f7967327554495152a6018ff8266c3530baf3d9b6a9078c",
+      "bytes": 239058,
+      "reusable": false
+    },
+    "fileDecodedAndDownloaded": true,
+    "foreign": 404,
+    "reopenedWithoutNewCall": true,
+    "originalSeriesPreserved": true,
+    "counts": {
+      "providerHttpCalls": 37,
+      "textHttpCalls": 25,
+      "imageHttpCalls": 12,
+      "tokenCounts": 25,
+      "calls": 37,
+      "usage": 37,
+      "simulatedMicro": 2812060
+    },
+    "notABudgetCapTest": true,
+    "realProviderCalls": 0
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 59,
+    "textHttpCalls": 39,
+    "imageHttpCalls": 20,
+    "tokenCounts": 39,
+    "calls": 59,
+    "usage": 58,
+    "simulatedMicro": 4420121
+  },
+  "exports": 5,
+  "themeCheckPerExport": {
+    "errors": 0,
+    "warnings": 35
+  },
+  "cmsInstallation": "not_tested",
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

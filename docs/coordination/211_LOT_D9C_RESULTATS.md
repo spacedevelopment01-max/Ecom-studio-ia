@@ -1,5 +1,7 @@
 # #211 — D9c : trois directions de logo natives depuis SYNA
 
+
+**Complément de contre-recette :** [retouche héritée et CI](211_D9C_CONTRE_RECETTE_RETOUCHE.md). CI a74 en échec sur un ancien littéral SDK ; harnais renforcé à f163b769, cinq parcours locaux réussis, nouvelle CI encore à vérifier. Aucun nouveau code applicatif.
 29 octobre 2026. Livraison pour revue dans #233, sans fusion, activation ou fournisseur réel. Suite de la [décision propriétaire D8–D12](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/211#issuecomment-6488971173) et du [complément domaines](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/211#issuecomment-6503231615). **La mission #211 reste ouverte** : D10/D11, puis D12/E/F et les domaines dépendant de Claude #232 ne sont pas livrés ici.
 
 ## Version exacte et dépendances

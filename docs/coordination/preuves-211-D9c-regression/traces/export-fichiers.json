@@ -1,0 +1,277 @@
+[
+  {
+    "file": "fichiers/mono-shopify.zip",
+    "sha256": "38406e202a0f8a1969e44d80313a0cdbc1fc3ad3d0de282e096d7bb00338835e",
+    "bytes": 1812536,
+    "meta": {
+      "proof": {
+        "schema": 1,
+        "jobId": "qp9ny7kzxbyub78c",
+        "zipSha256": "38406e202a0f8a1969e44d80313a0cdbc1fc3ad3d0de282e096d7bb00338835e",
+        "sourceDigest": "97fe41a7cadd692b"
+      },
+      "platform": "shopify",
+      "delivery": "theme",
+      "themeVersion": 2,
+      "versionId": "cfmxl0tgt32o23qd",
+      "fingerprint": "e1d134726f062d0d",
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "pgr4k3zyuoaosl2h",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "issues": [],
+      "stats": {
+        "files": 498,
+        "zipKb": 1770,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 204,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+    }
+  },
+  {
+    "file": "fichiers/multi-shopify.zip",
+    "sha256": "5a2825220192f6ea85a1636abec8d1eb88501f6e4d688131e926f0c952d09895",
+    "bytes": 1832634,
+    "meta": {
+      "proof": {
+        "schema": 1,
+        "jobId": "uciccvjlw6xmm6wq",
+        "zipSha256": "5a2825220192f6ea85a1636abec8d1eb88501f6e4d688131e926f0c952d09895",
+        "sourceDigest": "e8e754e929269cee"
+      },
+      "platform": "shopify",
+      "delivery": "theme",
+      "themeVersion": 2,
+      "versionId": "l7gwowgtg93xc328",
+      "fingerprint": "3b3c60435ba56d5b",
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "gaumaxaznmwhom37",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "issues": [],
+      "stats": {
+        "files": 498,
+        "zipKb": 1790,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 229,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+    }
+  },
+  {
+    "file": "fichiers/inedit-shopify.zip",
+    "sha256": "86125760464aef685daa6960d6a7bf543ab311afffacaa94743c8e9f337ebea3",
+    "bytes": 1835357,
+    "meta": {
+      "proof": {
+        "schema": 1,
+        "jobId": "fl09gshha2o0w7lq",
+        "zipSha256": "86125760464aef685daa6960d6a7bf543ab311afffacaa94743c8e9f337ebea3",
+        "sourceDigest": "7ad351cba503cf66"
+      },
+      "platform": "shopify",
+      "delivery": "theme",
+      "themeVersion": 2,
+      "versionId": "2b3uq9970yp0q88r",
+      "fingerprint": "d2f6912cec9ee437",
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "cp3xf1uhybw5xgrv",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "issues": [],
+      "stats": {
+        "files": 498,
+        "zipKb": 1792,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 231,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+    }
+  },
+  {
+    "file": "fichiers/services-shopify.zip",
+    "sha256": "780e3aa516142e47f2cb3ff9ac3959eea2f278f8f40212f9dd5fb794c5610f79",
+    "bytes": 1827646,
+    "meta": {
+      "proof": {
+        "schema": 1,
+        "jobId": "g3owcd15fb94y1qb",
+        "zipSha256": "780e3aa516142e47f2cb3ff9ac3959eea2f278f8f40212f9dd5fb794c5610f79",
+        "sourceDigest": "400abf4e6a74b45f"
+      },
+      "platform": "shopify",
+      "delivery": "theme",
+      "themeVersion": 2,
+      "versionId": "42tzxtxdianicvc0",
+      "fingerprint": "a8eea3c83433111c",
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "xi9w6udu6y1l87yx",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "issues": [],
+      "stats": {
+        "files": 499,
+        "zipKb": 1785,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 214,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+    }
+  },
+  {
+    "file": "fichiers/nouveau-service-shopify.zip",
+    "sha256": "41d87aa0eadbbf3d58dacd4ec15981304a033ab5d06cb19f84ac1f3b46f43b4e",
+    "bytes": 1832148,
+    "meta": {
+      "proof": {
+        "schema": 1,
+        "jobId": "evfcza50p27ke2pi",
+        "zipSha256": "41d87aa0eadbbf3d58dacd4ec15981304a033ab5d06cb19f84ac1f3b46f43b4e",
+        "sourceDigest": "d81ddf392961e212"
+      },
+      "platform": "shopify",
+      "delivery": "theme",
+      "themeVersion": 2,
+      "versionId": "z1156hqw6iw4cgvq",
+      "fingerprint": "e37b8a92e6fc99c4",
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "ez0pdzc4bxpz1yfz",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "issues": [],
+      "stats": {
+        "files": 499,
+        "zipKb": 1789,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 220,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "message": "Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier."
+    }
+  }
+]
