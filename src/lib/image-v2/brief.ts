@@ -17,6 +17,7 @@ import { tradeFr } from "../brain/trade-fr";
 import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
 import {applyWording,wordingPromptLine,type WordingRule} from '../client-wording';
+import {photoEditText} from './edit-request';
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
 export const BRIEF_VERSION = "5a.1";
@@ -27,6 +28,7 @@ export type BriefRequest = {
   /** Un produit ciblé reste fidèle aussi dans une bannière ; ce champ ne peut jamais désactiver la fidélité. */
   productFidelity?: boolean;
   instructions?: string;
+  nativeEdit?:VisualBrief['nativeEdit'];
   /** Autorisation explicite limitée à cette demande ; false interdit toute déduction depuis une autre photo. */
   peopleAllowed?: boolean;
   kind: VisualKind;
@@ -206,7 +208,8 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
 
   return {
-    version: req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
+    version: req.nativeEdit ? `${BRIEF_VERSION}.edit1` : req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
+    ...(req.nativeEdit?{nativeEdit:req.nativeEdit}:{}),
     ...(req.instructions?{instructions:req.instructions}:{}),
     ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
@@ -259,6 +262,7 @@ const ZONE_FR: Record<string, string> = { left: "le côté gauche", right: "le c
  * lieu, lumière, cadrage), aucun texte voulu dans l'image (rien entre guillemets), produit ENTIER exigé.
  */
 export function generationPrompt(b: VisualBrief, extra?: string | null): string {
+  if(b.nativeEdit)return photoEditText(b.instructions??'',b.format.aspect,{style:!!b.nativeEdit.styleAssetId,product:!!b.nativeEdit.productAssetId,peoplePolicy:'none'});
   const d = { ...DIRECTIONS[b.artDirection], ...(b.people === false ? DIRECTION_NO_PEOPLE[b.artDirection] : {}) };
   // Brief en français (ancien brief sans version française : données d'origine).
   const f = b.fr ?? { subject: b.subject, action: b.action, environment: b.environment, negative: b.negative };

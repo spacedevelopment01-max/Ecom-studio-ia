@@ -23,6 +23,8 @@ import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
 import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
+import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
+export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
 import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
@@ -662,9 +664,7 @@ export async function aiPostImage(ctx: Ctx, input: { prompt: string; aspect: Asp
  * demande du client ; seul ce qui est demandé change (composition, produit, lumière gardés). Même format que la
  * photo d'origine : le cadrage de la création reste valable.
  */
-async function editPhotoImpl(ctx: Ctx, input: { image: Buffer; instruction: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; usage?: MediaUsage }) {
-  return generateImageImpl(ctx, { text: editPhotoPrompt(input.instruction, input.aspect), aspect: input.aspect, reference: input.image, quality: "high", usage: input.usage ?? "ad_visual" });
-}
+async function editPhotoImpl(ctx:Ctx,input:PhotoEditInput){return generateImageImpl(ctx,photoEditRequest(input));}
 
 /**
  * Produit incomplet sur la photo du client (partie hors cadre, perdue dans l'ombre, cachée) : l'IA d'images refait le
@@ -682,11 +682,6 @@ async function completeProductImpl(ctx: Ctx, input: { image: Buffer; missing?: s
 }
 
 /** Consigne de retouche d'une photo livrée : la demande du client, rien d'autre ne bouge. */
-export function editPhotoPrompt(instruction: string, aspect: string): string {
-  return `Retoucher la photographie jointe. Modification demandée par le client : « ${instruction.replace(/["«»]/g, "'").slice(0, 400)} ».
-Appliquer seulement cette modification. Garder tout le reste exactement comme c'est : même cadrage et même composition, même angle de prise de vue, même lumière et mêmes couleurs, et le même produit (forme, proportions, couleurs, matières, détails, étiquette et inscriptions), entier dans le cadre, sauf si le client demande explicitement de le changer.
-N'ajouter aucun texte, aucune lettre, aucune légende, aucun filigrane, aucun logo ni prix. N'ajouter ni personne, ni main, ni visage sauf si le client le demande. Résultat photoréaliste. Format ${aspect}.`;
-}
 
 /**
  * Image d'ambiance d'une activité de services (texte vers image) : lieu, gestes, matériaux, lumière.

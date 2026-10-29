@@ -104,6 +104,7 @@ export const BoundedImageReviewSchema=ImageReviewSchema.extend({
  criteria:z.object(Object.fromEntries(IMAGE_CRITERIA.map(k=>[k,z.number().min(0).max(10)])) as Record<ImageCriterion,z.ZodNumber>),
  offTopic:z.boolean(),productAltered:z.boolean(),wrongProduct:z.boolean(),textInImage:z.boolean(),deformed:z.boolean(),artifacts:z.boolean(),personVisible:z.boolean(),
 });
+export const BoundedEditImageReviewSchema=BoundedImageReviewSchema.extend({sourceAltered:z.boolean(),requestedChangeApplied:z.boolean()});
 
 export const REVIEW_SYSTEM = `Rôle : directeur artistique exigeant d'une agence de création visuelle (niveau 2026). Tu juges UNE image avant qu'elle soit utilisée par une marque, à partir de son brief.
 Note chaque critère de 0 à 10 : relevance (montre exactement le sujet du brief : le métier ET son geste, ou l'univers du produit), fidelity (si un produit de référence est fourni : même forme, couleurs, logo, étiquette, proportions ; sinon 10), aesthetics (qualité esthétique réelle, pas seulement technique), composition (hiérarchie, cadrage, équilibre, espace pour le texte si demandé), realism, brand (cohérence avec la palette et le ton), brief (direction artistique, lumière, cadrage demandés), support (adaptée au format et à l'usage), artifacts (10 = aucun artefact), commercial (exploitable par une marque sans gêne).
@@ -113,6 +114,7 @@ Sois strict : 8 se mérite ; une image correcte mais banale n'a pas plus de 6 en
 /** Codes de défauts tirés d'une relecture. */
 export function reviewCodes(r: ImageReview, brief: VisualBrief): string[] {
   const codes: string[] = [];
+  if(brief.nativeEdit){if(r.sourceAltered!==false)codes.push('source_altered');if(r.requestedChangeApplied!==true)codes.push('edit_not_applied');}
   if (r.offTopic || r.criteria.relevance < 4) codes.push("off_topic");
   // Règle de présence humaine : personne visible sans autorisation du client = refus (défaut fatal).
   codes.push(...personCodes(r.personVisible, brief.people !== false));

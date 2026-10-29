@@ -13,11 +13,14 @@ import {mockDeps,review} from './image-v2-mock';
 import {id,all,one,run} from '@/lib/db';
 import {claimNext,completeJob,failJob,JobContext,getJob} from '@/lib/jobs';
 import {activeProviderKey} from '@/lib/ai/config';
-import {assetUrl} from '@/lib/library';
+import {assetUrl,assetData,getAsset} from '@/lib/library';
 import {setJsonSetting} from '@/lib/settings';
 import {MEDIA_MODELS} from '@/lib/ai/media-models';
-import {loadProject} from '@/lib/projects';
+import {loadProject,saveServices} from '@/lib/projects';
+import {emptyServiceProfile} from '@/lib/project-types';
+import {CognitiveReplySchema} from '@/lib/orchestrator/conversation/intelligence-contract';
 import {projectAccountKey} from '@/lib/project-billing';
+import {CostCapReached} from '@/lib/ai/trace';
 const flags=['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_IMAGES'];
 beforeEach(()=>{vi.mocked(activeProviderKey).mockReturnValue('FAUX FOURNISSEUR SANS SECRET');for(const key of flags)vi.stubEnv(key,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Aucun HTTP réel D9');}));setJsonSetting('billing.markup',1);setJsonSetting('ai.media.models',Object.fromEntries(MEDIA_MODELS.filter(m=>m.kind==='image').map(m=>[`${m.provider}:${m.model}`,{enabled:true,confirmedAt:Date.now()}])));});
 afterEach(()=>{run("UPDATE jobs SET status='cancelled' WHERE type='image.v2' AND status IN ('queued','running')");vi.unstubAllEnvs();vi.unstubAllGlobals();});
@@ -55,4 +58,43 @@ describe('D9 — création native depuis SYNA',()=>{
   const f=await fixture(),q=qid(f.quote());f.confirm(q);const first=await finish(),row=ownedConversation(f.u,f.c.id),meta=metaOf(row),receipt=id();meta.intelligence!.lastReceiptId=receipt;run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(meta),f.c.id);run('UPDATE wallets SET monthly_used=monthly_allowance WHERE user_id=?',projectAccountKey(f.pid));
   vi.mocked(activeProviderKey).mockReturnValue(null);const v=conversationView(f.u,f.c.id),reused=quoteImageCreation(f.u,f.c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:receipt});expect(reused.kind).toBe('quote');if(reused.kind!=='quote')throw Error('quote');expect(reused.quote).toMatchObject({estimatePct:0,maximumPct:0,maximumCalls:0,reused:2});const before=all('SELECT * FROM wallets WHERE user_id=?',projectAccountKey(f.pid));f.confirm(reused.quote.id);const fake=mockDeps({generate:async()=>{throw Error('Pas de nouvelle génération');}});await finish(fake);const result=imageToolReceipt(f.u,f.c.id,reused.quote.id);expect(result.outputs.map(o=>o.assetId)).toEqual(first.result.frames.flatMap(f=>f.outputs.map(o=>o.assetId)));expect(fake.log.generations).toHaveLength(0);expect(fake.log.reviews).toHaveLength(0);expect(all('SELECT * FROM wallets WHERE user_id=?',projectAccountKey(f.pid))).toEqual(before);
  });
+});
+
+async function acquiredForEdit(business:'products'|'services'='products'){
+ // Fixture isolée : route native compatible avec source + style + photo produit.
+ // Aucun changement de configuration client, aucune référence retirée pour faire passer le devis.
+ const editModel=MEDIA_MODELS.find(m=>m.kind==='image'&&m.adapter==='openai_image'&&m.caps.maskEdit&&(m.caps.references??0)>=3)!;
+ expect(editModel).toBeTruthy();setJsonSetting('ai.media.usage',{product_edit:{mode:'manual',primary:`${editModel.provider}:${editModel.model}`,backup:null}});
+ const f=await fixture(business);
+ if(business==='services'){
+  saveServices(f.pid,{...emptyServiceProfile(),services:[{name:'réparation des instruments',description:'Réparation sur devis.',duration:'',price:'',source:'client'}]});
+  const service=loadProject(f.pid).services.services[0],row=ownedConversation(f.u,f.c.id),m=metaOf(row);f.plan.target={kind:'service',key:service.key!};m.intelligence!.lastReply!.imagePlan=f.plan;run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(m),f.c.id);
+ }
+ const original=qid(f.quote());f.confirm(original);await finish();const outputs=imageToolReceipt(f.u,f.c.id,original).outputs,source=outputs[1],style=outputs[0];
+ const text='Refais la deuxième image avec la palette du décor de la première. Garde le produit, le cadrage et les autres détails exactement ; aucune personne.';
+ await f.send({action:'message',text,context:{tab:'images',target:{kind:'asset',assetId:source.assetId,version:source.version}}});
+ const row=ownedConversation(f.u,f.c.id),m=metaOf(row),ctx=cognitiveContext(row),last=ctx.context.lastClientRequest!,proposal=id(),plan:ImageToolPlan={tool:'images.edit',target:f.plan.target,source:{kind:'receipt',receiptId:original,index:2},style:{kind:'receipt',receiptId:original,index:1},sourceId:last.sourceId!,quote:last.text};
+ m.intelligence={lastReceiptId:proposal,sourceRevision:row.revision,sourceProjectRevision:conversationView(f.u,f.c.id).projectRevision,lastReply:{message:'[Proposition fictive] Retouche du décor seulement ; originaux conservés.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:['images.edit'],imagePlan:plan,actionsExecuted:false}};run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(m),f.c.id);
+ const quote=()=>{const v=conversationView(f.u,f.c.id);return quoteImageCreation(f.u,f.c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:proposal});};
+ return{...f,original,source,style,text,editPlan:plan,editProposal:proposal,editQuote:quote};
+}
+describe('D9b — retouche dans le même SYNA et moteur natif',()=>{
+ it('la relecture arrêtée au plafond expose seulement un essai non livrable, conservé après reprise sans nouvel appel',async()=>{
+  const f=await acquiredForEdit(),quote=qid(f.editQuote()),queued=f.confirm(quote),fake=mockDeps({reference:assetData(getAsset(f.source.assetId)!),reviewFor:()=>new CostCapReached(100,200,150)});await expect(finish(fake)).rejects.toThrow('livrable');const r=imageToolReceipt(f.u,f.c.id,quote);expect(r).toMatchObject({state:'failed',delivered:false});expect(r.outputs).toHaveLength(0);expect(r.trials).toHaveLength(1);expect(r.trials[0]).toMatchObject({present:true,diagnosticOnly:true,reusable:false});expect(r.trials[0].href).toBe(assetUrl({id:r.trials[0].assetId}));expect(r.job?.progress).toBeLessThan(1);expect(fake.log.generations).toHaveLength(1);expect(f.confirm(quote).job?.id).toBe(queued.job!.id);expect(imageToolReceipt(f.u,f.c.id,quote).trials[0].sha256).toBe(r.trials[0].sha256);expect(fake.log.generations).toHaveLength(1);
+ });
+ it('refuse avant génération une route configurée qui ne peut pas traiter les trois références',async()=>{const f=await acquiredForEdit(),limited=MEDIA_MODELS.find(m=>m.kind==='image'&&m.caps.references===2)!;expect(limited).toBeTruthy();setJsonSetting('ai.media.usage',{product_edit:{mode:'manual',primary:`${limited.provider}:${limited.model}`,backup:null}});expect(()=>f.editQuote()).toThrow('indisponible');expect(all("SELECT * FROM jobs WHERE project_id=? AND status='queued'",f.pid)).toHaveLength(0);expect(vi.mocked(fetch)).not.toHaveBeenCalled();});
+ it.each(['products','services']as const)('propositions2/1 → devis → accord → version → reprise, %s',async business=>{
+  const f=await acquiredForEdit(business),beforeSource=assetData(getAsset(f.source.assetId)!),beforeStyle=assetData(getAsset(f.style.assetId)!),q=f.editQuote(),quote=qid(q);expect(q.kind==='quote'&&q.quote).toMatchObject({operation:'edit',maximumCalls:2,count:1,instruction:f.text,edit:{source:{assetId:f.source.assetId,version:f.source.version},style:{assetId:f.style.assetId,version:f.style.version}}});expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  const queued=f.confirm(quote),fake=mockDeps({reference:beforeSource,generate:async()=>{const{mockImage}=await import('./image-v2-mock');return mockImage(749);},reviewFor:()=>review(9,{personVisible:false,sourceAltered:false,requestedChangeApplied:true})});await finish(fake);const r=imageToolReceipt(f.u,f.c.id,quote);expect(r).toMatchObject({delivered:true,clientApproved:false,siteChanged:false});expect(r.outputs).toHaveLength(1);const a=getAsset(r.outputs[0].assetId)!;expect(a.source_asset_id).toBe(f.source.assetId);expect(a.version_of).toBe(f.source.assetId);expect(a.version).toBe(2);expect(assetData(getAsset(f.source.assetId)!)).toEqual(beforeSource);expect(assetData(getAsset(f.style.assetId)!)).toEqual(beforeStyle);expect(fake.log.prompts[0]).toContain(f.text);expect(fake.log.prompts[0]).toContain('palette du décor et la lumière');expect(fake.log.generations).toHaveLength(1);expect(f.confirm(quote).job?.id).toBe(queued.job!.id);expect(fake.log.generations).toHaveLength(1);expect(imageToolReceipt(f.u,f.c.id,quote).outputs[0].sha256).toBe(r.outputs[0].sha256);expect(all('SELECT * FROM theme_versions WHERE project_id=?',f.pid)).toHaveLength(0);
+ });
+ it('refuse une position absente, un mauvais média désigné ou un reçu étranger avant la retouche',async()=>{
+  const f=await acquiredForEdit(),other=await acquiredForEdit(),set=(source:unknown)=>{const row=ownedConversation(f.u,f.c.id),m=metaOf(row);m.intelligence!.lastReply!.imagePlan={...f.editPlan,source}as ImageToolPlan;run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(m),f.c.id);};
+  set({kind:'receipt',receiptId:f.original,index:5});expect(()=>f.editQuote()).toThrow('position');set({kind:'receipt',receiptId:f.original,index:1});expect(()=>f.editQuote()).toThrow('désignée');set({kind:'receipt',receiptId:other.original,index:2});expect(()=>f.editQuote()).toThrow('introuvable');expect(all("SELECT * FROM jobs WHERE project_id=? AND status='queued'",f.pid)).toHaveLength(0);
+ });
+ it('refuse un reçu dont l’étape native ne prouve plus le fichier',async()=>{const f=await acquiredForEdit(),receipt=imageToolReceipt(f.u,f.c.id,f.original);run("UPDATE jobs SET checkpoint='{}' WHERE id=?",receipt.job!.id);expect(()=>f.editQuote()).toThrow('moteur natif');expect(vi.mocked(fetch)).not.toHaveBeenCalled();});
+ it('fige les références, conserve l’acquis rejeté et ne valide pas un changement hors demande',async()=>{
+  const f=await acquiredForEdit(),q=qid(f.editQuote());f.confirm(q);const fake=mockDeps({reference:assetData(getAsset(f.source.assetId)!),reviewFor:()=>review(9,{personVisible:false,sourceAltered:true,requestedChangeApplied:true})});await expect(finish(fake)).rejects.toThrow();const result=imageToolReceipt(f.u,f.c.id,q);expect(result.delivered).toBe(false);expect(result.job?.status).toBe('failed');expect(result.job?.progress).toBeLessThan(1);expect(fake.log.generations).toHaveLength(1);expect(getAsset(f.source.assetId)).toBeTruthy();
+ });
+ it('la source et le style modifiés après devis arrêtent la tâche avant génération',async()=>{const f=await acquiredForEdit(),q=qid(f.editQuote());run('UPDATE assets SET version=version+1 WHERE id=?',f.style.assetId);expect(()=>f.confirm(q)).toThrow('image');expect(all("SELECT * FROM jobs WHERE project_id=? AND status='queued'",f.pid)).toHaveLength(0);});
+ it('ne transforme pas une proposition de création en retouche sans contrat correspondant',async()=>{const f=await acquiredForEdit(),reply=metaOf(ownedConversation(f.u,f.c.id)).intelligence!.lastReply!;expect(CognitiveReplySchema.safeParse(reply).success).toBe(true);expect(CognitiveReplySchema.safeParse({...reply,proposedTools:['images.create']}).success).toBe(false);expect(CognitiveReplySchema.safeParse({...reply,proposedTools:['images.create','images.edit']}).success).toBe(false);expect(CognitiveReplySchema.safeParse({...reply,imagePlan:{...f.editPlan,costCapMicro:99999}}).success).toBe(false);});
 });

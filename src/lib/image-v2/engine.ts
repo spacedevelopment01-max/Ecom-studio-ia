@@ -37,7 +37,7 @@ import { loadWordingRules } from "../client-wording";
 import { rejectedDirections } from "./direction";
 import { frameTo } from "./formats";
 import { PRODUCT_KINDS, stagesFor } from "./intent";
-import { gateImage, localImageCheck } from "./quality";
+import { gateImage, localImageCheck,dHash } from "./quality";
 import { candidateKey, searchCandidates, shortlist, type SearchStats, type TypedSearch } from "./search";
 import { typedQueries, typedWords } from "../stock/typed-search";
 import { emptyBankPhotoDiag, noPhotoMessage, silhouetteBrief, stockFlagsNote, type BankPhotoDiag } from "../media/bank-photo";
@@ -127,11 +127,12 @@ export async function runImageEngineV2(ctx: JobContext | null, projectId: string
   if(req.themePlacement)await (await import("../theme/placement-request")).checkedPlacementRequest(projectId,req.themePlacement);
   if(req.kind==="ad_image"||req.support==="ad")(await import("../job-entitlements")).assertAdvertising(projectId);
   req = imagePolicy(req);
+  if(req.nativeEdit&&!req.binding?.edit)throw new UserFacingError(L('La retouche exige une source native figée. Aucun appel lancé.','Editing requires a pinned native source. No request started.'),'image_edit_binding_missing');
   const loaded = loadProject(projectId);
   const resolved=req.binding?resolveImageBinding(loaded,req.binding):null;
-  if(resolved)for(const reference of resolved.binding.references){try{await sharp(assetData(getAsset(reference.assetId)!),{failOn:'error'}).stats();}catch{throw new UserFacingError(L('La photo de référence est illisible. Aucun appel de génération lancé.','Reference photo is unreadable. No generation request started.'),'image_reference_unreadable');}}
+  if(resolved)for(const reference of resolved.pins){try{await sharp(assetData(getAsset(reference.assetId)!),{failOn:'error'}).stats();}catch{throw new UserFacingError(L('La photo de référence est illisible. Aucun appel de génération lancé.','Reference photo is unreadable. No generation request started.'),'image_reference_unreadable');}}
   const p=resolved?.project??loaded;
-  if(resolved)req={...req,references:resolved.references,peopleAllowed:false,bindingDigest:resolved.digest,...(resolved.binding.product?{productFidelity:true}:{}),...(resolved.service?{service:resolved.service}:{})};
+  if(resolved)req={...req,references:resolved.references,peopleAllowed:false,bindingDigest:resolved.digest,...(resolved.binding.product?{productFidelity:true}:{}),...(resolved.service?{service:resolved.service}:{}),...(resolved.nativeEdit?{nativeEdit:resolved.nativeEdit,attemptLimit:1,allowDirectionChange:false,singleReviewCall:true,noStock:true}:{} )};
   brainView(p, "image"); // Précontrôle avant tout appel, même si un adaptateur lit ensuite un brief local.
   const jobId = ctx?.job.id ?? null;
   const aiActive = aiActiveFor(p.userId, p.id);
@@ -143,7 +144,7 @@ export async function runImageEngineV2(ctx: JobContext | null, projectId: string
   const cur = currentTrace();
   const capMicro = cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own;
   const run = () => req.quotedRoutes?withQuotedImageRoute(req.quotedRoutes.image,()=>engine(ctx,p,req,deps)):engine(ctx,p,req,deps);
-  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: PRODUCT_KINDS.includes(req.kind) ? "GENERATE_IMAGE" : "FIND_STOCK_IMAGE" }), costCapMicro: capMicro }, run);
+  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: req.nativeEdit||PRODUCT_KINDS.includes(req.kind) ? "GENERATE_IMAGE" : "FIND_STOCK_IMAGE" }), costCapMicro: capMicro }, run);
 }
 
 async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps: ImageV2Deps): Promise<ImageRunResult> {
@@ -153,7 +154,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const result: ImageRunResult = { runId, outcomes: [], search: [], stats: { reused: 0, candidatesSeen: 0, controls: 0, controlsSkippedByMemo: 0, generations: 0, retries: 0, directionChanges: 0 }, stoppedByCostCap: false, costMicro: 0, notes };
   const memory = brainSnapshot(p).memory;
   const rejectedDirs = rejectedDirections(memory);
-  const stages = req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
+  const stages:ReturnType<typeof stagesFor> = req.nativeEdit?['reuse','generate']:req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
   const count = Math.max(1, Math.min(8, req.count ?? 1));
   const seriesHashes: string[] = [];
   // Détourage valide du produit (référence obligatoire pour toute image du produit).
@@ -173,6 +174,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
         const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
       } else result.outcomes.push({ ...out.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
+      if(result.stoppedByCostCap)break;
     }
   } catch (e) {
     if (!(e instanceof CostCapReached)) throw e;
@@ -207,7 +209,10 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     }
   }
   if(req.reuseOnly)return{outcome:none('L’acquis annoncé manque ; aucune nouvelle génération autorisée par ce devis.'),changeDirection:false};
-  const projectH = projectHashes(p.id);
+  const editReferenceHashes=brief.nativeEdit?await Promise.all([brief.nativeEdit.sourceAssetId,brief.nativeEdit.styleAssetId].filter((v):v is string=>!!v).map(assetId=>dHash(assetData(getAsset(assetId)!)))):[];
+  // Une correction volontairement proche de sa source/style n'est pas un doublon indésirable.
+  // Les autres acquis gardent leur contrôle ; l'application de la demande et les changements hors périmètre sont relus.
+  const projectH = projectHashes(p.id).filter(h=>!editReferenceHashes.includes(h));
   let lastReason = "aucune image retenue";
 
   // 2. Recherche (banques d'images). Recherche du client : son texte tel quel, élargie et silhouettes s'il les a cochées.
@@ -332,12 +337,14 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     const local = await localImageCheck(img, brief, [...projectH, ...seriesHashes]);
     let review: ImageReview | null = null;
     let reviewError: string | null = null;
+    let reviewCap:CostCapReached|null=null;
     if (local.ok && deps.canReview) {
       result.stats.controls++;
       try {
         review = await withCandidate(`img2:${bh}`, attempt, () => deps.review(brief, img, reference, `${key}:review`, "generated"));
       } catch (e) {
-        if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
+        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+        if(e instanceof CostCapReached)reviewCap=e;
         reviewError = (e as Error).message;
       }
     }
@@ -357,12 +364,13 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       name: `${req.name ?? `${brief.kind}-${(brief.variant?.index ?? 0) + 1}`}${attempt ? `-essai-${attempt + 1}` : ""}.jpg`,
       business: p.business,
       brief,
-      meta: { version: IMAGE_V2_VERSION, origin: brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1,...(req.binding?{binding:req.binding}:{}) },
+      meta: { version: IMAGE_V2_VERSION, origin: brief.nativeEdit||brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.nativeEdit?.productAssetId??brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1,...(req.binding?{binding:req.binding}:{}) },
       gate: g,
       status: d.verdict === "FINAL" || keep ? "review" : "rejected",
       slot: req.slot ?? null,
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
+      versionOf:brief.nativeEdit?(getAsset(brief.nativeEdit.sourceAssetId)?.version_of??brief.nativeEdit.sourceAssetId):null,
     });
     if (req.preserveOriginal) {
       const format = (await sharp(gen.img).metadata()).format;
@@ -371,7 +379,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       await saveAsset({ projectId: p.id, userId: p.userId, data: gen.img, name: `${req.slot?.replaceAll(":", "-") || "image"}-original.${ext}`, mime: format === "jpeg" ? "image/jpeg" : `image/${format}`, origin: "generated", role: "image-original", folderKey: "images.scenes", sourceAssetId: asset.id, status: "review", meta: { provider: gen.provider, model: gen.model, original: true, attempt } });
     }
     remember(p.id, `gen:${ph}`, bh, { verdict: d.verdict === "FINAL" ? "FINAL" : "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
-    last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null, attempts: attempt + 1, candidateKey: `gen:${ph}` };
+    last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null,...(d.verdict!=='FINAL'&&!keep?{diagnosticAssetId:asset.id}:{}), attempts: attempt + 1, candidateKey: `gen:${ph}` };
+    if(reviewCap){result.stoppedByCostCap=true;result.notes.push(`arrêt du contrôle au plafond : ${reviewCap.message}`);return{outcome:last,changeDirection:false};}
     if (d.verdict === "FINAL") {
       seriesHashes.push(local.hash);
       return { outcome: last, changeDirection: false };

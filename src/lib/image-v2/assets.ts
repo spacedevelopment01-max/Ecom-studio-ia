@@ -68,6 +68,7 @@ export async function saveImageV2(o: {
   slot?: string | null;
   service?: string | null;
   sourceAssetId?: string | null;
+  versionOf?:string|null;
 }): Promise<Asset> {
   const { role, folderKey } = roleFor(o.brief.kind, o.business);
   return saveAsset({
@@ -80,6 +81,7 @@ export async function saveImageV2(o: {
     folderKey,
     origin: o.meta.origin === "stock" ? "import" : "generated",
     sourceAssetId: o.sourceAssetId ?? null,
+    versionOf:o.versionOf??null,
     status: o.status,
     meta: {
       imageV2: o.meta,
