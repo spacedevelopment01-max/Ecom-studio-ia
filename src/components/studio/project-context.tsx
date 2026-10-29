@@ -7,6 +7,7 @@ export type JobView = { id: string; type: string; label: string; status: string;
 export type Overview = {
   /** Repère natif du parcours SYNA ; fermé si absent ou désactivé sur le serveur. */
   conversationContext?:boolean;
+  conversationCatalogue?:boolean;
   preparation?: {revision:number}|null;
   /** Forfait du projet (null : découverte, sans abonnement). */
   plan?: string | null;

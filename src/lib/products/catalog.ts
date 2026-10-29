@@ -312,13 +312,16 @@ export function toStoreProduct(p: StudioProduct, base?: StoreProduct): { product
  * Copie du thème avec les produits du Studio (aperçu, export, envoi) ; le thème enregistré n'est jamais modifié.
  * Projet sans fiche produit : le thème est rendu tel quel. Site de services : aucun produit n'est joint.
  */
-export function withStudioProducts(spec: ThemeSpec, projectId: string): ThemeSpec {
-  if (spec.store.business === "services" || !hasStudioProducts(projectId)) return spec;
+export function withStudioProducts(spec: ThemeSpec, projectId: string, previewDraft?: StudioProduct): ThemeSpec {
+  if(previewDraft&&(previewDraft.projectId!==projectId||previewDraft.status!=='draft'))throw new HttpError(400,L('Aperçu de brouillon invalide.','Invalid draft preview.'));
+  if (spec.store.business === "services" || !previewDraft&&!hasStudioProducts(projectId)) return spec;
   const list = listProducts(projectId).filter((p) => p.status === "active");
-  if (!list.length) return spec;
+  if (!list.length&&!previewDraft) return spec;
   const bases = new Map(storeProducts(spec).map((p) => [p.handle, p]));
   const files: Record<string, string> = {};
   const products = list.map((p) => { const r = toStoreProduct(p, bases.get(p.handle)); Object.assign(files, r.files); return r.product; });
+  // Le brouillon n'entre QUE dans cette copie privée de rendu. Sans produit actif, garder la boutique d'origine.
+  if(previewDraft){if(!products.length)products.push(...storeProducts(spec));const draft=toStoreProduct(previewDraft,bases.get(previewDraft.handle));Object.assign(files,draft.files);const index=products.findIndex(p=>p.handle===draft.product.handle);if(index<0)products.push(draft.product);else products[index]=draft.product;list.push(previewDraft);}
   const handles = new Set(products.map((p) => p.handle));
   // Collections du thème gardées (produits disparus retirés) ; une catégorie sans collection en devient une.
   const collections: StoreCollection[] = (spec.store.collections ?? []).map((c) => ({ ...c, products: c.products.filter((h) => handles.has(h)) }));

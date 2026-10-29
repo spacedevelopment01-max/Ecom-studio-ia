@@ -1,11 +1,11 @@
 /** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SYNA. */
 import {stableHash} from '../../brain/hash';
-import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled} from './tool-flags';
 import {strategyChoicesEnabled} from './strategy-choices';
 import type {SpaceId} from '../../studio-nav';
-type Adapter='brief'|'analysis'|'research'|'theme'|'compose'|'export'|'render'|'choices'|'none';
+type Adapter='brief'|'analysis'|'research'|'theme'|'compose'|'export'|'render'|'choices'|'catalogue'|'none';
 type Definition={id:string;tab:SpaceId;label:[string,string];adapter:Adapter;source:string;sensitive?:boolean};
-const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='choices'?'src/lib/orchestrator/conversation/strategy-choices.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
+const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='catalogue'?'src/lib/orchestrator/conversation/catalogue-tool-execution.ts':adapter==='choices'?'src/lib/orchestrator/conversation/strategy-choices.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
 export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('brief.update','produit','Corriger une fiche encore modifiable','Correct an editable brief','brief'),
  op('offer.analyse','pilote','Analyser l’offre sans avancer d’étape','Analyze the offer without advancing','analysis'),
@@ -26,9 +26,10 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('videos.plan','videos','Préparer une vidéo','Plan a video'),
  op('videos.generate','videos','Générer une vidéo','Generate a video'),
  op('videos.edit','videos','Modifier les scènes ou la voix','Edit scenes or voice'),
- op('catalogue.create','catalogue','Ajouter un produit','Add a product'),
- op('catalogue.update','catalogue','Modifier un produit et ses variantes','Edit a product and variants'),
- op('catalogue.stock','catalogue','Modifier les stocks','Edit stock'),
+ op('catalogue.read','catalogue','Lire une fiche et ses variantes autorisées','Read an authorized listing and variants','catalogue'),
+ op('catalogue.create','catalogue','Créer un brouillon produit','Create a product draft','catalogue'),
+ op('catalogue.update','catalogue','Retoucher un brouillon et ses variantes sans suppression','Edit a draft and variants without deletion','catalogue'),
+ op('catalogue.stock','catalogue','Renseigner les quantités d’un brouillon','Enter draft quantities','catalogue'),
  op('catalogue.sync','catalogue','Synchroniser une boutique connectée','Sync a connected store','none',true),
  op('services.update','produit','Modifier les prestations et coordonnées','Edit services and contact details'),
  op('properties.update','biens','Modifier un bien immobilier','Edit a property listing'),
@@ -59,7 +60,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('connections.configure','connexions','Connecter un compte externe','Connect an external account','none',true),
 ];
 export function studioOperationCatalogue(projectId:string|null,writableBrief:boolean){
- const enabled:Record<Adapter,boolean>={brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),choices:strategyChoicesEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
+ const enabled:Record<Adapter,boolean>={brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),choices:strategyChoicesEnabled(),catalogue:conversationCatalogueEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
  const rows=STUDIO_OPERATIONS.map(o=>({id:o.id,tab:o.tab,label:o.label,source:o.source,
   implementation:o.adapter==='none'?'absent_from_syna' as const:'implemented' as const,
   evidence:o.adapter==='none'?'not_tested' as const:'isolated_simulated_provider' as const,
@@ -67,7 +68,7 @@ export function studioOperationCatalogue(projectId:string|null,writableBrief:boo
   nativeAvailability:o.id==='theme.original'?'not_implemented':o.adapter==='none'?'not_verified_for_this_project':'native_checks_on_action',
   availability:o.adapter==='none'?'not_connected_native_screen_only':!projectId&&o.adapter!=='brief'?'project_required':!enabled[o.adapter]?'disabled_or_locked':o.adapter==='choices'?'native_current_comparison_and_revision_checks':o.adapter==='brief'?'native_revision_and_lock_checks':'native_checks_on_each_quote',
   confirmation:['brief','choices'].includes(o.adapter)?'explicit_client_command':o.adapter==='none'?'not_connected':'separate_native_quote_and_confirmation',
-  cost:['brief','choices'].includes(o.adapter)?'free':o.adapter==='none'?'unknown_not_quoted':['theme','compose','export','render'].includes(o.adapter)?'free_native_application_reflection_quoted_separately':'native_quote_required',
+  cost:['brief','choices'].includes(o.adapter)?'free':o.adapter==='none'?'unknown_not_quoted':['theme','compose','export','render','catalogue'].includes(o.adapter)?'free_native_application_reflection_quoted_separately':'native_quote_required',
   sensitive:!!o.sensitive,href:projectId?`/studio/${projectId}/${o.tab}`:'/studio',
  }));
  return{schema:'studio-operation-catalogue-1' as const,version:stableHash('studio-operation-definitions-1',STUDIO_OPERATIONS),scope:'explicit_operations_only_not_exhaustive_ui_control_coverage',notExhaustive:true,realProviderTested:false,clientInstanceTested:false,ownerValidated:false,rows};

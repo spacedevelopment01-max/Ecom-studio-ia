@@ -11,6 +11,7 @@ import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea,
 import { useProject } from "./project-context";
 import { MediaPicker } from "./common";
 import { useT } from "../i18n";
+import {useAgentFocus,useAgentPanel,useAgentUi} from './agent-ui-context';
 
 type Variant = { id: string; options: string[]; sku: string; price: number | null; compareAt: number | null; stock: number | null; stockPolicy: "deny" | "continue"; image: string | null; barcode: string; weightGrams: number | null };
 type Data = { title: string; description_html: string; vendor: string; productType: string; categories: string[]; tags: string[]; images: { assetId: string; file?: string; alt: string }[]; price: number | null; compareAt: number | null; currency: string; options: { name: string; values: string[] }[]; seo: { title: string; description: string }; templateSuffix: string; weightGrams: number | null; barcode: string };
@@ -26,7 +27,8 @@ const cents = (s: string) => { const v = s.replace(/\s|€/g, "").replace(",", "
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 export default function TabCatalogue() {
-  const { id } = useProject();
+  const { id,data:overview } = useProject();
+  const {setFocus}=useAgentFocus(),{setOpen}=useAgentPanel(),agentUi=useAgentUi();
   const t = useT();
   const toast = useToast();
   const { data, reload } = useApi<View>(`/api/projects/${id}/products`);
@@ -66,6 +68,7 @@ export default function TabCatalogue() {
                   <p className="text-sm text-muted">{[p.data.price !== null ? `${euros(p.data.price)} €` : t("Prix à renseigner", "Price to enter"), t(`${p.variants.length} variante(s)`, `${p.variants.length} variant(s)`), stock === null ? t("stock non suivi", "stock not tracked") : t(`stock ${stock}`, `stock ${stock}`), p.data.categories.join(", ")].filter(Boolean).join(" · ")}</p>
                 </div>
                 <div className="flex flex-wrap gap-1">
+                  {agentUi&&overview?.conversationCatalogue&&<Button size="sm" variant="secondary" onClick={()=>{setFocus({projectId:id,tab:'catalogue',label:p.data.title,target:{kind:'catalogue-product',productId:p.id,version:p.version}});setOpen(true);}}>{t('Désigner pour SYNA','Select for SYNA')}</Button>}
                   <a className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm hover:bg-paper-2" href={`/preview/${id}/v/current/products/${p.handle}`} target="_blank" rel="noreferrer"><Eye className="size-4" />{t("Voir la fiche", "View page")}</a>
                   <Button size="sm" variant="secondary" onClick={() => setEditing(p)}>{t("Modifier", "Edit")}</Button>
                   <Button size="sm" variant="ghost" aria-label={t("Monter", "Move up")} disabled={i === 0} onClick={() => patch({ id: p.id, move: "up" })} icon={<ArrowUp className="size-4" />} />
