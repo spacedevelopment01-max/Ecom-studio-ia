@@ -32,7 +32,7 @@ export const CognitiveReplySchema = z.object({
     value: text(1200), sourceId: text(120), quote: text(8000),
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
-  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft','images.create'])).max(3),
+  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft','images.create','images.edit'])).max(3),
   imagePlan:ImageToolPlanSchema.optional(),
   cataloguePlan:CataloguePlanSchema.optional(),
   strategyChoice:StrategyChoiceProposalSchema.optional(),
@@ -41,7 +41,7 @@ export const CognitiveReplySchema = z.object({
   exportPlan:ExportToolPlanSchema.optional(),
   renderPlan:RenderToolPlanSchema.optional(),
   actionsExecuted: z.literal(false),
-}).strict().superRefine((r,ctx)=>{if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan,r.cataloguePlan,r.imagePlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération native par proposition.'});if(!!r.cataloguePlan!==r.proposedTools.includes('catalogue.draft'))ctx.addIssue({code:'custom',message:'Le plan Catalogue doit correspondre à son outil.'});if(!!r.imagePlan!==r.proposedTools.includes('images.create'))ctx.addIssue({code:'custom',message:'Le plan image doit correspondre à son outil.'});});
+}).strict().superRefine((r,ctx)=>{if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan,r.cataloguePlan,r.imagePlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération native par proposition.'});if(!!r.cataloguePlan!==r.proposedTools.includes('catalogue.draft'))ctx.addIssue({code:'custom',message:'Le plan Catalogue doit correspondre à son outil.'});const images=r.proposedTools.filter(id=>id==='images.create'||id==='images.edit');if(r.imagePlan?images.length!==1||r.imagePlan.tool!==images[0]:images.length>0)ctx.addIssue({code:'custom',message:'Le plan image doit correspondre à son outil unique.'});});
 export type CognitiveReply = z.infer<typeof CognitiveReplySchema>;
 export type CognitiveQuestion = z.infer<typeof CognitiveQuestionSchema>;
 export type CognitiveState = {

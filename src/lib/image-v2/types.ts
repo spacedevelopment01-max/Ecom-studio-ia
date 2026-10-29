@@ -56,6 +56,7 @@ export type VisualBrief = {
   /** Liaison immuable à l'offre et aux références ; aucune permission. */
   bindingDigest?: string;
   instructions?: string;
+  nativeEdit?:{sourceAssetId:string;styleAssetId?:string;productAssetId?:string};
   version: string;
   kind: VisualKind;
   support: Support;
@@ -162,6 +163,9 @@ export type ImageCriterion = (typeof IMAGE_CRITERIA)[number];
 export type FixTarget = "lighting" | "composition" | "background" | "crop" | "product" | "direction" | "none";
 
 export type ImageReview = {
+  /** Retouche bornée : toute modification hors demande de la scène source interdit sa livraison. */
+  sourceAltered?:boolean;
+  requestedChangeApplied?:boolean;
   criteria: Record<ImageCriterion, number>;
   /** Ce que l'image montre réellement (une phrase) : sert au diagnostic, jamais au client. */
   shows: string;
@@ -185,6 +189,8 @@ export type ImageOutcome = {
   reason: string;
   origin: "stock" | "generated" | "reused" | "none";
   assetId: string | null;
+  /** Essai conservé pour inspection uniquement ; jamais une livraison ni une référence réutilisable. */
+  diagnosticAssetId?: string;
   attempts: number;
   candidateKey: string | null;
 };

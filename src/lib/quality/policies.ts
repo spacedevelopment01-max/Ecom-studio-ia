@@ -171,7 +171,7 @@ export const POLICIES: Record<Deliverable, Policy> = {
     criteriaFloors: { relevance: 6.5, fidelity: 7, aesthetics: 6, composition: 6, brief: 6 },
     finalCheckers: ["ai", "human"],
     minConfidence: 0.7,
-    fatal: ["off_topic", "wrong_product", "product_altered", "corrupt", "forbidden", "unauthorized_person"],
+    fatal: ["off_topic", "wrong_product", "product_altered", "source_altered", "edit_not_applied", "corrupt", "forbidden", "unauthorized_person"],
     blocking: ["deformed", "text_in_image", "artifacts", "low_resolution", "bad_crop", "weak_aesthetics", "brand_mismatch", "brief_mismatch", "duplicate", "license_unverified"],
     provisional: { checkers: ["ai"], floor: 6.5, use: "manual", label: "needs_improvement" },
   },

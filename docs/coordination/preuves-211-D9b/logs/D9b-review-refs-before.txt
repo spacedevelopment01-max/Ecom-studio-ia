@@ -1,0 +1,38 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/image-v2-edit-review-refs.test.ts (1 test | 1 failed) 328ms
+   × envoie candidat/source/style/produit au contrôle sans appeler la source « photo produit jointe en deuxième » 326ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/image-v2-edit-review-refs.test.ts > envoie candidat/source/style/produit au contrôle sans appeler la source « photo produit jointe en deuxième »
+AssertionError: expected 'BRIEF — kind: retouch; support: site;…' to contain 'SOURCE is image 2'
+
+- Expected
++ Received
+
+- SOURCE is image 2
++ BRIEF — kind: retouch; support: site; format: 16:9 (text area left).
++ Subject that MUST be shown: the exact subjects in the attached SOURCE image; do not replace them with another product or trade from project context.
++ Client instructions, also to verify: Éclaircis seulement le fond..
++ Art direction: keep the SOURCE composition, camera, subjects and details outside the exact requested change.
++ TARGETED EDIT: image 2 is the SOURCE image to preserve outside the exact requested change. Other attached references are labelled as style or the real product. sourceAltered MUST be true if any subject, framing, object, inscription, product colour or other detail changed outside that request. requestedChangeApplied MUST be true only if the requested change is visibly applied, false for an unchanged source or a missing change. A style reference only supplies background colours/light, never new objects or people. Include required booleans sourceAltered and requestedChangeApplied in the JSON.
++ Relevant concepts: the actual visible source and the requested edit.
++ Off-topic (fail relevance if this is all the image shows): replacement subjects, a recreated scene, changes outside the request.
++ A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).
++ Constraints: shape; colour; logo; label and packaging text; proportions; components; no people: no person, face, hands or silhouette.
++ People are NOT allowed for this project: set "personVisible" to true if any person, face, hand, arm, body, silhouette or reflection of a person is visible, even blurred or partial — the image will then be rejected.
++ Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.
+
+ ❯ tests/image-v2-edit-review-refs.test.ts:18:22
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  15:14:54
+   Duration  2.69s (import 45%, transform 41%, tests 13%)
+
