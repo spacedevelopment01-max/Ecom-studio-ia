@@ -24,6 +24,7 @@ type Overview = {
 
 type NotificationState = "sent" | "pending" | "retrying" | "smtp_not_configured" | "failed" | "partial" | "no_recipient" | "before_email";
 const NAME_KEYS = ["name", "nom", "full_name"];
+const fieldLabel = (k: string) => { const x = k.replace(/[_-]+/g, " ").trim(); return x.charAt(0).toUpperCase() + x.slice(1); };
 const requestName = (f: Record<string, string>) => NAME_KEYS.map((k) => f[k]).find(Boolean) || [f.first_name || f.firstName, f.last_name || f.lastName].filter(Boolean).join(" ") || f.email || "";
 
 export function SitePublication({ open, onClose, projectId, focusRequest }: { open: boolean; onClose: () => void; projectId: string; focusRequest?: string | null }) {
@@ -191,7 +192,7 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
                     {openRequest === r.id && (
                       <div className="mt-2 grid gap-2" data-request-detail>
                         <p className="text-xs text-muted">{r.hostname}{r.page}{r.notification_error && <> · {t("motif", "reason")} : <code>{r.notification_error}</code></>}</p>
-                        <dl className="grid gap-0.5">{Object.entries(r.fields).map(([k, v]) => <div key={k} className="flex gap-2"><dt className="shrink-0 text-muted">{k}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{v}</dd></div>)}</dl>
+                        <dl className="grid gap-0.5">{Object.entries(r.fields).map(([k, v]) => <div key={k} className="flex gap-2"><dt className="shrink-0 text-muted">{fieldLabel(k)}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{v}</dd></div>)}</dl>
                         <div className="flex flex-wrap gap-2">
                           {r.email && <a className="inline-flex h-8 items-center rounded-full border border-line px-3 text-[13px]" href={`mailto:${encodeURIComponent(r.email)}`}>{t("Répondre par e-mail", "Reply by email")}</a>}
                           <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("request-handled", { id: r.id, handled: !r.handled_at })}>{r.handled_at ? t("Remettre en nouvelle", "Mark as new") : t("Marquer comme traitée", "Mark as handled")}</Button>
