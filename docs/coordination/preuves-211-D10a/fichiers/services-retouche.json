@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "width": 1080,
+  "height": 1350,
+  "fps": 30,
+  "aspect": "4:5",
+  "platform": "meta_feed",
+  "safe": {
+    "top": 68,
+    "bottom": 108,
+    "side": 54
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": "hook",
+      "durationS": 2,
+      "source": {
+        "kind": "image",
+        "assetId": "8ljg142m40ag100n",
+        "motion": "push_in",
+        "crop": null
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 54,
+          "y": 95,
+          "w": 972,
+          "h": 194.29999999999998,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Texte de recette 1",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 67,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 37
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 20,
+            "x": 0,
+            "y": 3
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false,
+      "userEdited": true
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 3,
+      "source": {
+        "kind": "image",
+        "assetId": "8yqyyj3084rs0zi7",
+        "motion": "pan_left",
+        "crop": null
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 54,
+          "y": 95,
+          "w": 972,
+          "h": 194.29999999999998,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Texte de recette 2",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 67,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 37
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 20,
+            "x": 0,
+            "y": 3
+          }
+        },
+        {
+          "id": "closing-brand",
+          "name": "Marque",
+          "role": "title",
+          "x": 54,
+          "y": 658.8,
+          "w": 237.6,
+          "h": 140.4,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Point repris",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 92,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 51
+          },
+          "shadow": null,
+          "anim": {
+            "in": "fade",
+            "delay": 0.5,
+            "dur": 0.35
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": false
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Jost",
+      "weight": 700,
+      "size": 56,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 28,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": {
+      "source": "synth",
+      "mood": "calm",
+      "gainDb": -12
+    },
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#446274",
+      "secondary": "#D0D8DD",
+      "accent": "#747FB4",
+      "light": "#F2F5F7",
+      "dark": "#141B1F"
+    },
+    "fonts": {
+      "heading": "Cormorant",
+      "body": "Jost"
+    },
+    "name": "Point repris"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "social_content",
+    "source": "user",
+    "createdFrom": null,
+    "runId": null,
+    "promo": false,
+    "ending": {
+      "kind": "last_clip",
+      "holdS": 2.5
+    },
+    "marketingStrategy": {
+      "id": "strategy-0f7a7t6u71h1cqvd",
+      "version": 1,
+      "angleId": "generalist",
+      "inputDigest": "fed5dc476b14a0db1ef133a3ba32b6be9a4d4f725786e4ed254bfadc03d6d90e"
+    }
+  }
+}

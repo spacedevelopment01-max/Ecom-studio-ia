@@ -187,6 +187,17 @@ jobs:
           path: /tmp/agent211-D9c-proof
           if-no-files-found: ignore
 
+      - name: Vidéos SYNA, montage natif, retouche et restauration (cognition HTTP simulée)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10a-proof --videos-ui
+
+      - name: Preuves des montages vidéo natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10a-${{ github.sha }}
+          path: /tmp/agent211-D10a-proof
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

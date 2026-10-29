@@ -19,6 +19,7 @@ import {ConversationStrategyChoices} from './conversation-strategy-choices';
 import {ConversationCatalogueTools} from './conversation-catalogue-tools';
 import {ConversationImageTools} from './conversation-image-tools';
 import {ConversationLogoTools} from './conversation-logo-tools';
+import {ConversationVideoTools}from './conversation-video-tools';
 import {ConversationStudioHelp} from './conversation-studio-help';
 
 type Quote={id:string;estimatePct:number;maximumPct:number;expiresAt:number;confirmationRequired:true};
@@ -107,6 +108,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.catalogueExecution?.enabled&&projectId&&<ConversationCatalogueTools view={v} onChanged={reload}/>}
       {v?.imageExecution?.enabled&&projectId&&<ConversationImageTools view={v} onChanged={reload}/>}
       {v?.logoExecution?.enabled&&projectId&&<ConversationLogoTools view={v} onChanged={reload}/>}
+      {v?.videoExecution?.enabled&&projectId&&<ConversationVideoTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}

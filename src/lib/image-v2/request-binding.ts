@@ -46,7 +46,11 @@ export function boundReusableImage(p:Project,briefHash:string,pin:z.infer<typeof
  return a;
 }
 /** Projection éphémère pour LE moteur natif ; ne modifie ni produit, marque, mémoire ni Site. */
-export function resolveImageBinding(p:Project,input:ImageBinding){
+export function resolveImageBinding(p:Project,input:ImageBinding){return resolveBinding(p,input,false);}
+/** Réemploi local des pixels acquis uniquement : aucune transmission à un générateur/contrôle IA.
+ * Les personnes déjà dans la photo restent celles de la photo ; tous les contrôles propriétaire/version/offre restent appliqués. */
+export function resolveLocalVideoImageBinding(p:Project,input:ImageBinding){return resolveBinding(p,input,true);}
+function resolveBinding(p:Project,input:ImageBinding,preserveExistingPixels:boolean){
  const binding=ImageBindingSchema.parse(input);
  if(binding.product&&p.business==='services')throw new HttpError(409,L('Une prestation ne devient pas un produit e-commerce.','A service does not become an e-commerce product.'));
  const pins=[...binding.references,...(binding.edit?[binding.edit.source,...(binding.edit.style?[binding.edit.style]:[])]:[])];
@@ -55,7 +59,7 @@ export function resolveImageBinding(p:Project,input:ImageBinding){
   if(imageBindingHash(pinImageAsset(p.userId,p.id,ref.assetId,ref.version))!==imageBindingHash(ref))throw new HttpError(409,L('Les octets de la référence ont changé. Aucun appel lancé.','Reference bytes changed. No request started.'));
   const a=getAsset(ref.assetId)!;const meta=JSON.parse(a.meta||'{}');
   // Le parcours natif de scène produit interdit toute personne. Il ne sait pas prouver l'identité d'un modèle.
-  if(meta.hasPerson===true||meta.triage?.hasPerson===true)throw new HttpError(409,L('Cette référence contient une personne. Ce parcours ne sait pas encore garantir son identité sans en inventer une autre ; référence conservée, génération refusée.','This reference contains a person. This workflow cannot yet guarantee their identity without inventing someone else; reference kept, generation refused.'));
+  if(!preserveExistingPixels&&(meta.hasPerson===true||meta.triage?.hasPerson===true))throw new HttpError(409,L('Cette référence contient une personne. Ce parcours ne sait pas encore garantir son identité sans en inventer une autre ; référence conservée, génération refusée.','This reference contains a person. This workflow cannot yet guarantee their identity without inventing someone else; reference kept, generation refused.'));
  }
  let project=p;
  if(binding.product){

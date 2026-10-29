@@ -1,0 +1,90 @@
+[
+  {
+    "scene": "mono",
+    "file": "fichiers/mono-source-1.png",
+    "assetId": "iuqew0aaw5b3q8ju",
+    "version": 1,
+    "bytes": 82270,
+    "sha256": "73ec4d77cfb179a7155f8083d6bb9f4d60bbe9f4f03ad65d553e94cd6d0e23c7",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "mono",
+    "file": "fichiers/mono-source-2.png",
+    "assetId": "5xuc73pr59enwajw",
+    "version": 1,
+    "bytes": 79664,
+    "sha256": "848d77b6f5fa43f0c98afbf45942d79cf467c581bc8ebb455aecb0487b48315f",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "multi",
+    "file": "fichiers/multi-source-1.png",
+    "assetId": "zk1jzwakib7tubmj",
+    "version": 1,
+    "bytes": 82270,
+    "sha256": "73ec4d77cfb179a7155f8083d6bb9f4d60bbe9f4f03ad65d553e94cd6d0e23c7",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "multi",
+    "file": "fichiers/multi-source-2.png",
+    "assetId": "hsz0g8y4y9ow5psy",
+    "version": 1,
+    "bytes": 79664,
+    "sha256": "848d77b6f5fa43f0c98afbf45942d79cf467c581bc8ebb455aecb0487b48315f",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "services",
+    "file": "fichiers/services-source-1.png",
+    "assetId": "8ljg142m40ag100n",
+    "version": 1,
+    "bytes": 82270,
+    "sha256": "73ec4d77cfb179a7155f8083d6bb9f4d60bbe9f4f03ad65d553e94cd6d0e23c7",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "services",
+    "file": "fichiers/services-source-2.png",
+    "assetId": "8yqyyj3084rs0zi7",
+    "version": 1,
+    "bytes": 79664,
+    "sha256": "848d77b6f5fa43f0c98afbf45942d79cf467c581bc8ebb455aecb0487b48315f",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "inedit",
+    "file": "fichiers/inedit-source-1.png",
+    "assetId": "kmdu37s0xnncl32v",
+    "version": 1,
+    "bytes": 82270,
+    "sha256": "73ec4d77cfb179a7155f8083d6bb9f4d60bbe9f4f03ad65d553e94cd6d0e23c7",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  },
+  {
+    "scene": "inedit",
+    "file": "fichiers/inedit-source-2.png",
+    "assetId": "vhjz79sy54flktu2",
+    "version": 1,
+    "bytes": 79664,
+    "sha256": "848d77b6f5fa43f0c98afbf45942d79cf467c581bc8ebb455aecb0487b48315f",
+    "width": 1200,
+    "height": 1500,
+    "syntheticPatternNotClientPhoto": true
+  }
+]

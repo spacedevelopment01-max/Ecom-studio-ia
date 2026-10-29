@@ -1,0 +1,1806 @@
+{
+  "provider": "cognition-http-loopback-simulation",
+  "videoRenderer": "native-full-size-ffmpeg",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "newAiClips": 0,
+  "newAiVoices": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "scene": "mono",
+      "business": "products",
+      "width": 1440,
+      "before": {
+        "providerHttpCalls": 3,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "after": {
+        "providerHttpCalls": 7,
+        "textHttpCalls": 7,
+        "imageHttpCalls": 0,
+        "tokenCounts": 7,
+        "calls": 7,
+        "usage": 7,
+        "simulatedMicro": 55384
+      },
+      "first": {
+        "id": "7azgcd39lv9yc1gv",
+        "sourceReceiptId": "0my0efc4k80ful9e",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:9xg84g7jcevu6zr4",
+        "versionId": "ib9ffn33b9zddsz4",
+        "output": {
+          "assetId": "mrmack0dqmfvp7jx",
+          "version": 1,
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+          "present": true,
+          "href": "/api/files/mrmack0dqmfvp7jx",
+          "downloadHref": "/api/files/mrmack0dqmfvp7jx?download=1"
+        },
+        "job": {
+          "id": "sz1i7vutkiacj3xg",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "7azgcd39lv9yc1gv",
+            "docKey": "vid:9xg84g7jcevu6zr4",
+            "versionId": "ib9ffn33b9zddsz4",
+            "output": {
+              "assetId": "mrmack0dqmfvp7jx",
+              "version": 1,
+              "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "mrmack0dqmfvp7jx"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306144993,
+          "updatedAt": 1793306148812,
+          "finishedAt": 1793306148812,
+          "startedAt": 1793306144993,
+          "alive": false,
+          "idleMs": 83
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/c5uznpj9f9escqz7/publications#video",
+        "durationS": 6,
+        "aspect": "16:9",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307042534,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "edited": {
+        "id": "bylxm1o2xrn09zvg",
+        "sourceReceiptId": "09xo45gs6amnnehu",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:9xg84g7jcevu6zr4",
+        "versionId": "edeovrd0mz2s1jsy",
+        "output": {
+          "assetId": "w0c60od5y5wuqhxo",
+          "version": 1,
+          "sha256": "25b5c602e574df753750ac2402569d816fd84a6aac8eb3f65fc22068c9344310",
+          "present": true,
+          "href": "/api/files/w0c60od5y5wuqhxo",
+          "downloadHref": "/api/files/w0c60od5y5wuqhxo?download=1"
+        },
+        "job": {
+          "id": "6k35lsfv8rq4grmr",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "bylxm1o2xrn09zvg",
+            "docKey": "vid:9xg84g7jcevu6zr4",
+            "versionId": "edeovrd0mz2s1jsy",
+            "output": {
+              "assetId": "w0c60od5y5wuqhxo",
+              "version": 1,
+              "sha256": "25b5c602e574df753750ac2402569d816fd84a6aac8eb3f65fc22068c9344310"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "w0c60od5y5wuqhxo"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306153583,
+          "updatedAt": 1793306156863,
+          "finishedAt": 1793306156863,
+          "startedAt": 1793306153583,
+          "alive": false,
+          "idleMs": 133
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/c5uznpj9f9escqz7/publications#video",
+        "durationS": 5,
+        "aspect": "16:9",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307051544,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "restored": {
+        "id": "ppsqob050d91v1nk",
+        "sourceReceiptId": "3b8dtua9p2upwo8r",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:9xg84g7jcevu6zr4",
+        "versionId": "5zb2qzrqonwe02pu",
+        "output": {
+          "assetId": "744fvm58qnhmwzef",
+          "version": 1,
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+          "present": true,
+          "href": "/api/files/744fvm58qnhmwzef",
+          "downloadHref": "/api/files/744fvm58qnhmwzef?download=1"
+        },
+        "job": {
+          "id": "jw08pa2grtyss98g",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "ppsqob050d91v1nk",
+            "docKey": "vid:9xg84g7jcevu6zr4",
+            "versionId": "5zb2qzrqonwe02pu",
+            "output": {
+              "assetId": "744fvm58qnhmwzef",
+              "version": 1,
+              "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "744fvm58qnhmwzef"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306161403,
+          "updatedAt": 1793306164898,
+          "finishedAt": 1793306164898,
+          "startedAt": 1793306161403,
+          "alive": false,
+          "idleMs": 258
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/c5uznpj9f9escqz7/publications#video",
+        "durationS": 6,
+        "aspect": "16:9",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307059336,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "reuseWithoutJobOrRender": true,
+      "files": [
+        {
+          "phase": "creation",
+          "pin": {
+            "assetId": "mrmack0dqmfvp7jx",
+            "version": 1,
+            "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+            "present": true,
+            "href": "/api/files/mrmack0dqmfvp7jx",
+            "downloadHref": "/api/files/mrmack0dqmfvp7jx?download=1"
+          },
+          "media": {
+            "width": 1920,
+            "height": 1080,
+            "duration": 6,
+            "time": 0.36613
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "document-json",
+          "version": 2,
+          "actualBrowserDownload": true,
+          "exactNativeDocument": true,
+          "foreign": 404
+        },
+        {
+          "phase": "retouche",
+          "pin": {
+            "assetId": "w0c60od5y5wuqhxo",
+            "version": 1,
+            "sha256": "25b5c602e574df753750ac2402569d816fd84a6aac8eb3f65fc22068c9344310",
+            "present": true,
+            "href": "/api/files/w0c60od5y5wuqhxo",
+            "downloadHref": "/api/files/w0c60od5y5wuqhxo?download=1"
+          },
+          "media": {
+            "width": 1920,
+            "height": 1080,
+            "duration": 5,
+            "time": 0.412908
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "restauration",
+          "pin": {
+            "assetId": "744fvm58qnhmwzef",
+            "version": 1,
+            "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+            "present": true,
+            "href": "/api/files/744fvm58qnhmwzef",
+            "downloadHref": "/api/files/744fvm58qnhmwzef?download=1"
+          },
+          "media": {
+            "width": 1920,
+            "height": 1080,
+            "duration": 6,
+            "time": 0.41097
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        }
+      ],
+      "failure": null,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteVersionsUnchanged": true,
+      "captures": [
+        "mono-manuel-avant.png",
+        "mono-devis.png",
+        "mono-source-1.png",
+        "mono-source-2.png",
+        "mono-demande-exacte.png",
+        "mono-reouverture.png",
+        "mono-creation-lecture.png",
+        "mono-editeur-natif.png",
+        "mono-retouche-devis.png",
+        "mono-retouche-lecture.png",
+        "mono-restauration-devis.png",
+        "mono-restauration-lecture.png",
+        "mono-reutilisation-devis.png",
+        "mono-reutilisation-sans-rendu.png",
+        "mono-galerie-native.png",
+        "mono-autre-largeur.png",
+        "mono-syna-autre-largeur.png",
+        "mono-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "manuel-avant",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "source-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "source-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "demande-exacte",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "creation-lecture",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "editeur-natif",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-lecture",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "restauration-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "restauration-lecture",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reutilisation-sans-rendu",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "galerie-native",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "syna-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "multi",
+      "business": "products",
+      "width": 1024,
+      "before": {
+        "providerHttpCalls": 7,
+        "textHttpCalls": 7,
+        "imageHttpCalls": 0,
+        "tokenCounts": 7,
+        "calls": 7,
+        "usage": 7,
+        "simulatedMicro": 55384
+      },
+      "after": {
+        "providerHttpCalls": 11,
+        "textHttpCalls": 11,
+        "imageHttpCalls": 0,
+        "tokenCounts": 11,
+        "calls": 11,
+        "usage": 11,
+        "simulatedMicro": 87032
+      },
+      "first": {
+        "id": "3rd40top5kjg6ysc",
+        "sourceReceiptId": "bmrcdo88y53ejbc9",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:93e9j8u2w6712clf",
+        "versionId": "1fevbbv30puyc2i2",
+        "output": {
+          "assetId": "a21jj7fcw0ycdvm0",
+          "version": 1,
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+          "present": true,
+          "href": "/api/files/a21jj7fcw0ycdvm0",
+          "downloadHref": "/api/files/a21jj7fcw0ycdvm0?download=1"
+        },
+        "job": {
+          "id": "7uzaq6csus0tpcff",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "3rd40top5kjg6ysc",
+            "docKey": "vid:93e9j8u2w6712clf",
+            "versionId": "1fevbbv30puyc2i2",
+            "output": {
+              "assetId": "a21jj7fcw0ycdvm0",
+              "version": 1,
+              "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "a21jj7fcw0ycdvm0"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306176051,
+          "updatedAt": 1793306180575,
+          "finishedAt": 1793306180575,
+          "startedAt": 1793306176051,
+          "alive": false,
+          "idleMs": 50
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/qxvs3dzynpe822yi/publications#video",
+        "durationS": 6,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307073600,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "edited": {
+        "id": "emnhbpct2l9kvm1z",
+        "sourceReceiptId": "u32cfpt450w1rwsm",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:93e9j8u2w6712clf",
+        "versionId": "dpc37k9045mwfcg2",
+        "output": {
+          "assetId": "pehr15e1k49ijrrb",
+          "version": 1,
+          "sha256": "9102c637de76865164ad903aae39f2e1ddf19c46c547ae2a4cde4a49b6047816",
+          "present": true,
+          "href": "/api/files/pehr15e1k49ijrrb",
+          "downloadHref": "/api/files/pehr15e1k49ijrrb?download=1"
+        },
+        "job": {
+          "id": "i5mcpagjuv9ok2z7",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "emnhbpct2l9kvm1z",
+            "docKey": "vid:93e9j8u2w6712clf",
+            "versionId": "dpc37k9045mwfcg2",
+            "output": {
+              "assetId": "pehr15e1k49ijrrb",
+              "version": 1,
+              "sha256": "9102c637de76865164ad903aae39f2e1ddf19c46c547ae2a4cde4a49b6047816"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "pehr15e1k49ijrrb"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306184230,
+          "updatedAt": 1793306188667,
+          "finishedAt": 1793306188667,
+          "startedAt": 1793306184230,
+          "alive": false,
+          "idleMs": 257
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/qxvs3dzynpe822yi/publications#video",
+        "durationS": 5,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307082222,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "restored": {
+        "id": "t9xy4fcvqf42ij9q",
+        "sourceReceiptId": "aa0d60o54ue55ax7",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:93e9j8u2w6712clf",
+        "versionId": "b4s3fxw1s1zscw59",
+        "output": {
+          "assetId": "cf50v76gcm95vhsr",
+          "version": 1,
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+          "present": true,
+          "href": "/api/files/cf50v76gcm95vhsr",
+          "downloadHref": "/api/files/cf50v76gcm95vhsr?download=1"
+        },
+        "job": {
+          "id": "9potx5p895dh9uii",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "t9xy4fcvqf42ij9q",
+            "docKey": "vid:93e9j8u2w6712clf",
+            "versionId": "b4s3fxw1s1zscw59",
+            "output": {
+              "assetId": "cf50v76gcm95vhsr",
+              "version": 1,
+              "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "cf50v76gcm95vhsr"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306191863,
+          "updatedAt": 1793306196389,
+          "finishedAt": 1793306196389,
+          "startedAt": 1793306191863,
+          "alive": false,
+          "idleMs": 224
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/qxvs3dzynpe822yi/publications#video",
+        "durationS": 6,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307089838,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "reuseWithoutJobOrRender": true,
+      "files": [
+        {
+          "phase": "creation",
+          "pin": {
+            "assetId": "a21jj7fcw0ycdvm0",
+            "version": 1,
+            "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+            "present": true,
+            "href": "/api/files/a21jj7fcw0ycdvm0",
+            "downloadHref": "/api/files/a21jj7fcw0ycdvm0?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 6,
+            "time": 0.410741
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "document-json",
+          "version": 2,
+          "actualBrowserDownload": true,
+          "exactNativeDocument": true,
+          "foreign": 404
+        },
+        {
+          "phase": "retouche",
+          "pin": {
+            "assetId": "pehr15e1k49ijrrb",
+            "version": 1,
+            "sha256": "9102c637de76865164ad903aae39f2e1ddf19c46c547ae2a4cde4a49b6047816",
+            "present": true,
+            "href": "/api/files/pehr15e1k49ijrrb",
+            "downloadHref": "/api/files/pehr15e1k49ijrrb?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 5,
+            "time": 0.411142
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "restauration",
+          "pin": {
+            "assetId": "cf50v76gcm95vhsr",
+            "version": 1,
+            "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+            "present": true,
+            "href": "/api/files/cf50v76gcm95vhsr",
+            "downloadHref": "/api/files/cf50v76gcm95vhsr?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 6,
+            "time": 0.41278
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        }
+      ],
+      "failure": null,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteVersionsUnchanged": true,
+      "captures": [
+        "multi-manuel-avant.png",
+        "multi-devis.png",
+        "multi-source-1.png",
+        "multi-source-2.png",
+        "multi-demande-exacte.png",
+        "multi-reouverture.png",
+        "multi-creation-lecture.png",
+        "multi-editeur-natif.png",
+        "multi-retouche-devis.png",
+        "multi-retouche-lecture.png",
+        "multi-restauration-devis.png",
+        "multi-restauration-lecture.png",
+        "multi-reutilisation-devis.png",
+        "multi-reutilisation-sans-rendu.png",
+        "multi-galerie-native.png",
+        "multi-autre-largeur.png",
+        "multi-syna-autre-largeur.png",
+        "multi-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "manuel-avant",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "source-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "source-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "demande-exacte",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reouverture",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "creation-lecture",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "editeur-natif",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "retouche-devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "retouche-lecture",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "restauration-devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "restauration-lecture",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reutilisation-sans-rendu",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "galerie-native",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "syna-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "services",
+      "business": "services",
+      "width": 390,
+      "before": {
+        "providerHttpCalls": 11,
+        "textHttpCalls": 11,
+        "imageHttpCalls": 0,
+        "tokenCounts": 11,
+        "calls": 12,
+        "usage": 11,
+        "simulatedMicro": 87032
+      },
+      "after": {
+        "providerHttpCalls": 15,
+        "textHttpCalls": 15,
+        "imageHttpCalls": 0,
+        "tokenCounts": 15,
+        "calls": 16,
+        "usage": 15,
+        "simulatedMicro": 118680
+      },
+      "first": {
+        "id": "shww795axw49xvkh",
+        "sourceReceiptId": "resf004op17fmd5d",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:ae1va7a2u6rpyukp",
+        "versionId": "wipk6gsqwak7ojky",
+        "output": {
+          "assetId": "dvou8e8c7pereqsv",
+          "version": 1,
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+          "present": true,
+          "href": "/api/files/dvou8e8c7pereqsv",
+          "downloadHref": "/api/files/dvou8e8c7pereqsv?download=1"
+        },
+        "job": {
+          "id": "qvh6vflvxpeusmfi",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "shww795axw49xvkh",
+            "docKey": "vid:ae1va7a2u6rpyukp",
+            "versionId": "wipk6gsqwak7ojky",
+            "output": {
+              "assetId": "dvou8e8c7pereqsv",
+              "version": 1,
+              "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "dvou8e8c7pereqsv"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306206487,
+          "updatedAt": 1793306209966,
+          "finishedAt": 1793306209966,
+          "startedAt": 1793306206487,
+          "alive": false,
+          "idleMs": 26
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/wj6mh1mtq6l5r23f/publications#video",
+        "durationS": 6,
+        "aspect": "4:5",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307104135,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "edited": {
+        "id": "n4g4z5z9onn991jp",
+        "sourceReceiptId": "gdekjzxzh7dvdtkr",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:ae1va7a2u6rpyukp",
+        "versionId": "mziigujopyrryzf1",
+        "output": {
+          "assetId": "2e7yqwn4wfouire2",
+          "version": 1,
+          "sha256": "8da17211f9ecf3ef46453507af02b4abe9b4c3c8e11aa6f4ebc4e6a94484151f",
+          "present": true,
+          "href": "/api/files/2e7yqwn4wfouire2",
+          "downloadHref": "/api/files/2e7yqwn4wfouire2?download=1"
+        },
+        "job": {
+          "id": "5izg92i22ymdp12m",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "n4g4z5z9onn991jp",
+            "docKey": "vid:ae1va7a2u6rpyukp",
+            "versionId": "mziigujopyrryzf1",
+            "output": {
+              "assetId": "2e7yqwn4wfouire2",
+              "version": 1,
+              "sha256": "8da17211f9ecf3ef46453507af02b4abe9b4c3c8e11aa6f4ebc4e6a94484151f"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "2e7yqwn4wfouire2"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306214928,
+          "updatedAt": 1793306217982,
+          "finishedAt": 1793306217982,
+          "startedAt": 1793306214928,
+          "alive": false,
+          "idleMs": 99
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/wj6mh1mtq6l5r23f/publications#video",
+        "durationS": 5,
+        "aspect": "4:5",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307112933,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "restored": {
+        "id": "2ktcqig21sncvs3n",
+        "sourceReceiptId": "kz24kdsksr6kmukc",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:ae1va7a2u6rpyukp",
+        "versionId": "ouzpm3lgprv4fr65",
+        "output": {
+          "assetId": "634fefmhp9a316kf",
+          "version": 1,
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+          "present": true,
+          "href": "/api/files/634fefmhp9a316kf",
+          "downloadHref": "/api/files/634fefmhp9a316kf?download=1"
+        },
+        "job": {
+          "id": "i0ka7tafod945xkg",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "2ktcqig21sncvs3n",
+            "docKey": "vid:ae1va7a2u6rpyukp",
+            "versionId": "ouzpm3lgprv4fr65",
+            "output": {
+              "assetId": "634fefmhp9a316kf",
+              "version": 1,
+              "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "634fefmhp9a316kf"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306222745,
+          "updatedAt": 1793306225992,
+          "finishedAt": 1793306225992,
+          "startedAt": 1793306222745,
+          "alive": false,
+          "idleMs": 192
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/wj6mh1mtq6l5r23f/publications#video",
+        "durationS": 6,
+        "aspect": "4:5",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307120715,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "reuseWithoutJobOrRender": true,
+      "files": [
+        {
+          "phase": "creation",
+          "pin": {
+            "assetId": "dvou8e8c7pereqsv",
+            "version": 1,
+            "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+            "present": true,
+            "href": "/api/files/dvou8e8c7pereqsv",
+            "downloadHref": "/api/files/dvou8e8c7pereqsv?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1350,
+            "duration": 6,
+            "time": 0.398319
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "document-json",
+          "version": 2,
+          "actualBrowserDownload": true,
+          "exactNativeDocument": true,
+          "foreign": 404
+        },
+        {
+          "phase": "retouche",
+          "pin": {
+            "assetId": "2e7yqwn4wfouire2",
+            "version": 1,
+            "sha256": "8da17211f9ecf3ef46453507af02b4abe9b4c3c8e11aa6f4ebc4e6a94484151f",
+            "present": true,
+            "href": "/api/files/2e7yqwn4wfouire2",
+            "downloadHref": "/api/files/2e7yqwn4wfouire2?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1350,
+            "duration": 5,
+            "time": 0.410885
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "restauration",
+          "pin": {
+            "assetId": "634fefmhp9a316kf",
+            "version": 1,
+            "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+            "present": true,
+            "href": "/api/files/634fefmhp9a316kf",
+            "downloadHref": "/api/files/634fefmhp9a316kf?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1350,
+            "duration": 6,
+            "time": 0.41072
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        }
+      ],
+      "failure": null,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteVersionsUnchanged": true,
+      "captures": [
+        "services-manuel-avant.png",
+        "services-devis.png",
+        "services-source-1.png",
+        "services-source-2.png",
+        "services-demande-exacte.png",
+        "services-reouverture.png",
+        "services-creation-lecture.png",
+        "services-editeur-natif.png",
+        "services-retouche-devis.png",
+        "services-retouche-lecture.png",
+        "services-restauration-devis.png",
+        "services-restauration-lecture.png",
+        "services-reutilisation-devis.png",
+        "services-reutilisation-sans-rendu.png",
+        "services-galerie-native.png",
+        "services-autre-largeur.png",
+        "services-syna-autre-largeur.png",
+        "services-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "manuel-avant",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "source-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "source-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "demande-exacte",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reouverture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "creation-lecture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "editeur-natif",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-lecture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "restauration-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "restauration-lecture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reutilisation-sans-rendu",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-native",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "syna-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "inedit",
+      "business": "services",
+      "width": 360,
+      "before": {
+        "providerHttpCalls": 15,
+        "textHttpCalls": 15,
+        "imageHttpCalls": 0,
+        "tokenCounts": 15,
+        "calls": 17,
+        "usage": 15,
+        "simulatedMicro": 118680
+      },
+      "after": {
+        "providerHttpCalls": 20,
+        "textHttpCalls": 20,
+        "imageHttpCalls": 0,
+        "tokenCounts": 20,
+        "calls": 22,
+        "usage": 20,
+        "simulatedMicro": 158240
+      },
+      "first": {
+        "id": "tqu2t4o7bktv3o5f",
+        "sourceReceiptId": "jt352jgpuscy9t3v",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:gt8rju0w5pfoscgr",
+        "versionId": "d8a01r53xb371rcp",
+        "output": {
+          "assetId": "oshvykrw8nqfnomz",
+          "version": 1,
+          "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7",
+          "present": true,
+          "href": "/api/files/oshvykrw8nqfnomz",
+          "downloadHref": "/api/files/oshvykrw8nqfnomz?download=1"
+        },
+        "job": {
+          "id": "j2yh24rt6566v8mb",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "tqu2t4o7bktv3o5f",
+            "docKey": "vid:gt8rju0w5pfoscgr",
+            "versionId": "d8a01r53xb371rcp",
+            "output": {
+              "assetId": "oshvykrw8nqfnomz",
+              "version": 1,
+              "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "oshvykrw8nqfnomz"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306237030,
+          "updatedAt": 1793306240464,
+          "finishedAt": 1793306240464,
+          "startedAt": 1793306237030,
+          "alive": false,
+          "idleMs": 26
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/jd9hb3ahue9w5kb1/publications#video",
+        "durationS": 6,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307134699,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "edited": {
+        "id": "1m9at57ov5so17rq",
+        "sourceReceiptId": "ik5d7axnih8eu0wl",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:gt8rju0w5pfoscgr",
+        "versionId": "et22pe95c598kws4",
+        "output": {
+          "assetId": "rqscgza1yonb23q2",
+          "version": 1,
+          "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6",
+          "present": true,
+          "href": "/api/files/rqscgza1yonb23q2",
+          "downloadHref": "/api/files/rqscgza1yonb23q2?download=1"
+        },
+        "job": {
+          "id": "6eqr35akzyqatfps",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "1m9at57ov5so17rq",
+            "docKey": "vid:gt8rju0w5pfoscgr",
+            "versionId": "et22pe95c598kws4",
+            "output": {
+              "assetId": "rqscgza1yonb23q2",
+              "version": 1,
+              "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "rqscgza1yonb23q2"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306245492,
+          "updatedAt": 1793306249850,
+          "finishedAt": 1793306249850,
+          "startedAt": 1793306245492,
+          "alive": false,
+          "idleMs": 73
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/jd9hb3ahue9w5kb1/publications#video",
+        "durationS": 5,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307143501,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "restored": {
+        "id": "6n29gzcpap0kn79s",
+        "sourceReceiptId": "os3w9xtc6r2qs8km",
+        "state": "review",
+        "delivered": true,
+        "reused": false,
+        "docKey": "vid:gt8rju0w5pfoscgr",
+        "versionId": "j1ceb5j2af9w3ref",
+        "output": {
+          "assetId": "f3qidghuadqok7zu",
+          "version": 1,
+          "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+          "present": true,
+          "href": "/api/files/f3qidghuadqok7zu",
+          "downloadHref": "/api/files/f3qidghuadqok7zu?download=1"
+        },
+        "job": {
+          "id": "ov3sasvg8kpni179",
+          "type": "video.v2.render",
+          "label": "Vidéo : montage local accepté avec SYNA",
+          "status": "done",
+          "progress": 1,
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "quoteId": "6n29gzcpap0kn79s",
+            "docKey": "vid:gt8rju0w5pfoscgr",
+            "versionId": "j1ceb5j2af9w3ref",
+            "output": {
+              "assetId": "f3qidghuadqok7zu",
+              "version": 1,
+              "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e"
+            },
+            "verdict": "PROVISIONAL",
+            "delivery": {
+              "state": "review",
+              "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+              "assetIds": [
+                "f3qidghuadqok7zu"
+              ],
+              "expected": 1,
+              "delivered": 1,
+              "review": 1
+            }
+          },
+          "createdAt": 1793306252959,
+          "updatedAt": 1793306256341,
+          "finishedAt": 1793306256341,
+          "startedAt": 1793306252959,
+          "alive": false,
+          "idleMs": 25
+        },
+        "verdict": "PROVISIONAL",
+        "clientApproved": false,
+        "creativeQualityQualified": false,
+        "newGeneratedClips": false,
+        "voiceGenerated": false,
+        "siteChanged": false,
+        "isCurrent": true,
+        "href": "/studio/jd9hb3ahue9w5kb1/publications#video",
+        "durationS": 6,
+        "aspect": "9:16",
+        "requestBounds": {
+          "maxCalls": 4,
+          "remainingCalls": 2,
+          "maxDepth": 1,
+          "maxRetries": 0,
+          "deadlineAt": 1793307150967,
+          "httpAttempts": 1
+        },
+        "message": "Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé."
+      },
+      "reuseWithoutJobOrRender": true,
+      "files": [
+        {
+          "phase": "creation",
+          "pin": {
+            "assetId": "oshvykrw8nqfnomz",
+            "version": 1,
+            "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7",
+            "present": true,
+            "href": "/api/files/oshvykrw8nqfnomz",
+            "downloadHref": "/api/files/oshvykrw8nqfnomz?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 6,
+            "time": 0.399332
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "document-json",
+          "version": 2,
+          "actualBrowserDownload": true,
+          "exactNativeDocument": true,
+          "foreign": 404
+        },
+        {
+          "phase": "retouche",
+          "pin": {
+            "assetId": "rqscgza1yonb23q2",
+            "version": 1,
+            "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6",
+            "present": true,
+            "href": "/api/files/rqscgza1yonb23q2",
+            "downloadHref": "/api/files/rqscgza1yonb23q2?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 5,
+            "time": 0.411004
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        },
+        {
+          "phase": "restauration",
+          "pin": {
+            "assetId": "f3qidghuadqok7zu",
+            "version": 1,
+            "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+            "present": true,
+            "href": "/api/files/f3qidghuadqok7zu",
+            "downloadHref": "/api/files/f3qidghuadqok7zu?download=1"
+          },
+          "media": {
+            "width": 1080,
+            "height": 1920,
+            "duration": 6,
+            "time": 0.410908
+          },
+          "actualBrowserDownload": true,
+          "http": 200
+        }
+      ],
+      "failure": {
+        "receipt": {
+          "id": "qmymnqfes5zq0zww",
+          "sourceReceiptId": "vvvda8z3bvxa5d40",
+          "state": "failed",
+          "delivered": false,
+          "reused": false,
+          "docKey": "vid:gt8rju0w5pfoscgr",
+          "versionId": "yqq8naimmg9ppmn9",
+          "output": null,
+          "job": {
+            "id": "p3lvpfbpp9zhq30z",
+            "type": "video.v2.render",
+            "label": "Vidéo : montage local accepté avec SYNA",
+            "status": "failed",
+            "progress": 0,
+            "message": "Command failed: ffmpeg -y -v error -f lavfi -i anullsrc=r=44100:cl=stereo -t 4.5 /tmp/ecs-agent-211-G25R4N/tmp/video-v2-1793306267115-ats4j4/mix.wav\n",
+            "error": "Command failed: ffmpeg -y -v error -f lavfi -i anullsrc=r=44100:cl=stereo -t 4.5 /tmp/ecs-agent-211-G25R4N/tmp/video-v2-1793306267115-ats4j4/mix.wav\n",
+            "attempts": 1,
+            "parentId": null,
+            "result": null,
+            "createdAt": 1793306265379,
+            "updatedAt": 1793306267155,
+            "finishedAt": 1793306267155,
+            "startedAt": 1793306265379,
+            "alive": false,
+            "idleMs": 57
+          },
+          "verdict": null,
+          "clientApproved": false,
+          "creativeQualityQualified": false,
+          "newGeneratedClips": false,
+          "voiceGenerated": false,
+          "siteChanged": false,
+          "isCurrent": true,
+          "href": "/studio/jd9hb3ahue9w5kb1/publications#video",
+          "durationS": 4.5,
+          "aspect": "9:16",
+          "requestBounds": {
+            "maxCalls": 4,
+            "remainingCalls": 2,
+            "maxDepth": 1,
+            "maxRetries": 0,
+            "deadlineAt": 1793307163169,
+            "httpAttempts": 1
+          },
+          "message": "Vidéo complète non prouvée. Les médias et versions acquis restent conservés ; aucune génération automatique."
+        },
+        "simulatedLocalEncoderExit": 42,
+        "allPriorMp4Unchanged": true,
+        "reopenedWithoutRetry": true
+      },
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteVersionsUnchanged": true,
+      "captures": [
+        "inedit-manuel-avant.png",
+        "inedit-devis.png",
+        "inedit-source-1.png",
+        "inedit-source-2.png",
+        "inedit-demande-exacte.png",
+        "inedit-reouverture.png",
+        "inedit-creation-lecture.png",
+        "inedit-editeur-natif.png",
+        "inedit-retouche-devis.png",
+        "inedit-retouche-lecture.png",
+        "inedit-restauration-devis.png",
+        "inedit-restauration-lecture.png",
+        "inedit-reutilisation-devis.png",
+        "inedit-reutilisation-sans-rendu.png",
+        "inedit-galerie-native.png",
+        "inedit-autre-largeur.png",
+        "inedit-syna-autre-largeur.png",
+        "inedit-reprise.png",
+        "inedit-echec-encodeur-simule.png",
+        "inedit-echec-reprise-sans-relance.png"
+      ],
+      "geometry": [
+        {
+          "name": "manuel-avant",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "source-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "source-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "demande-exacte",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "creation-lecture",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "editeur-natif",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "retouche-devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "retouche-lecture",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "restauration-devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "restauration-lecture",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reutilisation-sans-rendu",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "galerie-native",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "syna-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "echec-encodeur-simule",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "echec-reprise-sans-relance",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
