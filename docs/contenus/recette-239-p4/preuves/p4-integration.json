@@ -1,0 +1,158 @@
+{
+ "menu_agence2": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "biens",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_restaurant": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "carte",
+  "rendez-vous",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_salon": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "rendez-vous",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_platrier": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "realisations",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menuTelephonePlatrier": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "realisations",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "prompts",
+  "fichiers",
+  "connexions"
+ ],
+ "manifeste": {
+  "projectId": "a964yh7rr0sfnc3y",
+  "types": [
+   {
+    "type": "realisations",
+    "label": "Réalisations",
+    "shownBySite": true,
+    "count": 2,
+    "statuses": [
+     "draft",
+     "published",
+     "withdrawn",
+     "archived"
+    ],
+    "actions": [
+     "list",
+     "get",
+     "create",
+     "update",
+     "publish",
+     "withdraw",
+     "archive",
+     "status",
+     "reorder"
+    ]
+   }
+  ],
+  "site": {
+   "live": true,
+   "upToDate": true,
+   "note": null
+  }
+ },
+ "creation": {
+  "statut": 201,
+  "etat": "draft",
+  "version": true
+ },
+ "publierSansAccord": 428,
+ "modification": 200,
+ "versionPerimee": 409,
+ "publierAvecAccord": {
+  "statut": 200,
+  "etat": "published",
+  "site": {
+   "live": true,
+   "upToDate": false,
+   "note": "Le site en ligne n'affiche pas encore ces changements : publiez une nouvelle version depuis l'onglet Site."
+  }
+ },
+ "siteEnLigneInchange": true,
+ "bandeauNonPublie": "Modifications non publiées : le site en ligne n'affiche pas encore vos derniers changements (1 réalisation(s) modifiée(s)). Ils sont visibles dans l'aperçu ; « Publier la version actuelle » les met en ligne.",
+ "retrait": 200,
+ "adresseAvant": {
+  "profil": "1 rue de l'Exemple, 69000 Lyon",
+  "reservation": "8 place Fictive, 69002 Lyon",
+  "version": "5wkjaa2n80z9kjks"
+ },
+ "adresseApres": {
+  "patch": 200,
+  "reservation": "14 rue des Ciseaux Fictifs, 69002 Lyon",
+  "nouvelleVersion": true
+ },
+ "adresseDansEditeur": "14 rue des Ciseaux Fictifs, 69002 Lyon",
+ "exportShopify": {
+  "status": 200,
+  "verdict": "PROVISIONAL",
+  "taille": 1762795
+ },
+ "exportEnregistre": [
+  {
+   "nom": "platrerie-fictive-durand-shopify-v1.zip",
+   "problemes": [
+    "Contenus métier (réalisations) exportés tels qu'ils sont aujourd'hui, comme textes et images du thème : la plateforme ne les relie pas au studio. Après une modification dans le studio, refaites un export ; aucune synchronisation automatique n'est proposée. / Business content (réalisations) exported as it is today, as theme text and images: the platform does not link it to the studio. After an edit in the studio, export again; no automatic sync is offered."
+   ]
+  }
+ ],
+ "compteEtranger": {
+  "manifeste": 404,
+  "liste": 404,
+  "lecture": 404,
+  "publication": 404
+ }
+}
