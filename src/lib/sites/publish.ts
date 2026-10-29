@@ -29,6 +29,9 @@ const SKIPPED = /^\/(cart|account|checkout|search|password|contact$|collections\
 /** Textes laissés à compléter : un site public ne les montre jamais. */
 const PLACEHOLDER = /\[(?:À|A) (?:compléter|définir|préciser|renseigner|confirmer)[^\]]*\]|\[To (?:complete|define|be confirmed)[^\]]*\]|\[Por completar[^\]]*\]|À compléter dans Shopify/i;
 
+/** Valeur laissée vide affichée seule par certains thèmes (mentions légales, coordonnées) : « À renseigner ». */
+const BARE = /(?:^|\n|:)[ \t]*(?:À|A) renseigner[ \t]*:?[ \t]*(?=\n|$)/;
+
 /** Champ piège ajouté aux formulaires de contact publiés : rempli = robot, la demande est ignorée. */
 export const HONEYPOT = "contact[site_web]";
 const HONEYPOT_HTML = `<div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden"><label>Ne pas remplir<input type="text" name="${HONEYPOT}" tabindex="-1" autocomplete="off" value=""></label></div>`;
@@ -125,9 +128,10 @@ export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
 export function publishBlockers(r: Pick<Rendered, "pages">): string[] {
   const reasons: string[] = [];
   for (const [p, html] of r.pages) {
-    const text = html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "");
-    const m = text.match(PLACEHOLDER);
-    if (m) reasons.push(L(`Page ${p} : texte à compléter avant publication (« ${m[0].slice(0, 80)} »).`, `Page ${p}: text to complete before publishing (“${m[0].slice(0, 80)}”).`));
+    // Texte visible seulement (sans scripts, styles ni attributs : une aide de saisie « À renseigner » n'est pas une lacune).
+    const text = html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, "\n");
+    const m = text.match(PLACEHOLDER) ?? text.match(BARE);
+    if (m) reasons.push(L(`Page ${p} : texte à compléter avant publication (« ${m[0].trim().slice(0, 80)} »).`, `Page ${p}: text to complete before publishing (“${m[0].trim().slice(0, 80)}”).`));
   }
   if (!r.pages.has("/")) reasons.push(L("La page d'accueil n'a pas pu être rendue.", "The home page couldn't be rendered."));
   return reasons;

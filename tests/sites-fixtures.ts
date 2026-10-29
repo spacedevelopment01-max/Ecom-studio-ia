@@ -22,7 +22,10 @@ const FILLED: [RegExp, string][] = [
   [/^$/, "Information fictive renseignée pour la recette."],
 ];
 const PLACEHOLDER = /\[(?:À|A) (?:compléter|définir|préciser|renseigner|confirmer)\s*:?\s*([^\]]*)\]/g;
-const fill = (s: string) => s.replace(PLACEHOLDER, (_all, what: string) => FILLED.find(([re]) => re.test(what))?.[1] ?? "Information fictive renseignée pour la recette.");
+const fill = (s: string) => s
+  .replace(PLACEHOLDER, (_all, what: string) => FILLED.find(([re]) => re.test(what))?.[1] ?? "Information fictive renseignée pour la recette.")
+  // Valeurs laissées « À renseigner » par certains thèmes (mentions légales) : renseignées par le client fictif.
+  .replace(/(?:À|A) renseigner\s*:?/g, "Information fictive de recette");
 
 const DAYS = ["hours_mon", "hours_tue", "hours_wed", "hours_thu", "hours_fri"];
 /** Horaires et durées de séance d'un moteur de réservation, saisis comme le ferait le professionnel (fictifs). */

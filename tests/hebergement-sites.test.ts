@@ -186,7 +186,10 @@ describe("Règles de blocage", () => {
     for (const mark of ["[À compléter : vos horaires]", "[À renseigner]", "[À confirmer : délai]", "[À définir]", "[To complete: hours]", "À compléter dans Shopify : Paramètres"]) {
       expect(publishBlockers({ pages: new Map([["/", `<p>${mark}</p>`]]) }).length, mark).toBe(1);
     }
-    expect(publishBlockers({ pages: new Map([["/", "<p>Texte complet.</p><script>var x='[À compléter]'</script>"]]) })).toEqual([]);
+    expect(publishBlockers({ pages: new Map([["/", "<dt>Nom ou raison sociale</dt><dd>À renseigner</dd>"]]) })).toHaveLength(1);
+    expect(publishBlockers({ pages: new Map([["/", "<li><strong>Téléphone</strong><em>À renseigner</em></li>"]]) })).toHaveLength(1);
+    expect(publishBlockers({ pages: new Map([["/", "<p>Texte complet.</p><script>var x='[À compléter]'</script><input placeholder=\"À renseigner\">"]]) })).toEqual([]);
+    expect(publishBlockers({ pages: new Map([["/", "<p>Les informations à renseigner sont listées ci-dessous.</p>"]]) })).toEqual([]);
   });
 
   it("réservation réelle sans aucun horaire : refusée (le calendrier ne proposerait aucun créneau)", async () => {
