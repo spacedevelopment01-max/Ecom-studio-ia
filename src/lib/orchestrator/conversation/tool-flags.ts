@@ -13,3 +13,5 @@ export const conversationContextEnabled=()=>['STUDIO_CONVERSATION_LOT_A','STUDIO
 export const conversationCatalogueEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_CATALOGUE==='1';
 export const conversationImagesEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_IMAGES==='1';
 export const conversationLogosEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_LOGOS==='1';
+
+export const conversationVideosEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_VIDEOS==='1';

@@ -6,7 +6,7 @@
  * Il n'y a PAS encore de timeline interactive (montage plan par plan à la souris) : voir reports/v1-to-v2-migration.md.
  */
 import { AiWait } from "../wait-time";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Download, Film, History, Play, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, Field, Input, Modal, Select, Textarea, Toggle, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -42,6 +42,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const services = data?.business === "services";
   const active = useActive("video.v2");
   const { data: list, reload } = useApi<{ videos: VideoItem[] }>(`/api/projects/${id}/videos/v2`, { poll: active.length ? 4000 : undefined });
+  useEffect(()=>{const updated=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:videos-changed',updated);return()=>window.removeEventListener('studio:videos-changed',updated);},[id,reload]);
   const kinds = KINDS.filter(([v]) => !scope || (scope === "ad") === AD_KINDS.has(v));
   const [form, setForm] = useState({ kind: scope === "ad" ? "video_ad" : scope === "organic" ? (services ? "service_presentation" : "social_content") : services ? "company_presentation" : "video_ad", platform: scope === "ad" ? "meta_feed" : "reels", text: "", allowGeneration: false });
   const [plan, setPlan] = useState<Plan | null>(null);

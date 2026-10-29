@@ -61,6 +61,7 @@ export default function TabPublicites() {
     } catch {}
   };
   const { data: files, reload } = useApi<{ assets: AssetView[] }>(`/api/projects/${id}/files?role=ad,video`);
+  useEffect(()=>{const updated=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:videos-changed',updated);return()=>window.removeEventListener('studio:videos-changed',updated);},[id,reload]);
   const { data: camps } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
   const adVisuals = (files?.assets ?? []).filter((a) => isAdVisual(a) && !a.name.includes("refusee"));
   const counts = { images: adVisuals.filter((a) => a.kind === "image").length, videos: adVisuals.filter((a) => a.kind === "video").length, campaigns: camps?.campaigns.length ?? 0 };

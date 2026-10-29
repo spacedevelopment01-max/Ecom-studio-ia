@@ -18,6 +18,7 @@ process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
 if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
 if(process.argv.includes('--retouches-ui')){process.argv.push('--images-ui');process.env.STUDIO_CONVERSATION_THEME_TOOLS='1';process.env.STUDIO_CONVERSATION_EXPORTS='1';}
+if(process.argv.includes('--videos-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_VIDEOS'])process.env[key]='1';
 if(process.argv.includes('--logos-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_LOGOS'])process.env[key]='1';
 if(process.argv.includes('--images-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_IMAGES'])process.env[key]='1';
 if(process.argv.includes('--catalogue-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_THEME_TOOLS','STUDIO_CONVERSATION_EXPORTS'])process.env[key]='1';
@@ -233,6 +234,11 @@ try{
   if(process.argv.includes('--logos-ui')){
     const{verifyLogosBrowser}=await import('./verify-agent211-logos-ui'),{REQUIRED_LOGO_PROVIDER,REQUIRED_LOGO_MODEL}=await import('../src/lib/ai/logo-policy');
     proof.logosUi=await verifyLogosBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},expectName:name=>{expectedLogoName=name;},failImageAfter:n=>{assert.ok(Number.isInteger(n)&&n>0);imageFailureAt=imageHttpCalls+n;},omitControl:()=>{assert.equal(omitLogoReviewOnce,false);omitLogoReviewOnce=true;},imageUnavailable:disabled=>setJsonSetting('ai.media.models',{[`${REQUIRED_LOGO_PROVIDER}:${REQUIRED_LOGO_MODEL}`]:{enabled:!disabled,confirmedAt:Date.now()}})});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;proof.logoReviewRequests=logoReviewRequests;
+  }
+  if(process.argv.includes('--videos-ui')){
+    const{verifyVideosBrowser}=await import('./verify-agent211-videos-ui');
+    const brokenEncoder=path.join(temp,'encoder-failure-fixture');fs.mkdirSync(brokenEncoder);fs.writeFileSync(path.join(brokenEncoder,'ffmpeg'),'#!/bin/sh\n# Simulated encoder failure, isolated fixture only.\nexit 42\n',{mode:0o700});
+    proof.videosUi=await verifyVideosBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,pauseWorker:async()=>{await stop(worker);worker=undefined;},resumeWorker:async(failEncoder=false)=>{worker=child(['--import','tsx','worker/index.ts'],{WORKER_CONCURRENCY:'1',...(failEncoder?{PATH:brokenEncoder+path.delimiter+process.env.PATH}:{})});}});proof.allSimulatedTotals=counts();
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){
