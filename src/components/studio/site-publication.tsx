@@ -14,7 +14,7 @@ type Overview = {
   sitesDomain: string | null;
   customDomainsServed: boolean;
   live: { id: string; number: number; origin: string; createdAt: number; pages: number } | null;
-  freshness: { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number };
+  freshness: { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number; changedCarte: number };
   publications: { id: string; number: number; createdAt: number; pages: number; bytes: number; live: boolean; purged: boolean }[];
   storage: { used: number; limit: number; keep: number };
   domains: { hostname: string; state: "pending_dns" | "pointing" | "active" | "not_served" | "disabled" | "reverify" | "lost"; checkedAt: number | null; checkError: string | null; lastOkAt: number | null; dns: { txt: { name: string; value: string | null }; apex: boolean; pointing: { type: "CNAME" | "A/AAAA"; name: string; values: string[]; note: string | null } } }[];
@@ -100,8 +100,7 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
             {data.live && !data.freshness.upToDate && (
               <p className="rounded-xl bg-warn-soft p-3 text-xs text-warn" data-site-pending>
                 {t("Modifications non publiées : le site en ligne n'affiche pas encore vos derniers changements", "Unpublished changes: the live site doesn't show your latest changes yet")}
-                {data.freshness.changedBiens > 0 && <> ({t(`${data.freshness.changedBiens} bien(s) modifié(s)`, `${data.freshness.changedBiens} propert(ies) changed`)}{data.freshness.themeChanged ? t(", site modifié", ", site changed") : ""})</>}
-                {data.freshness.changedBiens === 0 && data.freshness.themeChanged && <> ({t("site modifié", "site changed")})</>}
+                {(() => { const parts = [data.freshness.changedBiens ? t(`${data.freshness.changedBiens} bien(s) modifié(s)`, `${data.freshness.changedBiens} propert(ies) changed`) : "", data.freshness.changedCarte ? t(`${data.freshness.changedCarte} élément(s) de la carte modifié(s)`, `${data.freshness.changedCarte} menu item(s) changed`) : "", data.freshness.themeChanged ? t("site modifié", "site changed") : ""].filter(Boolean); return parts.length ? <> ({parts.join(", ")})</> : null; })()}
                 . {t("Ils sont visibles dans l'aperçu ; « Publier la version actuelle » les met en ligne.", "They're visible in the preview; “Publish the current version” puts them online.")}
               </p>
             )}

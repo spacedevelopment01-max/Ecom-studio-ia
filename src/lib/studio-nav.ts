@@ -3,7 +3,7 @@
  * chacun avec UNE phrase qui dit à quoi il sert, et les outils avancés (prompts, fichiers, connexions) rangés à part,
  * repliés tant qu'on ne s'en sert pas. Toutes les fonctions restent accessibles : rien n'est supprimé, seulement rangé.
  */
-export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
+export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "carte" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
 export type SpaceGroup = "projet" | "creer" | "diffuser" | "avance";
 type Business = "products" | "services" | undefined;
 type T2 = [fr: string, en: string];
@@ -23,6 +23,7 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
   { id: "boutique", group: "creer", purpose: ["Votre boutique en ligne : aperçu, retouches et mise en ligne.", "Your online store: preview, edits and going live."], purposeServices: ["Votre site : aperçu, retouches et mise en ligne.", "Your website: preview, edits and going live."] },
   { id: "catalogue", group: "creer", purpose: ["Vos produits : photos, prix, variantes, références et stock, saisis une fois ; la boutique, les exports et vos boutiques connectées s'en servent.", "Your products: photos, prices, variants, SKUs and stock, entered once; the store, the exports and your connected stores use them."] },
   { id: "biens", group: "creer", purpose: ["Vos biens à vendre et à louer : une fiche par bien, ses photos, sa publication. Le site les affiche tout seul.", "Your properties for sale and rent: one listing each, its photos, its publication. The website shows them by itself."] },
+  { id: "carte", group: "creer", purpose: ["Votre carte : catégories et plats, prix, allergènes déclarés, disponibilité. Le site l'affiche tout seul.", "Your menu: categories and dishes, prices, declared allergens, availability. The website shows it by itself."] },
   { id: "rendez-vous", group: "creer", purpose: ["Vos prestations, horaires, intervenants et réservations : tout le planning du site au même endroit.", "Your services, hours, staff and bookings: the whole website schedule in one place."] },
   { id: "images", group: "creer", purpose: ["Votre banque d'images, sans texte : vos photos, photos libres et images créées.", "Your image bank, no text: your photos, royalty-free photos and created images."] },
   { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },

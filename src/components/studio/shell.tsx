@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes } from "lucide-react";
+import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes, UtensilsCrossed } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -23,6 +23,7 @@ export const TABS = [
   { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store },
   { id: "catalogue", label: "Catalogue", labelEn: "Catalog", icon: Boxes },
   { id: "biens", label: "Biens", labelEn: "Properties", icon: KeyRound },
+  { id: "carte", label: "Carte", labelEn: "Menu", icon: UtensilsCrossed },
   { id: "rendez-vous", label: "Rendez-vous", labelEn: "Bookings", icon: CalendarCheck },
   { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },
   { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film },
@@ -36,9 +37,11 @@ export const TABS = [
 ] as const satisfies readonly { id: SpaceId; label: string; labelEn: string; icon: unknown }[];
 export type TabId = (typeof TABS)[number]["id"];
 /** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
-const tabsOf = (g: SpaceGroup, realEstate = false) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && (x.id !== "biens" || realEstate));
+/** Espaces propres à un métier : « Biens » pour un site immobilier, « Carte » pour un restaurant (#239). */
+const tabsOf = (g: SpaceGroup, direction?: string | null) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && (x.id !== "biens" || isRealEstate(direction)) && (x.id !== "carte" || isRestaurant(direction)));
 /** L'espace « Biens » n'apparaît que pour un site immobilier (thème Maison & Horizon) ; son adresse reste accessible. */
 const isRealEstate = (direction?: string | null) => direction === "maison-horizon";
+const isRestaurant = (direction?: string | null) => direction === "table-saison";
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
@@ -327,7 +330,7 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
 const MOBILE_MAIN: TabId[] = ["pilote", "images", "videos", "publications"];
 
 function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab: TabId; business?: "products" | "services"; badge: (id: TabId) => string | number | null }) {
-  const realEstate = isRealEstate(useProject().data?.theme?.direction);
+  const direction = useProject().data?.theme?.direction;
   const t = useT();
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
@@ -353,7 +356,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
               <div key={g.id} className="mb-3">
                 <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(...g.label)}</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {tabsOf(g.id, realEstate).map((x) => {
+                  {tabsOf(g.id, direction).map((x) => {
                     const Icon = tabIcon(x, business);
                     const b = badge(x.id);
                     return (
@@ -486,7 +489,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)))) return toggleFoldRef.current();
       if (!e.altKey) return;
       const n = Number(e.key);
-      const visible = TABS.filter((x) => !space(x.id)?.within && x.id !== "biens");
+      const visible = TABS.filter((x) => !space(x.id)?.within && x.id !== "biens" && x.id !== "carte");
       if (n >= 1 && n <= Math.min(9, visible.length)) router.push(`/studio/${projectId}/${visible[n - 1].id}`);
     };
     window.addEventListener("keydown", onKey);
@@ -541,7 +544,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           {SPACE_GROUPS.map((g) => {
             // Outils avancés : repliés tant que le client ne les ouvre pas (ou qu'il n'est pas dans l'un d'eux).
             const shut = !folded && g.folded && !advancedOpen(tab, showAdvanced);
-            const hidden = shut ? tabsOf(g.id, isRealEstate(data?.theme?.direction)).filter((x) => badge(x.id) !== null).length : 0;
+            const hidden = shut ? tabsOf(g.id, data?.theme?.direction).filter((x) => badge(x.id) !== null).length : 0;
             return (
             <div key={g.id} className="mb-4 short:mb-2" data-nav-group={g.id}>
               {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : g.folded ? (
@@ -551,7 +554,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
                   <ChevronDown className={cx("size-3.5 transition", !shut && "rotate-180")} />
                 </button>
               ) : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(...g.label)}</p>}
-              {!shut && tabsOf(g.id, isRealEstate(data?.theme?.direction)).map((x) => {
+              {!shut && tabsOf(g.id, data?.theme?.direction).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);

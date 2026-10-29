@@ -12,7 +12,7 @@ import { customDomainsEnabled, sitesDomain } from "@/lib/sites/host-match";
 import { bookingBlockers, contentBlockers, contentPagesWithReasons, publishBlockers, publishSite, renderSite, restorePublication, siteFreshness, unpublishSite, PublishBlocked } from "@/lib/sites/publish";
 import { sitePolicies, updatePolicy } from "@/lib/sites/policies";
 import { currentTheme } from "@/lib/projects";
-import { withBiens } from "@/lib/biens";
+import { withContenus } from "@/lib/contenus";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { addCustomDomain, customDomains, dnsInstructions, removeCustomDomain, setCustomDomainEnabled, verifyCustomDomain } from "@/lib/sites/domains";
 import { deleteRequest, markRequestHandled, markRequestRead, siteRequests } from "@/lib/sites/requests";
@@ -80,7 +80,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     // Vérification sans publier : mêmes pages et mêmes règles que la publication, rien n'est écrit.
     const cur = currentTheme(p.id);
     if (!cur) return ok({ ...overview(p.id), reasons: [L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first.")] });
-    const spec = withBiens(cur.spec as ThemeSpec, p.id);
+    const spec = withContenus(cur.spec as ThemeSpec, p.id);
     return ok({ ...overview(p.id), reasons: [...bookingBlockers(p.id, spec), ...contentBlockers(spec), ...publishBlockers(await renderSite(spec, "https://verification.invalid"), contentPagesWithReasons(spec))] });
   }
   try {

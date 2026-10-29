@@ -13,7 +13,8 @@ import { all, id, logError, now, one, run } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject } from "../projects";
 import { requirePlan } from "../plan-gates";
-import { withBiens } from "../biens";
+import { withContenus } from "../contenus";
+import { carteChangedSince } from "../contenus/carte";
 import { compileTheme, importedBinary, themeAssetBinary, themeFingerprint } from "../theme/compile";
 import { libraryLoader } from "../theme/loader";
 import { fontFilePath, renderPage } from "../theme/render";
@@ -233,7 +234,7 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
   if (!cur) throw new HttpError(409, L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first."), "no_site");
   const address = defaultStudioAddress(projectId, p.brand?.name || p.name);
   const origin = `${process.env.SITES_SCHEME === "http" ? "http" : "https"}://${address.hostname}${process.env.SITES_PORT ? `:${process.env.SITES_PORT}` : ""}`;
-  const spec = withBiens(cur.spec as ThemeSpec, projectId);
+  const spec = withContenus(cur.spec as ThemeSpec, projectId);
   const rendered = await renderSite(spec, origin);
   const reasons = [...bookingBlockers(projectId, spec), ...contentBlockers(spec), ...publishBlockers(rendered, contentPagesWithReasons(spec))];
   if (reasons.length) throw new PublishBlocked(reasons);
@@ -254,13 +255,13 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
  * à celle de la version en ligne. Dit aussi ce qui a changé (version du thème, biens modifiés depuis la publication),
  * pour que le client sache qu'il doit republier : le site public ne change jamais tout seul (#239).
  */
-export function siteFreshness(projectId: string): { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number } {
+export function siteFreshness(projectId: string): { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number; changedCarte: number } {
   const live = livePublication(projectId);
   const cur = currentTheme(projectId);
-  if (!live || !cur) return { live: !!live, upToDate: true, themeChanged: false, changedBiens: 0 };
-  const spec = withBiens(cur.spec as ThemeSpec, projectId);
+  if (!live || !cur) return { live: !!live, upToDate: true, themeChanged: false, changedBiens: 0, changedCarte: 0 };
+  const spec = withContenus(cur.spec as ThemeSpec, projectId);
   const changedBiens = all<{ n: number }>("SELECT COUNT(*) n FROM biens WHERE project_id = ? AND updated_at > ?", projectId, live.created_at)[0]?.n ?? 0;
-  return { live: true, upToDate: siteHash(spec) === live.spec_hash, themeChanged: cur.version.id !== live.theme_version_id, changedBiens };
+  return { live: true, upToDate: siteHash(spec) === live.spec_hash, themeChanged: cur.version.id !== live.theme_version_id, changedBiens, changedCarte: carteChangedSince(projectId, live.created_at) };
 }
 
 /** Remet en ligne une publication précédente, telle quelle (son artefact est vérifié avant). */
