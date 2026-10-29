@@ -1,0 +1,434 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "textHttpCalls": 3,
+    "imageHttpCalls": 0,
+    "tokenCounts": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 42,
+    "textHttpCalls": 27,
+    "imageHttpCalls": 15,
+    "tokenCounts": 27,
+    "calls": 42,
+    "usage": 41,
+    "simulatedMicro": 1418590
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "logosUi": {
+    "passed": true,
+    "cases": 5,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "creativeQualityQualified": false
+  },
+  "imageRequests": [
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "1f8d48b9a6c5609ccf739a9610041033bb8538431871a0dee9f357a15a613123",
+      "wirePromptSha256": "1f8d48b9a6c5609ccf739a9610041033bb8538431871a0dee9f357a15a613123",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 988,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "466d3d99040ff23103aaaabecd9b49a5c0a63997bed4c54b03953944826fd0c0",
+      "wirePromptSha256": "466d3d99040ff23103aaaabecd9b49a5c0a63997bed4c54b03953944826fd0c0",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 988,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "56115b3232e6492893219d1791ae64e0304166837835bca1b96b742b1a625e95",
+      "wirePromptSha256": "56115b3232e6492893219d1791ae64e0304166837835bca1b96b742b1a625e95",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 988,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "d6e2487b67c8fb425afd1e1fce79dab5ccb359bc3d46b5ccac077f11b82e1325",
+      "wirePromptSha256": "d6e2487b67c8fb425afd1e1fce79dab5ccb359bc3d46b5ccac077f11b82e1325",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1035,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "0815ea259379f6494a288a5635065827f20b8cb07bef5631a03d1990bfc60465",
+      "wirePromptSha256": "0815ea259379f6494a288a5635065827f20b8cb07bef5631a03d1990bfc60465",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1035,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "3385e7bc85cbe4c6044d44e943038e914e192838bc90b17bb9efa081532debec",
+      "wirePromptSha256": "3385e7bc85cbe4c6044d44e943038e914e192838bc90b17bb9efa081532debec",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1035,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "e23892b3b72697ca408e3066c4e889df9ffb45d3eccf34a6bcb7fb5fd6cf116f",
+      "wirePromptSha256": "e23892b3b72697ca408e3066c4e889df9ffb45d3eccf34a6bcb7fb5fd6cf116f",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1013,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "66359b0fd96819d6879876b300176dccfff3464e37e311bfa50ea965e026ac68",
+      "wirePromptSha256": "66359b0fd96819d6879876b300176dccfff3464e37e311bfa50ea965e026ac68",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1013,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "157411d43fdbf77d54de1f3ac9f25490ad0a8e037534b4a2ade2d9f93e6920ae",
+      "wirePromptSha256": "157411d43fdbf77d54de1f3ac9f25490ad0a8e037534b4a2ade2d9f93e6920ae",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1013,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "087032d2f185412b6a81151476255200219903b6f9a7b16383a812706ddf3ead",
+      "wirePromptSha256": "087032d2f185412b6a81151476255200219903b6f9a7b16383a812706ddf3ead",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 991,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "e8a4adf356e19fca2d40deb6e6d3ffe9d7f9b5bc0502ac1ebdb39eb0f845248d",
+      "wirePromptSha256": "e8a4adf356e19fca2d40deb6e6d3ffe9d7f9b5bc0502ac1ebdb39eb0f845248d",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 991,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "2b006d1928d585755d5cbcae63dcf429bb75f1c234af4cd7b6a075c800ffcf61",
+      "wirePromptSha256": "2b006d1928d585755d5cbcae63dcf429bb75f1c234af4cd7b6a075c800ffcf61",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 991,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "d1ea71863b47ffc7df33a023b4f060dcd467a9828f9904bb5ff25ca531a80718",
+      "wirePromptSha256": "d1ea71863b47ffc7df33a023b4f060dcd467a9828f9904bb5ff25ca531a80718",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 958,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "e52cd6f0d6b776e2e687ca1206d8a0d53909ce360913081c7566ec8f4d251683",
+      "wirePromptSha256": "e52cd6f0d6b776e2e687ca1206d8a0d53909ce360913081c7566ec8f4d251683",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1043,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 200,
+      "responseSha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+    },
+    {
+      "operation": "generate",
+      "hasReference": false,
+      "referenceProof": null,
+      "promptSha256": "4afb985b5c90c5ef5a6b22f2cff15256467189e0a33c278e05209b3e37ede293",
+      "wirePromptSha256": "4afb985b5c90c5ef5a6b22f2cff15256467189e0a33c278e05209b3e37ede293",
+      "multipartLineEndingsDecoded": false,
+      "promptBytes": 1043,
+      "requestRef": "525c8a572fc5e6a1",
+      "simulatedResponseStatus": 503
+    }
+  ],
+  "logoReviewRequests": [
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Fil & presse",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Fil & presse",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Fil & presse",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Sous la verrière",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Sous la verrière",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Sous la verrière",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Verre retrouvé",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Verre retrouvé",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Verre retrouvé",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Trace & papier",
+      "omittedCriticalFlags": true
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Trace & papier",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Trace & papier",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Trace & papier",
+      "omittedCriticalFlags": false
+    },
+    {
+      "images": [
+        {
+          "width": 1024,
+          "height": 791
+        },
+        {
+          "width": 1024,
+          "height": 1559
+        }
+      ],
+      "name": "Éclat de gravure",
+      "omittedCriticalFlags": false
+    }
+  ],
+  "failure": {
+    "status": "failed",
+    "progress": 0.15,
+    "conversationState": "failed",
+    "priorReplyPreserved": true,
+    "noAutomaticRetry": true
+  },
+  "finishedAt": "2026-10-29T18:38:27.505Z",
+  "success": true,
+  "completeLocalProofSha256": "a23d2ef525166768276d8be9dd5b2305fe4d2c5837f3d6a7d258716201e2318c"
+}

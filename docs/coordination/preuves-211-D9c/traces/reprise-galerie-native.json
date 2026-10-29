@@ -1,0 +1,835 @@
+{
+  "code": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+  "version": {
+    "commit": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "nativeGalleryVisibleWithoutSynaOverlay": true,
+  "freshBrowserAndServer": true,
+  "fixtureCopyOnly": true,
+  "before": {
+    "ai_calls": 42,
+    "ai_reservations": 42,
+    "usage_events": 41,
+    "jobs": 19
+  },
+  "after": {
+    "ai_calls": 42,
+    "ai_reservations": 42,
+    "usage_events": 41,
+    "jobs": 19
+  },
+  "unchangedProviderRowsAndJobs": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "scene": "mono",
+      "outputs": 3,
+      "files": [
+        {
+          "kind": "image",
+          "assetId": "z0rmggx7u7nh2erl",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "width": 594,
+          "height": 736,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "hu5nc4oojfzjujfk",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "pcbwusrlxmn5y0ce",
+          "version": 1,
+          "sha256": "b816a17c925fa2aca9a9d619d830a5cff90e3d100109041f66a816468976df24",
+          "bytes": 163427,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "lztx098emhdb44lj",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "width": 592,
+          "height": 732,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "086rqf2az5997tjs",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "iygrqeod9ypxbdnw",
+          "version": 1,
+          "sha256": "ab198c67fa2c888fd9f626904d77950617285d9f83747afb4e11e0b4d55f95ff",
+          "bytes": 174581,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "y0kxmjmxzlj3p0g4",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "width": 592,
+          "height": 729,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "xht6qc0xefrzeyzc",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "r9wixbnuh7agvc1v",
+          "version": 1,
+          "sha256": "f4cb0f6eb7199857b09fcecb2393873db6bc27c99cbb746aa2c6fa37c334094e",
+          "bytes": 163348,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "actualBrowserDownload": true
+        }
+      ],
+      "captures": [
+        "mono-galerie-1.png",
+        "mono-galerie-2.png",
+        "mono-galerie-3.png",
+        "mono-galerie-autre-largeur.png",
+        "mono-reouverture-galerie.png",
+        "mono-brouillon-manuel-conserve.png"
+      ],
+      "geometry": [
+        {
+          "name": "galerie-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "galerie-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "galerie-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "galerie-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture-galerie",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "brouillon-manuel-conserve",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": [],
+      "manualUnsavedDraftPreservedDuringSynaRefresh": true,
+      "brandValueNotSavedOrChanged": true
+    },
+    {
+      "scene": "multi",
+      "outputs": 3,
+      "files": [
+        {
+          "kind": "image",
+          "assetId": "znrpzwf4eo3uzxg4",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "width": 592,
+          "height": 722,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "o2tanwo6afathiyl",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "gcn92b1lh4n92dgq",
+          "version": 1,
+          "sha256": "e0720daace8573edfed60bd7816cd29ee9b3d73690df2b2117e315f96da57655",
+          "bytes": 172644,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "6a6whu80635l3g6k",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "width": 594,
+          "height": 736,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "ivdqnpnlxkwifu0c",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "ie8g01d8xoayw7cj",
+          "version": 1,
+          "sha256": "754ff2269330f6539464b8af81612174aba9ae01078d032cb13e44c25c88e001",
+          "bytes": 174439,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "gu6yz4dswdw8lj0a",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "width": 592,
+          "height": 732,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "i8ciiea1bpz8y1o7",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "bmicdpexvrw5abzr",
+          "version": 1,
+          "sha256": "6a7153782111491a2736f5547ec5b242129bbf33686fde968b8424172923f4dc",
+          "bytes": 165124,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "actualBrowserDownload": true
+        }
+      ],
+      "captures": [
+        "multi-galerie-1.png",
+        "multi-galerie-2.png",
+        "multi-galerie-3.png",
+        "multi-galerie-autre-largeur.png",
+        "multi-reouverture-galerie.png",
+        "multi-brouillon-manuel-conserve.png"
+      ],
+      "geometry": [
+        {
+          "name": "galerie-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture-galerie",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "brouillon-manuel-conserve",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": [],
+      "manualUnsavedDraftPreservedDuringSynaRefresh": true,
+      "brandValueNotSavedOrChanged": true
+    },
+    {
+      "scene": "services",
+      "outputs": 3,
+      "files": [
+        {
+          "kind": "image",
+          "assetId": "ljvu6a106iuxidb8",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "width": 592,
+          "height": 729,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "3rmbqqr78tiv2c57",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "krzoplfvi3ta1f5e",
+          "version": 1,
+          "sha256": "5de414f5aa884c25cc48cb663cd0da7e90859d7715d459e10b671ba5c5c64e59",
+          "bytes": 166835,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "5p2f0dcrjtb0o05f",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "width": 592,
+          "height": 722,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "5n6sbr22f4yyeyyo",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "poujeogbwgv84em4",
+          "version": 1,
+          "sha256": "c3867c357165626c5558c31d2d1082874d368c44638dfeacc2ecad0ff1084f0b",
+          "bytes": 177719,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "6nh620tf1ei4du2q",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "width": 594,
+          "height": 736,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "kpy04vzcnesid1sy",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "bwja75us0jtik867",
+          "version": 1,
+          "sha256": "d30f14c5751b2146e9df07c66971ccb42b727b915cc68183ebfa79e4bf7479d9",
+          "bytes": 162241,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "actualBrowserDownload": true
+        }
+      ],
+      "captures": [
+        "services-galerie-1.png",
+        "services-galerie-2.png",
+        "services-galerie-3.png",
+        "services-galerie-autre-largeur.png",
+        "services-reouverture-galerie.png",
+        "services-brouillon-manuel-conserve.png"
+      ],
+      "geometry": [
+        {
+          "name": "galerie-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "galerie-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "galerie-3",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "galerie-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture-galerie",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "brouillon-manuel-conserve",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": [],
+      "manualUnsavedDraftPreservedDuringSynaRefresh": true,
+      "brandValueNotSavedOrChanged": true
+    },
+    {
+      "scene": "inedit",
+      "outputs": 3,
+      "files": [
+        {
+          "kind": "image",
+          "assetId": "f44pxur11bfy6ywk",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "width": 594,
+          "height": 736,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "16r5m8h0k33rk571",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "3ef75a7obprno9h6",
+          "version": 1,
+          "sha256": "cbb0e7b2fe39bf2d12a277de5189393b0be008b17bdf72de6bd2f16804c76047",
+          "bytes": 165823,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "8m1r444lzap7hm0m",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "width": 592,
+          "height": 729,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "9dyck1dkjhi4qsd6",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "6o3dyo9usmt2qxvz",
+          "version": 1,
+          "sha256": "330733a885eed87229e23412cbf73b4df20e37c12d92c0bbf010e915698a606d",
+          "bytes": 176347,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "image",
+          "assetId": "xmly3aut62ddvx6k",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "width": 592,
+          "height": 722,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "6za2z50oojb3rdl4",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "je8p0zoie1ecmkgp",
+          "version": 1,
+          "sha256": "15294d6b21871a3787b394017a3f752a4013a419e93a681008da0f0369d078be",
+          "bytes": 168418,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564",
+          "bytes": 16406,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31",
+          "bytes": 16940,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410",
+          "bytes": 19150,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899",
+          "bytes": 18388,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0",
+          "bytes": 21367,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317",
+          "bytes": 22945,
+          "actualBrowserDownload": true
+        }
+      ],
+      "captures": [
+        "inedit-galerie-1.png",
+        "inedit-galerie-2.png",
+        "inedit-galerie-3.png",
+        "inedit-galerie-autre-largeur.png",
+        "inedit-reouverture-galerie.png",
+        "inedit-brouillon-manuel-conserve.png"
+      ],
+      "geometry": [
+        {
+          "name": "galerie-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "galerie-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "galerie-3",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "galerie-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture-galerie",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "brouillon-manuel-conserve",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": [],
+      "manualUnsavedDraftPreservedDuringSynaRefresh": true,
+      "brandValueNotSavedOrChanged": true
+    },
+    {
+      "scene": "panne",
+      "outputs": 1,
+      "files": [
+        {
+          "kind": "image",
+          "assetId": "rap90vwz0v4f9ccs",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "width": 592,
+          "height": 732,
+          "http": 200
+        },
+        {
+          "kind": "original",
+          "assetId": "5g1wyucxt7ui0cdf",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "width": 1024,
+          "height": 1024,
+          "http": 200
+        },
+        {
+          "kind": "planche",
+          "assetId": "liri9n56ici5uw8k",
+          "version": 1,
+          "sha256": "8babfc4098fe1b0d40f5249bc93c040f683004e6ddf57be890a532f6b30e0c50",
+          "bytes": 167773,
+          "width": 1400,
+          "height": 2132,
+          "http": 200
+        },
+        {
+          "kind": "Télécharger le logo",
+          "version": 1,
+          "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+          "bytes": 16703,
+          "actualBrowserDownload": true
+        },
+        {
+          "kind": "Télécharger la réponse image originale du fournisseur",
+          "version": 1,
+          "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3",
+          "bytes": 17221,
+          "actualBrowserDownload": true
+        }
+      ],
+      "captures": [
+        "panne-galerie-1.png",
+        "panne-galerie-autre-largeur.png",
+        "panne-reouverture-galerie.png",
+        "panne-brouillon-manuel-conserve.png"
+      ],
+      "geometry": [
+        {
+          "name": "galerie-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture-galerie",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "brouillon-manuel-conserve",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": [],
+      "manualUnsavedDraftPreservedDuringSynaRefresh": true,
+      "brandValueNotSavedOrChanged": true
+    }
+  ]
+}
