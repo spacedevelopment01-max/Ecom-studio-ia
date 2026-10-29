@@ -12,6 +12,7 @@ import { projectPlan } from "../project-billing";
 import { customDomainsEnabled } from "./host-match";
 import { manifestOf, pageFile, postedFile } from "./publish";
 import { recordTraffic } from "./maintenance";
+import { customDomainServable } from "./domains";
 import { receiveSiteRequest } from "./requests";
 import { addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
@@ -33,7 +34,8 @@ export function siteFor(hostname: string): { address: SiteAddress; pub: Publicat
   // Projet archivé ou masqué : son site n'est plus servi.
   const project = one<{ archived: number; hidden: number }>("SELECT archived, hidden FROM projects WHERE id = ?", address.project_id);
   if (!project || project.archived || project.hidden) return null;
-  if (address.kind === "studio" ? address.status !== "active" : address.status !== "verified" || !customDomainsEnabled()) return null;
+  // Domaine relié : vérifié par le propriétaire actuel du projet, ni désactivé ni perdu, et mise en service globale.
+  if (address.kind === "studio" ? address.status !== "active" : !customDomainServable(address) || !customDomainsEnabled()) return null;
   identifyProject(address.project_id);
   const pub = livePublication(address.project_id);
   return pub ? { address, pub } : null;

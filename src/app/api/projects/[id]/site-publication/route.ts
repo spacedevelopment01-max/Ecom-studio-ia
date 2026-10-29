@@ -14,7 +14,7 @@ import { sitePolicies, updatePolicy } from "@/lib/sites/policies";
 import { currentTheme } from "@/lib/projects";
 import { withBiens } from "@/lib/biens";
 import type { ThemeSpec } from "@/lib/theme/spec";
-import { addCustomDomain, dnsInstructions, removeCustomDomain, verifyCustomDomain } from "@/lib/sites/domains";
+import { addCustomDomain, customDomains, dnsInstructions, removeCustomDomain, setCustomDomainEnabled, verifyCustomDomain } from "@/lib/sites/domains";
 import { deleteRequest, markRequestHandled, markRequestRead, siteRequests } from "@/lib/sites/requests";
 import { addRecipient, recipients, removeRecipient, retryNotification, sendVerification } from "@/lib/sites/notify";
 import { mailConfigured } from "@/lib/mail";
@@ -32,6 +32,8 @@ function overview(projectId: string) {
     storage: { used: storageUsed(projectId), limit: STORAGE_LIMIT_BYTES, keep: KEEP_PUBLICATIONS },
     history: history(projectId),
     addresses: addresses(projectId).map((a) => ({ hostname: a.hostname, kind: a.kind, status: a.status, checkedAt: a.checked_at, checkError: a.check_error, dns: a.kind === "custom" ? dnsInstructions(a) : null })),
+    // Domaines déjà possédés par le client : état lisible (preuve, pointage, mise en service) et instructions DNS.
+    domains: customDomains(projectId),
     requests: siteRequests(projectId),
     // Envoi des demandes par e-mail : état du SMTP du studio et adresses du professionnel (jamais montrées aux visiteurs).
     notifications: { smtp: mailConfigured(), recipients: recipients(projectId) },
@@ -55,6 +57,7 @@ const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("domain-add"), hostname: z.string().max(260) }),
   z.object({ action: z.literal("domain-verify"), hostname: z.string().max(260) }),
   z.object({ action: z.literal("domain-remove"), hostname: z.string().max(260) }),
+  z.object({ action: z.literal("domain-enable"), hostname: z.string().max(260), enabled: z.boolean() }),
   z.object({ action: z.literal("request-read"), id: z.string().max(40) }),
   z.object({ action: z.literal("request-delete"), id: z.string().max(40) }),
   z.object({ action: z.literal("request-handled"), id: z.string().max(40), handled: z.boolean() }),
@@ -87,6 +90,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (b.action === "domain-add") addCustomDomain(p.id, b.hostname);
     if (b.action === "domain-verify") await verifyCustomDomain(p.id, b.hostname.trim().toLowerCase());
     if (b.action === "domain-remove") removeCustomDomain(p.id, b.hostname.trim().toLowerCase());
+    if (b.action === "domain-enable") await setCustomDomainEnabled(p.id, b.hostname.trim().toLowerCase(), b.enabled);
     if (b.action === "request-read") markRequestRead(p.id, b.id);
     if (b.action === "request-delete") deleteRequest(p.id, b.id);
     if (b.action === "request-handled") markRequestHandled(p.id, b.id, b.handled);

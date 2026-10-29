@@ -45,7 +45,7 @@ export type Publication = {
   purged_at?: number | null;
 };
 export type SiteAddress = {
-  hostname: string; project_id: string; kind: "studio" | "custom"; status: "active" | "pending_dns" | "verified" | "disabled";
+  hostname: string; project_id: string; kind: "studio" | "custom"; status: "active" | "pending_dns" | "verified" | "disabled" | "lost";
   verify_token: string | null; verified_at: number | null; checked_at: number | null; check_error: string | null; created_at: number;
 };
 

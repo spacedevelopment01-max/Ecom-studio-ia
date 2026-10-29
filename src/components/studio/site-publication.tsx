@@ -16,6 +16,7 @@ type Overview = {
   live: { id: string; number: number; origin: string; createdAt: number; pages: number } | null;
   publications: { id: string; number: number; createdAt: number; pages: number; bytes: number; live: boolean; purged: boolean }[];
   storage: { used: number; limit: number; keep: number };
+  domains: { hostname: string; state: "pending_dns" | "pointing" | "active" | "not_served" | "disabled" | "reverify" | "lost"; checkedAt: number | null; checkError: string | null; lastOkAt: number | null; dns: { txt: { name: string; value: string | null }; apex: boolean; pointing: { type: "CNAME" | "A/AAAA"; name: string; values: string[]; note: string | null } } }[];
   diagnostics?: { ok: boolean; checkedAt: number; checks: { key: string; ok: boolean; detail: string }[] };
   history: { id: string; publication_id: string | null; action: string; at: number }[];
   addresses: { hostname: string; kind: "studio" | "custom"; status: string; checkedAt: number | null; checkError: string | null; dns: { txt: { name: string; value: string | null }; cname: { name: string; value: string } | null } | null }[];
@@ -64,7 +65,6 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
   }
 
   const studio = data?.addresses.find((a) => a.kind === "studio");
-  const customs = data?.addresses.filter((a) => a.kind === "custom") ?? [];
   const fresh = data?.requests.filter((r) => !r.handled_at) ?? [];
   const shown = (showHandled ? data?.requests : fresh) ?? [];
   const notifLabel = (n: NotificationState) => ({
@@ -233,17 +233,39 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
               <input className="h-9 min-w-0 flex-1 rounded-full border border-line bg-card px-3 text-sm" placeholder="www.mon-entreprise.fr" value={domain} onChange={(e) => setDomain(e.target.value)} aria-label={t("Nom de domaine", "Domain name")} />
               <Button size="sm" variant="secondary" type="submit" disabled={!!busy || !domain.trim() || !data.configured}>{t("Ajouter", "Add")}</Button>
             </form>
-            {customs.map((a) => (
-              <div key={a.hostname} className="grid gap-1 rounded-xl border border-line p-3 text-sm" data-custom-domain={a.hostname}>
-                <p className="font-medium">{a.hostname} <Badge tone={a.status === "verified" ? "ok" : "warn"}>{a.status === "verified" ? t("Vérifié", "Verified") : t("En attente du DNS", "Waiting for DNS")}</Badge></p>
-                {a.dns && <p className="text-xs">{t("Chez votre fournisseur de domaine, ajoutez :", "At your domain provider, add:")} <code>TXT {a.dns.txt.name} = {a.dns.txt.value}</code>{a.dns.cname && <> {t("puis", "then")} <code>CNAME {a.dns.cname.name} → {a.dns.cname.value}</code></>}</p>}
-                {a.checkError && <p className="text-xs text-warn">{a.checkError}</p>}
-                <div className="flex gap-2">
-                  <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("domain-verify", { hostname: a.hostname })}>{t("Vérifier", "Verify")}</Button>
-                  <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("domain-remove", { hostname: a.hostname }, t("Domaine retiré.", "Domain removed."))}>{t("Retirer", "Remove")}</Button>
+            {data.domains.map((d) => {
+              const proofOk = !["pending_dns", "lost"].includes(d.state);
+              const pointOk = ["active", "not_served"].includes(d.state);
+              const label = {
+                pending_dns: t("Étape 1 : preuve de propriété à ajouter", "Step 1: proof of ownership to add"),
+                pointing: t("Propriété prouvée · étape 2 : pointage à faire", "Ownership proven · step 2: pointing to do"),
+                active: t("Actif", "Active"),
+                not_served: t("Prêt · pas encore servi par ce studio (HTTPS à activer)", "Ready · not served by this studio yet (HTTPS to enable)"),
+                disabled: t("Désactivé", "Disabled"),
+                reverify: t("À revérifier (le site a changé de propriétaire)", "To verify again (the site changed owner)"),
+                lost: t("Perdu : preuve DNS disparue", "Lost: DNS proof gone"),
+              }[d.state];
+              const tone = d.state === "active" ? "ok" : d.state === "lost" || d.state === "reverify" ? "bad" : d.state === "disabled" ? "neutral" : "warn";
+              return (
+                <div key={d.hostname} className="grid gap-2 rounded-xl border border-line p-3 text-sm" data-custom-domain={d.hostname} data-domain-state={d.state}>
+                  <p className="font-medium">{d.hostname} <Badge tone={tone as "ok" | "bad" | "warn" | "neutral"}>{label}</Badge></p>
+                  <ol className="grid gap-1.5 text-xs">
+                    <li className="flex gap-2"><Badge tone={proofOk ? "ok" : "warn"}>1</Badge><span>{t("Preuve de propriété — chez votre fournisseur de domaine, ajoutez un enregistrement", "Proof of ownership — at your domain provider, add a record")} <code className="break-all">TXT {d.dns.txt.name} = {d.dns.txt.value}</code>. {t("Laissez-le en place : il est revérifié chaque jour.", "Leave it in place: it's checked again every day.")}</span></li>
+                    <li className="flex gap-2"><Badge tone={pointOk ? "ok" : "warn"}>2</Badge><span>{t("Pointage —", "Pointing —")} {d.dns.pointing.values.length ? <code className="break-all">{d.dns.pointing.type === "CNAME" ? `CNAME ${d.dns.pointing.name} → ${d.dns.pointing.values[0]}` : `A/AAAA ${d.dns.pointing.name} → ${d.dns.pointing.values.join(", ")}`}</code> : null} {d.dns.pointing.note}{d.dns.apex && <> {t("Conseil : reliez aussi « www ».", "Tip: also connect “www”.")}</>}</span></li>
+                    <li className="flex gap-2"><Badge tone={d.state === "active" ? "ok" : "neutral"}>3</Badge><span>{d.state === "active" ? t("HTTPS : certificat émis automatiquement à la première visite.", "HTTPS: certificate issued automatically on the first visit.") : t("HTTPS : automatique une fois les étapes 1 et 2 validées et l'hébergement des domaines activé sur le serveur.", "HTTPS: automatic once steps 1 and 2 pass and domain hosting is enabled on the server.")}</span></li>
+                  </ol>
+                  {d.checkError && <p className="text-xs text-warn" data-domain-error>{d.checkError}</p>}
+                  {d.checkedAt && <p className="text-xs text-muted">{t("Dernière vérification :", "Last check:")} {formatDate(d.checkedAt)}</p>}
+                  <div className="flex flex-wrap gap-2">
+                    {d.state !== "disabled" && <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("domain-verify", { hostname: d.hostname })}>{t("Vérifier", "Verify")}</Button>}
+                    {d.state === "disabled"
+                      ? <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("domain-enable", { hostname: d.hostname, enabled: true }, t("Domaine revérifié.", "Domain verified again."))}>{t("Réactiver", "Re-enable")}</Button>
+                      : proofOk && <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("domain-enable", { hostname: d.hostname, enabled: false }, t("Domaine désactivé : il n'est plus servi.", "Domain disabled: it's no longer served."))}>{t("Désactiver", "Disable")}</Button>}
+                    <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("domain-remove", { hostname: d.hostname }, t("Domaine retiré.", "Domain removed."))}>{t("Retirer", "Remove")}</Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
         </div>
       )}
