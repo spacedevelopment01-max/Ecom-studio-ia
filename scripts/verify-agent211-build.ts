@@ -238,7 +238,7 @@ try{
   if(process.argv.includes('--videos-ui')){
     const{verifyVideosBrowser}=await import('./verify-agent211-videos-ui');
     const brokenEncoder=path.join(temp,'encoder-failure-fixture');fs.mkdirSync(brokenEncoder);fs.writeFileSync(path.join(brokenEncoder,'ffmpeg'),'#!/bin/sh\n# Simulated encoder failure, isolated fixture only.\nexit 42\n',{mode:0o700});
-    proof.videosUi=await verifyVideosBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,pauseWorker:async()=>{await stop(worker);worker=undefined;},resumeWorker:async(failEncoder=false)=>{worker=child(['--import','tsx','worker/index.ts'],{WORKER_CONCURRENCY:'1',...(failEncoder?{PATH:brokenEncoder+path.delimiter+process.env.PATH}:{})});}});proof.allSimulatedTotals=counts();
+    proof.videosUi=await verifyVideosBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;lastInputText='';},input:()=>lastInputText,pauseWorker:async()=>{await stop(worker);worker=undefined;},resumeWorker:async(failEncoder=false)=>{worker=child(['--import','tsx','worker/index.ts'],{WORKER_CONCURRENCY:'1',...(failEncoder?{PATH:brokenEncoder+path.delimiter+process.env.PATH}:{})});}});proof.allSimulatedTotals=counts();
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){
