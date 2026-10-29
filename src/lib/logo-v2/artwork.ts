@@ -100,7 +100,7 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
   const ink = pal[t.colorRole.ink];
   const accent = pal[t.colorRole.accent];
   const txt = artworkText(t, brief);
-  const upper = t.typography.case === "upper"&&exactInstructions===undefined;
+  const upper = t.typography.case === "upper"&&exactInstructions===undefined&&!brief.exactNameCase;
   // Couleurs : celles de la direction quand la palette n'est pas validée (choisies pour la marque), sinon la palette.
   const own = !brief.paletteLocked && t.colors?.length ? t.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 3) : [];
   const colours = own.length ? `Couleurs : ${own.join(", ")}.` : `Couleurs : ${[...new Set([ink, accent])].join(" et ")}, tirées de la palette de la marque.`;
@@ -404,7 +404,7 @@ export async function correctArtworkText(png: Buffer, box: TextBox, t: Territory
   ensureFonts();
   const family = fontsFor(t, brief)[0] ?? "Inter";
   const weight = nearestWeight(family, WEIGHT[t.typography.weight]);
-  const text = t.typography.case === "upper" ? brief.name.toLocaleUpperCase("fr-FR") : t.typography.case === "lower" ? brief.name.toLocaleLowerCase("fr-FR") : brief.name;
+  const text = brief.exactNameCase ? brief.name : t.typography.case === "upper" ? brief.name.toLocaleUpperCase("fr-FR") : t.typography.case === "lower" ? brief.name.toLocaleLowerCase("fr-FR") : brief.name;
   const c = createCanvas(bw, bh);
   const ctx = c.getContext("2d");
   let size = Math.floor(bh * 0.9);

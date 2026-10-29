@@ -135,7 +135,7 @@ export default function TabMarque() {
   const byRole = (r: string) => (logos?.assets ?? []).find((a) => a.role === r);
   const routes = (ident?.proposals ?? []).filter((x) => x.route);
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
+    <div className="@container mx-auto grid min-w-0 max-w-6xl gap-6" data-brand-editor>
       <MarketingStrategy projectId={id} onChange={reload} />
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
@@ -146,8 +146,8 @@ export default function TabMarque() {
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <Card className="p-5 sm:p-7">
+      <div className="grid min-w-0 gap-6 @[850px]:grid-cols-[minmax(0,1fr)_380px]" data-brand-details-layout>
+        <Card className="min-w-0 p-5 sm:p-7">
           <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
             {site?.status === "read" ? (
               <>
@@ -237,7 +237,7 @@ export default function TabMarque() {
             })()}
           </div>
         </Card>
-        <div className="grid content-start gap-6">
+        <div className="grid min-w-0 content-start gap-6">
           <Card className="p-5">
             <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold">{t("Logo", "Logo")} {b.logo.status === "provided" && b.logo.assetId && <Badge tone="ok">{t("fourni", "provided")}</Badge>}</h3>{V("logo")}</div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>

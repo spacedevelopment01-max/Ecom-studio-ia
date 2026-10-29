@@ -28,6 +28,6 @@ export function acceptedDirections(drafts:unknown,brief:BrandBrief):Territory[]{
  return selected.kept;
 }
 /** Même contexte exact au devis et dans le moteur de dessins existant. */
-export function directionBrief(brief:BrandBrief,t:Territory,directions:readonly Territory[],preserveValidatedTagline=false):BrandBrief{
- return t.identity?{...brief,palette:t.identity.palette,paletteLocked:true,fontsLocked:t.identity.fonts,tagline:preserveValidatedTagline?brief.tagline:null,brainContext:brief.brainContext+'\nDirection complète à contrôler : '+JSON.stringify(t.identity)+'\nPalettes des trois directions à distinguer : '+JSON.stringify(directions.map(d=>({direction:d.name,palette:d.identity?.palette,roles:d.identity?.colorRoles})))}:brief;
+export function directionBrief(brief:BrandBrief,t:Territory,directions:readonly Territory[],preserveClientText=false):BrandBrief{
+ return t.identity?{...brief,palette:t.identity.palette,paletteLocked:true,fontsLocked:t.identity.fonts,tagline:preserveClientText?brief.tagline:null,...(preserveClientText?{exactNameCase:true as const}:{}),brainContext:brief.brainContext+'\nDirection complète à contrôler : '+JSON.stringify(t.identity)+'\nPalettes des trois directions à distinguer : '+JSON.stringify(directions.map(d=>({direction:d.name,palette:d.identity?.palette,roles:d.identity?.colorRoles})))}:brief;
 }
