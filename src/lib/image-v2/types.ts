@@ -53,6 +53,8 @@ export type FormatSpec = { aspect: AspectId; width: number; height: number; labe
 
 /** Brief visuel structuré : construit localement quand l'information suffit, réutilisé par les fournisseurs et le contrôle. */
 export type VisualBrief = {
+  /** Liaison immuable à l'offre et aux références ; aucune permission. */
+  bindingDigest?: string;
   instructions?: string;
   version: string;
   kind: VisualKind;

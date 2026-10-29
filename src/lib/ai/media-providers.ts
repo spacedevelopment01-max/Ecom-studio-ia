@@ -177,7 +177,7 @@ function markReleased(e: unknown, t: MediaTrace) {
  * Relais en cours : modèle en échec écarté, et SEUL le secours choisi par l'administration peut être appelé.
  * `force` : relais de QUALITÉ (logos) — le modèle `only` est appelé directement s'il est utilisable et compatible.
  */
-const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string; force?: boolean }>();
+const mediaExclude = new AsyncLocalStorage<{ exclude: string[]; only: string; force?: boolean;quoted?:boolean }>();
 
 /** Secours utilisable pour cet usage (sinon ce type) : confirmé, tarifé, clé active, adaptateur réel (coût couvert). */
 function usableBackup(kind: MediaKind, usage?: MediaUsage): { provider: string; model: string } | null {
@@ -427,17 +427,17 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
     return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason, fallback: false, escalation: false, qualityTarget: null };
   }
   // Relais de qualité (logos) : le modèle désigné, s'il est utilisable (clé, tarif) et capable — sinon rien.
-  if (relay?.force) {
+  if (relay?.force||relay?.quoted) {
     const [fp, ...fm] = relay.only.split(":");
     const m = mediaModel(fp, fm.join(":"));
     const n = { ...(usage ? USAGE_INFO[usage].need : {}), kind, mask: inputType === "mask", ...need } as MediaNeed;
-    if (!m || !m.adapter || !mediaStatus(m).usable || incompatibility(m, n)) return null;
-    const choice: MediaChoice = { provider: m.provider, model: m.model, role: "backup", reason: `relais de qualité${usage ? ` [${usage}]` : ""}` };
+    if (!m || !m.adapter || !mediaStatus(m).usable || relay.quoted&&!mediaStatus(m).enabled || incompatibility(m, n)) return null;
+    const choice: MediaChoice = { provider: m.provider, model: m.model, role:relay.quoted?'primary':"backup", reason: `${relay.quoted?'route confirmée par devis':'relais de qualité'}${usage ? ` [${usage}]` : ""}` };
     if (t) {
       t.choice = choice;
-      t.routing = { reason: choice.reason, fallback: true, escalation: false };
+      t.routing = { reason: choice.reason, fallback: !relay.quoted, escalation: false };
     }
-    return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason: choice.reason, fallback: true, escalation: false, qualityTarget: null };
+    return { mode: kind, provider: m.provider, model: m.model, tier: "strong", reason: choice.reason, fallback: !relay.quoted, escalation: false, qualityTarget: null };
   }
   // Routage multimédia : principal de l'administration, secours compatible et couvert, ou mode automatique.
   const choice = selectMedia({ ...(usage ? USAGE_INFO[usage].need : {}), kind, mask: inputType === "mask", ...(kind === "video" ? { imageToVideo: true } : {}), ...need }, { exclude, budgetLeftMicro: budgetLeft(t?.ctx?.userId ?? currentAiUser() ?? undefined), mode: relay ? "manual" : undefined });
@@ -499,6 +499,23 @@ export function productImagePath(usage: "product_image" | "ad_visual"): { path: 
 export function mediaRouteFor(usage: MediaUsage, need: Partial<MediaNeed> = {}): { provider: string; model: string; reason: string } | null {
   const d = routeMedia(USAGE_INFO[usage].kind === "video" ? "video_generation" : "image_generation", need.mask ? "mask" : undefined, { ...need, usage });
   return d ? { provider: d.provider, model: d.model, reason: d.reason } : null;
+}
+
+/** Même route native que le devis ; aucun relais automatique hors de son accord. */
+export function withQuotedImageRoute<T>(route:{provider:string;model:string},fn:()=>T):T{
+  return mediaExclude.run({exclude:[],only:`${route.provider}:${route.model}`,quoted:true},fn);
+}
+
+/** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
+export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string}):number{
+  const size=input.aspect==='1:1'?'1024x1024':input.aspect==='16:9'?'1536x1024':'1024x1536';
+  const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
+  return mediaReservationMaxMicro(micro);
+}
+
+/** Texte d'acheminement réellement ajouté à chaque demande ; inclus aussi dans sa borne de coût. */
+export function imageReferencePrompt(text:string,roles:readonly string[]):string{
+ return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
 }
 
 export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
@@ -691,7 +708,7 @@ ${closed ? "Photographie réaliste et haut de gamme." : "Photographie éditorial
 
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage; /** Exclusions propres à la scène (négatif technique : le produit lui-même). */ negative?: string }) {
   const text = ambiancePrompt({ prompt: input.prompt, aspect: input.aspect, reference: !!input.reference });
-  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null,...(input.reference?{references:[{role:'style' as const,data:input.reference,essential:true}]}:{}), quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
 }
 
 /**
@@ -810,7 +827,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.
   const provider = imageProviderAvailable({ ...(input.usage ? { usage: input.usage } : {}), ...input.need, references: typed.length });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
-  const text = input.text + (typed.length ? "\nTRANSMITTED REFERENCES (ordered): " + typed.map((r, i) => `image ${i + 1}: ${r.role} (essential, reproduce faithfully)`).join("; ") : "");
+  const text = imageReferencePrompt(input.text,typed.map(r=>r.role));
   const rm = input.refMax ?? 768;
   const refs = await Promise.all(typed.map(r => prepareImageReference(r.data,rm)));
   const ref = refs[0] ?? null;

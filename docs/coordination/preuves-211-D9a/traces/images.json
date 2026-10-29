@@ -1,0 +1,744 @@
+{
+  "provider": "loopback-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "scene": "mono",
+      "business": "products",
+      "width": 1440,
+      "requested": 5,
+      "delivered": 5,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 3,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "after": {
+        "providerHttpCalls": 14,
+        "textHttpCalls": 9,
+        "imageHttpCalls": 5,
+        "tokenCounts": 9,
+        "calls": 14,
+        "usage": 14,
+        "simulatedMicro": 1160483
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "9fc2ec1d23bd38ed881285e7d3fb28035366065f56530ba0647cd3bc084ba3d2",
+          "bytes": 252625
+        },
+        {
+          "index": 2,
+          "sha256": "6368bdd367db0d7bc7e2df414c129c1084868143729ac7fe7a2bfd1ad8929f70",
+          "bytes": 278563
+        },
+        {
+          "index": 3,
+          "sha256": "c9c5e20e5afc5b8cbd28fffe4d547d6319d734616e8941036eafef97f67bddc9",
+          "bytes": 256035
+        },
+        {
+          "index": 4,
+          "sha256": "56747940cbd490a67f0b4301d8fcad395b79c8df7ea120382aa572e562eacd59",
+          "bytes": 279222
+        },
+        {
+          "index": 5,
+          "sha256": "444c38b3013e157732966f620a1bdf801d76da481b768bef88db7e5a98bb8c18",
+          "bytes": 278897
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "mono-proposition.png",
+        "mono-devis.png",
+        "mono-composition-1.png",
+        "mono-composition-2.png",
+        "mono-composition-3.png",
+        "mono-composition-4.png",
+        "mono-composition-5.png",
+        "mono-reouverture-apres-accord.png",
+        "mono-enregistre.png",
+        "mono-image-1.png",
+        "mono-image-2.png",
+        "mono-image-3.png",
+        "mono-image-4.png",
+        "mono-image-5.png",
+        "mono-bibliotheque-native.png",
+        "mono-reprise.png",
+        "mono-autre-largeur.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-4",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-5",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "enregistre",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-4",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-5",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "autre-largeur",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "multi",
+      "business": "products",
+      "width": 390,
+      "requested": 2,
+      "delivered": 2,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 14,
+        "textHttpCalls": 9,
+        "imageHttpCalls": 5,
+        "tokenCounts": 9,
+        "calls": 14,
+        "usage": 14,
+        "simulatedMicro": 1160483
+      },
+      "after": {
+        "providerHttpCalls": 19,
+        "textHttpCalls": 12,
+        "imageHttpCalls": 7,
+        "tokenCounts": 12,
+        "calls": 19,
+        "usage": 19,
+        "simulatedMicro": 1619929
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "c94c750434d41619a9b153ab213572bbad678be9438528e4acb84a88bd849919",
+          "bytes": 259212
+        },
+        {
+          "index": 2,
+          "sha256": "88c1759b77bb3836aba0699c493ce9fb9d51a8f1e406e3c80ca7f6073a00a0a3",
+          "bytes": 283082
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "multi-proposition.png",
+        "multi-devis.png",
+        "multi-composition-1.png",
+        "multi-composition-2.png",
+        "multi-reouverture-apres-accord.png",
+        "multi-enregistre.png",
+        "multi-image-1.png",
+        "multi-image-2.png",
+        "multi-bibliotheque-native.png",
+        "multi-reprise.png",
+        "multi-autre-largeur.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "composition-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "composition-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "enregistre",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "image-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "image-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reprise",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "inedit",
+      "business": "products",
+      "width": 360,
+      "requested": 1,
+      "delivered": 1,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 19,
+        "textHttpCalls": 12,
+        "imageHttpCalls": 7,
+        "tokenCounts": 12,
+        "calls": 19,
+        "usage": 19,
+        "simulatedMicro": 1619929
+      },
+      "after": {
+        "providerHttpCalls": 22,
+        "textHttpCalls": 14,
+        "imageHttpCalls": 8,
+        "tokenCounts": 14,
+        "calls": 22,
+        "usage": 22,
+        "simulatedMicro": 1853608
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "8caa2cc2f625638a372077e74284be92ca824de6bfc712d77d9305400501964d",
+          "bytes": 262105
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "inedit-proposition.png",
+        "inedit-devis.png",
+        "inedit-composition-1.png",
+        "inedit-reouverture-apres-accord.png",
+        "inedit-enregistre.png",
+        "inedit-image-1.png",
+        "inedit-bibliotheque-native.png",
+        "inedit-reprise.png",
+        "inedit-autre-largeur.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "composition-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "enregistre",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "image-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "services",
+      "business": "services",
+      "width": 1024,
+      "requested": 2,
+      "delivered": 2,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 22,
+        "textHttpCalls": 14,
+        "imageHttpCalls": 8,
+        "tokenCounts": 14,
+        "calls": 22,
+        "usage": 22,
+        "simulatedMicro": 1853608
+      },
+      "after": {
+        "providerHttpCalls": 27,
+        "textHttpCalls": 17,
+        "imageHttpCalls": 10,
+        "tokenCounts": 17,
+        "calls": 27,
+        "usage": 27,
+        "simulatedMicro": 2305142
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "48ab97ff2c6621547f64cda1b03beb41a4f2b54f93eb10f50659c45626044b9f",
+          "bytes": 286613
+        },
+        {
+          "index": 2,
+          "sha256": "261b6f5ac0e0afbfdedd11bf220133384479b5c679fad00e8928118c0ee8a339",
+          "bytes": 264148
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "services-proposition.png",
+        "services-devis.png",
+        "services-composition-1.png",
+        "services-composition-2.png",
+        "services-reouverture-apres-accord.png",
+        "services-enregistre.png",
+        "services-image-1.png",
+        "services-image-2.png",
+        "services-bibliotheque-native.png",
+        "services-reprise.png",
+        "services-autre-largeur.png",
+        "services-panne-devis-distinct.png",
+        "services-panne-visible-acquis-conserve.png",
+        "services-panne-reprise-sans-relance.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "composition-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "composition-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "enregistre",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "image-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "image-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reprise",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "autre-largeur",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-devis-distinct",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-visible-acquis-conserve",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-reprise-sans-relance",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "failure": {
+        "status": "failed",
+        "progress": 0.45,
+        "delivered": false,
+        "acquiredOutputs": 1,
+        "uncertainReservations": 1,
+        "originalSeriesStillDelivered": true,
+        "noAutomaticRetry": true,
+        "reconnectedWithoutRetry": true,
+        "duplicateConfirmationSameJob": true,
+        "before": {
+          "providerHttpCalls": 27,
+          "textHttpCalls": 17,
+          "imageHttpCalls": 10,
+          "tokenCounts": 17,
+          "calls": 27,
+          "usage": 27,
+          "simulatedMicro": 2305142
+        },
+        "after": {
+          "providerHttpCalls": 31,
+          "textHttpCalls": 19,
+          "imageHttpCalls": 12,
+          "tokenCounts": 19,
+          "calls": 31,
+          "usage": 30,
+          "simulatedMicro": 2534865
+        }
+      },
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "error",
+          "cost": 0,
+          "task": "image_generation",
+          "unit": "tokens"
+        }
+      ]
+    }
+  ]
+}

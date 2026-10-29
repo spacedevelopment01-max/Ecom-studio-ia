@@ -33,6 +33,7 @@ export function roleFor(kind: VisualKind, business: "products" | "services"): { 
 }
 
 export type ImageV2Meta = {
+  binding?: import('./request-binding').ImageBinding;
   version: string;
   origin: "stock" | "generated" | "edited";
   provider: string;

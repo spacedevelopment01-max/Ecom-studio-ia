@@ -16,11 +16,16 @@ import { toFr } from "./prompt-fr";
 import { tradeFr } from "../brain/trade-fr";
 import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
+import {applyWording,wordingPromptLine,type WordingRule} from '../client-wording';
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
 export const BRIEF_VERSION = "5a.1";
 
 export type BriefRequest = {
+  /** Empreinte des IDs, versions et octets natifs. */
+  bindingDigest?: string;
+  /** Un produit ciblé reste fidèle aussi dans une bannière ; ce champ ne peut jamais désactiver la fidélité. */
+  productFidelity?: boolean;
   instructions?: string;
   /** Autorisation explicite limitée à cette demande ; false interdit toute déduction depuis une autre photo. */
   peopleAllowed?: boolean;
@@ -70,7 +75,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const angles = people ? ANGLES : ANGLES_NO_PEOPLE;
   const intents = people ? INTENTS : INTENTS_NO_PEOPLE;
   const noPerson = (xs: string[]) => (people ? xs : xs.filter((x) => !mentionsPerson(x)));
-  const productKind = PRODUCT_KINDS.includes(req.kind) && !services;
+  const productKind = (PRODUCT_KINDS.includes(req.kind)||req.productFidelity===true) && !services;
   const support = req.support ?? "site";
   const aspect = req.aspect ?? defaultAspect(support, req.kind);
   const brand = p.brand;
@@ -201,8 +206,9 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
 
   return {
-    version: BRIEF_VERSION,
+    version: req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
     ...(req.instructions?{instructions:req.instructions}:{}),
+    ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
     support,
     subject,
@@ -232,10 +238,16 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   };
 }
 
+/** Même demande au devis et au fournisseur. Les textes acceptés restent intacts ; le vocabulaire demeure une consigne. */
+export function generationRequestPrompt(b:VisualBrief,rules:WordingRule[],correction?:string|null):string{
+ const prompt=generationPrompt(b,correction);
+ return b.bindingDigest?[wordingPromptLine(rules),prompt].filter(Boolean).join('\n'):applyWording(prompt,rules);
+}
+
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
+  const key = { v: b.version, ...(b.bindingDigest?{binding:b.bindingDigest}:{}), ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
@@ -256,8 +268,10 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
   // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
   const exact=b.instructions?`\nConsignes exactes du client : ${b.instructions}. Ne pas écrire ces consignes sur l’image. Les restrictions de fidélité et de personnes restent obligatoires.`:"";
-  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
-  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
+  // Une composition explicite remplace le décor générique ; ses quatre champs doivent atteindre le fournisseur.
+  // Les anciens briefs sans composition gardent leur scène fermée et leur empreinte de réutilisation.
+  if (f.scene && !b.shotKey) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
+  if (f.productScene && b.productFidelity && !b.shotKey) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
@@ -272,7 +286,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     b.productFidelity ? PRODUCT_FIDELITY_FR : "",
     // Positif seulement : nommer les interdits (« faux logos de luxe »…) les fait apparaître ; ils restent dans le
     // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.
-    "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
+    b.productFidelity ? "Photographie sans inscription, lettre, marque ni logo supplémentaire : conserver exactement ceux présents sur le produit de référence." : "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
     b.people === false ? NO_PEOPLE_FR : "",
     b.instructions ? `Consignes du client : ${b.instructions}. Ces consignes décrivent la composition, elles ne sont pas du texte à inscrire. Les restrictions de fidélité et de personnes ci-dessus restent obligatoires.` : "",
     extra ? `Correction pour cet essai : ${extra}` : "",

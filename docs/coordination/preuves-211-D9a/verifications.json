@@ -1,0 +1,501 @@
+{
+  "schema": "211-D9a-verification-1",
+  "code": "2cb3cdec2dcced5033c3a19e30d5a33976c4b609",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D9-full-envelope-transport": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "650ee8df670321f25c6a21b3aa1e82727edaf63d",
+      "startedAt": "2026-10-29T13:50:30.050828+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "5f8dbd9e0a2d510f873355c75c24a6fd9e6169066dd1b8e8b1dc9ed72f32ad1a",
+        "scripts/verify-agent211-images-ui.ts": "a205d8680c3f397d37f45381df49520696b349b11f3bfabed911993420e79625",
+        "src/lib/ai/media-providers.ts": "07ad0ccf15fb85aa2827523ae0c8bb10f93d50a6d7806c9925f37ca12154e530",
+        "src/lib/image-v2/brief.ts": "39c441965d89c10aafcb357c620375e6fdc6ac6305febf3d239afa6d7f571735",
+        "src/lib/image-v2/creation-quote.ts": "c59d661e27e6f836a8e467d236e365fed3d81afd778939f6a411577f60178ad5",
+        "src/lib/image-v2/deps.ts": "accb7e26bc9433e9ffe3009a7ba6c578030cb7067e8addfcd4fe0240661460eb",
+        "src/lib/image-v2/engine.ts": "048d68acbd6de66ca1d11326f17a4a3d465d86fc0a5e834a51e355e224eaff9a",
+        "tests/image-v2-binding.test.ts": "ec6fcf14054bb4e56c30cdff89b062cbfce94ca0c0a4a6c1261b8b745918de85"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-full-envelope-transport.log",
+      "pid": 1247542,
+      "processGroup": 1247542,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T14:02:29.982132+00:00",
+      "logSha256": "995d6eee0900d851160298dbca009b44b149a24f04ca0f77edc4bb47207dbcfb",
+      "sourceUnchanged": true
+    },
+    "D9-types-envelope-transport": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "650ee8df670321f25c6a21b3aa1e82727edaf63d",
+      "startedAt": "2026-10-29T13:50:31.585522+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "5f8dbd9e0a2d510f873355c75c24a6fd9e6169066dd1b8e8b1dc9ed72f32ad1a",
+        "scripts/verify-agent211-images-ui.ts": "a205d8680c3f397d37f45381df49520696b349b11f3bfabed911993420e79625",
+        "src/lib/ai/media-providers.ts": "07ad0ccf15fb85aa2827523ae0c8bb10f93d50a6d7806c9925f37ca12154e530",
+        "src/lib/image-v2/brief.ts": "39c441965d89c10aafcb357c620375e6fdc6ac6305febf3d239afa6d7f571735",
+        "src/lib/image-v2/creation-quote.ts": "c59d661e27e6f836a8e467d236e365fed3d81afd778939f6a411577f60178ad5",
+        "src/lib/image-v2/deps.ts": "accb7e26bc9433e9ffe3009a7ba6c578030cb7067e8addfcd4fe0240661460eb",
+        "src/lib/image-v2/engine.ts": "048d68acbd6de66ca1d11326f17a4a3d465d86fc0a5e834a51e355e224eaff9a",
+        "tests/image-v2-binding.test.ts": "ec6fcf14054bb4e56c30cdff89b062cbfce94ca0c0a4a6c1261b8b745918de85"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-types-envelope-transport.log",
+      "pid": 1247640,
+      "processGroup": 1247640,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T13:50:39.132850+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D9-build-final-envelope": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2cb3cdec2dcced5033c3a19e30d5a33976c4b609",
+      "startedAt": "2026-10-29T14:03:12.298788+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9-build-final-envelope.log",
+      "pid": 1286276,
+      "processGroup": 1286276,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T14:04:04.589313+00:00",
+      "logSha256": "162875fa7f9d45899f2a912482bb75f739e721b630d1c8c6f2937e2208097111",
+      "sourceUnchanged": true
+    },
+    "D9-browser-final-envelope": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9-browser-final-envelope",
+        "--images-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2cb3cdec2dcced5033c3a19e30d5a33976c4b609",
+      "startedAt": "2026-10-29T14:04:21.915399+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9-browser-final-envelope.log",
+      "pid": 1286815,
+      "processGroup": 1286815,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T14:05:18.041165+00:00",
+      "logSha256": "870c473c67a2c111db9be35c192bc422d81d0dc579bce8f4a130dd600b956b7e",
+      "sourceUnchanged": true
+    },
+    "D9-upload-proxy-before-final-test": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/openai-image-upload-proxy.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d4e2f0ca90901d7f77968182b07f8731f9855712",
+      "startedAt": "2026-10-29T13:21:15.359282+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-images-ui.ts": "45e84a6baa497d2cc5b7992fff7433ad9f76bd2211d6f61be24f0928c935428a",
+        "tests/openai-image-upload-proxy.test.ts": "fc921f9b4eb1b3e577fb392ac5d2c04e7f6a7ab5d288f6840089f91da9ce1239"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-upload-proxy-before-final-test.log",
+      "pid": 1164166,
+      "processGroup": 1164166,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T13:21:16.083386+00:00",
+      "logSha256": "e5919c6ce806bdb82c228eade77ea507f04c6a4ea9a68127c221949ca8726f10",
+      "sourceUnchanged": true
+    },
+    "D9-upload-proxy-after-v2": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/openai-image-upload-proxy.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d4e2f0ca90901d7f77968182b07f8731f9855712",
+      "startedAt": "2026-10-29T13:21:05.148413+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-images-ui.ts": "45e84a6baa497d2cc5b7992fff7433ad9f76bd2211d6f61be24f0928c935428a",
+        "src/lib/ai/openai-images.ts": "56a1fdaa6d161d946cb063d2310f2ca80abc198a8f0af5aa271a84c317711808",
+        "tests/openai-image-upload-proxy.test.ts": "fc921f9b4eb1b3e577fb392ac5d2c04e7f6a7ab5d288f6840089f91da9ce1239"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-upload-proxy-after-v2.log",
+      "pid": 1164043,
+      "processGroup": 1164043,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T13:21:05.895746+00:00",
+      "logSha256": "366ba3eb239635adbcbc3834b5d1a0159cd471c639eef0091010a3b9452a86df",
+      "sourceUnchanged": true
+    },
+    "D9-shot-before": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-binding.test.ts",
+        "-t",
+        "transmet chaque détail"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "ff10032788a48557494f102aac52c73d1fec3053",
+      "startedAt": "2026-10-29T12:58:31.651289+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "15f8dedcf0d29cd63be45341546a2a9977a9d7a477b046d50db8edcb58cb6c4a",
+        "scripts/verify-agent211-images-ui.ts": "cafa4535d271e373d9dc744c29ff5b7ca2410d84515d832d1a0866ad109836cb",
+        "src/components/studio/conversation-image-tools.tsx": "d9972769260fe7e9ea5f074ef6abfabd4b3dc4cdf31539e4c6445e5c3ded70b3",
+        "src/lib/ai/media-providers.ts": "dfcbf5063ffc5584c8983a38e626d9bc84e806b6d283cf07b8925c8e3a88ad5e",
+        "src/lib/image-v2/creation-quote.ts": "2e952a10689275316b8c910b746e51ba6e70c49f071437bf2dd0684c3b9aaeb0",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "035fb8c217c3ba3c4bcb0ddc0ca0dbb72310e35b432de7468d9dd66fe69a0961",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ff2c294fadc32ceebba6018ff2da9a53e51d23eba611c7d54d82e07b2749b388",
+        "tests/image-v2-binding.test.ts": "e4883ba47a6bba268e0cc19659c87d8c046bc6ba00bbcc26f01aa9b3360e2502"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-shot-before.log",
+      "pid": 1122914,
+      "processGroup": 1122914,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T12:58:34.761153+00:00",
+      "logSha256": "fdb804358aa81112d9ae4bbf751d5c8bd97f026a6f4556daa20316ad7864fabe",
+      "sourceUnchanged": true
+    },
+    "D9-targeted-directed": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-images.test.ts",
+        "tests/image-v2-binding.test.ts",
+        "tests/image-v2.test.ts",
+        "tests/conversation211-tools.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "ff10032788a48557494f102aac52c73d1fec3053",
+      "startedAt": "2026-10-29T12:59:56.230814+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "1dc8d2380b6658f4ee93cc790343ffeb82038c3c8af58a462685ad6ce73be8f6",
+        "scripts/verify-agent211-images-ui.ts": "d96ebdb4e88ccc794fdfb99faef1e6124dfaf25d0ee93636b6222cdeff018e20",
+        "src/components/studio/conversation-image-tools.tsx": "d9972769260fe7e9ea5f074ef6abfabd4b3dc4cdf31539e4c6445e5c3ded70b3",
+        "src/lib/ai/media-providers.ts": "dfcbf5063ffc5584c8983a38e626d9bc84e806b6d283cf07b8925c8e3a88ad5e",
+        "src/lib/image-v2/brief.ts": "5071e476272a55f66bd7f125f0b84e248b3f46efc3cd057b7121be8f5ca9db13",
+        "src/lib/image-v2/creation-quote.ts": "55b43a7ed214eaed4a300122c13afd33fad9fc28791782b01b51d267c7b6cda0",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "035fb8c217c3ba3c4bcb0ddc0ca0dbb72310e35b432de7468d9dd66fe69a0961",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ff2c294fadc32ceebba6018ff2da9a53e51d23eba611c7d54d82e07b2749b388",
+        "tests/conversation211-images.test.ts": "971395c39f454612ae913b51c12a62b88e13014a57a7552756093bbe073f6f5c",
+        "tests/image-v2-binding.test.ts": "e4883ba47a6bba268e0cc19659c87d8c046bc6ba00bbcc26f01aa9b3360e2502"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-targeted-directed.log",
+      "pid": 1123225,
+      "processGroup": 1123225,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T13:00:10.662802+00:00",
+      "logSha256": "dc653b2798435900a5535db55bc5bdd285ced4ddc76f601ecb50bc5ce8c203da",
+      "sourceUnchanged": true
+    },
+    "D9-exact-wording-before": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-binding.test.ts",
+        "-t",
+        "ne réécrit ni la consigne"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "650ee8df670321f25c6a21b3aa1e82727edaf63d",
+      "startedAt": "2026-10-29T13:44:57.327710+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "d5cf5c8cbe6911351352ba8890cc3bfd9a00633a5891e8a928a32500abd3ae1c",
+        "scripts/verify-agent211-images-ui.ts": "acbe3ba3fcec8b2ba37ab68abb1a9e73ec1659955072d8e6b032b9a01c745a7c",
+        "tests/image-v2-binding.test.ts": "ec6fcf14054bb4e56c30cdff89b062cbfce94ca0c0a4a6c1261b8b745918de85"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-exact-wording-before.log",
+      "pid": 1230743,
+      "processGroup": 1230743,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T13:45:00.382236+00:00",
+      "logSha256": "d9a1808430ae6a78827b4b1b23ff5ed2ba84310c6c7fc0db4e24376da326560d",
+      "sourceUnchanged": true
+    },
+    "D9-targeted-envelope": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-binding.test.ts",
+        "tests/conversation211-images.test.ts",
+        "tests/image-v2.test.ts",
+        "tests/media-multi-reference.test.ts",
+        "tests/openai-image-upload-proxy.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "650ee8df670321f25c6a21b3aa1e82727edaf63d",
+      "startedAt": "2026-10-29T13:46:11.356092+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "1d064c262f58639b6bd367764b5e60428a52afa828ef822632716d832e34c9a7",
+        "scripts/verify-agent211-images-ui.ts": "acbe3ba3fcec8b2ba37ab68abb1a9e73ec1659955072d8e6b032b9a01c745a7c",
+        "src/lib/ai/media-providers.ts": "07ad0ccf15fb85aa2827523ae0c8bb10f93d50a6d7806c9925f37ca12154e530",
+        "src/lib/image-v2/brief.ts": "39c441965d89c10aafcb357c620375e6fdc6ac6305febf3d239afa6d7f571735",
+        "src/lib/image-v2/creation-quote.ts": "c59d661e27e6f836a8e467d236e365fed3d81afd778939f6a411577f60178ad5",
+        "src/lib/image-v2/deps.ts": "accb7e26bc9433e9ffe3009a7ba6c578030cb7067e8addfcd4fe0240661460eb",
+        "src/lib/image-v2/engine.ts": "048d68acbd6de66ca1d11326f17a4a3d465d86fc0a5e834a51e355e224eaff9a",
+        "tests/image-v2-binding.test.ts": "ec6fcf14054bb4e56c30cdff89b062cbfce94ca0c0a4a6c1261b8b745918de85"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-targeted-envelope.log",
+      "pid": 1231080,
+      "processGroup": 1231080,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T13:46:25.376370+00:00",
+      "logSha256": "a85c4ef46079b9ffa37db8c5fba68ad0e24fb85a427f00e48af6deea20b1eaff",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "file": "traces/parcours.json",
+    "success": true,
+    "totals": {
+      "providerHttpCalls": 31,
+      "textHttpCalls": 19,
+      "imageHttpCalls": 12,
+      "tokenCounts": 19,
+      "calls": 31,
+      "usage": 30,
+      "simulatedMicro": 2534865
+    }
+  },
+  "screenshots": {
+    "final": 51,
+    "before": 3
+  },
+  "videos": [
+    {
+      "file": "videos/multi.mp4",
+      "sourceFile": "page@12466df7abe8a69b602d967fbbdd246f.webm",
+      "sourceSha256": "14a84651feee5eaf3583b0bb273c470b6b6ffd523d9e2529215890630045c5aa",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "200"
+          }
+        ],
+        "format": {
+          "duration": "8.000000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "200"
+          }
+        ],
+        "format": {
+          "duration": "8.000000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.3031784188034188
+        },
+        {
+          "frame": 100,
+          "meanAbsoluteRgbDifferenceOn255": 0.286102207977208
+        },
+        {
+          "frame": 199,
+          "meanAbsoluteRgbDifferenceOn255": 0.3711351495726496
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/mono.mp4",
+      "sourceFile": "page@909d8924ec9bbe7a2e8e41b559f71c33.webm",
+      "sourceSha256": "da2e3e098f602b150e507d06df9ceffb98badcfbea65785390522273849dc167",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "310"
+          }
+        ],
+        "format": {
+          "duration": "12.400000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "310"
+          }
+        ],
+        "format": {
+          "duration": "12.400000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.20455295138888888
+        },
+        {
+          "frame": 155,
+          "meanAbsoluteRgbDifferenceOn255": 0.37080632716049383
+        },
+        {
+          "frame": 309,
+          "meanAbsoluteRgbDifferenceOn255": 0.3718029031635802
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/inedit.mp4",
+      "sourceFile": "page@b046cb5778d4d90afa6d452318fe5a6e.webm",
+      "sourceSha256": "c3ae2e01ce291f03ba092e87d8a948b9a391cb1abc79f7d3a3b99bbb5fbf8fc5",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "189"
+          }
+        ],
+        "format": {
+          "duration": "7.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "189"
+          }
+        ],
+        "format": {
+          "duration": "7.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.34109760802469136
+        },
+        {
+          "frame": 94,
+          "meanAbsoluteRgbDifferenceOn255": 0.2960869984567901
+        },
+        {
+          "frame": 188,
+          "meanAbsoluteRgbDifferenceOn255": 0.2114718364197531
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/services.mp4",
+      "sourceFile": "page@c8885237ea3bc1acf0a2c19bfb72d4fa.webm",
+      "sourceSha256": "17db553f518f1b102fc35f8da36084fcb45e028c044dced6625e3ebfa77e6292",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "409"
+          }
+        ],
+        "format": {
+          "duration": "16.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "409"
+          }
+        ],
+        "format": {
+          "duration": "16.360000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 204,
+          "meanAbsoluteRgbDifferenceOn255": 0.8894907633463541
+        },
+        {
+          "frame": 408,
+          "meanAbsoluteRgbDifferenceOn255": 0.18102993435329862
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "limits": [
+    "Images de test à motifs, aucune photographie ou identité professionnelle qualifiée.",
+    "Vision et créativité du fournisseur simulées ; les réceptions HTTP, SDK, jobs, fichiers et téléchargements sont réels et isolés.",
+    "Aucune retouche de pixels, série de logos, insertion automatique dans le Site, publication ou CMS réel qualifiés dans D9a.",
+    "Pas de migration des anciens projets sans conversation ; le harnais suit le parcours natif d’un nouveau projet.",
+    "Aucune instance client ou publique mise à jour."
+  ]
+}

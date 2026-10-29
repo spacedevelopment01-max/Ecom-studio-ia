@@ -17,6 +17,7 @@ import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
 import {ConversationStrategyChoices} from './conversation-strategy-choices';
 import {ConversationCatalogueTools} from './conversation-catalogue-tools';
+import {ConversationImageTools} from './conversation-image-tools';
 import {ConversationStudioHelp} from './conversation-studio-help';
 
 type Quote={id:string;estimatePct:number;maximumPct:number;expiresAt:number;confirmationRequired:true};
@@ -103,6 +104,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.intelligence?.proposalId&&v.intelligence.state!=='stale'&&v.intelligence.sourceRevision===v.revision&&<div className="rounded-2xl border border-line p-4 text-sm"><p className="font-semibold">{t('Propositions à vérifier','Proposals to review')}</p><ul className="mt-2 space-y-2">{v.intelligence.reply?.proposedChanges.map((p,i)=><li key={i}><span className="font-medium">{p.field} :</span> {p.value}<blockquote className="mt-1 border-l-2 border-line pl-3 text-xs text-muted">{p.quote}</blockquote></li>)}</ul><Button className="mt-3" disabled={busy||!!v.readOnlyReason} onClick={()=>void perform(async()=>{await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId});})}>{t('Accepter ces modifications','Accept these changes')}</Button></div>}
       {v?.strategyChoices&&<ConversationStrategyChoices view={v} busy={busy||!!running} send={async p=>{await perform(async()=>{await send(p);});}}/>}
       {v?.catalogueExecution?.enabled&&projectId&&<ConversationCatalogueTools view={v} onChanged={reload}/>}
+      {v?.imageExecution?.enabled&&projectId&&<ConversationImageTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}

@@ -17,6 +17,7 @@ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
 if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
+if(process.argv.includes('--images-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_IMAGES'])process.env[key]='1';
 if(process.argv.includes('--catalogue-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_THEME_TOOLS','STUDIO_CONVERSATION_EXPORTS'])process.env[key]='1';
 if(process.argv.includes('--tools-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS'])process.env[key]='1';
 if(process.argv.includes('--choices-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CHOICES'])process.env[key]='1';
@@ -36,21 +37,31 @@ if(fs.existsSync(out)&&fs.readdirSync(out).length)throw Error('Nonempty proof fo
 fs.mkdirSync(out,{recursive:true});
 const {account}=await import('../tests/conversation209-fixtures');
 const {id,one,all,run}=await import('../src/lib/db');
-const {setSetting}=await import('../src/lib/settings');
+const {setSetting,setJsonSetting}=await import('../src/lib/settings');
 const {stateOf}=await import('../src/lib/preparation/store');
 type View=import('../src/lib/orchestrator/conversation/contract').ConversationView;
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
-let lastInputText='';
+let lastInputText='',imageHttpCalls=0,imageFailureAt=0;const imageRequests:unknown[]=[];
 const fake=http.createServer(async(req,res)=>{
   try{
     let bytes='';for await(const chunk of req)bytes+=chunk;
+    if(process.argv.includes('--images-ui')&&/\/images\/(?:edits|generations)/.test(req.url??'')){
+      await new Promise(r=>setTimeout(r,200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
+      const model=/name="model"\r\n\r\n([^\r]+)/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).model:null);assert.ok(model);
+      const wirePrompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
+      const prompt=wirePrompt.replace(/\r\n/g,'\n'); // FormData encode les fins de ligne en CRLF, sans modifier les mots ou espaces.
+      const proposed=fixture.imagePlan as{quote?:string;kind?:string;frames?:Record<string,string>[];reference?:unknown}|undefined;if(proposed?.quote){assert.ok(prompt.includes(proposed.quote),'La consigne exacte doit atteindre la requête image native');assert.ok(proposed.frames?.some(frame=>Object.values(frame).every(value=>prompt.includes(value))),'La composition, la lumière, le cadrage et le décor acceptés doivent atteindre le générateur');if(proposed.reference)assert.ok(prompt.includes('image 1: '+(proposed.kind==='trade_photo'?'style':'product')),'Une référence d’ambiance de service ne doit pas être décrite comme un produit à reproduire');}
+      const hasReference=/name="image(?:\[\])?"/.test(bytes);if(proposed)assert.equal(hasReference,!!proposed.reference,'La photo annoncée doit être réellement jointe');imageRequests.push({operation:req.url?.includes('edits')?'edit':'generate',hasReference,promptSha256:createHash('sha256').update(prompt).digest('hex'),wirePromptSha256:createHash('sha256').update(wirePrompt).digest('hex'),multipartLineEndingsDecoded:wirePrompt!==prompt,promptBytes:Buffer.byteLength(prompt),requestRef:createHash('sha256').update(model).digest('hex').slice(0,16),simulatedResponseStatus:imageFailureAt===imageHttpCalls?503:200});
+      if(imageFailureAt===imageHttpCalls){res.statusCode=503;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{message:'Panne image503 simulée après une première proposition acquise.'}}));return;}
+      res.setHeader('content-type','application/json');res.end(JSON.stringify({created:Math.floor(Date.now()/1000),data:[{b64_json:(await mockImage(800+imageHttpCalls,1440,960)).toString('base64')}],usage:{input_tokens:900,output_tokens:6208,input_tokens_details:{text_tokens:800,image_tokens:100}}}));return;
+    }
     const p=JSON.parse(bytes||'{}');
-    if(req.url?.endsWith('/count_tokens')){tokenCounts++;res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(bytes.length/3)}));return;}
-    assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;lastInputText=(p.messages??[]).flatMap((m:{content:unknown})=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.map((c:{text?:string})=>c.text??''):[]).join('\n');
+    if(req.url?.endsWith('/count_tokens')){tokenCounts++;let visionTokens=0;const counted=JSON.stringify(p,(_key,value)=>{if(value?.type==='image'&&value.source?.type==='base64'){/* Simulation conservative : les pixels coûtent des jetons visuels, pas un jeton pour chaque caractère base64. */visionTokens+=3400;return{type:'image',source:{type:'base64',media_type:value.source.media_type,data:'[octets retirés du comptage fictif]'}};}return value;});res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(counted.length/3)+visionTokens}));return;}
+    assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;const visionReview=JSON.stringify(p.system??'').includes('Tu juges UNE image');if(!visionReview)lastInputText=(p.messages??[]).flatMap((m:{content:unknown})=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.map((c:{text?:string})=>c.text??''):[]).join('\n');
     if(failureStatus){res.statusCode=failureStatus;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{type:'api_error',message:'Panne simulée, aucun appel fournisseur réel.'}}));return;}
-    const text=JSON.stringify(bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
+    const text=JSON.stringify(visionReview?(await import('../tests/image-v2-mock')).review(9,{personVisible:false}):bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -71,11 +82,16 @@ async function stop(p:ChildProcess|undefined){if(!p?.pid)return;try{process.kill
 process.on('exit',()=>{for(const p of [server,worker])if(p?.pid)try{process.kill(-p.pid,'SIGTERM');}catch{}});
 async function login(u:Session['u']):Promise<Session>{const r=await fetch(origin+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json',origin},body:JSON.stringify({email:u.email,password:'Mot-de-passe-fictif'})});assert.equal(r.status,200);return{u,cookie:r.headers.getSetCookie().map(x=>x.split(';')[0]).join('; ')};}
 async function call(s:Session,url:string,body?:unknown,expected=200,foreignOrigin?:string){const r=await fetch(origin+url,{method:body==null?'GET':'POST',headers:{cookie:s.cookie,'content-type':'application/json',origin:foreignOrigin??origin},...(body==null?{}:{body:JSON.stringify(body)})});assert.equal(r.status,expected,`${url}: ${r.status===expected?'':await r.clone().text()}`);return r.json();}
-const counts=()=>({providerHttpCalls:providerCalls,calls:one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,usage:one<{n:number}>('SELECT COUNT(*) n FROM usage_events')!.n,simulatedMicro:one<{n:number}>('SELECT COALESCE(SUM(cost),0) n FROM usage_events')!.n});
+const counts=()=>({providerHttpCalls:providerCalls+imageHttpCalls,textHttpCalls:providerCalls,imageHttpCalls,tokenCounts,calls:one<{n:number}>('SELECT COUNT(*) n FROM ai_calls')!.n,usage:one<{n:number}>('SELECT COUNT(*) n FROM usage_events')!.n,simulatedMicro:one<{n:number}>('SELECT COALESCE(SUM(cost),0) n FROM usage_events')!.n});
 async function finished(s:Session,jid:string){const end=Date.now()+45000;while(Date.now()<end){const{job}=await call(s,`/api/jobs/${jid}`);if(['done','failed','cancelled','blocked'].includes(job.status))return job;await new Promise(r=>setTimeout(r,150));}throw Error('Worker timeout');}
 const proof:Record<string,unknown>={schema:'agent211-B-compiled-proof-1',data:'fictitious-isolated',provider:'local-http-simulation',realProviderCalls:0,realCostEur:0,worker:'native',qualification:'real_provider_not_tested',cases:[]};
 try{
   await new Promise<void>(r=>fake.listen(0,'127.0.0.1',r));process.env.ANTHROPIC_BASE_URL=`http://127.0.0.1:${(fake.address()as net.AddressInfo).port}`;
+  if(process.argv.includes('--images-ui')){
+    process.env.OPENAI_API_KEY='fake-loopback-image-provider-not-a-secret';process.env.OPENAI_BASE_URL=process.env.ANTHROPIC_BASE_URL+'/v1';
+    const{MEDIA_MODELS}=await import('../src/lib/ai/media-models'),{priceFor}=await import('../src/lib/ai/config');const chosen=MEDIA_MODELS.find(m=>m.provider==='openai'&&m.adapter==='openai_image'&&(m.caps.references??0)>=1&&priceFor(m.provider,m.model)?.unit==='tokens');assert.ok(chosen);
+    setJsonSetting('ai.media.models',{[`${chosen.provider}:${chosen.model}`]:{enabled:true,confirmedAt:Date.now()}});setJsonSetting('ai.media.usage',Object.fromEntries(['scene','product_image','product_edit'].map(usage=>[usage,{mode:'manual',primary:`${chosen.provider}:${chosen.model}`,backup:null}])));setJsonSetting('ai.media.openaiStream',false);
+  }
   await start();proof.version=await(await fetch(origin+'/api/version')).json();
   const vproof=proof.version as{source:string;mode:string;tree:string};assert.equal(vproof.source,'compiled-build');assert.equal(vproof.mode,'production');assert.equal(vproof.tree,'clean');
   let sessions=[await login(users[0]),await login(users[1])];
@@ -201,6 +217,10 @@ try{
   if(process.argv.includes('--catalogue-ui')){
     const{verifyCatalogueBrowser}=await import('./verify-agent211-catalogue-ui'),{project}=await import('../tests/conversation209-fixtures'),{seedAgentUiSite}=await import('./agent211-ui-fixtures'),{openProjectConversation}=await import('../src/lib/orchestrator/conversation'),{currentTheme}=await import('../src/lib/projects'),{listProducts,seedFromTheme,createProduct}=await import('../src/lib/products/catalog'),{cognitiveContext}=await import('../src/lib/orchestrator/conversation/intelligence-context'),{ownedConversation}=await import('../src/lib/orchestrator/conversation/store');
     proof.catalogueUi=await verifyCatalogueBrowser({origin,out,account,project,login,counts,seed:async(u,pid,scene)=>{run('UPDATE projects SET store_type=?,name=? WHERE id=?',scene==='multi'?'multi':'mono','RECETTE D8 — '+scene,pid);openProjectConversation(u,pid);const s=await seedAgentUiSite(pid,one<{business_type:string}>('SELECT business_type FROM projects WHERE id=?',pid)!.business_type),asset=one<{id:string;version:number}>('SELECT id,version FROM assets WHERE project_id=?',pid)!;if(scene==='multi'){seedFromTheme(pid);createProduct(pid,{title:'Aiguille pour reliure — RECETTE',status:'active',price:700,currency:'EUR',categories:['Fournitures'],images:[{assetId:asset.id,alt:'Illustration technique de recette'}]});}return{...s,asset};},setFixture:value=>{fixture=value;bad=false;failureStatus=0;lastInputText='';},setFailure:n=>{failureStatus=n;},input:()=>lastInputText,source:cid=>{const row=one<{user_id:string}>('SELECT user_id FROM agent_conversations WHERE id=?',cid)!,u=one('SELECT * FROM users WHERE id=?',row.user_id)!,source=cognitiveContext(ownedConversation(u,cid)).context.lastClientRequest!;assert.ok(source.sourceId);return{sourceId:source.sourceId,text:source.text};},inspect:pid=>{const t=currentTheme(pid)!;return{storeType:one<{store_type:string}>('SELECT store_type FROM projects WHERE id=?',pid)!.store_type,spec:t.spec,versionId:t.version.id,products:listProducts(pid,{includeArchived:true}),calls:all('SELECT status,cost,job_id FROM ai_calls WHERE project_id=?',pid),reservations:one<{n:number}>("SELECT COUNT(*) n FROM ai_reservations WHERE job_id IN (SELECT id FROM jobs WHERE project_id=? AND type='agent.catalogue.change')",pid)!.n};},snapshot:(pid,qid)=>JSON.parse(one<{value:string}>('SELECT value FROM memory WHERE project_id=? AND key=?',pid,'agent.catalogue.tool.'+qid)!.value).afterSpec,invalidateJobResult:(pid,jid)=>{assert.equal(run("UPDATE jobs SET result='{}' WHERE id=? AND project_id=? AND type='agent.catalogue.change' AND status='done'",jid,pid).changes,1);}});proof.allSimulatedTotals=counts();
+  }
+  if(process.argv.includes('--images-ui')){
+    const{verifyImagesBrowser}=await import('./verify-agent211-images-ui');
+    proof.imagesUi=await verifyImagesBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,failImageAfter:n=>{assert.ok(Number.isInteger(n)&&n>0);imageFailureAt=imageHttpCalls+n;}});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){

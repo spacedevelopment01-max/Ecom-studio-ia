@@ -241,6 +241,7 @@ export default function TabImages() {
   const active = useActive(["image.v2", "image.single", "images.generate"]);
   const { list, reload, status, setStatus } = useImageList(id, BANK_IMAGE_ROLES.join(","));
   const follow = useFollowJob(reload);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:images-changed',changed);return()=>window.removeEventListener('studio:images-changed',changed);},[id,reload]);
   // État de l'IA d'images du projet et prix d'une image (affiché avant toute création payante).
   const { data: q } = useApi<ImagesQuote>(`/api/projects/${id}/images`);
   useEffect(() => {

@@ -115,6 +115,7 @@ export const handlers: Record<string, Handler> = {
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
+    if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.

@@ -1,0 +1,83 @@
+[
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9-browser-directed",
+        "--images-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d4e2f0ca90901d7f77968182b07f8731f9855712",
+      "startedAt": "2026-10-29T13:18:05.360107+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9-browser-directed.log",
+      "pid": 1162662,
+      "processGroup": 1162662,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T13:18:46.262746+00:00",
+      "logSha256": "fcb15100a9b4889106478ddf786e6ec622338ba81f011cfa6863e3cce91130c8",
+      "sourceUnchanged": true
+    },
+    "result": "Failed, not final evidence",
+    "fullLocalLogSha256": "fcb15100a9b4889106478ddf786e6ec622338ba81f011cfa6863e3cce91130c8"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9-browser-harness-v2",
+        "--images-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d4e2f0ca90901d7f77968182b07f8731f9855712",
+      "startedAt": "2026-10-29T13:19:05.604337+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-images-ui.ts": "45e84a6baa497d2cc5b7992fff7433ad9f76bd2211d6f61be24f0928c935428a"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-browser-harness-v2.log",
+      "pid": 1163166,
+      "processGroup": 1163166,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T13:19:20.276708+00:00",
+      "logSha256": "a0d303d4562374c4511109065e1a616c7b8778a014170be34b1425a1f5dcf9ec",
+      "sourceUnchanged": true
+    },
+    "result": "Failed, not final evidence",
+    "fullLocalLogSha256": "a0d303d4562374c4511109065e1a616c7b8778a014170be34b1425a1f5dcf9ec"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9-browser-upload-debug",
+        "--images-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d4e2f0ca90901d7f77968182b07f8731f9855712",
+      "startedAt": "2026-10-29T13:22:31.507524+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-images-ui.ts": "45e84a6baa497d2cc5b7992fff7433ad9f76bd2211d6f61be24f0928c935428a",
+        "src/lib/ai/openai-images.ts": "56a1fdaa6d161d946cb063d2310f2ca80abc198a8f0af5aa271a84c317711808",
+        "tests/openai-image-upload-proxy.test.ts": "5bbf3a641e2b1b4d0c3b38f0a89b98f82c3f917b629dc5db148ca79d3c9a9a62"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9-browser-upload-debug.log",
+      "pid": 1167190,
+      "processGroup": 1167190,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T13:23:21.627571+00:00",
+      "logSha256": "f6e1a75f2917236b5115883338d961126c185a74376b19f31d461d0d99fdc292",
+      "sourceUnchanged": true
+    },
+    "result": "Failed, not final evidence",
+    "fullLocalLogSha256": "f6e1a75f2917236b5115883338d961126c185a74376b19f31d461d0d99fdc292"
+  }
+]

@@ -82,6 +82,7 @@ export type ConversationView = {
   renderExecution?: {enabled:true};
   researchExecution?: {enabled:true};
   catalogueExecution?: {enabled:true};
+  imageExecution?: {enabled:true};
   activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
   strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;
   studioHelp?:{observation:import('./studio-observation').StudioObservation;capabilities:ReturnType<typeof import('./studio-operations').studioOperationCatalogue>};

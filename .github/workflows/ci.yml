@@ -154,6 +154,17 @@ jobs:
           path: /tmp/agent211-D8-proof
           if-no-files-found: ignore
 
+      - name: Images natives depuis SYNA, devis, bibliothèque et reprise (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9a-proof --images-ui
+
+      - name: Preuves des images natives de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D9a-${{ github.sha }}
+          path: /tmp/agent211-D9a-proof
+          if-no-files-found: ignore
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

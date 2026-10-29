@@ -11,17 +11,17 @@
  */
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
-import { llmConfigured, llmJson } from "../ai/llm";
+import { llmConfigured, llmJson,type LlmCall } from "../ai/llm";
 import { ambianceImage, imageProviderAvailable, mediaRouteFor, productImagePath, productScene } from "../ai/media-providers";
 import type { MediaUsage } from "../ai/media-routing";
-import { brainContext } from "../ai/context";
+import { brainView } from "../ai/context";
 import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
 import { downloadStock } from "../stock/photos";
 import { L } from "../i18n-server";
 import { personCheckEn } from "../people-policy";
 import { FORMATS, generationAspect } from "./formats";
-import { ImageReviewSchema, REVIEW_SYSTEM } from "./quality";
+import { ImageReviewSchema,BoundedImageReviewSchema, REVIEW_SYSTEM } from "./quality";
 import { STOCK_PROVIDERS, type StockProvider } from "./sources";
 import type { ImageReview, StockCandidate, VisualBrief } from "./types";
 
@@ -53,6 +53,12 @@ Off-topic (fail relevance if this is all the image shows): ${b.negative.slice(0,
 ${b.productFidelity ? "A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
 ${personCheckEn(b.people !== false)}
 Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
+}
+
+/** Demande commune au contrôle et à son devis ; les images sont réduites avant l'appel réel. */
+export function imageReviewRequest(p:Project,brief:VisualBrief,base:{userId:string;projectId:string;jobId:string|null;usageKey:string},images:NonNullable<LlmCall['images']>,origin:'stock'|'generated'='generated'):LlmCall{
+ const view=brainView(p,'image');
+ return{task:'quality_control',...base,promptKey:'image-v2-review',routing:{difficulty:brief.productFidelity?'complex':'standard',deliverable:origin==='stock'?'stock_v2':'image_v2'},system:REVIEW_SYSTEM,context:view.stable,volatile:view.volatile,images,prompt:reviewPrompt(brief),maxTokens:2500};
 }
 
 /**
@@ -113,7 +119,7 @@ export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: Vi
     .toBuffer();
 }
 
-export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: boolean }): ImageV2Deps {
+export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: boolean;singleReviewCall?:boolean;reviewRoute?:LlmCall['expectedRoute'];reviewEnvelope?:Pick<LlmCall,'context'|'volatile'|'reference'> }): ImageV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: b.jobId };
   /** Usage de l'administration (Images & Vidéos) : publicité, image du produit réel, ou décor et ambiance. */
   const usageFor = (brief: VisualBrief): MediaUsage => (brief.support === "ad" || brief.kind === "ad_image" ? "ad_visual" : brief.productFidelity ? "product_image" : "scene");
@@ -128,7 +134,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       const r = productImagePath(usage === "ad_visual" ? "ad_visual" : "product_image");
       return r ? { path: "reference_scene", usage: r.usage } : { path: "none", usage };
     }
-    return { path: imageProviderAvailable({ usage }) ? "text_to_image" : "none", usage };
+    return { path: imageProviderAvailable({ usage,references:brief.references.length?1:0 }) ? "text_to_image" : "none", usage };
   };
   const pathFor = (brief: VisualBrief): GenerationPath => routeFor(brief).path;
   return {
@@ -144,22 +150,11 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     async review(brief, img, reference, key, origin) {
       const small = await sharp(img, { failOn: "none" }).rotate().resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const images = [{ data: small, label: L("image à juger", "image to review") }];
-      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: L("produit de référence (réel)", "reference product (real)") });
+      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: brief.productFidelity?L("produit de référence (réel)", "reference product (real)"):L('référence autorisée d’ambiance et de couleurs','authorized reference for atmosphere and colours') });
       return (await llmJson(
-        {
-          task: "quality_control",
-          ...base,
-          usageKey: key,
-          promptKey: "image-v2-review",
-          // La fidélité d'un produit réel se juge au niveau fort directement ; une ambiance au niveau standard.
-          routing: { difficulty: brief.productFidelity ? "complex" : "standard", deliverable: origin === "stock" ? "stock_v2" : "image_v2" },
-          system: REVIEW_SYSTEM,
-          context: brainContext(p, "image"),
-          images,
-          prompt: reviewPrompt(brief),
-          maxTokens: 2500,
-        },
-        ImageReviewSchema,
+        {...imageReviewRequest(p,brief,{...base,usageKey:key},images,origin),...b.reviewEnvelope,...(b.reviewRoute?{expectedRoute:b.reviewRoute}:{})},
+        b.singleReviewCall?BoundedImageReviewSchema:ImageReviewSchema,
+        b.singleReviewCall?{strict:true}:{},
       )) as ImageReview;
     },
     async generate(brief, prompt, reference, key) {
@@ -171,8 +166,8 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
         return { img: await productScene({ ...base, usageKey: key }, { prompt, aspect, reference, textZone: zone, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       if (path === "text_to_image") {
-        const r = mediaRouteFor(usage);
-        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+        const r = mediaRouteFor(usage,{references:reference?1:0});
+        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, reference,usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       throw new Error(L("aucun parcours de génération fiable pour cette image", "no reliable generation path for this image"));
     },
