@@ -1,0 +1,24 @@
+{
+  "parent": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+  "capturedAtUnix": 1793305232.360777,
+  "files": {
+    "scripts/verify-agent211-build.ts": {
+      "sha256": "20b21d200495f41ca63a2d7488526515768cd9b069c0cb332c4c814320e5dd67",
+      "bytes": 54265
+    },
+    "scripts/verify-agent211-retouch-ui.ts": {
+      "sha256": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+      "bytes": 24497
+    },
+    "scripts/verify-agent211-videos-ui.ts": {
+      "sha256": "c17ce24180486901bf472152bab9ec0422d3bcad5ff77f424709d8c2fe9f120d",
+      "bytes": 21578
+    },
+    "src/components/studio/conversation-video-tools.tsx": {
+      "sha256": "bfd1bfdebbcbcf97836fdd1d8ce7fd0f5bb97eddf5e872df7ed76680849b0690",
+      "bytes": 9110
+    }
+  },
+  "onlyApplicationDelta": "client-facing video failure message; native technical job error retained",
+  "priorInterruptedRunNotFinalEvidence": "D10a-full-browser-finalized"
+}

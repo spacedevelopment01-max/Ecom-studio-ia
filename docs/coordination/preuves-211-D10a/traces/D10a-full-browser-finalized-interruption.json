@@ -1,0 +1,10 @@
+{
+  "run": "D10a-full-browser-finalized",
+  "requestedAtUnix": 1793305107.4075146,
+  "pid": 1788455,
+  "processGroup": 1788455,
+  "processArgsVerifiedByPs": "npm exec vitest run",
+  "reason": "Client failure display exposed an internal encoder command/path. Sources changed; incomplete run is superseded and must not be final evidence.",
+  "procCwdReadBlockedBySandbox": true,
+  "signalSent": true
+}

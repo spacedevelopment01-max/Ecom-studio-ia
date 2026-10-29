@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-29T21:02:58.342878+00:00",
+  "code": "7118b73ed013704062a8ee4adf568b04c75a56ba",
+  "contactSheetsOpened": [
+    "planches/selection-01.jpg",
+    "planches/selection-02.jpg",
+    "planches/selection-03.jpg",
+    "planches/selection-04.jpg",
+    "planches/selection-05.jpg",
+    "planches/selection-06.jpg",
+    "planches/selection-07.jpg",
+    "planches/selection-08.jpg",
+    "planches/selection-09.jpg",
+    "planches/selection-10.jpg",
+    "planches/selection-11.jpg",
+    "planches/selection-12.jpg",
+    "planches/selection-13.jpg",
+    "planches/selection-14.jpg",
+    "planches/selection-15.jpg"
+  ],
+  "browserRecordingSampleSheetsOpened": [
+    "planches/video-mono.jpg",
+    "planches/video-multi.jpg",
+    "planches/video-services.jpg",
+    "planches/video-inedit.jpg"
+  ],
+  "nativeMp4SampleSheetsOpened": [
+    "planches/mp4-natif-mono.jpg",
+    "planches/mp4-natif-multi.jpg",
+    "planches/mp4-natif-services.jpg",
+    "planches/mp4-natif-inedit.jpg"
+  ],
+  "nativeFramesActuallySampled": 36,
+  "selectedOriginalScreensAlsoOpened": true,
+  "twoPrematureCapturesRetainedAsDiagnostic": true,
+  "replacementPostflightPaintedFramesVerified": 16,
+  "limits": [
+    "Contact-sheet review plus selected full screenshots, not an independent artistic evaluation.",
+    "Browser recordings sampled at beginning/middle/end and byte/duration/frame checked; no claim of human real-time viewing of every frame.",
+    "Audio presence measured in native files; no subjective music/voice quality qualified.",
+    "Detailed movement/transition/gain quote preview and localization remain partial before activation."
+  ]
+}
