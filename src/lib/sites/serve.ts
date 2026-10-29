@@ -11,6 +11,7 @@ import { identifyProject } from "../access-scope";
 import { projectPlan } from "../project-billing";
 import { customDomainsEnabled } from "./host-match";
 import { manifestOf, pageFile, postedFile } from "./publish";
+import { recordTraffic } from "./maintenance";
 import { receiveSiteRequest } from "./requests";
 import { addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
@@ -104,6 +105,7 @@ export async function serveSite(req: Request, hostname: string, pathname: string
     if (!file || !entry) return plain(404, L("Fichier introuvable.", "File not found."));
     const width = Number(new URL(req.url).searchParams.get("width"));
     const data = width && entry.type.startsWith("image/") && !entry.type.includes("svg") && width < 2400 ? await resized(pub, rel, file, width) : fs.readFileSync(file);
+    recordTraffic(pub.project_id, data.length);
     return new Response(req.method === "HEAD" ? null : new Uint8Array(data), { headers: { "Content-Type": entry.type, "Cache-Control": "public, max-age=300", ETag: etag, ...SECURITY } });
   }
   if (new URL(req.url).searchParams.get("contact_posted") === "true" && manifest.files[postedFile(pathname)]) {
@@ -115,5 +117,6 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   if (req.headers.get("if-none-match") === etag && file) return new Response(null, { status: 304, headers: { ETag: etag } });
   const status = file ? 200 : 404;
   const html = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
+  recordTraffic(pub.project_id, html.length);
   return new Response(req.method === "HEAD" ? null : new Uint8Array(html), { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": status === 200 ? "public, max-age=60, must-revalidate" : "no-store", ETag: etag, ...SECURITY } });
 }

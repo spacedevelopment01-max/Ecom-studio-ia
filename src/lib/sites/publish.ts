@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { HttpError } from "../auth";
-import { id, now, one, run } from "../db";
+import { id, logError, now, one, run } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject } from "../projects";
 import { requirePlan } from "../plan-gates";
@@ -20,6 +20,7 @@ import { fontFilePath, renderPage } from "../theme/render";
 import type { ThemeSpec } from "../theme/spec";
 import { stableHash } from "../brain/hash";
 import { rdvRules, rdvSection, serviceUrlFor } from "../rendez-vous";
+import { ensureMaintenanceTables, purgeOldPublications, verifyPublication } from "./maintenance";
 import { defaultStudioAddress, ensureSiteTables, livePublication, publication, publicationDir, setLive, sitesRoot, type Publication } from "./store";
 
 /** Bornes d'une publication : un site vitrine reste petit ; au-delà, refus explicite plutôt qu'un artefact démesuré. */
@@ -137,8 +138,11 @@ export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
 }
 
 /** Points qui empêchent la publication : textes à compléter, pages vides. */
-export function publishBlockers(r: Pick<Rendered, "pages">): string[] {
+export function publishBlockers(r: Pick<Rendered, "pages"> & { missing?: string[] }): string[] {
   const reasons: string[] = [];
+  // Média ou fichier référencé introuvable (média supprimé de la bibliothèque, fichier du thème absent) : le site
+  // publié aurait une image ou une mise en forme cassée.
+  if (r.missing?.length) reasons.push(L(`${r.missing.length} fichier(s) du site introuvable(s) (${r.missing.slice(0, 5).map((m) => m.split("/").pop()).join(", ")}${r.missing.length > 5 ? "…" : ""}) : remplacez ou retirez ces médias dans l'éditeur du site.`, `${r.missing.length} site file(s) not found (${r.missing.slice(0, 5).map((m) => m.split("/").pop()).join(", ")}${r.missing.length > 5 ? "…" : ""}): replace or remove these media in the site editor.`));
   for (const [p, html] of r.pages) {
     // Texte visible seulement (sans scripts, styles ni attributs : une aide de saisie « À renseigner » n'est pas une lacune).
     const text = html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, "\n");
@@ -215,6 +219,8 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
   run("INSERT INTO site_publications (id, project_id, user_id, number, theme_version_id, spec_hash, theme_fingerprint, code_commit, status, pages, bytes, manifest_sha, origin, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     pubId, projectId, userId, number, cur.version.id, meta.specHash, meta.themeFingerprint, meta.codeCommit, "ready", rendered.pages.size, bytes, manifestSha, origin, meta.createdAt);
   setLive(projectId, pubId, "publish", userId);
+  // Anciennes versions au-delà de la limite : fichiers purgés (jamais la version en ligne ni les plus récentes).
+  try { purgeOldPublications(projectId); } catch (e) { logError("sites:purge", e, { projectId }); }
   return publication(projectId, pubId)!;
 }
 
@@ -223,8 +229,11 @@ export function restorePublication(projectId: string, publicationId: string, use
   requirePlan(null, projectId);
   const pub = publication(projectId, publicationId);
   if (!pub) throw new HttpError(404, L("Publication introuvable.", "Publication not found."));
-  const manifest = manifestOf(projectId, publicationId);
-  if (!manifest) throw new HttpError(409, L("Les fichiers de cette publication sont introuvables : elle ne peut pas être restaurée.", "This publication's files are missing: it can't be restored."), "artifact_missing");
+  ensureMaintenanceTables();
+  if (pub.purged_at) throw new HttpError(409, L("Les fichiers de cette ancienne publication ont été purgés (seules les plus récentes sont gardées) : elle ne peut plus être remise en ligne.", "This old publication's files were purged (only the most recent are kept): it can't be put back online."), "artifact_purged");
+  // Chaque fichier est vérifié contre son empreinte avant la remise en ligne : jamais une version incomplète ou altérée.
+  const check = verifyPublication(projectId, publicationId);
+  if (!check.ok) throw new HttpError(409, L(`Les fichiers de cette publication sont incomplets ou altérés (${check.manifest ? `${check.missing.length} manquant(s), ${check.corrupt.length} altéré(s)` : "manifeste introuvable"}) : elle ne peut pas être restaurée.`, `This publication's files are incomplete or altered (${check.manifest ? `${check.missing.length} missing, ${check.corrupt.length} altered` : "manifest not found"}): it can't be restored.`), "artifact_invalid");
   setLive(projectId, publicationId, "restore", userId);
   return pub;
 }

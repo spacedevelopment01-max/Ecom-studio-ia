@@ -18,6 +18,7 @@ import { addCustomDomain, dnsInstructions, removeCustomDomain, verifyCustomDomai
 import { deleteRequest, markRequestHandled, markRequestRead, siteRequests } from "@/lib/sites/requests";
 import { addRecipient, recipients, removeRecipient, retryNotification, sendVerification } from "@/lib/sites/notify";
 import { mailConfigured } from "@/lib/mail";
+import { siteDiagnostics, storageUsed, STORAGE_LIMIT_BYTES, KEEP_PUBLICATIONS, ensureMaintenanceTables } from "@/lib/sites/maintenance";
 import { addresses, history, livePublication, publications, setStudioAddress } from "@/lib/sites/store";
 
 function overview(projectId: string) {
@@ -27,7 +28,8 @@ function overview(projectId: string) {
     sitesDomain: sitesDomain(),
     customDomainsServed: customDomainsEnabled(),
     live: live ? { id: live.id, number: live.number, origin: live.origin, createdAt: live.created_at, pages: live.pages } : null,
-    publications: publications(projectId).map((p) => ({ id: p.id, number: p.number, createdAt: p.created_at, pages: p.pages, bytes: p.bytes, themeVersionId: p.theme_version_id, live: p.id === live?.id })),
+    publications: (ensureMaintenanceTables(), publications(projectId)).map((p) => ({ id: p.id, number: p.number, createdAt: p.created_at, pages: p.pages, bytes: p.bytes, themeVersionId: p.theme_version_id, live: p.id === live?.id, purged: !!p.purged_at })),
+    storage: { used: storageUsed(projectId), limit: STORAGE_LIMIT_BYTES, keep: KEEP_PUBLICATIONS },
     history: history(projectId),
     addresses: addresses(projectId).map((a) => ({ hostname: a.hostname, kind: a.kind, status: a.status, checkedAt: a.checked_at, checkError: a.check_error, dns: a.kind === "custom" ? dnsInstructions(a) : null })),
     requests: siteRequests(projectId),
@@ -45,6 +47,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("publish") }),
   z.object({ action: z.literal("check") }),
+  z.object({ action: z.literal("diagnose") }),
   z.object({ action: z.literal("policy"), handle: z.string().max(80), title: z.string().max(120), text: z.string().max(20000) }),
   z.object({ action: z.literal("restore"), publicationId: z.string().max(40) }),
   z.object({ action: z.literal("unpublish") }),
@@ -61,12 +64,13 @@ const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("recipient-remove"), id: z.string().max(40) }),
 ]);
 /** Actions sur les demandes et leurs e-mails : possibles même si l'hébergement n'est pas configuré sur ce studio. */
-const REQUEST_ACTIONS = ["request-read", "request-delete", "request-handled", "request-retry", "recipient-add", "recipient-resend", "recipient-remove"];
+const REQUEST_ACTIONS = ["diagnose", "request-read", "request-delete", "request-handled", "request-retry", "recipient-add", "recipient-resend", "recipient-remove"];
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, Schema);
   if (!sitesDomain() && !REQUEST_ACTIONS.includes(b.action)) throw new HttpError(409, L("L'hébergement des sites n'est pas configuré sur ce studio.", "Site hosting isn't configured on this studio."), "sites_not_configured");
+  if (b.action === "diagnose") return ok({ ...overview(p.id), diagnostics: siteDiagnostics(p.id) });
   if (b.action === "check") {
     // Vérification sans publier : mêmes pages et mêmes règles que la publication, rien n'est écrit.
     const cur = currentTheme(p.id);

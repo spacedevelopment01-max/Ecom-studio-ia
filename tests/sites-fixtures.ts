@@ -72,3 +72,37 @@ export async function servicesSite(userId: string, direction: "aplat" | "rive" |
   const version = saveThemeVersion(pid, completeSite(spec, name), "Site fictif de recette", "user");
   return { pid, version, spec: completeSite(spec, name) };
 }
+
+/** Formats et tailles variés des images FICTIVES générées (aucune photo réelle ni privée). */
+const MEDIA_SHAPES: [number, number, "jpeg" | "png" | "webp"][] = [[480, 320, "png"], [1600, 1067, "jpeg"], [3200, 2133, "webp"], [900, 1600, "jpeg"], [2400, 2400, "png"], [1200, 800, "webp"], [640, 960, "webp"], [2000, 1125, "jpeg"]];
+const MIME = { jpeg: "image/jpeg", png: "image/png", webp: "image/webp" } as const;
+
+/**
+ * Site riche en médias : `count` images générées (dégradés et numéro, sans personne ni lieu réel), enregistrées dans la
+ * bibliothèque du projet comme un client les téléverserait, puis placées dans TOUTES les cases d'image des sections.
+ */
+export async function withRichMedia(pid: string, userId: string, count = 24) {
+  const sharp = (await import("sharp")).default;
+  const { saveAsset } = await import("@/lib/library");
+  const { currentTheme } = await import("@/lib/projects");
+  const spec = structuredClone(currentTheme(pid)!.spec) as ThemeSpec;
+  const names: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const [w, h, fmt] = MEDIA_SHAPES[i % MEDIA_SHAPES.length];
+    const hue = (i * 47) % 360;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${hue},55%,62%)"/><stop offset="1" stop-color="hsl(${(hue + 60) % 360},45%,32%)"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><text x="50%" y="52%" font-family="sans-serif" font-size="${Math.round(Math.min(w, h) / 6)}" fill="#fff" text-anchor="middle">Image fictive ${i + 1}</text></svg>`;
+    const data = await sharp(Buffer.from(svg))[fmt]({ quality: 82 }).toBuffer();
+    const a = await saveAsset({ projectId: pid, userId, data, mime: MIME[fmt], name: `fictive-${i + 1}.${fmt === "jpeg" ? "jpg" : fmt}`, origin: "upload", role: "scene", status: "approved", meta: { width: w, height: h, alt: `Image fictive ${i + 1}` } });
+    const name = `rich-${i + 1}.${fmt === "jpeg" ? "jpg" : fmt}`;
+    spec.files[name] = a.id;
+    names.push(name);
+  }
+  let n = 0;
+  const fill = (settings: Record<string, unknown> | undefined) => { if (settings) for (const k of Object.keys(settings)) if (/_asset$/.test(k)) settings[k] = names[n++ % names.length]; };
+  for (const t of [spec.groups?.header, spec.groups?.footer, ...Object.values(spec.templates ?? {})]) for (const sec of Object.values(t?.sections ?? {})) {
+    fill(sec.settings as Record<string, unknown>);
+    for (const b of Object.values(sec.blocks ?? {})) fill(b.settings as Record<string, unknown>);
+  }
+  saveThemeVersion(pid, spec, "Site fictif riche en médias", "user");
+  return { names, slots: n };
+}

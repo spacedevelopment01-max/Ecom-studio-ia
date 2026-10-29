@@ -41,6 +41,8 @@ export type Publication = {
   id: string; project_id: string; user_id: string; number: number; theme_version_id: string; spec_hash: string;
   theme_fingerprint: string; code_commit: string; status: "ready"; pages: number; bytes: number; manifest_sha: string;
   origin: string; created_at: number;
+  /** Fichiers supprimés par la purge des anciennes versions (lot B) ; la fiche reste. */
+  purged_at?: number | null;
 };
 export type SiteAddress = {
   hostname: string; project_id: string; kind: "studio" | "custom"; status: "active" | "pending_dns" | "verified" | "disabled";

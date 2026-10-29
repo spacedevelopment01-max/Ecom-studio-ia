@@ -31,6 +31,7 @@ import { isLang } from "../src/lib/i18n";
 import { json, one } from "../src/lib/db";
 import { migrateLegacySecrets } from "../src/lib/secrets-migration";
 import { processOutbox } from "../src/lib/sites/notify";
+import { cleanupInterrupted } from "../src/lib/sites/maintenance";
 
 /** Langue des contenus d'une tâche : celle choisie pour l'action, sinon celle du projet. */
 function jobLangs(job: { user_id: string | null; project_id: string | null; payload: string }) {
@@ -123,6 +124,8 @@ async function tick() {
     await runDueAutopilots((p) => realSocialDeps(null, p, aiActiveFor(p.userId, p.id))).catch((e: unknown) => logError("worker:social-autopilot", e));
     // Sites publiés (#232) : e-mails des demandes de devis ou de contact encore à envoyer (reprises espacées).
     await processOutbox().catch((e) => logError("worker:site-notify", e));
+    // Publications interrompues (arrêt pendant l'écriture) : dossiers temporaires de plus d'une heure supprimés.
+    try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
     // Anciens abonnements Stripe dont l'arrêt a échoué (changement de forfait) : nouvel essai.
     await retryStripeCancellations().catch((e) => logError("worker:stripe-cancel", e));
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.

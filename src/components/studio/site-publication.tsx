@@ -14,7 +14,9 @@ type Overview = {
   sitesDomain: string | null;
   customDomainsServed: boolean;
   live: { id: string; number: number; origin: string; createdAt: number; pages: number } | null;
-  publications: { id: string; number: number; createdAt: number; pages: number; bytes: number; live: boolean }[];
+  publications: { id: string; number: number; createdAt: number; pages: number; bytes: number; live: boolean; purged: boolean }[];
+  storage: { used: number; limit: number; keep: number };
+  diagnostics?: { ok: boolean; checkedAt: number; checks: { key: string; ok: boolean; detail: string }[] };
   history: { id: string; publication_id: string | null; action: string; at: number }[];
   addresses: { hostname: string; kind: "studio" | "custom"; status: string; checkedAt: number | null; checkError: string | null; dns: { txt: { name: string; value: string | null }; cname: { name: string; value: string } | null } | null }[];
   requests: { id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: "contact" | "devis"; notification: NotificationState; notification_error: string | null }[];
@@ -38,6 +40,7 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
   const [domain, setDomain] = useState("");
   const [policy, setPolicy] = useState<{ handle: string; title: string; text: string } | null>(null);
   const [recipient, setRecipient] = useState("");
+  const [diag, setDiag] = useState<Overview["diagnostics"] | null>(null);
   const [showHandled, setShowHandled] = useState(false);
   const [openRequest, setOpenRequest] = useState<string | null>(focusRequest ?? null);
 
@@ -52,6 +55,7 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
         return false;
       }
       if (action === "check") setReasons(body.reasons ?? []);
+      if (action === "diagnose") setDiag(body.diagnostics ?? null);
       if (action === "publish") setReasons(null);
       if (done) toast("ok", done);
       await reload();
@@ -144,9 +148,23 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
                 {data.publications.map((p) => (
                   <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-3 text-sm" data-publication={p.number}>
                     <span>{t(`Publication ${p.number}`, `Publication ${p.number}`)} · {formatDate(p.createdAt)} · {p.pages} {t("pages", "pages")} · {Math.max(1, Math.round(p.bytes / 1024))} Ko {p.live && <Badge tone="ok">{t("En ligne", "Live")}</Badge>}</span>
-                    {!p.live && <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("restore", { publicationId: p.id }, t(`Publication ${p.number} remise en ligne.`, `Publication ${p.number} back online.`))}>{t("Remettre en ligne", "Put back online")}</Button>}
+                    {p.purged ? <Badge>{t("Ancienne version : fichiers purgés", "Old version: files purged")}</Badge> : !p.live && <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("restore", { publicationId: p.id }, t(`Publication ${p.number} remise en ligne.`, `Publication ${p.number} back online.`))}>{t("Remettre en ligne", "Put back online")}</Button>}
                   </li>
                 ))}
+              </ul>
+            )}
+          </section>
+
+          <p className="-mt-4 text-xs text-muted" data-site-storage>{t(`Espace utilisé : ${Math.round(data.storage.used / 1048576)} Mo sur ${Math.round(data.storage.limit / 1048576)} Mo inclus. Les ${data.storage.keep} versions les plus récentes restent restaurables ; les plus anciennes sont purgées automatiquement (jamais la version en ligne).`, `Space used: ${Math.round(data.storage.used / 1048576)} MB of ${Math.round(data.storage.limit / 1048576)} MB included. The ${data.storage.keep} most recent versions stay restorable; older ones are purged automatically (never the live one).`)}</p>
+
+          <section className="grid gap-2" data-site-diagnostics>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-semibold">{t("Diagnostic du site", "Site diagnostics")}</h3>
+              <Button size="sm" variant="secondary" disabled={!!busy} loading={busy === "diagnose"} onClick={() => act("diagnose")}>{t("Vérifier le site en ligne", "Check the live site")}</Button>
+            </div>
+            {diag && (
+              <ul className="grid gap-1 rounded-xl border border-line p-3 text-sm" data-diagnostics-result={diag.ok ? "ok" : "problems"}>
+                {diag.checks.map((c) => <li key={c.key} className="flex gap-2"><Badge tone={c.ok ? "ok" : "warn"}>{c.ok ? t("OK", "OK") : t("À voir", "Check")}</Badge><span>{c.detail}</span></li>)}
               </ul>
             )}
           </section>
