@@ -174,8 +174,9 @@ export function readFields(fields: Record<string, string>) {
     other: Object.entries(fields).filter(([k, v]) => !used.has(k) && v && v.trim()),
   };
 }
+/** Devis si la page ou un champ court du formulaire (type de demande, objet…) le dit ; le message lui-même ne compte pas. */
 export const requestKind = (page: string, fields: Record<string, string>): "devis" | "contact" =>
-  /devis|quote|estimation|estimate/i.test(`${page} ${fields.form || ""} ${fields.kind || ""} ${fields.subject || ""}`) ? "devis" : "contact";
+  /devis|quote|estimation|estimate/i.test(page) || Object.entries(fields).some(([k, v]) => !["body", "message", "email"].includes(k) && v.length <= 80 && /\bdevis\b|\bquote\b|estimation/i.test(v)) ? "devis" : "contact";
 
 /** E-mail envoyé au professionnel pour une demande. Tout ce qui vient du visiteur est échappé. */
 export function buildNotification(req: RequestRow, to: string, outboxId: string) {
@@ -288,11 +289,14 @@ export function retryNotification(projectId: string, requestId: string) {
   kickOutbox(projectId);
 }
 
-export type NotificationState = "sent" | "pending" | "smtp_not_configured" | "failed" | "partial" | "no_recipient";
-/** État lisible d'une demande, à partir de ses lignes d'envoi. */
-export function notificationState(rows: Pick<OutboxRow, "status">[], smtp = mailConfigured()): NotificationState {
+export type NotificationState = "sent" | "pending" | "retrying" | "smtp_not_configured" | "failed" | "partial" | "no_recipient" | "before_email";
+/** État lisible d'une demande, à partir de ses lignes d'envoi (et, sans ligne, de ce qui a été noté à la réception). */
+export function notificationState(rows: Pick<OutboxRow, "status" | "last_error">[], smtp = mailConfigured(), noted = "queued"): NotificationState {
   const live = rows.filter((r) => r.status !== "cancelled");
+  // Reçue avant l'envoi des demandes par e-mail (aucune ligne d'envoi n'a jamais existé pour elle).
+  if (!live.length && !rows.length && noted !== "queued" && noted !== "no_recipient") return "before_email";
   if (!live.length) return "no_recipient";
+  if (live.some((r) => r.status === "pending" && r.last_error) && smtp) return "retrying";
   if (live.every((r) => r.status === "sent")) return "sent";
   if (live.some((r) => r.status === "pending" || r.status === "sending")) return smtp ? "pending" : "smtp_not_configured";
   return live.some((r) => r.status === "sent") ? "partial" : "failed";

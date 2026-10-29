@@ -85,16 +85,17 @@ export async function receiveSiteRequest(req: Request, address: SiteAddress, pub
 export function siteRequests(projectId: string): SiteRequest[] {
   ensureSiteTables();
   const outbox = outboxFor(projectId);
-  return all<{ id: string; publication_id: string; hostname: string; page: string; fields: string; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: string | null }>(
-    "SELECT id, publication_id, hostname, page, fields, email, created_at, read_at, handled_at, kind FROM site_requests WHERE project_id = ? ORDER BY created_at DESC LIMIT 200", projectId)
-    .map((r) => {
+  return all<{ id: string; publication_id: string; hostname: string; page: string; fields: string; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: string | null; notified: string }>(
+    "SELECT id, publication_id, hostname, page, fields, email, created_at, read_at, handled_at, kind, notified FROM site_requests WHERE project_id = ? ORDER BY created_at DESC LIMIT 200", projectId)
+    .map(({ notified, ...r }) => {
       const rows = outbox.filter((o) => o.request_id === r.id);
       return {
         ...r,
         fields: JSON.parse(r.fields) as Record<string, string>,
         kind: r.kind === "devis" ? "devis" : "contact",
-        notification: notificationState(rows),
-        notification_error: rows.find((o) => o.status === "failed")?.last_error ?? null,
+        notification: notificationState(rows, undefined, notified),
+        // Motif lisible (code seulement) d'un e-mail échoué ou en attente d'un nouvel essai.
+        notification_error: rows.find((o) => o.status === "failed" || (o.status === "pending" && o.last_error))?.last_error ?? null,
       };
     });
 }

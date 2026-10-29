@@ -22,7 +22,7 @@ type Overview = {
   reasons?: string[];
 };
 
-type NotificationState = "sent" | "pending" | "smtp_not_configured" | "failed" | "partial" | "no_recipient";
+type NotificationState = "sent" | "pending" | "retrying" | "smtp_not_configured" | "failed" | "partial" | "no_recipient" | "before_email";
 const NAME_KEYS = ["name", "nom", "full_name"];
 const requestName = (f: Record<string, string>) => NAME_KEYS.map((k) => f[k]).find(Boolean) || [f.first_name || f.firstName, f.last_name || f.lastName].filter(Boolean).join(" ") || f.email || "";
 
@@ -65,12 +65,14 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
   const notifLabel = (n: NotificationState) => ({
     sent: t("E-mail envoyé", "Email sent"),
     pending: t("E-mail en cours d'envoi", "Email being sent"),
+    retrying: t("E-mail retardé : nouvel essai automatique", "Email delayed: automatic retry"),
+    before_email: t("Reçue avant l'envoi par e-mail", "Received before email sending"),
     smtp_not_configured: t("E-mail en attente : envoi non configuré", "Email waiting: sending not configured"),
     failed: t("E-mail non envoyé", "Email not sent"),
     partial: t("E-mail envoyé à une partie des adresses", "Email sent to some addresses"),
     no_recipient: t("Aucune adresse pour l'e-mail", "No address for the email"),
   })[n];
-  const notifTone = (n: NotificationState) => (n === "sent" ? "ok" : n === "failed" || n === "partial" || n === "no_recipient" ? "bad" : "warn") as "ok" | "bad" | "warn";
+  const notifTone = (n: NotificationState) => (n === "sent" ? "ok" : n === "before_email" ? "neutral" : n === "failed" || n === "partial" || n === "no_recipient" ? "bad" : "warn") as "ok" | "bad" | "warn" | "neutral";
   return (
     <Modal open={open} onClose={onClose} title={t("Publier votre site", "Publish your site")} wide>
       {!data ? <p className="text-sm text-muted">{t("Chargement…", "Loading…")}</p> : (

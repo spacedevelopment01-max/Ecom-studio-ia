@@ -16,7 +16,7 @@ import { publishSite } from "@/lib/sites/publish";
 import { serveSite } from "@/lib/sites/serve";
 import { siteRequests, deleteRequest } from "@/lib/sites/requests";
 import { studioAddress } from "@/lib/sites/store";
-import { addRecipient, buildNotification, confirmRecipient, LEASE_MS, processOutbox, recipients, removeRecipient, retryNotification } from "@/lib/sites/notify";
+import { addRecipient, buildNotification, notificationState, requestKind, confirmRecipient, LEASE_MS, processOutbox, recipients, removeRecipient, retryNotification } from "@/lib/sites/notify";
 import * as route from "@/app/api/projects/[id]/site-publication/route";
 import * as confirmRoute from "@/app/api/site-notify/confirm/route";
 import { payingUser, servicesSite } from "./sites-fixtures";
@@ -134,7 +134,7 @@ describe("Avec un SMTP local de test", () => {
     expect(row()).toMatchObject({ status: "pending", attempts: 1, last_error: "SMTP_451_MAIL" });
     expect(row().next_at).toBeGreaterThan(now());
     expect(siteRequests(pid)).toHaveLength(1);
-    expect(siteRequests(pid)[0].notification).toBe("pending");
+    expect(siteRequests(pid)[0]).toMatchObject({ notification: "retrying", notification_error: "SMTP_451_MAIL" });
     // Pas encore l'heure du nouvel essai : rien.
     await processOutbox();
     expect(row().attempts).toBe(1);
@@ -267,6 +267,18 @@ describe("Adresses qui reçoivent les demandes", () => {
     const m = withAccessScope({ kind: "http" }, () => buildNotification(r, "pro@example.test", "x"));
     expect(m.text).toContain("2 photo(s)");
     expect(m.text).toContain("ne sont pas transmises");
+  });
+});
+
+describe("Classement et états", () => {
+  it("devis si la page ou un champ court le dit (pas le message) ; demande reçue avant l'envoi par e-mail reconnue", () => {
+    expect(requestKind("/pages/devis", { body: "x" })).toBe("devis");
+    expect(requestKind("/pages/contact", { Demande: "Demander un devis", body: "x" })).toBe("devis");
+    expect(requestKind("/pages/contact", { body: "Pouvez-vous me faire un devis ?" })).toBe("contact");
+    expect(notificationState([], true, "sent")).toBe("before_email");
+    expect(notificationState([], true, "no_recipient")).toBe("no_recipient");
+    expect(notificationState([{ status: "pending", last_error: null }], false)).toBe("smtp_not_configured");
+    expect(notificationState([{ status: "sent", last_error: null }, { status: "failed", last_error: "SMTP_550_RCPT" }], true)).toBe("partial");
   });
 });
 
