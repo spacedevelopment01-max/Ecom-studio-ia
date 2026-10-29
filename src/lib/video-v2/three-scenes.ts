@@ -36,6 +36,7 @@ import type { Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import {isDeepStrictEqual} from "node:util";
 import { loadVideoGuide, type VideoCreativeGuide } from "./creative-guide";
 import { buildCreativeBrief, type CreativeBrief } from "./creative-brief";
 import { buildStoryboard, usable, type Storyboard } from "./ad-storyboard";
@@ -71,8 +72,9 @@ export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S, endCardS 
 
 /** Un couple durée/scènes impossible ne doit jamais devenir une vidéo raccourcie silencieusement. */
 export function sceneTimingIssue(scenes = SCENES, totalS = DEFAULT_TOTAL_S): string | null {
+  if(!Number.isInteger(scenes)||scenes<1||scenes>6||!Number.isFinite(totalS)||totalS<6||totalS>60)return L('Choisissez de1à6scènes et une durée de6à60secondes ; aucune limite n’est corrigée implicitement.','Choose1to6shots and a duration of6to60seconds; no limit is implicitly corrected.');
   const t = sceneTiming(scenes, totalS);
-  return t.endS > 4
+  return t.endS > 0
     ? L("Cette durée exige davantage de scènes (15 secondes au plus par plan). Augmentez le nombre de scènes ou réduisez la durée.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
     : null;
 }
@@ -129,12 +131,35 @@ export type Scene = {
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large"; /** Voix de la carte de fin. */ voiceEnd?: string };
 
 export const ScenePlanSchema = z.object({
-  scenes: z.array(z.object({ still: z.string().min(10).max(20000), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(),role:z.string().max(80).optional(),intent:z.string().max(1000).optional(),stock:z.object({queries:z.array(z.string().max(120)).max(6),must:z.array(z.string().max(80)).max(20),need:z.array(z.array(z.string().max(80))).max(10).optional()}).optional(), voice: z.string().max(200).optional() })).min(1).max(6),
+  scenes: z.array(z.object({ still: z.string().min(10).max(20000), motion: z.string().min(10).max(400), title: z.string().max(40).default(""), place: z.enum(["top", "lower"]).optional(), titleSize: z.enum(["standard", "large"]).optional(),titleColor:z.string().regex(/^#[a-fA-F0-9]{6}$/).optional(),role:z.string().max(80).optional(),intent:z.string().max(1000).optional(),stock:z.object({queries:z.array(z.string().max(120)).max(6),must:z.array(z.string().max(80)).max(20),need:z.array(z.array(z.string().max(80))).max(10).optional()}).optional(), voice: z.string().max(200).optional() })).min(1).max(6),
   line: z.string().max(70).default(""),
   cta: z.string().max(80),
   endCard: z.enum(["standard", "large"]).optional(),
   voiceEnd: z.string().max(160).optional(),
 });
+/** Entrée d'un scénario que le client peut approuver : clés fermées, aucun défaut qui ajouterait du texte. */
+export const ApprovedScenePlanSchema=ScenePlanSchema.extend({
+ scenes:z.array(ScenePlanSchema.shape.scenes.element.extend({title:z.string().max(40)}).strict()).min(1).max(6),
+ line:z.string().max(70),cta:z.string().max(80),
+}).strict();
+
+/** Frontière commune devis/accord/worker : aucun scénario accepté n'est complété ou assaini en silence.
+ * Le schéma historique demeure compatible ; une proposition approuvée doit déjà être représentable entièrement.
+ */
+export function approvedScenePlan(p:Project,req:ThreeScenesRequest,raw:unknown):ScenePlan {
+ const timingIssue=sceneTimingIssue(req.scenes,req.totalS);if(timingIssue)throw new UserFacingError(timingIssue);
+ const parsed=ApprovedScenePlanSchema.safeParse(raw);
+ if(!parsed.success||!isDeepStrictEqual(parsed.data,raw))throw new UserFacingError(L('Scénario non représentable exactement : vérifiez ses champs avant tout média. Aucun texte supprimé.','The scenario cannot be represented exactly: review its fields before any media. No text removed.'));
+ const plan=parsed.data;
+ if(plan.scenes.length!==(req.scenes??SCENES))throw new UserFacingError(L('Le scénario doit conserver exactement le nombre de scènes demandé.','The scenario must retain the exact requested shot count.'));
+ const fields:Record<string,string|undefined>={line:plan.line,cta:plan.cta,voiceEnd:plan.voiceEnd};
+ plan.scenes.forEach((s,k)=>Object.assign(fields,{[`title-${k}`]:s.title,[`voice-${k}`]:s.voice}));
+ if(brandIssuesInTexts(fields,allowedBrands(p)).length)throw new UserFacingError(L('Le scénario cite une marque tierce : corrigez-le avant validation. Aucun texte retiré ni média lancé.','The scenario mentions a third-party brand: correct it before approval. No text removed or media launched.'));
+ if(Object.values(fields).some(t=>!!t&&!usable(t)))throw new UserFacingError(L('Le scénario contient un texte à compléter ou non représentable. Corrigez-le avant validation ; rien n’est supprimé.','The scenario contains incomplete or unrepresentable text. Correct it before approval; nothing is removed.'));
+ if(!isDeepStrictEqual(applyWordingDeep(plan,loadWordingRules(p.id)),plan))throw new UserFacingError(L('Le scénario contredit le vocabulaire enregistré : relisez la correction avant validation, aucun remplacement implicite.','The scenario conflicts with saved wording: review the correction before approval; no implicit replacement.'));
+ if(req.purpose==='site'&&Object.values(fields).some(t=>!!t?.trim()))throw new UserFacingError(L('Ce scénario d’ambiance contient du texte ou une voix que le moteur retirerait. Validez un scénario sans texte, ou choisissez une vidéo de communication.','This ambience scenario contains text or voice that the engine would remove. Approve a scenario without text, or choose a communication video.'));
+ return structuredClone(plan);
+}
 
 /** Ce que le moteur sait avant d'écrire le plan : storyboard, fiche créative et contexte du Project Brain. */
 export type PlanContext = { storyboard: Storyboard; brief: CreativeBrief; brain: string };
@@ -427,13 +452,13 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   // Une erreur peut suivre un appel facturé ou incertain : elle ne se transforme pas en scénario simplifié.
   const written = await step(`${key}:plan`, () => req.approval ? Promise.resolve(req.approval.scenario) : req.editorial ? Promise.resolve(localScenePlan(p,s,req,storyboard)) : deps.writePlan ? deps.writePlan(p, s, req, `${key}:plan`, { storyboard, brief, brain }) : Promise.resolve(null));
   if (!written) notes.push(C("Scénario local utilisé : aucune rédaction IA obtenue.", "Local script used: no AI-written plan obtained."));
-  const fallback = localScenePlan(p, s, req, storyboard);
+  const fallback = req.approval ? null : localScenePlan(p, s, req, storyboard);
   // Nombre de scènes demandé respecté ; les recherches d'étape (services) et le rôle viennent toujours du storyboard.
   // Vocabulaire du client (ex. « montre », jamais « chronographe ») : appliqué aux titres, à la voix et à l'action.
   const wording = req.generation&&req.approval?[]:loadWordingRules(projectId);
-  const plan: ScenePlan = applyWordingDeep(written
-    ? { ...written, voiceEnd: written.voiceEnd ?? fallback.voiceEnd, scenes: Array.from({ length: fallback.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback.scenes[k]), role:written.scenes[k]?.role??fallback.scenes[k].role, intent:written.scenes[k]?.intent??fallback.scenes[k].intent, stock:written.scenes[k]?.stock??fallback.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback.scenes[k].voice })) }
-    : fallback, wording);
+  const plan: ScenePlan = req.approval ? approvedScenePlan(p0,req,written) : applyWordingDeep(written
+    ? { ...written, voiceEnd: written.voiceEnd ?? fallback!.voiceEnd, scenes: Array.from({ length: fallback!.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback!.scenes[k]), role:written.scenes[k]?.role??fallback!.scenes[k].role, intent:written.scenes[k]?.intent??fallback!.scenes[k].intent, stock:written.scenes[k]?.stock??fallback!.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback!.scenes[k].voice })) }
+    : fallback!, wording);
 
   const editorialIssues = editorialVideoIssues(req.editorial, plan.cta);
   if (editorialIssues.length) throw new UserFacingError(editorialIssues.join(" ; "));
@@ -448,7 +473,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
     else if (kind === "line" || kind === "voiceEnd") (plan as Record<string, unknown>)[kind] = "";
     notes.push(C(`marque tierce « ${issue.brand} » retirée (${issue.field})`, `third-party brand "${issue.brand}" removed (${issue.field})`));
   }
-  if (!plan.cta.trim()) plan.cta = ctaOf(p, req.as);
+  if (!req.approval && !plan.cta.trim()) plan.cta = ctaOf(p, req.as);
   // Jamais de « [À compléter : …] » à l'écran ni dans la voix (un manque se signale dans l'aperçu, pas dans la pub).
   for (const sc of plan.scenes) {
     if (sc.title && !usable(sc.title)) sc.title = "";

@@ -5,7 +5,6 @@ import { assertAdvertising } from "@/lib/job-entitlements";
 import { planAllowsAds } from "@/lib/plan-entitlements";
 import { projectPlan } from "@/lib/project-billing";
 import {assertCanSpend} from "@/lib/billing";
-import {applyWordingDeep,loadWordingRules} from "@/lib/client-wording";
 import crypto from "node:crypto";
 import {latestVideo} from "@/lib/video-v2/store";
 import { z } from "zod";
@@ -13,7 +12,7 @@ import { getAsset,assetMeta } from "@/lib/library";
 import { hasUncertainVideoReceipt } from "@/lib/video-v2/receipts";
 import { sceneChainQuote } from "@/lib/video-v2/chain-quote";
 import { saveGuidedScenario,savedGuidedScenarios,approveVideoScenario,readVideoApproval,sceneApprovalRequest,guidedRunKey,videoScope } from "@/lib/video-v2/approval";
-import { localScenePlan,ScenePlanSchema,type ScenePlan } from "@/lib/video-v2/three-scenes";
+import { localScenePlan,ApprovedScenePlanSchema,approvedScenePlan,type ScenePlan } from "@/lib/video-v2/three-scenes";
 import { VideoEditorialSchema } from "@/lib/video-v2/editorial";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
@@ -87,7 +86,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   return withCommunicationRequest(p.id,req,async()=>{
-  const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
+  const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ApprovedScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ApprovedScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
   if(b.action!=="repair"&&b.as==="ad")assertAdvertising(p.id);
   if(b.action === "repair") {
     requirePlan(user,p.id);
@@ -134,8 +133,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       const job=enqueue({userId:user.id,projectId:p.id,type:"video.scenario",label:L("Scénario vidéo à vérifier","Video scenario to review"),payload:{projectId:p.id,request:r,costCapMicro:q.scriptMicro}});
       return ok({...q,scenarioJobId:job.id});
     }
-    const scenario=applyWordingDeep(b.draftPlan??localScenePlan(p,resolveSubject(p,r.subject??null),r),loadWordingRules(p.id));if(scenario.scenes.length!==r.scenes) throw new HttpError(400,"Le scénario doit conserver le nombre de scènes demandé.");let spent=0;
+    const scenario=b.draftPlan??localScenePlan(p,resolveSubject(p,r.subject??null),r);if(scenario.scenes.length!==r.scenes) throw new HttpError(400,"Le scénario doit conserver le nombre de scènes demandé.");let spent=0;
     if(b.scenarioJobId){const prior=one<{result:string;payload:string}>("SELECT result,payload FROM jobs WHERE id=? AND project_id=? AND type='video.scenario' AND status='done'",b.scenarioJobId,p.id);const previousRequest=prior?json<{request:ThreeScenesRequest}>(prior.payload,{} as never).request:null;const writingIdentity=(request:ThreeScenesRequest)=>{const {generation,requestedSource,sceneImages,initialExistingAssetId,...writing}=sceneApprovalRequest(request);return writing;};if(!prior || !previousRequest || json<{scope:string}>(prior.result,{} as never).scope!==videoScope(p,sceneApprovalRequest(previousRequest)) || JSON.stringify(writingIdentity(previousRequest))!==JSON.stringify(writingIdentity(r))) throw new HttpError(409,"Scénario précédent hors de ce contexte.");spent=one<{cost:number}>("SELECT COALESCE(SUM(cost),0) cost FROM ai_calls WHERE job_id=?",b.scenarioJobId)?.cost??0;}
+    approvedScenePlan(p,r,scenario);
     saveGuidedScenario(p,r,scenario,b.scenarioJobId);
     const approved=approveVideoScenario(p,sceneApprovalRequest(r),scenario,Math.max(0,q.capMicro-spent),{quoteTotalMicro:q.capMicro,retakeMicro:q.oneSceneRetakeMicro,scenarioJobId:b.scenarioJobId});return ok({...q,scenario,scenarioJobId:b.scenarioJobId,approvalToken:approved.token});}
   // Le montage gratuit ne dispense pas du forfait actif nécessaire à toute création.
@@ -144,6 +144,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!q.allowed) throw new HttpError(402, q.reason ?? L("Vidéo impossible pour ce projet.", "Video not possible for this project."));
   if (q.estimateMicro > 0 && (b.approvedEstimateMicro == null || b.approvedEstimateMicro < q.estimateMicro)) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
   const approval=readVideoApproval<ScenePlan>(p,sceneApprovalRequest(r),b.approvalToken);
+  approvedScenePlan(p,r,approval.scenario);
   if((approval.quoteTotalMicro??approval.capMicro)!==q.capMicro) throw new HttpError(409,"Devis modifié : préparez à nouveau le scénario.");
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'video.scenes' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
   const docKey=`vid:${crypto.createHash("sha256").update(guidedRunKey(p,{...r,approval})).digest("hex").slice(0,20)}`;

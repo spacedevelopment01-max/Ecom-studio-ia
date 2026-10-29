@@ -83,3 +83,18 @@ it('devis injecté, budget natif épuisé après accord : refus serveur avant to
  const quotation=await(await post({action:'quote',...req})).json();expect(quotation.allowed,quotation.reason).toBe(true);const plan=await(await post({action:'plan',...req,draftPlan:localScenePlan(loadProject(pid),null,req)})).json();expect(plan.approvalToken).toBeTruthy();
  const held=reserve(u.id,balance(accountKeyFor(u.id,pid)).available,{task:'test-isolated-budget-hold',provider:'alibaba',model:'fixture',projectId:pid});try{const response=await post({action:'create',...req,approvalToken:plan.approvalToken,approvedEstimateMicro:quotation.estimateMicro});expect(response.status).toBe(422);expect((await response.json()).error).toMatch(/100|budget|épuisé/i);expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toHaveLength(0);expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',pid)).toHaveLength(0);}finally{release(held);injectedQuote=false;}
 });
+
+
+it('refuse le scénario invalide avant signature/sauvegarde, sans texte retiré ni tâche créée',async()=>{
+ const {account,project}=await import('./conversation209-fixtures'),{validatedBrand}=await import('./preparation-mission-fixtures');
+ const {all}=await import('@/lib/db');const route=await import('@/app/api/projects/[id]/creative/video/route');
+ const u=await account(),pid=project(u);sessionUser=u;validatedBrand(pid);
+ const valid={scenes:[{still:'Objet sur une table claire.',motion:'La caméra avance lentement.',title:'Mon texte',titleColor:'#123456'}],line:'',cta:''};
+ const post=(draftPlan:unknown)=>route.POST(new Request('http://localhost',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'plan',as:'post',generation:'direct',scenes:1,totalS:6,draftPlan})}),{params:Promise.resolve({id:pid})});
+ for(const bad of [{...valid,cta:'Découvrir Nike'},{...valid,scenes:[{...valid.scenes[0],title:'[À compléter : titre]'}]},{...valid,scenes:[{...valid.scenes[0],unrepresented:'ne pas supprimer'}]}]){
+  const response=await post(bad),out=await response.json();expect(response.status).toBeGreaterThanOrEqual(400);expect(out.approvalToken).toBeUndefined();
+  expect(all("SELECT id FROM memory WHERE project_id=? AND key='video.scenario.saved'",pid)).toEqual([]);
+  expect(all('SELECT id FROM jobs WHERE project_id=?',pid)).toEqual([]);expect(all('SELECT id FROM ai_calls WHERE project_id=?',pid)).toEqual([]);
+ }
+ const response=await post(valid),out=await response.json();expect(response.status,JSON.stringify(out)).toBe(200);expect(out.scenario).toEqual(valid);expect(out.approvalToken).toBeTruthy();
+});
