@@ -1,0 +1,35 @@
+{
+ "envoiVisiteur": 303,
+ "pendantPanne": {
+  "visiteur": "Sacha Fictif",
+  "type": "devis",
+  "etat": "retrying",
+  "motif": "SMTP_451_MAIL"
+ },
+ "repriseApresSecondes": 56,
+ "emailsPourCetteDemande": 1,
+ "apresReprise": "sent",
+ "traitee": true,
+ "avantConfirmation": [
+  "proprio@recette.invalid verified",
+  "secretariat.cle-de-fa@example.test verified",
+  "comptabilite.cle-de-fa@example.test pending"
+ ],
+ "apresConfirmation": [
+  "proprio@recette.invalid verified",
+  "secretariat.cle-de-fa@example.test verified",
+  "comptabilite.cle-de-fa@example.test verified"
+ ],
+ "compteEtranger": {
+  "lecture": 404,
+  "ajoutAdresse": 404,
+  "traitee": 404,
+  "renvoi": 404
+ },
+ "antiSpam": {
+  "rafaleEnregistrees": 5,
+  "piegeEnregistre": false
+ },
+ "sink": 12,
+ "erreursStudio": []
+}
