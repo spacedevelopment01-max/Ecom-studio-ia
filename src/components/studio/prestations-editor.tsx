@@ -12,7 +12,7 @@ import { useT } from "../i18n";
 type Service = { id?: string; name: string; category?: string; short: string; duration: number | null; price: number | null; priceFrom: boolean; modes?: string; upcoming?: number };
 type Staff = { id?: string; name: string; title: string; skills: string[]; days: number[] };
 type Data = {
-  kind: "salon" | "cabinet" | "restaurant"; live: boolean; services: Service[]; staff: Staff[]; hours: Record<string, string>; closures: string;
+  kind: "salon" | "cabinet" | "restaurant"; live: boolean; address: string; services: Service[]; staff: Staff[]; hours: Record<string, string>; closures: string;
   restaurant: { openDays: number[]; lunchSlots: string; dinnerSlots: string; capacity: number; minParty: number; maxParty: number; defaults: boolean } | null;
 };
 const DAYS: [string, number, string, string][] = [["mon", 1, "Lundi", "Monday"], ["tue", 2, "Mardi", "Tuesday"], ["wed", 3, "Mercredi", "Wednesday"], ["thu", 4, "Jeudi", "Thursday"], ["fri", 5, "Vendredi", "Friday"], ["sat", 6, "Samedi", "Saturday"], ["sun", 0, "Dimanche", "Sunday"]];
@@ -34,8 +34,8 @@ export function PrestationsEditor({ projectId, onSaved }: { projectId: string; o
     setBusy(true);
     try {
       const body = f!.kind === "restaurant"
-        ? { restaurant: { ...f!.restaurant!, capacity: Number(f!.restaurant!.capacity), minParty: Number(f!.restaurant!.minParty), maxParty: Number(f!.restaurant!.maxParty) }, closures: f!.closures }
-        : { services: f!.services.map(({ upcoming: _u, ...s }) => ({ ...s, duration: Number(s.duration), price: s.price })), ...(f!.kind === "salon" ? { staff: f!.staff } : {}), hours: f!.hours, closures: f!.closures };
+        ? { address: f!.address, restaurant: { ...f!.restaurant!, capacity: Number(f!.restaurant!.capacity), minParty: Number(f!.restaurant!.minParty), maxParty: Number(f!.restaurant!.maxParty) }, closures: f!.closures }
+        : { address: f!.address, services: f!.services.map(({ upcoming: _u, ...s }) => ({ ...s, duration: Number(s.duration), price: s.price })), ...(f!.kind === "salon" ? { staff: f!.staff } : {}), hours: f!.hours, closures: f!.closures };
       const r = await api<{ number: number; warnings: string[] }>(`/api/projects/${projectId}/prestations`, { method: "PUT", body });
       toast("ok", t(`Enregistré : version ${r.number} du site. L'aperçu et la réservation l'utilisent tout de suite ; le site hébergé, après « Publier ».`, `Saved: site version ${r.number}. Preview and booking use it right away; the hosted site after “Publish”.`));
       for (const w of r.warnings) toast("info", w);
@@ -119,6 +119,12 @@ export function PrestationsEditor({ projectId, onSaved }: { projectId: string; o
           </div>
         </section>
       )}
+
+      <section className="grid gap-1">
+        <h3 className="font-semibold">{t("Adresse de l'établissement", "Business address")}</h3>
+        <p className="text-xs text-muted">{t("Affichée sur la confirmation de réservation et dans le fichier d'agenda. Obligatoire pour publier le site.", "Shown on the booking confirmation and in the calendar file. Required to publish the site.")}</p>
+        <Input aria-label={t("Adresse de l'établissement", "Business address")} placeholder="12 rue de l'Exemple, 69000 Lyon" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} />
+      </section>
 
       <section className="grid gap-1">
         <h3 className="font-semibold">{t("Fermetures exceptionnelles", "Exceptional closures")}</h3>

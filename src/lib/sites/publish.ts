@@ -150,16 +150,18 @@ export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
   const sec = rdvSection(spec);
   if (!sec) return [];
   const s = sec.section.settings ?? {};
-  if (s.booking_mode !== "live") return [L("La réservation en ligne de votre site est en mode démonstration : activez le service réel dans l'onglet Rendez-vous avant de publier (un site public ne simule jamais une réservation).", "Your site's online booking is in demonstration mode: enable the live service in the Bookings tab before publishing (a public site never simulates a booking).")];
+  // Adresse affichée sur la confirmation et dans le fichier d'agenda : sinon « [À renseigner] » sur le site public.
+  const noAddress = !String(s.address ?? "").trim() ? [L("L'adresse de votre établissement n'est pas renseignée (affichée sur la confirmation de réservation) : renseignez-la dans l'onglet Rendez-vous, « Prestations, horaires… ».", "Your business address isn't set (shown on the booking confirmation): enter it in the Bookings tab, “Services, hours…”.")] : [];
+  if (s.booking_mode !== "live") return [...noAddress, L("La réservation en ligne de votre site est en mode démonstration : activez le service réel dans l'onglet Rendez-vous avant de publier (un site public ne simule jamais une réservation).", "Your site's online booking is in demonstration mode: enable the live service in the Bookings tab before publishing (a public site never simulates a booking).")];
   const expected = serviceUrlFor(projectId, sec.kind);
-  if (!expected || String(s.service_url ?? "") !== expected) return [L("La réservation en ligne n'est pas reliée au service du studio : réactivez-la dans l'onglet Rendez-vous.", "Online booking isn't linked to the studio's service: enable it again in the Bookings tab.")];
+  if (!expected || String(s.service_url ?? "") !== expected) return [...noAddress, L("La réservation en ligne n'est pas reliée au service du studio : réactivez-la dans l'onglet Rendez-vous.", "Online booking isn't linked to the studio's service: enable it again in the Bookings tab.")];
   // Un calendrier sans aucun horaire n'offre jamais de créneau : le visiteur ne pourrait rien réserver.
   const r = rdvRules(projectId, sec.kind);
   const open = sec.kind === "restaurant"
     ? Object.keys(r.hours).length > 0 && r.services.some((x) => (x as { slots?: string[] }).slots?.length)
     : Object.values(r.hours ?? {}).some((v) => Array.isArray(v) && v.length > 0) || r.workshops.length > 0;
-  if (!open) return [L("Aucun horaire de réservation n'est réglé : le calendrier du site ne proposerait aucun créneau. Renseignez vos horaires dans la section de réservation du site.", "No booking hours are set: the site's calendar would offer no slot. Set your hours in the site's booking section.")];
-  return [];
+  if (!open) return [...noAddress, L("Aucun horaire de réservation n'est réglé : le calendrier du site ne proposerait aucun créneau. Renseignez vos horaires dans la section de réservation du site.", "No booking hours are set: the site's calendar would offer no slot. Set your hours in the site's booking section.")];
+  return noAddress;
 }
 
 /** Points qui empêchent la publication : textes à compléter, pages vides. */

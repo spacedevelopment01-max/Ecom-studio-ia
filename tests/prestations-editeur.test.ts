@@ -16,6 +16,7 @@ import { liveCabinet } from "@/lib/cabinet/booking";
 import { readPrestations, savePrestations } from "@/lib/contenus/prestations";
 import { salonBlocks } from "@/lib/theme/atelier-nuance";
 import { rdvSection } from "@/lib/rendez-vous";
+import { bookingBlockers } from "@/lib/sites/publish";
 import * as route from "@/app/api/projects/[id]/prestations/route";
 import { seedHoldout } from "./lot1-holdout-fixtures";
 import { serviceSpec } from "./fixtures";
@@ -97,9 +98,10 @@ describe("Salon : une saisie, une source", () => {
     expect(() => savePrestations(salon, { ...inp, hours: { ...inp.hours, mon: "18:00-09:00" } })).toThrow(/heure de fin/);
     expect(() => savePrestations(salon, { ...inp, hours: { ...inp.hours, mon: "le matin" } })).toThrow(/horaires/);
     expect(() => savePrestations(salon, { ...inp, closures: "Noël" })).toThrow(/fermetures/);
-    savePrestations(salon, { ...inp, hours: { ...inp.hours, mon: "10:00 - 13:00 ,14:00-18:00" }, closures: "2026-12-24..2026-12-26", staff: [...inp.staff, { name: "Léa", title: "Coloriste", skills: ["couleur"], days: [1, 2] }] });
+    savePrestations(salon, { ...inp, address: "8 place Fictive, 69002 Lyon", hours: { ...inp.hours, mon: "10:00 - 13:00 ,14:00-18:00" }, closures: "2026-12-24..2026-12-26", staff: [...inp.staff, { name: "Léa", title: "Coloriste", skills: ["couleur"], days: [1, 2] }] });
     const r = readPrestations(salon)!;
     expect(r.hours.mon).toBe("10:00-13:00, 14:00-18:00");
+    expect(r.address).toBe("8 place Fictive, 69002 Lyon");
     expect(r.staff.find((m) => m.name === "Léa")).toMatchObject({ id: "lea", skills: ["couleur"], days: [1, 2] });
     expect(liveSalon(salon).config.staff.map((s) => s.id)).toContain("lea");
   });
@@ -127,6 +129,16 @@ describe("Cabinet et restaurant", () => {
     savePrestations(restaurant, { restaurant: { openDays: [2, 3, 4, 5, 6], lunchSlots: "12:00, 12:45", dinnerSlots: "19:30, 20:15, 21:00", capacity: 30, minParty: 1, maxParty: 10 } });
     const after = readPrestations(restaurant)!.restaurant!;
     expect(after).toMatchObject({ openDays: [2, 3, 4, 5, 6], lunchSlots: "12:00, 12:45", capacity: 30, defaults: false });
+  });
+});
+
+describe("Adresse de l'établissement", () => {
+  it("vide : refus de publication explicite (où la saisir) ; renseignée dans l'éditeur : plus de refus d'adresse", () => {
+    const r = readPrestations(cabinet)!;
+    savePrestations(cabinet, { address: "" });
+    expect(bookingBlockers(cabinet, currentTheme(cabinet)!.spec as ThemeSpec).join(" ")).toMatch(/adresse de votre établissement n'est pas renseignée.*onglet Rendez-vous/);
+    savePrestations(cabinet, { address: "3 quai Fictif, 69005 Lyon", closures: r.closures });
+    expect(bookingBlockers(cabinet, currentTheme(cabinet)!.spec as ThemeSpec).join(" ")).not.toMatch(/adresse/);
   });
 });
 

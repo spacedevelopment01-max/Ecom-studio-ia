@@ -48,6 +48,7 @@ export const prestationsInput = z.object({
   services: z.array(serviceSchema).max(60).optional(),
   staff: z.array(staffSchema).max(20).optional(),
   hours: z.object(Object.fromEntries(DAYS.map((d) => [d, hoursSchema])) as Record<(typeof DAYS)[number], typeof hoursSchema>).partial().optional(),
+  address: z.string().trim().max(300).optional(),
   closures: z.string().max(2000).regex(CLOSURES, "fermetures : dates AAAA-MM-JJ ou périodes AAAA-MM-JJ..AAAA-MM-JJ").optional(),
   restaurant: z.object({
     openDays: z.array(z.number().int().min(0).max(6)).max(7),
@@ -95,7 +96,7 @@ export function readPrestations(projectId: string) {
     // Valeurs proposées par le studio et jamais modifiées : le restaurateur doit les vérifier.
     defaults: String(st.lunch_slots ?? "") === "12:00, 12:30, 13:00" && String(st.dinner_slots ?? "").startsWith("19:00, 19:30, 20:00") && Number(st.capacity) === 24,
   } : null;
-  return { kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
+  return { kind: sec.kind, live: st.booking_mode === "live", versionId: cur!.version.id, address: String(st.address ?? ""), services, staff, hours, closures: String(st.closures ?? ""), restaurant, open: sec.kind === "restaurant" ? !!restaurant!.openDays.length : Object.values(hours).some((h) => h.trim()) };
 }
 
 /** Prix et durée affichés sans script, au format de la composition (« 45 € », « À partir de 45 € », « 1 h 30 »). */
@@ -179,6 +180,7 @@ export function savePrestations(projectId: string, raw: unknown) {
   }
   if (input.hours && sec.kind !== "restaurant") for (const d of DAYS) if (input.hours[d] !== undefined) st[`hours_${d}`] = input.hours[d]!.trim().replace(/\s*-\s*/g, "-").replace(/\s*,\s*/g, ", ");
   if (input.closures !== undefined) st.closures = input.closures.trim();
+  if (input.address !== undefined) st.address = input.address;
   if (input.restaurant && sec.kind === "restaurant") {
     const r = input.restaurant;
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
