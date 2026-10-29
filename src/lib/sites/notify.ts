@@ -22,6 +22,8 @@ import { rateTake } from "../rate-limit";
 import { hmac, randomToken } from "../secrets";
 import { appUrl } from "../settings";
 import { ensureSiteTables } from "./store";
+import { fieldLabel } from "./field-label";
+export { fieldLabel };
 
 export const MAX_RECIPIENTS = 3;
 export const MAX_ATTEMPTS = 5;
@@ -154,8 +156,6 @@ export function errorCode(e: unknown): string {
 /** Refus définitif du serveur (5xx) : inutile de réessayer. */
 const permanent = (e: unknown) => { const c = (e as { responseCode?: number })?.responseCode; return !!c && c >= 500 && c < 600; };
 
-/** Nom de champ du formulaire lisible : « code_postal » → « Code postal ». */
-export const fieldLabel = (k: string) => { const x = k.replace(/[_-]+/g, " ").trim(); return x.charAt(0).toUpperCase() + x.slice(1); };
 const oneLine = (s: string) => s.replace(/[\r\n\t]+/g, " ").replace(/\s{2,}/g, " ").trim().slice(0, 180);
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 

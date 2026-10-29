@@ -1,0 +1,3 @@
+/** Nom lisible d'un champ de formulaire de site (#232) : clés connues des thèmes en français, sinon « code_postal » → « Code postal ». Utilisable côté navigateur. */
+const KNOWN_LABELS: Record<string, string> = { name: "Nom", nom: "Nom", first_name: "Prénom", firstName: "Prénom", last_name: "Nom", lastName: "Nom", email: "E-mail", phone: "Téléphone", tel: "Téléphone", body: "Message", message: "Message", service: "Prestation", subject: "Objet" };
+export const fieldLabel = (k: string) => { if (KNOWN_LABELS[k]) return KNOWN_LABELS[k]; const x = k.replace(/[_-]+/g, " ").trim(); return x.charAt(0).toUpperCase() + x.slice(1); };

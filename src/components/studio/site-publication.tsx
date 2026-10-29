@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Badge, Button, Modal, formatDate, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
+import { fieldLabel } from "@/lib/sites/field-label";
 
 type Overview = {
   configured: boolean;
@@ -24,7 +25,6 @@ type Overview = {
 
 type NotificationState = "sent" | "pending" | "retrying" | "smtp_not_configured" | "failed" | "partial" | "no_recipient" | "before_email";
 const NAME_KEYS = ["name", "nom", "full_name"];
-const fieldLabel = (k: string) => { const x = k.replace(/[_-]+/g, " ").trim(); return x.charAt(0).toUpperCase() + x.slice(1); };
 const requestName = (f: Record<string, string>) => NAME_KEYS.map((k) => f[k]).find(Boolean) || [f.first_name || f.firstName, f.last_name || f.lastName].filter(Boolean).join(" ") || f.email || "";
 
 export function SitePublication({ open, onClose, projectId, focusRequest }: { open: boolean; onClose: () => void; projectId: string; focusRequest?: string | null }) {
