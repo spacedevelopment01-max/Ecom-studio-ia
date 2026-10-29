@@ -57,12 +57,12 @@ export default function TabCatalogue() {
           </div>
           <Button icon={<Plus className="size-4" />} onClick={() => setEditing("new")}>{t("Ajouter un produit", "Add a product")}</Button>
         </div>
-        <div className="mt-5 grid gap-3">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-3">
           {!data.products.length && <Empty icon={<Boxes className="size-6" />} title={t("Aucun produit", "No products")}>{t("Ajoutez votre premier produit, ou importez ceux d'une boutique connectée.", "Add your first product, or import those of a connected store.")}</Empty>}
           {data.products.map((p, i) => {
             const stock = stockOf(p);
             return (
-              <div key={p.id} data-catalogue-product={p.id} className="flex flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center">
+              <div key={p.id} data-catalogue-product={p.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center">
                 <div className="aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-paper-2">{p.images[0] ? <img src={p.images[0].url} alt={p.images[0].alt} className="size-full object-cover" /> : <span className="grid size-full place-items-center text-xs text-muted">{t("Sans photo", "No photo")}</span>}</div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2"><p className="max-w-full truncate font-semibold">{p.data.title}</p>{p.status === "draft" && <Badge tone="warn">{t("Brouillon", "Draft")}</Badge>}{p.links.map((l) => <Badge key={l.platform + l.store} tone="ok">{PLATFORM[l.platform as keyof typeof PLATFORM]} · {l.store}</Badge>)}</div>
