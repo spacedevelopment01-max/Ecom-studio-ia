@@ -150,7 +150,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     async review(brief, img, reference, key, origin) {
       const small = await sharp(img, { failOn: "none" }).rotate().resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const images = [{ data: small, label: L("image à juger", "image to review") }];
-      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: L("produit de référence (réel)", "reference product (real)") });
+      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: brief.productFidelity?L("produit de référence (réel)", "reference product (real)"):L('référence autorisée d’ambiance et de couleurs','authorized reference for atmosphere and colours') });
       return (await llmJson(
         {...imageReviewRequest(p,brief,{...base,usageKey:key},images,origin),...b.reviewEnvelope,...(b.reviewRoute?{expectedRoute:b.reviewRoute}:{})},
         b.singleReviewCall?BoundedImageReviewSchema:ImageReviewSchema,

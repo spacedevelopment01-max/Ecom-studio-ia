@@ -2,7 +2,7 @@
 import {HttpError} from '../auth';
 import {mediaRouteFor,productImagePath,photoRequestMaxMicro,productScenePrompt,ambiancePrompt,withQuotedImageRoute,imageReferencePrompt} from '../ai/media-providers';
 import {callCostBoundMicro,estimateCallMicro,routeLlm,strictTextQuoteInput,withSelectedStrategy,type LlmCall} from '../ai/llm';
-import {buildBrief,briefHash,generationPrompt} from './brief';
+import {buildBrief,briefHash,generationRequestPrompt} from './brief';
 import {PRODUCT_KINDS} from './intent';
 import {imageReviewRequest} from './deps';
 import {BoundedImageReviewSchema} from './quality';
@@ -15,7 +15,7 @@ import {L} from '../i18n-server';
 import {activeProviderKey} from '../ai/config';
 import {brainSnapshot} from '../brain/snapshot';
 import {rejectedDirections} from './direction';
-import {applyWording,loadWordingRules} from '../client-wording';
+import {loadWordingRules} from '../client-wording';
 export type ImageCreationInput={binding:ImageBinding;kind:ImageRequestV2['kind'];aspect:'1:1'|'4:5'|'9:16'|'16:9';instruction:string;frames:NonNullable<ImageRequestV2['shot']>[]};
 export function imageCreationQuote(p:Project,input:ImageCreationInput){
  const resolved=resolveImageBinding(p,input.binding),project=resolved.project;
@@ -23,7 +23,7 @@ export function imageCreationQuote(p:Project,input:ImageCreationInput){
  const requests:ImageRequestV2[]=input.frames.map((shot,index)=>({kind:input.kind,aspect:input.aspect,support:'site',instructions:input.instruction,shot,variant:index,count:1,binding:input.binding,bindingDigest:resolved.digest,productFidelity:fidelity,references:resolved.references,...(resolved.service?{service:resolved.service}:{}),peopleAllowed:false,noStock:true,allowGenerate:true,attemptLimit:1,allowDirectionChange:false,singleReviewCall:true}));
  let capMicro=0,estimateMicro=0,maximumCalls=0,reused=0,routeReason=L('Acquis natifs réutilisés sans appel fournisseur.','Native acquired files reused without a provider request.');const briefHashes:string[]=[];
  for(const request of requests){
-  const brief=buildBrief(project,request,{rejectedDirections:rejectedDirections(brainSnapshot(project).memory),peopleAllowed:false}),prompt=applyWording(generationPrompt(brief),loadWordingRules(p.id)),aspect=generationAspect(brief.format.aspect);
+  const brief=buildBrief(project,request,{rejectedDirections:rejectedDirections(brainSnapshot(project).memory),peopleAllowed:false}),prompt=generationRequestPrompt(brief,loadWordingRules(p.id)),aspect=generationAspect(brief.format.aspect);
   briefHashes.push(briefHash(brief));
   const existing=reusableFor(p.id,briefHash(brief));
   if(existing?.origin==='generated'){
@@ -35,7 +35,7 @@ export function imageCreationQuote(p:Project,input:ImageCreationInput){
   if(!imageRoute)throw new HttpError(409,L('Fournisseur image indisponible. Aucun substitut local.','Image provider unavailable. No local substitute.'));
   routeReason=imageRoute.reason;
   const textZone=brief.format.textZone&&brief.format.textZone!=='none'?`${{left:'à gauche',right:'à droite',top:'en haut',bottom:'en bas',center:'au centre'}[brief.format.textZone]} du cadre`:null;
-  const actualPrompt=imageReferencePrompt(fidelity?productScenePrompt({prompt,aspect,textZone}):ambiancePrompt({prompt,aspect,reference:resolved.references.length>0}),resolved.references.map(()=> 'product'));
+  const actualPrompt=imageReferencePrompt(fidelity?productScenePrompt({prompt,aspect,textZone}):ambiancePrompt({prompt,aspect,reference:resolved.references.length>0}),resolved.references.map(()=> fidelity?'product':'style'));
   const imageMax=withQuotedImageRoute(imageRoute,()=>photoRequestMaxMicro(imageRoute,{prompt:actualPrompt,references:resolved.references.length,aspect}));
   const images=[{data:Buffer.alloc(1),label:'image à juger'},...(resolved.references.length?[{data:Buffer.alloc(1),label:'référence réelle'}]:[])];
   const call=withSelectedStrategy(imageReviewRequest(project,brief,{userId:p.userId,projectId:p.id,jobId:null,usageKey:'quote'},images)),review=routeLlm(call);

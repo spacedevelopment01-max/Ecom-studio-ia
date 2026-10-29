@@ -708,7 +708,7 @@ ${closed ? "Photographie réaliste et haut de gamme." : "Photographie éditorial
 
 export async function ambianceImage(ctx: Ctx, input: { prompt: string; aspect: "1:1" | "4:5" | "9:16" | "16:9"; reference?: Buffer | null; usage?: MediaUsage; /** Exclusions propres à la scène (négatif technique : le produit lui-même). */ negative?: string }) {
   const text = ambiancePrompt({ prompt: input.prompt, aspect: input.aspect, reference: !!input.reference });
-  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null, quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
+  return generateImage(ctx, { text, aspect: input.aspect, reference: input.reference ?? null,...(input.reference?{references:[{role:'style' as const,data:input.reference,essential:true}]}:{}), quality: "high", usage: input.usage ?? "scene", ...(input.negative ? { negative: input.negative } : {}) });
 }
 
 /**

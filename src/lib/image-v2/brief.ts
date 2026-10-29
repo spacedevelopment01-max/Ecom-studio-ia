@@ -16,6 +16,7 @@ import { toFr } from "./prompt-fr";
 import { tradeFr } from "../brain/trade-fr";
 import { productScenePromptFr, stillLifeFor, stillLifePrompt, type StillLifeScene } from "./still-life";
 import { PRODUCT_KINDS } from "./intent";
+import {applyWording,wordingPromptLine,type WordingRule} from '../client-wording';
 import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from "./types";
 
 export const BRIEF_VERSION = "5a.1";
@@ -205,7 +206,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
 
   return {
-    version: req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
+    version: req.bindingDigest ? `${BRIEF_VERSION}.bound3` : req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
     ...(req.instructions?{instructions:req.instructions}:{}),
     ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
@@ -235,6 +236,12 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
     ...(req.shot ? { shotKey: crypto.createHash("sha256").update(JSON.stringify(req.shot)).digest("hex").slice(0, 12) } : {}),
     fr: { subject: subjectFr || subject, action: actionFr, environment: req.shot?.environment ?? environmentFr, negative: negative.map((n) => toFr(tradeFr(n))), ...(sceneFr ? { scene: sceneFr } : {}), ...(sceneExclude ? { sceneExclude } : {}), ...(productSceneFr ? { productScene: productSceneFr } : {}) },
   };
+}
+
+/** Même demande au devis et au fournisseur. Les textes acceptés restent intacts ; le vocabulaire demeure une consigne. */
+export function generationRequestPrompt(b:VisualBrief,rules:WordingRule[],correction?:string|null):string{
+ const prompt=generationPrompt(b,correction);
+ return b.bindingDigest?[wordingPromptLine(rules),prompt].filter(Boolean).join('\n'):applyWording(prompt,rules);
 }
 
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */

@@ -43,16 +43,18 @@ type View=import('../src/lib/orchestrator/conversation/contract').ConversationVi
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
-let lastInputText='',imageHttpCalls=0;const imageRequests:unknown[]=[];
+let lastInputText='',imageHttpCalls=0,imageFailureAt=0;const imageRequests:unknown[]=[];
 const fake=http.createServer(async(req,res)=>{
   try{
     let bytes='';for await(const chunk of req)bytes+=chunk;
     if(process.argv.includes('--images-ui')&&/\/images\/(?:edits|generations)/.test(req.url??'')){
       await new Promise(r=>setTimeout(r,200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
       const model=/name="model"\r\n\r\n([^\r]+)/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).model:null);assert.ok(model);
-      const prompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
-      const proposed=fixture.imagePlan as{quote?:string;frames?:Record<string,string>[];reference?:unknown}|undefined;if(proposed?.quote){assert.ok(prompt.includes(proposed.quote),'La consigne exacte doit atteindre la requête image native');assert.ok(proposed.frames?.some(frame=>Object.values(frame).every(value=>prompt.includes(value))),'La composition, la lumière, le cadrage et le décor acceptés doivent atteindre le générateur');}
-      const hasReference=/name="image(?:\[\])?"/.test(bytes);if(proposed)assert.equal(hasReference,!!proposed.reference,'La photo annoncée doit être réellement jointe');imageRequests.push({operation:req.url?.includes('edits')?'edit':'generate',hasReference,promptSha256:createHash('sha256').update(prompt).digest('hex'),promptBytes:Buffer.byteLength(prompt),requestRef:createHash('sha256').update(model).digest('hex').slice(0,16)});
+      const wirePrompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
+      const prompt=wirePrompt.replace(/\r\n/g,'\n'); // FormData encode les fins de ligne en CRLF, sans modifier les mots ou espaces.
+      const proposed=fixture.imagePlan as{quote?:string;kind?:string;frames?:Record<string,string>[];reference?:unknown}|undefined;if(proposed?.quote){assert.ok(prompt.includes(proposed.quote),'La consigne exacte doit atteindre la requête image native');assert.ok(proposed.frames?.some(frame=>Object.values(frame).every(value=>prompt.includes(value))),'La composition, la lumière, le cadrage et le décor acceptés doivent atteindre le générateur');if(proposed.reference)assert.ok(prompt.includes('image 1: '+(proposed.kind==='trade_photo'?'style':'product')),'Une référence d’ambiance de service ne doit pas être décrite comme un produit à reproduire');}
+      const hasReference=/name="image(?:\[\])?"/.test(bytes);if(proposed)assert.equal(hasReference,!!proposed.reference,'La photo annoncée doit être réellement jointe');imageRequests.push({operation:req.url?.includes('edits')?'edit':'generate',hasReference,promptSha256:createHash('sha256').update(prompt).digest('hex'),wirePromptSha256:createHash('sha256').update(wirePrompt).digest('hex'),multipartLineEndingsDecoded:wirePrompt!==prompt,promptBytes:Buffer.byteLength(prompt),requestRef:createHash('sha256').update(model).digest('hex').slice(0,16),simulatedResponseStatus:imageFailureAt===imageHttpCalls?503:200});
+      if(imageFailureAt===imageHttpCalls){res.statusCode=503;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{message:'Panne image503 simulée après une première proposition acquise.'}}));return;}
       res.setHeader('content-type','application/json');res.end(JSON.stringify({created:Math.floor(Date.now()/1000),data:[{b64_json:(await mockImage(800+imageHttpCalls,1440,960)).toString('base64')}],usage:{input_tokens:900,output_tokens:6208,input_tokens_details:{text_tokens:800,image_tokens:100}}}));return;
     }
     const p=JSON.parse(bytes||'{}');
@@ -218,7 +220,7 @@ try{
   }
   if(process.argv.includes('--images-ui')){
     const{verifyImagesBrowser}=await import('./verify-agent211-images-ui');
-    proof.imagesUi=await verifyImagesBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;
+    proof.imagesUi=await verifyImagesBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,failImageAfter:n=>{assert.ok(Number.isInteger(n)&&n>0);imageFailureAt=imageHttpCalls+n;}});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){

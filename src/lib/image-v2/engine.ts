@@ -32,8 +32,8 @@ import { POLICIES } from "../quality/policies";
 import { loadProject, type Project } from "../projects";
 import { validCutouts } from "../engine/cutouts";
 import { EUR } from "../billing";
-import { buildBrief, briefHash, generationPrompt, type BriefRequest } from "./brief";
-import { applyWording, loadWordingRules } from "../client-wording";
+import { buildBrief, briefHash, generationRequestPrompt, type BriefRequest } from "./brief";
+import { loadWordingRules } from "../client-wording";
 import { rejectedDirections } from "./direction";
 import { frameTo } from "./formats";
 import { PRODUCT_KINDS, stagesFor } from "./intent";
@@ -319,7 +319,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   for (let attempt = 0;attempt < maxAttempts;attempt++) {
     if(req.binding&&resolveImageBinding(loadProject(p.id),req.binding).digest!==req.bindingDigest)throw new UserFacingError(L('Le contexte image a changé. Les acquis restent conservés ; aucun nouvel appel lancé.','Image context changed. Acquired work is kept; no new request started.'),'image_binding_changed');
     // Vocabulaire du client (ex. ARVEN : « montre », jamais « chronographe ») : appliqué à chaque consigne.
-    const prompt = applyWording(generationPrompt(brief, correction), wording);
+    const prompt = generationRequestPrompt(brief,wording,correction);
     const ph = hash(prompt);
     // Jamais deux fois la même consigne (une reprise identique ne changerait rien, et se paierait).
     if (prompts.has(ph) || memoOf(p.id, `gen:${ph}`, bh)?.verdict === "REJECTED") break;
