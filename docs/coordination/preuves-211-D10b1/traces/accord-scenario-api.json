@@ -1,0 +1,255 @@
+{
+  "success": true,
+  "failure": null,
+  "code": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "version": {
+    "commit": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "cases": [
+    {
+      "scene": "mono",
+      "checks": [
+        {
+          "kind": "third-party",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "placeholder",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "missing-scene",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "unknown-key",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "shortened-duration",
+          "http": 422,
+          "noApprovalToken": true
+        }
+      ],
+      "acceptedHttp": 200,
+      "exactScenarioReturned": true,
+      "colorRetained": true,
+      "emptyCtaRetained": true,
+      "noVoiceAdded": true,
+      "approvalTokenCreatedButNotExported": true,
+      "sourceFiles": [
+        {
+          "assetId": "pvki9gcp4gks290l",
+          "bytes": 204606,
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33"
+        },
+        {
+          "assetId": "ml79wjet68l2f72a",
+          "bytes": 296382,
+          "sha256": "25b5c602e574df753750ac2402569d816fd84a6aac8eb3f65fc22068c9344310"
+        },
+        {
+          "assetId": "p4d3n2pncbcoz6o0",
+          "bytes": 204606,
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33"
+        }
+      ],
+      "realProviderCalls": 0
+    },
+    {
+      "scene": "multi",
+      "checks": [
+        {
+          "kind": "third-party",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "placeholder",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "missing-scene",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "unknown-key",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "shortened-duration",
+          "http": 422,
+          "noApprovalToken": true
+        }
+      ],
+      "acceptedHttp": 200,
+      "exactScenarioReturned": true,
+      "colorRetained": true,
+      "emptyCtaRetained": true,
+      "noVoiceAdded": true,
+      "approvalTokenCreatedButNotExported": true,
+      "sourceFiles": [
+        {
+          "assetId": "m629yjgodtd88h4x",
+          "bytes": 261604,
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2"
+        },
+        {
+          "assetId": "0j5op8lwfationhq",
+          "bytes": 348003,
+          "sha256": "756ca85d7e520d8980963245fbd3cd5ef2c48626bb4eab9b2fbdad406dd17b8b"
+        },
+        {
+          "assetId": "hdyxxjr4glkmqou0",
+          "bytes": 261604,
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2"
+        }
+      ],
+      "realProviderCalls": 0
+    },
+    {
+      "scene": "services",
+      "checks": [
+        {
+          "kind": "third-party",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "placeholder",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "missing-scene",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "unknown-key",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "shortened-duration",
+          "http": 422,
+          "noApprovalToken": true
+        }
+      ],
+      "acceptedHttp": 200,
+      "exactScenarioReturned": true,
+      "colorRetained": true,
+      "emptyCtaRetained": true,
+      "noVoiceAdded": true,
+      "approvalTokenCreatedButNotExported": true,
+      "sourceFiles": [
+        {
+          "assetId": "4pf3871y4wohxmpg",
+          "bytes": 250791,
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5"
+        },
+        {
+          "assetId": "aaxnh2f68kfl08vu",
+          "bytes": 343873,
+          "sha256": "8da17211f9ecf3ef46453507af02b4abe9b4c3c8e11aa6f4ebc4e6a94484151f"
+        },
+        {
+          "assetId": "zwf78jmy47ny20xp",
+          "bytes": 250791,
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5"
+        }
+      ],
+      "realProviderCalls": 0
+    },
+    {
+      "scene": "inedit",
+      "checks": [
+        {
+          "kind": "third-party",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "placeholder",
+          "http": 422,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "missing-scene",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "unknown-key",
+          "http": 400,
+          "noApprovalToken": true
+        },
+        {
+          "kind": "shortened-duration",
+          "http": 422,
+          "noApprovalToken": true
+        }
+      ],
+      "acceptedHttp": 200,
+      "exactScenarioReturned": true,
+      "colorRetained": true,
+      "emptyCtaRetained": true,
+      "noVoiceAdded": true,
+      "approvalTokenCreatedButNotExported": true,
+      "sourceFiles": [
+        {
+          "assetId": "8u9d7hogjqgvx1mx",
+          "bytes": 251701,
+          "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7"
+        },
+        {
+          "assetId": "8pd3in7g71gwlz6o",
+          "bytes": 339617,
+          "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6"
+        },
+        {
+          "assetId": "lzldrsnjatbtp921",
+          "bytes": 251293,
+          "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e"
+        }
+      ],
+      "realProviderCalls": 0
+    }
+  ],
+  "before": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0,
+    "video_documents": 25
+  },
+  "after": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0,
+    "video_documents": 25
+  },
+  "fixtureCopyOnly": true,
+  "noWorker": true,
+  "noProviderOrSdk": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "nativeScenarioHistorySaved": true,
+  "unchangedProviderRowsJobsAndVersions": true
+}

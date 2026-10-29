@@ -1,0 +1,593 @@
+{
+  "success": true,
+  "failure": null,
+  "code": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "version": {
+    "commit": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "fixtureCopyOnly": true,
+  "noWorker": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "before": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0,
+    "video_documents": 25
+  },
+  "after": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0,
+    "video_documents": 25
+  },
+  "unchangedProviderRowsJobsAndVersions": true,
+  "cases": [
+    {
+      "scene": "mono",
+      "receiptId": "brdlvdztjqf5qghd",
+      "assetId": "p4d3n2pncbcoz6o0",
+      "isCurrent": true,
+      "captures": [
+        "mono-syna-1440.png",
+        "mono-galerie-1440.png",
+        "mono-syna-360.png",
+        "mono-galerie-360.png"
+      ],
+      "frames": [
+        {
+          "name": "syna-1440",
+          "width": 1920,
+          "height": 1080,
+          "time": 1.000838,
+          "x": 1058,
+          "y": 420.5,
+          "w": 333,
+          "h": 187.3125,
+          "viewport": 960,
+          "capturedAtTime": 2.128889,
+          "coloredPixelRatio": 0.9537141932351513,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 1058,
+            "y": 420.5,
+            "w": 333,
+            "h": 187.3125
+          },
+          "roi": {
+            "left": 1141,
+            "top": 435,
+            "width": 167,
+            "height": 37
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-1440",
+          "width": 1920,
+          "height": 1080,
+          "time": 0.99776,
+          "x": 565,
+          "y": 649.390625,
+          "w": 197,
+          "h": 110.8125,
+          "viewport": 960,
+          "capturedAtTime": 2.121529,
+          "coloredPixelRatio": 0.9517906336088154,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 565,
+            "y": 649.390625,
+            "w": 197,
+            "h": 110.8125
+          },
+          "roi": {
+            "left": 614,
+            "top": 658,
+            "width": 99,
+            "height": 22
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "syna-360",
+          "width": 1920,
+          "height": 1080,
+          "time": 1.002084,
+          "x": 34,
+          "y": 432.5,
+          "w": 293,
+          "h": 164.8125,
+          "viewport": 960,
+          "capturedAtTime": 2.127496,
+          "coloredPixelRatio": 0.9562976705833849,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 34,
+            "y": 432.5,
+            "w": 293,
+            "h": 164.8125
+          },
+          "roi": {
+            "left": 107,
+            "top": 446,
+            "width": 147,
+            "height": 33
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-360",
+          "width": 1920,
+          "height": 1080,
+          "time": 1.003665,
+          "x": 17,
+          "y": 437.09375,
+          "w": 154,
+          "h": 86.625,
+          "viewport": 960,
+          "capturedAtTime": 2.128577,
+          "coloredPixelRatio": 0.948051948051948,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 17,
+            "y": 437.09375,
+            "w": 154,
+            "h": 86.625
+          },
+          "roi": {
+            "left": 56,
+            "top": 444,
+            "width": 77,
+            "height": 17
+          },
+          "nativeControlsNotHidden": true
+        }
+      ],
+      "files": [
+        {
+          "width": 1440,
+          "assetId": "p4d3n2pncbcoz6o0",
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+          "bytes": 204606,
+          "actualBrowserDownload": true
+        },
+        {
+          "width": 360,
+          "assetId": "p4d3n2pncbcoz6o0",
+          "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+          "bytes": 204606,
+          "actualBrowserDownload": true
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "multi",
+      "receiptId": "e4phy2td4bu7bucn",
+      "assetId": "hdyxxjr4glkmqou0",
+      "isCurrent": true,
+      "captures": [
+        "multi-syna-1024.png",
+        "multi-galerie-1024.png",
+        "multi-syna-360.png",
+        "multi-galerie-360.png"
+      ],
+      "frames": [
+        {
+          "name": "syna-1024",
+          "width": 1080,
+          "height": 1920,
+          "time": 1.004508,
+          "x": 602,
+          "y": 322.25,
+          "w": 373,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.131468,
+          "coloredPixelRatio": 0.9793169793169794,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 680.5,
+            "y": 322.25,
+            "w": 216,
+            "h": 384
+          },
+          "roi": {
+            "left": 735,
+            "top": 353,
+            "width": 108,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-1024",
+          "width": 1080,
+          "height": 1920,
+          "time": 1.006222,
+          "x": 565,
+          "y": 502.53125,
+          "w": 130,
+          "h": 231.109375,
+          "viewport": 960,
+          "capturedAtTime": 2.132505,
+          "coloredPixelRatio": 0.9806020066889632,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 565.00048828125,
+            "y": 502.53125,
+            "w": 129.9990234375,
+            "h": 231.109375
+          },
+          "roi": {
+            "left": 598,
+            "top": 521,
+            "width": 65,
+            "height": 46
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "syna-360",
+          "width": 1080,
+          "height": 1920,
+          "time": 0.967903,
+          "x": 34,
+          "y": 322.5,
+          "w": 293,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.092751,
+          "coloredPixelRatio": 0.9790764790764791,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 72.5,
+            "y": 322.5,
+            "w": 216,
+            "h": 384
+          },
+          "roi": {
+            "left": 127,
+            "top": 353,
+            "width": 108,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-360",
+          "width": 1080,
+          "height": 1920,
+          "time": 0.99149,
+          "x": 17,
+          "y": 343.09375,
+          "w": 154,
+          "h": 273.765625,
+          "viewport": 960,
+          "capturedAtTime": 2.112343,
+          "coloredPixelRatio": 0.9782762691853601,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 17.00341796875,
+            "y": 343.09375,
+            "w": 153.9931640625,
+            "h": 273.765625
+          },
+          "roi": {
+            "left": 56,
+            "top": 365,
+            "width": 77,
+            "height": 55
+          },
+          "nativeControlsNotHidden": true
+        }
+      ],
+      "files": [
+        {
+          "width": 1024,
+          "assetId": "hdyxxjr4glkmqou0",
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+          "bytes": 261604,
+          "actualBrowserDownload": true
+        },
+        {
+          "width": 360,
+          "assetId": "hdyxxjr4glkmqou0",
+          "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+          "bytes": 261604,
+          "actualBrowserDownload": true
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "services",
+      "receiptId": "mw8amwpsxsdj5x6k",
+      "assetId": "zwf78jmy47ny20xp",
+      "isCurrent": true,
+      "captures": [
+        "services-syna-390.png",
+        "services-galerie-390.png",
+        "services-syna-1440.png",
+        "services-galerie-1440.png"
+      ],
+      "frames": [
+        {
+          "name": "syna-390",
+          "width": 1080,
+          "height": 1350,
+          "time": 0.996755,
+          "x": 34,
+          "y": 322.25,
+          "w": 323,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.124286,
+          "coloredPixelRatio": 0.9802664867599933,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 41.900000000000006,
+            "y": 322.25,
+            "w": 307.2,
+            "h": 384
+          },
+          "roi": {
+            "left": 119,
+            "top": 353,
+            "width": 154,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-390",
+          "width": 1080,
+          "height": 1350,
+          "time": 1.004551,
+          "x": 17,
+          "y": 330.09375,
+          "w": 169,
+          "h": 300.4375,
+          "viewport": 960,
+          "capturedAtTime": 2.129243,
+          "coloredPixelRatio": 0.9829131652661064,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 17,
+            "y": 374.6875,
+            "w": 169,
+            "h": 211.25
+          },
+          "roi": {
+            "left": 59,
+            "top": 392,
+            "width": 85,
+            "height": 42
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "syna-1440",
+          "width": 1080,
+          "height": 1350,
+          "time": 0.986823,
+          "x": 1058,
+          "y": 322.25,
+          "w": 333,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.113145,
+          "coloredPixelRatio": 0.9802664867599933,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 1070.9,
+            "y": 322.25,
+            "w": 307.2,
+            "h": 384
+          },
+          "roi": {
+            "left": 1148,
+            "top": 353,
+            "width": 154,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-1440",
+          "width": 1080,
+          "height": 1350,
+          "time": 1.005214,
+          "x": 565,
+          "y": 409.390625,
+          "w": 197,
+          "h": 350.21875,
+          "viewport": 960,
+          "capturedAtTime": 2.128176,
+          "coloredPixelRatio": 0.9828901257472686,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 565,
+            "y": 461.375,
+            "w": 197,
+            "h": 246.25
+          },
+          "roi": {
+            "left": 614,
+            "top": 481,
+            "width": 99,
+            "height": 49
+          },
+          "nativeControlsNotHidden": true
+        }
+      ],
+      "files": [
+        {
+          "width": 390,
+          "assetId": "zwf78jmy47ny20xp",
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+          "bytes": 250791,
+          "actualBrowserDownload": true
+        },
+        {
+          "width": 1440,
+          "assetId": "zwf78jmy47ny20xp",
+          "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+          "bytes": 250791,
+          "actualBrowserDownload": true
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "inedit",
+      "receiptId": "cijymukmgwbzwek0",
+      "assetId": "lzldrsnjatbtp921",
+      "isCurrent": false,
+      "captures": [
+        "inedit-syna-360.png",
+        "inedit-galerie-360.png",
+        "inedit-syna-1440.png",
+        "inedit-galerie-1440.png"
+      ],
+      "frames": [
+        {
+          "name": "syna-360",
+          "width": 1080,
+          "height": 1920,
+          "time": 1.004183,
+          "x": 34,
+          "y": 322.25,
+          "w": 293,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.131382,
+          "coloredPixelRatio": 0.9889369889369889,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 72.5,
+            "y": 322.25,
+            "w": 216,
+            "h": 384
+          },
+          "roi": {
+            "left": 127,
+            "top": 353,
+            "width": 108,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-360",
+          "width": 1080,
+          "height": 1920,
+          "time": 1.002167,
+          "x": 17,
+          "y": 343.09375,
+          "w": 154,
+          "h": 273.765625,
+          "viewport": 960,
+          "capturedAtTime": 2.129462,
+          "coloredPixelRatio": 0.9881936245572609,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 17.00341796875,
+            "y": 343.09375,
+            "w": 153.9931640625,
+            "h": 273.765625
+          },
+          "roi": {
+            "left": 56,
+            "top": 365,
+            "width": 77,
+            "height": 55
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "syna-1440",
+          "width": 1080,
+          "height": 1920,
+          "time": 0.991217,
+          "x": 1058,
+          "y": 322,
+          "w": 333,
+          "h": 384,
+          "viewport": 960,
+          "capturedAtTime": 2.115643,
+          "coloredPixelRatio": 0.9889369889369889,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 1116.5,
+            "y": 322,
+            "w": 216,
+            "h": 384
+          },
+          "roi": {
+            "left": 1171,
+            "top": 353,
+            "width": 108,
+            "height": 77
+          },
+          "nativeControlsNotHidden": true
+        },
+        {
+          "name": "galerie-1440",
+          "width": 1080,
+          "height": 1920,
+          "time": 0.974047,
+          "x": 565,
+          "y": 409.390625,
+          "w": 197,
+          "h": 350.21875,
+          "viewport": 960,
+          "capturedAtTime": 2.098162,
+          "coloredPixelRatio": 0.9919825072886297,
+          "testOnlySyntheticPatternRoi": true,
+          "mediaContentBox": {
+            "x": 565.0009765625,
+            "y": 409.390625,
+            "w": 196.998046875,
+            "h": 350.21875
+          },
+          "roi": {
+            "left": 614,
+            "top": 437,
+            "width": 98,
+            "height": 70
+          },
+          "nativeControlsNotHidden": true
+        }
+      ],
+      "files": [
+        {
+          "width": 360,
+          "assetId": "lzldrsnjatbtp921",
+          "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+          "bytes": 251293,
+          "actualBrowserDownload": true
+        },
+        {
+          "width": 1440,
+          "assetId": "lzldrsnjatbtp921",
+          "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+          "bytes": 251293,
+          "actualBrowserDownload": true
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

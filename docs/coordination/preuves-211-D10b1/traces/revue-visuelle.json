@@ -1,0 +1,23 @@
+{
+  "code": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "contactSheetsOpened": 15,
+  "individualScreensOpened": [
+    "mono-devis.png",
+    "services-retouche-avant.png",
+    "postflight-echec-360.png",
+    "postflight-echec-1440.png"
+  ],
+  "browserVideoSampleSheetsOpened": 4,
+  "nativeVideoSampleSheetsOpened": 4,
+  "nativeFramesViewed": 36,
+  "all90ContactSheetCapturesReviewed": true,
+  "twoAdditionalErrorCapturesOpened": true,
+  "continuousHumanPlaybackClaimed": false,
+  "realCreativeQualityQualified": false,
+  "syntheticSourcePatternsOnly": true,
+  "notes": [
+    "Les films du navigateur gardent leur ouverture blanche/splash et leurs marges grises lors des changements de largeur, sans montage ni accélération.",
+    "Les captures individuelles sont livrées à leur résolution native ; les planches servent à parcourir la recette.",
+    "L’erreur après réouverture a été recapturée en la mettant effectivement dans le viewport, sans worker ni rendu."
+  ]
+}

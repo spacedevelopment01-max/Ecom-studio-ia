@@ -1,0 +1,58 @@
+{
+  "success": true,
+  "failure": null,
+  "code": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "version": {
+    "commit": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "fixtureSourceCode": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "captures": [
+    "echec-360.png",
+    "echec-1440.png"
+  ],
+  "files": [
+    {
+      "assetId": "8u9d7hogjqgvx1mx",
+      "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7",
+      "bytes": 251701,
+      "http": 200
+    },
+    {
+      "assetId": "8pd3in7g71gwlz6o",
+      "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6",
+      "bytes": 339617,
+      "http": 200
+    },
+    {
+      "assetId": "lzldrsnjatbtp921",
+      "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+      "bytes": 251293,
+      "http": 200
+    }
+  ],
+  "before": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0
+  },
+  "after": {
+    "ai_calls": 22,
+    "ai_reservations": 20,
+    "usage_events": 20,
+    "jobs": 33,
+    "posts": 0,
+    "campaigns": 0
+  },
+  "fixtureCopyOnly": true,
+  "noWorker": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "unchangedProviderRowsAndJobs": true
+}
