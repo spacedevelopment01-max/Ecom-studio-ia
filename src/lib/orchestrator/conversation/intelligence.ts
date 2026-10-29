@@ -17,13 +17,14 @@ import { currentBrief, metaOf, ownedConversation } from './store';
 import { assertBriefWritable, saveBrief } from './tools';
 import {validateStrategyChoiceProposal} from './strategy-choices';
 import { COGNITIVE_SYSTEM, cognitiveContext } from './intelligence-context';
-import { CognitiveReplySchema, type CognitiveReply, type IntelligenceView } from './intelligence-contract';
+import { CognitiveReplySchema,cognitiveResponseSchema, type CognitiveReply, type IntelligenceView } from './intelligence-contract';
 import type { ConversationRow } from './contract';
 import {AgentRoleSchema,SPECIALISTS,specialistsEnabled,withSpecialistPlan,type AgentRole} from './specialists';
 import {assertBoundQuote,bindAgentJob,boundPublic,createOrReadBound} from '../../ai/request-bounds';
 import {brainView} from '../../brain/facade';
 import {loadProject} from '../../projects';
-import {conversationCatalogueEnabled,conversationImagesEnabled} from './tool-flags';
+import {conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled} from './tool-flags';
+import {validateLogoToolProposal} from './logo-tool-validation';
 import {validateCatalogueProposal} from './catalogue-tool-validation';
 import {validateImageToolProposal} from './image-tool-validation';
 
@@ -62,7 +63,7 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
   if (!activeProviderKey(route.provider as Parameters<typeof activeProviderKey>[0])) throw new HttpError(409, L('Le fournisseur de cette route est indisponible. Aucun repli inférieur ni appel n’a été lancé.', 'The provider for this route is unavailable. No lower-quality fallback or request was started.'), 'conversation_ai_unavailable');
   requirePrice(route.provider, route.model);
   call.expectedRoute = { provider: route.provider, model: route.model, ...(route.effort ? { effort: route.effort } : {}) };
-  const tokens = strictTextQuoteInput(call, CognitiveReplySchema);
+  const tokens = strictTextQuoteInput(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled()));
   const cap = callCostBoundMicro(route.provider, route.model, tokens.maximumTokens, 6000, route.effort ?? null);
   const estimate = estimateCallMicro(route.provider, route.model, tokens.typicalTokens, 1200);
   if (cap == null || estimate == null || cap <= 0 || !Number.isSafeInteger(cap)) throw new HttpError(409, L('Tarif ou plafond inconnu : aucun appel autorisé.', 'Unknown price or bound: no request authorized.'), 'conversation_ai_price_missing');
@@ -141,6 +142,7 @@ export function intelligenceView(c: ConversationRow): IntelligenceView {
 }
 
 function validateReply(reply: CognitiveReply, c: ConversationRow, context: ReturnType<typeof cognitiveContext>) {
+  if(reply.logoPlan){if(!conversationLogosEnabled())throw new Error('logo_tool_disabled');validateLogoToolProposal(c,reply.logoPlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   const focus=context.context.activeContext;
   if(reply.imagePlan){if(!conversationImagesEnabled())throw new Error('image_tool_disabled');if(focus?.state==='unavailable')throw new Error('conversation_target_requires_clarification');validateImageToolProposal(c,reply.imagePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if(reply.cataloguePlan){if(!conversationCatalogueEnabled())throw new Error('catalogue_tool_disabled');if(focus?.state==='unavailable')throw new Error('conversation_target_requires_clarification');validateCatalogueProposal(c,reply.cataloguePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
@@ -182,7 +184,7 @@ export async function runCognitiveJob(ctx: JobContext) {
     if(plan.boundId&&!specialistsEnabled()&&!acquired)throw new HttpError(404,'conversation_specialists_disabled');
     return scoped(c, user.id, key, () => runForUser(user.id, () => scoped(c, user.id, key, () => withTrace({ jobId: ctx.job.id, projectId: c.project_id, step: 'conversation', costCapMicro: plan.capMicro,...(plan.boundId?{agentBoundId:plan.boundId}:{}) }, () => withSpecialistPlan(plan.boundId?c.project_id:null,user.id,ctx.job.id,plan.role??'principal',async () => {
       const call = { ...plan.call, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dialogue`, acquiredOnly: acquired };
-      const raw = await llmJson(call, CognitiveReplySchema, { strict: true });
+      const raw = await llmJson(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled()), { strict: true });
       const reply = CognitiveReplySchema.parse(raw); validateReply(reply, c, cognitiveContext(c));
       return { reply, sourceRevision: q.revision, projectRevision: q.project_revision, quoteId: q.id };
     }))), 'normal', c.project_id));

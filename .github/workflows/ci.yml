@@ -176,6 +176,17 @@ jobs:
           path: /tmp/agent211-D9b-proof
           if-no-files-found: ignore
 
+      - name: Logos SYNA, trois directions, reprise et réutilisation (HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9c-proof --logos-ui
+
+      - name: Preuves des logos natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D9c-${{ github.sha }}
+          path: /tmp/agent211-D9c-proof
+          if-no-files-found: ignore
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

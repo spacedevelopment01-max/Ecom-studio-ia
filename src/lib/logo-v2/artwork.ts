@@ -95,19 +95,19 @@ const fitBrief = (brief: string, room: number) => (Buffer.byteLength(brief, "utf
  * Demande complète au modèle d'images pour un territoire, EN FRANÇAIS (règle du propriétaire : consignes concrètes,
  * seuls les textes à écrire dans le logo entre guillemets — le nom de la direction n'en a pas, pour ne pas être écrit).
  */
-export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string): string {
+export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string,exactInstructions?:string): string {
   const pal = brief.palette;
   const ink = pal[t.colorRole.ink];
   const accent = pal[t.colorRole.accent];
   const txt = artworkText(t, brief);
-  const upper = t.typography.case === "upper";
+  const upper = t.typography.case === "upper"&&exactInstructions===undefined;
   // Couleurs : celles de la direction quand la palette n'est pas validée (choisies pour la marque), sinon la palette.
   const own = !brief.paletteLocked && t.colors?.length ? t.colors.filter((c) => /^#[0-9a-f]{6}$/i.test(c)).slice(0, 3) : [];
   const colours = own.length ? `Couleurs : ${own.join(", ")}.` : `Couleurs : ${[...new Set([ink, accent])].join(" et ")}, tirées de la palette de la marque.`;
   const end = (x: string) => x.trim().replace(/[.\s]+$/, "");
   const trade = brief.trade.label || brief.activity;
   const acts = brief.activities.filter((a) => a.toLowerCase() !== trade.toLowerCase()).slice(0, 3);
-  const name = upper ? txt.name.toLocaleUpperCase("fr-FR") : txt.name;
+  const name = upper&&exactInstructions===undefined ? txt.name.toLocaleUpperCase("fr-FR") : txt.name;
   // Même forme que l'essai direct réussi : peu de consignes, toutes positives, une marque forte décrite précisément.
   // Le brief de direction artistique décrit le dessin ; sans brief, la direction, le style et l'idée de symbole.
   const art = t.imageBrief?.trim()
@@ -130,6 +130,11 @@ export function artworkPrompt(t: Territory, brief: BrandBrief, feedback?: string
     "Logo centré, marges généreuses, fond blanc uni, dessin du logo à plat seulement : aucune maquette, aucun mur, aucun papier, aucune photo, aucune personne.",
   ];
   const fixed = lines.filter(Boolean).join("\n");
+  if(exactInstructions!==undefined){
+    const complete=fixed+'\nConsignes exactes du client, à appliquer sans les inscrire comme texte dans le logo :\n'+exactInstructions+'\nFin des consignes exactes. Aucune personne, main, silhouette ou visage.';
+    if(Buffer.byteLength(complete,'utf8')>PROMPT_BUDGET)throw Error('logo_exact_prompt_exceeds_native_limit');
+    return complete;
+  }
   // Taille bornée (devis) : seul le brief est raccourci, jamais le texte exact ni la sortie.
   if (Buffer.byteLength(fixed, "utf8") <= PROMPT_BUDGET) return fixed;
   const room = PROMPT_BUDGET - (Buffer.byteLength(fixed, "utf8") - Buffer.byteLength(art, "utf8")) - 20;

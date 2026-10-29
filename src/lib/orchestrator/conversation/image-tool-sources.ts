@@ -26,6 +26,8 @@ export function selectedImageSource(c:ConversationRow,selection:z.infer<typeof I
   const meta=json<{imageV2?:{binding?:unknown};aiPost?:unknown}>(a.meta,{});if(meta.aiPost)throw new HttpError(409,L('Ce visuel de publication doit conserver ses textes et son logo. Sa retouche composée n’est pas encore raccordée à cet outil photo.','This post visual must preserve its text and logo. Composed edits are not connected to this photo tool yet.'));
   const parsed=ImageBindingSchema.safeParse(meta.imageV2?.binding);if(parsed.success)binding=parsed.data;
  }
+ const asset=getAsset(pin.assetId)!,provenance=json<{engine?:string}>(asset.meta,{});
+ if(role==='source'&&(asset.role==='logo'||asset.role?.startsWith('logo-')||['brand-board','direction-preview','favicon'].includes(asset.role??'')||provenance.engine==='logo-v2'))throw new HttpError(409,L('Ce logo ou cette planche de marque ne passe pas dans l’outil photo, qui interdit le texte. Vos fichiers restent conservés ; utilisez Marque pour une nouvelle version avec son devis.','This logo or brand board cannot use the photo tool, which forbids text. Your files are kept; use Brand for a new version with its quote.'));
  const focus=metaOf(c).activeContext?.target;if(role==='source'&&focus?.kind==='asset'&&(focus.assetId!==pin.assetId||focus.version!==pin.version))throw new HttpError(409,L('La source diffère de l’image désignée.','The source differs from the selected image.'));
  return{pin,binding};
 }

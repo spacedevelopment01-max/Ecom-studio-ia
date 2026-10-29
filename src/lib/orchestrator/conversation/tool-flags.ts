@@ -12,3 +12,4 @@ export const conversationResearchEnabled=()=>conversationToolsEnabled()&&process
 export const conversationContextEnabled=()=>['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_CONTEXT'].every(key=>process.env[key]==='1');
 export const conversationCatalogueEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_CATALOGUE==='1';
 export const conversationImagesEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_IMAGES==='1';
+export const conversationLogosEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_LOGOS==='1';
