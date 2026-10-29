@@ -102,6 +102,10 @@ describe("Salon : une saisie, une source", () => {
     const r = readPrestations(salon)!;
     expect(r.hours.mon).toBe("10:00-13:00, 14:00-18:00");
     expect(r.address).toBe("8 place Fictive, 69002 Lyon");
+    // La confirmation sans script affiche l'adresse, plus « [À renseigner] ».
+    const booking = Object.values(currentTheme(salon)!.spec.templates).flatMap((t) => Object.values(t.sections)).filter((x) => x.type === "an-booking");
+    expect(booking.length).toBeGreaterThan(0);
+    for (const b of booking) expect(b.settings?.address_todo).toBe("8 place Fictive, 69002 Lyon");
     expect(r.staff.find((m) => m.name === "Léa")).toMatchObject({ id: "lea", skills: ["couleur"], days: [1, 2] });
     expect(liveSalon(salon).config.staff.map((s) => s.id)).toContain("lea");
   });

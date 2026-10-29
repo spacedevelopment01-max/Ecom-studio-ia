@@ -180,7 +180,15 @@ export function savePrestations(projectId: string, raw: unknown) {
   }
   if (input.hours && sec.kind !== "restaurant") for (const d of DAYS) if (input.hours[d] !== undefined) st[`hours_${d}`] = input.hours[d]!.trim().replace(/\s*-\s*/g, "-").replace(/\s*,\s*/g, ", ");
   if (input.closures !== undefined) st.closures = input.closures.trim();
-  if (input.address !== undefined) st.address = input.address;
+  if (input.address !== undefined) {
+    st.address = input.address;
+    // Confirmation de réservation sans script : son texte de secours devient l'adresse (sinon « [À renseigner] » resterait
+    // affiché aux visiteurs sans JavaScript, et le site public refuserait d'être publié).
+    const fallback: Record<string, string> = { "an-booking": "[À renseigner]", "pa-booking": "[Adresse du cabinet à renseigner]" };
+    for (const tpl of Object.values(spec.templates ?? {})) for (const sec2 of Object.values(tpl.sections ?? {})) {
+      if (fallback[sec2.type]) (sec2.settings ??= {}).address_todo = input.address || fallback[sec2.type];
+    }
+  }
   if (input.restaurant && sec.kind === "restaurant") {
     const r = input.restaurant;
     if (r.minParty > r.maxParty) throw new HttpError(400, L("Le nombre minimum de couverts dépasse le maximum.", "The minimum party size exceeds the maximum."));
