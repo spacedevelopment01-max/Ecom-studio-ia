@@ -1,0 +1,187 @@
+{
+ "site": "https://atelier-cle-de-fa.sites.recette.test:3943",
+ "ordinateur": {
+  "accueil": 200,
+  "cookies": [],
+  "liens": [
+   "/",
+   "/pages/prestations",
+   "/pages/a-propos",
+   "/pages/faq",
+   "/pages/contact",
+   "/pages/devis",
+   "/pages/mentions-legales",
+   "/pages/confidentialite",
+   "/pages/cookies"
+  ],
+  "pages": {
+   "/": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/prestations": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/a-propos": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/faq": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/contact": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/devis": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mentions-legales": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/confidentialite": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/cookies": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   }
+  },
+  "envoi": {
+   "status": 303,
+   "redirection": "/pages/confirmation",
+   "body": ""
+  },
+  "pageApresEnvoi": "https://atelier-cle-de-fa.sites.recette.test:3943/pages/confirmation#contact_form",
+  "messageAffiche": [
+   "Merci pour votre demande.",
+   "Récapitulatif de votre demande",
+   "",
+   ""
+  ],
+  "studioSousLeSite": {
+   "/studio": 404,
+   "/admin": 404,
+   "/api/version": 404,
+   "/connexion": 404,
+   "/preview/x/v/current/": 404
+  },
+  "robots": "User-agent: *\nAllow: /\nSitemap: https://atelier-cle-de-fa.sites.recette.test:3943/sitemap.xml\n",
+  "erreurs": [
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "telephone": {
+  "accueil": 200,
+  "cookies": [],
+  "liens": [
+   "/",
+   "/pages/prestations",
+   "/pages/a-propos",
+   "/pages/faq",
+   "/pages/contact",
+   "/pages/devis",
+   "/pages/mentions-legales",
+   "/pages/confidentialite",
+   "/pages/cookies"
+  ],
+  "pages": {
+   "/": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/prestations": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/a-propos": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/faq": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/contact": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/devis": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mentions-legales": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/confidentialite": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/cookies": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   }
+  },
+  "studioSousLeSite": {
+   "/studio": 404,
+   "/admin": 404,
+   "/api/version": 404,
+   "/connexion": 404,
+   "/preview/x/v/current/": 404
+  },
+  "robots": "User-agent: *\nAllow: /\nSitemap: https://atelier-cle-de-fa.sites.recette.test:3943/sitemap.xml\n",
+  "erreurs": [
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ }
+}

@@ -1,0 +1,251 @@
+{
+ "site": "https://cabinet-souffle.sites.recette.test:3943",
+ "ordinateur": {
+  "accueil": 200,
+  "cookies": [],
+  "liens": [
+   "/pages/prendre-rendez-vous",
+   "/pages/mon-rendez-vous",
+   "/pages/retrouver-mon-rendez-vous",
+   "/pages/ateliers",
+   "/pages/contact",
+   "/pages/conditions-de-reservation",
+   "/pages/cookies",
+   "/",
+   "/pages/prestations",
+   "/pages/a-propos",
+   "/pages/faq",
+   "/pages/mentions-legales",
+   "/policies/terms-of-service",
+   "/policies/privacy-policy",
+   "/pages/confidentialite"
+  ],
+  "pages": {
+   "/pages/prendre-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mon-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/retrouver-mon-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/ateliers": {
+    "status": 404,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/contact": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/conditions-de-reservation": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/cookies": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/prestations": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/a-propos": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/faq": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mentions-legales": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/policies/terms-of-service": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/policies/privacy-policy": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   }
+  },
+  "studioSousLeSite": {
+   "/studio": 404,
+   "/admin": 404,
+   "/api/version": 404,
+   "/connexion": 404,
+   "/preview/x/v/current/": 404
+  },
+  "robots": "User-agent: *\nAllow: /\nSitemap: https://cabinet-souffle.sites.recette.test:3943/sitemap.xml\n",
+  "erreurs": [
+   "404 GET https://cabinet-souffle.sites.recette.test:3943/pages/ateliers",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "telephone": {
+  "accueil": 200,
+  "cookies": [],
+  "liens": [
+   "/pages/prendre-rendez-vous",
+   "/pages/mon-rendez-vous",
+   "/pages/retrouver-mon-rendez-vous",
+   "/pages/ateliers",
+   "/pages/contact",
+   "/pages/conditions-de-reservation",
+   "/pages/cookies",
+   "/",
+   "/pages/prestations",
+   "/pages/a-propos",
+   "/pages/faq",
+   "/pages/mentions-legales",
+   "/policies/terms-of-service",
+   "/policies/privacy-policy",
+   "/pages/confidentialite"
+  ],
+  "pages": {
+   "/pages/prendre-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mon-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/retrouver-mon-rendez-vous": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/ateliers": {
+    "status": 404,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/contact": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/conditions-de-reservation": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/cookies": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/prestations": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/a-propos": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/faq": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/pages/mentions-legales": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/policies/terms-of-service": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   },
+   "/policies/privacy-policy": {
+    "status": 200,
+    "apercu": false,
+    "aCompleter": false,
+    "debordement": false
+   }
+  },
+  "studioSousLeSite": {
+   "/studio": 404,
+   "/admin": 404,
+   "/api/version": 404,
+   "/connexion": 404,
+   "/preview/x/v/current/": 404
+  },
+  "robots": "User-agent: *\nAllow: /\nSitemap: https://cabinet-souffle.sites.recette.test:3943/sitemap.xml\n",
+  "erreurs": [
+   "404 GET https://cabinet-souffle.sites.recette.test:3943/pages/ateliers",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ }
+}
