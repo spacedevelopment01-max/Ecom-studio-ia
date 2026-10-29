@@ -164,7 +164,7 @@ export default function TabMarque() {
               <ul className="mt-1 list-disc pl-5 text-muted">{b.checks!.map((c) => <li key={c}>{c}</li>)}</ul>
             </div>
           )}
-          <div className="grid gap-5">
+          <div className="grid min-w-0 grid-cols-1 gap-5" data-brand-fields>
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">{t("Nom de marque", "Brand name")}</label>{V("name")}</div>
               {b.nameStatus === "proposed" && site?.status !== "read" && <p className="text-xs text-muted">{t("Nom proposé : vérifiez qu'il est libre (INPI, EUIPO, nom de domaine, réseaux sociaux) avant de l'adopter.", "Suggested name: check that it's available (trademark offices, domain name, social handles) before adopting it.")}</p>}
@@ -214,7 +214,7 @@ export default function TabMarque() {
                   </div>
                   <div className="grid grid-cols-5 gap-2" data-testid="brand-palette">
                     {(Object.keys(pal) as (keyof Brand["palette"])[]).map((k) => (
-                      <div key={k} className="grid gap-1.5 text-center text-xs">
+                      <div key={k} className="grid min-w-0 grid-cols-1 gap-1.5 break-words text-center text-xs">
                         <span className="h-16 rounded-2xl border border-line" style={{ background: pal[k] }} aria-label={t(`Couleur ${PALETTE_LABEL[k].fr} ${pal[k]}`, `${PALETTE_LABEL[k].en} color ${pal[k]}`)} role="img" />
                         <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
                         <span className="font-mono text-[10px]">{pal[k]}</span>
@@ -229,8 +229,8 @@ export default function TabMarque() {
                         : t("Les couleurs sont liées à la direction choisie. Pour changer de couleurs, choisissez une autre direction ci-dessous.", "Colors are tied to the chosen direction. To change colors, choose another direction below.")}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
-                    {!pending && !saved.paletteMode && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
+                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
+                    {!pending && !saved.paletteMode && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
                   </div>
                 </div>
               );
