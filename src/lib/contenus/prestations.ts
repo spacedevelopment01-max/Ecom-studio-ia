@@ -157,7 +157,7 @@ export function savePrestations(projectId: string, raw: unknown) {
       used.add(id);
       const old = oldBlocks.get(id);
       const prev = before.services.find((x) => x.id === id);
-      if (prev && prev.upcoming && prev.duration !== s.duration) warnings.push(L(`« ${s.name} » : ${prev.upcoming} rendez-vous à venir gardent leur durée enregistrée (${prev.duration} min).`, `“${s.name}”: ${prev.upcoming} upcoming appointment(s) keep their recorded length (${prev.duration} min).`));
+      if (prev && prev.upcoming && prev.duration !== s.duration) warnings.push(L(`« ${s.name} » : les rendez-vous déjà pris (${prev.upcoming}) conservent leur durée enregistrée (${prev.duration} min).`, `“${s.name}”: already booked appointments (${prev.upcoming}) keep their recorded length (${prev.duration} min).`));
       const settings = { ...(old?.block.settings ?? {}), [idKey]: id, name: s.name, short: s.short, duration: s.duration, price: s.price ?? "",
         ...(sec.kind === "salon" ? { category: s.category ?? "coupe", price_from: s.priceFrom } : { modes: s.modes ?? "cabinet" }) };
       next.push({ key: old?.key ?? `${blockType}-${id}`, block: { type: blockType, settings } });

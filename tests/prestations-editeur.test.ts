@@ -67,7 +67,7 @@ describe("Salon : une saisie, une source", () => {
     cb.price = 52; cb.duration = 60;
     const r = savePrestations(salon, inp);
     expect(r.number).toBe(before + 1);
-    expect(r.warnings.join(" ")).toMatch(/gardent leur durée enregistrée \(45 min\)/);
+    expect(r.warnings.join(" ")).toMatch(/conservent leur durée enregistrée \(45 min\)/);
     const cfg = liveSalon(salon).config;
     expect(cfg.services.find((s) => s.id === "coupe-brushing")).toMatchObject({ price: 52, duration: 60 });
     // Textes « affichés sans script » remplis : remis d'accord ; ceux laissés vides restent vides.

@@ -1,0 +1,129 @@
+{
+ "salonAvant": {
+  "kind": "salon",
+  "live": false,
+  "versionId": "ookkswe7estxy3gb",
+  "address": "1 rue de l'Exemple, 69000 Lyon",
+  "services": [
+   {
+    "id": "offer-one",
+    "name": "Diagnostic du piano",
+    "category": "coupe",
+    "short": "État de l'instrument et intervention proposés après échange.",
+    "duration": null,
+    "price": null,
+    "priceFrom": false,
+    "upcoming": 0
+   }
+  ],
+  "staff": [],
+  "hours": {
+   "mon": "09:00-12:00, 14:00-18:00",
+   "tue": "09:00-12:00, 14:00-18:00",
+   "wed": "09:00-12:00, 14:00-18:00",
+   "thu": "09:00-12:00, 14:00-18:00",
+   "fri": "09:00-12:00, 14:00-18:00",
+   "sat": "",
+   "sun": ""
+  },
+  "closures": "",
+  "restaurant": null,
+  "open": true
+ },
+ "salonApres": {
+  "services": [
+   "offer-one 45min 38€"
+  ],
+  "staff": [
+   "ines Inès"
+  ],
+  "hours": {
+   "mon": "09:00-12:00, 14:00-18:00",
+   "tue": "09:00-12:00, 14:00-19:00",
+   "wed": "09:00-12:00, 14:00-19:00",
+   "thu": "09:00-12:00, 14:00-19:00",
+   "fri": "09:00-12:00, 14:00-19:00",
+   "sat": "09:00-12:00, 14:00-19:00",
+   "sun": ""
+  }
+ },
+ "salonLive": 200,
+ "salonPublication": {
+  "ok": false,
+  "statut": 409,
+  "raisons": [
+   "Page /pages/prendre-rendez-vous : texte à compléter avant publication (« [À renseigner] »)."
+  ]
+ },
+ "ongletCarteVisible": true,
+ "carte": [
+  "Velouté de potimarron 9 published",
+  "Daube provençale selon arrivage published sélection photo",
+  "Tarte fine aux pommes 8 published",
+  "Tartare de truite 12.5 published indisponible"
+ ],
+ "apercuCarte_ordinateur": {
+  "velouté": true,
+  "tartareMasque": true,
+  "allergenes": true,
+  "mention": true
+ },
+ "apercuCarte_telephone": {
+  "velouté": true,
+  "tartareMasque": true,
+  "allergenes": true,
+  "mention": true
+ },
+ "versionId": "d2nvr5io8a4y33v9",
+ "restaurantDefautsSignales": true,
+ "restaurantApres": {
+  "openDays": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "lunchSlots": "12:00, 12:30, 13:00",
+  "dinnerSlots": "19:00, 19:30, 20:00, 20:30",
+  "capacity": 32,
+  "minParty": 1,
+  "maxParty": 8,
+  "defaults": false
+ },
+ "restaurantLive": 200,
+ "restaurantV1": {
+  "ok": true,
+  "numero": 1,
+  "host": "la-treille-fictive.sites.recette.test"
+ },
+ "siteCarte_ordinateur": {
+  "statut": 200,
+  "velouté": true,
+  "prix9": true,
+  "tartareMasque": true
+ },
+ "siteCarte_telephone": {
+  "statut": 200,
+  "velouté": true,
+  "prix9": true,
+  "tartareMasque": true
+ },
+ "siteAvantRepublication": "9",
+ "nonPublie": "Modifications non publiées : le site en ligne n'affiche pas encore vos derniers changements (1 élément(s) de la carte modifié(s)). Ils sont visibles dans l'aperçu ; « Publier la version actuelle » les met en ligne.",
+ "siteApresV2": "10,50",
+ "restauration": 200,
+ "siteApresRestauration": "9",
+ "v2": 2,
+ "compteEtranger": {
+  "carte": 404,
+  "prestations": 404,
+  "ajoutPlat": 404
+ },
+ "erreursStudio": [
+  "409 POST https://studio.recette.test:3943/api/projects/mywreb3z8acczwn2/site-publication",
+  "console: Failed to load resource: the server responded with a status of 409 (Conflict)"
+ ]
+}
