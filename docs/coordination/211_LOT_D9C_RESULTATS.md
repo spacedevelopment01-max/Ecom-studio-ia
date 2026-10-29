@@ -1,0 +1,92 @@
+# #211 — D9c : trois directions de logo natives depuis SYNA
+
+
+**Complément de contre-recette :** [retouche héritée et CI](211_D9C_CONTRE_RECETTE_RETOUCHE.md). CI a74 en échec sur un ancien littéral SDK ; harnais renforcé à f163b769, cinq parcours locaux réussis, nouvelle CI encore à vérifier. Aucun nouveau code applicatif.
+29 octobre 2026. Livraison pour revue dans #233, sans fusion, activation ou fournisseur réel. Suite de la [décision propriétaire D8–D12](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/211#issuecomment-6488971173) et du [complément domaines](https://github.com/spacedevelopment01-max/Ecom-studio-ia/issues/211#issuecomment-6503231615). **La mission #211 reste ouverte** : D10/D11, puis D12/E/F et les domaines dépendant de Claude #232 ne sont pas livrés ici.
+
+## Version exacte et dépendances
+
+- Branche `codex/211-lot-d9c-identite-syna`, base #231 `6e686dcc37915294a3087d0cb7e2a7484e7cce0b`, puis #230/#229/#228. Toutes sont des branches de revue ; aucune fusion présumée.
+- Code final, build vierge et navigateur réellement servi : **`378ac552c43b7602b4afe816aa2e31fd77ff026e`**. Le complément documentaire n'ajoute aucun code applicatif après cette recette.
+- Premier candidat `6351d84e8ea5da0ff06e63fa88778130cea8e4df` : 3 908 tests/45 ignorés, build propre réussi, deux parcours produit réussis, puis arrêt réel à 1 024 px pour débordement de la page Marque. Ce passage n'est pas présenté comme la recette finale.
+- Deuxième candidat `7eca81a9007814b0c947dc24d4335601bb06d749` : 3 911 tests/45 ignorés, build propre, première largeur service corrigée ; nouvel échec à360px sur les champs et le bouton de palette. Ce passage est également conservé comme non final.
+- Troisième candidat `88440db9bb67500c0df0847577bf1cabab3ede12` :3 915tests/45ignorés, types/build, trois parcours principaux passent puis le contrôle négatif révèle une fausse réserve incertaine et une image acquise absente de la bibliothèque. Cette recette échouée ne vaut pas validation finale.
+- `main` revérifié à `70204a7ff83eb2382835a27a37a8465c0851a70a`. Copie dédiée, aucun `.env`/`.env.local`, aucune base client ; VANS étape 1, Contretemps et compositions de Claude non modifiés.
+- Les sources de la suite complète, exécutée avant publication sur le parent avec corrections locales, sont figées et comparées aux blobs du commit final, worker compris. Build et recette tournent ensuite sur le commit propre exact. [Vérifications et commandes](preuves-211-D9c/verifications.json).
+
+## Parcours effectivement raccordé
+
+**La même conversation SYNA** lit le nom confirmé, le brief/Brain, les activités, le catalogue et les refus du projet. La réponse cognitive propose trois concepts complets distincts, avec identités/palettes/typographies ; ce sont des propositions, pas des faits commerciaux. Le client relit ensuite un **devis de dessin distinct**, sa demande exacte et les concepts, puis confirme. Le worker `brand.logo.v2` utilise **LogoV2 natif**, ses droits de série, réservations et bibliothèque. Les fichiers et planches sont présentés dans un reçu, avec liens de téléchargement, versions et reprise.
+
+Une série complète déjà acquise est retrouvée **sans nouveau job ni appel de dessin/relecture**, même si le fournisseur est désactivé. La réflexion de SYNA reste un autre appel, avec son propre devis : « retrouver sans dessin » ne signifie pas « réflexion IA gratuite ». Une série partielle se répare après nouvelle demande et accord, avec les **seules directions manquantes** ; les deux directions utilisables restent identiques. Le nom ou l'identité active, les produits, prestations et le Site ne sont pas automatiquement remplacés.
+
+Nouveau drapeau `STUDIO_CONVERSATION_LOGOS`, **désactivé par défaut**, dépendant des drapeaux de conversation/outils/contexte existants. Aucun deuxième assistant, moteur de logo ou fournisseur ajouté.
+
+## Causes et corrections
+
+| Statut du constat | Cause et correction |
+| --- | --- |
+| **CONFIRMÉ DANS LE CODE / REPRODUIT** | Le registre reconnaissait le logo sans action complète depuis SYNA. Nouveaux `logo-tool-contract.ts`, `logo-tool-validation.ts`, `logo-tool-execution.ts` et route `/api/studio-agent/conversations/[cid]/logos` : schéma strict, propriétaire, cible/série native, citation du dernier message, devis/accord, job et reçu persistants. |
+| **REPRODUIT** | Les trois concepts acquis auraient pu être repayés ou remplacés par des directions locales. `logo-v2/accepted-directions.ts`, `engine.ts` et `creation-quote.ts` réutilisent exactement les territoires validés par les garde-fous natifs de structure/palette. Direction incomplète ou répétitive refusée avant dessin, sans remplissage. |
+| **REPRODUIT** | Les champs manquants du contrôle historique pouvaient recevoir des valeurs implicites. `logo-v2/ai.ts` ajoute un contrat strict pour le nouveau parcours : critères numériques, nom exact, texte supplémentaire, personnes, artefacts, banalité, etc. Un contrôle incomplet ne devient pas positif. Une image et au plus deux relectures par direction ; la seconde uniquement après correction locale du nom, jamais une nouvelle image automatique. |
+| **REPRODUIT, TEST ROUGE PUIS VERT** | Le réparateur local du nom pouvait appliquer les capitales/minuscules de la direction malgré la casse exacte du client. `types.ts`, `accepted-directions.ts`, `artwork.ts` fixent un contexte serveur accepté ; le vrai réparateur conserve alors les mêmes pixels que la variante à casse exacte. Deux échecs avant, trois réussites après, comportement historique conservé hors de ce mode. |
+| **REPRODUIT DANS LE NAVIGATEUR** | La grille de l'éditeur manuel Marque imposait deux colonnes selon le viewport, malgré une largeur utile insuffisante : document 1 096 px à écran 1 024 px. `tab-marque.tsx` utilise désormais sa largeur réelle de conteneur et des colonnes réductibles. Sur mobile, la piste implicite des champs et un bouton de palette sans retour à la ligne créaient aussi367px à360px : colonnes réductibles et texte du bouton enveloppé, couleurs et action conservées. Aucun `overflow:hidden` ajouté pour cacher le défaut ; contrôle géométrique et accès aux champs manuels conservés dans le harnais. |
+| **REPRODUIT, TEST REACT ROUGE PUIS VERT** | La page Marque affichait les directions natives acquises puis annonçait « aucune direction ». `logo-v2-panel.tsx` consulte maintenant les directions de la série du run concerné, au lieu de la seule ancienne liste qui exclut les séries gérées. Deux échecs avant/quatre réussites après ; un nouvel échec sans acquis reste visible malgré une ancienne série complète. La galerie se rafraîchit sur le signal natif des acquis de SYNA, y compris si le job finit entre deux relevés. |
+| **REPRODUIT SDK HTTP LOCAL, ROUGE PUIS VERT** | Le parseur structuré du SDK Anthropic levait sur un contenu200 invalide avant le règlement de l’usage. `ai/llm.ts` garde exactement le schéma JSON envoyé mais laisse le SDK retourner le texte brut : réponse/usage connus enregistrés, puis validation Zod toujours stricte. Champs absents, mauvais types et JSON invalide restent refusés ; reprise même clé sans nouveau HTTP/débit. Coupure/503/modèle servi non tarifé restent incertains, aucune réparation implicite. |
+| **REPRODUIT, ROUGE PUIS VERT** | Une réponse reçue sans compteur d’entrée pouvait être comptée à zéro. `ai/llm.ts` refuse les compteurs obligatoires absents, négatifs ou non entiers et garde le maximum réservé comme incertain. Les erreurs d’incertitude portent désormais un marqueur typé, indépendant de la langue du message ; elles restent bloquantes pour les moteurs. Quatre modes d’incertitude vérifiés sans rejeu. Portefeuille et tarifs inchangés. |
+| **REPRODUIT MOTEUR NATIF INJECTÉ, ROUGE PUIS VERT** | Une image déjà payée lors d’une relecture interrompue pouvait rester seulement dans le checkpoint. `logo-v2/engine.ts` sauvegarde image et original comme essai diagnostique non validé/non réutilisable, puis propage la même interruption (incertitude, pause ou annulation). Aucun autre dessin, aucun faux FINAL ; une reprise incertaine reste bloquée sans duplication. Ces trois interruptions sont injectées au moteur ; pas des pannes de fournisseur réel dans le navigateur. |
+| **REPRODUIT SUR D9b** | Une consigne cognitive ne suffisait pas à interdire la retouche photo d'un logo. `image-tool-sources.ts` refuse côté serveur les actifs identitaires natifs en tant que source photo ; neuf cas, dont sept échecs avant correction. Le fichier reste intact et son emploi explicite comme référence de style reste possible. Ni le nom du fichier ni celui du projet ne décide de cette règle. Un logo téléversé sans métadonnées d'identité n'est pas reconnu par analyse visuelle. |
+| **REPRODUIT** | Une reprise pouvait engager de nouveaux dessins ou faire disparaître les essais refusés du reçu. Même série/territoires/fichiers/révisions verrouillés, essai `logo-v2-trial` consultable séparément, confirmation idempotente et réutilisation sans appel. Aucun essai refusé ne devient réutilisable ni activé. |
+| **CONFIRMÉ DANS LE CODE / TESTÉ** | Trois dessins/relectures dépassent les quatre emplacements initiaux de l'agent. `ai/request-bounds.ts` alloue la continuation **après accord**, réutilise les emplacements inutilisés, borne dure à 20, sans remise à zéro du coût, des tentatives, de la durée ou des réservations incertaines. Les droits et le portefeuille restent natifs. |
+| **REPRODUIT / EMPREINTE EXACTE** | Ajouter tout le contrat de logo aux conversations ordinaires aurait grossi leurs devis. `intelligence-contract.ts` et `intelligence.ts` gardent le format fermé **octet pour octet identique** à D9b quand le drapeau est fermé ou le projet absent : 18 410 octets, même SHA-256. Format étendu uniquement dans le parcours autorisé. |
+
+L'interface est `conversation-logo-tools.tsx`, raccordée au panneau commun. Les requêtes natives de relecture sont partagées entre devis et exécution ; chaque contrôle reçoit effectivement deux images réduites aux dimensions prévues. Routes, tarifs, contexte et prompt sont revérifiés avant chaque envoi. Aucun identifiant de modèle nouveau, aucun forfait ou seuil commercial changé.
+
+## Vérifications réellement exécutées
+
+Commandes sous garde réseau interdisant les fournisseurs externes, avec données temporaires synthétiques et cache de polices isolé :
+
+```bash
+npx tsc --noEmit
+npx vitest run
+npx vitest run tests/llm-strict-receipt.test.ts tests/logo-v2-interrupted-review.test.ts tests/conversation211-logos.test.ts tests/logo-v2-acquired-engine.test.ts tests/logo-v2-panel-state.test.ts tests/logo-v2-exact-name-repair.test.ts tests/logo-v2-bounded-review.test.ts
+npm run build
+npx tsx scripts/verify-agent211-build.ts /workspace/reviews/ecom-211-state/D9c-browser-receipts-proof --logos-ui
+```
+
+- Suite finale : **3 926 tests réussis /45 ignorés**, 451 fichiers réussis et un ignoré ; types réussis. Les ignorés sont ceux du dépôt, aucun nouveau test désactivé.
+- 115 tests ciblés avant la correction responsive/casse ; 24 tests ciblés natifs après la première correction, puis28 natifs/React après le second défaut mobile et le faux état vide, dont les trois nouveaux tests de pixels. Après les défauts SDK et conservation des essais :42ciblés dans7fichiers et types passent. Ne pas additionner ces passes comme des tests uniques supplémentaires.
+- Build vierge et vraie recette du commit final propre. Serveur Next, routes, jobs/worker, SQLite, moteur/SDK, bibliothèque et téléchargements sont natifs. Les réponses d'IA et leurs contrôles créatifs sont **fournis par des serveurs HTTP locaux fictifs**.
+- Cinq parcours : reliure mono-produit ; catalogue de deux accessoires de bouturage ; entretien de vitraux ; numérisation de plaques photographiques, cas service supplémentaire ; outils de gravure avec panne. Aucune règle applicative ne dépend de ces noms.
+- Largeurs 1 440,1 024,390,360 px : contrôle du document, éditeur manuel Marque et SYNA, logos/planches décodés, téléchargements par navigateur et SHA natifs/originaux comparés. Absence d'erreur JavaScript et de débordement vérifiée par le harnais final.
+- Compte étranger et fichiers 404, CSRF 403, plafonds forgés 400, double confirmation même job sans HTTP supplémentaire. Identité active, catalogue, services et absence de version du Site comparés avant/après. Les crédits nuls et les changements de prix/version/contexte sont aussi testés de manière native injectée ; aucune panne budgétaire réelle n'est revendiquée dans le navigateur.
+
+Une vérification complémentaire rouvre une **copie de ces seules données synthétiques**, dans un nouveau processus et navigateur, sans worker ni fournisseur : galerie Marque visible sans le panneau SYNA, chaque logo décodé, HTTP/SHA des images/originaux/planches, clics de téléchargement supplémentaires, autre largeur et réouverture. Nombres de jobs/appels/réservations/usages comparés inchangés ; les données initiales de recette sont conservées. [Preuve dédiée](preuves-211-D9c/traces/reprise-galerie-native.json).
+
+### Échecs contrôlés et reprise
+
+Le quatrième parcours retire volontairement les champs critiques du contrôle : **la série ne devient pas complète**, deux directions restent utilisables, un essai est visible/téléchargeable comme non livrable. Une nouvelle demande explicite répare uniquement la direction manquante ; les octets/IDs/versions des deux acquis restent identiques. Le cinquième retourne un HTTP503 à la deuxième image : premier logo conservé, job échoué avant100%, réserve incertaine retenue et aucune troisième image. Réouverture et double confirmation ne relancent rien.
+
+Les mises au point antérieures restent identifiées comme non finales. La copie sparse omettait des ressources natives de tests (documents, `.claude/skills`, actifs CMS et anciens fixtures versionnés) : premières suites interrompues ou 11 échecs de ressources, tous conservés, puis restauration exacte depuis Git et nouvelle suite complète. Une exécution globale intermédiaire a été arrêtée pour ajouter la régression de casse avant publication. Les deux premiers passages navigateur ont échoué successivement sur les largeurs, sans assouplissement des assertions ; le second a révélé aussi le faux état vide natif. Le troisième passage a révélé le défaut SDK/règlement et l’absence de l’image dans la bibliothèque ; il reste échoué. Trois séries rouges complémentaires documentent ces causes avant correction. Le premier build a échoué ENOSPC ; journal/sortie conservés, cache généré retiré et ancien checkout propre allégé de manière réversible, sans source ni preuve unique/client supprimé. Aucun de ces passages ne vaut recette réussie.
+
+## Coûts et preuves
+
+**0 fournisseur réel / coût réel nul**. 42 HTTP fictifs, 41 usages connus, 1 418 590 micro simulés. 1 réservations incertaines, 112 994 micro de maximum retenu séparément. Compteurs/prix/jetons sont fictifs, pas une facture ou un gain financier démontré. Seuils de40% abonnement HT/50% recharge HT, droits et protections conservés.
+
+[Galerie/téléchargements](preuves-211-D9c/README.md) : **122 PNG navigateur**, cinq vidéos MP4 et cinq WebM originaux, fichiers natifs, planches, traces, coûts et empreintes. Vidéos sans coupe/accélération ; trames/FPS/durée et différences RGB source/conversion vérifiées. Le cadre vidéo garde sa largeur initiale ; les PNG fournissent les autres largeurs en pleine résolution.
+
+Inspection effective des planches de toutes les captures et des trois trames de chacune des cinq vidéos, puis originaux sélectionnés : logo et essai mobile, galerie native service, direction réparée et éditeur manuel. La première reprise photographiait parfois la galerie avant décodage et cadrait mal le brouillon manuel ; le seul harnais complémentaire a été précisé (attente de décodage et champ centré), puis les cinq reprises ont été réexécutées sans worker/appel et recapturées. Les versions antérieures restent conservées localement, pas utilisées comme preuve finale de visibilité. Les PNG publiés correspondent à la dernière reprise.
+
+Les motifs techniques retournés par le faux fournisseur ne contiennent pas les noms de nos marques fictives. Le faux contrôle les accepte pour éprouver le parcours, **pas pour prouver l'orthographe effective d'une image IA, la qualité d'un logo ou la pertinence du directeur artistique**. Les planches sont des présentations locales séparées, pas des générations IA. L'original du fournisseur reste téléchargeable avec sa propre empreinte.
+
+## Limites, état conservé et suite
+
+- Aucune sélection/application de logo à l'identité ou au Site depuis SYNA dans D9c : lien vers Marque, comparaison/choix natifs à étendre dans D12. Aucun mélange automatique de directions.
+- Le nom canonique confirmé et le slogan déjà validé restent le contrat natif. **Nouvelle ligne métier/slogan arbitraire demandé librement : pas encore un champ typé raccordé**, ne pas annoncer ce cas comme satisfait ; ligne métier limitée à une activité entière réelle, en forme native. La réparation réemploie les concepts acquis et sa nouvelle consigne ; l'application de toutes les anciennes phrases libres au nouveau dessin n'est pas qualifiée par ces tests.
+- Demande intégrale refusée au-delà de la limite native de prompt, aucune troncature silencieuse. Le client doit pouvoir préciser/réduire sa demande avant de payer. Les limites de catalogue/contexte restent annoncées.
+- Aucune personne autorisée dans ce parcours. Pas de qualification d'identité humaine, de ressemblance réelle ou de fidélité perceptuelle d'un fournisseur.
+- Pas de nouvel export D9c : les exports et Theme Check de D9b sont conservés, pas présentés comme une installation/édition réelle dans Shopify ou un autre CMS. Aucune synchronisation, programmation ou publication externe.
+- CI de **ce nouveau SHA** : en cours au relevé, workflow40932229772 sur378ac552 ; aucun vert global annoncé. Le commit documentaire ultérieur déclenche sa propre vérification. Le vert D9b `6e686dcc` n'est pas un feu vert pour D9c.
+- **D10 vidéo/audio puis D11 publications/publicités** restent à raccorder dans leurs incréments, puis D12 et composition/copywriting/rendu E/F. Les futurs domaines restent une dépendance #232, détaillée dans la [matrice](211_D9C_COUVERTURE.md), sans reconstruction ni achat/API réel.
+
+Les moteurs natifs, droits de série, plafonds, données/versionnements et compositions existantes sont conservés. La livraison est inspectable sur une branche isolée ; **aucune mise à jour du Studio client n'a été faite**.

@@ -1,0 +1,228 @@
+{
+  "commit": "6351d84e8ea5da0ff06e63fa88778130cea8e4df",
+  "fixture": "existing synthetic browser service fixture",
+  "before": {
+    "width": 1024,
+    "scrollWidth": 1096,
+    "overflow": [
+      {
+        "tag": "DIV",
+        "class": "rounded-3xl border border-line bg-card grid min-w-0 gap-4 p-5",
+        "right": 1096.046875,
+        "width": 792.046875,
+        "text": "Angles marketingChoisissez votre angleUne recherche sourcée, des approches concr"
+      },
+      {
+        "tag": "DIV",
+        "class": "",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Angles marketingChoisissez votre angleUne recherche sourcée, des approches concr"
+      },
+      {
+        "tag": "P",
+        "class": "text-xs font-semibold uppercase tracking-widest text-muted",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Angles marketing"
+      },
+      {
+        "tag": "H2",
+        "class": "mt-2 font-display text-3xl",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Choisissez votre angle"
+      },
+      {
+        "tag": "P",
+        "class": "mt-3 max-w-3xl text-sm leading-relaxed text-muted",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Une recherche sourcée, des approches concrètes à comparer. Vous gardez le choix."
+      },
+      {
+        "tag": "P",
+        "class": "rounded-xl bg-paper-2 p-4 text-sm leading-relaxed",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Votre site présente toute votre activité sans consommer d’angle. Les angles conc"
+      },
+      {
+        "tag": "P",
+        "class": "text-sm",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "0 / 5 angles distincts déjà choisis. Historique conservé au renouvellement ; rev"
+      },
+      {
+        "tag": "SECTION",
+        "class": "grid min-w-0 gap-3 rounded-2xl border border-line bg-paper-2 p-5",
+        "right": 1075.046875,
+        "width": 750.046875,
+        "text": "Avant les propositionsValidez d’abord la compréhension de l’offre, de ses photos"
+      },
+      {
+        "tag": "H3",
+        "class": "font-semibold",
+        "right": 1054.046875,
+        "width": 708.046875,
+        "text": "Avant les propositions"
+      },
+      {
+        "tag": "P",
+        "class": "text-sm leading-relaxed",
+        "right": 1054.046875,
+        "width": 708.046875,
+        "text": "Validez d’abord la compréhension de l’offre, de ses photos et de ses documents d"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 select-none whitespace-nowrap border border-line bg-card text-ink hover:border-ink h-10 px-4 text-sm max-w-full ",
+        "right": 1054.046875,
+        "width": 708.046875,
+        "text": "Reprendre les informations de mon offre"
+      },
+      {
+        "tag": "DIV",
+        "class": "mb-6 rounded-2xl border border-info/30 bg-info-soft px-4 py-3 text-sm text-info",
+        "right": 1096.046875,
+        "width": 792.046875,
+        "text": "L'IA n'est pas encore connectée sur cette installation : version simplifiée pour"
+      },
+      {
+        "tag": "DIV",
+        "class": "rounded-3xl border border-line bg-card min-w-0 p-5 sm:p-7",
+        "right": 1096.046875,
+        "width": 792.046875,
+        "text": "LogoComme en agence : plusieurs directions vraiment différentes (illustré, minim"
+      },
+      {
+        "tag": "DIV",
+        "class": "mb-4 flex flex-wrap items-end justify-between gap-3",
+        "right": 1067.046875,
+        "width": 734.046875,
+        "text": "LogoComme en agence : plusieurs directions vraiment différentes (illustré, minim"
+      },
+      {
+        "tag": "DIV",
+        "class": "grid gap-4 sm:grid-cols-2 md:grid-cols-3",
+        "right": 1067.046875,
+        "width": 734.046875,
+        "text": ""
+      },
+      {
+        "tag": "DIV",
+        "class": "grid gap-6 lg:grid-cols-[1fr_380px]",
+        "right": 1096.046875,
+        "width": 792.046875,
+        "text": "IdentitéBase proposée automatiquement : à affiner. Les éléments validés sont con"
+      },
+      {
+        "tag": "DIV",
+        "class": "grid content-start gap-6",
+        "right": 1096.046875,
+        "width": 380,
+        "text": "Logo  ValiderLogotype typographique en CormorantDéclinaisonsDirection de la bout"
+      },
+      {
+        "tag": "DIV",
+        "class": "rounded-3xl border border-line bg-card p-5",
+        "right": 1096.046875,
+        "width": 380,
+        "text": "Logo  ValiderLogotype typographique en CormorantDéclinaisons"
+      },
+      {
+        "tag": "DIV",
+        "class": "flex items-center justify-between",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Logo  Valider"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs bg-paper-2 text-muted hover:text-ink",
+        "right": 1075.046875,
+        "width": 75.09375,
+        "text": " Valider"
+      },
+      {
+        "tag": "P",
+        "class": "mt-1 text-xs text-muted",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Logotype typographique en Cormorant"
+      },
+      {
+        "tag": "P",
+        "class": "mb-2 mt-5 text-xs font-medium uppercase tracking-wider text-muted",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Déclinaisons"
+      },
+      {
+        "tag": "DIV",
+        "class": "grid grid-cols-2 gap-2",
+        "right": 1075.046875,
+        "width": 338,
+        "text": ""
+      },
+      {
+        "tag": "DIV",
+        "class": "mt-4 flex flex-wrap gap-2",
+        "right": 1075.046875,
+        "width": 338,
+        "text": ""
+      },
+      {
+        "tag": "DIV",
+        "class": "rounded-3xl border border-line bg-card p-5",
+        "right": 1096.046875,
+        "width": 380,
+        "text": "Direction de la boutiqueChaque direction a ses propres couleurs.Fraise · Gourman"
+      },
+      {
+        "tag": "H3",
+        "class": "font-display text-lg font-semibold",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Direction de la boutique"
+      },
+      {
+        "tag": "P",
+        "class": "mt-1 text-xs text-muted",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Chaque direction a ses propres couleurs."
+      },
+      {
+        "tag": "DIV",
+        "class": "mt-3 grid grid-cols-2 gap-2 lg:max-h-[min(72dvh,760px)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1",
+        "right": 1075.046875,
+        "width": 338,
+        "text": "Fraise · Gourmand, rond et fraise, un produit en trois formatsOnde · Graphite et"
+      },
+      {
+        "tag": "BUTTON",
+        "class": "overflow-hidden rounded-2xl border text-left transition border-line hover:border-ink",
+        "right": 1071.046875,
+        "width": 163,
+        "text": "Onde · Graphite et lime, titres géométriques gras"
+      },
+      {
+        "tag": "SPAN",
+        "class": "relative block w-full overflow-hidden bg-paper-2 aspect-[4/3]",
+        "right": 1070.046875,
+        "width": 161,
+        "text": ""
+      }
+    ]
+  },
+  "after": {
+    "width": 1024,
+    "scrollWidth": 1024,
+    "overflow": []
+  },
+  "sourceChanged": false,
+  "cssInjectedOnlyForDiagnosis": true,
+  "realProviderCalls": 0
+}

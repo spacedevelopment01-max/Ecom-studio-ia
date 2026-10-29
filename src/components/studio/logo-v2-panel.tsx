@@ -87,6 +87,12 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   // Rafraîchi seulement pendant une tâche de logo (série, nouvelle version, application du logo choisi).
   const logoActive = useActive("brand.logo").length > 0;
   const { data, reload } = useApi<View>(`/api/projects/${id}/brand/logo-v2`, { poll: logoActive || submittedJob ? 2000 : undefined });
+  // Les acquis de SYNA rejoignent cette même galerie, même si sa tâche a fini entre deux relevés.
+  useEffect(() => {
+    const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};
+    window.addEventListener('studio:images-changed',changed);
+    return()=>window.removeEventListener('studio:images-changed',changed);
+  },[id,reload]);
   useEffect(() => {
     const jobs = [data?.job, data?.applicationJob];
     const job = submittedJob ? jobs.find(j => j?.id === submittedJob) : jobs.find(j => j && ["queued", "running", "paused"].includes(j.status));
@@ -210,6 +216,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
   );
   // JAMAIS AUCUNE DIRECTION : sans proposition validée, le meilleur logo obtenu est mis en avant (signalé non validé).
   const bestItem = !data?.series?.length && !proposals.length ? (data?.discarded.find((d) => d.id === data?.run?.best && d.url) ?? null) : null;
+  const managedRunHasDirections=!!data?.run&&!!data.series?.some(s=>s.requestKeys.includes(data.run!.id)&&s.directions.length>0);
   return (
     <Card className="min-w-0 p-5 sm:p-7">
       <SectionTitle
@@ -245,7 +252,7 @@ export function LogoV2Panel({ onApplied }: { onApplied?: () => void }) {
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">{discardedCard(bestItem)}</div>
         </div>
       )}
-      {data?.run && !proposals.length && !bestItem && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : data.run.failures?.length && !data.discarded.length ? t("Aucune proposition : les images n'ont pas pu être produites (raisons ci-dessous).", "No proposal: the images could not be produced (reasons below).") : t("Aucune direction n'a atteint le niveau attendu dans cette série : les essais écartés sont montrés ci-dessous.", "No direction reached the expected level in this series: the rejected attempts are shown below.")}</p>}
+      {data?.run && !proposals.length && !bestItem && !managedRunHasDirections && <p className="mb-3 text-sm text-ink-2">{studio.length ? t("Aucune direction relue par l'IA dans cette série : les versions du studio ci-dessous servent de logo provisoire.", "No AI-reviewed direction in this series: the studio versions below serve as a provisional logo.") : data.run.failures?.length && !data.discarded.length ? t("Aucune proposition : les images n'ont pas pu être produites (raisons ci-dessous).", "No proposal: the images could not be produced (reasons below).") : t("Aucune direction n'a atteint le niveau attendu dans cette série : les essais écartés sont montrés ci-dessous.", "No direction reached the expected level in this series: the rejected attempts are shown below.")}</p>}
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         {proposals.map((p) => card(p, false))}
       </div>

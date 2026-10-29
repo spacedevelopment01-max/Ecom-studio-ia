@@ -35,6 +35,19 @@ export function createOrReadBound(conversationId:string,user:string,initialCallC
   return tx(()=>{const existing=one<AgentBound>('SELECT * FROM agent_request_bounds WHERE conversation_id=? AND request_key=?',conversationId,turn.request_id);if(existing)return existing;const bid=id();run('INSERT INTO agent_request_bounds(id,conversation_id,user_id,request_key,cap_micro,max_calls,max_depth,max_retries,http_attempts,created_at) VALUES(?,?,?,?,?,4,1,0,0,?)',bid,conversationId,user,turn.request_id,Math.ceil(initialCallCap*4),now());return one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=?',bid)!;});
 }
 export function assertBoundQuote(b:AgentBound,cap:number){assertTime(b);const u=boundUsage(b.id),j=one<{n:number}>('SELECT COUNT(*) n FROM agent_request_jobs WHERE bound_id=?',b.id)!.n;if(j>=b.max_calls||u.calls>=b.max_calls)throw new AgentBoundStop('AGENT_CALL_LIMIT');if(u.engaged+cap>b.cap_micro)throw new AgentBoundStop('AGENT_COST_LIMIT');if(one("SELECT 1 FROM ai_reservations r JOIN agent_request_jobs aj ON aj.job_id=r.job_id WHERE aj.bound_id=? AND r.status='uncertain'",b.id))throw new AgentBoundStop('AGENT_UNCERTAIN_RESULT');}
+/** Suite explicitement confirmée d'une demande fermée : réutilise les emplacements non consommés.
+ * Les quatre appels initiaux sont une borne, pas quatre appels réellement faits. Le plafond dur reste20 ;
+ * aucune dépense, tentative HTTP ou échéance n'est remise à zéro. Ne pas appeler deux fois pour le même accord.
+ */
+export function allocateAgentContinuation(bid:string,user:string,capMicro:number,maximumCalls:number){return tx(()=>{
+ const b=one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=? AND user_id=?',bid,user);if(!b)throw new AgentBoundStop('AGENT_REQUEST_BINDING');assertTime(b);
+ if(!Number.isSafeInteger(capMicro)||capMicro<0||!Number.isSafeInteger(maximumCalls)||maximumCalls<0||maximumCalls>20)throw new AgentBoundStop('AGENT_CONTINUATION_INVALID');
+ if(one("SELECT 1 FROM agent_request_jobs aj LEFT JOIN jobs j ON j.id=aj.job_id WHERE aj.bound_id=? AND (j.id IS NULL OR j.user_id!=? OR j.status NOT IN ('done','failed','cancelled'))",bid,user))throw new AgentBoundStop('AGENT_PREVIOUS_WORK_PENDING');
+ if(one("SELECT 1 FROM ai_reservations r JOIN agent_request_jobs aj ON aj.job_id=r.job_id WHERE aj.bound_id=? AND r.status IN ('held','uncertain')",bid))throw new AgentBoundStop('AGENT_UNCERTAIN_RESULT');
+ const usage=boundUsage(bid),calls=Math.max(b.max_calls,usage.calls+maximumCalls),cap=b.cap_micro+capMicro;
+ if(calls>20||!Number.isSafeInteger(cap))throw new AgentBoundStop('AGENT_CALL_LIMIT');
+ run('UPDATE agent_request_bounds SET cap_micro=?,max_calls=? WHERE id=?',cap,calls,bid);return one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=?',bid)!;
+});}
 export function bindAgentJob(bid:string,user:string,jid:string,role:string){
   return tx(()=>{const b=one<AgentBound>('SELECT * FROM agent_request_bounds WHERE id=? AND user_id=?',bid,user);if(!b)throw new AgentBoundStop('AGENT_REQUEST_BINDING');assertTime(b);
     const count=one<{n:number}>('SELECT COUNT(*) n FROM agent_request_jobs WHERE bound_id=?',bid)!.n;if(count>=b.max_calls)throw new AgentBoundStop('AGENT_JOB_LIMIT');

@@ -206,6 +206,7 @@ export const handlers: Record<string, Handler> = {
 
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
+    if(ctx.payload.agentLogoQuote){const{runAgentLogoCreation}=await import("../src/lib/orchestrator/conversation/logo-tool-execution");return runAgentLogoCreation(ctx);}
     const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
     const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
     const { currentSeries } = await import("../src/lib/logo-v2/direction-series");

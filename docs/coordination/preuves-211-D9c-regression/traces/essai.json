@@ -1,0 +1,71 @@
+{
+  "file": "fichiers/essai-non-livrable.png",
+  "sha256": "bf37da1cd8f620b07f7967327554495152a6018ff8266c3530baf3d9b6a9078c",
+  "bytes": 239058,
+  "meta": {
+    "imageV2": {
+      "version": "5a.1",
+      "origin": "edited",
+      "provider": "openai",
+      "briefHash": "trial:cace606e9bda4ba2",
+      "brief": {
+        "kind": "retouch",
+        "support": "site",
+        "subject": "the real product \"Cadre de tissage portatif\"",
+        "action": null,
+        "environment": "Conserver le décor hors modification demandée.",
+        "artDirection": "architectural",
+        "understanding": {
+          "source": "product",
+          "id": "home_decor",
+          "confidence": "high"
+        },
+        "aspect": "16:9",
+        "variant": 0
+      },
+      "score": null,
+      "verdict": "RETRY",
+      "codes": [],
+      "license": null,
+      "productRef": "0o8i4aiiu4y9m548",
+      "corrections": [],
+      "phash": "926d6d926d6d926d",
+      "attempts": 1,
+      "binding": {
+        "schema": 1,
+        "people": "none",
+        "references": [
+          {
+            "assetId": "0o8i4aiiu4y9m548",
+            "version": 1,
+            "sha256": "71bbbb69f1d3fcdcc0463c57e232b405960b0bad8335150af0d01e38c25f0531"
+          }
+        ],
+        "edit": {
+          "source": {
+            "assetId": "8vy9bbltd1zfdxc4",
+            "version": 1,
+            "sha256": "261b6f5ac0e0afbfdedd11bf220133384479b5c679fad00e8928118c0ee8a339"
+          }
+        },
+        "product": {
+          "productId": "qt693g3eu9a45gkg",
+          "version": 1
+        }
+      }
+    },
+    "format": "16:9",
+    "subject": "the real product \"Cadre de tissage portatif\"",
+    "gate": {
+      "verdict": "RETRY",
+      "fatal": false,
+      "score": null,
+      "checked": false,
+      "deliverable": "image_v2",
+      "reason": "contrôle en panne : [\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"sourceAltered\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received undefined\"\n  },\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"requestedChangeApplied\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received undefined\"\n  }\n]",
+      "policyVersion": "2026-10-p11h",
+      "checkId": "ap47nsn3nylx5oo3"
+    },
+    "qcWarning": "contrôle en panne : [\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"sourceAltered\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received undefined\"\n  },\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"requestedChangeApplied\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received undefined\"\n  }\n]"
+  }
+}

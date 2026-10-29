@@ -1,0 +1,501 @@
+{
+  "schema": "211-D9c-verification-1",
+  "code": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D9c-full-receipts": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "88440db9bb67500c0df0847577bf1cabab3ede12",
+      "startedAt": "2026-10-29T18:21:39.640968+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/ai/llm.ts": "dc15d1a18d0fa92fdc7d219a56591610e41cef7b24490796793903a01756e7c5",
+        "src/lib/logo-v2/engine.ts": "ee2b7bd02ee9c686c5e874136fb2a8c65a704cff87471c798e91f5e1755b1f5d",
+        "tests/llm-strict-receipt.test.ts": "13554e50b87b034ef3b0179a0734a58828e94c195fa81cf9ce142e89da9a06bd",
+        "tests/logo-v2-interrupted-review.test.ts": "96e56adbb5acbea28538fa31d75fc2f8a11817306f807f853f489d3f83d43d0b"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-full-receipts.log",
+      "pid": 1632827,
+      "processGroup": 1632827,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:33:26.838431+00:00",
+      "logSha256": "0b96b180c0a6ffc10a3a2b68ff8480fd11d94190fa3024cc25f9b0e5105a84ea",
+      "sourceUnchanged": true
+    },
+    "D9c-types-final-receipts": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "88440db9bb67500c0df0847577bf1cabab3ede12",
+      "startedAt": "2026-10-29T18:18:24.642385+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/ai/llm.ts": "dc15d1a18d0fa92fdc7d219a56591610e41cef7b24490796793903a01756e7c5",
+        "src/lib/logo-v2/engine.ts": "ee2b7bd02ee9c686c5e874136fb2a8c65a704cff87471c798e91f5e1755b1f5d",
+        "tests/llm-strict-receipt.test.ts": "13554e50b87b034ef3b0179a0734a58828e94c195fa81cf9ce142e89da9a06bd",
+        "tests/logo-v2-interrupted-review.test.ts": "96e56adbb5acbea28538fa31d75fc2f8a11817306f807f853f489d3f83d43d0b"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-types-final-receipts.log",
+      "pid": 1632014,
+      "processGroup": 1632014,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:18:29.962819+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D9c-receipts-marker-green": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/llm-strict-receipt.test.ts",
+        "tests/logo-v2-interrupted-review.test.ts",
+        "tests/conversation211-logos.test.ts",
+        "tests/logo-v2-acquired-engine.test.ts",
+        "tests/logo-v2-panel-state.test.ts",
+        "tests/logo-v2-exact-name-repair.test.ts",
+        "tests/logo-v2-bounded-review.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "88440db9bb67500c0df0847577bf1cabab3ede12",
+      "startedAt": "2026-10-29T18:18:23.152833+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/ai/llm.ts": "dc15d1a18d0fa92fdc7d219a56591610e41cef7b24490796793903a01756e7c5",
+        "src/lib/logo-v2/engine.ts": "ee2b7bd02ee9c686c5e874136fb2a8c65a704cff87471c798e91f5e1755b1f5d",
+        "tests/llm-strict-receipt.test.ts": "13554e50b87b034ef3b0179a0734a58828e94c195fa81cf9ce142e89da9a06bd",
+        "tests/logo-v2-interrupted-review.test.ts": "96e56adbb5acbea28538fa31d75fc2f8a11817306f807f853f489d3f83d43d0b"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9c-receipts-marker-green.log",
+      "pid": 1631913,
+      "processGroup": 1631913,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:18:41.270001+00:00",
+      "logSha256": "cd4a23ca6299ecea4ee3b982c81694255116ecad0d8135bca668b869e3a0dea6",
+      "sourceUnchanged": true
+    },
+    "D9c-build-receipts": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+      "startedAt": "2026-10-29T18:35:30.199588+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9c-build-receipts.log",
+      "pid": 1671076,
+      "processGroup": 1671076,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:36:32.512135+00:00",
+      "logSha256": "b7f443725f358bbc1938b5ef5acab03d27ea46ccb302fa1e6385e5a848bffa1a",
+      "sourceUnchanged": true
+    },
+    "D9c-browser-receipts": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9c-browser-receipts-proof",
+        "--logos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+      "startedAt": "2026-10-29T18:37:00.519284+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9c-browser-receipts.log",
+      "pid": 1671889,
+      "processGroup": 1671889,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:38:30.571513+00:00",
+      "logSha256": "81b6f4add780f6f4725cf5f9f4023d2e7c064637c22201e418b97268bddd07c1",
+      "sourceUnchanged": true
+    },
+    "D9c-gallery-postflight": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D9c-native-gallery.mjs",
+        "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+        "D9c-browser-receipts",
+        "D9c-browser-receipts-proof",
+        "D9c-native-gallery-postflight-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+      "startedAt": "2026-10-29T18:38:41.570502+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9c-gallery-postflight.log",
+      "pid": 1674276,
+      "processGroup": 1674276,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:39:19.926293+00:00",
+      "logSha256": "13eb35d7a5fe8118ef0d9d092aea8f3bb35e1246ca55a5931549b42a0e2fbbf6",
+      "sourceUnchanged": true
+    },
+    "D9c-gallery-postflight-decoded": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D9c-native-gallery.mjs",
+        "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+        "D9c-browser-receipts",
+        "D9c-browser-receipts-proof",
+        "D9c-native-gallery-postflight-decoded-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+      "startedAt": "2026-10-29T18:41:19.564813+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9c-gallery-postflight-decoded.log",
+      "pid": 1679654,
+      "processGroup": 1679654,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:42:01.725614+00:00",
+      "logSha256": "13eb35d7a5fe8118ef0d9d092aea8f3bb35e1246ca55a5931549b42a0e2fbbf6",
+      "sourceUnchanged": true
+    },
+    "D9c-gallery-postflight-readable": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D9c-native-gallery.mjs",
+        "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+        "D9c-browser-receipts",
+        "D9c-browser-receipts-proof",
+        "D9c-native-gallery-postflight-readable-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d9c-identity",
+      "head": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+      "startedAt": "2026-10-29T18:40:09.246616+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9c-gallery-postflight-readable.log",
+      "pid": 1677468,
+      "processGroup": 1677468,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T18:40:45.842390+00:00",
+      "logSha256": "13eb35d7a5fe8118ef0d9d092aea8f3bb35e1246ca55a5931549b42a0e2fbbf6",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "success": true,
+    "totals": {
+      "providerHttpCalls": 42,
+      "textHttpCalls": 27,
+      "imageHttpCalls": 15,
+      "tokenCounts": 27,
+      "calls": 42,
+      "usage": 41,
+      "simulatedMicro": 1418590
+    },
+    "cases": 5,
+    "creativeQualityQualified": false
+  },
+  "screenshots": {
+    "final": 122
+  },
+  "videos": [
+    {
+      "scene": "mono",
+      "file": "videos/mono.mp4",
+      "original": "sources-video/mono.webm",
+      "sourceSha256": "018b7bafed12d83add3048dde2632a6d5e3de11cc0b0df11bc6671193906afd5",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "447"
+          }
+        ],
+        "format": {
+          "duration": "17.880000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "447"
+          }
+        ],
+        "format": {
+          "duration": "17.880000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.20009476273148147
+        },
+        {
+          "frame": 223,
+          "meanAbsoluteRgbDifferenceOn255": 0.22314549575617285
+        },
+        {
+          "frame": 446,
+          "meanAbsoluteRgbDifferenceOn255": 0.14337287808641974
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "multi",
+      "file": "videos/multi.mp4",
+      "original": "sources-video/multi.webm",
+      "sourceSha256": "a15f3788927abe9a455b4be0047ff61707bedd49dc0650ff7306c251ba79531d",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "500"
+          }
+        ],
+        "format": {
+          "duration": "20.000000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "500"
+          }
+        ],
+        "format": {
+          "duration": "20.000000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.27453792735042737
+        },
+        {
+          "frame": 250,
+          "meanAbsoluteRgbDifferenceOn255": 0.5022409188034188
+        },
+        {
+          "frame": 499,
+          "meanAbsoluteRgbDifferenceOn255": 0.1846144943019943
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "services",
+      "file": "videos/services.mp4",
+      "original": "sources-video/services.webm",
+      "sourceSha256": "8110ad2c892d54a084bd70b449e2e4b5f6441b5f9ee54ac1a99c065a15aee7f2",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "325"
+          }
+        ],
+        "format": {
+          "duration": "13.000000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "325"
+          }
+        ],
+        "format": {
+          "duration": "13.000000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 162,
+          "meanAbsoluteRgbDifferenceOn255": 0.8051683213975694
+        },
+        {
+          "frame": 324,
+          "meanAbsoluteRgbDifferenceOn255": 0.19329935709635418
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "inedit",
+      "file": "videos/inedit.mp4",
+      "original": "sources-video/inedit.webm",
+      "sourceSha256": "21459578f12b35b2c9166baaed49c185e23e2a6181cf8f3ed8537ca34dbc738a",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "524"
+          }
+        ],
+        "format": {
+          "duration": "20.960000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "524"
+          }
+        ],
+        "format": {
+          "duration": "20.960000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.327890625
+        },
+        {
+          "frame": 262,
+          "meanAbsoluteRgbDifferenceOn255": 0.5224971064814815
+        },
+        {
+          "frame": 523,
+          "meanAbsoluteRgbDifferenceOn255": 0.1597559799382716
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "panne",
+      "file": "videos/panne.mp4",
+      "original": "sources-video/panne.webm",
+      "sourceSha256": "a2644f037bcfaeedf32ac197094d15cc657b88c0c67b24819534a5951a0cfc35",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "200"
+          }
+        ],
+        "format": {
+          "duration": "8.000000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "200"
+          }
+        ],
+        "format": {
+          "duration": "8.000000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 100,
+          "meanAbsoluteRgbDifferenceOn255": 1.0199643874643876
+        },
+        {
+          "frame": 199,
+          "meanAbsoluteRgbDifferenceOn255": 0.543633368945869
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "files": 40,
+  "uncertainMaximumMicro": 112994,
+  "scope": "native_logo_quote_generation_review_storage_versions_repair_reuse_browser_with_fake_http_not_real_creative_quality",
+  "supplementaryCaptureRefinement": {
+    "applicationCodeUnchanged": true,
+    "why": "Initial supplementary capture could precede image decode after reload; manual draft field was outside useful frame. Latest captures explicitly await decode and center the field. Earlier passing checks kept separately.",
+    "latestRun": "D9c-gallery-postflight-decoded",
+    "browserCallsReservationsUsagesJobsUnchanged": true
+  }
+}

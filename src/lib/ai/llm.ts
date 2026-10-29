@@ -262,6 +262,9 @@ const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
 function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
+  // Une réponse reçue sans usage exploitable n'est pas supposée gratuite : rawCall conserve sa réserve.
+  const counts=[usage?.input_tokens,usage?.output_tokens,...[usage?.cache_creation_input_tokens,usage?.cache_read_input_tokens].filter(n=>n!=null)];
+  if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
   const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
   if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
@@ -286,6 +289,8 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
 }
 
 type RawResult = { text: string; stop: string | null; model: string };
+/** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
+function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const operation = { task: call.task, projectId: call.projectId, usageKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined, requestHash: requestHash({ system: systemText(call), messages, format, maxTokens: call.maxTokens }) };
@@ -386,7 +391,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
     if (uncertain) {
       const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
-      throw new PermanentError(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+      throw uncertainProviderFailure(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
     }
     throw e; // 429 (saturation, réservation rendue) : la file de tâches réessaie plus tard.
   }
@@ -400,7 +405,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Réponse reçue (donc facturée) mais comptabilisation impossible : coût maximal retenu.
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
-    throw e;
+    throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
   recordCall({
     ...trace,
@@ -545,7 +550,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (uncertain) {
       const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
-      throw new PermanentError(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+      throw uncertainProviderFailure(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
     }
     throw e;
   }
@@ -561,7 +566,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     billed = { costMicro, estimated: !p, ...b };
   } catch (e) {
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
-    throw e;
+    throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
   recordCall({
     ...trace,
@@ -697,7 +702,9 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   const content = await buildContent(call);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
   if (opts.strict) {
-    const r = await rawCall(call, messages, zodOutputFormat(schema as any));
+    // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
+    // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
+    const r = await rawCall(call, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text});
     return schema.parse(JSON.parse(r.text));
   }
   messages[0].content = [

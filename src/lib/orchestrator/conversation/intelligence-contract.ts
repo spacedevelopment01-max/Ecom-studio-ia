@@ -7,6 +7,7 @@ import {ExportToolPlanSchema} from './export-tool-contract';
 import {ThemeToolPlanSchema} from './theme-tool-contract';
 import {CataloguePlanSchema} from './catalogue-tool-contract';
 import {ImageToolPlanSchema} from './image-tool-contract';
+import {LogoToolPlanSchema} from './logo-tool-contract';
 
 import {StrategyChoiceProposalSchema} from './strategy-choice-contract';
 const text = (max: number) => z.string().trim().min(1).max(max);
@@ -20,7 +21,7 @@ export const CognitiveQuestionSchema = z.object({
   if (new Set(q.choices.map(x => x.id)).size !== q.choices.length) c.addIssue({ code: 'custom', message: 'duplicate_choices' });
 });
 const noUnprovedCompletion = (s: string) => !/^(?:c['’]est fait|fait\s*[.!]|done\s*[.!])|(?:j['’]ai|nous avons|i have|i['’]ve|we have)\s+(?:créé|publié|envoyé|supprimé|acheté|réservé|created|published|sent|deleted|bought|booked)|(?:a été|ont été|has been|have been)\s+(?:créé|créée|publié|publiée|envoyé|envoyée|supprimé|supprimée|created|published|sent|deleted)/i.test(s);
-export const CognitiveReplySchema = z.object({
+const CognitiveReplyBaseSchema = z.object({
   specialistSuggestions:z.array(AgentRoleSchema.exclude(['principal'])).max(2).optional(),
   message: text(6000).refine(noUnprovedCompletion, 'Aucune exécution métier n’a eu lieu ; ne pas annoncer une action terminée.'),
   status: z.enum(['question', 'clarification', 'summary', 'answer', 'unavailable']),
@@ -32,7 +33,8 @@ export const CognitiveReplySchema = z.object({
     value: text(1200), sourceId: text(120), quote: text(8000),
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
-  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft','images.create','images.edit'])).max(3),
+  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft','images.create','images.edit','logos.create'])).max(3),
+  logoPlan:LogoToolPlanSchema.optional(),
   imagePlan:ImageToolPlanSchema.optional(),
   cataloguePlan:CataloguePlanSchema.optional(),
   strategyChoice:StrategyChoiceProposalSchema.optional(),
@@ -41,7 +43,12 @@ export const CognitiveReplySchema = z.object({
   exportPlan:ExportToolPlanSchema.optional(),
   renderPlan:RenderToolPlanSchema.optional(),
   actionsExecuted: z.literal(false),
-}).strict().superRefine((r,ctx)=>{if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan,r.cataloguePlan,r.imagePlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération native par proposition.'});if(!!r.cataloguePlan!==r.proposedTools.includes('catalogue.draft'))ctx.addIssue({code:'custom',message:'Le plan Catalogue doit correspondre à son outil.'});const images=r.proposedTools.filter(id=>id==='images.create'||id==='images.edit');if(r.imagePlan?images.length!==1||r.imagePlan.tool!==images[0]:images.length>0)ctx.addIssue({code:'custom',message:'Le plan image doit correspondre à son outil unique.'});});
+}).strict();
+function refineReply(r:z.infer<typeof CognitiveReplyBaseSchema>,ctx:z.RefinementCtx){if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan,r.cataloguePlan,r.imagePlan,r.logoPlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération native par proposition.'});if(!!r.logoPlan!==r.proposedTools.includes('logos.create'))ctx.addIssue({code:'custom',message:'Le plan logo doit correspondre à son outil.'});if(!!r.cataloguePlan!==r.proposedTools.includes('catalogue.draft'))ctx.addIssue({code:'custom',message:'Le plan Catalogue doit correspondre à son outil.'});const images=r.proposedTools.filter(id=>id==='images.create'||id==='images.edit');if(r.imagePlan?images.length!==1||r.imagePlan.tool!==images[0]:images.length>0)ctx.addIssue({code:'custom',message:'Le plan image doit correspondre à son outil unique.'});}
+export const CognitiveReplySchema=CognitiveReplyBaseSchema.superRefine(refineReply);
+const ReplyWithoutLogos=CognitiveReplyBaseSchema.omit({logoPlan:true}).extend({proposedTools:z.array(z.enum(['understand-offer','research','brief.update','studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft','images.create','images.edit'])).max(3)}).superRefine(refineReply);
+/** Aucun coût de schéma logo dans un dialogue dont ce raccordement est fermé. */
+export const cognitiveResponseSchema=(logos:boolean)=>logos?CognitiveReplySchema:ReplyWithoutLogos;
 export type CognitiveReply = z.infer<typeof CognitiveReplySchema>;
 export type CognitiveQuestion = z.infer<typeof CognitiveQuestionSchema>;
 export type CognitiveState = {

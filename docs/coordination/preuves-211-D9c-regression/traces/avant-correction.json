@@ -1,0 +1,59 @@
+{
+  "build": {
+    "commit": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "case": "malformed-complete-quality-review",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "failureReproduced": true,
+  "legacyAssertionFailure": "expects SDK text parse structured output",
+  "jobStatus": "failed",
+  "jobProgress": 0.9,
+  "errorFields": [
+    "sourceAltered",
+    "requestedChangeApplied"
+  ],
+  "reservations": [
+    {
+      "status": "settled",
+      "amount": 321457,
+      "actual": 217855
+    },
+    {
+      "status": "settled",
+      "amount": 216102,
+      "actual": 7912
+    }
+  ],
+  "calls": [
+    {
+      "status": "ok",
+      "cost": 217855
+    },
+    {
+      "status": "ok",
+      "cost": 7912
+    }
+  ],
+  "usages": [
+    {
+      "task": "image_generation",
+      "cost": 217855,
+      "billed": 217855,
+      "estimated": 0
+    },
+    {
+      "task": "quality_control",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    }
+  ],
+  "responseUsageKnownBeforeStrictRejection": true,
+  "sourceUnchanged": true,
+  "syntheticFixtureOnly": true
+}
