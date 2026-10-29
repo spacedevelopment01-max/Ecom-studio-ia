@@ -30,6 +30,10 @@ export function ensureSiteTables() {
     page TEXT NOT NULL, fields TEXT NOT NULL, email TEXT, ip_hash TEXT, created_at INTEGER NOT NULL, read_at INTEGER,
     notified TEXT NOT NULL)`);
   run("CREATE INDEX IF NOT EXISTS site_requests_project ON site_requests(project_id, created_at)");
+  // Lot A : type (contact ou devis) et traitement (« traitée » par le professionnel) ; colonnes ajoutées aux bases existantes.
+  const cols = new Set(all<{ name: string }>("PRAGMA table_info(site_requests)").map((c) => c.name));
+  if (!cols.has("kind")) run("ALTER TABLE site_requests ADD COLUMN kind TEXT");
+  if (!cols.has("handled_at")) run("ALTER TABLE site_requests ADD COLUMN handled_at INTEGER");
   ready = true;
 }
 

@@ -16,12 +16,17 @@ type Overview = {
   publications: { id: string; number: number; createdAt: number; pages: number; bytes: number; live: boolean }[];
   history: { id: string; publication_id: string | null; action: string; at: number }[];
   addresses: { hostname: string; kind: "studio" | "custom"; status: string; checkedAt: number | null; checkError: string | null; dns: { txt: { name: string; value: string | null }; cname: { name: string; value: string } | null } | null }[];
-  requests: { id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; notified: string }[];
+  requests: { id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: "contact" | "devis"; notification: NotificationState; notification_error: string | null }[];
+  notifications: { smtp: boolean; recipients: { id: string; email: string; source: "account" | "manual"; status: "verified" | "pending" }[] };
   policies: { handle: string; title: string; text: string }[];
   reasons?: string[];
 };
 
-export function SitePublication({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: string }) {
+type NotificationState = "sent" | "pending" | "smtp_not_configured" | "failed" | "partial" | "no_recipient";
+const NAME_KEYS = ["name", "nom", "full_name"];
+const requestName = (f: Record<string, string>) => NAME_KEYS.map((k) => f[k]).find(Boolean) || [f.first_name || f.firstName, f.last_name || f.lastName].filter(Boolean).join(" ") || f.email || "";
+
+export function SitePublication({ open, onClose, projectId, focusRequest }: { open: boolean; onClose: () => void; projectId: string; focusRequest?: string | null }) {
   const t = useT();
   const toast = useToast();
   const url = `/api/projects/${projectId}/site-publication`;
@@ -31,6 +36,9 @@ export function SitePublication({ open, onClose, projectId }: { open: boolean; o
   const [slug, setSlug] = useState("");
   const [domain, setDomain] = useState("");
   const [policy, setPolicy] = useState<{ handle: string; title: string; text: string } | null>(null);
+  const [recipient, setRecipient] = useState("");
+  const [showHandled, setShowHandled] = useState(false);
+  const [openRequest, setOpenRequest] = useState<string | null>(focusRequest ?? null);
 
   async function act(action: string, extra: Record<string, unknown> = {}, done?: string) {
     setBusy(action);
@@ -52,7 +60,17 @@ export function SitePublication({ open, onClose, projectId }: { open: boolean; o
 
   const studio = data?.addresses.find((a) => a.kind === "studio");
   const customs = data?.addresses.filter((a) => a.kind === "custom") ?? [];
-  const unread = data?.requests.filter((r) => !r.read_at).length ?? 0;
+  const fresh = data?.requests.filter((r) => !r.handled_at) ?? [];
+  const shown = (showHandled ? data?.requests : fresh) ?? [];
+  const notifLabel = (n: NotificationState) => ({
+    sent: t("E-mail envoyé", "Email sent"),
+    pending: t("E-mail en cours d'envoi", "Email being sent"),
+    smtp_not_configured: t("E-mail en attente : envoi non configuré", "Email waiting: sending not configured"),
+    failed: t("E-mail non envoyé", "Email not sent"),
+    partial: t("E-mail envoyé à une partie des adresses", "Email sent to some addresses"),
+    no_recipient: t("Aucune adresse pour l'e-mail", "No address for the email"),
+  })[n];
+  const notifTone = (n: NotificationState) => (n === "sent" ? "ok" : n === "failed" || n === "partial" || n === "no_recipient" ? "bad" : "warn") as "ok" | "bad" | "warn";
   return (
     <Modal open={open} onClose={onClose} title={t("Publier votre site", "Publish your site")} wide>
       {!data ? <p className="text-sm text-muted">{t("Chargement…", "Loading…")}</p> : (
@@ -130,23 +148,61 @@ export function SitePublication({ open, onClose, projectId }: { open: boolean; o
             )}
           </section>
 
+          <section className="grid gap-2" data-site-notifications>
+            <h3 className="font-semibold">{t("Recevoir les demandes par e-mail", "Receive requests by email")}</h3>
+            <p className="text-xs text-muted">{t("Chaque demande de devis ou de contact vous est envoyée par e-mail ; vous répondez au visiteur directement depuis votre boîte. Une copie reste ici.", "Each quote or contact request is emailed to you; you reply to the visitor straight from your inbox. A copy stays here.")}</p>
+            {!data.notifications.smtp && <p className="rounded-xl bg-warn-soft p-3 text-xs text-warn" data-smtp-missing>{t("L'envoi d'e-mails n'est pas encore configuré sur le studio : les demandes sont bien enregistrées ici, et leurs e-mails partiront dès que l'envoi sera configuré (dans les 7 jours).", "Email sending isn't configured on the studio yet: requests are saved here, and their emails will go out as soon as sending is configured (within 7 days).")}</p>}
+            <ul className="grid gap-2">
+              {data.notifications.recipients.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-3 text-sm" data-recipient={r.email}>
+                  <span className="min-w-0 break-all">{r.email} {r.status === "verified" ? <Badge tone="ok">{r.source === "account" ? t("Adresse du compte", "Account address") : t("Confirmée", "Confirmed")}</Badge> : <Badge tone="warn">{t("En attente de confirmation", "Awaiting confirmation")}</Badge>}</span>
+                  <span className="flex gap-2">
+                    {r.status === "pending" && <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("recipient-resend", { email: r.email }, t("Nouveau lien envoyé.", "New link sent."))}>{t("Renvoyer le lien", "Resend link")}</Button>}
+                    <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("recipient-remove", { id: r.id }, t("Adresse retirée.", "Address removed."))}>{t("Retirer", "Remove")}</Button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {!data.notifications.recipients.some((r) => r.status === "verified") && <p className="text-sm text-bad" data-no-recipient>{t("Aucune adresse confirmée : les demandes restent seulement ici.", "No confirmed address: requests stay only here.")}</p>}
+            {data.notifications.recipients.length < 3 && (
+              <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); if (recipient.trim()) act("recipient-add", { email: recipient }, t("Adresse ajoutée. Si ce n'est pas celle de votre compte, un lien de confirmation lui a été envoyé.", "Address added. If it isn't your account address, a confirmation link was sent to it.")).then((x) => x && setRecipient("")); }}>
+                <input type="email" className="h-9 min-w-0 flex-1 rounded-full border border-line bg-card px-3 text-sm" placeholder="contact@mon-entreprise.fr" value={recipient} onChange={(e) => setRecipient(e.target.value)} aria-label={t("Adresse qui recevra les demandes", "Address that will receive requests")} />
+                <Button size="sm" variant="secondary" type="submit" disabled={!!busy || !recipient.trim()}>{t("Ajouter l'adresse", "Add address")}</Button>
+              </form>
+            )}
+            <p className="text-xs text-muted">{t("3 adresses au plus. Une nouvelle adresse ne reçoit rien avant d'avoir confirmé le lien qui lui est envoyé.", "3 addresses at most. A new address receives nothing until it confirms the link sent to it.")}</p>
+          </section>
+
           <section className="grid gap-2">
-            <h3 className="font-semibold">{t("Demandes reçues", "Requests received")} {unread > 0 && <Badge tone="info">{unread}</Badge>}</h3>
-            {!data.requests.length ? <p className="text-sm text-muted">{t("Aucune demande reçue pour l'instant.", "No requests received yet.")}</p> : (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-semibold">{t("Demandes reçues", "Requests received")} {fresh.length > 0 && <Badge tone="info">{fresh.length} {t("nouvelle(s)", "new")}</Badge>}</h3>
+              {data.requests.length > fresh.length && <Button size="sm" variant="ghost" onClick={() => setShowHandled(!showHandled)}>{showHandled ? t("Masquer les traitées", "Hide handled") : t("Afficher aussi les traitées", "Show handled too")}</Button>}
+            </div>
+            {!shown.length ? <p className="text-sm text-muted">{data.requests.length ? t("Aucune nouvelle demande.", "No new request.") : t("Aucune demande reçue pour l'instant.", "No requests received yet.")}</p> : (
               <ul className="grid gap-2" data-site-requests>
-                {data.requests.map((r) => (
-                  <li key={r.id} className="rounded-xl border border-line p-3 text-sm" data-site-request={r.id}>
-                    <p className="text-xs text-muted">{formatDate(r.created_at)} · {r.hostname}{r.page} · {r.notified === "sent" ? t("e-mail envoyé au professionnel", "email sent to the business") : t("aucun e-mail (envoi non configuré) : consultable ici", "no email (sending not configured): viewable here")}</p>
-                    <dl className="mt-1 grid gap-0.5">{Object.entries(r.fields).map(([k, v]) => <div key={k} className="flex gap-2"><dt className="text-muted">{k}</dt><dd className="min-w-0 break-words">{v}</dd></div>)}</dl>
-                    <div className="mt-2 flex gap-2">
-                      {!r.read_at && <Button size="sm" variant="ghost" onClick={() => act("request-read", { id: r.id })}>{t("Marquer comme lue", "Mark as read")}</Button>}
-                      <Button size="sm" variant="ghost" onClick={() => act("request-delete", { id: r.id }, t("Demande effacée.", "Request deleted."))}>{t("Effacer", "Delete")}</Button>
-                    </div>
+                {shown.map((r) => (
+                  <li key={r.id} className={`rounded-xl border p-3 text-sm ${r.id === focusRequest ? "border-signal" : "border-line"}`} data-site-request={r.id} data-request-kind={r.kind} data-notification={r.notification}>
+                    <button type="button" className="flex w-full flex-wrap items-center justify-between gap-2 text-left" onClick={() => { setOpenRequest(openRequest === r.id ? null : r.id); if (!r.read_at) act("request-read", { id: r.id }); }} aria-expanded={openRequest === r.id}>
+                      <span className="min-w-0"><span className="font-medium">{requestName(r.fields) || t("Visiteur", "Visitor")}</span> <span className="text-muted">· {r.kind === "devis" ? t("Devis", "Quote") : t("Contact", "Contact")} · {formatDate(r.created_at)}</span>{!r.read_at && <Badge tone="info" className="ml-2">{t("Non lue", "Unread")}</Badge>}{r.handled_at && <Badge className="ml-2">{t("Traitée", "Handled")}</Badge>}</span>
+                      <Badge tone={notifTone(r.notification)}>{notifLabel(r.notification)}</Badge>
+                    </button>
+                    {openRequest === r.id && (
+                      <div className="mt-2 grid gap-2" data-request-detail>
+                        <p className="text-xs text-muted">{r.hostname}{r.page}{r.notification_error && <> · {t("motif", "reason")} : <code>{r.notification_error}</code></>}</p>
+                        <dl className="grid gap-0.5">{Object.entries(r.fields).map(([k, v]) => <div key={k} className="flex gap-2"><dt className="shrink-0 text-muted">{k}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{v}</dd></div>)}</dl>
+                        <div className="flex flex-wrap gap-2">
+                          {r.email && <a className="inline-flex h-8 items-center rounded-full border border-line px-3 text-[13px]" href={`mailto:${encodeURIComponent(r.email)}`}>{t("Répondre par e-mail", "Reply by email")}</a>}
+                          <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("request-handled", { id: r.id, handled: !r.handled_at })}>{r.handled_at ? t("Remettre en nouvelle", "Mark as new") : t("Marquer comme traitée", "Mark as handled")}</Button>
+                          {(r.notification === "failed" || r.notification === "partial") && <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("request-retry", { id: r.id }, t("Nouvel envoi lancé.", "New sending started."))}>{t("Renvoyer l'e-mail", "Send the email again")}</Button>}
+                          <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("request-delete", { id: r.id }, t("Demande effacée.", "Request deleted."))}>{t("Effacer", "Delete")}</Button>
+                        </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
             )}
-            <p className="text-xs text-muted">{t("Les demandes sont conservées 12 mois, puis effacées automatiquement.", "Requests are kept 12 months, then deleted automatically.")}</p>
+            <p className="text-xs text-muted">{t("Les demandes sont conservées 12 mois, puis effacées automatiquement. « Effacer » les supprime tout de suite (droit à l'effacement du visiteur).", "Requests are kept 12 months, then deleted automatically. “Delete” removes them right away (the visitor's right to erasure).")}</p>
           </section>
 
           <section className="grid gap-2">

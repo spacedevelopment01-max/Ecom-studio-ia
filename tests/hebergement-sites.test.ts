@@ -210,7 +210,7 @@ describe("Vraies demandes reçues par le site", () => {
     expect(ok.status).toBe(200);
     const saved = siteRequests(pid);
     expect(saved).toHaveLength(1);
-    expect(saved[0]).toMatchObject({ email: "visiteur@example.test", notified: "smtp_not_configured", hostname: host });
+    expect(saved[0]).toMatchObject({ email: "visiteur@example.test", notification: "smtp_not_configured", hostname: host });
     expect(saved[0].fields.body).toContain("devis");
     expect((await contact(host, { "contact[email]": "robot@example.test", "contact[body]": "spam", "contact[site_web]": "http://spam.example" })).status).toBe(200);
     expect((await contact(host, { "contact[email]": "x@example.test", "contact[body]": "Bonjour" }, "https://autre.example")).status).toBe(403);

@@ -180,6 +180,7 @@ export default function TabBoutique() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [focusRequest, setFocusRequest] = useState<string | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   // Thème choisi dans la galerie (après la démo) : une fois appliqué, on guide le client vers ce qui manque à SON projet.
   const [chosenTheme, setChosenTheme] = useState<string | null>(null);
@@ -188,7 +189,11 @@ export default function TabBoutique() {
   const [adding, setAdding] = useState<string | null>(null);
   // Lien direct « …/boutique?themes » (depuis le Pilote) : ouvre la galerie.
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).has("themes")) setGalleryOpen(true);
+    const q = new URLSearchParams(window.location.search);
+    if (q.has("themes")) setGalleryOpen(true);
+    // Lien « Retrouver cette demande dans le studio » des e-mails de demande (#232) : ouvre la demande.
+    const demande = q.get("demande");
+    if (demande && /^[\w-]{1,40}$/.test(demande)) { setFocusRequest(demande); setPublishOpen(true); }
   }, []);
   const [viewVersion, setViewVersion] = useState<string | null>(null);
   const iframe = useRef<HTMLIFrameElement>(null);
@@ -765,7 +770,7 @@ export default function TabBoutique() {
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
       <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={(direction) => { setChosenTheme(direction); setView("structure"); reload(); reloadProject(); }} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
-      {publishOpen && <SitePublication open onClose={() => setPublishOpen(false)} projectId={id} />}
+      {publishOpen && <SitePublication open onClose={() => setPublishOpen(false)} projectId={id} focusRequest={focusRequest} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>
   );

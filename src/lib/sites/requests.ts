@@ -1,14 +1,13 @@
 /**
  * Demandes réelles reçues par un site publié (#232) : formulaire de contact ou de devis du thème. Contrôle d'origine,
- * champ piège, corps borné, limites par IP et par site, validation, enregistrement en base, puis e-mail au professionnel
- * seulement si le SMTP du studio est configuré (sinon la demande reste consultable dans le studio, et c'est dit).
+ * champ piège, corps borné, limites par IP et par site, validation, puis enregistrement en base ET mise en file des
+ * e-mails au professionnel dans la même transaction (notify.ts) : un SMTP absent ou en panne ne perd jamais une demande.
  * Conservation : 12 mois, purge à chaque nouvelle demande du projet.
  */
-import { all, id, now, one, run } from "../db";
+import { all, id, now, run, tx } from "../db";
 import { clientIp, rateTake } from "../rate-limit";
 import { hmac } from "../secrets";
-import { mailConfigured, sendMailInBackground } from "../mail";
-import { loadProject } from "../projects";
+import { dropOutbox, kickOutbox, notificationState, outboxFor, queueNotifications, requestKind, type NotificationState } from "./notify";
 import { identifyProject } from "../access-scope";
 import { HONEYPOT } from "./publish";
 import { ensureSiteTables, type Publication, type SiteAddress } from "./store";
@@ -19,7 +18,11 @@ const MAX_FIELDS = 20;
 const MAX_VALUE = 3000;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export type SiteRequest = { id: string; publication_id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; notified: string };
+export type SiteRequest = {
+  id: string; publication_id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null;
+  created_at: number; read_at: number | null; handled_at: number | null; kind: "contact" | "devis";
+  notification: NotificationState; notification_error: string | null;
+};
 
 type Outcome = { status: number; body: { ok: boolean; error?: string; message?: string } };
 
@@ -65,24 +68,41 @@ export async function receiveSiteRequest(req: Request, address: SiteAddress, pub
   ])) return { status: 429, body: { ok: false, error: "rate" } };
   const page = (() => { try { return new URL(req.headers.get("referer") ?? "").pathname.slice(0, 200); } catch { return ""; } })();
   identifyProject(address.project_id);
-  const p = loadProject(address.project_id);
-  const recipient = p.services.email?.trim() || one<{ email: string }>("SELECT email FROM users WHERE id = ?", p.userId)?.email || "";
-  const notified = mailConfigured() && recipient ? "sent" : "smtp_not_configured";
   const requestId = id();
-  run("DELETE FROM site_requests WHERE project_id = ? AND created_at < ?", address.project_id, now() - RETENTION_MS);
-  run("INSERT INTO site_requests (id, project_id, publication_id, hostname, page, fields, email, ip_hash, created_at, notified) VALUES (?,?,?,?,?,?,?,?,?,?)",
-    requestId, address.project_id, pub.id, address.hostname, page, JSON.stringify(fields), email, ipHash, now(), notified);
-  if (notified === "sent") {
-    const lines = Object.entries(fields).map(([k, v]) => `${k} : ${v}`).join("\n");
-    sendMailInBackground({ to: recipient, subject: `Nouvelle demande reçue sur ${address.hostname}`, text: `Une demande a été envoyée depuis votre site ${address.hostname}${page ? ` (page ${page})` : ""}.\n\n${lines}\n\nRetrouvez-la dans le studio, rubrique « Publier votre site ».` }, "site-request");
-  }
+  const queued = tx(() => {
+    run("DELETE FROM site_requests WHERE project_id = ? AND created_at < ?", address.project_id, now() - RETENTION_MS);
+    dropOutbox(address.project_id);
+    run("INSERT INTO site_requests (id, project_id, publication_id, hostname, page, fields, email, ip_hash, created_at, notified, kind) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      requestId, address.project_id, pub.id, address.hostname, page, JSON.stringify(fields), email, ipHash, now(), "queued", requestKind(page, fields));
+    return queueNotifications(address.project_id, requestId);
+  });
+  if (!queued) run("UPDATE site_requests SET notified = 'no_recipient' WHERE id = ?", requestId);
+  // Envoi lancé sans attendre : la réponse au visiteur ne dépend jamais du SMTP (le worker reprend ce qui reste).
+  else kickOutbox(address.project_id);
   return { status: 200, body: { ok: true } };
 }
 
 export function siteRequests(projectId: string): SiteRequest[] {
   ensureSiteTables();
-  return all<Omit<SiteRequest, "fields"> & { fields: string }>("SELECT id, publication_id, hostname, page, fields, email, created_at, read_at, notified FROM site_requests WHERE project_id = ? ORDER BY created_at DESC LIMIT 200", projectId)
-    .map((r) => ({ ...r, fields: JSON.parse(r.fields) as Record<string, string> }));
+  const outbox = outboxFor(projectId);
+  return all<{ id: string; publication_id: string; hostname: string; page: string; fields: string; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: string | null }>(
+    "SELECT id, publication_id, hostname, page, fields, email, created_at, read_at, handled_at, kind FROM site_requests WHERE project_id = ? ORDER BY created_at DESC LIMIT 200", projectId)
+    .map((r) => {
+      const rows = outbox.filter((o) => o.request_id === r.id);
+      return {
+        ...r,
+        fields: JSON.parse(r.fields) as Record<string, string>,
+        kind: r.kind === "devis" ? "devis" : "contact",
+        notification: notificationState(rows),
+        notification_error: rows.find((o) => o.status === "failed")?.last_error ?? null,
+      };
+    });
+}
+
+/** Traitement minimal par le professionnel : « traitée » ou de nouveau « nouvelle ». */
+export function markRequestHandled(projectId: string, requestId: string, handled: boolean) {
+  ensureSiteTables();
+  run("UPDATE site_requests SET handled_at = ?, read_at = COALESCE(read_at, ?) WHERE id = ? AND project_id = ?", handled ? now() : null, now(), requestId, projectId);
 }
 
 export function markRequestRead(projectId: string, requestId: string) {
@@ -93,5 +113,8 @@ export function markRequestRead(projectId: string, requestId: string) {
 /** Effacement d'une demande à la demande du visiteur (droit à l'effacement) ou du professionnel. */
 export function deleteRequest(projectId: string, requestId: string) {
   ensureSiteTables();
-  run("DELETE FROM site_requests WHERE id = ? AND project_id = ?", requestId, projectId);
+  tx(() => {
+    run("DELETE FROM site_requests WHERE id = ? AND project_id = ?", requestId, projectId);
+    dropOutbox(projectId, [requestId]);
+  });
 }

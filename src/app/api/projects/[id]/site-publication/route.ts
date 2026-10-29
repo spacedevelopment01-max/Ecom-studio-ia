@@ -1,6 +1,6 @@
 /**
  * « Publier votre site » (#232, prototype) : adresse, publication figée, historique, restauration, retrait, demandes
- * reçues et domaines personnalisés. Propriétaire du projet seulement ; publication avec forfait actif (inclus, sans
+ * reçues (et adresses qui les reçoivent par e-mail) et domaines personnalisés. Propriétaire du projet seulement ; publication avec forfait actif (inclus, sans
  * supplément). Rien n'est servi tant que l'hébergement n'est pas configuré (SITES_DOMAIN).
  */
 import { z } from "zod";
@@ -15,7 +15,9 @@ import { currentTheme } from "@/lib/projects";
 import { withBiens } from "@/lib/biens";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { addCustomDomain, dnsInstructions, removeCustomDomain, verifyCustomDomain } from "@/lib/sites/domains";
-import { deleteRequest, markRequestRead, siteRequests } from "@/lib/sites/requests";
+import { deleteRequest, markRequestHandled, markRequestRead, siteRequests } from "@/lib/sites/requests";
+import { addRecipient, recipients, removeRecipient, retryNotification, sendVerification } from "@/lib/sites/notify";
+import { mailConfigured } from "@/lib/mail";
 import { addresses, history, livePublication, publications, setStudioAddress } from "@/lib/sites/store";
 
 function overview(projectId: string) {
@@ -29,6 +31,8 @@ function overview(projectId: string) {
     history: history(projectId),
     addresses: addresses(projectId).map((a) => ({ hostname: a.hostname, kind: a.kind, status: a.status, checkedAt: a.checked_at, checkError: a.check_error, dns: a.kind === "custom" ? dnsInstructions(a) : null })),
     requests: siteRequests(projectId),
+    // Envoi des demandes par e-mail : état du SMTP du studio et adresses du professionnel (jamais montrées aux visiteurs).
+    notifications: { smtp: mailConfigured(), recipients: recipients(projectId) },
     policies: sitePolicies(projectId),
   };
 }
@@ -50,12 +54,19 @@ const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("domain-remove"), hostname: z.string().max(260) }),
   z.object({ action: z.literal("request-read"), id: z.string().max(40) }),
   z.object({ action: z.literal("request-delete"), id: z.string().max(40) }),
+  z.object({ action: z.literal("request-handled"), id: z.string().max(40), handled: z.boolean() }),
+  z.object({ action: z.literal("request-retry"), id: z.string().max(40) }),
+  z.object({ action: z.literal("recipient-add"), email: z.string().max(200) }),
+  z.object({ action: z.literal("recipient-resend"), email: z.string().max(200) }),
+  z.object({ action: z.literal("recipient-remove"), id: z.string().max(40) }),
 ]);
+/** Actions sur les demandes et leurs e-mails : possibles même si l'hébergement n'est pas configuré sur ce studio. */
+const REQUEST_ACTIONS = ["request-read", "request-delete", "request-handled", "request-retry", "recipient-add", "recipient-resend", "recipient-remove"];
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   const b = await body(req, Schema);
-  if (!sitesDomain() && !["request-read", "request-delete"].includes(b.action)) throw new HttpError(409, L("L'hébergement des sites n'est pas configuré sur ce studio.", "Site hosting isn't configured on this studio."), "sites_not_configured");
+  if (!sitesDomain() && !REQUEST_ACTIONS.includes(b.action)) throw new HttpError(409, L("L'hébergement des sites n'est pas configuré sur ce studio.", "Site hosting isn't configured on this studio."), "sites_not_configured");
   if (b.action === "check") {
     // Vérification sans publier : mêmes pages et mêmes règles que la publication, rien n'est écrit.
     const cur = currentTheme(p.id);
@@ -74,6 +85,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (b.action === "domain-remove") removeCustomDomain(p.id, b.hostname.trim().toLowerCase());
     if (b.action === "request-read") markRequestRead(p.id, b.id);
     if (b.action === "request-delete") deleteRequest(p.id, b.id);
+    if (b.action === "request-handled") markRequestHandled(p.id, b.id, b.handled);
+    if (b.action === "request-retry") retryNotification(p.id, b.id);
+    if (b.action === "recipient-add") addRecipient(p.id, b.email);
+    if (b.action === "recipient-resend") sendVerification(p.id, b.email.trim().toLowerCase());
+    if (b.action === "recipient-remove") removeRecipient(p.id, b.id);
   } catch (e) {
     if (e instanceof PublishBlocked) return Response.json({ error: e.message, code: "publish_blocked", reasons: e.reasons }, { status: 409 });
     throw e;
