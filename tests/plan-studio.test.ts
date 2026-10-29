@@ -7,10 +7,11 @@ import { describe, expect, it } from "vitest";
 import { advancedOpen, SPACE_GROUPS, SPACES, spacePurpose } from "@/lib/studio-nav";
 
 describe("Plan du studio", () => {
-  it("les 18 espaces, dont Stratégie, Biens (immobilier, issue #172), Catalogue et Rendez-vous (mission #190), Carte (restaurant, #239), existent une seule fois, chacun dans un groupe connu, avec sa phrase FR et EN", () => {
+  it("les 19 espaces, dont Stratégie, Biens (immobilier, issue #172), Catalogue et Rendez-vous (mission #190), Carte et Réalisations (restaurant et artisans, #239), existent une seule fois, chacun dans un groupe connu, avec sa phrase FR et EN", () => {
     const ids = SPACES.map((s) => s.id);
-    expect(new Set(ids).size).toBe(18);
+    expect(new Set(ids).size).toBe(19);
     expect(ids).toContain("carte");
+    expect(ids).toContain("realisations");
     expect(ids).toContain("rendez-vous");
     expect(ids).toContain("catalogue");
     expect(ids).toContain("strategie");

@@ -15,6 +15,7 @@ import { currentTheme, loadProject } from "../projects";
 import { requirePlan } from "../plan-gates";
 import { withContenus } from "../contenus";
 import { carteChangedSince } from "../contenus/carte";
+import { realisationsChangedSince } from "../contenus/realisations";
 import { compileTheme, importedBinary, themeAssetBinary, themeFingerprint } from "../theme/compile";
 import { libraryLoader } from "../theme/loader";
 import { fontFilePath, renderPage } from "../theme/render";
@@ -28,7 +29,8 @@ import { defaultStudioAddress, ensureSiteTables, livePublication, publication, p
 export const LIMITS = { pages: 80, bytes: 250 * 1024 * 1024 };
 /** Fiches de contenus métier (biens…) : comptées à part, une agence pouvant avoir des centaines de biens (#239). */
 export const DETAIL_LIMIT = 600;
-const isDetail = (pathname: string) => /^\/pages\/bien\//.test(pathname);
+/** Fiches (biens, réalisations) : comptées à part de la limite des pages du site. */
+const isDetail = (pathname: string) => /^\/pages\/(?:bien\/|realisation-)/.test(pathname);
 /** Chemins jamais publiés comme pages : boutique, compte, recherche, envoi de formulaire. */
 const SKIPPED = /^\/(cart|account|checkout|search|password|contact$|collections\/all|products\/?)/;
 /** Textes laissés à compléter : un site public ne les montre jamais. */
@@ -257,13 +259,13 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
  * à celle de la version en ligne. Dit aussi ce qui a changé (version du thème, biens modifiés depuis la publication),
  * pour que le client sache qu'il doit republier : le site public ne change jamais tout seul (#239).
  */
-export function siteFreshness(projectId: string): { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number; changedCarte: number } {
+export function siteFreshness(projectId: string): { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number; changedCarte: number; changedRealisations: number } {
   const live = livePublication(projectId);
   const cur = currentTheme(projectId);
-  if (!live || !cur) return { live: !!live, upToDate: true, themeChanged: false, changedBiens: 0, changedCarte: 0 };
+  if (!live || !cur) return { live: !!live, upToDate: true, themeChanged: false, changedBiens: 0, changedCarte: 0, changedRealisations: 0 };
   const spec = withContenus(cur.spec as ThemeSpec, projectId);
   const changedBiens = all<{ n: number }>("SELECT COUNT(*) n FROM biens WHERE project_id = ? AND updated_at > ?", projectId, live.created_at)[0]?.n ?? 0;
-  return { live: true, upToDate: siteHash(spec) === live.spec_hash, themeChanged: cur.version.id !== live.theme_version_id, changedBiens, changedCarte: carteChangedSince(projectId, live.created_at) };
+  return { live: true, upToDate: siteHash(spec) === live.spec_hash, themeChanged: cur.version.id !== live.theme_version_id, changedBiens, changedCarte: carteChangedSince(projectId, live.created_at), changedRealisations: realisationsChangedSince(projectId, live.created_at) };
 }
 
 /** Remet en ligne une publication précédente, telle quelle (son artefact est vérifié avant). */
