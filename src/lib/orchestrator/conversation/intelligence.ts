@@ -23,8 +23,9 @@ import {AgentRoleSchema,SPECIALISTS,specialistsEnabled,withSpecialistPlan,type A
 import {assertBoundQuote,bindAgentJob,boundPublic,createOrReadBound} from '../../ai/request-bounds';
 import {brainView} from '../../brain/facade';
 import {loadProject} from '../../projects';
-import {conversationCatalogueEnabled} from './tool-flags';
+import {conversationCatalogueEnabled,conversationImagesEnabled} from './tool-flags';
 import {validateCatalogueProposal} from './catalogue-tool-validation';
+import {validateImageToolProposal} from './image-tool-validation';
 
 export const intelligenceEnabled = () => process.env.STUDIO_CONVERSATION_AI === '1';
 export function assertIntelligenceEnabled() {
@@ -141,6 +142,7 @@ export function intelligenceView(c: ConversationRow): IntelligenceView {
 
 function validateReply(reply: CognitiveReply, c: ConversationRow, context: ReturnType<typeof cognitiveContext>) {
   const focus=context.context.activeContext;
+  if(reply.imagePlan){if(!conversationImagesEnabled())throw new Error('image_tool_disabled');if(focus?.state==='unavailable')throw new Error('conversation_target_requires_clarification');validateImageToolProposal(c,reply.imagePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if(reply.cataloguePlan){if(!conversationCatalogueEnabled())throw new Error('catalogue_tool_disabled');if(focus?.state==='unavailable')throw new Error('conversation_target_requires_clarification');validateCatalogueProposal(c,reply.cataloguePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if((reply.themePlan||reply.compositionPlan||reply.exportPlan||reply.renderPlan)&&focus&&(focus.state==='unavailable'||('isCurrent' in focus&&focus.isCurrent===false)))throw new Error('conversation_target_requires_clarification');
   const evidence = (sourceId: string, quote: string, value?: string) => {

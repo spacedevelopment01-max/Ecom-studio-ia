@@ -21,6 +21,10 @@ import type { ArtDirectionId, AspectId, Support, VisualBrief, VisualKind } from 
 export const BRIEF_VERSION = "5a.1";
 
 export type BriefRequest = {
+  /** Empreinte des IDs, versions et octets natifs. */
+  bindingDigest?: string;
+  /** Un produit ciblé reste fidèle aussi dans une bannière ; ce champ ne peut jamais désactiver la fidélité. */
+  productFidelity?: boolean;
   instructions?: string;
   /** Autorisation explicite limitée à cette demande ; false interdit toute déduction depuis une autre photo. */
   peopleAllowed?: boolean;
@@ -70,7 +74,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const angles = people ? ANGLES : ANGLES_NO_PEOPLE;
   const intents = people ? INTENTS : INTENTS_NO_PEOPLE;
   const noPerson = (xs: string[]) => (people ? xs : xs.filter((x) => !mentionsPerson(x)));
-  const productKind = PRODUCT_KINDS.includes(req.kind) && !services;
+  const productKind = (PRODUCT_KINDS.includes(req.kind)||req.productFidelity===true) && !services;
   const support = req.support ?? "site";
   const aspect = req.aspect ?? defaultAspect(support, req.kind);
   const brand = p.brand;
@@ -203,6 +207,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   return {
     version: BRIEF_VERSION,
     ...(req.instructions?{instructions:req.instructions}:{}),
+    ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
     support,
     subject,
@@ -235,7 +240,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
 /** Empreinte stable du brief : même brief → même image réutilisable, même contrôle déjà payé. */
 export function briefHash(b: VisualBrief): string {
   // Sans personne : clé distincte (une image faite quand les personnes étaient permises n'est pas réutilisée).
-  const key = { v: b.version, ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
+  const key = { v: b.version, ...(b.bindingDigest?{binding:b.bindingDigest}:{}), ...(b.instructions?{ins:b.instructions}:{}), k: b.kind, s: b.support, sub: b.subject, a: b.action, e: b.environment, d: b.artDirection, f: b.format.aspect, var: b.variant?.index ?? null, ref: b.references, fid: b.productFidelity, ...(b.shotKey ? { sh: b.shotKey } : {}), ...(b.people === false ? { np: 1 } : {}), ...(b.format.textZone !== FORMATS[b.format.aspect].textZone ? { tz: b.format.textZone } : {}) };
   return crypto.createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
 }
 
