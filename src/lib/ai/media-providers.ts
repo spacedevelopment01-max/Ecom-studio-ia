@@ -513,6 +513,11 @@ export function photoRequestMaxMicro(route:{provider:string;model:string},input:
   return mediaReservationMaxMicro(micro);
 }
 
+/** Texte d'acheminement réellement ajouté à chaque demande ; inclus aussi dans sa borne de coût. */
+export function imageReferencePrompt(text:string,roles:readonly string[]):string{
+ return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
+}
+
 export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
   const d = routeMedia("video_generation", undefined, usage ? { usage } : undefined);
   return d && (d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
@@ -822,7 +827,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.
   const provider = imageProviderAvailable({ ...(input.usage ? { usage: input.usage } : {}), ...input.need, references: typed.length });
   if (!provider) throw new UserFacingError(L("Aucun fournisseur d'images configuré (Google Gemini, OpenAI ou fal.ai).", "No image provider configured (Google Gemini, OpenAI or fal.ai)."));
-  const text = input.text + (typed.length ? "\nTRANSMITTED REFERENCES (ordered): " + typed.map((r, i) => `image ${i + 1}: ${r.role} (essential, reproduce faithfully)`).join("; ") : "");
+  const text = imageReferencePrompt(input.text,typed.map(r=>r.role));
   const rm = input.refMax ?? 768;
   const refs = await Promise.all(typed.map(r => prepareImageReference(r.data,rm)));
   const ref = refs[0] ?? null;

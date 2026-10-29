@@ -1,6 +1,6 @@
 /** Devis du parcours natif borné : une génération et un contrôle strict par composition, sans reprise cachée. */
 import {HttpError} from '../auth';
-import {mediaRouteFor,productImagePath,photoRequestMaxMicro,productScenePrompt,ambiancePrompt,withQuotedImageRoute} from '../ai/media-providers';
+import {mediaRouteFor,productImagePath,photoRequestMaxMicro,productScenePrompt,ambiancePrompt,withQuotedImageRoute,imageReferencePrompt} from '../ai/media-providers';
 import {callCostBoundMicro,estimateCallMicro,routeLlm,strictTextQuoteInput,withSelectedStrategy,type LlmCall} from '../ai/llm';
 import {buildBrief,briefHash,generationPrompt} from './brief';
 import {PRODUCT_KINDS} from './intent';
@@ -21,9 +21,10 @@ export function imageCreationQuote(p:Project,input:ImageCreationInput){
  const resolved=resolveImageBinding(p,input.binding),project=resolved.project;
  const fidelity=(!!input.binding.product||PRODUCT_KINDS.includes(input.kind))&&p.business==='products';
  const requests:ImageRequestV2[]=input.frames.map((shot,index)=>({kind:input.kind,aspect:input.aspect,support:'site',instructions:input.instruction,shot,variant:index,count:1,binding:input.binding,bindingDigest:resolved.digest,productFidelity:fidelity,references:resolved.references,...(resolved.service?{service:resolved.service}:{}),peopleAllowed:false,noStock:true,allowGenerate:true,attemptLimit:1,allowDirectionChange:false,singleReviewCall:true}));
- let capMicro=0,estimateMicro=0,maximumCalls=0,reused=0,routeReason=L('Acquis natifs réutilisés sans appel fournisseur.','Native acquired files reused without a provider request.');
+ let capMicro=0,estimateMicro=0,maximumCalls=0,reused=0,routeReason=L('Acquis natifs réutilisés sans appel fournisseur.','Native acquired files reused without a provider request.');const briefHashes:string[]=[];
  for(const request of requests){
   const brief=buildBrief(project,request,{rejectedDirections:rejectedDirections(brainSnapshot(project).memory),peopleAllowed:false}),prompt=applyWording(generationPrompt(brief),loadWordingRules(p.id)),aspect=generationAspect(brief.format.aspect);
+  briefHashes.push(briefHash(brief));
   const existing=reusableFor(p.id,briefHash(brief));
   if(existing?.origin==='generated'){
    const pin=pinImageAsset(p.userId,p.id,existing.id,existing.version);boundReusableImage(project,briefHash(brief),pin);request.reuseAsset=pin;request.reuseOnly=true;reused++;continue;
@@ -34,7 +35,7 @@ export function imageCreationQuote(p:Project,input:ImageCreationInput){
   if(!imageRoute)throw new HttpError(409,L('Fournisseur image indisponible. Aucun substitut local.','Image provider unavailable. No local substitute.'));
   routeReason=imageRoute.reason;
   const textZone=brief.format.textZone&&brief.format.textZone!=='none'?`${{left:'à gauche',right:'à droite',top:'en haut',bottom:'en bas',center:'au centre'}[brief.format.textZone]} du cadre`:null;
-  const actualPrompt=fidelity?productScenePrompt({prompt,aspect,textZone}):ambiancePrompt({prompt,aspect,reference:resolved.references.length>0});
+  const actualPrompt=imageReferencePrompt(fidelity?productScenePrompt({prompt,aspect,textZone}):ambiancePrompt({prompt,aspect,reference:resolved.references.length>0}),resolved.references.map(()=> 'product'));
   const imageMax=withQuotedImageRoute(imageRoute,()=>photoRequestMaxMicro(imageRoute,{prompt:actualPrompt,references:resolved.references.length,aspect}));
   const images=[{data:Buffer.alloc(1),label:'image à juger'},...(resolved.references.length?[{data:Buffer.alloc(1),label:'référence réelle'}]:[])];
   const call=withSelectedStrategy(imageReviewRequest(project,brief,{userId:p.userId,projectId:p.id,jobId:null,usageKey:'quote'},images)),review=routeLlm(call);
@@ -47,5 +48,5 @@ export function imageCreationQuote(p:Project,input:ImageCreationInput){
   request.quotedRoutes={image:{provider:imageRoute.provider,model:imageRoute.model},review:{provider:review.provider,model:review.model,...(review.effort?{effort:review.effort}:{})} satisfies NonNullable<LlmCall['expectedRoute']>};
   request.quotedReviewEnvelope={context:call.context,volatile:call.volatile,reference:call.reference};
  }
- return{capMicro,estimateMicro,maximumCalls,reused,requests,routeReason,fingerprint:imageBindingHash({input,requests,capMicro,estimateMicro,routeReason})};
+ return{capMicro,estimateMicro,maximumCalls,reused,requests,briefHashes,routeReason,fingerprint:imageBindingHash({input,requests,briefHashes,capMicro,estimateMicro,routeReason})};
 }

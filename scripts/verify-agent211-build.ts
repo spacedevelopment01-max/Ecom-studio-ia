@@ -48,10 +48,11 @@ const fake=http.createServer(async(req,res)=>{
   try{
     let bytes='';for await(const chunk of req)bytes+=chunk;
     if(process.argv.includes('--images-ui')&&/\/images\/(?:edits|generations)/.test(req.url??'')){
-      imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
+      await new Promise(r=>setTimeout(r,200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
       const model=/name="model"\r\n\r\n([^\r]+)/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).model:null);assert.ok(model);
       const prompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
-      const hasReference=/name="image(?:\[\])?"/.test(bytes);imageRequests.push({operation:req.url?.includes('edits')?'edit':'generate',hasReference,promptSha256:createHash('sha256').update(prompt).digest('hex'),promptBytes:Buffer.byteLength(prompt),requestRef:createHash('sha256').update(model).digest('hex').slice(0,16)});
+      const proposed=fixture.imagePlan as{quote?:string;frames?:Record<string,string>[];reference?:unknown}|undefined;if(proposed?.quote){assert.ok(prompt.includes(proposed.quote),'La consigne exacte doit atteindre la requête image native');assert.ok(proposed.frames?.some(frame=>Object.values(frame).every(value=>prompt.includes(value))),'La composition, la lumière, le cadrage et le décor acceptés doivent atteindre le générateur');}
+      const hasReference=/name="image(?:\[\])?"/.test(bytes);if(proposed)assert.equal(hasReference,!!proposed.reference,'La photo annoncée doit être réellement jointe');imageRequests.push({operation:req.url?.includes('edits')?'edit':'generate',hasReference,promptSha256:createHash('sha256').update(prompt).digest('hex'),promptBytes:Buffer.byteLength(prompt),requestRef:createHash('sha256').update(model).digest('hex').slice(0,16)});
       res.setHeader('content-type','application/json');res.end(JSON.stringify({created:Math.floor(Date.now()/1000),data:[{b64_json:(await mockImage(800+imageHttpCalls,1440,960)).toString('base64')}],usage:{input_tokens:900,output_tokens:6208,input_tokens_details:{text_tokens:800,image_tokens:100}}}));return;
     }
     const p=JSON.parse(bytes||'{}');

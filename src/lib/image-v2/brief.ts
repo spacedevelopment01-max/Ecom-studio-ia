@@ -205,7 +205,7 @@ export function buildBrief(p: Project, req: BriefRequest, opts: { rejectedDirect
   const palette = brand?.palette ? uniq(Object.values(brand.palette).filter((x): x is string => typeof x === "string" && /^#/.test(x))).slice(0, 5) : [];
 
   return {
-    version: BRIEF_VERSION,
+    version: req.shot ? `${BRIEF_VERSION}.directed2` : BRIEF_VERSION,
     ...(req.instructions?{instructions:req.instructions}:{}),
     ...(req.bindingDigest?{bindingDigest:req.bindingDigest}:{}),
     kind: req.kind,
@@ -261,8 +261,10 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
   // Structure de la consigne du propriétaire (essai réel v4 réussi) : paragraphes, liste fermée d'objets, zone
   // dégagée, lumière, phrase finale ; aucune couleur en code ni matière du produit.
   const exact=b.instructions?`\nConsignes exactes du client : ${b.instructions}. Ne pas écrire ces consignes sur l’image. Les restrictions de fidélité et de personnes restent obligatoires.`:"";
-  if (f.scene) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
-  if (f.productScene && b.productFidelity) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
+  // Une composition explicite remplace le décor générique ; ses quatre champs doivent atteindre le fournisseur.
+  // Les anciens briefs sans composition gardent leur scène fermée et leur empreinte de réutilisation.
+  if (f.scene && !b.shotKey) return stillLifePrompt(f.scene, { aspect: b.format.aspect, zone: b.format.textZone, correction: extra })+exact;
+  if (f.productScene && b.productFidelity && !b.shotKey) return productScenePromptFr(f.productScene, { aspect: b.format.aspect, zone: b.format.textZone, mood: d.mood, correction: extra })+exact;
   return [
     `Photographie, style ${d.label}. Sujet : ${f.subject}.`,
     // Publicité : niveau campagne d'agence (lumière travaillée, matières, profondeur), un seul point focal, de l'air.
@@ -277,7 +279,7 @@ export function generationPrompt(b: VisualBrief, extra?: string | null): string 
     b.productFidelity ? PRODUCT_FIDELITY_FR : "",
     // Positif seulement : nommer les interdits (« faux logos de luxe »…) les fait apparaître ; ils restent dans le
     // brief pour la recherche et le contrôle, et le négatif du modèle exclut texte, logo et personnes.
-    "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
+    b.productFidelity ? "Photographie sans inscription, lettre, marque ni logo supplémentaire : conserver exactement ceux présents sur le produit de référence." : "Objets sans marque visible ; image purement photographique, rien n'est écrit sur l'image.",
     b.people === false ? NO_PEOPLE_FR : "",
     b.instructions ? `Consignes du client : ${b.instructions}. Ces consignes décrivent la composition, elles ne sont pas du texte à inscrire. Les restrictions de fidélité et de personnes ci-dessus restent obligatoires.` : "",
     extra ? `Correction pour cet essai : ${extra}` : "",
