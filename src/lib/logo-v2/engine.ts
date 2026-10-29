@@ -14,7 +14,8 @@ import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
  */
 import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
-import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError, PermanentError } from "../jobs";
+import { redact } from "../redact";
 import { loadProject, remember } from "../projects";
 import { saveAsset } from "../library";
 import { logoPng } from "../media/logo";
@@ -112,7 +113,21 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
       d = gateArtwork(review, t, expected, c.attempt);
     } catch (e) {
       // Plafond atteint au moment de la relecture : l'image déjà payée est gardée (essai non contrôlé), jamais perdue.
-      if (e instanceof JobCancelled || e instanceof JobPaused || uncertain(e)) throw e;
+      if (e instanceof JobCancelled || e instanceof JobPaused || uncertain(e)) {
+        // Le dessin est déjà acquis. L'arrêt conserve un diagnostic et son original sans le valider,
+        // sans poursuivre la série et sans transformer un coût incertain en réponse connue.
+        const reason=L("Contrôle interrompu : image acquise conservée, non validée et non réutilisable. Aucun autre dessin automatique.","Review interrupted: acquired image kept, unvalidated and not reusable. No automatic further drawing.");
+        try {
+          await ctx.step(`v2:${t.id}${tag}:interrupted-review:${c.attempt}`,async()=>{
+            const decision=decide("logo_artwork",{checker:"ai",score:null,error:reason},{attempt:POLICIES.logo_artwork.maxRetries});
+            const checkId=saveCheck(decision,{userId,projectId:brief.projectId,jobId:ctx.job.id,candidateId:`logo-v2:${t.id}${tag}`,previousCheckId});
+            return saveProposal(ctx,userId,brief.projectId,{territory:t,candidate:c,verdict:"REJECTED",score:null,reason,codes:[...decision.fatalCodes,...decision.blockingCodes,"review_interrupted"],attempts:c.attempt+1,checkId,artworkReview:null},{diagnosticOnly:true,unreviewed:true});
+          });
+        }catch(saveError){
+          throw new PermanentError(`${(e as Error).message||reason} ${L("Image présente dans le checkpoint mais sauvegarde en bibliothèque impossible :","Image present in checkpoint but library save failed:")} ${redact(String((saveError as Error)?.message??saveError)).slice(0,160)}`);
+        }
+        throw e;
+      }
       if (e instanceof CostCapReached) notes.push(`${t.name} : relecture non faite (${e.message})`);
       d = decide("logo_artwork", { checker: "ai", score: null, error: (e as Error).message.slice(0, 200) }, { attempt: c.attempt });
     }
