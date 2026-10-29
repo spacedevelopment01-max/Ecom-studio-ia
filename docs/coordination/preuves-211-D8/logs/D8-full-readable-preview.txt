@@ -1,0 +1,37 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/audit-contenus.test.ts (15 tests | 1 failed) 2970ms
+   ❯ I-3 sections sur mesure et aperçus cloisonnés (4)
+     × clé d'aperçu signée : liée au projet, infalsifiable, temporaire 256ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/audit-contenus.test.ts > I-3 sections sur mesure et aperçus cloisonnés > clé d'aperçu signée : liée au projet, infalsifiable, temporaire
+AssertionError: expected '52t8vz8m0lzrv2sc' to be null
+
+- Expected:
+null
+
++ Received:
+"52t8vz8m0lzrv2sc"
+
+ ❯ tests/audit-contenus.test.ts:218:57
+    216|     expect(verifyPreview(key, pid)).toBe(user.id);
+    217|     expect(verifyPreview(key, other.pid)).toBeNull();
+    218|     expect(verifyPreview(key.slice(0, -2) + "xx", pid)).toBeNull();
+       |                                                         ^
+    219|     expect(verifyPreview(signPreview(user.id, pid, -10), pid)).toBeNul…
+    220|     expect(verifyPreview(signPreview(other.user.id, pid), pid)).toBeNu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 433 passed | 1 skipped (435)
+      Tests  1 failed | 3793 passed | 45 skipped (3839)
+   Start at  10:42:24
+   Duration  695.55s (tests 76%, import 23%, transform 1%)
+
+    Isolate  435 workers spawned · ~[CAP_PRIVE_OMIS] startup each (spawn + environment, per file)
+             at least ~[CAP_PRIVE_OMIS] faster with isolate: false — reuses workers across files instead of one per file
+

@@ -1,0 +1,623 @@
+{
+  "schema": "211-D8-verification-1",
+  "code": "7d900c13ae4f2764ca31689d9041864ce9157567",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D8-full-list-refresh": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "75a92a235eaf95f423543de63e90bfecbf2aff64",
+      "startedAt": "2026-10-29T11:14:18.970050+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-catalogue-ui.ts": "75a38d4cd62e2061461887cdd0d322891587cdc8ff877714204c2b96aef5cdf1",
+        "src/components/studio/conversation-catalogue-tools.tsx": "316db88580be1903ee78a70bde9a0dde525d308fd7fa217d217857911835338a",
+        "src/components/studio/tab-catalogue.tsx": "e0a4b4038f7333172c0bcdb0c7dc7e3446ead34b894f3d8c84bc292628fad6fb",
+        "tests/catalogue211-ui-refresh.ts": "e2b49b977cb45cbc3b30130e5cab2f58535afae5c02ca85dd99f5762e67c3885"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D8-full-list-refresh.log",
+      "pid": 1012353,
+      "processGroup": 1012353,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:25:56.987507+00:00",
+      "logSha256": "851328c4859ca85294db383cccd4c145324d311fa775c5b6223e1ed5751bd72e",
+      "sourceUnchanged": true
+    },
+    "D8-types-list-refresh": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "75a92a235eaf95f423543de63e90bfecbf2aff64",
+      "startedAt": "2026-10-29T11:14:18.970217+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-catalogue-ui.ts": "75a38d4cd62e2061461887cdd0d322891587cdc8ff877714204c2b96aef5cdf1",
+        "src/components/studio/conversation-catalogue-tools.tsx": "316db88580be1903ee78a70bde9a0dde525d308fd7fa217d217857911835338a",
+        "src/components/studio/tab-catalogue.tsx": "e0a4b4038f7333172c0bcdb0c7dc7e3446ead34b894f3d8c84bc292628fad6fb",
+        "tests/catalogue211-ui-refresh.ts": "e2b49b977cb45cbc3b30130e5cab2f58535afae5c02ca85dd99f5762e67c3885"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D8-types-list-refresh.log",
+      "pid": 1012354,
+      "processGroup": 1012354,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:14:28.724913+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D8-build-final-v6": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "7d900c13ae4f2764ca31689d9041864ce9157567",
+      "startedAt": "2026-10-29T11:26:20.467900+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D8-build-final-v6.log",
+      "pid": 1049739,
+      "processGroup": 1049739,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:27:23.074116+00:00",
+      "logSha256": "1d2b9dd7beb8d7f4594f733a43f89e2994abca5dbbf58c173a0c357abd82c0d7",
+      "sourceUnchanged": true
+    },
+    "D8-browser-final-v6": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D8-browser-final-v6",
+        "--catalogue-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "7d900c13ae4f2764ca31689d9041864ce9157567",
+      "startedAt": "2026-10-29T11:27:35.087294+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D8-browser-final-v6.log",
+      "pid": 1050337,
+      "processGroup": 1050337,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:28:42.442649+00:00",
+      "logSha256": "67d796da1d1754df3a526c0588e0829dc4547e88b7ddcd69e1af99f99957f6f2",
+      "sourceUnchanged": true
+    },
+    "D8-shopify-final-v6": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/export-shopify-build-check.ts",
+        "/workspace/reviews/ecom-211-state/D8-shopify-final-v6"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "7d900c13ae4f2764ca31689d9041864ce9157567",
+      "startedAt": "2026-10-29T11:27:35.087306+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D8-shopify-final-v6.log",
+      "pid": 1050338,
+      "processGroup": 1050338,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:27:53.205523+00:00",
+      "logSha256": "2fcc593b60b708ac428bc46d972a2591e0c25a15129b9ad1c46b64a3b242e04d",
+      "sourceUnchanged": true
+    },
+    "D8-shopify-warnings-final-v6": {
+      "command": [
+        "npx",
+        "tsx",
+        "/workspace/reviews/ecom-211-state/inspect-D8-shopify-final-v6.mjs"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "7d900c13ae4f2764ca31689d9041864ce9157567",
+      "startedAt": "2026-10-29T11:28:42.337238+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D8-shopify-warnings-final-v6.log",
+      "pid": 1051673,
+      "processGroup": 1051673,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:28:49.317559+00:00",
+      "logSha256": "e79eda16ec22175d4fe7e2d6bb8278901b559904e107d78be3188cfb1d51fb99",
+      "sourceUnchanged": true
+    },
+    "D8-real-cart-ui-v6": {
+      "command": [
+        "npx",
+        "tsx",
+        "/workspace/reviews/ecom-211-state/verify-D8-real-cart-ui.mts",
+        "/workspace/reviews/ecom-211-state/D8-real-cart-ui-v6",
+        "7d900c13ae4f2764ca31689d9041864ce9157567"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "7d900c13ae4f2764ca31689d9041864ce9157567",
+      "startedAt": "2026-10-29T11:27:35.091690+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D8-real-cart-ui-v6.log",
+      "pid": 1050340,
+      "processGroup": 1050340,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T11:27:44.231829+00:00",
+      "logSha256": "324af338c96f7ec7eb3ca0e27df1de7519f882a9309e518698a99cdef61eec23",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "file": "traces/parcours.json",
+    "success": true,
+    "totals": {
+      "providerHttpCalls": 10,
+      "calls": 10,
+      "usage": 9,
+      "simulatedMicro": 71208
+    }
+  },
+  "screenshots": {
+    "conversationFinal": 37,
+    "nativeCartFinal": 6,
+    "beforeV4": 3,
+    "beforeV5": 1
+  },
+  "geometryChecks": 28,
+  "videos": [
+    {
+      "file": "videos/mono.mp4",
+      "sourceSha256": "667c6fb266d14734fd1993895b4bfb82bb8788ef195b970aa2dfc9e674411520",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "636"
+          }
+        ],
+        "format": {
+          "duration": "25.440000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "636"
+          }
+        ],
+        "format": {
+          "duration": "25.440000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 318,
+          "meanAbsoluteRgbDifferenceOn255": 0.23513792438271605
+        },
+        {
+          "frame": 635,
+          "meanAbsoluteRgbDifferenceOn255": 0.05789038387345679
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/mono-fiche-panier.mp4",
+      "sourceSha256": "a71c9968765c8e41b96b5d1fe0f49fd1c27a173c825d2d423b7c7219eaf0a7b6",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "42"
+          }
+        ],
+        "format": {
+          "duration": "1.680000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "42"
+          }
+        ],
+        "format": {
+          "duration": "1.680000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 21,
+          "meanAbsoluteRgbDifferenceOn255": 0.19359447337962962
+        },
+        {
+          "frame": 41,
+          "meanAbsoluteRgbDifferenceOn255": 0.3272796103395062
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/multi.mp4",
+      "sourceSha256": "2926ae371ba9fd741542756d0cb1cfc0bba72fb3da33e949dabd3eb5076b9ee1",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "365"
+          }
+        ],
+        "format": {
+          "duration": "14.600000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "365"
+          }
+        ],
+        "format": {
+          "duration": "14.600000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.27821937321937323
+        },
+        {
+          "frame": 182,
+          "meanAbsoluteRgbDifferenceOn255": 0.20602742165242166
+        },
+        {
+          "frame": 364,
+          "meanAbsoluteRgbDifferenceOn255": 0.12885327635327634
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/multi-fiche-panier.mp4",
+      "sourceSha256": "af1e5065ba3a8836d96f3e55bce57bd4fab50196f8310158baccee4ed30bb714",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "42"
+          }
+        ],
+        "format": {
+          "duration": "1.680000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "42"
+          }
+        ],
+        "format": {
+          "duration": "1.680000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 21,
+          "meanAbsoluteRgbDifferenceOn255": 0.7623539886039886
+        },
+        {
+          "frame": 41,
+          "meanAbsoluteRgbDifferenceOn255": 0.8377492877492877
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/inedit.mp4",
+      "sourceSha256": "aec4b5a7371e427b11d3423906ec02cfb82be340e91db3d6ecc7d1abe0d4b425",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "259"
+          }
+        ],
+        "format": {
+          "duration": "10.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "259"
+          }
+        ],
+        "format": {
+          "duration": "10.360000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 129,
+          "meanAbsoluteRgbDifferenceOn255": 0.2313599537037037
+        },
+        {
+          "frame": 258,
+          "meanAbsoluteRgbDifferenceOn255": 0.2522829861111111
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/inedit-fiche-panier.mp4",
+      "sourceSha256": "95439e4b4abf28445fa1f077c71f5955942d1089d6497a8ebfbfd52c680470ba",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "41"
+          }
+        ],
+        "format": {
+          "duration": "1.640000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "41"
+          }
+        ],
+        "format": {
+          "duration": "1.640000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 20,
+          "meanAbsoluteRgbDifferenceOn255": 0.6944126157407408
+        },
+        {
+          "frame": 40,
+          "meanAbsoluteRgbDifferenceOn255": 0.9722434413580247
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/services.mp4",
+      "sourceSha256": "1ececfa9cec51a89232136fe2f30a22083eec9b4e9045617f63ee3c3d3774bd3",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "112"
+          }
+        ],
+        "format": {
+          "duration": "4.480000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "112"
+          }
+        ],
+        "format": {
+          "duration": "4.480000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.20760054976851852
+        },
+        {
+          "frame": 56,
+          "meanAbsoluteRgbDifferenceOn255": 0.35598259066358023
+        },
+        {
+          "frame": 111,
+          "meanAbsoluteRgbDifferenceOn255": 0.07336829668209877
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/clic-mono-mobile.mp4",
+      "sourceSha256": "7fde7c845a9716a8107714b8919adfd74e97390536d6b4c920755ca01110b3c5",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "83"
+          }
+        ],
+        "format": {
+          "duration": "3.320000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "83"
+          }
+        ],
+        "format": {
+          "duration": "3.320000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 41,
+          "meanAbsoluteRgbDifferenceOn255": 0.3601531339031339
+        },
+        {
+          "frame": 82,
+          "meanAbsoluteRgbDifferenceOn255": 0.32303685897435896
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "file": "videos/clic-variantes-desktop.mp4",
+      "sourceSha256": "0124f0e3273435d91a2685b57084db09c545cd2855b5334e2b5b8a056164c465",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "73"
+          }
+        ],
+        "format": {
+          "duration": "2.920000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "73"
+          }
+        ],
+        "format": {
+          "duration": "2.920000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 36,
+          "meanAbsoluteRgbDifferenceOn255": 0.3240909529320988
+        },
+        {
+          "frame": 72,
+          "meanAbsoluteRgbDifferenceOn255": 0.42028428819444447
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "limits": [
+    "SDK HTTP local simulé, aucune qualification fournisseur ou créative réelle.",
+    "Fiche USD ajoutée par API native pour la vérification UI, pas présentée comme création SYNA par SDK.",
+    "Panier interrogé par HTTP natif et rendu navigateur ; pas commande/achat réels.",
+    "Aucun CMS réel, import/synchronisation/affectation ou éditeur Shopify vérifiés.",
+    "Aucune instance publique mise à jour."
+  ]
+}

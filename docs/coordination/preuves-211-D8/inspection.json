@@ -1,0 +1,17 @@
+{
+  "schema": "211-D8-inspection-1",
+  "code": "7d900c13ae4f2764ca31689d9041864ce9157567",
+  "screenshotsReviewed": "Seven contact sheets for all37 conversational captures, selected original desktop/mobile/failed-receipt/currency states and six full-page/cart supplemental originals. Before versions kept separately.",
+  "videoReview": "Technical metadata/frame/RGB equivalence for all nine files, plus first/middle/last visual sampling; not a claim of watching every frame or qualifying creative quality.",
+  "videoContactSheets": [
+    "planches/videos-01.jpg",
+    "planches/videos-02.jpg",
+    "planches/videos-03.jpg"
+  ],
+  "nativeUiAssertions": "updated listing title and restoration/archive, details width>=120px, no horizontal overflow, correct draft description, errors empty, no unproved 100%, real buy forms/drawer/cart and isolated live cart.",
+  "realProviderCalls": 0,
+  "limitations": [
+    "Technical fixture profile, no real product photography or creative quality qualification.",
+    "No real checkout, CMS installation, synchronization, remote stock or deployment."
+  ]
+}

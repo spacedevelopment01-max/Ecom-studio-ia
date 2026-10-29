@@ -1,0 +1,21 @@
+{
+ "projet": "56q7yf4sriumy2x6",
+ "version": {
+  "commit": "7d900c13ae4f2764ca31689d9041864ce9157567",
+  "commitOrigin": "build",
+  "mode": "production",
+  "tree": "clean",
+  "source": "compiled-build"
+ },
+ "export": {
+  "statut": 200,
+  "type": "application/zip",
+  "octets": 8498069,
+  "debut": null
+ },
+ "controle": {
+  "themeCheckErrors": 0,
+  "themeCheckWarnings": 35,
+  "problemesThemeCheck": []
+ }
+}

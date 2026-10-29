@@ -1,0 +1,47 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/conversation211-intelligence.test.ts (28 tests | 1 failed | 26 skipped) 882ms
+   ❯ #211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette (28)
+     × confirme une réponse après un export malgré le temps écoulé, sans appel fournisseur ni crédit contourné 616ms
+ ❯ tests/conversation211-exports.test.ts (13 tests | 1 failed | 11 skipped) 1124ms
+   ❯ #211 D3 — export depuis le même SYNA (13)
+     × garde un contexte cognitif stable après export malgré le temps écoulé, sans figer la télémétrie affichée 667ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-exports.test.ts > #211 D3 — export depuis le même SYNA > garde un contexte cognitif stable après export malgré le temps écoulé, sans figer la télémétrie affichée
+AssertionError: expected 'a0e9518d48e557e3' to be '80921c728309cd10' // Object.is equality
+
+Expected: "80921c728309cd10"
+Received: "a0e9518d48e557e3"
+
+ ❯ tests/conversation211-exports.test.ts:40:629
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/conversation211-intelligence.test.ts > #211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette > confirme une réponse après un export malgré le temps écoulé, sans appel fournisseur ni crédit contourné
+Error: La route, le tarif ou la demande ont changé : actualisez le devis.
+ ❯ src/lib/orchestrator/conversation/intelligence.ts:106:65
+
+ ❯ scoped src/lib/orchestrator/conversation/intelligence.ts:45:25
+ ❯ checkedQuote src/lib/orchestrator/conversation/intelligence.ts:104:16
+ ❯ sqliteTransaction.<anonymous> src/lib/orchestrator/conversation/intelligence.ts:121:28
+ ❯ sqliteTransaction ../../Ecom-studio-ia/node_modules/better-sqlite3/lib/methods/transaction.js:65:24
+ ❯ tx src/lib/db.ts:1301:31
+ ❯ Module.confirmCognitiveQuote src/lib/orchestrator/conversation/intelligence.ts:113:10
+ ❯ tests/conversation211-intelligence.test.ts:230:1240
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 2 passed | 37 skipped (41)
+   Start at  10:18:03
+   Duration  4.41s (transform 43%, import 32%, tests 24%)
+
+  Transform  transforming modules took 3.57s · 43% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
