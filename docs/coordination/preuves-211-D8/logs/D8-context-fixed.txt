@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+
+ Test Files  3 passed (3)
+      Tests  79 passed (79)
+   Start at  10:19:00
+   Duration  11.96s (tests 62%, transform 21%, import 17%)
+

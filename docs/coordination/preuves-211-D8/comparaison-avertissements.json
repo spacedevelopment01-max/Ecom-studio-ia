@@ -1,0 +1,9 @@
+{
+  "schema": "211-D8-warning-comparison-1",
+  "currentCode": "7d900c13ae4f2764ca31689d9041864ce9157567",
+  "currentZip": "9dfec228ae3b1994b78e6d3465ba01e4fa3528942cbea4097a9b0372bdd17a7f",
+  "comparedToCode": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+  "currentWarnings": 35,
+  "sameExactOffenses": true,
+  "note": "Both exact ZIPs were checked independently; comparison does not substitute for the current official check or CMS validation."
+}

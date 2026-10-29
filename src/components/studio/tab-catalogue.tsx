@@ -5,12 +5,13 @@
  * les boutiques connectées (Shopify, WooCommerce, PrestaShop) : envoi, mise à jour sans doublon, import des produits
  * existants. Règles et contrôles côté serveur (src/lib/products/).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Archive, Boxes, Eye, ImagePlus, Plug, Plus, RefreshCw, Download, Trash2, Unplug } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { MediaPicker } from "./common";
 import { useT } from "../i18n";
+import {useAgentFocus,useAgentPanel,useAgentUi} from './agent-ui-context';
 
 type Variant = { id: string; options: string[]; sku: string; price: number | null; compareAt: number | null; stock: number | null; stockPolicy: "deny" | "continue"; image: string | null; barcode: string; weightGrams: number | null };
 type Data = { title: string; description_html: string; vendor: string; productType: string; categories: string[]; tags: string[]; images: { assetId: string; file?: string; alt: string }[]; price: number | null; compareAt: number | null; currency: string; options: { name: string; values: string[] }[]; seo: { title: string; description: string }; templateSuffix: string; weightGrams: number | null; barcode: string };
@@ -20,16 +21,23 @@ type Report = { at: number; platform: string; store: string; lines: Line[]; coun
 type Store = { id: string; platform: "shopify" | "woocommerce" | "prestashop"; url: string; store: string; lastSyncAt: number | null; lastReport: Report | null; linked: number };
 type View = { services: boolean; products: Product[]; stores: Store[]; templates: string[] };
 
+const currencyLabel=(currency:string)=>currency==='EUR'?'€':currency;
 const PLATFORM = { shopify: "Shopify", woocommerce: "WooCommerce", prestashop: "PrestaShop" } as const;
 const euros = (c: number | null) => (c === null ? "" : (c / 100).toFixed(2).replace(".", ","));
 const cents = (s: string) => { const v = s.replace(/\s|€/g, "").replace(",", "."); if (!v) return null; const n = Math.round(Number(v) * 100); return Number.isFinite(n) && n >= 0 ? n : null; };
 const list = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 export default function TabCatalogue() {
-  const { id } = useProject();
+  const { id,data:overview } = useProject();
+  const {setFocus}=useAgentFocus(),{setOpen}=useAgentPanel(),agentUi=useAgentUi();
   const t = useT();
   const toast = useToast();
   const { data, reload } = useApi<View>(`/api/projects/${id}/products`);
+  useEffect(()=>{
+    const changed=(event:Event)=>{if(event instanceof CustomEvent&&event.detail?.projectId===id)void reload();};
+    window.addEventListener('studio:catalogue-changed',changed);
+    return()=>window.removeEventListener('studio:catalogue-changed',changed);
+  },[id,reload]);
   const [editing, setEditing] = useState<Product | "new" | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -45,7 +53,7 @@ export default function TabCatalogue() {
   };
   const stockOf = (p: Product) => (p.variants.every((v) => v.stock === null) ? null : p.variants.reduce((n, v) => n + (v.stock ?? 0), 0));
   return (
-    <div className="grid gap-5">
+    <div className="grid min-w-0 grid-cols-1 gap-5">
       <Card className="p-5 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-2xl">
@@ -54,19 +62,20 @@ export default function TabCatalogue() {
           </div>
           <Button icon={<Plus className="size-4" />} onClick={() => setEditing("new")}>{t("Ajouter un produit", "Add a product")}</Button>
         </div>
-        <div className="mt-5 grid gap-3">
+        <div className="mt-5 grid min-w-0 grid-cols-1 gap-3">
           {!data.products.length && <Empty icon={<Boxes className="size-6" />} title={t("Aucun produit", "No products")}>{t("Ajoutez votre premier produit, ou importez ceux d'une boutique connectée.", "Add your first product, or import those of a connected store.")}</Empty>}
           {data.products.map((p, i) => {
             const stock = stockOf(p);
             return (
-              <div key={p.id} className="flex flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center">
+              <div key={p.id} data-catalogue-product={p.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-paper-2">{p.images[0] ? <img src={p.images[0].url} alt={p.images[0].alt} className="size-full object-cover" /> : <span className="grid size-full place-items-center text-xs text-muted">{t("Sans photo", "No photo")}</span>}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2"><p className="truncate font-semibold">{p.data.title}</p>{p.status === "draft" && <Badge tone="warn">{t("Brouillon", "Draft")}</Badge>}{p.links.map((l) => <Badge key={l.platform + l.store} tone="ok">{PLATFORM[l.platform as keyof typeof PLATFORM]} · {l.store}</Badge>)}</div>
-                  <p className="text-sm text-muted">{[p.data.price !== null ? `${euros(p.data.price)} €` : t("Prix à renseigner", "Price to enter"), t(`${p.variants.length} variante(s)`, `${p.variants.length} variant(s)`), stock === null ? t("stock non suivi", "stock not tracked") : t(`stock ${stock}`, `stock ${stock}`), p.data.categories.join(", ")].filter(Boolean).join(" · ")}</p>
+                <div data-catalogue-product-details className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2"><p className="max-w-full truncate font-semibold">{p.data.title}</p>{p.status === "draft" && <Badge tone="warn">{t("Brouillon", "Draft")}</Badge>}{p.links.map((l) => <Badge key={l.platform + l.store} tone="ok">{PLATFORM[l.platform as keyof typeof PLATFORM]} · {l.store}</Badge>)}</div>
+                  <p className="break-words text-sm text-muted">{[p.data.price !== null ? `${euros(p.data.price)} ${currencyLabel(p.data.currency)}` : t("Prix à renseigner", "Price to enter"), t(`${p.variants.length} variante(s)`, `${p.variants.length} variant(s)`), stock === null ? t("stock non suivi", "stock not tracked") : t(`stock ${stock}`, `stock ${stock}`), p.data.categories.join(", ")].filter(Boolean).join(" · ")}</p>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  <a className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm hover:bg-paper-2" href={`/preview/${id}/v/current/products/${p.handle}`} target="_blank" rel="noreferrer"><Eye className="size-4" />{t("Voir la fiche", "View page")}</a>
+                <div className="flex w-full flex-wrap gap-1">
+                  {agentUi&&overview?.conversationCatalogue&&<Button size="sm" variant="secondary" onClick={()=>{setFocus({projectId:id,tab:'catalogue',label:p.data.title,target:{kind:'catalogue-product',productId:p.id,version:p.version}});setOpen(true);}}>{t('Désigner pour SYNA','Select for SYNA')}</Button>}
+                  {p.status==='active'?<a className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm hover:bg-paper-2" href={`/preview/${id}/v/current/products/${p.handle}`} target="_blank" rel="noreferrer"><Eye className="size-4" />{t("Voir la fiche", "View page")}</a>:<span className="inline-flex min-h-9 items-center px-3 text-xs text-muted">{t('Hors du Site actuel ; aperçu privé dans le reçu SYNA si disponible.','Outside the current Site; private preview in the SYNA receipt when available.')}</span>}
                   <Button size="sm" variant="secondary" onClick={() => setEditing(p)}>{t("Modifier", "Edit")}</Button>
                   <Button size="sm" variant="ghost" aria-label={t("Monter", "Move up")} disabled={i === 0} onClick={() => patch({ id: p.id, move: "up" })} icon={<ArrowUp className="size-4" />} />
                   <Button size="sm" variant="ghost" aria-label={t("Descendre", "Move down")} disabled={i === data.products.length - 1} onClick={() => patch({ id: p.id, move: "down" })} icon={<ArrowDown className="size-4" />} />
@@ -208,8 +217,8 @@ function ProductEditor({ product, templates, onClose, onSaved }: { product: Prod
             </span>))}</div>
         </div>
         <div className="grid gap-3 sm:grid-cols-4">
-          <Field label={t("Prix (€)", "Price (€)")}><Input inputMode="decimal" defaultValue={euros(d.price)} onBlur={(e) => set("price", cents(e.target.value))} /></Field>
-          <Field label={t("Prix barré (€)", "Compare-at (€)")}><Input inputMode="decimal" defaultValue={euros(d.compareAt)} onBlur={(e) => set("compareAt", cents(e.target.value))} /></Field>
+          <Field label={t(`Prix (${currencyLabel(d.currency)})`, `Price (${currencyLabel(d.currency)})`)}><Input inputMode="decimal" defaultValue={euros(d.price)} onBlur={(e) => set("price", cents(e.target.value))} /></Field>
+          <Field label={t(`Prix barré (${currencyLabel(d.currency)})`, `Compare-at (${currencyLabel(d.currency)})`)}><Input inputMode="decimal" defaultValue={euros(d.compareAt)} onBlur={(e) => set("compareAt", cents(e.target.value))} /></Field>
           <Field label={t("Catégories (virgules)", "Categories (commas)")}><Input defaultValue={d.categories.join(", ")} onBlur={(e) => set("categories", list(e.target.value))} /></Field>
           <Field label={t("Étiquettes (virgules)", "Tags (commas)")}><Input defaultValue={d.tags.join(", ")} onBlur={(e) => set("tags", list(e.target.value))} /></Field>
         </div>
@@ -225,7 +234,7 @@ function ProductEditor({ product, templates, onClose, onSaved }: { product: Prod
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
-            <thead><tr className="text-left text-muted"><th className="p-1">{t("Variante", "Variant")}</th><th className="p-1">{t("Référence (SKU)", "SKU")}</th><th className="p-1">{t("Prix (€)", "Price (€)")}</th><th className="p-1">{t("Stock (vide : non suivi)", "Stock (empty: not tracked)")}</th><th className="p-1">{t("Épuisé", "Sold out")}</th></tr></thead>
+            <thead><tr className="text-left text-muted"><th className="p-1">{t("Variante", "Variant")}</th><th className="p-1">{t("Référence (SKU)", "SKU")}</th><th className="p-1">{t(`Prix (${currencyLabel(d.currency)})`, `Price (${currencyLabel(d.currency)})`)}</th><th className="p-1">{t("Stock (vide : non suivi)", "Stock (empty: not tracked)")}</th><th className="p-1">{t("Épuisé", "Sold out")}</th></tr></thead>
             <tbody>{rows.map((v, i) => (
               <tr key={keyOf(v.options) || "unique"} className="border-t border-line">
                 <td className="p-1">{v.options.join(" / ") || t("Produit unique", "Single product")}</td>

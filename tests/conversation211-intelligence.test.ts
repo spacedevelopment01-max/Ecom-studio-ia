@@ -4,13 +4,15 @@ import { openDraft, openProjectConversation, conversationView } from '@/lib/orch
 import { confirmCognitiveQuote, createCognitiveQuote, runCognitiveJob } from '@/lib/orchestrator/conversation/intelligence';
 import { CognitiveReplySchema, type CognitiveReply } from '@/lib/orchestrator/conversation/intelligence-contract';
 import { all, id, now, one, run } from '@/lib/db';
-import { claimNext, JobContext, type Job } from '@/lib/jobs';
+import { claimNext, JobContext, completeJob, type Job } from '@/lib/jobs';
 import { currentBrief, ownedConversation } from '@/lib/orchestrator/conversation/store';
 import { exportAccountData } from '@/lib/privacy';
 import { balance } from '@/lib/billing';
 import { setJsonSetting } from '@/lib/settings';
 import { TEXT_MODEL_BY_TIER } from '@/lib/orchestrator/policy';
 import { cognitiveContext } from '@/lib/orchestrator/conversation/intelligence-context';
+import {seedAgentUiSite} from '../scripts/agent211-ui-fixtures';
+import {quoteNativeExport,confirmNativeExport,runNativeExport} from '@/lib/orchestrator/conversation/export-tool-execution';
 
 const fake = vi.hoisted(() => ({ reply: null as unknown, calls: 0, fail: false }));
 vi.mock('@/lib/ai/config', async orig => ({ ...(await orig() as object), activeProviderKey: () => 'FAUX FOURNISSEUR — AUCUN SECRET' }));
@@ -224,4 +226,8 @@ describe('#211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette'
     fake.reply=reply({proposedChanges:[{field:'target',value:'les décorateurs',sourceId:source.id,quote:text}]});await execute(user,cid);const v=conversationView(user,cid),pid=project(user);openProjectConversation(user,pid,cid,v.revision);
     const saved=await send({action:'accept-ai-changes',proposalId:v.intelligence!.proposalId!});expect(saved.summary.target).toBe('les décorateurs');expect(fake.calls).toBe(1);
   });
+  it('confirme une réponse après un export malgré le temps écoulé, sans appel fournisseur ni crédit contourné',async()=>{
+    for(const k of ['STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS','STUDIO_CONVERSATION_EXPORTS'])vi.stubEnv(k,'1');const user=await account(),pid=project(user),c=openProjectConversation(user,pid),send=sender(user,c.id);await send({action:'message',text:'Projet de reliure : prépare mon fichier sans publication.'});await seedAgentUiSite(pid,'products');let v=conversationView(user,c.id);const eq=quoteNativeExport(user,c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,versionId:(await import('@/lib/projects')).currentTheme(pid)!.version.id,platform:'wix',requestNew:false});expect(eq.kind).toBe('quote');if(eq.kind!=='quote')throw Error('export_quote');confirmNativeExport(user,c.id,{action:'confirm',quoteId:eq.quote.id,confirmation:true,requestId:id()});const job=claimNext(['agent.theme.export'])!;expect(job).toBeTruthy();const output=await runNativeExport(new JobContext(job));completeJob(job.id,output);await send({action:'message',text:'Explique maintenant les limites de mon fichier sans rien modifier.'});const at=Date.now(),clock=vi.spyOn(Date,'now');try{clock.mockReturnValue(at);const q=quote(user,c.id);clock.mockReturnValue(at+2100);const consent=confirmCognitiveQuote(user,c.id,q.id,id());expect(one<{status:string}>('SELECT status FROM jobs WHERE id=?',consent.jobId)!.status).toBe('queued');expect(fake.calls).toBe(0);expect(all('SELECT id FROM ai_reservations WHERE project_id=?',pid)).toHaveLength(0);run("UPDATE jobs SET status='cancelled' WHERE id=?",consent.jobId);}finally{clock.mockRestore();}
+  });
+
 });

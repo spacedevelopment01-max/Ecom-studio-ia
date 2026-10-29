@@ -1,0 +1,1 @@
+{"success":true,"file":"/workspace/reviews/ecom-211-state/D8-browser-final-v6/api-proof.json","version":{"commit":"7d900c13ae4f2764ca31689d9041864ce9157567","commitOrigin":"build","mode":"production","tree":"clean","source":"compiled-build"},"totals":{"providerHttpCalls":3,"calls":3,"usage":3,"simulatedMicro":23736,"tokenCounts":3},"temp":"/tmp/ecs-agent-211-5E5FBn"}

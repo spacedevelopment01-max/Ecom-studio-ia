@@ -1,0 +1,17 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: mono/restauration-autre-largeur: débordement 403/390
+    at capture (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-catalogue-ui.ts:26:733)
+    at async verifyCatalogueBrowser (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-catalogue-ui.ts:55:79)
+    at async <anonymous> (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-build.ts:203:23) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

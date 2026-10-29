@@ -9,13 +9,21 @@ import {L} from '../../i18n-server';
 import {stableHash} from '../../brain/hash';
 import {ActiveContextSchema,type ActiveContext} from './active-context-contract';
 import type {ConversationRow} from './contract';
-import {conversationContextEnabled} from './tool-flags';
+import {conversationCatalogueEnabled,conversationContextEnabled} from './tool-flags';
+import {getProduct} from '../../products/catalog';
 export const activeContextEnabled=conversationContextEnabled;
 const missing=()=>new HttpError(404,L('Cette cible est introuvable dans ce projet. Rien n’a été modifié.','This target was not found in this project. Nothing changed.'),'conversation_target_not_found');
 export function resolveActiveContext(c:ConversationRow,raw:unknown){
  const selected=ActiveContextSchema.parse(raw),target=selected.target;
  if(!target)return{selection:selected,kind:'tab' as const,label:selected.tab,contentRead:false};
  if(!c.project_id)throw missing();
+ if(target.kind==='catalogue-product'||target.kind==='catalogue-variant'){
+  if(selected.tab!=='catalogue'||!conversationCatalogueEnabled())throw missing();
+  const p=getProduct(c.project_id,target.productId),version=target.kind==='catalogue-product'?target.version:target.productVersion;
+  if(p.version!==version)throw new HttpError(409,L('La fiche produit a changé. Désignez-la à nouveau.','The product listing changed. Select it again.'),'conversation_target_stale');
+  if(target.kind==='catalogue-variant'){const v=p.variants.find(v=>v.id===target.variantId);if(!v)throw missing();if(v.version!==target.version)throw new HttpError(409,L('La variante a changé. Désignez-la à nouveau.','The variant changed. Select it again.'),'conversation_target_stale');return{selection:selected,kind:'catalogue-variant' as const,label:`${p.data.title} · ${v.options.join(' / ')||v.sku}`,isCurrent:true,contentRead:true,product:p,variant:v,visualQuality:'not_reviewed' as const};}
+  return{selection:selected,kind:'catalogue-product' as const,label:p.data.title,isCurrent:true,contentRead:true,product:p,visualQuality:'not_reviewed' as const};
+ }
  if(target.kind==='asset'){
   if(!['images','videos','marque','fichiers'].includes(selected.tab))throw missing();
   const a=one<{id:string;version:number;name:string;kind:string;status:string;mime:string;width:number|null;height:number|null}>("SELECT id,version,name,kind,status,mime,width,height FROM assets WHERE id=? AND project_id=? AND user_id=? AND deleted_at IS NULL AND status!='rejected' AND COALESCE(role,'')!='theme-render-capture'",target.assetId,c.project_id,c.user_id);

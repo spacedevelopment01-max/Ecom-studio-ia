@@ -17,7 +17,7 @@ import { FactSchema } from "@/lib/project-schemas";
 import { previewSandbox } from "@/lib/theme/preview-access";
 import { HttpError } from "@/lib/auth";
 import { L, uiLang } from "@/lib/i18n-server";
-import {conversationContextEnabled} from '@/lib/orchestrator/conversation/tool-flags';
+import {conversationContextEnabled,conversationCatalogueEnabled} from '@/lib/orchestrator/conversation/tool-flags';
 
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
@@ -40,6 +40,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
     // Forfait du PROJET (un abonnement = un projet) : ouvre les créations d'images et de vidéos dans l'écran.
     plan: planOfProject(p.id),
     conversationContext:conversationContextEnabled(),
+    conversationCatalogue:conversationCatalogueEnabled(),
     project: { id: p.id, name: p.name, status: p.status, platform: p.platform, storeUrl: p.row.store_url, createdAt: p.row.created_at, updatedAt: p.row.updated_at, sectorLabel: p.business === "services" && p.product.category ? p.product.category : sectorLabel(p.product.sector, uiLang()), business: p.business },
     // Questions posées au commerçant : dans la langue de son interface, quelle que soit celle du projet.
     product: { ...p.product, questions: localizeQuestions(p.product.questions ?? []) },

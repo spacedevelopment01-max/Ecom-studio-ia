@@ -5,6 +5,7 @@ import {CompositionPlanSchema} from '../../theme/composition/contract';
 import {RenderToolPlanSchema} from './render-tool-contract';
 import {ExportToolPlanSchema} from './export-tool-contract';
 import {ThemeToolPlanSchema} from './theme-tool-contract';
+import {CataloguePlanSchema} from './catalogue-tool-contract';
 
 import {StrategyChoiceProposalSchema} from './strategy-choice-contract';
 const text = (max: number) => z.string().trim().min(1).max(max);
@@ -30,14 +31,15 @@ export const CognitiveReplySchema = z.object({
     value: text(1200), sourceId: text(120), quote: text(8000),
   }).strict()).max(8),
   knowledgeSourceIds: z.array(text(100)).max(20),
-  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render'])).max(3),
+  proposedTools: z.array(z.enum(['understand-offer', 'research', 'brief.update', 'studio.help','theme.edit','theme.compose','theme.export','theme.inspect-render','catalogue.draft'])).max(3),
+  cataloguePlan:CataloguePlanSchema.optional(),
   strategyChoice:StrategyChoiceProposalSchema.optional(),
   themePlan:ThemeToolPlanSchema.optional(),
   compositionPlan:CompositionPlanSchema.optional(),
   exportPlan:ExportToolPlanSchema.optional(),
   renderPlan:RenderToolPlanSchema.optional(),
   actionsExecuted: z.literal(false),
-}).strict().superRefine((r,ctx)=>{if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération de thème par proposition.'});});
+}).strict().superRefine((r,ctx)=>{if([r.themePlan,r.compositionPlan,r.exportPlan,r.renderPlan,r.cataloguePlan].filter(Boolean).length>1)ctx.addIssue({code:'custom',message:'Une seule opération native par proposition.'});if(!!r.cataloguePlan!==r.proposedTools.includes('catalogue.draft'))ctx.addIssue({code:'custom',message:'Le plan Catalogue doit correspondre à son outil.'});});
 export type CognitiveReply = z.infer<typeof CognitiveReplySchema>;
 export type CognitiveQuestion = z.infer<typeof CognitiveQuestionSchema>;
 export type CognitiveState = {

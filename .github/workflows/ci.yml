@@ -143,6 +143,17 @@ jobs:
       - name: Export Shopify contrôlé sur le build compilé
         run: npx tsx scripts/export-shopify-build-check.ts
 
+      - name: Catalogue SYNA natif, brouillons, variantes, reprise, annulation et aperçu (IA HTTP simulée)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D8-proof --catalogue-ui
+
+      - name: Preuves du Catalogue SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D8-${{ github.sha }}
+          path: /tmp/agent211-D8-proof
+          if-no-files-found: ignore
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest
