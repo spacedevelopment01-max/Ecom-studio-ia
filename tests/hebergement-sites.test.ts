@@ -220,6 +220,22 @@ describe("Vraies demandes reçues par le site", () => {
     expect((await contact(host, { "contact[email]": "v5@example.test", "contact[body]": "Bonjour" }, `https://${host}`, "198.51.100.9")).status).toBe(200);
     expect((await contact(host, { "contact[email]": "v6@example.test", "contact[body]": "Bonjour" }, `https://${host}`, "198.51.100.9")).status).toBe(429);
   });
+  it("envoi sans le script du thème et sans page de confirmation : retour à la page du formulaire dans son état « envoyé »", async () => {
+    const { pid, pub, host } = await published("rive");
+    const m = manifestOf(pid, pub.id)!;
+    expect(m.files["pages/confirmation/index.html"]).toBeUndefined();
+    expect(m.files["pages/contact/envoye.html"]).toBeDefined();
+    expect(m.pages).not.toContain("/pages/contact/envoye");
+    const post = await scoped(() => serveSite(new Request(`https://${host}/contact`, { method: "POST", headers: { host, origin: `https://${host}`, referer: `https://${host}/pages/contact`, "content-type": "application/x-www-form-urlencoded", "x-forwarded-for": "203.0.113.20" }, body: new URLSearchParams({ form_type: "contact", "contact[name]": "Visiteur fictif", "contact[email]": "visiteur@example.test", "contact[body]": "Bonjour" }).toString() }), host, "/contact"));
+    expect(post.status).toBe(303);
+    expect(post.headers.get("location")).toBe("/pages/contact?contact_posted=true#contact_form");
+    expect(siteRequests(pid)).toHaveLength(1);
+    const done = await get(host, "/pages/contact?contact_posted=true");
+    expect(done.status).toBe(200);
+    expect(done.headers.get("cache-control")).toBe("no-store");
+    expect(await done.text()).toContain("Merci, nous revenons vers vous rapidement.");
+    expect(await (await get(host, "/pages/contact")).text()).not.toContain("Merci, nous revenons vers vous rapidement.");
+  });
 });
 
 describe("Droits : propriétaire seulement", () => {

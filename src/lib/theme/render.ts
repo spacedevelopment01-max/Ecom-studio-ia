@@ -508,7 +508,9 @@ export function createEngine(files: ThemeFiles, base: string, lang: Lang = "fr")
         .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`)
         .join("");
       emitter.write(`<form method="post" action="${actions[this.formType] ?? base}" accept-charset="UTF-8"${this.formType === "product" ? ' enctype="multipart/form-data"' : ""}${html}><input type="hidden" name="form_type" value="${this.formType}"><input type="hidden" name="utf8" value="✓">`);
-      ctx.push({ form: { errors: null, "posted_successfully?": false, posted_successfully: false, password_needed: true, email: "", name: "", body: "", phone: "", set_as_default_checkbox: '<input type="checkbox" name="address[default]" value="1">' } });
+      // Site publié uniquement : retour d'un envoi sans script (?contact_posted=true, comme Shopify) → état « envoyé » du thème.
+      const posted = this.formType === "contact" && !!(ctx.globals as Record<string, unknown> | undefined)?.__contactPosted;
+      ctx.push({ form: { errors: null, "posted_successfully?": posted, posted_successfully: posted, password_needed: true, email: "", name: "", body: "", phone: "", set_as_default_checkbox: '<input type="checkbox" name="address[default]" value="1">' } });
       yield this.liquid.renderer.renderTemplates(this.tpls, ctx, emitter);
       ctx.pop();
       emitter.write("</form>");
@@ -873,6 +875,7 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     additional_checkout_buttons: false,
     all_country_option_tags: '<option value="France">France</option>',
     "powered_by_link": "",
+    __contactPosted: !!opts.publicOrigin && search.get("contact_posted") === "true",
   };
 
   // Contenu de la page : sections du gabarit JSON.

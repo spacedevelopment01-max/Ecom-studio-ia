@@ -44,6 +44,11 @@ export function pageFile(pathname: string): string {
   return clean === "/" ? "index.html" : `${clean.slice(1)}/index.html`;
 }
 
+/** Version « demande envoyée » d'une page (même dossier, jamais confondue avec une page : pas de nom index.html). */
+export function postedFile(pathname: string): string {
+  return pageFile(pathname).replace(/index\.html$/, "envoye.html");
+}
+
 const internalLinks = (html: string) => [...html.matchAll(/\shref="(\/[^"#?]*)(?:[?#][^"]*)?"/g)].map((m) => decodeURI(m[1]).replace(/\/+$/, "") || "/");
 const fileRefs = (text: string) => [...text.matchAll(/\/(assets|__fonts)\/([A-Za-z0-9._%+@-]+(?:\/[A-Za-z0-9._%+@-]+)*)/g)].map((m) => ({ dir: m[1] as "assets" | "__fonts", name: decodeURIComponent(m[2]) }));
 const safeName = (name: string) => !name.includes("..") && !path.isAbsolute(name) && /^[A-Za-z0-9._%+@/-]+$/.test(name);
@@ -58,7 +63,7 @@ function codeCommit(): string {
   return process.env.STUDIO_BUILD_COMMIT || "inconnu";
 }
 
-type Rendered = { pages: Map<string, string>; notFound: string; files: Map<string, { data: Buffer; type: string }>; missing: string[] };
+type Rendered = { pages: Map<string, string>; posted: Map<string, string>; notFound: string; files: Map<string, { data: Buffer; type: string }>; missing: string[] };
 
 /** Rend le site complet (pages accessibles depuis l'accueil, menus, pages et politiques) et rassemble ses fichiers. */
 export async function renderSite(spec: ThemeSpec, origin: string): Promise<Rendered> {
@@ -76,6 +81,13 @@ export async function renderSite(spec: ThemeSpec, origin: string): Promise<Rende
     if (r.status !== 200) continue;
     pages.set(pathname, r.html);
     for (const link of internalLinks(r.html)) if (!seen.has(link) && !link.startsWith("/assets/") && !link.startsWith("/__fonts/")) queue.push(link);
+  }
+  // État « demande envoyée » des pages à formulaire de contact, servi après un envoi sans le script du thème.
+  const posted = new Map<string, string>();
+  for (const [pathname, html] of pages) {
+    if (!html.includes('action="/contact#contact_form"')) continue;
+    const r = await renderPage(opts, pathname, new URLSearchParams("contact_posted=true"));
+    if (r.status === 200 && r.html !== html) posted.set(pathname, r.html);
   }
   const notFound = (await renderPage(opts, "/__page-introuvable__", new URLSearchParams())).html;
   // Fichiers référencés par les pages, puis par les feuilles de style et scripts eux-mêmes.
@@ -101,7 +113,7 @@ export async function renderSite(spec: ThemeSpec, origin: string): Promise<Rende
     out.set(key, { data: Buffer.from(text), type: textType(ref.name) });
     if (/\.(css|js)$/.test(ref.name)) todo.push(...fileRefs(text));
   }
-  return { pages, notFound, files: out, missing };
+  return { pages, posted, notFound, files: out, missing };
 }
 
 /**
@@ -159,6 +171,7 @@ function writeArtifact(projectId: string, publicationId: string, r: Rendered, me
     entries[rel] = { sha256: sha(data), bytes: data.length, type };
   };
   for (const [p, html] of r.pages) put(pageFile(p), Buffer.from(finalizeHtml(html)), "text/html; charset=utf-8");
+  for (const [p, html] of r.posted) put(postedFile(p), Buffer.from(finalizeHtml(html)), "text/html; charset=utf-8");
   put("404.html", Buffer.from(finalizeHtml(r.notFound)), "text/html; charset=utf-8");
   for (const [key, f] of r.files) put(key, f.data, f.type);
   const bytes = Object.values(entries).reduce((s, e) => s + e.bytes, 0);

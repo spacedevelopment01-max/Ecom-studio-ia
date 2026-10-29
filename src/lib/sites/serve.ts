@@ -10,7 +10,7 @@ import { L } from "../i18n-server";
 import { identifyProject } from "../access-scope";
 import { projectPlan } from "../project-billing";
 import { customDomainsEnabled } from "./host-match";
-import { manifestOf, pageFile } from "./publish";
+import { manifestOf, pageFile, postedFile } from "./publish";
 import { receiveSiteRequest } from "./requests";
 import { addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
@@ -57,6 +57,16 @@ async function resized(pub: Publication, rel: string, file: string, width: numbe
   return data;
 }
 
+/** Chemin de la page d'où vient l'envoi, seulement si elle est sur ce même site. */
+function refererPath(req: Request, hostname: string): string | null {
+  try {
+    const u = new URL(req.headers.get("referer") ?? "");
+    return u.hostname === hostname ? u.pathname : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function serveSite(req: Request, hostname: string, pathname: string): Promise<Response> {
   const site = siteFor(hostname);
   if (!site) return plain(404, L("Site introuvable.", "Site not found."));
@@ -70,9 +80,12 @@ export async function serveSite(req: Request, hostname: string, pathname: string
     if (pathname !== "/contact") return plain(405, "Method Not Allowed");
     const r = await receiveSiteRequest(req, address, pub);
     if ((req.headers.get("accept") ?? "").includes("application/json") || (req.headers.get("content-type") ?? "").includes("application/json")) return Response.json(r.body, { status: r.status, headers: { "Cache-Control": "no-store", ...SECURITY } });
-    // Envoi sans le script du thème : page de confirmation du thème si elle existe, sinon page simple (ou d'échec).
+    // Envoi sans le script du thème : page de confirmation du thème si elle existe, sinon retour à la page du formulaire
+    // dans son état « demande envoyée » (comme Shopify), sinon page simple (ou d'échec).
     const ok = r.body.ok;
     if (ok && manifest.files["pages/confirmation/index.html"]) return new Response(null, { status: 303, headers: { Location: "/pages/confirmation", "Cache-Control": "no-store", ...SECURITY } });
+    const from = refererPath(req, hostname);
+    if (ok && from !== null && manifest.files[postedFile(from)]) return new Response(null, { status: 303, headers: { Location: `${from}?contact_posted=true#contact_form`, "Cache-Control": "no-store", ...SECURITY } });
     const html = `<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${ok ? "Demande envoyée" : "Envoi impossible"}</title><body style="font-family:system-ui,sans-serif;max-width:36rem;margin:4rem auto;padding:0 1rem;line-height:1.5"><h1>${ok ? "Votre demande a bien été envoyée." : "Votre demande n'a pas pu être envoyée."}</h1><p>${ok ? "Elle a été transmise au professionnel, qui vous répondra." : "Vérifiez votre adresse e-mail et votre message, puis réessayez dans quelques minutes."}</p><p><a href="/">Retour au site</a></p></body></html>`;
     return new Response(html, { status: r.status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", ...SECURITY } });
   }
@@ -92,6 +105,10 @@ export async function serveSite(req: Request, hostname: string, pathname: string
     const width = Number(new URL(req.url).searchParams.get("width"));
     const data = width && entry.type.startsWith("image/") && !entry.type.includes("svg") && width < 2400 ? await resized(pub, rel, file, width) : fs.readFileSync(file);
     return new Response(req.method === "HEAD" ? null : new Uint8Array(data), { headers: { "Content-Type": entry.type, "Cache-Control": "public, max-age=300", ETag: etag, ...SECURITY } });
+  }
+  if (new URL(req.url).searchParams.get("contact_posted") === "true" && manifest.files[postedFile(pathname)]) {
+    const html = fs.readFileSync(artifactPath(pub, postedFile(pathname))!);
+    return new Response(req.method === "HEAD" ? null : new Uint8Array(html), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex", ...SECURITY } });
   }
   const page = pageFile(pathname);
   const file = manifest.files[page] ? artifactPath(pub, page) : null;
