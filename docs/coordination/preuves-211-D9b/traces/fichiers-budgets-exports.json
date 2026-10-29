@@ -1,0 +1,286 @@
+{
+  "knownUsages": {
+    "providerHttpCalls": 59,
+    "textHttpCalls": 39,
+    "imageHttpCalls": 20,
+    "tokenCounts": 39,
+    "calls": 59,
+    "usage": 57,
+    "simulatedMicro": 4412209
+  },
+  "uncertainCount": 2,
+  "uncertainMaximumMicro": 523083,
+  "uncertainRecordedActualIsNotInvoice": true,
+  "failures": [
+    {
+      "status": "failed",
+      "progress": 0.9,
+      "files": [
+        {
+          "kind": "diagnostics",
+          "assetRef": "072250020e65ca97",
+          "version": 3,
+          "sha256": "bf37da1cd8f620b07f7967327554495152a6018ff8266c3530baf3d9b6a9078c",
+          "bytes": 239058,
+          "status": "rejected",
+          "verdict": "RETRY",
+          "checked": false,
+          "acquiredFileIntact": true
+        }
+      ],
+      "uncertainReservations": [
+        {
+          "amount": 216102,
+          "actual": 216102,
+          "status": "uncertain"
+        }
+      ],
+      "notAConfirmedInvoice": true
+    },
+    {
+      "status": "failed",
+      "progress": 0.45,
+      "files": [
+        {
+          "kind": "outputs",
+          "assetRef": "57508b0f63b4ea6c",
+          "version": 1,
+          "sha256": "7c72dd34532d12ea30c87fc903d641e639d9c10cb65ae3e4b2c20363711cd092",
+          "bytes": 294046,
+          "status": "review",
+          "verdict": "FINAL",
+          "checked": true,
+          "acquiredFileIntact": true
+        }
+      ],
+      "uncertainReservations": [
+        {
+          "amount": 306981,
+          "actual": 306981,
+          "status": "uncertain"
+        }
+      ],
+      "notAConfirmedInvoice": true
+    }
+  ],
+  "exports": [
+    {
+      "scene": "mono",
+      "file": "exports/mono-shopify.zip",
+      "sha256": "a95aeb8c71556178723c3f048a9b6a50a163c74d276ce3e90b3a72b60c6dd9ff",
+      "bytes": 1812538,
+      "stats": {
+        "files": 498,
+        "zipKb": 1770,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 204,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "810npo3gxr1xv7ug",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "multi",
+      "file": "exports/multi-shopify.zip",
+      "sha256": "7e5ddb511231817ac720c3d09a95869c3339c97da9da3c1ce8450867787ac1c9",
+      "bytes": 1832632,
+      "stats": {
+        "files": 498,
+        "zipKb": 1790,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 229,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "rc6gcf67jpk8q2pj",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "inedit",
+      "file": "exports/inedit-shopify.zip",
+      "sha256": "53295f980ee2fa8b3c3c0e5b3d29cf3857660143dd99b0a751877384d460e69f",
+      "bytes": 1835357,
+      "stats": {
+        "files": 498,
+        "zipKb": 1792,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 231,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "350klxqpgfxln1tv",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "services",
+      "file": "exports/services-shopify.zip",
+      "sha256": "821326c40cb90be66a11f0780d89635bde17d6d6fd5028228fe2d88d73dc279d",
+      "bytes": 1827647,
+      "stats": {
+        "files": 499,
+        "zipKb": 1785,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 214,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "mbdh9mst1vowaqox",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "nouveau-service",
+      "file": "exports/nouveau-service-shopify.zip",
+      "sha256": "c91320f4bde44ca05683a4ce6f222aa930356301cf4da30d73b7be7c9a54849d",
+      "bytes": 1832148,
+      "stats": {
+        "files": 499,
+        "zipKb": 1789,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 220,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "d1h2p5sg0q7m0wxj",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    }
+  ],
+  "readOnlyFixtureDatabase": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

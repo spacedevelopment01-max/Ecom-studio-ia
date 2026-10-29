@@ -1,0 +1,806 @@
+{
+  "schema": "211-D9b-verification-1",
+  "code": "12f3617f5f00018fa1892f9ccacfe841ad820e0e",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D9b-full-first": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2549f17706906e5466502ccd0690489988288828",
+      "startedAt": "2026-10-29T14:51:59.385839+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "16b1a7b531968ab78de76874b97e798577690078aac29bb59f79e711913185cb",
+        "scripts/verify-agent211-build.ts": "7910f3430b36a192e71da4420c9d7710e5461a6252cec73c9c493aee4ba0ac58",
+        "scripts/verify-agent211-images-ui.ts": "442e82b8333f5e2af8b96a56b4c8b24f839ed407801bc25fcf2e3d4da2464f77",
+        "scripts/verify-agent211-retouch-ui.ts": "e6919ae2eb6ed0101f616dede2f0bf26040ffb9e9856e2a7340f1bf4ecd26879",
+        "src/components/studio/conversation-image-tools.tsx": "cdadeed714cf8ef6b3a0d4c8d8349573fb97c3f94fe7071b2911bf0564afbef8",
+        "src/lib/ai/media-providers.ts": "29d6541b23995a47fdd6524c11f04a6568c1fef98a4c1e1b834ab881dd3ab712",
+        "src/lib/image-v2/assets.ts": "025955cd7a97099df19eaaefb930ae4d17a0646109e14178468cf021a4507c4f",
+        "src/lib/image-v2/brief.ts": "deef2e533452adba989046b623713ca3bfbcecc8579afecb7f7d89111e86802b",
+        "src/lib/image-v2/creation-quote.ts": "427d9e0e726d8ab8f4d9ef8ab9e1a88b038b61035d6bf44cbdc7c7fdd9e1df6c",
+        "src/lib/image-v2/deps.ts": "fbafa2e9463aed7dec4e5b336f6efb341c613f41012984251d8964d8af2cf2ec",
+        "src/lib/image-v2/edit-photo.ts": "faf44c9a4bc7376a399ea79cdc79ad368bcfef05e79517170c39ff20add06d08",
+        "src/lib/image-v2/edit-request.ts": "8e2c5311dc87a7ee6cd60ac3ab264ea00da4b6c449ae851cf0148df642eae6fa",
+        "src/lib/image-v2/engine.ts": "89514a09bbabf5f8cc54b965c2813d08e9b2b0c60a0b7b177f1597c8b7281ebf",
+        "src/lib/image-v2/quality.ts": "6f0e119be9d937e2df85e7e59c88876f9dc01be1c5809f1aff1f623dedb6a457",
+        "src/lib/image-v2/request-binding.ts": "5e3f70bc7d0d39cbc7e6a1754cff64d31c98928759326702467dd0584010732a",
+        "src/lib/image-v2/types.ts": "0b3c8a79e8791e2afcffbcf9d64f691db535c97d4dc99480271df8261677d9af",
+        "src/lib/library.ts": "2b4e78a034d601fe381c08cd6671fa271970144fe3913c20cc755a693ef9773e",
+        "src/lib/orchestrator/conversation/image-tool-contract.ts": "58f496a82ff4c8e97bb5c40a647c8f8d8ef8422b3a13423abac848723c3936e5",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "4c6ba7df5c04c7c3629d585d2cf39eed0ba00842800346671c4b54efca1c9dfd",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "893ab4c4b61e06dfeb48fb79840adbc4ee6d1e3573aede5fb6acc05426e324d5",
+        "src/lib/orchestrator/conversation/image-tool-validation.ts": "3617220f7a6c32b246e90e3daea2e9511352f576e3581091b6d5865d75df0d02",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "e1173215482218cacbd6dac88ac0e85a112fd9c153a02374652ca169389ed75d",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8cd3418972020b601075ed8bcfc626365f1ea303194a56ba9eaaeed23b41a41",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ee86c7802766d8ebbdb2803e53de4b613c54e5204830b6a7bbcd2a055374481f",
+        "src/lib/quality/policies.ts": "4a7fd11f2fac064d05c86182c49e0ee73ae23df96a97470de415446fd5278227",
+        "tests/conversation211-images.test.ts": "b0b69951cd323decddd8e721755257513606b1bafcbd4ef9da3421b7502c0f8d",
+        "tests/image-v2-retouch-binding.test.ts": "b3ee738bfd8f0a364489644f5c6a03e78ca28e7e10ca6cac8105d98b0c670df7",
+        "tests/image-v2-retouch-request.test.ts": "bcd686cfcdbfb7d245648d0d721ee465f35da9d29f67f3e7ac9f035e9704adc8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-full-first.log",
+      "pid": 1307455,
+      "processGroup": 1307455,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:03:58.746081+00:00",
+      "logSha256": "2668c1d32d5fbb1ef512a1e2b71719e16e1e1e7e8b9bf8edff54c07385f8093c",
+      "sourceUnchanged": true
+    },
+    "D9b-types-frozen-first": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2549f17706906e5466502ccd0690489988288828",
+      "startedAt": "2026-10-29T14:52:00.907755+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "16b1a7b531968ab78de76874b97e798577690078aac29bb59f79e711913185cb",
+        "scripts/verify-agent211-build.ts": "7910f3430b36a192e71da4420c9d7710e5461a6252cec73c9c493aee4ba0ac58",
+        "scripts/verify-agent211-images-ui.ts": "442e82b8333f5e2af8b96a56b4c8b24f839ed407801bc25fcf2e3d4da2464f77",
+        "scripts/verify-agent211-retouch-ui.ts": "e6919ae2eb6ed0101f616dede2f0bf26040ffb9e9856e2a7340f1bf4ecd26879",
+        "src/components/studio/conversation-image-tools.tsx": "cdadeed714cf8ef6b3a0d4c8d8349573fb97c3f94fe7071b2911bf0564afbef8",
+        "src/lib/ai/media-providers.ts": "29d6541b23995a47fdd6524c11f04a6568c1fef98a4c1e1b834ab881dd3ab712",
+        "src/lib/image-v2/assets.ts": "025955cd7a97099df19eaaefb930ae4d17a0646109e14178468cf021a4507c4f",
+        "src/lib/image-v2/brief.ts": "deef2e533452adba989046b623713ca3bfbcecc8579afecb7f7d89111e86802b",
+        "src/lib/image-v2/creation-quote.ts": "427d9e0e726d8ab8f4d9ef8ab9e1a88b038b61035d6bf44cbdc7c7fdd9e1df6c",
+        "src/lib/image-v2/deps.ts": "fbafa2e9463aed7dec4e5b336f6efb341c613f41012984251d8964d8af2cf2ec",
+        "src/lib/image-v2/edit-photo.ts": "faf44c9a4bc7376a399ea79cdc79ad368bcfef05e79517170c39ff20add06d08",
+        "src/lib/image-v2/edit-request.ts": "8e2c5311dc87a7ee6cd60ac3ab264ea00da4b6c449ae851cf0148df642eae6fa",
+        "src/lib/image-v2/engine.ts": "89514a09bbabf5f8cc54b965c2813d08e9b2b0c60a0b7b177f1597c8b7281ebf",
+        "src/lib/image-v2/quality.ts": "6f0e119be9d937e2df85e7e59c88876f9dc01be1c5809f1aff1f623dedb6a457",
+        "src/lib/image-v2/request-binding.ts": "5e3f70bc7d0d39cbc7e6a1754cff64d31c98928759326702467dd0584010732a",
+        "src/lib/image-v2/types.ts": "0b3c8a79e8791e2afcffbcf9d64f691db535c97d4dc99480271df8261677d9af",
+        "src/lib/library.ts": "2b4e78a034d601fe381c08cd6671fa271970144fe3913c20cc755a693ef9773e",
+        "src/lib/orchestrator/conversation/image-tool-contract.ts": "58f496a82ff4c8e97bb5c40a647c8f8d8ef8422b3a13423abac848723c3936e5",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "4c6ba7df5c04c7c3629d585d2cf39eed0ba00842800346671c4b54efca1c9dfd",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "893ab4c4b61e06dfeb48fb79840adbc4ee6d1e3573aede5fb6acc05426e324d5",
+        "src/lib/orchestrator/conversation/image-tool-validation.ts": "3617220f7a6c32b246e90e3daea2e9511352f576e3581091b6d5865d75df0d02",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "e1173215482218cacbd6dac88ac0e85a112fd9c153a02374652ca169389ed75d",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8cd3418972020b601075ed8bcfc626365f1ea303194a56ba9eaaeed23b41a41",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ee86c7802766d8ebbdb2803e53de4b613c54e5204830b6a7bbcd2a055374481f",
+        "src/lib/quality/policies.ts": "4a7fd11f2fac064d05c86182c49e0ee73ae23df96a97470de415446fd5278227",
+        "tests/conversation211-images.test.ts": "b0b69951cd323decddd8e721755257513606b1bafcbd4ef9da3421b7502c0f8d",
+        "tests/image-v2-retouch-binding.test.ts": "b3ee738bfd8f0a364489644f5c6a03e78ca28e7e10ca6cac8105d98b0c670df7",
+        "tests/image-v2-retouch-request.test.ts": "bcd686cfcdbfb7d245648d0d721ee465f35da9d29f67f3e7ac9f035e9704adc8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-types-frozen-first.log",
+      "pid": 1307552,
+      "processGroup": 1307552,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T14:52:06.427623+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D9b-targeted-diagnostics": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-images.test.ts",
+        "tests/image-v2-retouch-binding.test.ts",
+        "tests/image-v2-retouch-request.test.ts",
+        "tests/image-v2-binding.test.ts",
+        "tests/image-v2-quality.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2549f17706906e5466502ccd0690489988288828",
+      "startedAt": "2026-10-29T14:48:04.667587+00:00",
+      "state": "passed",
+      "sources": {
+        "src/components/studio/conversation-image-tools.tsx": "cdadeed714cf8ef6b3a0d4c8d8349573fb97c3f94fe7071b2911bf0564afbef8",
+        "src/lib/ai/media-providers.ts": "29d6541b23995a47fdd6524c11f04a6568c1fef98a4c1e1b834ab881dd3ab712",
+        "src/lib/image-v2/assets.ts": "025955cd7a97099df19eaaefb930ae4d17a0646109e14178468cf021a4507c4f",
+        "src/lib/image-v2/brief.ts": "deef2e533452adba989046b623713ca3bfbcecc8579afecb7f7d89111e86802b",
+        "src/lib/image-v2/creation-quote.ts": "427d9e0e726d8ab8f4d9ef8ab9e1a88b038b61035d6bf44cbdc7c7fdd9e1df6c",
+        "src/lib/image-v2/deps.ts": "fbafa2e9463aed7dec4e5b336f6efb341c613f41012984251d8964d8af2cf2ec",
+        "src/lib/image-v2/edit-photo.ts": "faf44c9a4bc7376a399ea79cdc79ad368bcfef05e79517170c39ff20add06d08",
+        "src/lib/image-v2/edit-request.ts": "8e2c5311dc87a7ee6cd60ac3ab264ea00da4b6c449ae851cf0148df642eae6fa",
+        "src/lib/image-v2/engine.ts": "89514a09bbabf5f8cc54b965c2813d08e9b2b0c60a0b7b177f1597c8b7281ebf",
+        "src/lib/image-v2/quality.ts": "6f0e119be9d937e2df85e7e59c88876f9dc01be1c5809f1aff1f623dedb6a457",
+        "src/lib/image-v2/request-binding.ts": "5e3f70bc7d0d39cbc7e6a1754cff64d31c98928759326702467dd0584010732a",
+        "src/lib/image-v2/types.ts": "0b3c8a79e8791e2afcffbcf9d64f691db535c97d4dc99480271df8261677d9af",
+        "src/lib/library.ts": "2b4e78a034d601fe381c08cd6671fa271970144fe3913c20cc755a693ef9773e",
+        "src/lib/orchestrator/conversation/image-tool-contract.ts": "58f496a82ff4c8e97bb5c40a647c8f8d8ef8422b3a13423abac848723c3936e5",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "4c6ba7df5c04c7c3629d585d2cf39eed0ba00842800346671c4b54efca1c9dfd",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "893ab4c4b61e06dfeb48fb79840adbc4ee6d1e3573aede5fb6acc05426e324d5",
+        "src/lib/orchestrator/conversation/image-tool-validation.ts": "3617220f7a6c32b246e90e3daea2e9511352f576e3581091b6d5865d75df0d02",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "e1173215482218cacbd6dac88ac0e85a112fd9c153a02374652ca169389ed75d",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8cd3418972020b601075ed8bcfc626365f1ea303194a56ba9eaaeed23b41a41",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ee86c7802766d8ebbdb2803e53de4b613c54e5204830b6a7bbcd2a055374481f",
+        "src/lib/quality/policies.ts": "4a7fd11f2fac064d05c86182c49e0ee73ae23df96a97470de415446fd5278227",
+        "tests/conversation211-images.test.ts": "b0b69951cd323decddd8e721755257513606b1bafcbd4ef9da3421b7502c0f8d",
+        "tests/image-v2-retouch-binding.test.ts": "b3ee738bfd8f0a364489644f5c6a03e78ca28e7e10ca6cac8105d98b0c670df7",
+        "tests/image-v2-retouch-request.test.ts": "bcd686cfcdbfb7d245648d0d721ee465f35da9d29f67f3e7ac9f035e9704adc8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-targeted-diagnostics.log",
+      "pid": 1306366,
+      "processGroup": 1306366,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T14:48:28.386825+00:00",
+      "logSha256": "588fa0e601b488dd3e0ffe95190522d1a4d5bc1bdb40692fdae446caf4462f85",
+      "sourceUnchanged": true
+    },
+    "D9b-full-review-fixed": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:20:13.772944+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "45d63c17317fe24b52e339a2abd013262497308cd8af250a18d2489174392a7e",
+        "scripts/verify-agent211-images-ui.ts": "3002ecb292276122a9021de234e169b93d1ff08127d476e195710d13d5f0d89a",
+        "scripts/verify-agent211-retouch-ui.ts": "61135c746831311cc4cad936120fcc7e80e4967449018c312de9068a21c289b5",
+        "src/components/studio/conversation-image-tools.tsx": "5e974510e792acdb539c6732938ebb69125d85a8ab54f75b8bf79ef2a5004eab",
+        "src/lib/image-v2/deps.ts": "8d5763375ce4265f1716dc1dc259d5d2ccb5e08d956ce8d71fd6c329ed7d1907",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "61d8ffa71dcd64a0f6f2955e348b024cf9ea6013bfba00a23cd458f2d3a3efda",
+        "tests/conversation211-images.test.ts": "b1ed5ccaf5b41f7a4092e035391375fcbbcb8d7e7b0385b11123b27b1f0bbec0",
+        "tests/image-v2-edit-review-refs.test.ts": "d7cd5a80cf4d59c42a2bb6a0b4462bd036be9b0ee37d5bca33ddb95343b743e2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-full-review-fixed.log",
+      "pid": 1352122,
+      "processGroup": 1352122,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:31:52.638985+00:00",
+      "logSha256": "7980683445aaef14099235e7c1cde34a2c67b0b8eaa6f056706f2061fcb28332",
+      "sourceUnchanged": true
+    },
+    "D9b-types-final-review-fixed": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:20:15.289273+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "45d63c17317fe24b52e339a2abd013262497308cd8af250a18d2489174392a7e",
+        "scripts/verify-agent211-images-ui.ts": "3002ecb292276122a9021de234e169b93d1ff08127d476e195710d13d5f0d89a",
+        "scripts/verify-agent211-retouch-ui.ts": "61135c746831311cc4cad936120fcc7e80e4967449018c312de9068a21c289b5",
+        "src/components/studio/conversation-image-tools.tsx": "5e974510e792acdb539c6732938ebb69125d85a8ab54f75b8bf79ef2a5004eab",
+        "src/lib/image-v2/deps.ts": "8d5763375ce4265f1716dc1dc259d5d2ccb5e08d956ce8d71fd6c329ed7d1907",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "61d8ffa71dcd64a0f6f2955e348b024cf9ea6013bfba00a23cd458f2d3a3efda",
+        "tests/conversation211-images.test.ts": "b1ed5ccaf5b41f7a4092e035391375fcbbcb8d7e7b0385b11123b27b1f0bbec0",
+        "tests/image-v2-edit-review-refs.test.ts": "d7cd5a80cf4d59c42a2bb6a0b4462bd036be9b0ee37d5bca33ddb95343b743e2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-types-final-review-fixed.log",
+      "pid": 1352221,
+      "processGroup": 1352221,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:20:20.879359+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D9b-targeted-review-fixed": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-edit-review-refs.test.ts",
+        "tests/conversation211-images.test.ts",
+        "tests/image-v2-retouch-binding.test.ts",
+        "tests/image-v2-retouch-request.test.ts",
+        "tests/image-v2-binding.test.ts",
+        "tests/image-v2.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:19:03.120213+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "45d63c17317fe24b52e339a2abd013262497308cd8af250a18d2489174392a7e",
+        "scripts/verify-agent211-images-ui.ts": "3002ecb292276122a9021de234e169b93d1ff08127d476e195710d13d5f0d89a",
+        "scripts/verify-agent211-retouch-ui.ts": "035e81063a66bab145fb1a5ce2d0ac035218c2f130d2be30c40d1a7e44e96073",
+        "src/components/studio/conversation-image-tools.tsx": "5e974510e792acdb539c6732938ebb69125d85a8ab54f75b8bf79ef2a5004eab",
+        "src/lib/image-v2/deps.ts": "8d5763375ce4265f1716dc1dc259d5d2ccb5e08d956ce8d71fd6c329ed7d1907",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "61d8ffa71dcd64a0f6f2955e348b024cf9ea6013bfba00a23cd458f2d3a3efda",
+        "tests/conversation211-images.test.ts": "b1ed5ccaf5b41f7a4092e035391375fcbbcb8d7e7b0385b11123b27b1f0bbec0",
+        "tests/image-v2-edit-review-refs.test.ts": "d7cd5a80cf4d59c42a2bb6a0b4462bd036be9b0ee37d5bca33ddb95343b743e2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-targeted-review-fixed.log",
+      "pid": 1351690,
+      "processGroup": 1351690,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:19:29.920275+00:00",
+      "logSha256": "2446834b002e22a1be92a692d5a6da41a825eacbd302c702bd5527abc5b622d7",
+      "sourceUnchanged": true
+    },
+    "D9b-build-final-review": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "12f3617f5f00018fa1892f9ccacfe841ad820e0e",
+      "startedAt": "2026-10-29T15:33:29.227108+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9b-build-final-review.log",
+      "pid": 1390233,
+      "processGroup": 1390233,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:34:32.534694+00:00",
+      "logSha256": "febfc967f14fb11b064bdc076715f962ef16674e5676e6116749b7d8d6b2a3bd",
+      "sourceUnchanged": true
+    },
+    "D9b-browser-final-review": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9b-browser-final-review-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "12f3617f5f00018fa1892f9ccacfe841ad820e0e",
+      "startedAt": "2026-10-29T15:35:08.141784+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9b-browser-final-review.log",
+      "pid": 1390993,
+      "processGroup": 1390993,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:38:07.961287+00:00",
+      "logSha256": "b0ca6bfc9283a4eaa3c3aa8e24a7eb67dd48fdf12108bfb87e3ccfcfea32fb46",
+      "sourceUnchanged": true
+    },
+    "D9b-review-refs-before": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-edit-review-refs.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:14:53.811542+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "45d63c17317fe24b52e339a2abd013262497308cd8af250a18d2489174392a7e",
+        "scripts/verify-agent211-images-ui.ts": "5691b7118aa5efd4b970bfcd660fa5a5ba82ae6e6d438831c4419214c472a5a5",
+        "scripts/verify-agent211-retouch-ui.ts": "f9b9a3e8dd1b319d2638c25ec908b1813592abd0da1c60f08f7a64098884a0fb",
+        "tests/image-v2-edit-review-refs.test.ts": "d7cd5a80cf4d59c42a2bb6a0b4462bd036be9b0ee37d5bca33ddb95343b743e2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-review-refs-before.log",
+      "pid": 1350547,
+      "processGroup": 1350547,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T15:14:56.941262+00:00",
+      "logSha256": "57814b74b6593246e3d9daa03a65d25681180b0ee51a952bc82d3f797b2c4139",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "success": true,
+    "totals": {
+      "providerHttpCalls": 59,
+      "textHttpCalls": 39,
+      "imageHttpCalls": 20,
+      "tokenCounts": 39,
+      "calls": 59,
+      "usage": 57,
+      "simulatedMicro": 4412209
+    },
+    "cases": 5,
+    "creativeQualityQualified": false
+  },
+  "screenshots": {
+    "final": 127
+  },
+  "videos": [
+    {
+      "scene": "mono",
+      "file": "videos/mono.mp4",
+      "original": "sources-video/mono.webm",
+      "sourceSha256": "bd36a9d10032a6c9b0398f0915bed55d3880a63c4d6f9eff330a4f29d13cce2f",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "866"
+          }
+        ],
+        "format": {
+          "duration": "34.640000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "866"
+          }
+        ],
+        "format": {
+          "duration": "34.640000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 433,
+          "meanAbsoluteRgbDifferenceOn255": 0.03692708333333333
+        },
+        {
+          "frame": 865,
+          "meanAbsoluteRgbDifferenceOn255": 0.14969111689814815
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true,
+      "sceneMapping": "browser_context_close_mtime_between_case_captures_and_original_frame_width"
+    },
+    {
+      "scene": "multi",
+      "file": "videos/multi.mp4",
+      "original": "sources-video/multi.webm",
+      "sourceSha256": "c0f622da29a0ddb2d2abe25a76222bdf8b4701a0f1009e3f47262026fce9893b",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "806"
+          }
+        ],
+        "format": {
+          "duration": "32.240000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "806"
+          }
+        ],
+        "format": {
+          "duration": "32.240000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.2848290598290598
+        },
+        {
+          "frame": 403,
+          "meanAbsoluteRgbDifferenceOn255": 0.09051727207977207
+        },
+        {
+          "frame": 805,
+          "meanAbsoluteRgbDifferenceOn255": 0.09046118233618233
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true,
+      "sceneMapping": "browser_context_close_mtime_between_case_captures_and_original_frame_width"
+    },
+    {
+      "scene": "inedit",
+      "file": "videos/inedit.mp4",
+      "original": "sources-video/inedit.webm",
+      "sourceSha256": "20102287921a946c11f3a8de8ef3a5c3e0d07aab74a5f5880954cac4707b7a0d",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "848"
+          }
+        ],
+        "format": {
+          "duration": "33.920000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "848"
+          }
+        ],
+        "format": {
+          "duration": "33.920000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.34109760802469136
+        },
+        {
+          "frame": 424,
+          "meanAbsoluteRgbDifferenceOn255": 0.13318769290123456
+        },
+        {
+          "frame": 847,
+          "meanAbsoluteRgbDifferenceOn255": 0.6539515817901235
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true,
+      "sceneMapping": "browser_context_close_mtime_between_case_captures_and_original_frame_width"
+    },
+    {
+      "scene": "services",
+      "file": "videos/services.mp4",
+      "original": "sources-video/services.webm",
+      "sourceSha256": "493b1cb0f4888b03395e4384e29860f8116efcfc3c766706bfde1f6d6589fe21",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "925"
+          }
+        ],
+        "format": {
+          "duration": "37.000000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "925"
+          }
+        ],
+        "format": {
+          "duration": "37.000000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.19966328938802083
+        },
+        {
+          "frame": 462,
+          "meanAbsoluteRgbDifferenceOn255": 0.07862413194444444
+        },
+        {
+          "frame": 924,
+          "meanAbsoluteRgbDifferenceOn255": 0.20867513020833334
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true,
+      "sceneMapping": "browser_context_close_mtime_between_case_captures_and_original_frame_width"
+    },
+    {
+      "scene": "nouveau-service",
+      "file": "videos/nouveau-service.mp4",
+      "original": "sources-video/nouveau-service.webm",
+      "sourceSha256": "b04ac8c4dd5984b64f5cb95747df7798992324b60b48252dd07564ef8e1848c0",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "768"
+          }
+        ],
+        "format": {
+          "duration": "30.720000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "768"
+          }
+        ],
+        "format": {
+          "duration": "30.720000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.34121913580246915
+        },
+        {
+          "frame": 384,
+          "meanAbsoluteRgbDifferenceOn255": 0.41803433641975307
+        },
+        {
+          "frame": 767,
+          "meanAbsoluteRgbDifferenceOn255": 0.06342206790123457
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true,
+      "sceneMapping": "browser_context_close_mtime_between_case_captures_and_original_frame_width"
+    }
+  ],
+  "exports": [
+    {
+      "scene": "mono",
+      "file": "exports/mono-shopify.zip",
+      "sha256": "a95aeb8c71556178723c3f048a9b6a50a163c74d276ce3e90b3a72b60c6dd9ff",
+      "bytes": 1812538,
+      "stats": {
+        "files": 498,
+        "zipKb": 1770,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 204,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "810npo3gxr1xv7ug",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "multi",
+      "file": "exports/multi-shopify.zip",
+      "sha256": "7e5ddb511231817ac720c3d09a95869c3339c97da9da3c1ce8450867787ac1c9",
+      "bytes": 1832632,
+      "stats": {
+        "files": 498,
+        "zipKb": 1790,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 229,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "rc6gcf67jpk8q2pj",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "inedit",
+      "file": "exports/inedit-shopify.zip",
+      "sha256": "53295f980ee2fa8b3c3c0e5b3d29cf3857660143dd99b0a751877384d460e69f",
+      "bytes": 1835357,
+      "stats": {
+        "files": 498,
+        "zipKb": 1792,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 231,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "350klxqpgfxln1tv",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "ecommerce"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "services",
+      "file": "exports/services-shopify.zip",
+      "sha256": "821326c40cb90be66a11f0780d89635bde17d6d6fd5028228fe2d88d73dc279d",
+      "bytes": 1827647,
+      "stats": {
+        "files": 499,
+        "zipKb": 1785,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 214,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "mbdh9mst1vowaqox",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    },
+    {
+      "scene": "nouveau-service",
+      "file": "exports/nouveau-service-shopify.zip",
+      "sha256": "c91320f4bde44ca05683a4ce6f222aa930356301cf4da30d73b7be7c9a54849d",
+      "bytes": 1832148,
+      "stats": {
+        "files": 499,
+        "zipKb": 1789,
+        "cssKb": 2179,
+        "jsKb": 534,
+        "mediaKb": 220,
+        "themeCheckErrors": 0,
+        "themeCheckWarnings": 35
+      },
+      "gate": {
+        "verdict": "PROVISIONAL",
+        "fatal": false,
+        "score": 9.3,
+        "checked": true,
+        "deliverable": "cms_export_v2",
+        "reason": "contrôle insuffisant pour un résultat final : provisoire",
+        "policyVersion": "2026-10-p11h",
+        "checkId": "d1h2p5sg0q7m0wxj",
+        "provisional": {
+          "use": "manual",
+          "label": "needs_improvement"
+        }
+      },
+      "scope": "static",
+      "unmeasured": [
+        "installation",
+        "page_fidelity",
+        "section_fidelity",
+        "typography",
+        "colors",
+        "responsive",
+        "navigation",
+        "buttons",
+        "forms"
+      ],
+      "installation": "not_tested",
+      "publication": false
+    }
+  ],
+  "uncertainMaximumMicro": 523083,
+  "scope": "native_creation_edit_storage_preview_zip_undo_with_fake_http_not_real_creative_quality"
+}
