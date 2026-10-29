@@ -16,7 +16,7 @@ import { withAccessScope } from "@/lib/access-scope";
 import { renderPage } from "@/lib/theme/render";
 import { currentTheme } from "@/lib/projects";
 import { siteHostOf } from "@/lib/sites/host-match";
-import { publishSite, restorePublication, unpublishSite, manifestOf, PublishBlocked } from "@/lib/sites/publish";
+import { bookingBlockers, publishBlockers, publishSite, restorePublication, unpublishSite, manifestOf, PublishBlocked } from "@/lib/sites/publish";
 import { serveSite } from "@/lib/sites/serve";
 import { siteRequests } from "@/lib/sites/requests";
 import { addCustomDomain, verifyCustomDomain } from "@/lib/sites/domains";
@@ -27,7 +27,7 @@ import * as route from "@/app/api/projects/[id]/site-publication/route";
 import { composeShop } from "@/lib/engine/shop";
 import { saveThemeVersion } from "@/lib/projects";
 import { seedHoldout } from "./lot1-holdout-fixtures";
-import { completeSite, payingUser, servicesSite } from "./sites-fixtures";
+import { completeSite, fictiveContact, payingUser, servicesSite } from "./sites-fixtures";
 import { setRdvLive } from "@/lib/rendez-vous";
 
 const fr = <T>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
@@ -168,6 +168,7 @@ describe("Réservation native (cabinet, salon, restaurant)", () => {
   it("jamais publiée en démonstration ; une fois le service réel activé, le site publié appelle l'API publique du studio", async () => {
     const u = await payingUser();
     const pid = seedHoldout(u.id, 3, "Cabinet fictif");
+    fictiveContact(pid);
     const { spec } = await fr(() => composeShop(pid, "parenthese", null, false));
     fr(() => saveThemeVersion(pid, completeSite(spec, "Cabinet fictif"), "Site fictif", "user"));
     const err = await fr(() => publishSite(pid, u.id)).catch((e) => e);
@@ -177,6 +178,25 @@ describe("Réservation native (cabinet, salon, restaurant)", () => {
     const files = manifestOf(pid, pub.id)!.files;
     const pages = Object.keys(files).filter((f) => f.endsWith(".html")).map((f) => fs.readFileSync(path.join(publicationDir(pid, pub.id), "files", f), "utf8")).join("");
     expect(pages).toContain(`https://studio.test/api/public/cabinet/${pid}`);
+  });
+});
+
+describe("Règles de blocage", () => {
+  it("toutes les marques de texte à compléter des thèmes bloquent, y compris « [À renseigner] » et « [À confirmer] »", () => {
+    for (const mark of ["[À compléter : vos horaires]", "[À renseigner]", "[À confirmer : délai]", "[À définir]", "[To complete: hours]", "À compléter dans Shopify : Paramètres"]) {
+      expect(publishBlockers({ pages: new Map([["/", `<p>${mark}</p>`]]) }).length, mark).toBe(1);
+    }
+    expect(publishBlockers({ pages: new Map([["/", "<p>Texte complet.</p><script>var x='[À compléter]'</script>"]]) })).toEqual([]);
+  });
+
+  it("réservation réelle sans aucun horaire : refusée (le calendrier ne proposerait aucun créneau)", async () => {
+    const u = await payingUser();
+    const pid = seedHoldout(u.id, 3, "Cabinet sans horaires");
+    fictiveContact(pid);
+    const { spec } = await fr(() => composeShop(pid, "parenthese", null, false));
+    fr(() => saveThemeVersion(pid, spec, "Cabinet sans horaires", "user"));
+    fr(() => setRdvLive(pid, true));
+    expect(bookingBlockers(pid, currentTheme(pid)!.spec).join(" ")).toMatch(/Aucun horaire de réservation/);
   });
 });
 

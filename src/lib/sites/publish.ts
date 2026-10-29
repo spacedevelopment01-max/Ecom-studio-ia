@@ -19,7 +19,7 @@ import { libraryLoader } from "../theme/loader";
 import { fontFilePath, renderPage } from "../theme/render";
 import type { ThemeSpec } from "../theme/spec";
 import { stableHash } from "../brain/hash";
-import { rdvSection, serviceUrlFor } from "../rendez-vous";
+import { rdvRules, rdvSection, serviceUrlFor } from "../rendez-vous";
 import { defaultStudioAddress, ensureSiteTables, livePublication, publication, publicationDir, setLive, sitesRoot, type Publication } from "./store";
 
 /** Bornes d'une publication : un site vitrine reste petit ; au-delà, refus explicite plutôt qu'un artefact démesuré. */
@@ -27,7 +27,7 @@ export const LIMITS = { pages: 80, bytes: 250 * 1024 * 1024 };
 /** Chemins jamais publiés comme pages : boutique, compte, recherche, envoi de formulaire. */
 const SKIPPED = /^\/(cart|account|checkout|search|password|contact$|collections\/all|products\/?)/;
 /** Textes laissés à compléter : un site public ne les montre jamais. */
-const PLACEHOLDER = /\[(?:À|A) (?:compléter|définir|préciser)[^\]]*\]|\[To (?:complete|define)[^\]]*\]|\[Por completar[^\]]*\]|À compléter dans Shopify/i;
+const PLACEHOLDER = /\[(?:À|A) (?:compléter|définir|préciser|renseigner|confirmer)[^\]]*\]|\[To (?:complete|define|be confirmed)[^\]]*\]|\[Por completar[^\]]*\]|À compléter dans Shopify/i;
 
 /** Champ piège ajouté aux formulaires de contact publiés : rempli = robot, la demande est ignorée. */
 export const HONEYPOT = "contact[site_web]";
@@ -112,6 +112,12 @@ export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
   if (s.booking_mode !== "live") return [L("La réservation en ligne de votre site est en mode démonstration : activez le service réel dans l'onglet Rendez-vous avant de publier (un site public ne simule jamais une réservation).", "Your site's online booking is in demonstration mode: enable the live service in the Bookings tab before publishing (a public site never simulates a booking).")];
   const expected = serviceUrlFor(projectId, sec.kind);
   if (!expected || String(s.service_url ?? "") !== expected) return [L("La réservation en ligne n'est pas reliée au service du studio : réactivez-la dans l'onglet Rendez-vous.", "Online booking isn't linked to the studio's service: enable it again in the Bookings tab.")];
+  // Un calendrier sans aucun horaire n'offre jamais de créneau : le visiteur ne pourrait rien réserver.
+  const r = rdvRules(projectId, sec.kind);
+  const open = sec.kind === "restaurant"
+    ? Object.keys(r.hours).length > 0 && r.services.some((x) => (x as { slots?: string[] }).slots?.length)
+    : Object.values(r.hours ?? {}).some((v) => Array.isArray(v) && v.length > 0) || r.workshops.length > 0;
+  if (!open) return [L("Aucun horaire de réservation n'est réglé : le calendrier du site ne proposerait aucun créneau. Renseignez vos horaires dans la section de réservation du site.", "No booking hours are set: the site's calendar would offer no slot. Set your hours in the site's booking section.")];
   return [];
 }
 
