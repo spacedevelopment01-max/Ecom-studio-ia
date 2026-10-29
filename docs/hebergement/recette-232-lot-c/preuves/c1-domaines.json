@@ -1,0 +1,61 @@
+{
+ "etape1": "pending_dns",
+ "visiteAvant": 404,
+ "etape2": {
+  "etat": "pointing",
+  "message": "Le domaine ne pointe pas encore vers cle-de-fa-lyon.sites.recette.test (CNAME)."
+ },
+ "etape3": "active",
+ "visiteActif": 200,
+ "ask": {
+  "avecJeton": 200,
+  "sansJeton": 404,
+  "domaineInconnu": 404,
+  "adresseStudio": 200
+ },
+ "apexInstructions": {
+  "type": "A/AAAA",
+  "name": "cle-de-fa.example",
+  "values": [
+   "203.0.113.10"
+  ],
+  "note": null
+ },
+ "apexMauvaiseIp": "pointing",
+ "apexBonneIp": "active",
+ "visiteApex": 200,
+ "desactive": {
+  "etat": "disabled",
+  "visite": 404,
+  "ask": 404
+ },
+ "reactive": {
+  "etat": "active",
+  "visite": 200
+ },
+ "perdu": {
+  "etat": "lost",
+  "message": "Preuve TXT disparue depuis plusieurs vérifications (domaine expiré ou DNS modifié ?) : le domaine n'est plus servi. Rétablissez l'enregistrement puis revérifiez.",
+  "visite": 404,
+  "ask": 404
+ },
+ "conflit": {
+  "lectureProjetArtisan": 404,
+  "ajoutSurSonProjet": "aucun projet"
+ },
+ "journalDns": [
+  "2026-10-29T19:38:23.003Z AAAA cle-de-fa.example → aucun",
+  "2026-10-29T19:38:28.530Z TXT _ecs-verif.www.cle-de-fa.example → ecs-R4a_NDL_AmBrxaDd_9_NqOzQ",
+  "2026-10-29T19:38:28.532Z CNAME www.cle-de-fa.example → cle-de-fa-lyon.sites.recette.test",
+  "2026-10-29T19:38:43.306Z TXT _ecs-verif.cle-de-fa.example → NXDOMAIN",
+  "2026-10-29T19:38:43.308Z A cle-de-fa.example → 203.0.113.10",
+  "2026-10-29T19:38:43.308Z AAAA cle-de-fa.example → aucun",
+  "2026-10-29T19:38:58.335Z TXT _ecs-verif.cle-de-fa.example → NXDOMAIN",
+  "2026-10-29T19:38:58.336Z A cle-de-fa.example → 203.0.113.10",
+  "2026-10-29T19:38:58.337Z AAAA cle-de-fa.example → aucun",
+  "2026-10-29T19:39:13.361Z TXT _ecs-verif.cle-de-fa.example → NXDOMAIN",
+  "2026-10-29T19:39:13.363Z A cle-de-fa.example → 203.0.113.10",
+  "2026-10-29T19:39:13.364Z AAAA cle-de-fa.example → aucun"
+ ],
+ "erreursStudio": []
+}
