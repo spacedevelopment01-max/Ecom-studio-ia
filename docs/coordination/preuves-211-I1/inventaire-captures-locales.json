@@ -1,0 +1,1574 @@
+[
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-autre-onglet-meme-memoire.png",
+    "sha256": "66895377acf0ba796ef055a00759382c0d5eb1c96e2ee2bfea017437180274f5",
+    "bytes": 257480
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-correction-reouverte.png",
+    "sha256": "35e6e63696b71be63abb6f2291aa6cd52173f9d060a9632ad93ff3d44427d83d",
+    "bytes": 251970
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-devis.png",
+    "sha256": "3764f27239b13d4eec5fafe70836694872752b6ceadf01624840e0774842aff7",
+    "bytes": 114769
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-dialogue-lisible.png",
+    "sha256": "e6638472ae5c9bd6b0b0103891adcec1fd452cac572bbf293f4936029d36dce4",
+    "bytes": 78183
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-entree.png",
+    "sha256": "b0224e5e165ce21c0fd9f99c5d86adc16c73acd3514af7896ead60ef3d5c2cf1",
+    "bytes": 66072
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-manuel-conserve.png",
+    "sha256": "f20e605f1186a3050902bb2b7f48978199d4089d8632198bda47ab59566f921e",
+    "bytes": 121348
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-memoire.png",
+    "sha256": "3d8f8e69cff9f2d6df536b7970c5b703175a990f4e659271677683ab9b80dac6",
+    "bytes": 211768
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-projet-repris.png",
+    "sha256": "6cc50321034c920525b33969656b5e36dd863fdf2d80ce29f8750d88cea12790",
+    "bytes": 160709
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-question-360.png",
+    "sha256": "5599db0033fd55e4c317711e5c53ac2fef8cdc42650b9de20abf5942d02c9c0b",
+    "bytes": 146568
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-question.png",
+    "sha256": "2566b90404f2007b0bff928d4b56b78407518f972af63be8f32955620b235afd",
+    "bytes": 165929
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-agent-ouvert.png",
+    "sha256": "874ddac0fc2649a24fef08234a8deb291d5ad92052a97276752e81baa076a68c",
+    "bytes": 262297
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-agent-replie.png",
+    "sha256": "c4efedf89d612c6154b9b5ffad955c4dcc95303a52e01b1b1f638c6381fc2bf2",
+    "bytes": 213613
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-conseil-premiere-visite.png",
+    "sha256": "fabd9640b605d98fd828e67b670ac869638d5b15992acd1df56a0f6792b947be",
+    "bytes": 216775
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-format-telephone.png",
+    "sha256": "9ca355755bd7a22569c2e913c1f5e82bbe7a9829f7fdb62c8c51e49715260d5a",
+    "bytes": 179687
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-outils-conserves.png",
+    "sha256": "0808708c3605e956537a064cda1ac23e35887a1512f21fe9745580ba21360347",
+    "bytes": 212934
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/1-produit-site-version-restauree.png",
+    "sha256": "70e6d4cf37ee3c549155b7fdb2679a5f07a7364f0add7ed4ab33ce58555811d2",
+    "bytes": 179518
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-autre-onglet-meme-memoire.png",
+    "sha256": "6ddfc55c1d9c1d0a7eeb06f2953a4ee6ac01d3a41dd208042c3b32807a7b9068",
+    "bytes": 99850
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-correction-reouverte.png",
+    "sha256": "36f864530f2bab9eef1050e24892f9b62d4f9156eda15a4c0cd006c54aaac1f3",
+    "bytes": 224129
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-devis.png",
+    "sha256": "f19c9cd5164e34f2df75b205d8c529801d9f31648300fa312b875da565c3486d",
+    "bytes": 98156
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-dialogue-lisible.png",
+    "sha256": "c63cdfd8e99afecde676dd3946cfa6cf6fbfe65332a41730667efb338100f661",
+    "bytes": 48661
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-entree.png",
+    "sha256": "bcb17550bed8e7c440f5c7c531670d5f0df84fad354d5016bb1b6526c70be3be",
+    "bytes": 51245
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-manuel-conserve.png",
+    "sha256": "f225976cb67e9984ae0b981a526423353274aaf0afb8c3b8aa985da5d1248817",
+    "bytes": 101834
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-memoire.png",
+    "sha256": "2e6e603032d0ae6485573718f447fa43ecec77cdc2277fffaa57a2de0c008b4e",
+    "bytes": 193045
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-projet-repris.png",
+    "sha256": "338116b60cfea6600dac02909440bb5dda99c2b05b0c0efdbeeb9b3cb4b44bce",
+    "bytes": 65327
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-question-360.png",
+    "sha256": "363f6b195ed4bb71c6caaacf258b46be75ec77a5a930ccf5505b4879cd1483f6",
+    "bytes": 150004
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-question.png",
+    "sha256": "eab05eeb4b9902da0780f063772f959a06f1f521753d69707d40bc5ef6d198a9",
+    "bytes": 149511
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-agent-ouvert.png",
+    "sha256": "6febb8d447532e77166ecf926f1b9e769cf79a33cdf1d7be909f0d1089906f96",
+    "bytes": 55619
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-agent-replie.png",
+    "sha256": "0407d8188ac34870990e6038d7787c194bc7865db20061baea90b0d1cb9c4331",
+    "bytes": 76955
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-conseil-premiere-visite.png",
+    "sha256": "5fad3615d5cb0a6ca9957d1c329d650b457ce56553c1e4d9c85e574ed0ff516d",
+    "bytes": 83435
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-format-telephone.png",
+    "sha256": "b3b8247395a8bb4a780a649eaf6e04e67503cd6ad1724238e27e0c1950e1e329",
+    "bytes": 76943
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-outils-conserves.png",
+    "sha256": "9c891a097060d2c790efc1cf5c116260adc7afb1e7e50869220cdee9f1744942",
+    "bytes": 82981
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/2-service-site-version-restauree.png",
+    "sha256": "d39036b34b18869433dba1dcde15a28ec516751caff222a5694a7021ac3bff23",
+    "bytes": 77137
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "captures/3-reprise-apres-reponse-perdue-390.png",
+    "sha256": "0b35d76c4cdff2e42baa04a0bccfcc145c8afa0ffa5c4db2d4f3a79fe9d4bc36",
+    "bytes": 63826
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-annulation-native.png",
+    "sha256": "1a614e96e7ede1c07c8cc06c4e1968a196a467ae2a491fc317bdc2b4462759e1",
+    "bytes": 238997
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-cinq-options-acquises.png",
+    "sha256": "b9bf92dde4c47e0f47aeb85c789c8518d5be35ec573b9dc6ddd1af1cb823a9d3",
+    "bytes": 242666
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-confirmation-preferee-sans-activation.png",
+    "sha256": "93bd1e83d91e91d991ea4b0d4bb828ef07dbc2606db0ad5a78639f60729f493a",
+    "bytes": 236222
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-conseil-simule-source.png",
+    "sha256": "c9d4c6c2126468a76ec8e49487b0876a2b41650c1b1e8575c7ff4752a823a470",
+    "bytes": 249731
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-deux-options-exactes.png",
+    "sha256": "69f20eaf1b82cd6aae569ef401053c1d48b8b9b5852d2adfb3b2c6a2de14bc5b",
+    "bytes": 246370
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-devis-distinct-du-choix.png",
+    "sha256": "63ff3e7067d04c6b6339db0d12340ad0b91a9b08d14344b0c5497cbe0cc4e6d1",
+    "bytes": 227518
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-preference-et-raison.png",
+    "sha256": "4ba07ba749d52490a7678fa9b2184b1f8bc33e52aa45dedc0f806d93670e270a",
+    "bytes": 240905
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-rejet-explicite.png",
+    "sha256": "79fc923a7d34632da12b1742140e0d1344973d5ff72b0943b3318f5a2af29057",
+    "bytes": 241524
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-mono-reprise-historique-perime.png",
+    "sha256": "0009e533c7ffc240bd9f1d25140f45e8addcf7fc5221a4dd56ff283eca16b88e",
+    "bytes": 230202
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-annulation-native.png",
+    "sha256": "aadde03cd7ade30b79c95abd95ee368fb027d27ebdb5394a40eb36ce1376a5e6",
+    "bytes": 197918
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-cinq-options-acquises.png",
+    "sha256": "f98ac3b060d5a2ef9b40e204102a895962d841d83507a6d1443da47d6ab3dc23",
+    "bytes": 198233
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-confirmation-preferee-sans-activation.png",
+    "sha256": "d9e7f76b6d0b5d917b307bdd807b9b3a935d251c91b254469c5e806ec60b1d21",
+    "bytes": 205027
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-conseil-simule-source.png",
+    "sha256": "7de98e791b50a984812c64fd6235debe3eedff881ad922369b05cb529dc79760",
+    "bytes": 206759
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-deux-options-exactes.png",
+    "sha256": "ce1ed0883461074a8711fc1df5afe8c7d1ef4c931fd0f74267d93d24b86567fb",
+    "bytes": 204090
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-devis-distinct-du-choix.png",
+    "sha256": "1042f1edd68d779d6a384d304ac660ac2074069e16d21b2a234c66e1b5d814ed",
+    "bytes": 185129
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-preference-et-raison.png",
+    "sha256": "30645e81e922f6434ec0003b668cb80de110bcba4b513b547687591947e9edc7",
+    "bytes": 196158
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-rejet-explicite.png",
+    "sha256": "998a60bec3841a5c5de2c458d24673ee99f11e88d72994cb34d87d2fab29c8b8",
+    "bytes": 196490
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/produit-multi-reprise-historique-perime.png",
+    "sha256": "4e3cba569f039a025a7386643cfaffbb803256374f9c5e60005c15a525b07391",
+    "bytes": 202075
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-annulation-native.png",
+    "sha256": "ea090a15491e8f504fbd22a8d971b7c5666b27c6af3116c45049b9ea9e26dd5e",
+    "bytes": 63455
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-cinq-options-acquises.png",
+    "sha256": "62df5bdcbd00fc87411533fe701fce1a15904bccb001e4c339b3762eb672bc36",
+    "bytes": 67845
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-confirmation-preferee-sans-activation.png",
+    "sha256": "5c516157455c27dd468153390eed6068617e98ca5a4226ba2c355248b603a80a",
+    "bytes": 61751
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-conseil-simule-source.png",
+    "sha256": "c09d508fd8bb16d0659370715c04dc781b51b2d6f4ec0fd18b45b400b8108635",
+    "bytes": 74243
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-deux-options-exactes.png",
+    "sha256": "96854a97fe205b79cba0e7604ab1c615819e2b39c33bed226a528fa9da676272",
+    "bytes": 73835
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-devis-distinct-du-choix.png",
+    "sha256": "aae0aa2f57b2f734952670da0b3e0f3d95f315b55db91eb983e9ac916751645a",
+    "bytes": 56573
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-preference-et-raison.png",
+    "sha256": "167d41397620d5dffab11d1d42d39f88c3b6d93230510ba9cf950714524a133d",
+    "bytes": 64843
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-rejet-explicite.png",
+    "sha256": "1b9389865cb3c5c2a5e2a2e95c2af81cb2beb5d28ccb4d400277a42aeaa278c8",
+    "bytes": 65272
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "choices-captures/service-reprise-historique-perime.png",
+    "sha256": "f20e46888b1fd1f4b43a44ec0edfc4891aa24ac384bb689d40e3a2b94f7daf54",
+    "bytes": 76180
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/contexte-ferme-syna-preserve.png",
+    "sha256": "e1e41fab12ca98973546caa50bc79c8a28428e7c3f4b7cd08bfc07ce0dda4b2f",
+    "bytes": 297995
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/manuel-drapeau-ferme-selection.png",
+    "sha256": "42e3b5a20f52be37b6595d2c75ab1d26a832a0ba5a60be550d6bd323a5c219f4",
+    "bytes": 292414
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-accord-distinct.png",
+    "sha256": "e7763e2cbbdc2c936ad67a81753af3e461f52ad87969e74e9c73a34e04118b2f",
+    "bytes": 243563
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-annulation-visible.png",
+    "sha256": "09091f1deeaa093fcf513b2763471ebbf6609ceaac26be78610145f305564815",
+    "bytes": 221473
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-autre-onglet-sans-cible-ancienne.png",
+    "sha256": "6552c5ec5835857f3c94b33d4fb7877684b16afd4f1d1cf34492fdd1548d354b",
+    "bytes": 231245
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-avant.png",
+    "sha256": "7357d8abfd7972edad665ff4d8b61fec1b4ba74ae86eaa093317a60eb809bf44",
+    "bytes": 221114
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-designation-retiree.png",
+    "sha256": "a31af64eae3823627dac947df9947660132393868070213dc979800698ac2f74",
+    "bytes": 253984
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-media-exact-sans-generation.png",
+    "sha256": "6f1fad48f4c360ead5bb55de73acacfa9500be91c6208ec549bc7eae8f5a23e5",
+    "bytes": 228202
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-proposition-exacte.png",
+    "sha256": "2c1b28cd49818d75f5d8ecb089442f2173f36fb432e059349655ecd1e87cc45e",
+    "bytes": 248497
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-reprise-reference.png",
+    "sha256": "a780591d09878ee1a80030e3c4732691df75d53dd1e5ceabf3306a5844bebfb9",
+    "bytes": 242548
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-resultat-visible.png",
+    "sha256": "cb32f19b6b3497482b60188aadbeb7e0714f33d7f8277ded939067d2fbe66e24",
+    "bytes": 224184
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-mono-section-designee.png",
+    "sha256": "c36473f7e1398bed88891e7accf2ac0fdd1ceaef948c65541f4e0fca32790590",
+    "bytes": 244155
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-accord-distinct.png",
+    "sha256": "11ceb2619db17fe1dd590a096a28ca6aa07d545271e3ad96b93bd93332d0855b",
+    "bytes": 186728
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-annulation-visible.png",
+    "sha256": "0cac547306f77260ec8a8aee66e4e50be6606289d90f1d122f95a50579d1f48b",
+    "bytes": 158735
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-autre-onglet-sans-cible-ancienne.png",
+    "sha256": "755284906de9dffe12372d249e1687395ad91d5d0080a5454f8d1e5fcbf68f00",
+    "bytes": 186815
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-avant.png",
+    "sha256": "54c67d60785ee11f842512e7504b3c1906b33a18295552adff646def68990689",
+    "bytes": 174340
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-designation-retiree.png",
+    "sha256": "10d1a5e76dfef9862fdcd2c9906e2823d99555eadbb7ea27204d7e8c5f8a7c3f",
+    "bytes": 183871
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-media-exact-sans-generation.png",
+    "sha256": "b9222418596c411203b140e706c82143956dad7388b6b55921d3813c7cadd3fc",
+    "bytes": 185956
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-proposition-exacte.png",
+    "sha256": "0ba2cd10c27c9f41be9c80d5a3c431d065b49caa1230add26a4077fec39507d9",
+    "bytes": 185106
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-reprise-reference.png",
+    "sha256": "a174afa181dbe254978920c7ea01743aaa8a7dd015679a47c19def3d3ff81992",
+    "bytes": 202525
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-resultat-visible.png",
+    "sha256": "1497aa1a9b6418e5bfd31a28d26139093f5e2be6bf5eff1dac54b0d5b3ba9e95",
+    "bytes": 160348
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/produit-multi-section-designee.png",
+    "sha256": "cd8824f4ee1b827148d35765604bd385206da1ff14316c33c170346d8ca44923",
+    "bytes": 186046
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-accord-distinct.png",
+    "sha256": "c67884a59b7ea1e39700018c7c140d4a37883da18fa9316883affdc267ee233f",
+    "bytes": 54653
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-annulation-visible.png",
+    "sha256": "c3f0a481608e6143e369e3b2809092334984b5b11427d53344eeef978a5ba29f",
+    "bytes": 87355
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-autre-onglet-sans-cible-ancienne.png",
+    "sha256": "96cb84b267f39ac6faf66b688cdba51b9b74c1022534c404fd3b0f111b8710ab",
+    "bytes": 70111
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-avant.png",
+    "sha256": "1bb7b80b57188e38a208e11c83c331356944b814019a1d5afcda96befd4b2ff9",
+    "bytes": 87183
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-designation-retiree.png",
+    "sha256": "54613fab52e0d31d1587d6d50e8bb59ea26116b5e16c33102dc779a24243ba41",
+    "bytes": 59655
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-media-exact-sans-generation.png",
+    "sha256": "b047f8cba5782a7d260b372ade501baf2447a10da6e35374186f855479fe6b79",
+    "bytes": 55728
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-proposition-exacte.png",
+    "sha256": "80c14d5b0b5fe6217d275e25c94044b7ee6e27e234c59263516471f7c1446847",
+    "bytes": 59600
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-reprise-reference.png",
+    "sha256": "c2231291a478d64609887abb32b347a490fc5d1ae16cafbfa5ba0cbde7e26b2d",
+    "bytes": 67790
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-resultat-visible.png",
+    "sha256": "bb134ffce9b9f3fd62415f1a121bc63a3d0906646212012c2e8e8d49523e80e7",
+    "bytes": 83833
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "context-captures/service-inedit-section-designee.png",
+    "sha256": "6e76a981b1370fdda69feb2d340445ca473d4f3fd961f1156e8a728fafdd4598",
+    "bytes": 60374
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-devis-separe.png",
+    "sha256": "9c96253e60ef6b2865cb67d157f68b575d8891e8693814217c3bf618287172b9",
+    "bytes": 188878
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-etat-natif.png",
+    "sha256": "212e7047a4f2cb92db0f76ab62dd4c7cd54db28ed95d336ad2e6a91f196b0357",
+    "bytes": 213714
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-meme-conversation-autre-onglet.png",
+    "sha256": "86a9689f7d7a3c49993f03f769c85019e53c264c76ff212a2277f9ca50016b00",
+    "bytes": 162150
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-mode-original-non-disponible.png",
+    "sha256": "fa5978bdc6ea4e0d062c721b2efc0d26e2b922f1ff59926a7972e63cb5b975ef",
+    "bytes": 211214
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-operation-absente-honnete.png",
+    "sha256": "1a6b8280874dbcc1257cb0cd89528db51620e9dec882dbb43c7b14ba7ab0c8fb",
+    "bytes": 204776
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-question-exacte.png",
+    "sha256": "28dbe1c9a184077b791e31cb47e8f0963f76c970c8a46428098d6e412941ef78",
+    "bytes": 195219
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/produit-multi-reponse-sourcee.png",
+    "sha256": "f6428f0c13f7d160d50a7adedc0a14d72cfb2ee3b8fa01d6f7d1f80370e274c5",
+    "bytes": 212013
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-devis-separe.png",
+    "sha256": "488f119135dd11760a42127ff888dbd169cd58b4835d5d705f795162f3896e83",
+    "bytes": 55204
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-echec-historique-observe.png",
+    "sha256": "18f356e568792bfe9a9e1ae39193a74bc5ba11383fc3435864937d4d13252754",
+    "bytes": 75872
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-etat-natif.png",
+    "sha256": "c86f1e4c93a6d565990b758407e1578dda3745d69166a4ecf76d9a794358cc12",
+    "bytes": 69745
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-meme-conversation-autre-onglet.png",
+    "sha256": "8cab7b11240bc1458fef3856fb88e6b9cf59fd9d27662328ab58a66ba0f5a69f",
+    "bytes": 58613
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-mode-original-non-disponible.png",
+    "sha256": "4da470dd71341444f40867073233f2dc7e0eed3e1e87c531698a25e1d74e96b7",
+    "bytes": 67528
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-operation-absente-honnete.png",
+    "sha256": "5450e03010c8c8b6c592731e5f548fa5e0e79b56d073b275695f8c62811b5540",
+    "bytes": 61443
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-question-exacte.png",
+    "sha256": "a7d4a04d5e4abbf48f857af566542a20d6cd51a337877c66e863bcfd5dc15cd6",
+    "bytes": 55218
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "knowledge-captures/service-reponse-sourcee.png",
+    "sha256": "d679b643aa1424f55842ea13703f964e92d5a74383e7d819036e26555ab74863",
+    "bytes": 61784
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "legacy-debug-before-assert-false.png",
+    "sha256": "3f5318c4cd8a5496faa3fa7697fb9571080b2df2657cf9c1a5f15bf6c7ea8b30",
+    "bytes": 281286
+  },
+  {
+    "run": "I1-browser-combined",
+    "path": "legacy-debug-before-assert-true.png",
+    "sha256": "f42b5c867211d3a4e220b1e9610266ce16c62f352af9f7853ca83ee8354149a8",
+    "bytes": 258316
+  },
+  {
+    "run": "I1-images",
+    "path": "1024-manuel.png",
+    "sha256": "6d76751f2e535caafd6ff168f97665c3016d3d21f13989a6f12c1b42cbff10c2",
+    "bytes": 167597
+  },
+  {
+    "run": "I1-images",
+    "path": "1024-syna.png",
+    "sha256": "d66c43d35e47d72c9632de8741ddb24e8a8a0493d7213db8fc4d39ec13dc1cfc",
+    "bytes": 160324
+  },
+  {
+    "run": "I1-images",
+    "path": "1440-manuel.png",
+    "sha256": "974c4ccecb4333660093962fc1f97a9d61f036e623e891918d697751c89a5865",
+    "bytes": 175631
+  },
+  {
+    "run": "I1-images",
+    "path": "1440-syna.png",
+    "sha256": "ecab23c4bf117924df100c0fbfc7f2f8caf8c87f171c8599c026e48cbf4f3cc6",
+    "bytes": 202423
+  },
+  {
+    "run": "I1-images",
+    "path": "360-manuel.png",
+    "sha256": "dec3e7644873a47077053db02326557d5caba2ee067b479e7fe32bed12cde7e7",
+    "bytes": 79676
+  },
+  {
+    "run": "I1-images",
+    "path": "360-syna.png",
+    "sha256": "9b78c535345c418cd8004c45c86d61adb413580c1aa973aeee508dc01c09abfe",
+    "bytes": 40890
+  },
+  {
+    "run": "I1-images",
+    "path": "390-manuel.png",
+    "sha256": "3a294435b4087f61c6a2c28d2ff99842da282d0410bdf20b505c1684092c2e0a",
+    "bytes": 84045
+  },
+  {
+    "run": "I1-images",
+    "path": "390-syna.png",
+    "sha256": "ef8a0279ffd2412758ffe8bbcd473df15c983313687d0eaafba59ebd9e25f32f",
+    "bytes": 41656
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-annulation-mobile.png",
+    "sha256": "8fb846f2a93ec7cf5de2c1745215e5b3432c5cdd487e1b331bd89f4350c39db3",
+    "bytes": 49321
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-avant-composition.png",
+    "sha256": "bb62bf0a9dfdbbc13f1b306787228c829857f6b9c073d852ffca7de556be762b",
+    "bytes": 177168
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-page-1024.png",
+    "sha256": "462437baa102a7c8af7daeccc73dd8a86d918debe3a6072d1476eeede86a4bde",
+    "bytes": 807386
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-page-1440.png",
+    "sha256": "9fbd1c3d3bad53f8b13b708e64387b33a1f89c82890c4cb771190dfd9ca8c07e",
+    "bytes": 970161
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-page-360.png",
+    "sha256": "3fc15508fd0f66daf67c94c44f52640edb8c6c6b415c9498f66db973c083a84c",
+    "bytes": 549812
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-page-390.png",
+    "sha256": "647b9fe9577ea84154d1e59aa6f12fbd2fc931496763a037f0e2685d5d6fe991",
+    "bytes": 563182
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-plan-a-confirmer.png",
+    "sha256": "edecaa5ae9f152791448988a4874ff6f88805bca988125a461681da26866ff7f",
+    "bytes": 250106
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-plan-invalide-refuse-sans-perte.png",
+    "sha256": "4809918d6878508945799a1cedb2bc3a915045afb672b57705ee9c996527395f",
+    "bytes": 61268
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-proposition.png",
+    "sha256": "aee29a8972f2cc8cca8365fd0a1570ccfb17366d9ddc299c2effc7fdacc3af92",
+    "bytes": 248994
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-section-reellement-composee.png",
+    "sha256": "4636216e6d7312e66d92ac4a79c050929b3cc4b0478616f8ca5bf21fae3dafb6",
+    "bytes": 214027
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/holdout-version-et-qualite-a-controler.png",
+    "sha256": "9385b117ca1608e4296ea765bc963b28fe7b0e7adc7e30e500af0c6efdf2e21a",
+    "bytes": 222937
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-annulation-mobile.png",
+    "sha256": "a0186b6dc91bcc47a15d4e243b0caf38ab59a54f315f86669ffa4953166756be",
+    "bytes": 49321
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-avant-composition.png",
+    "sha256": "0ffd6a1e62a2aa029ab58a1b6f569ecac88fbd24b3257b4ae6cba518cbd3c373",
+    "bytes": 227403
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-page-1024.png",
+    "sha256": "2b381d54eb1f61de5962143465c9ba6eae2a4301d65aaaf732b5950b42f57ad7",
+    "bytes": 651085
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-page-1440.png",
+    "sha256": "181a9ccdb6cc01a1bb0f239c3d64f80d3906a7c5f5a9533f3243f16d4c99a09c",
+    "bytes": 829463
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-page-360.png",
+    "sha256": "9c26c115ac271e22f55b6229b75a06605e5f882a92fdf7cb97c51164e02c5a1c",
+    "bytes": 390170
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-page-390.png",
+    "sha256": "b76fedf11ccfd1ae0e3859a0884a5d81cd18c374232fc952c1e7243f561efec3",
+    "bytes": 408157
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-plan-a-confirmer.png",
+    "sha256": "6c9dce3ed30d3efeac85ca78d2ac03e82f13020ddbcf6c8b5484177b86960ae4",
+    "bytes": 269384
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-proposition.png",
+    "sha256": "c71f0385e72c5cea5ec6df7fba5c246dc7c98654f9be2fe983fb5e96a8fdae93",
+    "bytes": 268417
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-section-reellement-composee.png",
+    "sha256": "82995b7f2bee28c601b9ee324436375788bde79714b94f1919fbb607d3eea96a",
+    "bytes": 181289
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-variante-panier.png",
+    "sha256": "039aed09528652752a344b0e9bb83f07b414b38b86c55761b119e798e1f53e83",
+    "bytes": 289474
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/mono-version-et-qualite-a-controler.png",
+    "sha256": "8c925b87eb42f9347485f1da048c2c2ce0f55bfca667fb0f2c5c663014710f92",
+    "bytes": 237615
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-annulation-mobile.png",
+    "sha256": "8fb846f2a93ec7cf5de2c1745215e5b3432c5cdd487e1b331bd89f4350c39db3",
+    "bytes": 49321
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-avant-composition.png",
+    "sha256": "6d9afbf16270569c786bcd8520acfd30505af01cf14e428edcb04447bee216dc",
+    "bytes": 201820
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-page-1024.png",
+    "sha256": "327d03e5cecc518857618f75511098e36f2a17df5550d470415341fb70a3ef3e",
+    "bytes": 628985
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-page-1440.png",
+    "sha256": "6060eea0ae3f610277fcd3d6ba0f07f210c62a553cf2a48625e1a5a63b4e37aa",
+    "bytes": 794620
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-page-360.png",
+    "sha256": "d7bc586df286a336aaa7fb14cfac0bd721b0e723cc4d5181a67d2f8b24e62134",
+    "bytes": 362568
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-page-390.png",
+    "sha256": "220c444d8d06997ec0ffb43ba46ef9ed056f363bb353fbd9fe7ddc02ad6d8660",
+    "bytes": 375867
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-plan-a-confirmer.png",
+    "sha256": "e05a94bd903dccdda996a0ac4bf8ec80d279482151b6a1e4a9e269e7ff83fa37",
+    "bytes": 269138
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-proposition.png",
+    "sha256": "9a1f38db10781dddaf0c6025288f76a349ce0744e112a9d49a68526c69be4c31",
+    "bytes": 268312
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-section-reellement-composee.png",
+    "sha256": "38baf99ef1615ad1ea1125294647b3a3a6b45caf1163b54e5af38e4f7280aba3",
+    "bytes": 166076
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-variante-panier.png",
+    "sha256": "7205e1659e4c23ef422869f2f3980660a00ea149abe17ae188df5f59b35e3429",
+    "bytes": 297357
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/multi-version-et-qualite-a-controler.png",
+    "sha256": "548bdce08bad70458bb7817d755b8af83d7f548defe845c94c5f3198f9fbfcfc",
+    "bytes": 236369
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-annulation-mobile.png",
+    "sha256": "8fb846f2a93ec7cf5de2c1745215e5b3432c5cdd487e1b331bd89f4350c39db3",
+    "bytes": 49321
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-avant-composition.png",
+    "sha256": "27d36d2fabc79573cab2161b1bfa9278c0b5c33a7d360ff17cd0bd472381c04c",
+    "bytes": 197166
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-page-1024.png",
+    "sha256": "d34d6718728b6e2050a1432cec7b234d635b7f902fbf8959a9da2e32df69dda3",
+    "bytes": 782965
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-page-1440.png",
+    "sha256": "0897e79ec35fdc5a59fbbf96f4c98d2fffab393034b21a53d4cf0e2617b2fe65",
+    "bytes": 930626
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-page-360.png",
+    "sha256": "e75c29ec5f2e5fd0ae462bf01805c0d5d810beecb71b1149ac6d533dccf2eeab",
+    "bytes": 540894
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-page-390.png",
+    "sha256": "0610d89398f4214bc46c84169b288d1e9ab119809c9cdbf1ec99843619b33627",
+    "bytes": 557788
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-plan-a-confirmer.png",
+    "sha256": "3886ae7c90830113aea8911248b2cfc4ed416c1da178fecac197cf30c25a4610",
+    "bytes": 250297
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-proposition.png",
+    "sha256": "228bc900c3780b8ad86a82c9c30910faa411582233d78db6db12958f62ade86d",
+    "bytes": 249526
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-section-reellement-composee.png",
+    "sha256": "7fc6e1a73426ad9d6c6f1c5cb0cd5fabad3c570f32dd9b3eb433ba6251d6c79c",
+    "bytes": 168612
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "composition-captures/service-version-et-qualite-a-controler.png",
+    "sha256": "0304a29b187713ca70cba07e5840f7972662482abb62343fdec5103ad9c1a30c",
+    "bytes": 157568
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-annulation-360.png",
+    "sha256": "634d60c098ad1fce952d7c2dbbfd37c283dd442dbe43fc0062169901256a783f",
+    "bytes": 48573
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-annulation-a-confirmer.png",
+    "sha256": "65d0c97efa9df7d0970992a66ad963c87e160d7b2da6c0926d1d45619cdcde05",
+    "bytes": 263326
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-annulation-enregistree.png",
+    "sha256": "7b6933c6d4cc0768496095cd815da7d8fdfd0dc3aff4eefb9a34858f77822db6",
+    "bytes": 247172
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-apres-retouche-visible.png",
+    "sha256": "9a4a0306fdaaf00302f9b848e6a6c8930b1d80a560ae2c99ab1d50bbc36dd3f9",
+    "bytes": 227643
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-avant-retouche.png",
+    "sha256": "9cbb881bdb4ac806f76a639f4f21240962f460084e094d3059974edbcb78afb9",
+    "bytes": 214023
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-devis-local-avant-apres.png",
+    "sha256": "ccf8d8fc695c127baee836060b908c96e1452514053966d285a1e98de90f5d10",
+    "bytes": 245115
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-image-annulation-a-confirmer.png",
+    "sha256": "d75b7cfd170e9de1ac8827791879c49970faa42721606a05325f42aa0f22f11d",
+    "bytes": 240163
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-image-devis-vrais-visuels.png",
+    "sha256": "dbaf1d128af790d6865c3e30fe9096344f21f8a2ea4ca7356c70c89f33360074",
+    "bytes": 237941
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-image-initiale-restauree.png",
+    "sha256": "f0b195bb794627ccc15aa18f854aacf86446d6242974f348838b10db579d0046",
+    "bytes": 213697
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-image-remplacee-visible.png",
+    "sha256": "06032b794dd2d50b7307e3e7af91adf53e95323898db498f597731526c8e42e0",
+    "bytes": 248385
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-recu-version.png",
+    "sha256": "0a80b75ee7bacb40a80f8635a4402dbccd3d57c7ee08831a8b194f94d4b73fa7",
+    "bytes": 253568
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-reprise-sans-nouvel-appel.png",
+    "sha256": "62957f8bb3d408af47a28e5b30f59b87d82c88343a530e458a5681a1505f1be2",
+    "bytes": 256985
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/produit-version-initiale-restauree.png",
+    "sha256": "ebaf5b8c3b1f5b56a0da1aa0019b90565eb99a3c93e8c530a5222d9bfb485c42",
+    "bytes": 214437
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-annulation-360.png",
+    "sha256": "6d5057b2e6c8668504fafd9fb4389b38c5973df9e247729a228c4638f6831c26",
+    "bytes": 46260
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-annulation-a-confirmer.png",
+    "sha256": "1ff71896e506eff1e584552afed4071f65d999d2c4010bacc6dac7fa9b3b267a",
+    "bytes": 53464
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-annulation-enregistree.png",
+    "sha256": "a431c41e431d91d8ba57f746e108c87cec53bca6bfd6ed4f6aedcd2987b1d360",
+    "bytes": 47458
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-apres-retouche-visible.png",
+    "sha256": "c939fdfa02b918681cee5dbe562339a246f773a257c9b6486f0bee2414b1a089",
+    "bytes": 79706
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-avant-retouche.png",
+    "sha256": "ce651b8d049cfdba0700eca3cea9fe2c676fa841ddad240ea83a19ce7d10c22e",
+    "bytes": 77012
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-devis-local-avant-apres.png",
+    "sha256": "1e5b33e43fc1f5d6515080df7a1d8d09c78b26a2e606ef3a6864f3b496364517",
+    "bytes": 51692
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-recu-version.png",
+    "sha256": "3d7b44b6b27961c691d94f03997aa9f90d4f885f834868a77a3869aa033aaf1a",
+    "bytes": 48510
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-reprise-sans-nouvel-appel.png",
+    "sha256": "8fb87c5f9555129f4106693e46fc6bf8f1fdd48ce4b63d3a84b3d04500073301",
+    "bytes": 48016
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "theme-captures/service-version-initiale-restauree.png",
+    "sha256": "9c61e58770711bee44583a9fa2ad1a7c91049a6623b0117dd777d9583195ea6d",
+    "bytes": 77184
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-action-proposee.png",
+    "sha256": "9690a0bbea138f7666deccd356430d2cba66ae0bf5c77cb458c7a2a9c0b3b3c6",
+    "bytes": 233050
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-correction-en-echec-acquis-conserve.png",
+    "sha256": "74a8eee8286f1059a656849e3098f96bad6f566db215befaa1680ebf0890eab0",
+    "bytes": 240587
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-demande-exacte.png",
+    "sha256": "54dbff1680f4a85f069b1465fffd5e39d37dc4692018720955239ca3a566543e",
+    "bytes": 215106
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-devis-natif.png",
+    "sha256": "fd89dce7ec76bbb4e30c873a24756b3ec924d7da10ef7b3b9edc9bb4223aa487",
+    "bytes": 233484
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-meme-resultat-onglet-images.png",
+    "sha256": "018fc2fa3b26db0fcff595a40029d61db38d112a0d676f697db123fe79710466",
+    "bytes": 244136
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-preparation-native.png",
+    "sha256": "81d29437ecb28c2d507b52a1d24d63c5556e7599777fb1599740b57bc297882c",
+    "bytes": 154549
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-reprise-nouvelle-session.png",
+    "sha256": "018fc2fa3b26db0fcff595a40029d61db38d112a0d676f697db123fe79710466",
+    "bytes": 244136
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-resultat-360.png",
+    "sha256": "4f7fb9d7d1c0a034afa4ecd5c310ecd69f45d17cd0d5487f88541d1152c13d43",
+    "bytes": 56880
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/produit-resultat-enregistre.png",
+    "sha256": "c4b27ac1a28c493c1c21efb6b3ca7d7665ac3c4fbf2b5a7491b578d82e7419ef",
+    "bytes": 216177
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-action-proposee.png",
+    "sha256": "a6282a32397510147bab9e710709e00d036db71ff05a3ddef8252b6858357fcc",
+    "bytes": 56012
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-correction-en-echec-acquis-conserve.png",
+    "sha256": "08e7c2a9e3b5eb81c050f7f1a25aca55ea3f9af671faadb907fd65ffc8ea68f1",
+    "bytes": 59135
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-demande-exacte.png",
+    "sha256": "a25c9c136773cc4eec5887d64cce82aced7f2200564a76bf3ce28fa8163dd434",
+    "bytes": 58396
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-devis-natif.png",
+    "sha256": "6e839f304bb423f8ceed7bf045d5b89ad6db131c99141e68fcef6b1210bc4e65",
+    "bytes": 57712
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-meme-resultat-onglet-images.png",
+    "sha256": "72dc33691ba4fe8832bedc16eacf1d9ff849d76253859a904cddca052c03abbe",
+    "bytes": 56479
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-preparation-native.png",
+    "sha256": "e7b36ecae13d7e3eb52b0fd23b489691b6574ef982dccd8f439cb61257796f48",
+    "bytes": 75212
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-reprise-nouvelle-session.png",
+    "sha256": "72dc33691ba4fe8832bedc16eacf1d9ff849d76253859a904cddca052c03abbe",
+    "bytes": 56479
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-resultat-360.png",
+    "sha256": "7a19783416b95bee4744a7e22ffb92cdcd82e6156787ff95b1bb3c9bce875979",
+    "bytes": 52400
+  },
+  {
+    "run": "I1-native-edit-compose",
+    "path": "tools-captures/service-resultat-enregistre.png",
+    "sha256": "96835195f83863518ad9151f6ce7020ae2574b8da709c12cbf28bc39303b0e74",
+    "bytes": 57477
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-correction-visible.png",
+    "sha256": "b9c7f21525b43e49d2a6e944035641650d153f8679d6d51ef1f526a6ccca332f",
+    "bytes": 149778
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-devis-zero.png",
+    "sha256": "a5a203e57480241da3f1da2712084c0b0fba6405d9c79e455fe4c28a33262efe",
+    "bytes": 250812
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-export-version-corrigee.png",
+    "sha256": "90b56357bff5810fc9eb2988c35b1dd1ccc564bd7dee5407274cf0ea78a11890",
+    "bytes": 198579
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-images-natives-apres.png",
+    "sha256": "54f1a415697e92ac424ece85c57f11523755065fbb6a4c85a0f31a42b107fe96",
+    "bytes": 192526
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-images-natives-avant.png",
+    "sha256": "7a2ed60d481afb9b864ff65fed22934c74360d3ae3b7b6337174250a22c23013",
+    "bytes": 246311
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-recapture-nouvelle-version.png",
+    "sha256": "e45089c4e26c3b0e96de89f622516744fcaa2bcd3f1eb71ac26b99302ff130b5",
+    "bytes": 201846
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-recu-avant.png",
+    "sha256": "a0eb4b3a8f6e49f0283334e77186f585a96c3af3a8f9f83893541a2124287f48",
+    "bytes": 252421
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/products-reprise-sans-nouvel-appel.png",
+    "sha256": "33a4de3e0fd150c1001b5aa895130f5d384b34367578678ec377ff259b98029b",
+    "bytes": 274723
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-capture-manquante-honnete.png",
+    "sha256": "426579d4903e51d340dfcec8aa2aa6851cf74b9cde2d9216be4ab46ded1a2e6c",
+    "bytes": 58848
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-correction-visible.png",
+    "sha256": "9dc493c52045fd4ae0e5da497c7294f4e18ab100525a34555bb377cc9a3c8620",
+    "bytes": 71487
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-devis-zero.png",
+    "sha256": "cc08ffe6058094703a64c431092efcf057edc87851e10a380ca5ff3b4266d6c8",
+    "bytes": 46463
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-export-version-corrigee.png",
+    "sha256": "8f1ba7caaded752bb7de347baa1c1fa60882e3ba2a6d79898d16682141349d17",
+    "bytes": 53703
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-images-natives-apres.png",
+    "sha256": "d58e8edee57bd44afb3250bec3a45aeb70cd9f3125d82cf389c4f5c0a3d42aec",
+    "bytes": 51997
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-images-natives-avant.png",
+    "sha256": "e9a46f19bac0c3ddd32ea1b18096aa4b4cc8e29d98081dc58049a75be1ed0918",
+    "bytes": 45381
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-recapture-nouvelle-version.png",
+    "sha256": "d6d2151000bcde66141a61ddbddabeeac796b1b84d5ccf692bcbdbf6fbe64785",
+    "bytes": 56636
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-recu-avant.png",
+    "sha256": "09d19926252a83760aaccd37b68dca6fa66d663644e2565457419e5b6585e01f",
+    "bytes": 47156
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "render-captures/services-reprise-sans-nouvel-appel.png",
+    "sha256": "1cd623d38fa67607e5bed850a02a44c33f3c0002c03c2bb01ae667fa086a0d4a",
+    "bytes": 63034
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-action-proposee.png",
+    "sha256": "06457457705d8cba1aacbb9d3943babd68adc392910b0e344b49c040196f07a4",
+    "bytes": 217002
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-conversation-reprise-apres-echec.png",
+    "sha256": "a989ecc40588e81c112f92831c1551fd423eb8f7461555745bbe47143655b222",
+    "bytes": 230662
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-demande-exacte.png",
+    "sha256": "eb139b652447b15fd22b488d1df564f6e0583e9f3ee857b091cb9bf46333a8ab",
+    "bytes": 223799
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-devis-plafond-natif.png",
+    "sha256": "8979293a23d8413572a403de8ef10b0c0a1565894e133e16aee2d9b0173097ec",
+    "bytes": 226575
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-echec-acquis-conserve.png",
+    "sha256": "d52986b6ffb8b46551c820002a76e1f24a0e296faab2bed866678c9348e803c5",
+    "bytes": 241742
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-etat-manuel-actualise.png",
+    "sha256": "67e35d368865c2fe41bdbb2f0196a0ad16edb3f5f9485d056fb5c85d6bfaab93",
+    "bytes": 239503
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-hypothese-1-integrale.png",
+    "sha256": "8b0d9e45c88f3c1a42296303b59be29cf3e3edcc7035a8ef80adbd9319ea85db",
+    "bytes": 240294
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-hypothese-2-integrale.png",
+    "sha256": "9251336fb103009e8b50c4aef74760b832e0c705590d21bb6e9bf780cbf15475",
+    "bytes": 238675
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-hypothese-3-integrale.png",
+    "sha256": "6720b566d00080cdcf22808b98937624337adc6c11c8c9f144496e641bd8fda5",
+    "bytes": 237317
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-hypothese-4-integrale.png",
+    "sha256": "4aa635f96b27a183cfd0749b865223832217600d856e3b40b81231969f7ed955",
+    "bytes": 237990
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-hypothese-5-integrale.png",
+    "sha256": "539205eadd37ef8e1515c21087572bd1948a165fe19ff9694ea3e4e61eddc9af",
+    "bytes": 235175
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-limite-native-sans-nouvel-accord.png",
+    "sha256": "7a2fc267367a708696c29990765b24a3c3ea58fa5b752e3e561db7d8eaf42fa2",
+    "bytes": 242396
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-reprise-autre-onglet.png",
+    "sha256": "277c4a347ac5ca0a53307c6a59a6ea52ed1db3702a64b512f7db607e6f7c7d8b",
+    "bytes": 245181
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-resultat-360.png",
+    "sha256": "78c255f99286628d51d6a8be855343bf5668d01af1b9a5424a1db94ae42229b1",
+    "bytes": 61980
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-resultat-390.png",
+    "sha256": "5499c0c7f7622ec82bd964cef59979af35c8526073336e991c499ee7d47d4053",
+    "bytes": 62582
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-resultat-natif.png",
+    "sha256": "67e35d368865c2fe41bdbb2f0196a0ad16edb3f5f9485d056fb5c85d6bfaab93",
+    "bytes": 239503
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/produit-sources-fictives-explicites.png",
+    "sha256": "c26a5fffec2a311156de2c878e51cd2bd4393b0a070a5b9020ded6e33a308e16",
+    "bytes": 256785
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-action-proposee.png",
+    "sha256": "dbcb9b341680e0c95dadb66f5e2ce72a07d5eb4b36731cff7a0854e2de7dd6a2",
+    "bytes": 49591
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-conversation-reprise-apres-echec.png",
+    "sha256": "1833a87f9ea967ef21e1799c336c63cde0d8c13f6b298addeab43f865cb161d9",
+    "bytes": 49841
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-demande-exacte.png",
+    "sha256": "f512d39dc54897d3f3174781e0d63fcc3d493f836f9325a5879a8e6be4cbe8d1",
+    "bytes": 59656
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-devis-plafond-natif.png",
+    "sha256": "f5055ead042f65ca38987216d678798af02926e75658285865fb0073e3554609",
+    "bytes": 53256
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-echec-acquis-conserve.png",
+    "sha256": "664ddbe04b382766279b758d2e6071e64ff3d615d35f5edebcbfa18c3bdbf5b6",
+    "bytes": 60083
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-etat-manuel-actualise.png",
+    "sha256": "2a2056d5976398cb71aac102cec78fd258a33d19e458b56e7842f24473219900",
+    "bytes": 66047
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-hypothese-1-integrale.png",
+    "sha256": "7fa6f8c5044e4567fe37b56f9f310629d3591a7cbfeb7ad32f51479ed850fc11",
+    "bytes": 65421
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-hypothese-2-integrale.png",
+    "sha256": "f14c340a36d23d078190dec85237af744b16aac00b1e801ebc05bb3f0516df39",
+    "bytes": 64559
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-hypothese-3-integrale.png",
+    "sha256": "7fb1e88c30f1aeebbc8c01e740f7ff18d5a863d42676afbfe43e07cfdc4629f0",
+    "bytes": 62343
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-hypothese-4-integrale.png",
+    "sha256": "faa8a15352fae03c595386acdbe16dd04e1508fbfadc2f7b2d1345645b0045c2",
+    "bytes": 62398
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-hypothese-5-integrale.png",
+    "sha256": "83fd752bab87745adbdb9e236d840901dfe5107e0b423b4e496288317624957b",
+    "bytes": 63425
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-limite-native-sans-nouvel-accord.png",
+    "sha256": "1dc91a3f3dcff689c8eb123a5b0af2bcc1956d98970cff39dd0a429d2102d9b2",
+    "bytes": 56564
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-reprise-autre-onglet.png",
+    "sha256": "234b1825e09826f2290bcc8e93edf291594c1eabe5d1e0ebc708d23e78bf8087",
+    "bytes": 61645
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-resultat-360.png",
+    "sha256": "5cb8d09ccb73f989705a4e1b1b6165d407856422994230dc642328445319b545",
+    "bytes": 63891
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-resultat-390.png",
+    "sha256": "4b2a29eff678c5fb1fe0dd20e2b3a6a7d596950062e2fb8b1d9eafd849ff7715",
+    "bytes": 66038
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-resultat-natif.png",
+    "sha256": "2a2056d5976398cb71aac102cec78fd258a33d19e458b56e7842f24473219900",
+    "bytes": 66047
+  },
+  {
+    "run": "I1-native-render-research",
+    "path": "research-captures/service-sources-fictives-explicites.png",
+    "sha256": "dd3e4c399f9d3d3625b4dc8356d121aeb30bb0e4fdcf352689e31e390babf3be",
+    "bytes": 71702
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/products-acquis-reutilise.png",
+    "sha256": "4fdc87d6d0b86b72e75867d81e359f75317ea28b6a4c74ecd31551909dd154f1",
+    "bytes": 265544
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/products-cinq-plateformes.png",
+    "sha256": "a1088c774e35f3322772d8fcb8fdb9a475d5b628a670d3a2ec92b3737e2ae9b3",
+    "bytes": 270016
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/products-devis-zero.png",
+    "sha256": "d1946768976260c9a509d468ad65dfe763bea61fbb93336a1b75ede94c047249",
+    "bytes": 260616
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/products-fichier-prouve.png",
+    "sha256": "85974b3ca5fe47c2a45c84ba3145f3f60b9b040149046ddae020a089685cabdd",
+    "bytes": 260994
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/products-reprise.png",
+    "sha256": "8ffc939a35e0ded3da98d29a651d757fdfdd97f8da7ff2fc95a88f1b009eb46a",
+    "bytes": 273028
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-acquis-reutilise.png",
+    "sha256": "9bdab1054cd0b7f06f5d465177cc829e54f05aa1a949c1f5c886635cb57ed6a1",
+    "bytes": 56117
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-cinq-plateformes.png",
+    "sha256": "fb96c4c2e3a3d8a1cef07716b21de49cc682eaffc92d37786b10ddf25c89bb50",
+    "bytes": 57742
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-devis-zero.png",
+    "sha256": "ff0e2508e5362537ccdd26e236ba1c1caf25313f62ad18c898624d0d871f3b4a",
+    "bytes": 49158
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-fichier-manquant-sans-relance.png",
+    "sha256": "e96f9248c6d1d7201a3fd5e6ffe3d2d484c6da929d18a66c083ec6f5de220590",
+    "bytes": 57485
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-fichier-prouve.png",
+    "sha256": "7a732df9185b21544377c30facb1b0043976891c3cc45df91794974eead104d0",
+    "bytes": 52038
+  },
+  {
+    "run": "I1-native-exports",
+    "path": "export-captures/services-reprise.png",
+    "sha256": "b933b9cd677b5ac81593a163871ced5fcf51d0955656e371a468c8708e6179a4",
+    "bytes": 62014
+  }
+]

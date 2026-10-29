@@ -1,0 +1,1 @@
+{"success":true,"file":"/workspace/reviews/ecom-211-state/I1-native-exports/api-proof.json","version":{"commit":"412f60dd5d3ed079ac46bae61e4b65055f97879e","commitOrigin":"build","mode":"production","tree":"clean","source":"compiled-build"},"totals":{"providerHttpCalls":3,"calls":3,"usage":3,"simulatedMicro":23736,"tokenCounts":3},"temp":"/tmp/ecs-agent-211-xJeafJ"}
