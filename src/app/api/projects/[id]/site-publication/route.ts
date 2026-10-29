@@ -9,7 +9,7 @@ import { HttpError } from "@/lib/auth";
 import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { customDomainsEnabled, sitesDomain } from "@/lib/sites/host-match";
-import { bookingBlockers, publishBlockers, publishSite, renderSite, restorePublication, unpublishSite, PublishBlocked } from "@/lib/sites/publish";
+import { bookingBlockers, contentBlockers, contentPagesWithReasons, publishBlockers, publishSite, renderSite, restorePublication, siteFreshness, unpublishSite, PublishBlocked } from "@/lib/sites/publish";
 import { sitePolicies, updatePolicy } from "@/lib/sites/policies";
 import { currentTheme } from "@/lib/projects";
 import { withBiens } from "@/lib/biens";
@@ -28,6 +28,8 @@ function overview(projectId: string) {
     sitesDomain: sitesDomain(),
     customDomainsServed: customDomainsEnabled(),
     live: live ? { id: live.id, number: live.number, origin: live.origin, createdAt: live.created_at, pages: live.pages } : null,
+    // Le site en ligne n'affiche pas encore les derniers changements (thème ou contenus métier) : republier.
+    freshness: siteFreshness(projectId),
     publications: (ensureMaintenanceTables(), publications(projectId)).map((p) => ({ id: p.id, number: p.number, createdAt: p.created_at, pages: p.pages, bytes: p.bytes, themeVersionId: p.theme_version_id, live: p.id === live?.id, purged: !!p.purged_at })),
     storage: { used: storageUsed(projectId), limit: STORAGE_LIMIT_BYTES, keep: KEEP_PUBLICATIONS },
     history: history(projectId),
@@ -79,7 +81,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const cur = currentTheme(p.id);
     if (!cur) return ok({ ...overview(p.id), reasons: [L("Créez d'abord le site dans l'onglet Site.", "Create the site in the Site tab first.")] });
     const spec = withBiens(cur.spec as ThemeSpec, p.id);
-    return ok({ ...overview(p.id), reasons: [...bookingBlockers(p.id, spec), ...publishBlockers(await renderSite(spec, "https://verification.invalid"))] });
+    return ok({ ...overview(p.id), reasons: [...bookingBlockers(p.id, spec), ...contentBlockers(spec), ...publishBlockers(await renderSite(spec, "https://verification.invalid"), contentPagesWithReasons(spec))] });
   }
   try {
     if (b.action === "policy") updatePolicy(p.id, b.handle, b.title, b.text);

@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { HttpError } from "../auth";
-import { id, logError, now, one, run } from "../db";
+import { all, id, logError, now, one, run } from "../db";
 import { L } from "../i18n-server";
 import { currentTheme, loadProject } from "../projects";
 import { requirePlan } from "../plan-gates";
@@ -25,6 +25,9 @@ import { defaultStudioAddress, ensureSiteTables, livePublication, publication, p
 
 /** Bornes d'une publication : un site vitrine reste petit ; au-delà, refus explicite plutôt qu'un artefact démesuré. */
 export const LIMITS = { pages: 80, bytes: 250 * 1024 * 1024 };
+/** Fiches de contenus métier (biens…) : comptées à part, une agence pouvant avoir des centaines de biens (#239). */
+export const DETAIL_LIMIT = 600;
+const isDetail = (pathname: string) => /^\/pages\/bien\//.test(pathname);
 /** Chemins jamais publiés comme pages : boutique, compte, recherche, envoi de formulaire. */
 const SKIPPED = /^\/(cart|account|checkout|search|password|contact$|collections\/all|products\/?)/;
 /** Textes laissés à compléter : un site public ne les montre jamais. */
@@ -77,7 +80,10 @@ export async function renderSite(spec: ThemeSpec, origin: string): Promise<Rende
     const pathname = queue.shift()!;
     if (seen.has(pathname) || SKIPPED.test(pathname)) continue;
     seen.add(pathname);
-    if (pages.size >= LIMITS.pages) throw new PublishBlocked([L(`Le site dépasse ${LIMITS.pages} pages : réduisez-le avant de le publier.`, `The site exceeds ${LIMITS.pages} pages: reduce it before publishing.`)]);
+    const details = [...pages.keys()].filter(isDetail).length;
+    if (isDetail(pathname) ? details >= DETAIL_LIMIT : pages.size - details >= LIMITS.pages) throw new PublishBlocked([isDetail(pathname)
+      ? L(`Le site compte plus de ${DETAIL_LIMIT} fiches : archivez les plus anciennes avant de le publier.`, `The site has more than ${DETAIL_LIMIT} listings: archive the oldest before publishing.`)
+      : L(`Le site dépasse ${LIMITS.pages} pages : réduisez-le avant de le publier.`, `The site exceeds ${LIMITS.pages} pages: reduce it before publishing.`)]);
     const r = await renderPage(opts, pathname, new URLSearchParams());
     if (r.status !== 200) continue;
     pages.set(pathname, r.html);
@@ -121,6 +127,24 @@ export async function renderSite(spec: ThemeSpec, origin: string): Promise<Rende
  * Réservation en ligne des thèmes salon, cabinet et restaurant : un site public ne simule jamais une réservation. Le
  * service réel doit être activé (onglet Rendez-vous) et relié à l'adresse HTTPS du studio, sinon la publication attend.
  */
+/** Contenus métier : un site public ne montre jamais de bien de démonstration (#239). */
+export function contentBlockers(spec: ThemeSpec): string[] {
+  const biens = spec.store.biens ?? [];
+  const demo = biens.filter((b) => b.demo);
+  // Classes DPE et GES obligatoires dans une annonce de vente ou de location (un terrain n'en a pas) : la fiche
+  // afficherait « à renseigner » au public. Raison par bien (référence, titre), plus claire qu'un refus de page.
+  const energy = biens.filter((b) => b.type !== "terrain" && (!b.dpe || !b.ges)).map((b) => L(`Bien ${b.ref} « ${b.title} » : classes DPE et GES à renseigner dans l'onglet Biens (obligatoires dans une annonce de vente ou de location).`, `Property ${b.ref} “${b.title}”: enter the DPE and GES energy classes in the Properties tab (required in a sale or rental listing).`));
+  return [...energy, ...(demo.length ? [L(`${demo.length} bien(s) de démonstration sont visibles (${demo.slice(0, 3).map((b) => b.ref).join(", ")}${demo.length > 3 ? "…" : ""}) : archivez-les ou remplacez-les par vos biens avant de publier.`, `${demo.length} demonstration propert(ies) are visible (${demo.slice(0, 3).map((b) => b.ref).join(", ")}${demo.length > 3 ? "…" : ""}): archive or replace them with your own before publishing.`)] : [])];
+}
+
+/** Fiches déjà expliquées par une raison « par bien » : pas de second refus, moins clair, pour la même page. */
+export function contentPagesWithReasons(spec: ThemeSpec): Set<string> {
+  return new Set((spec.store.biens ?? []).filter((b) => b.type !== "terrain" && (!b.dpe || !b.ges)).map((b) => `/pages/bien/${b.handle}`));
+}
+
+/** Empreinte du contenu publié : même calcul à la publication et pour savoir si le site en ligne est à jour. */
+export const siteHash = (spec: ThemeSpec) => stableHash("site-publication", spec);
+
 export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
   const sec = rdvSection(spec);
   if (!sec) return [];
@@ -138,12 +162,13 @@ export function bookingBlockers(projectId: string, spec: ThemeSpec): string[] {
 }
 
 /** Points qui empêchent la publication : textes à compléter, pages vides. */
-export function publishBlockers(r: Pick<Rendered, "pages"> & { missing?: string[] }): string[] {
+export function publishBlockers(r: Pick<Rendered, "pages"> & { missing?: string[] }, skip: Set<string> = new Set()): string[] {
   const reasons: string[] = [];
   // Média ou fichier référencé introuvable (média supprimé de la bibliothèque, fichier du thème absent) : le site
   // publié aurait une image ou une mise en forme cassée.
   if (r.missing?.length) reasons.push(L(`${r.missing.length} fichier(s) du site introuvable(s) (${r.missing.slice(0, 5).map((m) => m.split("/").pop()).join(", ")}${r.missing.length > 5 ? "…" : ""}) : remplacez ou retirez ces médias dans l'éditeur du site.`, `${r.missing.length} site file(s) not found (${r.missing.slice(0, 5).map((m) => m.split("/").pop()).join(", ")}${r.missing.length > 5 ? "…" : ""}): replace or remove these media in the site editor.`));
   for (const [p, html] of r.pages) {
+    if (skip.has(p)) continue;
     // Texte visible seulement (sans scripts, styles ni attributs : une aide de saisie « À renseigner » n'est pas une lacune).
     const text = html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, "\n");
     const m = text.match(PLACEHOLDER) ?? text.match(BARE);
@@ -210,11 +235,11 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
   const origin = `${process.env.SITES_SCHEME === "http" ? "http" : "https"}://${address.hostname}${process.env.SITES_PORT ? `:${process.env.SITES_PORT}` : ""}`;
   const spec = withBiens(cur.spec as ThemeSpec, projectId);
   const rendered = await renderSite(spec, origin);
-  const reasons = [...bookingBlockers(projectId, spec), ...publishBlockers(rendered)];
+  const reasons = [...bookingBlockers(projectId, spec), ...contentBlockers(spec), ...publishBlockers(rendered, contentPagesWithReasons(spec))];
   if (reasons.length) throw new PublishBlocked(reasons);
   const pubId = id();
   const number = (one<{ n: number | null }>("SELECT MAX(number) n FROM site_publications WHERE project_id = ?", projectId)?.n ?? 0) + 1;
-  const meta = { publicationId: pubId, projectId, number, themeVersionId: cur.version.id, specHash: stableHash("site-publication", spec), themeFingerprint: themeFingerprint(spec), codeCommit: codeCommit(), origin, createdAt: now() };
+  const meta = { publicationId: pubId, projectId, number, themeVersionId: cur.version.id, specHash: siteHash(spec), themeFingerprint: themeFingerprint(spec), codeCommit: codeCommit(), origin, createdAt: now() };
   const { bytes, manifestSha } = writeArtifact(projectId, pubId, rendered, meta);
   run("INSERT INTO site_publications (id, project_id, user_id, number, theme_version_id, spec_hash, theme_fingerprint, code_commit, status, pages, bytes, manifest_sha, origin, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     pubId, projectId, userId, number, cur.version.id, meta.specHash, meta.themeFingerprint, meta.codeCommit, "ready", rendered.pages.size, bytes, manifestSha, origin, meta.createdAt);
@@ -222,6 +247,20 @@ export async function publishSite(projectId: string, userId: string): Promise<Pu
   // Anciennes versions au-delà de la limite : fichiers purgés (jamais la version en ligne ni les plus récentes).
   try { purgeOldPublications(projectId); } catch (e) { logError("sites:purge", e, { projectId }); }
   return publication(projectId, pubId)!;
+}
+
+/**
+ * Le site en ligne est-il à jour ? Compare l'empreinte de ce qui serait publié maintenant (thème + contenus métier)
+ * à celle de la version en ligne. Dit aussi ce qui a changé (version du thème, biens modifiés depuis la publication),
+ * pour que le client sache qu'il doit republier : le site public ne change jamais tout seul (#239).
+ */
+export function siteFreshness(projectId: string): { live: boolean; upToDate: boolean; themeChanged: boolean; changedBiens: number } {
+  const live = livePublication(projectId);
+  const cur = currentTheme(projectId);
+  if (!live || !cur) return { live: !!live, upToDate: true, themeChanged: false, changedBiens: 0 };
+  const spec = withBiens(cur.spec as ThemeSpec, projectId);
+  const changedBiens = all<{ n: number }>("SELECT COUNT(*) n FROM biens WHERE project_id = ? AND updated_at > ?", projectId, live.created_at)[0]?.n ?? 0;
+  return { live: true, upToDate: siteHash(spec) === live.spec_hash, themeChanged: cur.version.id !== live.theme_version_id, changedBiens };
 }
 
 /** Remet en ligne une publication précédente, telle quelle (son artefact est vérifié avant). */
