@@ -19,6 +19,7 @@ import { L } from "../i18n-server";
 import { slugify } from "../blog-html";
 import { currentTheme } from "../projects";
 import { storeProducts, type StoreCollection, type StoreProduct, type ThemeSpec } from "../theme/spec";
+import { neutralProductTemplate } from "../theme/product-content";
 
 export const PRODUCT_STATUSES = ["active", "draft", "archived"] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
@@ -320,8 +321,22 @@ export function withStudioProducts(spec: ThemeSpec, projectId: string, previewDr
   const bases = new Map(storeProducts(spec).map((p) => [p.handle, p]));
   const files: Record<string, string> = {};
   const products = list.map((p) => { const r = toStoreProduct(p, bases.get(p.handle)); Object.assign(files, r.files); return r.product; });
+  let templates=spec.templates;
   // Le brouillon n'entre QUE dans cette copie privée de rendu. Sans produit actif, garder la boutique d'origine.
-  if(previewDraft){if(!products.length)products.push(...storeProducts(spec));const draft=toStoreProduct(previewDraft,bases.get(previewDraft.handle));Object.assign(files,draft.files);const index=products.findIndex(p=>p.handle===draft.product.handle);if(index<0)products.push(draft.product);else products[index]=draft.product;list.push(previewDraft);}
+  if(previewDraft){if(!products.length)products.push(...storeProducts(spec));const draft=toStoreProduct(previewDraft,bases.get(previewDraft.handle));Object.assign(files,draft.files);
+    // Une fiche nouvelle ne possède pas les faits statiques du produit principal. Réutiliser
+    // son gabarit natif neutre DANS CETTE COPIE PRIVÉE seulement ; garder tout gabarit explicite.
+    if(!previewDraft.data.templateSuffix&&spec.templates.product){
+      const template=neutralProductTemplate(spec.templates.product);
+      for(const section of Object.values(template.sections))if(section.type==='main-product'){
+        for(const key of ['display_heading','display_intro','crumb_label','crumb_link'])delete section.settings[key];
+        section.blocks??={};section.block_order??=Object.keys(section.blocks);
+        if(!Object.values(section.blocks).some(b=>b.type==='description')){let key='catalogue_description';while(section.blocks[key])key+='_';section.blocks[key]={type:'description',settings:{}};section.block_order.push(key);}
+      }
+      let suffix='studio-draft-'+previewDraft.id;while(spec.templates['product.'+suffix])suffix+='-x';
+      draft.product.template_suffix=suffix;templates={...spec.templates,['product.'+suffix]:template};
+    }
+    const index=products.findIndex(p=>p.handle===draft.product.handle);if(index<0)products.push(draft.product);else products[index]=draft.product;list.push(previewDraft);}
   const handles = new Set(products.map((p) => p.handle));
   // Collections du thème gardées (produits disparus retirés) ; une catégorie sans collection en devient une.
   const collections: StoreCollection[] = (spec.store.collections ?? []).map((c) => ({ ...c, products: c.products.filter((h) => handles.has(h)) }));
@@ -330,7 +345,7 @@ export function withStudioProducts(spec: ThemeSpec, projectId: string, previewDr
     if (!c) collections.push((c = { handle: slugify(cat) || `categorie-${collections.length + 1}`, title: cat, description: "", products: [] }));
     if (!c.products.includes(p.handle)) c.products.push(p.handle);
   }
-  return { ...spec, files: { ...spec.files, ...files }, store: { ...spec.store, product: products[0], products: products.slice(1), collections } };
+  return { ...spec, templates, files: { ...spec.files, ...files }, store: { ...spec.store, product: products[0], products: products.slice(1), collections } };
 }
 
 // ─── Correspondances avec les boutiques ─────────────────────────────────────────────────────────────────────────────

@@ -62,15 +62,15 @@ export default function TabCatalogue() {
           {data.products.map((p, i) => {
             const stock = stockOf(p);
             return (
-              <div key={p.id} data-catalogue-product={p.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center">
+              <div key={p.id} data-catalogue-product={p.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-paper-2">{p.images[0] ? <img src={p.images[0].url} alt={p.images[0].alt} className="size-full object-cover" /> : <span className="grid size-full place-items-center text-xs text-muted">{t("Sans photo", "No photo")}</span>}</div>
-                <div className="min-w-0 flex-1">
+                <div data-catalogue-product-details className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2"><p className="max-w-full truncate font-semibold">{p.data.title}</p>{p.status === "draft" && <Badge tone="warn">{t("Brouillon", "Draft")}</Badge>}{p.links.map((l) => <Badge key={l.platform + l.store} tone="ok">{PLATFORM[l.platform as keyof typeof PLATFORM]} · {l.store}</Badge>)}</div>
                   <p className="break-words text-sm text-muted">{[p.data.price !== null ? `${euros(p.data.price)} ${currencyLabel(p.data.currency)}` : t("Prix à renseigner", "Price to enter"), t(`${p.variants.length} variante(s)`, `${p.variants.length} variant(s)`), stock === null ? t("stock non suivi", "stock not tracked") : t(`stock ${stock}`, `stock ${stock}`), p.data.categories.join(", ")].filter(Boolean).join(" · ")}</p>
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex w-full flex-wrap gap-1">
                   {agentUi&&overview?.conversationCatalogue&&<Button size="sm" variant="secondary" onClick={()=>{setFocus({projectId:id,tab:'catalogue',label:p.data.title,target:{kind:'catalogue-product',productId:p.id,version:p.version}});setOpen(true);}}>{t('Désigner pour SYNA','Select for SYNA')}</Button>}
-                  <a className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm hover:bg-paper-2" href={`/preview/${id}/v/current/products/${p.handle}`} target="_blank" rel="noreferrer"><Eye className="size-4" />{t("Voir la fiche", "View page")}</a>
+                  {p.status==='active'?<a className="inline-flex h-9 items-center gap-1 rounded-xl px-3 text-sm hover:bg-paper-2" href={`/preview/${id}/v/current/products/${p.handle}`} target="_blank" rel="noreferrer"><Eye className="size-4" />{t("Voir la fiche", "View page")}</a>:<span className="inline-flex min-h-9 items-center px-3 text-xs text-muted">{t('Hors du Site actuel ; aperçu privé dans le reçu SYNA si disponible.','Outside the current Site; private preview in the SYNA receipt when available.')}</span>}
                   <Button size="sm" variant="secondary" onClick={() => setEditing(p)}>{t("Modifier", "Edit")}</Button>
                   <Button size="sm" variant="ghost" aria-label={t("Monter", "Move up")} disabled={i === 0} onClick={() => patch({ id: p.id, move: "up" })} icon={<ArrowUp className="size-4" />} />
                   <Button size="sm" variant="ghost" aria-label={t("Descendre", "Move down")} disabled={i === data.products.length - 1} onClick={() => patch({ id: p.id, move: "down" })} icon={<ArrowDown className="size-4" />} />

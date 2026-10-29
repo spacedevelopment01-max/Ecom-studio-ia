@@ -215,7 +215,10 @@ describe("I-3 sections sur mesure et aperçus cloisonnés", () => {
     const key = signPreview(user.id, pid);
     expect(verifyPreview(key, pid)).toBe(user.id);
     expect(verifyPreview(key, other.pid)).toBeNull();
-    expect(verifyPreview(key.slice(0, -2) + "xx", pid)).toBeNull();
+    // « xx » pouvait déjà être la fin de la signature : garantir une véritable altération.
+    const tampered = key.slice(0, -1) + (key.endsWith("A") ? "B" : "A");
+    expect(tampered).not.toBe(key);
+    expect(verifyPreview(tampered, pid)).toBeNull();
     expect(verifyPreview(signPreview(user.id, pid, -10), pid)).toBeNull();
     expect(verifyPreview(signPreview(other.user.id, pid), pid)).toBeNull();
     expect(splitPreviewSegment(previewSegment("v1", user.id, pid))).toMatchObject({ vid: "v1" });
