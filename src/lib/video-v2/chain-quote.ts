@@ -10,7 +10,7 @@ import { projectRights } from "../plan-gates";
 import { aiActiveFor } from "../ai/access";
 import { llmConfigured } from "../ai/llm";
 import { quoteScenes,sceneTiming,type ThreeScenesRequest } from "./three-scenes";
-import {resolveSubject} from "../creative-subject";
+import {sceneSubjectContext} from "./subject-binding";
 import {productReferences} from "./creative-memory";
 import type { Project } from "../projects";
 export const GUIDED_VIDEO_POLICY={version:"guided-video-1",automaticGenerationRetries:0,maxTargetedSceneRetakes:1,automaticRechecks:0,localContrastReencodes:1} as const;
@@ -28,7 +28,7 @@ export function sceneChainQuote(p:Project,req:ThreeScenesRequest) {
  const clipQc=review?estimateTaskMicro("quality_control",{input:9000,output:1500}):0;
  const scriptMicro=review&&!req.editorial&&req.purpose!=="site"?estimateTaskMicro("copywriting",{input:12000,output:4000}):0;
  const voiceId=projectVoice(loadCreativeMemory(p.id,p).preferences);
- const voiced=req.purpose!=="site"&&voiceId&&isOpenAIVoice(voiceId);
+ const voiced=req.purpose!=="site"&&req.voice!=="none"&&voiceId&&isOpenAIVoice(voiceId);
  const voiceLines=voiced?Array.from({length:n},(_,k)=>req.approval?.scenario?[req.approval.scenario.scenes[k]?.voice??"",k===n-1?req.approval.scenario.voiceEnd??"":""].filter(Boolean).join(" "):"x".repeat(k===n-1?361:200)).filter(t=>t.trim()):[];
  const voiceMicro=voiceLines.reduce((sum,text)=>sum+voiceQuote(text).estimateMicro,0);
  const voiceCapMicro=voiceLines.reduce((sum,text)=>sum+voiceQuote(text).capMicro,0);
@@ -44,11 +44,11 @@ export function sceneChainQuote(p:Project,req:ThreeScenesRequest) {
  const firstMicro=steps.reduce((sum,s)=>sum+s.totalMicro,0);
  const oneSceneRetakeMicro=image+imageQc+clip+clipQc;
  const maximumMicro=req.generation?mediaReservationMaxMicro(firstMicro-voiceMicro+oneSceneRetakeMicro)+voiceCapMicro:firstMicro-voiceMicro+oneSceneRetakeMicro+voiceCapMicro;
- const selected=resolveSubject(p,req.subject??null);
+ const {subject:selected,project:subjectProject}=sceneSubjectContext(p,req);
  const mainProduct=!selected||(selected.kind!=="service"&&(!selected.referenceAssetId||selected.key==="main"||selected.name===p.product.name));
- const hasReference=!!selected?.referenceAssetId||(mainProduct&&productReferences(p.id).length>0);
+ const hasReference=!!selected?.referenceAssetId||(!req.binding&&mainProduct&&productReferences(p.id).length>0);
  const missingReference=req.generation==="reference"&&!hasReference&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(x=>!x);
- const missingContext=!p.brand?.name.trim()?"Validez le nom et l’identité de votre projet dans sa préparation.":!(p.business==="services"?p.services.services.some(s=>s.name.trim()):p.product.name.trim())?"Quel produit ou quelle prestation souhaitez-vous présenter ? Renseignez cette offre dans le projet.":null;
+ const missingContext=!p.brand?.name.trim()?"Validez le nom et l’identité de votre projet dans sa préparation.":!(subjectProject.business==="services"?subjectProject.services.services.some(s=>s.name.trim()):subjectProject.product.name.trim())?"Quel produit ou quelle prestation souhaitez-vous présenter ? Renseignez cette offre dans le projet.":null;
  const reason=(voiced&&projectRights(p.id)?.videos==="none"?"La voix IA nécessite un forfait incluant les vidéos IA ; les audios acquis restent conservés.":null)??missingContext??(missingReference?"Choisissez une photo autorisée pour chaque scène, ou le mode direct sans référence.":null)??common.reason??(route&&!route.allowed?route.reason:null)??(common.mode==="ai"&&!review?"Contrôle visuel indisponible : aucun clip IA ne sera lancé.":null);
  return {...common,generation:req.generation??"staged",initialImagesRequired:staged,allowed:!reason,reason,estimateMicro:reason?0:firstMicro,capMicro:reason?0:maximumMicro,firstMicro,scriptMicro,oneSceneRetakeMicro,maximumMicro,steps,policy:GUIDED_VIDEO_POLICY,generatedSeconds:common.mode==="ai"?n*(route?.allowed?route.seconds:timing.clipS):0,routes:{quality:routeFor("quality_control"),clip:route?.allowed?{provider:route.provider,model:route.model}:null},exchange:{eurPerUsd:usdToEur(),source:"configured rate; no live FX quote",safety:FX_SAFETY},hypotheses:["Token counts are planning allowances, not measured consumption.","Image unit uses the configured maximum reservation for one reference.","No paid final audiovisual review is executed by this chain.","No automatic paid regeneration; one explicit targeted retake at most."]};
 }

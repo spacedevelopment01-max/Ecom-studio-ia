@@ -22,7 +22,7 @@ import {
   HIGGS_MODELS,
   defaultConfiguration,
 } from "../src/lib/ai/higgsfield/catalog";
-import { higgsfieldClip, aiClip } from "../src/lib/ai/media-providers";
+import { higgsfieldClip, aiClip, withQuotedImageRoute, withQuotedVideoRoute } from "../src/lib/ai/media-providers";
 import { polling } from "../src/lib/ai/higgsfield/lifecycle";
 import { withTrace } from "../src/lib/ai/trace";
 import { mediaStatus } from "../src/lib/ai/media-routing";
@@ -33,6 +33,8 @@ let posts = 0,
   polls = 0,
   mode = "ok";
 const model = HIGGS_MODELS[3].id;
+const backupModel=HIGGS_MODELS.find(m=>m.mode==="image"&&m.id!==model)!.id;
+let quotedBackupPosts=0;
 const png = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ObAAAAAASUVORK5CYII=",
   "base64",
@@ -70,6 +72,7 @@ const fakeFetch = async (url: RequestInfo | URL, init?: RequestInit) => {
     if (mode === "400") return json({}, 400);
     return json({ request_id: "req-engine" });
   }
+  if(u===`https://api.higgsfield.ai/${backupModel}`){quotedBackupPosts++;return json({request_id:"req-engine"});}
   if (u.endsWith("/requests/req-engine/status")) {
     polls++;
     if (mode === "poll-down") return json({}, 401);
@@ -438,4 +441,35 @@ it("uses the approved Higgsfield route in the explicit staged guided workflow", 
     ),
   ).toEqual(video);
   expect(posts).toBe(1);
+});
+
+
+it('route consentie : un refus400 ne doit pas lancer le secours hors devis',async()=>{
+ const c=await client(),old=getSetting('ai.media.usage');quotedBackupPosts=0;
+ const prices=await refreshPricing(fakeFetch);approvePricing(prices.id,[model,backupModel],'fixture-admin');
+ setSetting('ai.media.usage',JSON.stringify({product_video:{mode:'manual',primary:`higgsfield:${model}`,backup:`higgsfield:${backupModel}`}}));mode='400';
+ try{
+  await expect(withQuotedImageRoute({provider:'higgsfield',model},()=>aiClip('higgsfield',c,input))).rejects.toThrow();
+  expect(posts).toBe(1);expect(quotedBackupPosts).toBe(0);
+  expect(all('SELECT status FROM ai_reservations WHERE project_id=?',c.projectId)).toEqual([{status:'released'}]);
+ }finally{setSetting('ai.media.usage',old);}
+});
+it('sans route consentie, conserve le secours historique après refus non facturé',async()=>{
+ const c=await client(),old=getSetting('ai.media.usage');quotedBackupPosts=0;
+ const prices=await refreshPricing(fakeFetch);approvePricing(prices.id,[model,backupModel],'fixture-admin');
+ setSetting('ai.media.usage',JSON.stringify({product_video:{mode:'manual',primary:`higgsfield:${model}`,backup:`higgsfield:${backupModel}`}}));mode='400';
+ try{
+  expect(await aiClip('higgsfield',c,input)).toEqual(video);expect(posts).toBe(1);expect(quotedBackupPosts).toBe(1);
+  expect(all<{status:string}>('SELECT status FROM ai_reservations WHERE project_id=? ORDER BY created_at,rowid',c.projectId).map(r=>r.status)).toEqual(['released','settled']);
+ }finally{setSetting('ai.media.usage',old);}
+});
+
+it('verrou vidéo dédié :503 reste incertain et sans secours ni seconde réservation',async()=>{
+ const c=await client(),old=getSetting('ai.media.usage');quotedBackupPosts=0;
+ const prices=await refreshPricing(fakeFetch);approvePricing(prices.id,[model,backupModel],'fixture-admin');
+ setSetting('ai.media.usage',JSON.stringify({product_video:{mode:'manual',primary:`higgsfield:${model}`,backup:`higgsfield:${backupModel}`}}));mode='503';
+ try{
+  await expect(withQuotedVideoRoute({provider:'higgsfield',model},()=>aiClip('higgsfield',c,input))).rejects.toThrow();
+  expect(posts).toBe(1);expect(quotedBackupPosts).toBe(0);expect(all('SELECT status FROM ai_reservations WHERE project_id=?',c.projectId)).toEqual([{status:'uncertain'}]);
+ }finally{setSetting('ai.media.usage',old);}
 });

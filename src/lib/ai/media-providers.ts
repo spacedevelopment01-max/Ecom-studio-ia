@@ -507,6 +507,10 @@ export function mediaRouteFor(usage: MediaUsage, need: Partial<MediaNeed> = {}):
 export function withQuotedImageRoute<T>(route:{provider:string;model:string},fn:()=>T):T{
   return mediaExclude.run({exclude:[],only:`${route.provider}:${route.model}`,quoted:true},fn);
 }
+/** Même verrou natif pour les clips : la route consentie interdit tout secours hors de son devis. */
+export function withQuotedVideoRoute<T>(route:{provider:string;model:string},fn:()=>T):T{
+  return mediaExclude.run({exclude:[],only:`${route.provider}:${route.model}`,quoted:true},fn);
+}
 
 /** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
 export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string}):number{
@@ -1252,7 +1256,7 @@ export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer;
     const b = usableBackup("video", usage);
     const bm = b ? mediaModel(b.provider, b.model) : null;
     // Secours seulement s'il est compatible (son natif pour l'UGC) et différent du modèle en échec.
-    if (!f?.mediaReleased || !b || !bm || `${b.provider}:${b.model}` === f.mediaFailed || (input.people && !bm.caps.audio && provider === "google")) throw e;
+    if (mediaExclude.getStore()?.quoted || !f?.mediaReleased || !b || !bm || `${b.provider}:${b.model}` === f.mediaFailed || (input.people && !bm.caps.audio && provider === "google")) throw e;
     return mediaExclude.run({ exclude: [f.mediaFailed ?? ""], only: `${b.provider}:${b.model}` }, () => run(b.provider, b.model));
   }
 }

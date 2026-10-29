@@ -50,7 +50,10 @@ export function resolveImageBinding(p:Project,input:ImageBinding){return resolve
 /** Réemploi local des pixels acquis uniquement : aucune transmission à un générateur/contrôle IA.
  * Les personnes déjà dans la photo restent celles de la photo ; tous les contrôles propriétaire/version/offre restent appliqués. */
 export function resolveLocalVideoImageBinding(p:Project,input:ImageBinding){return resolveBinding(p,input,true);}
-function resolveBinding(p:Project,input:ImageBinding,preserveExistingPixels:boolean){
+/** Vidéo directe explicitement sans référence : la fiche reste figée, sans revendiquer une fidélité visuelle.
+ * Les parcours photo et animation locale conservent leur exigence historique de référence. */
+export function resolveVideoSubjectBinding(p:Project,input:ImageBinding,directWithoutReference:boolean){return resolveBinding(p,input,false,directWithoutReference);}
+function resolveBinding(p:Project,input:ImageBinding,preserveExistingPixels:boolean,directWithoutReference=false){
  const binding=ImageBindingSchema.parse(input);
  if(binding.product&&p.business==='services')throw new HttpError(409,L('Une prestation ne devient pas un produit e-commerce.','A service does not become an e-commerce product.'));
  const pins=[...binding.references,...(binding.edit?[binding.edit.source,...(binding.edit.style?[binding.edit.style]:[])]:[])];
@@ -68,7 +71,7 @@ function resolveBinding(p:Project,input:ImageBinding,preserveExistingPixels:bool
   const variant=t.variant?product.variants.find(v=>v.id===t.variant!.variantId):null;
   if(t.variant&&(!variant||variant.version!==t.variant.version))throw new HttpError(409,L('La variante a changé ou manque.','Variant changed or is missing.'));
   const allowed=variant?.image?[variant.image]:product.data.images.map(a=>a.assetId);
-  if(binding.references.length!==1||!allowed.includes(binding.references[0].assetId))throw new HttpError(409,L('Désignez une photo appartenant à cette fiche ou à cette variante. Aucune photo d’un autre produit ne la remplace.','Select a photo belonging to this listing or variant. No other product photo substitutes for it.'));
+  if(!(directWithoutReference&&binding.references.length===0)&&(binding.references.length!==1||!allowed.includes(binding.references[0].assetId)))throw new HttpError(409,L('Désignez une photo appartenant à cette fiche ou à cette variante. Aucune photo d’un autre produit ne la remplace.','Select a photo belonging to this listing or variant. No other product photo substitutes for it.'));
   if(binding.edit){const source=getAsset(binding.edit.source.assetId)!,meta=JSON.parse(source.meta||'{}'),provenance=meta.imageV2?.binding?.product;
    if(!allowed.includes(source.id)&&(!provenance||provenance.productId!==t.productId||(provenance.variant?.variantId??null)!==(t.variant?.variantId??null)))throw new HttpError(409,L('La source à retoucher n’appartient pas à cette fiche ou variante. Désignez la bonne source ; aucun produit n’est substitué.','The edit source does not belong to this listing or variant. Select the correct source; no product is substituted.'));
   }

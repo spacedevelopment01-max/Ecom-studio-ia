@@ -1,11 +1,11 @@
 /** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SYNA. */
 import {stableHash} from '../../brain/hash';
-import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled} from './tool-flags';
 import {strategyChoicesEnabled} from './strategy-choices';
 import type {SpaceId} from '../../studio-nav';
-type Adapter='brief'|'analysis'|'research'|'theme'|'compose'|'export'|'render'|'choices'|'catalogue'|'images'|'logos'|'videos'|'none';
+type Adapter='brief'|'analysis'|'research'|'theme'|'compose'|'export'|'render'|'choices'|'catalogue'|'images'|'logos'|'videos'|'video-generation'|'none';
 type Definition={id:string;tab:SpaceId;label:[string,string];adapter:Adapter;source:string;sensitive?:boolean};
-const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='videos'?'src/lib/orchestrator/conversation/video-tool-execution.ts':adapter==='logos'?'src/lib/orchestrator/conversation/logo-tool-execution.ts':adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='images'?'src/lib/orchestrator/conversation/image-tool-execution.ts':adapter==='catalogue'?'src/lib/orchestrator/conversation/catalogue-tool-execution.ts':adapter==='choices'?'src/lib/orchestrator/conversation/strategy-choices.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
+const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='video-generation'?'src/lib/orchestrator/conversation/video-generation-execution.ts':adapter==='videos'?'src/lib/orchestrator/conversation/video-tool-execution.ts':adapter==='logos'?'src/lib/orchestrator/conversation/logo-tool-execution.ts':adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='images'?'src/lib/orchestrator/conversation/image-tool-execution.ts':adapter==='catalogue'?'src/lib/orchestrator/conversation/catalogue-tool-execution.ts':adapter==='choices'?'src/lib/orchestrator/conversation/strategy-choices.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
 export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('brief.update','produit','Corriger une fiche encore modifiable','Correct an editable brief','brief'),
  op('offer.analyse','pilote','Analyser l’offre sans avancer d’étape','Analyze the offer without advancing','analysis'),
@@ -26,7 +26,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('videos.motion','videos','Monter les images acquises avec mouvement local','Edit acquired images with local motion','videos'),
  op('videos.restore','videos','Restaurer une version vidéo conservée','Restore a retained video version','videos'),
  op('videos.plan','videos','Préparer une vidéo filmée par IA','Plan an AI-filmed video'),
- op('videos.generate','videos','Générer une vidéo','Generate a video'),
+ op('videos.generate','videos','Générer des clips IA après scénario et devis','Generate AI clips after scenario and quote','video-generation'),
  op('videos.edit','videos','Retoucher durée, texte, transitions et musique locale','Edit duration, text, transitions and local music','videos'),
  op('catalogue.read','catalogue','Lire une fiche et ses variantes autorisées','Read an authorized listing and variants','catalogue'),
  op('catalogue.create','catalogue','Créer un brouillon produit','Create a product draft','catalogue'),
@@ -62,7 +62,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('connections.configure','connexions','Connecter un compte externe','Connect an external account','none',true),
 ];
 export function studioOperationCatalogue(projectId:string|null,writableBrief:boolean){
- const enabled:Record<Adapter,boolean>={videos:conversationVideosEnabled(),logos:conversationLogosEnabled(),images:conversationImagesEnabled(),brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),choices:strategyChoicesEnabled(),catalogue:conversationCatalogueEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
+ const enabled:Record<Adapter,boolean>={'video-generation':conversationVideoGenerationEnabled(),videos:conversationVideosEnabled(),logos:conversationLogosEnabled(),images:conversationImagesEnabled(),brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),choices:strategyChoicesEnabled(),catalogue:conversationCatalogueEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
  const rows=STUDIO_OPERATIONS.map(o=>({id:o.id,tab:o.tab,label:o.label,source:o.source,
   implementation:o.adapter==='none'?'absent_from_syna' as const:'implemented' as const,
   evidence:o.adapter==='none'?'not_tested' as const:'isolated_simulated_provider' as const,
