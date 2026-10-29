@@ -1,0 +1,31 @@
+{
+  "schema": "211-D9a-partial-failure-readonly-1",
+  "compiledCommit": "2cb3cdec2dcced5033c3a19e30d5a33976c4b609",
+  "fixtureOnly": true,
+  "readOnlyDatabase": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "job": {
+    "status": "failed",
+    "progress": 0.45,
+    "complete": false
+  },
+  "acquiredFiles": [
+    {
+      "assetRef": "f161c4770baea858",
+      "version": 1,
+      "sha256": "d244838c1189a6e1e4df9d1a1d5c34d1b3ff66560e52317a737c74cb3ea96828",
+      "bytes": 288375,
+      "verdict": "FINAL",
+      "acquiredFileIntact": true
+    }
+  ],
+  "uncertainReservation": {
+    "count": 1,
+    "maximumMicro": 306981,
+    "recordedActualMicro": 306981,
+    "status": "uncertain",
+    "notAConfirmedInvoice": true
+  },
+  "requestSha256": "114b76aa4bb8ebcdf8b54ea655bbbf4511ef24e524a75143bf64ef6363d64285"
+}

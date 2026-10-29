@@ -1,0 +1,11 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+
+ Test Files  437 passed | 1 skipped (438)
+      Tests  3833 passed | 45 skipped (3878)
+   Start at  13:50:30
+   Duration  719.37s (tests 77%, import 22%, transform 1%)
+
+    Isolate  438 workers spawned · ~[CAP_PRIVE_OMIS] startup each (spawn + environment, per file)
+             at least ~[CAP_PRIVE_OMIS] faster with isolate: false — reuses workers across files instead of one per file
