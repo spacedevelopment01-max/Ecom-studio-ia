@@ -12,7 +12,7 @@ import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
 import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
-import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
+import { advancedOpen, navSpace, space, spacePurpose, spaceVisible, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
 import { projectProgress } from "@/lib/project-progress";
 
 export const TABS = [
@@ -38,13 +38,11 @@ export const TABS = [
 ] as const satisfies readonly { id: SpaceId; label: string; labelEn: string; icon: unknown }[];
 export type TabId = (typeof TABS)[number]["id"];
 /** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
-/** Espaces propres à un métier : « Biens » pour un site immobilier, « Carte » pour un restaurant, « Réalisations » pour un artisan (#239). */
-const tabsOf = (g: SpaceGroup, direction?: string | null) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && (x.id !== "biens" || isRealEstate(direction)) && (x.id !== "carte" || isRestaurant(direction)) && (x.id !== "realisations" || isArtisan(direction)));
-/** L'espace « Biens » n'apparaît que pour un site immobilier (thème Maison & Horizon) ; son adresse reste accessible. */
-const isRealEstate = (direction?: string | null) => direction === "maison-horizon";
-const isRestaurant = (direction?: string | null) => direction === "table-saison";
-/** Thèmes d'artisan qui dessinent une galerie et une fiche de réalisation ; ailleurs, l'adresse de l'onglet reste accessible. */
-const isArtisan = (direction?: string | null) => direction === "rive" || direction === "aplat" || direction === "phase";
+/** Espaces d'un groupe du plan du studio, selon le métier du projet (voir `spaceVisible`). */
+type NavCtx = { business?: "products" | "services"; direction?: string | null; contactModes?: readonly string[] };
+const tabsOf = (g: SpaceGroup, ctx: NavCtx) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && spaceVisible(x.id, ctx));
+const navCtx = (d: { business?: "products" | "services"; theme?: { direction?: string | null } | null; services?: { contactMode?: string; contactModes?: string[] } | null } | null | undefined): NavCtx =>
+  ({ business: d?.business, direction: d?.theme?.direction, contactModes: [d?.services?.contactMode ?? "", ...(d?.services?.contactModes ?? [])].filter(Boolean) });
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
@@ -333,7 +331,7 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
 const MOBILE_MAIN: TabId[] = ["pilote", "images", "videos", "publications"];
 
 function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab: TabId; business?: "products" | "services"; badge: (id: TabId) => string | number | null }) {
-  const direction = useProject().data?.theme?.direction;
+  const ctx = navCtx(useProject().data);
   const t = useT();
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
@@ -359,7 +357,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
               <div key={g.id} className="mb-3">
                 <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(...g.label)}</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {tabsOf(g.id, direction).map((x) => {
+                  {tabsOf(g.id, ctx).map((x) => {
                     const Icon = tabIcon(x, business);
                     const b = badge(x.id);
                     return (
@@ -547,7 +545,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           {SPACE_GROUPS.map((g) => {
             // Outils avancés : repliés tant que le client ne les ouvre pas (ou qu'il n'est pas dans l'un d'eux).
             const shut = !folded && g.folded && !advancedOpen(tab, showAdvanced);
-            const hidden = shut ? tabsOf(g.id, data?.theme?.direction).filter((x) => badge(x.id) !== null).length : 0;
+            const hidden = shut ? tabsOf(g.id, navCtx(data)).filter((x) => badge(x.id) !== null).length : 0;
             return (
             <div key={g.id} className="mb-4 short:mb-2" data-nav-group={g.id}>
               {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : g.folded ? (
@@ -557,7 +555,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
                   <ChevronDown className={cx("size-3.5 transition", !shut && "rotate-180")} />
                 </button>
               ) : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(...g.label)}</p>}
-              {!shut && tabsOf(g.id, data?.theme?.direction).map((x) => {
+              {!shut && tabsOf(g.id, navCtx(data)).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);

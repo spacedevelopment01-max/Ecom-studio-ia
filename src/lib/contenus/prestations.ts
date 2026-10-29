@@ -15,7 +15,7 @@ import { z } from "zod";
 import { HttpError } from "../auth";
 import { all } from "../db";
 import { L } from "../i18n-server";
-import { currentTheme, saveThemeVersion } from "../projects";
+import { currentTheme, loadProject, saveServices, saveThemeVersion } from "../projects";
 import { rdvSection, type RdvKind } from "../rendez-vous";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
@@ -195,5 +195,21 @@ export function savePrestations(projectId: string, raw: unknown) {
     Object.assign(st, { open_days: [...new Set(r.openDays)].sort().join(","), lunch_slots: r.lunchSlots.trim(), dinner_slots: r.dinnerSlots.trim(), capacity: r.capacity, min_party: r.minParty, max_party: r.maxParty });
   }
   const v = saveThemeVersion(projectId, spec, L("Prestations et horaires", "Services and hours"), "user");
+  // Adresse unique (#239, phase 4) : celle des réservations est aussi celle du profil d'activité.
+  if (input.address !== undefined) {
+    const profile = loadProject(projectId).services;
+    if (profile.address.trim() !== input.address) saveServices(projectId, { ...profile, address: input.address });
+  }
   return { versionId: v.id, number: v.number, warnings, prestations: readPrestations(projectId) };
+}
+
+/**
+ * Adresse unique (#239, phase 4) : une adresse modifiée dans le profil d'activité est reportée dans les réglages de
+ * réservation du site (confirmation, texte de secours), par une nouvelle version restaurable. Sans réservation
+ * intégrée, ou si l'adresse est déjà la même, rien n'est fait.
+ */
+export function syncBookingAddress(projectId: string, address: string) {
+  const cur = readPrestations(projectId);
+  if (!cur || cur.address === address.trim()) return null;
+  return savePrestations(projectId, { address: address.trim() });
 }

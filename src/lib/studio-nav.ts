@@ -42,6 +42,23 @@ export const space = (id: string) => SPACES.find((s) => s.id === id);
 /** Entrée du menu qui contient cet espace (le Calendrier est un sous-menu de Publications). */
 export const navSpace = (id: string): string => space(id)?.within ?? id;
 
+/** Thèmes dont le site prend des réservations (salon, cabinet, restaurant). */
+const BOOKING_DIRECTIONS = ["atelier-nuance", "parenthese", "table-saison"];
+/**
+ * L'espace apparaît-il dans le menu de ce projet (#239) ? Chaque métier retrouve ses contenus et ne voit pas ceux des
+ * autres : « Biens » (agence immobilière), « Carte » (restaurant), « Réalisations » (artisans), « Rendez-vous » quand le
+ * site réserve ; « Catalogue » (produits) n'est pas proposé à un site de services. Un espace masqué reste accessible
+ * par son adresse : rien n'est supprimé.
+ */
+export function spaceVisible(id: string, p: { business?: Business; direction?: string | null; contactModes?: readonly string[] }): boolean {
+  if (id === "biens") return p.direction === "maison-horizon";
+  if (id === "carte") return p.direction === "table-saison";
+  if (id === "realisations") return p.direction === "rive" || p.direction === "aplat" || p.direction === "phase";
+  if (id === "catalogue") return p.business !== "services";
+  if (id === "rendez-vous") return p.business !== "services" || BOOKING_DIRECTIONS.includes(p.direction ?? "") || !!p.contactModes?.includes("booking");
+  return true;
+}
+
 /** À quoi sert cet espace (une phrase), dans la langue de l'interface. */
 export function spacePurpose(id: string, lang: "fr" | "en", business?: Business): string | null {
   const s = space(id);
