@@ -11,6 +11,7 @@ import { api, Badge, Button, Card, Field, Input, Select, useApi, useToast, Empty
 import { useProject } from "./project-context";
 import { useLang, useT } from "../i18n";
 import { SectionSettingsPanel } from "./section-settings";
+import { PrestationsEditor } from "./prestations-editor";
 
 type Booking = { number: string; status: "confirmed" | "canceled"; date: string; start: string; end: string | null; service: string; staff: string | null; party: number | null; modality: string | null; client: { name: string; email: string; phone: string | null }; note: string | null };
 type Rules = { timezone: string; hours: Record<string, [number, number][]>; closures: string[]; step: number | null; horizonDays: number; leadMinutes: number; cancelHours: number | null; services: { id: string; name: string; duration: number | null; price: number | null; slots?: string[] }[]; staff: { id: string; name: string; days: number[] | null }[]; capacity: number | null; workshops: { id: string; title: string; date: string; time: string; capacity: number | null }[] };
@@ -32,6 +33,7 @@ export default function TabRendezVous() {
   const [to, setTo] = useState(() => iso(new Date(Date.now() + 60 * 86400000)));
   const { data, reload } = useApi<View>(`/api/projects/${id}/rendez-vous?du=${from}&au=${to}`);
   const [editing, setEditing] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
   const [adding, setAdding] = useState(false);
   const [moving, setMoving] = useState<Booking | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export default function TabRendezVous() {
           <div>
             <p className="font-medium">{data.kind === "restaurant" ? t("Services", "Services") : t("Prestations et durées", "Services and durations")}</p>
             <ul className="mt-1 grid gap-1 text-ink-2">
-              {r.services.map((s) => <li key={s.id}>{s.name}{s.duration ? ` · ${s.duration} min` : ""}{s.price != null ? ` · ${(s.price / 100).toLocaleString(lang === "en" ? "en-GB" : "fr-FR", { style: "currency", currency: "EUR" })}` : ""}{s.slots?.length ? ` · ${s.slots.join(", ")}` : ""}</li>)}
+              {r.services.map((s) => <li key={s.id}>{s.name}{s.duration ? ` · ${s.duration} min` : ""}{s.price != null ? ` · ${(s.price).toLocaleString(lang === "en" ? "en-GB" : "fr-FR", { style: "currency", currency: "EUR" })}` : ""}{s.slots?.length ? ` · ${s.slots.join(", ")}` : ""}</li>)}
               {!r.services.length && <li className="text-muted">{t("[À compléter : aucune prestation réglée]", "[To complete: no service set]")}</li>}
             </ul>
           </div>
@@ -162,8 +164,13 @@ export default function TabRendezVous() {
 
       {editing && (
         <Modal open onClose={() => { setEditing(false); reload(); }} title={t("Prestations, horaires, fermetures, intervenants", "Services, hours, closures, staff")} wide>
-          <p className="mb-3 text-sm text-ink-2">{t("Ces réglages sont ceux de la section du thème : le site et le service de réservation les lisent tous les deux, il n'y a qu'une seule source.", "These settings are the theme section's: both the site and the booking service read them, there is a single source.")}</p>
-          <SectionSettingsPanel projectId={id} target={{ template: data.section.template, section: data.section.id }} onClose={() => { setEditing(false); reload(); }} onChanged={reload} />
+          {advanced ? (
+            <>
+              <p className="mb-3 text-sm text-ink-2">{t("Réglages avancés de la section du thème (adresse, délais, textes, cookies…). Les prestations et horaires se règlent plus simplement dans le formulaire.", "Advanced settings of the theme section (address, delays, texts, cookies…). Services and hours are simpler to set in the form.")}</p>
+              <SectionSettingsPanel projectId={id} target={{ template: data.section.template, section: data.section.id }} onClose={() => { setEditing(false); reload(); }} onChanged={reload} />
+            </>
+          ) : <PrestationsEditor projectId={id} onSaved={reload} />}
+          <button type="button" className="mt-4 text-xs underline" onClick={() => setAdvanced(!advanced)}>{advanced ? t("Revenir au formulaire", "Back to the form") : t("Réglages avancés (délais, adresse, textes)", "Advanced settings (delays, address, texts)")}</button>
         </Modal>
       )}
       {moving && <MoveModal kind={data.kind} booking={moving} staff={r.staff} busy={busy === "move"} onClose={() => setMoving(null)} onSave={async (c) => { if (await act("move", { action: "move", number: moving.number, ...c }, t(`Réservation ${moving.number} déplacée.`, `Booking ${moving.number} moved.`))) setMoving(null); }} />}
