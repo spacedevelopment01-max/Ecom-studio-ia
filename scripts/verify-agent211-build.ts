@@ -44,7 +44,7 @@ type View=import('../src/lib/orchestrator/conversation/contract').ConversationVi
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
-let lastInputText='',imageHttpCalls=0,imageFailureAt=0;const imageRequests:unknown[]=[];let expectedImageReferences:string[]|null=null;
+let lastInputText='',imageHttpCalls=0,imageFailureAt=0;const imageRequests:unknown[]=[];let expectedImageReferences:string[]|null=null;let omitEditReviewOnce=false;
 const fake=http.createServer(async(req,res)=>{
   try{
     const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(Buffer.from(chunk));const raw=Buffer.concat(chunks),bytes=raw.toString('utf8');
@@ -62,7 +62,7 @@ const fake=http.createServer(async(req,res)=>{
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;let visionTokens=0;const counted=JSON.stringify(p,(_key,value)=>{if(value?.type==='image'&&value.source?.type==='base64'){/* Simulation conservative : les pixels coûtent des jetons visuels, pas un jeton pour chaque caractère base64. */visionTokens+=3400;return{type:'image',source:{type:'base64',media_type:value.source.media_type,data:'[octets retirés du comptage fictif]'}};}return value;});res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(counted.length/3)+visionTokens}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;const visionReview=JSON.stringify(p.system??'').includes('Tu juges UNE image');if(!visionReview)lastInputText=(p.messages??[]).flatMap((m:{content:unknown})=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.map((c:{text?:string})=>c.text??''):[]).join('\n');
     if(failureStatus){res.statusCode=failureStatus;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{type:'api_error',message:'Panne simulée, aucun appel fournisseur réel.'}}));return;}
-    const text=JSON.stringify(visionReview?(await import('../tests/image-v2-mock')).review(9,{personVisible:false,...(JSON.stringify(p.system??'').includes('sourceAltered')?{sourceAltered:false,requestedChangeApplied:true}:{})}):bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
+    const editReview=visionReview&&JSON.stringify(p.messages??[]).includes('sourceAltered'),omit=editReview&&omitEditReviewOnce;if(omit)omitEditReviewOnce=false;const text=JSON.stringify(visionReview?(await import('../tests/image-v2-mock')).review(9,{personVisible:false,...(editReview&&!omit?{sourceAltered:false,requestedChangeApplied:true}:{})}):bad?{...fixture,proposedChanges:[{field:'target',value:'Citation sans preuve',sourceId:'source-inexistante',quote:'Citation sans preuve — FOURNISSEUR SIMULÉ'}]}:fixture);
     res.setHeader('content-type','text/event-stream');res.setHeader('cache-control','no-cache');
     const event=(type:string,value:object)=>res.write(`event: ${type}\ndata: ${JSON.stringify({type,...value})}\n\n`);
     event('message_start',{message:{id:`fake-${providerCalls}`,type:'message',role:'assistant',model:p.model,content:[],stop_reason:null,stop_sequence:null,usage:{input_tokens:800,output_tokens:0}}});
@@ -221,7 +221,7 @@ try{
   }
   if(process.argv.includes('--images-ui')){
     const{verifyImagesBrowser}=await import('./verify-agent211-images-ui');
-    proof.imagesUi=await verifyImagesBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,failImageAfter:n=>{assert.ok(Number.isInteger(n)&&n>0);imageFailureAt=imageHttpCalls+n;},retouch:process.argv.includes('--retouches-ui'),expectImageReferences:refs=>{expectedImageReferences=refs;}});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;
+    proof.imagesUi=await verifyImagesBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;},input:()=>lastInputText,failImageAfter:n=>{assert.ok(Number.isInteger(n)&&n>0);imageFailureAt=imageHttpCalls+n;},retouch:process.argv.includes('--retouches-ui'),expectImageReferences:refs=>{expectedImageReferences=refs;},omitEditControl:()=>{assert.equal(omitEditReviewOnce,false);omitEditReviewOnce=true;}});proof.allSimulatedTotals=counts();proof.imageRequests=imageRequests;
   }
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){
