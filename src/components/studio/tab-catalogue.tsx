@@ -5,7 +5,7 @@
  * les boutiques connectées (Shopify, WooCommerce, PrestaShop) : envoi, mise à jour sans doublon, import des produits
  * existants. Règles et contrôles côté serveur (src/lib/products/).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Archive, Boxes, Eye, ImagePlus, Plug, Plus, RefreshCw, Download, Trash2, Unplug } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
@@ -33,6 +33,11 @@ export default function TabCatalogue() {
   const t = useT();
   const toast = useToast();
   const { data, reload } = useApi<View>(`/api/projects/${id}/products`);
+  useEffect(()=>{
+    const changed=(event:Event)=>{if(event instanceof CustomEvent&&event.detail?.projectId===id)void reload();};
+    window.addEventListener('studio:catalogue-changed',changed);
+    return()=>window.removeEventListener('studio:catalogue-changed',changed);
+  },[id,reload]);
   const [editing, setEditing] = useState<Product | "new" | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
