@@ -1,0 +1,485 @@
+{
+  "schema": "211-D10b1-verification-1",
+  "code": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D10b-full-prep": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:28:27.314908+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-videos-ui.ts": "1273f85b3d0c1600a69eeea084a3cda5273a57345a109addeaf77f2ad9f97ec9",
+        "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "e564f05eaee888e571304db6192d452923965bccea126fbdf51b7e35af9c118b",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "0c005189ce4312bd92f815db78ef5c694fdb980b64f29d1cf90b5caa6c2b8fa4",
+        "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-full-prep.log",
+      "pid": 1882489,
+      "processGroup": 1882489,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:40:19.054127+00:00",
+      "logSha256": "fd6066c74af80ec2bd9a8c527629d2bd0f8760b1aa865f94d411106187368a7f",
+      "sourceUnchanged": true
+    },
+    "D10b-types-prep": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:28:13.503587+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-videos-ui.ts": "1273f85b3d0c1600a69eeea084a3cda5273a57345a109addeaf77f2ad9f97ec9",
+        "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "e564f05eaee888e571304db6192d452923965bccea126fbdf51b7e35af9c118b",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "0c005189ce4312bd92f815db78ef5c694fdb980b64f29d1cf90b5caa6c2b8fa4",
+        "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-types-prep.log",
+      "pid": 1882368,
+      "processGroup": 1882368,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:28:38.322968+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D10b-preflight-final": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-approved-exactness.test.ts",
+        "tests/video-creation-rights.test.ts",
+        "tests/video-beginners-direct.test.ts",
+        "tests/video-mission-reliability.test.ts",
+        "tests/video-scenes.test.ts",
+        "tests/video-receipts-approval.test.ts",
+        "tests/conversation211-video-preview.test.ts",
+        "tests/conversation211-video-contract.test.ts",
+        "tests/conversation211-video-motion.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:27:40.488550+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "e564f05eaee888e571304db6192d452923965bccea126fbdf51b7e35af9c118b",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "0c005189ce4312bd92f815db78ef5c694fdb980b64f29d1cf90b5caa6c2b8fa4",
+        "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-preflight-final.log",
+      "pid": 1878881,
+      "processGroup": 1878881,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:27:57.654848+00:00",
+      "logSha256": "1c0435b9c722df9a396538ee168f93f7e10bd798b784b783785e3086866ce493",
+      "sourceUnchanged": true
+    },
+    "D10b-build-prep": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+      "startedAt": "2026-10-29T21:41:18.208760+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b-build-prep.log",
+      "pid": 1920273,
+      "processGroup": 1920273,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:42:18.446690+00:00",
+      "logSha256": "884990758af21c6b054af13e03c893bc51035de5133a900ce1acfe31fa20e655",
+      "sourceUnchanged": true
+    },
+    "D10b-browser-prep": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10b-browser-prep-proof",
+        "--videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+      "startedAt": "2026-10-29T21:42:41.734100+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b-browser-prep.log",
+      "pid": 1920784,
+      "processGroup": 1920784,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:45:09.420009+00:00",
+      "logSha256": "fa18b34b83351f254deb82575c981a389652ba62baf01ca2576c390c12051c8b",
+      "sourceUnchanged": true
+    },
+    "D10b-approved-postflight": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D10b-approved.mjs",
+        "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+        "D10b-browser-prep",
+        "D10b-browser-prep-proof",
+        "D10b-approved-postflight-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+      "startedAt": "2026-10-29T21:46:02.787186+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b-approved-postflight.log",
+      "pid": 1923108,
+      "processGroup": 1923108,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:46:04.616130+00:00",
+      "logSha256": "8ae9c3e1b003a1d2907f50e6cecefcb0a53bf301947133c4b7c404dc0ddf1e18",
+      "sourceUnchanged": true
+    },
+    "D10b-gallery-postflight": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D10b-gallery-painted.mjs",
+        "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+        "D10b-browser-prep",
+        "D10b-browser-prep-proof",
+        "D10b-gallery-postflight-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+      "startedAt": "2026-10-29T21:46:02.786959+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b-gallery-postflight.log",
+      "pid": 1923107,
+      "processGroup": 1923107,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:46:36.281587+00:00",
+      "logSha256": "1041fe8e0166f3a79aea3a2fe89f1d748e2d1cc68d6a55fa1ae172859c66b90e",
+      "sourceUnchanged": true
+    },
+    "D10b-error-postflight": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D10b-failure.mjs",
+        "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+        "D10b-browser-prep",
+        "D10b-browser-prep-proof",
+        "D10b-error-postflight-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+      "startedAt": "2026-10-29T21:49:23.902298+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b-error-postflight.log",
+      "pid": 1926090,
+      "processGroup": 1926090,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:49:27.087864+00:00",
+      "logSha256": "ce12e588802f3738c90aff904a0b804477b73fd43c52be6a8a3e75ae7cf2c792",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "cases": 4,
+    "success": true,
+    "newAiClips": 0,
+    "newAiVoices": 0,
+    "creativeQualityQualified": false
+  },
+  "screenshots": {
+    "final": 92,
+    "initialReuseInDiagnostics": 4,
+    "postflight": 18,
+    "totalRetained": 96
+  },
+  "recordings": [
+    {
+      "scene": "mono",
+      "file": "videos/mono.mp4",
+      "original": "sources-video/mono.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "805"
+          }
+        ],
+        "format": {
+          "duration": "32.200000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "805"
+          }
+        ],
+        "format": {
+          "duration": "32.200000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 402,
+          "meanAbsoluteRgbDifferenceOn255": 0.31697627314814814
+        },
+        {
+          "frame": 804,
+          "meanAbsoluteRgbDifferenceOn255": 0.11792028356481482
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "multi",
+      "file": "videos/multi.mp4",
+      "original": "sources-video/multi.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "867"
+          }
+        ],
+        "format": {
+          "duration": "34.680000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "867"
+          }
+        ],
+        "format": {
+          "duration": "34.680000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 433,
+          "meanAbsoluteRgbDifferenceOn255": 0.638787841796875
+        },
+        {
+          "frame": 866,
+          "meanAbsoluteRgbDifferenceOn255": 0.22024570041232638
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "services",
+      "file": "videos/services.mp4",
+      "original": "sources-video/services.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "765"
+          }
+        ],
+        "format": {
+          "duration": "30.600000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "765"
+          }
+        ],
+        "format": {
+          "duration": "30.600000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.2780867165242165
+        },
+        {
+          "frame": 382,
+          "meanAbsoluteRgbDifferenceOn255": 0.42209045584045585
+        },
+        {
+          "frame": 764,
+          "meanAbsoluteRgbDifferenceOn255": 0.12448628917378918
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "inedit",
+      "file": "videos/inedit.mp4",
+      "original": "sources-video/inedit.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "933"
+          }
+        ],
+        "format": {
+          "duration": "37.320000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "933"
+          }
+        ],
+        "format": {
+          "duration": "37.320000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 466,
+          "meanAbsoluteRgbDifferenceOn255": 0.3781124614197531
+        },
+        {
+          "frame": 932,
+          "meanAbsoluteRgbDifferenceOn255": 0.1265817901234568
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "nativeMp4Files": 12,
+  "localRenderer": "native full-size FFmpeg",
+  "simulated": "cognitive HTTP responses and explicit encoder failure only",
+  "totals": {
+    "providerHttpCalls": 20,
+    "textHttpCalls": 20,
+    "imageHttpCalls": 0,
+    "tokenCounts": 20,
+    "calls": 22,
+    "usage": 20,
+    "simulatedMicro": 158240
+  },
+  "pr": 243,
+  "scope": "approved-native-scenario-exactness-and-local-quote-detail-not-generative-syna",
+  "nativeApprovalApi": {
+    "fourActivities": true,
+    "negativeRequests": 20,
+    "positiveExactScenarios": 4,
+    "providerCalls": 0,
+    "worker": false,
+    "previous12Mp4Unchanged": true
+  },
+  "errorReopenedWithoutWorker": {
+    "success": true,
+    "previousMp4Downloads": 3,
+    "noProvider": true
+  }
+}

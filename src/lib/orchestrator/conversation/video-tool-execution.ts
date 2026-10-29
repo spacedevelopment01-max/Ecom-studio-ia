@@ -12,6 +12,7 @@ import {stateOf}from '../../preparation/store';
 import {latestVideo,listVideoVersions,restoreVideoVersion,saveVideoVersion}from '../../video-v2/store';
 import {renderLatest}from '../../video-v2/engine';
 import {timeline}from '../../video-v2/doc';
+import {videoQuoteSummary}from '../../video-v2/quote-summary';
 import {videoDelivery}from '../../media/delivery-check';
 import {communicationStrategy}from '../../marketing-strategy';
 import {ownedConversation,metaOf}from './store';
@@ -40,7 +41,7 @@ function recheck(u:User,cid:string,pid:string,m:Saved,running=false){const{c}=ow
  if(running){if(!target||![m.targetVersionId,m.renderedVersionId].includes(target.version.id))throw new HttpError(409,L('La vidéo a été modifiée pendant cette tâche. Aucun écrasement.','The video changed during this job. No overwrite.'));}
  else if(m.prepared.current){const current=latestVideo(pid,m.prepared.current.docKey);if(!current||current.version.id!==m.prepared.current.id)throw new HttpError(409,L('La vidéo à modifier n’est plus la version relue.','The video to edit is no longer the reviewed version.'));}
 }
-function videoSummary(doc:Prepared['doc']){return{durationS:timeline(doc).total,music:doc.audio.music?.source==='synth'?doc.audio.music.mood:doc.audio.music?'library':'none',voice:doc.audio.voice.some(v=>v.assetId),scenes:doc.clips.map((c,i)=>({index:i+1,label:c.label,durationS:c.durationS,media:c.source.kind==='image'||c.source.kind==='video'?{kind:c.source.kind,href:assetUrl({id:c.source.assetId})}:null,overlayImages:c.overlays.flatMap(l=>l.kind==='image'&&l.assetId?[{href:assetUrl({id:l.assetId}),label:l.name}]:[]),text:c.overlays.flatMap(l=>(l.kind==='text'||l.kind==='button')?[l.text]:[])}))};}
+const videoSummary=(doc:Prepared['doc'])=>videoQuoteSummary(doc,assetId=>assetUrl({id:assetId}));
 function renderIdentity(prepared:Prepared){const{source,createdFrom,runId,marketingStrategy,...meta}=prepared.doc.meta;return stableHash('agent-video-render-identity-1',{doc:{...prepared.doc,meta},pins:prepared.pins,strategy:prepared.strategy,scope:prepared.scope});}
 function publicQuote(m:Saved){return{id:m.id,tool:m.prepared.plan.tool,instruction:m.prepared.instruction,plan:m.prepared.plan,before:m.prepared.before?videoSummary(m.prepared.before):null,after:videoSummary(m.prepared.doc),durationS:timeline(m.prepared.doc).total,aspect:m.prepared.doc.aspect,estimatePct:0,maximumPct:0,maximumCalls:0,expiresAt:m.expiresAt,reused:!!m.reusedFrom,confirmationRequired:true,actionsExecuted:false,effect:L('Montage local des médias acquis, sans nouvel appel IA. La réflexion de SYNA est devisée séparément. Le rendu reste provisoire et à vérifier ; aucune voix ni scène filmée n’est générée. Les versions antérieures restent conservées.','Local editing of acquired media without a new AI call. SYNA reasoning is quoted separately. The render remains provisional for review; no voice or filmed scene is generated. Previous versions are kept.')};}
 export function quoteVideoCreation(u:User,cid:string,cmd:Extract<VideoToolCommand,{action:'quote'}>){return tx(()=>{

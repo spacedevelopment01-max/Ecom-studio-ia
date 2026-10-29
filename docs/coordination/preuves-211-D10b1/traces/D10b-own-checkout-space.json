@@ -1,0 +1,11 @@
+{
+  "checkout": "/workspace/reviews/ecom-211-lot-d-outils",
+  "head": "5427f9838cca463995918833ea5ad114df435491",
+  "inactiveOwnReviewCheckoutOnly": true,
+  "baselineReportFilesVerifiedAgainstGit": 3382,
+  "untrackedOrIgnoredReports": 0,
+  "sourcesCheckedUnchanged": 2353,
+  "reversibleSparseExclusion": "/reports/",
+  "restore": "git sparse-checkout disable",
+  "clientDataOrUniqueProofDeleted": false
+}

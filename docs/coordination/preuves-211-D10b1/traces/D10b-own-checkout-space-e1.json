@@ -1,0 +1,11 @@
+{
+  "checkout": "/workspace/reviews/ecom-211-lot-e1-composition",
+  "head": "26c082bf8e4f92878909b27eafb2be0f39053660",
+  "inactiveOwnReviewCheckoutOnly": true,
+  "baselineReportFilesVerifiedAgainstGit": 3382,
+  "untrackedOrIgnoredReports": 0,
+  "sourcesCheckedUnchanged": 2365,
+  "reversibleSparseExclusion": "/reports/",
+  "restore": "git sparse-checkout disable",
+  "clientDataOrUniqueProofDeleted": false
+}

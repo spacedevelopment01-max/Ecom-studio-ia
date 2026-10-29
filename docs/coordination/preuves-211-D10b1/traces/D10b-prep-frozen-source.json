@@ -1,0 +1,18 @@
+{
+  "base": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+  "branch": "codex/211-lot-d10b-clips-voix",
+  "files": {
+    "scripts/verify-agent211-videos-ui.ts": "1273f85b3d0c1600a69eeea084a3cda5273a57345a109addeaf77f2ad9f97ec9",
+    "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+    "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+    "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+    "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+    "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+    "src/lib/video-v2/three-scenes.ts": "e564f05eaee888e571304db6192d452923965bccea126fbdf51b7e35af9c118b",
+    "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+    "tests/video-approved-exactness.test.ts": "0c005189ce4312bd92f815db78ef5c694fdb980b64f29d1cf90b5caa6c2b8fa4",
+    "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+  },
+  "workerSha256": "981988a6da0a27e0245052b475c061c9cd4b11a486698a5aa28bce8f3dfbd288",
+  "realProviderCalls": 0
+}

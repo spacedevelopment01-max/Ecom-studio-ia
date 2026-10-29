@@ -1,0 +1,206 @@
+[
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:24:58.241841+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "6957e6921e03018463afcb2f116dee6fd97db7c439c31223975a9b72eba1f8dd",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "d92f2ec2a8cbe599bb75101de1b662e1fda127818654e6978449c04d6825cb4a",
+        "tests/video-approved-exactness.test.ts": "d7a4008531fa51d0aeed263e8c1c255597d36f09660bba8df278e0d8e047a366"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-types-first.log",
+      "pid": 1874176,
+      "processGroup": 1874176,
+      "exitCode": 2,
+      "finishedAt": "2026-10-29T21:25:27.733796+00:00",
+      "logSha256": "deef4c95821ce670e611fd0941b0b43e62583a360d42ed7978c0f4eadd253cbc",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-approved-exactness.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:23:25.540321+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/video-approved-exactness.test.ts": "d7a4008531fa51d0aeed263e8c1c255597d36f09660bba8df278e0d8e047a366"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-approved-exact-red.log",
+      "pid": 1871412,
+      "processGroup": 1871412,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T21:23:32.390854+00:00",
+      "logSha256": "57df162777e60f88f3bf5c0c127c3a5eec12b85642672b84b1f4e82397e99a8c",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-approved-exactness.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:27:09.685792+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "5af7efb305515e6ab80cc0656c201ac26e03fffc77738a2cac2ee7138c37af1c",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "0c005189ce4312bd92f815db78ef5c694fdb980b64f29d1cf90b5caa6c2b8fa4",
+        "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-approved-duration-red.log",
+      "pid": 1878672,
+      "processGroup": 1878672,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T21:27:14.930849+00:00",
+      "logSha256": "08b03359ff319547434047559693ccc24ef244673f036ee05d1a11a29ea5a29d",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-approved-exactness.test.ts",
+        "tests/video-beginners-direct.test.ts",
+        "tests/video-mission-reliability.test.ts",
+        "tests/video-receipts-approval.test.ts",
+        "tests/video-scenes.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:24:02.139271+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "b9750e697bee9a02cdba64e539c5b01c1f6e21f80f7dcf79863f64b184a24dfe",
+        "src/lib/video-v2/three-scenes.ts": "d92f2ec2a8cbe599bb75101de1b662e1fda127818654e6978449c04d6825cb4a",
+        "tests/video-approved-exactness.test.ts": "d7a4008531fa51d0aeed263e8c1c255597d36f09660bba8df278e0d8e047a366"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-approved-exact-green.log",
+      "pid": 1871878,
+      "processGroup": 1871878,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:24:13.057798+00:00",
+      "logSha256": "6fce51c5d121d40c4bc0323399604325e2b3cb529219c21cd67dc74426714531",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-preview.test.ts",
+        "tests/conversation211-video-contract.test.ts",
+        "tests/conversation211-video-motion.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:25:38.055102+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "6957e6921e03018463afcb2f116dee6fd97db7c439c31223975a9b72eba1f8dd",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "d92f2ec2a8cbe599bb75101de1b662e1fda127818654e6978449c04d6825cb4a",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "d7a4008531fa51d0aeed263e8c1c255597d36f09660bba8df278e0d8e047a366"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-preview-targeted.log",
+      "pid": 1874297,
+      "processGroup": 1874297,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:25:51.312194+00:00",
+      "logSha256": "c175291317083f4ae35dbb221ddeb9ff042046368f212c5a58ea043c918446d8",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-approved-exactness.test.ts",
+        "tests/video-creation-rights.test.ts",
+        "tests/video-beginners-direct.test.ts",
+        "tests/video-mission-reliability.test.ts",
+        "tests/conversation211-video-preview.test.ts",
+        "tests/conversation211-video-contract.test.ts",
+        "tests/conversation211-video-motion.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b-video",
+      "head": "ab32ffcec753a35f2213990aebecbb39756cbaf9",
+      "startedAt": "2026-10-29T21:26:36.757052+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/creative/video/route.ts": "9649fd9dc1b6deb8a8f02d6d4f7b0fb8fbdacf5b64f25148430a4734ffaf5a49",
+        "src/components/studio/conversation-video-preview.tsx": "ca5c21c12627cb885d68b418d407673929ebab83b36c303b9aecf154553a1ea5",
+        "src/components/studio/conversation-video-tools.tsx": "dcf595a752fc2bfdec369301a0af58cdde23c8342397528144076a229a793ec2",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+        "src/lib/video-v2/quote-summary.ts": "665ddc6ce6955c09c367bdd8a8a0ed56eb8d9fbf9301ace8fb03a961111cc74a",
+        "src/lib/video-v2/three-scenes.ts": "5af7efb305515e6ab80cc0656c201ac26e03fffc77738a2cac2ee7138c37af1c",
+        "tests/conversation211-video-preview.test.ts": "8e7bb3d9728a367c7a56b242eaef7c6e75709983ef9a3a563fd732bf416163c9",
+        "tests/video-approved-exactness.test.ts": "2cdf77924327a63e5a06cc1c706e7b82dc33b96a0a67cafb60cd02e2d8e9e02d",
+        "tests/video-creation-rights.test.ts": "3dcc4f4477433abf7cc202fb59093d7a5d8ab0b977f24a773c6eb2a47dfc52b2"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b-targeted-exact-ui.log",
+      "pid": 1875701,
+      "processGroup": 1875701,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T21:26:51.720920+00:00",
+      "logSha256": "a92240580dddaaba309c786fb1f4f76bcb741a71e86f569fd759cd9eef2d0faa",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  }
+]
