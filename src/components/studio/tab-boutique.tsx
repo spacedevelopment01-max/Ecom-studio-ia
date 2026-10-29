@@ -3,7 +3,7 @@ import { TimeInfo } from "../wait-time";
 import type { ThemeRecommendationContract } from "@/lib/theme/theme-recommendation";
 import type { StoreKindVerdict } from "@/lib/theme/store-kind";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Globe, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
 import { useCostConfirm } from "./cost-confirm";
@@ -13,6 +13,7 @@ const ThemeImportModal = dynamic(() => import("./theme-import").then((m) => m.Th
 const SectionLibrary = dynamic(() => import("./section-library").then((m) => m.SectionLibrary), { ssr: false });
 const PagesManager = dynamic(() => import("./pages-manager").then((m) => m.PagesManager), { ssr: false });
 const ThemeGallery = dynamic(() => import("./theme-gallery").then((m) => m.ThemeGallery), { ssr: false });
+const SitePublication = dynamic(() => import("./site-publication").then((m) => m.SitePublication), { ssr: false });
 import { AssetThumb, JobProgress, MediaPicker, useActive, type AssetView } from "./common";
 import type { LibraryItem } from "./section-library";
 import { SortableList } from "./sortable";
@@ -178,6 +179,7 @@ export default function TabBoutique() {
   const [sending, setSending] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   // Thème choisi dans la galerie (après la démo) : une fois appliqué, on guide le client vers ce qui manque à SON projet.
   const [chosenTheme, setChosenTheme] = useState<string | null>(null);
@@ -686,7 +688,10 @@ export default function TabBoutique() {
           {discovery ? (
             <a href="/studio/compte#forfaits" className="plan-sparkle inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-signal px-3 text-xs font-semibold text-signal-ink"><Lock className="size-3.5" aria-hidden /> {t("Choisir un forfait pour publier", "Choose a plan to publish")}</a>
           ) : (
+            <>
+            {isServices && <button onClick={() => setPublishOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Publier votre site", "Publish your site")} data-open-site-publication><Globe className="size-4" aria-hidden /><span className="sr-only">{t("Publier votre site", "Publish your site")}</span></button>}
             <button onClick={() => setExportOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={data && isPlatform(data.project.platform) ? t(`Exporter pour ${platformInfo(data.project.platform, data.business, t).short}`, `Export for ${platformInfo(data.project.platform, data.business, t).short}`) : t("Exporter", "Export")}><Download className="size-4" aria-hidden /><span className="sr-only">{t("Exporter et installer", "Export and install")}</span></button>
+            </>
           )}
           {src && !discovery && <a href={src} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Ouvrir dans un onglet", "Open in a new tab")}><ExternalLink className="size-4" /></a>}
         </div>
@@ -760,6 +765,7 @@ export default function TabBoutique() {
       <SectionLibrary open={!!libTarget} onClose={() => setLibTarget(null)} items={theme.library} onPick={addSection} where={libTarget?.label ?? ""} busy={adding} projectId={id} versionId={theme.current.versionId} template={libTarget?.template} aiAvailable={!!data?.ai.llm} onGenerate={generateSection} generateLocked={!!custom.data && !custom.data.sectionsAllowed} sameOrigin={!!theme.sandbox?.includes("allow-same-origin")} onOpenExisting={(type) => { const hit = cur.structure.flatMap((tp) => tp.sections.map((x) => ({ template: tp.template, section: x }))).find((x) => x.section.type === type); setLibTarget(null); if (!hit) return toast("info", t("Ce composant n'est pas présent dans ce thème.", "This component is not present in this theme.")); const target = pages.find((pg) => pageTemplate(pg.path, theme) === hit.template); if (target && !hit.template.startsWith("group:")) setPage(target.path); setLayoutOpen(false); setSettingsFor({ template: hit.template, section: hit.section.id }); setView("structure"); }} />
       <ThemeGallery recommendation={theme.recommendation} onKindChanged={() => reload()} services={isServices} sandbox={theme.sandbox} open={galleryOpen} onClose={() => setGalleryOpen(false)} projectId={id} directions={theme.directions} current={cur.direction} canApply onApplied={(direction) => { setChosenTheme(direction); setView("structure"); reload(); reloadProject(); }} />
       {pagesOpen && <PagesManager open onClose={() => setPagesOpen(false)} projectId={id} sandbox={theme.sandbox} onOpenPage={(path) => (setPage(path), setView("preview"))} onChanged={() => reload()} />}
+      {publishOpen && <SitePublication open onClose={() => setPublishOpen(false)} projectId={id} />}
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} projectId={id} versionId={versionId} fingerprint={cur.fingerprint} platform={data && isPlatform(data.project.platform) ? data.project.platform : "shopify"} business={data?.business ?? "products"} hasProductTemplates={!!cur.products?.some((p) => p.template_suffix)} />
     </div>
   );

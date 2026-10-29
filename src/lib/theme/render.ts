@@ -109,6 +109,11 @@ export type PreviewOptions = {
   injectStudioTools?: boolean;
   /** `request.design_mode` (aperçu de la bibliothèque : emplacements d'application montrés comme dans l'éditeur). */
   designMode?: boolean;
+  /**
+   * Site publié par le studio (#232) : adresse publique du site (« https://atelier.sites.exemple.fr »). Sans elle, rendu
+   * d'aperçu inchangé ; avec elle, ni balise noindex, ni articles « Exemple », ni hôte « apercu », URL canonique absolue.
+   */
+  publicOrigin?: string;
 };
 
 type ImageObj = { src: string; width: number; height: number; alt: string; id: string; aspect_ratio: number; media_type: "image" };
@@ -848,21 +853,21 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
     metaobject,
     blog: { title: "Journal", articles: [], url: `${opts.base}/blogs/journal` },
     // Articles « Exemple » pour l'aperçu du studio uniquement (section featured-blog) ; jamais dans le thème exporté.
-    blogs: sampleBlogs(opts.spec, opts.base, lang),
+    blogs: opts.publicOrigin ? {} : sampleBlogs(opts.spec, opts.base, lang),
     article: null,
     search: { performed: !!q, terms: q, results, results_count: results.length },
     recommendations: { performed: store.recommendations.length > 0, products: store.recommendations, products_count: store.recommendations.length },
     all_products: Object.fromEntries(store.products.map((p: any) => [p.handle, p])),
     __purchaseTargets: purchaseTargetHandles(opts.spec),
     customer: null,
-    request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: "", design_mode: !!opts.designMode, path: pathname, host: "apercu" },
+    request: { page_type: tplKey.split(".")[0], locale: { iso_code: lang }, origin: opts.publicOrigin ?? "", design_mode: !!opts.designMode, path: pathname, host: opts.publicOrigin ? new URL(opts.publicOrigin).host : "apercu" },
     template: { name: tplKey.split(".")[0], suffix: tplKey.includes(".") ? tplKey.split(".")[1] : null, directory: null },
-    canonical_url: `${opts.base}${pathname}`,
+    canonical_url: `${opts.publicOrigin ?? opts.base}${pathname}`,
     page_title: pageTitle,
     page_description: seoDescription ?? (tplKey === "product" || tplKey.startsWith("product.") ? store.product.description : opts.spec.store.product.description_html).replace(/<[^>]+>/g, " ").slice(0, 160),
     page_image: null,
     // Objet global attendu par les scripts des thèmes Shopify (Dawn : global.js, cart, animations).
-    content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"${lang}",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:"apercu",theme:{name:"${pick(lang, "aperçu", "preview")}"}};</script>`,
+    content_for_header: `<script>window.Shopify=window.Shopify||{designMode:false,locale:"${lang}",country:"FR",currency:{active:"EUR",rate:"1.0"},routes:{root:"${opts.base}/"},shop:${opts.publicOrigin ? JSON.stringify(new URL(opts.publicOrigin).host).replace(/</g, "\\u003c") : '"apercu"'},theme:{name:"${opts.publicOrigin ? "site" : pick(lang, "aperçu", "preview")}"}};</script>`,
     current_page: 1,
     current_tags: null,
     additional_checkout_buttons: false,
@@ -889,8 +894,8 @@ export async function renderPage(opts: PreviewOptions, pathname: string, search:
   const layoutName = typeof template.layout === "string" ? template.layout : "theme";
   const layoutSrc = files.get(`layout/${layoutName}.liquid`) ?? files.get("layout/theme.liquid")!;
   let html = await ctxRender(layoutSrc, `layout/${layoutName}.liquid`, { content_for_layout: content });
-  // Aperçu du studio : page privée, jamais indexée (le thème exporté vers la plateforme n'a pas cette balise).
-  html = html.replace("</head>", '<meta name="robots" content="noindex, nofollow"></head>');
+  // Aperçu du studio : page privée, jamais indexée (le thème exporté vers la plateforme n'a pas cette balise, le site publié non plus).
+  if (!opts.publicOrigin) html = html.replace("</head>", '<meta name="robots" content="noindex, nofollow"></head>');
   // Remplacement par fonction : le code des sections peut contenir « $$ » ou « $' », motifs spéciaux de String.replace.
   if (collected.css.length) html = html.replace("</head>", () => `<style data-section-styles>${collected.css.join("\n")}</style></head>`);
   if (collected.js.length) html = html.replace("</body>", () => `<script>${collected.js.join("\n")}</script></body>`);
