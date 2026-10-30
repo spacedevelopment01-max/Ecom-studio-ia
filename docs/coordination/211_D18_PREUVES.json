@@ -1,0 +1,55 @@
+{
+  "schema": "211-D18-proof-1",
+  "applicationCommit": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+  "parentDelivery": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+  "transport": "native SDK/worker/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "targeted": {
+    "initialFinal": {
+      "tests": 162,
+      "files": 7
+    },
+    "mockBlogCorrection": {
+      "tests": 30,
+      "files": 2,
+      "overlapWithPrevious": true
+    }
+  },
+  "browser": {
+    "cases": 3,
+    "widths": [
+      1440,
+      1024,
+      390,
+      360
+    ],
+    "mainFilmSeconds": 11.76,
+    "finalFixtureAddedAfterApplicationFreeze": true,
+    "compilationReused": true
+  },
+  "ci": "required_on_final_delivery_not_yet_observed",
+  "files": {
+    "docs/coordination/preuves-211-D18/01-devis-mobile.png": {
+      "bytes": 83689,
+      "sha256": "f3aace7cd65ec557f0f168d6bbbdcf47baf0ca2ad98bfa26dbc8b250c0951981"
+    },
+    "docs/coordination/preuves-211-D18/checks.json": {
+      "bytes": 6262,
+      "sha256": "df3caaf11ab1bbd589f6e44aeb110b42415b6d8bf83a638f5202016991f01ba9"
+    },
+    "docs/coordination/preuves-211-D18/blog-native-proof.json": {
+      "bytes": 4983,
+      "sha256": "7bcf8b5a8bce0d161b5b08f8dacebb103c72c3154d1690cdccf550586557ecd1"
+    },
+    "docs/coordination/preuves-211-D18/blog-natif.mp4": {
+      "bytes": 1519363,
+      "sha256": "e5e2774b6480644b1d385c19911cfdcb1b77d3e52b014d386f5858de43ce8bf2"
+    },
+    "docs/coordination/preuves-211-D18/02-blog-natif-ordinateur.png": {
+      "bytes": 228020,
+      "sha256": "118e302fc52dda0824add7b6bf31b259be8522e577b4fa5e6d554528774d6887"
+    }
+  }
+}

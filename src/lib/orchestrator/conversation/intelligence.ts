@@ -33,6 +33,8 @@ import {validateVideoToolProposal}from './video-tool-validation';
 import {validateCatalogueProposal} from './catalogue-tool-validation';
 import {validateImageToolProposal} from './image-tool-validation';
 import {validateBrandCorrectionEvidence} from './brand-review-contract';
+import {validateBlogEvidence} from './blog-tool-contract';
+import {conversationBlogEnabled} from './tool-flags';
 import {brandReceipt,brandNativeInputMatches} from './brand-tool-execution';
 
 export const intelligenceEnabled = () => process.env.STUDIO_CONVERSATION_AI === '1';
@@ -70,7 +72,7 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
   if (!activeProviderKey(route.provider as Parameters<typeof activeProviderKey>[0])) throw new HttpError(409, L('Le fournisseur de cette route est indisponible. Aucun repli inférieur ni appel n’a été lancé.', 'The provider for this route is unavailable. No lower-quality fallback or request was started.'), 'conversation_ai_unavailable');
   requirePrice(route.provider, route.model);
   call.expectedRoute = { provider: route.provider, model: route.model, ...(route.effort ? { effort: route.effort } : {}) };
-  const tokens = strictTextQuoteInput(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled(),!!c.project_id&&conversationBrandReviewEnabled()));
+  const tokens = strictTextQuoteInput(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled(),!!c.project_id&&conversationBrandReviewEnabled(),!!c.project_id&&conversationBlogEnabled()));
   const cap = callCostBoundMicro(route.provider, route.model, tokens.maximumTokens, 6000, route.effort ?? null);
   const estimate = estimateCallMicro(route.provider, route.model, tokens.typicalTokens, 1200);
   if (cap == null || estimate == null || cap <= 0 || !Number.isSafeInteger(cap)) throw new HttpError(409, L('Tarif ou plafond inconnu : aucun appel autorisé.', 'Unknown price or bound: no request authorized.'), 'conversation_ai_price_missing');
@@ -149,6 +151,7 @@ export function intelligenceView(c: ConversationRow): IntelligenceView {
 }
 
 function validateReply(reply: CognitiveReply, c: ConversationRow, context: ReturnType<typeof cognitiveContext>) {
+  if(reply.blogPlan){if(!conversationBlogEnabled())throw Error('blog_draft_disabled');validateBlogEvidence(reply.blogPlan,context.context.lastClientRequest);}
   if(reply.brandCorrection){if(!conversationBrandReviewEnabled())throw Error('brand_correction_disabled');validateBrandCorrectionEvidence(reply.brandCorrection,context.context.lastClientRequest);const u=one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,r=brandReceipt(u,c.id,reply.brandCorrection.candidateId);if(!r.delivered||r.output?.source!=='native_version'||r.output.identity.identityConfirmed||!brandNativeInputMatches(u,c.id,r.id))throw Error('brand_correction_candidate_changed');}
   if(reply.voicePlan){if(!conversationVideoVoiceEnabled())throw new Error('video_voice_disabled');validateVoiceProposal(c,reply.voicePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if(reply.socialPlan){if(!conversationSocialEnabled())throw new Error('social_prepare_disabled');validateSocialProposal(c,reply.socialPlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
@@ -197,7 +200,7 @@ export async function runCognitiveJob(ctx: JobContext) {
     if(plan.boundId&&!specialistsEnabled()&&!acquired)throw new HttpError(404,'conversation_specialists_disabled');
     return scoped(c, user.id, key, () => runForUser(user.id, () => scoped(c, user.id, key, () => withTrace({ jobId: ctx.job.id, projectId: c.project_id, step: 'conversation', costCapMicro: plan.capMicro,...(plan.boundId?{agentBoundId:plan.boundId}:{}) }, () => withSpecialistPlan(plan.boundId?c.project_id:null,user.id,ctx.job.id,plan.role??'principal',async () => {
       const call = { ...plan.call, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dialogue`, acquiredOnly: acquired };
-      const raw = await llmJson(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled(),!!c.project_id&&conversationBrandReviewEnabled()), { strict: true });
+      const raw = await llmJson(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled(),!!c.project_id&&conversationBrandReviewEnabled(),!!c.project_id&&conversationBlogEnabled()), { strict: true });
       const reply = CognitiveReplySchema.parse(raw); validateReply(reply, c, cognitiveContext(c));
       return { reply, sourceRevision: q.revision, projectRevision: q.project_revision, quoteId: q.id };
     }))), 'normal', c.project_id));
