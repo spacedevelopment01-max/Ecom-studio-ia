@@ -13,6 +13,9 @@ import {balance} from '@/lib/billing';
 import {themeToolContext,themeTargetPaths} from '@/lib/orchestrator/conversation/theme-tool-context';
 import {saveAsset} from '@/lib/library';
 import sharp from 'sharp';
+import Database from 'better-sqlite3';
+import * as Jobs from '@/lib/jobs';
+import {db} from '@/lib/db';
 beforeEach(()=>{for(const key of ['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS'])vi.stubEnv(key,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Aucun réseau D2');}));});
 afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();vi.restoreAllMocks();});
 async function fixture(business:'products'|'services'='products'){
@@ -26,6 +29,28 @@ async function fixture(business:'products'|'services'='products'){
   return{u,pid,c,send,plan,quote,confirm,replacement,initial:cur};
 }
 async function finish(){const j=claimNext(['agent.theme.change'])!;const result=await runThemeChange(new JobContext(j));completeJob(j.id,result);return{j,result};}
+it.each(['edit','undo'] as const)('lit un reçu cohérent si le worker finit entre lecture du devis et lecture du job (%s)',async kind=>{
+ const f=await fixture('services'),first=f.quote();f.confirm(first.id);
+ let qid=first.id;
+ if(kind==='undo'){await finish();const original=themeChangeReceipt(f.u,f.c.id,qid),q=quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:qid,currentVersionId:original.version!.id});qid=q.id;f.confirm(qid);}
+ const key=`agent.theme.tool.${qid}`,before=one<{value:string}>('SELECT value FROM memory WHERE project_id=? AND key=?',f.pid,key)!.value,jid=JSON.parse(before).jobId as string,pending=Jobs.getJob(jid)!;
+ await finish();const completed=Jobs.getJob(jid)!,after=one<{value:string}>('SELECT value FROM memory WHERE project_id=? AND key=?',f.pid,key)!.value,versions=all('SELECT id FROM theme_versions WHERE project_id=?',f.pid);
+ run('UPDATE memory SET value=? WHERE project_id=? AND key=?',before,f.pid,key);
+ run('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?',pending.status,pending.progress,pending.result,pending.message,pending.finished_at,jid);
+ const writer=new Database(db().name),actualGetJob=Jobs.getJob;
+ try{
+  vi.spyOn(Jobs,'getJob').mockImplementationOnce(id=>{
+   expect(id).toBe(jid);
+   // Une autre connexion WAL, comme le worker : commit atomique pendant la lecture HTTP.
+   writer.transaction(()=>{writer.prepare('UPDATE memory SET value=? WHERE project_id=? AND key=?').run(after,f.pid,key);writer.prepare('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?').run(completed.status,completed.progress,completed.result,completed.message,completed.finished_at,jid);})();
+   return actualGetJob(id);
+  });
+  const inFlight=themeChangeReceipt(f.u,f.c.id,qid);
+  expect(inFlight).toMatchObject({state:'queued',recorded:false,delivered:false,job:{status:'queued'}});
+  expect(themeChangeReceipt(f.u,f.c.id,qid)).toMatchObject({state:'delivered',recorded:true,delivered:true,kind});
+  expect(all('SELECT id FROM theme_versions WHERE project_id=?',f.pid)).toEqual(versions);expect(all('SELECT id FROM ai_calls WHERE project_id=?',f.pid)).toHaveLength(0);expect(fetch).not.toHaveBeenCalled();
+ }finally{writer.close();vi.restoreAllMocks();}
+});
 describe('#211 D2 — retouche exacte et annulation depuis SYNA',()=>{
   it.each(['products','services']as const)('modifie une vraie version puis annule sans appel IA ni perte (%s)',async business=>{
     const f=await fixture(business),before=balance(f.u.id),q=f.quote();expect(q.costPct).toBe(0);expect(q.confirmationRequired).toBe(true);expect(q.changes[0].after).toBe(f.replacement);expect(currentTheme(f.pid)!.version.id).toBe(f.initial.version.id);

@@ -1,7 +1,7 @@
 import {conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
-import { id, json, now, one, run, tx } from "../../db";
+import { id, json, now, one, run, tx, readSnapshot } from "../../db";
 import { stableHash } from "../../brain/hash";
 import { remember } from "../../projects";
 import { pendingSubscriptions } from "../../project-billing";
@@ -40,6 +40,7 @@ function effective(c: ConversationRow) {
   return { brief, revision, meta, status };
 }
 export function conversationView(user: User, cid: string, before?: number,includeStudioHelp=true): ConversationView {
+ const {view,c,readOnlyReason}=readSnapshot(()=>{
   const c = ownedConversation(user, cid), { brief: b, revision, meta: m, status } = effective(c);
   const key = nextQuestion(b, m);
   let readOnlyReason:string|null=null;
@@ -78,8 +79,12 @@ export function conversationView(user: User, cid: string, before?: number,includ
     view.progress = !b.input.description ? 'describe' : m.business ? 'collect' : 'clarify';
   }
   if(c.project_id&&strategyChoicesEnabled())view.strategyChoices=strategyChoicesView(c,m);
-  if(includeStudioHelp&&studioKnowledgeEnabled())view.studioHelp={observation:captureStudioObservation(c),capabilities:studioOperationCatalogue(c.project_id,!readOnlyReason)};
-  return view;
+  return {view,c,readOnlyReason};
+ });
+ // Ce relevé possède sa transaction native et peut régulariser une période budgétaire.
+ // Il reste hors du snapshot de lecture pour ne pas tenter de convertir un ancien lecteur WAL en écrivain.
+ if(includeStudioHelp&&studioKnowledgeEnabled())view.studioHelp={observation:captureStudioObservation(c),capabilities:studioOperationCatalogue(c.project_id,!readOnlyReason)};
+ return view;
 }
 function setUnknown(b: Brief, m: ConversationState, key: QuestionKey) {
   const factKey = `conversation.${key}`;

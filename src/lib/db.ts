@@ -1301,6 +1301,13 @@ export function tx<T>(fn: () => T): T {
   return db().transaction(fn).immediate();
 }
 
+/** Lecture synchrone cohérente entre tables pendant les commits du worker.
+ * DEFERRED conserve le snapshot WAL sans réserver le verrou d'écriture IMMEDIATE.
+ */
+export function readSnapshot<T>(fn: () => T): T {
+  return db().transaction(fn).deferred();
+}
+
 export function json<T = any>(v: string | null | undefined, fallback: T): T {
   if (!v) return fallback;
   try {
