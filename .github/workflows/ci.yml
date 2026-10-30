@@ -242,6 +242,28 @@ jobs:
           path: /tmp/agent211-D11a-proof
           if-no-files-found: warn
 
+      - name: Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11b-proof --campaign-ui
+
+      - name: Preuves des brouillons de campagne natifs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D11b-${{ github.sha }}
+          path: /tmp/agent211-D11b-proof
+          if-no-files-found: ignore
+
+      - name: Version confirmée des productions sociales et réemploi natif (zéro appel fournisseur)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-social-production211-build.ts /tmp/agent211-D11c-proof
+
+      - name: Preuves des protections de production sociale
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D11c-${{ github.sha }}
+          path: /tmp/agent211-D11c-proof
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest
@@ -272,14 +294,3 @@ jobs:
       - name: Journaux du conteneur
         if: always()
         run: docker logs studio 2>&1 | tail -80 || true
-
-      - name: Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)
-        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11b-proof --campaign-ui
-
-      - name: Preuves des brouillons de campagne natifs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: agent-D11b-${{ github.sha }}
-          path: /tmp/agent211-D11b-proof
-          if-no-files-found: ignore

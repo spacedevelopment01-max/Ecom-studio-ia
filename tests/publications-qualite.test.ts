@@ -491,4 +491,11 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
       checks: 3,
     });
   });
+  it('contexte changé après image : aucun QC envoyé ni faux reçu ; retour au contexte exact réemploie image et rédaction',async()=>{
+    const {p,ref}=await setup(),{d,calls}=deps();let changed=false;const generate=d.generate;d.generate=async(...args)=>{const data=await generate(...args);changed=true;return data;};d.beforeDispatch=()=>{if(changed)throw Error('Texte client modifié ; aucun envoi.');};
+    const options={aspect:'4:5' as const,maxCostEur:1,reference:ref.id},first=await designPostWithAi(p,post,options,d);expect(first.assetId).toBeNull();expect(first.costMicro).toBe(100);expect(calls).toMatchObject({copy:1,images:1,review:0});
+    const {all}=await import('@/lib/db');expect(all<{key:string}>("SELECT key FROM memory WHERE project_id=? AND key LIKE 'publication.stage.%:review'",p.id)).toHaveLength(0);
+    changed=false;const restored=await designPostWithAi(p,post,options,d);expect(restored.assetId).toBeTruthy();expect(calls).toMatchObject({copy:1,images:1,review:1});expect(getAsset(restored.assetId!)).toBeTruthy();
+  });
+
 });

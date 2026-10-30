@@ -1,3 +1,5 @@
+import {nativeSocialSubject}from './native-subject';
+import {loadProject}from '../projects';
 import { assertContentAlignment } from "../marketing-strategy";
 import { contentStrategy, withCommunicationStrategy, strategyContent } from "../strategy-consumption";
 /**
@@ -11,7 +13,7 @@ import { contentStrategy, withCommunicationStrategy, strategyContent } from "../
  *  Génération payante SEULEMENT si le client l'a autorisée, dans le plafond du lot, après estimation.
  * Une publication modifiée par le client garde ses médias (jamais remplacés sans sa demande).
  */
-import { all, json, now, run } from "../db";
+import { all, json, now, run,tx } from "../db";
 import { addUsage, getAsset, type Asset } from "../library";
 import type { Project } from "../projects";
 import { isAutoUsable } from "../quality/usable";
@@ -70,6 +72,8 @@ function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, 
   return { method: "none", paid: false };
 }
 
+function matchesNativeOffer(a:Asset,r:PostBrief,p:Project){if(!r.nativeBinding)return true;const meta=json<any>(a.meta,{}),b=meta.aiPost?.nativeBinding;if(!b)return false;return stableHash('native-offer',{product:b.product,service:b.service})===stableHash('native-offer',{product:r.nativeBinding.product,service:r.nativeBinding.service})&&stableHash('native-identity',meta.aiPost?.brand)===stableHash('native-identity',p.brand);}
+
 function matchesEditorial(a:Asset,r:PostBrief) {
   const m=json<any>(a.meta,{});
   if(r.format==="carousel")return m.carousel?.postId===r.id && m.carousel.assetIds?.length>=2;
@@ -83,9 +87,13 @@ const selectRows = (projectId: string, ids: string[]) =>
   ids.length
     ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => {
         const b = json<{ headline?: string; subject?: PostBrief["subject"]; request?: string; editorial?:Editorial } & Record<string,unknown>>(r.brief, {});
-        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null,editorial:b.editorial,editorialData:b,entryPoint:"publications" as const };
+        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null,editorial:b.editorial,nativeBinding:b.nativeBinding as PostBrief["nativeBinding"],editorialData:b,entryPoint:"publications" as const };
       })
     : [];
+
+/** Empreintes natives figées lors de la confirmation HTTP, avant l’attente du worker. */
+const productionInputToken=(p:Project,row:Row)=>stableHash('social-production-confirmed-input-1',{row,context:row.nativeBinding?nativeSocialSubject(p,row,false)?.digest:{identity:p.brand,settings:p.settings,strategy:p.strategy,business:p.business,product:p.product,catalog:p.catalog,services:p.services}});
+export const productionInputVersions=(projectId:string,ids:string[])=>{const p=loadProject(projectId);return Object.fromEntries(selectRows(projectId,ids).map(row=>[row.id,productionInputToken(p,row)]));};
 
 /** Les `n` premières publications en image (dans l'ordre du calendrier) : celles dont le visuel est fait par l'IA. */
 export function aiImageIds(rows: { id: string; format: string }[], n: number | null | undefined): Set<string> {
@@ -100,7 +108,7 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
   const aiIds = aiImageIds(rows, opts.aiImages);
   const lines = rows.map((r) => {
     const own=p.business==='services'?contentStrategy(p.id,'post',r.id):null;
-    const ownPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools;
+    const scopedPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools,ownPools={image:scopedPools.image.filter(a=>matchesNativeOffer(a,r,p)),video:scopedPools.video.filter(a=>matchesNativeOffer(a,r,p))};
     // The quote and execution use the same angle-compatible stock; no false free reuse.
     const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, ownPools);
     const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
@@ -119,24 +127,30 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { expectedInputs?:Record<string,string>;allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
   if (o.allowPaid && !allowPaid) notes.push(deps.aiActive ? "estimation non acceptée ou au-delà du plafond : les images attendent leur création par l'IA" : "IA non disponible : les images attendent leur création par l'IA (vidéos de la bibliothèque seulement)");
-  const rows = selectRows(p.id, ids).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]") && (!o.replace || !o.replaceFrom || o.replaceFrom[r.id] === r.media)).slice(0, o.batchSize ?? 30);
+  const selected=selectRows(p.id,ids),changed=new Set(o.expectedInputs?ids.filter(id=>{const row=selected.find(r=>r.id===id);if(!row||!o.expectedInputs![id])return true;try{return productionInputToken(p,row)!==o.expectedInputs![id];}catch{return true;}}):[]);
+  const rows = selected.filter(r=>!changed.has(r.id)).filter((r) => PRODUCIBLE.has(r.status) && (o.replace || r.media === "[]") && (!o.replace || !o.replaceFrom || o.replaceFrom[r.id] === r.media)).slice(0, o.batchSize ?? 30);
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
+  if(changed.size){res.failed=changed.size;notes.push('Un brouillon a changé ou disparu depuis la confirmation. Aucune acquisition pour cette ancienne version.');}
   let done = 0;
   for (const r of rows) {
+    let native:ReturnType<typeof nativeSocialSubject>=null;let forGeneration=false;
+    const inputVersion=stableHash('social-production-input-1',r),assertCurrent=()=>{const current=selectRows(p.id,[r.id])[0];if(!current||stableHash('social-production-input-1',current)!==inputVersion)throw new Error('Ce brouillon a changé pendant la préparation. Les fichiers acquis sont conservés, aucun remplacement ni nouvel appel automatique.');if(o.expectedInputs&&productionInputToken(loadProject(p.id),current)!==o.expectedInputs[r.id])throw new Error('Le contexte confirmé a changé ; aucun nouvel appel ni attache à la nouvelle version.');if(native){const fresh=nativeSocialSubject(loadProject(p.id),r,forGeneration);if(!fresh||fresh.digest!==native.digest)throw new Error('L’offre, l’identité ou sa référence ont changé. Acquis conservés, aucun nouvel appel ni remplacement.');}};
     o.progress?.(done++, rows.length);
     const own= p.business==='services'?contentStrategy(p.id,"post",r.id):null;
-    const ownPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools;
+    const scopedPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools,ownPools={image:scopedPools.image.filter(a=>matchesNativeOffer(a,r,p)),video:scopedPools.video.filter(a=>matchesNativeOffer(a,r,p))};
     const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, ownPools);
     let out: MediaResult | null = null;
     try {
+      assertCurrent();
+      if(r.nativeBinding){if(needsVideo(r)||r.format==='text')throw new Error('Cette production ciblée raccorde les images et carrousels seulement. Texte et vidéos restent conservés dans leurs outils natifs ; aucun appel image détourné.');forGeneration=m.method==='ai_post';native=nativeSocialSubject(loadProject(p.id),r,forGeneration);}
       assertContentAlignment(p.id, "post", r.id);
       if (m.method === "none") {
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
@@ -152,9 +166,9 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
           notes.push(`plafond atteint (${budgetPctText(p.userId, cap, p.id)}) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
           out = null;
         } else {
-          const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR) };
+          const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR),assertCurrent };
           // Image : publication entièrement créée par l'IA (jamais une affiche montée par le studio).
-          out = await withCommunicationStrategy(p.id,()=>m.method === "video_v2" ? deps.video(p, r, opts) : deps.aiPost ? deps.aiPost(p, r, opts) : null,own?{strategyId:own.id}:{});
+          out = await withCommunicationStrategy(p.id,()=>m.method === "video_v2" ? deps.video(p, r, opts) : deps.aiPost ? deps.aiPost(native?.project??p,native?{...r,nativeBinding:native.binding}:r, opts) : null,own?{strategyId:own.id}:{});
           // Rien d'exploitable : visuel IA refusé après ses essais (ou blocage). Ce qui a été payé reste compté ; la
           // publication attend son visuel, dit clairement — aucun gabarit ni rendu local à la place.
           if (!out?.assetId && m.method !== "video_v2") {
@@ -179,12 +193,15 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     const media=out.assetIds??[out.assetId];
     if(r.format==="carousel" && (media.length<2 || new Set(media).size!==media.length)){res.failed++;notes.push("Carrousel incomplet : plusieurs images distinctes et ordonnées sont requises.");continue;}
     if(media.some(aid=>{const a=getAsset(aid);return !a||a.project_id!==p.id||a.deleted_at||a.status==="rejected";})){res.failed++;notes.push("Média indisponible : version précédente conservée.");continue;}
-    run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND (media = '[]' OR ?)", JSON.stringify(media), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id, o.replace ? 1 : 0);
-    for(const aid of media)addUsage(aid, "post", r.id, "Publication (Social V2)");
-    // L'empreinte change (nouveau média) : une approbation antérieure ne couvre plus cette version.
-    afterEdit(r.id);
-    run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
-    strategyContent(p.id, "post", r.id,own?{stamp:own}:{});
+    try{tx(()=>{
+      assertCurrent();
+      const updated=run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND project_id=? AND (media = '[]' OR ?)", JSON.stringify(media), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id,p.id, o.replace ? 1 : 0);
+      if(updated.changes!==1)throw new Error('La publication native n’a pas été mise à jour ; résultat acquis conservé, sans faux succès.');
+      for(const aid of media)addUsage(aid, "post", r.id, "Publication (Social V2)");
+      afterEdit(r.id);
+      run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
+      strategyContent(p.id, "post", r.id,own?{stamp:own}:{});
+    });}catch(error){if(error instanceof JobCancelled||error instanceof JobPaused)throw error;res.failed++;notes.push((error as Error).message);continue;}
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
     // Reprise payée (1er essai refusé par le contrôle) : annoncée au client, jamais en silence.
