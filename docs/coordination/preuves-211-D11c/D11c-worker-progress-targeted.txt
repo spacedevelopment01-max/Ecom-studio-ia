@@ -1,0 +1,17 @@
+
+> ecom-studio-ia@1.0.0 test
+> vitest run tests/social-production-confirmed-version.test.ts tests/publication-input-guard.test.ts
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-production
+
+
+ Test Files  2 passed (2)
+      Tests  10 passed (10)
+   Start at  13:00:01
+   Duration  4.96s (transform 50%, import 33%, tests 17%)
+
+  Transform  transforming modules took 4.42s · 50% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

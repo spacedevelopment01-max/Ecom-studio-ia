@@ -1,0 +1,51 @@
+{
+  "schema": "social-production211-compiled-proof-1",
+  "isolatedSyntheticData": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "expectedLocalProviderRequests": 0,
+  "nativeWorker": true,
+  "creativeQualityQualified": false,
+  "version": {
+    "commit": "0aca203b9f07fc48c4778fe9c1f6ee5d3105ca7b",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "passed": true,
+  "failures": [
+    {
+      "kind": "text",
+      "status": "failed",
+      "progress": 0,
+      "sourceKept": true,
+      "providerCalls": 0
+    },
+    {
+      "kind": "context",
+      "status": "failed",
+      "progress": 0,
+      "sourceKept": true,
+      "providerCalls": 0
+    },
+    {
+      "kind": "deleted",
+      "status": "failed",
+      "progress": 0,
+      "sourceKept": true,
+      "providerCalls": 0
+    }
+  ],
+  "freeReuse": {
+    "produced": 1,
+    "newMediaCalls": 0,
+    "newJobs": 0,
+    "sourceMissingDidNotBlockAcquired": true,
+    "sha256": "b0e4e9fbb2a046d5ce215783ec352b15965f3e37cd79acb78cd4b1096735b8ee"
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "empty": 400,
+  "localProviderRequests": 0
+}
