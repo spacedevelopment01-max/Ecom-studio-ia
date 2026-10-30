@@ -282,3 +282,11 @@ try{
   proof.finishedAt=new Date().toISOString();proof.success=true;
 }finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
 console.log(JSON.stringify({success:proof.success,file:path.join(out,'api-proof.json'),version:proof.version,totals:proof.simulatedTotals,temp}));
+
+// D11c : même recette finale, après les campagnes et la fermeture des processus précédents.
+// Un échec du contrôle natif fait échouer le job ; ses preuves restent dans l’artefact campagne.
+if(process.argv.includes('--campaign-ui')){
+ const{execFileSync}=await import('node:child_process'),isolatedEnv={...process.env};
+ for(const selector of ['DATA_DIR','DATABASE_FILE','STORAGE_DIR'])delete isolatedEnv[selector];
+ execFileSync(process.execPath,['--import','tsx','scripts/verify-social-production211-build.ts',path.join(out,'native-production')],{env:isolatedEnv,stdio:'inherit'});
+}

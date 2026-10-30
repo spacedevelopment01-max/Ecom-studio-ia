@@ -28,7 +28,7 @@ Les fichiers, SHA et commandes exacts figurent dans [211_D11C_PREUVES.json](211_
 
 ## Dépendances et limites
 
-- Branche dédiée basée sur #254 `1190e0ce` ; correction de placement CI de #254 `d62aa36c` conservée **par contenu**. Ne pas l’appliquer deux fois. Dépend aussi de #253/#252/#251 ; aucune fusion/rebase de leurs branches ni de Claude. Les étapes antérieures de CI restent présentes ; recette D11c ajoutée au job ayant installé et compilé le Studio.
+- Branche dédiée basée sur #254 `1190e0ce` ; correction de placement CI de #254 `d62aa36c` conservée **par contenu**. Ne pas l’appliquer deux fois. Dépend aussi de #253/#252/#251 ; aucune fusion/rebase de leurs branches ni de Claude. Les étapes antérieures de CI restent présentes ; recette D11c ajoutée à la fin du harnais campagne, après fermeture de ses processus, dans le même job ayant installé et compilé le Studio.
 - Fonction corrigée : **producteur d’images/carrousels sociaux natif** et réemploi d’acquis. Pas encore un nouvel outil payant de génération sociale/campagne pilotable depuis SYNA. Les brouillons/calendriers/campagnes SYNA de D11a/b restent des préparations locales.
 - Les tâches historiques sans empreinte de confirmation ne permettent pas de reconstruire leur contexte historique ; les gardes pendant acquisition restent actives. Lorsque la référence n’était pas explicitement liée, son fichier est figé au début de l’acquisition, **pas son historique à l’accord HTTP**. Le prochain devis SYNA devra épingler explicitement sa référence.
 - Texte seul et vidéo avec binding natif ne sont pas détournés vers ce producteur d’images : refus explicite, contenus conservés, outils natifs distincts à raccorder.
@@ -36,3 +36,7 @@ Les fichiers, SHA et commandes exacts figurent dans [211_D11C_PREUVES.json](211_
 - Restent : génération sociale/publicitaire bornée depuis SYNA, compléments D10, comparaisons D12 puis intégration E/F. Les API métier Claude #239/#245 et intégration #247/#248 sont des dépendances préservées, pas réinventées ici.
 
 **Critère de revue :** CI complète verte sur la tête exacte publiée avant de considérer cette PR prête. Tous les drapeaux restent fermés par défaut ; #211 n’est pas déclarée terminée.
+
+### Correction de dépendance avant CI
+
+La création de #255 a révélé un conflit Git limité au workflow : la correction de placement de #254 et l’ajout de l’étape D11c recouvraient le même déplacement. **Aucune fusion ni réécriture de branche** : workflow remis identique au SHA d62aa36c ; la recette D11c s’exécute maintenant à la fin de `verify-agent211-build.ts --campaign-ui`, dans un processus/dossier isolé et ses résultats dans l’artefact campagne. `execFileSync` propage les échecs. Les51 étapes existantes sont strictement conservées. Aucun changement applicatif/worker ni nouvelle preuve créative ; test ciblé du raccordement ajouté. La tête de PR corrigée et sa CI doivent encore être vérifiées.
