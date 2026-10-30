@@ -1,0 +1,153 @@
+{
+  "codeCommit": "c6ad7f81018f7e76763f2a4dc12a7a555e6b53ed",
+  "base": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+  "testedSourceSha256": {
+    "src/lib/orchestrator/conversation/video-generation-execution.ts": "c76cc843da014685ca5f6918cbdd4418a3be2c0fc0fccf74f1b0b4a152866f55",
+    "tests/conversation211-video-generation.test.ts": "09c3b3a04fdafcbdc5094c78d0b32b094b956cd59fee6232a769b3bd40cb0bd4"
+  },
+  "runs": {
+    "D10c-cache-red": {
+      "state": "failed",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-generation.test.ts",
+        "-t",
+        "au-delà|105"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "tests/conversation211-video-generation.test.ts": "8c8b07e985a3d24d326864950bcfcf1b441bfd27569a148677cd742a7be78240"
+      },
+      "startedAt": "2026-10-30T07:50:57.644755+00:00",
+      "finishedAt": "2026-10-30T07:51:18.298650+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "ccf929cc515fff6ca11db45d4f30f45f1148ac7d68b2604dcd1361f482a4ad22"
+    },
+    "D10c-cache-missing-red": {
+      "state": "failed",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-generation.test.ts",
+        "-t",
+        "ancien acquis"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "tests/conversation211-video-generation.test.ts": "199c7e52fe0f023720f9a970049d89dd693f8b362e3103edb6ab44df0fedeed1"
+      },
+      "startedAt": "2026-10-30T07:51:40.683262+00:00",
+      "finishedAt": "2026-10-30T07:51:52.064889+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "d18c9e76303f8923a36644f88f764a1cf883ee8b022abbfe9c414e7bd14aa257"
+    },
+    "D10c-cache-final-targeted": {
+      "state": "passed",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-generation.test.ts",
+        "tests/conversation211-request-bounds.test.ts",
+        "tests/conversation211-continuation-bound.test.ts",
+        "tests/video-bounded-chain.test.ts",
+        "tests/video-bounded-review.test.ts"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "c76cc843da014685ca5f6918cbdd4418a3be2c0fc0fccf74f1b0b4a152866f55",
+        "tests/conversation211-video-generation.test.ts": "09c3b3a04fdafcbdc5094c78d0b32b094b956cd59fee6232a769b3bd40cb0bd4"
+      },
+      "startedAt": "2026-10-30T07:53:16.006271+00:00",
+      "finishedAt": "2026-10-30T07:54:25.628558+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "345294cb4734716adbfca3548b069fca7b22651ca94ef06ffa989bb02ba86a99"
+    },
+    "D10c-cache-types": {
+      "state": "passed",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "c76cc843da014685ca5f6918cbdd4418a3be2c0fc0fccf74f1b0b4a152866f55",
+        "tests/conversation211-video-generation.test.ts": "09c3b3a04fdafcbdc5094c78d0b32b094b956cd59fee6232a769b3bd40cb0bd4"
+      },
+      "startedAt": "2026-10-30T07:53:17.589209+00:00",
+      "finishedAt": "2026-10-30T07:53:53.698429+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D10c-cache-full": {
+      "state": "failed",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "c76cc843da014685ca5f6918cbdd4418a3be2c0fc0fccf74f1b0b4a152866f55",
+        "tests/conversation211-video-generation.test.ts": "09c3b3a04fdafcbdc5094c78d0b32b094b956cd59fee6232a769b3bd40cb0bd4"
+      },
+      "startedAt": "2026-10-30T07:54:37.306282+00:00",
+      "finishedAt": "2026-10-30T08:10:25.316394+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "91d0ac4a19498c2dbf6ebc2886d7ffcdfaa83fcca8b96a75742e51a69da8ce96"
+    },
+    "D10c-cache-fixture-recheck": {
+      "state": "passed",
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/openai-streaming.test.ts"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "c76cc843da014685ca5f6918cbdd4418a3be2c0fc0fccf74f1b0b4a152866f55",
+        "tests/conversation211-video-generation.test.ts": "09c3b3a04fdafcbdc5094c78d0b32b094b956cd59fee6232a769b3bd40cb0bd4"
+      },
+      "startedAt": "2026-10-30T08:09:00.043076+00:00",
+      "finishedAt": "2026-10-30T08:09:52.113132+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "e94bf16525e7fafc4f4f579b5ce2775ed53b3b52f4443d24611ca66b30ba36f2"
+    }
+  },
+  "summary": {
+    "targetedPassed": 44,
+    "fullCommandExit": 1,
+    "fullPassed": 4001,
+    "fullSkipped": 45,
+    "collectFailure": "FIXTURE_MISSING_IN_SPARSE_CHECKOUT",
+    "fixtureRestoredFromExistingCommit": true,
+    "affectedSuiteRecheckPassed": 14,
+    "fullLocalCommandClaimedGreen": false,
+    "realProviderCalls": 0,
+    "realCostEur": 0
+  },
+  "assertions": [
+    "After105new receipts: original MP4 reused despite disabled providers and exhausted budget; no new job/usage/reservation/version.",
+    "Manual version remains current; old acquired output is kept.",
+    "Same confirmed proposal remains idempotent after105otherquotes.",
+    "Missing old file blocks implicit repurchase.",
+    "Other conversation and invalid JSON artefacts ignored; foreign owner refused."
+  ],
+  "limits": [
+    "No new UI or compiled browser run for this SQL-only change; parent #246 covers presentation.",
+    "Final CI must run the full suite on the final delivery SHA.",
+    "Recent receipt display remains100/10; exact acquisition lookup is not limited by that display."
+  ]
+}

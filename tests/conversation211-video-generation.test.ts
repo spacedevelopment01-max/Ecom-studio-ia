@@ -10,7 +10,7 @@ import {cognitiveContext}from '@/lib/orchestrator/conversation/intelligence-cont
 import {cognitiveResponseSchema}from '@/lib/orchestrator/conversation/intelligence-contract';
 import {VideoGenerationPlanSchema,type VideoGenerationPlan}from '@/lib/orchestrator/conversation/video-generation-contract';
 import {quoteVideoGeneration,confirmVideoGeneration,runAgentVideoGeneration,videoGenerationReceipt}from '@/lib/orchestrator/conversation/video-generation-execution';
-import {loadProject}from '@/lib/projects';
+import {loadProject,remember}from '@/lib/projects';
 import {createProduct}from '@/lib/products/catalog';
 import {setSetting}from '@/lib/settings';
 import {MEDIA_MODELS}from '@/lib/ai/media-models';
@@ -66,3 +66,29 @@ it('un contexte modifié entre devis et accord ne produit aucune tâche',async()
 it('une prestation exige son angle autorisé ; aucune activation implicite',async()=>{const f=await fixture(true,false);expect(()=>f.quote()).toThrow('angle autorisé');expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);});
 it('ne sélectionne pas une autre variante à la place du repère actif',async()=>{const f=await fixture();f.propose({...f.plan,target:{kind:'product',productId:'absent',version:1}});expect(()=>f.quote()).toThrow();expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toHaveLength(0);});
 it('enveloppe incertaine préexistante : aucun autre travail payé ajouté',async()=>{const f=await fixture(),q=f.quote();const m=all<{id:string}>('SELECT id FROM agent_request_bounds WHERE conversation_id=?',f.c.id)[0],j=enqueue({userId:f.u.id,projectId:f.pid,type:'conversation.ai',label:'résultat antérieur fictif',payload:{}});run("UPDATE jobs SET status='failed' WHERE id=?",j.id);run("INSERT INTO agent_request_jobs(bound_id,job_id,role,depth) VALUES(?,?,'principal',0)",m.id,j.id);run("INSERT INTO ai_reservations(id,user_id,project_id,job_id,amount,res_monthly,res_topup,status,task,provider,model,created_at) VALUES(?,?,?,?,100,100,0,'uncertain','quality_control','anthropic',?,?)",id(),f.u.id,f.pid,j.id,DEFAULT_ROUTES.quality_control.model,Date.now());expect(()=>f.confirm(q.id)).toThrow();expect(all("SELECT id FROM jobs WHERE project_id=? AND type='video.scenes'",f.pid)).toHaveLength(0);});
+
+/** Les artefacts de bruit sont des devis persistés, pas des jobs ni des médias achetés. */
+function ageReceipt(pid:string,cid:string){
+ const saved=JSON.parse(all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND key LIKE 'agent.video.generation.%' ORDER BY rowid DESC LIMIT 1",pid)[0].value);
+ for(let i=0;i<105;i++){const key=id();remember(pid,{kind:'artifact',key:'agent.video.generation.'+key,value:JSON.stringify({...saved,id:key,conversationId:cid,sourceReceiptId:'other-'+key,identity:'different-'+key,confirmedAt:undefined,jobId:undefined,output:undefined,docKey:undefined,versionId:undefined}),source:'local',origin:'system',status:'inferred'});}
+}
+it('retrouve un acquis au-delà des100reçus, même sans fournisseur ni budget, et préserve la version manuelle',async()=>{
+ const f=await fixture(),q=f.quote();f.confirm(q.id);await f.finish();const first=videoGenerationReceipt(f.u,f.c.id,q.id),current=latestVideo(f.pid,first.docKey!)!;
+ saveVideoVersion(f.pid,first.docKey!,{...current.doc,meta:{...current.doc.meta,source:'user'}},{note:'Version manuelle à préserver'});ageReceipt(f.pid,f.c.id);
+ await f.send({action:'message',text:'Crée une vidéo de dix secondes pour Presse de linogravure.\nGarde deux  espaces.'});f.propose();setSetting('provider.alibaba.disabled','1');setSetting('provider.anthropic.disabled','1');run('UPDATE wallets SET monthly_used=monthly_allowance');
+ const snapshot=()=>Object.fromEntries(['jobs','ai_calls','ai_reservations','usage_events','video_documents'].map(t=>[t,all('SELECT id FROM '+t+' WHERE project_id=?',f.pid)])),before=snapshot(),reuse=f.quote();expect(reuse).toMatchObject({reused:true,maximumCalls:0,maximumPct:0});f.confirm(reuse.id);expect(videoGenerationReceipt(f.u,f.c.id,reuse.id)).toMatchObject({delivered:true,reused:true,isCurrent:false,output:{assetId:first.output!.assetId}});expect(snapshot()).toEqual(before);expect(f.deps.directClip).toHaveBeenCalledTimes(2);expect(fetch).not.toHaveBeenCalled();
+},60000);
+it('une même proposition déjà confirmée reste idempotente après105autres devis',async()=>{
+ const f=await fixture(),q=f.quote(),confirmed=f.confirm(q.id);ageReceipt(f.pid,f.c.id);const v=conversationView(f.u,f.c.id),meta=metaOf(ownedConversation(f.u,f.c.id)),before=all('SELECT id FROM agent_request_bounds WHERE conversation_id=?',f.c.id);
+ try{const again=quoteVideoGeneration(f.u,f.c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:meta.intelligence!.lastReceiptId!});expect(again).toMatchObject({kind:'receipt',receipt:{id:q.id,job:{id:confirmed.job!.id}}});expect(all('SELECT id FROM agent_request_bounds WHERE conversation_id=?',f.c.id)).toEqual(before);expect(fetch).not.toHaveBeenCalled();}finally{const j=claimNext(['video.scenes'])!;failJob(j,new Error('Fin de test sans worker'),{permanent:true});}
+});
+it('un ancien acquis dont le fichier manque bloque le rachat implicite malgré105devis plus récents',async()=>{
+ const f=await fixture(),q=f.quote();f.confirm(q.id);await f.finish();const first=videoGenerationReceipt(f.u,f.c.id,q.id);ageReceipt(f.pid,f.c.id);run('UPDATE assets SET deleted_at=? WHERE id=?',Date.now(),first.output!.assetId);
+ await f.send({action:'message',text:'Crée une vidéo de dix secondes pour Presse de linogravure.\nGarde deux  espaces.'});f.propose();const before=all('SELECT id FROM jobs WHERE project_id=?',f.pid);expect(()=>f.quote()).toThrow('déjà acquis manque');expect(all('SELECT id FROM jobs WHERE project_id=?',f.pid)).toEqual(before);expect(f.deps.directClip).toHaveBeenCalledTimes(2);expect(fetch).not.toHaveBeenCalled();
+},60000);
+it('la recherche durable ignore les artefacts invalides et ceux d’une autre conversation',async()=>{
+ const f=await fixture(),q=f.quote(),confirmed=f.confirm(q.id),saved=JSON.parse(all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND key=?",f.pid,'agent.video.generation.'+q.id)[0].value);
+ remember(f.pid,{kind:'artifact',key:'agent.video.generation.'+id(),value:'ancien artefact non JSON',source:'local',origin:'system',status:'inferred'});
+ remember(f.pid,{kind:'artifact',key:'agent.video.generation.'+id(),value:JSON.stringify({...saved,id:id(),conversationId:'other-conversation'}),source:'local',origin:'system',status:'inferred'});
+ const v=conversationView(f.u,f.c.id),meta=metaOf(ownedConversation(f.u,f.c.id));try{const again=quoteVideoGeneration(f.u,f.c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:meta.intelligence!.lastReceiptId!});expect(again).toMatchObject({kind:'receipt',receipt:{id:q.id,job:{id:confirmed.job!.id}}});expect(()=>videoGenerationReceipt({...f.u,id:'foreign'},f.c.id,q.id)).toThrow();expect(fetch).not.toHaveBeenCalled();}finally{const j=claimNext(['video.scenes'])!;failJob(j,new Error('Fin de test sans worker'),{permanent:true});}
+});
