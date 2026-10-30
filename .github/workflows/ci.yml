@@ -313,6 +313,18 @@ jobs:
           path: reports/ci-agent211-communication-integration
           if-no-files-found: warn
 
+      - name: Rédaction native depuis SYNA, versions et échec sans remplacement local (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-content --content-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves de rédaction native SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-native-content-simulated
+          path: reports/ci-agent211-native-content
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

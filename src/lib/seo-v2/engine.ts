@@ -14,6 +14,7 @@ import { assertJobEntitlements,assertAdvertising } from "../job-entitlements";
  * 0 € d'IA.
  */
 import crypto from "node:crypto";
+import {tx} from "../db";
 import type { JobContext } from "../jobs";
 import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
@@ -47,6 +48,8 @@ export const SEO_V2_VERSION = "lot1.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
 
 export type ContentRequestV2 = {
+  /** Server-selected contract: an explicitly requested AI result cannot become a local substitute. */
+  requireAi?: boolean;
   /** Page prévue identifiée par l’orchestrateur amont ; aucune création de thème requise. */
   target?: {page:PageRef;serviceIndex?:number};
   type: ContentType;
@@ -107,6 +110,7 @@ async function runContentEngineV2InScope(ctx: JobContext | null, projectId: stri
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
   const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId, p.id);
   if (blogBlocked) deps = localOnlyDeps();
+  if(req.requireAi&&!req.planOnly&&(!deps.canWrite||!deps.canReview))throw new UserFacingError(L("Rédaction et relecture IA indisponibles. Aucun texte local de remplacement ; vos acquis restent conservés.","AI writing and review are unavailable. No local replacement; acquired work is kept."),"CONTENT_AI_UNAVAILABLE");
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_SEO_CAP_EUR) * EUR);
   const cur = currentTrace();
   const flight = runKey({ marketingStrategy: strategyStamp(projectId), projectId, req, product: p.product, services: p.services, catalog: p.catalog, brand: p.brand, context: deps.context });
@@ -172,7 +176,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   if (memo) {
     const saved = contentVersionDoc(p.id, memo.docKey, memo.version);
     const latest = latestContent(p.id, memo.docKey);
-    if (saved) {
+    if (saved && (!req.requireAi || saved.meta2.by === "ai")) {
       let key = memo.docKey;
       // Le mémo désigne une version précise, jamais la dernière rédaction d'un autre contexte.
       if (!latest || JSON.stringify(latest.doc) !== JSON.stringify(saved)) {
@@ -194,6 +198,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
     try {
       const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion });
       expectedVersion = v.version;
+      deps.onRetained?.({docKey,version:v});
       return v;
     } catch (e) {
       if (!(e instanceof ContentConflict)) throw e;
@@ -202,6 +207,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       notes.push("Le contenu a changé pendant la rédaction : votre version est conservée, la tentative est enregistrée séparément.");
       const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion: 0 });
       expectedVersion = v.version;
+      deps.onRetained?.({docKey,version:v});
       return v;
     }
   };
@@ -241,6 +247,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       } else notes.push("réponse de l'IA inexploitable : texte local conservé");
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+      if(req.requireAi)throw e;
       if (e instanceof CostCapReached) {
         budget.stopped = true;
         notes.push("plafond de coût atteint : texte local conservé");
@@ -248,6 +255,9 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       providerStopped = true;
     }
   } else if (!deps.canWrite) notes.push("IA non disponible pour ce compte : rédaction locale à partir des faits (gratuit)");
+
+  if(req.requireAi&&by!=="ai"&&budget.stopped)throw new CostCapReached(budget.spentMicro,deps.estimate(writeKind(req.type)),budget.capMicro);
+  if(req.requireAi&&by!=="ai")throw new UserFacingError(L("Aucun texte IA exploitable n’a été enregistré pour cette demande. La tâche s’arrête sans remplacement local ; les versions précédentes sont conservées.","No usable AI copy was saved for this request. Stopping without local replacement; previous versions are kept."),"CONTENT_AI_RESULT_MISSING");
 
   // 8-9. Contrôles, relecture, barrière, reprises ciblées (défaut identifié seulement).
   const policy = POLICIES[DELIVERABLE_OF[req.type]];
@@ -291,7 +301,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
     const fix = decision.feedback || review?.fix.instruction || checks.issues.join(" ; ");
     // Un défaut non localisé est laissé à vérifier plutôt que de réécrire tout le document.
     if (!fix.trim() || !blockIds.length || !pay("rewrite")) break;
-    retain(doc, decision.verdict, `essai ${attempt + 1} — ${decision.reason}`);
+    retain(doc, req.requireAi ? "RETRY" : decision.verdict, `essai ${attempt + 1} — ${decision.reason}`);
     try {
       ctx?.progress(0.5 + attempt * 0.1, L("Correction ciblée des passages insuffisants", "Correcting insufficient passages"));
       const key = `${jobKey}:seo2:rewrite:${memoKey}:${attempt + 1}`;
@@ -316,6 +326,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   // texte local, construit sur les seuls faits, le remplace.
   if (by === "ai" && decision && (decision.verdict === "REJECTED" || decision.verdict === "RETRY") && decision.blockingCodes.some((c) => ["invented_claim", "invented_source", "wrong_fact", "unconfirmed_commercial", "forbidden_claim", "invented_link"].includes(c))) {
     retain(doc, decision.verdict, `essai écarté — ${decision.reason}`);
+    if(req.requireAi)throw new UserFacingError(L("Le texte IA reste refusé : tentative conservée pour correction, aucune version locale ne remplace vos textes utilisables.","The AI copy remains rejected: the attempt is kept for correction; no local version replaces usable copy."),"CONTENT_AI_COPY_REJECTED");
     notes.push(`texte IA écarté (${decision.blockingCodes.join(", ")}) : texte local construit sur les faits vérifiés`);
     doc = local;
     by = "local";
@@ -333,7 +344,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, { ...d, verdict });
   doc = { ...doc, meta2: { ...doc.meta2, contract: { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(doc, brief.requirements) } } };
   ctx?.progress(0.9, L("Conservation du texte et de son contrôle", "Saving content and its check"));
-  const saved = retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);
+  const saved = tx(()=>{deps.beforeFinalSave?.();return retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);});
   // Blog V2 : le brouillon rejoint le blog existant (relecture, couverture, publication dans l'onglet Blog).
   if (req.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: [...base.issues, ...notes], ai: by === "ai", jobKey: runId, quotaReserved:true });
   rememberContentRun(p.id, memoKey, { docKey, version: saved.version, verdict, costMicro: budget.spentMicro });

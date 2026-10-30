@@ -22,3 +22,4 @@ export const conversationVideoVoiceEnabled=()=>conversationVideosEnabled()&&proc
 
 export const conversationVideoClipEnabled=()=>conversationVideosEnabled()&&process.env.STUDIO_CONVERSATION_VIDEO_CLIP==='1';
 export const conversationSocialEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_SOCIAL==='1';
+export const conversationContentEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_CONTENT==='1';
