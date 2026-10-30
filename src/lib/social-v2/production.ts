@@ -1,3 +1,4 @@
+import{matchesPostAspect}from './post-aspect';
 import {nativeSocialSubject}from './native-subject';
 import {loadProject}from '../projects';
 import { assertContentAlignment } from "../marketing-strategy";
@@ -75,6 +76,7 @@ function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, 
 function matchesNativeOffer(a:Asset,r:PostBrief,p:Project){if(!r.nativeBinding)return true;const meta=json<any>(a.meta,{}),b=meta.aiPost?.nativeBinding;if(!b)return false;return stableHash('native-offer',{product:b.product,service:b.service})===stableHash('native-offer',{product:r.nativeBinding.product,service:r.nativeBinding.service})&&stableHash('native-identity',meta.aiPost?.brand)===stableHash('native-identity',p.brand);}
 
 function matchesEditorial(a:Asset,r:PostBrief) {
+  if(!matchesPostAspect(a,r))return false;
   const m=json<any>(a.meta,{});
   if(r.format==="carousel")return m.carousel?.postId===r.id && m.carousel.assetIds?.length>=2;
   try{return m.finalImage?.purpose==="post" && m.finalImage?.editorialFingerprint===stableHash("editorial",creativeContract(r,"organic"));}catch{return false;}
@@ -87,7 +89,7 @@ const selectRows = (projectId: string, ids: string[]) =>
   ids.length
     ? all<Row>(`SELECT * FROM posts WHERE project_id = ? AND id IN (${ids.map(() => "?").join(",")}) ORDER BY scheduled_at`, projectId, ...ids).map((r) => {
         const b = json<{ headline?: string; subject?: PostBrief["subject"]; request?: string; editorial?:Editorial } & Record<string,unknown>>(r.brief, {});
-        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null,editorial:b.editorial,nativeBinding:b.nativeBinding as PostBrief["nativeBinding"],editorialData:b,entryPoint:"publications" as const };
+        return { ...r, headline: b.headline ?? r.title, subject: b.subject ?? null, request: b.request ?? null,editorial:b.editorial,aspect:b.aspect as PostBrief["aspect"],nativeBinding:b.nativeBinding as PostBrief["nativeBinding"],editorialData:b,entryPoint:"publications" as const };
       })
     : [];
 
@@ -196,6 +198,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     const media=out.assetIds??[out.assetId];
     if(r.format==="carousel" && (media.length<2 || new Set(media).size!==media.length)){res.failed++;notes.push("Carrousel incomplet : plusieurs images distinctes et ordonnées sont requises.");continue;}
     if(media.some(aid=>{const a=getAsset(aid);return !a||a.project_id!==p.id||a.deleted_at||a.status==="rejected";})){res.failed++;notes.push("Média indisponible : version précédente conservée.");continue;}
+    if(media.some(aid=>!matchesPostAspect(getAsset(aid)!,r))){res.failed++;notes.push("Le visuel acquis ne respecte pas le ratio confirmé. Fichier conservé, aucune attache ni nouvelle génération automatique.");continue;}
     try{tx(()=>{
       assertCurrent();
       const updated=run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND project_id=? AND (media = '[]' OR ?)", JSON.stringify(media), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id,p.id, o.replace ? 1 : 0);

@@ -277,6 +277,18 @@ jobs:
           path: reports/ci-agent211-campaign-visual
           if-no-files-found: warn
 
+      - name: Ratio social demandé conservé dans le Studio compilé (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-aspect --social-aspect-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves du ratio social natif
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-aspect-simulated
+          path: reports/ci-agent211-social-aspect
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

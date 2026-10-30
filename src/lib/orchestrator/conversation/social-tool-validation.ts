@@ -46,6 +46,8 @@ export function validateSocialProposal(c:ConversationRow,raw:unknown,sources:Sou
  const posts=plan.tool==='social.draft'?plan.posts.map(post=>{
   if(!platformSpec(post.network).formats.includes(post.format))throw new HttpError(409,'Ce format n’est pas pris en charge par ce réseau. Aucun format substitué.');
   if(post.format==='text'&&!post.title.trim()&&!post.caption.trim())throw new HttpError(409,'Le brouillon texte est vide ; précisez son contenu.');
+  if(post.pendingImage&&!post.aspect)throw new HttpError(409,'Précisez le ratio du visuel avant de confirmer : carré, portrait, vertical ou paysage. Aucun format supposé.');
+  if(post.aspect&&post.format==='text')throw new HttpError(409,'Un brouillon texte ne doit pas annoncer un ratio image.');
   if(post.pendingImage&&(post.format!=='image'||post.media.length!==0))throw new HttpError(409,'Une image en attente doit être annoncée sans média ; aucun média existant remplacé.');
   if(post.format==='image'&&post.media.length!==1&&!(post.pendingImage&&post.media.length===0)||post.format==='carousel'&&post.media.length<2||post.format==='text'&&post.media.length)throw new HttpError(409,'Le nombre de médias doit correspondre au format. Rien n’est ajouté ou retiré automatiquement.');
   const media=post.media.map(selection=>{const selected=selectedLocalVideoSource(c,selection,last.text,true),a=getAsset(selected.pin.assetId)!;
