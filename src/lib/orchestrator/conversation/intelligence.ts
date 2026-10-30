@@ -32,6 +32,8 @@ import {validateLogoToolProposal} from './logo-tool-validation';
 import {validateVideoToolProposal}from './video-tool-validation';
 import {validateCatalogueProposal} from './catalogue-tool-validation';
 import {validateImageToolProposal} from './image-tool-validation';
+import {validateBrandCorrectionEvidence} from './brand-review-contract';
+import {brandReceipt,brandNativeInputMatches} from './brand-tool-execution';
 
 export const intelligenceEnabled = () => process.env.STUDIO_CONVERSATION_AI === '1';
 export function assertIntelligenceEnabled() {
@@ -147,6 +149,7 @@ export function intelligenceView(c: ConversationRow): IntelligenceView {
 }
 
 function validateReply(reply: CognitiveReply, c: ConversationRow, context: ReturnType<typeof cognitiveContext>) {
+  if(reply.brandCorrection){if(!conversationBrandReviewEnabled())throw Error('brand_correction_disabled');validateBrandCorrectionEvidence(reply.brandCorrection,context.context.lastClientRequest);const u=one<User>('SELECT * FROM users WHERE id=?',c.user_id)!,r=brandReceipt(u,c.id,reply.brandCorrection.candidateId);if(!r.delivered||r.output?.source!=='native_version'||r.output.identity.identityConfirmed||!brandNativeInputMatches(u,c.id,r.id))throw Error('brand_correction_candidate_changed');}
   if(reply.voicePlan){if(!conversationVideoVoiceEnabled())throw new Error('video_voice_disabled');validateVoiceProposal(c,reply.voicePlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if(reply.socialPlan){if(!conversationSocialEnabled())throw new Error('social_prepare_disabled');validateSocialProposal(c,reply.socialPlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}
   if(reply.clipPlan){if(!conversationVideoClipEnabled())throw new Error('video_clip_disabled');validateClipProposal(c,reply.clipPlan,{sources:context.sources,lastClientRequest:context.context.lastClientRequest});}

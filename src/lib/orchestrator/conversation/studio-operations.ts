@@ -18,7 +18,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('strategy.preference','strategie','Retenir ou écarter un angle dans la discussion, puis annuler','Prefer or reject an angle in discussion, then undo','choices'),
  op('brand.confirm','marque','Choisir une identité textuelle acquise','Choose an acquired textual identity','brand-review'),
  op('brand.generate','marque','Créer une identité de marque','Create a brand identity','brand'),
- op('brand.correct','marque','Corriger nom, couleurs et polices','Correct name, colors and fonts'),
+ op('brand.correct','marque','Corriger nom et signature avant leur choix','Correct name and tagline before choosing','brand-review'),
  op('logo.generate','marque','Créer trois propositions de logo','Create three logo proposals','logos'),
  op('logo.replace','marque','Choisir un autre logo','Choose another logo'),
  op('images.upload','images','Importer ses images','Upload images'),
