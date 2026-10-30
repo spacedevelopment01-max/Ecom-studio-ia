@@ -1,0 +1,38 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "transport": "native SDK/HTTP loopback simulation",
+  "creativeQualityQualified": false,
+  "passed": true,
+  "postIds": [
+    "syna-c44e128167d8744d24c7d91f3186"
+  ],
+  "success": {
+    "delivered": true,
+    "sha256": "2855a737acbfa47f82ee5371c38fdfc881f60a9d4e3e4ee31cc9be6a0aa57ef8",
+    "downloadExact": true,
+    "newImageCalls": 1,
+    "clientApproved": false
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.95,
+    "newImageCalls": 1,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "previousVersionPreserved": true,
+  "counts": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 8,
+    "imageHttpCalls": 2,
+    "tokenCounts": 8,
+    "calls": 10,
+    "usage": 9,
+    "simulatedMicro": 269283
+  }
+}

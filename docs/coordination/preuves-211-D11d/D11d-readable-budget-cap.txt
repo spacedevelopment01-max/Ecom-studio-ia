@@ -1,0 +1,17 @@
+
+> ecom-studio-ia@1.0.0 test
+> vitest run tests/social-production-maximum-display.test.ts tests/conversation211-social-production.test.ts
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-generation
+
+
+ Test Files  2 passed (2)
+      Tests  19 passed (19)
+   Start at  13:44:44
+   Duration  7.10s (tests 47%, transform 33%, import 20%)
+
+  Transform  transforming modules took 2.29s · 33% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
