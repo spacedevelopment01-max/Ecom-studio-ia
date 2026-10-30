@@ -1,6 +1,7 @@
 import { analysisAttempts, attemptProblem } from "./analysis-attempts";
 import { analysisCostPlan } from "./inspect";
-import {activeStrategy,currentStrategyInputDigest} from "../marketing-strategy";
+import {activeStrategy,currentStrategyInputDigest,proposeStrategies} from "../marketing-strategy";
+import {retainResearchAfterIdentityConfirmation} from "../marketing-strategy/research";
 import {researchDigest} from "../marketing-strategy/research";
 import { placementHash, receiptFor } from "./media-context";
 import { buildProjectHandoff } from "../project-handoff/contract";
@@ -622,7 +623,9 @@ export function confirmIdentity(
     fonts?: { heading: string; body: string };
   },
 ) {
-  return commitState(projectId, revision, (s) => {
+  return tx(() => {
+  const before=loadProject(projectId);
+  const next=commitState(projectId, revision, (s) => {
     requireUpstream(s, "brand");
     assertFresh(projectId, s, "brand");
     const st = stageOf(s, "brand");
@@ -663,6 +666,9 @@ export function confirmIdentity(
     invalidateAfter(s, "brand");
     st.status = "draft";
     if (!loadProject(projectId).brand?.artIdentity) saveBrand(projectId, b.proposal);
+  });
+  if(retainResearchAfterIdentityConfirmation(before,loadProject(projectId),next))proposeStrategies(projectId);
+  return next;
   });
 }
 export function assignMedia(
