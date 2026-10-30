@@ -15,6 +15,7 @@ import { assertJobEntitlements } from "../job-entitlements";
 import { organicVideo, videoContext, editorialVideoIssues } from "./editorial";
 import { projectForSubject } from "../social-v2/ai-post";
 import { resolveSubject } from "../creative-subject";
+import { ImageBindingSchema } from "../image-v2/request-binding";
 import { videoScope,type VideoApproval } from "./approval";
 import { videoReceipt } from "./receipts";
 import { measuredCues,projectVoice,voiceAvailable } from "./voice";
@@ -35,7 +36,7 @@ import { POLICIES } from "../quality/policies";
 import { assetData, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { applyWordingDeep, loadWordingRules } from "../client-wording";
-import { contentLang } from "../i18n-server";
+import { contentLang, L } from "../i18n-server";
 import { EUR } from "../billing";
 import { budgetPctText } from "../ai/budget-pct";
 import { brandTypo, palette } from "../engine/images";
@@ -860,7 +861,17 @@ function scenesMetaOf(projectId: string, docKey: string, createdFrom: string | n
   if(doc.meta.ending?.kind==="last_clip" && e) {
     const raw=e.subject as {kind?:unknown;key?:unknown;name?:unknown}|null;
     const selected=raw?.kind==="product"&&typeof raw.key==="string"?{kind:"product" as const,key:raw.key}:raw?.kind==="service"&&typeof raw.name==="string"?{kind:"service" as const,name:raw.name}:null;
-    const subject=resolveSubject(loadProject(projectId),selected);
+    let subject: {kind:"product"|"service";key:string;name:string}|null;
+    if(e.nativeBinding){
+      // Reprise locale des médias acquis : ne pas résoudre une autre offre depuis le projet actuel.
+      const bound=ImageBindingSchema.safeParse(e.nativeBinding);
+      const frozen=e.identity as {product?:{name?:unknown}}|undefined;
+      if(!bound.success||bound.data.edit||(!bound.data.product&&!bound.data.service))throw new Error(L("Référence native du document invalide : document et médias conservés.","Native document reference is invalid; document and media kept."));
+      const kind=bound.data.product?"product":"service",key=bound.data.product?.productId??bound.data.service!.key;
+      const name=raw?.kind===kind&&raw.key===key&&typeof raw.name==="string"?raw.name:frozen?.product?.name;
+      if(typeof name!=="string"||!name.trim())throw new Error(L("Nom de l’offre acquise absent du document : aucun autre produit substitué.","Acquired offer name is missing from the document; no other product substituted."));
+      subject={kind,key,name};
+    }else subject=resolveSubject(loadProject(projectId),selected);
     return {key:docKey,mode:doc.clips.some(c=>c.generated)?"ai":"stock",as:e.purpose==="ad"?"ad":"post",subject:subject?{kind:subject.kind,key:subject.key,name:subject.name}:null,request:typeof e.request==="string"?e.request:null,music:!!doc.audio.music};
   }
   return null;
