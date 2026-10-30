@@ -1,3 +1,4 @@
+import{imageBindingHash,pinImageAsset}from '../image-v2/request-binding';import{acquiredPublicationCopyReview}from './publication-copy-policy';
 import{matchesPostAspect}from './post-aspect';
 import {nativeSocialSubject}from './native-subject';
 import {loadProject}from '../projects';
@@ -75,6 +76,15 @@ function pick(r: Row, opts: { allowPaid: boolean; ai?: boolean; bg?: boolean }, 
 
 function matchesNativeOffer(a:Asset,r:PostBrief,p:Project){if(!r.nativeBinding)return true;const meta=json<any>(a.meta,{}),b=meta.aiPost?.nativeBinding;if(!b)return false;return stableHash('native-offer',{product:b.product,service:b.service})===stableHash('native-offer',{product:r.nativeBinding.product,service:r.nativeBinding.service})&&stableHash('native-identity',meta.aiPost?.brand)===stableHash('native-identity',p.brand);}
 
+/** Acquis explicitement désigné : mêmes textes/offre/identité/ratio, sans chercher une autre image. */
+export function pinAcquiredSocialImage(p:Project,post:PostBrief,assetId:string,instruction=post.request??''){
+ const a=getAsset(assetId),effective={...post,request:instruction};
+ if(!a||a.project_id!==p.id||a.user_id!==p.userId||a.kind!=='image'||!['ready','approved'].includes(a.status)||!isAutoUsable(a)||!aiFinal(a)||!matchesEditorial(a,effective)||!matchesNativeOffer(a,effective,p))throw new Error('Cet acquis ne correspond plus exactement à la publication actuelle. Aucun nouvel achat dans un réemploi.');
+ const own=p.business==='services'?contentStrategy(p.id,'post',post.id):null;if(own&&!mediaAngleMatches(a,p.id,own))throw new Error('L’angle de cet acquis doit être relu avant réemploi.');
+ const target=nativeSocialSubject(p,effective,false),copy=acquiredPublicationCopyReview(target?.project??p,json(a.meta,{}));if(copy.status!=='supported')throw new Error('Les textes de cet acquis doivent être relus pour cette offre. Aucun rachat.');
+ return pinImageAsset(p.userId,p.id,a.id,a.version);
+}
+
 function matchesEditorial(a:Asset,r:PostBrief) {
   if(!matchesPostAspect(a,r))return false;
   const m=json<any>(a.meta,{});
@@ -131,7 +141,7 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { beforeDispatch?:()=>void;publicationQuote?:import('./bounded-production-quote').NativePublicationQuote;expectedInputs?:Record<string,string>;allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { onAcquired?:(postId:string,assetIds:string[])=>void;beforeDispatch?:()=>void;publicationQuote?:import('./bounded-production-quote').NativePublicationQuote;expectedInputs?:Record<string,string>;allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -150,7 +160,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     o.progress?.(done++, rows.length);
     const own= p.business==='services'?contentStrategy(p.id,"post",r.id):null;
     const scopedPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools,ownPools={image:scopedPools.image.filter(a=>matchesNativeOffer(a,r,p)),video:scopedPools.video.filter(a=>matchesNativeOffer(a,r,p))};
-    const m = pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, ownPools);
+    const exact=o.publicationQuote?.reused?o.publicationQuote.reuse:undefined;const m=exact?{method:"library" as const,paid:false}:pick(r, { allowPaid: allowPaid && (!o.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: o.aiBackground }, ownPools);
     let out: MediaResult | null = null;
     try {
       assertCurrent();
@@ -161,7 +171,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? ownPools.video : ownPools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
-        const a = [...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
+        let a:Asset|undefined;if(exact){const pin=pinAcquiredSocialImage(loadProject(p.id),r,exact.assetId,o.publicationQuote!.instruction);if(imageBindingHash(pin)!==imageBindingHash(exact))throw new Error('Le fichier acquis a changé. Aucun autre fichier substitué.');a=getAsset(pin.assetId);}else a=[...pool].sort((x, y) => (used.get(x.id) ?? 0) - (used.get(y.id) ?? 0))[0];
         out = a ? { assetId: a.id,assetIds:r.format==="carousel"?json<any>(a.meta,{}).carousel.assetIds:undefined, costMicro: 0, by: "library" } : null;
       } else {
         const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
@@ -199,6 +209,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     if(r.format==="carousel" && (media.length<2 || new Set(media).size!==media.length)){res.failed++;notes.push("Carrousel incomplet : plusieurs images distinctes et ordonnées sont requises.");continue;}
     if(media.some(aid=>{const a=getAsset(aid);return !a||a.project_id!==p.id||a.deleted_at||a.status==="rejected";})){res.failed++;notes.push("Média indisponible : version précédente conservée.");continue;}
     if(media.some(aid=>!matchesPostAspect(getAsset(aid)!,r))){res.failed++;notes.push("Le visuel acquis ne respecte pas le ratio confirmé. Fichier conservé, aucune attache ni nouvelle génération automatique.");continue;}
+    o.onAcquired?.(r.id,media); // Reçu du fichier complet avant une attache pouvant être refusée.
     try{tx(()=>{
       assertCurrent();
       const updated=run("UPDATE posts SET media = ?, production = ?, status = CASE WHEN status IN ('planned','draft','failed') THEN 'review' ELSE status END, updated_at = ? WHERE id = ? AND project_id=? AND (media = '[]' OR ?)", JSON.stringify(media), JSON.stringify({ by: out.by, costMicro: out.costMicro, at: now() }), now(), r.id,p.id, o.replace ? 1 : 0);
