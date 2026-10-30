@@ -1,0 +1,31 @@
+{
+  "D20-controller-tests": {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-logo-selection.test.ts"
+    ],
+    "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+    "startedAt": "2026-10-30T22:39:17.623524+00:00",
+    "finishedAt": "2026-10-30T22:39:39.506365+00:00",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "logSha256": "590d35313963979aa6f95b70e5216244af9764efddb574a4d31b486f5de99308"
+  },
+  "D20-checkpoint-types": {
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    "head": "4b9bae98e47e3b3f4840cf57a3ab38745dbd2d41",
+    "startedAt": "2026-10-30T22:41:28.753834+00:00",
+    "finishedAt": "2026-10-30T22:41:38.689529+00:00",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
