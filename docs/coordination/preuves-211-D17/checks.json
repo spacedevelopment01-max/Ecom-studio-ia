@@ -1,0 +1,129 @@
+{
+  "applicationCommit": "b1053e9357d1a17c872caa4182c18211232be051",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": {
+    "D17-targeted-final": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-brand-review.test.ts",
+        "tests/conversation211-generation-schema.test.ts",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/conversation211-brand.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts",
+        "tests/ci-native-brand-placement.test.ts",
+        "tests/ci211-verdict-complet.test.ts",
+        "tests/conversation211-social-preview.test.ts",
+        "tests/conversation211-clip-preview.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "6ecba5b22053ef11f79d9a84f7c4000cb7a9abce",
+      "startedAt": "2026-10-30T21:25:07.958063+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "4e33ad78230975d8114f14e3d183b4e4deea8cb99ff20386b8ebb40e0b58431f",
+        "scripts/verify-agent211-brand-ui.ts": "a4d4899595351c4999b1d7ae31bf20b8811974a8c0d5cb966bd904367951887b",
+        "src/components/studio/conversation-brand-choice.tsx": "eb58719fec6f68d2f1157e83f48fc9048631a64d0ac74dc0b528ed29429429ac",
+        "src/lib/orchestrator/conversation/brand-review-contract.ts": "07c3b456c6452c77154512b48b41d32cf1b966a27296406c55c022acfa091dc1",
+        "src/lib/orchestrator/conversation/brand-review-execution.ts": "0036d519151811197a5f2c1b278c21af3d853b8c4dd5ec9369a740fc593264c4",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "916d1d00cf42537690b69bf4ab2c395d81ade049f397583e68ff26ccb5a85f17",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c275096096c8b133b58a5221e0d78fd57ec3e8faa1463002a460016b63abc381",
+        "src/lib/orchestrator/conversation/intelligence.ts": "4aad80c7db713d8b831f5fdfc620079ede1a568294c417efa5b003bfe7b740a1",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "163f6b0fba5a1dd282504048cd7fa81b23caccf62ebd66f0d980412407f3e1c0",
+        "tests/conversation211-brand-review.test.ts": "2d2df3298648b44d286e25aa9561943a662b069215b6688803fc47dab1494088"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D17-targeted-final.log",
+      "cleanCommitSnapshot": false,
+      "pid": 595938,
+      "processGroup": 595938,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:25:20.373436+00:00",
+      "logSha256": "7b980f03fa1ad7e2b250c85e23f266df67310505c1cd66f94cb243fed484afd3",
+      "sourceUnchanged": true,
+      "finalHead": "6ecba5b22053ef11f79d9a84f7c4000cb7a9abce"
+    },
+    "D17-types-final": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "6ecba5b22053ef11f79d9a84f7c4000cb7a9abce",
+      "startedAt": "2026-10-30T21:25:07.958060+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "4e33ad78230975d8114f14e3d183b4e4deea8cb99ff20386b8ebb40e0b58431f",
+        "scripts/verify-agent211-brand-ui.ts": "a4d4899595351c4999b1d7ae31bf20b8811974a8c0d5cb966bd904367951887b",
+        "src/components/studio/conversation-brand-choice.tsx": "eb58719fec6f68d2f1157e83f48fc9048631a64d0ac74dc0b528ed29429429ac",
+        "src/lib/orchestrator/conversation/brand-review-contract.ts": "07c3b456c6452c77154512b48b41d32cf1b966a27296406c55c022acfa091dc1",
+        "src/lib/orchestrator/conversation/brand-review-execution.ts": "0036d519151811197a5f2c1b278c21af3d853b8c4dd5ec9369a740fc593264c4",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "916d1d00cf42537690b69bf4ab2c395d81ade049f397583e68ff26ccb5a85f17",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c275096096c8b133b58a5221e0d78fd57ec3e8faa1463002a460016b63abc381",
+        "src/lib/orchestrator/conversation/intelligence.ts": "4aad80c7db713d8b831f5fdfc620079ede1a568294c417efa5b003bfe7b740a1",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "163f6b0fba5a1dd282504048cd7fa81b23caccf62ebd66f0d980412407f3e1c0",
+        "tests/conversation211-brand-review.test.ts": "2d2df3298648b44d286e25aa9561943a662b069215b6688803fc47dab1494088"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D17-types-final.log",
+      "cleanCommitSnapshot": false,
+      "pid": 595939,
+      "processGroup": 595939,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:25:13.745656+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true,
+      "finalHead": "6ecba5b22053ef11f79d9a84f7c4000cb7a9abce"
+    },
+    "D17-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "b1053e9357d1a17c872caa4182c18211232be051",
+      "startedAt": "2026-10-30T21:26:34.507284+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D17-build.log",
+      "cleanCommitSnapshot": true,
+      "pid": 596392,
+      "processGroup": 596392,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:27:37.719561+00:00",
+      "logSha256": "7b321a59f83b46afb327a5f3df6e4520413c4cef568b82f2b3e344958b9348ec",
+      "sourceUnchanged": true,
+      "finalHead": "b1053e9357d1a17c872caa4182c18211232be051"
+    },
+    "D17-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D17-browser-proof",
+        "--brand-ui",
+        "--brand-review",
+        "--brand-correction"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "b1053e9357d1a17c872caa4182c18211232be051",
+      "startedAt": "2026-10-30T21:27:52.823211+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-brand-ui.ts": "128bee48402d267f893ba3cb8edccf7c78ac6245dd724a7b29a1efeb9620fef8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D17-browser.log",
+      "cleanCommitSnapshot": false,
+      "pid": 596805,
+      "processGroup": 596805,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:28:33.713126+00:00",
+      "logSha256": "d1dc592c96c04722382bad910974b7bec4efa24dc584aa21bf38e8eb8c2a93e4",
+      "sourceUnchanged": true,
+      "finalHead": "b1053e9357d1a17c872caa4182c18211232be051"
+    }
+  }
+}

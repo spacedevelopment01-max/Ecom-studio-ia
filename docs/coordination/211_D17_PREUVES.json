@@ -1,0 +1,31 @@
+{
+  "applicationCommit": "b1053e9357d1a17c872caa4182c18211232be051",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/preuves-211-D17/01-correction-mobile.png": {
+      "bytes": 65699,
+      "sha256": "10c8dd6b80a3b47fb7f17474f9f45f364fd2b05e07ca3bcab6922ae1286c20d8"
+    },
+    "docs/coordination/preuves-211-D17/02-correction-ordinateur.png": {
+      "bytes": 257206,
+      "sha256": "da2561f204e1e90f0596a881a2805d6d1130f5a040f6d1baceb3ea834796fd2d"
+    },
+    "docs/coordination/preuves-211-D17/checks.json": {
+      "bytes": 6513,
+      "sha256": "09ff36d480aa29e06a3ee332374a20251c9399c469286e10b28c35cceedae1f1"
+    },
+    "docs/coordination/preuves-211-D17/correction-identite.mp4": {
+      "bytes": 1068347,
+      "sha256": "db479fd812d5f292b5e66301bdfbdaef82f5320ede7f9dae3d7841c435b5c87a"
+    },
+    "docs/coordination/preuves-211-D17/native-proof.json": {
+      "bytes": 6889,
+      "sha256": "9158b3432cf15af56533d1edfb21c301dec12e14b0db0fa96d1c4de15eca9aba"
+    },
+    "docs/coordination/preuves-211-D17/saved-captures.json": {
+      "bytes": 1298,
+      "sha256": "c326eae6cd99b52fac025c28bf621d0825e39b786796aa93d9c9c2ac6c44a720"
+    }
+  }
+}

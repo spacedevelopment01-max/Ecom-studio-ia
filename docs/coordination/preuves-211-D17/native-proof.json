@@ -1,0 +1,249 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "produit",
+      "business": "products",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": false,
+        "clientCorrection": true,
+        "exactName": "Équerre douce — choisi ensemble",
+        "exactTagline": "Des  mots exacts,\npour une offre décrite sans promesse.",
+        "originalProposalPreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1274,
+      "instructionSha256": "e08f2d43fb300498f4feb8796d9d35646779826d3a3472f490aa9cf268ba014c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "1f47de82de2aca8a641be3fdf12a7f50c220162bdc6458dbccadd633454f2b98"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchangedBeforeChoice": true,
+      "brandUnchanged": false,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "qez7ykmxif5zz5kk",
+          "usage_key": "qez7ykmxif5zz5kk:dialogue",
+          "cost": 7912
+        },
+        {
+          "status": "ok",
+          "job_id": "32fnonrmjkypsfma",
+          "usage_key": "32fnonrmjkypsfma:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "qdxwxx3zx7dhsc6v",
+          "usage_key": "qdxwxx3zx7dhsc6v:identity",
+          "cost": 0
+        },
+        {
+          "status": "ok",
+          "job_id": "pfhtdgnm928xdtdj",
+          "usage_key": "pfhtdgnm928xdtdj:dialogue",
+          "cost": 7912
+        },
+        {
+          "status": "ok",
+          "job_id": "iy4cimgwpm5v9kwt",
+          "usage_key": "iy4cimgwpm5v9kwt:dialogue",
+          "cost": 7912
+        }
+      ]
+    },
+    {
+      "case": "service",
+      "business": "services",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": true,
+        "clientCorrection": false,
+        "exactName": "Cordes claires",
+        "exactTagline": null,
+        "originalProposalPreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1278,
+      "instructionSha256": "3ff4acee6fb9f6cfc61a37f57608539fc1adcb73d876061d2e7bded1ab00d01c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "b03f1360ca36802457d24a335bc4009c3f5d22b66385b77ff10dc07de690e1f0"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchangedBeforeChoice": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "t2c57gc749bcg5qr",
+          "usage_key": "t2c57gc749bcg5qr:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "pfpg86usikrospb6",
+          "usage_key": "pfpg86usikrospb6:identity",
+          "cost": 0
+        }
+      ]
+    },
+    {
+      "case": "reserve",
+      "business": "products",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": false,
+        "clientCorrection": true,
+        "exactName": "Repères de semis — choisi ensemble",
+        "exactTagline": "Des  mots exacts,\npour une offre décrite sans promesse.",
+        "originalProposalPreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1290,
+      "instructionSha256": "28b2057338351e77d937005185f57f5249d4df733410a97a277e744f26a6fb1d",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "cebf626f57d27705b315a08073a207b4e22c5f6a496d6e729284c78805c63fed"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchangedBeforeChoice": true,
+      "brandUnchanged": false,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "sj6q222pxyep63n6",
+          "usage_key": "sj6q222pxyep63n6:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "hdt3hbbihwf0farr",
+          "usage_key": "hdt3hbbihwf0farr:identity",
+          "cost": 0
+        },
+        {
+          "status": "ok",
+          "job_id": "vl6psbheqgpprp5x",
+          "usage_key": "vl6psbheqgpprp5x:dialogue",
+          "cost": 7912
+        }
+      ]
+    }
+  ]
+}
