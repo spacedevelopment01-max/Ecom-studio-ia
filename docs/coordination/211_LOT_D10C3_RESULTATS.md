@@ -2,7 +2,15 @@
 
 **Fait et recetté en simulation ; CI finale du SHA de livraison encore attendue. Drapeau fermé, aucune mise en service.**
 
-Application compilée/testée : `1992ebc70e8468d8c5cf88b4de04de05242d8616`. Harnais final : `22205fe9d966f2d89557e4a01e00cea85052442a`. Branche `codex/211-lot-d10c-voix-ciblee`, parent #249`2252d10a`. Le contenu de #250`8117a3f8` et ses deux documents`f3026999` est conservé dans cette branche, sans ascendance Git : **ne pas réappliquer ces apports deux fois lors de l’intégration #247/#248**. Aucun merge/rebase/cherry-pick dans les branches Claude ou main.
+Application corrigée, compilée/testée : `7c9a13ed9a40c855eab2abbf14a168c23fe5ce11`. Harnais final : `22205fe9d966f2d89557e4a01e00cea85052442a`. Branche `codex/211-lot-d10c-voix-ciblee`, parent #249`2252d10a`. Le contenu de #250`8117a3f8` et ses deux documents`f3026999` est conservé dans cette branche, sans ascendance Git : **ne pas réappliquer ces apports deux fois lors de l’intégration #247/#248**. Aucun merge/rebase/cherry-pick dans les branches Claude ou main.
+
+## Correctif de droits avant livraison
+
+Une contre-vérification rouge a confirmé un oubli : la nouvelle voix d’une publicité acquise ne contrôlait pas le droit publicitaire Dominer, contrairement à la reprise publicitaire native. La même garde agit désormais au devis, à la confirmation et dans le worker. Un changement vers Vendre bloque toute nouvelle synthèse ; les fichiers acquis et leur réemploi sans achat restent accessibles.
+
+Le **serveur compilé et le worker natif7c9a13ed** ont été contrôlés séparément : devis402, confirmation402, tâche refusée avant appel vocal après changement de forfait, MP4 téléchargé200, même version et mêmes octets, **0appel/0réservation/0usage IA**. [Preuve](preuves-211-D10c3/compiled-ad-rights-proof.json), [script reproductible dans un checkout isolé compilé](preuves-211-D10c3/verify-compiled-ad-rights.mts), [commandes et régression](211_D10C3_CORRECTIF_DROITS.json). Un premier essai du script a rencontré403 à la connexion : URL locale déclarée manquante, corrigée sans désactiver CSRF.
+
+**4 038réussis/45ignorés**, types et build sur ce candidat corrigé. La nouvelle suite complète est justifiée par ce défaut de droit effectivement reproduit ; aucun vert du SHA précédent ne le valide. Les quatre captures et le film restent ceux de1992ebc7 : sources du composant strictement inchangées, pas de nouvelle recette graphique redondante. La CI du nouveau SHA de livraison reste indispensable.
 
 ## Résultat
 
@@ -14,13 +22,13 @@ Conflit de version avant/pendant la synthèse : aucun écrasement, WAV acquis et
 
 ## Vérifications réelles
 
-- **4 037 tests réussis,45 ignorés**,464 fichiers réussis/1 ignoré, suite finale sur l’application`1992ebc7`. Les ignorés ne sont pas des succès.
-- 32tests vocaux natifs ciblés ;6scénarios agent produit/service/droits/échec ;7contrôles ciblés sécurité et premier encodeur (recouvrements, nombres non additionnés). Types et build de production réussis.
+- **4 038 tests réussis,45 ignorés**,464 fichiers réussis/1 ignoré, suite finale sur l’application`7c9a13ed`. Les ignorés ne sont pas des succès.
+- 32tests vocaux natifs ciblés ;7scénarios agent produit/service/droits/échec ;7contrôles ciblés sécurité et premier encodeur (recouvrements, nombres non additionnés). Types et build de production réussis.
 - Un parcours navigateur compilé complet, worker/FFmpeg/stockage/budgets natifs : une seule nouvelle phrase, MP41080×1920/10s décodé, téléchargement MP4/JSON, réouverture/éditeur natif, réemploi sans tâche/version/coût et503 sans retry. Les tests unitaires couvrent aussi une prestation de réglage de métiers à tisser, distincte du produit cadre de séchage.
 - Quatre captures réellement ouvertes : [ordinateur](preuves-211-D10c3/voice-captures/01-devis-ordinateur.png), [devis360px](preuves-211-D10c3/voice-captures/02-devis-mobile.png), [MP4 mobile](preuves-211-D10c3/voice-captures/03-resultat-mobile.png), [échec](preuves-211-D10c3/voice-captures/04-echec-ordinateur.png). Bouton mobile≥44px, pas de débordement, erreurs affichées.
 - [Film réel des interactions](preuves-211-D10c3/voice-workflow.mp4), [MP4 natif fictif](preuves-211-D10c3/voice-native.mp4), [document](preuves-211-D10c3/voice-native.json), [preuve navigateur](preuves-211-D10c3/voice-browser-proof.json). Film compressé intégral, original WebM local conservé.
 
-[Commandes réellement exécutées, dates, SHA et limites](211_D10C3_PREUVES.json). Les sources application/worker/tests restent exactement celles du build ; seuls le harnais navigateur et la durée CI ont changé après gel. La CI finale doit revalider le SHA de livraison. Aucun nouvel essai applicatif complet répété pour ces corrections du harnais.
+[Commandes réellement exécutées, dates, SHA et limites](211_D10C3_PREUVES.json). Les sources application/worker/tests du candidat corrigé sont restées figées pendant sa suite et son build. Les captures antérieures et les corrections du harnais sont datées séparément dans les preuves. La CI finale doit revalider le SHA de livraison. Aucun nouvel essai applicatif complet répété pour ces corrections du harnais.
 
 ## Erreurs et limites explicites
 
