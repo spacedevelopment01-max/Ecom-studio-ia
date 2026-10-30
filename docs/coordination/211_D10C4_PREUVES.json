@@ -1,0 +1,233 @@
+{
+  "schema": "211-D10c4-proof-1",
+  "applicationCommit": "969766bd7b7fa3acac3d9efb3285181302ec6e8a",
+  "base": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+  "full": {
+    "passed": 4065,
+    "skipped": 45
+  },
+  "checks": {
+    "D10c4-full-candidate": {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "head": "969766bd7b7fa3acac3d9efb3285181302ec6e8a",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:50:59.290000+00:00",
+      "finishedAt": "2026-10-30T11:07:08.584287+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "7aaba0d38e9cc2bfc75e4d2b14b03ce6fddf2951fce70785748cb31d1d452903"
+    },
+    "D10c4-clean-build-writable-cache": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "969766bd7b7fa3acac3d9efb3285181302ec6e8a",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:51:14.027586+00:00",
+      "finishedAt": "2026-10-30T10:53:19.460597+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "43ba63410a8e92426890a9d0bfb6234cce80b19ac8ae321b3af46ffcf5d6a486"
+    },
+    "D10c4-browser-named-photo-esm": {
+      "command": [
+        "npx",
+        "tsx",
+        "/workspace/reviews/ecom-211-state/D10c4-harness-fixture/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10c4-browser-named-photo-esm",
+        "--clip-ui"
+      ],
+      "head": "969766bd7b7fa3acac3d9efb3285181302ec6e8a",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:56:23.051735+00:00",
+      "finishedAt": "2026-10-30T10:57:59.218239+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "461825e5f73a8cb3844f5f9645ce87974825e823f2dacf897fc9d303664525c8"
+    },
+    "D10c4-final-candidate-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:46:55.593477+00:00",
+      "finishedAt": "2026-10-30T10:47:07.022311+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D10c4-targeted-stable": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "tests/conversation211-clip-preview.test.ts",
+        "tests/video-clip-revision.test.ts",
+        "tests/video-direct-scene-primitive.test.ts",
+        "tests/video-bounded-chain.test.ts",
+        "tests/conversation211-continuation-bound.test.ts"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "failed",
+      "exitCode": 1,
+      "startedAt": "2026-10-30T10:48:11.545796+00:00",
+      "finishedAt": "2026-10-30T10:49:51.929423+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "31fd5067d110e0d3dd6175dc8ae520fc8be3c63511782be42b288178e427c362"
+    },
+    "D10c4-native-sdk-fixture-green": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/video-bounded-chain.test.ts",
+        "-t",
+        "voix désactivée|reprise native réelle|SYNA reprise ciblée"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:50:18.781770+00:00",
+      "finishedAt": "2026-10-30T10:50:51.167985+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": false,
+      "logSha256": "0aea336caa941f89fd54d3033c4c3b4930d88b771583914e0d4308b8ab96caeb"
+    },
+    "D10c4-unsent-paid-attempt-red": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "-t",
+        "droits publicitaires"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "failed",
+      "exitCode": 1,
+      "startedAt": "2026-10-30T10:46:01.060002+00:00",
+      "finishedAt": "2026-10-30T10:46:18.699157+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "2fea5c955097f9d6175dd19732af9e5b54363e46c1b9d306c0b61c9339bb43f6"
+    },
+    "D10c4-unsent-paid-attempt-green": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "-t",
+        "droits publicitaires"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:46:52.095453+00:00",
+      "finishedAt": "2026-10-30T10:47:11.392991+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "856b6929e182484f63002e547698c55e239b42156bbd6ec7335f56e3faa3158c"
+    },
+    "D10c4-refused-and-review-only": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "tests/video-clip-revision.test.ts",
+        "-t",
+        "503 et contrôle|contrôle ne redéclenche|contrôle acquis"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:43:32.399180+00:00",
+      "finishedAt": "2026-10-30T10:43:58.212173+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "74798d1a520fe77e37dac1d5d04b0a4eed49ec6f64eba32d47db87fb9667f857"
+    },
+    "D10c4-legacy-boundary": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-clip.test.ts",
+        "-t",
+        "bouton historique"
+      ],
+      "head": "a93398de96cf47d046f8f22efb1de26cd0035d7c",
+      "state": "passed",
+      "exitCode": 0,
+      "startedAt": "2026-10-30T10:44:00.341386+00:00",
+      "finishedAt": "2026-10-30T10:44:12.623154+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "11a728396ca63391945bab5e171fdb07651658409c19c0efa6a300215aa3a6a5"
+    }
+  },
+  "files": {
+    "docs/coordination/preuves-211-D10c4/01-devis-ordinateur.png": {
+      "bytes": 253274,
+      "sha256": "39b350387a0d8cd3a70f7608dcc1bfb822ad1652197d0190b02d2261b8a7bc49"
+    },
+    "docs/coordination/preuves-211-D10c4/02-devis-mobile.png": {
+      "bytes": 60459,
+      "sha256": "beffc05f744ce229d21e25f281e890dd60e73e4bd85c029b716c8483b36e622a"
+    },
+    "docs/coordination/preuves-211-D10c4/03-resultat-mobile.png": {
+      "bytes": 43740,
+      "sha256": "722e5a8dac5a0ddc2b70c929dcc821df85002cf5f6a6a506029ae2def4b37079"
+    },
+    "docs/coordination/preuves-211-D10c4/clip-browser-proof.json": {
+      "bytes": 4392,
+      "sha256": "1f32778083f9480ff4eedc5e28f8f54b6adc14761395df0aa8647ef96d39db31"
+    },
+    "docs/coordination/preuves-211-D10c4/clip-native.json": {
+      "bytes": 7887,
+      "sha256": "4287fbf63b9c4c7d5ad89e299c16d0facaaa7a56fd03fe1632dec273676490b4"
+    },
+    "docs/coordination/preuves-211-D10c4/clip-native.mp4": {
+      "bytes": 98471,
+      "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f"
+    },
+    "docs/coordination/preuves-211-D10c4/clip-workflow.mp4": {
+      "bytes": 962912,
+      "sha256": "bfd10c41dc4c426c71ba76020c4387d1072e593fbfe124fb8cee63831a26741b"
+    },
+    "docs/coordination/preuves-211-D10c4/compiled-summary.json": {
+      "bytes": 4150,
+      "sha256": "a3a7f6b34267a3ae7564f9d1afda82993cbe9a03d2d800b265f44df70de2275a"
+    }
+  },
+  "capturesActuallyOpened": 3,
+  "filmSeconds": 80.48,
+  "film": "Full workflow, compressed960px12fps; original1440px25fps WebM kept locally",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "limitations": [
+    "SDK HTTP and explicit video transport simulated; neutral MP4, synthetic pattern and tone, no real creative qualification.",
+    "Focused SDK green kept identical file bytes but HEAD changed when the exact code object was imported; final full/build/browser are clean-commit checks.",
+    "Browser initial source photo was not explicitly named and was correctly refused. External harness names it; paths made absolute, ESM package set, application unchanged.",
+    "Local full run emitted Fontconfig unwritable-cache warnings; result is recorded, no repeat to suppress warnings.",
+    "CI for final delivery not presumed green."
+  ],
+  "harnessCommit": "c390f611203c33dc5d7e580418c35f20b856fac8",
+  "appWorkerTestsIdenticalToTestedApplicationCommit": true,
+  "harnessSourceHash": "34bb567b6dcace52a2471549821770dc85a38c168b2018d456c96dfacd189e3e"
+}
