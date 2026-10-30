@@ -20,6 +20,7 @@ import {ConversationCatalogueTools} from './conversation-catalogue-tools';
 import {ConversationImageTools} from './conversation-image-tools';
 import {ConversationLogoTools} from './conversation-logo-tools';
 import {ConversationGeneratedVideos}from './conversation-generated-videos';
+import {ConversationVoiceTools}from './conversation-voice-tools';
 import {ConversationVideoTools}from './conversation-video-tools';
 import {ConversationStudioHelp} from './conversation-studio-help';
 
@@ -110,6 +111,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.imageExecution?.enabled&&projectId&&<ConversationImageTools view={v} onChanged={reload}/>}
       {v?.logoExecution?.enabled&&projectId&&<ConversationLogoTools view={v} onChanged={reload}/>}
       {v?.videoExecution?.generation&&projectId&&<ConversationGeneratedVideos view={v} onChanged={reload}/>}
+      {v?.videoExecution?.voice&&projectId&&<ConversationVoiceTools view={v} onChanged={reload}/>}
       {v?.videoExecution?.enabled&&projectId&&<ConversationVideoTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}

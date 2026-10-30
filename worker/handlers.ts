@@ -169,6 +169,7 @@ export const handlers: Record<string, Handler> = {
   },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
+    if(ctx.payload.agentVoiceQuote){const {runAgentVideoVoice}=await import("../src/lib/orchestrator/conversation/video-voice-execution");return runAgentVideoVoice(ctx);}
     if(ctx.payload.agentVideoQuote){const {runAgentVideoCreation}=await import("../src/lib/orchestrator/conversation/video-tool-execution");return runAgentVideoCreation(ctx);}
     const { renderLatest } = await import("../src/lib/video-v2/engine");
     const r=await renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);

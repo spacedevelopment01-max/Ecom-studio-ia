@@ -209,6 +209,17 @@ jobs:
           path: /tmp/agent211-D10b2-proof
           if-no-files-found: warn
 
+      - name: Correction vocale ciblée depuis SYNA compilé (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10c3-proof --voice-ui
+
+      - name: Preuves de la correction vocale ciblée
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10c3-${{ github.sha }}
+          path: /tmp/agent211-D10c3-proof
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

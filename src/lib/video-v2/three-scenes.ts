@@ -635,7 +635,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
 
   doc.meta.retakeCount=req.repair?1:0;
   if(req.approval) doc.meta.retakeBudgetMicro=req.quotedGeneration?0:req.approval.retakeMicro??Math.floor(req.approval.capMicro/(n+1));
-  doc.meta.editorial = {...videoContext(req.binding?p:p0,req.as,req.request,req.subject,req.editorial),...(req.binding?{nativeBinding:req.binding}:{})};
+  doc.meta.editorial = {...videoContext(req.binding?p:p0,req.as,req.request,req.binding?s:req.subject,req.editorial),...(req.binding?{nativeBinding:req.binding}:{})};
 
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = wantsSpeech?projectVoice(memory.preferences):null;
@@ -686,9 +686,10 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
 }
 
 /** Voix off par scène + phrase de fin ; durée mesurée ; sous-titres découpés par groupes de sens (2 lignes). */
-export async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number], synth = synthLine,beforeEach?:()=>void) {
-  const lang: "fr" | "en" = loadProject(projectId).settings?.language === "en" ? "en" : "fr";
-  const texts=sceneVoiceLines(plan,doc.clips.length),lines=doc.clips.map((clip,k)=>({clip,text:texts[k]}));
+export async function addVoice(projectId: string, userId: string, doc: VideoDocument, plan: ScenePlan, brief: CreativeBrief, key: string, words30: [number, number], synth = synthLine,beforeEach?:()=>void,revision?:{language:"fr"|"en";exactLines:readonly string[]}) {
+  const lang: "fr" | "en" = revision?.language ?? (loadProject(projectId).settings?.language === "en" ? "en" : "fr");
+  if(revision&&revision.exactLines.length!==doc.clips.length)throw new UserFacingError(L("Les phrases ne correspondent pas aux plans. Aucun texte transformé.","The phrases do not match the shots. No text transformed."));
+  const texts=revision?.exactLines??sceneVoiceLines(plan,doc.clips.length),lines=doc.clips.map((clip,k)=>({clip,text:texts[k]}));
   const dir=tmpDir("voice");
   const pending:VideoDocument["audio"]["voice"]=[];
   const cues:VideoDocument["subtitles"]["cues"]=[];
@@ -702,7 +703,7 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
       if(acquired)fs.writeFileSync(wav,assetData(acquired));
       const durationS=acquired?Number((await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",wav])).stdout.trim()):await synth(l.text,wav,options);
       if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
-      const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
+      const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,speed:brief.voice.speed,lang,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
       cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
     }
