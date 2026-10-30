@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "product",
+      "name": "Décapsuleur de poche pour bouteilles",
+      "passed": true,
+      "requestCharacters": 859,
+      "instructionPreserved": true,
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 5009,
+          "sha256": "516db2c975e63b4fae070fb409a28add03fa9e237a6354bcf2cde79a83e0fa23",
+          "hasExactInstruction": true
+        },
+        {
+          "phase": "review",
+          "bytes": 2307,
+          "sha256": "01db4b51da58dca3222c1df94f2627b3eaacc827d619a4728b668aae34e7537e",
+          "hasExactInstruction": true
+        }
+      ],
+      "output": {
+        "version": 2,
+        "by": "ai",
+        "verdict": "FINAL",
+        "downloadSha256": "b2e6e599d33777373553138038f6adc1ba8140743743f53cc35aa016b12cd463",
+        "nativeEditor": true,
+        "unsavedEditPreserved": true
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.2,
+        "httpAttempts": 1,
+        "automaticRetry": false,
+        "localReplacement": false,
+        "priorPreserved": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedBudget": 400,
+      "themeVersions": 0,
+      "reloadNoCall": true,
+      "counts": {
+        "providerHttpCalls": 6,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 6,
+        "imageHttpCalls": 0,
+        "tokenCounts": 6,
+        "calls": 6,
+        "usage": 5,
+        "simulatedMicro": 35604
+      },
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    },
+    {
+      "case": "service",
+      "name": "Remise en état de stores bannes",
+      "passed": true,
+      "requestCharacters": 863,
+      "instructionPreserved": true,
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 6969,
+          "sha256": "185eed4fd23ea00172bd990db46ef9641441c08edf71cb05410dd501dd3ad667",
+          "hasExactInstruction": true
+        },
+        {
+          "phase": "review",
+          "bytes": 2417,
+          "sha256": "854a6c09afe4791b3d71a44ac33b1e300db30e644c8d2593199a84e15209e1d0",
+          "hasExactInstruction": true
+        }
+      ],
+      "output": {
+        "version": 2,
+        "by": "ai",
+        "verdict": "FINAL",
+        "downloadSha256": "f0f279aaa3317e503089271d953ccca5799db7bbac439fd0d500f3f9d1249695",
+        "nativeEditor": true,
+        "unsavedEditPreserved": true
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.2,
+        "httpAttempts": 1,
+        "automaticRetry": false,
+        "localReplacement": false,
+        "priorPreserved": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedBudget": 400,
+      "themeVersions": 0,
+      "reloadNoCall": true,
+      "counts": {
+        "providerHttpCalls": 9,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 9,
+        "imageHttpCalls": 0,
+        "tokenCounts": 9,
+        "calls": 9,
+        "usage": 7,
+        "simulatedMicro": 47472
+      },
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    }
+  ],
+  "applicationCommit": "6aedfbd46b03b40ef13f2c614e7774a61c499c2e",
+  "harnessCommit": "7bd872c746bb3ded4444f75b7c1d4f27d4e20017",
+  "compiledVersion": {
+    "commit": "6aedfbd46b03b40ef13f2c614e7774a61c499c2e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  }
+}
