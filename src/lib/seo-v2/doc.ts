@@ -7,6 +7,7 @@
 import crypto from "node:crypto";
 import { z } from "zod";
 import { fold } from "./lang";
+import {ContentBindingSchema} from "./subject-contract";
 import type { Block, ContentDoc, ContentType, VerifiedFacts } from "./types";
 
 export const CONTENT_DOC_VERSION = 1;
@@ -157,7 +158,7 @@ export const ContentDocSchema = z.object({
   blocks: z.array(BlockSchema).max(200),
   schema: z.array(z.record(z.string(), z.unknown())).max(10),
   links: z.array(PageRefSchema).max(40),
-  meta2: z.object({ source: z.enum(["engine", "user", "ai_local", "ai"]), by: z.enum(["ai", "local"]), runId: z.string().max(60).nullable(), createdFrom: z.string().max(80).nullable(), contract: z.object({ request: z.string().max(8000), contextHash: z.string(), contextVersion: z.string(), target: z.string(), checks: z.object({ checked: z.array(z.string()), issues: z.array(z.string()), unchecked: z.array(z.string()) }) }).optional() }),
+  meta2: z.object({ nativeBinding: ContentBindingSchema.optional(), source: z.enum(["engine", "user", "ai_local", "ai"]), by: z.enum(["ai", "local"]), runId: z.string().max(60).nullable(), createdFrom: z.string().max(80).nullable(), contract: z.object({ request: z.string().max(8000), contextHash: z.string(), contextVersion: z.string(), target: z.string(), checks: z.object({ checked: z.array(z.string()), issues: z.array(z.string()), unchecked: z.array(z.string()) }) }).optional() }),
 });
 
 /** Ids uniques (une copie ou un collage de bloc garde un identifiant distinct). */
