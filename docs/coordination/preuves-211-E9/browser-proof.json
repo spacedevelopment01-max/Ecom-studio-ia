@@ -1,0 +1,1137 @@
+{
+  "schema": "211-E9-selected-browser-proof-1",
+  "compiledApplication": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+  "finalHarness": "e04e13f3196ef6844c5d26e43bc1ce2190843007",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "scene": "mono",
+      "version": {
+        "id": "8uyt61rhultm7ska",
+        "number": 1,
+        "parentId": null,
+        "specSha256": "f4425ef6f2fe9dbe651942caf6fbf9593d087af119e24ec54acbb15f76fe0cb3",
+        "direction": "original",
+        "themeKit": "none",
+        "productCount": 1,
+        "functionalTemplates": [
+          "404",
+          "index",
+          "product",
+          "collection",
+          "cart",
+          "search",
+          "page",
+          "list-collections",
+          "page.contact"
+        ]
+      },
+      "plan": {
+        "schema": 1,
+        "mode": "original",
+        "versionId": "original.fa50342e6864420c",
+        "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+        "pages": [
+          {
+            "template": "index",
+            "sections": [
+              {
+                "kind": "component",
+                "id": "opening",
+                "type": "image-with-text",
+                "blocks": [],
+                "layout": [
+                  {
+                    "key": "layout",
+                    "value": "image-right"
+                  },
+                  {
+                    "key": "reveal",
+                    "value": "curtain"
+                  },
+                  {
+                    "key": "ratio",
+                    "value": "landscape"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "key": "heading",
+                    "source": "source.2"
+                  },
+                  {
+                    "key": "text",
+                    "source": "source.4"
+                  },
+                  {
+                    "key": "image",
+                    "source": "source.6"
+                  }
+                ]
+              },
+              {
+                "kind": "component",
+                "id": "editorial",
+                "type": "rich-text",
+                "blocks": [
+                  {
+                    "id": "offer",
+                    "type": "heading"
+                  },
+                  {
+                    "id": "description",
+                    "type": "text"
+                  }
+                ],
+                "layout": [],
+                "bindings": [
+                  {
+                    "key": "text",
+                    "block": "offer",
+                    "source": "source.3"
+                  },
+                  {
+                    "key": "text",
+                    "block": "description",
+                    "source": "source.4"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "broken": 0
+        },
+        {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "broken": 0
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "broken": 0
+        },
+        {
+          "width": 360,
+          "scrollWidth": 360,
+          "broken": 0
+        }
+      ],
+      "functional": {
+        "variantChanged": true,
+        "cartCount": 2,
+        "totalCents": 25800
+      },
+      "platformChecks": [
+        {
+          "platform": "woocommerce",
+          "status": 200,
+          "verdict": "PROVISIONAL",
+          "scope": "static",
+          "installation": "not_tested"
+        },
+        {
+          "platform": "prestashop",
+          "status": 200,
+          "verdict": "PROVISIONAL",
+          "scope": "static",
+          "installation": "not_tested"
+        },
+        {
+          "platform": "wix",
+          "status": 200,
+          "verdict": "PROVISIONAL",
+          "scope": "static",
+          "installation": "not_tested"
+        },
+        {
+          "platform": "squarespace",
+          "status": 200,
+          "verdict": "PROVISIONAL",
+          "scope": "static",
+          "installation": "not_tested"
+        }
+      ],
+      "export": {
+        "status": 200,
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "installation": "not_tested",
+        "nativeCheck": {
+          "stats": {
+            "files": 491,
+            "zipKb": 1635,
+            "cssKb": 2179,
+            "jsKb": 534,
+            "mediaKb": 68,
+            "themeCheckErrors": 0,
+            "themeCheckWarnings": 35
+          },
+          "issues": [],
+          "scope": "static",
+          "unmeasured": [
+            "installation",
+            "page_fidelity",
+            "section_fidelity",
+            "typography",
+            "colors",
+            "responsive",
+            "navigation",
+            "buttons",
+            "ecommerce"
+          ]
+        }
+      },
+      "simulatedCalls": 1,
+      "realProviderCalls": 0,
+      "retainedNativeMetadata": {
+        "original": {
+          "schema": 1,
+          "foundation": "native_functional_only",
+          "quality": "not_measured"
+        },
+        "composition": {
+          "schema": 1,
+          "plan": {
+            "schema": 1,
+            "versionId": "original.fa50342e6864420c",
+            "mode": "original",
+            "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+            "pages": [
+              {
+                "template": "index",
+                "sections": [
+                  {
+                    "kind": "component",
+                    "id": "opening",
+                    "type": "image-with-text",
+                    "bindings": [
+                      {
+                        "key": "heading",
+                        "source": "source.2"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4"
+                      },
+                      {
+                        "key": "image",
+                        "source": "source.6"
+                      }
+                    ],
+                    "layout": [
+                      {
+                        "key": "layout",
+                        "value": "image-right"
+                      },
+                      {
+                        "key": "reveal",
+                        "value": "curtain"
+                      },
+                      {
+                        "key": "ratio",
+                        "value": "landscape"
+                      }
+                    ],
+                    "blocks": []
+                  },
+                  {
+                    "kind": "component",
+                    "id": "editorial",
+                    "type": "rich-text",
+                    "bindings": [
+                      {
+                        "key": "text",
+                        "source": "source.3",
+                        "block": "offer"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4",
+                        "block": "description"
+                      }
+                    ],
+                    "layout": [],
+                    "blocks": [
+                      {
+                        "id": "offer",
+                        "type": "heading"
+                      },
+                      {
+                        "id": "description",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "parentVersionId": "original.fa50342e6864420c",
+          "sourceRefs": [
+            {
+              "id": "source.2",
+              "ref": "project.brand.name",
+              "kind": "copy"
+            },
+            {
+              "id": "source.4",
+              "ref": "project.product.summary",
+              "kind": "copy"
+            },
+            {
+              "id": "source.6",
+              "ref": "asset.knp5lrshvl2xfx9g",
+              "kind": "media"
+            },
+            {
+              "id": "source.3",
+              "ref": "project.product.name",
+              "kind": "copy"
+            }
+          ],
+          "templateSections": {
+            "index": [
+              "image_with_text_1",
+              "rich_text_1"
+            ]
+          },
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        }
+      }
+    },
+    {
+      "scene": "multi",
+      "version": {
+        "id": "q8uh92mz2484yk0j",
+        "number": 1,
+        "parentId": null,
+        "specSha256": "a81852dc9d1bc4ebd1d7c09afed1a27c0ee965cdb7146a596cbae9c2164b4abe",
+        "direction": "original",
+        "themeKit": "none",
+        "productCount": 2,
+        "functionalTemplates": [
+          "404",
+          "index",
+          "product",
+          "collection",
+          "cart",
+          "search",
+          "page",
+          "list-collections",
+          "page.contact"
+        ]
+      },
+      "plan": {
+        "schema": 1,
+        "mode": "original",
+        "versionId": "original.429f8e3025f64410",
+        "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+        "pages": [
+          {
+            "template": "index",
+            "sections": [
+              {
+                "kind": "component",
+                "id": "opening",
+                "type": "image-with-text",
+                "blocks": [],
+                "layout": [
+                  {
+                    "key": "layout",
+                    "value": "image-right"
+                  },
+                  {
+                    "key": "reveal",
+                    "value": "curtain"
+                  },
+                  {
+                    "key": "ratio",
+                    "value": "landscape"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "key": "heading",
+                    "source": "source.2"
+                  },
+                  {
+                    "key": "text",
+                    "source": "source.4"
+                  },
+                  {
+                    "key": "image",
+                    "source": "source.6"
+                  }
+                ]
+              },
+              {
+                "kind": "component",
+                "id": "editorial",
+                "type": "rich-text",
+                "blocks": [
+                  {
+                    "id": "offer",
+                    "type": "heading"
+                  },
+                  {
+                    "id": "description",
+                    "type": "text"
+                  }
+                ],
+                "layout": [],
+                "bindings": [
+                  {
+                    "key": "text",
+                    "block": "offer",
+                    "source": "source.3"
+                  },
+                  {
+                    "key": "text",
+                    "block": "description",
+                    "source": "source.4"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "broken": 0
+        },
+        {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "broken": 0
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "broken": 0
+        },
+        {
+          "width": 360,
+          "scrollWidth": 360,
+          "broken": 0
+        }
+      ],
+      "functional": {
+        "variantChanged": true,
+        "cartCount": 2,
+        "totalCents": 25800
+      },
+      "platformChecks": [],
+      "export": {
+        "status": 200,
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "installation": "not_tested",
+        "nativeCheck": {
+          "stats": {
+            "files": 491,
+            "zipKb": 1636,
+            "cssKb": 2179,
+            "jsKb": 534,
+            "mediaKb": 69,
+            "themeCheckErrors": 0,
+            "themeCheckWarnings": 35
+          },
+          "issues": [],
+          "scope": "static",
+          "unmeasured": [
+            "installation",
+            "page_fidelity",
+            "section_fidelity",
+            "typography",
+            "colors",
+            "responsive",
+            "navigation",
+            "buttons",
+            "ecommerce"
+          ]
+        }
+      },
+      "simulatedCalls": 1,
+      "realProviderCalls": 0,
+      "retainedNativeMetadata": {
+        "original": {
+          "schema": 1,
+          "foundation": "native_functional_only",
+          "quality": "not_measured"
+        },
+        "composition": {
+          "schema": 1,
+          "plan": {
+            "schema": 1,
+            "versionId": "original.429f8e3025f64410",
+            "mode": "original",
+            "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+            "pages": [
+              {
+                "template": "index",
+                "sections": [
+                  {
+                    "kind": "component",
+                    "id": "opening",
+                    "type": "image-with-text",
+                    "bindings": [
+                      {
+                        "key": "heading",
+                        "source": "source.2"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4"
+                      },
+                      {
+                        "key": "image",
+                        "source": "source.6"
+                      }
+                    ],
+                    "layout": [
+                      {
+                        "key": "layout",
+                        "value": "image-right"
+                      },
+                      {
+                        "key": "reveal",
+                        "value": "curtain"
+                      },
+                      {
+                        "key": "ratio",
+                        "value": "landscape"
+                      }
+                    ],
+                    "blocks": []
+                  },
+                  {
+                    "kind": "component",
+                    "id": "editorial",
+                    "type": "rich-text",
+                    "bindings": [
+                      {
+                        "key": "text",
+                        "source": "source.3",
+                        "block": "offer"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4",
+                        "block": "description"
+                      }
+                    ],
+                    "layout": [],
+                    "blocks": [
+                      {
+                        "id": "offer",
+                        "type": "heading"
+                      },
+                      {
+                        "id": "description",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "parentVersionId": "original.429f8e3025f64410",
+          "sourceRefs": [
+            {
+              "id": "source.2",
+              "ref": "project.brand.name",
+              "kind": "copy"
+            },
+            {
+              "id": "source.4",
+              "ref": "project.product.summary",
+              "kind": "copy"
+            },
+            {
+              "id": "source.6",
+              "ref": "asset.ld5zltv39jazh91x",
+              "kind": "media"
+            },
+            {
+              "id": "source.3",
+              "ref": "project.product.name",
+              "kind": "copy"
+            }
+          ],
+          "templateSections": {
+            "index": [
+              "image_with_text_1",
+              "rich_text_1"
+            ]
+          },
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        }
+      }
+    },
+    {
+      "scene": "service",
+      "version": {
+        "id": "hs227ol11gcq94xa",
+        "number": 1,
+        "parentId": null,
+        "specSha256": "8245813dc2d79ad8666a119a43331cdddbd2de2bd89413979fc8e1c08fe1a1de",
+        "direction": "original",
+        "themeKit": "none",
+        "productCount": 1,
+        "functionalTemplates": [
+          "404",
+          "index",
+          "product",
+          "collection",
+          "cart",
+          "search",
+          "page",
+          "list-collections",
+          "page.contact"
+        ]
+      },
+      "plan": {
+        "schema": 1,
+        "mode": "original",
+        "versionId": "original.441c6fb086d65156",
+        "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+        "pages": [
+          {
+            "template": "index",
+            "sections": [
+              {
+                "kind": "component",
+                "id": "opening",
+                "type": "image-with-text",
+                "blocks": [],
+                "layout": [
+                  {
+                    "key": "layout",
+                    "value": "image-right"
+                  },
+                  {
+                    "key": "reveal",
+                    "value": "curtain"
+                  },
+                  {
+                    "key": "ratio",
+                    "value": "landscape"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "key": "heading",
+                    "source": "source.2"
+                  },
+                  {
+                    "key": "text",
+                    "source": "source.4"
+                  },
+                  {
+                    "key": "image",
+                    "source": "source.6"
+                  }
+                ]
+              },
+              {
+                "kind": "component",
+                "id": "editorial",
+                "type": "rich-text",
+                "blocks": [
+                  {
+                    "id": "offer",
+                    "type": "heading"
+                  },
+                  {
+                    "id": "description",
+                    "type": "text"
+                  }
+                ],
+                "layout": [],
+                "bindings": [
+                  {
+                    "key": "text",
+                    "block": "offer",
+                    "source": "source.3"
+                  },
+                  {
+                    "key": "text",
+                    "block": "description",
+                    "source": "source.4"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "broken": 0
+        },
+        {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "broken": 0
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "broken": 0
+        },
+        {
+          "width": 360,
+          "scrollWidth": 360,
+          "broken": 0
+        }
+      ],
+      "functional": {
+        "contactFormPresent": true,
+        "realSend": false,
+        "appointment": "not_connected_in_original_base"
+      },
+      "platformChecks": [],
+      "export": {
+        "status": 200,
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "installation": "not_tested",
+        "nativeCheck": {
+          "stats": {
+            "files": 491,
+            "zipKb": 1634,
+            "cssKb": 2179,
+            "jsKb": 534,
+            "mediaKb": 68,
+            "themeCheckErrors": 0,
+            "themeCheckWarnings": 35
+          },
+          "issues": [],
+          "scope": "static",
+          "unmeasured": [
+            "installation",
+            "page_fidelity",
+            "section_fidelity",
+            "typography",
+            "colors",
+            "responsive",
+            "navigation",
+            "buttons",
+            "forms"
+          ]
+        }
+      },
+      "simulatedCalls": 1,
+      "realProviderCalls": 0,
+      "retainedNativeMetadata": {
+        "original": {
+          "schema": 1,
+          "foundation": "native_functional_only",
+          "quality": "not_measured"
+        },
+        "composition": {
+          "schema": 1,
+          "plan": {
+            "schema": 1,
+            "versionId": "original.441c6fb086d65156",
+            "mode": "original",
+            "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+            "pages": [
+              {
+                "template": "index",
+                "sections": [
+                  {
+                    "kind": "component",
+                    "id": "opening",
+                    "type": "image-with-text",
+                    "bindings": [
+                      {
+                        "key": "heading",
+                        "source": "source.2"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4"
+                      },
+                      {
+                        "key": "image",
+                        "source": "source.6"
+                      }
+                    ],
+                    "layout": [
+                      {
+                        "key": "layout",
+                        "value": "image-right"
+                      },
+                      {
+                        "key": "reveal",
+                        "value": "curtain"
+                      },
+                      {
+                        "key": "ratio",
+                        "value": "landscape"
+                      }
+                    ],
+                    "blocks": []
+                  },
+                  {
+                    "kind": "component",
+                    "id": "editorial",
+                    "type": "rich-text",
+                    "bindings": [
+                      {
+                        "key": "text",
+                        "source": "source.3",
+                        "block": "offer"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4",
+                        "block": "description"
+                      }
+                    ],
+                    "layout": [],
+                    "blocks": [
+                      {
+                        "id": "offer",
+                        "type": "heading"
+                      },
+                      {
+                        "id": "description",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "parentVersionId": "original.441c6fb086d65156",
+          "sourceRefs": [
+            {
+              "id": "source.2",
+              "ref": "project.brand.name",
+              "kind": "copy"
+            },
+            {
+              "id": "source.4",
+              "ref": "project.product.summary",
+              "kind": "copy"
+            },
+            {
+              "id": "source.6",
+              "ref": "asset.ufmd4oag4pvrs255",
+              "kind": "media"
+            },
+            {
+              "id": "source.3",
+              "ref": "project.product.name",
+              "kind": "copy"
+            }
+          ],
+          "templateSections": {
+            "index": [
+              "image_with_text_1",
+              "rich_text_1"
+            ]
+          },
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        }
+      }
+    },
+    {
+      "scene": "holdout",
+      "version": {
+        "id": "ec0mw1550cr7uuzi",
+        "number": 1,
+        "parentId": null,
+        "specSha256": "6ee07a3c845fbe8d1ec08f15fb5e38c226e50979203dd4529eba1bce13248101",
+        "direction": "original",
+        "themeKit": "none",
+        "productCount": 1,
+        "functionalTemplates": [
+          "404",
+          "index",
+          "product",
+          "collection",
+          "cart",
+          "search",
+          "page",
+          "list-collections",
+          "page.contact"
+        ]
+      },
+      "plan": {
+        "schema": 1,
+        "mode": "original",
+        "versionId": "original.03b3aa4760b04a6c",
+        "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+        "pages": [
+          {
+            "template": "index",
+            "sections": [
+              {
+                "kind": "component",
+                "id": "opening",
+                "type": "image-with-text",
+                "blocks": [],
+                "layout": [
+                  {
+                    "key": "layout",
+                    "value": "image-right"
+                  },
+                  {
+                    "key": "reveal",
+                    "value": "curtain"
+                  },
+                  {
+                    "key": "ratio",
+                    "value": "landscape"
+                  }
+                ],
+                "bindings": [
+                  {
+                    "key": "heading",
+                    "source": "source.2"
+                  },
+                  {
+                    "key": "text",
+                    "source": "source.4"
+                  },
+                  {
+                    "key": "image",
+                    "source": "source.6"
+                  }
+                ]
+              },
+              {
+                "kind": "component",
+                "id": "editorial",
+                "type": "rich-text",
+                "blocks": [
+                  {
+                    "id": "offer",
+                    "type": "heading"
+                  },
+                  {
+                    "id": "description",
+                    "type": "text"
+                  }
+                ],
+                "layout": [],
+                "bindings": [
+                  {
+                    "key": "text",
+                    "block": "offer",
+                    "source": "source.3"
+                  },
+                  {
+                    "key": "text",
+                    "block": "description",
+                    "source": "source.4"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "broken": 0
+        },
+        {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "broken": 0
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "broken": 0
+        },
+        {
+          "width": 360,
+          "scrollWidth": 360,
+          "broken": 0
+        }
+      ],
+      "functional": {
+        "contactFormPresent": true,
+        "realSend": false,
+        "appointment": "not_connected_in_original_base"
+      },
+      "platformChecks": [],
+      "export": {
+        "status": 200,
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "installation": "not_tested",
+        "nativeCheck": {
+          "stats": {
+            "files": 491,
+            "zipKb": 1634,
+            "cssKb": 2179,
+            "jsKb": 534,
+            "mediaKb": 68,
+            "themeCheckErrors": 0,
+            "themeCheckWarnings": 35
+          },
+          "issues": [],
+          "scope": "static",
+          "unmeasured": [
+            "installation",
+            "page_fidelity",
+            "section_fidelity",
+            "typography",
+            "colors",
+            "responsive",
+            "navigation",
+            "buttons",
+            "forms"
+          ]
+        }
+      },
+      "simulatedCalls": 1,
+      "realProviderCalls": 0,
+      "retainedNativeMetadata": {
+        "original": {
+          "schema": 1,
+          "foundation": "native_functional_only",
+          "quality": "not_measured"
+        },
+        "composition": {
+          "schema": 1,
+          "plan": {
+            "schema": 1,
+            "versionId": "original.03b3aa4760b04a6c",
+            "mode": "original",
+            "summary": "Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.",
+            "pages": [
+              {
+                "template": "index",
+                "sections": [
+                  {
+                    "kind": "component",
+                    "id": "opening",
+                    "type": "image-with-text",
+                    "bindings": [
+                      {
+                        "key": "heading",
+                        "source": "source.2"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4"
+                      },
+                      {
+                        "key": "image",
+                        "source": "source.6"
+                      }
+                    ],
+                    "layout": [
+                      {
+                        "key": "layout",
+                        "value": "image-right"
+                      },
+                      {
+                        "key": "reveal",
+                        "value": "curtain"
+                      },
+                      {
+                        "key": "ratio",
+                        "value": "landscape"
+                      }
+                    ],
+                    "blocks": []
+                  },
+                  {
+                    "kind": "component",
+                    "id": "editorial",
+                    "type": "rich-text",
+                    "bindings": [
+                      {
+                        "key": "text",
+                        "source": "source.3",
+                        "block": "offer"
+                      },
+                      {
+                        "key": "text",
+                        "source": "source.4",
+                        "block": "description"
+                      }
+                    ],
+                    "layout": [],
+                    "blocks": [
+                      {
+                        "id": "offer",
+                        "type": "heading"
+                      },
+                      {
+                        "id": "description",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "parentVersionId": "original.03b3aa4760b04a6c",
+          "sourceRefs": [
+            {
+              "id": "source.2",
+              "ref": "project.brand.name",
+              "kind": "copy"
+            },
+            {
+              "id": "source.4",
+              "ref": "project.product.summary",
+              "kind": "copy"
+            },
+            {
+              "id": "source.6",
+              "ref": "asset.x8ghkigzealj5sub",
+              "kind": "media"
+            },
+            {
+              "id": "source.3",
+              "ref": "project.product.name",
+              "kind": "copy"
+            }
+          ],
+          "templateSections": {
+            "index": [
+              "image_with_text_1",
+              "rich_text_1"
+            ]
+          },
+          "quality": "not_measured",
+          "platformInstallation": "not_tested"
+        }
+      }
+    }
+  ],
+  "heldoutIntroducedAfterApplicationFreeze": true,
+  "initialCartographyCaseRetainedLocallyNotClaimedNew": true
+}

@@ -51,3 +51,12 @@ Deux captures finales réellement ouvertes et inspectées ; un film du parcours 
 Sélection explicite du document et des passages, pas de sélection sémantique autonome par l’agent ; 50 documents récents dans le sélecteur, 30 blocs maximum, consigne 8 000 caractères maximum. Types rédactionnels E6 seulement, pas de blog/publicité/contact autonome ajouté. Réemploi d’une tentative refusée = consultation gratuite et accès à l’éditeur, **pas de réapplication automatique** au document initial ; une reprise hors contexte ou après modification reste refusée, sans nouvel achat implicite. Une nouvelle correction payante exige un devis et un accord distincts.
 
 Ce lot ne modifie ni thème ni composition, ne publie rien et n’installe aucun CMS. Le téléchargement Markdown est vérifié ; pas de nouvelle recette CMS ou qualité créative réelle. Mode sans thème de départ, autres raccordements D12/E/F/vidéo et intégration métier future Claude #245/#247/#248 restent ouverts. Le Studio client/main n’est pas mis à jour par la branche. Ne marquer la PR prête qu’après sa CI complète sur la tête distante exacte ; aucune fusion présumée.
+
+
+### Correctif de recette après la CI complète 41104794700
+
+La CI du SHA 76ef3d1d a échoué sur deux assertions de `lot1-consignes-livraison.test.ts` (artisan et restaurant) : le nouveau contrôle E8 refuse une prestation absente avant l’ancien résolveur. Le test attendait uniquement le mot « introuvable ». Le refus observé est HTTP 409, « La prestation désignée manque ». Aucune protection applicative n’a été retirée ni modifiée.
+
+Correctif de tests `accda0ed411caeb72e167cb3f7482184f3aa49cd` : vérifier ce statut et cette cause, **aucun appel SDK supplémentaire** et les deux documents acquis inchangés ; les vérifications de renommage, ordre, rendu et export restent présentes. Reproduction ciblée : 2 échecs ; fichier corrigé : **17 tests réussis**. Contrôle local dans la copie d’intégration au SHA 0035ba3a (moteur rédactionnel/service de E8 inchangé), statut/provenance conservés dans la preuve ci-dessous ; cela ne remplace pas la CI exacte de cette PR.
+
+Application et captures E8 restent `8dce0191`, inchangées ; aucune recompilation ou capture redondante. Une CI complète sera lancée sur la tête finale corrigée ; elle reste exigée avant de déclarer cette PR prête. Aucun fournisseur réel, coût nul, aucun merge ou déploiement.

@@ -1,0 +1,42 @@
+{
+  "schema": "211-E9-proof-manifest-1",
+  "applicationCommit": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+  "harnessCommit": "e04e13f3196ef6844c5d26e43bc1ce2190843007",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/211_LOT_E9_RESULTATS.md": {
+      "bytes": 9524,
+      "sha256": "fb5dddf3cd2e40e52b3f26c19a712ab0297b5dfe1345a69042c9bf5a5d16da7b"
+    },
+    "docs/coordination/preuves-211-E9/01-accord-mobile.png": {
+      "bytes": 69577,
+      "sha256": "981b60793cf2c9944b4e57574cd6698e80ed462cf240ee0366e6d293c599a868"
+    },
+    "docs/coordination/preuves-211-E9/02-service-ordinateur.png": {
+      "bytes": 139344,
+      "sha256": "4409f9392fe06dbc89738c897850eca34e7306c5ab0fb10d18cad984922716b6"
+    },
+    "docs/coordination/preuves-211-E9/03-produit-mobile.png": {
+      "bytes": 85664,
+      "sha256": "81d394e7d57ae3e7df05c9bdabfc266e6c644881a01d2c6fef6b0b2e4a873bdd"
+    },
+    "docs/coordination/preuves-211-E9/browser-proof.json": {
+      "bytes": 31764,
+      "sha256": "5a5f0a1719da06d3ad960424fdffaf58865fe271b89de7625f6eaec1843dfa6c"
+    },
+    "docs/coordination/preuves-211-E9/checks.json": {
+      "bytes": 11795,
+      "sha256": "854521f5bb85c375785fcd46e324e3ed8fda93f8fe11718bbed06e66c7bfba66"
+    },
+    "docs/coordination/preuves-211-E9/original-native.mp4": {
+      "bytes": 231793,
+      "sha256": "9f397d871000b43e85461a827ecaaf1acfb51ad5169c6991998d6e1f0dc864a2"
+    },
+    "docs/coordination/preuves-211-E9/shopify-warnings.json": {
+      "bytes": 11090,
+      "sha256": "9bc22966a9916e2cc8c48feb1803e44e505789e4ff083c8c245385b3bdac4789"
+    }
+  },
+  "ownManifestExcludedFromItsHashes": true
+}
