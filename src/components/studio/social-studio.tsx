@@ -124,6 +124,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
   }, []);
   const [range, setRange] = useState(() => ({ from: Date.now() - 40 * 86_400_000, to: Date.now() + 120 * 86_400_000 }));
   const { data, reload, error } = useApi<Data>(`/api/projects/${id}/social/v2?from=${range.from}&to=${range.to}`);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:social-changed',changed);return()=>window.removeEventListener('studio:social-changed',changed);},[id,reload]);
   const [open, setOpen] = useState<string | null>(null);
   if (error && !data) return <Empty title={t("Réseaux sociaux indisponibles", "Social unavailable")}>{error}</Empty>;
   if (!data) return <div className="grid place-items-center py-24 text-muted"><Spinner className="size-6" /></div>;
