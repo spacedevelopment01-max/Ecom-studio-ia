@@ -1,0 +1,224 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "product",
+      "name": "Emporte-pièce de maroquinerie",
+      "targetedEdit": {
+        "passed": true,
+        "instructionCharacters": 135,
+        "exactInstruction": true,
+        "selectedBlocks": 1,
+        "unselectedBlocksPreserved": true,
+        "metaPreserved": true,
+        "oldVersionPreserved": true,
+        "verdict": "PROVISIONAL",
+        "qualified": false,
+        "downloadSha256": "3597b6f5a00417a8c88381d02cf8492ff85282a76059d867796d928a91d6ad8d",
+        "wire": [
+          {
+            "phase": "rewrite",
+            "bytes": 624,
+            "sha256": "0540a688add6737224aa56bae9c59c1c970a82b8d123c83e00f1c2e9dd140bce",
+            "hasExactInstruction": true,
+            "blockIds": [
+              "b1bc72f9c"
+            ]
+          }
+        ],
+        "repeatedWithoutCall": true,
+        "failure": {
+          "status": "failed",
+          "httpAttempts": 1,
+          "priorPreserved": true,
+          "progress": 0.15
+        },
+        "reloadNoCall": true,
+        "restoration": {
+          "nativeBrowserButton": true,
+          "version": 4,
+          "blocksAndMetaExact": true,
+          "newCalls": 0
+        },
+        "realProviderCalls": 0,
+        "creativeQualityQualified": false
+      },
+      "nativeCatalogue": {
+        "subject": "variant",
+        "price": "32,50 €",
+        "selectedOption": "Brunie",
+        "homonymExcluded": true,
+        "archived": {
+          "read": 200,
+          "edit": 200,
+          "download": 200,
+          "currentInput": false,
+          "factsCheck": "CONTENT_SUBJECT_CHANGED",
+          "bindingPreserved": true
+        }
+      },
+      "passed": true,
+      "requestCharacters": 852,
+      "instructionPreserved": true,
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 4882,
+          "sha256": "c5929cf6c2ae8f6aa031b014b101aa18712587401a62e1d8eb185d9a4dbc6eb6",
+          "hasExactInstruction": true,
+          "offerName": "Emporte-pièce de maroquinerie",
+          "price": "32,50 €",
+          "factValues": [
+            "Brunie"
+          ]
+        },
+        {
+          "phase": "review",
+          "bytes": 2223,
+          "sha256": "8fcc7890987f146fde95ffdd2aae969bd6a5fb4bd8ec88d6b2244b4095e98810",
+          "hasExactInstruction": true
+        }
+      ],
+      "output": {
+        "version": 2,
+        "by": "ai",
+        "verdict": "FINAL",
+        "downloadSha256": "f62fb484ee5049cee9225ce7115568d76be4ee41f641c016ec7a7d3b0bd05d11",
+        "nativeEditor": true,
+        "unsavedEditPreserved": true
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.2,
+        "httpAttempts": 1,
+        "automaticRetry": false,
+        "localReplacement": false,
+        "priorPreserved": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedBudget": 400,
+      "themeVersions": 0,
+      "reloadNoCall": true,
+      "counts": {
+        "providerHttpCalls": 8,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 8,
+        "imageHttpCalls": 0,
+        "tokenCounts": 8,
+        "calls": 8,
+        "usage": 6,
+        "simulatedMicro": 39560
+      },
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    },
+    {
+      "case": "service",
+      "name": "Remise en état de stores bannes",
+      "targetedEdit": {
+        "passed": true,
+        "instructionCharacters": 135,
+        "exactInstruction": true,
+        "selectedBlocks": 1,
+        "unselectedBlocksPreserved": true,
+        "metaPreserved": true,
+        "oldVersionPreserved": true,
+        "verdict": "PROVISIONAL",
+        "qualified": false,
+        "downloadSha256": "0d7db49000f853ede9cc25e60db0e698304700fd6ced16c76b5db272c00f9c2c",
+        "wire": [
+          {
+            "phase": "rewrite",
+            "bytes": 646,
+            "sha256": "199410d14e49bec7e079166995094fed9e03e450fb716564a670c57832f305a5",
+            "hasExactInstruction": true,
+            "blockIds": [
+              "b9edad714"
+            ]
+          }
+        ],
+        "repeatedWithoutCall": true,
+        "failure": {
+          "status": "failed",
+          "httpAttempts": 1,
+          "priorPreserved": true,
+          "progress": 0.15
+        },
+        "reloadNoCall": true,
+        "restoration": {
+          "nativeBrowserButton": true,
+          "version": 4,
+          "blocksAndMetaExact": true,
+          "newCalls": 0
+        },
+        "realProviderCalls": 0,
+        "creativeQualityQualified": false
+      },
+      "nativeCatalogue": null,
+      "passed": true,
+      "requestCharacters": 863,
+      "instructionPreserved": true,
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 7160,
+          "sha256": "e97424785916eeeed04869cdf6d7e3581ed9c6c79e8f7ce761461ceadaae8516",
+          "hasExactInstruction": true,
+          "offerName": "Remise en état de stores bannes",
+          "price": null,
+          "factValues": []
+        },
+        {
+          "phase": "review",
+          "bytes": 2310,
+          "sha256": "6954587c92489f4bfd65d5507c66b0b7d1291853b993be8d10cff6c2bc19fe38",
+          "hasExactInstruction": true
+        }
+      ],
+      "output": {
+        "version": 2,
+        "by": "ai",
+        "verdict": "FINAL",
+        "downloadSha256": "35ce0d039fd7794faa1055a50642ffac84b052f64448d087cc31610ecb49951d",
+        "nativeEditor": true,
+        "unsavedEditPreserved": true
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.2,
+        "httpAttempts": 1,
+        "automaticRetry": false,
+        "localReplacement": false,
+        "priorPreserved": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedBudget": 400,
+      "themeVersions": 0,
+      "reloadNoCall": true,
+      "counts": {
+        "providerHttpCalls": 13,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 13,
+        "imageHttpCalls": 0,
+        "tokenCounts": 13,
+        "calls": 13,
+        "usage": 9,
+        "simulatedMicro": 55384
+      },
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    }
+  ]
+}

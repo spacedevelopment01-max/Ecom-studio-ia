@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "applicationCommit": "8dce0191ba092f3c9e202252fd8800e04b46c77f",
+  "compiledTree": "clean",
+  "targetedTests": 93,
+  "targetedFiles": 7,
+  "browser": "native SDK and worker, loopback HTTP simulated, Chromium product/variant and multi-offer service",
+  "capturesActuallyInspected": 2,
+  "filmSeconds": 12.12,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "files": [
+    {
+      "path": "docs/coordination/211_LOT_E8_RESULTATS.md",
+      "bytes": 9541,
+      "sha256": "d086a7d6d87c8178485c3f0ee2c694de61704b70585c7c0586edac6c30508ce7"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E8/01-retouche-mobile.png",
+      "bytes": 78759,
+      "sha256": "940147cbcdeaae0ef70c51bf0b25e91cd3768a0fc2cf7d97913c0c3856d6f3dd"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E8/02-prestation-ordinateur.png",
+      "bytes": 126641,
+      "sha256": "c996ac872999d8dffd3e16e5309feb658cb096824c44967f102d13337755b201"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E8/browser-proof.json",
+      "bytes": 6382,
+      "sha256": "4b8499df6b9771cc2144633eb3b356f2a72b0d59120cf34691061f0ee5ed097d"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E8/checks.json",
+      "bytes": 17212,
+      "sha256": "09b5ae1ecad64ee8200568577324eae55ebcdf6664619610da6eb37e64b3f40e"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E8/retouche-native.mp4",
+      "bytes": 1113666,
+      "sha256": "72fdfe8afb1ad6f579d76898e6c325a22018bb9f05c8d7a84f7e040f5b7a8958"
+    }
+  ]
+}

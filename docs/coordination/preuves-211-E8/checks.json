@@ -1,0 +1,358 @@
+{
+  "E8-native-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/content211-edit.test.ts"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:25:32.715631+00:00",
+    "finishedAt": "2026-10-30T17:25:37.834444+00:00",
+    "logSha256": "35502a271816ef8f834195fb44160a6a12e09d55e9915d479f8e0ac1e471638d",
+    "sourceHashes": {
+      "tests/content211-edit.test.ts": "2dbfe6ac50d64115f3893b39d1daf3d09aac6b50fe3b921f55187638485b880a"
+    }
+  },
+  "E8-native-1": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/content211-edit.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/conversation211-content.test.ts"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:26:26.071778+00:00",
+    "finishedAt": "2026-10-30T17:26:33.636796+00:00",
+    "logSha256": "986b5a039740e76f2510adc30ea3bbb47c488e392eb9395016d96c3f9146f3bd",
+    "sourceHashes": {
+      "src/lib/seo-v2/engine.ts": "56c06fe323ba01d8996df742faaab63c6e19ce91f71f8ba6616b901469c3e970",
+      "tests/content211-edit.test.ts": "2dbfe6ac50d64115f3893b39d1daf3d09aac6b50fe3b921f55187638485b880a"
+    }
+  },
+  "E8-controller-1": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "tests/content211-edit.test.ts",
+      "tests/seo-v2-engine.test.ts"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:28:54.749556+00:00",
+    "finishedAt": "2026-10-30T17:29:04.553753+00:00",
+    "logSha256": "80db6a6c615b50851f3af929ebdadd45752e7e9b9c3a72f5e917e11f94662c4a",
+    "sourceHashes": {
+      "src/app/api/studio-agent/conversations/[cid]/content/route.ts": "1bd7563f8902addd0278168e30d817da6054c3a29b9516b5e581b72b19770dc1",
+      "src/lib/orchestrator/conversation/content-tool-contract.ts": "6a182697e2db1b68daafc1a029edf2462b9e2318a43e13f195548149b818fab8",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "75dd6ee6b756d8702b61621eb30a04f24cdc7c9c589e5ee1bcadab2ed42657c0",
+      "src/lib/seo-v2/engine.ts": "bdb09235cad66f6cacb2cb104c70e9b8837c314e2ac5cea05aa6f715b8c01b67",
+      "tests/content211-edit.test.ts": "2dbfe6ac50d64115f3893b39d1daf3d09aac6b50fe3b921f55187638485b880a",
+      "tests/conversation211-content.test.ts": "06a9d0279baa506b2906c0bfe04260413039d919dfa5a0ac7061929017bd9b3f"
+    }
+  },
+  "E8-quality-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/content211-edit.test.ts",
+      "-t",
+      "existing diagnostic code"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:37:46.232569+00:00",
+    "finishedAt": "2026-10-30T17:37:50.383643+00:00",
+    "logSha256": "8de40ff6baa2d0274ab2c540b475e54618eed3e4438efe0612e5a1fea413855d",
+    "sourceHashes": {
+      ".github/workflows/ci.yml": "34d8dc461ecefcf82e4534f777ea10816502c54678e063f54f416f75084148d2",
+      "scripts/agent211-content-wire.ts": "5c4f8b75e40a9d37fb9dd8b6610ab3070e9ac18b9ae10795b54054b23a7a45c6",
+      "scripts/verify-agent211-build.ts": "1e43d9ffecbdad783aaf11f83219c4f2d0c3ae0b8c647405387905c7db3a3ad3",
+      "scripts/verify-agent211-content-edit-ui.ts": "ef52d242367d40728bdade7223545073f9c5d27a9700052ed8dbd30cc931110b",
+      "scripts/verify-agent211-content-ui.ts": "82b2d3c8e64d540f2824d4d12f3d7e1f5e80deebe4f76502be93fff535ba504e",
+      "src/app/api/studio-agent/conversations/[cid]/content/route.ts": "1bd7563f8902addd0278168e30d817da6054c3a29b9516b5e581b72b19770dc1",
+      "src/components/studio/conversation-content-tools.tsx": "1190ddf58748fd469c4f762671646836f83b0737e1c4eea50dfdd88990da682b",
+      "src/lib/orchestrator/conversation/content-tool-contract.ts": "6a182697e2db1b68daafc1a029edf2462b9e2318a43e13f195548149b818fab8",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "dc179aab3b564cf7dcdd2d22602d49cb17f65fb55e3d32f4eaac1f1160012a8b",
+      "src/lib/orchestrator/conversation/intelligence-context.ts": "e4f6ae391ad5673f6a0dc5008846dbcf4b3bf2b9d9e29f408b42645838a216ba",
+      "src/lib/orchestrator/conversation/studio-operations.ts": "8274e4ad62608bd65a7ad3b15b4bfe23d733561858f41014d7be0081706ddf04",
+      "src/lib/orchestrator/conversation/tool-execution.ts": "10998207d44595d892b37a057e534987a853a207fd4424b073bd8d979c9c28ef",
+      "src/lib/seo-v2/engine.ts": "d7636554ea41c4146d8057467eb69b3d45bad898eb811a71c36bc7dd69d46d04",
+      "tests/content211-edit.test.ts": "4c4b10754d118b6abae96c4a3261f9f0bd941e8d62de919f2729042d958cfa2e",
+      "tests/content211-wire.test.ts": "97db77797ce667ee2ccc06fc562cd01e620151d3edd367299edde2673707f6ae",
+      "tests/conversation211-communication-registry.test.ts": "d5edc5e8d7cacee349df0c64f8791f97df76ea681adc5b2e1de0fb97f15643dc",
+      "tests/conversation211-content.test.ts": "c8f2b0923fabee62fcca14fbb9bbb43044aadfef43b1fa6bda5d5cd8380ab7c6"
+    }
+  },
+  "E8-service-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "-t",
+      "only that service facts"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:43:15.272153+00:00",
+    "finishedAt": "2026-10-30T17:43:19.518067+00:00",
+    "logSha256": "ba4b47a7b3a383173a5799ce9445ea49f1daf73a663ce53cdd69657b44ebe450",
+    "sourceHashes": {
+      ".github/workflows/ci.yml": "34d8dc461ecefcf82e4534f777ea10816502c54678e063f54f416f75084148d2",
+      "scripts/agent211-content-wire.ts": "5c4f8b75e40a9d37fb9dd8b6610ab3070e9ac18b9ae10795b54054b23a7a45c6",
+      "scripts/verify-agent211-build.ts": "1e43d9ffecbdad783aaf11f83219c4f2d0c3ae0b8c647405387905c7db3a3ad3",
+      "scripts/verify-agent211-content-edit-ui.ts": "ef52d242367d40728bdade7223545073f9c5d27a9700052ed8dbd30cc931110b",
+      "scripts/verify-agent211-content-ui.ts": "82b2d3c8e64d540f2824d4d12f3d7e1f5e80deebe4f76502be93fff535ba504e",
+      "src/app/api/studio-agent/conversations/[cid]/content/route.ts": "1bd7563f8902addd0278168e30d817da6054c3a29b9516b5e581b72b19770dc1",
+      "src/components/studio/conversation-content-tools.tsx": "804c92559c2bc8a009975e8132751934a11c1d8f1b81d2a3b576c66603c37289",
+      "src/lib/orchestrator/conversation/content-tool-contract.ts": "6a182697e2db1b68daafc1a029edf2462b9e2318a43e13f195548149b818fab8",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "92c6122012ee0f3709041c5af03a8fb40ea4e8186b4a376bf86778ed8bf092f9",
+      "src/lib/orchestrator/conversation/intelligence-context.ts": "e4f6ae391ad5673f6a0dc5008846dbcf4b3bf2b9d9e29f408b42645838a216ba",
+      "src/lib/orchestrator/conversation/studio-operations.ts": "8274e4ad62608bd65a7ad3b15b4bfe23d733561858f41014d7be0081706ddf04",
+      "src/lib/orchestrator/conversation/tool-execution.ts": "10998207d44595d892b37a057e534987a853a207fd4424b073bd8d979c9c28ef",
+      "src/lib/seo-v2/engine.ts": "04b903eb93dbdb886c2a6226e520ca1fd5929bc7299291dd20c24bd3225e3bdf",
+      "tests/content211-edit.test.ts": "4c4b10754d118b6abae96c4a3261f9f0bd941e8d62de919f2729042d958cfa2e",
+      "tests/content211-wire.test.ts": "97db77797ce667ee2ccc06fc562cd01e620151d3edd367299edde2673707f6ae",
+      "tests/conversation211-communication-registry.test.ts": "d5edc5e8d7cacee349df0c64f8791f97df76ea681adc5b2e1de0fb97f15643dc",
+      "tests/conversation211-content.test.ts": "92627010a7479a816cc0bb7b6e5a181891e07a9b0d3cf65f3964d77b9b8f98fe",
+      "worker/handlers.ts": "3e639da816225d643f5726a099c8f293a908bfc8c81a8a142a7f9bba45c7b945"
+    }
+  },
+  "E8-types-final": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "state": "failed",
+    "exitCode": 2,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:36:26.371672+00:00",
+    "finishedAt": "2026-10-30T17:36:38.677073+00:00",
+    "logSha256": "05266b5e0d0f3e0ac1fdb053a28f5b00912f2cb0d387aa919e9a6ab6d205b137",
+    "sourceHashes": {
+      ".github/workflows/ci.yml": "34d8dc461ecefcf82e4534f777ea10816502c54678e063f54f416f75084148d2",
+      "scripts/agent211-content-wire.ts": "5c4f8b75e40a9d37fb9dd8b6610ab3070e9ac18b9ae10795b54054b23a7a45c6",
+      "scripts/verify-agent211-build.ts": "f8edb1aced6a9908f0fdecfa452aec0f681f6eae850e0aca6539639018e8aa98",
+      "scripts/verify-agent211-content-edit-ui.ts": "e01178a143fdc551297bd3e929adf6726891fc9bdf7e021f16bccb9e2bae88d9",
+      "scripts/verify-agent211-content-ui.ts": "82b2d3c8e64d540f2824d4d12f3d7e1f5e80deebe4f76502be93fff535ba504e",
+      "src/app/api/studio-agent/conversations/[cid]/content/route.ts": "1bd7563f8902addd0278168e30d817da6054c3a29b9516b5e581b72b19770dc1",
+      "src/components/studio/conversation-content-tools.tsx": "1190ddf58748fd469c4f762671646836f83b0737e1c4eea50dfdd88990da682b",
+      "src/lib/orchestrator/conversation/content-tool-contract.ts": "6a182697e2db1b68daafc1a029edf2462b9e2318a43e13f195548149b818fab8",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "dc179aab3b564cf7dcdd2d22602d49cb17f65fb55e3d32f4eaac1f1160012a8b",
+      "src/lib/orchestrator/conversation/intelligence-context.ts": "e4f6ae391ad5673f6a0dc5008846dbcf4b3bf2b9d9e29f408b42645838a216ba",
+      "src/lib/orchestrator/conversation/studio-operations.ts": "8274e4ad62608bd65a7ad3b15b4bfe23d733561858f41014d7be0081706ddf04",
+      "src/lib/orchestrator/conversation/tool-execution.ts": "10998207d44595d892b37a057e534987a853a207fd4424b073bd8d979c9c28ef",
+      "src/lib/seo-v2/engine.ts": "d7636554ea41c4146d8057467eb69b3d45bad898eb811a71c36bc7dd69d46d04",
+      "tests/content211-edit.test.ts": "a76547a33b038cc45788b41a9f17a24abd854a570a75b1677ad49242124cd051",
+      "tests/content211-wire.test.ts": "97db77797ce667ee2ccc06fc562cd01e620151d3edd367299edde2673707f6ae",
+      "tests/conversation211-communication-registry.test.ts": "d5edc5e8d7cacee349df0c64f8791f97df76ea681adc5b2e1de0fb97f15643dc",
+      "tests/conversation211-content.test.ts": "c8f2b0923fabee62fcca14fbb9bbb43044aadfef43b1fa6bda5d5cd8380ab7c6"
+    }
+  },
+  "E8-build": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:45:44.106154+00:00",
+    "finishedAt": "2026-10-30T17:46:47.348589+00:00",
+    "logSha256": "38264ab13eb42edfad4c49d4098982f302338c3fcb56ee8df873f6fcd590525f",
+    "sourceHashes": {}
+  },
+  "E8-browser": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E8-targeted-browser-proof",
+      "--content-ui"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:46:54.567544+00:00",
+    "finishedAt": "2026-10-30T17:47:20.502128+00:00",
+    "logSha256": "7304ad8680aeb98bcc273f2a6e5c09b3b500b6c6b9e33ef12bc4fcd986fcccf0",
+    "sourceHashes": {}
+  },
+  "E8-blocked-delivery-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "-t",
+      "quality-blocked draft"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:49:48.303057+00:00",
+    "finishedAt": "2026-10-30T17:49:52.631746+00:00",
+    "logSha256": "430a4aa40cfddc978f412bbf1e7cdc2120154b9514640075fab735b9a45b56e9",
+    "sourceHashes": {
+      "tests/conversation211-content.test.ts": "238fac1cecbf8be65cef712ed02a18b6dbccdbfea2bcd7418cc4a98b8bc52f15"
+    }
+  },
+  "E8-targeted-quality-final": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/content211-edit.test.ts",
+      "tests/conversation211-content.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/conversation211-communication-registry.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/content211-wire.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:50:38.056883+00:00",
+    "finishedAt": "2026-10-30T17:50:48.750775+00:00",
+    "logSha256": "0045eca4593a104e19458a4178dffb858756d29bd47bf5b6e12f390ff7d98418",
+    "sourceHashes": {
+      "scripts/verify-agent211-build.ts": "93a9fc3b33d556c086b0d17e8ce267c4eb87144ff2d9db0db907544bb237bf8c",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "1202ac8132863fd69c1d1300d3a01cb170518f9c4a4e46dee7ffd470f369db87",
+      "tests/conversation211-content.test.ts": "238fac1cecbf8be65cef712ed02a18b6dbccdbfea2bcd7418cc4a98b8bc52f15"
+    }
+  },
+  "E8-targeted-quality-fixed": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/content211-edit.test.ts",
+      "tests/conversation211-content.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/conversation211-communication-registry.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/content211-wire.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:52:41.379731+00:00",
+    "finishedAt": "2026-10-30T17:52:51.894452+00:00",
+    "logSha256": "57f1ef8d01eff1e7784ee67e0ead2d56839f8132fefe9a80634bd5938fd9ef2f",
+    "sourceHashes": {
+      "scripts/verify-agent211-build.ts": "93a9fc3b33d556c086b0d17e8ce267c4eb87144ff2d9db0db907544bb237bf8c",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "1202ac8132863fd69c1d1300d3a01cb170518f9c4a4e46dee7ffd470f369db87",
+      "tests/conversation211-content.test.ts": "35bb1744c20ebf266eb3899dfddcd0885f0a2bdbde8ffa57fbb7c0a0d75fa3b3"
+    }
+  },
+  "E8-types-quality-fixed": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "head": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:52:42.885733+00:00",
+    "finishedAt": "2026-10-30T17:52:48.198961+00:00",
+    "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+    "sourceHashes": {
+      "scripts/verify-agent211-build.ts": "93a9fc3b33d556c086b0d17e8ce267c4eb87144ff2d9db0db907544bb237bf8c",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "1202ac8132863fd69c1d1300d3a01cb170518f9c4a4e46dee7ffd470f369db87",
+      "tests/conversation211-content.test.ts": "35bb1744c20ebf266eb3899dfddcd0885f0a2bdbde8ffa57fbb7c0a0d75fa3b3"
+    }
+  },
+  "E8-build-final": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "head": "8dce0191ba092f3c9e202252fd8800e04b46c77f",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:53:52.088357+00:00",
+    "finishedAt": "2026-10-30T17:54:54.649160+00:00",
+    "logSha256": "fb21627557ff11fd0ab94e0e57ce0395696846444143888f5599f3e43e0fc1d0",
+    "sourceHashes": {}
+  },
+  "E8-browser-final": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E8-targeted-final-proof",
+      "--content-ui"
+    ],
+    "head": "8dce0191ba092f3c9e202252fd8800e04b46c77f",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:55:50.570397+00:00",
+    "finishedAt": "2026-10-30T17:56:24.868653+00:00",
+    "logSha256": "92db6d8cace2151a4554c351a8958b9610bcc941ad7b8026cfd7460ec58591ec",
+    "sourceHashes": {}
+  },
+  "initialBrowserRootCause": {
+    "store": "isolated synthetic read-only diagnostic",
+    "applicationCommit": "e778468da53a1c2dcb58cba941e05c7180f1cd4b",
+    "productTargetedFlowAndRestorePassed": true,
+    "service": {
+      "nativeVerdict": "REJECTED",
+      "code": "keyword_stuffing",
+      "occurrences": 3,
+      "densityPercent": 51,
+      "reviewCalls": 0,
+      "deliveryState": "blocked",
+      "jobStatusBeforeFix": "done"
+    },
+    "fix": "Preserve quality check, improve simulated fixture from supplied description, reject blocked native delivery after saving acquired output"
+  }
+}
