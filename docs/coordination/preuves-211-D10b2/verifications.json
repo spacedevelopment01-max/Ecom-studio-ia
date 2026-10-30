@@ -1,0 +1,667 @@
+{
+  "schema": "211-D10b2-verification-1",
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "runs": {
+    "D10b2-full-boundary-final": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+        "npm",
+        "test"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b2-clips",
+      "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+      "startedAt": "2026-10-29T23:36:42.023271+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-generated-videos-ui.ts": "dd98394ac0074a8272adc722774bb9f017a24e3a0b8d8b687d2cac74e7dab2c4",
+        "src/app/api/projects/[id]/creative/video/route.ts": "a823fbdd3355ff371aaef809e121462456e2cfd472106bf364d36ca5aae28c5e",
+        "src/components/studio/conversation-generated-videos.tsx": "96572e6342be73df0543b6eb38f1e16e711a6ff1715b07818fdc8759672e918a",
+        "src/components/studio/guided-video.tsx": "672d7aae4f054b491f77a1c659a8a0a8d1b79bf56897a7e17cf552bdb119395b",
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "1f4d95965b03265ce5fc36e85069e6268f5524d162f69d7720a6f7521b782930",
+        "tests/conversation211-video-generation.test.ts": "04f85d54dab2d0d6e001f38e8285c6fe85e527754f177d4d1fb7ae6b688d9738"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b2-full-boundary-final.log",
+      "pid": 2073818,
+      "processGroup": 2073818,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T23:49:11.504919+00:00",
+      "logSha256": "3fce0bdacd86233c187590424df6327aae3028059b770bdb73dee05bb6f769c6",
+      "sourceUnchanged": true
+    },
+    "D10b2-boundary-final-types": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b2-clips",
+      "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+      "startedAt": "2026-10-29T23:36:12.847503+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-generated-videos-ui.ts": "dd98394ac0074a8272adc722774bb9f017a24e3a0b8d8b687d2cac74e7dab2c4",
+        "src/app/api/projects/[id]/creative/video/route.ts": "a823fbdd3355ff371aaef809e121462456e2cfd472106bf364d36ca5aae28c5e",
+        "src/components/studio/conversation-generated-videos.tsx": "96572e6342be73df0543b6eb38f1e16e711a6ff1715b07818fdc8759672e918a",
+        "src/components/studio/guided-video.tsx": "672d7aae4f054b491f77a1c659a8a0a8d1b79bf56897a7e17cf552bdb119395b",
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "1f4d95965b03265ce5fc36e85069e6268f5524d162f69d7720a6f7521b782930",
+        "tests/conversation211-video-generation.test.ts": "04f85d54dab2d0d6e001f38e8285c6fe85e527754f177d4d1fb7ae6b688d9738"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b2-boundary-final-types.log",
+      "pid": 2073728,
+      "processGroup": 2073728,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T23:36:41.984567+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true
+    },
+    "D10b2-boundary-final-targeted": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-generation.test.ts",
+        "tests/video-creation-rights.test.ts",
+        "tests/conversation211-generation-preview.test.ts",
+        "tests/conversation211-generation-schema.test.ts",
+        "tests/video-bounded-chain.test.ts",
+        "tests/video-bounded-review.test.ts",
+        "tests/video-native-binding.test.ts",
+        "tests/video-voice-timing.test.ts",
+        "tests/video-local-voice-identity.test.ts",
+        "tests/higgsfield-engine.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b2-clips",
+      "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+      "startedAt": "2026-10-29T23:35:13.371094+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-generated-videos-ui.ts": "dd98394ac0074a8272adc722774bb9f017a24e3a0b8d8b687d2cac74e7dab2c4",
+        "src/app/api/projects/[id]/creative/video/route.ts": "a823fbdd3355ff371aaef809e121462456e2cfd472106bf364d36ca5aae28c5e",
+        "src/components/studio/conversation-generated-videos.tsx": "96572e6342be73df0543b6eb38f1e16e711a6ff1715b07818fdc8759672e918a",
+        "src/components/studio/guided-video.tsx": "672d7aae4f054b491f77a1c659a8a0a8d1b79bf56897a7e17cf552bdb119395b",
+        "src/lib/orchestrator/conversation/video-generation-execution.ts": "1f4d95965b03265ce5fc36e85069e6268f5524d162f69d7720a6f7521b782930",
+        "tests/conversation211-video-generation.test.ts": "04f85d54dab2d0d6e001f38e8285c6fe85e527754f177d4d1fb7ae6b688d9738"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10b2-boundary-final-targeted.log",
+      "pid": 2069582,
+      "processGroup": 2069582,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T23:36:12.808591+00:00",
+      "logSha256": "34965c1e1beae14631dbf6436a095fe4972bdccfb6ff86c326fea1d2672bbbe5",
+      "sourceUnchanged": true
+    },
+    "D10b2-build-boundary-final": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b2-clips",
+      "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+      "startedAt": "2026-10-29T23:54:48.271377+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b2-build-boundary-final.log",
+      "pid": 2115488,
+      "processGroup": 2115488,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T23:55:53.169245+00:00",
+      "logSha256": "a32ee350e4290fb25c44cf7339ef94670d36739e570ce5ce28a513e1cea5661e",
+      "sourceUnchanged": true
+    },
+    "D10b2-browser-boundary-final": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10b2-browser-boundary-final-proof",
+        "--generated-videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10b2-clips",
+      "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+      "startedAt": "2026-10-29T23:57:28.990782+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10b2-browser-boundary-final.log",
+      "pid": 2116819,
+      "processGroup": 2116819,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T00:00:31.277688+00:00",
+      "logSha256": "a1f7f0e980b518968f803f916cffc53d257079d10fbd2b13f91722b430901590",
+      "sourceUnchanged": true
+    }
+  },
+  "browser": {
+    "cases": 4,
+    "success": true,
+    "nativeWorker": true,
+    "nativeFfmpeg": true,
+    "creativeQualityQualified": false,
+    "continuousMotionQualified": false,
+    "naturalSpeechQualified": false
+  },
+  "screenshots": 43,
+  "recordings": [
+    {
+      "scene": "mono",
+      "file": "videos/mono.mp4",
+      "original": "sources-video/mono.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1026"
+          }
+        ],
+        "format": {
+          "duration": "41.040000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1026"
+          }
+        ],
+        "format": {
+          "duration": "41.040000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 513,
+          "meanAbsoluteRgbDifferenceOn255": 0.32104335455246913
+        },
+        {
+          "frame": 1025,
+          "meanAbsoluteRgbDifferenceOn255": 0.5356271701388889
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "multi",
+      "file": "videos/multi.mp4",
+      "original": "sources-video/multi.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1011"
+          }
+        ],
+        "format": {
+          "duration": "40.440000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1024,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1011"
+          }
+        ],
+        "format": {
+          "duration": "40.440000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.1900387234157986
+        },
+        {
+          "frame": 505,
+          "meanAbsoluteRgbDifferenceOn255": 0.3967661539713542
+        },
+        {
+          "frame": 1010,
+          "meanAbsoluteRgbDifferenceOn255": 0.4685919867621528
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "services",
+      "file": "videos/services.mp4",
+      "original": "sources-video/services.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "964"
+          }
+        ],
+        "format": {
+          "duration": "38.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "964"
+          }
+        ],
+        "format": {
+          "duration": "38.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.27741007834757836
+        },
+        {
+          "frame": 482,
+          "meanAbsoluteRgbDifferenceOn255": 0.19956908831908832
+        },
+        {
+          "frame": 963,
+          "meanAbsoluteRgbDifferenceOn255": 0.3808377849002849
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "inedit",
+      "file": "videos/inedit.mp4",
+      "original": "sources-video/inedit.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1264"
+          }
+        ],
+        "format": {
+          "duration": "50.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 360,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1264"
+          }
+        ],
+        "format": {
+          "duration": "50.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 632,
+          "meanAbsoluteRgbDifferenceOn255": 0.1546875
+        },
+        {
+          "frame": 1263,
+          "meanAbsoluteRgbDifferenceOn255": 0.37928433641975307
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "nativeMp4Files": 4,
+  "acquiredNeutralClips": 9,
+  "syntheticToneWav": 2,
+  "references": 4,
+  "totals": {
+    "providerHttpCalls": 33,
+    "videoClipCalls": 10,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 21,
+    "imageHttpCalls": 0,
+    "tokenCounts": 21,
+    "calls": 35,
+    "usage": 32,
+    "simulatedMicro": 4037184
+  },
+  "noPublicationOrScheduling": {
+    "posts": 0,
+    "campaigns": 0
+  },
+  "additionalHeldoutCases": {
+    "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "cases": 2,
+    "screenshots": 23,
+    "recordings": [
+      {
+        "scene": "mono",
+        "file": "videos/mono.mp4",
+        "original": "sources-video/mono.webm",
+        "source": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 390,
+              "height": 960,
+              "r_frame_rate": "25/1",
+              "nb_read_frames": "899"
+            }
+          ],
+          "format": {
+            "duration": "35.960000"
+          }
+        },
+        "mp4": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 390,
+              "height": 960,
+              "r_frame_rate": "25/1",
+              "nb_read_frames": "899"
+            }
+          ],
+          "format": {
+            "duration": "35.960000"
+          }
+        },
+        "rgbSamples": [
+          {
+            "frame": 0,
+            "meanAbsoluteRgbDifferenceOn255": 0.0
+          },
+          {
+            "frame": 449,
+            "meanAbsoluteRgbDifferenceOn255": 0.19804398148148147
+          },
+          {
+            "frame": 898,
+            "meanAbsoluteRgbDifferenceOn255": 0.493082264957265
+          }
+        ],
+        "noCutNoAccelerationNoColorFilter": true
+      },
+      {
+        "scene": "inedit",
+        "file": "videos/inedit.mp4",
+        "original": "sources-video/inedit.webm",
+        "source": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 1440,
+              "height": 960,
+              "r_frame_rate": "25/1",
+              "nb_read_frames": "1339"
+            }
+          ],
+          "format": {
+            "duration": "53.560000"
+          }
+        },
+        "mp4": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 1440,
+              "height": 960,
+              "r_frame_rate": "25/1",
+              "nb_read_frames": "1339"
+            }
+          ],
+          "format": {
+            "duration": "53.560000"
+          }
+        },
+        "rgbSamples": [
+          {
+            "frame": 0,
+            "meanAbsoluteRgbDifferenceOn255": 0.0
+          },
+          {
+            "frame": 669,
+            "meanAbsoluteRgbDifferenceOn255": 0.23786699459876542
+          },
+          {
+            "frame": 1338,
+            "meanAbsoluteRgbDifferenceOn255": 0.3311205150462963
+          }
+        ],
+        "noCutNoAccelerationNoColorFilter": true
+      }
+    ],
+    "nativeMp4": [
+      {
+        "scene": "mono",
+        "file": "fichiers/mono-generated.mp4",
+        "document": "fichiers/mono-generated.json",
+        "sha256": "a879bada94abbcea2bb4c459ddb6fc6923fdeab17941dd489a1cfc0ef1dd6074",
+        "bytes": 79646,
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 1080,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "nb_read_frames": "300"
+            },
+            {
+              "codec_type": "audio",
+              "r_frame_rate": "0/0",
+              "nb_read_frames": "431"
+            }
+          ],
+          "format": {
+            "duration": "10.000000"
+          }
+        },
+        "browserDecoded": {
+          "width": 1080,
+          "height": 1080,
+          "durationS": 10,
+          "currentTime": 3.460726
+        },
+        "actualBrowserDownloadMatched": true
+      },
+      {
+        "scene": "inedit",
+        "file": "fichiers/inedit-generated.mp4",
+        "document": "fichiers/inedit-generated.json",
+        "sha256": "187d37d7439fecf65b1084d43877a5d15b4eb851df7e4eb0ceb2e35def4c68f7",
+        "bytes": 92674,
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_type": "video",
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "nb_read_frames": "300"
+            },
+            {
+              "codec_type": "audio",
+              "r_frame_rate": "0/0",
+              "nb_read_frames": "431"
+            }
+          ],
+          "format": {
+            "duration": "10.000000"
+          }
+        },
+        "browserDecoded": {
+          "width": 1920,
+          "height": 1080,
+          "durationS": 10,
+          "currentTime": 3.46312
+        },
+        "actualBrowserDownloadMatched": true
+      }
+    ],
+    "sourcesAndPartialClips": [
+      {
+        "scene": "mono",
+        "file": "sources/mono-original-lv1vrmsjxykjg5vm.png",
+        "role": "original",
+        "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d",
+        "bytes": 32830,
+        "synthetic": true
+      },
+      {
+        "scene": "mono",
+        "file": "fichiers/mono-clip-bplfvexjmad3aatw.mp4",
+        "role": "clip",
+        "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+        "bytes": 2988,
+        "synthetic": true
+      },
+      {
+        "scene": "mono",
+        "file": "fichiers/mono-clip-l43h3shvnpkag2ta.mp4",
+        "role": "clip",
+        "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+        "bytes": 2988,
+        "synthetic": true
+      },
+      {
+        "scene": "inedit",
+        "file": "sources/inedit-original-wv831e1emt3nl2z6.png",
+        "role": "original",
+        "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d",
+        "bytes": 32830,
+        "synthetic": true
+      },
+      {
+        "scene": "inedit",
+        "file": "fichiers/inedit-clip-jkbizt977xlsknsb.mp4",
+        "role": "clip",
+        "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+        "bytes": 2988,
+        "synthetic": true
+      },
+      {
+        "scene": "inedit",
+        "file": "fichiers/inedit-clip-nyo6nxptkg30irz8.mp4",
+        "role": "clip",
+        "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+        "bytes": 2988,
+        "synthetic": true
+      },
+      {
+        "scene": "inedit",
+        "file": "fichiers/inedit-clip-zytj45py5w95rv32.mp4",
+        "role": "clip",
+        "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+        "bytes": 2988,
+        "synthetic": true
+      }
+    ],
+    "totals": {
+      "providerHttpCalls": 19,
+      "videoClipCalls": 6,
+      "videoVoiceCalls": 0,
+      "textHttpCalls": 13,
+      "imageHttpCalls": 0,
+      "tokenCounts": 13,
+      "calls": 20,
+      "usage": 18,
+      "simulatedMicro": 2252856
+    },
+    "applicationUnchanged": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "creativeQualityQualified": false
+  },
+  "reopenChecks": [
+    {
+      "legacy": false,
+      "path": "reouverture/syna",
+      "captures": 8,
+      "countsUnchanged": true
+    },
+    {
+      "legacy": true,
+      "path": "reouverture/historique",
+      "captures": 8,
+      "countsUnchanged": true
+    }
+  ],
+  "totalFinalScreenshots": 82,
+  "totalBrowserRecordings": 6,
+  "totalNativeMp4Files": 6
+}

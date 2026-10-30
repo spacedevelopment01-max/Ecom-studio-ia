@@ -1,0 +1,648 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "fixturesOnly": true,
+  "realProviderCalls": 0,
+  "realProviderCostEur": 0,
+  "providerInvoiceVerified": false,
+  "allVideoJobsChecked": true,
+  "suites": [
+    {
+      "suite": "principal",
+      "jobs": [
+        {
+          "jobRef": "gdzf3hz0k73b5orj",
+          "status": "done",
+          "acceptedCapMicro": 1604192,
+          "sumMaximumReservedMicro": 1573624,
+          "reservations": [
+            {
+              "id": "tva34mh1xaf5am30",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "hxver4r4ix9z3v86"
+            },
+            {
+              "id": "u9fbvstt5fy698cp",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221759,
+              "actual": 7912,
+              "usage_event_id": "7yfrilyum63wpbst"
+            },
+            {
+              "id": "ihxxx1n9y9ydhupe",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "jc0lrzhocsk2g3x2"
+            },
+            {
+              "id": "n2gi2ke2490cakwl",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221759,
+              "actual": 7912,
+              "usage_event_id": "97qj6v3qomd8l5yw"
+            },
+            {
+              "id": "wqiosj4ti34k6jw4",
+              "task": "voice_generation",
+              "provider": "openai",
+              "status": "settled",
+              "amount": 678,
+              "actual": 516,
+              "usage_event_id": "qpb4ofwr5ln24dde"
+            },
+            {
+              "id": "e0jrw1ufp6z09us6",
+              "task": "voice_generation",
+              "provider": "openai",
+              "status": "settled",
+              "amount": 678,
+              "actual": 516,
+              "usage_event_id": "lzy4snbnxqr7bfvp"
+            }
+          ],
+          "usage": [
+            {
+              "id": "hxver4r4ix9z3v86",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "7yfrilyum63wpbst",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "jc0lrzhocsk2g3x2",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "97qj6v3qomd8l5yw",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "qpb4ofwr5ln24dde",
+              "cost": 516,
+              "billed": 516,
+              "estimated": 1
+            },
+            {
+              "id": "lzy4snbnxqr7bfvp",
+              "cost": 516,
+              "billed": 516,
+              "estimated": 1
+            }
+          ],
+          "bound": {
+            "id": "9ubswjag0v5l801u",
+            "max_calls": 7,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3089756,
+            "deadline_at": 1793319159887
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "xy87xki8xzvmja9r",
+          "status": "done",
+          "acceptedCapMicro": 1603322,
+          "sumMaximumReservedMicro": 1572422,
+          "reservations": [
+            {
+              "id": "bbx0glfbzr0vh7k9",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "xucep58qq0x6eg0h"
+            },
+            {
+              "id": "tf7spyniwjh4nl68",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221836,
+              "actual": 7912,
+              "usage_event_id": "lk5n8d4rsr2y2aby"
+            },
+            {
+              "id": "j28rgohf49vh5o18",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "3brgsw1cqskijun9"
+            },
+            {
+              "id": "m0lay9t1tkj1a2rc",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221836,
+              "actual": 7912,
+              "usage_event_id": "swd94mbiq2258hwr"
+            }
+          ],
+          "usage": [
+            {
+              "id": "xucep58qq0x6eg0h",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "lk5n8d4rsr2y2aby",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "3brgsw1cqskijun9",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "swd94mbiq2258hwr",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "0q5y8fg3hest7hnv",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3092026,
+            "deadline_at": 1793319200453
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "chm8bhip38p817kx",
+          "status": "done",
+          "acceptedCapMicro": 1647742,
+          "sumMaximumReservedMicro": 1586762,
+          "reservations": [
+            {
+              "id": "x7vbew08payjwfdd",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "kz1y7qfgwysj030z"
+            },
+            {
+              "id": "tudqojv7tedr25ux",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 229006,
+              "actual": 7912,
+              "usage_event_id": "5sst6bop5b44z43d"
+            },
+            {
+              "id": "cs3qbdyz9zp0629v",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "dj7yfx2fvbx73csw"
+            },
+            {
+              "id": "dskztiotkqusxete",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 229006,
+              "actual": 7912,
+              "usage_event_id": "dey28js44x53hrw5"
+            }
+          ],
+          "usage": [
+            {
+              "id": "kz1y7qfgwysj030z",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "5sst6bop5b44z43d",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "dj7yfx2fvbx73csw",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "dey28js44x53hrw5",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "tmbcclq8fxwtwstl",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3119706,
+            "deadline_at": 1793319240431
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "ygabxxlj45fwujaz",
+          "status": "done",
+          "acceptedCapMicro": 1615910,
+          "sumMaximumReservedMicro": 1554678,
+          "reservations": [
+            {
+              "id": "8yzhs411891v3vkg",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "41j8ke9ca114ye1k"
+            },
+            {
+              "id": "r1lwbxoau1u9vxy2",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 212964,
+              "actual": 7912,
+              "usage_event_id": "h9d58hc5iqjwlf2q"
+            },
+            {
+              "id": "6u5qwaof1w5db8dy",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "qgqlb5hjes641yep"
+            },
+            {
+              "id": "m7df2bn6ldcqzplk",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 212964,
+              "actual": 7912,
+              "usage_event_id": "ncl7t1zegen17a1z"
+            }
+          ],
+          "usage": [
+            {
+              "id": "41j8ke9ca114ye1k",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "h9d58hc5iqjwlf2q",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "qgqlb5hjes641yep",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "ncl7t1zegen17a1z",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "vx3effs8lgwuwfz9",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3087422,
+            "deadline_at": 1793319278564
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "gg5ibyu7vngv6shh",
+          "status": "failed",
+          "acceptedCapMicro": 1616272,
+          "sumMaximumReservedMicro": 1341768,
+          "reservations": [
+            {
+              "id": "0yt9rn126og42wg3",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "i0voz9hqfvctbskr"
+            },
+            {
+              "id": "8lg5dltlfyy8mlth",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 213018,
+              "actual": 7912,
+              "usage_event_id": "vlbfr0vsnh3nvu6k"
+            },
+            {
+              "id": "5t6bx2q8cjsu7ko6",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "uncertain",
+              "amount": 564375,
+              "actual": 564375,
+              "usage_event_id": null
+            }
+          ],
+          "usage": [
+            {
+              "id": "i0voz9hqfvctbskr",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "vlbfr0vsnh3nvu6k",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "drdb2l50l76j43ns",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3123760,
+            "deadline_at": 1793319315112
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        }
+      ],
+      "noPublicationOrScheduling": {
+        "posts": 0,
+        "campaigns": 0
+      }
+    },
+    {
+      "suite": "inedits",
+      "jobs": [
+        {
+          "jobRef": "ben6u3gxoo1gcico",
+          "status": "done",
+          "acceptedCapMicro": 1603566,
+          "sumMaximumReservedMicro": 1572486,
+          "reservations": [
+            {
+              "id": "71msffmb47588k0s",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "u3o0u5ssr3lxqwb8"
+            },
+            {
+              "id": "v9xrf3dwskh4e6ji",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221868,
+              "actual": 7912,
+              "usage_event_id": "37a5c05squsvfgg0"
+            },
+            {
+              "id": "9ycvovppro7zvqpp",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "1l2vyh7usmslsi1e"
+            },
+            {
+              "id": "hdeag6vqj7501qal",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 221868,
+              "actual": 7912,
+              "usage_event_id": "cj0loo3tnqqchoxa"
+            }
+          ],
+          "usage": [
+            {
+              "id": "u3o0u5ssr3lxqwb8",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "37a5c05squsvfgg0",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "1l2vyh7usmslsi1e",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "cj0loo3tnqqchoxa",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "s0kskhwbv49jnegv",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3090086,
+            "deadline_at": 1793319419640
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "hazv0dyz0yps3p29",
+          "status": "done",
+          "acceptedCapMicro": 1648752,
+          "sumMaximumReservedMicro": 1587042,
+          "reservations": [
+            {
+              "id": "4bwfrcnzlkoyw9wz",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "1rn869zq0hdn3kzf"
+            },
+            {
+              "id": "7v7pt10t5ik47r13",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 229146,
+              "actual": 7912,
+              "usage_event_id": "xmo9rugxpa5upr2o"
+            },
+            {
+              "id": "4ohs86pxoie5uqnj",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "vcvcvx5dkgh4bmlk"
+            },
+            {
+              "id": "cj5ctlsvq4p5v4y0",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 229146,
+              "actual": 7912,
+              "usage_event_id": "r1ng12zdxt09ulnz"
+            }
+          ],
+          "usage": [
+            {
+              "id": "1rn869zq0hdn3kzf",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "xmo9rugxpa5upr2o",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            },
+            {
+              "id": "vcvcvx5dkgh4bmlk",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "r1ng12zdxt09ulnz",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "b9ew7s3qhe621khx",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3122992,
+            "deadline_at": 1793319455109
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        },
+        {
+          "jobRef": "1ar0c1n9ol2314d4",
+          "status": "failed",
+          "acceptedCapMicro": 1649114,
+          "sumMaximumReservedMicro": 1357950,
+          "reservations": [
+            {
+              "id": "qhc6nl0c182re4ll",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "settled",
+              "amount": 564375,
+              "actual": 430000,
+              "usage_event_id": "6iz6xssiunz1b5f7"
+            },
+            {
+              "id": "q7rd1lm1v0oawevc",
+              "task": "quality_control",
+              "provider": "anthropic",
+              "status": "settled",
+              "amount": 229200,
+              "actual": 7912,
+              "usage_event_id": "6hfxhfj4lp6va6t7"
+            },
+            {
+              "id": "dq1623abwsddnt03",
+              "task": "video_generation",
+              "provider": "alibaba",
+              "status": "uncertain",
+              "amount": 564375,
+              "actual": 564375,
+              "usage_event_id": null
+            }
+          ],
+          "usage": [
+            {
+              "id": "6iz6xssiunz1b5f7",
+              "cost": 430000,
+              "billed": 430000,
+              "estimated": 1
+            },
+            {
+              "id": "6hfxhfj4lp6va6t7",
+              "cost": 7912,
+              "billed": 7912,
+              "estimated": 0
+            }
+          ],
+          "bound": {
+            "id": "zlzfkge4svy8wy97",
+            "max_calls": 5,
+            "max_depth": 1,
+            "max_retries": 0,
+            "cap_micro": 3159942,
+            "deadline_at": 1793319494206
+          },
+          "noReservationOrUsageExceededAcceptedCap": true
+        }
+      ],
+      "noPublicationOrScheduling": {
+        "posts": 0,
+        "campaigns": 0
+      }
+    }
+  ]
+}

@@ -25,12 +25,13 @@ import { L } from "../i18n-server";
 import { peopleAllowedFor, personCheckFr } from "../people-policy";
 import type { ImageRequestV2 } from "../image-v2/engine";
 import { ScriptSchema, type ScriptDraft } from "./script";
-import { SHOT_REVIEW_SYSTEM, ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
+import { ShotReviewSchema, VIDEO_REVIEW_SYSTEM, VideoReviewSchema } from "./quality";
 import type { Inventory } from "./storyboard";
 import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
 import { projectVoice, voiceAvailable, synthLine } from "./voice";
 import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { loadCreativeMemory } from "./creative-memory";
+import {videoShotReviewImages,videoShotReviewRequest} from "./shot-review-request";
 import type { ShotReview, VideoReview } from "./types";
 
 export type ClipRequest = { provider: string; model: string; image: Buffer|null; prompt: string; aspect: "16:9" | "9:16"; seconds: number; people: boolean };
@@ -113,10 +114,8 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
     generationAllowed: aiActive,
     writeScript: (system, prompt, key) => llmJson({ task: "video_direction", ...base, usageKey: key, promptKey: "video-v2-script", routing: { difficulty: "complex", deliverable: "video_v2" }, system, context: brainView(p, "video").stable, reference: skillReference("video_ad"), prompt, maxTokens: 3000 }, ScriptSchema),
     async reviewShot(frames, refs, text, key) {
-      const images = [...(await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image ${k + 1} du plan`, `shot frame ${k + 1}`) }))];
-      if (refs.product) images.push({ data: await small(refs.product), label: L("référence : produit réel", "reference: real product") });
-      if (refs.character) images.push({ data: await small(refs.character), label: L("référence : personnage", "reference: character") });
-      return (await llmJson({ task: "quality_control", ...base, usageKey: key, promptKey: "video-v2-shot-review", routing: { difficulty: "complex", deliverable: "video_shot_v2" }, system: SHOT_REVIEW_SYSTEM, context: brainView(p, "qc").stable, images, prompt: `${text}\n${personCheckFr(peopleAllowedFor(p))}\nRéponds { "score": 0, "sameProduct": null, "foreignBrands":[], "textCorrect":null, "productAltered": false, "characterConsistent": null, "offTopic": false, "artifacts": false, "personVisible": false, "issues": [] }.`, maxTokens: 1500 }, ShotReviewSchema)) as ShotReview;
+      const images=await videoShotReviewImages(frames,refs);
+      return await llmJson(videoShotReviewRequest(p,{...base,usageKey:key},images,text),ShotReviewSchema) as ShotReview;
     },
     async reviewVideo(frames, text, key) {
       const images = (await Promise.all(frames.map(small))).map((data, k) => ({ data, label: L(`image clé ${k + 1}`, `key frame ${k + 1}`) }));

@@ -15,3 +15,5 @@ export const conversationImagesEnabled=()=>conversationToolsEnabled()&&conversat
 export const conversationLogosEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_LOGOS==='1';
 
 export const conversationVideosEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_VIDEOS==='1';
+
+export const conversationVideoGenerationEnabled=()=>conversationVideosEnabled()&&process.env.STUDIO_CONVERSATION_VIDEO_GENERATION==='1';

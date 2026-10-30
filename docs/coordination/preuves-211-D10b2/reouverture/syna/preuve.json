@@ -1,0 +1,62 @@
+{
+  "before": {
+    "jobs": 17,
+    "ai_calls": 35,
+    "ai_reservations": 33,
+    "usage_events": 32,
+    "video_documents": 8,
+    "assets": 31
+  },
+  "noWorker": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "version": {
+    "commit": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "fixtureDataAdaptation": "none",
+  "errors": [],
+  "captures": [
+    "syna-echec-360.png",
+    "manuel-echec-360.png",
+    "syna-echec-390.png",
+    "manuel-echec-390.png",
+    "syna-echec-1024.png",
+    "manuel-echec-1024.png",
+    "syna-echec-1440.png",
+    "manuel-echec-1440.png"
+  ],
+  "widths": [
+    {
+      "width": 360,
+      "unavailableRepairStated": true
+    },
+    {
+      "width": 390,
+      "unavailableRepairStated": true
+    },
+    {
+      "width": 1024,
+      "unavailableRepairStated": true
+    },
+    {
+      "width": 1440,
+      "unavailableRepairStated": true
+    }
+  ],
+  "priorMp4Unchanged": true,
+  "failedWithoutVersionIsNotCurrent": true,
+  "after": {
+    "jobs": 17,
+    "ai_calls": 35,
+    "ai_reservations": 33,
+    "usage_events": 32,
+    "video_documents": 8,
+    "assets": 31
+  },
+  "readOnlyProviderAndJobs": true,
+  "success": true
+}

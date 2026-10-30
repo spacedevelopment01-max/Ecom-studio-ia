@@ -1,0 +1,284 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "group": "principal",
+  "before": {
+    "jobs": {
+      "count": 17,
+      "sha256": "332e32bd1238816c246243850103453add43e6865950d96a893688032fa8df3c"
+    },
+    "ai_calls": {
+      "count": 35,
+      "sha256": "d4d727a51dfaf24df072d78b12b25e2bb35b4d3a35e143d90246aa994aed6e32"
+    },
+    "ai_reservations": {
+      "count": 33,
+      "sha256": "109876641901658ec00931299fe0c5544b9ec2239f53902fb4c573d3868d7575"
+    },
+    "usage_events": {
+      "count": 32,
+      "sha256": "34e368818f1728adbc700b00719b699e853084ebd9a67c81402a23bee433b468"
+    },
+    "video_documents": {
+      "count": 8,
+      "sha256": "7c7a070455988db62adc9a6e53c1de703dfbf10a1e7f93efa4ca358d550f18b7"
+    },
+    "assets": {
+      "count": 31,
+      "sha256": "4212dd82545db7ab05fb087cd2e4a49d419f2682e4155759ef1c8259c406f43b"
+    }
+  },
+  "noWorker": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "captures": [
+    "mono-reprise.png",
+    "mono-autre-largeur.png",
+    "mono-reutilisation-sans-appel.png",
+    "multi-reprise.png",
+    "multi-autre-largeur.png",
+    "multi-reutilisation-sans-appel.png",
+    "services-reprise.png",
+    "services-autre-largeur.png",
+    "services-reutilisation-sans-appel.png",
+    "inedit-reprise.png",
+    "inedit-autre-largeur.png",
+    "inedit-reutilisation-sans-appel.png",
+    "inedit-echec-reprise-sans-relance.png",
+    "inedit-acquis-partiel.png"
+  ],
+  "decoded": [
+    {
+      "scene": "mono",
+      "label": "reprise",
+      "width": 1920,
+      "height": 1080,
+      "time": 0.273408,
+      "readyState": 4
+    },
+    {
+      "scene": "mono",
+      "label": "autre-largeur",
+      "width": 1920,
+      "height": 1080,
+      "time": 1.750491,
+      "readyState": 4
+    },
+    {
+      "scene": "mono",
+      "label": "reutilisation-sans-appel",
+      "width": 1920,
+      "height": 1080,
+      "time": 2.551851,
+      "readyState": 4
+    },
+    {
+      "scene": "multi",
+      "label": "reprise",
+      "width": 1080,
+      "height": 1920,
+      "time": 0.301989,
+      "readyState": 4
+    },
+    {
+      "scene": "multi",
+      "label": "autre-largeur",
+      "width": 1080,
+      "height": 1920,
+      "time": 1.790306,
+      "readyState": 4
+    },
+    {
+      "scene": "multi",
+      "label": "reutilisation-sans-appel",
+      "width": 1080,
+      "height": 1920,
+      "time": 1.410249,
+      "readyState": 4
+    },
+    {
+      "scene": "services",
+      "label": "reprise",
+      "width": 1080,
+      "height": 1350,
+      "time": 0.30281,
+      "readyState": 4
+    },
+    {
+      "scene": "services",
+      "label": "autre-largeur",
+      "width": 1080,
+      "height": 1350,
+      "time": 1.790665,
+      "readyState": 4
+    },
+    {
+      "scene": "services",
+      "label": "reutilisation-sans-appel",
+      "width": 1080,
+      "height": 1350,
+      "time": 2.530275,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "reprise",
+      "width": 1080,
+      "height": 1920,
+      "time": 0.299106,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "autre-largeur",
+      "width": 1080,
+      "height": 1920,
+      "time": 1.770363,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "reutilisation-sans-appel",
+      "width": 1080,
+      "height": 1920,
+      "time": 1.410299,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "echec-reprise-sans-relance",
+      "width": 90,
+      "height": 160,
+      "time": 1.449934,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "acquis-partiel",
+      "width": 90,
+      "height": 160,
+      "time": 2.900824,
+      "readyState": 4
+    }
+  ],
+  "nativeExports": [
+    {
+      "scene": "mono",
+      "format": "json",
+      "bytes": 8165,
+      "sha256": "ad626d8de1c80cc42c099de7d3a74dcc0dd1a992c3c0903cc264b0bfef538415",
+      "http": 200
+    },
+    {
+      "scene": "mono",
+      "format": "srt",
+      "bytes": 109,
+      "sha256": "f980ea4703b30e092bc343b248615f489065b3dd882dd3751bec0155e8679cbc",
+      "http": 200
+    },
+    {
+      "scene": "mono",
+      "format": "vtt",
+      "bytes": 113,
+      "sha256": "15b64130c14266367ed3b6c07a93d4aab69ad2faaf2015b1cbc829e2aab56415",
+      "http": 200
+    },
+    {
+      "scene": "multi",
+      "format": "json",
+      "bytes": 7751,
+      "sha256": "51b2a7995bb19778a377da2954fdc58ef66453c563449ec84dc0017e49590dd2",
+      "http": 200
+    },
+    {
+      "scene": "multi",
+      "format": "srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http": 200
+    },
+    {
+      "scene": "multi",
+      "format": "vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c",
+      "http": 200
+    },
+    {
+      "scene": "services",
+      "format": "json",
+      "bytes": 8019,
+      "sha256": "fe7e8d34842812fb6227cea4765c6b7e155bdca9bfaa2c447a3aff8c91a7dfb8",
+      "http": 200
+    },
+    {
+      "scene": "services",
+      "format": "srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http": 200
+    },
+    {
+      "scene": "services",
+      "format": "vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "json",
+      "bytes": 7865,
+      "sha256": "91452a26de2c9275e4f47cae0c8aff4e7a75a17ed77b8c6e3c53957e02e80b87",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c",
+      "http": 200
+    }
+  ],
+  "originalRecordingsUnchanged": true,
+  "version": {
+    "commit": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "after": {
+    "jobs": {
+      "count": 17,
+      "sha256": "332e32bd1238816c246243850103453add43e6865950d96a893688032fa8df3c"
+    },
+    "ai_calls": {
+      "count": 35,
+      "sha256": "d4d727a51dfaf24df072d78b12b25e2bb35b4d3a35e143d90246aa994aed6e32"
+    },
+    "ai_reservations": {
+      "count": 33,
+      "sha256": "109876641901658ec00931299fe0c5544b9ec2239f53902fb4c573d3868d7575"
+    },
+    "usage_events": {
+      "count": 32,
+      "sha256": "34e368818f1728adbc700b00719b699e853084ebd9a67c81402a23bee433b468"
+    },
+    "video_documents": {
+      "count": 8,
+      "sha256": "7c7a070455988db62adc9a6e53c1de703dfbf10a1e7f93efa4ca358d550f18b7"
+    },
+    "assets": {
+      "count": 31,
+      "sha256": "4212dd82545db7ab05fb087cd2e4a49d419f2682e4155759ef1c8259c406f43b"
+    }
+  },
+  "success": true
+}

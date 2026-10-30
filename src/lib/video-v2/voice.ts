@@ -28,7 +28,7 @@ export function speakable(text: string): string {
 /** Synthèse d'une phrase → fichier WAV ; renvoie sa durée réelle (s). */
 export async function synthLine(text: string, out: string, o: { voice: string; speed: number; lang: "fr" | "en" }): Promise<number> {
   await new Promise<void>((resolve, reject) => {
-    const child = spawn("python3", [path.join(process.cwd(), "scripts", "tts-kokoro.py"), "--model-dir", kokoroDir(), "--voice", o.lang === "fr" ? o.voice : "am_michael", "--lang", o.lang === "fr" ? "fr" : "en-us", "--speed", String(o.speed), "--out", out], { stdio: ["pipe", "ignore", "pipe"] });
+    const child = spawn("python3", [path.join(process.cwd(), "scripts", "tts-kokoro.py"), "--model-dir", kokoroDir(), "--voice", o.voice, "--lang", o.lang === "fr" ? "fr" : "en-us", "--speed", String(o.speed), "--out", out], { stdio: ["pipe", "ignore", "pipe"] });
     let err = "";
     child.stderr.on("data", (d) => (err += String(d)));
     child.on("error", reject);

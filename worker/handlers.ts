@@ -158,12 +158,13 @@ export const handlers: Record<string, Handler> = {
     return runSceneScenario(ctx,ctx.payload.projectId,ctx.payload.request);
   },
   "video.scenes": async (ctx) => {
+    if(ctx.payload.agentVideoGenerationQuote){const {runAgentVideoGeneration}=await import("../src/lib/orchestrator/conversation/video-generation-execution");return runAgentVideoGeneration(ctx);}
     const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
     const { llmConfigured } = await import("../src/lib/ai/llm");
     const p = loadProject(ctx.payload.projectId);
     const { aiActiveFor } = await import("../src/lib/ai/access");
     // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
-    const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured() }));
+    const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured(),request:ctx.payload.request }));
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes,delivery:await videoDelivery(p.id,r.videoAssetId) };
   },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */

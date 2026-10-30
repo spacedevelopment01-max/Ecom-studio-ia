@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "width": 1080,
+  "height": 1080,
+  "fps": 30,
+  "aspect": "1:1",
+  "platform": "meta_feed",
+  "safe": {
+    "top": 54,
+    "bottom": 86,
+    "side": 54
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "bplfvexjmad3aatw",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 54,
+          "y": 75.6,
+          "w": 972,
+          "h": 260,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Ma ligne\nDeux  espaces.",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 100,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.1,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 55
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 30,
+            "x": 0,
+            "y": 4
+          },
+          "anim": {
+            "in": "rise",
+            "delay": 0.25,
+            "dur": 0.325
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "l43h3shvnpkag2ta",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "closing-brand",
+          "name": "Marque",
+          "role": "title",
+          "x": 54,
+          "y": 410.79999999999995,
+          "w": 237.6,
+          "h": 145.6,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "La pâte claire",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 92,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 51
+          },
+          "shadow": null,
+          "anim": {
+            "in": "fade",
+            "delay": 1.7999999999999998,
+            "dur": 0.35
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.4
+      },
+      "generated": true
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "DM Sans",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": null,
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#735B45",
+      "secondary": "#DBD6D1",
+      "accent": "#B4B074",
+      "light": "#F7F5F2",
+      "dark": "#1F1914"
+    },
+    "fonts": {
+      "heading": "Cormorant",
+      "body": "DM Sans"
+    },
+    "name": "La pâte claire"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "social_content",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": false,
+    "ending": {
+      "kind": "last_clip",
+      "holdS": 3.2
+    },
+    "retakeCount": 0,
+    "retakeBudgetMicro": 0,
+    "editorial": {
+      "purpose": "organic",
+      "business": "products",
+      "subject": null,
+      "request": "Crée deux clips pour Support de séchage pour pâtes fraîches avec Source-mono.png, dix secondes.\nGarde deux  espaces.",
+      "editorial": null,
+      "identity": {
+        "name": "La pâte claire",
+        "brand": {
+          "name": "La pâte claire",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "Des objets à vivre.",
+          "positioning": "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
+          "audience": "[À préciser]",
+          "personality": [],
+          "tone": {
+            "voice": "Clair, précis et chaleureux",
+            "do": [
+              "Parler concret",
+              "Citer les caractéristiques vérifiées"
+            ],
+            "dont": [
+              "Promettre sans preuve",
+              "Superlatifs vides"
+            ]
+          },
+          "palette": {
+            "primary": "#735B45",
+            "secondary": "#DBD6D1",
+            "accent": "#B4B074",
+            "light": "#F7F5F2",
+            "dark": "#1F1914"
+          },
+          "fonts": {
+            "heading": "poppins_n7",
+            "body": "dm_sans_n4"
+          },
+          "logo": {
+            "concept": "Logotype typographique en Cormorant",
+            "status": "proposed"
+          },
+          "story": "",
+          "values": [],
+          "direction": "fraise",
+          "validated": [
+            "name"
+          ],
+          "generatedBy": "local"
+        },
+        "product": {
+          "name": "Support de séchage pour pâtes fraîches",
+          "nameStatus": "provided",
+          "category": "",
+          "sector": null,
+          "summary": "",
+          "facts": [],
+          "visual": {
+            "colors": []
+          },
+          "price": {
+            "amount": null,
+            "currency": "EUR",
+            "status": "unknown"
+          },
+          "variants": [],
+          "questions": [],
+          "claimsToAvoid": [],
+          "sources": [
+            {
+              "type": "photo",
+              "ref": "lv1vrmsjxykjg5vm",
+              "summary": "Référence native de la fiche désignée."
+            }
+          ],
+          "analyzedBy": "local",
+          "summaryStatus": "provided"
+        },
+        "services": {
+          "services": [],
+          "area": "",
+          "address": "",
+          "phone": "",
+          "email": "",
+          "hours": "",
+          "bookingUrl": "",
+          "contactMode": "form"
+        },
+        "settings": {
+          "mode": "autopilot",
+          "timezone": "Europe/Paris",
+          "autopublish": {
+            "enabled": false,
+            "networks": [],
+            "requireApprovalFor": []
+          },
+          "language": "fr"
+        }
+      },
+      "nativeBinding": {
+        "schema": 1,
+        "people": "none",
+        "references": [
+          {
+            "assetId": "lv1vrmsjxykjg5vm",
+            "version": 1,
+            "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d"
+          }
+        ],
+        "product": {
+          "productId": "io7rpiidajmpjgpx",
+          "version": 1,
+          "variant": {
+            "variantId": "czjw2ompe0fcvgk9",
+            "version": 1
+          }
+        }
+      }
+    }
+  }
+}
