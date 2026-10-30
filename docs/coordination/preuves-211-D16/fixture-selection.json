@@ -1,0 +1,44 @@
+[
+  {
+    "root": "/tmp/ecs-agent-211-zr9x0g",
+    "prefixes": [
+      "agent.export.tool",
+      "agent.images.tool",
+      "agent.theme.tool"
+    ]
+  },
+  {
+    "root": "/tmp/ecs-agent-211-tU1aAw",
+    "prefixes": [
+      "agent.campaign.visual",
+      "agent.social.prepare",
+      "agent.social.production"
+    ]
+  },
+  {
+    "root": "/tmp/ecs-agent-211-eTTRiI",
+    "prefixes": [
+      "agent.brand.review",
+      "agent.brand.tool"
+    ]
+  },
+  {
+    "root": "/tmp/ecs-agent-211-wTkWxP",
+    "prefixes": [
+      "agent.video.clip",
+      "agent.video.generation"
+    ]
+  },
+  {
+    "root": "/tmp/ecs-agent-211-G0qH4T",
+    "prefixes": [
+      "agent.content.tool"
+    ]
+  },
+  {
+    "root": "/tmp/ecs-agent-211-DEb55l",
+    "prefixes": [
+      "agent.video.voice"
+    ]
+  }
+]

@@ -1,6 +1,6 @@
 /** Montage vidéo natif depuis l'unique SYNA. Local annoncé, devis/accord distincts, aucune API IA ici. */
 import {HttpError,type User}from '../../auth';
-import {all,id,json,now,one,tx}from '../../db';
+import {all,id,json,now,one,tx,readSnapshot}from '../../db';
 import {remember,loadProject}from '../../projects';
 import {requirePlan}from '../../plan-gates';
 import {getAsset,assetData,assetUrl}from '../../library';
@@ -69,12 +69,12 @@ export async function runAgentVideoCreation(ctx:JobContext,injected?:{render:typ
   const delivery=await videoDelivery(pid,m.output.assetId);return{quoteId:m.id,docKey:m.docKey,versionId:m.renderedVersionId,output:m.output,verdict:m.verdict,delivery};
  });
 }
-export function videoToolReceipt(u:User,cid:string,qid:string){
+export function videoToolReceipt(u:User,cid:string,qid:string){return readSnapshot(()=>{
  const{pid,m}=located(u,cid,qid),job=m.jobId?getJob(m.jobId):null;if(job&&(job.user_id!==u.id||job.project_id!==pid||job.type!=='video.v2.render'))throw new HttpError(404,'video_receipt_job_mismatch');
  const present=!!m.output&&matchesOutput(u.id,pid,m.output),saved=json<{quoteId?:string;output?:Pin;delivery?:{delivered?:number}}>(job?.result,{}),reused=m.reusedFrom?read(pid,m.reusedFrom):null,complete=!!m.confirmedAt&&present&&(reused?!!reused.jobId&&getJob(reused.jobId)?.status==='done'&&stableHash('video-pin',reused.output)===stableHash('video-pin',m.output):job?.status==='done'&&saved.quoteId===m.id&&saved.delivery?.delivered===1&&stableHash('video-pin',saved.output)===stableHash('video-pin',m.output));
  return{id:m.id,sourceReceiptId:m.sourceReceiptId,state:complete?'review':job?.status??'quoted',delivered:complete,reused:!!m.reusedFrom,docKey:m.docKey??null,versionId:m.renderedVersionId??m.targetVersionId??null,output:m.output?{...m.output,present,href:present?assetUrl({id:m.output.assetId}):null,downloadHref:present?assetUrl({id:m.output.assetId},{download:true}):null}:null,job:job?publicJob(job):null,verdict:m.verdict??null,clientApproved:false,creativeQualityQualified:false,newGeneratedClips:false,voiceGenerated:false,siteChanged:false,isCurrent:!!m.docKey&&latestVideo(pid,m.docKey)?.version.id===(m.renderedVersionId??m.targetVersionId)&&videoProjectScope(pid)===m.prepared.scope,href:`/studio/${pid}/${m.prepared.doc.meta.promo?'publicites':'publications'}#video`,durationS:timeline(m.prepared.doc).total,aspect:m.prepared.doc.aspect,requestBounds:boundPublic(m.boundId),message:complete?L('Montage local enregistré et lisible, à vérifier. Aucun nouveau plan filmé ni voix générés ; aucun accord esthétique prouvé.','Local edit saved and readable for review. No new filmed shots or voice generated; no aesthetic approval proved.'):L('Vidéo complète non prouvée. Les médias et versions acquis restent conservés ; aucune génération automatique.','Complete video not proved. Acquired media and versions are kept; no automatic generation.')};
-}
-export function videoToolRegistry(u:User,cid:string){const{pid}=owned(u,cid);return{projectId:pid,receipts:records(pid,cid).filter(m=>m.confirmedAt).slice(0,10).map(m=>videoToolReceipt(u,cid,m.id)),scope:'local_motion_edit_restore_no_generated_clip_or_voice',realProviderQualified:false,href:`/studio/${pid}/publications`};}
+});}
+export function videoToolRegistry(u:User,cid:string){return readSnapshot(()=>{const{pid}=owned(u,cid);return{projectId:pid,receipts:records(pid,cid).filter(m=>m.confirmedAt).slice(0,10).map(m=>videoToolReceipt(u,cid,m.id)),scope:'local_motion_edit_restore_no_generated_clip_or_voice',realProviderQualified:false,href:`/studio/${pid}/publications`};});}
 export function videoToolKnowledge(c:ReturnType<typeof ownedConversation>){
  if(!c.project_id)return null;const pid=c.project_id,p=loadProject(pid),rows=all<{doc_key:string}>('SELECT doc_key FROM video_documents WHERE project_id=? GROUP BY doc_key ORDER BY MAX(created_at) DESC LIMIT 5',pid);
  let communication={available:true,reason:null as string|null};if(p.business==='services')try{communicationStrategy(pid);}catch(e){if(!(e instanceof HttpError))throw e;communication={available:false,reason:e.message};}

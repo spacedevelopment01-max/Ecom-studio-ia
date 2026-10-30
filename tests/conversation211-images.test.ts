@@ -21,6 +21,10 @@ import {emptyServiceProfile} from '@/lib/project-types';
 import {CognitiveReplySchema} from '@/lib/orchestrator/conversation/intelligence-contract';
 import {projectAccountKey} from '@/lib/project-billing';
 import {CostCapReached} from '@/lib/ai/trace';
+import Database from 'better-sqlite3';
+import * as Jobs from '@/lib/jobs';
+import {db} from '@/lib/db';
+import {studioOperationCatalogue} from '@/lib/orchestrator/conversation/studio-operations';
 const flags=['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_CATALOGUE','STUDIO_CONVERSATION_IMAGES'];
 beforeEach(()=>{vi.mocked(activeProviderKey).mockReturnValue('FAUX FOURNISSEUR SANS SECRET');for(const key of flags)vi.stubEnv(key,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('Aucun HTTP réel D9');}));setJsonSetting('billing.markup',1);setJsonSetting('ai.media.models',Object.fromEntries(MEDIA_MODELS.filter(m=>m.kind==='image').map(m=>[`${m.provider}:${m.model}`,{enabled:true,confirmedAt:Date.now()}])));});
 afterEach(()=>{run("UPDATE jobs SET status='cancelled' WHERE type='image.v2' AND status IN ('queued','running')");vi.unstubAllEnvs();vi.unstubAllGlobals();});
@@ -35,6 +39,17 @@ async function fixture(business:'products'|'services'='products',count=2){
  return{u,pid,c,send,plan,receipt,quote,confirm};
 }
 function qid(r:ReturnType<typeof quoteImageCreation>){expect(r.kind).toBe('quote');if(r.kind!=='quote')throw Error('quote');return r.quote.id;}
+it('conserve le suivi des images si le worker ferme le job pendant la lecture du reçu',async()=>{
+ const f=await fixture('products',1),q=qid(f.quote()),queued=f.confirm(q),key=`agent.images.tool.${q}`,before=one<{value:string}>('SELECT value FROM memory WHERE project_id=? AND key=?',f.pid,key)!.value,pending=getJob(queued.job!.id)!;
+ await finish();const complete=getJob(pending.id)!,after=one<{value:string}>('SELECT value FROM memory WHERE project_id=? AND key=?',f.pid,key)!.value,assets=all('SELECT id,version FROM assets WHERE project_id=?',f.pid);
+ run('UPDATE memory SET value=? WHERE project_id=? AND key=?',before,f.pid,key);run('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?',pending.status,pending.progress,pending.result,pending.message,pending.finished_at,pending.id);
+ const writer=new Database(db().name),actualGetJob=Jobs.getJob;
+ try{vi.spyOn(Jobs,'getJob').mockImplementationOnce(jid=>{expect(jid).toBe(pending.id);writer.transaction(()=>{writer.prepare('UPDATE memory SET value=? WHERE project_id=? AND key=?').run(after,f.pid,key);writer.prepare('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?').run(complete.status,complete.progress,complete.result,complete.message,complete.finished_at,pending.id);})();return actualGetJob(jid);});
+  expect(imageToolReceipt(f.u,f.c.id,q)).toMatchObject({state:'queued',delivered:false,job:{status:'queued'}});
+  expect(imageToolReceipt(f.u,f.c.id,q)).toMatchObject({state:'review',delivered:true,outputs:[{present:true,verdict:'FINAL'}]});expect(all('SELECT id,version FROM assets WHERE project_id=?',f.pid)).toEqual(assets);expect(fetch).not.toHaveBeenCalled();
+ }finally{writer.close();vi.restoreAllMocks();}
+});
+it('déclare la retouche réellement raccordée sans la confondre avec une validation client',async()=>{const u=await account(),pid=project(u);expect(studioOperationCatalogue(pid,true).rows.find(r=>r.id==='images.correct')).toMatchObject({implementation:'implemented',connectionEnabled:true,nativeAvailability:'native_checks_on_action',cost:'native_quote_required'});vi.stubEnv('STUDIO_CONVERSATION_IMAGES','0');expect(studioOperationCatalogue(pid,true).rows.find(r=>r.id==='images.correct')?.connectionEnabled).toBe(false);expect(fetch).not.toHaveBeenCalled();});
 async function finish(fake=mockDeps({reference:Buffer.from('faux'),reviewFor:()=>review(9)}),complete=true){
  const j=claimNext(['image.v2'])!;expect(j).toBeTruthy();try{const result=await runAgentImageCreation(new JobContext(j),fake.deps);if(complete)completeJob(j.id,result);return{j,result,fake};}catch(e){failJob(j,e,{permanent:true});throw e;}
 }

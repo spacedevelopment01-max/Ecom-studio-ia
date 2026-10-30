@@ -1,0 +1,656 @@
+{
+  "schema": "agent211-D16-acquired-http-1",
+  "passed": true,
+  "source": "existing_synthetic_results_only",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "noWorker": true,
+  "noGenerationOrQuote": true,
+  "report": [
+    {
+      "fixture": "ecs-agent-211-zr9x0g",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 18,
+          "usage_events": 18,
+          "theme_versions": 3,
+          "assets": 9,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "279fa2c9561b4d315041595dff3a9656b9c974f7bf7c8bc0c4e70a655d3f3a5e"
+      },
+      "after": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 18,
+          "usage_events": 18,
+          "theme_versions": 3,
+          "assets": 9,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "279fa2c9561b4d315041595dff3a9656b9c974f7bf7c8bc0c4e70a655d3f3a5e"
+      },
+      "results": [
+        {
+          "endpoint": "exports",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "v2xkmbc27o80sz0f",
+              "state": "delivered",
+              "delivered": true,
+              "recorded": true,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 2
+            }
+          ]
+        },
+        {
+          "endpoint": "images",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "hsuw9k7ctzmf1kfm",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": 1,
+              "nativeVersion": null
+            },
+            {
+              "id": "mnhjgv3sxac53vc9",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": 5,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "theme-tools",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "j658o318utwps29w",
+              "state": "delivered",
+              "delivered": true,
+              "recorded": true,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 3
+            },
+            {
+              "id": "swqsfl7owgm6lw5v",
+              "state": "delivered",
+              "delivered": true,
+              "recorded": true,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 2
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    },
+    {
+      "fixture": "ecs-agent-211-tU1aAw",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 13,
+          "usage_events": 12,
+          "theme_versions": 0,
+          "assets": 6,
+          "posts": 1,
+          "campaigns": 1
+        },
+        "memorySha256": "113ed915056a273bc3c49e071e9a2d7acf5d42e66365be4f046a6adaa72285bc"
+      },
+      "after": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 13,
+          "usage_events": 12,
+          "theme_versions": 0,
+          "assets": 6,
+          "posts": 1,
+          "campaigns": 1
+        },
+        "memorySha256": "113ed915056a273bc3c49e071e9a2d7acf5d42e66365be4f046a6adaa72285bc"
+      },
+      "results": [
+        {
+          "endpoint": "campaign-visuals",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "pn766kkoo8hf4wyl",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "tmj8026ojo8felc4",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "social-drafts",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "pq6okddlqca5s6al",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "social-drafts",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "vmm9fdyc58ohyjtj",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "social-production",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "yanwxihf7ku6opwr",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": 1,
+              "nativeVersion": null
+            },
+            {
+              "id": "jvr1r4peq2djwppf",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": 1,
+              "nativeVersion": null
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    },
+    {
+      "fixture": "ecs-agent-211-eTTRiI",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 14,
+          "usage_events": 8,
+          "theme_versions": 0,
+          "assets": 0,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "25919955137a236272832cccf9b57caddaa7d20dda6f32f9292c2bd4c8ef9e6e"
+      },
+      "after": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 14,
+          "usage_events": 8,
+          "theme_versions": 0,
+          "assets": 0,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "25919955137a236272832cccf9b57caddaa7d20dda6f32f9292c2bd4c8ef9e6e"
+      },
+      "results": [
+        {
+          "endpoint": "brand",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "cg2evwd7buvkhyj4",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "1c6885nk105lh91j",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 3
+            }
+          ]
+        },
+        {
+          "endpoint": "brand",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "wyvp7zlmhetzo8kp",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "15r7lmp99altublp",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 3
+            }
+          ]
+        },
+        {
+          "endpoint": "brand",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "z9fnetrbjfm6h3cq",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "qg7jiu5g1gn8b273",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": 3
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    },
+    {
+      "fixture": "ecs-agent-211-wTkWxP",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 9,
+          "ai_calls": 15,
+          "usage_events": 15,
+          "theme_versions": 0,
+          "assets": 14,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "71e1c2a8bdd41d4ee573e3c9676dc2f504fadf95ee971a82f7fb54135b26eaa1"
+      },
+      "after": {
+        "counts": {
+          "jobs": 9,
+          "ai_calls": 15,
+          "usage_events": 15,
+          "theme_versions": 0,
+          "assets": 14,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "71e1c2a8bdd41d4ee573e3c9676dc2f504fadf95ee971a82f7fb54135b26eaa1"
+      },
+      "results": [
+        {
+          "endpoint": "video-clips",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "tur1avxfmgkwzjxi",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": null,
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "e4j8hl59ysqrtga0",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "generated-videos",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "tqi7de7v42skzyld",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    },
+    {
+      "fixture": "ecs-agent-211-G0qH4T",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 13,
+          "usage_events": 9,
+          "theme_versions": 0,
+          "assets": 0,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "9704938a2528fff5ea5a71c83ef1c1d4e9592a3c0c077c7c917149a2757f9297"
+      },
+      "after": {
+        "counts": {
+          "jobs": 11,
+          "ai_calls": 13,
+          "usage_events": 9,
+          "theme_versions": 0,
+          "assets": 0,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "9704938a2528fff5ea5a71c83ef1c1d4e9592a3c0c077c7c917149a2757f9297"
+      },
+      "results": [
+        {
+          "endpoint": "content",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "jo02zgjhs4ckxzpb",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "z93fxppdeh8m0zo3",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "t2wppzybbr2h7x2b",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "4pqnsi4qdxfflpty",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        },
+        {
+          "endpoint": "content",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "s48dm4bulc50jqwo",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "fm4drcoxts772ogz",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "yhjzlhrlnwmz661i",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "4jtjqlxrfckxa8vr",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    },
+    {
+      "fixture": "ecs-agent-211-DEb55l",
+      "version": {
+        "commit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "before": {
+        "counts": {
+          "jobs": 10,
+          "ai_calls": 15,
+          "usage_events": 14,
+          "theme_versions": 0,
+          "assets": 13,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "08f4d8cf0d9117abf17d0f1f5fe6e655b800e4a6a1d64418769d36887566e723"
+      },
+      "after": {
+        "counts": {
+          "jobs": 10,
+          "ai_calls": 15,
+          "usage_events": 14,
+          "theme_versions": 0,
+          "assets": 13,
+          "posts": 0,
+          "campaigns": 0
+        },
+        "memorySha256": "08f4d8cf0d9117abf17d0f1f5fe6e655b800e4a6a1d64418769d36887566e723"
+      },
+      "results": [
+        {
+          "endpoint": "video-voices",
+          "status": 200,
+          "unauthenticated": 401,
+          "foreign": 404,
+          "receipts": [
+            {
+              "id": "kyfw91ayvhpntdzs",
+              "state": "failed",
+              "delivered": false,
+              "recorded": null,
+              "jobStatus": "failed",
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "tespvawn1u0rm17x",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": null,
+              "outputCount": null,
+              "nativeVersion": null
+            },
+            {
+              "id": "qmwg8tebueujzt8o",
+              "state": "review",
+              "delivered": true,
+              "recorded": null,
+              "jobStatus": "done",
+              "outputCount": null,
+              "nativeVersion": null
+            }
+          ]
+        }
+      ],
+      "newJobs": 0,
+      "newProviderCalls": 0,
+      "newMedia": 0,
+      "newVersions": 0,
+      "acquiredMemoryUnchanged": true
+    }
+  ]
+}
