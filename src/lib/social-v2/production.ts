@@ -1,3 +1,4 @@
+import{HttpError}from '../auth';
 import{imageBindingHash,pinImageAsset}from '../image-v2/request-binding';import{acquiredPublicationCopyReview}from './publication-copy-policy';
 import{matchesPostAspect}from './post-aspect';
 import {nativeSocialSubject}from './native-subject';
@@ -79,9 +80,9 @@ function matchesNativeOffer(a:Asset,r:PostBrief,p:Project){if(!r.nativeBinding)r
 /** Acquis explicitement désigné : mêmes textes/offre/identité/ratio, sans chercher une autre image. */
 export function pinAcquiredSocialImage(p:Project,post:PostBrief,assetId:string,instruction=post.request??''){
  const a=getAsset(assetId),effective={...post,request:instruction};
- if(!a||a.project_id!==p.id||a.user_id!==p.userId||a.kind!=='image'||!['ready','approved'].includes(a.status)||!isAutoUsable(a)||!aiFinal(a)||!matchesEditorial(a,effective)||!matchesNativeOffer(a,effective,p))throw new Error('Cet acquis ne correspond plus exactement à la publication actuelle. Aucun nouvel achat dans un réemploi.');
- const own=p.business==='services'?contentStrategy(p.id,'post',post.id):null;if(own&&!mediaAngleMatches(a,p.id,own))throw new Error('L’angle de cet acquis doit être relu avant réemploi.');
- const target=nativeSocialSubject(p,effective,false),copy=acquiredPublicationCopyReview(target?.project??p,json(a.meta,{}));if(copy.status!=='supported')throw new Error('Les textes de cet acquis doivent être relus pour cette offre. Aucun rachat.');
+ if(!a||a.project_id!==p.id||a.user_id!==p.userId||a.kind!=='image'||!['ready','approved'].includes(a.status)||!isAutoUsable(a)||!aiFinal(a)||!matchesEditorial(a,effective)||!matchesNativeOffer(a,effective,p))throw new HttpError(409,'Cet acquis ne correspond plus exactement à la publication actuelle. Aucun nouvel achat dans un réemploi.');
+ const own=p.business==='services'?contentStrategy(p.id,'post',post.id):null;if(own&&!mediaAngleMatches(a,p.id,own))throw new HttpError(409,'L’angle de cet acquis doit être relu avant réemploi.');
+ const target=nativeSocialSubject(p,effective,false),copy=acquiredPublicationCopyReview(target?.project??p,json(a.meta,{}));if(copy.status!=='supported')throw new HttpError(409,'Les textes de cet acquis doivent être relus pour cette offre. Aucun rachat.');
  return pinImageAsset(p.userId,p.id,a.id,a.version);
 }
 
