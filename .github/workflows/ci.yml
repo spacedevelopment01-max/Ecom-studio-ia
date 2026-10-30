@@ -12,9 +12,24 @@ concurrency:
 jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
+    needs: [tests, natif, image-docker]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
-    # #249/41025348837 : annulation au plafond de75min, contrôles précédents réussis ;
-    # tous les parcours natifs restent exécutés, dont la correction vocale. Aucune erreur ignorée.
+    timeout-minutes: 5
+    steps:
+      - name: Verdict obligatoire de tous les contrôles
+        env:
+          TESTS_RESULT: ${{ needs.tests.result }}
+          NATIVE_RESULT: ${{ needs.natif.result }}
+          DOCKER_RESULT: ${{ needs.image-docker.result }}
+        run: |
+          test "$TESTS_RESULT" = success
+          test "$NATIVE_RESULT" = success
+          test "$DOCKER_RESULT" = success
+
+  tests:
+    name: Types et suite complète (réseau fournisseur interdit)
+    runs-on: ubuntu-latest
     timeout-minutes: 100
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
@@ -40,6 +55,32 @@ jobs:
 
       - name: Tests (réseau fournisseur interdit)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm test
+
+
+  natif:
+    name: Theme Check, build et recettes natives compilées
+    runs-on: ubuntu-latest
+    # #264/41098085980 : 100min cumulées (tests ~32min, Theme Check ~26min),
+    # annulation pendant une recette active. Même couverture, un seul build hôte.
+    timeout-minutes: 100
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      APP_SECRET: ci-only-secret-not-used-in-production-000000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installation
+        run: npm ci
+
+      # ffmpeg encode les vidéos (déjà présent dans l'image Docker) : les tests de rendu vidéo en ont besoin.
+      - name: ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
       - name: "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
         run: JOBS=4 scripts/verify-theme.sh
