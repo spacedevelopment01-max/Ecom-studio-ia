@@ -49,6 +49,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('theme.export','boutique','Créer un ZIP natif en bibliothèque','Create a native library ZIP','export'),
  op('theme.publish','boutique','Publier le site sur un CMS','Publish the site to a CMS','none',true),
  op('copy.generate','boutique','Rédiger un document natif pour une page précise','Write one native document for a specific page','content'),
+ op('copy.edit','boutique','Retoucher les passages choisis d’un texte natif','Rewrite selected passages of native copy','content'),
  op('seo.update','blog','Modifier le référencement','Edit SEO'),
  op('blog.generate','blog','Créer un article','Create an article'),
  op('blog.publish','blog','Publier un article','Publish an article','none',true),

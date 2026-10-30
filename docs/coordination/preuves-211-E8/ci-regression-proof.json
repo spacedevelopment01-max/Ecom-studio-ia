@@ -1,0 +1,32 @@
+{
+  "schema": "211-E8-CI-regression-1",
+  "failedRun": 41104794700,
+  "failedHead": "76ef3d1d021ad2f1b76a3e0358b39dfa869f1161",
+  "testCommit": "accda0ed411caeb72e167cb3f7482184f3aa49cd",
+  "local": {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/lot1-consignes-livraison.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+    "startedAt": "2026-10-30T18:46:46.488453+00:00",
+    "state": "passed",
+    "sources": {
+      "tests/lot1-consignes-livraison.test.ts": "dadbb86fb77582cebb8cb7a8a7075f679736a16ccb3880a134cac215dc592e07"
+    },
+    "log": "/workspace/reviews/ecom-211-state/E8-ci-regression-green.log",
+    "cleanCommitSnapshot": false,
+    "pid": 539119,
+    "processGroup": 539119,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T18:46:58.358447+00:00",
+    "logSha256": "e6395db97bca5262bc716c90acbb190af97f846af448997e1df231b2d99bd20c",
+    "sourceUnchanged": true,
+    "finalHead": "0035ba3a592144c92d6aed6e988be13a17334c07"
+  },
+  "applicationBuildUnchanged": "8dce0191ba092f3c9e202252fd8800e04b46c77f",
+  "realProviderCalls": 0
+}

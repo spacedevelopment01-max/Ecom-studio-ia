@@ -313,7 +313,7 @@ jobs:
           path: reports/ci-agent211-communication-integration
           if-no-files-found: warn
 
-      - name: Rédaction SYNA native, Catalogue/variante et service, acquis conservés (HTTP simulé)
+      - name: Rédaction et retouche SYNA natives, Catalogue/variante/service, versions conservées (HTTP simulé)
         run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-content --content-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs

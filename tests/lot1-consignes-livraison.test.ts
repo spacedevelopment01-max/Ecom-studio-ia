@@ -150,7 +150,14 @@ describe("Lot 1 — consignes et livraison", async () => {
     const built = await fr(() => composeThemeV2(pid));
     expect(built.spec.store.pages.filter((x) => x.handle.startsWith("texte-service-"))).toHaveLength(2);
     expect(built.spec.store.pages.find((x) => x.handle === "texte-service-appointment")?.body_html).toContain("Séance sur rendez-vous");
-    await expect(fr(() => runContentEngineV2(null, pid, { type: "service_page", pageKey: "service:absent" }))).rejects.toThrow(/introuvable/);
+    const callsBefore = remote.calls.length;
+    const acquired = ["service:estimate", "service:appointment"].map(key => {
+      const doc = referenceDoc(pid, "service_page", "fr", key)!;
+      return { key: doc.page.key, doc: structuredClone(doc) };
+    });
+    await expect(fr(() => runContentEngineV2(null, pid, { type: "service_page", pageKey: "service:absent" }))).rejects.toMatchObject({ status: 409, message: expect.stringContaining("La prestation désignée manque") });
+    expect(remote.calls).toHaveLength(callsBefore);
+    for (const { key, doc } of acquired) expect(referenceDoc(pid, "service_page", "fr", key)).toEqual(doc);
   });
 
   it("long texte client : document → thème → rendu Liquid réel → ZIP et CSV, HTML dangereux inerte", async () => {
