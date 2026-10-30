@@ -1,0 +1,27 @@
+{
+  "applicationCommit": "f561a0ba0121804088662ab0e3c0224370121396",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/preuves-211-D15/01-annulation-mobile.png": {
+      "bytes": 49321,
+      "sha256": "8fb846f2a93ec7cf5de2c1745215e5b3432c5cdd487e1b331bd89f4350c39db3"
+    },
+    "docs/coordination/preuves-211-D15/02-composition-ordinateur.png": {
+      "bytes": 215411,
+      "sha256": "1accda4ab71131aa36a4d3793cd98e5205fa77e524ed159f4d8f988824ea5165"
+    },
+    "docs/coordination/preuves-211-D15/checks.json": {
+      "bytes": 7380,
+      "sha256": "dca28be0155737af7990d201d5adde5a14880ddace660a4bdf94bac14037accf"
+    },
+    "docs/coordination/preuves-211-D15/native-proof.json": {
+      "bytes": 52032,
+      "sha256": "f53a68e40a0398fa380c9e78a75b1ed6461d3e1309260d346196723f65dd8c19"
+    },
+    "docs/coordination/preuves-211-D15/race-red.txt": {
+      "bytes": 8060,
+      "sha256": "a8c228112878a677d566c8db21a54e5e4fea82dca9f88d56e7298794c15ec818"
+    }
+  }
+}
