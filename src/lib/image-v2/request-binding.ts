@@ -53,6 +53,13 @@ export function resolveLocalVideoImageBinding(p:Project,input:ImageBinding){retu
 /** Vidéo directe explicitement sans référence : la fiche reste figée, sans revendiquer une fidélité visuelle.
  * Les parcours photo et animation locale conservent leur exigence historique de référence. */
 export function resolveVideoSubjectBinding(p:Project,input:ImageBinding,directWithoutReference:boolean){return resolveBinding(p,input,false,directWithoutReference);}
+/** Lecture de l’offre figée pour un brouillon de contenu, sans produire ni transformer de pixels. */
+export function resolveContentSubjectBinding(p:Project,input:ImageBinding){
+ const resolved=resolveBinding(p,input,true,true),t=resolved.binding.product;if(!t)return resolved;
+ const product=getProduct(p.id,t.productId);if(product.version!==t.version)throw new HttpError(409,L('La fiche a changé.','The listing changed.'));
+ const variant=t.variant?product.variants.find(v=>v.id===t.variant!.variantId):null,amount=variant?.price??product.data.price;
+ return{...resolved,project:{...resolved.project,product:{...resolved.project.product,price:{amount,currency:product.data.currency,status:amount==null?'unknown' as const:'confirmed' as const}}}};
+}
 function resolveBinding(p:Project,input:ImageBinding,preserveExistingPixels:boolean,directWithoutReference=false){
  const binding=ImageBindingSchema.parse(input);
  if(binding.product&&p.business==='services')throw new HttpError(409,L('Une prestation ne devient pas un produit e-commerce.','A service does not become an e-commerce product.'));

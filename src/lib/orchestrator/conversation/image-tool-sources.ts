@@ -27,7 +27,7 @@ function selectedSource(c:ConversationRow,selection:z.infer<typeof ImageSelectio
   pin=pinImageAsset(c.user_id,pid,selection.assetId,selection.version);const a=getAsset(pin.assetId)!,focus=metaOf(c).activeContext?.target,selected=!secondaryScene&&role==='source'&&focus?.kind==='asset'&&focus.assetId===a.id&&focus.version===a.version;
   const named=!!a.name.trim()&&latestText.includes(a.name)&&one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE project_id=? AND name=? AND deleted_at IS NULL",pid,a.name)!.n===1;
   if(!selected&&!named)throw new HttpError(409,L('Désignez cette image ou citez son nom unique avant de la retoucher.','Select this image or name it uniquely before editing it.'));
-  const meta=json<{imageV2?:{binding?:unknown};aiPost?:unknown}>(a.meta,{});if(meta.aiPost)throw new HttpError(409,L('Ce visuel de publication doit conserver ses textes et son logo. Sa retouche composée n’est pas encore raccordée à cet outil photo.','This post visual must preserve its text and logo. Composed edits are not connected to this photo tool yet.'));
+  const meta=json<{imageV2?:{binding?:unknown};aiPost?:unknown}>(a.meta,{});if(meta.aiPost&&!preservePixelsOnly)throw new HttpError(409,L('Ce visuel de publication doit conserver ses textes et son logo. Sa retouche composée n’est pas encore raccordée à cet outil photo.','This post visual must preserve its text and logo. Composed edits are not connected to this photo tool yet.'));
   const parsed=ImageBindingSchema.safeParse(meta.imageV2?.binding);if(parsed.success)binding=parsed.data;
  }
  const asset=getAsset(pin.assetId)!;

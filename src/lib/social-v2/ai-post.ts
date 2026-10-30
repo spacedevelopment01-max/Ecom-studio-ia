@@ -399,7 +399,7 @@ export function projectForSubject(
           ? "Prestation de services"
           : (selected?.category ?? "Produit du catalogue"),
       price: {
-        amount: selected?.price != null ? selected.price / 100 : null,
+        amount: selected?.price ?? null,
         currency: p.product.price.currency,
         status: selected?.price != null ? "confirmed" : "unknown",
       },
@@ -539,7 +539,10 @@ async function designSinglePostWithAi(
     // An acquired final result does not need a currently available generation model.
     for(let i=0;i<Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS));i++) {
       const cached=publicationStageValue<{assetId?:string}>(p.id,`${prefix}:${i}:outcome`);
-      if(cached?.assetId){const a=getAsset(cached.assetId);if(!a||a.project_id!==p.id||a.deleted_at||!["ready","approved"].includes(a.status))return blocked("Version conservée indisponible : pas de nouvelle dépense automatique.");return {assetId:a.id,costMicro:spent(),by:"image_v2",attempts:i+1};}
+      if(cached?.assetId){const a=getAsset(cached.assetId);if(!a||a.project_id!==p.id||a.deleted_at||!["ready","approved"].includes(a.status))return blocked("Version conservée indisponible : pas de nouvelle dépense automatique.");
+        const texts=assetMeta<any>(a).aiPost?.texts,explicit=Object.values(deps.clientTexts??{}).filter((v):v is string=>typeof v==='string');
+        if(!texts||!['headline','subline','cta'].every(field=>typeof texts[field]==='string')||publicationCopyIssues(p,texts,post.request??'',explicit,deps.confirmedCommercialTexts).length)return{...blocked("Le visuel acquis est conservé, mais ses affirmations commerciales doivent être relues. Aucun nouveau débit ni remplacement automatique."),code:'ACQUIRED_COPY_FACTS_REQUIRED',partialAssetIds:[a.id]};
+        return {assetId:a.id,costMicro:spent(),by:"image_v2",attempts:i+1};}
     }
     // Deterministic prerequisites BEFORE buying copy or claiming a pending receipt.
     if(mode==="two-step"&&!deps.layout)return {...blocked("Étape de mise en page demandée indisponible, aucun remplacement automatique."),code:"LAYOUT_STAGE_UNAVAILABLE"};

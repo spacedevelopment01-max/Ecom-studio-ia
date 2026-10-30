@@ -1,0 +1,185 @@
+{
+  "id": "luer2doeqjnzp2ul",
+  "sourceReceiptId": "yr17bhbil01tu6rs",
+  "creationProven": true,
+  "delivered": true,
+  "state": "review",
+  "job": {
+    "id": "cv9vb5vdpo6lg35g",
+    "type": "agent.social.prepare",
+    "label": "Préparer les brouillons sociaux avec SYNA",
+    "status": "done",
+    "progress": 1,
+    "message": "Terminé",
+    "error": null,
+    "attempts": 1,
+    "parentId": null,
+    "result": {
+      "quoteId": "luer2doeqjnzp2ul",
+      "outcome": {
+        "planId": null,
+        "posts": [
+          {
+            "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+            "network": "facebook",
+            "format": "image",
+            "title": "Un papier, un geste.",
+            "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+            "hashtags": "#Papier",
+            "link": null,
+            "media": "[\"kxrp66yo0lkb4skg\"]",
+            "status": "review",
+            "scheduled_at": null,
+            "timezone": "Europe/Paris",
+            "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+            "approved_hash": null,
+            "connection_id": null,
+            "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}"
+          }
+        ],
+        "warnings": []
+      },
+      "localOnly": true,
+      "providerCalls": 0,
+      "publication": false
+    },
+    "createdAt": 1793361342150,
+    "updatedAt": 1793361343041,
+    "finishedAt": 1793361343041,
+    "startedAt": 1793361342150,
+    "alive": false,
+    "idleMs": 1228
+  },
+  "planId": null,
+  "posts": [
+    {
+      "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+      "network": "facebook",
+      "format": "image",
+      "title": "Un papier, un geste.",
+      "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+      "hashtags": "#Papier",
+      "link": null,
+      "media": [
+        {
+          "assetId": "kxrp66yo0lkb4skg",
+          "present": true,
+          "href": "/api/files/kxrp66yo0lkb4skg"
+        }
+      ],
+      "status": "review",
+      "scheduled_at": null,
+      "timezone": "Europe/Paris",
+      "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+      "approved_hash": null,
+      "connection_id": null,
+      "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}",
+      "nativePresent": true,
+      "isCurrent": true,
+      "current": {
+        "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+        "network": "facebook",
+        "format": "image",
+        "status": "review",
+        "scheduledAt": null,
+        "timezone": "Europe/Paris",
+        "title": "Un papier, un geste.",
+        "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+        "hashtags": "#Papier",
+        "link": null,
+        "angle": null,
+        "media": [
+          {
+            "id": "kxrp66yo0lkb4skg",
+            "name": "detourage.png",
+            "kind": "image",
+            "role": "cutout",
+            "mime": "image/png",
+            "size": 9944,
+            "width": 600,
+            "height": 900,
+            "duration": null,
+            "folderId": "msta1lpp6unbsu0u",
+            "origin": "generated",
+            "status": "approved",
+            "starred": false,
+            "version": 1,
+            "versionOf": null,
+            "sourceAssetId": null,
+            "createdAt": 1793361335470,
+            "url": "/api/files/kxrp66yo0lkb4skg",
+            "thumbUrl": "/api/files/kxrp66yo0lkb4skg?thumb=1",
+            "downloadUrl": "/api/files/kxrp66yo0lkb4skg?download=1",
+            "meta": {
+              "best": true
+            },
+            "provenance": {
+              "origin": "generated_or_transformed_unspecified",
+              "rightsStatus": "to_confirm",
+              "declaredLicense": null,
+              "evidenceRef": null,
+              "ownershipCertified": false,
+              "peopleConsent": "not_documented",
+              "thirdPartyBrands": "to_confirm",
+              "claims": "requires_project_evidence",
+              "demoOnly": false
+            }
+          }
+        ],
+        "connectionId": null,
+        "connectionName": null,
+        "planId": null,
+        "campaignId": null,
+        "error": null,
+        "remoteUrl": null,
+        "publishedAt": null,
+        "autoApproved": false,
+        "approvedAt": null,
+        "attempts": 0,
+        "advice": [
+          "Ajouter un appel à l'interaction (question, enregistrer, partager, lien).",
+          "Titre du visuel à raccourcir (2 à 6 mots)."
+        ],
+        "marketingStrategy": null,
+        "editorial": null,
+        "engine": "v2",
+        "pillar": null,
+        "objective": null,
+        "approvedValid": false,
+        "approvedHash": null,
+        "userEdited": true,
+        "blocking": [
+          "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+        ],
+        "issues": [],
+        "level": "ready_to_connect"
+      },
+      "check": {
+        "blocking": [
+          "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+        ],
+        "issues": [],
+        "codes": [
+          "invented_claim"
+        ],
+        "score": 8
+      }
+    }
+  ],
+  "warnings": [],
+  "costPct": 0,
+  "requestBounds": {
+    "maxCalls": 4,
+    "remainingCalls": 3,
+    "maxDepth": 1,
+    "maxRetries": 0,
+    "deadlineAt": 1793362239221,
+    "httpAttempts": 1
+  },
+  "localOnly": true,
+  "clientApproved": false,
+  "creativeQualityQualified": false,
+  "publication": false,
+  "href": "/studio/e9zrlix719iep8ui/publications",
+  "message": "Brouillons conservés dans Publications, à relire. Cette préparation n’a programmé ni diffusé de contenu."
+}

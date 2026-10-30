@@ -25,6 +25,7 @@ import { publicationStage } from "@/lib/social-v2/publication-recipe";
 import { withClientTexts } from "@/lib/engine/ai-post-image";
 import { reformatAiImage, redoRequest } from "@/lib/media/ai-image-variants";
 import { isAutoUsable } from "@/lib/quality/usable";
+import {run}from '@/lib/db';
 const post = {
   id: "isolated-campaign",
   network: "instagram",
@@ -261,7 +262,7 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
   it("promotion exacte demandée préservée ; aucune coupe de la consigne en régénération", async () => {
     const { p, ref } = await setup();
     const { d, calls } = deps();
-    p.product.price = { amount: 49, currency: "EUR", status: "confirmed" };
+    p.product.price = { amount: 4900, currency: "EUR", status: "confirmed" };
     p.product.facts.push({
       key: "promo",
       label: "Promotion confirmée",
@@ -285,6 +286,12 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
         { aspect: "2:3", instruction: "éclaircir" },
       ).request,
     ).toContain("CONTRAINTE FINALE");
+  });
+  it('un acquis dont le prix est faux reste conservé, sans être réaccepté ni racheté',async()=>{
+    const{p,ref}=await setup(),{d,calls}=deps();p.product.price={amount:1990,currency:'EUR',status:'confirmed'};
+    const ask={...post,request:'Affiche le prix fourni, sans autre promotion.'},options={aspect:'4:5' as const,maxCostEur:1,reference:ref.id,as:'ad' as const},bound=withClientTexts(d,{headline:'19,90 €'}),first=await designPostWithAi(p,ask,options,bound);expect(first.assetId).toBeTruthy();
+    const asset=getAsset(first.assetId!)!,original=assetData(asset),meta=assetMeta<any>(asset);meta.aiPost.texts.headline='1990 €';run('UPDATE assets SET meta=? WHERE id=?',JSON.stringify(meta),asset.id);const before={...calls};
+    const reused=await designPostWithAi(p,ask,options,bound);expect(reused.assetId).toBeNull();expect(reused.code).toBe('ACQUIRED_COPY_FACTS_REQUIRED');expect(reused.partialAssetIds).toEqual([asset.id]);expect(calls).toEqual(before);expect(assetData(getAsset(asset.id)!)).toEqual(original);expect(getAsset(asset.id)!.status).toBe(asset.status);
   });
   it("copie gratuite clairement provisoire, pas de certification héritée ; original conservé", async () => {
     const { p, ref } = await setup();
@@ -353,7 +360,7 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
       summary: p.catalog[0].description,
       referenceAssetId: null,
     });
-    expect(q.product.price.amount).toBe(19);
+    expect(q.product.price.amount).toBe(1900); // Contrat Project : centimes, comme le catalogue natif.
     expect(q.product.category).toBe("Protection");
     expect(q.product.variants).toEqual([]);
     expect(q.product.summary).toContain("FIN DU SUJET");

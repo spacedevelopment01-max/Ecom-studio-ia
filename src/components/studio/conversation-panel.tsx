@@ -22,6 +22,7 @@ import {ConversationLogoTools} from './conversation-logo-tools';
 import {ConversationGeneratedVideos}from './conversation-generated-videos';
 import {ConversationVoiceTools}from './conversation-voice-tools';
 import {ConversationClipTools}from './conversation-clip-tools';
+import {ConversationSocialTools}from './conversation-social-tools';
 import {ConversationVideoTools}from './conversation-video-tools';
 import {ConversationStudioHelp} from './conversation-studio-help';
 
@@ -114,6 +115,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.videoExecution?.generation&&projectId&&<ConversationGeneratedVideos view={v} onChanged={reload}/>}
       {v?.videoExecution?.voice&&projectId&&<ConversationVoiceTools view={v} onChanged={reload}/>}
       {v?.videoExecution?.clip&&projectId&&<ConversationClipTools view={v} onChanged={reload}/>}
+      {v?.socialExecution?.enabled&&projectId&&<ConversationSocialTools view={v} onChanged={reload}/>}
       {v?.videoExecution?.enabled&&projectId&&<ConversationVideoTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}

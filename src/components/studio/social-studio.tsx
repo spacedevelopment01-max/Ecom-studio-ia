@@ -866,13 +866,19 @@ function PostPreview({ media, caption, hashtags, network }: { media: AssetView[]
   );
 }
 
+/** Même éditeur natif pour la liste Publications et le panneau SYNA. */
+export function SocialPostEditor({postId,onClose,onChanged}:{postId:string;onClose:()=>void;onChanged:()=>void}){
+  const{id}=useProject(),t=useT(),{data,error,reload}=useApi<Data>(`/api/projects/${id}/social/v2`);
+  if(!data)return <div role={error?'alert':'status'} className="rounded-xl border border-line p-4 text-sm"><p>{error||t('Ouverture de l’éditeur Publications…','Opening the Posts editor…')}</p><Button variant="ghost" className="min-h-11" onClick={onClose}>{t('Fermer','Close')}</Button></div>;
+  return <PostEditorV2 postId={postId} data={data} onClose={onClose} onChanged={()=>{void reload();onChanged();}}/>;
+}
 function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; data: Data; onClose: () => void; onChanged: () => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
   const base = `/api/projects/${id}/social/v2/posts/${postId}`;
   const { data: v, reload } = useApi<{ post: PostV; attempts: { attempt: number; started_at: number; outcome: string; detail: string }[]; platform: { label: string; captionMax: number; hashtags: [number, number]; level: string; formats: string[] }; variants?: { id: string; network: string; label: string; format: string; status: string; blocking: string[] }[] }>(base);
-  const tz = data.timezone || "Europe/Paris";
+  const tz = v?.post.timezone || data.timezone || "Europe/Paris";
   const [f, setF] = useState<{ title: string; caption: string; editorial?:Editorial; hashtags: string; link: string; date: string; time: string; media: AssetView[]; network: string; connectionId: string } | null>(null);
   const [picker, setPicker] = useState(false);
   const [busy, setBusy] = useState(false);
