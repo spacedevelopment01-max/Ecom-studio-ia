@@ -45,3 +45,7 @@ Ce sont un motif, une vidéo bleue et une tonalité **de test**, jamais des cré
 Modes direct et référence uniquement. Images intermédiaires/staged, rapprochement fournisseur réel et changement de profil vocal restent à compléter/qualifier. Le contrôle natif observe quelques images : il ne certifie ni mouvement continu, fidélité IA, voix naturelle, droits des médias réels ni qualité commerciale. Aucun fournisseur/CMS/compte social réel testé. D11 puis D12/E/F restent ouverts.
 
 #251 reste la dépendance immédiate ; #249/#250 sont déjà conservées par contenu dans cette chaîne, #250 sans ascendance : ne pas l’appliquer deux fois. #247/#248 et les API services Claude #239/#245 restent des dépendances d’intégration futures ; aucun thème ni branche Claude/main modifié. La version du studio client n’a pas été mise à jour. Fusion/activation et recette réelle attendent l’accord du propriétaire.
+
+## Complément CI du 30 octobre
+
+La première CI distante41046090069 sur9a9b2b1c a échoué : un ancien test `mission154-livraison` a dépassé60s pendant ses deux exports/Theme Check,4078autres tests réussis/31ignorés. Ce résultat n’est pas déclaré vert. Reproduction isolée sur9a9b2b1c : test réussi en17,43s (14autres cas volontairement non sélectionnés). Le délai de CE test d’intégration passe à120s, comme les exports multi-CMS voisins ; toutes les assertions et contrôles natifs restent présents, aucun code applicatif changé. Nouvelle CI finale requise. Les preuves/build/navigateur applicatifs précédents restent valables pour969766bd ; aucune nouvelle génération ni capture.
