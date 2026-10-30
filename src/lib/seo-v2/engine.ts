@@ -26,6 +26,9 @@ import { EUR } from "../billing";
 import { contentLang } from "../i18n-server";
 import { loadProject, type Project } from "../projects";
 import { verifiedFacts } from "./facts";
+import {contentSubjectProject,documentSubject} from "./subject";
+import {HttpError} from "../auth";
+import {emptyProduct} from "../project-types";
 import { researchKeywords } from "./keywords";
 import { sitePages, resolvePage } from "./pages";
 import { checkRequirements, requirementTargets } from "./requirements";
@@ -50,6 +53,8 @@ export const DEFAULT_SEO_CAP_EUR = 0.6;
 export type ContentRequestV2 = {
   /** Server-selected contract: an explicitly requested AI result cannot become a local substitute. */
   requireAi?: boolean;
+  /** Internal server-selected catalogue pin, never accepted by the public SYNA command. */
+  nativeBinding?: import("../image-v2/request-binding").ImageBinding;
   /** Page prévue identifiée par l’orchestrateur amont ; aucune création de thème requise. */
   target?: {page:PageRef;serviceIndex?:number};
   type: ContentType;
@@ -104,7 +109,7 @@ export async function runContentEngineV2(ctx: JobContext | null, projectId: stri
 async function runContentEngineV2InScope(ctx: JobContext | null, projectId: string, req: ContentRequestV2, injected?: SeoV2Deps): Promise<RunResult> {
   if(!req.planOnly)assertJobEntitlements("content.v2",projectId,{request:req});
   if(req.type==="ad_copy")assertAdvertising(projectId);
-  let p = loadProject(projectId);
+  let p = contentSubjectProject(loadProject(projectId),req.nativeBinding);
   if(req.target?.serviceIndex!=null){const service=p.services.services[req.target.serviceIndex];if(p.business!=="services"||!service)throw new UserFacingError("Prestation cible absente.");p={...p,services:{...p.services,services:[service]}};}
   let deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
@@ -147,7 +152,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const strategy = seoStrategy(p, lang, { pages, research });
   const page = req.target?.page ?? targetPage(pages, req.type, req.pageKey, strategy, req.keyword);
   const item = page.key.startsWith("product:catalog:") ? p.catalog.find((c) => `product:catalog:${c.key}` === page.key) ?? null : req.target&&req.type==="product_page"?p.catalog.find(c=>c.name.trim()===page.title.trim())??null:null;
-  let facts = verifiedFacts(p, item);
+  let facts = verifiedFacts(p, item, {confirmedCategoryOnly:!!req.nativeBinding});
   if (page.kind === "service") {
     const service = req.target?.serviceIndex!=null?p.services.services[0]:p.services.services.find((s) => `service:${s.key}` === page.key);
     if (!service) throw new UserFacingError(L("Prestation introuvable.", "Service not found."));
@@ -174,7 +179,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const memoKey = runKey(strategyReuseInput({ v: SEO_V2_VERSION, brief, identity: p.brand?.artIdentity ?? null, brandTone: p.brand?.tone, docKey, type: req.type, lang, page: page.key, instructions:brief.instructions??null, kw: brief.primaryKeyword?.term ?? null, intent: brief.intent, facts, links: brief.links.map((l) => [l.key, l.status, l.url]), ai: deps.canWrite, review: deps.canReview }));
   const memo = req.force ? null : contentRun(p.id, memoKey);
   if (memo) {
-    const saved = contentVersionDoc(p.id, memo.docKey, memo.version);
+    let saved = contentVersionDoc(p.id, memo.docKey, memo.version);
     const latest = latestContent(p.id, memo.docKey);
     if (saved && (!req.requireAi || saved.meta2.by === "ai")) {
       let key = memo.docKey;
@@ -185,6 +190,13 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
         if (existing && JSON.stringify(existing.doc) !== JSON.stringify(saved)) key = `cnt:${runKey({ reuse: key, preserve: existing.version.id }).slice(0, 20)}`;
         if (!latestContent(p.id, key)) saveContentVersion(p.id, key, saved, { verdict: memo.verdict, note: `Réutilisation gratuite de ${memo.docKey}, version ${memo.version} ; autres versions conservées` });
       }
+      // Identical semantic inputs can reuse paid copy after a stock-only version change.
+      // Refresh metadata locally, keeping the historical version and client-owned lineages intact.
+      if(req.nativeBinding&&JSON.stringify(saved.meta2.nativeBinding)!==JSON.stringify(req.nativeBinding)){
+        saved={...saved,meta2:{...saved.meta2,nativeBinding:req.nativeBinding}};
+        const v=tx(()=>{deps.beforeFinalSave?.();contentSubjectProject(loadProject(p.id),req.nativeBinding);return saveContentVersion(p.id,key,saved!,{verdict:memo.verdict,note:"Réemploi gratuit du texte acquis ; version de la fiche actualisée",expectedVersion:latestContent(p.id,key)?.version.version??0});});
+        rememberContentRun(p.id,memoKey,{docKey:key,version:v.version,verdict:memo.verdict,costMicro:0});
+      }
       return { ...base, docKey: key, doc: saved, verdict: memo.verdict as ContentRunResult["verdict"], reason: "version précise déjà rédigée avec le même brief, les mêmes faits et la même identité : rien de repayé", by: saved.meta2.by, costMicro: 0, skipped: true, delivery: delivery(memo.verdict,saved.meta2.contract?.checks.issues??[]) };
     }
   }
@@ -194,7 +206,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   let expectedVersion = latestContent(p.id, docKey)?.version.version ?? 0;
   const retain = (candidate: ContentDoc, verdict: string, note: string) => {
     const contract = { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(candidate, brief.requirements) };
-    candidate = { ...candidate, meta2: { ...candidate.meta2, contract } };
+    candidate = { ...candidate, meta2: { ...candidate.meta2, contract, ...(req.nativeBinding?{nativeBinding:req.nativeBinding}:{}) } };
     try {
       const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion });
       expectedVersion = v.version;
@@ -342,7 +354,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const verdict = base.codes.length || insufficient ? "REJECTED" : d.verdict === "RETRY" && !d.checked ? "PROVISIONAL" : d.verdict;
   // Garder les contrôles d'essai, puis tracer aussi le verdict effectif du document livré.
   gateSave({ userId: p.userId, projectId: p.id, jobId: ctx?.job.id ?? null, candidateId: `seo2:${docKey}` }, { ...d, verdict });
-  doc = { ...doc, meta2: { ...doc.meta2, contract: { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(doc, brief.requirements) } } };
+  doc = { ...doc, meta2: { ...doc.meta2, ...(req.nativeBinding?{nativeBinding:req.nativeBinding}:{}), contract: { request: brief.request ?? "", contextHash: brief.context?.hash ?? "", contextVersion: brief.context?.version ?? "", target: page.key, checks: checkRequirements(doc, brief.requirements) } } };
   ctx?.progress(0.9, L("Conservation du texte et de son contrôle", "Saving content and its check"));
   const saved = tx(()=>{deps.beforeFinalSave?.();return retain(doc, verdict, `moteur ${by === "ai" ? "IA" : "local"} — ${verdict}`);});
   // Blog V2 : le brouillon rejoint le blog existant (relecture, couverture, publication dans l'onglet Blog).
@@ -368,13 +380,23 @@ export function mergeRewrite(doc: ContentDoc, out: RewriteOut, ids: string[]): C
   }) };
 }
 
+/** Informative checks must use the document subject, or explicitly report why facts were not checked. */
+export function documentContentChecks(p:Project,doc:ContentDoc){
+ const subject=documentSubject(p,doc);
+ if(!subject.project){
+  const neutral={...p,product:emptyProduct(),catalog:[]},c=localContentChecks(doc,neutral,verifiedFacts(neutral),{pages:sitePages(p),factsUnavailable:true});
+  return{...c,codes:[...c.codes,"CONTENT_SUBJECT_CHANGED"],issues:[...c.issues,"La fiche ou sa variante a changé ou manque. Texte conservé ; contrôles factuels non effectués. Désignez sa version actuelle avant une nouvelle rédaction IA."],measures:{...c.measures,subject:"changed"}};
+ }
+ const item=subject.project.catalog.find(c=>`product:catalog:${c.key}`===doc.page.key);
+ return localContentChecks(doc,subject.project,verifiedFacts(subject.project,item,{confirmedCategoryOnly:!!doc.meta2.nativeBinding}),{pages:sitePages(subject.project)});
+}
+
 /** Enregistrement d'une modification manuelle du client : aucune IA ; contrôles locaux pour information. */
 export function saveUserEdit(projectId: string, docKey: string, doc: ContentDoc, note = "modification du client", expectedVersion?: number) {
   const p = loadProject(projectId);
   const previous = latestContent(projectId, docKey);
   if (previous) doc = { ...doc, type: previous.doc.type, lang: previous.doc.lang, page: { ...doc.page, key: previous.doc.page.key, kind: previous.doc.page.kind }, meta2: previous.doc.meta2 };
-  const facts = verifiedFacts(p);
-  const checks = localContentChecks(doc, p, facts, { pages: sitePages(p) });
+  const checks = documentContentChecks(p,doc);
   const version = saveContentVersion(projectId, docKey, { ...doc, meta2: { ...doc.meta2, source: "user" } }, { note, verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: expectedVersion ?? previous?.version.version });
   if (doc.type === "blog_article") saveBlogDraftV2(p, docKey, doc, { notes: checks.issues, ai: false, jobKey: "" });
   return { version, checks };
@@ -392,25 +414,27 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
   const cur = latestContent(projectId, docKey);
   if (!cur) throw new Error("contenu introuvable");
   const doc = cur.doc;
-  const item = p.catalog.find((c) => `product:catalog:${c.key}` === doc.page.key);
-  const facts = verifiedFacts(p, item);
-  const pages = sitePages(p);
+  const subject=documentSubject(p,doc),bound=subject.project;
+  const item = bound?.catalog.find((c) => `product:catalog:${c.key}` === doc.page.key);
+  const facts = bound?verifiedFacts(bound,item,{confirmedCategoryOnly:!!doc.meta2.nativeBinding}):undefined;
+  const pages = bound?sitePages(bound):[];
   const plan = planEdit(request, doc, { selected: o.selected, facts, brief: { primaryKeyword: doc.primaryKeyword ? { term: doc.primaryKeyword, intent: "commercial", source: "semantic_hypothesis", metrics: null, basis: "" } : null, page: doc.page, type: doc.type } });
   if (plan.kind === "unclear") return { applied: false, by: "none", summary: plan.summary, version: null, doc, issues: [], costMicro: 0 };
   if (plan.kind === "local") {
     const next = { ...applyContentOps(doc, plan.ops), meta2: { ...doc.meta2, source: "ai_local" as const } };
     if (JSON.stringify(next.blocks) === JSON.stringify(doc.blocks) && JSON.stringify(next.meta) === JSON.stringify(doc.meta)) return { applied: false, by: "none", summary: L("Aucun changement : le texte est déjà identique.", "No change: the content is already identical."), version: null, doc, issues: [], costMicro: 0 };
-    const checks = localContentChecks(next, p, facts, { pages });
+    const checks = documentContentChecks(p,next);
     const v = saveContentVersion(projectId, docKey, next, { note: `retouche locale : ${plan.summary}`.slice(0, 200), verdict: checks.codes.length ? "PROVISIONAL" : null, expectedVersion: cur.version.version });
     if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: checks.issues, ai: false, jobKey: "" });
     return { applied: true, by: "local", summary: plan.summary, version: v.version, doc: next, issues: checks.issues, costMicro: 0 };
   }
-  const deps = injected ?? realSeoDeps(ctx, p, aiActiveFor(p.userId, p.id));
+  if(!bound||!facts)throw new HttpError(409,"La fiche ou sa variante a changé ou manque. Texte conservé ; désignez sa version actuelle avant une retouche IA.");
+  const deps = injected ?? realSeoDeps(ctx, bound, aiActiveFor(p.userId, p.id));
   if (!deps.canWrite) return { applied: false, by: "none", summary: "cette retouche demande l'IA, non disponible pour ce compte (forfait ou IA coupée) : modifiez le texte directement dans l'éditeur", version: null, doc, issues: [], needsAi: true, costMicro: 0 };
   const capMicro = Math.round((o.maxCostEur ?? 0.2) * EUR);
   if (deps.estimate("rewrite") > capMicro) return { applied: false, by: "none", summary: "plafond de coût trop bas pour cette retouche", version: null, doc, issues: [], costMicro: 0 };
   const target = doc.blocks.filter((b) => plan.blockIds.includes(b.id));
-  const before = localContentChecks(doc, p, facts, { pages });
+  const before = localContentChecks(doc, bound, facts, { pages });
   const system = `${writeSystem(doc.lang)}\nTu modifies UNIQUEMENT les blocs fournis (mêmes identifiants, même nature) selon la demande. N'ajoute aucune information absente des faits.`;
   const prompt = [
     `Demande du client : ${plan.instruction}`,
@@ -433,11 +457,12 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
     }),
     meta2: { ...doc.meta2, source: "ai" },
   };
-  const after = localContentChecks(next, p, facts, { pages });
+  const after = localContentChecks(next, bound, facts, { pages });
   const added = after.codes.filter((c) => !before.codes.includes(c));
   if (added.length) return { applied: false, by: "ai", summary: `réécriture refusée (${added.join(", ")}) : votre texte est conservé`, version: null, doc, issues: after.issues, costMicro: r.costMicro };
   const changed = next.blocks.filter((b, i) => blockText(b) !== blockText(doc.blocks[i])).length;
   if (!changed) return { applied: false, by: "ai", summary: L("La réécriture n'a rien changé : votre version est conservée.", "The rewrite changed nothing: your version is kept."), version: null, doc, issues: after.issues, costMicro: r.costMicro };
+  contentSubjectProject(loadProject(projectId),doc.meta2.nativeBinding);
   const v = saveContentVersion(projectId, docKey, next, { note: `retouche IA : ${plan.instruction}`.slice(0, 200), verdict: "PROVISIONAL", expectedVersion: cur.version.version });
   if (next.type === "blog_article") saveBlogDraftV2(p, docKey, next, { notes: after.issues, ai: false, jobKey: "" });
   return { applied: true, by: "ai", summary: `${changed} bloc(s) réécrit(s)`, version: v.version, doc: next, issues: after.issues, costMicro: r.costMicro };

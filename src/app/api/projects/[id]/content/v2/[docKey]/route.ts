@@ -4,10 +4,8 @@ import { body, handle, ok } from "@/lib/http";
 import { L } from "@/lib/i18n-server";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import type { Project } from "@/lib/projects";
-import { editContentV2, saveUserEdit } from "@/lib/seo-v2/engine";
-import { verifiedFacts } from "@/lib/seo-v2/facts";
+import { editContentV2, saveUserEdit, documentContentChecks } from "@/lib/seo-v2/engine";
 import { sitePages } from "@/lib/seo-v2/pages";
-import { localContentChecks } from "@/lib/seo-v2/quality";
 import { suggestLinks } from "@/lib/seo-v2/links";
 import { auditDocs } from "@/lib/seo-v2/tech";
 import { cmsTargets, exportBundle } from "@/lib/seo-v2/cms";
@@ -22,7 +20,7 @@ type DocCtx = Ctx<{ id: string; docKey: string }>;
 /** Indicateurs SEO gratuits (jamais bloquants pour le client). */
 function indicators(p: Project, doc: ContentDoc) {
   const pages = sitePages(p);
-  const c = localContentChecks(doc, p, verifiedFacts(p), { pages });
+  const c = documentContentChecks(p,doc);
   return { codes: c.codes, issues: c.issues, measures: { ...c.measures, words: wordCount(plainText(doc)) }, links: suggestLinks(doc, pages), audit: auditDocs([doc], pages) };
 }
 
