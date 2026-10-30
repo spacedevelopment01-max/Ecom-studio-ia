@@ -142,13 +142,15 @@
       "npm",
       "test",
       "--",
-      "tests/ci-native-social-placement.test.ts"
+      "tests/ci-native-social-placement.test.ts",
+      "tests/ci-native-production-placement.test.ts"
     ],
-    "head": "9878cd3846d340c3197711c15d2a9e2b957ca95d",
+    "head": "69d338861b31402efef02c66c22e93e0b60d6bc2",
     "state": "passed",
     "sourceUnchanged": true,
-    "logSha256": "a848422676b9c0df3f2a096a0941800ffeb947f44a3bd716999857d3778e39cc",
+    "logSha256": "13f0086bed09492a31e082bd0107c17d066097b5f7c624447d49e6c8de8f4bd3",
     "workflowIdenticalTo": "d62aa36c65c5d597b3795838ff615e0207e2dfb7",
-    "existingStepsRetained": 51
+    "existingStepsRetained": 51,
+    "nativeTestSeparateFile": true
   }
 }

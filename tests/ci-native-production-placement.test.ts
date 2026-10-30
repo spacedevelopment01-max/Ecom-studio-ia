@@ -1,0 +1,3 @@
+/** Raccordement du contrôle natif à la recette compilée commune. */
+import {it,expect}from 'vitest';import fs from 'node:fs';
+it('production native exécutée après la recette campagne sans masquer son échec',()=>{const source=fs.readFileSync('scripts/verify-agent211-build.ts','utf8'),tail=source.slice(source.lastIndexOf('// D11c :'));expect(tail).toContain("process.argv.includes('--campaign-ui')");expect(tail).toContain("execFileSync(process.execPath");expect(tail).toContain("scripts/verify-social-production211-build.ts");expect(tail).toContain("path.join(out,'native-production')");expect(tail).toContain("delete isolatedEnv[selector]");expect(tail).not.toContain('catch');});

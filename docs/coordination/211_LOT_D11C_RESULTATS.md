@@ -40,3 +40,5 @@ Les fichiers, SHA et commandes exacts figurent dans [211_D11C_PREUVES.json](211_
 ### Correction de dépendance avant CI
 
 La création de #255 a révélé un conflit Git limité au workflow : la correction de placement de #254 et l’ajout de l’étape D11c recouvraient le même déplacement. **Aucune fusion ni réécriture de branche** : workflow remis identique au SHA d62aa36c ; la recette D11c s’exécute maintenant à la fin de `verify-agent211-build.ts --campaign-ui`, dans un processus/dossier isolé et ses résultats dans l’artefact campagne. `execFileSync` propage les échecs. Les51 étapes existantes sont strictement conservées. Aucun changement applicatif/worker ni nouvelle preuve créative ; test ciblé du raccordement ajouté. La tête de PR corrigée et sa CI doivent encore être vérifiées.
+
+Le contrôle de fusion à blanc a également identifié l’ajout simultané du fichier de test CI par #254 : son contenu reste maintenant strictement identique à d62aa36c et le contrôle D11c est dans un fichier distinct. Aucun conflit n’est masqué ; compatibilité complète vérifiée à blanc avant l’envoi final.
