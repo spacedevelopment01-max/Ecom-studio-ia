@@ -798,7 +798,7 @@ export function aiPostMaxMicro(references = 2,photoOnly=false): number | null {
   const r = mediaRouteFor("social_image", { text: !photoOnly, references });
   if (!r) return null;
   const prompt = "x".repeat(PUBLICATION_PROMPT_MAX_BYTES);
-  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: references, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: references }) : cost(r.provider, r.model, { images: references }).micro;
+  const micro = r.provider === "openai" ? openaiImageMax(r.model, { prompt, images: references, size: "1024x1536", quality: "high" }) : r.provider === "google" ? geminiImageMax(r.model, { prompt, images: references }) : cost(r.provider, r.model, { images: 1 }).micro;
   return mediaReservationMaxMicro(micro);
 }
 

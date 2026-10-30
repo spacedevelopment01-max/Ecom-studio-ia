@@ -49,7 +49,7 @@ export type PostBrief = {
   advertising?: Record<string, unknown>;
   series?: { id: string; index: number; total: number; pages: unknown[]; family?:unknown };
 };
-export type MediaOpts = { allowPaid: boolean; maxCostEur: number; /** Relire le brouillon avant chaque envoi payant ; ne crée aucun accord. */ assertCurrent?:()=>void };
+export type MediaOpts = { allowPaid: boolean; maxCostEur: number; /** Relire le brouillon avant chaque envoi payant ; ne crée aucun accord. */ assertCurrent?:()=>void;publicationQuote?:import('./bounded-production-quote').NativePublicationQuote };
 
 export type SocialDeps = {
   /** IA active pour ce compte (forfait, budget, IA activée) : condition des générations payantes. */
@@ -273,7 +273,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       // Le produit (ou service) choisi par le client ; sinon le produit principal et sa photo de référence.
       const {nativeSocialSubject}=await import('./native-subject');
       const native=nativeSocialSubject(pp,post),project=native?.project??pp,subject=native?.subject??resolveSubject(pp, post.subject);
-      return designPostWithAi(project, {...post,...(native?{nativeBinding:native.binding}:{}),entryPoint:"publications"}, { as:"post", aspect, maxCostEur: o.maxCostEur, reference: native?native.reference:subject?.referenceAssetId??null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null },{project:native?.project,beforeDispatch:o.assertCurrent}));
+      return designPostWithAi(project, {...post,...(native?{nativeBinding:native.binding}:{}),entryPoint:"publications"}, { as:"post", aspect, maxCostEur: o.maxCostEur,...(o.publicationQuote?{maxAttempts:1,mode:o.publicationQuote.mode}:{}), reference: native?native.reference:subject?.referenceAssetId??null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null },{project:native?.project,beforeDispatch:o.assertCurrent,quote:o.publicationQuote}));
     },
     local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {

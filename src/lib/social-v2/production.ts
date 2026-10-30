@@ -91,6 +91,8 @@ const selectRows = (projectId: string, ids: string[]) =>
       })
     : [];
 
+export const productionPost=(pid:string,postId:string)=>selectRows(pid,[postId])[0]??null;
+
 /** Empreintes natives figées lors de la confirmation HTTP, avant l’attente du worker. */
 const productionInputToken=(p:Project,row:Row)=>stableHash('social-production-confirmed-input-1',{row,context:row.nativeBinding?nativeSocialSubject(p,row,false)?.digest:{identity:p.brand,settings:p.settings,strategy:p.strategy,business:p.business,product:p.product,catalog:p.catalog,services:p.services}});
 export const productionInputVersions=(projectId:string,ids:string[])=>{const p=loadProject(projectId);return Object.fromEntries(selectRows(projectId,ids).map(row=>[row.id,productionInputToken(p,row)]));};
@@ -127,7 +129,7 @@ export type ProductionResult = { produced: number; skipped: number; failed: numb
  * Production d'un lot. `approvedEstimateMicro` : estimation vue et acceptée par le client — une production
  * payante n'est lancée que si elle a été acceptée et seulement dans le plafond `maxCostEur`.
  */
-export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { expectedInputs?:Record<string,string>;allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
+export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, o: { beforeDispatch?:()=>void;publicationQuote?:import('./bounded-production-quote').NativePublicationQuote;expectedInputs?:Record<string,string>;allowPaid: boolean; maxCostEur: number; approvedEstimateMicro?: number | null; batchSize?: number; /** Nombre d'images différentes voulu pour les publications du calendrier (vide : une par publication). */ distinctImages?: number | null; /** Les N premières publications en image : visuel entièrement créé par l'IA (payant, dans le plafond). */ aiImages?: number | null; /** Image de fond par l'IA, mise en page du studio (payant, dans le plafond). */ aiBackground?: boolean; /** Remplacer le visuel déjà posé (l'ancien reste dans la bibliothèque). */ replace?: boolean; /** Image de la banque choisie par le client comme fond des publications en image (gratuit). */ background?: Asset | null; /** Remplacement accepté : médias de chaque publication au moment de l'accord. Une publication dont le média a déjà changé (refaite, ou modifiée entre-temps) est sautée : jamais refaite ni repayée par une reprise de la tâche. */ replaceFrom?: Record<string, string> | null; /** Suivi visible : une publication à la fois (tâche de fond). */ progress?: (done: number, total: number) => void }): Promise<ProductionResult> {
   const cap = Math.round(o.maxCostEur * EUR);
   const allowPaid = o.allowPaid && deps.aiActive && o.approvedEstimateMicro != null && o.approvedEstimateMicro <= cap;
   const notes: string[] = [];
@@ -142,7 +144,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   let done = 0;
   for (const r of rows) {
     let native:ReturnType<typeof nativeSocialSubject>=null;let forGeneration=false;
-    const inputVersion=stableHash('social-production-input-1',r),assertCurrent=()=>{const current=selectRows(p.id,[r.id])[0];if(!current||stableHash('social-production-input-1',current)!==inputVersion)throw new Error('Ce brouillon a changé pendant la préparation. Les fichiers acquis sont conservés, aucun remplacement ni nouvel appel automatique.');if(o.expectedInputs&&productionInputToken(loadProject(p.id),current)!==o.expectedInputs[r.id])throw new Error('Le contexte confirmé a changé ; aucun nouvel appel ni attache à la nouvelle version.');if(native){const fresh=nativeSocialSubject(loadProject(p.id),r,forGeneration);if(!fresh||fresh.digest!==native.digest)throw new Error('L’offre, l’identité ou sa référence ont changé. Acquis conservés, aucun nouvel appel ni remplacement.');}};
+    const inputVersion=stableHash('social-production-input-1',r),assertCurrent=()=>{o.beforeDispatch?.();const current=selectRows(p.id,[r.id])[0];if(!current||stableHash('social-production-input-1',current)!==inputVersion)throw new Error('Ce brouillon a changé pendant la préparation. Les fichiers acquis sont conservés, aucun remplacement ni nouvel appel automatique.');if(o.expectedInputs&&productionInputToken(loadProject(p.id),current)!==o.expectedInputs[r.id])throw new Error('Le contexte confirmé a changé ; aucun nouvel appel ni attache à la nouvelle version.');if(native){const fresh=nativeSocialSubject(loadProject(p.id),o.publicationQuote&&forGeneration?{...r,request:o.publicationQuote.instruction,nativeBinding:o.publicationQuote.binding}:r,forGeneration);if(!fresh||fresh.digest!==native.digest)throw new Error('L’offre, l’identité ou sa référence ont changé. Acquis conservés, aucun nouvel appel ni remplacement.');}};
     o.progress?.(done++, rows.length);
     const own= p.business==='services'?contentStrategy(p.id,"post",r.id):null;
     const scopedPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools,ownPools={image:scopedPools.image.filter(a=>matchesNativeOffer(a,r,p)),video:scopedPools.video.filter(a=>matchesNativeOffer(a,r,p))};
@@ -150,7 +152,8 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
     let out: MediaResult | null = null;
     try {
       assertCurrent();
-      if(r.nativeBinding){if(needsVideo(r)||r.format==='text')throw new Error('Cette production ciblée raccorde les images et carrousels seulement. Texte et vidéos restent conservés dans leurs outils natifs ; aucun appel image détourné.');forGeneration=m.method==='ai_post';native=nativeSocialSubject(loadProject(p.id),r,forGeneration);}
+      if(o.publicationQuote&&o.publicationQuote.postId!==r.id)throw new Error('Le devis ne désigne pas ce brouillon.');
+      if(r.nativeBinding){if(needsVideo(r)||r.format==='text')throw new Error('Cette production ciblée raccorde les images et carrousels seulement. Texte et vidéos restent conservés dans leurs outils natifs ; aucun appel image détourné.');forGeneration=m.method==='ai_post';native=nativeSocialSubject(loadProject(p.id),o.publicationQuote&&forGeneration?{...r,request:o.publicationQuote.instruction,nativeBinding:o.publicationQuote.binding}:r,forGeneration);}
       assertContentAlignment(p.id, "post", r.id);
       if (m.method === "none") {
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
@@ -166,9 +169,9 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
           notes.push(`plafond atteint (${budgetPctText(p.userId, cap, p.id)}) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);
           out = null;
         } else {
-          const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR),assertCurrent };
+          const opts = { allowPaid: m.paid, maxCostEur: Math.max(0, (cap - res.spentMicro) / EUR),assertCurrent,publicationQuote:o.publicationQuote };
           // Image : publication entièrement créée par l'IA (jamais une affiche montée par le studio).
-          out = await withCommunicationStrategy(p.id,()=>m.method === "video_v2" ? deps.video(p, r, opts) : deps.aiPost ? deps.aiPost(native?.project??p,native?{...r,nativeBinding:native.binding}:r, opts) : null,own?{strategyId:own.id}:{});
+          out = await withCommunicationStrategy(p.id,()=>m.method === "video_v2" ? deps.video(p, r, opts) : deps.aiPost ? deps.aiPost(native?.project??p,native?{...r,...(o.publicationQuote?{request:o.publicationQuote.instruction}:{}),nativeBinding:native.binding}:r, opts) : null,own?{strategyId:own.id}:{});
           // Rien d'exploitable : visuel IA refusé après ses essais (ou blocage). Ce qui a été payé reste compté ; la
           // publication attend son visuel, dit clairement — aucun gabarit ni rendu local à la place.
           if (!out?.assetId && m.method !== "video_v2") {

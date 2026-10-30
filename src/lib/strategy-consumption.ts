@@ -93,7 +93,7 @@ export function contentStrategy(projectId:string,module:string,contentId:string)
 /** Communication jobs pin their content's strategy, not the latest default. Website jobs stay general. */
 export function communicationJob(type:string,payload:any):boolean {
  if(type.startsWith('video.')&&(payload?.request?.purpose==='site'||payload?.request?.siteAmbience||!payload?.request?.ask?.purpose&&['website','shop_page'].includes(payload?.request?.ask?.platform)))return false;
- return type==='image.ai_post'||/^(social\.|post\.|calendar\.|ads\.|campaign\.|ugc\.|video\.)/.test(type)||(type==='content.v2'&&payload?.request?.type==='ad_copy');
+ return type==='agent.social.produce'||type==='image.ai_post'||/^(social\.|post\.|calendar\.|ads\.|campaign\.|ugc\.|video\.)/.test(type)||(type==='content.v2'&&payload?.request?.type==='ad_copy');
 }
 export function jobStrategy(projectId:string,type:string,payload:any,executing=false):Selection|null {
  if(!serviceStrategyProject(projectId))return strategySelection(projectId);
