@@ -400,5 +400,38 @@
     "Browser fixture created brand/catalog before opening the conversation, correctly refused by legacy-project migration guard; harness order fixed, application protection unchanged.",
     "Price test proposed a known price without customer request; refusal correct. Test strengthened: no request refused, explicit correct price accepted, false price/promotion refused."
   ],
-  "creativeQualityQualified": false
+  "creativeQualityQualified": false,
+  "ciCorrection": {
+    "initialRun": 41054579925,
+    "initialHead": "1190e0ce510620b76ab74b2d882bce809be32f16",
+    "initialResult": "Docker build/start/health passed but job failed because campaign harness was in wrong job, npx install blocked by network guard",
+    "correction": "Same recipe moved to verification job after npm ci/build/Chromium. All original step names preserved.",
+    "targeted": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/ci-native-social-placement.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "1190e0ce510620b76ab74b2d882bce809be32f16",
+      "startedAt": "2026-10-30T12:43:16.779969+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "a8a9581e507aa2bdb95803c5a9faa90662efabca7d5ecbb07ac8948c6db7ed04",
+        "tests/ci-native-social-placement.test.ts": "24fb724e388909a4cb46b55b8063f5bd20dccd9a2990be7b5a3325c357346ec0"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-CI-placement-green.log",
+      "cleanCommitSnapshot": false,
+      "pid": 434193,
+      "processGroup": 434193,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:43:17.371508+00:00",
+      "logSha256": "18064b7ea50d4b7faf323c4f897c67bb9f34a8716142a25559c1f97adbd676b8",
+      "sourceUnchanged": true,
+      "finalHead": "1190e0ce510620b76ab74b2d882bce809be32f16"
+    },
+    "applicationAndProofsUnchanged": true,
+    "newFinalCIRequired": true
+  }
 }
