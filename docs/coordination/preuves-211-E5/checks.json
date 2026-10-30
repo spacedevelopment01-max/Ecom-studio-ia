@@ -1,0 +1,198 @@
+{
+  "before": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/composition211-acquired-copy.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "639e026d238759e54c8ece620b0e6d374423f455",
+    "startedAt": "2026-10-30T15:55:35.037932+00:00",
+    "state": "failed",
+    "sources": {
+      "tests/composition211-acquired-copy.test.ts": "53c814caf87e5ba322150b5f034907110d8a4d9bddf5e8f923bc077425b981e8"
+    },
+    "log": "/workspace/reviews/ecom-211-state/E5-copy-before.log",
+    "cleanCommitSnapshot": false,
+    "pid": 488420,
+    "processGroup": 488420,
+    "exitCode": 1,
+    "finishedAt": "2026-10-30T15:55:40.587623+00:00",
+    "logSha256": "22ea97af70d9ef1696aaa53751b40cc80a6851681e49efd3b36d729e336ddbc5",
+    "sourceUnchanged": true,
+    "finalHead": "639e026d238759e54c8ece620b0e6d374423f455"
+  },
+  "scoped": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/composition211-acquired-copy.test.ts",
+      "tests/composition211-server.test.ts",
+      "tests/composition211-plan.test.ts",
+      "tests/composition211-syna.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "639e026d238759e54c8ece620b0e6d374423f455",
+    "startedAt": "2026-10-30T15:57:29.863284+00:00",
+    "state": "passed",
+    "sources": {
+      ".github/workflows/ci.yml": "04768cacaae8e9ab7a6d3bbe359c2fb9d4f017337a158b5f0ad89361f4784d07",
+      "scripts/composition211-copy-fixtures.ts": "f38a83824349753759c8c764acececc619331f0e4af5ee69290bf2a5107963bf",
+      "scripts/verify-agent211-build.ts": "87505c76c0c1086b6c67c4321fe757e712e5f0beb988aaa9e2316e72891aa432",
+      "scripts/verify-agent211-composition-ui.ts": "3972af6d400d264d9b5d3c1242bd599892aedb37527b1e5f31d797310b1246da",
+      "src/lib/theme/composition/assemble.ts": "e82cbceedd9fae70195f76dbb97ad4566ba2b6ef787bbaec77a3466496cff3ef",
+      "src/lib/theme/composition/contract.ts": "03e4bf00cdd1fd14da6e56e6a87f4491a3cd409fbb86130ace94e19c1b502cec",
+      "src/lib/theme/composition/copy-sources.ts": "ba4f799bbbe98249309f06e26ec805f1b403bc2c2ec2f92dbfda59a992413368",
+      "src/lib/theme/composition/server.ts": "64b82994d22cae87d6b4853e7082b00d99809caf06fc3015203455f8068c6945",
+      "tests/composition211-acquired-copy.test.ts": "f5e47c71ec23749ade87ddafda1e0de5370a6b50fcfabd6333b82d0ef414b3c6"
+    },
+    "log": "/workspace/reviews/ecom-211-state/E5-copy-scoped-final.log",
+    "cleanCommitSnapshot": false,
+    "pid": 489130,
+    "processGroup": 489130,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:57:37.175366+00:00",
+    "logSha256": "f023cdded8a9be064f236f8041f9e6831f890f5ae2e8df249417aee101f63cb0",
+    "sourceUnchanged": true,
+    "finalHead": "639e026d238759e54c8ece620b0e6d374423f455"
+  },
+  "targetedOverlap": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/composition211-acquired-copy.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "639e026d238759e54c8ece620b0e6d374423f455",
+    "startedAt": "2026-10-30T15:58:13.843448+00:00",
+    "state": "passed",
+    "sources": {
+      ".github/workflows/ci.yml": "04768cacaae8e9ab7a6d3bbe359c2fb9d4f017337a158b5f0ad89361f4784d07",
+      "scripts/composition211-copy-fixtures.ts": "f38a83824349753759c8c764acececc619331f0e4af5ee69290bf2a5107963bf",
+      "scripts/verify-agent211-build.ts": "87505c76c0c1086b6c67c4321fe757e712e5f0beb988aaa9e2316e72891aa432",
+      "scripts/verify-agent211-composition-ui.ts": "3972af6d400d264d9b5d3c1242bd599892aedb37527b1e5f31d797310b1246da",
+      "src/lib/theme/composition/assemble.ts": "e82cbceedd9fae70195f76dbb97ad4566ba2b6ef787bbaec77a3466496cff3ef",
+      "src/lib/theme/composition/contract.ts": "03e4bf00cdd1fd14da6e56e6a87f4491a3cd409fbb86130ace94e19c1b502cec",
+      "src/lib/theme/composition/copy-sources.ts": "ba4f799bbbe98249309f06e26ec805f1b403bc2c2ec2f92dbfda59a992413368",
+      "src/lib/theme/composition/server.ts": "64b82994d22cae87d6b4853e7082b00d99809caf06fc3015203455f8068c6945",
+      "tests/composition211-acquired-copy.test.ts": "d15001d7da70f2172b46b9c0467834734b9e55c5638c95999ea96dec9e74b0f5"
+    },
+    "log": "/workspace/reviews/ecom-211-state/E5-targets.log",
+    "cleanCommitSnapshot": false,
+    "pid": 489499,
+    "processGroup": 489499,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:58:19.788179+00:00",
+    "logSha256": "6756526741fa04fd00d30cde39bbb4e96bd55be4a39de922ef7f72179c221571",
+    "sourceUnchanged": true,
+    "finalHead": "639e026d238759e54c8ece620b0e6d374423f455"
+  },
+  "types": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "639e026d238759e54c8ece620b0e6d374423f455",
+    "startedAt": "2026-10-30T15:58:19.825296+00:00",
+    "state": "passed",
+    "sources": {
+      ".github/workflows/ci.yml": "04768cacaae8e9ab7a6d3bbe359c2fb9d4f017337a158b5f0ad89361f4784d07",
+      "scripts/composition211-copy-fixtures.ts": "f38a83824349753759c8c764acececc619331f0e4af5ee69290bf2a5107963bf",
+      "scripts/verify-agent211-build.ts": "87505c76c0c1086b6c67c4321fe757e712e5f0beb988aaa9e2316e72891aa432",
+      "scripts/verify-agent211-composition-ui.ts": "3972af6d400d264d9b5d3c1242bd599892aedb37527b1e5f31d797310b1246da",
+      "src/lib/theme/composition/assemble.ts": "e82cbceedd9fae70195f76dbb97ad4566ba2b6ef787bbaec77a3466496cff3ef",
+      "src/lib/theme/composition/contract.ts": "03e4bf00cdd1fd14da6e56e6a87f4491a3cd409fbb86130ace94e19c1b502cec",
+      "src/lib/theme/composition/copy-sources.ts": "ba4f799bbbe98249309f06e26ec805f1b403bc2c2ec2f92dbfda59a992413368",
+      "src/lib/theme/composition/server.ts": "64b82994d22cae87d6b4853e7082b00d99809caf06fc3015203455f8068c6945",
+      "tests/composition211-acquired-copy.test.ts": "d15001d7da70f2172b46b9c0467834734b9e55c5638c95999ea96dec9e74b0f5"
+    },
+    "log": "/workspace/reviews/ecom-211-state/E5-types.log",
+    "cleanCommitSnapshot": false,
+    "pid": 489601,
+    "processGroup": 489601,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:58:43.955760+00:00",
+    "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+    "sourceUnchanged": true,
+    "finalHead": "639e026d238759e54c8ece620b0e6d374423f455"
+  },
+  "build": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "aa93ee05e56ec23f50a52f88ed783881749646f2",
+    "startedAt": "2026-10-30T15:59:25.538012+00:00",
+    "state": "passed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/E5-clean-build.log",
+    "cleanCommitSnapshot": true,
+    "pid": 490094,
+    "processGroup": 490094,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T16:00:26.901459+00:00",
+    "logSha256": "7a7b4062a6752750978fdfe8810b2c4f14a6ecd85e67095c12c89dffac250883",
+    "sourceUnchanged": true,
+    "finalHead": "aa93ee05e56ec23f50a52f88ed783881749646f2"
+  },
+  "browserFirst": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E5-native-copy-proof",
+      "--acquired-copy-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "aa93ee05e56ec23f50a52f88ed783881749646f2",
+    "startedAt": "2026-10-30T16:00:57.185723+00:00",
+    "state": "failed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/E5-native-copy-browser.log",
+    "cleanCommitSnapshot": true,
+    "pid": 490717,
+    "processGroup": 490717,
+    "exitCode": 1,
+    "finishedAt": "2026-10-30T16:01:29.322447+00:00",
+    "logSha256": "df3a762a9ef322645ebde0f5d5b136cbcb09e1a898586b8564953b5dd751035c",
+    "sourceUnchanged": true,
+    "finalHead": "aa93ee05e56ec23f50a52f88ed783881749646f2"
+  },
+  "browserFinal": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E5-native-copy-final-proof",
+      "--acquired-copy-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "512c575fa8283d946fdd11fb65035c7a37cc4d18",
+    "startedAt": "2026-10-30T16:02:22.805268+00:00",
+    "state": "passed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/E5-native-copy-final-browser.log",
+    "cleanCommitSnapshot": true,
+    "pid": 491528,
+    "processGroup": 491528,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T16:03:04.317619+00:00",
+    "logSha256": "d85fe6f76314d909161c6c899209edd2bd21b5fc6c384154b9675357211f0d43",
+    "sourceUnchanged": true,
+    "finalHead": "512c575fa8283d946fdd11fb65035c7a37cc4d18"
+  },
+  "distinctTargetedTests": 40,
+  "overlappingReruns": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "applicationSourcesUnchangedAfterBuild": true
+}

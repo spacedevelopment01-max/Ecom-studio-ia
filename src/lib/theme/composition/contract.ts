@@ -50,7 +50,7 @@ export type CompositionPlan=z.infer<typeof CompositionPlanSchema>;
 export type CompositionSection=z.infer<typeof CompositionSectionSchema>;
 /** Sources résolues par le serveur, jamais une autorisation provenant du JSON du modèle. */
 export type CompositionSource=
- |{kind:'copy';text:string;scope:string;provenance:{kind:'client'|'acquired';ref:string}}
+ |{kind:'copy';text:string;format?:'text'|'richtext';scope:string;provenance:{kind:'client'|'acquired';ref:string}}
  |{kind:'link';url:string;scope:string;provenance:{kind:'client'|'acquired';ref:string}}
  |{kind:'media';assetId:string;filename:string;scope:string;provenance:{kind:'client'|'acquired';ref:string}};
 export type CompositionRecord={schema:1;plan:CompositionPlan;parentVersionId:string;sourceRefs:{id:string;ref:string;kind:string}[];templateSections:Record<string,string[]>;quality:'not_measured';platformInstallation:'not_tested'};

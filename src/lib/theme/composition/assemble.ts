@@ -71,7 +71,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
     const{def,block}=definition(b.key,b.block),source=deps.source(b.source);if(!source||source.scope!==scope&&source.scope!=='site')fail('source absente ou destinée à une autre page');
     if(!source.provenance.ref)fail('provenance absente');refs.set(b.source,source);
     if(source.kind==='copy'){
-     if(!COPY.has(def.type)||b.key.endsWith('_asset')||!source.text.trim()||source.text.length>16000||unsafeContentReason(source.text))fail('texte non applicable en sécurité');
+     if(!COPY.has(def.type)||source.format==='richtext'&&def.type!=='richtext'||b.key.endsWith('_asset')||!source.text.trim()||source.text.length>16000||unsafeContentReason(source.text))fail('texte non applicable en sécurité');
      ops.push({op:'set_setting',template:page.template,section:sid,block,key:b.key,value:source.text});
     }else if(source.kind==='media'){
      if(def.type!=='image_picker'||!schema.settings.some(d=>d.id===`${b.key}_asset`)&&!block)fail('image native non raccordée');

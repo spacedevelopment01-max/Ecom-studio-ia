@@ -1,0 +1,97 @@
+{
+  "schema": "agent211-E2-browser-proof-1",
+  "realBrowser": true,
+  "provider": "local-http-simulated",
+  "realProviderCalls": 0,
+  "report": [
+    {
+      "scenario": "holdout",
+      "acquiredCopy": {
+        "versionId": "fjd53k3bxb2a1h39",
+        "characters": 1437,
+        "bodyPreserved": true,
+        "previewPreserved": true,
+        "exportPreserved": true,
+        "syntheticQuality": true
+      },
+      "captures": [
+        "holdout-avant-composition.png",
+        "holdout-proposition.png",
+        "holdout-plan-a-confirmer.png",
+        "holdout-version-et-qualite-a-controler.png",
+        "holdout-section-reellement-composee.png",
+        "holdout-page-1440.png",
+        "holdout-page-1024.png",
+        "holdout-page-390.png",
+        "holdout-page-360.png",
+        "holdout-annulation-mobile.png",
+        "holdout-plan-invalide-refuse-sans-perte.png"
+      ],
+      "rendered": [
+        {
+          "width": 1440,
+          "scrollWidth": 1440,
+          "broken": []
+        },
+        {
+          "width": 1024,
+          "scrollWidth": 1024,
+          "broken": []
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "broken": []
+        },
+        {
+          "width": 360,
+          "scrollWidth": 360,
+          "broken": []
+        }
+      ],
+      "functional": {
+        "quoteFormPresent": true,
+        "emptyFormRejected": true,
+        "submissionDisabled": false,
+        "contact": "native_preview_explicitly_blocks_send",
+        "previewMessage": "Aperçu : les formulaires sont traités par Shopify sur la boutique réelle.",
+        "contactPostRequests": 0,
+        "appointment": "preserved_not_exercised",
+        "email": "none_sent"
+      },
+      "exportProof": {
+        "platformChecks": [],
+        "status": 200,
+        "verdict": "PROVISIONAL",
+        "scope": "static",
+        "installation": "not_tested",
+        "fileCount": 499,
+        "zipSha256": "a70054928deb1f843e2eecdb86e5c4e38b0cca2816cf5704d29f33bb7d0a8d88",
+        "zipBytes": 1697114
+      },
+      "rejectedPlan": {
+        "status": 422,
+        "code": "agent_composition_invalid",
+        "message": "composition: source absente ou destinée à une autre page",
+        "versionsPreserved": true,
+        "noAutomaticRetry": true
+      },
+      "threeVersions": true,
+      "noPaidLocalActions": true,
+      "jsErrors": [],
+      "simulatedCalls": 2,
+      "simulatedMicro": 15824,
+      "realProviderCalls": 0
+    }
+  ],
+  "compiledVersion": {
+    "commit": "aa93ee05e56ec23f50a52f88ed783881749646f2",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "harnessCommit": "512c575fa8283d946fdd11fb65035c7a37cc4d18",
+  "applicationCommit": "aa93ee05e56ec23f50a52f88ed783881749646f2",
+  "realCostEur": 0
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "applicationCommit": "aa93ee05e56ec23f50a52f88ed783881749646f2",
+  "harnessCommit": "512c575fa8283d946fdd11fb65035c7a37cc4d18",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "filmDurationSeconds": 27.84,
+  "proofs": {
+    "docs/coordination/211_LOT_E5_RESULTATS.md": {
+      "sha256": "23b1fce80a7e4f7bccc4a73a67534dcd786b49b0c5c47f88d710afac4bc21307",
+      "bytes": 7121
+    },
+    "docs/coordination/preuves-211-E5/01-texte-acquis-apercu-ordinateur.png": {
+      "sha256": "08efeba09a71956a2866c2578861bc2fe2b15d61387bc9b581a6650074fdc3ef",
+      "bytes": 228433
+    },
+    "docs/coordination/preuves-211-E5/02-page-complete-mobile.png": {
+      "sha256": "689c3c7303532187d7f3d2839340d7be98d5ea235854c750badb771bd15200e4",
+      "bytes": 634388
+    },
+    "docs/coordination/preuves-211-E5/03-annulation-mobile.png": {
+      "sha256": "8fb846f2a93ec7cf5de2c1745215e5b3432c5cdd487e1b331bd89f4350c39db3",
+      "bytes": 49321
+    },
+    "docs/coordination/preuves-211-E5/browser-proof.json": {
+      "sha256": "43393c8e85b6adb9b2710b6697821b69c48d32a9bf7b0d4961c429c639bb17e9",
+      "bytes": 2833
+    },
+    "docs/coordination/preuves-211-E5/checks.json": {
+      "sha256": "b5267dcf2a27d45eaf0d339334fc9587ab4302ece3f9693473d444c94486a0cd",
+      "bytes": 8801
+    },
+    "docs/coordination/preuves-211-E5/textes-acquis.mp4": {
+      "sha256": "b5fe6c3cf141685df43493b13c39a807f31f03bd35d87e57a297dbd2e5833ee5",
+      "bytes": 1346593
+    }
+  }
+}
