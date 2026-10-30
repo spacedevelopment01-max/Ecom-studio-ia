@@ -5,9 +5,10 @@ import {all}from '../../db';
 import {stableHash}from '../../brain/hash';
 import {loadWordingRules}from '../../client-wording';
 import {getProduct,listProducts}from '../../products/catalog';
-import {latestVideo,listVideoVersions,videoVersionDoc,referencedAssets,foreignVideoAssets}from '../../video-v2/store';
-import {getAsset,assetData}from '../../library';
-import {createHash}from 'node:crypto';
+import {latestVideo,listVideoVersions,videoVersionDoc,referencedAssets}from '../../video-v2/store';
+import {getAsset}from '../../library';
+import {videoDocumentPins}from '../../video-v2/document-pins';
+export {videoDocumentPins}from '../../video-v2/document-pins';
 import {conversationMotionDocument,conversationVideoEdit}from '../../video-v2/conversation-motion';
 import {resolveLocalVideoImageBinding,imageBindingHash,type ImageBinding}from '../../image-v2/request-binding';
 import {selectedLocalVideoSource,isNativeIdentityImage}from './image-tool-sources';
@@ -20,10 +21,6 @@ import {communicationStrategy}from '../../marketing-strategy';
 import {strategyStamp,recordedContentStrategy,type StrategyStamp}from '../../strategy-consumption';
 type Sources={sources:{id:string;text:string}[];lastClientRequest:{sourceId:string|null;text:string}|null};
 export function videoProjectScope(pid:string){const p=loadProject(pid);return stableHash('agent-video-project-1',{project:p.id,business:p.business,storeType:p.storeType,brand:p.brand,product:p.product,services:p.services,strategy:p.strategy,catalogue:listProducts(pid,{includeArchived:true}),wording:loadWordingRules(pid),clientMemory:all<{kind:string;key:string;value:string}>("SELECT kind,key,value FROM memory WHERE project_id=? AND source='user' AND kind IN ('decision','rejection') ORDER BY kind,key,rowid",pid)});}
-export function videoDocumentPins(userId:string,pid:string,doc:Parameters<typeof referencedAssets>[0]){
- if(foreignVideoAssets(pid,doc).length)throw new HttpError(409,L('Un média de cette vidéo manque ou n’appartient pas au projet.','A video media file is missing or does not belong to this project.'));
- return referencedAssets(doc).map(assetId=>{const a=getAsset(assetId)!;if(a.user_id!==userId||a.status==='rejected')throw new HttpError(404,L('Média vidéo autorisé introuvable.','Authorized video media not found.'));const bytes=assetData(a);if(!bytes.length)throw new HttpError(409,L('Un fichier vidéo source est vide.','A source video file is empty.'));return{assetId,version:a.version,sha256:createHash('sha256').update(bytes).digest('hex')};});
-}
 export function validateVideoToolProposal(c:ConversationRow,raw:unknown,sources:Sources){
  const plan=VideoToolPlanSchema.parse(raw),pid=c.project_id,latest=sources.lastClientRequest,source=sources.sources.find(s=>s.id===plan.sourceId);
  if(!pid||!latest?.sourceId||plan.sourceId!==latest.sourceId||!source?.text.includes(plan.quote)||!latest.text.includes(plan.quote))throw new HttpError(409,L('La proposition doit citer votre dernière demande exacte et son projet.','The proposal must cite your latest exact request and project.'));

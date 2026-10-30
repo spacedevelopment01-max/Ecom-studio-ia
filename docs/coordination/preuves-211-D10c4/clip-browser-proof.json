@@ -1,0 +1,159 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "naturalSpeechQualified": false,
+  "creativeQualityQualified": false,
+  "nativeWorker": true,
+  "nativeFfmpeg": true,
+  "passed": true,
+  "firstCounts": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 2,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 6,
+    "imageHttpCalls": 0,
+    "tokenCounts": 6,
+    "calls": 10,
+    "usage": 10,
+    "simulatedMicro": 908583
+  },
+  "finishedCounts": {
+    "providerHttpCalls": 13,
+    "videoClipCalls": 3,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 8,
+    "imageHttpCalls": 0,
+    "tokenCounts": 8,
+    "calls": 13,
+    "usage": 13,
+    "simulatedMicro": 1354407
+  },
+  "result": {
+    "id": "e4j8hl59ysqrtga0",
+    "sourceReceiptId": "fcdanvvwy5i3gsjb",
+    "state": "review",
+    "delivered": true,
+    "reused": false,
+    "docKey": "vid:d4f8291d5cea26078cc3",
+    "versionId": "4mkvid0hws7i1714",
+    "job": {
+      "id": "l83fiw7u9dfw6rtf",
+      "type": "video.v2.render",
+      "label": "Reprise d’un plan confirmée avec SYNA",
+      "status": "done",
+      "progress": 1,
+      "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+      "error": null,
+      "attempts": 1,
+      "parentId": null,
+      "result": {
+        "quoteId": "e4j8hl59ysqrtga0",
+        "docKey": "vid:d4f8291d5cea26078cc3",
+        "versionId": "4mkvid0hws7i1714",
+        "output": {
+          "assetId": "84h01bhuc0o83nyr",
+          "version": 1,
+          "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f"
+        },
+        "delivery": {
+          "state": "review",
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "assetIds": [
+            "84h01bhuc0o83nyr"
+          ],
+          "expected": 1,
+          "delivered": 1,
+          "review": 1
+        }
+      },
+      "createdAt": 1793357838986,
+      "updatedAt": 1793357863968,
+      "finishedAt": 1793357863968,
+      "startedAt": 1793357838986,
+      "alive": false,
+      "idleMs": 317
+    },
+    "output": {
+      "assetId": "84h01bhuc0o83nyr",
+      "version": 1,
+      "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f",
+      "present": true,
+      "href": "/api/files/84h01bhuc0o83nyr",
+      "downloadHref": "/api/files/84h01bhuc0o83nyr?download=1"
+    },
+    "parts": [],
+    "newClipCalls": 1,
+    "newVoiceCalls": 0,
+    "isCurrent": true,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 1,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793358735938,
+      "httpAttempts": 2
+    },
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "siteChanged": false,
+    "message": "Plan et vidéo conservés, à vérifier. Autres plans, textes et pistes audio préservés. Aucune publication."
+  },
+  "decoded": {
+    "width": 1080,
+    "height": 1920,
+    "duration": 10,
+    "currentTime": 1.759837
+  },
+  "reused": {
+    "id": "tur1avxfmgkwzjxi",
+    "sourceReceiptId": "ywgz5tc06ppozde5",
+    "state": "review",
+    "delivered": true,
+    "reused": true,
+    "docKey": "vid:d4f8291d5cea26078cc3",
+    "versionId": "4mkvid0hws7i1714",
+    "job": null,
+    "output": {
+      "assetId": "84h01bhuc0o83nyr",
+      "version": 1,
+      "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f",
+      "present": true,
+      "href": "/api/files/84h01bhuc0o83nyr",
+      "downloadHref": "/api/files/84h01bhuc0o83nyr?download=1"
+    },
+    "parts": [],
+    "newClipCalls": 0,
+    "newVoiceCalls": 0,
+    "isCurrent": true,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 3,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793358768353,
+      "httpAttempts": 1
+    },
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "siteChanged": false,
+    "message": "Plan et vidéo conservés, à vérifier. Autres plans, textes et pistes audio préservés. Aucune publication."
+  },
+  "secondPaidAttemptRefused": true,
+  "oldFilesKept": true,
+  "unchangedOtherClipsAndAllVoices": true,
+  "after": {
+    "providerHttpCalls": 15,
+    "videoClipCalls": 3,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 10,
+    "imageHttpCalls": 0,
+    "tokenCounts": 10,
+    "calls": 15,
+    "usage": 15,
+    "simulatedMicro": 1370231
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "errors": [],
+  "captures": 3
+}
