@@ -1,0 +1,40 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "viewed": [
+    "inedits/planches/film-inedit.jpg",
+    "inedits/planches/film-mono.jpg",
+    "inedits/planches/natif-inedit.jpg",
+    "inedits/planches/natif-mono.jpg",
+    "inedits/planches/selection-01.jpg",
+    "inedits/planches/selection-02.jpg",
+    "inedits/planches/selection-03.jpg",
+    "inedits/planches/selection-04.jpg",
+    "planches/film-inedit.jpg",
+    "planches/film-mono.jpg",
+    "planches/film-multi.jpg",
+    "planches/film-services.jpg",
+    "planches/natif-inedit.jpg",
+    "planches/natif-mono.jpg",
+    "planches/natif-multi.jpg",
+    "planches/natif-services.jpg",
+    "planches/selection-01.jpg",
+    "planches/selection-02.jpg",
+    "planches/selection-03.jpg",
+    "planches/selection-04.jpg",
+    "planches/selection-05.jpg",
+    "planches/selection-06.jpg",
+    "planches/selection-07.jpg",
+    "planches/selection-08.jpg"
+  ],
+  "method": "24 planches réellement ouvertes : 12 contacts des 66 captures primaires et inédites, 6 échantillonnages de MP4 natifs et 6 échantillonnages de films navigateur. Pas une lecture continue de tous les films. Les 16 captures de réouverture bornée/historique complètent les 82 finales ; les vues360 ont été ouvertes individuellement.",
+  "allVisiblePlayerPostflight": "passed: all visible players decoded; no worker; protected table row hashes and MP4 identical",
+  "syntheticMedia": true,
+  "qualityClaim": "technical only, no real creative/natural-voice assessment",
+  "findings": [
+    "Aucun spinner restant sur les 22 captures de reprise après décodage de tous les lecteurs visibles.",
+    "Bouton historique multiligne conservé ; reprise bornée explicitement indisponible.",
+    "Clips bleus neutres et motifs artificiels non représentatifs du rendu créatif.",
+    "Films sans coupe : les états transitoires et écrans initiaux restent visibles.",
+    "Ancien formulaire manuel sous-jacent conserve son catalogue existant ; le scénario et les sorties SYNA utilisent le binding exact testé."
+  ]
+}

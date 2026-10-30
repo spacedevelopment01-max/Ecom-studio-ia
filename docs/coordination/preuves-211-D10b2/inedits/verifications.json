@@ -1,0 +1,256 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "cases": 2,
+  "screenshots": 23,
+  "recordings": [
+    {
+      "scene": "mono",
+      "file": "videos/mono.mp4",
+      "original": "sources-video/mono.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "899"
+          }
+        ],
+        "format": {
+          "duration": "35.960000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 390,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "899"
+          }
+        ],
+        "format": {
+          "duration": "35.960000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 449,
+          "meanAbsoluteRgbDifferenceOn255": 0.19804398148148147
+        },
+        {
+          "frame": 898,
+          "meanAbsoluteRgbDifferenceOn255": 0.493082264957265
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    },
+    {
+      "scene": "inedit",
+      "file": "videos/inedit.mp4",
+      "original": "sources-video/inedit.webm",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1339"
+          }
+        ],
+        "format": {
+          "duration": "53.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1440,
+            "height": 960,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "1339"
+          }
+        ],
+        "format": {
+          "duration": "53.560000"
+        }
+      },
+      "rgbSamples": [
+        {
+          "frame": 0,
+          "meanAbsoluteRgbDifferenceOn255": 0.0
+        },
+        {
+          "frame": 669,
+          "meanAbsoluteRgbDifferenceOn255": 0.23786699459876542
+        },
+        {
+          "frame": 1338,
+          "meanAbsoluteRgbDifferenceOn255": 0.3311205150462963
+        }
+      ],
+      "noCutNoAccelerationNoColorFilter": true
+    }
+  ],
+  "nativeMp4": [
+    {
+      "scene": "mono",
+      "file": "fichiers/mono-generated.mp4",
+      "document": "fichiers/mono-generated.json",
+      "sha256": "a879bada94abbcea2bb4c459ddb6fc6923fdeab17941dd489a1cfc0ef1dd6074",
+      "bytes": 79646,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "nb_read_frames": "300"
+          },
+          {
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "nb_read_frames": "431"
+          }
+        ],
+        "format": {
+          "duration": "10.000000"
+        }
+      },
+      "browserDecoded": {
+        "width": 1080,
+        "height": 1080,
+        "durationS": 10,
+        "currentTime": 3.460726
+      },
+      "actualBrowserDownloadMatched": true
+    },
+    {
+      "scene": "inedit",
+      "file": "fichiers/inedit-generated.mp4",
+      "document": "fichiers/inedit-generated.json",
+      "sha256": "187d37d7439fecf65b1084d43877a5d15b4eb851df7e4eb0ceb2e35def4c68f7",
+      "bytes": 92674,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "nb_read_frames": "300"
+          },
+          {
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "nb_read_frames": "431"
+          }
+        ],
+        "format": {
+          "duration": "10.000000"
+        }
+      },
+      "browserDecoded": {
+        "width": 1920,
+        "height": 1080,
+        "durationS": 10,
+        "currentTime": 3.46312
+      },
+      "actualBrowserDownloadMatched": true
+    }
+  ],
+  "sourcesAndPartialClips": [
+    {
+      "scene": "mono",
+      "file": "sources/mono-original-lv1vrmsjxykjg5vm.png",
+      "role": "original",
+      "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d",
+      "bytes": 32830,
+      "synthetic": true
+    },
+    {
+      "scene": "mono",
+      "file": "fichiers/mono-clip-bplfvexjmad3aatw.mp4",
+      "role": "clip",
+      "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+      "bytes": 2988,
+      "synthetic": true
+    },
+    {
+      "scene": "mono",
+      "file": "fichiers/mono-clip-l43h3shvnpkag2ta.mp4",
+      "role": "clip",
+      "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+      "bytes": 2988,
+      "synthetic": true
+    },
+    {
+      "scene": "inedit",
+      "file": "sources/inedit-original-wv831e1emt3nl2z6.png",
+      "role": "original",
+      "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d",
+      "bytes": 32830,
+      "synthetic": true
+    },
+    {
+      "scene": "inedit",
+      "file": "fichiers/inedit-clip-jkbizt977xlsknsb.mp4",
+      "role": "clip",
+      "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+      "bytes": 2988,
+      "synthetic": true
+    },
+    {
+      "scene": "inedit",
+      "file": "fichiers/inedit-clip-nyo6nxptkg30irz8.mp4",
+      "role": "clip",
+      "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+      "bytes": 2988,
+      "synthetic": true
+    },
+    {
+      "scene": "inedit",
+      "file": "fichiers/inedit-clip-zytj45py5w95rv32.mp4",
+      "role": "clip",
+      "sha256": "dc617d69f1b793fced02ce3913567712666b2aa14de6369bffe0f440b8a2511f",
+      "bytes": 2988,
+      "synthetic": true
+    }
+  ],
+  "totals": {
+    "providerHttpCalls": 19,
+    "videoClipCalls": 6,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 13,
+    "imageHttpCalls": 0,
+    "tokenCounts": 13,
+    "calls": 20,
+    "usage": 18,
+    "simulatedMicro": 2252856
+  },
+  "applicationUnchanged": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false
+}

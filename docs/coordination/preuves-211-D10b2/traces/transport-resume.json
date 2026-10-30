@@ -1,0 +1,6 @@
+{
+  "source": "D10b2-preloader-order.json",
+  "canonicalNetworkGuardRequired": true,
+  "noExternalProviderCalls": true,
+  "note": "Le garde est chargé depuis une seule copie canonique ; les faux téléchargements loopback seuls sont permis."
+}

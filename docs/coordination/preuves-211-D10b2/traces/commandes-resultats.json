@@ -1,0 +1,194 @@
+{
+  "D10b2-boundary-final-targeted": {
+    "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-video-generation.test.ts",
+      "tests/video-creation-rights.test.ts",
+      "tests/conversation211-generation-preview.test.ts",
+      "tests/conversation211-generation-schema.test.ts",
+      "tests/video-bounded-chain.test.ts",
+      "tests/video-bounded-review.test.ts",
+      "tests/video-native-binding.test.ts",
+      "tests/video-voice-timing.test.ts",
+      "tests/video-local-voice-identity.test.ts",
+      "tests/higgsfield-engine.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts"
+    ],
+    "startedAt": "2026-10-29T23:35:13.371094+00:00",
+    "finishedAt": "2026-10-29T23:36:12.808591+00:00",
+    "exitCode": 0,
+    "logSha256": "34965c1e1beae14631dbf6436a095fe4972bdccfb6ff86c326fea1d2672bbbe5"
+  },
+  "D10b2-boundary-final-types": {
+    "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "npx",
+      "tsc",
+      "--noEmit"
+    ],
+    "startedAt": "2026-10-29T23:36:12.847503+00:00",
+    "finishedAt": "2026-10-29T23:36:41.984567+00:00",
+    "exitCode": 0,
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "D10b2-full-boundary-final": {
+    "head": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "npm",
+      "test"
+    ],
+    "startedAt": "2026-10-29T23:36:42.023271+00:00",
+    "finishedAt": "2026-10-29T23:49:11.504919+00:00",
+    "exitCode": 0,
+    "logSha256": "3fce0bdacd86233c187590424df6327aae3028059b770bdb73dee05bb6f769c6"
+  },
+  "D10b2-build-boundary-final": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "npm",
+      "run",
+      "build"
+    ],
+    "startedAt": "2026-10-29T23:54:48.271377+00:00",
+    "finishedAt": "2026-10-29T23:55:53.169245+00:00",
+    "exitCode": 0,
+    "logSha256": "a32ee350e4290fb25c44cf7339ef94670d36739e570ce5ce28a513e1cea5661e"
+  },
+  "D10b2-browser-boundary-final": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "CHROMIUM=/usr/bin/chromium",
+      "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "npx",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D10b2-browser-boundary-final-proof",
+      "--generated-videos-ui"
+    ],
+    "startedAt": "2026-10-29T23:57:28.990782+00:00",
+    "finishedAt": "2026-10-30T00:00:31.277688+00:00",
+    "exitCode": 0,
+    "logSha256": "a1f7f0e980b518968f803f916cffc53d257079d10fbd2b13f91722b430901590"
+  },
+  "D10b2-browser-heldout-grounded": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "CHROMIUM=/usr/bin/chromium",
+      "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "npx",
+      "tsx",
+      "/workspace/reviews/ecom-211-state/D10b2-heldout-build.mts",
+      "/workspace/reviews/ecom-211-state/D10b2-browser-heldout-grounded-proof",
+      "--generated-videos-ui"
+    ],
+    "startedAt": "2026-10-30T00:01:48.857936+00:00",
+    "finishedAt": "2026-10-30T00:03:30.933767+00:00",
+    "exitCode": 0,
+    "logSha256": "f6cc6490216d244477153793e335af19b06f600e87db5e69da5f249ddd3e5a8f"
+  },
+  "D10b2-reopen-boundary-painted": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "node",
+      "/workspace/reviews/ecom-211-state/postflight-D10b2-reopen.mjs",
+      "c180c150bce48c1af705dd785c830cda0c78886c"
+    ],
+    "startedAt": "2026-10-29T23:57:10.666007+00:00",
+    "finishedAt": "2026-10-29T23:57:19.230913+00:00",
+    "exitCode": 0,
+    "logSha256": "d66a3537dec9d9b1bc44b1d2b9de357af5204bfa1046a919223fab98e786a061"
+  },
+  "D10b2-reopen-legacy-painted": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "node",
+      "/workspace/reviews/ecom-211-state/postflight-D10b2-reopen.mjs",
+      "c180c150bce48c1af705dd785c830cda0c78886c",
+      "--legacy"
+    ],
+    "startedAt": "2026-10-29T23:57:10.666046+00:00",
+    "finishedAt": "2026-10-29T23:57:19.418564+00:00",
+    "exitCode": 0,
+    "logSha256": "fa5b2b69217c18af10e247c31d6f68f0987aa1bc4ad52ff766c9a906b9ad4d5d"
+  },
+  "D10b2-painted-visible-principal": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "node",
+      "/workspace/reviews/ecom-211-state/postflight-D10b2-painted.mjs",
+      "principal"
+    ],
+    "startedAt": "2026-10-30T00:28:21.096581+00:00",
+    "finishedAt": "2026-10-30T00:29:01.197720+00:00",
+    "exitCode": 0,
+    "logSha256": "d51542b5617df6b0a235c3d85c8c8be38cb1ed23a879dabed5adaa4042c7c713"
+  },
+  "D10b2-painted-visible-inedits": {
+    "head": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "command": [
+      "env",
+      "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+      "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/lot9/network-guard.mjs",
+      "node",
+      "/workspace/reviews/ecom-211-state/postflight-D10b2-painted.mjs",
+      "inedits"
+    ],
+    "startedAt": "2026-10-30T00:28:21.095092+00:00",
+    "finishedAt": "2026-10-30T00:28:49.751351+00:00",
+    "exitCode": 0,
+    "logSha256": "d9ff8e5fe5fe10b6c73b4a034603ac37f7bdca91f14f7ef69974b31040236684"
+  }
+}

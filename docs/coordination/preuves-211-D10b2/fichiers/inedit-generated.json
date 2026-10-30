@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "aspect": "9:16",
+  "platform": "reels",
+  "safe": {
+    "top": 230,
+    "bottom": 384,
+    "side": 65
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "r14u5xlra3u76376",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 260,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Ma ligne\nDeux  espaces.",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 100,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.1,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 55
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 30,
+            "x": 0,
+            "y": 4
+          },
+          "anim": {
+            "in": "rise",
+            "delay": 0.25,
+            "dur": 0.325
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "2fb3pv3711a94oje",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "closing-brand",
+          "name": "Marque",
+          "role": "title",
+          "x": 65,
+          "y": 952.8,
+          "w": 237.6,
+          "h": 145.6,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Verre mémoire",
+          "font": {
+            "family": "Cormorant",
+            "weight": 500,
+            "size": 92,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 51
+          },
+          "shadow": null,
+          "anim": {
+            "in": "fade",
+            "delay": 1.7999999999999998,
+            "dur": 0.35
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.4
+      },
+      "generated": true
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Jost",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": null,
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#446274",
+      "secondary": "#D0D8DD",
+      "accent": "#747FB4",
+      "light": "#F2F5F7",
+      "dark": "#141B1F"
+    },
+    "fonts": {
+      "heading": "Cormorant",
+      "body": "Jost"
+    },
+    "name": "Verre mémoire"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "social_content",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": false,
+    "ending": {
+      "kind": "last_clip",
+      "holdS": 3.2
+    },
+    "retakeCount": 0,
+    "retakeBudgetMicro": 0,
+    "editorial": {
+      "purpose": "organic",
+      "business": "services",
+      "subject": null,
+      "request": "Crée deux clips pour Relevé de fissures sur vitraux anciens, dix secondes.\nGarde deux  espaces.",
+      "editorial": null,
+      "identity": {
+        "name": "Verre mémoire",
+        "brand": {
+          "name": "Verre mémoire",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "À votre service, simplement.",
+          "positioning": "[À définir avec vous : pour quels clients, quelles prestations, dans quelle zone, avec quelle différence]",
+          "audience": "[À compléter : clients visés]",
+          "personality": [],
+          "tone": {
+            "voice": "Professionnel, rassurant et accessible",
+            "do": [
+              "Expliquer simplement chaque prestation",
+              "Donner les informations pratiques (zone, horaires, contact)",
+              "Montrer le vrai travail"
+            ],
+            "dont": [
+              "Inventer des tarifs, des délais ou des avis",
+              "Promettre un résultat",
+              "Jargon sans explication"
+            ]
+          },
+          "story": "",
+          "values": [],
+          "validated": [
+            "name"
+          ],
+          "generatedBy": "local",
+          "palette": {
+            "primary": "#446274",
+            "secondary": "#D0D8DD",
+            "accent": "#747FB4",
+            "light": "#F2F5F7",
+            "dark": "#141B1F"
+          },
+          "fonts": {
+            "heading": "newsreader_n4",
+            "body": "inter_n4"
+          },
+          "direction": "rive",
+          "logo": {
+            "concept": "Logotype typographique en Cormorant",
+            "status": "proposed"
+          }
+        },
+        "product": {
+          "name": "Relevé de fissures sur vitraux anciens",
+          "nameStatus": "provided",
+          "category": "Relevé de fissures sur vitraux anciens",
+          "sector": null,
+          "summary": "Constat sur devis sans promesse de résultat.",
+          "facts": [],
+          "visual": {
+            "colors": []
+          },
+          "price": {
+            "amount": null,
+            "currency": "EUR",
+            "status": "unknown"
+          },
+          "variants": [],
+          "questions": [],
+          "claimsToAvoid": [],
+          "sources": [],
+          "analyzedBy": "local",
+          "summaryStatus": "provided"
+        },
+        "services": {
+          "services": [
+            {
+              "key": "prestation",
+              "name": "Relevé de fissures sur vitraux anciens",
+              "description": "Constat sur devis sans promesse de résultat.",
+              "contentAliases": [
+                "Relevé de fissures sur vitraux anciens"
+              ]
+            }
+          ],
+          "area": "",
+          "address": "",
+          "phone": "",
+          "email": "",
+          "hours": "",
+          "bookingUrl": "",
+          "contactMode": "form",
+          "contactModes": [
+            "quote"
+          ]
+        },
+        "settings": {
+          "mode": "autopilot",
+          "timezone": "Europe/Paris",
+          "autopublish": {
+            "enabled": false,
+            "networks": [],
+            "requireApprovalFor": []
+          },
+          "language": "fr"
+        }
+      },
+      "nativeBinding": {
+        "schema": 1,
+        "people": "none",
+        "references": [],
+        "service": {
+          "key": "prestation",
+          "sha256": "32c8a035d8c5373f643b132d3682c77e00c6efaea05aa53c4623bf60e3cb5a3c"
+        }
+      }
+    },
+    "marketingStrategy": {
+      "id": "strategy-bs9maxjzq15caunl",
+      "version": 1,
+      "angleId": "generalist",
+      "inputDigest": "ed16849799c7da81b2b24072d87c5cac5b501cf483898eb41f8e30e4a238c194"
+    }
+  }
+}
