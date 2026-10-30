@@ -94,7 +94,7 @@ jobs:
           path: /tmp/agent211-D2-proof
           if-no-files-found: ignore
 
-      - name: Composition native depuis SYNA, rendu et exports (fournisseur HTTP simulé)
+      - name: Composition native et textes acquis depuis SYNA, rendu et exports (HTTP simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E2-proof --composition-ui
 
       - name: Preuves de composition et limites des plateformes
