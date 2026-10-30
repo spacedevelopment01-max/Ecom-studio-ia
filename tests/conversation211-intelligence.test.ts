@@ -13,6 +13,8 @@ import { TEXT_MODEL_BY_TIER } from '@/lib/orchestrator/policy';
 import { cognitiveContext } from '@/lib/orchestrator/conversation/intelligence-context';
 import {seedAgentUiSite} from '../scripts/agent211-ui-fixtures';
 import {quoteNativeExport,confirmNativeExport,runNativeExport} from '@/lib/orchestrator/conversation/export-tool-execution';
+import Database from 'better-sqlite3';
+import * as Db from '@/lib/db';
 
 const fake = vi.hoisted(() => ({ reply: null as unknown, calls: 0, fail: false }));
 vi.mock('@/lib/ai/config', async orig => ({ ...(await orig() as object), activeProviderKey: () => 'FAUX FOURNISSEUR — AUCUN SECRET' }));
@@ -44,6 +46,23 @@ async function execute(user: Awaited<ReturnType<typeof account>>, cid: string) {
   run("UPDATE jobs SET status='done',result=?,finished_at=? WHERE id=?", JSON.stringify(result), now(), claimed.id);
   return { q, job: claimed, result };
 }
+
+it.each([false,true])('ne perd pas le suivi si le worker répond entre lecture de la conversation et du job (réponse antérieure : %s)',async prior=>{
+ const f=await initial();fake.reply=reply({business:null,businessEvidence:null});
+ if(prior){await execute(f.user,f.cid);await f.send({action:'message',text:'Proposez une autre question sans modifier les choix conservés.'});}
+ const q=quote(f.user,f.cid),confirmed=confirmCognitiveQuote(f.user,f.cid,q.id,id()),pending=one<any>('SELECT * FROM jobs WHERE id=?',confirmed.jobId)!,before=ownedConversation(f.user,f.cid);
+ const claimed=claimNext(['agent.reason'])!;expect(claimed.id).toBe(confirmed.jobId);const result=await runCognitiveJob(new JobContext(claimed));completeJob(claimed.id,result);
+ const after=ownedConversation(f.user,f.cid),finished=one<any>('SELECT * FROM jobs WHERE id=?',claimed.id)!;
+ run('UPDATE agent_conversations SET revision=?,state_json=? WHERE id=?',before.revision,before.state_json,f.cid);run('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?',pending.status,pending.progress,pending.result,pending.message,pending.finished_at,claimed.id);
+ const writer=new Database(Db.db().name),originalOne=Db.one;let interleaved=false;
+ try{vi.spyOn(Db,'one').mockImplementation((sql,...params)=>{
+  if(!interleaved&&sql==='SELECT status,message FROM jobs WHERE id=? AND user_id=?'&&params[0]===claimed.id){interleaved=true;writer.transaction(()=>{writer.prepare('UPDATE agent_conversations SET revision=?,state_json=? WHERE id=?').run(after.revision,after.state_json,f.cid);writer.prepare('UPDATE jobs SET status=?,progress=?,result=?,message=?,finished_at=? WHERE id=?').run(finished.status,finished.progress,finished.result,finished.message,finished.finished_at,claimed.id);})();}
+  return originalOne(sql,...params);
+ });
+ const during=conversationView(f.user,f.cid);expect(interleaved).toBe(true);expect(during.intelligence).toMatchObject({state:'running',pendingJobId:claimed.id});
+ const next=conversationView(f.user,f.cid);expect(next.intelligence).toMatchObject({state:'reply',lastReceiptId:claimed.id,reply:fake.reply});expect(next.revision).toBe(after.revision);expect(fetch).not.toHaveBeenCalled();
+ }finally{writer.close();vi.restoreAllMocks();}
+});
 
 describe('#211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette', () => {
   it('conserve le message exact sans compréhension locale ni appel implicite ; drapeau fermé par défaut', async () => {

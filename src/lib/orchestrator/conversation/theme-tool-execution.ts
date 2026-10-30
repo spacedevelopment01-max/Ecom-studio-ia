@@ -2,7 +2,7 @@
 import {z} from 'zod';
 import {L} from '../../i18n-server';
 import {HttpError,type User} from '../../auth';
-import {all,id,json,now,one,tx} from '../../db';
+import {all,id,json,now,one,tx,readSnapshot} from '../../db';
 import {currentTheme,loadProject,remember,saveThemeVersion,themeVersion,type ThemeVersion} from '../../projects';
 import {requirePlan} from '../../plan-gates';
 import {applyOps,validateSpec} from '../../theme/ops';
@@ -122,12 +122,12 @@ export async function runThemeChange(ctx:JobContext){return withAiDisabled('Opé
     return{versionId:v.id,number:v.number,fingerprint:m.resultFingerprint,reused:false};
   });ctx.progress(1,'Version du thème enregistrée ; aucune publication.');return result;
 });}
-export function themeChangeReceipt(user:User,cid:string,qid:string){const{pid,m}=ownedMeta(user,cid,qid),job=m.jobId?getJob(m.jobId):null;if(job&&(job.user_id!==user.id||job.project_id!==pid))throw new HttpError(404,'Tâche introuvable.');
+export function themeChangeReceipt(user:User,cid:string,qid:string){return readSnapshot(()=>{const{pid,m}=ownedMeta(user,cid,qid),job=m.jobId?getJob(m.jobId):null;if(job&&(job.user_id!==user.id||job.project_id!==pid))throw new HttpError(404,'Tâche introuvable.');
   const version=m.resultVersionId?themeVersion(pid,m.resultVersionId):null,recorded=!!version&&fingerprint(version.spec)===m.resultFingerprint;
   const result=json<{versionId?:string;fingerprint?:string}>(job?.result,{}),delivered=recorded&&job?.status==='done'&&result.versionId===m.resultVersionId&&result.fingerprint===m.resultFingerprint;
   const cur=currentTheme(pid),paths=recorded?[...new Set(m.changes.flatMap(d=>themeTargetPaths(version!.spec,d.template)))]:[];return{id:m.id,kind:m.kind,summary:m.summary,sourceReceiptId:m.sourceReceiptId??null,state:delivered?'delivered':recorded?'version_recorded_job_unfinished':job?.status==='done'?'result_missing':job?.status??'quoted',delivered,recorded,job:job?publicJob(job):null,costPct:0,composition:m.kind==='compose'?{mode:m.compositionPlan?.mode,quality:'not_measured',platformInstallation:'not_tested'}:null,changes:m.changes,version:recorded?{id:version!.version.id,number:version!.version.number,parentId:version!.version.parent_id,fingerprint:m.resultFingerprint,isCurrent:cur?.version.id===version!.version.id}:null,previewHref:recorded?`/preview/${pid}/v/${version!.version.id}${paths[0]==='/'?'':paths[0]??''}`:null,previewHrefs:paths.map(path=>({path,href:`/preview/${pid}/v/${version!.version.id}${path==='/'?'':path}`})),siteHref:`/studio/${pid}/boutique`,canUndo:recorded&&!m.startingWithoutTheme&&cur?.version.id===version!.version.id,actionsExecuted:recorded};
-}
-export function themeToolsRegistry(user:User,cid:string){const{pid,c}=owned(user,cid),cur=currentTheme(pid);return{projectId:pid,currentVersionId:cur?.version.id??null,available:!!cur||originalAvailable(user,pid),mode:conversationCompositionEnabled()?'native_composition_and_exact_edits':'exact_client_text_or_owned_media_only',costPct:0,receipts:all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.theme.tool.%' ORDER BY created_at DESC,rowid DESC LIMIT 100",pid).map(r=>json<Meta|null>(r.value,null)).filter((m):m is Meta=>!!m&&m.conversationId===c.id&&!!m.jobId).slice(0,10).map(m=>themeChangeReceipt(user,cid,m.id)),siteHref:`/studio/${pid}/boutique`};}
+});}
+export function themeToolsRegistry(user:User,cid:string){return readSnapshot(()=>{const{pid,c}=owned(user,cid),cur=currentTheme(pid);return{projectId:pid,currentVersionId:cur?.version.id??null,available:!!cur||originalAvailable(user,pid),mode:conversationCompositionEnabled()?'native_composition_and_exact_edits':'exact_client_text_or_owned_media_only',costPct:0,receipts:all<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key LIKE 'agent.theme.tool.%' ORDER BY created_at DESC,rowid DESC LIMIT 100",pid).map(r=>json<Meta|null>(r.value,null)).filter((m):m is Meta=>!!m&&m.conversationId===c.id&&!!m.jobId).slice(0,10).map(m=>themeChangeReceipt(user,cid,m.id)),siteHref:`/studio/${pid}/boutique`};});}
 
 function originalAvailable(user:User,pid:string){try{previewOriginalAvailability(user,pid);return true;}catch(e){if(e instanceof HttpError&&[400,402,404,409,422].includes(e.status))return false;throw e;}}
 function previewOriginalAvailability(user:User,pid:string){requirePlan(user,pid);return compositionBase(pid);}
