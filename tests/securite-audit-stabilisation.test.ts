@@ -66,6 +66,8 @@ describe("Sécurité (audit de stabilisation)", () => {
     const cutout = fs.readFileSync("src/lib/media/cutout.ts", "utf8");
     expect(cutout).toMatch(/env: childEnv\(model\)/);
     expect(cutout).not.toMatch(/\.\.\.process\.env, CUTOUT_MODEL/);
-    for (const f of ["src/app/api/posts/[pid]/route.ts", "src/app/api/projects/[id]/posts/route.ts"]) expect(fs.readFileSync(f, "utf8")).toMatch(/FROM connections WHERE id = \? AND user_id = \?/);
+    // La seconde route délègue à la même sauvegarde native que SYNA ; le contrôle reste exécuté.
+    for (const f of ["src/app/api/posts/[pid]/route.ts", "src/lib/social-v2/manual.ts"]) expect(fs.readFileSync(f, "utf8")).toMatch(/FROM connections WHERE id\s*=\s*\? AND user_id\s*=\s*\?/);
+    expect(fs.readFileSync("src/app/api/projects/[id]/posts/route.ts", "utf8")).toContain("createManualPost(p,user.id,b)");
   });
 });
