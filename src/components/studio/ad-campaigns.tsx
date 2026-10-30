@@ -1,7 +1,7 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { AiWait } from "../wait-time";
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { useEffect } from "react";
 import { Download, Megaphone, Plus, Trash2, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
@@ -82,6 +82,8 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
     reload();
   };
   const [edit, setEdit] = useState<Campaign | null>(null);
+  const openedCampaign=useRef<string|null>(null);
+  useEffect(()=>{const wanted=new URLSearchParams(window.location.search).get('campaignId');if(!wanted||openedCampaign.current===wanted)return;const existing=list?.campaigns.find(c=>c.id===wanted);if(existing){openedCampaign.current=wanted;setEdit(structuredClone(existing));}},[list]);
   const [picker, setPicker] = useState<number | null>(null);
   const [drafting, setDrafting] = useState(false);
   // « Nouvelle campagne » demandée depuis une autre rubrique : l'éditeur s'ouvre directement.

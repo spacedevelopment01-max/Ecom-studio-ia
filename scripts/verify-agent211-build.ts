@@ -20,7 +20,7 @@ if(process.argv.includes('--ui'))process.env.STUDIO_CONVERSATION_UI='1';
 if(process.argv.includes('--retouches-ui')){process.argv.push('--images-ui');process.env.STUDIO_CONVERSATION_THEME_TOOLS='1';process.env.STUDIO_CONVERSATION_EXPORTS='1';}
 if(process.argv.includes('--voice-ui'))process.env.STUDIO_CONVERSATION_VIDEO_VOICE='1';
 if(process.argv.includes('--clip-ui'))process.env.STUDIO_CONVERSATION_VIDEO_CLIP='1';
-if(process.argv.includes('--social-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_SOCIAL'])process.env[key]='1';
+if(process.argv.includes('--social-ui')||process.argv.includes('--campaign-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_SOCIAL'])process.env[key]='1';
 if(process.argv.includes('--generated-videos-ui')||process.argv.includes('--voice-ui')||process.argv.includes('--clip-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_VIDEOS','STUDIO_CONVERSATION_VIDEO_GENERATION'])process.env[key]='1';
 if(process.argv.includes('--videos-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_VIDEOS'])process.env[key]='1';
 if(process.argv.includes('--logos-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_LOGOS'])process.env[key]='1';
@@ -273,6 +273,7 @@ try{
     const{verifySocialBrowser}=await import('./verify-agent211-social-ui');
     proof.socialUi=await verifySocialBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;lastInputText='';},input:()=>lastInputText});proof.allSimulatedTotals=counts();
   }
+  if(process.argv.includes('--campaign-ui')){const{verifyCampaignBrowser}=await import('./verify-agent211-campaign-ui');proof.campaignUi=await verifyCampaignBrowser({origin,out,account,login,counts,setFixture:value=>{fixture=value;bad=false;failureStatus=0;lastInputText='';},input:()=>lastInputText});proof.allSimulatedTotals=counts();}
   await stop(worker);worker=undefined;await stop(server);server=undefined;await start(false);const fresh=await login(users[0]);await call(fresh,route+'/intelligence',{action:'quote',revision:v.revision,projectRevision:v.projectRevision},404);await call(fresh,'/api/projects');proof.defaultOff={intelligence:404,manualProjects:200};
   if(process.argv.includes('--context-ui')||process.argv.includes('--context-manual-ui')){
     const{verifyLegacySelectionBrowser}=await import('./verify-agent211-context-ui'),{project}=await import('../tests/conversation209-fixtures'),{seedCompositionSite,COMPOSITION_SCENES}=await import('./composition211-ui-fixtures'),{openProjectConversation}=await import('../src/lib/orchestrator/conversation'),{currentTheme}=await import('../src/lib/projects');

@@ -57,6 +57,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('social.generate','publications','Créer une publication','Create a social post'),
  op('social.publish','publications','Publier sur un réseau','Publish to a network','none',true),
  op('calendar.update','calendrier','Déplacer une publication programmée','Reschedule a post','none',true),
+ op('campaign.draft','publicites','Préparer un brouillon de campagne avec les médias acquis','Prepare a campaign draft with acquired media','social'),
  op('ads.create','publicites','Créer une publicité','Create an ad'),
  op('ads.launch','publicites','Activer une campagne réelle','Launch a real campaign','none',true),
  op('prompts.edit','prompts','Modifier les consignes d’un moteur','Edit an engine prompt'),

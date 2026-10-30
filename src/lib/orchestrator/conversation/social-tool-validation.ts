@@ -1,9 +1,14 @@
+import {assertAdvertising}from '../../job-entitlements';
+import {projectRights}from '../../plan-gates';
+import {claimIssues}from '../../ads-v2/claims';
+import {adInsight}from '../../ads-v2/insight';
+import {strictestText}from '../../ads-v2/platforms';
 import {HttpError}from '../../auth';
 import {loadProject}from '../../projects';
 import {getProduct,listProducts}from '../../products/catalog';
 import {getAsset,assetMeta}from '../../library';
 import {ImageBindingSchema,resolveContentSubjectBinding,imageBindingHash,type ImageBinding}from '../../image-v2/request-binding';
-import {SocialToolPlanSchema}from './social-tool-contract';
+import {SocialToolPlanSchema,type SocialToolPlan}from './social-tool-contract';
 import {selectedLocalVideoSource,isNativeIdentityImage}from './image-tool-sources';
 import {metaOf}from './store';
 import {publicationCopyIssues,acquiredPublicationCopyReview}from '../../social-v2/publication-copy-policy';
@@ -11,7 +16,11 @@ import {platformSpec}from '../../social-v2/platforms';
 import {applyWordingDeep,loadWordingRules}from '../../client-wording';
 import type {ConversationRow}from './contract';
 type Sources={sources:{id:string;text:string}[];lastClientRequest:{sourceId:string|null;text:string}|null};
-export function validateSocialProposal(c:ConversationRow,raw:unknown,sources:Sources){
+type Pin=ImageBinding['references'][number];
+type DraftPost=Omit<Extract<SocialToolPlan,{tool:'social.draft'}>['posts'][number],'media'>&{media:Pin[]};
+type Campaign=Omit<Extract<SocialToolPlan,{tool:'campaign.draft'}>,'ads'>&{ads:(Omit<Extract<SocialToolPlan,{tool:'campaign.draft'}>['ads'][number],'media'>&{media:Pin[]})[]};
+type Prepared={plan:SocialToolPlan;binding:ImageBinding;bindingDigest:string;instruction:string;posts:DraftPost[]|null;campaign:Campaign|null};
+export function validateSocialProposal(c:ConversationRow,raw:unknown,sources:Sources):Prepared{
  const plan=SocialToolPlanSchema.parse(raw),pid=c.project_id,last=sources.lastClientRequest,source=sources.sources.find(s=>s.id===plan.sourceId);if(!pid||!last?.sourceId||last.sourceId!==plan.sourceId||!last.text.includes(plan.quote)||!source?.text.includes(plan.quote))throw new HttpError(409,'La proposition doit citer votre dernière demande exacte.');
  const root=loadProject(pid),focus=metaOf(c).activeContext?.target,b:ImageBinding={schema:1,people:'none',references:[]};
  if(plan.target.kind==='product'){
@@ -25,6 +34,15 @@ export function validateSocialProposal(c:ConversationRow,raw:unknown,sources:Sou
  const resolved=resolveContentSubjectBinding(root,b),project=resolved.project;
  const confirmed:string[]=[];
  if(b.product){const p=getProduct(pid,b.product.productId),v=b.product.variant?p.variants.find(v=>v.id===b.product!.variant!.variantId):null,amount=v?.price??p.data.price;if(amount!=null)confirmed.push(`${amount/100} ${p.data.currency}`);}
+ const campaign=plan.tool==='campaign.draft'?(()=>{
+  assertAdvertising(pid);const rights=projectRights(pid),maximum=rights?.ads==='full'?6:rights?.ads==='advanced'?3:1;if(plan.ads.length>maximum)throw new HttpError(402,'Ce nombre d’annonces dépasse les droits du forfait ; aucune annonce tronquée.');
+  const ads=plan.ads.map(ad=>{const validated=validateSocialProposal(c,{tool:'social.draft',target:plan.target,sourceId:plan.sourceId,quote:plan.quote,posts:[{network:plan.networks[0],format:ad.media.length>1?'carousel':ad.media.length?'image':'text',title:ad.headline,caption:[ad.hook,ad.primary,ad.description,ad.cta].join('\n'),hashtags:'',link:null,media:ad.media}]},sources),media=validated.posts![0].media;return{...ad,media};});
+  const platforms=plan.networks.map(n=>n==='facebook'||n==='instagram'?'meta_feed':n==='youtube'?'google_display':n) as import('../../ads-v2/types').Platform[];
+  const issues=claimIssues(ads.map((a,i)=>({id:String(i),copy:{hook:a.hook,hookB:null,primary:a.primary,headline:a.headline,description:a.description,cta:a.cta,sub:null,visual:a.visual}})),project,adInsight(project),strictestText(platforms));
+  if([...issues.values()].some(v=>v.length))throw new HttpError(409,'Les textes publicitaires nécessitent une correction : '+[...issues.values()].flat().map(v=>v.fix).join(' ; '));
+  const labels={name:plan.name,objective:plan.objective,audience:plan.audience,ads:ads.map(a=>({angle:a.angle,visual:a.visual}))};if(imageBindingHash(applyWordingDeep(labels,loadWordingRules(pid)))!==imageBindingHash(labels))throw new HttpError(409,'La campagne contredit le vocabulaire enregistré.');
+  return{...plan,ads};
+ })():null;
  const posts=plan.tool==='social.draft'?plan.posts.map(post=>{
   if(!platformSpec(post.network).formats.includes(post.format))throw new HttpError(409,'Ce format n’est pas pris en charge par ce réseau. Aucun format substitué.');
   if(post.format==='text'&&!post.title.trim()&&!post.caption.trim())throw new HttpError(409,'Le brouillon texte est vide ; précisez son contenu.');
@@ -39,5 +57,5 @@ export function validateSocialProposal(c:ConversationRow,raw:unknown,sources:Sou
   if(publicationCopyIssues(project,{headline:post.title,subline:post.caption,cta:''},last.text,[],confirmed).length)throw new HttpError(409,'Des affirmations commerciales de ce brouillon manquent de faits confirmés ou demandés. Précisez-les avant de l’enregistrer.');
   return{...post,media};
  }):null;
- return{plan,binding:b,bindingDigest:resolved.digest,instruction:last.text,posts};
+ return{plan,binding:b,bindingDigest:resolved.digest,instruction:last.text,posts,campaign};
 }
