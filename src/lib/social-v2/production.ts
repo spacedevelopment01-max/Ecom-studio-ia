@@ -163,7 +163,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
         out = a ? { assetId: a.id,assetIds:r.format==="carousel"?json<any>(a.meta,{}).carousel.assetIds:undefined, costMicro: 0, by: "library" } : null;
       } else {
         const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
-        const est = m.paid ? deps.estimate(kind)*publicationUnits(r) : 0;
+        const est = m.paid ? o.publicationQuote?.capMicro??deps.estimate(kind)*publicationUnits(r) : 0;
         if (m.paid && res.spentMicro + est > cap) {
           res.stoppedByCap = true;
           notes.push(`plafond atteint (${budgetPctText(p.userId, cap, p.id)}) : production arrêtée, les publications suivantes attendent leur visuel IA (aucun gabarit à la place)`);

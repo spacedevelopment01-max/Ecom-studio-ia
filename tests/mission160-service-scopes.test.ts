@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 /** Priority rectification #160: website foundation and coexisting service communication angles. */
 import {it,expect,afterEach,vi} from 'vitest';
 import {clientFixture} from './mission154-fixtures';
@@ -48,6 +49,7 @@ it.each([['creer',1],['vendre',2],['dominer',5]] as const)('droits services %s :
 it('A/B coexistent : calendrier, publication, worker différé et approbation A inchangés après B',async()=>{
  const f=await clientFixture({services:true,copySource:'ai',strategy:null});grantProjectPlan(f.pid,'vendre');const a=choose(f.pid,'usage');
  const pa=createOnePost(loadProject(f.pid),{...planRequest(),kind:'image',date:tomorrow(),time:'11:30',angleId:'usage'});const aid=pa.ids[0];
+ const proofAsset=await withCommunicationStrategy(f.pid,async()=>saveAsset({projectId:f.pid,userId:f.user.id,name:'preuve-approuvee-simulee.png',mime:'image/png',data:await sharp({create:{width:64,height:80,channels:3,background:'#556677'}}).png().toBuffer(),role:'social',origin:'generated'}),{strategyId:a.id});run('UPDATE posts SET media=? WHERE id=?',JSON.stringify([proofAsset.id]),aid);
  approvePosts([aid],f.user.id,()=>({blocking:[]}));run("UPDATE posts SET status='scheduled' WHERE id=?",aid);const approved=one<any>('SELECT * FROM posts WHERE id=?',aid)!;
  const queued=enqueue({userId:f.user.id,projectId:f.pid,type:'social.v2.produce',payload:{projectId:f.pid,action:'produce',ids:[aid],allowPaid:false,maxCostEur:0}});
  const b=choose(f.pid,'reassurance');expect(b.id).not.toBe(a.id);
@@ -55,7 +57,7 @@ it('A/B coexistent : calendrier, publication, worker différé et approbation A 
  expect(jobStrategy(f.pid,'social.v2.produce',JSON.parse(queued.payload),true)?.id).toBe(a.id);
  const pb=createPlanV2(loadProject(f.pid),{...planRequest(),angleId:'reassurance'});const later=createPlanV2(loadProject(f.pid),{...planRequest(),angleId:'usage'});
  const stamps=all<any>('SELECT angle_id FROM marketing_strategy_contents WHERE project_id=? AND module=\'calendar\' AND content_id IN (?,?)',f.pid,pb.planId,later.planId);expect(stamps.map(s=>s.angle_id).sort()).toEqual(['reassurance','usage']);
- const r=await handlers[queued.type](new JobContext(queued));expect(r).toBeDefined();expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
+ const r=await handlers[queued.type](new JobContext(queued));expect(r).toMatchObject({produced:0,alreadySatisfied:1,unchanged:true});expect(one<any>('SELECT * FROM posts WHERE id=?',aid)).toEqual(approved);expect(all('SELECT id FROM ai_calls WHERE project_id=? AND id NOT GLOB \'fixture_research_*\'',f.pid)).toHaveLength(0);
 });
 it('site : un média de campagne reste consultable sans pouvoir entrer automatiquement dans le site',async()=>{
  const f=await clientFixture({services:true,strategy:null});choose(f.pid,'usage');
