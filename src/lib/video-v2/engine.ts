@@ -18,6 +18,7 @@ import { resolveSubject } from "../creative-subject";
 import { ImageBindingSchema } from "../image-v2/request-binding";
 import { videoScope,type VideoApproval } from "./approval";
 import { videoReceipt } from "./receipts";
+import {requiresClipRevisionQuote}from './clip-revision-contract';
 import { measuredCues,projectVoice,voiceAvailable } from "./voice";
 import {isOpenAIVoice} from "./openai-voice";
 import {loadCreativeMemory} from "./creative-memory";
@@ -810,6 +811,7 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const cur = latestVideo(projectId, docKey);
   if (!cur) throw new Error("vidéo introuvable");
+  if(requiresClipRevisionQuote(cur.doc))throw new Error("Cette vidéo nécessite un devis ciblé et son accord dans SYNA. Aucun remplacement local ni achat par l’ancien parcours.");
   const k = cur.doc.clips.findIndex((c) => c.id === clipId);
   if (k < 0) throw new Error("plan introuvable");
   if(o.approve && ((cur.doc.meta.retakeCount??0)>=1 || one("SELECT 1 FROM jobs WHERE project_id=? AND type='video.v2.clip' AND json_extract(payload,'$.docKey')=? AND id<>? LIMIT 1",projectId,docKey,ctx?.job.id??""))) throw new Error("Limite de reprise ciblée atteinte : version utilisable conservée ; nouveau scénario et devis requis.");

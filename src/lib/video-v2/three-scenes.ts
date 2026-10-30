@@ -402,6 +402,29 @@ async function sceneClipDuration(data:Buffer){
  const dir=tmpDir("scene-duration");try{const file=path.join(dir,"clip.mp4");fs.writeFileSync(file,data);const {execTool}=await import("../exec-tool");const r=await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",file]);const duration=Number(r.stdout.trim());if(!Number.isFinite(duration)||duration<=0)throw new UserFacingError("Clip reçu illisible ; fichier conservé.");return duration;}finally{fs.rmSync(dir,{recursive:true,force:true});}
 }
 
+/** Primitive commune aux scènes et aux reprises : même reçu durable, contrôle obligatoire, aucun secours. */
+export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:number;key:string;rootKey:string;as:"post"|"ad";aspect:SceneAspect;generation:"direct"|"reference";scene:Scene;reference:Buffer|null;referenceAssetId:string|null;clipS:number;minimumDurationS:number;progress?:number;request?:string|null;folderKey:string;prior:import("../library").Asset|null;beforeAcquire:()=>void},deps:ThreeScenesDeps):Promise<string>{
+ const {ctx,index:k,reference,prior}=o,projectId=p.id;
+ if(!deps.directClip)throw new UserFacingError("Adaptateur vidéo directe indisponible ; aucune image ou vidéo stock substituée.");
+ if(prior&&(prior.project_id!==projectId||prior.user_id!==p.userId||prior.kind!=="video"||prior.role!=="clip"||prior.deleted_at||assetMeta<any>(prior).scenes?.key!==o.key||assetMeta<any>(prior).scenes?.index!==k))throw new UserFacingError("Le clip acquis ne correspond pas à cette scène. Aucun rachat.");
+ if(prior&&isAutoUsable(prior)&&assetMeta<any>(prior).gate?.checked)return prior.id;
+ o.beforeAcquire();ctx?.progress(o.progress??.1,`Scène ${k+1} : clip IA, sans image intermédiaire`);
+ const text=directScenePrompt(p,o.scene,!!reference,o.request),clipKey=`${o.key}:direct:${k}`,reviewKey=`${o.key}:direct-qc:${k}`;
+ const mp4=prior?assetData(prior):await videoReceipt(projectId,clipKey,()=>deps.directClip!(reference,text,o.aspect,o.clipS,clipKey,o.generation),{readOnlyRecovery:true});
+ const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey:o.folderKey,origin:"generated",status:"review",sourceAssetId:o.referenceAssetId,meta:{scenes:{key:o.key,rootKey:o.rootKey,index:k,as:o.as,generation:o.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
+ const duration=await(deps.duration??sceneClipDuration)(mp4);
+ if(duration+.05<o.minimumDurationS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
+ const {run}=await import("../db");run("UPDATE assets SET duration=?,meta=json_set(meta,'$.durationS',?) WHERE id=?",duration,duration,asset.id);
+ o.beforeAcquire();
+ const frames=await(deps.frames??clipFrames)(mp4),expectsProduct=p.business!=="services"&&!!reference;
+ const review=frames.length&&deps.reviewMedia?JSON.parse((await videoReceipt(projectId,reviewKey,async()=>Buffer.from(JSON.stringify(await deps.reviewMedia!(frames,reference??Buffer.alloc(0),text,reviewKey))))).toString()) as ShotReview:null;
+ const decision=gateShot({review,expectsProduct,expectsCharacter:false,attempt:0,peopleAllowed:false});
+ if(expectsProduct&&review?.sameProduct==null){decision.verdict="PROVISIONAL";decision.checked=false;decision.reason="Identité du produit non vérifiée";}
+ const gate=gateSave({userId:p.userId,projectId,jobId:ctx?.job.id??null,assetId:asset.id},decision);run("UPDATE assets SET status=?,meta=? WHERE id=?",statusFor(decision),JSON.stringify({...assetMeta(asset),...gate.meta}),asset.id);
+ if(decision.verdict!=="FINAL")throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée.`);
+ return asset.id;
+}
+
 /** Identité du document natif, également lisible pour conserver le brouillon d’un encodage interrompu. */
 export function sceneDocumentKey(p:Project,req:ThreeScenesRequest){return `vid:${crypto.createHash("sha256").update(guidedRunKey(p,req)).digest("hex").slice(0,20)}`;}
 export async function runThreeScenes(ctx: JobContext | null, projectId: string, req: ThreeScenesRequest, deps: ThreeScenesDeps): Promise<ThreeScenesResult> {
@@ -518,21 +541,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
         const reference=req.generation==="reference"?(photo?assetData(photo):refBuf):null;
         if(req.generation==="reference"&&!reference)throw new UserFacingError("Choisissez une photo autorisée de ce produit ou lieu, ou la génération directe sans référence.");
         const clipId=await step(`${key}:direct-scene-${k}`,async()=>{
-          const prior=savedScene(k,"clip");if(prior&&isAutoUsable(prior)&&assetMeta<any>(prior).gate?.checked)return prior.id;
-          preserveClientVersion();ctx?.progress(.1+k*.65/n,`Scène ${k+1} : clip IA, sans image intermédiaire`);
-          const text=directScenePrompt(p,scene,!!reference,req.request);
-          const mp4=prior?assetData(prior):await videoReceipt(projectId,`${assetKey(k,"clip")}:direct:${k}`,()=>deps.directClip!(reference,text,aspect,timing.clipS,`${assetKey(k,"clip")}:direct:${k}`,req.generation!),{readOnlyRecovery:true});
-          const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey,origin:"generated",status:"review",sourceAssetId:photo?.id??(reference?refId:null),meta:{scenes:{key:assetKey(k,"clip"),rootKey:key,index:k,as:req.as,generation:req.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
-          const duration=await(deps.duration??sceneClipDuration)(mp4);
-          if(duration+.05<timing.showS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
-          const {run:saveDuration}=await import("../db");saveDuration("UPDATE assets SET duration=?,meta=json_set(meta,'$.durationS',?) WHERE id=?",duration,duration,asset.id);
-          const frames=await(deps.frames??clipFrames)(mp4);const expectsProduct=p.business!=="services"&&!!reference;
-          const review=frames.length&&deps.reviewMedia?JSON.parse((await videoReceipt(projectId,`${assetKey(k,"clip")}:direct-qc:${k}`,async()=>Buffer.from(JSON.stringify(await deps.reviewMedia!(frames,reference??Buffer.alloc(0),text,`${assetKey(k,"clip")}:direct-qc:${k}`))))).toString()) as ShotReview:null;
-          const decision=gateShot({review,expectsProduct,expectsCharacter:false,attempt:0,peopleAllowed:false});
-          if(expectsProduct&&review?.sameProduct==null){decision.verdict="PROVISIONAL";decision.checked=false;decision.reason="Identité du produit non vérifiée";}
-          const gate=gateSave({userId:p.userId,projectId,jobId:ctx?.job.id??null,assetId:asset.id},decision);const {run}=await import("../db");run("UPDATE assets SET status=?,meta=? WHERE id=?",statusFor(decision),JSON.stringify({...assetMeta(asset),...gate.meta}),asset.id);
-          if(decision.verdict!=="FINAL")throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée.`);
-          return asset.id;
+          return acquireDirectScene(p,{ctx,index:k,key:assetKey(k,"clip"),rootKey:key,as:req.as,aspect,generation:req.generation as "direct"|"reference",scene,reference,referenceAssetId:photo?.id??(reference?refId:null),clipS:timing.clipS,minimumDurationS:timing.showS,progress:.1+k*.65/n,request:req.request,folderKey,prior:savedScene(k,"clip")??null,beforeAcquire:preserveClientVersion},deps);
         });
         clips.push({assetId:clipId,durationS:timing.clipS,generated:true});kept.push(k);
       }
@@ -776,7 +785,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       if(o.request?.quotedGeneration){
         const q=o.request.quotedGeneration,{assertBoundedSceneQuote}=await import("./bounded-quote");assertBoundedSceneQuote(q);
         const index=Number(key.match(/:direct:(\d+)$/)?.[1]),scene=q.scenes[index];
-        if(!scene||scene.prompt!==prompt||q.generation!==generation||q.aspect!==(aspect==="16:9"?"16:9":"9:16")||q.seconds!==route.seconds||q.clip.provider!==route.provider||q.clip.model!==route.model||q.clip.unitMicro!==route.unitMicro||!!scene.reference!==!!image||scene.reference&&crypto.createHash("sha256").update(image!).digest("hex")!==scene.reference.sha256)throw new UserFacingError("La scène, sa référence ou sa route ne correspond plus au devis. Aucun clip lancé.");
+        if(!q.clip||!scene||scene.prompt!==prompt||q.generation!==generation||q.aspect!==(aspect==="16:9"?"16:9":"9:16")||q.seconds!==route.seconds||q.clip.provider!==route.provider||q.clip.model!==route.model||q.clip.unitMicro!==route.unitMicro||!!scene.reference!==!!image||scene.reference&&crypto.createHash("sha256").update(image!).digest("hex")!==scene.reference.sha256)throw new UserFacingError("La scène, sa référence ou sa route ne correspond plus au devis. Aucun clip lancé.");
         const {withQuotedVideoRoute}=await import("../ai/media-providers");return withQuotedVideoRoute(q.clip,generate);
       }
       return generate();

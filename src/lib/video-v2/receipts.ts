@@ -6,7 +6,7 @@ import crypto from "node:crypto";
 import { DATA_DIR } from "../db";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
-const paths = (projectId: string, key: string) => {
+const paths = (projectId: string, key: string, create=true) => {
   const hash = crypto
     .createHash("sha256")
     .update(`${projectId}:${key}`)
@@ -16,7 +16,7 @@ const paths = (projectId: string, key: string) => {
     "video-receipts",
     crypto.createHash("sha256").update(projectId).digest("hex"),
   );
-  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  if(create)fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   return {
     dir,
     json: path.join(dir, `${hash}.json`),
@@ -52,6 +52,16 @@ function stateOf(file: string): { state?: string } {
     "VIDEO_RECEIPT_UNREADABLE",
   );
 }
+/** Devis/reprise : n’écrit aucun dossier et ne démarre jamais de production ou de réservation. */
+export function inspectVideoReceipt(projectId:string,key:string){
+ const p=paths(projectId,key,false);
+ try{
+  if(fs.existsSync(p.blob)){const bytes=fs.readFileSync(p.blob);return bytes.length?{state:"received" as const,bytes:bytes.length,sha256:crypto.createHash("sha256").update(bytes).digest("hex")}:{state:"blocked" as const,reason:"EMPTY_RECEIVED_FILE"};}
+  if(!fs.existsSync(p.json))return{state:"new" as const};
+  const state=stateOf(p.json).state;return{state:"blocked" as const,reason:state==='confirmed_failed'?"CONFIRMED_REFUSAL":state==='received'?"RECEIVED_FILE_MISSING":"PENDING_OR_UNCERTAIN"};
+ }catch{return{state:"blocked" as const,reason:"RECEIPT_UNREADABLE"};}
+}
+
 export async function videoReceipt(
   projectId: string,
   key: string,
