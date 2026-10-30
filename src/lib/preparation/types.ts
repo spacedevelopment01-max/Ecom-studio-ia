@@ -157,6 +157,8 @@ export type Data = {
   media: Media;
 };
 export type Stage<K extends Step = Step> = {
+  /** Tâche productrice du candidat natif ; les versions gardent cette preuve. */
+  producedByJobId?: string;
   data: Data[K];
   inputHash: string;
   status: "draft" | "approved" | "stale";

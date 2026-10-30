@@ -27,7 +27,7 @@ import {AgentRoleSchema,SPECIALISTS,specialistsEnabled,withSpecialistPlan,type A
 import {assertBoundQuote,bindAgentJob,boundPublic,createOrReadBound} from '../../ai/request-bounds';
 import {brainView} from '../../brain/facade';
 import {loadProject} from '../../projects';
-import {conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled,conversationVideoClipEnabled,conversationSocialEnabled} from './tool-flags';
+import {conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled,conversationVideoClipEnabled,conversationSocialEnabled,conversationBrandEnabled} from './tool-flags';
 import {validateLogoToolProposal} from './logo-tool-validation';
 import {validateVideoToolProposal}from './video-tool-validation';
 import {validateCatalogueProposal} from './catalogue-tool-validation';
@@ -68,7 +68,7 @@ function makePlan(c: ConversationRow, user: User,selectedRole:AgentRole='princip
   if (!activeProviderKey(route.provider as Parameters<typeof activeProviderKey>[0])) throw new HttpError(409, L('Le fournisseur de cette route est indisponible. Aucun repli inférieur ni appel n’a été lancé.', 'The provider for this route is unavailable. No lower-quality fallback or request was started.'), 'conversation_ai_unavailable');
   requirePrice(route.provider, route.model);
   call.expectedRoute = { provider: route.provider, model: route.model, ...(route.effort ? { effort: route.effort } : {}) };
-  const tokens = strictTextQuoteInput(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled()));
+  const tokens = strictTextQuoteInput(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled()));
   const cap = callCostBoundMicro(route.provider, route.model, tokens.maximumTokens, 6000, route.effort ?? null);
   const estimate = estimateCallMicro(route.provider, route.model, tokens.typicalTokens, 1200);
   if (cap == null || estimate == null || cap <= 0 || !Number.isSafeInteger(cap)) throw new HttpError(409, L('Tarif ou plafond inconnu : aucun appel autorisé.', 'Unknown price or bound: no request authorized.'), 'conversation_ai_price_missing');
@@ -194,7 +194,7 @@ export async function runCognitiveJob(ctx: JobContext) {
     if(plan.boundId&&!specialistsEnabled()&&!acquired)throw new HttpError(404,'conversation_specialists_disabled');
     return scoped(c, user.id, key, () => runForUser(user.id, () => scoped(c, user.id, key, () => withTrace({ jobId: ctx.job.id, projectId: c.project_id, step: 'conversation', costCapMicro: plan.capMicro,...(plan.boundId?{agentBoundId:plan.boundId}:{}) }, () => withSpecialistPlan(plan.boundId?c.project_id:null,user.id,ctx.job.id,plan.role??'principal',async () => {
       const call = { ...plan.call, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dialogue`, acquiredOnly: acquired };
-      const raw = await llmJson(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled()), { strict: true });
+      const raw = await llmJson(call, cognitiveResponseSchema(!!c.project_id&&conversationLogosEnabled(),!!c.project_id&&conversationVideosEnabled(),!!c.project_id&&conversationVideoGenerationEnabled(),!!c.project_id&&conversationVideoVoiceEnabled(),!!c.project_id&&conversationVideoClipEnabled(),!!c.project_id&&conversationSocialEnabled(),!!c.project_id&&conversationBrandEnabled()), { strict: true });
       const reply = CognitiveReplySchema.parse(raw); validateReply(reply, c, cognitiveContext(c));
       return { reply, sourceRevision: q.revision, projectRevision: q.project_revision, quoteId: q.id };
     }))), 'normal', c.project_id));

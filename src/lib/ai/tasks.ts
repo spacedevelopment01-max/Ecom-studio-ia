@@ -1,3 +1,4 @@
+import {BRAND_OUTPUT_TOKENS} from '../preparation/identity-policy';
 /**
  * Tâches d'IA du studio. Chaque tâche : instructions spécialisées + contexte
  * commun + sortie JSON validée + contrôle qualité. Lorsque aucun fournisseur
@@ -266,7 +267,7 @@ Familles disponibles pour le logo (logo.family) : ${Object.keys(CANVAS_FONTS).fi
 ${guidance ? `Orientation demandée par le client : ${guidance}` : ""}${feedback ? `\nCorrections exigées par le contrôle qualité de la proposition précédente (à appliquer impérativement) :\n${feedback}` : ""}
 Réponds avec un objet JSON exactement de cette forme :
 ${BRAND_SHAPE}`,
-      maxTokens: 16000,
+      maxTokens: BRAND_OUTPUT_TOKENS,
     },
     BrandSchema,
   );
