@@ -1,0 +1,53 @@
+/** Mode sans thème : vrais composants et stockage natifs, cognition non qualifiée. */
+import {afterEach,beforeEach,describe,expect,it,vi} from 'vitest';
+import {account,project,emptySpend} from './conversation209-fixtures';
+import {localBrand} from '@/lib/engine/local';
+import {currentTheme,loadProject,saveProduct,saveBrand,saveThemeVersion} from '@/lib/projects';
+import {compositionContext,previewNativeComposition} from '@/lib/theme/composition/server';
+import {validateSpec} from '@/lib/theme/ops';
+import {run} from '@/lib/db';
+import type {CompositionPlan} from '@/lib/theme/composition/contract';
+import {seedOriginalProject} from '../scripts/original211-fixtures';
+import {openProjectConversation,conversationView} from '@/lib/orchestrator/conversation';
+import {ownedConversation,metaOf} from '@/lib/orchestrator/conversation/store';
+import {id,all} from '@/lib/db';
+import {quoteThemeChange,confirmThemeChange,runThemeChange,themeChangeReceipt,quoteThemeUndo} from '@/lib/orchestrator/conversation/theme-tool-execution';
+import {claimNext,JobContext,completeJob} from '@/lib/jobs';
+beforeEach(()=>{for(const key of ['STUDIO_CONVERSATION_LOT_A','STUDIO_CONVERSATION_AI','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_THEME_TOOLS','STUDIO_CONVERSATION_COMPOSITION','STUDIO_CONVERSATION_ORIGINAL'])vi.stubEnv(key,'1');vi.stubGlobal('fetch',vi.fn(()=>{throw Error('No network');}));});
+afterEach(()=>{vi.unstubAllEnvs();vi.unstubAllGlobals();});
+async function originalFixture(){
+ const business='services' as const;
+ const u=await account(),pid=project(u,business),p=loadProject(pid);
+ saveProduct(pid,{...p.product,name:'Affûtage de ciseaux',nameStatus:'provided',summary:'Les informations exactes du client, sans promesse ajoutée.',summaryStatus:'provided',price:{amount:3500,currency:'EUR',status:'confirmed'},variants:[{name:'Finition',values:['Claire','Foncée']}]});
+ const b=localBrand(loadProject(pid).product,'Les Gestes',loadProject(pid)).brand;saveBrand(pid,b);
+ const context=compositionContext(u,pid),title=context.sources.find(s=>s.ref==='project.brand.name')!,body=context.sources.find(s=>s.ref==='project.product.summary')!;
+ const plan:CompositionPlan={schema:1,mode:'original',versionId:context.versionId,summary:'Une ouverture composée à partir des informations acquises.',pages:[{template:'index',sections:[{kind:'component',id:'opening',type:'image-with-text',blocks:[],layout:[{key:'layout',value:'image-right'}],bindings:[{key:'heading',source:title.id},{key:'text',source:body.id}]}]}]};
+ return{u,pid,context,plan};
+}
+describe('#211 E9 — composition sans thème préexistant',()=>{
+ it('expose une base neutre non enregistrée, puis une vraie structure originale sans écriture implicite',async()=>{const f=await originalFixture(),before=emptySpend();expect(f.context.modes.original).toBe(true);expect(currentTheme(f.pid)).toBeNull();const preview=previewNativeComposition(f.u,f.pid,f.plan);expect(validateSpec(preview.spec)).toEqual([]);expect(preview.parentVersionId).toBeNull();expect(preview.spec.direction).toBe('original');expect(preview.spec.settings.theme_kit).toBe('none');expect(preview.spec.templates.index.order).toHaveLength(1);expect(preview.spec.templates.index.sections[preview.spec.templates.index.order[0]].type).toBe('image-with-text');expect(preview.spec.meta?.composition?.quality).toBe('not_measured');expect(currentTheme(f.pid)).toBeNull();expect(emptySpend()).toEqual(before);});
+ it('refuse de présenter une base technique vide comme un site composé',async()=>{const f=await originalFixture();expect(()=>previewNativeComposition(f.u,f.pid,{...f.plan,mode:'hybrid'})).toThrow('original');const plan=structuredClone(f.plan);plan.pages=[{template:'page.contact',sections:[{kind:'existing',section:'contact',bindings:[],layout:[]}]}];expect(()=>previewNativeComposition(f.u,f.pid,plan)).toThrow('accueil');});
+ it('ne remplace jamais un thème installé et refuse son ancien parent virtuel',async()=>{const f=await originalFixture(),p=previewNativeComposition(f.u,f.pid,f.plan);saveThemeVersion(f.pid,p.spec,'Version de test','user',undefined,null);expect(()=>previewNativeComposition(f.u,f.pid,f.plan)).toThrow('périmée');const current=currentTheme(f.pid)!;expect(current.spec.meta?.original?.schema).toBe(1);});
+ it('ne contourne ni le drapeau, ni le forfait, ni la propriété',async()=>{const f=await originalFixture(),other=await account();expect(()=>compositionContext(other,f.pid)).toThrow('introuvable');vi.stubEnv('STUDIO_CONVERSATION_ORIGINAL','0');expect(()=>compositionContext(f.u,f.pid)).toThrow('thème');vi.stubEnv('STUDIO_CONVERSATION_ORIGINAL','1');run("UPDATE subscriptions SET plan='creer' WHERE project_id=?",f.pid);expect(()=>compositionContext(f.u,f.pid)).toThrow();});
+ it('préserve VANS et les étapes non approuvées au lieu de les contourner',async()=>{const f=await originalFixture();const {commitState}=await import('@/lib/preparation/store');commitState(f.pid,0,()=>{});expect(()=>compositionContext(f.u,f.pid)).toThrow('Validez');});
+ it('refuse un parent virtuel devenu périmé après modification des données natives',async()=>{const f=await originalFixture(),p=loadProject(f.pid);saveProduct(f.pid,{...p.product,summary:'Une autre description confirmée.'});expect(()=>previewNativeComposition(f.u,f.pid,f.plan)).toThrow('périmée');});
+ it('conserve les sections fonctionnelles et rejette leur remplacement',async()=>{const f=await originalFixture(),plan=structuredClone(f.plan);plan.pages.push({template:'page.contact',sections:[plan.pages[0].sections[0]]});expect(()=>previewNativeComposition(f.u,f.pid,plan)).toThrow('fonctionnelle');});
+});
+async function workerFixture(business:'products'|'services'){
+ const u=await account(),pid=project(u,business);
+ await seedOriginalProject(pid,{business,name:'Maquette technique',offer:business==='products'?'Presse de gravure':'Réparation de soufflets',description:'Informations acquises pour une maquette isolée, aucune promesse ajoutée.',color:'#355746'});
+ const c=openProjectConversation(u,pid),context=compositionContext(u,pid),title=context.sources.find(s=>s.ref==='project.brand.name')!,body=context.sources.find(s=>s.ref==='project.product.summary')!;
+ const plan:CompositionPlan={schema:1,versionId:context.versionId,mode:'original',summary:'Une page structurée sans thème du catalogue.',pages:[{template:'index',sections:[{kind:'component',id:'opening',type:'image-with-text',blocks:[],layout:[],bindings:[{key:'heading',source:title.id},{key:'text',source:body.id}]}]}]};
+ const v=conversationView(u,c.id),m=metaOf(ownedConversation(u,c.id)),receipt=id();m.intelligence={lastReceiptId:receipt,sourceRevision:v.revision,sourceProjectRevision:v.projectRevision,lastReply:{message:'Proposition simulée.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:['theme.compose'],compositionPlan:plan,actionsExecuted:false}};run('UPDATE agent_conversations SET state_json=? WHERE id=?',JSON.stringify(m),c.id);
+ const quote=()=>quoteThemeChange(u,c.id,{action:'quote',revision:v.revision,projectRevision:v.projectRevision!,proposalReceiptId:receipt});
+ const confirm=(quoteId:string)=>confirmThemeChange(u,c.id,{action:'confirm',quoteId,confirmation:true,requestId:id()});
+ return{u,pid,c,plan,quote,confirm};
+}
+async function execute(){const job=claimNext(['agent.theme.change'])!;expect(job).toBeTruthy();const result=await runThemeChange(new JobContext(job));completeJob(job.id,result);return{job,result};}
+describe('#211 E9 — accord et première version dans le worker natif',()=>{
+ it.each(['products','services'] as const)('ne crée rien avant accord, puis une seule version complète (%s)',async business=>{const f=await workerFixture(business),before=emptySpend(),q=f.quote();expect(q).toMatchObject({costPct:0,beforeVersionId:null,startingWithoutTheme:true});expect(currentTheme(f.pid)).toBeNull();expect(emptySpend()).toEqual(before);const pending=f.confirm(q.id);expect(f.confirm(q.id).job!.id).toBe(pending.job!.id);const job=claimNext(['agent.theme.change'])!,result=await runThemeChange(new JobContext(job));const receipt=themeChangeReceipt(f.u,f.c.id,q.id);expect(receipt).toMatchObject({recorded:true,delivered:false,canUndo:false,version:{number:1,parentId:null}});const again=await runThemeChange(new JobContext(job));expect(again).toMatchObject({reused:true,versionId:result.versionId});completeJob(job.id,again);expect(themeChangeReceipt(f.u,f.c.id,q.id).delivered).toBe(true);expect(all('SELECT id FROM theme_versions WHERE project_id=?',f.pid)).toHaveLength(1);expect(()=>quoteThemeUndo(f.u,f.c.id,{action:'quote-undo',receiptId:q.id,currentVersionId:result.versionId})).toThrow('première composition');expect(all("SELECT id FROM ai_reservations WHERE job_id=?",job.id)).toHaveLength(0);});
+ it('refuse une première version concurrente après accord, sans la remplacer',async()=>{const f=await workerFixture('services'),q=f.quote();f.confirm(q.id);const preview=previewNativeComposition(f.u,f.pid,f.plan),saved=saveThemeVersion(f.pid,preview.spec,'Version concurrente du client','user',undefined,null);await expect(execute()).rejects.toThrow('changé');expect(currentTheme(f.pid)!.version.id).toBe(saved.id);expect(all('SELECT id FROM theme_versions WHERE project_id=?',f.pid)).toHaveLength(1);});
+ it('recontrôle le forfait dans le worker avant la première écriture',async()=>{const f=await workerFixture('products'),q=f.quote();f.confirm(q.id);run("UPDATE subscriptions SET plan='creer' WHERE project_id=?",f.pid);await expect(execute()).rejects.toThrow('structure');expect(currentTheme(f.pid)).toBeNull();});
+ it('refuse une identité périmée même si les étapes restent cochées approuvées',async()=>{const f=await workerFixture('services'),p=loadProject(f.pid);saveBrand(f.pid,{...p.brand!,name:'Nouvelle identité'});expect(()=>compositionContext(f.u,f.pid)).toThrow('identité');});
+ it('ne crée pas la première version après annulation du job',async()=>{const f=await workerFixture('services'),q=f.quote();f.confirm(q.id);const job=claimNext(['agent.theme.change'])!;run("UPDATE jobs SET status='cancelled' WHERE id=?",job.id);await expect(runThemeChange(new JobContext(job))).rejects.toThrow('annulée');expect(currentTheme(f.pid)).toBeNull();});
+});

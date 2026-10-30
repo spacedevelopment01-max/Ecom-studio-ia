@@ -1,0 +1,53 @@
+/** Browser/HTTP/worker réels ; plans et illustrations SIMULÉS, aucun fournisseur réel. */
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {unzipSync,strFromU8} from 'fflate';
+import type {User} from '../src/lib/auth';
+import type {ThemeSpec} from '../src/lib/theme/spec';
+import type {CompositionPlan} from '../src/lib/theme/composition/contract';
+import type {compositionContext} from '../src/lib/theme/composition/server';
+import {COMPOSITION_SCENES} from './composition211-ui-fixtures';
+type F={origin:string;out:string;account:()=>Promise<User>;project:(u:User,b:'products'|'services')=>string;login:(u:User)=>Promise<{cookie:string}>;counts:()=>{providerHttpCalls:number};seed:(pid:string,s:typeof COMPOSITION_SCENES[number])=>Promise<unknown>;describe:typeof compositionContext;inspect:(pid:string)=>{version:{id:string;number:number};spec:ThemeSpec;versions:unknown[]}|null;setFixture:(reply:Record<string,unknown>)=>void};
+export async function verifyOriginalBrowser(f:F){
+ const shots=path.join(f.out,'original-captures'),videos=path.join(f.out,'original-videos');fs.mkdirSync(shots,{recursive:true});fs.mkdirSync(videos,{recursive:true});
+ const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox','--disable-background-networking']});
+ const cases:unknown[]=[];let last:import('playwright').Page|null=null;
+ try{for(const scene of COMPOSITION_SCENES){
+  const u=await f.account(),pid=f.project(u,scene.business);await f.seed(pid,scene);assert.equal(f.inspect(pid),null);
+  const session=await f.login(u),ctx=await browser.newContext({viewport:{width:scene.id==='mono'?390:1440,height:960},locale:'fr-FR',reducedMotion:'reduce',...(scene.id==='mono'?{recordVideo:{dir:videos,size:{width:390,height:960}}}:{})});
+  await ctx.addCookies(session.cookie.split('; ').map(raw=>{const n=raw.indexOf('=');return{name:raw.slice(0,n),value:raw.slice(n+1),url:f.origin};}));
+  const page=await ctx.newPage();last=page;const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(f.origin+`/studio/${pid}/boutique`);const splash=page.locator('#ecs-splash');if(await splash.isVisible())await splash.getByRole('button',{name:'Passer',exact:true}).click();
+  await page.getByRole('button',{name:'SYNA',exact:true}).click();const panel=page.locator('#central-agent-panel');
+  const request='Compose mon accueil sans thème de départ avec mes textes et mon illustration acquise. Place une ouverture à droite puis un bloc éditorial, conserve les fonctions natives et montre-moi le plan avant toute écriture.';
+  await panel.getByRole('textbox',{name:'Décrivez votre projet ou posez votre question à SYNA'}).fill(request);await panel.getByRole('button',{name:'Enregistrer',exact:true}).click();
+  await panel.getByRole('list',{name:'Historique sauvegardé',exact:true}).getByText(request,{exact:true}).waitFor();
+  const c=f.describe(u,pid),title=c.sources.find(s=>s.ref==='project.brand.name')!,body=c.sources.find(s=>s.ref==='project.product.summary')!,image=c.sources.find(s=>s.kind==='media')!;assert.ok(c.modes.original);assert.ok(c.startingWithoutTheme);assert.ok(title&&body&&image);
+  const plan:CompositionPlan={schema:1,mode:'original',versionId:c.versionId,summary:'Deux sections réellement créées, sans thème du catalogue ni écriture avant accord.',pages:[{template:'index',sections:[{kind:'component',id:'opening',type:'image-with-text',blocks:[],layout:[{key:'layout',value:'image-right'},{key:'reveal',value:'curtain'}],bindings:[{key:'heading',source:title.id},{key:'text',source:body.id},{key:'image',source:image.id}]},{kind:'component',id:'editorial',type:'image-with-text',blocks:[],layout:[{key:'layout',value:'image-left'}],bindings:[{key:'heading',source:title.id},{key:'text',source:body.id}]}]}]};
+  f.setFixture({message:'[SIMULATION TECHNIQUE] Proposition de structure originale à vérifier, pas de qualité créative démontrée.',status:'answer',business:null,businessEvidence:null,question:null,proposedChanges:[],knowledgeSourceIds:[],proposedTools:['theme.compose'],compositionPlan:plan,actionsExecuted:false});
+  const before=f.counts().providerHttpCalls;await panel.getByRole('button',{name:'Voir le devis de la réponse de SYNA',exact:true}).click();await panel.getByRole('button',{name:'J’accepte ce coût, répondre',exact:true}).click();
+  const tools=panel.locator('[data-agent-theme-tools]');await tools.getByRole('button',{name:'Voir le plan et son coût',exact:true}).click({timeout:45000});const quote=tools.getByLabel('Devis de la retouche du thème',{exact:true});await quote.waitFor();assert.equal(f.inspect(pid),null);
+  await quote.getByText(/Sans thème de départ :/).waitFor();if(scene.id==='mono'){await quote.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'01-accord-mobile.png'),fullPage:true,animations:'disabled'});}
+  await quote.getByRole('button',{name:'Confirmer cette composition',exact:true}).click();const receipt=tools.getByRole('article',{name:'Reçu de la retouche du thème',exact:true}).first();await receipt.getByText('Composition enregistrée',{exact:true}).waitFor({timeout:30000});
+  const applied=f.inspect(pid)!;assert.equal(applied.version.number,1);assert.equal(applied.spec.direction,'original');assert.equal(applied.spec.settings.theme_kit,'none');assert.equal(applied.spec.meta?.composition?.plan.mode,'original');assert.equal(applied.spec.templates.index.order.length,2);assert.equal(applied.versions.length,1);assert.equal(f.counts().providerHttpCalls,before+1);
+  assert.equal(await receipt.getByRole('button',{name:'Préparer l’annulation de cette retouche',exact:true}).count(),0);
+  await page.reload();await page.getByRole('button',{name:'SYNA',exact:true}).click();await receipt.getByText('Composition enregistrée',{exact:true}).waitFor();assert.equal(f.counts().providerHttpCalls,before+1);
+  const preview=await ctx.newPage();last=preview;preview.on('pageerror',e=>errors.push(e.message));const base=`/preview/${pid}/v/${applied.version.id}`;await preview.goto(f.origin+base+'/');const metrics=[];
+  for(const width of [1440,1024,390,360]){await preview.setViewportSize({width,height:960});await preview.locator('body').evaluate(async()=>{await document.fonts.ready;for(let y=0;y<document.documentElement.scrollHeight;y+=innerHeight*.8){scrollTo(0,y);await new Promise(r=>setTimeout(r,60));}scrollTo(0,0);});await preview.locator('img').evaluateAll(async imgs=>{await Promise.all(imgs.map(i=>(i as HTMLImageElement).decode()));});const m=await preview.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,broken:[...document.images].filter(i=>!i.naturalWidth).length}));assert.ok(m.scrollWidth<=width+1);assert.equal(m.broken,0);metrics.push(m);}
+  await preview.getByText(scene.description,{exact:true}).first().waitFor();if(scene.id==='service'){await preview.setViewportSize({width:1440,height:960});await preview.screenshot({path:path.join(shots,'02-service-ordinateur.png'),fullPage:true,animations:'disabled'});}
+  let functional:unknown;
+  if(scene.business==='products'){
+   await preview.goto(f.origin+base+'/products/'+applied.spec.store.product.handle);const form=preview.locator('form[data-product-form]').first();await form.waitFor();const old=await form.locator('input[name="id"]').inputValue();await preview.locator('label.es-chip').filter({hasText:/^Grand$/}).first().click();assert.notEqual(await form.locator('input[name="id"]').inputValue(),old);await form.locator('input[name="quantity"]').fill('2');const add=preview.waitForResponse(r=>r.request().method()==='POST'&&r.url().includes('/cart/add'));await form.locator('[data-add-button]').click();assert.equal((await add).status(),200);const cart=await(await preview.request.get(f.origin+base+'/cart.js')).json();assert.equal(cart.item_count,2);assert.equal(cart.total_price,25800);functional={variantChanged:true,cartCount:2,totalCents:25800};
+  }else{
+   await preview.goto(f.origin+base+'/pages/contact');const form=preview.locator('form').filter({has:preview.locator('input[name="contact[email]"]')}).first();await form.waitFor();assert.equal(await preview.locator('a[href*="/cart"]').count(),0);functional={contactFormPresent:true,realSend:false,appointment:'not_connected_in_original_base'};
+  }
+  const response=await page.request.get(f.origin+`/api/projects/${pid}/theme/export?platform=shopify&version=${applied.version.id}`);if(response.status()!==200)throw Error('Export '+response.status()+': '+(await response.text()).slice(0,500));const entries=unzipSync(await response.body());assert.ok(strFromU8(entries['templates/index.json']).includes(scene.description));assert.ok(entries['templates/cart.json']);assert.ok(entries['templates/product.json']);
+  assert.deepEqual(errors,[]);assert.equal(f.counts().providerHttpCalls,before+1);cases.push({scene:scene.id,version:applied.version,plan,metrics,functional,export:{status:response.status(),verdict:response.headers()['x-es-verdict'],scope:response.headers()['x-es-scope'],installation:'not_tested'},simulatedCalls:1,realProviderCalls:0});
+  const video=page.video();await ctx.close();if(video)fs.renameSync(await video.path(),path.join(videos,'original-native.webm'));
+ }
+ const proof={passed:true,realProviderCalls:0,realCostEur:0,creativeQualityQualified:false,cases};fs.writeFileSync(path.join(f.out,'original-proof.json'),JSON.stringify(proof,null,2));return proof;
+ }catch(error){if(last){await last.screenshot({path:path.join(f.out,'original-failure.png')}).catch(()=>{});fs.writeFileSync(path.join(f.out,'original-failure.json'),JSON.stringify({error:String(error),body:await last.locator('body').innerText().catch(()=>''),realProviderCalls:0},null,2));}throw error;}
+ finally{await browser.close();}
+}
