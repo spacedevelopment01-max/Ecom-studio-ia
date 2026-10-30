@@ -12,6 +12,7 @@ import {useAgentPanel,useAgentUi,useAgentFocus} from './agent-ui-context';
 import {ActiveTabSchema} from '@/lib/orchestrator/conversation/active-context-contract';
 import {ConversationTools} from './conversation-tools';
 import {ConversationResearchTools} from './conversation-research-tools';
+import {ConversationBrandTools} from './conversation-brand-tools';
 import {ConversationRenderTools} from './conversation-render-tools';
 import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
@@ -120,6 +121,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.videoExecution?.enabled&&projectId&&<ConversationVideoTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}
+      {v?.brandExecution?.enabled&&projectId&&<ConversationBrandTools view={v} onChanged={reload}/>}
       {v?.contentExecution?.enabled&&projectId&&<ConversationContentTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}
       {v?.exportExecution?.enabled&&projectId&&<ConversationExportTools view={v}/>}

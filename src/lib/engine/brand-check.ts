@@ -1,3 +1,4 @@
+import {BRAND_CANDIDATE_CALLS} from '../preparation/identity-policy';
 /**
  * Contrôle qualité de la marque (IA ou moteur local) avant qu'elle serve au logo, à la charte et à la boutique :
  * nom déjà porté par une marque connue ou trop générique, allégations non confirmées et formules creuses dans
@@ -163,7 +164,7 @@ export async function aiBrandChecked(b: Parameters<typeof aiBrand>[0], p: Projec
   const words = sourceWords(p);
   const freeAlt = (r.alternatives ?? []).some((a: string) => a.trim() && !famousBrandClash(a) && !copiesSource(a, words) && a.length >= 2 && a.length <= 22);
   const worth = issues.some((i) => i.blocking && (i.code === "hollow" || i.code === "tagline" || (i.code.startsWith("name_") && !(freeAlt && (i.code === "name_taken" || i.code === "name_copied")))));
-  if (worth) {
+  if (worth && BRAND_CANDIDATE_CALLS > 1) {
     const retry = tidyBrand(await aiBrand({ ...b, usageKey: `${b.usageKey}:fix` }, p, guidance, brandFeedback(issues)));
     const after = brandIssues({ ...retry, palette: retry.palette ?? fixPalette(DEFAULT_PALETTE) }, p, retry.strategy as Strategy);
     // On garde la meilleure des deux propositions (moins de défauts bloquants).

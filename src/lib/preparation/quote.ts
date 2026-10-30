@@ -49,7 +49,7 @@ export function createQuote(
   if (!s) throw new HttpError(409, "Parcours absent.");
   requireUpstream(s, step);
   assertFresh(projectId, s, step);
-  if (one("SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')", projectId))
+  if (one("SELECT 1 FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND status IN ('queued','running','paused')", projectId))
     throw new HttpError(409, "Une préparation est déjà en cours.");
   if (action === "analyze") {
     const input = s.stages.brief!.data.input;

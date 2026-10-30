@@ -796,6 +796,10 @@ export function mediaReusable(projectId: string, s = stateOf(projectId)): boolea
   const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
   return !!c && !!m?.slots.length && m.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
+/** Les adaptateurs SYNA restent dans la même cohorte d’essais native. */
+export function preparationAttemptCount(projectId: string, hash: string) {
+  return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0;
+}
 export function queuePreparation(
   projectId: string,
   revision: number,
@@ -812,7 +816,7 @@ export function queuePreparation(
     requireUpstream(s, step);
     if (
       one(
-        "SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')",
+        "SELECT 1 FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND status IN ('queued','running','paused')",
         projectId,
       )
     )
@@ -840,7 +844,7 @@ export function queuePreparation(
       return { state: s, job: null, reused: true };
     if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };
     const analysis = action === "analyze" ? analysisAttempts(projectId, stageOf(s, "brief").data, hash) : null;
-    const attempts = analysis?.attempts ?? (one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0);
+    const attempts = analysis?.attempts ?? preparationAttemptCount(projectId, hash);
     const problem = attemptProblem(attempts, opts.correction, analysis?.historyIncomplete);
     if (problem) throw new HttpError(409, problem);
     const p = loadProject(projectId);
@@ -1013,6 +1017,7 @@ export async function runPreparation(
     const output = await (paid
       ? execute()
       : withAiDisabled("préparation locale sans devis payant", execute));
+    deps.beforeRetain?.();
     if (action === "logo")
       for (const aid of output as string[]) {
         const a = usableAsset(projectId, aid, "logo");
@@ -1044,6 +1049,10 @@ export async function runPreparation(
       );
     }
     const next = commitState(projectId, expectedRevision, (n) => {
+      if (deps.beforeRetain) {
+        ctx.progress(0.9, L("Proposition acquise, vérification avant enregistrement.", "Proposal acquired, checking before saving."));
+        deps.beforeRetain();
+      }
       if (action === "collect") { stageOf(n, "media").status = "draft"; }
       else if (action === "logo") {
         // Renouveler les propositions ne remplace ni l'identité active ni ses validations.
@@ -1066,7 +1075,10 @@ export async function runPreparation(
           reviewed: false,
           inputHash: inputHash(n, "media"),
         });
-      } else draft(n, step, output as any);
+      } else {
+        draft(n, step, output as any);
+        n.stages[step]!.producedByJobId = ctx.job.id;
+      }
       if (deps.simulation) n.simulation = true;
       delete n.pending;
       delete n.error;

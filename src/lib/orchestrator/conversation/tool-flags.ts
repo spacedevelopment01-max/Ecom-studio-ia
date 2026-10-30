@@ -25,3 +25,5 @@ export const conversationSocialEnabled=()=>conversationToolsEnabled()&&conversat
 export const conversationContentEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_CONTENT==='1';
 
 export const conversationOriginalEnabled=()=>conversationCompositionEnabled()&&process.env.STUDIO_CONVERSATION_ORIGINAL==='1';
+
+export const conversationBrandEnabled=()=>conversationToolsEnabled()&&process.env.STUDIO_CONVERSATION_BRAND==='1';

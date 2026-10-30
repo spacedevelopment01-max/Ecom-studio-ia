@@ -81,6 +81,7 @@ export type ConversationView = {
   exportExecution?: {enabled:true};
   renderExecution?: {enabled:true};
   researchExecution?: {enabled:true};
+  brandExecution?: {enabled:true};
   catalogueExecution?: {enabled:true};
   imageExecution?: {enabled:true};
   logoExecution?: {enabled:true};

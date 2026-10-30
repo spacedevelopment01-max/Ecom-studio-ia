@@ -366,6 +366,19 @@ jobs:
           path: reports/ci-agent211-native-content
           if-no-files-found: warn
 
+      - name: Proposition de marque native depuis SYNA (simulation HTTP isolée)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-brand --brand-ui
+      - name: Preuves de la proposition de marque SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-native-brand
+          path: reports/ci-agent211-native-brand
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest
