@@ -23,6 +23,8 @@ export type CallKind = "write_page" | "write_article" | "write_meta" | "review" 
 export type Paid<T> = { value: T; costMicro: number };
 
 export type SeoV2Deps = {
+  /** Observer of a version already committed by the native store, not a generation callback. */
+  onRetained?: (saved: {docKey: string; version: import("./store").ContentVersion}) => void;
   context?: ContentBrief["context"];
   /** IA de rédaction disponible pour ce compte (forfait, IA active, fournisseur configuré). */
   canWrite: boolean;

@@ -15,6 +15,7 @@ import {ConversationResearchTools} from './conversation-research-tools';
 import {ConversationRenderTools} from './conversation-render-tools';
 import {ConversationExportTools} from './conversation-export-tools';
 import {ConversationThemeTools} from './conversation-theme-tools';
+import {ConversationContentTools} from './conversation-content-tools';
 import {ConversationStrategyChoices} from './conversation-strategy-choices';
 import {ConversationCatalogueTools} from './conversation-catalogue-tools';
 import {ConversationImageTools} from './conversation-image-tools';
@@ -119,6 +120,7 @@ export function ConversationPanel({projectId,subscriptionKey,compact=false,onCre
       {v?.videoExecution?.enabled&&projectId&&<ConversationVideoTools view={v} onChanged={reload}/>}
       {v?.execution?.enabled&&projectId&&<ConversationTools view={v} onChanged={reload}/>}
       {v?.researchExecution?.enabled&&projectId&&<ConversationResearchTools view={v} onChanged={reload}/>}
+      {v?.contentExecution?.enabled&&projectId&&<ConversationContentTools view={v} onChanged={reload}/>}
       {v?.themeExecution?.enabled&&projectId&&<ConversationThemeTools view={v} onChanged={reload}/>}
       {v?.exportExecution?.enabled&&projectId&&<ConversationExportTools view={v}/>}
       {v?.renderExecution?.enabled&&projectId&&<ConversationRenderTools view={v}/>}

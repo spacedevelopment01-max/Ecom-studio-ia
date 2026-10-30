@@ -85,6 +85,7 @@ export type ConversationView = {
   imageExecution?: {enabled:true};
   logoExecution?: {enabled:true};
   socialExecution?:{enabled:true};
+  contentExecution?:{enabled:true};
   videoExecution?: {enabled:true;generation?:true;voice?:true;clip?:true};
   activeContext?: {enabled:true;current:ReturnType<typeof import('./active-context').observedActiveContext>};
   strategyChoices?:ReturnType<typeof import("./strategy-choices").strategyChoicesView>;

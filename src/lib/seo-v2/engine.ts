@@ -47,6 +47,8 @@ export const SEO_V2_VERSION = "lot1.1";
 export const DEFAULT_SEO_CAP_EUR = 0.6;
 
 export type ContentRequestV2 = {
+  /** Server-selected contract: an explicitly requested AI result cannot become a local substitute. */
+  requireAi?: boolean;
   /** Page prévue identifiée par l’orchestrateur amont ; aucune création de thème requise. */
   target?: {page:PageRef;serviceIndex?:number};
   type: ContentType;
@@ -107,6 +109,7 @@ async function runContentEngineV2InScope(ctx: JobContext | null, projectId: stri
   // Articles écrits par l'IA : inclus selon le forfait (comme le blog existant) ; sinon brouillon local gratuit.
   const blogBlocked = req.type === "blog_article" && deps.canWrite && !blogAiAllowed(p.userId, p.id);
   if (blogBlocked) deps = localOnlyDeps();
+  if(req.requireAi&&!req.planOnly&&(!deps.canWrite||!deps.canReview))throw new UserFacingError(L("Rédaction et relecture IA indisponibles. Aucun texte local de remplacement ; vos acquis restent conservés.","AI writing and review are unavailable. No local replacement; acquired work is kept."),"CONTENT_AI_UNAVAILABLE");
   const capMicro = Math.round((req.maxCostEur ?? DEFAULT_SEO_CAP_EUR) * EUR);
   const cur = currentTrace();
   const flight = runKey({ marketingStrategy: strategyStamp(projectId), projectId, req, product: p.product, services: p.services, catalog: p.catalog, brand: p.brand, context: deps.context });
@@ -172,7 +175,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   if (memo) {
     const saved = contentVersionDoc(p.id, memo.docKey, memo.version);
     const latest = latestContent(p.id, memo.docKey);
-    if (saved) {
+    if (saved && (!req.requireAi || saved.meta2.by === "ai")) {
       let key = memo.docKey;
       // Le mémo désigne une version précise, jamais la dernière rédaction d'un autre contexte.
       if (!latest || JSON.stringify(latest.doc) !== JSON.stringify(saved)) {
@@ -194,6 +197,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
     try {
       const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion });
       expectedVersion = v.version;
+      deps.onRetained?.({docKey,version:v});
       return v;
     } catch (e) {
       if (!(e instanceof ContentConflict)) throw e;
@@ -202,6 +206,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       notes.push("Le contenu a changé pendant la rédaction : votre version est conservée, la tentative est enregistrée séparément.");
       const v = saveContentVersion(p.id, docKey, candidate, { verdict, note, expectedVersion: 0 });
       expectedVersion = v.version;
+      deps.onRetained?.({docKey,version:v});
       return v;
     }
   };
@@ -248,6 +253,8 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
       providerStopped = true;
     }
   } else if (!deps.canWrite) notes.push("IA non disponible pour ce compte : rédaction locale à partir des faits (gratuit)");
+
+  if(req.requireAi&&by!=="ai")throw new UserFacingError(L("Aucun texte IA exploitable n’a été enregistré pour cette demande. La tâche s’arrête sans remplacement local ; les versions précédentes sont conservées.","No usable AI copy was saved for this request. Stopping without local replacement; previous versions are kept."),"CONTENT_AI_RESULT_MISSING");
 
   // 8-9. Contrôles, relecture, barrière, reprises ciblées (défaut identifié seulement).
   const policy = POLICIES[DELIVERABLE_OF[req.type]];
@@ -316,6 +323,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   // texte local, construit sur les seuls faits, le remplace.
   if (by === "ai" && decision && (decision.verdict === "REJECTED" || decision.verdict === "RETRY") && decision.blockingCodes.some((c) => ["invented_claim", "invented_source", "wrong_fact", "unconfirmed_commercial", "forbidden_claim", "invented_link"].includes(c))) {
     retain(doc, decision.verdict, `essai écarté — ${decision.reason}`);
+    if(req.requireAi)throw new UserFacingError(L("Le texte IA reste refusé : tentative conservée pour correction, aucune version locale ne remplace vos textes utilisables.","The AI copy remains rejected: the attempt is kept for correction; no local version replaces usable copy."),"CONTENT_AI_COPY_REJECTED");
     notes.push(`texte IA écarté (${decision.blockingCodes.join(", ")}) : texte local construit sur les faits vérifiés`);
     doc = local;
     by = "local";
