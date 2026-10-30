@@ -1,0 +1,142 @@
+{
+  "schema": "211-CI-separated-proof-1",
+  "codeCommit": "611870b1db49f02edf2ded8e6772ae2e98b38874",
+  "base": "60de649997faca9d6e107872cf61790c7b9ce8f1",
+  "failureTiming": {
+    "source": "completed_job_logs",
+    "jobId": 124208955554,
+    "runId": 41098085980,
+    "head": "1faf4071de16d5d6496428dc6be6d1a30767db1c",
+    "firstLogAt": "2026-10-30T17:21:22.6005195Z",
+    "cancelLogAt": "2026-10-30T19:01:38.2312556Z",
+    "elapsedLogMinutes": 100.26051666666666,
+    "configuredTimeoutMinutes": 100,
+    "lastActiveCommand": "--social-reuse-ui",
+    "lastRecipeStartedAt": "2026-10-30T19:01:14.6290083Z",
+    "unitMinutes": 31.7,
+    "themeCheckMinutes": 26.3
+  },
+  "commandPreservation": {
+    "previousCI": 41098085980,
+    "cancelledJob": 124208955554,
+    "previousTimeoutMinutes": 100,
+    "newJobTimeouts": {
+      "verifications": 5,
+      "tests": 100,
+      "natif": 100,
+      "image-docker": 30
+    },
+    "requiredStatusNameUnchanged": true,
+    "requiredGateWaitsFor": [
+      "tests",
+      "natif",
+      "image-docker"
+    ],
+    "nativeRecipesPreservedExactly": 26,
+    "allPreviousCommandsPreserved": true,
+    "extraSetupOnly": {
+      "npm ci": 1,
+      "sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg": 1
+    },
+    "hostBuildCount": 1,
+    "dockerUnchanged": true,
+    "applicationChanges": false
+  },
+  "checks": [
+    {
+      "name": "CI211-gate-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/ci211-verdict-complet.test.ts"
+      ],
+      "head": "60de649997faca9d6e107872cf61790c7b9ce8f1",
+      "startedAt": "2026-10-30T19:10:52.903910+00:00",
+      "finishedAt": "2026-10-30T19:11:00.639900+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "7ad5e09fd177a71b8e87c0ab35565df880bae129b8f3bcb044d357f3a5fe9559"
+    },
+    {
+      "name": "CI211-gate-green",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/ci211-verdict-complet.test.ts",
+        "tests/ci-native-social-placement.test.ts",
+        "tests/ci-native-production-placement.test.ts"
+      ],
+      "head": "60de649997faca9d6e107872cf61790c7b9ce8f1",
+      "startedAt": "2026-10-30T19:15:23.240939+00:00",
+      "finishedAt": "2026-10-30T19:15:23.748591+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "2acceaeb0a60d0cb7b8ddb60c908d85532d949b98f8ec46424168176a6ae8240"
+    },
+    {
+      "name": "CI211-types",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "head": "60de649997faca9d6e107872cf61790c7b9ce8f1",
+      "startedAt": "2026-10-30T19:15:42.377664+00:00",
+      "finishedAt": "2026-10-30T19:16:12.473170+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "CI211-runtime-native-smoke",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts"
+      ],
+      "head": "60de649997faca9d6e107872cf61790c7b9ce8f1",
+      "startedAt": "2026-10-30T19:17:17.191462+00:00",
+      "finishedAt": "2026-10-30T19:17:23.576686+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "d0946ea5b7bd1bd7280632c1a75f8098f6ecd31120e94199eac327a49dd499e1"
+    }
+  ],
+  "runtimeRecovery": {
+    "incident": "Initial CI test selected first workflow command npm ci instead of a missing named verdict step. Generated shared dependencies removed; application source/data/media not touched.",
+    "restoredFromExactLock": {
+      "package.json": "1016b9fcfe0960c38eb43d1eb670d79921241fbfcb5b4fb55c97ffb06f328751",
+      "package-lock.json": "6850eb93b7cb8c8b436d621b8e33c3ec8c341e0439fd5d224214336d89c62cbf"
+    },
+    "generatedRuntime": "/tmp/ecs-211-runtime-restored/node_modules",
+    "readOnlySourceGitStatus": "",
+    "nativeChecks": [
+      "Next loaded",
+      "TypeScript loaded",
+      "YAML parsed",
+      "Sharp loaded",
+      "SQLite :memory: SELECT42",
+      "ONNX CPU module loaded without model/inference"
+    ],
+    "optionalCudaDownloaded": false,
+    "notes": [
+      "First installation in workspace hit ENOSPC, restored in separate temporary filesystem.",
+      "SQLite compiled with task-specific node-gyp directory.",
+      "No CUDA required or newly enabled; documented vendor skip flag only for temporary installation.",
+      "Interrupted generated directories retained; project package and lock unchanged."
+    ],
+    "testGuard": "Explicit verdict name and closed three-line status-comparison grammar required BEFORE execution.",
+    "realProviderCalls": 0
+  },
+  "appSourcesUnchanged": true,
+  "finalCI": "required_not_yet_completed",
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}
