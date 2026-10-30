@@ -29,6 +29,7 @@ const PLAN_ERROR_EN:Record<string,string>={
  'média absent ou changé':'The media is missing or has changed.',
  'image Shopify prioritaire : remplacement via son éditeur':'A Shopify image takes priority. Replace it in the Shopify editor.',
  'lien natif attendu':'A supported native link is required.',
+ 'une image acquise est nécessaire pour ce composant ; choisissez sinon un composant texte':'This component needs an acquired image; otherwise choose a text component.',
  'ordre natif non obtenu':'The native section order was not obtained.',
 };
 export class CompositionPlanError extends Error{

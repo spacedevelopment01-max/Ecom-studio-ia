@@ -84,6 +84,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
     }
    }
    apply(ops);
+   if(plan.mode==='original'&&instance.type==='image-with-text'){const saved=containerOf(spec,page.template)!.sections[sid];if(!saved.settings.image&&!saved.settings.image_asset)fail('une image acquise est nécessaire pour ce composant ; choisissez sinon un composant texte');}
   }
   // Les suppressions/mouvements suivent les mêmes gates natifs que l’éditeur, sans override de verrou.
   for(const sid of original.order)if(!order.includes(sid))apply([{op:'remove_section',template:page.template,section:sid}]);
