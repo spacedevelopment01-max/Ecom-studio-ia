@@ -9,12 +9,14 @@ import type {ThemeSpec} from '../src/lib/theme/spec';
 import type {CompositionPlan} from '../src/lib/theme/composition/contract';
 import type {compositionContext} from '../src/lib/theme/composition/server';
 import {COMPOSITION_SCENES} from './composition211-ui-fixtures';
-type F={origin:string;out:string;account:()=>Promise<User>;project:(u:User,b:'products'|'services')=>string;login:(u:User)=>Promise<{cookie:string}>;counts:()=>{providerHttpCalls:number};seed:(pid:string,s:typeof COMPOSITION_SCENES[number])=>Promise<unknown>;describe:typeof compositionContext;inspect:(pid:string)=>{version:{id:string;number:number};spec:ThemeSpec;versions:unknown[];exportCheck?:{stats?:Record<string,number>;issues?:string[];scope?:string;unmeasured?:string[]}}|null;setFixture:(reply:Record<string,unknown>)=>void};
+type F={origin:string;out:string;account:()=>Promise<User>;project:(u:User,b:'products'|'services')=>string;login:(u:User)=>Promise<{cookie:string}>;counts:()=>{providerHttpCalls:number};seed:(pid:string,s:Parameters<typeof import('./original211-fixtures').seedOriginalProject>[1])=>Promise<unknown>;describe:typeof compositionContext;inspect:(pid:string)=>{version:{id:string;number:number};spec:ThemeSpec;versions:unknown[];exportCheck?:{stats?:Record<string,number>;issues?:string[];scope?:string;unmeasured?:string[]}}|null;setFixture:(reply:Record<string,unknown>)=>void};
 export async function verifyOriginalBrowser(f:F){
  const shots=path.join(f.out,'original-captures'),videos=path.join(f.out,'original-videos');fs.mkdirSync(shots,{recursive:true});fs.mkdirSync(videos,{recursive:true});
  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{}),args:['--no-sandbox','--disable-background-networking']});
+ const heldout={id:'holdout',business:'services' as const,name:'Partitions numérisées — RECETTE',offer:'Numérisation de partitions anciennes',description:'Numérisation des partitions confiées par les ensembles musicaux. Le format des fichiers, le périmètre et le devis sont à convenir.',color:'#4b4565'};
+ const scenes=process.argv.includes('--original-holdout-ui')?[heldout]:[...COMPOSITION_SCENES.filter(s=>s.id!=='holdout'),heldout];
  const cases:unknown[]=[];let last:import('playwright').Page|null=null;
- try{for(const scene of COMPOSITION_SCENES){
+ try{for(const scene of scenes){
   const u=await f.account(),pid=f.project(u,scene.business);await f.seed(pid,scene);assert.equal(f.inspect(pid),null);
   const session=await f.login(u),ctx=await browser.newContext({viewport:{width:scene.id==='mono'?390:1440,height:960},locale:'fr-FR',reducedMotion:'reduce',...(scene.id==='mono'?{recordVideo:{dir:videos,size:{width:390,height:960}}}:{})});
   await ctx.addCookies(session.cookie.split('; ').map(raw=>{const n=raw.indexOf('=');return{name:raw.slice(0,n),value:raw.slice(n+1),url:f.origin};}));

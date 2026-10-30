@@ -16,6 +16,7 @@ if(!fs.existsSync('.next/BUILD_ID'))throw Error('Production build required');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
+if(process.argv.includes('--original-holdout-ui'))process.argv.push('--original-ui');
 if(process.argv.includes('--targeted-copy-ui'))process.argv.push('--catalogue-copy-ui');
 if(process.argv.includes('--catalogue-copy-ui'))process.argv.push('--content-ui');
 if(process.argv.includes('--content-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTENT'])process.env[key]='1';
