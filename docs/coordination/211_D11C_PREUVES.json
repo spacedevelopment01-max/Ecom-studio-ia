@@ -135,6 +135,10 @@
     "acquired-native.jpg": {
       "bytes": 298,
       "sha256": "b0e4e9fbb2a046d5ce215783ec352b15965f3e37cd79acb78cd4b1096735b8ee"
+    },
+    "D11c-preserved-approved-complete.txt": {
+      "bytes": 4467,
+      "sha256": "2858b3042475d7d7191261610231e4fb5c8e0a8523eda0f81155ac096aab0f2b"
     }
   },
   "ciCorrection": {
@@ -152,5 +156,28 @@
     "workflowIdenticalTo": "d62aa36c65c5d597b3795838ff615e0207e2dfb7",
     "existingStepsRetained": 51,
     "nativeTestSeparateFile": true
+  },
+  "ciFirstResult": {
+    "run": 41060452002,
+    "conclusion": "failure",
+    "passed": 4142,
+    "skipped": 31,
+    "failed": 1
+  },
+  "preservedApprovedCorrection": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/mission160-service-scopes.test.ts",
+      "tests/social-preserved-delivery.test.ts",
+      "tests/social-production-confirmed-version.test.ts"
+    ],
+    "head": "2bfc6a294e14365ed7b09b8e92ec0a3e6146e7b4",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "logSha256": "2858b3042475d7d7191261610231e4fb5c8e0a8523eda0f81155ac096aab0f2b",
+    "compiledNextRoutesUnchanged": true,
+    "newHelperWorkerOnly": true
   }
 }
