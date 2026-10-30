@@ -1,0 +1,282 @@
+{
+  "E7-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "-t",
+      "modern|historical|changed variant"
+    ],
+    "head": "4807c5acf8acecf5769d802bb5cb1d13a06fee98",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:06:41.818579+00:00",
+    "finishedAt": "2026-10-30T17:06:46.662864+00:00",
+    "logSha256": "a256b1a6c31596fa3373e1b71cc6195f90b5b45c41bafcc632d841f550fda309",
+    "sourceHashes": {
+      "tests/conversation211-content.test.ts": "1d59bc64d59bcd3c3c54db673dcac2b24965589c3a6fe5b8c15614f7b0f1045b"
+    }
+  },
+  "E7-targeted-1": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/seo-v2-engine.test.ts"
+    ],
+    "head": "4807c5acf8acecf5769d802bb5cb1d13a06fee98",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:07:40.635005+00:00",
+    "finishedAt": "2026-10-30T17:07:47.368743+00:00",
+    "logSha256": "1f6a2634eaf8e159dd07a5380410825e9a2bdd0aeceff3587871b7faffa143d4",
+    "sourceHashes": {
+      "src/app/api/projects/[id]/content/v2/[docKey]/route.ts": "845f9d95ae7b1e99ea4d4a8b095f97058149cb0457d068b3c79b09838a016eb2",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "8ec7c1f301a117080523c4ed1da238e6c304666d63c930f5658c2265fbcef0d2",
+      "src/lib/seo-v2/doc.ts": "232a41186d10437808554c4b33572a685c8ed6d685acd46dba53f1989e11d1b4",
+      "src/lib/seo-v2/engine.ts": "fc5bdef09b27d009e7c75bb6f707c296655b9e9a1f66e169ce025d655015beed",
+      "src/lib/seo-v2/subject.ts": "06d07331bd3155595b07a4091a6fa4f5c2c0ff6d1f51c1f45a5a630a857e27b1",
+      "src/lib/seo-v2/types.ts": "bec046bdd6fb5c4be5cfc6a62b73fffd2d9fc2891172b311c9418d8e415c32a6",
+      "tests/conversation211-content.test.ts": "1d59bc64d59bcd3c3c54db673dcac2b24965589c3a6fe5b8c15614f7b0f1045b"
+    }
+  },
+  "E7-targeted-2": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/seo-v2.test.ts"
+    ],
+    "head": "4807c5acf8acecf5769d802bb5cb1d13a06fee98",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:08:21.663132+00:00",
+    "finishedAt": "2026-10-30T17:08:28.310232+00:00",
+    "logSha256": "c3df00af1e9c2fc8a5d7c1f208060d29fbb4131a06d5a430b621a0d27be29136",
+    "sourceHashes": {
+      "src/app/api/projects/[id]/content/v2/[docKey]/route.ts": "640c73d7e2e849de70848d0a28cd204c86b93369ad8782edfd96cc1933bbac71",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "8ec7c1f301a117080523c4ed1da238e6c304666d63c930f5658c2265fbcef0d2",
+      "src/lib/seo-v2/doc.ts": "3589271e57182cc5dac25e982db32d77c65f9a9b094c4827347c12f5c6ec089a",
+      "src/lib/seo-v2/engine.ts": "7c23bbb4e3f6ac2c51a41c78e75859c72d0cb434c502e78340087e0a39bccb31",
+      "src/lib/seo-v2/subject-contract.ts": "3cf33e32997a5ff2372ae51b9e355ac6116ae61f0c8cd93f080e425d3d0437f2",
+      "src/lib/seo-v2/subject.ts": "96e52a37f966ae635f8e5111e13908347a46c876bf27d51d60778f0a46cd5982",
+      "src/lib/seo-v2/types.ts": "bec046bdd6fb5c4be5cfc6a62b73fffd2d9fc2891172b311c9418d8e415c32a6",
+      "tests/conversation211-content.test.ts": "78f0a48be3300dda841c822ce003c6e16527c0b6bebee2883173d600ae457d70"
+    }
+  },
+  "E7-targeted-stable": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/content211-wire.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/seo-v2.test.ts"
+    ],
+    "head": "4807c5acf8acecf5769d802bb5cb1d13a06fee98",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:11:58.497451+00:00",
+    "finishedAt": "2026-10-30T17:12:06.070963+00:00",
+    "logSha256": "ed1b2cf23c895240b550071fa9eb10a0ac6c39e1da055a4186376d78dd009887",
+    "sourceHashes": {
+      ".github/workflows/ci.yml": "7efa4a9121161fe19e00c6a77b431e8acaa87aa0178e1cf147e0ed8849c8508f",
+      "scripts/verify-agent211-build.ts": "b2efb84a5d37a3795dbd91a6a8a5ea7f46aa9158f1fe7605fd3f8e93daeed6eb",
+      "scripts/verify-agent211-content-ui.ts": "49087ec3d7064c8bc5802a9427daf60445feb961d36a565930fb33e3b37467b9",
+      "src/app/api/projects/[id]/content/v2/[docKey]/route.ts": "640c73d7e2e849de70848d0a28cd204c86b93369ad8782edfd96cc1933bbac71",
+      "src/components/studio/conversation-content-tools.tsx": "ac6844e4a386b7af0253e2ef9c9aded14de819944d1324e83842594bd41da6fb",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "f077791f7f14e4d200f263c25eb3e351a52a0c38f626ad4f9499f4fd5aec6168",
+      "src/lib/seo-v2/doc.ts": "3589271e57182cc5dac25e982db32d77c65f9a9b094c4827347c12f5c6ec089a",
+      "src/lib/seo-v2/engine.ts": "70db722ad01235dfe4cb2e58ae0f67f0063671b6d29c7efbc0221737deb2f4b7",
+      "src/lib/seo-v2/quality.ts": "c23e5c20b026cabcf9090daf1c6d1e3a26c98b53970a6acff40e77825a1163a1",
+      "src/lib/seo-v2/subject-contract.ts": "3cf33e32997a5ff2372ae51b9e355ac6116ae61f0c8cd93f080e425d3d0437f2",
+      "src/lib/seo-v2/subject.ts": "96e52a37f966ae635f8e5111e13908347a46c876bf27d51d60778f0a46cd5982",
+      "src/lib/seo-v2/types.ts": "bec046bdd6fb5c4be5cfc6a62b73fffd2d9fc2891172b311c9418d8e415c32a6",
+      "tests/conversation211-content.test.ts": "73a627194dc61d25fffff2ece1d6bdc1eff47b7819efec085c7ae7f382e1ca8c"
+    }
+  },
+  "E7-types-stable": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "head": "4807c5acf8acecf5769d802bb5cb1d13a06fee98",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:12:06.053292+00:00",
+    "finishedAt": "2026-10-30T17:12:20.614728+00:00",
+    "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+    "sourceHashes": {
+      ".github/workflows/ci.yml": "7efa4a9121161fe19e00c6a77b431e8acaa87aa0178e1cf147e0ed8849c8508f",
+      "scripts/verify-agent211-build.ts": "b2efb84a5d37a3795dbd91a6a8a5ea7f46aa9158f1fe7605fd3f8e93daeed6eb",
+      "scripts/verify-agent211-content-ui.ts": "49087ec3d7064c8bc5802a9427daf60445feb961d36a565930fb33e3b37467b9",
+      "src/app/api/projects/[id]/content/v2/[docKey]/route.ts": "640c73d7e2e849de70848d0a28cd204c86b93369ad8782edfd96cc1933bbac71",
+      "src/components/studio/conversation-content-tools.tsx": "ac6844e4a386b7af0253e2ef9c9aded14de819944d1324e83842594bd41da6fb",
+      "src/lib/orchestrator/conversation/content-tool-execution.ts": "f077791f7f14e4d200f263c25eb3e351a52a0c38f626ad4f9499f4fd5aec6168",
+      "src/lib/seo-v2/doc.ts": "3589271e57182cc5dac25e982db32d77c65f9a9b094c4827347c12f5c6ec089a",
+      "src/lib/seo-v2/engine.ts": "70db722ad01235dfe4cb2e58ae0f67f0063671b6d29c7efbc0221737deb2f4b7",
+      "src/lib/seo-v2/quality.ts": "c23e5c20b026cabcf9090daf1c6d1e3a26c98b53970a6acff40e77825a1163a1",
+      "src/lib/seo-v2/subject-contract.ts": "3cf33e32997a5ff2372ae51b9e355ac6116ae61f0c8cd93f080e425d3d0437f2",
+      "src/lib/seo-v2/subject.ts": "96e52a37f966ae635f8e5111e13908347a46c876bf27d51d60778f0a46cd5982",
+      "src/lib/seo-v2/types.ts": "bec046bdd6fb5c4be5cfc6a62b73fffd2d9fc2891172b311c9418d8e415c32a6",
+      "tests/conversation211-content.test.ts": "73a627194dc61d25fffff2ece1d6bdc1eff47b7819efec085c7ae7f382e1ca8c"
+    }
+  },
+  "E7-build": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "head": "2229b66b07bb3a4056d39fb915ed62e91e86ce81",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:12:54.432919+00:00",
+    "finishedAt": "2026-10-30T17:13:57.548657+00:00",
+    "logSha256": "71153584055fd393336c35d0397613270cf879ae38f816c517027a8e9ebe3706",
+    "sourceHashes": {}
+  },
+  "E7-browser": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E7-catalogue-browser-proof",
+      "--catalogue-copy-ui"
+    ],
+    "head": "2229b66b07bb3a4056d39fb915ed62e91e86ce81",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:14:05.000960+00:00",
+    "finishedAt": "2026-10-30T17:14:25.845192+00:00",
+    "logSha256": "7b3714d2b1876a74c30c9e90bc5fdcf7cf3676f3f33469b7172f8764754866c0",
+    "sourceHashes": {}
+  },
+  "E7-category-red": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "-t",
+      "unknown catalogue category"
+    ],
+    "head": "2229b66b07bb3a4056d39fb915ed62e91e86ce81",
+    "state": "failed",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:15:27.839143+00:00",
+    "finishedAt": "2026-10-30T17:15:32.132675+00:00",
+    "logSha256": "7af8e20e1830ef88eeafb4da4ef07a739e06d822a67fad93305f1572ab3a3705",
+    "sourceHashes": {
+      "tests/conversation211-content.test.ts": "194e9841bf989dafc6ffe391940320446e3e80798d58af79fbf2c8fb1ee767a9"
+    }
+  },
+  "E7-targeted-category-fixed": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-content.test.ts",
+      "tests/content211-required-ai.test.ts",
+      "tests/content211-wire.test.ts",
+      "tests/seo-v2-engine.test.ts",
+      "tests/seo-v2.test.ts"
+    ],
+    "head": "2229b66b07bb3a4056d39fb915ed62e91e86ce81",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:15:48.908787+00:00",
+    "finishedAt": "2026-10-30T17:15:57.950272+00:00",
+    "logSha256": "35ebfc3d2921a9df620cf5ae2c3dd0df2ec9a6155866ace0906a1ae08500f9d3",
+    "sourceHashes": {
+      "scripts/verify-agent211-content-ui.ts": "e8511c3cfbfaf29857bc8b0d8b7e402891c9a65fa2b78d4ab9fee3bb2fb80f91",
+      "src/lib/seo-v2/engine.ts": "81e0ec398e5f3657e550846b8516df3c3e5fd50bd205b70af7a860b67e37dfb4",
+      "src/lib/seo-v2/facts.ts": "24fb2f46a5773d2f2d011ef476951551b20d41af36a1c7eec5fb053fa7b85e39",
+      "tests/conversation211-content.test.ts": "194e9841bf989dafc6ffe391940320446e3e80798d58af79fbf2c8fb1ee767a9"
+    }
+  },
+  "E7-types-category-fixed": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "head": "2229b66b07bb3a4056d39fb915ed62e91e86ce81",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "startedAt": "2026-10-30T17:15:50.399106+00:00",
+    "finishedAt": "2026-10-30T17:16:05.949400+00:00",
+    "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+    "sourceHashes": {
+      "scripts/verify-agent211-content-ui.ts": "e8511c3cfbfaf29857bc8b0d8b7e402891c9a65fa2b78d4ab9fee3bb2fb80f91",
+      "src/lib/seo-v2/engine.ts": "81e0ec398e5f3657e550846b8516df3c3e5fd50bd205b70af7a860b67e37dfb4",
+      "src/lib/seo-v2/facts.ts": "24fb2f46a5773d2f2d011ef476951551b20d41af36a1c7eec5fb053fa7b85e39",
+      "tests/conversation211-content.test.ts": "194e9841bf989dafc6ffe391940320446e3e80798d58af79fbf2c8fb1ee767a9"
+    }
+  },
+  "E7-build-final": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "head": "1b5161fb3178063f866cc915377dac277ee466f6",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:16:49.151652+00:00",
+    "finishedAt": "2026-10-30T17:17:51.924149+00:00",
+    "logSha256": "83e0bfea5e2c1ab1fb95de1403d8cb469e975c476ce3a56b4a8a28734982c886",
+    "sourceHashes": {}
+  },
+  "E7-browser-final": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/E7-catalogue-final-proof",
+      "--catalogue-copy-ui"
+    ],
+    "head": "1b5161fb3178063f866cc915377dac277ee466f6",
+    "state": "passed",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "startedAt": "2026-10-30T17:18:11.482007+00:00",
+    "finishedAt": "2026-10-30T17:18:31.268419+00:00",
+    "logSha256": "9c9b31bf7b7452585af0d0c57a2a70c4699a73183335d8e49b45544ba3eaf6d4",
+    "sourceHashes": {}
+  }
+}
