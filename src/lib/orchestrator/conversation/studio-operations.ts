@@ -24,7 +24,7 @@ export const STUDIO_OPERATIONS:readonly Definition[]=[
  op('images.upload','images','Importer ses images','Upload images'),
  op('images.search','images','Chercher des photos libres','Search stock photos'),
  op('images.generate','images','Créer de 1 à 5 images IA distinctes','Generate 1 to 5 distinct AI images','images'),
- op('images.correct','images','Corriger une image','Revise an image'),
+ op('images.correct','images','Corriger une image avec sa source et son devis','Revise an image with its source and quote','images'),
  op('videos.motion','videos','Monter les images acquises avec mouvement local','Edit acquired images with local motion','videos'),
  op('videos.restore','videos','Restaurer une version vidéo conservée','Restore a retained video version','videos'),
  op('videos.plan','videos','Préparer une vidéo filmée par IA','Plan an AI-filmed video'),
