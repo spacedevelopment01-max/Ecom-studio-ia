@@ -392,6 +392,31 @@ jobs:
           path: reports/ci-agent211-native-blog
           if-no-files-found: warn
 
+      - name: Choix puis validation du logo natif depuis SYNA (HTTP simulé)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-logo-selection --logo-selection-ui
+      - name: Preuves du choix natif du logo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-logo-selection
+          path: reports/ci-agent211-logo-selection
+          if-no-files-found: warn
+      - name: Recette commune produit et service dans SYNA (HTTP simulé)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-closure --closure-ui
+      - name: Preuves du parcours commun
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-closure
+          path: reports/ci-agent211-closure
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest

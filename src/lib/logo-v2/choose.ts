@@ -213,12 +213,13 @@ async function applyProposal(ctx: JobContext | null, projectId: string, assetId:
  * Choix du CLIENT : décision du Project Brain, puis application et verrou (aucun traitement automatique ne remplacera
  * ce logo). Le choix du client vaut contrôle humain : une version du studio choisie par lui devient son logo.
  */
-export async function chooseLogoV2(ctx: JobContext | null, projectId: string, assetId: string) {
+export type LogoApplicationGuards = { beforeFinalApply?: () => void; deferInitialCreation?: boolean };
+export async function chooseLogoV2(ctx: JobContext | null, projectId: string, assetId: string, guards?: LogoApplicationGuards) {
   requirePlan(null, projectId);
   const chosen = directionOf(projectId, assetId);
   if (chosen) {
     if (ctx?.payload.selectionBrandHash && ctx.payload.selectionBrandHash !== stableHash("direction-active", loadProject(projectId).brand)) throw new UserFacingError("L’identité a été retouchée après votre validation. Vos modifications sont conservées ; resélectionnez la proposition avant de continuer.");
-    return applyCompleteDirection(ctx, projectId, assetId);
+    return applyCompleteDirection(ctx, projectId, assetId, guards);
   }
 
   const { meta, verdict } = proposalOf(projectId, assetId, { byClient: true });
@@ -305,7 +306,7 @@ async function reapplyArtwork(ctx: JobContext | null, projectId: string, assetId
 }
 
 /** Point commun préparation / Marque / chat. Aucun appel payant lors de la sélection. */
-async function applyCompleteDirection(ctx: JobContext | null, projectId: string, assetId: string) {
+async function applyCompleteDirection(ctx: JobContext | null, projectId: string, assetId: string, guards?: LogoApplicationGuards) {
   const { series, direction } = directionOf(projectId, assetId)!;
   if (series.status !== "complete" || series.directions.length !== 3) throw new UserFacingError("Série incomplète : trois directions complètes requises avant choix.");
   const p = loadProject(projectId), identity = direction.identity;
@@ -316,7 +317,10 @@ async function applyCompleteDirection(ctx: JobContext | null, projectId: string,
   const key = `brand.direction.application.${series.id}.${direction.id}`;
   const done = json<{ main: string; identityHash: string } | null>(one<{ value: string }>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?", projectId, key)?.value, null);
   const hash = stableHash("direction", identity);
-  if (done && done.identityHash === hash && p.brand?.artIdentity?.directionId === direction.id && p.brand.logo.assetId === done.main) return { main: done.main, territory: direction.id, reused: true };
+  if (done && done.identityHash === hash && p.brand?.artIdentity?.directionId === direction.id && p.brand.logo.assetId === done.main) {
+    tx(() => { guards?.beforeFinalApply?.(); completeDirectionSelection(projectId, assetId); });
+    return { main: done.main, territory: direction.id, reused: true };
+  }
   const prior = stateOf(projectId);
   if (prior?.stages.brand) {
     requireUpstream(prior, "brand");
@@ -331,6 +335,7 @@ async function applyCompleteDirection(ctx: JobContext | null, projectId: string,
   // doit être issu du NOUVEAU logo principal et appartenir au même projet.
   for (const role of ["logo-light", "logo-mono", "logo-white", "logo-mark", "favicon", "brand-board", "brand-guide", "brand-book"]) if (!one("SELECT id FROM assets WHERE project_id=? AND role=? AND source_asset_id=? AND deleted_at IS NULL AND status!='rejected'", projectId, role, applied.main.id)) throw new UserFacingError(`Application partielle : ${role} de la nouvelle identité manquant. L’identité active et les retouches restent conservées ; validation finale en attente.`);
   tx(() => {
+    guards?.beforeFinalApply?.();
     if (stableHash("direction-active", loadProject(projectId).brand) !== activeHash) throw new UserFacingError("Votre identité a été retouchée pendant la préparation du kit. Vos modifications et les nouveaux fichiers sont conservés ; resélectionnez la direction pour la valider.");
     if ((stateOf(projectId)?.revision ?? null) !== (prior?.revision ?? null)) throw new UserFacingError("Le parcours a changé pendant la préparation du kit : validation arrêtée, données conservées.");
     remember(projectId, { kind: "artifact", key: `brand.before-direction.${now()}`, value: JSON.stringify(p.brand), source: "user" });
@@ -340,7 +345,7 @@ async function applyCompleteDirection(ctx: JobContext | null, projectId: string,
     recordBrandDecision(projectId, "direction", `${series.name} — ${direction.label} (${series.id}/${direction.id}), ensemble complet validé`);
     updateDirectionSeries(projectId, series.id, s => { s.selectedId = direction.id; });
     remember(projectId, { kind: "artifact", key: "brand.adaptation", value: JSON.stringify({ directionId: direction.id, seriesId: series.id, state: "review_required", assetIds: priorAssets, documentKeys: prior?.stages.content?.data.documents.map(d => d.docKey) ?? [], note: "Contenus antérieurs à vérifier et adapter sur demande. Aucun contenu approuvé écrasé, aucun thème reconstruit ni appel payant." }), source: "user" });
-    remember(projectId, { kind: "artifact", key, value: JSON.stringify({ main: applied.main.id, identityHash: hash }), source: "user" });
+    remember(projectId, { kind: "artifact", key, value: JSON.stringify({ main: applied.main.id, identityHash: hash, jobId: ctx?.job.id ?? null }), source: "user" });
     completeDirectionSelection(projectId, assetId);
     if (prior?.stages.brand) commitState(projectId, prior.revision, n => {
       const b = n.stages.brand!;
@@ -349,7 +354,9 @@ async function applyCompleteDirection(ctx: JobContext | null, projectId: string,
       b.status = "approved"; b.approvedAt = now(); invalidateAfter(n, "brand");
     });
   });
-  const { tryStartInitialFromConsent } = await import("../social-v2/initial-authorization");
-  tryStartInitialFromConsent(projectId);
+  if (!guards?.deferInitialCreation) {
+    const { tryStartInitialFromConsent } = await import("../social-v2/initial-authorization");
+    tryStartInitialFromConsent(projectId);
+  }
   return { main: applied.main.id, territory: direction.id };
 }

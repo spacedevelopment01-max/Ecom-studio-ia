@@ -236,6 +236,7 @@ export const handlers: Record<string, Handler> = {
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
+    if (ctx.payload.agentLogoSelectionQuote) return (await import("../src/lib/orchestrator/conversation/logo-selection-execution")).runLogoSelection(ctx);
     const { chooseLogoV2 } = await import("../src/lib/logo-v2/choose");
     return chooseLogoV2(ctx, ctx.payload.projectId, ctx.payload.assetId);
   },

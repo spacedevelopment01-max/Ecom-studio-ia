@@ -6,7 +6,7 @@ import type { Brief } from '../../preparation/types';
 import type { Command, ConversationRow, ConversationState } from './contract';
 import {clearConversationAnswer} from './answer-state';
 
-export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: ConversationState, cmd: Command) {
+export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: ConversationState, cmd: Command, canonicalWritable = true) {
   const a = m.intelligence;
   if (cmd.action === 'back-ai') {
     const q = a?.questionHistory?.find(q => q.id === cmd.questionId);
@@ -46,6 +46,11 @@ export function applyCognitiveCommand(c: ConversationRow, b: Brief, m: Conversat
   if (!cmd.unknown && !cmd.text && (!cmd.choices.length || cmd.choices.includes('other'))) throw new HttpError(400, L('Précisez votre réponse avec vos mots.', 'Explain your answer in your own words.'));
   const value = cmd.unknown ? '' : [...q.choices.filter(x => cmd.choices.includes(x.id) && x.id !== 'other').map(x => x.label), cmd.text].filter(Boolean).join(' ; ');
   if (value.length > 1200) throw new HttpError(400, 'conversation_answer_limit');
+  // Une précision de tâche reste dans le journal de conversation, sans rouvrir une fiche validée.
+  if(q.field==='custom'&&!canonicalWritable){
+    (cmd as Command & {clientAnswer?:string}).clientAnswer=cmd.unknown?L('Je ne sais pas encore.','I do not know yet.'):value;
+    return{changed:false,message:L('Réponse exacte conservée dans la conversation. Votre fiche validée reste inchangée.','Exact answer saved in the conversation. Your approved brief stays unchanged.')};
+  }
   const key = `conversation.ai.${q.id}`;
   if (cmd.unknown) {b.profile.facts = [...b.profile.facts.filter(f => f.key !== key), { key, label: q.title, value: '', status: 'unknown', source: 'user', later: true }];clearConversationAnswer(b,m,q.field);}
   else writeFact(b, key, q.title, value);

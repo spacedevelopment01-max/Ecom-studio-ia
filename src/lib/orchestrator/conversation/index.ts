@@ -287,7 +287,11 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       }
     }
     if (['answer-ai', 'accept-ai-changes', 'back-ai'].includes(cmd.action)) {
-      const result = applyCognitiveCommand(c, b, m, cmd);
+      let canonicalWritable=true;
+      if(cmd.action==='answer-ai'&&m.intelligence?.lastReply?.question?.field==='custom'){
+        try{assertBriefWritable(c,user,revision);}catch(e){if(e instanceof HttpError&&e.code==='conversation_existing_progress')canonicalWritable=false;else throw e;}
+      }
+      const result = applyCognitiveCommand(c, b, m, cmd, canonicalWritable);
       changed = result.changed; message = result.message;
     }
     if (cmd.action === 'explain' && intelligenceEnabled() && m.intelligence?.lastReply?.question) message = m.intelligence.lastReply.question.why;
