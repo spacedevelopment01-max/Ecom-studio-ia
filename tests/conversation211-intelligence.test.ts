@@ -231,3 +231,16 @@ describe('#211 lot B — vrai chemin IA, fournisseur SIMULÉ dans cette recette'
   });
 
 });
+
+// Le temps qui passe n’est pas une modification du contexte accepté.
+it('social : devis confirmé et worker après une minute, horloge ancrée au message exact',async()=>{
+ for(const flag of ['STUDIO_CONVERSATION_SOCIAL','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_SPECIALISTS'])vi.stubEnv(flag,'1');
+ const u=await account(),pid=project(u),c=openProjectConversation(u,pid);await sender(u,c.id)({action:'message',text:'Prépare un calendrier local pour mon atelier, sans diffusion.'});
+ fake.reply=reply({business:null,businessEvidence:null,question:null,status:'answer',message:'Préparation à relire.'});
+ vi.useFakeTimers({toFake:['Date']});
+ try{const first=Date.now(),before=cognitiveContext(ownedConversation(u,c.id));expect(before.context).toHaveProperty('socialTool');const q=quote(u,c.id);vi.setSystemTime(first+60000);
+ expect(cognitiveContext(ownedConversation(u,c.id)).fingerprint).toBe(before.fingerprint);
+ const confirmed=confirmCognitiveQuote(u,c.id,q.id,id()),claimed=claimNext(['agent.reason'])!;expect(claimed.id).toBe(confirmed.jobId);vi.setSystemTime(first+90000);
+ await runCognitiveJob(new JobContext(claimed));expect(fake.calls).toBe(1);
+ }finally{vi.useRealTimers();}
+});

@@ -399,7 +399,7 @@ export function projectForSubject(
           ? "Prestation de services"
           : (selected?.category ?? "Produit du catalogue"),
       price: {
-        amount: selected?.price != null ? selected.price / 100 : null,
+        amount: selected?.price ?? null,
         currency: p.product.price.currency,
         status: selected?.price != null ? "confirmed" : "unknown",
       },

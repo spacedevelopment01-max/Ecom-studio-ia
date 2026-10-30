@@ -360,7 +360,7 @@ describe("Campagnes — preuves de contrat simulées, pas de qualité fournisseu
       summary: p.catalog[0].description,
       referenceAssetId: null,
     });
-    expect(q.product.price.amount).toBe(19);
+    expect(q.product.price.amount).toBe(1900); // Contrat Project : centimes, comme le catalogue natif.
     expect(q.product.category).toBe("Protection");
     expect(q.product.variants).toEqual([]);
     expect(q.product.summary).toContain("FIN DU SUJET");

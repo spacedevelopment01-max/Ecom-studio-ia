@@ -9,3 +9,11 @@ it('1990 centimes confirme 19,90 €, jamais 1990 €',async()=>{
  expect(publicationCopyIssues(p,{headline:'19,90 €',subline:'',cta:''},'Mentionne 19.90 EUR.',[])).toEqual([]);
  expect(publicationCopyIssues(p,{headline:'1990 €',subline:'',cta:''},'Mentionne 1990 EUR.',[]).some(i=>i.code==='COMMERCIAL_NUMBER_UNCONFIRMED')).toBe(true);
 });
+
+it('le catalogue secondaire conserve aussi les centimes avant les mêmes contrôles',async()=>{
+ const {projectForSubject}=await import('@/lib/social-v2/ai-post');const u=await account(),p=loadProject(project(u));p.catalog=[{key:'outil',name:'Outil de reliure',category:'Reliure',price:1990,compareAt:null,description:'Un outil manuel.',features:[],originalAssetId:null}];
+ const q=projectForSubject(p,{kind:'product',key:'outil',name:'Outil de reliure',summary:'Un outil manuel.',referenceAssetId:null});
+ expect(q.product.price.amount).toBe(1990);expect(verifiedFacts(q).price).toContain('19,90');
+ expect(publicationCopyIssues(q,{headline:'19,90 €',subline:'',cta:''},'Mentionne 19.90 EUR.',[])).toEqual([]);
+ expect(publicationCopyIssues(q,{headline:'1990 €',subline:'',cta:''},'Mentionne 1990 EUR.',[]).some(i=>i.code==='COMMERCIAL_NUMBER_UNCONFIRMED')).toBe(true);
+});
