@@ -14,7 +14,7 @@ export function assertJobEntitlements(type:string,projectId:string|null|undefine
   if(request.themePlacement){if(!projectId)throw new HttpError(404,"Project required");placementRequest(projectId,request.themePlacement);}
   const advertising=(type==='image.v2'&&(request.kind==='ad_image'||request.support==='ad'))||/^(ads\.|ad\.|campaign\.)/.test(type)||(type==='image.ai_post'&&(payload.request?.as==='ad'||payload.request?.kind==='ad'||String(payload.request?.entryPoint??'').startsWith('ads-')))||(type.startsWith('video.')&&(request.as==='ad'||request.ask?.purpose==='ad'||(request.ask?.kind==='video_ad'&&request.ask?.purpose!=='organic')));
   const video=['video.bank.ai','video.ugc','video.v2.clip'].includes(type)||(type==='video.v2'&&request.approveGeneration===true)||(type==='video.scenes'&&request.mode!=='stock');
-  const blog=type==='blog.write'||(type==='content.v2'&&payload.request?.type==='blog_article');
+  const blog=type==='blog.write'||type==='agent.blog.write'||(type==='content.v2'&&payload.request?.type==='blog_article');
   if(!advertising&&!video&&!blog)return;
   if(!projectId)throw new HttpError(402,L('Choisissez le projet et son forfait avant de créer.','Choose the project and its plan before creating.'),'plan_required');
   if(advertising)assertAdvertising(projectId);
