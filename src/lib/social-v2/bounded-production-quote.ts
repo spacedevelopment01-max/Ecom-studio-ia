@@ -9,6 +9,12 @@ export function quoteNativeSocialImage(p:Project,postId:string,forcePaid=false,i
  const inputVersion=productionInputVersions(p.id,[postId])[postId],base={schema:1 as const,postId,instruction:instruction??post.request??'',inputVersion,mode:(usageExplicit('text_layout')?'two-step':'one-step')as 'one-step'|'two-step'};
  const free=estimateProduction(p,[postId],realSocialDeps(null,p,false),{allowPaid:false}).lines[0];
  if(!forcePaid&&(instruction==null||instruction===(post.request??''))&&free?.method==='library'){const value={...base,binding:post.nativeBinding,maximumCalls:0,capMicro:0,estimateMicro:0,reused:true,routes:null,costs:null};return{...value,fingerprint:imageBindingHash(value)};}
+ return quoteNativePublicationPass(p,post,inputVersion,base.instruction);
+}
+
+/** Même tarification de la passe finale, pour une publication ou une annonce natives. */
+export function quoteNativePublicationPass(p:Project,post:import('./deps').PostBrief&{media?:string},inputVersion:string,instruction=post.request??''):NativePublicationQuote{
+ const base={schema:1 as const,postId:post.id,instruction,inputVersion,mode:(usageExplicit('text_layout')?'two-step':'one-step')as 'one-step'|'two-step'};
  const resolved=nativeSocialSubject(p,{...post,request:base.instruction},true)!;const references=resolved.binding.references.length,logo=p.brand?.logo?.assetId?1:0;
  if(logo){const a=getAsset(p.brand!.logo!.assetId!);if(!a||a.project_id!==p.id||a.deleted_at)throw new HttpError(409,'Logo validé indisponible, aucun remplacement inventé.');}
  const image=mediaRouteFor('social_image',{text:base.mode==='one-step',references:references+(base.mode==='one-step'?logo:0)}),layout=base.mode==='two-step'?mediaRouteFor('text_layout',{text:true,references:1+logo}):null;
