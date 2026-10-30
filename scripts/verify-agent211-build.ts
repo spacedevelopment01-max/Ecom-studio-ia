@@ -62,7 +62,7 @@ const fake=http.createServer(async(req,res)=>{
       if(req.url==='/__video-file'){res.setHeader('content-type','video/mp4');res.end(fs.readFileSync('tests/fixtures/neutral-clip.mp4'));return;}
       if(req.url==='/__video-voice'){videoVoiceCalls++;if(voiceFailureAt===videoVoiceCalls){res.writeHead(503,{'content-type':'application/json'});res.end('{"error":"simulated voice503"}');return;}const{execFileSync}=await import('node:child_process'),file=path.join(temp,'voice-tone.wav');if(!fs.existsSync(file))execFileSync('ffmpeg',['-y','-v','error','-f','lavfi','-i','sine=frequency=330:duration=0.5',file]);res.setHeader('content-type','audio/wav');res.end(fs.readFileSync(file));return;}
     }
-    if((process.argv.includes('--images-ui')||process.argv.includes('--logos-ui'))&&/\/images\/(?:edits|generations)/.test(req.url??'')){
+    if((process.argv.includes('--images-ui')||process.argv.includes('--logos-ui')||process.argv.includes('--social-production-ui'))&&/\/images\/(?:edits|generations)/.test(req.url??'')){
       await new Promise(r=>setTimeout(r,200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
       const model=/name="model"\r\n\r\n([^\r]+)/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).model:null);assert.ok(model);
       const wirePrompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
@@ -90,7 +90,7 @@ const fake=http.createServer(async(req,res)=>{
     event('content_block_stop',{index:0});
     event('message_delta',{delta:{stop_reason:'end_turn',stop_sequence:null},usage:{output_tokens:300}});
     event('message_stop',{});res.end();
-  }catch{res.statusCode=500;res.end('Fake provider fixture failure');}
+  }catch(error){logs+='[LOCAL FIXTURE] '+(error instanceof Error?error.stack:String(error))+'\n';res.statusCode=500;res.end('Fake provider fixture failure');}
 });
 async function freePort(){const s=net.createServer();await new Promise<void>(r=>s.listen(0,'127.0.0.1',r));const port=(s.address()as net.AddressInfo).port;await new Promise<void>(r=>s.close(()=>r()));return port;}
 function child(args:string[],extra:Record<string,string>={}){
