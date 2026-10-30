@@ -1,0 +1,28 @@
+// Recette de lecture de fixtures synthétiques déjà acquises : aucun worker ou devis/génération.
+import fs from 'node:fs';import net from 'node:net';import path from 'node:path';
+import assert from 'node:assert/strict';import {spawn} from 'node:child_process';import {randomBytes,createHash} from 'node:crypto';
+import Database from '/workspace/Ecom-studio-ia/node_modules/better-sqlite3/lib/index.js';
+const root='/workspace/reviews/ecom-211-lot-d11-reemploi',state='/workspace/reviews/ecom-211-state',expected=process.argv[2];assert.match(expected??'',/^[0-9a-f]{40}$/);
+const selection=JSON.parse(fs.readFileSync(state+'/D16-acquired-fixture-selection.json'));
+const endpoints={'agent.export.tool':'exports','agent.images.tool':'images','agent.theme.tool':'theme-tools','agent.campaign.visual':'campaign-visuals','agent.social.prepare':'social-drafts','agent.social.production':'social-production','agent.brand.tool':'brand','agent.video.clip':'video-clips','agent.video.generation':'generated-videos','agent.content.tool':'content','agent.video.voice':'video-voices'};
+const flags=[...new Set(fs.readFileSync(root+'/src/lib/orchestrator/conversation/tool-flags.ts','utf8').match(/STUDIO_CONVERSATION_[A-Z_]+/g))];
+const report=[];
+for(const chosen of selection){
+ assert.equal(path.dirname(chosen.root),'/tmp');assert.ok(path.basename(chosen.root).startsWith('ecs-agent-211-'));
+ const db=new Database(chosen.root+'/studio.db',{readonly:true});
+ const snapshot=()=>({counts:Object.fromEntries(['jobs','ai_calls','usage_events','theme_versions','assets','posts','campaigns'].map(t=>[t,db.prepare(`SELECT COUNT(*) n FROM ${t}`).get().n])),memorySha256:createHash('sha256').update(JSON.stringify(db.prepare('SELECT project_id,key,value FROM memory ORDER BY project_id,key,id').all())).digest('hex')});
+ const before=snapshot(),records=[];
+ for(const prefix of chosen.prefixes){if(!endpoints[prefix])continue;for(const row of db.prepare("SELECT value FROM memory WHERE kind='artifact' AND key LIKE ? ORDER BY created_at DESC,rowid DESC").all(prefix+'.%')){const m=JSON.parse(row.value);if(m.conversationId&&m.jobId&&!records.some(r=>r.cid===m.conversationId&&r.endpoint===endpoints[prefix])){const c=db.prepare('SELECT user_id FROM agent_conversations WHERE id=?').get(m.conversationId),u=c&&db.prepare('SELECT id,email FROM users WHERE id=?').get(c.user_id);assert.ok(u);records.push({cid:m.conversationId,endpoint:endpoints[prefix],user:u});}}}
+ const port=await new Promise(resolve=>{const s=net.createServer();s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(()=>resolve(p));});}),origin='http://127.0.0.1:'+port;
+ const env={...process.env,DATA_DIR:chosen.root,DATABASE_FILE:chosen.root+'/studio.db',STORAGE_DIR:chosen.root+'/storage',APP_SECRET:randomBytes(32).toString('hex'),APP_URL:origin,NEXT_TELEMETRY_DISABLED:'1',STOCK_OFFLINE:'1'};for(const key of flags)env[key]='1';for(const key of ['ANTHROPIC_API_KEY','OPENAI_API_KEY','GOOGLE_API_KEY','GEMINI_API_KEY','FAL_KEY','FAL_API_KEY','DASHSCOPE_API_KEY','ALIBABA_MODEL_STUDIO_API_KEY'])env[key]='';
+ const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-H','127.0.0.1','-p',String(port)],{cwd:root,env,stdio:'ignore'});
+ try{let version;for(let n=0;n<100;n++){try{const response=await fetch(origin+'/api/version');if(response.ok){version=await response.json();break;}}catch{}await new Promise(r=>setTimeout(r,100));}assert.equal(version?.commit,expected);
+  const sessions=new Map(),results=[];
+  const login=async user=>{if(sessions.has(user.id))return sessions.get(user.id);const response=await fetch(origin+'/api/auth/login',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({email:user.email,password:'Mot-de-passe-fictif'})});assert.equal(response.status,200);const cookie=response.headers.getSetCookie().map(s=>s.split(';')[0]).join('; ');assert.ok(cookie);sessions.set(user.id,cookie);return cookie;};
+  for(const row of records){const cookie=await login(row.user),url=origin+'/api/studio-agent/conversations/'+row.cid+'/'+row.endpoint,response=await fetch(url,{headers:{cookie}});assert.equal(response.status,200,row.endpoint);const value=await response.json();assert.ok(Array.isArray(value.receipts),row.endpoint);assert.ok(value.receipts.length>0,row.endpoint);const states=value.receipts.map(r=>({id:r.id,state:r.state,delivered:r.delivered,recorded:r.recorded??null,jobStatus:r.job?.status??null,outputCount:r.outputs?.length??null,nativeVersion:r.output?.revision??r.version?.number??null}));
+   assert.equal((await fetch(url)).status,401);const foreign=db.prepare("SELECT id,email FROM users WHERE id<>? AND role='client' LIMIT 1").get(row.user.id);assert.ok(foreign);assert.equal((await fetch(url,{headers:{cookie:await login(foreign)}})).status,404);results.push({endpoint:row.endpoint,status:200,unauthenticated:401,foreign:404,receipts:states});
+  }
+  assert.deepEqual(snapshot(),before);report.push({fixture:path.basename(chosen.root),version,before,after:snapshot(),results,newJobs:0,newProviderCalls:0,newMedia:0,newVersions:0,acquiredMemoryUnchanged:true});
+ }finally{server.kill('SIGTERM');await new Promise(resolve=>{if(server.exitCode!==null)return resolve();server.once('exit',resolve);});db.close();}
+}
+const proof={schema:'agent211-D16-acquired-http-1',passed:true,source:'existing_synthetic_results_only',realProviderCalls:0,realCostEur:0,noWorker:true,noGenerationOrQuote:true,report};fs.writeFileSync(state+'/D16-acquired-http-proof.json',JSON.stringify(proof,null,2)+'\n');console.log(JSON.stringify({passed:true,fixtures:report.length,registries:report.flatMap(r=>r.results).length,realProviderCalls:0,newJobs:0}));
