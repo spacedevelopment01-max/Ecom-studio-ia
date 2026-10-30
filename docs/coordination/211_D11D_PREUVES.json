@@ -1,0 +1,146 @@
+{
+  "schema": "211-D11d-proof-1",
+  "applicationCommit": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+  "compiledCommit": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+  "workerCommit": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "capturesActuallyOpened": 4,
+  "video": {
+    "durationS": 18.2,
+    "width": 1440,
+    "height": 960,
+    "fps": 15,
+    "speedChanged": false,
+    "originalWebmKeptInIsolatedArtifacts": true
+  },
+  "checks": {
+    "D11d-final-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+      "state": "passed",
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T13:45:26.042072+00:00",
+      "finishedAt": "2026-10-30T13:46:28.166572+00:00",
+      "logSha256": "f2fd1300159659b1653d41855a9279209b86779320565c0c1103c43918901098"
+    },
+    "D11d-final-compiled-social-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11d-final-compiled-social-browser-proof",
+        "--social-production-ui"
+      ],
+      "head": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+      "state": "passed",
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T13:46:49.859001+00:00",
+      "finishedAt": "2026-10-30T13:47:20.562770+00:00",
+      "logSha256": "30bf5aca70165a89b882c9fe4233b89a42d54470ce28beaae5a95df273a0bcae"
+    },
+    "D11d-readable-budget-cap": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/social-production-maximum-display.test.ts",
+        "tests/conversation211-social-production.test.ts"
+      ],
+      "head": "b4d04950ffbd1dfb5113c14167ec9a37c5aa239b",
+      "state": "passed",
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T13:44:44.271641+00:00",
+      "finishedAt": "2026-10-30T13:44:51.810601+00:00",
+      "logSha256": "98ab2cc4ac92261e85d8fd1b2f993c2ebb1d36386819b5783891ad1899c61167"
+    },
+    "D11d-with-C-preserved-guard": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts",
+        "tests/mission160-service-scopes.test.ts",
+        "tests/social-preserved-delivery.test.ts",
+        "tests/ci-native-production-placement.test.ts"
+      ],
+      "head": "c949f0cae73c79f132714e23409e6dac4c7d1b53",
+      "state": "passed",
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T13:35:26.007666+00:00",
+      "finishedAt": "2026-10-30T13:35:40.466554+00:00",
+      "logSha256": "0ba83e58191bdfa0b3231d8008998790b39a93024c24e8794bd273b66979fd14"
+    },
+    "D11d-heldout-product-service": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts",
+        "tests/social-production-maximum-display.test.ts"
+      ],
+      "head": "5ec638f2060ae3372ab4cb08ced7f7ee951feb15",
+      "state": "passed",
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T13:50:33.582712+00:00",
+      "finishedAt": "2026-10-30T13:50:41.503279+00:00",
+      "logSha256": "fc236e362785b55da09ab8b7974ca1898d9f7d8a639c9bbac19e1e6b0797e762"
+    }
+  },
+  "nativeImage": {
+    "bytes": 3287225,
+    "sha256": "2855a737acbfa47f82ee5371c38fdfc881f60a9d4e3e4ee31cc9be6a0aa57ef8",
+    "downloadedExactlyInBrowser": true,
+    "includedOnlyInCompleteCIArtifact": true
+  },
+  "files": {
+    "04-echec-mobile.png": {
+      "bytes": 172992,
+      "sha256": "e8ff21890ddbf84f490bf5e7b7484ec5fbad145ba8eb5dc8d602dfd4bf07922d"
+    },
+    "D11d-with-C-preserved-guard.txt": {
+      "bytes": 670,
+      "sha256": "0ba83e58191bdfa0b3231d8008998790b39a93024c24e8794bd273b66979fd14"
+    },
+    "02-devis-visuel-mobile.png": {
+      "bytes": 50123,
+      "sha256": "174c333561ab0538e767765d355f15fa5dec649b02dde21677f6b4aa98330785"
+    },
+    "01-devis-visuel-ordinateur.png": {
+      "bytes": 219193,
+      "sha256": "96da69d896a02e58e56e2c0b25ccc004c2565564db483c3a12a42bdadf3b973c"
+    },
+    "03-visuel-mobile.png": {
+      "bytes": 202803,
+      "sha256": "6deddfe6387fdb194839f61cfcecbe70f86af3963fe7935a0c8bc6ea85543b04"
+    },
+    "D11d-readable-budget-cap.txt": {
+      "bytes": 592,
+      "sha256": "98ab2cc4ac92261e85d8fd1b2f993c2ebb1d36386819b5783891ad1899c61167"
+    },
+    "social-production-proof.json": {
+      "bytes": 2158,
+      "sha256": "80e9cad761b34174c0ca0094cfe33e0c8da3fafe3a3e0d2c5d58be6cd3ab050a"
+    },
+    "social-production-workflow.mp4": {
+      "bytes": 1074550,
+      "sha256": "a6ffb91fd34b2bc6bbb0b95a54692ddf4fcfb5507f259760609e9cc79bfe4c4c"
+    },
+    "D11d-heldout-product-service.txt": {
+      "bytes": 592,
+      "sha256": "fc236e362785b55da09ab8b7974ca1898d9f7d8a639c9bbac19e1e6b0797e762"
+    }
+  },
+  "testOnlyCommit": "0bda43f691e0a6330b982de68c46868663e86caf"
+}

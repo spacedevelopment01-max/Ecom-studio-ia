@@ -1,3 +1,5 @@
 /** Raccordement du contrôle natif à la recette compilée commune. */
 import {it,expect}from 'vitest';import fs from 'node:fs';
 it('production native exécutée après la recette campagne sans masquer son échec',()=>{const source=fs.readFileSync('scripts/verify-agent211-build.ts','utf8'),tail=source.slice(source.lastIndexOf('// D11c :'));expect(tail).toContain("process.argv.includes('--campaign-ui')");expect(tail).toContain("execFileSync(process.execPath");expect(tail).toContain("scripts/verify-social-production211-build.ts");expect(tail).toContain("path.join(out,'native-production')");expect(tail).toContain("delete isolatedEnv[selector]");expect(tail).not.toContain('catch');});
+
+it('la recette sociale donne un dossier en premier argument, jamais un drapeau comme destination',()=>{const source=fs.readFileSync('.github/workflows/ci.yml','utf8'),line=source.split('\n').find(s=>s.includes('run:')&&s.includes('--social-production-ui'));expect(line).toBeTruthy();const args=line!.trim().split(/\s+/),index=args.indexOf('scripts/verify-agent211-build.ts');expect(index).toBeGreaterThan(0);expect(args[index+1]).toBe('reports/ci-agent211-social-production');});

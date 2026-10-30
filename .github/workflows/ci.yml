@@ -242,6 +242,18 @@ jobs:
           path: /tmp/agent211-D11a-proof
           if-no-files-found: warn
 
+      - name: Visuel social depuis SYNA, devis borné et échec conservant les acquis (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-production --social-production-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves de la production sociale bornée
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-production-simulated
+          path: reports/ci-agent211-social-production
+          if-no-files-found: warn
+
       - name: Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11b-proof --campaign-ui
 

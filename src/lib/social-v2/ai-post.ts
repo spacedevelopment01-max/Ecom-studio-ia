@@ -46,6 +46,7 @@ import {
   aiTextLayout,
   textLayoutMaxMicro,
 } from "../ai/media-providers";
+import {withQuotedImageRoute}from "../ai/media-providers";
 import { usageExplicit } from "../ai/media-routing";
 import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
 import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
@@ -1000,7 +1001,7 @@ async function designSinglePostWithAi(
       if (result.sceneFailed) sceneVersion++;
     }
     return blocked(
-      "Publication refusée après trois essais : défauts et versions conservés, aucun remplacement local.",
+      `Publication refusée après ${Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS))} essai(s) : défauts et versions conservés, aucun remplacement local.`,
     );
   } catch (e) {
     return blocked(
@@ -1017,7 +1018,8 @@ export function realAiPostDeps(base: {
   projectId: string;
   jobId: string | null;
   sourceAssetId?: string;
-},requestContext:{project?:Project;beforeDispatch?:()=>void}={}): AiPostDeps {
+},requestContext:{project?:Project;beforeDispatch?:()=>void;quote?:import('./bounded-production-quote').NativePublicationQuote}={}): AiPostDeps {
+  const quoted=requestContext.quote,quotedImage=<T,>(route:{provider:string;model:string}|null|undefined,fn:()=>T):T=>route?withQuotedImageRoute(route,fn):fn();
   const previous = base.sourceAssetId ? getAsset(base.sourceAssetId) : null;
   if (
     base.sourceAssetId &&
@@ -1043,6 +1045,7 @@ export function realAiPostDeps(base: {
       return llmJson(
         {
           task: "copywriting",
+          ...(quoted?.routes?{expectedRoute:quoted.routes.copy}:{}),
           ...base,
           usageKey: key,
           promptKey: "social-ai-post-copy",
@@ -1064,7 +1067,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
       );
     },
     async generate(prompt, aspect, reference, key, logo, options) {
-      return aiPostImage(
+      return quotedImage(quoted?.routes?.image,()=>aiPostImage(
         { ...base, usageKey: key },
         {
           prompt: previous
@@ -1077,7 +1080,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
           people: peopleAllowedFor(requestContext.project??loadProjectForReview(base.projectId)),
           photoOnly: options?.photoOnly,
         },
-      );
+      ));
     },
     async review(image, reference, texts, key, people, logo, context) {
       const { llmJson } = await import("../ai/llm");
@@ -1085,6 +1088,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
       return llmJson(
         {
           task: "quality_control",
+          ...(quoted?.routes?{expectedRoute:quoted.routes.review}:{}),
           ...base,
           usageKey: `${key}:check`,
           promptKey: "social-ai-post-check",
@@ -1186,12 +1190,12 @@ Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lin
             logo: Buffer | null,
             key: string,
           ) {
-            return aiTextLayout(
+            return quotedImage(quoted?.routes?.layout,()=>aiTextLayout(
               { ...base, usageKey: key },
               { prompt, aspect, image: photo, logo },
-            );
+            ));
           },
-          layoutMaxMicro: textLayoutMaxMicro,
+          layoutMaxMicro: ()=>quoted?.costs?.layout??textLayoutMaxMicro(),
         }
       : {}),
     spentMicro: (prefix) =>
@@ -1201,11 +1205,11 @@ Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lin
         `${prefix}%`,
       )[0]?.c ?? 0,
     maxMicro: (references = 2, photoOnly = false) =>
-      aiPostMaxMicro(references + (previous ? 1 : 0), photoOnly),
+      quoted?.costs?.image??aiPostMaxMicro(references + (previous ? 1 : 0), photoOnly),
     conceptMaxMicro: () =>
-      estimateTaskMicro("copywriting", { input: 18000, output: 2000 }),
+      quoted?.costs?.copy??estimateTaskMicro("copywriting", { input: 18000, output: 2000 }),
     reviewMaxMicro: () =>
-      estimateTaskMicro("quality_control", { input: 24000, output: 2000 }),
+      quoted?.costs?.review??estimateTaskMicro("quality_control", { input: 24000, output: 2000 }),
   };
 }
 

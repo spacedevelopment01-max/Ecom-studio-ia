@@ -1,5 +1,5 @@
 /** L’offre persistée dans le brouillon reste celle du moteur ; jamais le premier produit du projet. */
-import {HttpError}from '../auth';import {one}from '../db';import {getAsset,assetMeta}from '../library';import {getProduct}from '../products/catalog';import type {Project}from '../projects';import {ImageBindingSchema,resolveImageBinding,resolveVideoSubjectBinding,resolveContentSubjectBinding,pinImageAsset,imageBindingHash}from '../image-v2/request-binding';import {MAIN_PRODUCT,type SubjectOption}from '../creative-subject';import type {PostBrief}from './deps';
+import {HttpError}from '../auth';import {one,all}from '../db';import {getAsset,assetMeta}from '../library';import {getProduct}from '../products/catalog';import type {Project}from '../projects';import {ImageBindingSchema,resolveImageBinding,resolveVideoSubjectBinding,resolveContentSubjectBinding,pinImageAsset,imageBindingHash}from '../image-v2/request-binding';import {MAIN_PRODUCT,type SubjectOption}from '../creative-subject';import type {PostBrief}from './deps';
 export function nativeSocialSubject(p:Project,post:PostBrief&{media?:string},forGeneration=true){
  if(!post.nativeBinding)return null;
  const binding=ImageBindingSchema.parse(post.nativeBinding);
@@ -7,8 +7,11 @@ export function nativeSocialSubject(p:Project,post:PostBrief&{media?:string},for
  if(!binding.references.length){
   let media:string[]=[];try{media=JSON.parse(post.media??'[]');}catch{throw new HttpError(409,'Les médias du brouillon sont illisibles.');}
   const product=binding.product?getProduct(p.id,binding.product.productId):null,variant=binding.product?.variant?product?.variants.find(v=>v.id===binding.product!.variant!.variantId):null;
-  const allowed=product?(variant?.image?[variant.image]:product.data.images.map(a=>a.assetId)):media;
+  const namedService=!product?all<{id:string;name:string}>('SELECT id,name FROM assets WHERE project_id=? AND user_id=? AND kind=?',p.id,p.userId,'image').filter(a=>!!a.name&&!!post.request?.includes(a.name)):[];
+  if(namedService.length>1)throw new HttpError(409,'La référence de prestation est ambiguë. Désignez une seule photo avant le devis.');
+  const allowed=product?(variant?.image?[variant.image]:product.data.images.map(a=>a.assetId)):[...media,...namedService.map(a=>a.id)];
   const candidates=[...new Set(allowed)].filter(aid=>{const a=getAsset(aid);if(!a||a.deleted_at||a.status==='rejected')return false;const explicitlyAttached=media.includes(aid),named=!!a.name&&!!post.request?.includes(a.name)&&one<{n:number}>('SELECT COUNT(*) n FROM assets WHERE project_id=? AND name=? AND deleted_at IS NULL',p.id,a.name)?.n===1;return explicitlyAttached||named;});
+  if(namedService.length&&!candidates.length)throw new HttpError(409,'La photo de prestation désignée est indisponible. Aucune référence ignorée ni remplacée.');
   if(candidates.length>1)throw new HttpError(409,'Plusieurs photos correspondent à ce brouillon. Désignez une seule référence ; rien n’est choisi à votre place.');
   if(candidates.length){const a=getAsset(candidates[0])!;if(assetMeta<any>(a).aiPost)throw new HttpError(409,'Un visuel composé ne remplace pas la photo de référence. Les créations acquises restent conservées.');binding.references=[pinImageAsset(p.userId,p.id,a.id,a.version)];}
  }

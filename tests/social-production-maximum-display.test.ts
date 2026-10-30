@@ -1,0 +1,3 @@
+/** Le montant accepté affiché ne doit jamais sous-estimer le plafond natif. */
+import{it,expect}from 'vitest';import{formatMaximumPct}from '@/lib/budget-pct';
+it('maximum localisé lisible, arrondi supérieur y compris les très petits montants',()=>{expect(formatMaximumPct(1.575865116,'fr')).toBe('1,58\u202f%');expect(formatMaximumPct(1.575865116,'en')).toBe('1.58%');expect(formatMaximumPct(.000001,'fr')).toBe('0,01\u202f%');expect(formatMaximumPct(0,'fr')).toBe('0\u202f%');for(const value of [.000001,.234,1.575865116,99.999])expect(Number.parseFloat(formatMaximumPct(value,'en'))).toBeGreaterThanOrEqual(value);expect(formatMaximumPct(null,'fr')).toBe('—');});
