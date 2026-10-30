@@ -635,7 +635,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
 
   doc.meta.retakeCount=req.repair?1:0;
   if(req.approval) doc.meta.retakeBudgetMicro=req.quotedGeneration?0:req.approval.retakeMicro??Math.floor(req.approval.capMicro/(n+1));
-  doc.meta.editorial = {...videoContext(req.binding?p:p0,req.as,req.request,req.subject,req.editorial),...(req.binding?{nativeBinding:req.binding}:{})};
+  doc.meta.editorial = {...videoContext(req.binding?p:p0,req.as,req.request,req.binding?s:req.subject,req.editorial),...(req.binding?{nativeBinding:req.binding}:{})};
 
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = wantsSpeech?projectVoice(memory.preferences):null;
