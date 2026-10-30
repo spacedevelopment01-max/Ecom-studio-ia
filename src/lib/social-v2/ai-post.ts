@@ -286,6 +286,8 @@ export type PublicationContext = {
 };
 
 export type AiPostDeps = {
+  /** Relire la cible avant une nouvelle étape ; un acquis reste lisible sans appel. */
+  beforeDispatch?:()=>void;
   /** Accroche, ligne, bouton et scène écrits par l'IA de texte (null : textes du calendrier). */
   copy?: (
     p: Project,
@@ -453,6 +455,8 @@ async function designSinglePostWithAi(
   try {creative=creativeContract(post,isAd?"ad":"organic");}
   catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:(e as Error).message};}
   const capMicro = Math.round(o.maxCostEur * 1e6);
+  const stage=<T,>(key:string,fn:()=>Promise<T>,replaySafe=false)=>publicationStage(p.id,key,fn,replaySafe,deps.beforeDispatch);
+  const imageStage=(key:string,prompt:string,fn:()=>Promise<Buffer>)=>publicationImageStage(p,key,prompt,fn,deps.beforeDispatch);
   const ref = o.reference ? getAsset(o.reference) : null;
   if (
     ref &&
@@ -500,6 +504,7 @@ async function designSinglePostWithAi(
     policy: PUBLICATION_POLICY,
     post: {
       id: post.id,
+      ...(post.nativeBinding?{nativeBinding:post.nativeBinding}:{}),
       network: post.network,
       format: post.format,
       title: post.title,
@@ -612,7 +617,7 @@ async function designSinglePostWithAi(
     };
     const base = aiPostTexts(p, post);
     if(!creative.allowCommercial)base.cta="";
-    const acquired = await publicationStage(p.id, `${prefix}:copy`, async () => {
+    const acquired = await stage(`${prefix}:copy`, async () => {
       if (!fits(deps.conceptMaxMicro?.() ?? 0))
         throw new Error(
           "Budget insuffisant pour concevoir le visuel : aucun titre de calendrier certifié premium.",
@@ -726,8 +731,7 @@ async function designSinglePostWithAi(
     const pal = effectivePalette(p.brand) ?? p.brand?.palette;
     for (let attempt = 0; attempt < Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS)); attempt++) {
       const key = `${prefix}:${attempt}`;
-      const result = await publicationStage(
-        p.id,
+      const result = await stage(
         `${key}:outcome`,
         async () => {
           const imageReady = publicationStageDone(
@@ -775,8 +779,7 @@ async function designSinglePostWithAi(
                 fix: sceneVersion ? fix : undefined,
               }),
             );
-            scene = await publicationImageStage(
-              p,
+            scene = await imageStage(
               `${prefix}:scene:${sceneVersion}`,
               sp,
               () =>
@@ -789,8 +792,7 @@ async function designSinglePostWithAi(
                   { photoOnly: true },
                 ),
             );
-            const sr = await publicationStage(
-              p.id,
+            const sr = await stage(
               `${prefix}:scene:${sceneVersion}:review`,
               () =>
                 deps.review(
@@ -829,7 +831,7 @@ async function designSinglePostWithAi(
                 accent: pal?.accent ?? art.palette.accent,
               }) + (fix ? `\nTargeted correction: ${fix}` : ""),
             );
-            native = await publicationImageStage(p, `${key}:layout`, lp, () =>
+            native = await imageStage(`${key}:layout`, lp, () =>
               deps.layout!(scene!.data, lp, o.aspect, logoBuf, `${key}:layout`),
             );
           } else {
@@ -844,7 +846,7 @@ async function designSinglePostWithAi(
                 brief,
               }),
             );
-            native = await publicationImageStage(p, `${key}:image`, gp, () =>
+            native = await imageStage(`${key}:image`, gp, () =>
               deps.generate(gp, o.aspect, refBuf, `${key}:image`, logoBuf),
             );
           }
@@ -869,7 +871,7 @@ async function designSinglePostWithAi(
             ...brief.exactTexts.map((x) => x.text),
             ...(logoBuf ? [] : [t.brand]),
           ].filter(Boolean);
-          const r = await publicationStage(p.id, `${key}:review`, () =>
+          const r = await stage(`${key}:review`, () =>
             deps.review(
               rendition.data,
               refBuf,
@@ -935,6 +937,7 @@ async function designSinglePostWithAi(
                 sceneAssetId: scene?.assetId,
               },
               aiPost: {
+                ...(post.nativeBinding?{nativeBinding:post.nativeBinding}:{}),
                 texts: t,
                 score: r.score,
                 attempts: attempt + 1,
@@ -1014,7 +1017,7 @@ export function realAiPostDeps(base: {
   projectId: string;
   jobId: string | null;
   sourceAssetId?: string;
-}): AiPostDeps {
+},requestContext:{project?:Project;beforeDispatch?:()=>void}={}): AiPostDeps {
   const previous = base.sourceAssetId ? getAsset(base.sourceAssetId) : null;
   if (
     base.sourceAssetId &&
@@ -1022,6 +1025,7 @@ export function realAiPostDeps(base: {
   )
     throw new Error("Création d'origine inaccessible dans ce projet.");
   return {
+    beforeDispatch:requestContext.beforeDispatch,
     operationId: previous ? (base.jobId ?? undefined) : undefined,
     sourceAssetId: previous?.id,
     async copy(p, post, fallback, key, people, context) {
@@ -1070,7 +1074,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
           reference,
           logo,
           previous: previous ? assetData(previous) : null,
-          people: peopleAllowedFor(loadProjectForReview(base.projectId)),
+          people: peopleAllowedFor(requestContext.project??loadProjectForReview(base.projectId)),
           photoOnly: options?.photoOnly,
         },
       );
@@ -1151,7 +1155,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
                 : [];
             }),
           ],
-          context: brainView(loadProjectForReview(base.projectId), "image")
+          context: brainView(requestContext.project??loadProjectForReview(base.projectId), "image")
             .stable,
           prompt: `${context?.creative?creativeInstruction(context.creative):""}
 Evaluate relevance and hierarchy against the declared purpose. Organic content must teach, help, explain or invite dialogue according to its role; never penalize absence of a commercial CTA, hero product or photography. Product fidelity means faithful if depicted, or legitimately absent for an editorial subject. Every useful block/step/authorized quotation must remain intact and readable. Invented review, attribution, proof or diagram data is fatal. A carousel page must match its declared order and series, not repeat the same sales poster.

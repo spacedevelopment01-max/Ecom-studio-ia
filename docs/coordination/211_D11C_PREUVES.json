@@ -1,0 +1,183 @@
+{
+  "schema": "211-D11c-proof-1",
+  "codeCommit": "748b53311e8fc04d002c1c7b5a8b2a7eefa45cc0",
+  "compiledNextCommit": "0aca203b9f07fc48c4778fe9c1f6ee5d3105ca7b",
+  "sameCompiledApplicationSources": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "newBrowserCapture": false,
+  "uiSourcesUnchangedFromD11b": true,
+  "checks": {
+    "D11c-last-native-targeted": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-production/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/social-production-confirmed-version.test.ts",
+        "tests/social-production-input-race.test.ts",
+        "tests/social-native-production-binding.test.ts",
+        "tests/publication-input-guard.test.ts",
+        "tests/publications-qualite.test.ts",
+        "tests/social-v2-engine.test.ts",
+        "tests/mission142-blocages-transversaux.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/conversation211-campaign-execution.test.ts",
+        "tests/ci-native-social-placement.test.ts"
+      ],
+      "head": "1190e0ce510620b76ab74b2d882bce809be32f16",
+      "state": "passed",
+      "startedAt": "2026-10-30T12:50:39.134939+00:00",
+      "finishedAt": "2026-10-30T12:50:52.943445+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "e2b79d95e89ec9772a7001fcaf701d48a20c877ef1fa49aa8389e7a1b917f1a2"
+    },
+    "D11c-final-stage-guard": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/publication-input-guard.test.ts",
+        "tests/ci-native-social-placement.test.ts"
+      ],
+      "head": "1190e0ce510620b76ab74b2d882bce809be32f16",
+      "state": "passed",
+      "startedAt": "2026-10-30T12:57:10.241468+00:00",
+      "finishedAt": "2026-10-30T12:57:14.771224+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "ab10924cb031f3efbff814d2b372dc7d43e0dbfc0a1410dfa87291b4bd645ff2"
+    },
+    "D11c-worker-progress-targeted": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/social-production-confirmed-version.test.ts",
+        "tests/publication-input-guard.test.ts"
+      ],
+      "head": "0aca203b9f07fc48c4778fe9c1f6ee5d3105ca7b",
+      "state": "passed",
+      "startedAt": "2026-10-30T13:00:01.522278+00:00",
+      "finishedAt": "2026-10-30T13:00:06.855475+00:00",
+      "cleanCommitSnapshot": false,
+      "sourceUnchanged": true,
+      "logSha256": "ce32dcecc983dae39f1bbbaf4bee9937680f7ee88bf3af3bdc9160c1773e68d5"
+    },
+    "D11c-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "0aca203b9f07fc48c4778fe9c1f6ee5d3105ca7b",
+      "state": "passed",
+      "startedAt": "2026-10-30T12:57:48.297537+00:00",
+      "finishedAt": "2026-10-30T12:58:50.438947+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "c75d92481b6f93a398c2319132cc2e0d40e92475416322c2e644f7be9acce901"
+    },
+    "D11c-final-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "748b53311e8fc04d002c1c7b5a8b2a7eefa45cc0",
+      "state": "passed",
+      "startedAt": "2026-10-30T13:00:33.674732+00:00",
+      "finishedAt": "2026-10-30T13:01:02.737655+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D11c-native-compiled-progress-fixed": {
+      "command": [
+        "node",
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/verify-social-production211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11c-native-compiled-progress-fixed-proof"
+      ],
+      "head": "748b53311e8fc04d002c1c7b5a8b2a7eefa45cc0",
+      "state": "passed",
+      "startedAt": "2026-10-30T13:00:26.626560+00:00",
+      "finishedAt": "2026-10-30T13:00:35.472508+00:00",
+      "cleanCommitSnapshot": true,
+      "sourceUnchanged": true,
+      "logSha256": "d54916ccbdb6b1419b25e4f6019978c9867a9089359f85ad299669cd5635b12f"
+    }
+  },
+  "files": {
+    "D11c-last-native-targeted.txt": {
+      "bytes": 203,
+      "sha256": "e2b79d95e89ec9772a7001fcaf701d48a20c877ef1fa49aa8389e7a1b917f1a2"
+    },
+    "native-production-proof.json": {
+      "bytes": 1151,
+      "sha256": "5b0cb0cfec20c6ca1a09477ad37bd8063f837a7e39724279a7311391172af0b0"
+    },
+    "D11c-final-types.txt": {
+      "bytes": 258,
+      "sha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D11c-worker-progress-targeted.txt": {
+      "bytes": 584,
+      "sha256": "ce32dcecc983dae39f1bbbaf4bee9937680f7ee88bf3af3bdc9160c1773e68d5"
+    },
+    "D11c-final-stage-guard.txt": {
+      "bytes": 781,
+      "sha256": "ab10924cb031f3efbff814d2b372dc7d43e0dbfc0a1410dfa87291b4bd645ff2"
+    },
+    "acquired-native.jpg": {
+      "bytes": 298,
+      "sha256": "b0e4e9fbb2a046d5ce215783ec352b15965f3e37cd79acb78cd4b1096735b8ee"
+    },
+    "D11c-preserved-approved-complete.txt": {
+      "bytes": 4467,
+      "sha256": "2858b3042475d7d7191261610231e4fb5c8e0a8523eda0f81155ac096aab0f2b"
+    }
+  },
+  "ciCorrection": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/ci-native-social-placement.test.ts",
+      "tests/ci-native-production-placement.test.ts"
+    ],
+    "head": "69d338861b31402efef02c66c22e93e0b60d6bc2",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "logSha256": "13f0086bed09492a31e082bd0107c17d066097b5f7c624447d49e6c8de8f4bd3",
+    "workflowIdenticalTo": "d62aa36c65c5d597b3795838ff615e0207e2dfb7",
+    "existingStepsRetained": 51,
+    "nativeTestSeparateFile": true
+  },
+  "ciFirstResult": {
+    "run": 41060452002,
+    "conclusion": "failure",
+    "passed": 4142,
+    "skipped": 31,
+    "failed": 1
+  },
+  "preservedApprovedCorrection": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/mission160-service-scopes.test.ts",
+      "tests/social-preserved-delivery.test.ts",
+      "tests/social-production-confirmed-version.test.ts"
+    ],
+    "head": "2bfc6a294e14365ed7b09b8e92ec0a3e6146e7b4",
+    "state": "passed",
+    "sourceUnchanged": true,
+    "logSha256": "2858b3042475d7d7191261610231e4fb5c8e0a8523eda0f81155ac096aab0f2b",
+    "compiledNextRoutesUnchanged": true,
+    "newHelperWorkerOnly": true
+  }
+}

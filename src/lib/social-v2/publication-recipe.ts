@@ -15,6 +15,7 @@ export async function publicationStage<T>(
   key: string,
   fn: () => Promise<T>,
   replaySafe = false,
+  beforeDispatch?:()=>void,
 ): Promise<T> {
   const execute=async(rid:string)=>{
     const jobId=currentTrace().jobId;
@@ -40,11 +41,13 @@ export async function publicationStage<T>(
     const v = JSON.parse(row.value) as Receipt<T>;
     if (v.state === "done") return v.value as T;
     if(v.state==="not_sent") {
+      beforeDispatch?.();
       const claim=run("UPDATE memory SET value=?,updated_at=? WHERE id=? AND value=?",JSON.stringify({state:"pending"}),now(),row.id,row.value);
-      if(!claim.changes)return publicationStage(projectId,key,fn,replaySafe);
+      if(!claim.changes)return publicationStage(projectId,key,fn,replaySafe,beforeDispatch);
       return execute(row.id);
     }
     if (replaySafe) {
+      beforeDispatch?.();
       const value = await fn();
       run(
         "UPDATE memory SET value=?,updated_at=? WHERE id=?",
@@ -59,6 +62,7 @@ export async function publicationStage<T>(
     );
   }
   // Synchronous claim before first await also serializes callers in the worker process.
+  beforeDispatch?.();
   const rid = id();
   const claim = run(
     "INSERT INTO memory (id,project_id,kind,key,value,status,source,scope,created_at,updated_at) SELECT ?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM memory WHERE project_id=? AND key=?)",
@@ -75,7 +79,7 @@ export async function publicationStage<T>(
     projectId,
     memoryKey(key),
   );
-  if (!claim.changes) return publicationStage(projectId, key, fn, replaySafe);
+  if (!claim.changes) return publicationStage(projectId, key, fn, replaySafe,beforeDispatch);
   return execute(rid);
 }
 export async function publicationImageStage(
@@ -83,6 +87,7 @@ export async function publicationImageStage(
   key: string,
   prompt: string,
   fn: () => Promise<Buffer>,
+  beforeDispatch?:()=>void,
 ) {
   const aid = await publicationStage(p.id, key, async () => {
     const data = await fn();
@@ -105,7 +110,7 @@ export async function publicationImageStage(
       },
     });
     return a.id;
-  });
+  },false,beforeDispatch);
   const a = getAsset(aid);
   if (!a || a.project_id !== p.id || a.deleted_at)
     throw new Error(
