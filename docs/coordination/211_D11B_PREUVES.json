@@ -1,0 +1,404 @@
+{
+  "schema": "211-D11b-proof-1",
+  "applicationCommit": "06688a0a4a3beefe5ffdab371025f5b228abed11",
+  "testAndHarnessHead": "3893860d0580e11fde84052e5432371778bf59eb",
+  "sourceApplicationUnchanged": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fullCIRequired": true,
+  "fullLocalSuiteRepeated": false,
+  "proofs": {
+    "01-campagne-ordinateur.png": {
+      "bytes": 241338,
+      "sha256": "228e91d317ab16642607a904bc7091c2cf80d15b1c2e4bec774b8c6f98c14347"
+    },
+    "compiled-summary.json": {
+      "bytes": 796,
+      "sha256": "01f53fd6b7ae9f922dc91474c6bf02b900f83442763f161ce4042343b8e8cec3"
+    },
+    "campaign-browser-proof.json": {
+      "bytes": 17020,
+      "sha256": "b368adfcb9062ccc4455974220ea276cde14c6eee1aca654e4259110dff36eef"
+    },
+    "campaign-workflow.mp4": {
+      "bytes": 341620,
+      "sha256": "05a862d5e410341bb5817b4625c7774ce9a677c8a5b32b3d611885b422421818"
+    },
+    "02-campagne-mobile.png": {
+      "bytes": 49317,
+      "sha256": "a33529100cd7ac5181c8964254893d80535159af805a708f0fe59b80c61a6904"
+    },
+    "campaign-native.csv": {
+      "bytes": 589,
+      "sha256": "ea4519fa0d19e9f82b3cc5da3d7ab8cb6ab75f1c08ec3a28f30c672e94c8447b"
+    },
+    "03-editeur-natif.png": {
+      "bytes": 192584,
+      "sha256": "9164a9787fdaa958b76a197ce012f4bc0788d7e42c84d68281d5038f26094837"
+    },
+    "campaign-preparation.json": {
+      "bytes": 7779,
+      "sha256": "52eeba87c57f91aaeddf1ee4ee86c87b7293440831ac93bdbc43f96e9761543e"
+    }
+  },
+  "checks": {
+    "D11b-native-campaigns": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/campaign-manual-native.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T11:55:18.438902+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/campaigns/route.ts": "38259c76da7e06bdf9deda2865378d72f5cca492b95fcd7f34bbdf36b84e10c5",
+        "src/lib/campaigns/manual.ts": "4e3f955f7461c93870ef33b3d5a32257a9e33dc9468fd97ad8a76f2644aa2d7a",
+        "tests/campaign-manual-native.test.ts": "264c91434906f270d8fab941f11d15a6c3ffbdb59c516f951436f46a5fa5d484"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-native-campaigns.log",
+      "cleanCommitSnapshot": false,
+      "pid": 372176,
+      "processGroup": 372176,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:55:32.067882+00:00",
+      "logSha256": "cd409ad40b3d156f225311e946f7af16d61b137d250a7975311512bf6bcd2539",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11b-first-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T11:58:31.978398+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/projects/[id]/campaigns/route.ts": "38259c76da7e06bdf9deda2865378d72f5cca492b95fcd7f34bbdf36b84e10c5",
+        "src/components/studio/ad-campaigns.tsx": "0b706d820f7776dd0535d8ed9c674b8029766815fb0b23d5ba03813e65b15d68",
+        "src/components/studio/conversation-social-tools.tsx": "a6164bce5d2522aa5ba12d4dae4ed1527af727a4df1fd37f3ccc6ac33de6069e",
+        "src/lib/campaigns/manual.ts": "4e3f955f7461c93870ef33b3d5a32257a9e33dc9468fd97ad8a76f2644aa2d7a",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "f14fe616142ea318e59fe7f2a653b8481f7d4b84f0aab8a31155d2e172917a0f",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "89c180468d93a2209c3ca2b79bbd3893c76cabc348cf3800b985763a9ce72504",
+        "src/lib/orchestrator/conversation/social-tool-contract.ts": "70f253e8b8d9b9350f524fe5b32f294bb6ece06777967b2894b0660b354a1d49",
+        "src/lib/orchestrator/conversation/social-tool-execution.ts": "88ec4b2e7e5ee2028f29066f11e9ad08ac0e1e5789e4e1414ba879eba4450b9e",
+        "src/lib/orchestrator/conversation/social-tool-validation.ts": "c2c33bd05d8c3daa865c4e3c52b9448da87e2821d8e77e21ee3a8edbe0ccccc5",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "92165014670759a422297947fb6d6e7ef1ba0ad67b66b818fb632bc87c9dd8f4",
+        "tests/campaign-manual-native.test.ts": "264c91434906f270d8fab941f11d15a6c3ffbdb59c516f951436f46a5fa5d484",
+        "tests/conversation211-social-preview.test.ts": "5bd5ef43c0b4ba17da94f52312d74394d29e4f47a5def71a2bac75a9afe3c3e7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-first-types.log",
+      "cleanCommitSnapshot": false,
+      "pid": 390275,
+      "processGroup": 390275,
+      "exitCode": 2,
+      "finishedAt": "2026-10-30T11:59:02.688362+00:00",
+      "logSha256": "c4edbcc7e55c32ac1fbdfeff57e2f332fffb3ebf4981d979fac83377b17ceff7",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11b-generalization-targeted": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npx",
+        "vitest",
+        "run",
+        "tests/campaign-manual-native.test.ts",
+        "tests/conversation211-campaign-execution.test.ts",
+        "tests/conversation211-social-validation.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/conversation211-social-preview.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T12:00:13.117463+00:00",
+      "state": "passed",
+      "sources": {
+        "src/app/api/projects/[id]/campaigns/route.ts": "9d8b1fd28e59aa6da3894574a4ef323a9299e0979fbd6dd7dadf761db4f6c6a0",
+        "src/components/studio/ad-campaigns.tsx": "0b706d820f7776dd0535d8ed9c674b8029766815fb0b23d5ba03813e65b15d68",
+        "src/components/studio/conversation-social-tools.tsx": "a6164bce5d2522aa5ba12d4dae4ed1527af727a4df1fd37f3ccc6ac33de6069e",
+        "src/lib/campaigns/manual.ts": "4e3f955f7461c93870ef33b3d5a32257a9e33dc9468fd97ad8a76f2644aa2d7a",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "f14fe616142ea318e59fe7f2a653b8481f7d4b84f0aab8a31155d2e172917a0f",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "89c180468d93a2209c3ca2b79bbd3893c76cabc348cf3800b985763a9ce72504",
+        "src/lib/orchestrator/conversation/social-tool-contract.ts": "70f253e8b8d9b9350f524fe5b32f294bb6ece06777967b2894b0660b354a1d49",
+        "src/lib/orchestrator/conversation/social-tool-execution.ts": "88ec4b2e7e5ee2028f29066f11e9ad08ac0e1e5789e4e1414ba879eba4450b9e",
+        "src/lib/orchestrator/conversation/social-tool-validation.ts": "c2c33bd05d8c3daa865c4e3c52b9448da87e2821d8e77e21ee3a8edbe0ccccc5",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "92165014670759a422297947fb6d6e7ef1ba0ad67b66b818fb632bc87c9dd8f4",
+        "tests/campaign-manual-native.test.ts": "846d2a82ff20977ee89c43e58d70c6f87cd227c405b59c6cc29e2e8042fce8a9",
+        "tests/conversation211-campaign-execution.test.ts": "458173c140fc6ed33c6083716f4a2a7ec40d50880823b81f2406de388b92b5ab",
+        "tests/conversation211-social-preview.test.ts": "5bd5ef43c0b4ba17da94f52312d74394d29e4f47a5def71a2bac75a9afe3c3e7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-generalization-targeted.log",
+      "cleanCommitSnapshot": false,
+      "pid": 394340,
+      "processGroup": 394340,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:00:27.557432+00:00",
+      "logSha256": "2b5ead4056fba6bb5e30c03b00e9a8b58d3a9bcbaaf98ea29e5c64b11a445971",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11b-browser-source-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T12:02:33.106003+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "e77e53c47ea96446893262e373caecb6e7ed4472459b284242a699ee0095417d",
+        "scripts/verify-agent211-build.ts": "a091a2b4e865f6df2686d25b73a3d99dbe38215746fb3b03febf5ad8341bb1f3",
+        "scripts/verify-agent211-campaign-ui.ts": "765fa5f86b63b14d5c8503c0e25f1db0a912b4101a5facb4b4ea56647086ca17",
+        "src/app/api/projects/[id]/campaigns/route.ts": "9d8b1fd28e59aa6da3894574a4ef323a9299e0979fbd6dd7dadf761db4f6c6a0",
+        "src/components/studio/ad-campaigns.tsx": "0b706d820f7776dd0535d8ed9c674b8029766815fb0b23d5ba03813e65b15d68",
+        "src/components/studio/conversation-social-tools.tsx": "a6164bce5d2522aa5ba12d4dae4ed1527af727a4df1fd37f3ccc6ac33de6069e",
+        "src/lib/campaigns/manual.ts": "4e3f955f7461c93870ef33b3d5a32257a9e33dc9468fd97ad8a76f2644aa2d7a",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "f14fe616142ea318e59fe7f2a653b8481f7d4b84f0aab8a31155d2e172917a0f",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "89c180468d93a2209c3ca2b79bbd3893c76cabc348cf3800b985763a9ce72504",
+        "src/lib/orchestrator/conversation/social-tool-contract.ts": "70f253e8b8d9b9350f524fe5b32f294bb6ece06777967b2894b0660b354a1d49",
+        "src/lib/orchestrator/conversation/social-tool-execution.ts": "88ec4b2e7e5ee2028f29066f11e9ad08ac0e1e5789e4e1414ba879eba4450b9e",
+        "src/lib/orchestrator/conversation/social-tool-validation.ts": "c2c33bd05d8c3daa865c4e3c52b9448da87e2821d8e77e21ee3a8edbe0ccccc5",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "92165014670759a422297947fb6d6e7ef1ba0ad67b66b818fb632bc87c9dd8f4",
+        "tests/campaign-manual-native.test.ts": "846d2a82ff20977ee89c43e58d70c6f87cd227c405b59c6cc29e2e8042fce8a9",
+        "tests/conversation211-campaign-execution.test.ts": "458173c140fc6ed33c6083716f4a2a7ec40d50880823b81f2406de388b92b5ab",
+        "tests/conversation211-social-preview.test.ts": "5bd5ef43c0b4ba17da94f52312d74394d29e4f47a5def71a2bac75a9afe3c3e7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-browser-source-types.log",
+      "cleanCommitSnapshot": false,
+      "pid": 400222,
+      "processGroup": 400222,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:02:39.654965+00:00",
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11b-clean-build": {
+      "command": [
+        "env",
+        "DATA_DIR=/tmp/ecs-d11b-build",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "XDG_CONFIG_HOME=/workspace/reviews/ecom-211-state/config",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-campagnes/scripts/lot9/network-guard.mjs",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "06688a0a4a3beefe5ffdab371025f5b228abed11",
+      "startedAt": "2026-10-30T12:04:09.368971+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11b-clean-build.log",
+      "cleanCommitSnapshot": true,
+      "pid": 408113,
+      "processGroup": 408113,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:05:34.589633+00:00",
+      "logSha256": "5bc55db6bb769201c6f1c718eeb170620dede299b0489d195c2ad3086964c29a",
+      "sourceUnchanged": true,
+      "finalHead": "06688a0a4a3beefe5ffdab371025f5b228abed11"
+    },
+    "D11b-browser-compiled": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11b-browser",
+        "--campaign-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "06688a0a4a3beefe5ffdab371025f5b228abed11",
+      "startedAt": "2026-10-30T12:06:18.580390+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11b-browser-compiled.log",
+      "cleanCommitSnapshot": true,
+      "pid": 413512,
+      "processGroup": 413512,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T12:06:28.186088+00:00",
+      "logSha256": "003ecb7d6136294641065128346aad9b5fb605dd8d22261d5e1c90e2b17ecae9",
+      "sourceUnchanged": true,
+      "finalHead": "06688a0a4a3beefe5ffdab371025f5b228abed11"
+    },
+    "D11b-clean-fixtures-build": {
+      "command": [
+        "env",
+        "DATA_DIR=/tmp/ecs-d11b-build",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "XDG_CONFIG_HOME=/workspace/reviews/ecom-211-state/config",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-campagnes/scripts/lot9/network-guard.mjs",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "06688a0a4a3beefe5ffdab371025f5b228abed11",
+      "startedAt": "2026-10-30T12:07:36.633996+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11b-clean-fixtures-build.log",
+      "cleanCommitSnapshot": true,
+      "pid": 416743,
+      "processGroup": 416743,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:09:19.441545+00:00",
+      "logSha256": "392c0f1a8e7854231cc733921fdbfacb0931c6566e493321f9e3225801067e03",
+      "sourceUnchanged": true,
+      "finalHead": "06688a0a4a3beefe5ffdab371025f5b228abed11"
+    },
+    "D11b-actual-browser": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11b-actual-browser",
+        "--campaign-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "cc8b3dae7e218a5043f169826f1a995735d39746",
+      "startedAt": "2026-10-30T12:10:33.586329+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11b-actual-browser.log",
+      "cleanCommitSnapshot": true,
+      "pid": 422745,
+      "processGroup": 422745,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T12:10:43.187848+00:00",
+      "logSha256": "b0286e7a8c320a476d84c7db52b12e2e8c331482d639051084a9b76cca5ff201",
+      "sourceUnchanged": true,
+      "finalHead": "cc8b3dae7e218a5043f169826f1a995735d39746"
+    },
+    "D11b-named-native-conversation-browser": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11b-named-native-conversation-browser",
+        "--campaign-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "bff328a68bfc88eb79df8d987ca92fe814002a98",
+      "startedAt": "2026-10-30T12:13:56.170787+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11b-named-native-conversation-browser.log",
+      "cleanCommitSnapshot": true,
+      "pid": 425174,
+      "processGroup": 425174,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:14:16.333382+00:00",
+      "logSha256": "6e86c0a0dc57f2367afb2daa8051f0623a8e44488df67d4e9c3f8bad33440fa1",
+      "sourceUnchanged": true,
+      "finalHead": "bff328a68bfc88eb79df8d987ca92fe814002a98"
+    },
+    "D11b-held-out-and-security": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-campagnes/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-campaign-execution.test.ts",
+        "tests/campaign-manual-native.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/social-manual-native.test.ts",
+        "tests/securite-audit-stabilisation.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "bff328a68bfc88eb79df8d987ca92fe814002a98",
+      "startedAt": "2026-10-30T12:15:44.002010+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-campaign-execution.test.ts": "4f9460492b793ec5bca61f4323b8bde2eaeadf9993334347cc28325319efd99b"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-held-out-and-security.log",
+      "cleanCommitSnapshot": false,
+      "pid": 425849,
+      "processGroup": 425849,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T12:15:53.457563+00:00",
+      "logSha256": "6c802b2aac34e65e573887a7d646eb817297a5ab251e954fdf6de2c0a6276b5b",
+      "sourceUnchanged": true,
+      "finalHead": "bff328a68bfc88eb79df8d987ca92fe814002a98"
+    },
+    "D11b-complete-targeted": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-campagnes/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-campaign-execution.test.ts",
+        "tests/campaign-manual-native.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/social-manual-native.test.ts",
+        "tests/securite-audit-stabilisation.test.ts",
+        "tests/conversation211-social-preview.test.ts",
+        "tests/conversation211-social-validation.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "bff328a68bfc88eb79df8d987ca92fe814002a98",
+      "startedAt": "2026-10-30T12:16:46.750977+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/conversation211-campaign-execution.test.ts": "85fc3692aaf40602c6432631b28fd1fae05af0475f26584e1e9b60fb696624bc"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-complete-targeted.log",
+      "cleanCommitSnapshot": false,
+      "pid": 426271,
+      "processGroup": 426271,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:16:55.685331+00:00",
+      "logSha256": "9eba43bee707e3d3ff716a4452f2de486233945c3290ce43f668cff7f1bc17a9",
+      "sourceUnchanged": true,
+      "finalHead": "bff328a68bfc88eb79df8d987ca92fe814002a98"
+    },
+    "D11b-held-out-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-campagnes",
+      "head": "bff328a68bfc88eb79df8d987ca92fe814002a98",
+      "startedAt": "2026-10-30T12:15:45.489269+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/conversation211-campaign-execution.test.ts": "4f9460492b793ec5bca61f4323b8bde2eaeadf9993334347cc28325319efd99b"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11b-held-out-types.log",
+      "cleanCommitSnapshot": false,
+      "pid": 425940,
+      "processGroup": 425940,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:16:16.195423+00:00",
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870",
+      "sourceUnchanged": true,
+      "finalHead": "bff328a68bfc88eb79df8d987ca92fe814002a98"
+    }
+  },
+  "scope": "native campaign draft with existing media; no generated creative, publication, account or spend",
+  "failedAttempts": [
+    "Type check found deleted z import still required by DELETE and missing Promise in test callback; fixed before freeze.",
+    "First compiled stamp showed modified because public fixture was symlinked; own tracked files restored and clean build repeated without application change.",
+    "Browser fixture created brand/catalog before opening the conversation, correctly refused by legacy-project migration guard; harness order fixed, application protection unchanged.",
+    "Price test proposed a known price without customer request; refusal correct. Test strengthened: no request refused, explicit correct price accepted, false price/promotion refused."
+  ],
+  "creativeQualityQualified": false
+}

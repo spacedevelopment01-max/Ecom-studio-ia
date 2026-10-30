@@ -1,0 +1,137 @@
+{
+  "id": "5klfy7o6io1myrbi",
+  "sourceReceiptId": "dtlnjo4kx2w6dz0l",
+  "creationProven": true,
+  "delivered": true,
+  "state": "review",
+  "job": {
+    "id": "j1k8l5qra34s9oa4",
+    "type": "agent.social.prepare",
+    "label": "Préparer les brouillons sociaux avec SYNA",
+    "status": "done",
+    "progress": 1,
+    "message": "Terminé",
+    "error": null,
+    "attempts": 1,
+    "parentId": null,
+    "result": {
+      "quoteId": "5klfy7o6io1myrbi",
+      "outcome": {
+        "planId": null,
+        "posts": [],
+        "warnings": [],
+        "campaign": {
+          "id": "syna-5klfy7o6io1myrbi",
+          "name": "Le papier au quotidien",
+          "objective": "Notoriété",
+          "networks": "[\"facebook\"]",
+          "brief": "{\"language\":\"fr\",\"audience\":\"Ateliers de reliure\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"xc1w125d4qvmm5np\",\"version\":1}},\"request\":\"Prépare un brouillon de campagne pour Presse à papier avec detourage.png. Deux angles : Usage et Découverte. Garde le premier texte exact :\\nUne presse à papier pour l’atelier.\\nDeux  espaces.\\nSans diffusion ni génération de média.\",\"agentQuoteId\":\"5klfy7o6io1myrbi\"}",
+          "plan": "{\"ads\":[{\"angle\":\"Usage\",\"hook\":\"Un geste pour le papier\",\"primary\":\"Une presse à papier pour l’atelier.\\nDeux  espaces.\",\"headline\":\"Le papier, à plat\",\"description\":\"Un outil pour le papier\",\"cta\":\"Découvrir\",\"visual\":\"Photo acquise conservée.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]},{\"angle\":\"Découverte\",\"hook\":\"Regarder les détails\",\"primary\":\"Découvrez la presse à papier.\",\"headline\":\"Une presse à découvrir\",\"description\":\"Présentation de l’outil\",\"cta\":\"En savoir plus\",\"visual\":\"La même photo acquise.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]}]}",
+          "status": "draft"
+        }
+      },
+      "localOnly": true,
+      "providerCalls": 0,
+      "publication": false
+    },
+    "createdAt": 1793362448980,
+    "updatedAt": 1793362450468,
+    "finishedAt": 1793362450468,
+    "startedAt": 1793362448980,
+    "alive": false,
+    "idleMs": 1086
+  },
+  "planId": null,
+  "posts": [],
+  "campaign": {
+    "original": {
+      "id": "syna-5klfy7o6io1myrbi",
+      "name": "Le papier au quotidien",
+      "objective": "Notoriété",
+      "networks": "[\"facebook\"]",
+      "brief": "{\"language\":\"fr\",\"audience\":\"Ateliers de reliure\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"xc1w125d4qvmm5np\",\"version\":1}},\"request\":\"Prépare un brouillon de campagne pour Presse à papier avec detourage.png. Deux angles : Usage et Découverte. Garde le premier texte exact :\\nUne presse à papier pour l’atelier.\\nDeux  espaces.\\nSans diffusion ni génération de média.\",\"agentQuoteId\":\"5klfy7o6io1myrbi\"}",
+      "plan": "{\"ads\":[{\"angle\":\"Usage\",\"hook\":\"Un geste pour le papier\",\"primary\":\"Une presse à papier pour l’atelier.\\nDeux  espaces.\",\"headline\":\"Le papier, à plat\",\"description\":\"Un outil pour le papier\",\"cta\":\"Découvrir\",\"visual\":\"Photo acquise conservée.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]},{\"angle\":\"Découverte\",\"hook\":\"Regarder les détails\",\"primary\":\"Découvrez la presse à papier.\",\"headline\":\"Une presse à découvrir\",\"description\":\"Présentation de l’outil\",\"cta\":\"En savoir plus\",\"visual\":\"La même photo acquise.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]}]}",
+      "status": "draft"
+    },
+    "ads": [
+      {
+        "angle": "Usage",
+        "hook": "Un geste pour le papier",
+        "primary": "Une presse à papier pour l’atelier.\nDeux  espaces.",
+        "headline": "Le papier, à plat",
+        "description": "Un outil pour le papier",
+        "cta": "Découvrir",
+        "visual": "Photo acquise conservée.",
+        "media": [
+          {
+            "id": "49xeiocjgfxca5mo",
+            "name": "detourage.png",
+            "url": "/api/files/49xeiocjgfxca5mo",
+            "kind": "image",
+            "meta": {}
+          }
+        ]
+      },
+      {
+        "angle": "Découverte",
+        "hook": "Regarder les détails",
+        "primary": "Découvrez la presse à papier.",
+        "headline": "Une presse à découvrir",
+        "description": "Présentation de l’outil",
+        "cta": "En savoir plus",
+        "visual": "La même photo acquise.",
+        "media": [
+          {
+            "id": "49xeiocjgfxca5mo",
+            "name": "detourage.png",
+            "url": "/api/files/49xeiocjgfxca5mo",
+            "kind": "image",
+            "meta": {}
+          }
+        ]
+      }
+    ],
+    "current": {
+      "id": "syna-5klfy7o6io1myrbi",
+      "name": "Le papier au quotidien",
+      "objective": "Notoriété",
+      "networks": "[\"facebook\"]",
+      "brief": "{\"language\":\"fr\",\"audience\":\"Ateliers de reliure\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"xc1w125d4qvmm5np\",\"version\":1}},\"request\":\"Prépare un brouillon de campagne pour Presse à papier avec detourage.png. Deux angles : Usage et Découverte. Garde le premier texte exact :\\nUne presse à papier pour l’atelier.\\nDeux  espaces.\\nSans diffusion ni génération de média.\",\"agentQuoteId\":\"5klfy7o6io1myrbi\"}",
+      "plan": "{\"ads\":[{\"angle\":\"Usage\",\"hook\":\"Un geste pour le papier\",\"primary\":\"Ma correction manuelle entière.\\nDeux  espaces.\",\"headline\":\"Le papier, à plat\",\"description\":\"Un outil pour le papier\",\"cta\":\"Découvrir\",\"visual\":\"Photo acquise conservée.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]},{\"angle\":\"Découverte\",\"hook\":\"Regarder les détails\",\"primary\":\"Découvrez la presse à papier.\",\"headline\":\"Une presse à découvrir\",\"description\":\"Présentation de l’outil\",\"cta\":\"En savoir plus\",\"visual\":\"La même photo acquise.\",\"media\":[{\"id\":\"49xeiocjgfxca5mo\",\"name\":\"detourage.png\",\"url\":\"/api/files/49xeiocjgfxca5mo\",\"kind\":\"image\",\"meta\":{}}]}]}",
+      "status": "draft"
+    },
+    "isCurrent": false,
+    "media": [
+      {
+        "assetId": "49xeiocjgfxca5mo",
+        "version": 1,
+        "sha256": "499586638732617de54a14962020bc9d2412710e3283c33d066f90907ed31ec9",
+        "present": true,
+        "href": "/api/files/49xeiocjgfxca5mo"
+      },
+      {
+        "assetId": "49xeiocjgfxca5mo",
+        "version": 1,
+        "sha256": "499586638732617de54a14962020bc9d2412710e3283c33d066f90907ed31ec9",
+        "present": true,
+        "href": "/api/files/49xeiocjgfxca5mo"
+      }
+    ]
+  },
+  "warnings": [],
+  "costPct": 0,
+  "requestBounds": {
+    "maxCalls": 4,
+    "remainingCalls": 3,
+    "maxDepth": 1,
+    "maxRetries": 0,
+    "deadlineAt": 1793363346813,
+    "httpAttempts": 1
+  },
+  "localOnly": true,
+  "clientApproved": false,
+  "creativeQualityQualified": false,
+  "publication": false,
+  "href": "/studio/mfykj8qj4allxqz2/publicites?campaignId=syna-5klfy7o6io1myrbi#campagnes",
+  "message": "Brouillons conservés dans leurs outils natifs, à relire. Aucune création IA, programmation, diffusion ou dépense publicitaire par cette préparation."
+}
