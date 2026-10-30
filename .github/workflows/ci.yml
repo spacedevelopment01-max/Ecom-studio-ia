@@ -301,8 +301,8 @@ jobs:
           path: reports/ci-agent211-social-reuse
           if-no-files-found: warn
 
-      - name: Intégration SYNA et compteurs natifs communication (HTTP simulé)
-        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-communication-integration --integrated-communication-ui
+      - name: Intégration SYNA, compteurs natifs et suivi panneau fermé (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-communication-integration --background-communication-ui
         env:
           NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
       - name: Preuves de cohérence du Studio communication
