@@ -22,7 +22,7 @@ export const copyNeedsEvidence = (text:string, names:string[] = []) => terms(tex
 export type CopyIssue = {field:"headline"|"subline"|"cta";code:"COMMERCIAL_NUMBER_UNCONFIRMED"|"COMMERCIAL_NUMBER_NOT_REQUESTED"|"CLAIM_EVIDENCE_REQUIRED";clientText:boolean};
 export function publicationCopyIssues(p:Project, copy:Record<"headline"|"subline"|"cta",string>, request:string, explicit:string[], extraConfirmed:string[]=[]):CopyIssue[] {
   const servicePrice=p.business==="services"&&p.services.services.length===1?p.services.services[0].price??"":"";
-  const confirmed=[...p.product.facts.filter(f=>f.status==="confirmed").map(f=>`${f.label} ${f.value}`),p.product.price.status==="confirmed"?`${p.product.price.amount} ${p.product.price.currency}`:"",servicePrice,...extraConfirmed].join("\n");
+  const confirmed=[...p.product.facts.filter(f=>f.status==="confirmed").map(f=>`${f.label} ${f.value}`),p.product.price.status==="confirmed"&&p.product.price.amount!=null?`${p.product.price.amount/100} ${p.product.price.currency}`:"",servicePrice,...extraConfirmed].join("\n");
   const wanted=[request,...explicit].join("\n"), verified=terms(confirmed),asked=terms(wanted);
   const names=[p.brand?.name??"",p.product.name];
   return (["headline","subline","cta"] as const).flatMap(field=>{
@@ -42,4 +42,12 @@ export function authorizedPublicationTexts(
   extraConfirmed: string[] = [],
 ) {
   return texts.filter(x=>!publicationCopyIssues(p,{headline:x,subline:"",cta:""},request,explicit,extraConfirmed).length);
+}
+/** Réemploi des pixels d’une publication acquise : ses textes ne sont pas réécrits ni rachetés.
+ * La sélection du fichier désigne ses textes existants ; leurs faits doivent toujours appartenir à l’offre. */
+export function acquiredPublicationCopyReview(p:Project,meta:{aiPost?:{texts?:unknown}}){
+ if(!meta.aiPost)return{status:'not_applicable' as const,issues:[]as CopyIssue[]};
+ const texts=meta.aiPost.texts as Record<'headline'|'subline'|'cta',string>|undefined;
+ if(!texts||!['headline','subline','cta'].every(k=>typeof texts[k as keyof typeof texts]==='string'))return{status:'unverified' as const,issues:[]as CopyIssue[]};
+ const issues=publicationCopyIssues(p,texts,'',Object.values(texts));return{status:issues.length?'blocked' as const:'supported' as const,issues};
 }

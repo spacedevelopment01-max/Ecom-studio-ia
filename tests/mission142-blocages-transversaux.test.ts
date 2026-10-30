@@ -48,9 +48,9 @@ it.each(["50 % de remise","1 250 € seulement","1250 EUR seulement","5 étoiles
  const {p}=await fixture();expect(publicationCopyIssues(p,{headline:text,subline:"",cta:""},"",[]).length).toBeGreaterThan(0);
 });
 it("un prix avec espace de milliers ne se confond pas avec son suffixe",async()=>{
- const {p}=await fixture();p.product.price={amount:250,currency:"EUR",status:"confirmed"};
+ const {p}=await fixture();p.product.price={amount:25000,currency:"EUR",status:"confirmed"};
  expect(publicationCopyIssues(p,{headline:"1 250 €",subline:"",cta:""},"250 €",[])[0].code).toBe("COMMERCIAL_NUMBER_UNCONFIRMED");
- p.product.price.amount=1250;expect(publicationCopyIssues(p,{headline:"1 250 €",subline:"",cta:""},"1250 EUR",[])).toEqual([]);
+ p.product.price.amount=125000;expect(publicationCopyIssues(p,{headline:"1 250 €",subline:"",cta:""},"1250 EUR",[])).toEqual([]);
 });
 it("références incompatibles, mise en page absente et plafond trop faible : zéro rédaction achetée, aucun reçu pending",async()=>{
  const f=await fixture(),ref=resolveSubject(f.p,null)!.referenceAssetId,d=transports();

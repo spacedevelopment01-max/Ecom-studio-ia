@@ -21,3 +21,4 @@ export const conversationVideoGenerationEnabled=()=>conversationVideosEnabled()&
 export const conversationVideoVoiceEnabled=()=>conversationVideosEnabled()&&process.env.STUDIO_CONVERSATION_VIDEO_VOICE==='1';
 
 export const conversationVideoClipEnabled=()=>conversationVideosEnabled()&&process.env.STUDIO_CONVERSATION_VIDEO_CLIP==='1';
+export const conversationSocialEnabled=()=>conversationToolsEnabled()&&conversationContextEnabled()&&process.env.STUDIO_CONVERSATION_SOCIAL==='1';

@@ -1,13 +1,9 @@
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
-import { z } from "zod";
-import { all, id, now, run, one } from "@/lib/db";
+import { all } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
-import { HttpError } from "@/lib/auth";
-import { getAsset, addUsage } from "@/lib/library";
 import { postView } from "@/lib/posts";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { L } from "@/lib/i18n-server";
-import { contentHash } from "@/lib/social-v2/approval";
+import {createManualPost,ManualPostInputSchema}from "@/lib/social-v2/manual";
 
 
 export const GET = handle(async (req: Request, ctx: Ctx) => {
@@ -22,19 +18,6 @@ export const GET = handle(async (req: Request, ctx: Ctx) => {
 /** Publication créée à la main ou depuis une campagne (texte, médias de la bibliothèque, date) : publication Social V2. */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ network: z.enum(["instagram", "facebook", "tiktok", "youtube", "pinterest"]), format: z.enum(["image", "carousel", "video", "reel", "story", "short", "pin", "text"]), title: z.string().max(200).default(""), caption: z.string().max(5000).default(""), hashtags: z.string().max(500).default(""), media: z.array(z.string()).max(10).default([]), scheduledAt: z.number().nullable().optional(), connectionId: z.string().nullable().optional(), link: z.string().max(500).optional(), campaignId: z.string().optional() }));
-  for (const m of b.media) if (getAsset(m)?.project_id !== p.id) throw new HttpError(400, L("Média étranger au projet.", "Media does not belong to this project."));
-  // Compte de réseau social : seulement l'un de ceux du client (jamais l'identifiant d'un autre compte).
-  if (b.connectionId && !one("SELECT 1 FROM connections WHERE id = ? AND user_id = ?", b.connectionId, user.id)) throw new HttpError(400, L("Compte de réseau social introuvable.", "Social account not found."));
-  const pid = id();
-  // Publication Social V2 : à relire (statut « review »), approbation par version (empreinte), barrière avant toute
-  // programmation ; écrite par le client (jamais réécrite automatiquement).
-  const media = JSON.stringify(b.media);
-  const hash = contentHash({ network: b.network, format: b.format, title: b.title, caption: b.caption, hashtags: b.hashtags, link: b.link ?? null, media });
-  run(
-    "INSERT INTO posts (id, project_id, connection_id, network, format, status, scheduled_at, timezone, title, caption, hashtags, link, media, campaign_id, publish_key, created_at, updated_at, engine, content_hash, user_edited) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-    pid, p.id, b.connectionId ?? null, b.network, b.format, "review", b.scheduledAt ?? null, p.settings.timezone, b.title, b.caption, b.hashtags, b.link ?? null, media, b.campaignId ?? null, `manual:${pid}`, now(), now(), "v2", hash, 1,
-  );
-  for (const m of b.media) addUsage(m, "post", pid, L("Publication", "Post"));
-  return ok({ id: pid });
+  const b=await body(req,ManualPostInputSchema);
+  return ok(createManualPost(p,user.id,b));
 });
