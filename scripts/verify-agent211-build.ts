@@ -326,7 +326,7 @@ try{
     const legacyFixture={origin,out,account,project,login,counts,seed:async(u:Awaited<ReturnType<typeof account>>,pid:string)=>{openProjectConversation(u,pid);const seeded=await seedCompositionSite(pid,COMPOSITION_SCENES[0]);return{...seeded,asset:one<{id:string;version:number;name:string}>('SELECT id,version,name FROM assets WHERE project_id=?',pid)!};},setFixture:()=>{},input:()=>'',inspect:(pid:string)=>currentTheme(pid)!};proof.legacyContextUi=await verifyLegacySelectionBrowser(legacyFixture);await stop(server);server=undefined;await start(true,{STUDIO_CONVERSATION_CONTEXT:'0'});proof.contextFlagClosed=await verifyLegacySelectionBrowser({...legacyFixture,origin},true);
   }
   proof.finishedAt=new Date().toISOString();proof.success=true;
-}finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
+}finally{await stop(worker);await stop(server);await new Promise<void>(r=>fake.close(()=>r()));if(!proof.success){try{(await import('./agent211-failure-diagnostic')).saveAgentFailureDiagnostic(out,logs);}catch(error){console.error('Failure diagnostic unavailable:',String(error));}}fs.writeFileSync(path.join(out,'api-proof.json'),JSON.stringify(proof,null,2)+'\n');fs.writeFileSync(path.join(temp,'process.log'),logs);}
 console.log(JSON.stringify({success:proof.success,file:path.join(out,'api-proof.json'),version:proof.version,totals:proof.simulatedTotals,temp}));
 
 // D11c : même recette finale, après les campagnes et la fermeture des processus précédents.
