@@ -1,0 +1,44 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "transport": "native SDK/HTTP loopback simulation",
+  "manualProjectOptInPreserved": true,
+  "passed": true,
+  "campaignId": "syna-vmm9fdyc58ohyjtj",
+  "success": {
+    "nativeCountersRefreshed": true,
+    "panelClosedDuringAcquisition": true,
+    "unsentConversationDraftPreserved": true,
+    "refreshPreservedDraft": true,
+    "heldoutProduct": "Tranchet de sellier à lame courbe",
+    "sha256": "fbc3caeeef19e97a5c9acb5eadca1fd3345ae34c56da776ad1d3bfd532932660",
+    "downloadExact": true,
+    "aspect": "1:1",
+    "newImageCalls": 1,
+    "textExact": true,
+    "nativeEditor": true,
+    "approved": false
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0,
+    "newImageCalls": 1,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "firstAssetPreserved": true,
+  "counts": {
+    "providerHttpCalls": 9,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 7,
+    "imageHttpCalls": 2,
+    "tokenCounts": 7,
+    "calls": 9,
+    "usage": 8,
+    "simulatedMicro": 261371
+  }
+}

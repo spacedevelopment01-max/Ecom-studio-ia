@@ -1,0 +1,166 @@
+{
+  "before": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D12b-closed-panel-before-proof",
+      "--background-communication-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "b1ab323f7c81025fe01aa72173f416ab90108a25",
+    "startedAt": "2026-10-30T15:39:16.842517+00:00",
+    "state": "failed",
+    "sources": {
+      "scripts/verify-agent211-build.ts": "c3bf3c2d1a27ddc278f4ec0e82679acb1eccd9bacaf35b34a0d97ef0bf206b99",
+      "scripts/verify-agent211-campaign-visual-ui.ts": "995942e2aeb1891f2b58ebbc242e5e02bdf992dd68acc86f0e7679563f3a890a"
+    },
+    "log": "/workspace/reviews/ecom-211-state/D12b-closed-panel-before.log",
+    "cleanCommitSnapshot": false,
+    "pid": 482928,
+    "processGroup": 482928,
+    "exitCode": 1,
+    "finishedAt": "2026-10-30T15:39:39.263477+00:00",
+    "logSha256": "1613aa7a56188a465477a1268545d7dbd95e26ae814449576cebb36705e8e71c",
+    "sourceUnchanged": true,
+    "finalHead": "b1ab323f7c81025fe01aa72173f416ab90108a25"
+  },
+  "scoped": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/conversation211-communication-registry.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts",
+      "tests/ci-native-production-placement.test.ts",
+      "tests/ci-native-social-placement.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "b1ab323f7c81025fe01aa72173f416ab90108a25",
+    "startedAt": "2026-10-30T15:41:42.340960+00:00",
+    "state": "passed",
+    "sources": {
+      ".github/workflows/ci.yml": "afbffb8bd353145c488b4567b317acc746673d8aaf4be4d26ed3e5d1ea20f0d6",
+      "scripts/verify-agent211-build.ts": "c3bf3c2d1a27ddc278f4ec0e82679acb1eccd9bacaf35b34a0d97ef0bf206b99",
+      "scripts/verify-agent211-campaign-visual-ui.ts": "53fd20cf4c46c04494154a4b236f98d9460cc16cdf12331da0fe9df024653824",
+      "src/components/studio/conversation-panel.tsx": "35a4ab741dffaf62e2c43c7890744304a40db2afdc7a041dac6466651ada88ce"
+    },
+    "log": "/workspace/reviews/ecom-211-state/D12b-scoped-tests.log",
+    "cleanCommitSnapshot": false,
+    "pid": 483617,
+    "processGroup": 483617,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:41:48.405628+00:00",
+    "logSha256": "aa77d2d39661ae5dd373b8f5ade25b6bc2a34aa1dd5805a6c1da9b76176f94a7",
+    "sourceUnchanged": true,
+    "finalHead": "b1ab323f7c81025fe01aa72173f416ab90108a25"
+  },
+  "typesBeforeFinalHarness": {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "b1ab323f7c81025fe01aa72173f416ab90108a25",
+    "startedAt": "2026-10-30T15:40:53.180842+00:00",
+    "state": "passed",
+    "sources": {
+      ".github/workflows/ci.yml": "afbffb8bd353145c488b4567b317acc746673d8aaf4be4d26ed3e5d1ea20f0d6",
+      "scripts/verify-agent211-build.ts": "c3bf3c2d1a27ddc278f4ec0e82679acb1eccd9bacaf35b34a0d97ef0bf206b99",
+      "scripts/verify-agent211-campaign-visual-ui.ts": "5a1a51a22099c5d825bb92542c46a4f56914fadf47552d30dd6795c1cef1db55",
+      "src/components/studio/conversation-panel.tsx": "35a4ab741dffaf62e2c43c7890744304a40db2afdc7a041dac6466651ada88ce"
+    },
+    "log": "/workspace/reviews/ecom-211-state/D12b-types.log",
+    "cleanCommitSnapshot": false,
+    "pid": 483428,
+    "processGroup": 483428,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:41:00.176863+00:00",
+    "logSha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580",
+    "sourceUnchanged": true,
+    "finalHead": "b1ab323f7c81025fe01aa72173f416ab90108a25"
+  },
+  "finalCiPlacementOverlap": {
+    "command": [
+      "npm",
+      "test",
+      "--",
+      "tests/ci-native-production-placement.test.ts",
+      "tests/ci-native-social-placement.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "4efb32af32e033572e142fc0f842734f6f3e200a",
+    "startedAt": "2026-10-30T15:49:26.688421+00:00",
+    "state": "passed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/D12b-ci-placement.log",
+    "cleanCommitSnapshot": true,
+    "pid": 486478,
+    "processGroup": 486478,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:49:27.256580+00:00",
+    "logSha256": "d18f492a935aba42f5eca2698c362250a172156725af65f042915aba52fb112d",
+    "sourceUnchanged": true,
+    "finalHead": "4efb32af32e033572e142fc0f842734f6f3e200a"
+  },
+  "build": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "4efb32af32e033572e142fc0f842734f6f3e200a",
+    "startedAt": "2026-10-30T15:47:34.439435+00:00",
+    "state": "passed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/D12b-clean-build.log",
+    "cleanCommitSnapshot": true,
+    "pid": 485143,
+    "processGroup": 485143,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:48:36.584164+00:00",
+    "logSha256": "8a41ea7fc3b29491a1886496a28a05d7f3300498c65fcf54f977b16d6a7699f0",
+    "sourceUnchanged": true,
+    "finalHead": "4efb32af32e033572e142fc0f842734f6f3e200a"
+  },
+  "browser": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D12b-closed-panel-after-proof",
+      "--background-communication-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "4efb32af32e033572e142fc0f842734f6f3e200a",
+    "startedAt": "2026-10-30T15:48:41.765132+00:00",
+    "state": "passed",
+    "sources": {},
+    "log": "/workspace/reviews/ecom-211-state/D12b-closed-panel-after.log",
+    "cleanCommitSnapshot": true,
+    "pid": 485809,
+    "processGroup": 485809,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T15:49:21.802824+00:00",
+    "logSha256": "fb75357d1c859294cd63c54d61603a6633dab85a85903f9ee481a74db54b41b3",
+    "sourceUnchanged": true,
+    "finalHead": "4efb32af32e033572e142fc0f842734f6f3e200a"
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "targetedDistinctTests": 24,
+  "ciPlacementRerunTests": 3,
+  "ciPlacementRerunOverlaps": true,
+  "applicationCommit": "4efb32af32e033572e142fc0f842734f6f3e200a",
+  "compiledVersion": {
+    "commit": "4efb32af32e033572e142fc0f842734f6f3e200a",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  }
+}
