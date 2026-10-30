@@ -1,0 +1,34 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "success": true,
+  "socialUi": {
+    "passed": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "captures": 4,
+    "nativeLocalPreparationOnly": true
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 5,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 5,
+    "imageHttpCalls": 0,
+    "tokenCounts": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  }
+}

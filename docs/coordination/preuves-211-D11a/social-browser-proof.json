@@ -1,0 +1,570 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "provider": "cognitive SDK HTTP simulation only; no media provider",
+  "nativeWorker": true,
+  "creativeQualityQualified": false,
+  "passed": true,
+  "result": {
+    "id": "luer2doeqjnzp2ul",
+    "sourceReceiptId": "yr17bhbil01tu6rs",
+    "creationProven": true,
+    "delivered": true,
+    "state": "review",
+    "job": {
+      "id": "cv9vb5vdpo6lg35g",
+      "type": "agent.social.prepare",
+      "label": "Préparer les brouillons sociaux avec SYNA",
+      "status": "done",
+      "progress": 1,
+      "message": "Terminé",
+      "error": null,
+      "attempts": 1,
+      "parentId": null,
+      "result": {
+        "quoteId": "luer2doeqjnzp2ul",
+        "outcome": {
+          "planId": null,
+          "posts": [
+            {
+              "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+              "network": "facebook",
+              "format": "image",
+              "title": "Un papier, un geste.",
+              "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+              "hashtags": "#Papier",
+              "link": null,
+              "media": "[\"kxrp66yo0lkb4skg\"]",
+              "status": "review",
+              "scheduled_at": null,
+              "timezone": "Europe/Paris",
+              "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+              "approved_hash": null,
+              "connection_id": null,
+              "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}"
+            }
+          ],
+          "warnings": []
+        },
+        "localOnly": true,
+        "providerCalls": 0,
+        "publication": false
+      },
+      "createdAt": 1793361342150,
+      "updatedAt": 1793361343041,
+      "finishedAt": 1793361343041,
+      "startedAt": 1793361342150,
+      "alive": false,
+      "idleMs": 33
+    },
+    "planId": null,
+    "posts": [
+      {
+        "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+        "network": "facebook",
+        "format": "image",
+        "title": "Un papier, un geste.",
+        "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+        "hashtags": "#Papier",
+        "link": null,
+        "media": [
+          {
+            "assetId": "kxrp66yo0lkb4skg",
+            "present": true,
+            "href": "/api/files/kxrp66yo0lkb4skg"
+          }
+        ],
+        "status": "review",
+        "scheduled_at": null,
+        "timezone": "Europe/Paris",
+        "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+        "approved_hash": null,
+        "connection_id": null,
+        "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}",
+        "nativePresent": true,
+        "isCurrent": true,
+        "current": {
+          "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+          "network": "facebook",
+          "format": "image",
+          "status": "review",
+          "scheduledAt": null,
+          "timezone": "Europe/Paris",
+          "title": "Un papier, un geste.",
+          "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+          "hashtags": "#Papier",
+          "link": null,
+          "angle": null,
+          "media": [
+            {
+              "id": "kxrp66yo0lkb4skg",
+              "name": "detourage.png",
+              "kind": "image",
+              "role": "cutout",
+              "mime": "image/png",
+              "size": 9944,
+              "width": 600,
+              "height": 900,
+              "duration": null,
+              "folderId": "msta1lpp6unbsu0u",
+              "origin": "generated",
+              "status": "approved",
+              "starred": false,
+              "version": 1,
+              "versionOf": null,
+              "sourceAssetId": null,
+              "createdAt": 1793361335470,
+              "url": "/api/files/kxrp66yo0lkb4skg",
+              "thumbUrl": "/api/files/kxrp66yo0lkb4skg?thumb=1",
+              "downloadUrl": "/api/files/kxrp66yo0lkb4skg?download=1",
+              "meta": {
+                "best": true
+              },
+              "provenance": {
+                "origin": "generated_or_transformed_unspecified",
+                "rightsStatus": "to_confirm",
+                "declaredLicense": null,
+                "evidenceRef": null,
+                "ownershipCertified": false,
+                "peopleConsent": "not_documented",
+                "thirdPartyBrands": "to_confirm",
+                "claims": "requires_project_evidence",
+                "demoOnly": false
+              }
+            }
+          ],
+          "connectionId": null,
+          "connectionName": null,
+          "planId": null,
+          "campaignId": null,
+          "error": null,
+          "remoteUrl": null,
+          "publishedAt": null,
+          "autoApproved": false,
+          "approvedAt": null,
+          "attempts": 0,
+          "advice": [
+            "Ajouter un appel à l'interaction (question, enregistrer, partager, lien).",
+            "Titre du visuel à raccourcir (2 à 6 mots)."
+          ],
+          "marketingStrategy": null,
+          "editorial": null,
+          "engine": "v2",
+          "pillar": null,
+          "objective": null,
+          "approvedValid": false,
+          "approvedHash": null,
+          "userEdited": true,
+          "blocking": [
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+          ],
+          "issues": [],
+          "level": "ready_to_connect"
+        },
+        "check": {
+          "blocking": [
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+          ],
+          "issues": [],
+          "codes": [
+            "invented_claim"
+          ],
+          "score": 8
+        }
+      }
+    ],
+    "warnings": [],
+    "costPct": 0,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 3,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793362239221,
+      "httpAttempts": 1
+    },
+    "localOnly": true,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "publication": false,
+    "href": "/studio/e9zrlix719iep8ui/publications",
+    "message": "Brouillons conservés dans Publications, à relire. Cette préparation n’a programmé ni diffusé de contenu."
+  },
+  "planned": {
+    "id": "h4bdo2mams3cdzj1",
+    "sourceReceiptId": "yhfg47ep18a18joq",
+    "creationProven": true,
+    "delivered": true,
+    "state": "review",
+    "job": {
+      "id": "j7q2n9p466786qru",
+      "type": "agent.social.prepare",
+      "label": "Préparer les brouillons sociaux avec SYNA",
+      "status": "done",
+      "progress": 1,
+      "message": "Terminé",
+      "error": null,
+      "attempts": 1,
+      "parentId": null,
+      "result": {
+        "quoteId": "h4bdo2mams3cdzj1",
+        "outcome": {
+          "planId": "syna-h4bdo2mams3cdzj1",
+          "posts": [
+            {
+              "id": "f95l7w9q9v3sx6b2",
+              "network": "facebook",
+              "format": "carousel",
+              "title": "Presse à papier artisanal",
+              "caption": "Presse à papier artisanal : 19,90 €.\n\n[À compléter : ce qui le rend intéressant]\n\nVoir le produit",
+              "hashtags": "pressepapier mise",
+              "link": null,
+              "media": "[]",
+              "status": "planned",
+              "scheduled_at": 1793455200000,
+              "timezone": "America/New_York",
+              "content_hash": "bf52563d82709c9c79144b06af418823",
+              "approved_hash": null,
+              "connection_id": null,
+              "brief": "{\"kind\":\"creative\",\"headline\":\"Presse à papier artisanal\",\"subline\":\"\",\"layout\":\"editorial\",\"material\":\"offer\",\"fullCaption\":\"Presse à papier artisanal : 19,90 €.\\n\\n[À compléter : ce qui le rend intéressant]\\n\\nVoir le produit\",\"verifiedFacts\":{\"brand\":\"SIMULATION — lot A\",\"offerName\":\"Presse à papier artisanal\",\"category\":\"Presse à papier artisanal\",\"business\":\"products\",\"facts\":[],\"answers\":[],\"objections\":[],\"proofs\":[],\"services\":[],\"area\":null,\"contact\":{\"phone\":null,\"email\":null,\"address\":null,\"hours\":null,\"bookingUrl\":null,\"mode\":null},\"shipping\":null,\"returns\":null,\"price\":\"19,90 €\",\"claimsToAvoid\":[],\"tone\":[],\"audience\":null,\"difference\":null,\"problem\":null,\"unknowns\":[\"caractéristiques confirmées du produit (dimensions, matières, contenance…)\",\"conditions de livraison\",\"conditions de retour\",\"preuves (garanties, labels, certifications) — aucune ne sera affirmée\"]},\"editorialObjective\":\"convert\",\"adapt\":[\"1 hashtag(s) retiré(s) (au plus 2 sur Facebook)\"],\"items\":[{\"key\":\"offer\",\"name\":\"offer\",\"price\":null}],\"role\":\"6:sell\",\"roleKind\":\"main\",\"roleTitle\":\"Mise en avant commerciale\",\"roleIdea\":\"votre offre, avec son vrai prix s'il est confirmé\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"request\":\"Prépare un calendrier de deux jours pour Presse à papier artisanal à partir du 2026-10-31, une publication Facebook à10h dans America/New_York. Sans diffusion.\",\"agentQuoteId\":\"h4bdo2mams3cdzj1\"}"
+            },
+            {
+              "id": "c8w1hld1uwnrtd6d",
+              "network": "facebook",
+              "format": "image",
+              "title": "Presse à papier artisanal : comment",
+              "caption": "Presse à papier artisanal : comment l'utiliser ? Votre avis en commentaire.\n\nVoir le produit",
+              "hashtags": "pressepapier question",
+              "link": null,
+              "media": "[]",
+              "status": "planned",
+              "scheduled_at": 1793545200000,
+              "timezone": "America/New_York",
+              "content_hash": "78d28e7167c3e2a365a0316df4940f77",
+              "approved_hash": null,
+              "connection_id": null,
+              "brief": "{\"kind\":\"creative\",\"headline\":\"Presse à papier artisanal : comment\",\"subline\":\"\",\"layout\":\"editorial\",\"material\":\"q0\",\"fullCaption\":\"Presse à papier artisanal : comment l'utiliser ? Votre avis en commentaire.\\n\\nVoir le produit\",\"verifiedFacts\":{\"brand\":\"SIMULATION — lot A\",\"offerName\":\"Presse à papier artisanal\",\"category\":\"Presse à papier artisanal\",\"business\":\"products\",\"facts\":[],\"answers\":[],\"objections\":[],\"proofs\":[],\"services\":[],\"area\":null,\"contact\":{\"phone\":null,\"email\":null,\"address\":null,\"hours\":null,\"bookingUrl\":null,\"mode\":null},\"shipping\":null,\"returns\":null,\"price\":\"19,90 €\",\"claimsToAvoid\":[],\"tone\":[],\"audience\":null,\"difference\":null,\"problem\":null,\"unknowns\":[\"caractéristiques confirmées du produit (dimensions, matières, contenance…)\",\"conditions de livraison\",\"conditions de retour\",\"preuves (garanties, labels, certifications) — aucune ne sera affirmée\"]},\"editorialObjective\":\"engage\",\"adapt\":[\"1 hashtag(s) retiré(s) (au plus 2 sur Facebook)\"],\"items\":[{\"key\":\"offer\",\"name\":\"offer\",\"price\":null}],\"role\":\"0:community\",\"roleKind\":\"main\",\"roleTitle\":\"Question à la communauté\",\"roleIdea\":\"une question à votre communauté\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"request\":\"Prépare un calendrier de deux jours pour Presse à papier artisanal à partir du 2026-10-31, une publication Facebook à10h dans America/New_York. Sans diffusion.\",\"agentQuoteId\":\"h4bdo2mams3cdzj1\"}"
+            }
+          ],
+          "warnings": []
+        },
+        "localOnly": true,
+        "providerCalls": 0,
+        "publication": false
+      },
+      "createdAt": 1793361348716,
+      "updatedAt": 1793361349465,
+      "finishedAt": 1793361349465,
+      "startedAt": 1793361348716,
+      "alive": false,
+      "idleMs": 95
+    },
+    "planId": "syna-h4bdo2mams3cdzj1",
+    "posts": [
+      {
+        "id": "f95l7w9q9v3sx6b2",
+        "network": "facebook",
+        "format": "carousel",
+        "title": "Presse à papier artisanal",
+        "caption": "Presse à papier artisanal : 19,90 €.\n\n[À compléter : ce qui le rend intéressant]\n\nVoir le produit",
+        "hashtags": "pressepapier mise",
+        "link": null,
+        "media": [],
+        "status": "planned",
+        "scheduled_at": 1793455200000,
+        "timezone": "America/New_York",
+        "content_hash": "bf52563d82709c9c79144b06af418823",
+        "approved_hash": null,
+        "connection_id": null,
+        "brief": "{\"kind\":\"creative\",\"headline\":\"Presse à papier artisanal\",\"subline\":\"\",\"layout\":\"editorial\",\"material\":\"offer\",\"fullCaption\":\"Presse à papier artisanal : 19,90 €.\\n\\n[À compléter : ce qui le rend intéressant]\\n\\nVoir le produit\",\"verifiedFacts\":{\"brand\":\"SIMULATION — lot A\",\"offerName\":\"Presse à papier artisanal\",\"category\":\"Presse à papier artisanal\",\"business\":\"products\",\"facts\":[],\"answers\":[],\"objections\":[],\"proofs\":[],\"services\":[],\"area\":null,\"contact\":{\"phone\":null,\"email\":null,\"address\":null,\"hours\":null,\"bookingUrl\":null,\"mode\":null},\"shipping\":null,\"returns\":null,\"price\":\"19,90 €\",\"claimsToAvoid\":[],\"tone\":[],\"audience\":null,\"difference\":null,\"problem\":null,\"unknowns\":[\"caractéristiques confirmées du produit (dimensions, matières, contenance…)\",\"conditions de livraison\",\"conditions de retour\",\"preuves (garanties, labels, certifications) — aucune ne sera affirmée\"]},\"editorialObjective\":\"convert\",\"adapt\":[\"1 hashtag(s) retiré(s) (au plus 2 sur Facebook)\"],\"items\":[{\"key\":\"offer\",\"name\":\"offer\",\"price\":null}],\"role\":\"6:sell\",\"roleKind\":\"main\",\"roleTitle\":\"Mise en avant commerciale\",\"roleIdea\":\"votre offre, avec son vrai prix s'il est confirmé\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"request\":\"Prépare un calendrier de deux jours pour Presse à papier artisanal à partir du 2026-10-31, une publication Facebook à10h dans America/New_York. Sans diffusion.\",\"agentQuoteId\":\"h4bdo2mams3cdzj1\"}",
+        "nativePresent": true,
+        "isCurrent": true,
+        "current": {
+          "id": "f95l7w9q9v3sx6b2",
+          "network": "facebook",
+          "format": "carousel",
+          "status": "planned",
+          "scheduledAt": 1793455200000,
+          "timezone": "America/New_York",
+          "title": "Presse à papier artisanal",
+          "caption": "Presse à papier artisanal : 19,90 €.\n\n[À compléter : ce qui le rend intéressant]\n\nVoir le produit",
+          "hashtags": "pressepapier mise",
+          "link": null,
+          "angle": "Mise en avant commerciale",
+          "media": [],
+          "connectionId": null,
+          "connectionName": null,
+          "planId": "syna-h4bdo2mams3cdzj1",
+          "campaignId": null,
+          "error": null,
+          "remoteUrl": null,
+          "publishedAt": null,
+          "autoApproved": false,
+          "approvedAt": null,
+          "attempts": 0,
+          "advice": [
+            "Ajouter un appel à l'interaction (question, enregistrer, partager, lien).",
+            "Carrousel : prévoir 3 à 6 diapositives."
+          ],
+          "marketingStrategy": null,
+          "editorial": null,
+          "engine": "v2",
+          "pillar": "Mise en avant commerciale",
+          "objective": "convert",
+          "approvedValid": false,
+          "approvedHash": null,
+          "userEdited": false,
+          "blocking": [
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)",
+            "information à compléter dans le texte",
+            "un carrousel exige plusieurs images distinctes et ordonnées"
+          ],
+          "issues": [
+            "accroche très proche d'une autre publication des 14 jours"
+          ],
+          "level": "ready_to_connect"
+        },
+        "check": {
+          "blocking": [
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)",
+            "information à compléter dans le texte",
+            "un carrousel exige plusieurs images distinctes et ordonnées"
+          ],
+          "issues": [
+            "accroche très proche d'une autre publication des 14 jours"
+          ],
+          "codes": [
+            "invented_claim",
+            "incomplete",
+            "incomplete_carousel",
+            "similar_hook"
+          ],
+          "score": 3.5
+        }
+      },
+      {
+        "id": "c8w1hld1uwnrtd6d",
+        "network": "facebook",
+        "format": "image",
+        "title": "Presse à papier artisanal : comment",
+        "caption": "Presse à papier artisanal : comment l'utiliser ? Votre avis en commentaire.\n\nVoir le produit",
+        "hashtags": "pressepapier question",
+        "link": null,
+        "media": [],
+        "status": "planned",
+        "scheduled_at": 1793545200000,
+        "timezone": "America/New_York",
+        "content_hash": "78d28e7167c3e2a365a0316df4940f77",
+        "approved_hash": null,
+        "connection_id": null,
+        "brief": "{\"kind\":\"creative\",\"headline\":\"Presse à papier artisanal : comment\",\"subline\":\"\",\"layout\":\"editorial\",\"material\":\"q0\",\"fullCaption\":\"Presse à papier artisanal : comment l'utiliser ? Votre avis en commentaire.\\n\\nVoir le produit\",\"verifiedFacts\":{\"brand\":\"SIMULATION — lot A\",\"offerName\":\"Presse à papier artisanal\",\"category\":\"Presse à papier artisanal\",\"business\":\"products\",\"facts\":[],\"answers\":[],\"objections\":[],\"proofs\":[],\"services\":[],\"area\":null,\"contact\":{\"phone\":null,\"email\":null,\"address\":null,\"hours\":null,\"bookingUrl\":null,\"mode\":null},\"shipping\":null,\"returns\":null,\"price\":\"19,90 €\",\"claimsToAvoid\":[],\"tone\":[],\"audience\":null,\"difference\":null,\"problem\":null,\"unknowns\":[\"caractéristiques confirmées du produit (dimensions, matières, contenance…)\",\"conditions de livraison\",\"conditions de retour\",\"preuves (garanties, labels, certifications) — aucune ne sera affirmée\"]},\"editorialObjective\":\"engage\",\"adapt\":[\"1 hashtag(s) retiré(s) (au plus 2 sur Facebook)\"],\"items\":[{\"key\":\"offer\",\"name\":\"offer\",\"price\":null}],\"role\":\"0:community\",\"roleKind\":\"main\",\"roleTitle\":\"Question à la communauté\",\"roleIdea\":\"une question à votre communauté\",\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"request\":\"Prépare un calendrier de deux jours pour Presse à papier artisanal à partir du 2026-10-31, une publication Facebook à10h dans America/New_York. Sans diffusion.\",\"agentQuoteId\":\"h4bdo2mams3cdzj1\"}",
+        "nativePresent": true,
+        "isCurrent": true,
+        "current": {
+          "id": "c8w1hld1uwnrtd6d",
+          "network": "facebook",
+          "format": "image",
+          "status": "planned",
+          "scheduledAt": 1793545200000,
+          "timezone": "America/New_York",
+          "title": "Presse à papier artisanal : comment",
+          "caption": "Presse à papier artisanal : comment l'utiliser ? Votre avis en commentaire.\n\nVoir le produit",
+          "hashtags": "pressepapier question",
+          "link": null,
+          "angle": "Question à la communauté",
+          "media": [],
+          "connectionId": null,
+          "connectionName": null,
+          "planId": "syna-h4bdo2mams3cdzj1",
+          "campaignId": null,
+          "error": null,
+          "remoteUrl": null,
+          "publishedAt": null,
+          "autoApproved": false,
+          "approvedAt": null,
+          "attempts": 0,
+          "advice": [
+            "Titre du visuel à raccourcir (2 à 6 mots)."
+          ],
+          "marketingStrategy": null,
+          "editorial": null,
+          "engine": "v2",
+          "pillar": "Question à la communauté",
+          "objective": "engage",
+          "approvedValid": false,
+          "approvedHash": null,
+          "userEdited": false,
+          "blocking": [
+            "affirmation non confirmée : « avis » (avis ou notes)",
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+          ],
+          "issues": [
+            "accroche très proche d'une autre publication des 14 jours"
+          ],
+          "level": "ready_to_connect"
+        },
+        "check": {
+          "blocking": [
+            "affirmation non confirmée : « avis » (avis ou notes)",
+            "affirmation non confirmée : « artisanal » (fabrication artisanale)"
+          ],
+          "issues": [
+            "accroche très proche d'une autre publication des 14 jours"
+          ],
+          "codes": [
+            "invented_claim",
+            "similar_hook"
+          ],
+          "score": 5.5
+        }
+      }
+    ],
+    "warnings": [],
+    "costPct": 0,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 3,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793362246694,
+      "httpAttempts": 1
+    },
+    "localOnly": true,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "publication": false,
+    "href": "/studio/e9zrlix719iep8ui/publications",
+    "message": "Brouillons conservés dans Publications, à relire. Cette préparation n’a programmé ni diffusé de contenu."
+  },
+  "historical": {
+    "id": "luer2doeqjnzp2ul",
+    "sourceReceiptId": "yr17bhbil01tu6rs",
+    "creationProven": true,
+    "delivered": false,
+    "state": "historical",
+    "job": {
+      "id": "cv9vb5vdpo6lg35g",
+      "type": "agent.social.prepare",
+      "label": "Préparer les brouillons sociaux avec SYNA",
+      "status": "done",
+      "progress": 1,
+      "message": "Terminé",
+      "error": null,
+      "attempts": 1,
+      "parentId": null,
+      "result": {
+        "quoteId": "luer2doeqjnzp2ul",
+        "outcome": {
+          "planId": null,
+          "posts": [
+            {
+              "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+              "network": "facebook",
+              "format": "image",
+              "title": "Un papier, un geste.",
+              "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+              "hashtags": "#Papier",
+              "link": null,
+              "media": "[\"kxrp66yo0lkb4skg\"]",
+              "status": "review",
+              "scheduled_at": null,
+              "timezone": "Europe/Paris",
+              "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+              "approved_hash": null,
+              "connection_id": null,
+              "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}"
+            }
+          ],
+          "warnings": []
+        },
+        "localOnly": true,
+        "providerCalls": 0,
+        "publication": false
+      },
+      "createdAt": 1793361342150,
+      "updatedAt": 1793361343041,
+      "finishedAt": 1793361343041,
+      "startedAt": 1793361342150,
+      "alive": false,
+      "idleMs": 8832
+    },
+    "planId": null,
+    "posts": [
+      {
+        "id": "syna-8b16d524afc0cefc99c2b34f9c1b",
+        "network": "facebook",
+        "format": "image",
+        "title": "Un papier, un geste.",
+        "caption": "Un papier, un geste.\nDeux  espaces conservés.\nDécouvrez la presse à papier artisanal.",
+        "hashtags": "#Papier",
+        "link": null,
+        "media": [
+          {
+            "assetId": "kxrp66yo0lkb4skg",
+            "present": true,
+            "href": "/api/files/kxrp66yo0lkb4skg"
+          }
+        ],
+        "status": "review",
+        "scheduled_at": null,
+        "timezone": "Europe/Paris",
+        "content_hash": "5101ee09fc90bbe0a1fafe409607ee00",
+        "approved_hash": null,
+        "connection_id": null,
+        "brief": "{\"request\":\"Prépare un brouillon Facebook pour Presse à papier artisanal avec detourage.png. Garde cette légende exacte :\\nUn papier, un geste.\\nDeux  espaces conservés.\\nDécouvrez la presse à papier artisanal.\\nSans diffusion.\",\"subject\":{\"kind\":\"product\",\"key\":\"sv31v43e5vaogiar\"},\"nativeBinding\":{\"schema\":1,\"people\":\"none\",\"references\":[],\"product\":{\"productId\":\"sv31v43e5vaogiar\",\"version\":1}},\"agentQuoteId\":\"luer2doeqjnzp2ul\"}",
+        "nativePresent": false,
+        "isCurrent": false,
+        "current": null,
+        "check": null
+      }
+    ],
+    "warnings": [],
+    "costPct": 0,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 3,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793362239221,
+      "httpAttempts": 1
+    },
+    "localOnly": true,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "publication": false,
+    "href": "/studio/e9zrlix719iep8ui/publications",
+    "message": "La préparation initiale est conservée, mais un brouillon natif ou son média manque ou a changé. Aucune recréation automatique."
+  },
+  "before": {
+    "providerHttpCalls": 4,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 4,
+    "imageHttpCalls": 0,
+    "tokenCounts": 4,
+    "calls": 4,
+    "usage": 4,
+    "simulatedMicro": 31648
+  },
+  "after": {
+    "providerHttpCalls": 5,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 5,
+    "imageHttpCalls": 0,
+    "tokenCounts": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  },
+  "manualVersionPreserved": true,
+  "originalPixelsSha256": "499586638732617de54a14962020bc9d2412710e3283c33d066f90907ed31ec9",
+  "downloadedJsonCaptionExact": true,
+  "editorTimezoneVerified": true,
+  "reopenNoNewCalls": true,
+  "missingNoRecreation": true,
+  "foreign": 404,
+  "csrf": 403,
+  "captures": 4,
+  "errors": []
+}

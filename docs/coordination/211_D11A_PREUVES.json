@@ -1,0 +1,369 @@
+{
+  "schema": "211-D11a-proof-1",
+  "applicationCommit": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+  "testOnlyCommit": "ee4d3740acfd39900905426b73d456914aa26e2d",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fullSuiteGreen": false,
+  "CIRequired": true,
+  "scope": "native local preparation; no generated media, approval, scheduling or publication",
+  "proofs": {
+    "compiled-summary.json": {
+      "bytes": 805,
+      "sha256": "c0d8a9309f74a9475c635197684119012cb4d0ec280318c123aa9d16ab4cc306"
+    },
+    "social-preparation.json": {
+      "bytes": 6582,
+      "sha256": "4f3ba6ad0558c09bf083be6bb2071d46d70cc492906f7c949b294b86e3a9a4f2"
+    },
+    "02-devis-mobile.png": {
+      "bytes": 49740,
+      "sha256": "eeacfa45ee29fcf6c5fdfccfc5ec35dc1ed2f1552518c7072be64cbfc5f3cb18"
+    },
+    "04-version-native-manquante.png": {
+      "bytes": 234320,
+      "sha256": "4114991be9f94060c2064c102db749515eada91e1fe9e5ddb4228b4d7e5e88d2"
+    },
+    "03-brouillon-mobile.png": {
+      "bytes": 58618,
+      "sha256": "c1f8a5c3172c07439df5e1869023049b11ec42cbf3381a5ee1481db9da0c71ea"
+    },
+    "social-workflow.mp4": {
+      "bytes": 548828,
+      "sha256": "6dac0a7ef9bd9eb7343bf786fe12932a53c4f00a941ad3ca872a8add81544420"
+    },
+    "social-browser-proof.json": {
+      "bytes": 27283,
+      "sha256": "e5022e09e0cbf5c2a383b7b479d84f37de819355ea95d2b7d9fcb699b2431fb9"
+    },
+    "01-devis-ordinateur.png": {
+      "bytes": 222004,
+      "sha256": "1322ad32ae56bd499d5b65c23d978c367a04b4b41ed2ffa3659460d12ccffd4c"
+    }
+  },
+  "checks": {
+    "D11a-final-targeted": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-social-preview.test.ts",
+        "tests/conversation211-social-validation.test.ts",
+        "tests/conversation211-social-execution.test.ts",
+        "tests/social-manual-native.test.ts",
+        "tests/publication-native-price-units.test.ts",
+        "tests/publications-qualite.test.ts",
+        "tests/mission142-blocages-transversaux.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "9a9b2b1ce1d698b9bbbd7be099df6b719e79a9fc",
+      "startedAt": "2026-10-30T11:40:41.006670+00:00",
+      "state": "passed",
+      "sources": {
+        ".github/workflows/ci.yml": "00bd3509612b2c7aaf2072ed4ac2dcf443e404c329c4ce48ad4a450daf32bf71",
+        "scripts/verify-agent211-build.ts": "ccebf9333b0f0b446ca99b65effee07aebd3c2e8bd8ae8dc2f1f8da65a66c404",
+        "scripts/verify-agent211-social-ui.ts": "e72cd2cc3eddd30f7bfd5cee279d2d2a261c9587cc939599ffd8e73a3156963e",
+        "src/app/api/projects/[id]/posts/route.ts": "31539e6122c0f9336722cdb8b3d894d2bcdf35e0bddfe1fca30fe86d7d273b2d",
+        "src/app/api/studio-agent/conversations/[cid]/social-drafts/route.ts": "ea6bed32bb42afa2c947c5f301b891751295bddc109e8d0c77aee691a54ed980",
+        "src/components/studio/conversation-panel.tsx": "9188d7b4e33259ba4ff34fa5a431b85fe164baa03423353bc3b50631f9cf5ad3",
+        "src/components/studio/conversation-social-tools.tsx": "c7759dc18d3bc321a00aac8886a4d1d9f6589a5ec536245d729f0553fa17bc96",
+        "src/components/studio/social-studio.tsx": "490b49400a7b60f40cb5d9037988e2eef4c836ea58a75e5e8fe1e918b2d90497",
+        "src/lib/image-v2/request-binding.ts": "ff06148d80b8962d511bae1e349c3476dced2d34e5561302e81135f9d0914fde",
+        "src/lib/orchestrator/conversation/contract.ts": "f58401b3a7ba09f7c6f8893bfd5902f580ba07fa0bde318fde2478e5a8f50390",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "c291dea240d781a1f3fb5b901ed01a72d8285bce906b293fc5338a78609bbdf6",
+        "src/lib/orchestrator/conversation/index.ts": "bf35ce2c0952ee20baff34feac6d09b3cf42ee6fa991b4741da38d8ba7acac8a",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "df1fa8cd3175a1ff54c7c2e82bfef8b5076de7f742926ec59647c6a3915aa7cf",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "8d27b682b16e961c3270f30730be01d225704e23b878676ba9a9da4fc7f4a631",
+        "src/lib/orchestrator/conversation/intelligence.ts": "ece98513da1068abfd980bc30940fcccce6833f997b29727903bd6a296ca21e1",
+        "src/lib/orchestrator/conversation/social-tool-contract.ts": "762bafe0e4767c0455105e87a9363a8e771ec2f8069e7841f36efc8fe2fc64b4",
+        "src/lib/orchestrator/conversation/social-tool-execution.ts": "35dbea20e629c456b5ec8de6dc8b2871a7aaf1ab5da796a0b835463fe0f8f890",
+        "src/lib/orchestrator/conversation/social-tool-validation.ts": "e02d94e6954c1027299a209620ed8a8978aff492a9270cf9aa922cf3abef62a0",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "117c6b24299c3323a9fd5b3d79e29fc92afe32432ed24f85ecca38880e7ef039",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "70570e166c269f3ca7febe0d3d93acbff314b76bcaa275488e3130f02dbd4004",
+        "src/lib/social-v2/ai-post.ts": "7263b86585e70d693dc0d469c201abe8c182c730b238a746d5b1c4dbb9d0826c",
+        "src/lib/social-v2/manual.ts": "387898609a3ad404055326c21b5dfb17eefe7cca01169290dfe257366f56edfb",
+        "src/lib/social-v2/publication-copy-policy.ts": "7ec6e5e6ce246a07f82b9677c7728430c0adedde506d6224ced9f82dc0d2f768",
+        "src/lib/social-v2/quality.ts": "72bfab73d50e28d33681458240b8b1b596b87fd97c1d9ddfd8dcd7bddff7af44",
+        "tests/conversation211-social-execution.test.ts": "0f6ac73863fc45f3a4f13eabcb26e0ae399157e31142591bf40d34325d7adda4",
+        "tests/conversation211-social-preview.test.ts": "d93dba259821eadf2c0360d7ece43ddb1293541554acc7be29893ec634198d86",
+        "tests/conversation211-social-validation.test.ts": "98618e8c2966d6ae04d832d6fbfca09430bef15f83960007895204b0b4a7ca67",
+        "tests/mission142-blocages-transversaux.test.ts": "75eb780a57bcbf92543e5caedb3f9d2f46ffd8f32ecd4aa32ed908967ef4fc9a",
+        "tests/publication-native-price-units.test.ts": "4c1a2b404957246ff1e379fad63b48ba608ea8e9616beebfe66bcdc22a2b0a28",
+        "tests/publications-qualite.test.ts": "b1f17b40f1323b5bfc672b9dd4a831398c785bd5aa0384c36971c8ece6a04da0",
+        "tests/social-manual-native.test.ts": "6f89c2ef2d300a417b5e7f60c06de1798bc1de9a1b71a168b0d0bdc2c87c5838",
+        "worker/handlers.ts": "216b48512d90080300b91ac8a026fe5d76c6ea7669d879b8ed65ba1fff4baccf"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-final-targeted.log",
+      "cleanCommitSnapshot": false,
+      "pid": 345887,
+      "processGroup": 345887,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:40:51.852247+00:00",
+      "logSha256": "ba3ff29196303499731d0ee6dd7f26be7d5449d3a5b3ce3b442f29664f9290c3",
+      "sourceUnchanged": true,
+      "finalHead": "9a9b2b1ce1d698b9bbbd7be099df6b719e79a9fc"
+    },
+    "D11a-clock-secondary-price-red": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/publication-native-price-units.test.ts",
+        "-t",
+        "horloge ancrée|catalogue secondaire"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3",
+      "startedAt": "2026-10-30T11:51:31.811355+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-intelligence.test.ts": "5d132c90cca42159b77a2f3ce18f1c82be3b33bf555f8f17dfc0d023f39a7c60",
+        "tests/publication-native-price-units.test.ts": "0c129400992285a1abafc77ce55d09bbf8428cdd98fec599bce2682c2536c222"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-clock-secondary-price-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 362883,
+      "processGroup": 362883,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T11:51:36.231336+00:00",
+      "logSha256": "3f2a9971c8857132ceac2bcad027b53d1c965893ff395bf58ccdfeb79e63dc96",
+      "sourceUnchanged": true,
+      "finalHead": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3"
+    },
+    "D11a-clock-secondary-price-green": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/publication-native-price-units.test.ts",
+        "tests/publications-qualite.test.ts",
+        "tests/conversation211-social-validation.test.ts",
+        "tests/conversation211-social-execution.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3",
+      "startedAt": "2026-10-30T11:51:50.526143+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "8cb7ab73da8426ad326d7302223b343627a9f5b18312713e24c2897a3b4519bd",
+        "src/lib/social-v2/ai-post.ts": "fbb336275ff01cb010b33f7a6dc651d9fecb4e708f96871a71af7d60baeea664",
+        "tests/conversation211-intelligence.test.ts": "5d132c90cca42159b77a2f3ce18f1c82be3b33bf555f8f17dfc0d023f39a7c60",
+        "tests/mission154-livraison.test.ts": "f6ecad6b06f5d01b9af25aaa9f204f1c01d745678a44cffc1bc88996491cd501",
+        "tests/publication-native-price-units.test.ts": "0c129400992285a1abafc77ce55d09bbf8428cdd98fec599bce2682c2536c222",
+        "tests/publications-qualite.test.ts": "b44fb17d9bf4b2ad4319773700ed9e9408f6d8eb952efbca8e30f31f6bfc55b7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-clock-secondary-price-green.log",
+      "cleanCommitSnapshot": false,
+      "pid": 363068,
+      "processGroup": 363068,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:52:02.108430+00:00",
+      "logSha256": "193581608abd46062503addb8bc4ecf62d32e171ed243eef31de6f093cda89ff",
+      "sourceUnchanged": true,
+      "finalHead": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3"
+    },
+    "D11a-clock-enabled-red": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "-t",
+        "horloge ancrée"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3",
+      "startedAt": "2026-10-30T11:52:16.220955+00:00",
+      "state": "failed",
+      "sources": {
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "86039cb70531aeaec4cf6834f2517fe155caef81f5eb396a0caa56ed28a74fff",
+        "src/lib/social-v2/ai-post.ts": "fbb336275ff01cb010b33f7a6dc651d9fecb4e708f96871a71af7d60baeea664",
+        "tests/conversation211-intelligence.test.ts": "6f402a641d3618560ac623921808aaf3ea7a541abfaa709cdf3346b485506d4b",
+        "tests/mission154-livraison.test.ts": "f6ecad6b06f5d01b9af25aaa9f204f1c01d745678a44cffc1bc88996491cd501",
+        "tests/publication-native-price-units.test.ts": "0c129400992285a1abafc77ce55d09bbf8428cdd98fec599bce2682c2536c222",
+        "tests/publications-qualite.test.ts": "b44fb17d9bf4b2ad4319773700ed9e9408f6d8eb952efbca8e30f31f6bfc55b7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-clock-enabled-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 363350,
+      "processGroup": 363350,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T11:52:20.427391+00:00",
+      "logSha256": "cc4ecfba13260dd9bbf35c23688c064cdabbbd70122bee391509e65e344f9fe9",
+      "sourceUnchanged": true,
+      "finalHead": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3"
+    },
+    "D11a-clock-enabled-green": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "-t",
+        "horloge ancrée"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3",
+      "startedAt": "2026-10-30T11:52:30.154001+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "8cb7ab73da8426ad326d7302223b343627a9f5b18312713e24c2897a3b4519bd",
+        "src/lib/social-v2/ai-post.ts": "fbb336275ff01cb010b33f7a6dc651d9fecb4e708f96871a71af7d60baeea664",
+        "tests/conversation211-intelligence.test.ts": "6f402a641d3618560ac623921808aaf3ea7a541abfaa709cdf3346b485506d4b",
+        "tests/mission154-livraison.test.ts": "f6ecad6b06f5d01b9af25aaa9f204f1c01d745678a44cffc1bc88996491cd501",
+        "tests/publication-native-price-units.test.ts": "0c129400992285a1abafc77ce55d09bbf8428cdd98fec599bce2682c2536c222",
+        "tests/publications-qualite.test.ts": "b44fb17d9bf4b2ad4319773700ed9e9408f6d8eb952efbca8e30f31f6bfc55b7"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-clock-enabled-green.log",
+      "cleanCommitSnapshot": false,
+      "pid": 363481,
+      "processGroup": 363481,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:52:34.396630+00:00",
+      "logSha256": "23ffab7924ad4311bdc41f5a961312db4054aa557bddcb609581891e09ab04bd",
+      "sourceUnchanged": true,
+      "finalHead": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3"
+    },
+    "D11a-corrected-full": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-social/scripts/lot9/network-guard.mjs",
+        "npm",
+        "test"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T11:52:54.203486+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11a-corrected-full.log",
+      "cleanCommitSnapshot": true,
+      "pid": 363877,
+      "processGroup": 363877,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T12:09:31.602144+00:00",
+      "logSha256": "c2d324469cf133196d321712c503144db7724560cad989ca823d92e656f631a5",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11a-restored-fixtures-targeted": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-social/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/openai-streaming.test.ts",
+        "tests/traverse.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T12:03:12.823983+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11a-restored-fixtures-targeted.log",
+      "cleanCommitSnapshot": true,
+      "pid": 404067,
+      "processGroup": 404067,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:03:44.506870+00:00",
+      "logSha256": "73213d8dd3445b58803b396567025be47970463421bc757adc3fb6509bb80f1b",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11a-native-security-after-extraction": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-social/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/securite-audit-stabilisation.test.ts",
+        "tests/social-manual-native.test.ts",
+        "tests/conversation211-social-execution.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T12:09:49.469998+00:00",
+      "state": "passed",
+      "sources": {
+        "tests/securite-audit-stabilisation.test.ts": "6e7c773e441deea1b274abded94210e141f73051a85591c0f55c86572a053c09",
+        "tests/social-manual-native.test.ts": "74c73fe274da62677c7a087eaf10c35e29c7725b77734cd77c74730c92aa1377"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D11a-native-security-after-extraction.log",
+      "cleanCommitSnapshot": false,
+      "pid": 422334,
+      "processGroup": 422334,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T12:09:55.625015+00:00",
+      "logSha256": "87baef5fa537d8c4c4f0feccd24b8bde6dce321eec31ad514c2b930e31a8a3f4",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11a-corrected-build": {
+      "command": [
+        "env",
+        "DATA_DIR=/tmp/ecs-d11a-build",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "XDG_CONFIG_HOME=/workspace/reviews/ecom-211-state/config",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d11-social/scripts/lot9/network-guard.mjs",
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T11:52:55.743800+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11a-corrected-build.log",
+      "cleanCommitSnapshot": true,
+      "pid": 363985,
+      "processGroup": 363985,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:54:54.832631+00:00",
+      "logSha256": "adc949371e55fe96bc5e11ad4c98128e6a1ed71fb9a5609c64905375b763f655",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    },
+    "D11a-corrected-browser": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11a-corrected-browser",
+        "--social-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-social",
+      "head": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74",
+      "startedAt": "2026-10-30T11:55:16.877880+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D11a-corrected-browser.log",
+      "cleanCommitSnapshot": true,
+      "pid": 372111,
+      "processGroup": 372111,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T11:55:57.340682+00:00",
+      "logSha256": "9808be84da3ad30c46ce8c764dcbf0a6e5dda342f86200536e6f5a7a5bef0d17",
+      "sourceUnchanged": true,
+      "finalHead": "dfe46ee0c7dd605d1bb70d9d606b3459bf9e1d74"
+    }
+  },
+  "fullFailures": {
+    "openai-streaming": "missing tracked reports fixture restored; affected file passed",
+    "traverse": "missing tracked docs manifest/photos restored; affected file passed",
+    "securite-audit-stabilisation": "source assertion updated to shared native helper; ownership behavior strengthened,17 scoped tests passed"
+  },
+  "firstCandidate": "3d9a30632cd4c68eeee6a2e0f83bf0b660cce0f3 rejected after browser reproduced volatile-clock quote failure; its partial full run stopped intentionally; not green",
+  "visualWarning": "native artisan claim remains blocked for publication, draft saved only",
+  "creativeQualityQualified": false
+}
