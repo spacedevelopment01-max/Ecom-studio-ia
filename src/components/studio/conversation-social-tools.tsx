@@ -1,6 +1,7 @@
 "use client";
 import {useCallback,useEffect,useRef,useState}from 'react';
 import {api,Button}from '../ui';import {useT}from '../i18n';
+import {ConversationCampaignVisuals}from './conversation-campaign-visuals';
 import {ConversationSocialProduction}from './conversation-social-production';
 import {SocialPostEditor}from './social-studio';
 import type {ConversationView}from '@/lib/orchestrator/conversation/contract';
@@ -29,6 +30,7 @@ export function ConversationSocialTools({view,onChanged}:{view:ConversationView;
    {r.campaign&&<details><summary className="min-h-11 cursor-pointer font-semibold">{t('Relire la campagne enregistrée','Review saved campaign')}</summary><p className="whitespace-pre-wrap break-words font-semibold">{r.campaign.original.name}</p>{!r.campaign.isCurrent&&<p className="text-xs">{t('La version native a changé ; cette préparation initiale reste conservée.','The native version changed; this original preparation is retained.')}</p>}{r.campaign.ads.map((ad,i)=><div key={i} className="min-w-0 space-y-2 border-t border-line py-3"><p className="whitespace-pre-wrap break-words">{ad.angle} — {ad.hook}</p><p className="whitespace-pre-wrap break-words">{ad.primary}</p><p className="whitespace-pre-wrap break-words">{ad.headline} · {ad.description} · {ad.cta}</p></div>)}{r.campaign.media.map(a=>a.present&&a.href?<a key={a.assetId} href={a.href} target="_blank" rel="noreferrer"><img src={a.href} className="max-h-48 w-full object-contain" alt={t('Média acquis','Existing media')}/></a>:<p key={a.assetId}>{t('Le média manque ou a changé. Aucun remplacement automatique.','Media missing or changed. No automatic replacement.')}</p>)}</details>}
    <div className="flex flex-wrap gap-2"><a className="inline-flex min-h-11 items-center underline" href={r.href}>{r.campaign?t('Ouvrir cette campagne dans Publicités','Open this campaign in Ads'):t('Ouvrir Publications','Open Posts')}</a>{r.creationProven&&<a className="inline-flex min-h-11 items-center underline" href={route+'?receipt='+encodeURIComponent(r.id)} download={'brouillons-'+r.id+'.json'}>{t('Télécharger la préparation JSON','Download preparation JSON')}</a>}</div><p className="text-xs">{t('Validation, compte social et programmation restent des étapes distinctes dans les outils natifs. Rien n’est diffusé automatiquement.','Approval, social account and scheduling remain separate steps in the native tools. Nothing is automatically published.')}</p></article>)}
   {registry&&<ConversationSocialProduction view={view} onChanged={onChanged} candidates={registry.receipts.flatMap(r=>r.posts.filter(post=>post.nativePresent&&post.current?.format==='image'&&!post.current.media.length).map(post=>({preparationId:r.id,postId:post.id,title:post.current!.title,network:post.network})))}/>}
+  {registry?.receipts.some(r=>r.campaign)&&<ConversationCampaignVisuals view={view} onChanged={onChanged}/>}
   {editor&&<SocialPostEditor postId={editor} onClose={()=>setEditor(null)} onChanged={()=>{void refresh();void onChanged();}}/>}
  </section>;
 }

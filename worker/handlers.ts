@@ -56,6 +56,7 @@ export const handlers: Record<string, Handler> = {
   "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
   "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
   "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
+  "agent.campaign.visual":async ctx=>(await import('../src/lib/orchestrator/conversation/campaign-visual-execution')).runCampaignVisual(ctx),
   "agent.social.produce":async ctx=>(await import('../src/lib/orchestrator/conversation/social-production-execution')).runSocialProduction(ctx),
   "agent.social.prepare":async ctx=>(await import('../src/lib/orchestrator/conversation/social-tool-execution')).runSocialPreparation(ctx),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),

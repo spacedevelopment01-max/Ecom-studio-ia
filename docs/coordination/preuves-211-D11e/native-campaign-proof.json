@@ -1,0 +1,87 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "transport": "native SDK/HTTP loopback simulation",
+  "passed": true,
+  "campaignId": "syna-9124j26t2bsa15b1",
+  "success": {
+    "sha256": "fbc3caeeef19e97a5c9acb5eadca1fd3345ae34c56da776ad1d3bfd532932660",
+    "downloadExact": true,
+    "aspect": "1:1",
+    "newImageCalls": 1,
+    "textExact": true,
+    "nativeEditor": true,
+    "approved": false
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0,
+    "newImageCalls": 1,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "firstAssetPreserved": true,
+  "counts": {
+    "providerHttpCalls": 9,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 7,
+    "imageHttpCalls": 2,
+    "tokenCounts": 7,
+    "calls": 9,
+    "usage": 8,
+    "simulatedMicro": 261371
+  },
+  "compiledVersion": {
+    "commit": "3795837437129313168c0752cdeb887e05dc7c8e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "harnessCommit": "6c7340d55bfc0585cbb10b50699530cc36287797",
+  "imageReferenceTransports": [
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "yoa4g7vzz9sliapa",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "333213a67ca8d8b59e181e1561dc66e7e0ac66e28b215ac73c1f29d96365d6a7",
+      "wirePromptSha256": "f5e257b46136d9e8f0c4c60fac873cf5437c7ea27870530e1ca22a8426c1c73f",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 6386,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    },
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "yoa4g7vzz9sliapa",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "54f1f02aba58d6fe202b3b4bcaded3c264e4c527bfc9e9d3140d3e4fbe3cffe9",
+      "wirePromptSha256": "558cc6a9df4cf3d3a0e246ac9dff812ce181aa8d7cdc369f8f05950ee8a46ca8",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 6391,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 503
+    }
+  ],
+  "screenshotsOpened": 4,
+  "filmDurationS": 13.266667,
+  "filmFramesPerSecond": 15,
+  "timeAcceleration": false,
+  "nativeImageOriginal": "Retained in full CI artifact/local proof, not duplicated in Git selection"
+}
