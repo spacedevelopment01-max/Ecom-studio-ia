@@ -74,6 +74,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const objectives = svc ? SERVICE_OBJECTIVES : OBJECTIVES;
   const mainCta = (lang: Lang) => ctaList[lang][svc ? ({ booking: 0, quote: 1, call: 2, form: 4 } as const)[data?.services?.contactMode ?? "form"] ?? 4 : 0];
   const { data: list, reload } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:campaigns-changed',changed);return()=>window.removeEventListener('studio:campaigns-changed',changed);},[id,reload]);
   const remove = async (c: Campaign) => {
     const posts = c.posts.length ? t(` Ses ${c.posts.length} publication(s) sont gardées.`, ` Its ${c.posts.length} post(s) are kept.`) : "";
     if (!window.confirm(t(`Supprimer la campagne « ${c.name} » ?`, `Delete the “${c.name}” campaign?`) + posts)) return;

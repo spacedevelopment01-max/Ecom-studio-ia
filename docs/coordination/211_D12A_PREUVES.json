@@ -1,0 +1,124 @@
+{
+  "applicationCommit": "c4c31a0e37953cf117f8a1381c4c199524aa3bf7",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": {
+    "D12a-registry-before": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-communication-registry.test.ts"
+      ],
+      "head": "c1cae1437e5c3cdbbc4ecfdd32000aa6fd2e4a0e",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:17:16.589268+00:00",
+      "finishedAt": "2026-10-30T15:17:17.380986+00:00",
+      "logSha256": "030a86d7cf29a53d7e8c51fe7b558e7d2613a836db789ebe8a6e738233b918c9"
+    },
+    "D12a-final-scoped-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-communication-registry.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts",
+        "tests/ci-native-production-placement.test.ts",
+        "tests/ci-native-social-placement.test.ts"
+      ],
+      "head": "c1cae1437e5c3cdbbc4ecfdd32000aa6fd2e4a0e",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:22:25.382809+00:00",
+      "finishedAt": "2026-10-30T15:22:31.280538+00:00",
+      "logSha256": "60308c9f321f9e1c62fd3f5fea98ba18e3eecf1fbc4e08bfffc7382418998e79"
+    },
+    "D12a-integration-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "c1cae1437e5c3cdbbc4ecfdd32000aa6fd2e4a0e",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:21:08.098737+00:00",
+      "finishedAt": "2026-10-30T15:21:12.961992+00:00",
+      "logSha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    "D12a-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "c4c31a0e37953cf117f8a1381c4c199524aa3bf7",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T15:24:51.862735+00:00",
+      "finishedAt": "2026-10-30T15:25:53.528816+00:00",
+      "logSha256": "f434a77a408d960ea47fdb044225d09693e3112cba5d34394e4ad1f0df706478"
+    },
+    "D12a-compiled-communication-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D12a-compiled-communication-proof",
+        "--integrated-communication-ui"
+      ],
+      "head": "c4c31a0e37953cf117f8a1381c4c199524aa3bf7",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T15:27:13.716220+00:00",
+      "finishedAt": "2026-10-30T15:27:52.028913+00:00",
+      "logSha256": "545f6e8e1680541d09ed3111d6b9c7d31455146c061bf6e8d695684e897d82d6"
+    }
+  },
+  "proofFiles": {
+    "01-campagne-compteur-ordinateur.png": {
+      "bytes": 240291,
+      "sha256": "c3e0dc18a2ce74f65784b32613dbc2947f56ff53fd5284400940c13768861292"
+    },
+    "02-editeur-natif-ordinateur.png": {
+      "bytes": 203416,
+      "sha256": "8db376db41dfdd4c8e694c82d57fd4ce6b471f0316c09e203ed4b670773a76ee"
+    },
+    "03-publication-compteur-ordinateur.png": {
+      "bytes": 221281,
+      "sha256": "8d5e3179711f87b73d55cb072ce4c39b1880ef14589773b3c7e01d13d8d1e45f"
+    },
+    "04-reemploi-mobile.png": {
+      "bytes": 107340,
+      "sha256": "4968f71ac5091e4cc3c98d26eae1262f50ac0287423b69c72fa1117807a27156"
+    },
+    "campaign-integration.mp4": {
+      "bytes": 875048,
+      "sha256": "c4d225c504c8cc0d3ca091af0c6b277d8bf938e724b303abd5458e3af11c449a"
+    },
+    "communication-proof.json": {
+      "bytes": 4929,
+      "sha256": "347053e46b382fbcb2854faa95b5f9eb3a2951d5024e51765b7451cae67fd4c0"
+    },
+    "social-integration.mp4": {
+      "bytes": 737385,
+      "sha256": "fa2f59142a63ff9a2b3c696a891453b327b5c57c6c1e24f898d7bee804c898af"
+    },
+    "tests-cibles.txt": {
+      "bytes": 680,
+      "sha256": "60308c9f321f9e1c62fd3f5fea98ba18e3eecf1fbc4e08bfffc7382418998e79"
+    }
+  }
+}
