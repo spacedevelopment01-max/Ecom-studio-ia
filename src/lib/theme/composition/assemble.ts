@@ -27,7 +27,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
  const plan=CompositionPlanSchema.parse(input);
  if(plan.versionId!==deps.versionId)fail('version parent périmée');
  if(base.imported)fail('composition de thème importé non raccordée');
- if(plan.mode==='original')fail('sur-mesure sans thème de départ non raccordé à cet incrément');
+ if(plan.mode==='original'&&!base.meta?.original)fail('sur-mesure sans thème de départ non raccordé à cet incrément');
  let spec=structuredClone(base);const refs=new Map<string,CompositionSource>(),orders:Record<string,string[]>={};
  const apply=(ops:ThemeOp[])=>{if(!ops.length)return;deps.authorize(ops);const r=applyOps(spec,ops,{mediaFile:deps.media,storeKind:deps.storeKind});if(r.rejected.length)fail(r.rejected.map(x=>x.reason).join(' ; '));spec=r.spec;};
  for(const page of plan.pages){
@@ -84,6 +84,7 @@ export function assembleComposition(base:ThemeSpec,input:unknown,deps:Compositio
     }
    }
    apply(ops);
+   if(plan.mode==='original'&&instance.type==='image-with-text'){const saved=containerOf(spec,page.template)!.sections[sid];if(!saved.settings.image&&!saved.settings.image_asset)fail('une image acquise est nécessaire pour ce composant ; choisissez sinon un composant texte');}
   }
   // Les suppressions/mouvements suivent les mêmes gates natifs que l’éditeur, sans override de verrou.
   for(const sid of original.order)if(!order.includes(sid))apply([{op:'remove_section',template:page.template,section:sid}]);

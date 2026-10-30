@@ -95,7 +95,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Composition native et textes acquis depuis SYNA, rendu et exports (HTTP simulé)
-        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E2-proof --composition-ui
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E2-proof --composition-ui --original-ui
 
       - name: Preuves de composition et limites des plateformes
         if: always()
