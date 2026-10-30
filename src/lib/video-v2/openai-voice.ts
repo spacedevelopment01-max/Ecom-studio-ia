@@ -7,6 +7,7 @@ import { assertAiAllowed } from "../ai/access";
 import { currentTrace, recordCall } from "../ai/trace";
 import { existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import { getAsset, saveAsset, type Asset } from "../library";
+import { createHash } from "node:crypto";
 import { fileExists, putFile, readFile } from "../storage";
 import { PermanentError } from "../jobs";
 import { requireCreationPlan } from "../plan-gates";
@@ -32,10 +33,33 @@ type Options = { voice: string; speed: number; lang: "fr" | "en" };
 export function voiceOperation(text: string, o: Options) {
   return requestHash({ model: OPENAI_VOICE_MODEL, text, voice: o.voice, speed: o.speed, lang: o.lang, format: "wav" });
 }
+function voiceOperationMeta(ctx:Context,text:string,o:Options){
+  const fingerprint=voiceOperation(text,o);
+  return {task:"voice_generation",projectId:ctx.projectId,jobId:ctx.jobId??currentTrace().jobId,provider:"openai",model:OPENAI_VOICE_MODEL,usageKey:`voice:${fingerprint}`,requestHash:fingerprint};
+}
+/** Devis/réemploi : lecture seule du reçu natif, même identité que l’achat réel.
+ * Aucun tarif, clé, réserve, transfert ou appel fournisseur n’est nécessaire pour lire un acquis.
+ * Un reçu incomplet ne devient jamais une permission de racheter sa phrase.
+ */
+export function voiceAcquisitionInfo(ctx:Context,text:string,o:Options){
+  if(!isOpenAIVoice(o.voice)||!Number.isFinite(o.speed)||o.speed<.25||o.speed>4)throw new PermanentError("Voix non sélectionnée ou vitesse invalide ; aucun appel lancé.");
+  const meta=voiceOperationMeta(ctx,text,o),fingerprint=meta.requestHash,old=existingOperation(ctx.userId,meta);
+  if(!old)return{state:"new" as const,fingerprint};
+  let saved:{file?:string;assetId?:string}|null=null;try{saved=old.result?JSON.parse(old.result):null;}catch{return{state:"blocked" as const,fingerprint,reason:"VOICE_RECEIPT_INVALID" as const};}
+  const asset=saved?.assetId?getAsset(saved.assetId):null;
+  const own=asset&&asset.project_id===ctx.projectId&&asset.user_id===ctx.userId&&!asset.deleted_at&&asset.kind==="audio"&&asset.role==="voice";
+  if(own&&asset.status==="rejected")return{state:"blocked" as const,fingerprint,reason:"VOICE_ASSET_REJECTED" as const};
+  const assetFile=own&&fileExists(asset.storage_key)?asset.storage_key:null;
+  const file=assetFile??(saved?.file&&fileExists(saved.file)&&["settled","reconciled"].includes(old.status)?saved.file:null);
+  if(!file)return{state:"blocked" as const,fingerprint,reason:old.status==="uncertain"||old.status==="held"?"VOICE_RESULT_PENDING" as const:"VOICE_FILE_MISSING" as const};
+  let bytes:Buffer;try{bytes=readFile(file);}catch{return{state:"blocked" as const,fingerprint,reason:"VOICE_FILE_MISSING" as const};}
+  if(bytes.length<44||bytes.toString("ascii",0,4)!=="RIFF"||bytes.toString("ascii",8,12)!=="WAVE")return{state:"blocked" as const,fingerprint,reason:"VOICE_FILE_UNREADABLE" as const};
+  const sha256=createHash("sha256").update(bytes).digest("hex");
+  return assetFile&&asset?{state:"asset" as const,fingerprint,assetId:asset.id,version:asset.version,sha256}:{state:"receipt-file" as const,fingerprint,sha256};
+}
 export async function acquiredVoice(ctx: Context, text: string, o: Options): Promise<Asset> {
   if (!isOpenAIVoice(o.voice) || !Number.isFinite(o.speed) || o.speed < .25 || o.speed > 4) throw new PermanentError("Voix OpenAI non sélectionnée ou vitesse invalide ; choix historique conservé.");
-  const fingerprint = voiceOperation(text, o);
-  const meta = { task: "voice_generation", projectId: ctx.projectId, jobId: ctx.jobId ?? currentTrace().jobId, provider: "openai", model: OPENAI_VOICE_MODEL, usageKey: `voice:${fingerprint}`, requestHash: fingerprint };
+  const meta=voiceOperationMeta(ctx,text,o),fingerprint=meta.requestHash;
   const old = existingOperation(ctx.userId, meta);
   let file: string, reservation: string;
   if (old) {
@@ -78,7 +102,7 @@ export async function acquiredVoice(ctx: Context, text: string, o: Options): Pro
   }
   const data = readFile(file!);
   if (data.length < 44 || data.toString("ascii", 0, 4) !== "RIFF" || data.toString("ascii", 8, 12) !== "WAVE") throw new PermanentError("Audio acquis illisible ; original conservé, aucune nouvelle synthèse automatique.");
-  const asset = await saveAsset({ ...ctx, data, name: "voix-synthetique.wav", mime: "audio/wav", role: "voice", folderKey: "videos.ads", origin: "generated", meta: { voice: { engine: "openai", model: OPENAI_VOICE_MODEL, id: o.voice, consent: "synthetic", operation: fingerprint, alignment: "measured_phrase_proportional_chunks", estimated: true } } });
+  const asset = await saveAsset({ ...ctx, data, name: "voix-synthetique.wav", mime: "audio/wav", role: "voice", folderKey: "videos.ads", origin: "generated", meta: { voice: { engine: "openai", model: OPENAI_VOICE_MODEL, id: o.voice, consent: "synthetic", operation: fingerprint, speed:o.speed,lang:o.lang, alignment: "measured_phrase_proportional_chunks", estimated: true } } });
   saveOperationResult(reservation!, { file, assetId: asset.id });
   return asset;
 }

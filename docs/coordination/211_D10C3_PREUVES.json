@@ -1,0 +1,476 @@
+{
+  "applicationCommit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+  "harnessCommit": "22205fe9d966f2d89557e4a01e00cea85052442a",
+  "parent": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+  "inheritedByContentNotAncestry": "#2508117a3f8 and its exact two documents f3026999; do not apply those changes twice at integration",
+  "applicationSeal": {
+    "applicationCommit": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+    "fullPassed": 4037,
+    "fullSkipped": 45,
+    "applicationWorkerAndTestsUnchanged": true,
+    "changedAfterFreezeOnly": [
+      ".github/workflows/ci.yml",
+      "scripts/verify-agent211-voice-ui.ts"
+    ],
+    "browserHarnessCommit": "22205fe9d966f2d89557e4a01e00cea85052442a",
+    "notClaimingWholeCheckoutUnchanged": true,
+    "realProviderCalls": 0
+  },
+  "runs": {
+    "D10c3-voice-agent-fixture-fixed": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-voice.test.ts"
+      ],
+      "head": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:15:17.207371+00:00",
+      "finishedAt": "2026-10-30T09:16:08.507561+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "7f32655d3e1b93d86e28beb0b1d7baf8f83139a6cf94dcdb135e4730b0c5a7f3"
+    },
+    "D10c3-voice-security": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-voice.test.ts",
+        "tests/video-native-first-encode.test.ts",
+        "-t",
+        "route vocale|version concurrente|premier encodeur"
+      ],
+      "head": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:17:35.616586+00:00",
+      "finishedAt": "2026-10-30T09:17:47.982928+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "fbbe5ecd1b1224b9054e1bd6ab00c2132e100f52001cc7682518c043f5bb3276"
+    },
+    "D10c3-exact-voice-red": {
+      "command": [
+        "env",
+        "DATA_DIR=/tmp/ecs-d10c3-exact-voice-red",
+        "STOCK_OFFLINE=1",
+        "node",
+        "--import",
+        "tsx",
+        "/workspace/reviews/ecom-211-state/D10c3-exact-voice-red.ts"
+      ],
+      "head": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+      "state": "failed",
+      "startedAt": "2026-10-30T09:23:33.097867+00:00",
+      "finishedAt": "2026-10-30T09:23:38.149990+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "6a860a96eaf2e79c22e07466a7d4762819eb542a46e182cfecba345a9259ec16"
+    },
+    "D10c3-exact-voice-green": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/lot5-openai-voice.test.ts",
+        "tests/video-voice-timing.test.ts"
+      ],
+      "head": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:23:49.988931+00:00",
+      "finishedAt": "2026-10-30T09:24:07.211361+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "1b74ca3d3c508476fc259a0ae41e9f7cc097ad9b393a6c47326ea078574dae14"
+    },
+    "D10c3-voice-exact-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "2252d10a94d1aedaf170ed261f4b0dcb3cf9133c",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:24:32.264981+00:00",
+      "finishedAt": "2026-10-30T09:24:53.619625+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D10c3-voice-final-full": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test"
+      ],
+      "head": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:25:51.734727+00:00",
+      "finishedAt": "2026-10-30T09:40:42.016364+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "bfc76a96a04337c86b72dc0066cb4a876dacd12fe75838d7eae2360f779e212e"
+    },
+    "D10c3-voice-clean-build": {
+      "command": [
+        "env",
+        "DATA_DIR=/tmp/ecs-d10c3-build",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10c-video/scripts/lot9/network-guard.mjs",
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:25:53.236323+00:00",
+      "finishedAt": "2026-10-30T09:27:36.532626+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "f1b17ebb8b12491edc925ea87b44f15c5e9b530c6ddc3d8595e51a85c13fcb8b"
+    },
+    "D10c3-voice-browser-inline-fixed": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10c-video/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10c3-browser-delivery-proof",
+        "--voice-ui"
+      ],
+      "head": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:32:06.824801+00:00",
+      "finishedAt": "2026-10-30T09:33:26.517008+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "2007863b02e78fa1207e357c930a285407a959343942e6e1156d4f2e56d04fbf"
+    },
+    "D10c3-voice-harness-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+      "state": "passed",
+      "startedAt": "2026-10-30T09:34:20.281238+00:00",
+      "finishedAt": "2026-10-30T09:35:11.811504+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    }
+  },
+  "summary": {
+    "fullPassed": 4038,
+    "fullSkipped": 45,
+    "nativeVoiceTargetedPassed": 32,
+    "agentScenarios": 7,
+    "securityAndFirstEncodeTargetedPassed": 7,
+    "browserPrincipalFlows": 1,
+    "capturesActuallyOpened": 4,
+    "realProviderCalls": 0,
+    "realCostEur": 0
+  },
+  "applicationSourceSha256": {
+    "scripts/verify-agent211-build.ts": "c101e70c70cab440a59638aa4859d73174584c1c777df507c36bc0e27f190a04",
+    "src/app/api/studio-agent/conversations/[cid]/video-voices/route.ts": "7598ac099b6c0864f0004950eabd991d729face9e90f9d995e1406b61f6fabeb",
+    "src/components/studio/conversation-panel.tsx": "a90817a4e283bcfeb182f1e8a1294b34969be8d66f666cd74a60cf5bcd9a6be3",
+    "src/components/studio/conversation-voice-tools.tsx": "58c847f33b8064c781d02c0e121a0b228abf9d400af8129e5e1178fcc826aed0",
+    "src/lib/orchestrator/conversation/contract.ts": "4ac371754e8c9930d49132e9a9903dddb0178a45c3602b158bf566720fa7c738",
+    "src/lib/orchestrator/conversation/index.ts": "1da73a77f068b63cccabea2828276a9e73b5461e6a62cb2b121f9d67e54211fa",
+    "src/lib/orchestrator/conversation/intelligence-context.ts": "d194f347aab994a1a494c5eeed404c90062f76b844c87db448786f190ce9a738",
+    "src/lib/orchestrator/conversation/intelligence-contract.ts": "62252c3488e9c4ec233da7a75e227d435466aa40754243273b010b495e4f7202",
+    "src/lib/orchestrator/conversation/intelligence.ts": "db3fc88645c8619307c3cbdcbd30dc1c845ec8cc98faf1a9bbf69d030bfdabdd",
+    "src/lib/orchestrator/conversation/studio-operations.ts": "e5bda46c3702757f6b8e0bd849d73023735ba2f5db7bf9a9e5e89450fd229fc3",
+    "src/lib/orchestrator/conversation/tool-flags.ts": "e0a7b2c44e8da72260450b6c5904aed3efe01de02ea3150b1f36e279d832e361",
+    "src/lib/orchestrator/conversation/video-voice-contract.ts": "74dd4fde05d7f7705a2d3c9a1ecf6ecf20565b9533a67de77950a01314bd4e79",
+    "src/lib/orchestrator/conversation/video-voice-execution.ts": "63a2d97a2b19f0aa6ddb68d31a355da14680a1deed7d1279f5ba3b900db7e3b7",
+    "src/lib/orchestrator/conversation/video-voice-validation.ts": "b17cd98633666afb86aeb5bee5c3c3fe769d3a01c7b0ca17fd4259a8cdb4ff2c",
+    "src/lib/video-v2/engine.ts": "06dd75f947e49064ec252bfb4c6fc49ec8075a74078c99528ed1994f2691093b",
+    "src/lib/video-v2/openai-voice.ts": "f1a5586800107d540ece44040f354b011c0d22d411de8d02c5f5b3d64235ccb3",
+    "src/lib/video-v2/three-scenes.ts": "fec8d35c9501760d8b5b469bd1cdf2f346d2e9a2b0deb06058f1284cd7340719",
+    "src/lib/video-v2/voice-revision-contract.ts": "76f73f0e81da1fad020622157d881ebea1caa1b969c3dec9525150559caa7dd4",
+    "src/lib/video-v2/voice-revision.ts": "d918a4edb342b6ace66b7de3945c0b4d273263e0735145e59f43a009257fff4e",
+    "tests/conversation211-video-generation.test.ts": "3a8c6ae3bcf328776d9b5a056f051b4b9731e621af31cb46469f5062ae508a87",
+    "tests/conversation211-video-voice.test.ts": "eb435d0b64c3521d2d0a49abcf7622bfcd583518b628cb92aed6f5109bf6d328",
+    "tests/lot5-openai-voice.test.ts": "97664c4c7dff215a4ee08783bc0c0950f10c2a4ff3580f183a6e1710538a0871",
+    "tests/video-native-first-encode.test.ts": "4437f924a07184b0b68250f252c612d49f64d6aa31017f2fb5b5d7a9452b7c2a",
+    "worker/handlers.ts": "b76066498064287d7bf4a5cfaa6c4550362dc1e1f510c545a8752f0bb105deff"
+  },
+  "harnessSourceSha256": {
+    ".github/workflows/ci.yml": "1058c9c89060595f8e19e9b15ca40e77e00e86d67a09fc7456b670af45c2d2e7",
+    "scripts/verify-agent211-voice-ui.ts": "a8e1ec9192e3a1eb88fb663be52be428655f1fa8ccd5baac530924dd76a69672"
+  },
+  "proofSelection": {
+    "scope": "local_readable_selected_proofs_not_full_archives",
+    "applicationCommit": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "files": {
+      "compiled-summary.json": {
+        "bytes": 624,
+        "sha256": "7bddda403237d327f891acfad70e6f60be38b3c7820b0808145b5490554a9a7f"
+      },
+      "voice-browser-proof.json": {
+        "bytes": 6020,
+        "sha256": "ff4dcd5f63973a58587851bfc343ed5a74f60d54ec0b27ca91874293cada4f18"
+      },
+      "voice-captures/01-devis-ordinateur.png": {
+        "bytes": 259282,
+        "sha256": "ace5aaea397b62cb38efa21604783034354717e8d8528db7664ae52726493df3"
+      },
+      "voice-captures/02-devis-mobile.png": {
+        "bytes": 63651,
+        "sha256": "da2788d83ba68b02b328d22af634bfe082a1f532531789c731f9405825ec67bf"
+      },
+      "voice-captures/03-resultat-mobile.png": {
+        "bytes": 38350,
+        "sha256": "798f2f0d2df81b75a28771a4850184c3a4208b09e243ce94ddd7ca85f25521a7"
+      },
+      "voice-captures/04-echec-ordinateur.png": {
+        "bytes": 243505,
+        "sha256": "e0d822062ac510d6f42569739956de9f305a37e09785ad35d8cb1c608b4bde3e"
+      },
+      "voice-native.json": {
+        "bytes": 6978,
+        "sha256": "085d2fa9830e66006d3aca9ca1d06d13ebe8ad10398bde924ed91096d8fca5e7"
+      },
+      "voice-native.mp4": {
+        "bytes": 98471,
+        "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f"
+      },
+      "voice-workflow.mp4": {
+        "bytes": 634064,
+        "sha256": "b359c823c49b8b480332eeec8300183771253e342e8d683712eeb1ada3ca3207"
+      }
+    }
+  },
+  "failuresNotHidden": [
+    "Initial agent test setup: missing documentary fixture and conversation opened after acquired data. Corrected fixture/order, no product protections weakened.",
+    "First complete local run terminated with SIGTERM on discovery of exact voice whitespace loss, not reported successful. Minimal red recorded; native revision now sends and stores exact text.",
+    "Browser first request used abbreviated product title and was rejected; fixture now uses exact title.",
+    "Second browser stopped after successful native MP4 save because a named callback compiled to unavailable __name. Diagnosed, inline callback tested and final full browser path passed without application changes.",
+    "No claim of entire source checkout unchanged after application freeze: two harness/CI files changed, native application/worker/tests individually sealed unchanged.",
+    "Sibling #249 final CI cancelled at75min, not passed. Separate #250 final CI successful."
+  ],
+  "limits": [
+    "Real reasoning, creative motion, natural speech and provider invoice accuracy unqualified; fake HTTP/SDK only.",
+    "Native MP4 decoded with muted automated playback; no human approval of voice.",
+    "Only proven original voice profile retained. Choosing a new voice/profile or confirming an unproved old profile remains partial.",
+    "Targeted clip retake, staged generation, interrupted-provider reconciliation and full first-encode receipt recovery still need their own vertical completion.",
+    "No client activation, merge, deployment, public publishing, real media/customer changes. D10c, D11, D12/E/F and #211 incomplete.",
+    "Visual component evidence remains from1992ebc7; the corrected application7c9a13ed is built/tested and has a separate compiled HTTP/worker entitlement proof. UI sources are exactly unchanged."
+  ],
+  "originalApplicationCommit": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+  "latestCorrection": {
+    "applicationCommit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+    "previousDelivery": "7ebccf43278894c380905901af5e04ceaaa0e754",
+    "defect": "A new voice on an acquired ad did not check the native Dominer advertising entitlement.",
+    "nativePolicyEvidence": "src/app/api/projects/[id]/creative/video/route.ts:90,97 uses assertAdvertising for advertising creation/repair.",
+    "fix": "Same gate at quote, confirmation and worker before any new voice. Existing acquired files remain readable/reusable without new generation.",
+    "files": {
+      "src/lib/orchestrator/conversation/video-voice-execution.ts": "63a2d97a2b19f0aa6ddb68d31a355da14680a1deed7d1279f5ba3b900db7e3b7",
+      "tests/conversation211-video-voice.test.ts": "eb435d0b64c3521d2d0a49abcf7622bfcd583518b628cb92aed6f5109bf6d328"
+    },
+    "runs": {
+      "D10c3-ad-rights-red": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "npm",
+          "test",
+          "--",
+          "tests/conversation211-video-voice.test.ts",
+          "-t",
+          "d’une publicité acquise"
+        ],
+        "head": "7ebccf43278894c380905901af5e04ceaaa0e754",
+        "state": "failed",
+        "startedAt": "2026-10-30T09:59:13.560201+00:00",
+        "finishedAt": "2026-10-30T09:59:27.261761+00:00",
+        "exitCode": 1,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": false,
+        "logSha256": "47e2ccf3d770cca7887cbd1f93b1560622d1c5dc47226bc52b6bc5e5cc6a2793"
+      },
+      "D10c3-ad-rights-green": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "npm",
+          "test",
+          "--",
+          "tests/conversation211-video-voice.test.ts",
+          "-t",
+          "d’une publicité acquise"
+        ],
+        "head": "7ebccf43278894c380905901af5e04ceaaa0e754",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:01:03.786583+00:00",
+        "finishedAt": "2026-10-30T10:01:17.178442+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": false,
+        "logSha256": "d867ebcc4171b62c9ca9e728c94251616768834155c168fb2c5e9e99aa54fc0c"
+      },
+      "D10c3-ad-rights-and-free-acquired": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "npm",
+          "test",
+          "--",
+          "tests/conversation211-video-voice.test.ts",
+          "-t",
+          "d’une publicité acquise"
+        ],
+        "head": "7ebccf43278894c380905901af5e04ceaaa0e754",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:03:06.127176+00:00",
+        "finishedAt": "2026-10-30T10:03:20.453221+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": false,
+        "logSha256": "5226839d6c3202b37cc6b73438611eb64180ca1c5dfb87cf91f687eed95824e4"
+      },
+      "D10c3-ad-final-types": {
+        "command": [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        "head": "7ebccf43278894c380905901af5e04ceaaa0e754",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:03:35.779874+00:00",
+        "finishedAt": "2026-10-30T10:03:40.670702+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": false,
+        "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+      },
+      "D10c3-ad-final-full": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "npm",
+          "test"
+        ],
+        "head": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:04:33.042106+00:00",
+        "finishedAt": "2026-10-30T10:19:04.587681+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": true,
+        "logSha256": "64e3db10e9f17416b464e1c5a3737734161d91476e23b0a7d98ceca3092e8b38"
+      },
+      "D10c3-ad-clean-build": {
+        "command": [
+          "env",
+          "DATA_DIR=/tmp/ecs-d10c3-ad-build",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "NEXT_TELEMETRY_DISABLED=1",
+          "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10c-video/scripts/lot9/network-guard.mjs",
+          "npm",
+          "run",
+          "build"
+        ],
+        "head": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:04:33.042146+00:00",
+        "finishedAt": "2026-10-30T10:06:17.545842+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": true,
+        "logSha256": "f1b17ebb8b12491edc925ea87b44f15c5e9b530c6ddc3d8595e51a85c13fcb8b"
+      },
+      "D10c3-ad-compiled-guards": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10c-video/scripts/lot9/network-guard.mjs",
+          "npx",
+          "tsx",
+          "docs/coordination/preuves-211-D10c3/verify-compiled-ad-rights.mts",
+          "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+          "/workspace/reviews/ecom-211-state/D10c3-ad-compiled-proof.json"
+        ],
+        "head": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+        "state": "failed",
+        "startedAt": "2026-10-30T10:12:57.801762+00:00",
+        "finishedAt": "2026-10-30T10:13:04.246984+00:00",
+        "exitCode": 1,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": true,
+        "logSha256": "4e6f856ec35f49603687c4397fffc25aebfd98d5b909a87745ff4df6b50a770e"
+      },
+      "D10c3-ad-compiled-origin-fixed": {
+        "command": [
+          "env",
+          "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+          "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d10c-video/scripts/lot9/network-guard.mjs",
+          "npx",
+          "tsx",
+          "docs/coordination/preuves-211-D10c3/verify-compiled-ad-rights.mts",
+          "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+          "/workspace/reviews/ecom-211-state/D10c3-ad-compiled-final-proof.json"
+        ],
+        "head": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+        "state": "passed",
+        "startedAt": "2026-10-30T10:15:25.188146+00:00",
+        "finishedAt": "2026-10-30T10:15:33.258586+00:00",
+        "exitCode": 0,
+        "sourceUnchanged": true,
+        "cleanCommitSnapshot": true,
+        "logSha256": "fc22b20c2abf3c20dedcd435c5670d787d5c800251b2b2dc4bebd8fdf0bb2cf5"
+      }
+    },
+    "fullPassed": 4038,
+    "fullSkipped": 45,
+    "compiledProof": {
+      "applicationCommit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+      "provider": "none; trusted synthetic metadata and local neutral media fixtures",
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "served": {
+        "commit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      },
+      "passed": true,
+      "quoteBlocked": 402,
+      "confirmationBlocked": 402,
+      "workerBlockedBeforeVoice": true,
+      "acquiredDownload": 200,
+      "sourceVersionAndBytesUnchanged": true,
+      "counts": {
+        "ai_calls": 0,
+        "ai_reservations": 0,
+        "usage_events": 0
+      }
+    },
+    "visualProofApplicationCommit": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+    "visualSourceUnchanged": true,
+    "newVisualCaptures": 0,
+    "providerCalls": 0,
+    "realCostEur": 0,
+    "initialCompiledProbeFailure": "403 at login because isolated APP_URL was missing; fixture now sets its loopback APP_URL as the standard harness does. CSRF was never disabled.",
+    "ci": "Old SHA under review insufficient even if green; await CI on corrected delivery SHA."
+  }
+}

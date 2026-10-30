@@ -21,7 +21,7 @@ import {clearConversationAnswer} from './answer-state';
 import {activeContextEnabled,resolveActiveContext,observedActiveContext} from './active-context';
 import {studioKnowledgeEnabled,captureStudioObservation} from './studio-observation';
 import {studioOperationCatalogue} from './studio-operations';
-import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled} from './tool-flags';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled} from './tool-flags';
 import {strategyChoicesEnabled,strategyChoicesView,applyStrategyChoice} from "./strategy-choices";
 export { openDraft, draftOf, openProjectConversation, projectConversation, assertConversationEnabled } from "./store";
 export { CommandSchema } from "./contract";
@@ -58,7 +58,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(c.project_id&&conversationResearchEnabled()?{researchExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationCatalogueEnabled()?{catalogueExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationImagesEnabled()?{imageExecution:{enabled:true as const}}:{}),
-    ...(c.project_id&&conversationVideosEnabled()?{videoExecution:{enabled:true as const,...(conversationVideoGenerationEnabled()?{generation:true as const}:{})}}:{}),
+    ...(c.project_id&&conversationVideosEnabled()?{videoExecution:{enabled:true as const,...(conversationVideoGenerationEnabled()?{generation:true as const}:{}),...(conversationVideoVoiceEnabled()?{voice:true as const}:{})}}:{}),
     ...(c.project_id&&conversationLogosEnabled()?{logoExecution:{enabled:true as const}}:{}),
     tools: [{id:"brief.update",state:readOnlyReason?"unavailable":"available",executionEnabled:!readOnlyReason},{id:"understand-offer",state:!readOnlyReason&&c.project_id&&m.business&&b.input.description?"quote_only":"unavailable",executionEnabled:false},...(["research","brand","logo","theme","products","images","videos","seo","blog","ads","social","calendar","appointments","export","render","publish","delete","purchase"] as const).map(id=>({id,state:(id==="theme"&&conversationThemeToolsEnabled()||id==="export"&&conversationExportsEnabled()||id==="render"&&conversationRenderEnabled()||id==="research"&&conversationResearchEnabled()||id==="products"&&conversationCatalogueEnabled()||id==="images"&&conversationImagesEnabled()||id==="logo"&&conversationLogosEnabled()||id==="videos"&&conversationVideosEnabled())?"quote_only" as const:"not_connected" as const,executionEnabled:false}))],
     summary: { description: b.input.description, business: m.business, businessSource: m.businessSource, target: b.input.target, goals: b.profile.facts.find(f => f.key === "conversation.goals" && f.status === "confirmed")?.value ?? "", offerName: b.input.offerName, brandName: b.input.brandName,
