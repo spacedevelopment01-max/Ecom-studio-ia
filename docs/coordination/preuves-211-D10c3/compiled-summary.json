@@ -1,0 +1,29 @@
+{
+  "version": {
+    "commit": "1992ebc70e8468d8c5cf88b4de04de05242d8616",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "voiceUi": {
+    "passed": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "naturalSpeechQualified": false,
+    "captures": 4
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 15,
+    "videoClipCalls": 2,
+    "videoVoiceCalls": 4,
+    "textHttpCalls": 9,
+    "imageHttpCalls": 0,
+    "tokenCounts": 9,
+    "calls": 15,
+    "usage": 14,
+    "simulatedMicro": 933042
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}
