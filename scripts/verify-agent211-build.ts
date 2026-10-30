@@ -16,6 +16,7 @@ if(!fs.existsSync('.next/BUILD_ID'))throw Error('Production build required');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
+if(process.argv.includes('--background-communication-ui'))process.argv.push('--integrated-communication-ui');
 if(process.argv.includes('--integrated-communication-ui'))process.argv.push('--social-reuse-ui','--social-production-ui','--campaign-visual-ui');
 if(process.argv.includes('--social-reuse-ui'))process.argv.push('--social-production-ui');
 if(process.argv.includes('--social-aspect-ui'))process.argv.push('--social-production-ui');
@@ -67,7 +68,7 @@ const fake=http.createServer(async(req,res)=>{
       if(req.url==='/__video-voice'){videoVoiceCalls++;if(voiceFailureAt===videoVoiceCalls){res.writeHead(503,{'content-type':'application/json'});res.end('{"error":"simulated voice503"}');return;}const{execFileSync}=await import('node:child_process'),file=path.join(temp,'voice-tone.wav');if(!fs.existsSync(file))execFileSync('ffmpeg',['-y','-v','error','-f','lavfi','-i','sine=frequency=330:duration=0.5',file]);res.setHeader('content-type','audio/wav');res.end(fs.readFileSync(file));return;}
     }
     if((process.argv.includes('--images-ui')||process.argv.includes('--logos-ui')||(process.argv.includes('--social-production-ui')||process.argv.includes('--campaign-visual-ui')))&&/\/images\/(?:edits|generations)/.test(req.url??'')){
-      await new Promise(r=>setTimeout(r,200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
+      await new Promise(r=>setTimeout(r,process.argv.includes("--background-communication-ui")?1000:200));imageHttpCalls++;const {mockImage}=await import('../tests/image-v2-mock');const {createHash}=await import('node:crypto');
       const model=/name="model"\r\n\r\n([^\r]+)/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).model:null);assert.ok(model);
       const wirePrompt=/name="prompt"\r\n\r\n([\s\S]*?)\r\n--/.exec(bytes)?.[1]??(req.headers['content-type']?.includes('application/json')?JSON.parse(bytes).prompt:'');
       const prompt=wirePrompt.replace(/\r\n/g,'\n'); // FormData encode les fins de ligne en CRLF, sans modifier les mots ou espaces.
