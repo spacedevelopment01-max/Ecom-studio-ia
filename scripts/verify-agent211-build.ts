@@ -16,6 +16,7 @@ if(!fs.existsSync('.next/BUILD_ID'))throw Error('Production build required');
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'ecs-agent-211-'));
 process.env.DATA_DIR=temp;process.env.STOCK_OFFLINE='1';
 process.env.STUDIO_CONVERSATION_LOT_A='1';process.env.STUDIO_CONVERSATION_AI='1';
+if(process.argv.includes('--targeted-copy-ui'))process.argv.push('--catalogue-copy-ui');
 if(process.argv.includes('--catalogue-copy-ui'))process.argv.push('--content-ui');
 if(process.argv.includes('--content-ui'))for(const key of ['STUDIO_CONVERSATION_UI','STUDIO_CONVERSATION_CONTEXT','STUDIO_CONVERSATION_SPECIALISTS','STUDIO_CONVERSATION_TOOLS','STUDIO_CONVERSATION_CONTENT'])process.env[key]='1';
 if(process.argv.includes('--acquired-copy-ui'))process.argv.push('--composition-ui');
@@ -56,7 +57,7 @@ const {stateOf}=await import('../src/lib/preparation/store');
 type View=import('../src/lib/orchestrator/conversation/contract').ConversationView;
 type Session={u:Awaited<ReturnType<typeof account>>;cookie:string};
 const users=[await account(),await account()];setSetting('ai.prices.checkedAt',String(Date.now()));
-let contentInstruction='',nativeContentMode=false;const contentRequests:{phase:string;bytes:number;sha256:string;hasExactInstruction:boolean;offerName?:string;price?:string|null;factValues?:string[]}[]=[];
+let contentInstruction='',nativeContentMode=false;const contentRequests:{phase:string;bytes:number;sha256:string;hasExactInstruction:boolean;offerName?:string;price?:string|null;factValues?:string[];blockIds?:string[]}[]=[];
 let afterPublicationReview:(()=>void)|null=null;
 let socialPublicationFixture:{headline:string;caption:string;brand:string;referenceId:string;subline?:string;cta?:string;purpose?:"post"|"ad";aspect?:string}|null=null;
 let server:ChildProcess|undefined,worker:ChildProcess|undefined,logs='',origin='',fixture:Record<string,unknown>={},bad=false,failureStatus=0,providerCalls=0,tokenCounts=0;
@@ -88,7 +89,16 @@ const fake=http.createServer(async(req,res)=>{
     if(req.url?.endsWith('/count_tokens')){tokenCounts++;let visionTokens=0;const counted=JSON.stringify(p,(_key,value)=>{if(value?.type==='image'&&value.source?.type==='base64'){/* Simulation conservative : les pixels coûtent des jetons visuels, pas un jeton pour chaque caractère base64. */visionTokens+=3400;return{type:'image',source:{type:'base64',media_type:value.source.media_type,data:'[octets retirés du comptage fictif]'}};}return value;});res.setHeader('content-type','application/json');res.end(JSON.stringify({input_tokens:Math.ceil(counted.length/3)+visionTokens}));return;}
     assert.ok(req.url?.startsWith('/v1/messages'));assert.equal(p.stream,true);providerCalls++;const shotReview=(process.argv.includes('--generated-videos-ui')||process.argv.includes('--voice-ui')||process.argv.includes('--clip-ui'))&&JSON.stringify(p.system??'').includes('Tu juges UN plan vidéo'),logoReview=process.argv.includes('--logos-ui')&&JSON.stringify(p.system??'').includes('Tu juges UN logo complet'),visionReview=JSON.stringify(p.system??'').includes('Tu juges UNE image');if(!visionReview&&!logoReview&&!shotReview)lastInputText=(p.messages??[]).flatMap((m:{content:unknown})=>typeof m.content==='string'?[m.content]:Array.isArray(m.content)?m.content.map((c:{text?:string})=>c.text??''):[]).join('\n');
     if(failureStatus){res.statusCode=failureStatus;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{type:'api_error',message:'Panne simulée, aucun appel fournisseur réel.'}}));return;}
-    let contentAnswer:Record<string,unknown>|null=null;if(nativeContentMode){const system=JSON.stringify(p.system??''),writing=system.includes('Rôle : rédacteur SEO et copywriter senior'),reviewing=system.includes('Rôle : rédacteur en chef et consultant SEO senior');if(writing||reviewing){const{prompt,instruction,phase}=(await import('./agent211-content-wire')).contentWire(p.messages,reviewing),exact=instruction===contentInstruction;contentRequests.push({phase,bytes:Buffer.byteLength(prompt),sha256:(await import('node:crypto')).createHash('sha256').update(prompt).digest('hex'),hasExactInstruction:exact,...(!reviewing?(()=>{const facts=JSON.parse(prompt.match(/FAITS VÉRIFIÉS \(seule matière autorisée\) : (\{.*\})/)![1]);return{offerName:facts.offre,price:facts.prix,factValues:facts.faits.map((f:{value:string})=>f.value)};})():{})});assert.ok(exact,'La consigne JSON décodée doit rester identique au texte client');const mock=await import('../tests/seo-v2-mock');contentAnswer=(reviewing?mock.review():phase==='rewrite'?{blocks:[],note:'Aucun changement fictif'}:mock.faithfulDraft(prompt.slice(prompt.indexOf('Type : ')))) as unknown as Record<string,unknown>;}}
+    let contentAnswer:Record<string,unknown>|null=null;
+    if(nativeContentMode){
+      const system=JSON.stringify(p.system??''),editing=JSON.stringify(p.messages??[]).includes('DEMANDE EXACTE DE RETOUCHE (donnée métier'),writing=system.includes('Rôle : rédacteur SEO et copywriter senior'),reviewing=system.includes('Rôle : rédacteur en chef et consultant SEO senior');
+      if(editing||writing||reviewing){
+        const helpers=await import('./agent211-content-wire'),editWire=editing?helpers.contentEditWire(p.messages):null,wire=editWire??helpers.contentWire(p.messages,reviewing),{prompt,instruction,phase}=wire,exact=instruction===contentInstruction;
+        contentRequests.push({phase,bytes:Buffer.byteLength(prompt),sha256:(await import('node:crypto')).createHash('sha256').update(prompt).digest('hex'),hasExactInstruction:exact,...(editWire?{blockIds:editWire.blocks.map(b=>b.id)}:{}),...(phase==='write'?(()=>{const facts=JSON.parse(prompt.match(/FAITS VÉRIFIÉS \(seule matière autorisée\) : (\{.*\})/)![1]);return{offerName:facts.offre,price:facts.prix,factValues:facts.faits.map((f:{value:string})=>f.value)};})():{})});
+        assert.ok(exact,'La consigne JSON décodée doit rester identique au texte client');const mock=await import('../tests/seo-v2-mock');
+        contentAnswer=(editWire?{blocks:editWire.blocks.map(b=>({id:b.id,...(b.items?{items:b.items.map(t=>'Reformulation simulée : '+t)}:b.q&&b.a?{q:b.q,a:'Reformulation simulée : '+b.a}:{text:'Reformulation simulée : '+b.text})})),note:'Retouche simulée, qualité créative non qualifiée'}:reviewing?mock.review():phase==='rewrite'?{blocks:[],note:'Aucun changement fictif'}:mock.faithfulDraft(prompt.slice(prompt.indexOf('Type : ')))) as unknown as Record<string,unknown>;
+      }
+    }
 
     const publicationInput=JSON.stringify(p.system??''),publicationCopy=(process.argv.includes('--social-production-ui')||process.argv.includes('--campaign-visual-ui'))&&(publicationInput.includes('You are an editorial art director.')||publicationInput.includes('You are an advertising creative director.')),publicationReview=(process.argv.includes('--social-production-ui')||process.argv.includes('--campaign-visual-ui'))&&publicationInput.includes('You are a strict art director checking a finished social media post');
     let publicationAnswer:Record<string,unknown>|null=null;
@@ -226,7 +236,7 @@ try{
     proof.allSimulatedTotals=counts();
   }
   if(process.argv.includes('--content-ui')){
-    const{verifyContentBrowser}=await import('./verify-agent211-content-ui');proof.contentUi=await verifyContentBrowser({origin,out,account,login,counts,catalogueOnly:process.argv.includes('--catalogue-copy-ui'),setInstruction:text=>{nativeContentMode=true;contentInstruction=text;failureStatus=0;},setFailure:status=>{failureStatus=status;},wire:()=>contentRequests});proof.allSimulatedTotals=counts();
+    const{verifyContentBrowser}=await import('./verify-agent211-content-ui');proof.contentUi=await verifyContentBrowser({origin,out,account,login,counts,targeted:!process.argv.includes('--catalogue-copy-ui')||process.argv.includes('--targeted-copy-ui'),catalogueOnly:process.argv.includes('--catalogue-copy-ui'),setInstruction:text=>{nativeContentMode=true;contentInstruction=text;failureStatus=0;},setFailure:status=>{failureStatus=status;},wire:()=>contentRequests});proof.allSimulatedTotals=counts();
   }
   if(process.argv.includes('--composition-ui')){
     const{verifyCompositionBrowser}=await import('./verify-agent211-composition-ui'),{project}=await import('../tests/conversation209-fixtures'),{seedCompositionSite}=await import('./composition211-ui-fixtures'),{compositionContext}=await import('../src/lib/theme/composition/server'),{currentTheme,themeVersion}=await import('../src/lib/projects');
