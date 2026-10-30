@@ -1,0 +1,154 @@
+{
+  "applicationCommit": "7259e506d92cd680836ebef394b0a31cdfb94569",
+  "initialCodeCommit": "1a74dd27fc208b3ffec3637a8ee2d796d120887e",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": {
+    "D11g-acquired-receipt-before": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts"
+      ],
+      "head": "cdbbd92ddeec2b825532f4fd99f5e574a7fea2db",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T14:48:57.784123+00:00",
+      "finishedAt": "2026-10-30T14:49:07.045921+00:00",
+      "logSha256": "31ee7d7295babda8fad533afb4313538ea3a7581a4a13fac210ca11a4daf61d5"
+    },
+    "D11g-final-scoped-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts",
+        "tests/social-native-production-binding.test.ts",
+        "tests/publications-qualite.test.ts"
+      ],
+      "head": "cdbbd92ddeec2b825532f4fd99f5e574a7fea2db",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T14:55:50.981258+00:00",
+      "finishedAt": "2026-10-30T14:56:03.900610+00:00",
+      "logSha256": "a6f3c2550da9bf2184f9d541336a97331d7c02c5dda97452ef88c3f3fa09fefc"
+    },
+    "D11g-refusal-http-before": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts",
+        "-t",
+        "réemploi bloqué"
+      ],
+      "head": "1a74dd27fc208b3ffec3637a8ee2d796d120887e",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:02:33.193688+00:00",
+      "finishedAt": "2026-10-30T15:02:38.135632+00:00",
+      "logSha256": "3b402860f1b04dda3fd55f6abb54dc32182671bb82ce84bcfe5a1c4855b0883b"
+    },
+    "D11g-http-refusal-corrected-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts"
+      ],
+      "head": "1a74dd27fc208b3ffec3637a8ee2d796d120887e",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:03:15.548712+00:00",
+      "finishedAt": "2026-10-30T15:03:28.498685+00:00",
+      "logSha256": "0ec4db08faaa7686f8e81bfacdaf679f44bedb28d8f7399ad16cf5addc7381aa"
+    },
+    "D11g-http-refusal-corrected-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "1a74dd27fc208b3ffec3637a8ee2d796d120887e",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T15:03:17.040750+00:00",
+      "finishedAt": "2026-10-30T15:03:41.562164+00:00",
+      "logSha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    "D11g-final-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "7259e506d92cd680836ebef394b0a31cdfb94569",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T15:04:36.425063+00:00",
+      "finishedAt": "2026-10-30T15:05:38.928792+00:00",
+      "logSha256": "51c70c011badd41d3b2f341c324cb97fc746247b0d5dd91c8c3fc5da369b3b81"
+    },
+    "D11g-final-free-reuse-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11g-final-free-reuse-proof",
+        "--social-reuse-ui"
+      ],
+      "head": "7259e506d92cd680836ebef394b0a31cdfb94569",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T15:06:31.307072+00:00",
+      "finishedAt": "2026-10-30T15:06:56.744131+00:00",
+      "logSha256": "477306676f33d96f33b8d7ba6b84f9dd5cac2d6fc3d76df3d477b5f83af6728c"
+    }
+  },
+  "proofFiles": {
+    "01-devis-visuel-ordinateur.png": {
+      "bytes": 219672,
+      "sha256": "98eaf073afe556288c1103c5c3113f2aba347f6915a14fd2fa647ef45544986c"
+    },
+    "03-reemploi-sans-ia-mobile.png": {
+      "bytes": 109899,
+      "sha256": "80d1afb9f28fc7b344c65e8678b715289f72150ed89789d31ab509de0e3b68bd"
+    },
+    "03-visuel-mobile.png": {
+      "bytes": 207358,
+      "sha256": "14d427091c3b7f924c47f02bdd3afcaba3fa5e861840de0e5c7c2f773e9a7201"
+    },
+    "native-reuse-proof.json": {
+      "bytes": 2299,
+      "sha256": "3d2019768138acaeb5e3d5c3c30676bc48dcde279ee15516daae2f06d3aabedd"
+    },
+    "social-reuse-workflow.mp4": {
+      "bytes": 724847,
+      "sha256": "b620f83a0aae278256de568bf83960093922c23a55ecd90d9cd5a469b437522b"
+    },
+    "tests-natifs-74.txt": {
+      "bytes": 625,
+      "sha256": "a6f3c2550da9bf2184f9d541336a97331d7c02c5dda97452ef88c3f3fa09fefc"
+    },
+    "tests-refus-40.txt": {
+      "bytes": 543,
+      "sha256": "0ec4db08faaa7686f8e81bfacdaf679f44bedb28d8f7399ad16cf5addc7381aa"
+    }
+  }
+}

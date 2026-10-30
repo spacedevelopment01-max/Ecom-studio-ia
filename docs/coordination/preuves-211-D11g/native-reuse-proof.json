@@ -1,0 +1,81 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "transport": "native SDK/HTTP loopback simulation",
+  "creativeQualityQualified": false,
+  "passed": true,
+  "postIds": [
+    "syna-691279b90bd875bdfc2b696f5946"
+  ],
+  "success": {
+    "reusedWithoutAi": true,
+    "sameAsset": true,
+    "sha256": "2855a737acbfa47f82ee5371c38fdfc881f60a9d4e3e4ee31cc9be6a0aa57ef8",
+    "downloadExact": true,
+    "requestAspect": "4:5",
+    "sourceRemoved": true,
+    "budgetExhausted": true,
+    "expiredOriginalQuoteAndBound": true,
+    "contextConflictHttp": 409,
+    "forgedAssetHttp": 400,
+    "boundsUnchanged": true,
+    "manualSchedulePreserved": true
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.95,
+    "origin": "INPUT_CHANGED_AFTER_ACQUISITION",
+    "acquiredReadable": true,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "counts": {
+    "providerHttpCalls": 7,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 6,
+    "imageHttpCalls": 1,
+    "tokenCounts": 6,
+    "calls": 7,
+    "usage": 7,
+    "simulatedMicro": 257415
+  },
+  "version": {
+    "commit": "7259e506d92cd680836ebef394b0a31cdfb94569",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "imageReferenceTransports": [
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "kz3w5glmx7aldh2t",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "8aa73e1f4a0bc63e89db33ab1980829b86f63c564a1692bc1d798da45b50f18d",
+      "wirePromptSha256": "c33c0ecd34e40100a3a629cadbff9b59a3570b6b84c850202d93a1e0b8ed881f",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7144,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    }
+  ],
+  "screenshotsActuallyOpened": 4,
+  "publishedScreenshots": 3,
+  "filmDurationS": 12.933333,
+  "filmFramesPerSecond": 15,
+  "filmNotAccelerated": true,
+  "unitBefore": {
+    "missingAcquiredReceipt": "1failed28passed",
+    "controlledRefusals": "3failed1passed36skipped"
+  },
+  "nativeOriginal": "Kept in local/full CI proof, not duplicated in Git selection"
+}

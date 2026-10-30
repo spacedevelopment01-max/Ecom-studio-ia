@@ -289,6 +289,18 @@ jobs:
           path: reports/ci-agent211-social-aspect
           if-no-files-found: warn
 
+      - name: Acquis social après conflit et réemploi sans IA depuis le Studio compilé
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-reuse --social-reuse-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves du réemploi social sans achat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-reuse-simulated
+          path: reports/ci-agent211-social-reuse
+          if-no-files-found: warn
+
   image-docker:
     name: Image Docker (construction et démarrage)
     runs-on: ubuntu-latest
