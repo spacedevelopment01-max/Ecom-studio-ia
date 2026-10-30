@@ -1,0 +1,33 @@
+{
+  "schema": "211-D19-evidence-1",
+  "harnessCommit": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+  "compiledApplicationCommit": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+  "appAndWorkerIdentical": true,
+  "targetedTests": 23,
+  "targetedFiles": 3,
+  "types": "passed",
+  "nativeVoice": "passed",
+  "nativeClip": "passed",
+  "compilationReused": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "ci": "required_on_final_delivery_pending",
+  "files": {
+    "docs/coordination/preuves-211-D19/checks.json": {
+      "bytes": 2483,
+      "sha256": "e05bd2bb5744edf72f9652720b881c82a9dba2546b707046e212965d2d8f3eb6"
+    },
+    "docs/coordination/preuves-211-D19/native-receipts.json": {
+      "bytes": 2983,
+      "sha256": "30f91e3c8b079df70ec4a64179d83a472f905defc795ac27cc97a93ce6fb7ac6"
+    },
+    "docs/coordination/preuves-211-D19/ci-historical-evidence.json": {
+      "bytes": 418,
+      "sha256": "8afcaa6ca4c9e6eb2b4838da2e8c7b682296af133a500f228a8f2e444b4f4a23"
+    },
+    "docs/coordination/preuves-211-D19/01-echec-et-acquis-ordinateur.png": {
+      "bytes": 243505,
+      "sha256": "e0d822062ac510d6f42569739956de9f305a37e09785ad35d8cb1c608b4bde3e"
+    }
+  }
+}

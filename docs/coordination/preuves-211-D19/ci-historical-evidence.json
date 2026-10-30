@@ -1,0 +1,14 @@
+{
+  "run": 41127062315,
+  "head": "3a47efbab8326a8aa1da0602c6292d167b629bc2",
+  "job": 124308202116,
+  "artifact": 13014841550,
+  "zipSha256": "804260d44ab759e830e79d4b1c75d6365b86fb388a5a0256e863f16d4bd62631",
+  "assertion": "true !== false, failed.delivered",
+  "source": "scripts/verify-agent211-voice-ui.ts:56:370",
+  "nativeAtFailure": {
+    "queuedRender": 1,
+    "doneRender": 1
+  },
+  "realProviderCalls": 0
+}
