@@ -34,6 +34,8 @@ function save(pid:string,m:Saved){remember(pid,{kind:'artifact',key:key(m.id),va
 function read(pid:string,id:string){return json<Saved|null>(one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND kind='artifact' AND key=?",pid,key(id))?.value,null);}
 function located(u:User,cid:string,qid:string){const{c,pid,s}=owned(u,cid),m=read(pid,qid);if(!m||m.conversationId!==cid)throw new HttpError(404,L('Proposition de marque introuvable.','Brand proposal not found.'));return{c,pid,s,m};}
 function currentSource(c:ReturnType<typeof ownedConversation>,pid:string,s:State,m:Saved){return c.revision===m.revision&&sourceHash(pid,s)===m.sourceHash;}
+/** Une nouvelle parole ne réécrit pas l’acquis ; toute modification effective du projet le périme. */
+export function brandNativeInputMatches(u:User,cid:string,qid:string){const{pid,s,m}=located(u,cid,qid);return sourceHash(pid,s)===m.sourceHash;}
 function checkSource(u:User,cid:string,pid:string,m:Saved){const{c,s}=owned(u,cid);if(c.project_id!==pid||!currentSource(c,pid,s,m))throw new HttpError(409,L('Le contexte ou la marque ont changé. La proposition acquise reste conservée sans remplacer vos choix.','The context or brand changed. The acquired proposal is kept without replacing your choices.'),'agent_brand_context_changed');}
 function identityOf(value:unknown):Identity|null{const v=value as Identity|undefined;return v&&['local','provider','simulation'].includes(v.provenance)&&v.identityConfirmed===false&&Array.isArray(v.logoCandidates)&&v.proposal&&typeof v.proposal.name==='string'&&v.proposal.name.trim()&&v.proposal.palette&&v.proposal.fonts&&v.proposal.tone&&Array.isArray(v.proposal.values)?v:null;}
 function acquired(pid:string,m:Saved,j:Job|null|undefined){

@@ -1,3 +1,4 @@
+import {conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
 import { id, json, now, one, run, tx } from "../../db";
@@ -56,7 +57,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     ...(c.project_id&&conversationThemeToolsEnabled()?{themeExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationExportsEnabled()?{exportExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationRenderEnabled()?{renderExecution:{enabled:true as const}}:{}),
-    ...(c.project_id&&conversationBrandEnabled()?{brandExecution:{enabled:true as const}}:{}),
+    ...(c.project_id&&conversationBrandEnabled()?{brandExecution:{enabled:true as const,...(conversationBrandReviewEnabled()?{review:true as const}:{})}}:{}),
     ...(c.project_id&&conversationResearchEnabled()?{researchExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationCatalogueEnabled()?{catalogueExecution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationImagesEnabled()?{imageExecution:{enabled:true as const}}:{}),
