@@ -1,13 +1,10 @@
+import {z}from 'zod';
 import {withCommunicationRequest} from "@/lib/marketing-strategy/communication-route";
-import { recordedContentStrategy, strategyContent } from "@/lib/strategy-consumption";
-import { assertAdvertising } from "@/lib/job-entitlements";
-import { z } from "zod";
-import { all, id, now, one, run } from "@/lib/db";
-import { HttpError } from "@/lib/auth";
-import { L } from "@/lib/i18n-server";
+import { recordedContentStrategy } from "@/lib/strategy-consumption";
+import {ManualCampaignSchema,saveManualCampaign}from "@/lib/campaigns/manual";
+import { all, run } from "@/lib/db";
 import { body, handle, ok } from "@/lib/http";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
-import { assertCampaignSlot } from "@/lib/plan-gates";
 
 /** Campagnes : préparation des angles, créations et textes. Aucune dépense n'est lancée depuis le studio. */
 export const GET = handle(async (_req: Request, ctx: Ctx) => {
@@ -21,22 +18,9 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   return withCommunicationRequest(p.id,req,async()=>{
-  const b = await body(req, z.object({ id: z.string().optional(), name: z.string().min(1).max(120), objective: z.string().max(80), networks: z.array(z.string()).max(6), brief: z.object({ language: z.enum(["fr", "en"]).optional() }).catchall(z.any()).default({}), plan: z.record(z.string(), z.any()).default({}), status: z.enum(["draft", "ready", "archived"]).default("draft") }));
-  if(b.status!=="archived")assertAdvertising(p.id);
-  if (b.id) {
-    const cur = one<{ status: string }>("SELECT status FROM campaigns WHERE id = ? AND project_id = ?", b.id, p.id);
-    if (!cur) throw new HttpError(404, L("Campagne introuvable.", "Campaign not found."));
-    // Ressortir une campagne des archives l'ajoute aux campagnes actives : même limite du forfait qu'une création.
-    if (cur.status === "archived" && b.status !== "archived") assertCampaignSlot(user, p.id);
-    run("UPDATE campaigns SET name = ?, objective = ?, networks = ?, brief = ?, plan = ?, status = ?, updated_at = ? WHERE id = ? AND project_id = ?", b.name, b.objective, JSON.stringify(b.networks), JSON.stringify(b.brief), JSON.stringify(b.plan), b.status, now(), b.id, p.id);
-    strategyContent(p.id,"campaign",b.id,{protected:true});
-    return ok({ id: b.id });
-  }
-  assertCampaignSlot(user, p.id);
-  const cid = id();
-  run("INSERT INTO campaigns (id, project_id, name, objective, networks, status, brief, plan, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", cid, p.id, b.name, b.objective, JSON.stringify(b.networks), b.status, JSON.stringify(b.brief), JSON.stringify(b.plan), now(), now());
-  strategyContent(p.id,"campaign",cid,{protected:true});
-  return ok({ id: cid });
+  const b=await body(req,ManualCampaignSchema);
+  const result=saveManualCampaign(p,user,b);
+  return ok({id:result.id});
   },['']);
 });
 
