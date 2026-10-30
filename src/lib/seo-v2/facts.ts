@@ -12,7 +12,7 @@ import type { VerifiedFacts } from "./types";
 const ph = (s: string | null | undefined) => !s?.trim() || /\[(À|A) (compléter|définir|préciser)|\[To (complete|define)|\[Por completar/i.test(s);
 const clean = (s: string | null | undefined) => (ph(s) ? null : s!.trim());
 
-export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFacts {
+export function verifiedFacts(p: Project, item?: CatalogItem | null, o: { confirmedCategoryOnly?: boolean } = {}): VerifiedFacts {
   const i = adInsight(p);
   const confirmed = p.product.facts.filter((f) => f.status === "confirmed" && f.value.trim());
   const find = (re: RegExp) => confirmed.find((f) => re.test(`${f.key} ${f.label}`))?.value.trim() ?? null;
@@ -21,6 +21,7 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
   const unknowns: string[] = [];
   // Un produit du catalogue : ses propres données (description et caractéristiques saisies), pas celles du produit phare.
   const itemFacts = item ? item.features.filter((f) => f.trim()).map((f) => ({ label: "", value: f.trim() })) : [];
+  if(o.confirmedCategoryOnly&&!p.product.category.trim())unknowns.push("catégorie du produit");
   const facts = item ? itemFacts : confirmed.map((f) => ({ label: f.label.trim(), value: f.value.trim() }));
   if (!facts.length) unknowns.push(services ? "détails des prestations (matériaux, étapes, délais)" : "caractéristiques confirmées du produit (dimensions, matières, contenance…)");
   const shipping = item ? null : find(/livraison|shipping|envoi|delivery/i);
@@ -36,7 +37,7 @@ export function verifiedFacts(p: Project, item?: CatalogItem | null): VerifiedFa
     ...(i.marketingStrategy ? { marketingStrategy: i.marketingStrategy } : {}),
     brand: i.brand,
     offerName: item ? item.name.trim() : i.offerName,
-    category: item ? item.category.trim() : p.product.category?.trim() || i.category.label,
+    category: item ? item.category.trim() : o.confirmedCategoryOnly ? p.product.category.trim() : p.product.category?.trim() || i.category.label,
     business: p.business,
     facts,
     answers: item ? [] : p.product.questions.filter((q) => q.answer?.trim()).map((q) => ({ q: q.question.trim(), a: q.answer!.trim() })),

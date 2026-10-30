@@ -152,7 +152,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ContentRequestV2,
   const strategy = seoStrategy(p, lang, { pages, research });
   const page = req.target?.page ?? targetPage(pages, req.type, req.pageKey, strategy, req.keyword);
   const item = page.key.startsWith("product:catalog:") ? p.catalog.find((c) => `product:catalog:${c.key}` === page.key) ?? null : req.target&&req.type==="product_page"?p.catalog.find(c=>c.name.trim()===page.title.trim())??null:null;
-  let facts = verifiedFacts(p, item);
+  let facts = verifiedFacts(p, item, {confirmedCategoryOnly:!!req.nativeBinding});
   if (page.kind === "service") {
     const service = req.target?.serviceIndex!=null?p.services.services[0]:p.services.services.find((s) => `service:${s.key}` === page.key);
     if (!service) throw new UserFacingError(L("Prestation introuvable.", "Service not found."));
@@ -388,7 +388,7 @@ export function documentContentChecks(p:Project,doc:ContentDoc){
   return{...c,codes:[...c.codes,"CONTENT_SUBJECT_CHANGED"],issues:[...c.issues,"La fiche ou sa variante a changé ou manque. Texte conservé ; contrôles factuels non effectués. Désignez sa version actuelle avant une nouvelle rédaction IA."],measures:{...c.measures,subject:"changed"}};
  }
  const item=subject.project.catalog.find(c=>`product:catalog:${c.key}`===doc.page.key);
- return localContentChecks(doc,subject.project,verifiedFacts(subject.project,item),{pages:sitePages(subject.project)});
+ return localContentChecks(doc,subject.project,verifiedFacts(subject.project,item,{confirmedCategoryOnly:!!doc.meta2.nativeBinding}),{pages:sitePages(subject.project)});
 }
 
 /** Enregistrement d'une modification manuelle du client : aucune IA ; contrôles locaux pour information. */
@@ -416,7 +416,7 @@ export async function editContentV2(ctx: JobContext | null, projectId: string, d
   const doc = cur.doc;
   const subject=documentSubject(p,doc),bound=subject.project;
   const item = bound?.catalog.find((c) => `product:catalog:${c.key}` === doc.page.key);
-  const facts = bound?verifiedFacts(bound,item):undefined;
+  const facts = bound?verifiedFacts(bound,item,{confirmedCategoryOnly:!!doc.meta2.nativeBinding}):undefined;
   const pages = bound?sitePages(bound):[];
   const plan = planEdit(request, doc, { selected: o.selected, facts, brief: { primaryKeyword: doc.primaryKeyword ? { term: doc.primaryKeyword, intent: "commercial", source: "semantic_hypothesis", metrics: null, basis: "" } : null, page: doc.page, type: doc.type } });
   if (plan.kind === "unclear") return { applied: false, by: "none", summary: plan.summary, version: null, doc, issues: [], costMicro: 0 };
