@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — projet existant, état de transition (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+.inv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.inv .panel { padding: 16px; display: grid; gap: 10px; align-content: start; }
+.inv h3 { margin: 0; font: 500 20px var(--f-voice); }
+.li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+.li:last-child { border-bottom: 0; }
+@media (max-width: 760px) { .inv { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">Table Saison <em>· projet créé le 12 oct.</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#">Site</a><a href="#">Carte</a><a href="#">Rendez-vous</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Diffusion</a><a href="#" aria-current="page">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>81 %</b> restant</span><div class="gauge"><i style="width:81%"></i></div></div><div class="avatar">TS</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">première ouverture</span></div></div>
+      <div class="thread">
+        <div class="msg-syna"><span class="who">Syna</span><p>Bonjour. Ce projet existait avant moi. J'ai lu ce que je sais lire : votre site (version 7), votre marque et vos images. Rien n'a été modifié.</p><p>Je ne connais pas encore <strong>votre carte, vos réservations ni vos conversations passées</strong> avec l'ancienne discussion de la boutique. Ces espaces restent ouverts et fonctionnent comme avant.</p></div>
+        <article class="card"><div class="card-h"><h4>Ce que j'ai repris</h4><span class="state s-verified">Lu</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">✓</span><div><div class="t">Site, version 7</div><div class="d">14 sections · 6 pages</div></div><span class="state s-verified">Lu</span></li>
+            <li class="step"><span class="n">✓</span><div><div class="t">Marque : nom, couleurs, polices, logo</div><div class="d">Charte du 14 oct.</div></div><span class="state s-verified">Lu</span></li>
+            <li class="step"><span class="n">—</span><div><div class="t">Carte (8 plats) et réservations</div><div class="d">Écrans natifs seulement</div></div><span class="state s-na">Non raccordé</span></li>
+            <li class="step"><span class="n">—</span><div><div class="t">Historique de l'ancienne discussion</div><div class="d">Consultable dans Site › Ancienne discussion</div></div><span class="state s-na">Non repris</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Lecture seule, aucun coût.</span><button class="btn small primary">Commencer avec Syna</button></div>
+        </article>
+      </div>
+      <div class="composer"><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Projet">
+      <div class="work-bar"><div class="left"><span class="crumb">Reprise du projet<small>état de transition</small></span></div><div class="right"><button class="btn small">Ouvrir l'ancien Studio</button></div></div>
+      <div class="stage"><div class="wide stack">
+        <div class="banner info"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div><b>La reprise complète d'un projet existant par Syna n'est pas encore disponible.</b><p>Tout ce qui existe reste à sa place. Vous pouvez travailler avec Syna sur ce qu'elle sait lire, et utiliser les écrans habituels pour le reste.</p></div><span></span></div>
+        <div class="inv">
+          <div class="panel"><span class="label">Syna peut aider ici</span><h3>Disponible</h3>
+            <div class="li"><span>Retoucher un texte ou une image du site</span><span class="state s-verified">Oui</span></div>
+            <div class="li"><span>Rédiger un article de blog (brouillon)</span><span class="state s-verified">Oui</span></div>
+            <div class="li"><span>Préparer des publications (brouillons)</span><span class="state s-verified">Oui</span></div>
+            <div class="li"><span>Exporter le site en ZIP</span><span class="state s-verified">Oui</span></div>
+          </div>
+          <div class="panel"><span class="label">À faire dans les écrans habituels</span><h3>Pas encore</h3>
+            <div class="li"><span>Modifier la carte, les prix, les allergènes</span><a class="btn small" href="#">Carte</a></div>
+            <div class="li"><span>Horaires et règles de réservation</span><a class="btn small" href="#">Rendez-vous</a></div>
+            <div class="li"><span>Déplacer, ajouter ou masquer une section</span><a class="btn small" href="#">Structure</a></div>
+            <div class="li"><span>Publier sur le domaine</span><a class="btn small" href="#">Publier</a></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#" aria-current="page">Syna</a><a href="#">Aperçu</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+</body>
+</html>

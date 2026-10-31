@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype SYNA 2030</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+/* Prototype de parcours : données fictives de démonstration, aucun appel, aucun serveur. */
+.proto { display: grid; grid-template-rows: 56px auto minmax(0, 1fr); height: 100vh; min-height: 640px; }
+.ptop { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--rule); background: var(--sheet); }
+.ptop .tabs { display: flex; gap: 4px; }
+.ptop .tabs button { border: 1px solid var(--rule); background: var(--paper); border-radius: 999px; padding: 6px 14px; font-size: 13px; }
+.ptop .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.stepper { display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid var(--rule); background: var(--paper); padding: 0 12px; }
+.stepper button { border: 0; background: none; padding: 12px 14px; font-size: 12.5px; color: var(--muted); white-space: nowrap; border-bottom: 2px solid transparent; }
+.stepper button b { font: 500 11px var(--f-mono); margin-right: 6px; }
+.stepper button[aria-current="step"] { color: var(--ink); border-bottom-color: var(--blue); }
+.stepper button.done { color: var(--ink-2); }
+.pmain { display: grid; grid-template-columns: 440px minmax(0, 1fr); min-height: 0; }
+.pmain .convo { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.nav-steps { display: flex; justify-content: space-between; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--rule); background: var(--paper); }
+.why { font-size: 12.5px; color: var(--muted); padding: 0 16px 10px; }
+.preview { position: relative; }
+.hit { cursor: pointer; }
+.hit:hover .hover-outline { display: block; }
+.hover-outline { display: none; }
+.fade { animation: fade .35s var(--ease); }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.manual { display: grid; gap: 12px; padding: 18px; }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cmp figure { margin: 0; position: relative; border-radius: 8px; overflow: hidden; }
+.cmp img { aspect-ratio: 4/3; object-fit: cover; width: 100%; }
+.cmp figcaption { position: absolute; left: 8px; bottom: 8px; background: rgba(255,255,255,.92); color: #222; border-radius: 4px; padding: 1px 6px; font: 500 11px var(--f-mono); }
+@media (max-width: 760px) {
+  .proto { grid-template-rows: auto auto minmax(0, 1fr); }
+  .ptop { flex-wrap: wrap; padding: 8px 12px; }
+  .pmain { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; overflow: auto; }
+  .pmain .convo { border-right: 0; border-bottom: 1px solid var(--rule); }
+  .pmain .work { display: grid; min-height: 460px; }
+  .pmain .thread { max-height: none; overflow: visible; }
+  .pmain .convo { grid-template-rows: auto auto auto auto; }
+  .pmain { display: block; }
+  .pmain .work { grid-template-rows: auto auto; min-height: 0; }
+  .proto { height: auto; min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+<div class="proto">
+  <div class="ptop">
+    <div class="syna-mark"><span class="name">Syna</span><span class="mem">prototype de parcours · données fictives</span></div>
+    <div class="tabs" role="group" aria-label="Parcours"><button id="p-prod" aria-pressed="true">Boutique · SILLON</button><button id="p-serv" aria-pressed="false">Services · Table Saison</button></div>
+  </div>
+  <nav class="stepper" id="stepper" aria-label="Étapes du parcours"></nav>
+  <div class="pmain">
+    <section class="convo" aria-label="Conversation">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem" id="mem">mémoire du projet · à jour</span></div><span class="state" id="phase"></span></div>
+      <div class="thread" id="thread" aria-live="polite"></div>
+      <p class="why" id="why"></p>
+      <div class="nav-steps"><button class="btn" id="prev">← Précédent</button><button class="btn primary" id="next">Suivant →</button></div>
+    </section>
+    <section class="work" aria-label="Espace de travail">
+      <div class="work-bar"><div class="left"><span class="crumb" id="crumb"></span></div><div class="right"><span class="version" id="version"></span></div></div>
+      <div class="stage" id="stage"></div>
+    </section>
+  </div>
+</div>
+<script>
+const S = (cls, txt) => `<span class="state ${cls}">${txt}</span>`;
+const userMsg = (t) => `<div class="msg-user fade">${t}</div>`;
+const syna = (ps, working) => `<div class="msg-syna fade${working ? " working" : ""}"><span class="who">Syna</span>${ps.map((p) => `<p>${p}</p>`).join("")}</div>`;
+const card = (title, state, steps, foot, actions) => `<article class="card fade"><div class="card-h"><h4>${title}</h4>${state}</div><ol class="steps">${steps.map(([n, t, d, c]) => `<li class="step"><span class="n">${n}</span><div><div class="t">${t}</div><div class="d">${d}</div></div>${c}</li>`).join("")}</ol><div class="card-f"><span class="note">${foot}</span><div class="actions">${actions || ""}</div></div></article>`;
+
+const sillonSite = (opts) => `<div class="frame preview fade"><div class="frame-bar"><i></i><i></i><i></i><span>Aperçu · sillon — fiche Machine</span></div>
+  <div class="site-nav"><span>Machine · Rituel</span><b>SILLON</b><span>Panier (0)</span></div>
+  <div class="site-row" style="grid-template-columns:1fr 1fr;padding-top:8px">
+    <div class="hit" style="position:relative" data-pick="photo">${opts.photo ? `<img src="img/${opts.photo}.jpg" alt="Photo de la finition">` : `<div style="aspect-ratio:4/3;border-radius:6px;background:#efe9e2;display:grid;place-items:center;color:#8a8077;font-size:13px">Photo de la finition Cuivre : aucune</div>`}<span class="hover-outline"></span>${opts.sel ? `<div class="sel-outline"></div><div class="sel-tag">Photo · finition Cuivre</div>` : ""}</div>
+    <div><h3>Machine SILLON</h3><p style="margin-bottom:12px">Une machine nomade, pensée pour les haltes.</p>
+      <div style="display:flex;gap:6px;margin-bottom:12px;font-size:12px"><span style="border:1px solid #d9d2ca;border-radius:999px;padding:4px 10px">Graphite</span><span style="border:1px solid #d9d2ca;border-radius:999px;padding:4px 10px">Sable</span><span style="border:1.5px solid #1d1a17;border-radius:999px;padding:4px 10px">Cuivre · 139 €</span></div>
+      <span style="display:inline-block;padding:10px 18px;background:#1d1a17;color:#fff;font:600 12px var(--f-ui);letter-spacing:.08em;text-transform:uppercase;border-radius:2px">Ajouter au panier</span></div>
+  </div></div>`;
+
+const tsSite = (opts) => `<div class="frame preview fade"><div class="frame-bar"><i></i><i></i><i></i><span>Aperçu · table saison — accueil</span></div>
+  <div class="site-nav"><span>La carte · Groupes</span><b>TABLE SAISON</b><span>Réserver</span></div>
+  <div class="site-hero" style="aspect-ratio:16/7"><img src="img/ts-hero.jpg" alt="Table dressée, plat de poisson">
+    <div class="copy"><h2>La saison, à table.</h2><p>Une cuisine du marché, deux services par jour.</p>
+      <span class="hit" data-pick="cta" style="position:relative">${opts.cta}${opts.sel ? `<i style="position:absolute;inset:-6px;border:2px solid var(--blue);border-radius:4px;box-shadow:0 0 0 4px rgba(31,60,153,.25)"></i>` : `<i class="hover-outline"></i>`}</span></div></div>
+  <div class="site-row"><div><h3>La carte du dimanche</h3><p>${opts.sunday ? "Menu du dimanche · 38 € · entrée, plat, dessert" : "[Aucun menu du dimanche dans la carte]"}</p></div><img src="img/ts-veloute.jpg" alt="Velouté"></div></div>`;
+
+const flows = {
+  prod: { name: "Boutique · SILLON", steps: [
+    { k: "Commande", phase: "", crumb: "Catalogue › Machine SILLON", ver: "fiche v5",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre pour la fiche, sur une pierre claire, sans personne."),
+      stage: () => sillonSite({}), why: "Le client écrit avec ses mots. Rien ne se passe encore." },
+    { k: "Proposition", phase: S("s-proposal", "Proposition"), crumb: "Catalogue › Machine SILLON", ver: "fiche v5",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre pour la fiche, sur une pierre claire, sans personne.") + syna(["Je propose de créer <strong>une</strong> image de la machine Cuivre, posée sur une pierre claire, à partir de votre photo produit. Aucune personne.", "Où voulez-vous la placer ? Touchez l'emplacement dans l'aperçu."]),
+      stage: () => sillonSite({}), why: "Syna propose et demande l'emplacement au lieu de deviner." },
+    { k: "Sélection", phase: S("s-proposal", "Proposition"), crumb: "Catalogue › Machine SILLON", ver: "fiche v5",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre pour la fiche, sur une pierre claire, sans personne.") + syna(["Emplacement choisi : <strong>photo de la finition Cuivre</strong> sur la fiche Machine."]) + `<div class="ctx fade"><span class="chip sel">Sélection : photo · finition Cuivre</span></div>`,
+      stage: () => sillonSite({ sel: true }), why: "La sélection dans l'aperçu devient le contexte de la conversation (puce bleue)." },
+    { k: "Devis", phase: S("s-proposal", "Devis"), crumb: "Catalogue › Machine SILLON", ver: "fiche v5",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre…") + card("Créer 1 image · finition Cuivre", S("s-proposal", "Devis"), [["1", "Machine Cuivre sur pierre claire, 4:3", "Qwen-Image 3.0 Pro · photo produit en référence · aucune personne", '<span class="cost">≈ 2 %</span>']], "Budget : 46 % utilisé → ≈ 48 % après. Une reprise n'est débitée que si elle a lieu.", '<button class="btn ghost small">Pas maintenant</button><button class="btn primary small">Créer · ≈ 2 %</button>'),
+      stage: () => sillonSite({ sel: true }), why: "Prix annoncé en % du budget avant toute dépense ; l'accord est un clic explicite." },
+    { k: "Exécution", phase: S("s-running", "En cours"), crumb: "Catalogue › Machine SILLON", ver: "fiche v5",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre…") + syna(["Je crée l'image, puis je la contrôle : produit entier, aucune lettre ajoutée, fidèle à la photo."], true) + card("Créer 1 image · finition Cuivre", S("s-running", "En cours"), [["1", "Création en cours…", '<div class="progress indet" style="margin-top:6px"><i></i></div>', '<span class="cost">≈ 2 %</span>']], "Vous pouvez fermer le Studio : la tâche continue.", '<button class="btn ghost small">Arrêter</button>'),
+      stage: () => sillonSite({ sel: true }), why: "L'état « En cours » est explicite ; la tâche survit à la fermeture du navigateur." },
+    { k: "Preuve", phase: S("s-verified", "Vérifié"), crumb: "Catalogue › Machine SILLON", ver: "fiche v6",
+      thread: () => userMsg("Il me faut une photo de la finition Cuivre…") + card("Image créée et placée", S("s-verified", "Vérifié"), [["1", "Photo · finition Cuivre", "Contrôle : produit entier, aucune lettre · fiche v5 → v6 · débité 2 % (devis 2 %)", S("s-verified", "OK")]], "Avant / après visibles à droite.", '<button class="btn ghost small">Annuler v6</button><button class="btn small">Autre essai · ≈ 2 %</button>') + syna(["C'est en place sur la fiche. Le stock de la finition Cuivre est toujours vide : je ne peux pas l'inventer."]),
+      stage: () => `<div class="wide stack fade"><div class="cmp"><figure><div style="aspect-ratio:4/3;background:#efe9e2"></div><figcaption>avant · v5</figcaption></figure><figure><img src="img/sillon-pierre.jpg" alt="Machine sur une pierre claire"><figcaption>après · v6</figcaption></figure></div>${sillonSite({ photo: "sillon-pierre" })}</div>`,
+      why: "La preuve, c'est le résultat réel : avant/après, version, coût débité comparé au devis." },
+    { k: "Retour à la main", phase: S("s-draft", "Brouillon"), crumb: "Catalogue › Variante Cuivre", ver: "catalogue v7",
+      thread: () => userMsg("OK, je mets le stock moi-même.") + syna(["Bien sûr. La ligne Cuivre est ouverte à droite ; tout ce que vous changez à la main est enregistré dans l'historique, comme mes changements."]),
+      stage: () => `<div class="panel fade wide" style="max-width:520px"><div class="panel-h"><h3>Variante Cuivre</h3>${S("s-draft", "Brouillon")}</div><div class="manual form"><div class="row2"><label>Prix (€)<input value="139,00"></label><label>Stock<input value="12" style="border-color:var(--blue)"></label></div><div class="mini">Historique : v7 · vous · stock 12 — v6 · Syna · photo — v5 · Syna · variante</div><div class="actions"><button class="btn small">Restaurer v5</button><button class="btn primary small">Publier la variante</button></div></div></div>`,
+      why: "Les commandes manuelles restent au même endroit ; Syna et le client partagent un seul historique." },
+  ] },
+  serv: { name: "Services · Table Saison", steps: [
+    { k: "Commande", phase: "", crumb: "Site › Accueil", ver: "v7",
+      thread: () => userMsg("Ajoute un menu du dimanche à 38 € et mets la réservation plus en avant."),
+      stage: () => tsSite({ cta: "Découvrir la carte" }), why: "Une demande qui touche deux espaces : la carte et le site." },
+    { k: "Proposition", phase: S("s-proposal", "Proposition"), crumb: "Site › Accueil", ver: "v7",
+      thread: () => userMsg("Ajoute un menu du dimanche à 38 € et mets la réservation plus en avant.") + syna(["Je peux mettre la réservation en avant : changer le bouton principal de l'accueil en « Réserver une table ». C'est une retouche exacte, gratuite et annulable.", "Le <strong>menu du dimanche</strong> appartient à votre carte : je ne sais pas encore la modifier. Je vous l'ouvre déjà remplie, vous n'aurez qu'à valider."]) + card("Ce que je peux faire", S("s-proposal", "Proposition"), [["01", "Bouton d'accueil → « Réserver une table »", "Retouche exacte · v8 · annulable", '<span class="cost">0 %</span>'], ["02", "Menu du dimanche · 38 €", "Espace Carte · pas encore raccordé à Syna", S("s-na", "Non disponible")]], "Touchez le bouton dans l'aperçu pour le confirmer.", ""),
+      stage: () => tsSite({ cta: "Découvrir la carte" }), why: "Syna dit clairement ce qu'elle ne sait pas faire, et propose le chemin manuel." },
+    { k: "Sélection", phase: S("s-proposal", "Proposition"), crumb: "Site › Accueil", ver: "v7",
+      thread: () => userMsg("Ajoute un menu du dimanche…") + syna(["Bouton désigné : <strong>« Découvrir la carte »</strong> dans la bannière d'accueil."]) + `<div class="ctx fade"><span class="chip sel">Sélection : bouton · bannière d'accueil</span></div>`,
+      stage: () => tsSite({ cta: "Découvrir la carte", sel: true }), why: "La sélection lève l'ambiguïté (il y a trois boutons sur la page)." },
+    { k: "Accord", phase: S("s-proposal", "Accord"), crumb: "Site › Accueil", ver: "v7",
+      thread: () => userMsg("Ajoute un menu du dimanche…") + card("Retouche du bouton", S("s-proposal", "Accord"), [["01", "« Découvrir la carte » → « Réserver une table »", "Lien vers la page de réservation · moteur local, sans IA", '<span class="cost">0 %</span>']], "Gratuit : aucune IA nécessaire.", '<button class="btn ghost small">Annuler</button><button class="btn primary small">Appliquer</button>'),
+      stage: () => tsSite({ cta: "Découvrir la carte", sel: true }), why: "Même à 0 %, une modification visible demande un accord explicite." },
+    { k: "Exécution", phase: S("s-running", "En cours"), crumb: "Site › Accueil", ver: "v7 → v8",
+      thread: () => userMsg("Ajoute un menu du dimanche…") + syna(["J'applique la retouche, puis je recapture l'accueil pour vérifier le résultat."], true),
+      stage: () => `<div class="wide fade"><div class="progress indet"><i></i></div><p class="mini" style="margin-top:8px">Capture de l'aperçu en cours…</p></div>`, why: "Le texte « c'est fait » n'apparaît qu'après la vérification." },
+    { k: "Preuve", phase: S("s-verified", "Vérifié"), crumb: "Site › Accueil", ver: "v8",
+      thread: () => userMsg("Ajoute un menu du dimanche…") + card("Bouton modifié", S("s-verified", "Vérifié"), [["01", "« Réserver une table »", "Capture v8 comparée · lien vérifié vers /pages/reserver · 0 %", S("s-verified", "OK")], ["02", "Menu du dimanche", "À valider dans Carte (ligne préremplie)", S("s-na", "Non disponible")]], "Annulable à tout moment.", '<button class="btn ghost small">Annuler v8</button><a class="btn small" href="#">Ouvrir Carte</a>'),
+      stage: () => tsSite({ cta: "Réserver une table", sel: true }), why: "Le résultat réel est visible dans l'aperçu ; l'étape non couverte reste signalée." },
+    { k: "Retour à la main", phase: S("s-draft", "Brouillon"), crumb: "Carte › Menus", ver: "carte v4",
+      thread: () => userMsg("J'ajoute le menu moi-même.") + syna(["La ligne est préremplie avec vos mots. Rien n'est publié tant que vous n'enregistrez pas. Une fois la carte enregistrée, l'accueil l'affichera tout seul."]),
+      stage: () => `<div class="panel fade wide" style="max-width:560px"><div class="panel-h"><h3>Carte · nouveau menu</h3>${S("s-draft", "Brouillon")}</div><div class="manual form"><label>Nom<input value="Menu du dimanche"></label><div class="row2"><label>Prix (€)<input value="38,00"></label><label>Disponible<select><option>Le dimanche midi</option></select></label></div><label>Composition<textarea>Entrée, plat, dessert du marché</textarea></label><div class="mini">Allergènes : [À compléter] — à déclarer par vous.</div><div class="actions"><button class="btn primary small">Enregistrer dans la carte</button></div></div></div>`,
+      why: "L'écran Carte reste la référence ; Syna l'ouvre au bon endroit sans le remplacer." },
+  ] },
+};
+let flow = "prod", i = 0;
+const $ = (id) => document.getElementById(id);
+function render() {
+  const f = flows[flow], s = f.steps[i];
+  $("stepper").innerHTML = f.steps.map((x, j) => `<button data-j="${j}" class="${j < i ? "done" : ""}" ${j === i ? 'aria-current="step"' : ""}><b>${String(j + 1).padStart(2, "0")}</b>${x.k}</button>`).join("");
+  $("thread").innerHTML = s.thread();
+  $("stage").innerHTML = s.stage();
+  $("why").textContent = s.why;
+  $("phase").outerHTML = `<span id="phase">${s.phase}</span>`;
+  $("crumb").textContent = s.crumb;
+  $("version").innerHTML = `Version <b>${s.ver}</b>`;
+  $("prev").disabled = i === 0;
+  $("next").textContent = i === f.steps.length - 1 ? "Recommencer ↺" : "Suivant →";
+  $("thread").scrollTop = $("thread").scrollHeight;
+  document.querySelectorAll("[data-pick]").forEach((el) => el.addEventListener("click", () => { if (i < 2) { i = 2; render(); } }));
+  document.querySelectorAll("#stepper button").forEach((b) => b.addEventListener("click", () => { i = +b.dataset.j; render(); }));
+}
+$("next").addEventListener("click", () => { i = i === flows[flow].steps.length - 1 ? 0 : i + 1; render(); });
+$("prev").addEventListener("click", () => { if (i > 0) { i--; render(); } });
+for (const [id, key] of [["p-prod", "prod"], ["p-serv", "serv"]]) $(id).addEventListener("click", () => { flow = key; i = 0; $("p-prod").setAttribute("aria-pressed", key === "prod"); $("p-serv").setAttribute("aria-pressed", key === "serv"); render(); });
+document.addEventListener("keydown", (e) => { if (e.target.closest("input,textarea,select")) return; if (e.key === "ArrowRight") $("next").click(); if (e.key === "ArrowLeft") $("prev").click(); });
+const h = location.hash.slice(1); if (h === "services") $("p-serv").click(); else render();
+</script>
+</body>
+</html>

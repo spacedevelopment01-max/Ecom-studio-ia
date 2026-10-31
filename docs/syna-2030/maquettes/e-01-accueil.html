@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — accueil et nouveau projet (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+.home { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
+.start { display: grid; align-content: center; justify-items: center; gap: 26px; padding: 40px 24px; background: var(--sheet); }
+.start h1 { margin: 0; font: 400 46px/1.08 var(--f-voice); letter-spacing: -.02em; text-align: center; max-width: 16ch; }
+.start h1 em { color: var(--blue); }
+.start .lede { margin: 0; color: var(--ink-2); font-size: 15px; text-align: center; max-width: 52ch; }
+.big-field { width: min(720px, 100%); border: 1px solid var(--rule-2); border-radius: 16px; background: var(--sheet); box-shadow: var(--shadow); padding: 14px 14px 10px 18px; display: grid; gap: 10px; }
+.big-field textarea { border: 0; outline: none; resize: none; min-height: 84px; font: 400 18px/1.5 var(--f-voice); background: none; }
+.big-field .tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.drops { display: flex; gap: 8px; flex-wrap: wrap; }
+.examples { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 720px; }
+.examples button { border: 1px solid var(--rule); background: var(--paper); border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--ink-2); }
+.choose { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.kind { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; border: 1px solid var(--rule); border-radius: 12px; padding: 10px 14px; width: 240px; background: var(--sheet); text-align: left; }
+.kind[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.kind b { display: block; font-size: 13.5px; }
+.kind span { font-size: 12px; color: var(--muted); }
+.kind svg { width: 22px; height: 22px; color: var(--blue); }
+.side { border-left: 1px solid var(--rule); background: var(--paper); padding: 22px; display: grid; align-content: start; gap: 18px; overflow: auto; }
+.side h3 { margin: 0; font: 500 18px var(--f-voice); }
+.proj { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: center; padding: 10px; border-radius: 12px; border: 1px solid var(--rule); background: var(--sheet); text-decoration: none; color: inherit; }
+.proj img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
+.proj b { display: block; font-size: 14px; }
+.proj span { font-size: 12px; color: var(--muted); }
+.plan-note { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 14px; }
+@media (max-width: 760px) {
+  .home { grid-template-columns: minmax(0, 1fr); overflow: auto; }
+  .side { border-left: 0; border-top: 1px solid var(--rule); }
+  .start { align-content: start; padding: 28px 16px; gap: 18px; }
+  .start h1 { font-size: 32px; }
+  .kind { width: 100%; }
+  .big-field textarea { font-size: 16px; min-height: 96px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">Mes projets</span></div>
+    <nav class="spaces" aria-label="Espaces"></nav>
+    <div class="meter"><div class="avatar" aria-label="Compte">TL</div></div>
+  </header>
+  <div class="home">
+    <section class="start" aria-label="Nouveau projet">
+      <div class="syna-mark"><span class="name">Syna</span></div>
+      <h1>Qu'allons-nous <em>lancer</em> ensemble ?</h1>
+      <p class="lede">Décrivez votre activité avec vos mots, ajoutez une photo ou l'adresse de votre site. Je vous pose seulement les questions utiles, et rien n'est créé ni dépensé sans votre accord.</p>
+      <div class="choose" role="group" aria-label="Type de projet">
+        <button class="kind" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7l8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7"/></svg><span><b>Je vends des produits</b><span>Boutique, fiches, variantes</span></span></button>
+        <button class="kind" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V8l8-5 8 5v12"/><path d="M9 20v-6h6v6"/></svg><span><b>J'offre des services</b><span>Site, devis, rendez-vous</span></span></button>
+        <button class="kind" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span><b>J'ai déjà un site</b><span>Reprendre l'existant</span></span></button>
+      </div>
+      <div class="big-field">
+        <label class="sr" for="d">Décrivez votre projet</label>
+        <textarea id="d">Je fabrique une machine à espresso nomade pour les voyageurs en van. Je veux une boutique sobre, haut de gamme, avec la machine et son coffret d'accessoires.</textarea>
+        <div class="tools">
+          <div class="drops"><span class="chip">＋ Photo du produit</span><span class="chip">＋ Adresse d'un site</span><span class="chip">＋ Document</span></div>
+          <button class="btn primary">Commencer avec Syna</button>
+        </div>
+      </div>
+      <div class="examples" aria-label="Exemples"><button>« Un salon de coiffure à Lyon, rendez-vous en ligne »</button><button>« Une gamme de bougies, 3 parfums »</button><button>« Un restaurant de saison, carte et réservations »</button></div>
+    </section>
+    <aside class="side" aria-label="Projets récents">
+      <h3>Reprendre un projet</h3>
+      <a class="proj" href="#"><img src="img/sillon-detoure.jpg" alt=""><span><b>SILLON</b><span>Boutique · forfait Développer · modifié hier</span></span></a>
+      <a class="proj" href="#"><img src="img/ts-salle.jpg" alt=""><span><b>Table Saison</b><span>Restaurant · forfait Créer · 2 brouillons à valider</span></span></a>
+      <p class="plan-note">Chaque projet a son propre abonnement, son budget IA et ses droits. Un nouveau projet demande un forfait (49, 89 ou 129 € par mois).</p>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

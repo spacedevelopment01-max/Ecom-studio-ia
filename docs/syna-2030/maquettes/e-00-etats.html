@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — planche des états (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+body { overflow: auto; }
+.board { padding: 32px max(16px, 4vw); display: grid; gap: 28px; max-width: 1360px; margin: 0 auto; }
+.board h1 { margin: 0; font: 400 34px var(--f-voice); }
+.board > p { margin: 0; color: var(--ink-2); max-width: 70ch; }
+.states { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.cell { display: grid; gap: 8px; align-content: start; }
+.cell .label { margin-left: 2px; }
+@media (max-width: 980px) { .states { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .states { grid-template-columns: minmax(0, 1fr); } .board { padding: 20px 16px; } }
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Les états d'une action, toujours dits en mots</h1>
+  <p>Chaque état a un mot, une forme et une couleur. La couleur seule ne porte jamais l'information. Un texte de Syna n'affirme jamais une modification tant que l'état n'est pas « Vérifié ».</p>
+  <div class="states">
+    <div class="cell"><span class="label">1 · Proposition — rien n'est fait</span>
+      <article class="card"><div class="card-h"><h4>Remplacer l'image d'en-tête</h4><span class="state s-proposal">Proposition</span></div><div class="card-f"><span class="note">0 % · annulable</span><button class="btn primary small">Appliquer</button></div></article></div>
+    <div class="cell"><span class="label">2 · Brouillon — enregistré, non publié</span>
+      <article class="card"><div class="card-h"><h4>Variante Cuivre · 139 €</h4><span class="state s-draft">Brouillon</span></div><div class="card-f"><span class="note">Visible seulement dans le Studio</span><button class="btn small">Ouvrir</button></div></article></div>
+    <div class="cell"><span class="label">3 · Confirmé — accord donné, en file</span>
+      <article class="card"><div class="card-h"><h4>Export Shopify v13</h4><span class="state s-confirmed">Confirmé</span></div><div class="card-f"><span class="note">En attente d'un créneau · position 1</span><button class="btn ghost small">Annuler</button></div></article></div>
+    <div class="cell"><span class="label">4 · En cours — attente</span>
+      <article class="card"><div class="card-h"><h4>3 images · finition Cuivre</h4><span class="state s-running">En cours 2/3</span></div><div style="padding:12px 14px"><div class="progress"><i style="width:66%"></i></div></div><div class="card-f"><span class="note">Vous pouvez fermer le Studio</span><button class="btn ghost small">Arrêter après</button></div></article></div>
+    <div class="cell"><span class="label">5 · Vérifié — succès prouvé</span>
+      <article class="card"><div class="card-h"><h4>Image d'en-tête remplacée</h4><span class="state s-verified">Vérifié</span></div><div class="card-f"><span class="note">v12 → v13 · capture comparée · 0 %</span><button class="btn ghost small">Annuler v13</button></div></article></div>
+    <div class="cell"><span class="label">6 · Échec — dit, jamais maquillé</span>
+      <article class="card"><div class="card-h"><h4>Image 2 · gros plan</h4><span class="state s-failed">Échec</span></div><div style="padding:12px 14px;font-size:13px;color:var(--ink-2)">Le fournisseur n'a pas répondu (503). Résultat incertain : non débité, rien relancé sans vous.</div><div class="card-f"><span class="note">≈ 2 % si relancé</span><button class="btn small">Relancer</button></div></article></div>
+    <div class="cell"><span class="label">7 · Non disponible — honnête</span>
+      <article class="card"><div class="card-h"><h4>Modifier le prix d'un plat</h4><span class="state s-na">Non disponible</span></div><div style="padding:12px 14px;font-size:13px;color:var(--ink-2)">Syna ne sait pas encore modifier la carte. L'écran Carte le fait déjà.</div><div class="card-f"><span class="note">Pas d'action de Syna</span><a class="btn small" href="#">Ouvrir Carte</a></div></article></div>
+    <div class="cell"><span class="label">8 · Chargement</span>
+      <article class="card"><div class="card-h"><div class="skel" style="height:14px;width:60%"></div><div class="skel" style="height:20px;width:80px"></div></div><div style="padding:14px;display:grid;gap:8px"><div class="skel" style="height:10px"></div><div class="skel" style="height:10px;width:70%"></div></div></article></div>
+    <div class="cell"><span class="label">9 · Vide</span>
+      <article class="card"><div class="empty"><h4>Aucune vidéo pour l'instant</h4><span>Décrivez-en une à Syna ou importez vos plans.</span><button class="btn small">Importer des plans</button></div></article></div>
+  </div>
+  <div class="grid-2">
+    <div class="banner bad"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><b>Budget IA du mois épuisé.</b><p>Les retouches sans IA continuent. Pour créer : recharge de 10 € (n'expire pas) ou attendre le 1er décembre.</p></div><button class="btn small">Recharger</button></div>
+    <div class="banner warn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><b>Non compris dans votre forfait Créer.</b><p>Les vidéos courtes commencent au forfait Développer. Rien n'est débité.</p></div><button class="btn small">Voir les forfaits</button></div>
+  </div>
+</div>
+</body>
+</html>

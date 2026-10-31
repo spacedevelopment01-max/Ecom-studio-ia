@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — vidéo, scénario et clips (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+.vid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
+.phone { aspect-ratio: 9/16; border-radius: 22px; overflow: hidden; position: relative; background: #000; box-shadow: var(--shadow); }
+.phone img { width: 100%; height: 100%; object-fit: cover; opacity: .92; }
+.phone .cap { position: absolute; left: 14px; right: 14px; bottom: 60px; color: #fff; font: 600 18px/1.2 var(--f-ui); text-shadow: 0 1px 12px rgba(0,0,0,.5); }
+.phone .ctl { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; gap: 10px; align-items: center; color: #fff; font: 500 11px var(--f-mono); }
+.phone .ctl .progress { flex: 1; background: rgba(255,255,255,.3); }
+.phone .ctl .progress i { background: #fff; width: 38%; }
+@media (max-width: 760px) { .vid { grid-template-columns: minmax(0, 1fr); } .phone { width: 220px; justify-self: center; } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#">Images</a><a href="#" aria-current="page">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>54 %</b> restant</span><div class="gauge"><i style="width:54%"></i></div></div><div class="avatar">TL</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
+      <div class="thread">
+        <div class="msg-user">Le troisième plan est trop sombre, refais-le.</div>
+        <div class="msg-syna"><span class="who">Syna</span><p>Je peux refaire <strong>seulement le plan 3</strong>, sans racheter les autres. Le texte et la musique restent identiques.</p></div>
+        <article class="card"><div class="card-h"><h4>Refaire le plan 3</h4><span class="state s-proposal">Devis</span></div>
+          <ol class="steps"><li class="step"><span class="n">03</span><div><div class="t">Nouveau clip de 5 s · même cadrage, plus lumineux</div><div class="d">Wan 2.6 · coût probable pour un essai · une reprise n'est débitée que si elle a lieu</div></div><span class="cost">≈ 3 %</span></li></ol>
+          <div class="card-f"><span class="note">Version 2 conservée et restaurable</span><div class="actions"><button class="btn ghost small">Pas maintenant</button><button class="btn primary small">Confirmer · 3 %</button></div></div>
+        </article>
+      </div>
+      <div class="composer"><div class="ctx"><span class="chip sel">Sélection : plan 3 <button aria-label="Retirer">×</button></span><span class="chip">Vidéo : « La route » 9:16</span></div><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Vidéo">
+      <div class="work-bar"><div class="left"><span class="crumb">« La route »<small>9:16 · 20 s · version 2</small></span></div><div class="right"><button class="btn small">Durée</button><button class="btn small">Texte</button><button class="btn small">Musique</button><button class="btn small">Télécharger MP4</button></div></div>
+      <div class="stage"><div class="wide vid">
+        <div class="phone"><img src="img/sillon-halte.jpg" alt="Van à l'arrêt au bord d'un lac"><div class="cap">Une halte. Un espresso.</div><div class="ctl"><span>0:07</span><span class="progress"><i></i></span><span>0:20</span></div></div>
+        <div class="stack">
+          <div class="panel"><div class="panel-h"><h3>Plans</h3><span class="mini">Cliquez un plan pour le désigner à Syna ou le retoucher</span></div>
+            <div style="padding:14px" class="tl">
+              <div class="clip"><img src="img/sillon-hero.jpg" alt=""><div class="cm"><b>1 · La route</b><span class="mini">montage local · 4 s</span></div></div>
+              <div class="clip"><img src="img/sillon-cuivre.jpg" alt=""><div class="cm"><b>2 · Le cuivre</b><span class="mini">montage local · 4 s</span></div></div>
+              <div class="clip sel"><img src="img/sillon-halte.jpg" alt=""><div class="cm"><b>3 · La halte</b><span class="state s-proposal">Reprise proposée</span></div></div>
+              <div class="clip"><img src="img/sillon-lac.jpg" alt=""><div class="cm"><b>4 · La tasse</b><span class="mini">IA · 5 s</span></div></div>
+            </div>
+            <div style="padding:0 14px 14px"><span class="label">Voix et musique</span><div class="wave" style="margin-top:8px"></div></div>
+          </div>
+          <div class="banner na"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div><b>Vidéo sur mesure « par étapes » : pas encore dans Syna</b><p>Le parcours guidé reste disponible dans l'onglet Vidéos › Mode guidé.</p></div><a class="btn small" href="#">Ouvrir</a></div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#" aria-current="page">Vidéo</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — mise en ligne, domaine et exports (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+.route { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.way { padding: 18px; display: grid; gap: 12px; align-content: start; }
+.way h3 { margin: 0; font: 500 22px var(--f-voice); }
+.way ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13.5px; color: var(--ink-2); }
+.plats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.plat { min-width: 0; overflow-wrap: anywhere; border: 1px solid var(--rule); border-radius: 8px; padding: 10px; font-size: 12px; display: grid; gap: 4px; background: var(--sheet); }
+.plat.on { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.plat small { color: var(--muted); }
+@media (max-width: 760px) { .route { grid-template-columns: minmax(0, 1fr); } .plats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#" aria-current="page">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>50 %</b> restant</span><div class="gauge"><i style="width:50%"></i></div></div><div class="avatar">TL</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
+      <div class="thread">
+        <div class="msg-user">Mets la boutique en ligne.</div>
+        <div class="msg-syna"><span class="who">Syna</span><p>La mise en ligne est une action que vous validez vous-même : je ne la lance pas. Je vous ai ouvert les deux chemins possibles à droite.</p><p>Votre version 13 est prête et contrôlée. Ce qui reste <strong>non vérifié</strong> : l'installation dans votre boutique et le paiement réel.</p></div>
+      </div>
+      <div class="composer"><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Publication">
+      <div class="work-bar"><div class="left"><span class="crumb">Mettre en ligne<small>version 13 · contrôlée à 14:02</small></span></div><div class="right"><button class="btn small">Historique des versions</button></div></div>
+      <div class="stage"><div class="wide stack">
+        <div class="route">
+          <div class="panel way">
+            <span class="label">Chemin 1 · votre plateforme</span><h3>Exporter vers votre boutique</h3>
+            <div class="plats" role="radiogroup" aria-label="Plateforme"><div class="plat on"><b>Shopify</b><small>thème ZIP</small></div><div class="plat"><b>WooCommerce</b><small>thème + produits</small></div><div class="plat"><b>PrestaShop</b><small>thème enfant</small></div><div class="plat"><b>Wix</b><small>kit guidé</small></div><div class="plat"><b>Squarespace</b><small>kit guidé</small></div></div>
+            <ol><li>Télécharger le ZIP (Theme Check : 0 erreur, 35 avertissements listés)</li><li>Shopify › Boutique en ligne › Thèmes › Ajouter</li><li>Choisir le modèle des fiches importées par CSV</li></ol>
+            <div class="banner warn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><b>Envoi direct « non publié » : pas encore essayé sur une vraie boutique.</b><p>L'import du ZIP reste le chemin recommandé.</p></div><span></span></div>
+            <div class="actions"><button class="btn primary">Télécharger le ZIP Shopify</button><button class="btn">Guide pas à pas</button></div>
+          </div>
+          <div class="panel way">
+            <span class="label">Chemin 2 · hébergé par le Studio</span><h3>Publier sur votre adresse</h3>
+            <div class="banner na"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div><b>Hébergement non configuré sur ce Studio</b><p>L'adresse du Studio (SITES_DOMAIN) n'est pas réglée : rien ne peut être publié ici pour l'instant. Ce n'est pas une panne.</p></div><span></span></div>
+            <div class="form"><label>Domaine que vous possédez déjà<input placeholder="www.sillon-espresso.fr" disabled></label></div>
+            <dl class="kv"><dt>Étapes</dt><dd>Publier la version · relier le domaine · vérifier le DNS · certificat HTTPS</dd><dt>État</dt><dd><span class="state s-na">Non disponible</span></dd></dl>
+            <div class="actions"><button class="btn" disabled>Publier la version 13</button></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#" aria-current="page">Publier</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+</body>
+</html>

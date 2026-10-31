@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA 2030 · maquettes</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+body { overflow: auto; }
+.idx { max-width: 1120px; margin: 0 auto; padding: 40px max(16px, 4vw) 64px; display: grid; gap: 34px; }
+.idx header { display: grid; gap: 10px; }
+.idx h1 { margin: 0; font: 400 clamp(32px, 5vw, 52px)/1.05 var(--f-voice); letter-spacing: -.02em; text-wrap: balance; }
+.idx h1 em { color: var(--blue); }
+.idx header p { margin: 0; color: var(--ink-2); max-width: 68ch; font-size: 15px; }
+.idx h2 { margin: 0 0 12px; font: 500 22px var(--f-voice); }
+.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.item { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; padding: 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--sheet); text-decoration: none; color: inherit; }
+.item:hover { border-color: var(--blue); }
+.item .n { font: 500 12px/24px var(--f-mono); color: var(--blue); }
+.item b { display: block; font-size: 14.5px; }
+.item span { font-size: 12.5px; color: var(--muted); }
+.reco { display: grid; gap: 6px; padding: 18px; border-radius: 12px; background: var(--blue-soft); border: 1px solid var(--blue-line); }
+.reco b { font: 500 18px var(--f-voice); }
+.foot { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main class="idx">
+  <header>
+    <div class="syna-mark"><span class="name">Syna</span><span class="mem">mission #282 · phase 1 · à valider</span></div>
+    <h1>Une seule conversation, <em>tout le Studio</em> autour.</h1>
+    <p>Maquettes de la refonte : trois directions artistiques, treize écrans dans la direction recommandée et un prototype cliquable. Données de démonstration, images du dépôt (aucune personne), aucun appel. Rien n'est développé tant que ces propositions ne sont pas validées.</p>
+  </header>
+
+  <section>
+    <h2>Prototype de parcours</h2>
+    <div class="list">
+      <a class="item" href="prototype.html"><span class="n">P1</span><span><b>Boutique · SILLON</b><span>Commande → proposition → sélection → devis 2 % → exécution → preuve → retour à la main</span></span></a>
+      <a class="item" href="prototype.html#services"><span class="n">P2</span><span><b>Services · Table Saison</b><span>Retouche gratuite vérifiée ; carte non raccordée, écran Carte ouvert prérempli</span></span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>Trois directions artistiques</h2>
+    <div class="list">
+      <a class="item" href="da-1-encre.html"><span class="n">DA1</span><span><b>Encre · recommandée</b><span>La voix de SYNA en serif, bleu d'encre, conversation et espace de travail côte à côte</span></span></a>
+      <a class="item" href="da-2-cockpit.html"><span class="n">DA2</span><span><b>Cockpit</b><span>Sombre, instrument de précision, journal d'exécution toujours visible</span></span></a>
+      <a class="item" href="da-3-plein-cadre.html"><span class="n">DA3</span><span><b>Plein cadre</b><span>Le résultat en plein écran, barre de commande et point cobalt</span></span></a>
+    </div>
+  </section>
+
+  <div class="reco"><b>Recommandation : Encre</b><span>Seule direction qui garde à la fois une conversation persistante et lisible et un espace de travail permanent, avec une identité propre à SYNA.</span></div>
+
+  <section>
+    <h2>Écrans détaillés (direction Encre)</h2>
+    <div class="list">
+      <a class="item" href="e-00-etats.html"><span class="n">00</span><span><b>Planche des états</b><span>Proposition, brouillon, confirmé, en cours, vérifié, échec, non disponible, chargement, vide</span></span></a>
+      <a class="item" href="e-01-accueil.html"><span class="n">01</span><span><b>Accueil et nouveau projet</b><span>Commencer en décrivant son activité</span></span></a>
+      <a class="item" href="e-02-syna-espace.html"><span class="n">02</span><span><b>SYNA et espace de travail</b><span>Plan en deux étapes, sélection dans l'aperçu</span></span></a>
+      <a class="item" href="e-03-site-selection.html"><span class="n">03</span><span><b>Site et sélection d'élément</b><span>Section gérée par un espace métier, retouche à la main</span></span></a>
+      <a class="item" href="e-04-produits.html"><span class="n">04</span><span><b>Catalogue et variantes</b><span>Brouillon vérifié, stock à saisir</span></span></a>
+      <a class="item" href="e-05-images-logos.html"><span class="n">05</span><span><b>Logos et images</b><span>Trois logos comparés, reprise OpenAI signalée</span></span></a>
+      <a class="item" href="e-06-video.html"><span class="n">06</span><span><b>Vidéo</b><span>Refaire un seul plan, avec devis</span></span></a>
+      <a class="item" href="e-07-diffusion.html"><span class="n">07</span><span><b>Calendrier et publications</b><span>Brouillons, compte non connecté</span></span></a>
+      <a class="item" href="e-08-cout.html"><span class="n">08</span><span><b>Confirmation du coût</b><span>Devis en % du budget, alternatives</span></span></a>
+      <a class="item" href="e-09-execution.html"><span class="n">09</span><span><b>Exécution, échec, reprise</b><span>Suivi des tâches, erreur fournisseur non relancée seule</span></span></a>
+      <a class="item" href="e-10-publication.html"><span class="n">10</span><span><b>Mise en ligne et domaine</b><span>Export par plateforme, hébergement non configuré</span></span></a>
+      <a class="item" href="e-11-mobile-navigation.html"><span class="n">11</span><span><b>Navigation au téléphone</b><span>Espaces, désignation au doigt, suivi</span></span></a>
+      <a class="item" href="e-12-projet-existant.html"><span class="n">12</span><span><b>Projet existant</b><span>État de transition honnête</span></span></a>
+    </div>
+  </section>
+  <p class="foot">Polices Newsreader, Geist, Geist Mono, Instrument Sans, JetBrains Mono, Bricolage Grotesque et Onest sous licence SIL OFL 1.1. Images issues de public/theme-assets (SILLON, Table Saison).</p>
+</main>
+</body>
+</html>

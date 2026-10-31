@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — confirmation du coût (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<style>
+.app { filter: none; }
+.behind { pointer-events: none; }
+.alt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mini-card { border: 1px solid var(--rule); border-radius: 10px; padding: 12px; background: var(--sheet); display: grid; gap: 6px; font-size: 12.5px; }
+.mini-card b { font-size: 13px; }
+@media (max-width: 760px) { .alt { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="app behind" aria-hidden="true">
+  <header class="top"><div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div><nav class="spaces"><a href="#">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#" aria-current="page">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a></nav><div class="meter"><div class="budget"><span>Budget IA du mois · <b>54 %</b> restant</span><div class="gauge"><i style="width:54%"></i></div></div></div></header>
+  <div class="main"><section class="convo"><div class="convo-head"><div class="syna-mark"><span class="name">Syna</span></div></div><div class="thread"><div class="msg-user">Crée 3 images de la finition Cuivre sur une table en pierre, sans personne.</div></div></section><section class="work"><div class="stage"></div></section></div>
+</div>
+<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="dt">
+  <div class="dialog">
+    <div class="dialog-h"><span class="label">Avant de créer</span><h2 id="dt">3 images de la finition Cuivre</h2><p>Qwen-Image 3.0 Pro · format 4:5 · aucune personne · photo du produit fournie comme référence</p></div>
+    <div class="dialog-b">
+      <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap"><div class="big-pct">≈ 6 %<small>du budget IA du mois</small></div><span class="state s-proposal">Devis</span></div>
+      <div class="budget-bar" aria-label="Budget : 46 % utilisés, 6 % pour cette création"><span class="used" style="width:46%"></span><span class="this" style="left:46%;width:6%"></span></div>
+      <div class="legend"><span style="--sw:color-mix(in srgb, var(--ink-2) 35%, transparent)">Déjà utilisé · 46 %</span><span style="--sw:var(--blue)">Cette création · ≈ 6 %</span><span style="--sw:var(--rule)">Reste après · ≈ 48 %</span></div>
+      <dl class="kv"><dt>Coût probable</dt><dd>un essai par image. Une reprise n'est débitée que si elle a lieu, et je vous l'annonce.</dd><dt>Plafond</dt><dd>je m'arrête avant de dépasser 8 % sans vous redemander.</dd><dt>Si une image est ratée</dt><dd>je la signale comme ratée, je ne la montre pas comme bonne.</dd></dl>
+      <div class="alt" aria-label="Autres possibilités">
+        <div class="mini-card"><b>Réemployer</b><span class="mini">2 images de la bibliothèque conviennent déjà</span><span>0 %</span></div>
+        <div class="mini-card"><b>1 seule image</b><span class="mini">pour tester le rendu d'abord</span><span>≈ 2 %</span></div>
+        <div class="mini-card"><b>Mes photos</b><span class="mini">importer vos propres photos</span><span>0 %</span></div>
+      </div>
+    </div>
+    <div class="dialog-f"><span class="mini">Forfait Développer · recharge possible à tout moment</span><div class="actions"><button class="btn ghost">Annuler</button><button class="btn primary">Créer · ≈ 6 %</button></div></div>
+  </div>
+</div>
+</body>
+</html>
