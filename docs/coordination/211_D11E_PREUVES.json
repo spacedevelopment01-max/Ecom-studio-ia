@@ -1,0 +1,152 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "applicationCommit": "3795837437129313168c0752cdeb887e05dc7c8e",
+  "harnessAndTestsCommit": "6c7340d55bfc0585cbb10b50699530cc36287797",
+  "applicationUnchangedBetweenTheseCommits": true,
+  "checks": {
+    "D11e-final-scoped-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-campaign-visual.test.ts",
+        "tests/conversation211-social-production.test.ts",
+        "tests/publications.test.ts",
+        "tests/native-social-binding.test.ts",
+        "tests/ci-native-production-placement.test.ts"
+      ],
+      "head": "0d1543b755d80457738edd2f1ca0834f05f09f00",
+      "startedAt": "2026-10-30T14:19:54.689816+00:00",
+      "finishedAt": "2026-10-30T14:20:03.200398+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "379f05303b22846909b685b9f3679a4ff3f8c444fb41fbb14248194f36d5b5e5"
+    },
+    "D11e-shared-native-regressions": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/publications-qualite.test.ts",
+        "tests/social-native-production-binding.test.ts"
+      ],
+      "head": "0d1543b755d80457738edd2f1ca0834f05f09f00",
+      "startedAt": "2026-10-30T14:21:12.133637+00:00",
+      "finishedAt": "2026-10-30T14:21:18.125702+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "0f7660a2f04ffec3f8b9e701d6c975d1f92bfd5252180034a235f9071755396a"
+    },
+    "D11e-final-heldout-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-campaign-visual.test.ts"
+      ],
+      "head": "3795837437129313168c0752cdeb887e05dc7c8e",
+      "startedAt": "2026-10-30T14:26:26.619001+00:00",
+      "finishedAt": "2026-10-30T14:26:36.106924+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "b808a262ed275c1ebaecad7f470567adb36e0debd930af09da38d0ff41bb8515"
+    },
+    "D11e-final-harness-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "3795837437129313168c0752cdeb887e05dc7c8e",
+      "startedAt": "2026-10-30T14:26:28.122608+00:00",
+      "finishedAt": "2026-10-30T14:26:57.681874+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    "D11e-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "3795837437129313168c0752cdeb887e05dc7c8e",
+      "startedAt": "2026-10-30T14:21:32.096243+00:00",
+      "finishedAt": "2026-10-30T14:22:34.676329+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "logSha256": "16580b20b6d61a8a5a39b91228a6acf3cf05500ff2c5b168bef25497b6f538a2"
+    },
+    "D11e-native-ad-QA-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11e-native-ad-QA-proof",
+        "--campaign-visual-ui"
+      ],
+      "head": "3795837437129313168c0752cdeb887e05dc7c8e",
+      "startedAt": "2026-10-30T14:25:34.308185+00:00",
+      "finishedAt": "2026-10-30T14:25:59.967327+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "04fc0601340f582aa1d7f974e388ee6ee69cdc3de38f491edfa96f17a9a7f4bd"
+    }
+  },
+  "proofFiles": {
+    "01-devis-annonce-ordinateur.png": {
+      "bytes": 240766,
+      "sha256": "0ec7d4012c44b6b2431a7a372d52a144286725ebc55f011336dddf5ac351581a"
+    },
+    "02-devis-annonce-mobile.png": {
+      "bytes": 53875,
+      "sha256": "645a1fc90a7c5c831f4099983103db6f73ec689051edc650e4c2a561058e5317"
+    },
+    "03-visuel-annonce-mobile.png": {
+      "bytes": 180220,
+      "sha256": "611a0d2585c5daef826c8c1bf7a0786bdc100d9732488395083ead7723af6012"
+    },
+    "04-editeur-campagne-ordinateur.png": {
+      "bytes": 205921,
+      "sha256": "3fbd785a15d87fb699dc6bfbe01b2fded3e702e165714c3d9c9ea06ad979002a"
+    },
+    "D11e-QA-minimal-repro.json": {
+      "bytes": 232,
+      "sha256": "f71f887c2f0c8ca7d723e4a4dd13ec36a59ff34cb391dec0c067a2203ea30438"
+    },
+    "D11e-final-harness-types.log": {
+      "bytes": 50,
+      "sha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    "D11e-final-heldout-tests.log": {
+      "bytes": 542,
+      "sha256": "b808a262ed275c1ebaecad7f470567adb36e0debd930af09da38d0ff41bb8515"
+    },
+    "D11e-shared-native-regressions.log": {
+      "bytes": 578,
+      "sha256": "0f7660a2f04ffec3f8b9e701d6c975d1f92bfd5252180034a235f9071755396a"
+    },
+    "campaign-visual-workflow.mp4": {
+      "bytes": 839378,
+      "sha256": "d438e9d8dc6d9e7f42476cc24af65ea0bca0f9f4c1d6541c4ab49893e19fb68f"
+    },
+    "native-campaign-proof.json": {
+      "bytes": 2601,
+      "sha256": "a34fc8cd45135a3c1c2fe146167dd5045dbd8fc8f6c9af3d9953f6d19ac72366"
+    }
+  }
+}

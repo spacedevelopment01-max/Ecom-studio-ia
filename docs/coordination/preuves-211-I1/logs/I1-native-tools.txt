@@ -1,0 +1,21 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+429 !== 200
+
+    at Object.login (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-build.ts:71:243)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async verifyRenderBrowser (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-render-ui.ts:17:206)
+    at async <anonymous> (/workspace/reviews/ecom-211-lot-d3-export/scripts/verify-agent211-build.ts:178:20) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 429,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

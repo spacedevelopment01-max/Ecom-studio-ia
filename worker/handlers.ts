@@ -51,6 +51,17 @@ import { ACTION_STEPS, findStockPhotos, orchestrated, runRequestPlan } from "../
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
 export const handlers: Record<string, Handler> = {
+  "agent.reason": async ctx => (await import('../src/lib/orchestrator/conversation/intelligence')).runCognitiveJob(ctx),
+  "agent.theme.capture": async ctx => (await import('../src/lib/orchestrator/conversation/render-tool-execution')).runRenderCapture(ctx),
+  "agent.theme.export": async ctx => (await import('../src/lib/orchestrator/conversation/export-tool-execution')).runNativeExport(ctx),
+  "agent.theme.change": async ctx => (await import('../src/lib/orchestrator/conversation/theme-tool-execution')).runThemeChange(ctx),
+  "agent.catalogue.change": async ctx => (await import('../src/lib/orchestrator/conversation/catalogue-tool-execution')).runCatalogueChange(ctx),
+  "agent.campaign.visual":async ctx=>(await import('../src/lib/orchestrator/conversation/campaign-visual-execution')).runCampaignVisual(ctx),
+  "agent.content.edit":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
+  "agent.content.write":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
+  "agent.blog.write":async ctx=>(await import('../src/lib/orchestrator/conversation/content-tool-execution')).runContentTool(ctx),
+  "agent.social.produce":async ctx=>(await import('../src/lib/orchestrator/conversation/social-production-execution')).runSocialProduction(ctx),
+  "agent.social.prepare":async ctx=>(await import('../src/lib/orchestrator/conversation/social-tool-execution')).runSocialPreparation(ctx),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "social.initial": async(ctx)=>{
     const {runInitialCreatives}=await import("../src/lib/social-v2/initial");
@@ -58,6 +69,7 @@ export const handlers: Record<string, Handler> = {
   },
   // Création complète : passe par le planner à l'intérieur (étapes déjà acquises sautées, marque existante gardée).
   "pipeline.run": runPipeline,
+  "agent.brand.propose": async (ctx) => (await import("../src/lib/orchestrator/conversation/brand-tool-execution")).runBrandTool(ctx),
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 
   /** Demande libre du client : intention → plan → moteurs existants (Router V2, barrière de qualité). */
@@ -110,6 +122,7 @@ export const handlers: Record<string, Handler> = {
   },
   /** Image V2 : brief local, recherche multisource ou génération routée, barrière V2, bibliothèque, réutilisation. */
   "image.v2": async (ctx) => {
+    if(ctx.payload.agentImageQuote){const{runAgentImageCreation}=await import('../src/lib/orchestrator/conversation/image-tool-execution');return runAgentImageCreation(ctx);}
     const { runImageEngineV2 } = await import("../src/lib/image-v2/engine");
     const r = await runImageEngineV2(ctx, ctx.payload.projectId, ctx.payload.request);
     // Reprise payée (1re image refusée par le contrôle) : annoncée au client, en % du budget IA.
@@ -152,16 +165,20 @@ export const handlers: Record<string, Handler> = {
     return runSceneScenario(ctx,ctx.payload.projectId,ctx.payload.request);
   },
   "video.scenes": async (ctx) => {
+    if(ctx.payload.agentVideoGenerationQuote){const {runAgentVideoGeneration}=await import("../src/lib/orchestrator/conversation/video-generation-execution");return runAgentVideoGeneration(ctx);}
     const { runThreeScenes, realThreeScenesDeps } = await import("../src/lib/video-v2/three-scenes");
     const { llmConfigured } = await import("../src/lib/ai/llm");
     const p = loadProject(ctx.payload.projectId);
     const { aiActiveFor } = await import("../src/lib/ai/access");
     // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
-    const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured() }));
+    const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured(),request:ctx.payload.request }));
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes,delivery:await videoDelivery(p.id,r.videoAssetId) };
   },
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
+    if(ctx.payload.agentClipQuote){const {runAgentVideoClip}=await import("../src/lib/orchestrator/conversation/video-clip-execution");return runAgentVideoClip(ctx);}
+    if(ctx.payload.agentVoiceQuote){const {runAgentVideoVoice}=await import("../src/lib/orchestrator/conversation/video-voice-execution");return runAgentVideoVoice(ctx);}
+    if(ctx.payload.agentVideoQuote){const {runAgentVideoCreation}=await import("../src/lib/orchestrator/conversation/video-tool-execution");return runAgentVideoCreation(ctx);}
     const { renderLatest } = await import("../src/lib/video-v2/engine");
     const r=await renderLatest(ctx, ctx.payload.projectId, ctx.payload.docKey);
     return {...r,delivery:await videoDelivery(ctx.payload.projectId,r.videoAssetId)};
@@ -200,6 +217,7 @@ export const handlers: Record<string, Handler> = {
 
   /** Logo V2 : territoires créatifs, construction hybride, barrière V2 (aucun mockup avant le choix). */
   "brand.logo.v2": async (ctx) => {
+    if(ctx.payload.agentLogoQuote){const{runAgentLogoCreation}=await import("../src/lib/orchestrator/conversation/logo-tool-execution");return runAgentLogoCreation(ctx);}
     const { runLogoEngineV2 } = await import("../src/lib/logo-v2/engine");
     const r = await runLogoEngineV2(ctx, ctx.payload.projectId, { avoid: ctx.payload.avoid, style: ctx.payload.style, renew: ctx.payload.renew, correction: ctx.payload.correction });
     const { currentSeries } = await import("../src/lib/logo-v2/direction-series");
@@ -218,6 +236,7 @@ export const handlers: Record<string, Handler> = {
   },
   /** Logo V2 choisi : décision du client, déclinaisons, système de marque. */
   "brand.logo.v2.choose": async (ctx) => {
+    if (ctx.payload.agentLogoSelectionQuote) return (await import("../src/lib/orchestrator/conversation/logo-selection-execution")).runLogoSelection(ctx);
     const { chooseLogoV2 } = await import("../src/lib/logo-v2/choose");
     return chooseLogoV2(ctx, ctx.payload.projectId, ctx.payload.assetId);
   },
@@ -420,8 +439,9 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     const p = loadProject(ctx.payload.projectId);
     const deps = realSocialDeps(ctx, p, aiActiveFor(p.userId, p.id));
-    const result=await ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace, replaceFrom: ctx.payload.replaceFrom ?? null, batchSize: ctx.payload.batchSize ?? undefined, progress: (done, total) => ctx.progress(total ? done / total : 1, L(`Visuel ${Math.min(done + 1, total)} sur ${total}`, `Visual ${Math.min(done + 1, total)} of ${total}`)) }));
-    if(!result.produced && (result.failed||result.skipped))throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+result.notes.join(" ; "));
+    const result=await ctx.step("produce", () => produceBatch(p, ctx.payload.ids ?? [], deps, { expectedInputs:ctx.payload.expectedInputs,allowPaid: !!ctx.payload.allowPaid, maxCostEur: Number(ctx.payload.maxCostEur ?? 0), approvedEstimateMicro: ctx.payload.approvedEstimateMicro ?? null, distinctImages: ctx.payload.distinctImages ?? null, aiImages: ctx.payload.aiImages ?? null, aiBackground: !!ctx.payload.aiBackground, replace: !!ctx.payload.replace, replaceFrom: ctx.payload.replaceFrom ?? null, batchSize: ctx.payload.batchSize ?? undefined, progress: (done, total) => ctx.progress(total ? Math.min(.95,.95*done/total) : 0, L(`Visuel ${Math.min(done + 1, total)} sur ${total}`, `Visual ${Math.min(done + 1, total)} of ${total}`)) }));
+    if(!result.produced&&!result.failed&&!ctx.payload.replace){const{preservedApprovedDelivery}=await import('../src/lib/social-v2/preserved-delivery');const preserved=await preservedApprovedDelivery(p,ctx.payload.ids??[]);if(preserved)return{...result,alreadySatisfied:preserved.length,preserved,unchanged:true,partial:false,notice:L('Publications déjà approuvées : versions conservées sans nouvelle production.','Already approved posts: versions kept without new production.')};}
+    if(!result.produced)throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+(result.notes.join(" ; ")||L("aucun brouillon en attente n’est disponible ; les acquis restent conservés.","no waiting draft is available; acquired work is kept.")));
     return {...result,partial:!!(result.failed||result.skipped)};
   },
   "post.publish": async (ctx) => {

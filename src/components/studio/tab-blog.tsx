@@ -6,6 +6,7 @@
  * Sans forfait ou avec Créer : présentation et « Inclus dans les forfaits Vendre et Dominer ».
  */
 import { AiWait } from "../wait-time";
+import {useSearchParams} from "next/navigation";
 import { startPolling } from "@/lib/poll";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -90,12 +91,18 @@ export default function TabBlog() {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
-  const active = useActive(["blog.write", "content.v2"]);
+  const active = useActive(["blog.write", "content.v2", "agent.blog.write"]);
+  const requestedArticle=useSearchParams().get("article"),handledArticle=useRef<string|null>(null);
   const [showTrash, setShowTrash] = useState(false);
-  const { data, reload, error } = useApi<BlogData>(`/api/projects/${id}/blog${showTrash ? "?trash=1" : ""}`);
+  const { data, reload, error } = useApi<BlogData>(`/api/projects/${id}/blog${showTrash ? "?trash=1" : ""}`,{poll:active.length?2000:15000});
   const [writeOpen, setWriteOpen] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
+  useEffect(()=>{if(!data||!requestedArticle)return;const key=id+":"+requestedArticle;if(handledArticle.current===key)return;handledArticle.current=key;if(data.articles.some(a=>a.id===requestedArticle))setOpenId(requestedArticle);else toast("bad", t("Article demandé absent ou retiré.","Requested article is missing or removed."));},[data,id,requestedArticle,t,toast]);
+  // Un article créé depuis SYNA reste visible si son panneau est fermé avant la fin.
+  const activeKey=active.map(j=>j.id+":"+j.status).join("|"), lastActive=useRef(activeKey);
+  useEffect(()=>{if(lastActive.current!==activeKey){lastActive.current=activeKey;void reload();}},[activeKey,reload]);
+  useEffect(()=>{const changed=(e:Event)=>{if((e as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:content-changed',changed);return()=>window.removeEventListener('studio:content-changed',changed);},[id,reload]);
   const cost = useCostConfirm();
 
   // Fin d'une écriture : la liste se met à jour et l'article s'ouvre.

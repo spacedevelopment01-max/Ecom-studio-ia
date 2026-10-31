@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "product",
+      "name": "Emporte-pièce de maroquinerie",
+      "nativeCatalogue": {
+        "subject": "variant",
+        "price": "32,50 €",
+        "selectedOption": "Brunie",
+        "homonymExcluded": true,
+        "archived": {
+          "read": 200,
+          "edit": 200,
+          "download": 200,
+          "currentInput": false,
+          "factsCheck": "CONTENT_SUBJECT_CHANGED",
+          "bindingPreserved": true
+        }
+      },
+      "passed": true,
+      "requestCharacters": 852,
+      "instructionPreserved": true,
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 4882,
+          "sha256": "b556ecd8aedf59db6d471f910bbf28a68e197b7424729fd69966b03a06b6f6f0",
+          "hasExactInstruction": true,
+          "offerName": "Emporte-pièce de maroquinerie",
+          "price": "32,50 €",
+          "factValues": [
+            "Brunie"
+          ]
+        },
+        {
+          "phase": "review",
+          "bytes": 2223,
+          "sha256": "a3b9d4f7e15a101f741bb93ba559d5bbfae023ce002dc9096a3ac4243616931e",
+          "hasExactInstruction": true
+        }
+      ],
+      "output": {
+        "version": 2,
+        "by": "ai",
+        "verdict": "FINAL",
+        "downloadSha256": "f62fb484ee5049cee9225ce7115568d76be4ee41f641c016ec7a7d3b0bd05d11",
+        "nativeEditor": true,
+        "unsavedEditPreserved": true
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.2,
+        "httpAttempts": 1,
+        "automaticRetry": false,
+        "localReplacement": false,
+        "priorPreserved": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedBudget": 400,
+      "themeVersions": 0,
+      "reloadNoCall": true,
+      "counts": {
+        "providerHttpCalls": 6,
+        "videoClipCalls": 0,
+        "videoVoiceCalls": 0,
+        "textHttpCalls": 6,
+        "imageHttpCalls": 0,
+        "tokenCounts": 6,
+        "calls": 6,
+        "usage": 5,
+        "simulatedMicro": 35604
+      },
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "applicationCommit": "bfa013ca545b8ccbaebce86281bc9e94b747ccda",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/preuves-211-D16/acquired-http.json": {
+      "bytes": 17835,
+      "sha256": "8f50c58b0b7378b56293697f4fe2858acd345218cce2dbe73ef9bc7c65edf8b0"
+    },
+    "docs/coordination/preuves-211-D16/checks.json": {
+      "bytes": 10040,
+      "sha256": "bf5c5fa380984e3f3cea4f7b2f29481af57c3aed290558efd530086b0638bb2c"
+    },
+    "docs/coordination/preuves-211-D16/fixture-selection.json": {
+      "bytes": 782,
+      "sha256": "2a59cf8142fd338df874b7bd6756c4e2af0712cd7790470cb11a26e3100ee5c1"
+    },
+    "docs/coordination/preuves-211-D16/race-and-catalogue-red.txt": {
+      "bytes": 2183,
+      "sha256": "6102c2f4160d2a2bb234a30483ee0363cf693723d1a4ca68d5df8409d6e4db5e"
+    },
+    "docs/coordination/preuves-211-D16/read-acquired.mjs": {
+      "bytes": 5689,
+      "sha256": "2d466024ce73526a871e774651ff81e0bfcd8fa80c1afea22014aff843a5b954"
+    },
+    "docs/coordination/preuves-211-D16/snapshot-scope.json": {
+      "bytes": 5208,
+      "sha256": "d15fbd48e6cd43454f2511d3e96bd1815268417ce60ee59480338a87aeffd2f4"
+    }
+  }
+}

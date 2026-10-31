@@ -6,6 +6,7 @@
  * compteurs, indicateurs SEO, versions et restauration, aperçu, export et retouches en conversation.
  * Les modifications manuelles n'appellent jamais l'IA.
  */
+import {useSearchParams} from "next/navigation";
 import { startPolling } from "@/lib/poll";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Bold, Download, Eye, FileText, Italic, Link2, MessageSquare, Plus, RotateCcw, Save, Search, Sparkles, Trash2 } from "lucide-react";
@@ -81,6 +82,9 @@ export function ContentPanel({ types, title }: { types: string[]; title?: string
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const search=useSearchParams(),openedLink=useRef<string|null>(null),requestedContent=search.get('content');
+  useEffect(()=>{if(!requestedContent||!data?.contents.some(c=>c.docKey===requestedContent&&types.includes(c.type)))return;const key=id+':'+requestedContent;if(openedLink.current===key)return;openedLink.current=key;setOpen(requestedContent);},[id,data,requestedContent,types]);
+  useEffect(()=>{const changed=(e:Event)=>{if((e as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:content-changed',changed);return()=>window.removeEventListener('studio:content-changed',changed);},[id,reload]);
   const [showStrategy, setShowStrategy] = useState(false);
 
   useEffect(() => {

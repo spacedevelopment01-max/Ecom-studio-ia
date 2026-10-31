@@ -1,0 +1,142 @@
+{
+  "knowledge-produit-multi-native.json": {
+    "sha256": "ddb593f812b6109584be79ce8cfd071886026d162bb8727fb8ae75c380b6d1d8",
+    "size": 40343
+  },
+  "knowledge-service-native.json": {
+    "sha256": "e8a02f7a5ce499d36c18aaf41f52ed368c4411d905754eaf5d063de02653aa83",
+    "size": 42623
+  },
+  "verifications.json": {
+    "sha256": "7db814868a06cba8c68cd758a4f3d48049f4bffac49f2de618002ad39374a0b0",
+    "size": 8707
+  },
+  "README.md": {
+    "sha256": "efbf95013bb9f3e8878b609101ef0d0cabecf38bd00ba7174020ced7dca30a0b",
+    "size": 2576
+  },
+  "diagnostic-test-video.json": {
+    "sha256": "2ad7db39d8c6ab03049f0a9fb3fa8ae990a730d03e29cfa796a299a84a8f153c",
+    "size": 741
+  },
+  "logs/D6-build-proof-final.txt": {
+    "sha256": "c404277408fcfe6e55df175a0ce05b0572f9f036ac48bc074e9452d863d8d4ef",
+    "size": 17627
+  },
+  "logs/D6-types-expanded.txt": {
+    "sha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b",
+    "size": 208
+  },
+  "logs/D6-browser-published-final.txt": {
+    "sha256": "a115eedb8d7949027cfbbf3350819b5421584f05cb7cbe417f6eec875a192221",
+    "size": 585
+  },
+  "logs/D6-video-secret-red.txt": {
+    "sha256": "101eced94da0beef06d3e7df2a10d377eb4aa3c12db6adcd01f40f9ce2ad62ea",
+    "size": 1498
+  },
+  "logs/D6-target-index-final.txt": {
+    "sha256": "83503352cbac3014e5a70752a80b3124ec0973cb4d6d3fe82b4df98b4cc9eedb",
+    "size": 4498
+  },
+  "logs/D6-full-secret-final.txt": {
+    "sha256": "f40d685f3d3ec09fd7bc802790d7dde57587b215211f7d3b157d451a49227f51",
+    "size": 428
+  },
+  "logs/D6-video-secret-green.txt": {
+    "sha256": "0574d1e9d216282a3661d11292b5662a3b7ecddab24dca7f158747448c82a9b8",
+    "size": 402
+  },
+  "videos/produit-multi.mp4": {
+    "sha256": "206afd1ca5daa9ba10713f1af224c6b2cebcb1fd64c2cf81a1faedb960ebdbec",
+    "size": 864446
+  },
+  "videos/service.mp4": {
+    "sha256": "b8ea6be65ff41ff037f497b2626e167f3df7a8fa6d2ad116306ea5e8cb0b46bc",
+    "size": 429359
+  },
+  "planches/produit-multi-3.jpg": {
+    "sha256": "39a8b593fd35beaee26eb1961cd8598d7379607574e26bea9e19cd876a1638d8",
+    "size": 51232
+  },
+  "planches/service-2.jpg": {
+    "sha256": "cb44124c685f3f2eab433bfd6fb2b5485d9fd757502c838507b76e120f336510",
+    "size": 126767
+  },
+  "planches/produit-multi-2.jpg": {
+    "sha256": "f014b3ade7d132f0db0185fb201f62c42969de3731a06ac50b1fce94e33aede2",
+    "size": 118511
+  },
+  "planches/service-1.jpg": {
+    "sha256": "4066b05e4dcd38e95601e0795561c6abf424699502e312891c3b722cc41ece66",
+    "size": 126672
+  },
+  "planches/service-3.jpg": {
+    "sha256": "7fdb6e8235505b565814e8f578b5f7c5ba059a5a7c1307c40d0fb9142d0a8f77",
+    "size": 89253
+  },
+  "planches/produit-multi-1.jpg": {
+    "sha256": "6b439144442efdbb0f0059162d84ba7b83ccbe6ffb656bfb5f8ac01e61308a98",
+    "size": 109024
+  },
+  "captures/produit-multi-meme-conversation-autre-onglet.png": {
+    "sha256": "1b12438312db258ca7193d4b406b5042aa5df3511e747c4b7ccefe1316e6a01c",
+    "size": 163195
+  },
+  "captures/service-operation-absente-honnete.png": {
+    "sha256": "5450e03010c8c8b6c592731e5f548fa5e0e79b56d073b275695f8c62811b5540",
+    "size": 61443
+  },
+  "captures/produit-multi-devis-separe.png": {
+    "sha256": "4fbf957722a3c5fd0ee6dd8710c409c40d003a540ece168910748619833c238a",
+    "size": 191244
+  },
+  "captures/produit-multi-reponse-sourcee.png": {
+    "sha256": "90c76638e9ec433a5d3714de3c8729c7dc8885ad383881f1e56842829b287a28",
+    "size": 214310
+  },
+  "captures/service-question-exacte.png": {
+    "sha256": "5e449766884323200c586a95b5cddc9482d723f1b75407cee9b12f873ecb3887",
+    "size": 55159
+  },
+  "captures/service-reponse-sourcee.png": {
+    "sha256": "dadaf9357328feb4094bad676beffc6ee3773afe614b412ef66e2db75dfbf2e6",
+    "size": 62837
+  },
+  "captures/produit-multi-etat-natif.png": {
+    "sha256": "f2c8d1887a39949f94f7fafa0e14673a74fcb0b468346c43d72af6453ef2759f",
+    "size": 206428
+  },
+  "captures/service-mode-original-non-disponible.png": {
+    "sha256": "fcffe948985c8f501c377e19250e12b14a9ef562adcc6dcd2d96ed79f0863fbe",
+    "size": 67787
+  },
+  "captures/service-etat-natif.png": {
+    "sha256": "c2069797c9a0598a7804be5108f6502f747e3a5e6d16f8bee0ffb18571334d42",
+    "size": 65720
+  },
+  "captures/produit-multi-mode-original-non-disponible.png": {
+    "sha256": "f743402c915819c4034d1611714c2ae039530f6a25a054dacfa711dad6cabb31",
+    "size": 211554
+  },
+  "captures/service-echec-historique-observe.png": {
+    "sha256": "10c3c4835b0510985cb618397b6471a23cd95a6a5a8224503519e4ae5d9e1221",
+    "size": 71499
+  },
+  "captures/service-meme-conversation-autre-onglet.png": {
+    "sha256": "8c72e8d0607d8b7907c9746fea97bb1113b37138124dded29d07a3f0ebf66380",
+    "size": 60144
+  },
+  "captures/service-devis-separe.png": {
+    "sha256": "0cf62800d6d9b75c4903b030e9b723c28e384b8e9e71b2eba6756d8b6d3e2669",
+    "size": 56271
+  },
+  "captures/produit-multi-operation-absente-honnete.png": {
+    "sha256": "1a6b8280874dbcc1257cb0cd89528db51620e9dec882dbb43c7b14ba7ab0c8fb",
+    "size": 204776
+  },
+  "captures/produit-multi-question-exacte.png": {
+    "sha256": "5c6b64ef156bdf52f77320ae019fc270ceae741e532c004cb7e79adfe5276a34",
+    "size": 194613
+  }
+}

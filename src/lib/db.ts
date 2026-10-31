@@ -197,6 +197,62 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 CREATE INDEX IF NOT EXISTS chat_project ON chat_messages(project_id, thread, created_at);
 
+-- Lot A #209 : échanges uniquement ; les données d'un projet restent dans sa préparation et sa mémoire.
+-- Un brouillon avant création ne crée pas de projet et ne consomme aucun abonnement.
+CREATE TABLE IF NOT EXISTS agent_conversations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id TEXT UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL DEFAULT 0,
+  state_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS agent_one_draft ON agent_conversations(user_id) WHERE project_id IS NULL;
+CREATE TABLE IF NOT EXISTS agent_conversation_turns (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  request_id TEXT NOT NULL,
+  request_hash TEXT NOT NULL,
+  request_json TEXT NOT NULL,
+  response_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(conversation_id, revision),
+  UNIQUE(conversation_id, request_id)
+);
+CREATE TABLE IF NOT EXISTS agent_conversation_quotes (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  revision INTEGER NOT NULL,
+  project_revision INTEGER,
+  billing_key TEXT NOT NULL,
+  plan_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  job_id TEXT REFERENCES jobs(id)
+);
+CREATE INDEX IF NOT EXISTS agent_quotes_conversation ON agent_conversation_quotes(conversation_id, created_at);
+CREATE TABLE IF NOT EXISTS agent_request_bounds (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  request_key TEXT NOT NULL,
+  cap_micro INTEGER NOT NULL,
+  max_calls INTEGER NOT NULL,
+  max_depth INTEGER NOT NULL,
+  max_retries INTEGER NOT NULL,
+  deadline_at INTEGER,
+  http_attempts INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  UNIQUE(conversation_id,request_key)
+);
+CREATE TABLE IF NOT EXISTS agent_request_jobs (
+  bound_id TEXT NOT NULL REFERENCES agent_request_bounds(id) ON DELETE CASCADE,
+  job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  depth INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS user_prompts (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -1243,6 +1299,13 @@ export function run(sql: string, ...params: unknown[]) {
 }
 export function tx<T>(fn: () => T): T {
   return db().transaction(fn).immediate();
+}
+
+/** Lecture synchrone cohérente entre tables pendant les commits du worker.
+ * DEFERRED conserve le snapshot WAL sans réserver le verrou d'écriture IMMEDIATE.
+ */
+export function readSnapshot<T>(fn: () => T): T {
+  return db().transaction(fn).deferred();
 }
 
 export function json<T = any>(v: string | null | undefined, fallback: T): T {

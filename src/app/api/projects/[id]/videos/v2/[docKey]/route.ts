@@ -12,6 +12,7 @@ import { localVideoEdit } from "@/lib/video-v2/local-edit";
 import { localVideoChecks } from "@/lib/video-v2/quality";
 import { timeline, toSrt, toVtt } from "@/lib/video-v2/doc";
 import type { VideoDocument } from "@/lib/video-v2/types";
+import {requiresClipRevisionQuote}from '@/lib/video-v2/clip-revision-contract';
 
 export const runtime = "nodejs";
 type DocCtx = Ctx<{ id: string; docKey: string }>;
@@ -121,6 +122,7 @@ export const POST = handle(async (req: Request, ctx: DocCtx) => {
     }
     case "clip": {
       if (!b.clipId || !cur.doc.clips.some((c) => c.id === b.clipId)) throw new HttpError(400, L("Plan introuvable.", "Shot not found."));
+      if(requiresClipRevisionQuote(cur.doc))throw new HttpError(409,L('Cette vidéo nécessite un devis ciblé et son accord dans SYNA. Aucun remplacement par l’ancien parcours.','This video requires a targeted quote and approval in SYNA. No replacement through the legacy flow.'));
       if (busy()) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
       const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2.clip", label: L("Vidéo : nouveau plan", "Video: new shot"), payload: { projectId: p.id, docKey, clipId: b.clipId, approve: !!b.approve, maxCostEur: b.maxCostEur, instruction: b.instruction } });
       return ok({ jobId: job.id });

@@ -1,0 +1,246 @@
+{
+  "schema": "agent209-source-audit-1",
+  "sourceCommit": "477e47f57612878d001223fafd2b666fd81ac31b",
+  "classification": "CONFIRMED_IN_CODE_NOT_RENDERED_OR_REAL_PROVIDER_VERIFICATION",
+  "applicationModifiedBySupplement": false,
+  "sources": [
+    {
+      "file": "src/lib/orchestrator/router.ts",
+      "sha256": "c6b9415ccc2b1cf2d385072038a59a32c4ae5be2ea5bc93d197344af15660f6e",
+      "locations": [
+        {
+          "symbol": "export function route",
+          "line": 105,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/orchestrator/router.ts#L105"
+        },
+        {
+          "symbol": "if (!req.aiActive)",
+          "line": 112,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/orchestrator/router.ts#L112"
+        },
+        {
+          "symbol": "const candidates = capableModels",
+          "line": 173,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/orchestrator/router.ts#L173"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/spec.ts",
+      "sha256": "34182a8288b62bcff64c7587ef1989198bb0c98bf9314aeaad5e50ab6d2a52ea",
+      "locations": [
+        {
+          "symbol": "export type ThemeSpec",
+          "line": 102,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/spec.ts#L102"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/engine/shop.ts",
+      "sha256": "cb47d54d77df495b00eabeb3fd14167d538ca2c37e947ee7c6479fece629e7fe",
+      "locations": [
+        {
+          "symbol": "async function buildShopInScope",
+          "line": 336,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/engine/shop.ts#L336"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/engine/custom-theme.ts",
+      "sha256": "8ef580c92591b45824ad3516bdc09e1b86c70ab56eb956c17abe78dab8393455",
+      "locations": [
+        {
+          "symbol": "export const CustomPlanSchema",
+          "line": 40,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/engine/custom-theme.ts#L40"
+        },
+        {
+          "symbol": "export function assembleCustomTheme",
+          "line": 349,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/engine/custom-theme.ts#L349"
+        },
+        {
+          "symbol": "export async function buildCustomTheme",
+          "line": 403,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/engine/custom-theme.ts#L403"
+        },
+        {
+          "symbol": "const shots = await snapshotTheme",
+          "line": 469,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/engine/custom-theme.ts#L469"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/ops.ts",
+      "sha256": "d5049b0b88b7bef5b904e1c3fd370b68c7e03b7bb1bedd36da554867c77f6746",
+      "locations": [
+        {
+          "symbol": "export const OpSchema",
+          "line": 35,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/ops.ts#L35"
+        },
+        {
+          "symbol": "export function validateCustomSection",
+          "line": 149,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/ops.ts#L149"
+        },
+        {
+          "symbol": "export function applyOps",
+          "line": 195,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/ops.ts#L195"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/content-security.ts",
+      "sha256": "a2956e7b330fd2814b7dea4096a389d4188363fb056fee95033c95668bde57d0",
+      "locations": [
+        {
+          "symbol": "export function unsafeContentReason",
+          "line": 8,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/content-security.ts#L8"
+        },
+        {
+          "symbol": "export function assertSafeThemeContent",
+          "line": 29,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/content-security.ts#L29"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/client-copy.ts",
+      "sha256": "c780e89de60b8a11ac3cd8def3fe62bbe50596fb1afa67585f1d912932433bf9",
+      "locations": [
+        {
+          "symbol": "export function bindClientCopy",
+          "line": 53,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/client-copy.ts#L53"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/section-copy.ts",
+      "sha256": "29696d4c2107760c38ebd00291dbe39f39594ae9f588cf29e166439c377ede6a",
+      "locations": [
+        {
+          "symbol": "export function applySectionCopy",
+          "line": 20,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/section-copy.ts#L20"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/snapshot.ts",
+      "sha256": "da9a2e39708bb9ddb63012e6b05c008514406055fc25725aa461299d27536399",
+      "locations": [
+        {
+          "symbol": "export async function snapshotTheme",
+          "line": 86,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/snapshot.ts#L86"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme-v2/quality.ts",
+      "sha256": "964539f4b0775b3e8b37ab23f59579e915dfae737129572ffcff4abf2bcc74fc",
+      "locations": [
+        {
+          "symbol": "export function checkThemeV2",
+          "line": 35,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme-v2/quality.ts#L35"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/ai/tasks.ts",
+      "sha256": "28c6d036b8df5f1afa76eeb4889b8f8a36fc7072f1b13a5dcfa4a0fb0dfce4a0",
+      "locations": [
+        {
+          "symbol": "export async function aiReviewHome",
+          "line": 887,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/ai/tasks.ts#L887"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/projects.ts",
+      "sha256": "cd9d9c58b0e3d7e6e5c3ea55c2170c7094ab9f5be4b26143c3473924e5ea0983",
+      "locations": [
+        {
+          "symbol": "export function saveThemeVersion",
+          "line": 210,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/projects.ts#L210"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/cms-v2/export.ts",
+      "sha256": "17495e93ae3804a7ea1461fd387368581a50ea1a3a97cf85a4bf2c1a5605ff60",
+      "locations": [
+        {
+          "symbol": "export async function cmsExport",
+          "line": 38,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/cms-v2/export.ts#L38"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/cms-v2/adapters/shopify.ts",
+      "sha256": "90b004cbe0ef812723c8c78dd1743b6f72609b763d70c0f4dd5fff2c5ab8905d",
+      "locations": [
+        {
+          "symbol": "export async function exportShopify",
+          "line": 18,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/cms-v2/adapters/shopify.ts#L18"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/cms-v2/adapters/wordpress.ts",
+      "sha256": "90991fb4b0cb4c4852aa8acd1b1444110829049d38a92efa80b94aa68517b629",
+      "locations": [
+        {
+          "symbol": "product_layouts_shared",
+          "line": 133,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/cms-v2/adapters/wordpress.ts#L133"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/cms-v2/adapters/prestashop.ts",
+      "sha256": "8eeb4b25eecb6cfd018b74b7c8f9d191acbdd2fb57a2faac5e18c38f5d88ddf6",
+      "locations": [
+        {
+          "symbol": "product_layouts_shared",
+          "line": 146,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/cms-v2/adapters/prestashop.ts#L146"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/theme/platforms.ts",
+      "sha256": "d0d936a3150b42c8e648279fe9ced6ffac90de4aac5d19185b28a487aada0e30",
+      "locations": [
+        {
+          "symbol": "export function fromV2",
+          "line": 48,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/theme/platforms.ts#L48"
+        }
+      ]
+    },
+    {
+      "file": "src/lib/billing.ts",
+      "sha256": "a882c034cbee4ffb6a32a5616869fc964f7d72bb263ce47ae93474a0ef0471ae",
+      "locations": [
+        {
+          "symbol": "export function reserve",
+          "line": 425,
+          "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/477e47f57612878d001223fafd2b666fd81ac31b/src/lib/billing.ts#L425"
+        }
+      ]
+    }
+  ]
+}

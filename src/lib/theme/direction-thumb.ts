@@ -69,12 +69,14 @@ export async function directionThumb(projectId: string, direction: DirectionId, 
     if (again) return again;
     const b = await browser();
     if (!b) return null;
-    const { context, url } = await themeContext(b, spec, { width: 1280, height: 880 });
+    const { context, url, assertResources } = await themeContext(b, spec, { width: 1280, height: 880 });
     try {
       const page = await context.newPage();
       await page.goto(url("/"), { waitUntil: "load", timeout: 45_000 });
       await page.waitForTimeout(400);
+      assertResources();
       const shot = await page.screenshot({ type: "jpeg", quality: 85 });
+      assertResources();
       const out = await sharp(shot).resize({ width: 640 }).jpeg({ quality: 78 }).toBuffer();
       state.cache.set(key, out);
       if (state.cache.size > 120) state.cache.delete(state.cache.keys().next().value!);

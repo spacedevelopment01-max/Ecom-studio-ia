@@ -1,0 +1,422 @@
+[
+  {
+    "scene": "mono",
+    "phase": "creation",
+    "file": "fichiers/mono-creation.mp4",
+    "document": "fichiers/mono-creation.json",
+    "assetId": "mrmack0dqmfvp7jx",
+    "versionId": "ib9ffn33b9zddsz4",
+    "nativeDocumentVersion": 2,
+    "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+    "bytes": 204606,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 2.144998070987654,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "mono",
+    "phase": "retouche",
+    "file": "fichiers/mono-retouche.mp4",
+    "document": "fichiers/mono-retouche.json",
+    "assetId": "w0c60od5y5wuqhxo",
+    "versionId": "edeovrd0mz2s1jsy",
+    "nativeDocumentVersion": 4,
+    "sha256": "25b5c602e574df753750ac2402569d816fd84a6aac8eb3f65fc22068c9344310",
+    "bytes": 296382,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "150"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "216"
+        }
+      ],
+      "format": {
+        "duration": "5.000000"
+      }
+    },
+    "meanVolumeDb": -16.3,
+    "cameraCentralRgbDifference": 4.210830761316872,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "mono",
+    "phase": "restauration",
+    "file": "fichiers/mono-restauration.mp4",
+    "document": "fichiers/mono-restauration.json",
+    "assetId": "744fvm58qnhmwzef",
+    "versionId": "5zb2qzrqonwe02pu",
+    "nativeDocumentVersion": 6,
+    "sha256": "4d10e6ef892a9aec85d2efebb87c9ca68cbe2926a3d1f48a87245a28cb488b33",
+    "bytes": 204606,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1920,
+          "height": 1080,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 2.144998070987654,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "multi",
+    "phase": "creation",
+    "file": "fichiers/multi-creation.mp4",
+    "document": "fichiers/multi-creation.json",
+    "assetId": "a21jj7fcw0ycdvm0",
+    "versionId": "1fevbbv30puyc2i2",
+    "nativeDocumentVersion": 2,
+    "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+    "bytes": 261604,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.8369900977366256,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "multi",
+    "phase": "retouche",
+    "file": "fichiers/multi-retouche.mp4",
+    "document": "fichiers/multi-retouche.json",
+    "assetId": "pehr15e1k49ijrrb",
+    "versionId": "dpc37k9045mwfcg2",
+    "nativeDocumentVersion": 4,
+    "sha256": "9102c637de76865164ad903aae39f2e1ddf19c46c547ae2a4cde4a49b6047816",
+    "bytes": 348077,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "150"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "216"
+        }
+      ],
+      "format": {
+        "duration": "5.000000"
+      }
+    },
+    "meanVolumeDb": -16.6,
+    "cameraCentralRgbDifference": 3.5347022890946502,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "multi",
+    "phase": "restauration",
+    "file": "fichiers/multi-restauration.mp4",
+    "document": "fichiers/multi-restauration.json",
+    "assetId": "cf50v76gcm95vhsr",
+    "versionId": "b4s3fxw1s1zscw59",
+    "nativeDocumentVersion": 6,
+    "sha256": "caf24226b1fe94291f42c6139b5f04f9f8e0ee771c61aff27f4e5f9f83e98cb2",
+    "bytes": 261604,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.8369900977366256,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "services",
+    "phase": "creation",
+    "file": "fichiers/services-creation.mp4",
+    "document": "fichiers/services-creation.json",
+    "assetId": "dvou8e8c7pereqsv",
+    "versionId": "wipk6gsqwak7ojky",
+    "nativeDocumentVersion": 2,
+    "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+    "bytes": 250791,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1350,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.8791010516689528,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "services",
+    "phase": "retouche",
+    "file": "fichiers/services-retouche.mp4",
+    "document": "fichiers/services-retouche.json",
+    "assetId": "2e7yqwn4wfouire2",
+    "versionId": "mziigujopyrryzf1",
+    "nativeDocumentVersion": 4,
+    "sha256": "8da17211f9ecf3ef46453507af02b4abe9b4c3c8e11aa6f4ebc4e6a94484151f",
+    "bytes": 343873,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1350,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "150"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "216"
+        }
+      ],
+      "format": {
+        "duration": "5.000000"
+      }
+    },
+    "meanVolumeDb": -16.1,
+    "cameraCentralRgbDifference": 3.5854156378600823,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "services",
+    "phase": "restauration",
+    "file": "fichiers/services-restauration.mp4",
+    "document": "fichiers/services-restauration.json",
+    "assetId": "634fefmhp9a316kf",
+    "versionId": "ouzpm3lgprv4fr65",
+    "nativeDocumentVersion": 6,
+    "sha256": "152b3807ac9bcd6bdc505898ad9c76e6cabbc452538b354e84af0df6b3ed7fb5",
+    "bytes": 250791,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1350,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.8791010516689528,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "inedit",
+    "phase": "creation",
+    "file": "fichiers/inedit-creation.mp4",
+    "document": "fichiers/inedit-creation.json",
+    "assetId": "oshvykrw8nqfnomz",
+    "versionId": "d8a01r53xb371rcp",
+    "nativeDocumentVersion": 2,
+    "sha256": "2899fab740e159632e60cc1d56e3b5d951223beb9605e5de4f08a0ae998d27f7",
+    "bytes": 251701,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.830903420781893,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "inedit",
+    "phase": "retouche",
+    "file": "fichiers/inedit-retouche.mp4",
+    "document": "fichiers/inedit-retouche.json",
+    "assetId": "rqscgza1yonb23q2",
+    "versionId": "et22pe95c598kws4",
+    "nativeDocumentVersion": 4,
+    "sha256": "2581b4b0c449a02219387b7a05e343c6ffe4169ec63d860eab3f6ffb2ac4deb6",
+    "bytes": 339617,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "150"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "216"
+        }
+      ],
+      "format": {
+        "duration": "5.000000"
+      }
+    },
+    "meanVolumeDb": -16.6,
+    "cameraCentralRgbDifference": 3.5368023405349795,
+    "actualBrowserDownloadMatched": true
+  },
+  {
+    "scene": "inedit",
+    "phase": "restauration",
+    "file": "fichiers/inedit-restauration.mp4",
+    "document": "fichiers/inedit-restauration.json",
+    "assetId": "f3qidghuadqok7zu",
+    "versionId": "j1ceb5j2af9w3ref",
+    "nativeDocumentVersion": 6,
+    "sha256": "72a3e00332f392eb0cd7f56fed58c9da5fcb1e50937e2d50020209be2f082b7e",
+    "bytes": 251293,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 1080,
+          "height": 1920,
+          "r_frame_rate": "30/1",
+          "nb_read_frames": "180"
+        },
+        {
+          "codec_type": "audio",
+          "r_frame_rate": "0/0",
+          "nb_read_frames": "259"
+        }
+      ],
+      "format": {
+        "duration": "6.000000"
+      }
+    },
+    "meanVolumeDb": -91.0,
+    "cameraCentralRgbDifference": 1.830903420781893,
+    "actualBrowserDownloadMatched": true
+  }
+]

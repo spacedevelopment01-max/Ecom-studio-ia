@@ -1,0 +1,31 @@
+{
+  "base": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+  "generationFlag": false,
+  "allFourProviderSchemasByteIdentical": true,
+  "hashes": [
+    {
+      "logos": false,
+      "videos": false,
+      "bytes": 18410,
+      "sha256": "b65d693c1bd410669428ac7340eb996d6564a12f9f0ea0e0e2bd7188b9eb6764"
+    },
+    {
+      "logos": false,
+      "videos": true,
+      "bytes": 23558,
+      "sha256": "36f4484a11f216378ad7073eb459b5edc655d06fc4f078c66d3103060a56a3e1"
+    },
+    {
+      "logos": true,
+      "videos": false,
+      "bytes": 23816,
+      "sha256": "d2cda09bbbf8f2b33ebf42b9ce9bb14278ad8288ba80b5a390b0b0bf9f412183"
+    },
+    {
+      "logos": true,
+      "videos": true,
+      "bytes": 28980,
+      "sha256": "eb958cac18c8caa3372d5a2b08881fc43da6a5ce5367622088c027f3e92850af"
+    }
+  ]
+}

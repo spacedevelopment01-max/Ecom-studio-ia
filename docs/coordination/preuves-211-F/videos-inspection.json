@@ -1,0 +1,119 @@
+{
+  "compiledCommit": "ad41f4301052a79dfe4e2e735ba8f6a40b5de476",
+  "realBrowserRecordings": true,
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0,
+  "clips": [
+    {
+      "name": "produit",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "238"
+          }
+        ],
+        "format": {
+          "duration": "9.520000",
+          "size": "1359646"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "238"
+          }
+        ],
+        "format": {
+          "duration": "9.520000",
+          "size": "1518343"
+        }
+      },
+      "encoding": "H264 CRF23, all frames, no trim or speed change",
+      "originalWebmSavedInLocalProofFolderAndReproducibleCIArtifact": true
+    },
+    {
+      "name": "service",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "205"
+          }
+        ],
+        "format": {
+          "duration": "8.200000",
+          "size": "848782"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "205"
+          }
+        ],
+        "format": {
+          "duration": "8.200000",
+          "size": "819296"
+        }
+      },
+      "encoding": "H264 CRF23, all frames, no trim or speed change",
+      "originalWebmSavedInLocalProofFolderAndReproducibleCIArtifact": true
+    },
+    {
+      "name": "reprise",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "115"
+          }
+        ],
+        "format": {
+          "duration": "4.600000",
+          "size": "408878"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "avg_frame_rate": "25/1",
+            "nb_read_frames": "115"
+          }
+        ],
+        "format": {
+          "duration": "4.600000",
+          "size": "352511"
+        }
+      },
+      "encoding": "H264 CRF23, all frames, no trim or speed change",
+      "originalWebmSavedInLocalProofFolderAndReproducibleCIArtifact": true
+    }
+  ]
+}

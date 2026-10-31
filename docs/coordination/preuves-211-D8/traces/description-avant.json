@@ -1,0 +1,29 @@
+{
+  "status": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-catalogue.test.ts",
+      "-t",
+      "rend la description propre"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+    "head": "21fa10c674adf43bc01a0f38f8e011dc80607339",
+    "startedAt": "2026-10-29T10:39:05.106688+00:00",
+    "state": "failed",
+    "sources": {
+      "tests/conversation211-catalogue.test.ts": "5ec7f2044508f7a071d4b93cbab031bb37ef366f041e67652f8f86dde8532f1f"
+    },
+    "log": "/workspace/reviews/ecom-211-state/D8-native-description-red.log",
+    "pid": 924442,
+    "processGroup": 924442,
+    "exitCode": 1,
+    "finishedAt": "2026-10-29T10:39:09.495701+00:00",
+    "logSha256": "4fdbbeb860da581cfa9ab38c2722ac9d4a89b279d5ae8906778c5259db622935",
+    "sourceUnchanged": true
+  },
+  "negativeTest": "rend la description propre au nouveau brouillon",
+  "result": "1 test failed / 38 skipped; real native compile/render omitted draft description",
+  "logSha256": "4fdbbeb860da581cfa9ab38c2722ac9d4a89b279d5ae8906778c5259db622935"
+}

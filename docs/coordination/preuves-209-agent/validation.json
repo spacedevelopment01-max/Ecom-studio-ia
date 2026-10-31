@@ -1,0 +1,90 @@
+{
+  "schema": "agent209-validation-1",
+  "baseCommit": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+  "codeCommit": "f4999022089d27778c0961c5d86c5ad7b528f721",
+  "codeTree": "015a71ca450762363b0660e135d05f8c8b748d2e",
+  "native": {
+    "node": "24.19.0",
+    "typecheck": "passed",
+    "tests": {
+      "passed": 3505,
+      "skipped": 45,
+      "failed": 0,
+      "durationSeconds": 655.98,
+      "filesPassed": 408,
+      "filesSkipped": 1
+    },
+    "targeted": {
+      "lotA": 58,
+      "existingPrivacy": 18,
+      "total": 76,
+      "passed": 76,
+      "failed": 0
+    },
+    "productionBuild": "passed"
+  },
+  "compiledHttp": {
+    "version": {
+      "commit": "f4999022089d27778c0961c5d86c5ad7b528f721",
+      "commitOrigin": "build",
+      "mode": "production",
+      "tree": "clean",
+      "source": "compiled-build"
+    },
+    "cases": 2,
+    "success": true,
+    "foreignRead": 404,
+    "foreignAdministrator": 404,
+    "forgedExecution": 400,
+    "csrf": 403,
+    "staleRevision": 409,
+    "defaultOff": {
+      "conversation": 404,
+      "existingProjects": 200
+    },
+    "countsBefore": {
+      "calls": 0,
+      "jobs": 0,
+      "usage": 0,
+      "ledger": 3,
+      "wallet": {
+        "used": 0,
+        "reserved": 0,
+        "reservedTopup": 0
+      }
+    },
+    "countsAfter": {
+      "calls": 0,
+      "jobs": 0,
+      "usage": 0,
+      "ledger": 3,
+      "wallet": {
+        "used": 0,
+        "reserved": 0,
+        "reservedTopup": 0
+      }
+    }
+  },
+  "simulationOnly": [
+    "Injected IntentClassifier",
+    "Native quote contract with fake percentage amounts; no real provider quote validated"
+  ],
+  "constraints": {
+    "providerCalls": 0,
+    "spendEur": 0,
+    "realProjectWrites": 0,
+    "merge": false,
+    "deployment": false,
+    "frontendReplaced": false,
+    "themesChanged": false,
+    "workerStarted": false
+  },
+  "limits": [
+    "No real provider or creative quality tested",
+    "No visual interface created or browser screenshots claimed",
+    "Interpretation is local and limited; ambiguous requests require clarification",
+    "Native full-context quote depends on reviewed integration of PR208; execution absent",
+    "Historical acquired projects remain protected; migration not connected",
+    "CI verdict on delivery SHA must be read in the PR final comment"
+  ]
+}

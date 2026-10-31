@@ -1,0 +1,13 @@
+{
+  "remoteCommit": "7118b73ed013704062a8ee4adf568b04c75a56ba",
+  "remoteTree": "8985288605eea3b4fe2a54780c8f43153cceaede",
+  "parent": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+  "transport": "authorized_github_connector_api_git_commit",
+  "canonicalGitObjectHashMatched": true,
+  "canonicalOffsetsFromKnownParent": {
+    "author": "+0100",
+    "committer": "+0100"
+  },
+  "workingTreeClean": true,
+  "noResetOrMainUpdate": true
+}

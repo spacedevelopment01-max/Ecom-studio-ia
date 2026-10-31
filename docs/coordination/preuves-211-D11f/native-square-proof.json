@@ -1,0 +1,94 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "transport": "native SDK/HTTP loopback simulation",
+  "creativeQualityQualified": false,
+  "passed": true,
+  "postIds": [
+    "syna-8ac8a6aacbdf7219b495bc8ea29a"
+  ],
+  "success": {
+    "aspect": "1:1",
+    "imageRequestAspect": "1:1",
+    "nativeSize": "1024x1024",
+    "nativeBriefAspect": "1:1",
+    "dimensions": {
+      "width": 1080,
+      "height": 1080
+    },
+    "delivered": true,
+    "sha256": "fbc3caeeef19e97a5c9acb5eadca1fd3345ae34c56da776ad1d3bfd532932660",
+    "downloadExact": true,
+    "newImageCalls": 1,
+    "clientApproved": false
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.95,
+    "newImageCalls": 1,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "previousVersionPreserved": true,
+  "counts": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 8,
+    "imageHttpCalls": 2,
+    "tokenCounts": 8,
+    "calls": 10,
+    "usage": 9,
+    "simulatedMicro": 269283
+  },
+  "version": {
+    "commit": "9708be906bdc0e951c6b32fa70d6c32115af40f9",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "imageReferenceTransports": [
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "h3w7iu83ux99nwum",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "7e52f11a0208a01aa7af936a74090f874e643997574c108d575cb9ffd8793626",
+      "wirePromptSha256": "19734f2ab11919714583d4568da90daec739f8a342fcc2cfe5b63d9e14de0971",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7144,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    },
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "h3w7iu83ux99nwum",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "0f39b291f1c36a42c1532af0dbfc630c5c9034836b0892f836f11f2db515955e",
+      "wirePromptSha256": "1b17315e9b45fd5bcd9b2b6724681e5c2df96c4635de8b0bbbfe6b4d1d1b5164",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7044,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 503
+    }
+  ],
+  "screenshotsActuallyOpened": 4,
+  "publishedScreenshots": 3,
+  "filmDurationS": 16.6,
+  "filmFramesPerSecond": 15,
+  "filmNotAccelerated": true
+}

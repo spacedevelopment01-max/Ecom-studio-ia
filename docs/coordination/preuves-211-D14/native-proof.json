@@ -1,0 +1,222 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "produit",
+      "business": "products",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1274,
+      "instructionSha256": "e08f2d43fb300498f4feb8796d9d35646779826d3a3472f490aa9cf268ba014c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "2d392dbd2a720ee6229df4f4b2f8c8b2b39437d3272e74906b10d670f64def85"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "mz5rxo5hs05s5ayy",
+          "usage_key": "mz5rxo5hs05s5ayy:dialogue",
+          "cost": 7912
+        },
+        {
+          "status": "ok",
+          "job_id": "1rr7rtehibvd7obu",
+          "usage_key": "1rr7rtehibvd7obu:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "ol9camhvzj7wz063",
+          "usage_key": "ol9camhvzj7wz063:identity",
+          "cost": 0
+        },
+        {
+          "status": "ok",
+          "job_id": "w4lezyitkfbdb83y",
+          "usage_key": "w4lezyitkfbdb83y:dialogue",
+          "cost": 7912
+        }
+      ]
+    },
+    {
+      "case": "service",
+      "business": "services",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1278,
+      "instructionSha256": "3ff4acee6fb9f6cfc61a37f57608539fc1adcb73d876061d2e7bded1ab00d01c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "b03f1360ca36802457d24a335bc4009c3f5d22b66385b77ff10dc07de690e1f0"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "ol92i1et7hwxl4ay",
+          "usage_key": "ol92i1et7hwxl4ay:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "7ly7m0phobo9v0ji",
+          "usage_key": "7ly7m0phobo9v0ji:identity",
+          "cost": 0
+        }
+      ]
+    },
+    {
+      "case": "reserve",
+      "business": "products",
+      "passed": true,
+      "choice": {
+        "passed": true,
+        "researchReadyWithoutNewCall": true,
+        "researchReceiptUnchanged": true,
+        "chosenAnglesAndQuotaUnchanged": true,
+        "maximumPct": 0,
+        "revision": 6,
+        "identityConfirmed": true,
+        "preparationStageApproved": false,
+        "newJobs": 0,
+        "newProviderCalls": 0,
+        "duplicateSameVersion": true,
+        "brandNamePreserved": true,
+        "reloadNoCall": true,
+        "auth": 401,
+        "foreign": 404,
+        "csrf": 403,
+        "forgedFields": 400
+      },
+      "instructionCharacters": 1271,
+      "instructionSha256": "27a9d60b79ecf4a151f78b78305a4f7a2c2f8811cf55f3ec84d9dd1f0fffc6e1",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "8e259c60b2ca39fa4656fe665422d8e49e7fcce7349b86444d867f5d4331a101"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "3l1ewcvtbkwkk3yp",
+          "usage_key": "3l1ewcvtbkwkk3yp:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "ibwntniirad1uazz",
+          "usage_key": "ibwntniirad1uazz:identity",
+          "cost": 0
+        }
+      ]
+    }
+  ]
+}

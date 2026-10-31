@@ -1,0 +1,24 @@
+{
+  "applicationCommit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+  "provider": "none; trusted synthetic metadata and local neutral media fixtures",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "served": {
+    "commit": "7c9a13ed9a40c855eab2abbf14a168c23fe5ce11",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "passed": true,
+  "quoteBlocked": 402,
+  "confirmationBlocked": 402,
+  "workerBlockedBeforeVoice": true,
+  "acquiredDownload": 200,
+  "sourceVersionAndBytesUnchanged": true,
+  "counts": {
+    "ai_calls": 0,
+    "ai_reservations": 0,
+    "usage_events": 0
+  }
+}

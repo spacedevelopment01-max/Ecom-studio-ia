@@ -1,0 +1,168 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-e4-textes
+
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+ Test Files  3 passed (3)
+      Tests  57 passed (57)
+   Start at  20:51:44
+   Duration  14.66s (tests 41%, transform 34%, import 25%)
+
+  Transform  transforming modules took 12.96s · 34% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

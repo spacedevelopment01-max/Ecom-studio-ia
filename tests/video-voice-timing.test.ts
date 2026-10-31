@@ -37,3 +37,15 @@ describe("Voix : autorisation persistée et phrases entières, outil simulé",()
   expect(all("SELECT * FROM assets WHERE project_id=? AND role='voice'",p.id)).toHaveLength(0);
  });
 });
+it('la langue vocale est celle du projet, même lorsque l’interface est en français',async()=>{
+ const u=await createUser(`voice-language-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Fixture'),pid=seedImageFixture(u.id,'hightech');
+ const {run}=await import('@/lib/db');run("UPDATE projects SET settings_json=json_set(settings_json,'$.language','en') WHERE id=?",pid);
+ const p=loadProject(pid),plan=localScenePlan(p,null,{as:'post',scenes:1,totalS:6});plan.scenes[0].voice='Keep this whole sentence.';plan.voiceEnd='';
+ const brief=buildCreativeBrief(p,{durationS:6,width:1080,height:1920,platform:'reels'}),doc=buildSceneDoc(p,[{assetId:'fixture-clip',durationS:6,generated:true}],plan,'9:16','post',sceneTiming(1,6));
+ const options:unknown[]=[];await addVoice(pid,u.id,doc,plan,brief,'language-fixture',[55,75],async(_text,file,o)=>{options.push(o);fs.writeFileSync(file,Buffer.from('audio simulé'));return 1;});
+ expect(options).toEqual([expect.objectContaining({lang:'en',speed:brief.voice.speed,voice:brief.voice.kokoroVoice})]);
+});
+it('une modification pendant la voix arrête la phrase suivante et conserve l’audio acquis',async()=>{
+ const u=await createUser(`voice-scope-${crypto.randomUUID()}@test.invalid`,'motdepasse-test','Fixture'),pid=seedImageFixture(u.id,'hightech'),p=loadProject(pid),plan=localScenePlan(p,null,{as:'post',scenes:2,totalS:10});plan.scenes.forEach(s=>s.voice='Phrase entière.');plan.voiceEnd='';const brief=buildCreativeBrief(p,{durationS:10,width:1080,height:1920,platform:'reels'}),doc=buildSceneDoc(p,[0,1].map(k=>({assetId:'clip-'+k,durationS:5,generated:true})),plan,'9:16','post',sceneTiming(2,10));let changed=false,sent=0;
+ await expect(addVoice(pid,u.id,doc,plan,brief,'scope-fixture',[55,75],async(_text,file)=>{sent++;fs.writeFileSync(file,Buffer.from('audio acquis fictif'));changed=true;return 1;},()=>{if(changed)throw Error('Contexte vocal modifié.');})).rejects.toThrow('Contexte vocal modifié');expect(sent).toBe(1);expect(all('SELECT id FROM assets WHERE project_id=? AND role=\'voice\'',pid)).toHaveLength(1);expect(doc.audio.voice).toEqual([]);
+});

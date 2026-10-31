@@ -1,0 +1,97 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d9c-identity
+
+ ❯ tests/llm-strict-receipt.test.ts (8 tests | 4 failed) 1007ms
+   × conserve le plafond incertain pour cut, sans usage fictivement gratuit ni relance 139ms
+   × conserve le plafond incertain pour 503, sans usage fictivement gratuit ni relance 115ms
+   × conserve le plafond incertain pour unpriced, sans usage fictivement gratuit ni relance 116ms
+   × conserve le plafond incertain pour missing-usage, sans usage fictivement gratuit ni relance 116ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/llm-strict-receipt.test.ts > conserve le plafond incertain pour cut, sans usage fictivement gratuit ni relance
+AssertionError: expected Error: Résultat incertain chez Anthropic … { permanent: true } to match object { uncertain: true }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "uncertain": true,
++ PermanentError {
++   "message": "Résultat incertain chez Anthropic (terminated) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
++   "permanent": true,
+  }
+
+ ❯ tests/llm-strict-receipt.test.ts:22:247
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/llm-strict-receipt.test.ts > conserve le plafond incertain pour 503, sans usage fictivement gratuit ni relance
+AssertionError: expected Error: Résultat incertain chez Anthropic … { permanent: true } to match object { uncertain: true }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "uncertain": true,
++ PermanentError {
++   "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Erreur503 strictement simulée\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
++   "permanent": true,
+  }
+
+ ❯ tests/llm-strict-receipt.test.ts:22:247
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/llm-strict-receipt.test.ts > conserve le plafond incertain pour unpriced, sans usage fictivement gratuit ni relance
+AssertionError: expected Error: Tarif du modèle servi inconnu : co… { permanent: true } to match object { uncertain: true }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "uncertain": true,
++ PermanentError {
++   "message": "Tarif du modèle servi inconnu : coût maximal retenu, rapprochement nécessaire avant toute relance.",
++   "permanent": true,
+  }
+
+ ❯ tests/llm-strict-receipt.test.ts:22:247
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/llm-strict-receipt.test.ts > conserve le plafond incertain pour missing-usage, sans usage fictivement gratuit ni relance
+AssertionError: expected Error: Usage fournisseur incomplet ou inv… { permanent: true } to match object { uncertain: true }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+- {
+-   "uncertain": true,
++ PermanentError {
++   "message": "Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.",
++   "permanent": true,
+  }
+
+ ❯ tests/llm-strict-receipt.test.ts:22:247
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  18:16:59
+   Duration  4.59s (transform 46%, import 31%, tests 23%)
+
+  Transform  transforming modules took 2.03s · 46% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

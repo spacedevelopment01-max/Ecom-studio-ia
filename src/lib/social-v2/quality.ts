@@ -17,6 +17,8 @@ import { platformSpec } from "./platforms";
 import { hookSimilarity } from "./memory";
 import { brainIssues } from "./brain-check";
 import { creativeContract, type Editorial } from "./creative-contract";
+import {ImageBindingSchema,resolveContentSubjectBinding}from '../image-v2/request-binding';
+import {acquiredPublicationCopyReview}from './publication-copy-policy';
 
 export type PostCheck = { blocking: string[]; issues: string[]; codes: string[]; score: number };
 const PLACEHOLDER = /\[(À|A) compléter[^\]]*\]|\[To complete[^\]]*\]/i;
@@ -26,7 +28,9 @@ type Row = { id: string; project_id: string; network: string; format: string; ti
 
 export function checkPost(p: Project, postId: string): PostCheck {
   const r = one<Row>("SELECT * FROM posts WHERE id = ?", postId);
-  if (!r) return { blocking: ["publication introuvable"], issues: [], codes: ["missing"], score: 0 };
+  if (!r||r.project_id!==p.id) return { blocking: ["publication introuvable"], issues: [], codes: ["missing"], score: 0 };
+  const native=json<{nativeBinding?:unknown}>(r.brief??'{}',{}).nativeBinding;
+  if(native){try{p=resolveContentSubjectBinding(p,ImageBindingSchema.parse(native)).project;}catch{return{blocking:['La fiche, la prestation ou ses médias ont changé : ce brouillon doit être relu.'],issues:[],codes:['subject_changed'],score:0};}}
   const blocking: string[] = [];
   const issues: string[] = [];
   const codes = new Set<string>();
@@ -60,6 +64,7 @@ export function checkPost(p: Project, postId: string): PostCheck {
   const spec = platformSpec(r.network);
   const media = json<string[]>(r.media, []);
   const assets = media.map((m) => getAsset(m));
+  for(const asset of assets){if(!asset)continue;const review=acquiredPublicationCopyReview(p,json(asset.meta,{}));if(review.status==='blocked'||review.status==='unverified')add('saved_copy_unverified','les textes d’un visuel acquis doivent être relus pour cette offre (fichier conservé)',true);}
   if(savedBrief.editorial)try {
     const current=creativeContract({...r,headline:savedBrief.headline??r.title,editorial:savedBrief.editorial},"organic");
     const wanted=current.slides.length?current.slides.flatMap(s=>s.blocks):current.blocks;

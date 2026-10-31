@@ -1,0 +1,64 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-reemploi
+
+ ❯ tests/conversation211-images.test.ts (25 tests | 2 failed | 23 skipped) 601ms
+   × conserve le suivi des images si le worker ferme le job pendant la lecture du reçu 490ms
+   × déclare la retouche réellement raccordée sans la confondre avec une validation client 107ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-images.test.ts > conserve le suivi des images si le worker ferme le job pendant la lecture du reçu
+AssertionError: expected { id: '9dmmia6hv3w05tvg', …(13) } to match object { state: 'queued', …(2) }
+(36 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+    "job": {
+-     "status": "queued",
++     "status": "done",
+    },
+-   "state": "queued",
++   "state": "result_missing",
+  }
+
+ ❯ tests/conversation211-images.test.ts:48:42
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/conversation211-images.test.ts > déclare la retouche réellement raccordée sans la confondre avec une validation client
+AssertionError: expected { id: 'images.correct', …(13) } to match object { implementation: 'implemented', …(3) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "connectionEnabled": true,
+-   "cost": "native_quote_required",
+-   "implementation": "implemented",
+-   "nativeAvailability": "native_checks_on_action",
++   "connectionEnabled": false,
++   "cost": "unknown_not_quoted",
++   "implementation": "absent_from_syna",
++   "nativeAvailability": "not_verified_for_this_project",
+  }
+
+ ❯ tests/conversation211-images.test.ts:52:222
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 23 skipped (25)
+   Start at  21:11:02
+   Duration  4.40s (transform 53%, import 33%, tests 14%)
+
+  Transform  transforming modules took 2.24s · 53% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

@@ -11,7 +11,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
  *  - « normal » : chaque génération compte.
  */
 export type QuotaScope = "normal" | "creation" | "ugc";
-export type RunScope = { userId: string; projectId: string | null; scope: QuotaScope };
+export type RunScope = { userId: string; projectId: string | null; scope: QuotaScope; /** Abonnement libre choisi et vérifié côté serveur avant création du projet. */ billingKey?: string };
 
 export const runScope = new AsyncLocalStorage<RunScope>();
 export const currentRunScope = () => runScope.getStore() ?? null;

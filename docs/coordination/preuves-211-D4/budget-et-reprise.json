@@ -1,0 +1,177 @@
+{
+  "realProviderCalls": 0,
+  "realInternetConsultation": false,
+  "realCostEur": 0,
+  "simulatedTotals": {
+    "providerHttpCalls": 9,
+    "calls": 9,
+    "usage": 7,
+    "simulatedMicro": 55384
+  },
+  "knownUsageMicro": 55384,
+  "uncertainMaximumMicro": 329095,
+  "uncertainAmountsAreNotConfirmedCosts": true,
+  "nativeResearchJobs": [
+    {
+      "id": "fvs6xhk2arnqjdqg",
+      "project_id": "buqb6k7alpqi7wp6",
+      "type": "project.prepare",
+      "status": "done",
+      "progress": 1.0,
+      "result": "{\"revision\":5,\"step\":\"research\",\"action\":\"generate\",\"ready\":false,\"simulation\":false}",
+      "error": null
+    },
+    {
+      "id": "kz9wqxgjml9n252z",
+      "project_id": "buqb6k7alpqi7wp6",
+      "type": "project.prepare",
+      "status": "failed",
+      "progress": 0.05,
+      "result": null,
+      "error": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer."
+    },
+    {
+      "id": "ykkxhezk7ai2uu72",
+      "project_id": "wrevgjt9hkah6dpf",
+      "type": "project.prepare",
+      "status": "done",
+      "progress": 1.0,
+      "result": "{\"revision\":5,\"step\":\"research\",\"action\":\"generate\",\"ready\":false,\"simulation\":false}",
+      "error": null
+    },
+    {
+      "id": "x5dpyhc4abv9ca5r",
+      "project_id": "wrevgjt9hkah6dpf",
+      "type": "project.prepare",
+      "status": "failed",
+      "progress": 0.05,
+      "result": null,
+      "error": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer."
+    }
+  ],
+  "reservations": [
+    {
+      "job_id": "pqlrp3995yy6iwd9",
+      "project_id": null,
+      "status": "settled",
+      "amount": 202449,
+      "actual": 7912,
+      "usage_event_id": "pzv77ofy9rq8lsvp"
+    },
+    {
+      "job_id": "g1u72i2ug83mzyrf",
+      "project_id": null,
+      "status": "settled",
+      "amount": 202634,
+      "actual": 7912,
+      "usage_event_id": "9qrra8vluekrib12"
+    },
+    {
+      "job_id": "emr3k6wzmvzedcvx",
+      "project_id": "w0be5zoacw2vht10",
+      "status": "settled",
+      "amount": 206869,
+      "actual": 7912,
+      "usage_event_id": "rsq1rbwm8b2jikhi"
+    },
+    {
+      "job_id": "xxgciemurs028gbc",
+      "project_id": "buqb6k7alpqi7wp6",
+      "status": "settled",
+      "amount": 206083,
+      "actual": 7912,
+      "usage_event_id": "i11wgrbnmbqo70nc"
+    },
+    {
+      "job_id": "fvs6xhk2arnqjdqg",
+      "project_id": "buqb6k7alpqi7wp6",
+      "status": "settled",
+      "amount": 164288,
+      "actual": 7912,
+      "usage_event_id": "ueu412zmqixb7bq7"
+    },
+    {
+      "job_id": "kz9wqxgjml9n252z",
+      "project_id": "buqb6k7alpqi7wp6",
+      "status": "uncertain",
+      "amount": 164396,
+      "actual": 164396,
+      "usage_event_id": null
+    },
+    {
+      "job_id": "3n0mkpxw1u6d7wj5",
+      "project_id": "wrevgjt9hkah6dpf",
+      "status": "settled",
+      "amount": 206819,
+      "actual": 7912,
+      "usage_event_id": "7z11yiqfmmmyf7hc"
+    },
+    {
+      "job_id": "ykkxhezk7ai2uu72",
+      "project_id": "wrevgjt9hkah6dpf",
+      "status": "settled",
+      "amount": 164590,
+      "actual": 7912,
+      "usage_event_id": "xx94rwc3w09ka2ec"
+    },
+    {
+      "job_id": "x5dpyhc4abv9ca5r",
+      "project_id": "wrevgjt9hkah6dpf",
+      "status": "uncertain",
+      "amount": 164699,
+      "actual": 164699,
+      "usage_event_id": null
+    }
+  ],
+  "usages": [
+    {
+      "job_id": "pqlrp3995yy6iwd9",
+      "project_id": null,
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "g1u72i2ug83mzyrf",
+      "project_id": null,
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "emr3k6wzmvzedcvx",
+      "project_id": "w0be5zoacw2vht10",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "xxgciemurs028gbc",
+      "project_id": "buqb6k7alpqi7wp6",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "fvs6xhk2arnqjdqg",
+      "project_id": "buqb6k7alpqi7wp6",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "3n0mkpxw1u6d7wj5",
+      "project_id": "wrevgjt9hkah6dpf",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    },
+    {
+      "job_id": "ykkxhezk7ai2uu72",
+      "project_id": "wrevgjt9hkah6dpf",
+      "cost": 7912,
+      "billed": 7912,
+      "estimated": 0
+    }
+  ]
+}

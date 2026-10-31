@@ -1,0 +1,9 @@
+/** Aperçu relisible ; aucune production déclenchée par le rendu de la carte. */
+import {it,expect}from 'vitest';import {createElement}from 'react';import {renderToStaticMarkup}from 'react-dom/server';
+import {GeneratedVideoQuote}from '@/components/studio/conversation-generated-videos';
+it('montre les textes entiers, le plafond, la référence, le cadrage final et la voix réellement choisie',()=>{
+ const quote:Parameters<typeof GeneratedVideoQuote>[0]['quote']={id:'fixture',tool:'videos.generate',instruction:'Ma demande\nDeux  espaces.',subject:'Offre de recette',identityName:'Marque de recette',purpose:'organic',scenario:{scenes:[{still:'Objet entier dans un atelier clair.',motion:'La caméra avance lentement.',title:'Titre\nDeux  espaces.',voice:'Une phrase entière.',place:'lower',titleColor:'#FFFFFF',titleSize:'large',role:'Détail',intent:'Décrire la matière.'}],line:'',cta:''},aspect:'4:5',routeAspect:'9:16',durationS:6,generation:'reference',music:false,voice:{id:'voix déjà choisie',speed:.94,lang:'fr',lines:['Une phrase entière.']},estimatePct:.5,maximumPct:1,maximumCalls:3,expiresAt:Date.now()+10000,reused:false,references:[{assetId:'fixture-image',href:'/api/assets/fixture-image'}],route:null,confirmationRequired:true,actionsExecuted:false,limitations:'Aucune qualité créative qualifiée.'};
+ const before=JSON.stringify(quote),html=renderToStaticMarkup(createElement(GeneratedVideoQuote,{quote,busy:false,onConfirm:()=>{throw Error('No consent from render');},onCancel:()=>{}}));
+ for(const value of ['Ma demande\nDeux  espaces.','Titre\nDeux  espaces.','Une phrase entière.','1.00','vitesse','0.94','Titre en bas','grande taille','9:16','4:5','bords peuvent être coupés','pas une simulation','/api/assets/fixture-image','Décrire la matière.'])expect(html).toContain(value);
+ expect(JSON.stringify(quote)).toBe(before);
+});

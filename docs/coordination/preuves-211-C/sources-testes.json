@@ -1,0 +1,24 @@
+{
+  "compiledCommit": "7fafba04f27c92ac6b060f4837203e9db5f6d94c",
+  "treeAtBuild": "clean",
+  "node": "v24.19.0",
+  "sha256": {
+    "scripts/verify-agent211-build.ts": "d2923c98d37b0fd68c56d8f363a64bb4dde46004f171afe7489fb6f0a9e973cc",
+    "src/lib/ai/llm.ts": "2b6a8ddb770d4fcf7e1a5b056acacbd9c47c091601d8be94028cc191cb8a3d92",
+    "src/lib/ai/request-bounds.ts": "6c895e2b97145266c1d27d75314b8f84c482d022a2e5a0bc1d4603e87c4d03b3",
+    "src/lib/ai/trace.ts": "d10a329d5ed8e4cf08b3edea1c17567fb9a5dd274ceabfc2d504bfc1be9882ae",
+    "src/lib/billing.ts": "43cac435f40c36880c649aba4db8a1b6c0edd0b484e4b352c183fc26cc057f89",
+    "src/lib/db.ts": "a27622b1ce2e73ad2b155a4a546bbb76272da988870f682f8cd1ea8637fedf64",
+    "src/lib/orchestrator/conversation/answer-state.ts": "a909ee5e6c5a818668e9b7c2ebae4ea06816c3c9841476d86c081986f10b0886",
+    "src/lib/orchestrator/conversation/index.ts": "78e434fbd22588a2996795076120ce335bc3379d364b84a7486f074da655ddb9",
+    "src/lib/orchestrator/conversation/intelligence-commands.ts": "8ea0bf6d91b08185d7ca7c80a7161e1bec8dc6e736bf169f1cc293f2a88cb0cd",
+    "src/lib/orchestrator/conversation/intelligence-contract.ts": "799edc91e5fe88bff985946f57dec021b24d9ee577ca21f2c92f032aaab7869a",
+    "src/lib/orchestrator/conversation/intelligence.ts": "26b3a4b2163fcea7e28cee06247325a2e57fe4acfdb4ef9de6b180cba749f43f",
+    "src/lib/orchestrator/conversation/specialists.ts": "1c198f2e1b866dd1b28b346b5234665a1b473da0e850a0baf17fc63f189993e0",
+    "src/lib/orchestrator/conversation/store.ts": "8dd7d5460d495e07a0868c3830d5f7ceaed40ff2d5085237afb16866553d054d",
+    "src/lib/privacy.ts": "b7b6c15e5707dec64ac01977669f6fa130b2ed886945694ff81c54f134e15117",
+    "tests/conversation211-intelligence.test.ts": "107ea3e602c92621fedfcb52de04c8fbb8ecb2e2ddf97ffbf4a18f20092d30be",
+    "tests/conversation211-native-billing.test.ts": "5759b15fb281d0096e90abc507dc3be8481e160a44bb207f08b0b258b5962312",
+    "tests/conversation211-request-bounds.test.ts": "5c9f1954c3ab6198099ff23e5fe6e9d6adcbdc29c4bab4b03256146cfdfb51bd"
+  }
+}

@@ -124,6 +124,7 @@ export function SocialStudio({ initial = "calendrier" }: { initial?: Section }) 
   }, []);
   const [range, setRange] = useState(() => ({ from: Date.now() - 40 * 86_400_000, to: Date.now() + 120 * 86_400_000 }));
   const { data, reload, error } = useApi<Data>(`/api/projects/${id}/social/v2?from=${range.from}&to=${range.to}`);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:social-changed',changed);return()=>window.removeEventListener('studio:social-changed',changed);},[id,reload]);
   const [open, setOpen] = useState<string | null>(null);
   if (error && !data) return <Empty title={t("Réseaux sociaux indisponibles", "Social unavailable")}>{error}</Empty>;
   if (!data) return <div className="grid place-items-center py-24 text-muted"><Spinner className="size-6" /></div>;
@@ -866,13 +867,19 @@ function PostPreview({ media, caption, hashtags, network }: { media: AssetView[]
   );
 }
 
+/** Même éditeur natif pour la liste Publications et le panneau SYNA. */
+export function SocialPostEditor({postId,onClose,onChanged}:{postId:string;onClose:()=>void;onChanged:()=>void}){
+  const{id}=useProject(),t=useT(),{data,error,reload}=useApi<Data>(`/api/projects/${id}/social/v2`);
+  if(!data)return <div role={error?'alert':'status'} className="rounded-xl border border-line p-4 text-sm"><p>{error||t('Ouverture de l’éditeur Publications…','Opening the Posts editor…')}</p><Button variant="ghost" className="min-h-11" onClick={onClose}>{t('Fermer','Close')}</Button></div>;
+  return <PostEditorV2 postId={postId} data={data} onClose={onClose} onChanged={()=>{void reload();onChanged();}}/>;
+}
 function PostEditorV2({ postId, data, onClose, onChanged }: { postId: string; data: Data; onClose: () => void; onChanged: () => void }) {
   const { id } = useProject();
   const t = useT();
   const toast = useToast();
   const base = `/api/projects/${id}/social/v2/posts/${postId}`;
   const { data: v, reload } = useApi<{ post: PostV; attempts: { attempt: number; started_at: number; outcome: string; detail: string }[]; platform: { label: string; captionMax: number; hashtags: [number, number]; level: string; formats: string[] }; variants?: { id: string; network: string; label: string; format: string; status: string; blocking: string[] }[] }>(base);
-  const tz = data.timezone || "Europe/Paris";
+  const tz = v?.post.timezone || data.timezone || "Europe/Paris";
   const [f, setF] = useState<{ title: string; caption: string; editorial?:Editorial; hashtags: string; link: string; date: string; time: string; media: AssetView[]; network: string; connectionId: string } | null>(null);
   const [picker, setPicker] = useState(false);
   const [busy, setBusy] = useState(false);

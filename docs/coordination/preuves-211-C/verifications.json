@@ -1,0 +1,31 @@
+{
+  "schema": "agent211-C-verifications-1",
+  "testedCode": "7fafba04f27c92ac6b060f4837203e9db5f6d94c",
+  "fullSuite": {
+    "passed": 3589,
+    "skipped": 45,
+    "filesPassed": 416,
+    "filesSkipped": 1,
+    "seconds": 1049.03
+  },
+  "targeted": {
+    "current211And209": 118,
+    "seconds": 9.8,
+    "extraMemoryAndConcurrencyCases": 5
+  },
+  "types": "passed",
+  "productionBuild": "passed",
+  "compiledHttp": "passed",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedCalls": 4,
+  "simulatedCostMicro": 31648,
+  "modelQualityQualified": false,
+  "commands": [
+    "npx tsc --noEmit",
+    "XDG_CACHE_HOME=/tmp/ecom209-font-cache NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run",
+    "NEXT_TELEMETRY_DISABLED=1 npm run build",
+    "STUDIO_CONVERSATION_SPECIALISTS=1 NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx tsx scripts/verify-agent211-build.ts /tmp/ecom211-C-http-fidelity --specialists"
+  ],
+  "scope": "Native router, SDK, billing, worker, Brain and Planner; local HTTP provider is a fixture, not a real model."
+}

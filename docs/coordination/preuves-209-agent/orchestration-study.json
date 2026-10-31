@@ -1,0 +1,190 @@
+{
+  "schema": "agent209-orchestration-study-1",
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realCost": 0,
+  "productionWired": false,
+  "qualityGainDemonstrated": false,
+  "pricingBasis": "repository_defaults_not_live_admin_or_supplier_verified",
+  "prices": {
+    "rates": {
+      "light": {
+        "inputPerM": 1,
+        "outputPerM": 5
+      },
+      "standard": {
+        "inputPerM": 2,
+        "outputPerM": 10
+      },
+      "strong": {
+        "inputPerM": 4,
+        "outputPerM": 20
+      }
+    },
+    "perImageUsd": 0.081,
+    "sources": [
+      {
+        "file": "src/lib/orchestrator/policy.ts",
+        "sha256": "03e674b707ea98180b876fded39b7e3aaf9de0ac9706ada8635d9c510d17d405"
+      },
+      {
+        "file": "src/lib/ai/config.ts",
+        "sha256": "7ec67486e7462cd3d121603c823deaf1b95bd880484b9fd3da5b88061fa99afc"
+      },
+      {
+        "file": "src/lib/ai/media-models.ts",
+        "sha256": "5c93e342a71dc83fd41c3cdaaf43ddf40d8b6b679da8daffa1618eb327c4ba82"
+      }
+    ]
+  },
+  "assumptions": {
+    "tokens": "fixture_estimates_not_tokenizer_or_model_usage",
+    "latency": "synthetic_serial_estimate_not_benchmark",
+    "maximum": "input_x1.25_output_x2_plus_one_targeted_text_repair_and_declared_media_retry",
+    "noAutomaticRetryOnUncertainResponse": true
+  },
+  "scenarios": [
+    {
+      "id": "simple-question",
+      "brief": "Conseiller le client sur les informations utiles pour son offre ; pas une FAQ fixe.",
+      "variants": [
+        {
+          "id": "single",
+          "roles": [
+            "principal"
+          ],
+          "calls": 1,
+          "textCalls": 1,
+          "imageCalls": 0,
+          "maxCalls": 2,
+          "inputTokensEstimated": 1600,
+          "outputTokensEstimated": 400,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.0072,
+          "maximumUsd": 0.024,
+          "sequentialLatencyMsEstimated": 1800,
+          "quality": "UNMEASURED"
+        },
+        {
+          "id": "specialists",
+          "roles": [
+            "principal",
+            "strategy",
+            "principal"
+          ],
+          "calls": 3,
+          "textCalls": 3,
+          "imageCalls": 0,
+          "maxCalls": 4,
+          "inputTokensEstimated": 3800,
+          "outputTokensEstimated": 800,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.0156,
+          "maximumUsd": 0.03725,
+          "sequentialLatencyMsEstimated": 4600,
+          "quality": "UNMEASURED"
+        }
+      ]
+    },
+    {
+      "id": "brand-and-site",
+      "brief": "Même marque, textes, composition et contrôle visuel ; médias client déjà acquis.",
+      "variants": [
+        {
+          "id": "single",
+          "roles": [
+            "principal",
+            "principal",
+            "quality"
+          ],
+          "calls": 3,
+          "textCalls": 3,
+          "imageCalls": 0,
+          "maxCalls": 4,
+          "inputTokensEstimated": 26000,
+          "outputTokensEstimated": 6800,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.24,
+          "maximumUsd": 0.5945,
+          "sequentialLatencyMsEstimated": 23500,
+          "quality": "UNMEASURED"
+        },
+        {
+          "id": "specialists",
+          "roles": [
+            "principal",
+            "strategy",
+            "copy",
+            "site",
+            "quality",
+            "principal"
+          ],
+          "calls": 6,
+          "textCalls": 6,
+          "imageCalls": 0,
+          "maxCalls": 7,
+          "inputTokensEstimated": 28000,
+          "outputTokensEstimated": 9000,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.2576,
+          "maximumUsd": 0.5915,
+          "sequentialLatencyMsEstimated": 30500,
+          "quality": "UNMEASURED"
+        }
+      ]
+    },
+    {
+      "id": "site-ads-media",
+      "brief": "Même site, trois annonces et trois images IA ; contrôle inclus, aucune vidéo.",
+      "variants": [
+        {
+          "id": "single",
+          "roles": [
+            "principal",
+            "principal",
+            "quality"
+          ],
+          "calls": 6,
+          "textCalls": 3,
+          "imageCalls": 3,
+          "maxCalls": 8,
+          "inputTokensEstimated": 28000,
+          "outputTokensEstimated": 8000,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.515,
+          "maximumUsd": 0.994,
+          "sequentialLatencyMsEstimated": 86500,
+          "quality": "UNMEASURED"
+        },
+        {
+          "id": "specialists",
+          "roles": [
+            "principal",
+            "site",
+            "copy",
+            "media",
+            "quality",
+            "principal"
+          ],
+          "calls": 9,
+          "textCalls": 6,
+          "imageCalls": 3,
+          "maxCalls": 11,
+          "inputTokensEstimated": 29500,
+          "outputTokensEstimated": 9400,
+          "tokenScope": "text_calls_only_image_price_includes_reference_bound",
+          "expectedUsd": 0.5146,
+          "maximumUsd": 0.939,
+          "sequentialLatencyMsEstimated": 92500,
+          "quality": "UNMEASURED"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No quality equivalence or specialist gain proved.",
+    "Images are fixture output counts, not generated assets; no vision token usage measured.",
+    "No external research price, CMS installation, tax, FX, markup or invoice verified.",
+    "Maxima are study bounds; production quotes must use native estimators, wallet reservations and current approved prices."
+  ]
+}

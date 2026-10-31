@@ -6,6 +6,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ArrowDown, ArrowUp, Copy, Globe, SlidersHorizontal, FileStack, Crosshair, Replace, Maximize2, Minimize2, PanelTop, Palette, Download, Eye, EyeOff, ExternalLink, History, Image as ImageIcon, Laptop, Layers, Lock, MessageSquare, Monitor, Paperclip, RotateCcw, Send, Smartphone, Sparkles, Tablet, Unlock, Upload, X, Store, Loader2, Plus, Trash2, MoreHorizontal } from "lucide-react";
 import { api, Badge, Button, Card, cx, Empty, formatDate, Modal, Select, Spinner, useApi, useToast } from "../ui";
 import { useProject } from "./project-context";
+import { useAgentUi,useAgentFocus,useAgentPanel } from "./agent-ui-context";
+import {previewSelectionScope} from '@/lib/conversation-presentation';
 import { useCostConfirm } from "./cost-confirm";
 import dynamic from "next/dynamic";
 // Fenêtres ouvertes à la demande (import, bibliothèque de sections, galerie) : chargées à leur première ouverture.
@@ -142,7 +144,11 @@ export default function TabBoutique() {
   const chatJobs = useActive(["shop.chat", "shop.build", "shop.direction", "shopify.push", "theme.custom"]);
   // Thème entièrement sur mesure (Dominer) et sections sur mesure (Vendre, Dominer) : accès selon le forfait.
   const custom = useCustomThemeStatus(id);
-  const [view, setView] = useState<"chat" | "preview" | "structure">("chat");
+  const agentUi=useAgentUi();
+  const contextUi=agentUi&&data?.conversationContext===true;
+  const {setFocus:setAgentFocus,clearSerial}=useAgentFocus();
+  const {setOpen:setAgentOpen}=useAgentPanel();
+  const [view, setView] = useState<"chat" | "preview" | "structure">(agentUi?'preview':'chat');
   const [device, setDevice] = useState<keyof typeof DEVICES>("desktop");
   // Plein écran : l'aperçu couvre tout l'écran (même aperçu, sans rechargement), pour juger la mise en page.
   const [full, setFull] = useState(false);
@@ -172,6 +178,8 @@ export default function TabBoutique() {
   const [picking, setPicking] = useState(false);
   const pickingRef = useRef(false);
   const [selection, setSelection] = useState<Selection>(null);
+  const [selectionScope,setSelectionScope]=useState<{versionId:string;page:string}|null>(null);
+  const loadedSelectionScope=useRef<{versionId:string;page:string}|null>(null);
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<AssetView[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -215,7 +223,14 @@ export default function TabBoutique() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const versionId = viewVersion ?? theme?.current?.versionId ?? null;
+  const selectionCurrent=!!selection&&selectionScope?.versionId===versionId&&selectionScope?.page===page;
+  useEffect(()=>{
+    if(!contextUi||!versionId)return;
+    setAgentFocus({projectId:id,tab:'boutique',label:selectionCurrent?[selection!.kind,selection!.text].filter(Boolean).join(' · '):page,target:selectionCurrent?{kind:'theme-section',versionId,template:selection!.template,section:selection!.section,...(selection!.block?{block:selection!.block}:{})}:{kind:'theme-page',versionId,path:page}});
+    if(selection&&!selectionCurrent)setSelection(null);
+  },[contextUi,id,versionId,page,selection,selectionCurrent,setAgentFocus]);
   const src = versionId ? `/preview/${id}/v/${versionId}${page === "/" ? "" : page}` : null;
+  useEffect(()=>{if(!contextUi||!clearSerial)return;setSelection(null);iframe.current?.contentWindow?.postMessage({source:'es-studio',type:'unpick'},'*');},[contextUi,clearSerial]);
 
   // Messages de l'aperçu (désignation, défilement, chargement).
   useEffect(() => {
@@ -224,16 +239,21 @@ export default function TabBoutique() {
       // Seulement l'aperçu affiché (cloisonné : origine opaque, on vérifie donc la fenêtre émettrice).
       if (!d || d.source !== "es-preview" || e.source !== iframe.current?.contentWindow) return;
       if (d.type === "selected") {
+        if(contextUi&&(!versionId||loadedSelectionScope.current?.versionId!==versionId||loadedSelectionScope.current?.page!==page)){
+          setPicking(false);toast('info',t('L’aperçu se met à jour. Désignez l’élément lorsqu’il est chargé.','The preview is updating. Select the element once it has loaded.'));return;
+        }
+        if(versionId)setSelectionScope({versionId,page});
         setSelection(d.selection);
         setPicking(false);
         // Élément désigné : retour à la discussion pour écrire la demande.
         setFull(false);
-        setView("chat");
+        if(contextUi){setView("preview");setAgentOpen(true);}else setView("chat");
       }
       if (d.type === "pick-cancel") setPicking(false);
       if (d.type === "ready" && pickingRef.current) iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: true }, "*");
       if (d.type === "scroll") scrollY.current = d.y;
       if (d.type === "loaded") {
+        loadedSelectionScope.current=previewSelectionScope(String(d.path),id);
         const path = String(d.path).replace(/^\/preview\/[^/]+\/v\/[^/]+/, "") || "/";
         // Position de défilement conservée SEULEMENT quand la même page est rendue à nouveau (réglage, version, panier) ;
         // une autre page (lien du pied de page, menu) s'ouvre en haut, et une ancre va à sa cible.
@@ -247,7 +267,7 @@ export default function TabBoutique() {
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
-  }, [page]);
+  }, [page,contextUi,setAgentOpen,versionId,id,t,toast]);
   useEffect(() => {
     pickingRef.current = picking;
     iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "pick", on: picking }, "*");
@@ -643,33 +663,7 @@ export default function TabBoutique() {
     </div>
   );
 
-  const Preview = (
-    <div className="relative flex h-full min-h-0 flex-col">
-      {layoutOpen && !full && layoutSections.length > 0 && (
-        <div id="layout-panel" className="absolute right-3 top-[3.75rem] z-30 hidden max-h-[calc(100%-4.5rem)] w-[min(400px,calc(100%-1.5rem))] overflow-y-auto rounded-2xl border border-line bg-card p-4 shadow-soft lg:block xl:hidden" role="dialog" aria-label={t("Disposition de l'en-tête et du pied de page", "Header and footer layout")}>
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
-            <button onClick={() => setLayoutOpen(false)} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" aria-label={t("Fermer", "Close")}><X className="size-4" /></button>
-          </div>
-          <LayoutPanel sections={layoutSections} onApply={applyLayout} busy={layoutBusy} />
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2 border-b border-line p-2.5">
-        <div className="w-44 shrink-0">
-          <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 text-sm" aria-label={t("Page affichée", "Page shown")}>
-            {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
-          </Select>
-        </div>
-        {!cur.imported && <button onClick={() => setPagesOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" data-pages-manager><FileStack className="size-3.5" /> {t("Pages", "Pages")}</button>}
-        <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
-          {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {
-            const I = DEVICES[d].icon;
-            return <button key={d} onClick={() => setDevice(d)} className={cx("grid h-8 w-9 place-items-center rounded-full", device === d && "bg-ink text-paper")} aria-pressed={device === d} title={t(DEVICES[d].label, DEVICES[d].en)}><I className="size-4" /></button>;
-          })}
-        </div>
-        <button onClick={() => setFull(!full)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", full ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={full} title={full ? t("Quitter le plein écran (Échap)", "Exit full screen (Esc)") : t("Voir le thème en plein écran", "View the theme full screen")} data-preview-full>
-          {full ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />} {full ? t("Quitter", "Exit") : t("Plein écran", "Full screen")}
-        </button>
+  const SecondaryTools = (<>
         <button onClick={() => setPicking(!picking)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", picking ? "border-signal bg-signal text-signal-ink" : "border-line bg-card")} aria-pressed={picking}><Crosshair className="size-3.5" /> {picking ? t("Cliquez un élément", "Click an element") : t("Désigner", "Select")}</button>
         {cur.motion && <AnimationsMenu motion={cur.motion} onReplay={() => iframe.current?.contentWindow?.postMessage({ source: "es-studio", type: "replay" }, "*")} onSet={(key, value, label) => ops([{ op: "set_global", key, value }], label)} />}
 {!full && (
@@ -686,6 +680,36 @@ export default function TabBoutique() {
                 {cur.imported && <button onClick={() => setImportOpen("report")} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-signal/40 bg-signal-soft px-3 text-xs text-signal" title={t("Analyse de votre thème importé", "Analysis of your imported theme")}><Layers className="size-3.5" /> {cur.imported.name} · {t("analyse", "analysis")}</button>}
           </>
         )}
+  </>);
+
+  const Preview = (
+    <div className="relative flex h-full min-h-0 flex-col">
+      {layoutOpen && !full && layoutSections.length > 0 && (
+        <div id="layout-panel" className="absolute right-3 top-[3.75rem] z-30 hidden max-h-[calc(100%-4.5rem)] w-[min(400px,calc(100%-1.5rem))] overflow-y-auto rounded-2xl border border-line bg-card p-4 shadow-soft lg:block xl:hidden" role="dialog" aria-label={t("Disposition de l'en-tête et du pied de page", "Header and footer layout")}>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <p className="font-display text-lg font-semibold">{t("Disposition", "Layout")}</p>
+            <button onClick={() => setLayoutOpen(false)} className="grid size-8 place-items-center rounded-full border border-line hover:border-ink" aria-label={t("Fermer", "Close")}><X className="size-4" /></button>
+          </div>
+          <LayoutPanel sections={layoutSections} onApply={applyLayout} busy={layoutBusy} />
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-line px-2.5 py-1 sm:gap-y-2 sm:p-2.5" data-preview-toolbar>
+        <div className="w-44 shrink-0">
+          <Select value={pages.some((p) => p.path === page) ? page : "/"} onChange={(e) => setPage(e.target.value)} className="h-9 text-sm" aria-label={t("Page affichée", "Page shown")}>
+            {pages.map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}
+          </Select>
+        </div>
+        {!cur.imported && <button onClick={() => setPagesOpen(true)} className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs hover:border-ink" data-pages-manager><FileStack className="size-3.5" /> {t("Pages", "Pages")}</button>}
+        <div className="flex rounded-full border border-line bg-card p-0.5" role="group" aria-label={t("Appareil", "Device")}>
+          {(Object.keys(DEVICES) as (keyof typeof DEVICES)[]).map((d) => {
+            const I = DEVICES[d].icon;
+            return <button key={d} onClick={() => setDevice(d)} className={cx("grid h-8 w-9 place-items-center rounded-full", device === d && "bg-ink text-paper")} aria-pressed={device === d} title={t(DEVICES[d].label, DEVICES[d].en)}><I className="size-4" /></button>;
+          })}
+        </div>
+        <button onClick={() => setFull(!full)} className={cx("inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs", full ? "border-ink bg-ink text-paper" : "border-line bg-card hover:border-ink")} aria-pressed={full} title={full ? t("Quitter le plein écran (Échap)", "Exit full screen (Esc)") : t("Voir le thème en plein écran", "View the theme full screen")} data-preview-full>
+          {full ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />} {full ? t("Quitter", "Exit") : t("Plein écran", "Full screen")}
+        </button>
+        {agentUi?<details className="relative" data-site-tools><summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-3 text-xs"><SlidersHorizontal className="size-3.5"/>{t("Outils du site", "Website tools")}</summary><div className="fixed inset-x-3 top-24 z-[45] flex max-h-[calc(100dvh-8rem)] flex-wrap gap-2 overflow-y-auto rounded-2xl border border-line bg-card p-3 shadow-soft xl:absolute xl:inset-x-auto xl:right-0 xl:top-full xl:mt-2 xl:w-[560px]">{SecondaryTools}<button type="button" className="min-h-9 rounded-full border border-line px-3 text-xs" onClick={event=>event.currentTarget.closest("details")?.removeAttribute("open")}>{t("Fermer les outils", "Close tools")}</button></div></details>:SecondaryTools}
         <div className={cx("ml-auto flex items-center gap-1.5", full && "hidden")}>
           <Badge tone={viewVersion ? "warn" : "neutral"}>v{theme.versions.find((v) => v.id === versionId)?.number ?? cur.number}{viewVersion ? t(" (consultation)", " (viewing)") : ""}</Badge>
           <button onClick={() => setHistoryOpen(true)} className="grid size-9 place-items-center rounded-full border border-line bg-card" title={t("Versions", "Versions")}><History className="size-4" /></button>
@@ -729,22 +753,22 @@ export default function TabBoutique() {
   );
 
   return (
-    <div className="-mx-4 -my-6 sm:-mx-6 lg:-mx-8">
+    <div className={cx("-mx-4 sm:-mx-6 lg:-mx-8",!agentUi&&"-my-6")}>
       {theme.quality && theme.quality.verdict !== "FINAL" && <div className="m-3 rounded-xl border border-line bg-paper-2 p-3 text-sm"><p className="font-medium">{t("Thème enregistré, à vérifier avant utilisation", "Theme saved, review before use")}</p><p className="mt-1 text-muted">{theme.quality.reason}</p></div>}
       {chatJobs.filter((j) => j.type !== "shop.chat").map((j) => <JobProgress key={j.id} job={j} className="m-4" />)}
       {/* Photos libres de droits sur le site : toujours visibles (ordinateur et téléphone), jamais en silence. */}
       {!!theme.stock?.photos.length && <StockStrip stock={theme.stock} projectId={id} onReplaced={() => (reload(), reloadProject())} onHeight={setStockH} />}
       {/* Téléphone : bascule entre discussion, aperçu et structure */}
-      <div className="flex gap-1 border-b border-line bg-paper p-2 lg:hidden" role="tablist">
+      <div className={cx('flex gap-1 border-b border-line bg-paper p-2',!agentUi&&'lg:hidden')} role="tablist" aria-label={t('Outils et aperçu du site','Website tools and preview')}>
         {[["chat", MessageSquare, t("Discussion", "Chat")], ["preview", Laptop, t("Aperçu", "Preview")], ["structure", Layers, t("Structure", "Structure")]].map(([k, I, l]: any) => (
           <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className={cx("flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-sm", view === k ? "bg-ink text-paper" : "text-ink-2")}><I className="size-4" /> {l}</button>
         ))}
       </div>
       {/* Hauteur du bandeau des photos libres déduite : la zone de saisie reste visible (téléphone compris). */}
-      <div className="grid h-[calc(100dvh-9.5rem-var(--stock-h,0px))] grid-cols-1 lg:h-[calc(100dvh-4rem-var(--stock-h,0px))] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]" style={{ "--stock-h": `${theme.stock?.photos.length ? stockH : 0}px` } as React.CSSProperties}>
-        <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && "hidden lg:block")} aria-label={t("Discussion", "Chat")}>{Chat}</section>
+      <div className={cx('grid h-[calc(100dvh-9.5rem-var(--stock-h,0px))] grid-cols-1 lg:h-[calc(100dvh-4rem-var(--stock-h,0px))]',agentUi?(view==='chat'?'lg:grid-cols-[320px_minmax(0,1fr)]':view==='structure'?'lg:grid-cols-[minmax(0,1fr)_320px]':'lg:grid-cols-1'):'lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[380px_minmax(0,1fr)_320px]')} style={{ "--stock-h": `${theme.stock?.photos.length ? stockH : 0}px` } as React.CSSProperties}>
+        <section className={cx("min-h-0 border-r border-line bg-paper", view !== "chat" && (agentUi?'hidden':'hidden lg:block'))} aria-label={t("Discussion", "Chat")}>{Chat}</section>
         <section className={cx("min-h-0", full ? "fixed inset-0 z-[80] bg-paper" : view !== "preview" && "hidden lg:block")} aria-label={t("Aperçu", "Preview")} aria-modal={full || undefined} role={full ? "dialog" : undefined}>{Preview}</section>
-        <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? "hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
+        <section className={cx("min-h-0 border-l border-line bg-paper", view !== "structure" ? agentUi?'hidden':"hidden xl:block" : "")} aria-label={t("Structure", "Structure")}>{Structure}</section>
       </div>
       <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple kinds={["image", "video", "logo"]} onPick={(a) => addAttachments(a)} />
       <Modal open={historyOpen} onClose={() => setHistoryOpen(false)} title={isServices ? t("Versions du site", "Website versions") : t("Versions de la boutique", "Store versions")}>

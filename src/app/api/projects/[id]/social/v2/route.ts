@@ -18,7 +18,7 @@ import { longTermStrategy } from "@/lib/social-v2/strategy-long";
 import { verifiedFacts } from "@/lib/seo-v2/facts";
 import { mainCity } from "@/lib/seo-v2/keywords";
 import { PLATFORM_SPECS, PLATFORMS } from "@/lib/social-v2/platforms";
-import { estimateProduction, postsOfPlan, probableOf, produceBatch } from "@/lib/social-v2/production";
+import { estimateProduction,productionInputVersions, postsOfPlan, probableOf, produceBatch } from "@/lib/social-v2/production";
 import { budgetPctOf, capPctToMicro } from "@/lib/ai/budget-pct";
 import { realSocialDeps } from "@/lib/social-v2/deps";
 import { schedulePosts, setPlanPaused, unschedule } from "@/lib/social-v2/scheduler";
@@ -169,8 +169,10 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     }
     case "produce": {
       const list = own(b.ids, b.planId);
+      if(!list.length)throw new HttpError(400,L('Choisissez au moins un brouillon de ce projet.','Choose at least one draft in this project.'));
+      const expectedInputs=productionInputVersions(p.id,list);
       if (b.allowPaid && aiActiveFor(p.userId, p.id)) {
-        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list, allowPaid: true, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace } });
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: L("Production des publications", "Producing posts"), payload: { projectId: p.id, ids: list,expectedInputs, allowPaid: true, maxCostEur: b.maxCostPct != null ? capPctToMicro(p.userId, b.maxCostPct, p.id) / 1e6 : b.maxCostEur, approvedEstimateMicro: b.approvedEstimateMicro ?? null, distinctImages: b.distinctImages ?? null, aiImages: b.aiImages ?? null, aiBackground: !!b.aiBackground, replace: !!b.replace } });
         return ok({ jobId: job.id });
       }
       // Gratuit (bibliothèque, rendu local) : immédiat, par lots de 30.
@@ -238,7 +240,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
       const one = createOnePost(p, { kind: b.kind, date: b.date, time: b.time, timezone: b.timezone, platforms: b.platforms, pillar: b.pillar, headline: b.headline, lang: p.settings.language === "en" ? "en" : "fr", subject: b.subject ?? null, request: b.request ?? null,caption:b.caption,editorial:b.editorial });
       const params = produceParams(b.kind, b.mode);
       if (params.allowPaid) {
-        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids, allowPaid: true, maxCostEur: capOne / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
+        const job = enqueue({ userId: user.id, projectId: p.id, type: "social.v2.produce", label: b.kind === "video" ? L("Publication vidéo", "Video post") : L("Publication image", "Image post"), payload: { projectId: p.id, ids: one.ids,expectedInputs:productionInputVersions(p.id,one.ids), allowPaid: true, maxCostEur: capOne / 1e6, approvedEstimateMicro: quote, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
         return ok({ ...one, jobId: job.id, estimateMicro: quote });
       }
       const produced = await produceBatch(p, one.ids, realSocialDeps(null, p, false), { allowPaid: false, maxCostEur: 0, batchSize: 6 });

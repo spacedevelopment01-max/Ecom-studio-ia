@@ -1,0 +1,30 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/image-v2-binding.test.ts (21 tests | 1 failed | 20 skipped) 266ms
+   ❯ D9 — lier les images à la bonne offre native et à ses vrais fichiers (21)
+     × ne réécrit ni la consigne exacte ni les compositions acceptées avec le filtre de vocabulaire 264ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/image-v2-binding.test.ts > D9 — lier les images à la bonne offre native et à ses vrais fichiers > ne réécrit ni la consigne exacte ni les compositions acceptées avec le filtre de vocabulaire
+AssertionError: expected 'Photographie, style studio minimalist…' to contain 'Garde deux  espaces.\nNe change pas l…'
+
+- Expected
++ Received
+
+- Garde deux  espaces.
+- Ne change pas la terre cuite.
++ Photographie, style studio minimaliste. Sujet : le vrai produit, Presse de linogravure. Décor : Atelier aux parois en céramique.. Composition : Le produit entier occupe le tiers droit sur une étagère étroite.. Lumière : Éclairage chaud venant de la droite.. Prise de vue : Point de vue bas, à hauteur de la base du produit.. Ambiance : calme, précis, silencieux. Touches de couleur en accord avec #34363D, #DFE0E2, #307ACF, #F7F7F8, #131416. Format 16:9 ; le côté gauche de l'image reste dégagé et calme (surface unie). Le produit reste EXACTEMENT comme sur la référence : même forme, mêmes couleurs, même logo, mêmes inscriptions, mêmes proportions ; ne pas le redessiner. Le produit ENTIER est dans le cadre, aucune partie coupée, cachée ou manquante (ex. une montre : le bracelet complet avec sa boucle). Photographie sans inscription, lettre, marque ni logo supplémentaire : conserver exactement ceux présents sur le produit de référence. Scène sans aucune présence humaine : seulement des lieux, des objets, des outils, des matériaux et des résultats. Consignes du client : Garde deux espaces.
++ Ne change pas la céramique.. Ces consignes décrivent la composition, elles ne sont pas du texte à inscrire. Les restrictions de fidélité et de personnes ci-dessus restent obligatoires.
+
+ ❯ tests/image-v2-binding.test.ts:47:813
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  13:44:57
+   Duration  2.64s (import 50%, transform 39%, tests 11%)

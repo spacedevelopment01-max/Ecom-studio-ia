@@ -1,0 +1,235 @@
+{
+  "code": "c6cbc69b4be33ea8c216c0887f2cd09a5a95c5ff",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4422,
+      "sha256": "ba663b0f2a97e0953c0df9d0230c5c59dfd6fd7e907b0c71caf51e476cadd605"
+    },
+    {
+      "path": "api-proof.json",
+      "bytes": 56515,
+      "sha256": "58111342273f4abd63b9b9c589d61437bed6dd554382fa3f6c3921f7a3e335f6"
+    },
+    {
+      "path": "budget-et-reprise.json",
+      "bytes": 4788,
+      "sha256": "a01afd6dab933b626506cb8849c015f20fadd118f5a082ec2d49e11bcff97be4"
+    },
+    {
+      "path": "captures/produit-action-proposee.png",
+      "bytes": 224920,
+      "sha256": "76784c0f3c81045c75c8d417d19c64febf9077cfb9e391936990c3492a7d8ba5"
+    },
+    {
+      "path": "captures/produit-conversation-reprise-apres-echec.png",
+      "bytes": 223934,
+      "sha256": "012439c20222d9c7b67df1fc76164dca9003556190b266fd9c8ea36a0b57cd7e"
+    },
+    {
+      "path": "captures/produit-demande-exacte.png",
+      "bytes": 229839,
+      "sha256": "cc5e2c5d842d428e18dfba4da1996f6384fcae836fd4db25dcedbc1770dede1a"
+    },
+    {
+      "path": "captures/produit-devis-plafond-natif.png",
+      "bytes": 236372,
+      "sha256": "d31742c6864995c11e2fd8c1cdfddaf9a424a9570a860f81564e69d7652adcbe"
+    },
+    {
+      "path": "captures/produit-echec-acquis-conserve.png",
+      "bytes": 229917,
+      "sha256": "72262c27e7f16ef9a7f0b3068145c27968a75c08c31c2ac52b6737842757d20d"
+    },
+    {
+      "path": "captures/produit-etat-manuel-actualise.png",
+      "bytes": 238612,
+      "sha256": "223b6db89dd627fd651f5d99421dc97a61ff40f3823cd9275a0f730c5631e1e0"
+    },
+    {
+      "path": "captures/produit-hypothese-1-integrale.png",
+      "bytes": 239841,
+      "sha256": "7e37e6585c6b0a896a526e3686307311127ae5048756209b9ab08934f898123a"
+    },
+    {
+      "path": "captures/produit-hypothese-2-integrale.png",
+      "bytes": 238165,
+      "sha256": "24cb2954ee847e8bb06945bb30e2bbcd6aeef7b2de9ae5503699ef90bd65c14b"
+    },
+    {
+      "path": "captures/produit-hypothese-3-integrale.png",
+      "bytes": 236479,
+      "sha256": "188784405da4921db952fd9f36816c03a7476456dc892c58ed5a5939cdfd1b50"
+    },
+    {
+      "path": "captures/produit-hypothese-4-integrale.png",
+      "bytes": 236880,
+      "sha256": "501e4cddcc17ca2736139f60262f5914f53a6ee21a6193ac05ed3df7396ce670"
+    },
+    {
+      "path": "captures/produit-hypothese-5-integrale.png",
+      "bytes": 233994,
+      "sha256": "1ec78fada2225d156407ea1483940ab543cbd36b94b0009f739459e476eacb22"
+    },
+    {
+      "path": "captures/produit-limite-native-sans-nouvel-accord.png",
+      "bytes": 230502,
+      "sha256": "da085caa908dbef948b727b1cc8516b3ce9255631d1667f6fda35e2b9d6b970a"
+    },
+    {
+      "path": "captures/produit-reprise-autre-onglet.png",
+      "bytes": 231903,
+      "sha256": "530f4a0a34ca7bf11a1d7b88d5566112d70fde27b814fbf40d51bea65251dcd2"
+    },
+    {
+      "path": "captures/produit-resultat-360.png",
+      "bytes": 61980,
+      "sha256": "78c255f99286628d51d6a8be855343bf5668d01af1b9a5424a1db94ae42229b1"
+    },
+    {
+      "path": "captures/produit-resultat-390.png",
+      "bytes": 62582,
+      "sha256": "5499c0c7f7622ec82bd964cef59979af35c8526073336e991c499ee7d47d4053"
+    },
+    {
+      "path": "captures/produit-resultat-natif.png",
+      "bytes": 238612,
+      "sha256": "223b6db89dd627fd651f5d99421dc97a61ff40f3823cd9275a0f730c5631e1e0"
+    },
+    {
+      "path": "captures/produit-sources-fictives-explicites.png",
+      "bytes": 256697,
+      "sha256": "55ed5f1890904e369b78beaa15c32d9539bdd8b2af9f4b860744e031371eed8d"
+    },
+    {
+      "path": "captures/service-action-proposee.png",
+      "bytes": 57135,
+      "sha256": "b496b728c0792e40e33f265253b2963f2c0986f179aedc7c0b3575bf8b0eabd7"
+    },
+    {
+      "path": "captures/service-conversation-reprise-apres-echec.png",
+      "bytes": 57811,
+      "sha256": "1ca263f2d7b803d40fecc743e6c2de98eb5cc455fbdc35b62c84cc76d8bb6a05"
+    },
+    {
+      "path": "captures/service-demande-exacte.png",
+      "bytes": 59656,
+      "sha256": "f512d39dc54897d3f3174781e0d63fcc3d493f836f9325a5879a8e6be4cbe8d1"
+    },
+    {
+      "path": "captures/service-devis-plafond-natif.png",
+      "bytes": 61699,
+      "sha256": "1c4e6f36767d5f483f9533ca6d2fea578dcf9ef308c405cbab5da71866e9d85a"
+    },
+    {
+      "path": "captures/service-echec-acquis-conserve.png",
+      "bytes": 60083,
+      "sha256": "664ddbe04b382766279b758d2e6071e64ff3d615d35f5edebcbfa18c3bdbf5b6"
+    },
+    {
+      "path": "captures/service-etat-manuel-actualise.png",
+      "bytes": 66047,
+      "sha256": "2a2056d5976398cb71aac102cec78fd258a33d19e458b56e7842f24473219900"
+    },
+    {
+      "path": "captures/service-hypothese-1-integrale.png",
+      "bytes": 65421,
+      "sha256": "7fa6f8c5044e4567fe37b56f9f310629d3591a7cbfeb7ad32f51479ed850fc11"
+    },
+    {
+      "path": "captures/service-hypothese-2-integrale.png",
+      "bytes": 64559,
+      "sha256": "f14c340a36d23d078190dec85237af744b16aac00b1e801ebc05bb3f0516df39"
+    },
+    {
+      "path": "captures/service-hypothese-3-integrale.png",
+      "bytes": 62343,
+      "sha256": "7fb1e88c30f1aeebbc8c01e740f7ff18d5a863d42676afbfe43e07cfdc4629f0"
+    },
+    {
+      "path": "captures/service-hypothese-4-integrale.png",
+      "bytes": 62398,
+      "sha256": "faa8a15352fae03c595386acdbe16dd04e1508fbfadc2f7b2d1345645b0045c2"
+    },
+    {
+      "path": "captures/service-hypothese-5-integrale.png",
+      "bytes": 63425,
+      "sha256": "83fd752bab87745adbdb9e236d840901dfe5107e0b423b4e496288317624957b"
+    },
+    {
+      "path": "captures/service-limite-native-sans-nouvel-accord.png",
+      "bytes": 56127,
+      "sha256": "b3197059f61b55f1278feb88f6c7b9ab05fe823b1d61f527c44b8a575da124d9"
+    },
+    {
+      "path": "captures/service-reprise-autre-onglet.png",
+      "bytes": 61645,
+      "sha256": "234b1825e09826f2290bcc8e93edf291594c1eabe5d1e0ebc708d23e78bf8087"
+    },
+    {
+      "path": "captures/service-resultat-360.png",
+      "bytes": 63891,
+      "sha256": "5cb8d09ccb73f989705a4e1b1b6165d407856422994230dc642328445319b545"
+    },
+    {
+      "path": "captures/service-resultat-390.png",
+      "bytes": 66038,
+      "sha256": "4b2a29eff678c5fb1fe0dd20e2b3a6a7d596950062e2fb8b1d9eafd849ff7715"
+    },
+    {
+      "path": "captures/service-resultat-natif.png",
+      "bytes": 66047,
+      "sha256": "2a2056d5976398cb71aac102cec78fd258a33d19e458b56e7842f24473219900"
+    },
+    {
+      "path": "captures/service-sources-fictives-explicites.png",
+      "bytes": 71702,
+      "sha256": "dd3e4c399f9d3d3625b4dc8356d121aeb30bb0e4fdcf352689e31e390babf3be"
+    },
+    {
+      "path": "limite-native.json",
+      "bytes": 768,
+      "sha256": "74977dac02a37a2ead3b40b6a134527e356f275a1cf37d6a2ba4b2b522ec34f2"
+    },
+    {
+      "path": "research-produit-failure.json",
+      "bytes": 50400,
+      "sha256": "e9fe5f41f4b5e35b240a5babf4d4a81ffb0230dad8bb65f046977bd162002c31"
+    },
+    {
+      "path": "research-produit-native.json",
+      "bytes": 48259,
+      "sha256": "a49a7b82282e4e676fce47a2d1bfe7861bf08c929024ae8f97d78c15f2d4655a"
+    },
+    {
+      "path": "research-service-failure.json",
+      "bytes": 51424,
+      "sha256": "13dd81fd1e29c6292e615dc93fa3555d36ceeded05d06ed1c62022cc8ecc59a7"
+    },
+    {
+      "path": "research-service-native.json",
+      "bytes": 49283,
+      "sha256": "d09027616243f338448a88cf700c09525f03203cf909530c57ac46011619a033"
+    },
+    {
+      "path": "verifications.json",
+      "bytes": 7134,
+      "sha256": "ca6ae3280c3d8c043f4690f3a418389962c42f236d965981a4489cc7c87d7d27"
+    },
+    {
+      "path": "videos/produit.mp4",
+      "bytes": 1978364,
+      "sha256": "281f990cc45fbf530a93895f5b39b719ab512ceb0122e4441501b5d3d6dcef3e"
+    },
+    {
+      "path": "videos/service.mp4",
+      "bytes": 938121,
+      "sha256": "91ace1bbf1f34a3abdd67e10f1d5313831966adfcb95d7ed1091c600b5add26d"
+    },
+    {
+      "path": "videos-inspection.json",
+      "bytes": 1893,
+      "sha256": "e1963f82f12a32f8a704f69ad2f213f8cb7c9e0461daf02b8c054dd14c190bc9"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "211-D9b-source-protection-1",
+  "base": "2549f17706906e5466502ccd0690489988288828",
+  "code": "12f3617f5f00018fa1892f9ccacfe841ad820e0e",
+  "fullSuiteRecordedParent": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+  "testedWorkingSourceHashesMatchPublishedCode": {
+    "scripts/verify-agent211-build.ts": true,
+    "scripts/verify-agent211-images-ui.ts": true,
+    "scripts/verify-agent211-retouch-ui.ts": true,
+    "src/components/studio/conversation-image-tools.tsx": true,
+    "src/lib/image-v2/deps.ts": true,
+    "src/lib/orchestrator/conversation/image-tool-execution.ts": true,
+    "tests/conversation211-images.test.ts": true,
+    "tests/image-v2-edit-review-refs.test.ts": true
+  },
+  "fullSuiteSourceUnchanged": true,
+  "protectedGitObjects": {
+    "theme-base": {
+      "base": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "code": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "unchanged": true
+    },
+    "src/lib/theme": {
+      "base": "1fa918c8217b89f44c1c64c4163b545baf77177e",
+      "code": "1fa918c8217b89f44c1c64c4163b545baf77177e",
+      "unchanged": true
+    },
+    "public/demo": {
+      "base": "69c6bbac36b0602b7e85fcd57cde8ee8262576bf",
+      "code": "69c6bbac36b0602b7e85fcd57cde8ee8262576bf",
+      "unchanged": true
+    },
+    "public/theme-assets": {
+      "base": "74f4c01fccf97a138ba3f9d65f6b8515d37de595",
+      "code": "74f4c01fccf97a138ba3f9d65f6b8515d37de595",
+      "unchanged": true
+    },
+    "CLAUDE.md": {
+      "base": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "code": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "unchanged": true
+    },
+    "src/lib/billing.ts": {
+      "base": "3785c9e9adb7102e5730ae5a3a6cb231db04398a",
+      "code": "3785c9e9adb7102e5730ae5a3a6cb231db04398a",
+      "unchanged": true
+    },
+    "src/lib/ai/access.ts": {
+      "base": "eb40ac212d9a220926f9edcbcb1a7db838bcd1e3",
+      "code": "eb40ac212d9a220926f9edcbcb1a7db838bcd1e3",
+      "unchanged": true
+    }
+  },
+  "changedFiles": [
+    ".github/workflows/ci.yml",
+    "scripts/verify-agent211-build.ts",
+    "scripts/verify-agent211-images-ui.ts",
+    "scripts/verify-agent211-retouch-ui.ts",
+    "src/components/studio/conversation-image-tools.tsx",
+    "src/lib/ai/media-providers.ts",
+    "src/lib/image-v2/assets.ts",
+    "src/lib/image-v2/brief.ts",
+    "src/lib/image-v2/creation-quote.ts",
+    "src/lib/image-v2/deps.ts",
+    "src/lib/image-v2/edit-photo.ts",
+    "src/lib/image-v2/edit-request.ts",
+    "src/lib/image-v2/engine.ts",
+    "src/lib/image-v2/quality.ts",
+    "src/lib/image-v2/request-binding.ts",
+    "src/lib/image-v2/types.ts",
+    "src/lib/library.ts",
+    "src/lib/orchestrator/conversation/image-tool-contract.ts",
+    "src/lib/orchestrator/conversation/image-tool-execution.ts",
+    "src/lib/orchestrator/conversation/image-tool-sources.ts",
+    "src/lib/orchestrator/conversation/image-tool-validation.ts",
+    "src/lib/orchestrator/conversation/intelligence-context.ts",
+    "src/lib/orchestrator/conversation/intelligence-contract.ts",
+    "src/lib/orchestrator/conversation/tool-execution.ts",
+    "src/lib/quality/policies.ts",
+    "tests/conversation211-images.test.ts",
+    "tests/image-v2-edit-review-refs.test.ts",
+    "tests/image-v2-retouch-binding.test.ts",
+    "tests/image-v2-retouch-request.test.ts"
+  ],
+  "productionEnvironmentInspectedOrModified": false,
+  "realProjectsInspectedOrModified": false,
+  "fixtureDataIsolated": true,
+  "realProviderCalls": 0,
+  "merge": false,
+  "deployment": false,
+  "flagsDefaultOff": true
+}

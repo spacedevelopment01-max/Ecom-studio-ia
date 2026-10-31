@@ -1,0 +1,1182 @@
+{
+  "business": "services",
+  "initial": {
+    "id": "fwpg8rsy6ggvzpk5",
+    "projectId": "41h2axllvp5bciqh",
+    "revision": 0,
+    "projectRevision": 1,
+    "summary": {
+      "description": "",
+      "business": null,
+      "businessSource": "unknown",
+      "target": "",
+      "goals": "",
+      "offerName": "",
+      "brandName": "",
+      "constraints": "",
+      "services": [],
+      "contactModes": [
+        "form"
+      ],
+      "facts": [],
+      "unknown": [
+        "Décrivez ce qui est proposé ; une photo seule ne confirme pas les caractéristiques.",
+        "À qui cette offre s’adresse-t-elle ?"
+      ],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": false,
+      "preparationStatus": "draft"
+    }
+  },
+  "live": {
+    "observation": {
+      "schema": "studio-observation-1",
+      "status": "project",
+      "projectId": "41h2axllvp5bciqh",
+      "observedAt": 1793225382253,
+      "software": {
+        "commit": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+        "tree": "clean"
+      },
+      "project": {
+        "name": "Entretien de vitraux — RECETTE",
+        "business": "services",
+        "storeType": "mono",
+        "status": "draft",
+        "platform": "shopify",
+        "offerName": "",
+        "brandName": null
+      },
+      "plan": {
+        "id": "creer",
+        "name": {
+          "fr": "Créer",
+          "en": "Create"
+        },
+        "rights": {
+          "themeEditing": "basic",
+          "aiSections": false,
+          "pageModels": false,
+          "videos": "none",
+          "ugc": false,
+          "ads": "none",
+          "seo": "essential",
+          "calendarDays": 7,
+          "postsPerDay": 1,
+          "autopublish": true,
+          "marketingAngles": 1,
+          "languages": 1,
+          "blogPerMonth": 0
+        },
+        "units": {
+          "marketingAngles": "lifetime_project",
+          "blogPerMonth": "monthly",
+          "calendarDays": "planning_horizon_days",
+          "postsPerDay": "daily_max"
+        }
+      },
+      "budget": {
+        "unit": "percentage_of_each_native_reserve",
+        "used": 0,
+        "available": 100,
+        "creditsAvailable": null,
+        "reserved": 0,
+        "reservedIsMaximumNotSpent": true,
+        "remainingIsRecordedNotSpendable": true,
+        "paused": false,
+        "pending": false,
+        "periodEnd": 1795903780682,
+        "costBasis": "monthly_reserve",
+        "window": "observed_before_any_subsequent_reply_or_action"
+      },
+      "preparation": {
+        "revision": 1,
+        "pending": null,
+        "stages": [
+          {
+            "step": "brief",
+            "status": "draft",
+            "candidateId": "mpcjgbsz7nf5o86w"
+          }
+        ]
+      },
+      "theme": null,
+      "counts": {
+        "catalogueRowsIncludingArchived": 0,
+        "posts": 0,
+        "articles": 0,
+        "campaigns": 0,
+        "projectServices": 1,
+        "assets": 0
+      },
+      "providerConfiguration": {
+        "capturedByNativeHelper": true,
+        "detailsOmittedFromPublishedProof": true,
+        "realProviderTested": false
+      },
+      "providerTested": false,
+      "observationsAreClientConfirmedFacts": false,
+      "jobs": [
+        {
+          "id": "56ig7lsxdjtg3mon",
+          "type": "image.ai_post",
+          "label": "Création d’une image — ÉCHEC HISTORIQUE FICTIF",
+          "status": "failed",
+          "progress": 0.15,
+          "finishedAt": 1793225350689,
+          "failureCode": "COPY_FACTS_REJECTED",
+          "resultRecorded": false,
+          "deliveryVerifiedByThisObservation": false
+        }
+      ],
+      "jobCoverage": {
+        "limit": 8,
+        "total": 1,
+        "ordering": "newest_created_first"
+      },
+      "failureDefinitions": [
+        {
+          "code": "COPY_FACTS_REJECTED",
+          "kind": "quality",
+          "tab": "images",
+          "message": [
+            "La rédaction acquise a été refusée par le contrôle des faits. Le code seul ne donne pas les passages concernés.",
+            "Acquired copy was rejected by the factual check. The code alone does not identify the passages."
+          ],
+          "next": [
+            "Relire et corriger le texte acquis dans Images ; une nouvelle génération reste une action séparée.",
+            "Review and correct acquired copy in Images; generation remains a separate action."
+          ],
+          "source": "src/lib/social-v2/ai-post.ts",
+          "automaticRetry": false
+        }
+      ],
+      "readingScope": "Native metadata and counts only; the eight newest jobs. No file contents, full texts, source pages, media vision, provider authentication or delivery verification. Catalogue count explicitly includes archived rows. Unmapped failure codes have no inferred cause."
+    },
+    "capabilities": {
+      "schema": "studio-operation-catalogue-1",
+      "version": "17260256b3037fd3",
+      "scope": "explicit_operations_only_not_exhaustive_ui_control_coverage",
+      "notExhaustive": true,
+      "realProviderTested": false,
+      "clientInstanceTested": false,
+      "ownerValidated": false,
+      "rows": [
+        {
+          "id": "brief.update",
+          "tab": "produit",
+          "label": [
+            "Corriger une fiche encore modifiable",
+            "Correct an editable brief"
+          ],
+          "source": "src/lib/orchestrator/conversation/index.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": true,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "native_revision_and_lock_checks",
+          "confirmation": "explicit_client_command",
+          "cost": "free",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/produit"
+        },
+        {
+          "id": "offer.analyse",
+          "tab": "pilote",
+          "label": [
+            "Analyser l’offre sans avancer d’étape",
+            "Analyze the offer without advancing"
+          ],
+          "source": "src/lib/orchestrator/conversation/tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": true,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "native_checks_on_each_quote",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "native_quote_required",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/pilote"
+        },
+        {
+          "id": "research.generate",
+          "tab": "strategie",
+          "label": [
+            "Rechercher et conserver les hypothèses",
+            "Research and retain hypotheses"
+          ],
+          "source": "src/lib/orchestrator/conversation/research-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "native_quote_required",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/strategie"
+        },
+        {
+          "id": "research.approve",
+          "tab": "strategie",
+          "label": [
+            "Valider un angle dans la préparation",
+            "Approve an angle in preparation"
+          ],
+          "source": "src/components/studio/tab-strategie.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/strategie"
+        },
+        {
+          "id": "proposal.compare",
+          "tab": "strategie",
+          "label": [
+            "Comparer des propositions versionnées",
+            "Compare versioned proposals"
+          ],
+          "source": "src/components/studio/tab-strategie.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/strategie"
+        },
+        {
+          "id": "proposal.choose",
+          "tab": "strategie",
+          "label": [
+            "Retenir une proposition et ses raisons",
+            "Choose a proposal and record reasons"
+          ],
+          "source": "src/components/studio/tab-strategie.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/strategie"
+        },
+        {
+          "id": "brand.generate",
+          "tab": "marque",
+          "label": [
+            "Créer une identité de marque",
+            "Create a brand identity"
+          ],
+          "source": "src/components/studio/tab-marque.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/marque"
+        },
+        {
+          "id": "brand.correct",
+          "tab": "marque",
+          "label": [
+            "Corriger nom, couleurs et polices",
+            "Correct name, colors and fonts"
+          ],
+          "source": "src/components/studio/tab-marque.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/marque"
+        },
+        {
+          "id": "logo.generate",
+          "tab": "marque",
+          "label": [
+            "Créer un logo",
+            "Create a logo"
+          ],
+          "source": "src/components/studio/tab-marque.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/marque"
+        },
+        {
+          "id": "logo.replace",
+          "tab": "marque",
+          "label": [
+            "Choisir un autre logo",
+            "Choose another logo"
+          ],
+          "source": "src/components/studio/tab-marque.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/marque"
+        },
+        {
+          "id": "images.upload",
+          "tab": "images",
+          "label": [
+            "Importer ses images",
+            "Upload images"
+          ],
+          "source": "src/components/studio/tab-images.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/images"
+        },
+        {
+          "id": "images.search",
+          "tab": "images",
+          "label": [
+            "Chercher des photos libres",
+            "Search stock photos"
+          ],
+          "source": "src/components/studio/tab-images.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/images"
+        },
+        {
+          "id": "images.generate",
+          "tab": "images",
+          "label": [
+            "Créer une image IA",
+            "Generate an AI image"
+          ],
+          "source": "src/components/studio/tab-images.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/images"
+        },
+        {
+          "id": "images.correct",
+          "tab": "images",
+          "label": [
+            "Corriger une image",
+            "Revise an image"
+          ],
+          "source": "src/components/studio/tab-images.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/images"
+        },
+        {
+          "id": "videos.plan",
+          "tab": "videos",
+          "label": [
+            "Préparer une vidéo",
+            "Plan a video"
+          ],
+          "source": "src/components/studio/tab-videos.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/videos"
+        },
+        {
+          "id": "videos.generate",
+          "tab": "videos",
+          "label": [
+            "Générer une vidéo",
+            "Generate a video"
+          ],
+          "source": "src/components/studio/tab-videos.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/videos"
+        },
+        {
+          "id": "videos.edit",
+          "tab": "videos",
+          "label": [
+            "Modifier les scènes ou la voix",
+            "Edit scenes or voice"
+          ],
+          "source": "src/components/studio/tab-videos.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/videos"
+        },
+        {
+          "id": "catalogue.create",
+          "tab": "catalogue",
+          "label": [
+            "Ajouter un produit",
+            "Add a product"
+          ],
+          "source": "src/components/studio/tab-catalogue.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/catalogue"
+        },
+        {
+          "id": "catalogue.update",
+          "tab": "catalogue",
+          "label": [
+            "Modifier un produit et ses variantes",
+            "Edit a product and variants"
+          ],
+          "source": "src/components/studio/tab-catalogue.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/catalogue"
+        },
+        {
+          "id": "catalogue.stock",
+          "tab": "catalogue",
+          "label": [
+            "Modifier les stocks",
+            "Edit stock"
+          ],
+          "source": "src/components/studio/tab-catalogue.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/catalogue"
+        },
+        {
+          "id": "catalogue.sync",
+          "tab": "catalogue",
+          "label": [
+            "Synchroniser une boutique connectée",
+            "Sync a connected store"
+          ],
+          "source": "src/components/studio/tab-catalogue.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/catalogue"
+        },
+        {
+          "id": "services.update",
+          "tab": "produit",
+          "label": [
+            "Modifier les prestations et coordonnées",
+            "Edit services and contact details"
+          ],
+          "source": "src/components/studio/tab-produit.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/produit"
+        },
+        {
+          "id": "properties.update",
+          "tab": "biens",
+          "label": [
+            "Modifier un bien immobilier",
+            "Edit a property listing"
+          ],
+          "source": "src/components/studio/tab-biens.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/biens"
+        },
+        {
+          "id": "appointments.settings",
+          "tab": "rendez-vous",
+          "label": [
+            "Modifier les règles de réservation",
+            "Edit booking settings"
+          ],
+          "source": "src/components/studio/tab-rendez-vous.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/rendez-vous"
+        },
+        {
+          "id": "appointments.create",
+          "tab": "rendez-vous",
+          "label": [
+            "Réserver un rendez-vous réel",
+            "Book a real appointment"
+          ],
+          "source": "src/components/studio/tab-rendez-vous.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/rendez-vous"
+        },
+        {
+          "id": "appointments.cancel",
+          "tab": "rendez-vous",
+          "label": [
+            "Annuler un rendez-vous",
+            "Cancel an appointment"
+          ],
+          "source": "src/components/studio/tab-rendez-vous.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/rendez-vous"
+        },
+        {
+          "id": "theme.select",
+          "tab": "boutique",
+          "label": [
+            "Choisir un thème dans la galerie",
+            "Choose a gallery theme"
+          ],
+          "source": "src/components/studio/tab-boutique.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.exact-edit",
+          "tab": "boutique",
+          "label": [
+            "Retoucher un texte exact ou média acquis",
+            "Edit exact text or an acquired image"
+          ],
+          "source": "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "free_native_application_reflection_quoted_separately",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.compose",
+          "tab": "boutique",
+          "label": [
+            "Composer avec les composants natifs",
+            "Compose with native components"
+          ],
+          "source": "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "free_native_application_reflection_quoted_separately",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.original",
+          "tab": "boutique",
+          "label": [
+            "Créer un site sans thème de départ",
+            "Build without a starting theme"
+          ],
+          "source": "src/components/studio/tab-boutique.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_implemented",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.undo",
+          "tab": "boutique",
+          "label": [
+            "Annuler une retouche avec son reçu",
+            "Undo an edit with its receipt"
+          ],
+          "source": "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "free_native_application_reflection_quoted_separately",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.capture",
+          "tab": "boutique",
+          "label": [
+            "Capturer le rendu réel et ses mesures",
+            "Capture the actual render and metrics"
+          ],
+          "source": "src/lib/orchestrator/conversation/render-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "free_native_application_reflection_quoted_separately",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.export",
+          "tab": "boutique",
+          "label": [
+            "Créer un ZIP natif en bibliothèque",
+            "Create a native library ZIP"
+          ],
+          "source": "src/lib/orchestrator/conversation/export-tool-execution.ts",
+          "implementation": "implemented",
+          "evidence": "isolated_simulated_provider",
+          "connectionEnabled": false,
+          "nativeAvailability": "native_checks_on_action",
+          "availability": "disabled_or_locked",
+          "confirmation": "separate_native_quote_and_confirmation",
+          "cost": "free_native_application_reflection_quoted_separately",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "theme.publish",
+          "tab": "boutique",
+          "label": [
+            "Publier le site sur un CMS",
+            "Publish the site to a CMS"
+          ],
+          "source": "src/components/studio/tab-boutique.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "copy.generate",
+          "tab": "boutique",
+          "label": [
+            "Rédiger les textes du site",
+            "Write website copy"
+          ],
+          "source": "src/components/studio/tab-boutique.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/boutique"
+        },
+        {
+          "id": "seo.update",
+          "tab": "blog",
+          "label": [
+            "Modifier le référencement",
+            "Edit SEO"
+          ],
+          "source": "src/components/studio/tab-blog.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/blog"
+        },
+        {
+          "id": "blog.generate",
+          "tab": "blog",
+          "label": [
+            "Créer un article",
+            "Create an article"
+          ],
+          "source": "src/components/studio/tab-blog.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/blog"
+        },
+        {
+          "id": "blog.publish",
+          "tab": "blog",
+          "label": [
+            "Publier un article",
+            "Publish an article"
+          ],
+          "source": "src/components/studio/tab-blog.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/blog"
+        },
+        {
+          "id": "social.plan",
+          "tab": "publications",
+          "label": [
+            "Préparer les publications",
+            "Plan social posts"
+          ],
+          "source": "src/components/studio/tab-publications.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/publications"
+        },
+        {
+          "id": "social.generate",
+          "tab": "publications",
+          "label": [
+            "Créer une publication",
+            "Create a social post"
+          ],
+          "source": "src/components/studio/tab-publications.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/publications"
+        },
+        {
+          "id": "social.publish",
+          "tab": "publications",
+          "label": [
+            "Publier sur un réseau",
+            "Publish to a network"
+          ],
+          "source": "src/components/studio/tab-publications.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/publications"
+        },
+        {
+          "id": "calendar.update",
+          "tab": "calendrier",
+          "label": [
+            "Déplacer une publication programmée",
+            "Reschedule a post"
+          ],
+          "source": "src/components/studio/tab-calendrier.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/calendrier"
+        },
+        {
+          "id": "ads.create",
+          "tab": "publicites",
+          "label": [
+            "Créer une publicité",
+            "Create an ad"
+          ],
+          "source": "src/components/studio/tab-publicites.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/publicites"
+        },
+        {
+          "id": "ads.launch",
+          "tab": "publicites",
+          "label": [
+            "Activer une campagne réelle",
+            "Launch a real campaign"
+          ],
+          "source": "src/components/studio/tab-publicites.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/publicites"
+        },
+        {
+          "id": "prompts.edit",
+          "tab": "prompts",
+          "label": [
+            "Modifier les consignes d’un moteur",
+            "Edit an engine prompt"
+          ],
+          "source": "src/components/studio/tab-prompts.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/prompts"
+        },
+        {
+          "id": "files.organize",
+          "tab": "fichiers",
+          "label": [
+            "Ranger ou renommer un fichier",
+            "Organize or rename a file"
+          ],
+          "source": "src/components/studio/tab-fichiers.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": false,
+          "href": "/studio/41h2axllvp5bciqh/fichiers"
+        },
+        {
+          "id": "files.delete",
+          "tab": "fichiers",
+          "label": [
+            "Supprimer un fichier",
+            "Delete a file"
+          ],
+          "source": "src/components/studio/tab-fichiers.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/fichiers"
+        },
+        {
+          "id": "connections.configure",
+          "tab": "connexions",
+          "label": [
+            "Connecter un compte externe",
+            "Connect an external account"
+          ],
+          "source": "src/components/studio/tab-connexions.tsx",
+          "implementation": "absent_from_syna",
+          "evidence": "not_tested",
+          "connectionEnabled": false,
+          "nativeAvailability": "not_verified_for_this_project",
+          "availability": "not_connected_native_screen_only",
+          "confirmation": "not_connected",
+          "cost": "unknown_not_quoted",
+          "sensitive": true,
+          "href": "/studio/41h2axllvp5bciqh/connexions"
+        }
+      ]
+    }
+  },
+  "inspected": {
+    "storedObservation": {
+      "schema": "studio-observation-1",
+      "status": "project",
+      "projectId": "41h2axllvp5bciqh",
+      "observedAt": 1793225382452,
+      "software": {
+        "commit": "012c989fc32fc647dbb5f46bc50dbc4c600483cb",
+        "tree": "clean"
+      },
+      "project": {
+        "name": "Entretien de vitraux — RECETTE",
+        "business": "services",
+        "storeType": "mono",
+        "status": "draft",
+        "platform": "shopify",
+        "offerName": "",
+        "brandName": null
+      },
+      "plan": {
+        "id": "creer",
+        "name": {
+          "fr": "Créer",
+          "en": "Create"
+        },
+        "rights": {
+          "themeEditing": "basic",
+          "aiSections": false,
+          "pageModels": false,
+          "videos": "none",
+          "ugc": false,
+          "ads": "none",
+          "seo": "essential",
+          "calendarDays": 7,
+          "postsPerDay": 1,
+          "autopublish": true,
+          "marketingAngles": 1,
+          "languages": 1,
+          "blogPerMonth": 0
+        },
+        "units": {
+          "marketingAngles": "lifetime_project",
+          "blogPerMonth": "monthly",
+          "calendarDays": "planning_horizon_days",
+          "postsPerDay": "daily_max"
+        }
+      },
+      "budget": {
+        "unit": "percentage_of_each_native_reserve",
+        "used": 0,
+        "available": 100,
+        "creditsAvailable": null,
+        "reserved": 0,
+        "reservedIsMaximumNotSpent": true,
+        "remainingIsRecordedNotSpendable": true,
+        "paused": false,
+        "pending": false,
+        "periodEnd": 1795903780682,
+        "costBasis": "monthly_reserve",
+        "window": "observed_before_any_subsequent_reply_or_action"
+      },
+      "preparation": {
+        "revision": 2,
+        "pending": null,
+        "stages": [
+          {
+            "step": "brief",
+            "status": "draft",
+            "candidateId": "4thnvzns2znps2en"
+          }
+        ]
+      },
+      "theme": null,
+      "counts": {
+        "catalogueRowsIncludingArchived": 0,
+        "posts": 0,
+        "articles": 0,
+        "campaigns": 0,
+        "projectServices": 1,
+        "assets": 0
+      },
+      "providerConfiguration": {
+        "capturedByNativeHelper": true,
+        "detailsOmittedFromPublishedProof": true,
+        "realProviderTested": false
+      },
+      "providerTested": false,
+      "observationsAreClientConfirmedFacts": false,
+      "jobs": [
+        {
+          "id": "56ig7lsxdjtg3mon",
+          "type": "image.ai_post",
+          "label": "Création d’une image — ÉCHEC HISTORIQUE FICTIF",
+          "status": "failed",
+          "progress": 0.15,
+          "finishedAt": 1793225350689,
+          "failureCode": "COPY_FACTS_REJECTED",
+          "resultRecorded": false,
+          "deliveryVerifiedByThisObservation": false
+        }
+      ],
+      "jobCoverage": {
+        "limit": 8,
+        "total": 1,
+        "ordering": "newest_created_first"
+      },
+      "failureDefinitions": [
+        {
+          "code": "COPY_FACTS_REJECTED",
+          "kind": "quality",
+          "tab": "images",
+          "message": [
+            "La rédaction acquise a été refusée par le contrôle des faits. Le code seul ne donne pas les passages concernés.",
+            "Acquired copy was rejected by the factual check. The code alone does not identify the passages."
+          ],
+          "next": [
+            "Relire et corriger le texte acquis dans Images ; une nouvelle génération reste une action séparée.",
+            "Review and correct acquired copy in Images; generation remains a separate action."
+          ],
+          "source": "src/lib/social-v2/ai-post.ts",
+          "automaticRetry": false
+        }
+      ],
+      "readingScope": "Native metadata and counts only; the eight newest jobs. No file contents, full texts, source pages, media vision, provider authentication or delivery verification. Catalogue count explicitly includes archived rows. Unmapped failure codes have no inferred cause."
+    },
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "5mogve2wthf0s4pf"
+      }
+    ],
+    "jobs": [
+      {
+        "type": "image.ai_post",
+        "status": "failed",
+        "progress": 0.15
+      },
+      {
+        "type": "agent.reason",
+        "status": "done",
+        "progress": 1
+      }
+    ],
+    "themes": 0
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "configurationValuesOmittedOnlyInPublishedProof": true
+}

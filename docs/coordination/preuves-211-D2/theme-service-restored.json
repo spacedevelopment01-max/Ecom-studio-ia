@@ -1,0 +1,1704 @@
+{
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0,
+  "registry": {
+    "projectId": "sucv1ziajrlh83ex",
+    "currentVersionId": "ig28nu8voxsjvq57",
+    "available": true,
+    "mode": "exact_client_text_or_owned_media_only",
+    "costPct": 0,
+    "receipts": [
+      {
+        "id": "65zcb1o5vdc7248k",
+        "kind": "undo",
+        "summary": "Annuler cette retouche en créant une nouvelle version ; historique conservé.",
+        "sourceReceiptId": null,
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "zemdzoc7leuj2ggk",
+          "type": "agent.theme.change",
+          "label": "Annulation de la retouche",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "ig28nu8voxsjvq57",
+            "number": 3,
+            "fingerprint": "38bbcf8dcfb80f2f",
+            "reused": false
+          },
+          "createdAt": 1793196277906,
+          "updatedAt": 1793196279319,
+          "finishedAt": 1793196279319,
+          "startedAt": 1793196277906,
+          "alive": false,
+          "idleMs": 1015
+        },
+        "costPct": 0,
+        "changes": [
+          {
+            "template": "index",
+            "section": "hero_split_1",
+            "key": "heading",
+            "before": "Votre instrument,",
+            "after": "Votre instrument,"
+          },
+          {
+            "template": "index",
+            "section": "hero_split_1",
+            "key": "heading_accent",
+            "before": "une histoire à poursuivre.",
+            "after": "votre histoire."
+          }
+        ],
+        "version": {
+          "id": "ig28nu8voxsjvq57",
+          "number": 3,
+          "parentId": "opa2e954k87amzrt",
+          "fingerprint": "38bbcf8dcfb80f2f",
+          "isCurrent": true
+        },
+        "previewHref": "/preview/sucv1ziajrlh83ex/v/ig28nu8voxsjvq57",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/sucv1ziajrlh83ex/v/ig28nu8voxsjvq57"
+          }
+        ],
+        "siteHref": "/studio/sucv1ziajrlh83ex/boutique",
+        "canUndo": true,
+        "actionsExecuted": true
+      },
+      {
+        "id": "893esx5x5whdyn3v",
+        "kind": "edit",
+        "summary": "Reprendre les mots exacts demandés pour le titre, sans autre changement.",
+        "sourceReceiptId": "ih71s5wp4813rf2m",
+        "state": "delivered",
+        "delivered": true,
+        "recorded": true,
+        "job": {
+          "id": "o7r1gb9v9g017vt5",
+          "type": "agent.theme.change",
+          "label": "Retouche ciblée du thème",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "versionId": "opa2e954k87amzrt",
+            "number": 2,
+            "fingerprint": "829a48058a4e31b0",
+            "reused": false
+          },
+          "createdAt": 1793196274676,
+          "updatedAt": 1793196276117,
+          "finishedAt": 1793196276117,
+          "startedAt": 1793196274676,
+          "alive": false,
+          "idleMs": 4218
+        },
+        "costPct": 0,
+        "changes": [
+          {
+            "template": "index",
+            "section": "hero_split_1",
+            "key": "heading",
+            "before": "Votre instrument,",
+            "after": "Votre instrument,"
+          },
+          {
+            "template": "index",
+            "section": "hero_split_1",
+            "key": "heading_accent",
+            "before": "votre histoire.",
+            "after": "une histoire à poursuivre."
+          }
+        ],
+        "version": {
+          "id": "opa2e954k87amzrt",
+          "number": 2,
+          "parentId": "dm01kswhxirandrq",
+          "fingerprint": "829a48058a4e31b0",
+          "isCurrent": false
+        },
+        "previewHref": "/preview/sucv1ziajrlh83ex/v/opa2e954k87amzrt",
+        "previewHrefs": [
+          {
+            "path": "/",
+            "href": "/preview/sucv1ziajrlh83ex/v/opa2e954k87amzrt"
+          }
+        ],
+        "siteHref": "/studio/sucv1ziajrlh83ex/boutique",
+        "canUndo": false,
+        "actionsExecuted": true
+      }
+    ],
+    "siteHref": "/studio/sucv1ziajrlh83ex/boutique"
+  },
+  "native": {
+    "current": {
+      "id": "ig28nu8voxsjvq57",
+      "number": 3,
+      "spec": {
+        "v": 1,
+        "name": "Atelier des cordes — RECETTE · Atelier",
+        "direction": "atelier",
+        "language": "fr",
+        "settings": {
+          "logo_asset": "",
+          "logo_width": 150,
+          "favicon_asset": "",
+          "color_schemes": {
+            "scheme-1": {
+              "settings": {
+                "background": "#F4F5F2",
+                "surface": "#EAECE9",
+                "text": "#182521",
+                "muted": "#5E6562",
+                "accent": "#254d43",
+                "accent_text": "#FFFFFF",
+                "border": "#D5D8D5"
+              }
+            },
+            "scheme-2": {
+              "settings": {
+                "background": "#EBEEE7",
+                "surface": "#E2E5DE",
+                "text": "#182521",
+                "muted": "#5C625E",
+                "accent": "#254d43",
+                "accent_text": "#FFFFFF",
+                "border": "#CDD2CB"
+              }
+            },
+            "scheme-3": {
+              "settings": {
+                "background": "#131B19",
+                "surface": "#202826",
+                "text": "#F3F4F1",
+                "muted": "#959996",
+                "accent": "#b68a44",
+                "accent_text": "#141414",
+                "border": "#323937"
+              }
+            },
+            "scheme-4": {
+              "settings": {
+                "background": "#E0D4C2",
+                "surface": "#D7CCBB",
+                "text": "#182521",
+                "muted": "#4D5049",
+                "accent": "#182521",
+                "accent_text": "#FFFFFF",
+                "border": "#C4BCAB"
+              }
+            }
+          },
+          "type_heading_font": "playfair_display_n6",
+          "type_body_font": "inter_n4",
+          "type_accent_font": "cormorant_i5",
+          "heading_scale": 104,
+          "body_scale": 100,
+          "heading_case": "none",
+          "heading_tracking": 0,
+          "heading_weight_boost": 0,
+          "page_width": 1320,
+          "spacing_scale": 100,
+          "style_preset": "atelier",
+          "button_radius": 40,
+          "card_radius": 28,
+          "button_style": "solid",
+          "button_uppercase": true,
+          "button_shine": true,
+          "glow_enabled": true,
+          "glow_intensity": 35,
+          "header_shape": "floating",
+          "card_style": "minimal",
+          "motion_enabled": true,
+          "motion_intensity": "expressive",
+          "motion_parallax": true,
+          "fab_back_to_top": true,
+          "fab_contact_link": "/pages/contact",
+          "fab_contact_icon": "chat",
+          "fab_contact_label": "Demander un devis",
+          "cart_type": "none",
+          "cart_show_note": false,
+          "cart_reassurance": "",
+          "social_instagram": "",
+          "social_tiktok": "",
+          "social_facebook": "",
+          "social_youtube": "",
+          "social_pinterest": ""
+        },
+        "groups": {
+          "header": {
+            "type": "header",
+            "name": "Groupe en-tête",
+            "sections": {
+              "header_1": {
+                "type": "header",
+                "settings": {
+                  "menu": "main-menu",
+                  "layout": "logo-center",
+                  "shape": "floating",
+                  "icons": "circles",
+                  "mobile_menu": "fullscreen",
+                  "sticky": true,
+                  "transparent_on_home": false,
+                  "show_search": false,
+                  "color_scheme": "scheme-1",
+                  "show_cart": false,
+                  "cta_label": "Demander un devis",
+                  "cta_link": "/pages/contact",
+                  "cta_icon": "mail",
+                  "phone": ""
+                }
+              }
+            },
+            "order": [
+              "header_1"
+            ]
+          },
+          "footer": {
+            "type": "footer",
+            "name": "Groupe pied de page",
+            "sections": {
+              "footer_1": {
+                "type": "footer",
+                "settings": {
+                  "style": "wordmark",
+                  "logo_asset": "",
+                  "show_wordmark": true,
+                  "show_policies": false,
+                  "show_payment": false,
+                  "color_scheme": "scheme-3"
+                },
+                "blocks": {
+                  "text_4": {
+                    "type": "text",
+                    "settings": {
+                      "heading": "Atelier des cordes — RECETTE",
+                      "text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>"
+                    }
+                  },
+                  "links_1": {
+                    "type": "links",
+                    "settings": {
+                      "heading": "Le site",
+                      "menu": "main-menu"
+                    }
+                  },
+                  "contact_1": {
+                    "type": "contact",
+                    "settings": {
+                      "heading": "Nous trouver",
+                      "address": "",
+                      "phone": "",
+                      "email": "",
+                      "hours": ""
+                    }
+                  },
+                  "links_2": {
+                    "type": "links",
+                    "settings": {
+                      "heading": "Informations",
+                      "menu": "footer"
+                    }
+                  }
+                },
+                "block_order": [
+                  "text_4",
+                  "links_1",
+                  "contact_1",
+                  "links_2"
+                ]
+              }
+            },
+            "order": [
+              "footer_1"
+            ]
+          }
+        },
+        "templates": {
+          "404": {
+            "sections": {
+              "main_404_2": {
+                "type": "main-404",
+                "settings": {
+                  "heading": "Cette page s'est égarée.",
+                  "text": "Le lien est peut-être ancien. Le reste du site vous attend.",
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_404_2"
+            ]
+          },
+          "index": {
+            "sections": {
+              "hero_split_1": {
+                "type": "hero-split",
+                "settings": {
+                  "badge": "",
+                  "eyebrow": "Réparation d’instruments",
+                  "heading": "Votre instrument,",
+                  "heading_accent": "votre histoire.",
+                  "text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "button2_label": "Nos prestations",
+                  "button2_link": "/pages/prestations",
+                  "image_asset": "es-recette-interface.webp",
+                  "image_position": "right",
+                  "height": "large",
+                  "parallax": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 72,
+                  "padding_bottom": 104
+                }
+              },
+              "services_list_1": {
+                "type": "services-list",
+                "settings": {
+                  "eyebrow": "Prestations",
+                  "heading": "Ce que nous faisons pour vous",
+                  "text": "",
+                  "layout": "cards",
+                  "columns": 2,
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "highlight_label": "",
+                  "note": "",
+                  "footer_label": "",
+                  "footer_link": "",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "service_1": {
+                    "type": "service",
+                    "settings": {
+                      "title": "Réparation d’instrument",
+                      "text": "<p>Instrument apporté par le client</p>",
+                      "price": "",
+                      "duration": "",
+                      "icon": "sparkle",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "service_1"
+                ]
+              },
+              "features_grid_1": {
+                "type": "features-grid",
+                "settings": {
+                  "eyebrow": "",
+                  "heading": "Les repères du projet",
+                  "heading_align": "left",
+                  "columns": 2,
+                  "columns_mobile": "1",
+                  "style": "glow",
+                  "link_label": "",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "feature_1": {
+                    "type": "feature",
+                    "settings": {
+                      "title": "Vos instruments",
+                      "text": "<p>Les clients apportent leurs instruments.</p>",
+                      "icon": "hand",
+                      "link_label": "",
+                      "link": ""
+                    }
+                  },
+                  "feature_2": {
+                    "type": "feature",
+                    "settings": {
+                      "title": "À préciser ensemble",
+                      "text": "<p>Aucune performance ni promesse commerciale inventée.</p>",
+                      "icon": "check",
+                      "link_label": "",
+                      "link": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "feature_1",
+                  "feature_2"
+                ]
+              },
+              "how_to_1": {
+                "type": "how-to",
+                "settings": {
+                  "eyebrow": "Notre méthode",
+                  "heading": "Comment ça se passe",
+                  "text": "",
+                  "layout": "vertical",
+                  "media_ratio": "landscape",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "step_3": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Décrivez votre projet",
+                      "text": "<p>Quelques lignes suffisent : le besoin, le lieu, vos contraintes.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_4": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Recevez votre devis",
+                      "text": "<p>Une proposition détaillée, établie d'après votre demande.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_5": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Nous réalisons",
+                      "text": "<p>Le travail est réalisé selon ce qui a été convenu ensemble.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_3",
+                  "step_4",
+                  "step_5"
+                ]
+              },
+              "testimonials_1": {
+                "type": "testimonials",
+                "settings": {
+                  "eyebrow": "Avis",
+                  "heading": "Ils nous ont fait confiance",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "review_1": {
+                    "type": "review",
+                    "settings": {
+                      "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                      "author": "[À compléter : prénom]",
+                      "detail": "[À compléter : prestation]",
+                      "rating": "0"
+                    }
+                  },
+                  "review_2": {
+                    "type": "review",
+                    "settings": {
+                      "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                      "author": "[À compléter : prénom]",
+                      "detail": "[À compléter : prestation]",
+                      "rating": "0"
+                    }
+                  },
+                  "review_3": {
+                    "type": "review",
+                    "settings": {
+                      "quote": "[À compléter : avis réel d'un client, avec son accord]",
+                      "author": "[À compléter : prénom]",
+                      "detail": "[À compléter : prestation]",
+                      "rating": "0"
+                    }
+                  }
+                },
+                "block_order": [
+                  "review_1",
+                  "review_2",
+                  "review_3"
+                ]
+              },
+              "practical_info_1": {
+                "type": "practical-info",
+                "settings": {
+                  "eyebrow": "Infos pratiques",
+                  "heading": "Nous trouver, nous joindre",
+                  "text": "",
+                  "hours": "[À compléter : vos horaires, une ligne par jour]",
+                  "hours_note": "",
+                  "address": "",
+                  "area": "[À compléter : zone d'intervention ou adresse]",
+                  "phone": "[À compléter : téléphone]",
+                  "email": "",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "map": "none",
+                  "map_query": "",
+                  "latitude": "",
+                  "longitude": "",
+                  "map_consent": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                }
+              },
+              "faq_2": {
+                "type": "faq",
+                "settings": {
+                  "heading": "À préciser",
+                  "style": "cards",
+                  "structured_data": true,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "question_5": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Comment obtenir un devis ?",
+                      "answer": "<p>Décrivez votre projet dans le formulaire de la page Contact ; nous revenons vers vous avec une proposition détaillée.</p>"
+                    }
+                  },
+                  "question_6": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Où intervenez-vous ?",
+                      "answer": "<p>[À compléter : votre zone d'intervention ou votre adresse]</p>"
+                    }
+                  },
+                  "question_7": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels sont vos horaires ?",
+                      "answer": "<p>[À compléter : vos horaires]</p>"
+                    }
+                  },
+                  "question_8": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels sont vos tarifs ?",
+                      "answer": "<p>[À compléter : vos tarifs, ou la façon dont ils sont établis]</p>"
+                    }
+                  },
+                  "question_9": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Comment se déroule une première prestation ?",
+                      "answer": "<p>[À compléter : le déroulement d'une première prestation]</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_5",
+                  "question_6",
+                  "question_7",
+                  "question_8",
+                  "question_9"
+                ]
+              },
+              "booking_1": {
+                "type": "booking",
+                "settings": {
+                  "eyebrow": "Devis",
+                  "heading": "Demander un devis",
+                  "text": "<p>Décrivez votre projet : nous revenons vers vous avec une proposition détaillée.</p>",
+                  "booking_url": "",
+                  "display": "auto",
+                  "embed_height": 700,
+                  "button_label": "Envoyer ma demande",
+                  "panel_title": "Réservation en ligne",
+                  "panel_text": "<p>Choisissez votre prestation et votre créneau ; la confirmation vous parvient directement.</p>",
+                  "services": "Réparation d’instrument",
+                  "ask_date": true,
+                  "form_note": "",
+                  "phone": "",
+                  "email": "",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "step_6": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Décrivez votre projet",
+                      "text": "Quelques lignes suffisent : le besoin, le lieu, vos contraintes."
+                    }
+                  },
+                  "step_7": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Recevez votre devis",
+                      "text": "Une proposition détaillée, établie d'après votre demande."
+                    }
+                  },
+                  "step_8": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Nous réalisons",
+                      "text": "Le travail est réalisé selon ce qui a été convenu ensemble."
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_6",
+                  "step_7",
+                  "step_8"
+                ]
+              },
+              "booking_calendar_1": {
+                "type": "booking-calendar",
+                "settings": {
+                  "eyebrow": "Réservation",
+                  "heading": "Prenez rendez-vous",
+                  "text": "<p>Choisissez la prestation, le jour et l'horaire : nous confirmons votre rendez-vous par e-mail.</p>",
+                  "kind": "appointment",
+                  "slot_minutes": 60,
+                  "notice_days": 1,
+                  "ask_people": false,
+                  "people_min": 1,
+                  "people_max": 20,
+                  "ask_phone": true,
+                  "phone_required": false,
+                  "ask_message": true,
+                  "button_label": "Envoyer ma demande de rendez-vous",
+                  "note": "Votre rendez-vous est réservé après notre confirmation par e-mail.",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "item_1": {
+                    "type": "item",
+                    "settings": {
+                      "title": "Réparation d’instrument",
+                      "text": "Instrument apporté par le client",
+                      "duration": "",
+                      "price": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "item_1"
+                ],
+                "disabled": true
+              },
+              "cta_banner_2": {
+                "type": "cta-banner",
+                "settings": {
+                  "heading": "Parlons de votre projet.",
+                  "text": "",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "image_asset": "es-recette-interface.webp",
+                  "overlay": 60,
+                  "style": "center",
+                  "parallax": true,
+                  "color_scheme": "scheme-3",
+                  "padding_top": 152,
+                  "padding_bottom": 152
+                }
+              }
+            },
+            "order": [
+              "hero_split_1",
+              "services_list_1",
+              "features_grid_1",
+              "how_to_1",
+              "testimonials_1",
+              "practical_info_1",
+              "faq_2",
+              "booking_1",
+              "booking_calendar_1",
+              "cta_banner_2"
+            ]
+          },
+          "product": {
+            "sections": {
+              "main_product_2": {
+                "type": "main-product",
+                "settings": {
+                  "gallery_layout": "stack",
+                  "sticky_bar": false,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 32,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "title_2": {
+                    "type": "title",
+                    "settings": {}
+                  },
+                  "price_2": {
+                    "type": "price",
+                    "settings": {}
+                  },
+                  "description_1": {
+                    "type": "description",
+                    "settings": {}
+                  },
+                  "buy_buttons_2": {
+                    "type": "buy_buttons",
+                    "settings": {
+                      "picker": "buttons",
+                      "show_quantity": false,
+                      "show_dynamic_checkout": false
+                    }
+                  }
+                },
+                "block_order": [
+                  "title_2",
+                  "price_2",
+                  "description_1",
+                  "buy_buttons_2"
+                ]
+              }
+            },
+            "order": [
+              "main_product_2"
+            ]
+          },
+          "collection": {
+            "sections": {
+              "main_collection_1": {
+                "type": "main-collection",
+                "settings": {
+                  "per_page": 16,
+                  "columns": 3,
+                  "enable_filters": true,
+                  "enable_sorting": true,
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_collection_1"
+            ]
+          },
+          "list-collections": {
+            "sections": {
+              "main_list_collections_1": {
+                "type": "main-list-collections",
+                "settings": {
+                  "heading": "Catalogue",
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_list_collections_1"
+            ]
+          },
+          "search": {
+            "sections": {
+              "main_search_1": {
+                "type": "main-search",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_search_1"
+            ]
+          },
+          "cart": {
+            "sections": {
+              "main_cart_1": {
+                "type": "main-cart",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_cart_1"
+            ]
+          },
+          "page": {
+            "sections": {
+              "main_page_1": {
+                "type": "main-page",
+                "settings": {
+                  "width": "narrow",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 96
+                }
+              }
+            },
+            "order": [
+              "main_page_1"
+            ]
+          },
+          "page.about": {
+            "sections": {
+              "about_1": {
+                "type": "about",
+                "settings": {
+                  "eyebrow": "À propos",
+                  "heading": "Votre projet",
+                  "heading_accent": "",
+                  "image_asset": "es-recette-interface.webp",
+                  "lead": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "why_title": "Les acquis",
+                  "why_text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "values_title": "Ce qui nous guide",
+                  "button_label": "Découvrir nos prestations",
+                  "button_link": "/pages/prestations",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 120,
+                  "padding_bottom": 104
+                }
+              },
+              "team_1": {
+                "type": "team",
+                "settings": {
+                  "eyebrow": "L'équipe",
+                  "heading": "Les personnes qui vous accueillent",
+                  "text": "",
+                  "style": "cards",
+                  "columns": 3,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "member_1": {
+                    "type": "member",
+                    "settings": {
+                      "name": "[À compléter : prénom et nom]",
+                      "role": "[À compléter : rôle]",
+                      "bio": "<p>[À compléter : parcours et spécialités réels]</p>"
+                    }
+                  },
+                  "member_2": {
+                    "type": "member",
+                    "settings": {
+                      "name": "[À compléter : prénom et nom]",
+                      "role": "[À compléter : rôle]",
+                      "bio": "<p>[À compléter : parcours et spécialités réels]</p>"
+                    }
+                  },
+                  "member_3": {
+                    "type": "member",
+                    "settings": {
+                      "name": "[À compléter : prénom et nom]",
+                      "role": "[À compléter : rôle]",
+                      "bio": "<p>[À compléter : parcours et spécialités réels]</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "member_1",
+                  "member_2",
+                  "member_3"
+                ]
+              },
+              "timeline_1": {
+                "type": "timeline",
+                "settings": {
+                  "eyebrow": "Notre méthode",
+                  "heading": "Comment ça se passe",
+                  "heading_accent": "",
+                  "image_asset": "",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "step_12": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Décrivez votre projet",
+                      "text": "<p>Quelques lignes suffisent : le besoin, le lieu, vos contraintes.</p>"
+                    }
+                  },
+                  "step_13": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Recevez votre devis",
+                      "text": "<p>Une proposition détaillée, établie d'après votre demande.</p>"
+                    }
+                  },
+                  "step_14": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Nous réalisons",
+                      "text": "<p>Le travail est réalisé selon ce qui a été convenu ensemble.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_12",
+                  "step_13",
+                  "step_14"
+                ]
+              },
+              "cta_banner_4": {
+                "type": "cta-banner",
+                "settings": {
+                  "heading": "Parlons de votre projet.",
+                  "text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "image_asset": "es-recette-interface.webp",
+                  "overlay": 60,
+                  "style": "center",
+                  "parallax": true,
+                  "color_scheme": "scheme-3",
+                  "padding_top": 152,
+                  "padding_bottom": 152
+                }
+              },
+              "main_page_3": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_3",
+              "about_1",
+              "team_1",
+              "timeline_1",
+              "cta_banner_4"
+            ]
+          },
+          "page.faq": {
+            "sections": {
+              "faq_5": {
+                "type": "faq",
+                "settings": {
+                  "heading": "Questions fréquentes",
+                  "style": "cards",
+                  "structured_data": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "question_21": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Comment obtenir un devis ?",
+                      "answer": "<p>Décrivez votre projet dans le formulaire de la page Contact ; nous revenons vers vous avec une proposition détaillée.</p>"
+                    }
+                  },
+                  "question_22": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Où intervenez-vous ?",
+                      "answer": "<p>[À compléter : votre zone d'intervention ou votre adresse]</p>"
+                    }
+                  },
+                  "question_23": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels sont vos horaires ?",
+                      "answer": "<p>[À compléter : vos horaires]</p>"
+                    }
+                  },
+                  "question_24": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels sont vos tarifs ?",
+                      "answer": "<p>[À compléter : vos tarifs, ou la façon dont ils sont établis]</p>"
+                    }
+                  },
+                  "question_25": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Comment se déroule une première prestation ?",
+                      "answer": "<p>[À compléter : le déroulement d'une première prestation]</p>"
+                    }
+                  },
+                  "question_26": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels moyens de paiement acceptez-vous ?",
+                      "answer": "<p>[À compléter : les moyens de paiement acceptés]</p>"
+                    }
+                  },
+                  "question_27": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels tarifs ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  },
+                  "question_28": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels délais ?",
+                      "answer": "<p>Ils restent à confirmer par le client.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_21",
+                  "question_22",
+                  "question_23",
+                  "question_24",
+                  "question_25",
+                  "question_26",
+                  "question_27",
+                  "question_28"
+                ]
+              },
+              "contact_form_3": {
+                "type": "contact-form",
+                "settings": {
+                  "heading": "Une autre question ?",
+                  "text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "email": "",
+                  "hours": "",
+                  "response": "",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                }
+              },
+              "main_page_4": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_4",
+              "faq_5",
+              "contact_form_3"
+            ]
+          },
+          "page.contact": {
+            "sections": {
+              "booking_2": {
+                "type": "booking",
+                "settings": {
+                  "eyebrow": "Devis",
+                  "heading": "Demander un devis",
+                  "text": "<p>Décrivez votre projet : nous revenons vers vous avec une proposition détaillée.</p>",
+                  "booking_url": "",
+                  "display": "auto",
+                  "embed_height": 700,
+                  "button_label": "Envoyer ma demande",
+                  "panel_title": "Réservation en ligne",
+                  "panel_text": "<p>Choisissez votre prestation et votre créneau ; la confirmation vous parvient directement.</p>",
+                  "services": "Réparation d’instrument",
+                  "ask_date": true,
+                  "form_note": "",
+                  "phone": "",
+                  "email": "",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "step_15": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Décrivez votre projet",
+                      "text": "Quelques lignes suffisent : le besoin, le lieu, vos contraintes."
+                    }
+                  },
+                  "step_16": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Recevez votre devis",
+                      "text": "Une proposition détaillée, établie d'après votre demande."
+                    }
+                  },
+                  "step_17": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Nous réalisons",
+                      "text": "Le travail est réalisé selon ce qui a été convenu ensemble."
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_15",
+                  "step_16",
+                  "step_17"
+                ]
+              },
+              "practical_info_2": {
+                "type": "practical-info",
+                "settings": {
+                  "eyebrow": "Infos pratiques",
+                  "heading": "Nous trouver, nous joindre",
+                  "text": "",
+                  "hours": "[À compléter : vos horaires, une ligne par jour]",
+                  "hours_note": "",
+                  "address": "",
+                  "area": "[À compléter : zone d'intervention ou adresse]",
+                  "phone": "[À compléter : téléphone]",
+                  "email": "",
+                  "button_label": "",
+                  "button_link": "",
+                  "map": "none",
+                  "map_query": "",
+                  "latitude": "",
+                  "longitude": "",
+                  "map_consent": true,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                }
+              },
+              "booking_calendar_2": {
+                "type": "booking-calendar",
+                "settings": {
+                  "eyebrow": "Réservation",
+                  "heading": "Prenez rendez-vous",
+                  "text": "<p>Choisissez la prestation, le jour et l'horaire : nous confirmons votre rendez-vous par e-mail.</p>",
+                  "kind": "appointment",
+                  "slot_minutes": 60,
+                  "notice_days": 1,
+                  "ask_people": false,
+                  "people_min": 1,
+                  "people_max": 20,
+                  "ask_phone": true,
+                  "phone_required": false,
+                  "ask_message": true,
+                  "button_label": "Envoyer ma demande de rendez-vous",
+                  "note": "Votre rendez-vous est réservé après notre confirmation par e-mail.",
+                  "color_scheme": "scheme-2",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "item_2": {
+                    "type": "item",
+                    "settings": {
+                      "title": "Réparation d’instrument",
+                      "text": "Instrument apporté par le client",
+                      "duration": "",
+                      "price": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "item_2"
+                ],
+                "disabled": true
+              },
+              "main_page_5": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_5",
+              "booking_2",
+              "practical_info_2",
+              "booking_calendar_2"
+            ]
+          },
+          "blog": {
+            "sections": {
+              "main_blog_1": {
+                "type": "main-blog",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_blog_1"
+            ]
+          },
+          "article": {
+            "sections": {
+              "main_article_1": {
+                "type": "main-article",
+                "settings": {
+                  "color_scheme": "scheme-1"
+                }
+              }
+            },
+            "order": [
+              "main_article_1"
+            ]
+          },
+          "password": {
+            "sections": {
+              "main_password_1": {
+                "type": "main-password",
+                "settings": {
+                  "heading": "Bientôt en ligne"
+                }
+              }
+            },
+            "order": [
+              "main_password_1"
+            ],
+            "layout": "password"
+          },
+          "page.services": {
+            "sections": {
+              "services_list_2": {
+                "type": "services-list",
+                "settings": {
+                  "eyebrow": "Prestations",
+                  "heading": "Nos prestations",
+                  "text": "",
+                  "layout": "list",
+                  "columns": 2,
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "highlight_label": "",
+                  "note": "",
+                  "footer_label": "",
+                  "footer_link": "",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "service_2": {
+                    "type": "service",
+                    "settings": {
+                      "title": "Réparation d’instrument",
+                      "text": "<p>Instrument apporté par le client</p>",
+                      "price": "",
+                      "duration": "",
+                      "icon": "sparkle",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "service_2"
+                ]
+              },
+              "how_to_2": {
+                "type": "how-to",
+                "settings": {
+                  "eyebrow": "Notre méthode",
+                  "heading": "Comment ça se passe",
+                  "text": "",
+                  "layout": "horizontal",
+                  "media_ratio": "landscape",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 104,
+                  "padding_bottom": 104
+                },
+                "blocks": {
+                  "step_9": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Décrivez votre projet",
+                      "text": "<p>Quelques lignes suffisent : le besoin, le lieu, vos contraintes.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_10": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Recevez votre devis",
+                      "text": "<p>Une proposition détaillée, établie d'après votre demande.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  },
+                  "step_11": {
+                    "type": "step",
+                    "settings": {
+                      "title": "Nous réalisons",
+                      "text": "<p>Le travail est réalisé selon ce qui a été convenu ensemble.</p>",
+                      "duration": "",
+                      "tip": "",
+                      "image_asset": ""
+                    }
+                  }
+                },
+                "block_order": [
+                  "step_9",
+                  "step_10",
+                  "step_11"
+                ]
+              },
+              "faq_4": {
+                "type": "faq",
+                "settings": {
+                  "heading": "Bon à savoir",
+                  "style": "lines",
+                  "structured_data": false,
+                  "color_scheme": "scheme-2",
+                  "padding_top": 96,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "question_18": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels sont vos tarifs ?",
+                      "answer": "<p>[À compléter : vos tarifs, ou la façon dont ils sont établis]</p>"
+                    }
+                  },
+                  "question_19": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Comment se déroule une première prestation ?",
+                      "answer": "<p>[À compléter : le déroulement d'une première prestation]</p>"
+                    }
+                  },
+                  "question_20": {
+                    "type": "question",
+                    "settings": {
+                      "question": "Quels moyens de paiement acceptez-vous ?",
+                      "answer": "<p>[À compléter : les moyens de paiement acceptés]</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "question_18",
+                  "question_19",
+                  "question_20"
+                ]
+              },
+              "cta_banner_3": {
+                "type": "cta-banner",
+                "settings": {
+                  "heading": "Parlons de votre projet.",
+                  "text": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+                  "button_label": "Demander un devis",
+                  "button_link": "/pages/contact",
+                  "image_asset": "es-recette-interface.webp",
+                  "overlay": 60,
+                  "style": "center",
+                  "parallax": true,
+                  "color_scheme": "scheme-3",
+                  "padding_top": 152,
+                  "padding_bottom": 152
+                }
+              },
+              "main_page_6": {
+                "type": "main-page",
+                "settings": {
+                  "width": "wide",
+                  "color_scheme": "scheme-1",
+                  "padding_top": 40,
+                  "padding_bottom": 0
+                }
+              }
+            },
+            "order": [
+              "main_page_6",
+              "services_list_2",
+              "how_to_2",
+              "faq_4",
+              "cta_banner_3"
+            ]
+          },
+          "page.legal": {
+            "sections": {
+              "legal_page_1": {
+                "type": "legal-page",
+                "settings": {
+                  "source": "blocks",
+                  "eyebrow": "Informations légales",
+                  "heading": "Mentions légales",
+                  "updated": "[À compléter : date]",
+                  "intro": "",
+                  "show_toc": true,
+                  "show_print": true,
+                  "color_scheme": "scheme-1",
+                  "padding_top": 64,
+                  "padding_bottom": 96
+                },
+                "blocks": {
+                  "part_1": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Éditeur du site",
+                      "text": "<p>Atelier des cordes — RECETTE — [À compléter : forme juridique, adresse du siège, numéro d'immatriculation (SIRET, RCS ou RM)]</p>"
+                    }
+                  },
+                  "part_2": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Contact",
+                      "text": "<p>[À compléter : téléphone et e-mail]</p>"
+                    }
+                  },
+                  "part_3": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Directeur de la publication",
+                      "text": "<p>[À compléter : prénom et nom]</p>"
+                    }
+                  },
+                  "part_4": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Hébergement",
+                      "text": "<p>[À compléter : nom, adresse et téléphone de l'hébergeur du site]</p>"
+                    }
+                  },
+                  "part_5": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Activité réglementée",
+                      "text": "<p>[À compléter : ordre ou chambre professionnelle, assurance, numéro d'inscription — le cas échéant]</p>"
+                    }
+                  },
+                  "part_6": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Propriété intellectuelle",
+                      "text": "<p>Les textes, images et logos de ce site appartiennent à Atelier des cordes — RECETTE ou sont utilisés avec l'accord de leurs auteurs. Toute reproduction sans autorisation est interdite.</p>"
+                    }
+                  },
+                  "part_7": {
+                    "type": "part",
+                    "settings": {
+                      "title": "Données personnelles",
+                      "text": "<p>Les informations transmises via les formulaires servent uniquement à répondre à votre demande. Voir la politique de confidentialité pour le détail de vos droits.</p>"
+                    }
+                  }
+                },
+                "block_order": [
+                  "part_1",
+                  "part_2",
+                  "part_3",
+                  "part_4",
+                  "part_5",
+                  "part_6",
+                  "part_7"
+                ]
+              }
+            },
+            "order": [
+              "legal_page_1"
+            ]
+          }
+        },
+        "customSections": {},
+        "files": {
+          "es-recette-interface.webp": "0jq14dd723urt6a9"
+        },
+        "locks": [],
+        "store": {
+          "shopName": "Atelier des cordes — RECETTE",
+          "product": {
+            "title": "Réparation d’instruments",
+            "handle": "offre-recette",
+            "vendor": "Atelier des cordes — RECETTE",
+            "description_html": "<p>Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.</p>",
+            "price": null,
+            "compare_at_price": null,
+            "currency": "EUR",
+            "options": [],
+            "variants": [],
+            "images": [
+              "es-recette-interface.webp"
+            ],
+            "tags": [],
+            "seo": {
+              "title": "Atelier des cordes — RECETTE",
+              "description": "Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble."
+            }
+          },
+          "business": "services",
+          "pages": [
+            {
+              "handle": "prestations",
+              "title": "Prestations",
+              "template_suffix": "services",
+              "body_html": ""
+            },
+            {
+              "handle": "a-propos",
+              "title": "À propos",
+              "template_suffix": "about",
+              "body_html": ""
+            },
+            {
+              "handle": "contact",
+              "title": "Demande de devis",
+              "template_suffix": "contact",
+              "body_html": ""
+            },
+            {
+              "handle": "faq",
+              "title": "Questions fréquentes",
+              "template_suffix": "faq",
+              "body_html": ""
+            },
+            {
+              "handle": "mentions-legales",
+              "title": "Mentions légales",
+              "template_suffix": "legal",
+              "body_html": ""
+            }
+          ],
+          "menus": {
+            "main-menu": {
+              "title": "Menu principal",
+              "links": [
+                {
+                  "title": "Accueil",
+                  "url": "/"
+                },
+                {
+                  "title": "Prestations",
+                  "url": "/pages/prestations"
+                },
+                {
+                  "title": "À propos",
+                  "url": "/pages/a-propos"
+                },
+                {
+                  "title": "FAQ",
+                  "url": "/pages/faq"
+                },
+                {
+                  "title": "Demande de devis",
+                  "url": "/pages/contact"
+                }
+              ]
+            },
+            "footer": {
+              "title": "Pied de page",
+              "links": [
+                {
+                  "title": "Prestations",
+                  "url": "/pages/prestations"
+                },
+                {
+                  "title": "Demande de devis",
+                  "url": "/pages/contact"
+                },
+                {
+                  "title": "FAQ",
+                  "url": "/pages/faq"
+                },
+                {
+                  "title": "Mentions légales",
+                  "url": "/pages/mentions-legales"
+                },
+                {
+                  "title": "Conditions générales",
+                  "url": "/policies/terms-of-service"
+                },
+                {
+                  "title": "Confidentialité",
+                  "url": "/policies/privacy-policy"
+                }
+              ]
+            }
+          },
+          "policies": [
+            {
+              "handle": "terms-of-service",
+              "title": "Conditions générales de prestation",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            },
+            {
+              "handle": "privacy-policy",
+              "title": "Politique de confidentialité",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            },
+            {
+              "handle": "legal-notice",
+              "title": "Mentions légales",
+              "body_html": "<p>[À compléter dans Shopify : Paramètres › Politiques]</p>"
+            }
+          ]
+        }
+      }
+    },
+    "versions": [
+      {
+        "id": "dm01kswhxirandrq",
+        "number": 1,
+        "parent_id": null,
+        "author": "system"
+      },
+      {
+        "id": "opa2e954k87amzrt",
+        "number": 2,
+        "parent_id": "dm01kswhxirandrq",
+        "author": "user"
+      },
+      {
+        "id": "ig28nu8voxsjvq57",
+        "number": 3,
+        "parent_id": "opa2e954k87amzrt",
+        "author": "user"
+      }
+    ],
+    "jobs": [
+      {
+        "id": "ih71s5wp4813rf2m",
+        "type": "agent.reason",
+        "status": "done",
+        "payload": "{\"conversationId\":\"k1wqmu6dxts7i52g\",\"quoteId\":\"vvjjgt4olylg4wft\",\"requestId\":\"479fbd3f-681c-40ee-806e-0765d7ad17b6\",\"costCapMicro\":489097,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "o7r1gb9v9g017vt5",
+        "type": "agent.theme.change",
+        "status": "done",
+        "payload": "{\"conversationId\":\"k1wqmu6dxts7i52g\",\"quoteId\":\"893esx5x5whdyn3v\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      },
+      {
+        "id": "zemdzoc7leuj2ggk",
+        "type": "agent.theme.change",
+        "status": "done",
+        "payload": "{\"conversationId\":\"k1wqmu6dxts7i52g\",\"quoteId\":\"65zcb1o5vdc7248k\",\"aiOff\":true,\"lang\":\"fr\",\"strategyVersion\":null,\"strategyInputDigest\":null}"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "ih71s5wp4813rf2m"
+      }
+    ],
+    "freeJobReservations": 0,
+    "otherFieldsPreserved": true
+  },
+  "threeVersionsConserved": true
+}

@@ -1,0 +1,2059 @@
+{
+  "provider": "loopback-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "scene": "mono",
+      "business": "products",
+      "width": 1440,
+      "before": {
+        "providerHttpCalls": 3,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "afterAcquisition": {
+        "providerHttpCalls": 10,
+        "textHttpCalls": 7,
+        "imageHttpCalls": 3,
+        "tokenCounts": 7,
+        "calls": 10,
+        "usage": 10,
+        "simulatedMicro": 313591
+      },
+      "after": {
+        "providerHttpCalls": 11,
+        "textHttpCalls": 8,
+        "imageHttpCalls": 3,
+        "tokenCounts": 8,
+        "calls": 11,
+        "usage": 11,
+        "simulatedMicro": 321503
+      },
+      "outputs": [
+        {
+          "directionId": "t1",
+          "label": "Signature typographique",
+          "concept": "Concept « Signature typographique » pour Fil & presse : Reliure manuelle.",
+          "identity": {
+            "signature": "Le détail, au quotidien.",
+            "palette": {
+              "primary": "#28504a",
+              "secondary": "#bfd0b4",
+              "accent": "#9b4f2c",
+              "light": "#fcfaf5",
+              "dark": "#171f20"
+            },
+            "colorRoles": {
+              "primary": "Vert profond : signature et titres précis",
+              "secondary": "Sauge douce : surfaces calmes",
+              "accent": "Terre cuite : appels à l’action chaleureux",
+              "light": "Ivoire neutre : fond de lecture",
+              "dark": "Encre neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "jost_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Précis et direct",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Lumière diffuse, gestes simples",
+            "graphicLanguage": "Traits nets et grilles aérées",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "z0rmggx7u7nh2erl",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "hu5nc4oojfzjujfk",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          },
+          "preview": {
+            "assetId": "pcbwusrlxmn5y0ce",
+            "version": 1,
+            "sha256": "b816a17c925fa2aca9a9d619d830a5cff90e3d100109041f66a816468976df24"
+          },
+          "present": true,
+          "href": "/api/files/z0rmggx7u7nh2erl",
+          "downloadHref": "/api/files/z0rmggx7u7nh2erl?download=1",
+          "originalHref": "/api/files/hu5nc4oojfzjujfk?download=1",
+          "previewHref": "/api/files/pcbwusrlxmn5y0ce"
+        },
+        {
+          "directionId": "t2",
+          "label": "Monogramme construit",
+          "concept": "Concept « Monogramme construit » pour Fil & presse : Reliure manuelle.",
+          "identity": {
+            "signature": "Une approche claire.",
+            "palette": {
+              "primary": "#483d68",
+              "secondary": "#c4b7d6",
+              "accent": "#9a3662",
+              "light": "#f8f5fc",
+              "dark": "#201a2c"
+            },
+            "colorRoles": {
+              "primary": "Prune : titres éditoriaux",
+              "secondary": "Lavande grisée : surfaces posées",
+              "accent": "Baie : appels à l’action affirmés",
+              "light": "Blanc légèrement teinté : fond de lecture",
+              "dark": "Encre légèrement violacée : texte courant"
+            },
+            "fonts": {
+              "heading": "playfair_display_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Éditorial et posé",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Plans graphiques et espace",
+            "graphicLanguage": "Contraste de tailles et marges",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "lztx098emhdb44lj",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "086rqf2az5997tjs",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          },
+          "preview": {
+            "assetId": "iygrqeod9ypxbdnw",
+            "version": 1,
+            "sha256": "ab198c67fa2c888fd9f626904d77950617285d9f83747afb4e11e0b4d55f95ff"
+          },
+          "present": true,
+          "href": "/api/files/lztx098emhdb44lj",
+          "downloadHref": "/api/files/lztx098emhdb44lj?download=1",
+          "originalHref": "/api/files/086rqf2az5997tjs?download=1",
+          "previewHref": "/api/files/iygrqeod9ypxbdnw"
+        },
+        {
+          "directionId": "t3",
+          "label": "Geste abstrait",
+          "concept": "Concept « Geste abstrait » pour Fil & presse : Reliure manuelle.",
+          "identity": {
+            "signature": "La matière prend place.",
+            "palette": {
+              "primary": "#614024",
+              "secondary": "#d8b77c",
+              "accent": "#47657a",
+              "light": "#fbf6ed",
+              "dark": "#282019"
+            },
+            "colorRoles": {
+              "primary": "Brun : titres liés à la matière",
+              "secondary": "Sable : surfaces chaleureuses",
+              "accent": "Bleu ardoise : appels à l’action nets",
+              "light": "Papier neutre : fond de lecture",
+              "dark": "Encre brune neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "montserrat_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Chaleureux et concret",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Textures et lumière latérale",
+            "graphicLanguage": "Formes organiques et aplats",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "y0kxmjmxzlj3p0g4",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "xht6qc0xefrzeyzc",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          },
+          "preview": {
+            "assetId": "r9wixbnuh7agvc1v",
+            "version": 1,
+            "sha256": "f4cb0f6eb7199857b09fcecb2393873db6bc27c99cbb746aa2c6fa37c334094e"
+          },
+          "present": true,
+          "href": "/api/files/y0kxmjmxzlj3p0g4",
+          "downloadHref": "/api/files/y0kxmjmxzlj3p0g4?download=1",
+          "originalHref": "/api/files/xht6qc0xefrzeyzc?download=1",
+          "previewHref": "/api/files/r9wixbnuh7agvc1v"
+        }
+      ],
+      "downloads": [
+        {
+          "asset": {
+            "assetId": "z0rmggx7u7nh2erl",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "hu5nc4oojfzjujfk",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "lztx098emhdb44lj",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "086rqf2az5997tjs",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "y0kxmjmxzlj3p0g4",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "xht6qc0xefrzeyzc",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          }
+        }
+      ],
+      "partial": null,
+      "reused": true,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteUnchanged": true,
+      "captures": [
+        "mono-identite-manuelle.png",
+        "mono-devis.png",
+        "mono-concept-1.png",
+        "mono-concept-2.png",
+        "mono-concept-3.png",
+        "mono-consigne-exacte.png",
+        "mono-reouverture.png",
+        "mono-enregistre.png",
+        "mono-galerie-native-meme-serie.png",
+        "mono-logo-1.png",
+        "mono-planche-1.png",
+        "mono-logo-2.png",
+        "mono-planche-2.png",
+        "mono-logo-3.png",
+        "mono-planche-3.png",
+        "mono-reutilisation-devis.png",
+        "mono-reutilisation-sans-appel.png",
+        "mono-identite-autre-largeur.png",
+        "mono-autre-largeur.png",
+        "mono-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "identite-manuelle",
+          "availableWidth": 1104,
+          "contentWidth": 1104,
+          "columns": "700px 380px",
+          "nameWidth": 642,
+          "nameLeft": 333,
+          "nameRight": 975,
+          "viewport": 1440
+        },
+        {
+          "name": "identite-manuelle",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "concept-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "concept-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "concept-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "consigne-exacte",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "enregistre",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "galerie-native-meme-serie",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "logo-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "planche-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "logo-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "planche-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "logo-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "planche-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reutilisation-sans-appel",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "identite-autre-largeur",
+          "availableWidth": 328,
+          "contentWidth": 328,
+          "columns": "328px",
+          "nameWidth": 286,
+          "nameLeft": 37,
+          "nameRight": 323,
+          "viewport": 360
+        },
+        {
+          "name": "identite-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "multi",
+      "business": "products",
+      "width": 390,
+      "before": {
+        "providerHttpCalls": 11,
+        "textHttpCalls": 8,
+        "imageHttpCalls": 3,
+        "tokenCounts": 8,
+        "calls": 11,
+        "usage": 11,
+        "simulatedMicro": 321503
+      },
+      "afterAcquisition": {
+        "providerHttpCalls": 18,
+        "textHttpCalls": 12,
+        "imageHttpCalls": 6,
+        "tokenCounts": 12,
+        "calls": 18,
+        "usage": 18,
+        "simulatedMicro": 611358
+      },
+      "after": {
+        "providerHttpCalls": 19,
+        "textHttpCalls": 13,
+        "imageHttpCalls": 6,
+        "tokenCounts": 13,
+        "calls": 19,
+        "usage": 19,
+        "simulatedMicro": 619270
+      },
+      "outputs": [
+        {
+          "directionId": "t1",
+          "label": "Signature typographique",
+          "concept": "Concept « Signature typographique » pour Sous la verrière : Accessoires de bouturage.",
+          "identity": {
+            "signature": "Le détail, au quotidien.",
+            "palette": {
+              "primary": "#28504a",
+              "secondary": "#bfd0b4",
+              "accent": "#9b4f2c",
+              "light": "#fcfaf5",
+              "dark": "#171f20"
+            },
+            "colorRoles": {
+              "primary": "Vert profond : signature et titres précis",
+              "secondary": "Sauge douce : surfaces calmes",
+              "accent": "Terre cuite : appels à l’action chaleureux",
+              "light": "Ivoire neutre : fond de lecture",
+              "dark": "Encre neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "jost_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Précis et direct",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Lumière diffuse, gestes simples",
+            "graphicLanguage": "Traits nets et grilles aérées",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "znrpzwf4eo3uzxg4",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "o2tanwo6afathiyl",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          },
+          "preview": {
+            "assetId": "gcn92b1lh4n92dgq",
+            "version": 1,
+            "sha256": "e0720daace8573edfed60bd7816cd29ee9b3d73690df2b2117e315f96da57655"
+          },
+          "present": true,
+          "href": "/api/files/znrpzwf4eo3uzxg4",
+          "downloadHref": "/api/files/znrpzwf4eo3uzxg4?download=1",
+          "originalHref": "/api/files/o2tanwo6afathiyl?download=1",
+          "previewHref": "/api/files/gcn92b1lh4n92dgq"
+        },
+        {
+          "directionId": "t2",
+          "label": "Monogramme construit",
+          "concept": "Concept « Monogramme construit » pour Sous la verrière : Accessoires de bouturage.",
+          "identity": {
+            "signature": "Une approche claire.",
+            "palette": {
+              "primary": "#483d68",
+              "secondary": "#c4b7d6",
+              "accent": "#9a3662",
+              "light": "#f8f5fc",
+              "dark": "#201a2c"
+            },
+            "colorRoles": {
+              "primary": "Prune : titres éditoriaux",
+              "secondary": "Lavande grisée : surfaces posées",
+              "accent": "Baie : appels à l’action affirmés",
+              "light": "Blanc légèrement teinté : fond de lecture",
+              "dark": "Encre légèrement violacée : texte courant"
+            },
+            "fonts": {
+              "heading": "playfair_display_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Éditorial et posé",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Plans graphiques et espace",
+            "graphicLanguage": "Contraste de tailles et marges",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "6a6whu80635l3g6k",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "ivdqnpnlxkwifu0c",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          },
+          "preview": {
+            "assetId": "ie8g01d8xoayw7cj",
+            "version": 1,
+            "sha256": "754ff2269330f6539464b8af81612174aba9ae01078d032cb13e44c25c88e001"
+          },
+          "present": true,
+          "href": "/api/files/6a6whu80635l3g6k",
+          "downloadHref": "/api/files/6a6whu80635l3g6k?download=1",
+          "originalHref": "/api/files/ivdqnpnlxkwifu0c?download=1",
+          "previewHref": "/api/files/ie8g01d8xoayw7cj"
+        },
+        {
+          "directionId": "t3",
+          "label": "Geste abstrait",
+          "concept": "Concept « Geste abstrait » pour Sous la verrière : Accessoires de bouturage.",
+          "identity": {
+            "signature": "La matière prend place.",
+            "palette": {
+              "primary": "#614024",
+              "secondary": "#d8b77c",
+              "accent": "#47657a",
+              "light": "#fbf6ed",
+              "dark": "#282019"
+            },
+            "colorRoles": {
+              "primary": "Brun : titres liés à la matière",
+              "secondary": "Sable : surfaces chaleureuses",
+              "accent": "Bleu ardoise : appels à l’action nets",
+              "light": "Papier neutre : fond de lecture",
+              "dark": "Encre brune neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "montserrat_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Chaleureux et concret",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Textures et lumière latérale",
+            "graphicLanguage": "Formes organiques et aplats",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "gu6yz4dswdw8lj0a",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "i8ciiea1bpz8y1o7",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          },
+          "preview": {
+            "assetId": "bmicdpexvrw5abzr",
+            "version": 1,
+            "sha256": "6a7153782111491a2736f5547ec5b242129bbf33686fde968b8424172923f4dc"
+          },
+          "present": true,
+          "href": "/api/files/gu6yz4dswdw8lj0a",
+          "downloadHref": "/api/files/gu6yz4dswdw8lj0a?download=1",
+          "originalHref": "/api/files/i8ciiea1bpz8y1o7?download=1",
+          "previewHref": "/api/files/bmicdpexvrw5abzr"
+        }
+      ],
+      "downloads": [
+        {
+          "asset": {
+            "assetId": "znrpzwf4eo3uzxg4",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "o2tanwo6afathiyl",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "6a6whu80635l3g6k",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "ivdqnpnlxkwifu0c",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "gu6yz4dswdw8lj0a",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "i8ciiea1bpz8y1o7",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          }
+        }
+      ],
+      "partial": null,
+      "reused": true,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteUnchanged": true,
+      "captures": [
+        "multi-identite-manuelle.png",
+        "multi-devis.png",
+        "multi-concept-1.png",
+        "multi-concept-2.png",
+        "multi-concept-3.png",
+        "multi-consigne-exacte.png",
+        "multi-reouverture.png",
+        "multi-enregistre.png",
+        "multi-galerie-native-meme-serie.png",
+        "multi-logo-1.png",
+        "multi-planche-1.png",
+        "multi-logo-2.png",
+        "multi-planche-2.png",
+        "multi-logo-3.png",
+        "multi-planche-3.png",
+        "multi-reutilisation-devis.png",
+        "multi-reutilisation-sans-appel.png",
+        "multi-identite-autre-largeur.png",
+        "multi-autre-largeur.png",
+        "multi-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "identite-manuelle",
+          "availableWidth": 358,
+          "contentWidth": 358,
+          "columns": "358px",
+          "nameWidth": 316,
+          "nameLeft": 37,
+          "nameRight": 353,
+          "viewport": 390
+        },
+        {
+          "name": "identite-manuelle",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "consigne-exacte",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reouverture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "enregistre",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-native-meme-serie",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "logo-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "planche-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "logo-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "planche-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "logo-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "planche-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reutilisation-sans-appel",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "identite-autre-largeur",
+          "availableWidth": 1104,
+          "contentWidth": 1104,
+          "columns": "700px 380px",
+          "nameWidth": 642,
+          "nameLeft": 333,
+          "nameRight": 975,
+          "viewport": 1440
+        },
+        {
+          "name": "identite-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "services",
+      "business": "services",
+      "width": 1024,
+      "before": {
+        "providerHttpCalls": 19,
+        "textHttpCalls": 13,
+        "imageHttpCalls": 6,
+        "tokenCounts": 13,
+        "calls": 19,
+        "usage": 19,
+        "simulatedMicro": 619270
+      },
+      "afterAcquisition": {
+        "providerHttpCalls": 26,
+        "textHttpCalls": 17,
+        "imageHttpCalls": 9,
+        "tokenCounts": 17,
+        "calls": 26,
+        "usage": 26,
+        "simulatedMicro": 909125
+      },
+      "after": {
+        "providerHttpCalls": 27,
+        "textHttpCalls": 18,
+        "imageHttpCalls": 9,
+        "tokenCounts": 18,
+        "calls": 27,
+        "usage": 27,
+        "simulatedMicro": 917037
+      },
+      "outputs": [
+        {
+          "directionId": "t1",
+          "label": "Signature typographique",
+          "concept": "Concept « Signature typographique » pour Verre retrouvé : Entretien de vitraux.",
+          "identity": {
+            "signature": "Le détail, au quotidien.",
+            "palette": {
+              "primary": "#28504a",
+              "secondary": "#bfd0b4",
+              "accent": "#9b4f2c",
+              "light": "#fcfaf5",
+              "dark": "#171f20"
+            },
+            "colorRoles": {
+              "primary": "Vert profond : signature et titres précis",
+              "secondary": "Sauge douce : surfaces calmes",
+              "accent": "Terre cuite : appels à l’action chaleureux",
+              "light": "Ivoire neutre : fond de lecture",
+              "dark": "Encre neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "jost_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Précis et direct",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Lumière diffuse, gestes simples",
+            "graphicLanguage": "Traits nets et grilles aérées",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "ljvu6a106iuxidb8",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "3rmbqqr78tiv2c57",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          },
+          "preview": {
+            "assetId": "krzoplfvi3ta1f5e",
+            "version": 1,
+            "sha256": "5de414f5aa884c25cc48cb663cd0da7e90859d7715d459e10b671ba5c5c64e59"
+          },
+          "present": true,
+          "href": "/api/files/ljvu6a106iuxidb8",
+          "downloadHref": "/api/files/ljvu6a106iuxidb8?download=1",
+          "originalHref": "/api/files/3rmbqqr78tiv2c57?download=1",
+          "previewHref": "/api/files/krzoplfvi3ta1f5e"
+        },
+        {
+          "directionId": "t2",
+          "label": "Monogramme construit",
+          "concept": "Concept « Monogramme construit » pour Verre retrouvé : Entretien de vitraux.",
+          "identity": {
+            "signature": "Une approche claire.",
+            "palette": {
+              "primary": "#483d68",
+              "secondary": "#c4b7d6",
+              "accent": "#9a3662",
+              "light": "#f8f5fc",
+              "dark": "#201a2c"
+            },
+            "colorRoles": {
+              "primary": "Prune : titres éditoriaux",
+              "secondary": "Lavande grisée : surfaces posées",
+              "accent": "Baie : appels à l’action affirmés",
+              "light": "Blanc légèrement teinté : fond de lecture",
+              "dark": "Encre légèrement violacée : texte courant"
+            },
+            "fonts": {
+              "heading": "playfair_display_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Éditorial et posé",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Plans graphiques et espace",
+            "graphicLanguage": "Contraste de tailles et marges",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "5p2f0dcrjtb0o05f",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "5n6sbr22f4yyeyyo",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          },
+          "preview": {
+            "assetId": "poujeogbwgv84em4",
+            "version": 1,
+            "sha256": "c3867c357165626c5558c31d2d1082874d368c44638dfeacc2ecad0ff1084f0b"
+          },
+          "present": true,
+          "href": "/api/files/5p2f0dcrjtb0o05f",
+          "downloadHref": "/api/files/5p2f0dcrjtb0o05f?download=1",
+          "originalHref": "/api/files/5n6sbr22f4yyeyyo?download=1",
+          "previewHref": "/api/files/poujeogbwgv84em4"
+        },
+        {
+          "directionId": "t3",
+          "label": "Geste abstrait",
+          "concept": "Concept « Geste abstrait » pour Verre retrouvé : Entretien de vitraux.",
+          "identity": {
+            "signature": "La matière prend place.",
+            "palette": {
+              "primary": "#614024",
+              "secondary": "#d8b77c",
+              "accent": "#47657a",
+              "light": "#fbf6ed",
+              "dark": "#282019"
+            },
+            "colorRoles": {
+              "primary": "Brun : titres liés à la matière",
+              "secondary": "Sable : surfaces chaleureuses",
+              "accent": "Bleu ardoise : appels à l’action nets",
+              "light": "Papier neutre : fond de lecture",
+              "dark": "Encre brune neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "montserrat_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Chaleureux et concret",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Textures et lumière latérale",
+            "graphicLanguage": "Formes organiques et aplats",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "6nh620tf1ei4du2q",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "kpy04vzcnesid1sy",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          },
+          "preview": {
+            "assetId": "bwja75us0jtik867",
+            "version": 1,
+            "sha256": "d30f14c5751b2146e9df07c66971ccb42b727b915cc68183ebfa79e4bf7479d9"
+          },
+          "present": true,
+          "href": "/api/files/6nh620tf1ei4du2q",
+          "downloadHref": "/api/files/6nh620tf1ei4du2q?download=1",
+          "originalHref": "/api/files/kpy04vzcnesid1sy?download=1",
+          "previewHref": "/api/files/bwja75us0jtik867"
+        }
+      ],
+      "downloads": [
+        {
+          "asset": {
+            "assetId": "ljvu6a106iuxidb8",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "3rmbqqr78tiv2c57",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "5p2f0dcrjtb0o05f",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "5n6sbr22f4yyeyyo",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "6nh620tf1ei4du2q",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "kpy04vzcnesid1sy",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          }
+        }
+      ],
+      "partial": null,
+      "reused": true,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteUnchanged": true,
+      "captures": [
+        "services-identite-manuelle.png",
+        "services-devis.png",
+        "services-concept-1.png",
+        "services-concept-2.png",
+        "services-concept-3.png",
+        "services-consigne-exacte.png",
+        "services-reouverture.png",
+        "services-enregistre.png",
+        "services-galerie-native-meme-serie.png",
+        "services-logo-1.png",
+        "services-planche-1.png",
+        "services-logo-2.png",
+        "services-planche-2.png",
+        "services-logo-3.png",
+        "services-planche-3.png",
+        "services-reutilisation-devis.png",
+        "services-reutilisation-sans-appel.png",
+        "services-identite-autre-largeur.png",
+        "services-autre-largeur.png",
+        "services-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "identite-manuelle",
+          "availableWidth": 688,
+          "contentWidth": 688,
+          "columns": "688px",
+          "nameWidth": 630,
+          "nameLeft": 333,
+          "nameRight": 963,
+          "viewport": 1024
+        },
+        {
+          "name": "identite-manuelle",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "concept-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "concept-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "concept-3",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "consigne-exacte",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reouverture",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "enregistre",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "galerie-native-meme-serie",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "logo-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "planche-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "logo-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "planche-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "logo-3",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "planche-3",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reutilisation-sans-appel",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "identite-autre-largeur",
+          "availableWidth": 328,
+          "contentWidth": 328,
+          "columns": "328px",
+          "nameWidth": 286,
+          "nameLeft": 37,
+          "nameRight": 323,
+          "viewport": 360
+        },
+        {
+          "name": "identite-autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "inedit",
+      "business": "services",
+      "width": 360,
+      "before": {
+        "providerHttpCalls": 27,
+        "textHttpCalls": 18,
+        "imageHttpCalls": 9,
+        "tokenCounts": 18,
+        "calls": 27,
+        "usage": 27,
+        "simulatedMicro": 917037
+      },
+      "afterAcquisition": {
+        "providerHttpCalls": 37,
+        "textHttpCalls": 24,
+        "imageHttpCalls": 13,
+        "tokenCounts": 24,
+        "calls": 37,
+        "usage": 37,
+        "simulatedMicro": 1308785
+      },
+      "after": {
+        "providerHttpCalls": 38,
+        "textHttpCalls": 25,
+        "imageHttpCalls": 13,
+        "tokenCounts": 25,
+        "calls": 38,
+        "usage": 38,
+        "simulatedMicro": 1316697
+      },
+      "outputs": [
+        {
+          "directionId": "t1",
+          "label": "Signature typographique",
+          "concept": "Concept « Signature typographique » pour Trace & papier : Numérisation de plaques photographiques.",
+          "identity": {
+            "signature": "Le détail, au quotidien.",
+            "palette": {
+              "primary": "#28504a",
+              "secondary": "#bfd0b4",
+              "accent": "#9b4f2c",
+              "light": "#fcfaf5",
+              "dark": "#171f20"
+            },
+            "colorRoles": {
+              "primary": "Vert profond : signature et titres précis",
+              "secondary": "Sauge douce : surfaces calmes",
+              "accent": "Terre cuite : appels à l’action chaleureux",
+              "light": "Ivoire neutre : fond de lecture",
+              "dark": "Encre neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "jost_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Précis et direct",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Lumière diffuse, gestes simples",
+            "graphicLanguage": "Traits nets et grilles aérées",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "f44pxur11bfy6ywk",
+            "version": 1,
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          "original": {
+            "assetId": "16r5m8h0k33rk571",
+            "version": 1,
+            "sha256": "1ce190ef4b8dbd4d4bd3112a17ad1e640caba6d07869e5b7c39269870208ee31"
+          },
+          "preview": {
+            "assetId": "3ef75a7obprno9h6",
+            "version": 1,
+            "sha256": "cbb0e7b2fe39bf2d12a277de5189393b0be008b17bdf72de6bd2f16804c76047"
+          },
+          "present": true,
+          "href": "/api/files/f44pxur11bfy6ywk",
+          "downloadHref": "/api/files/f44pxur11bfy6ywk?download=1",
+          "originalHref": "/api/files/16r5m8h0k33rk571?download=1",
+          "previewHref": "/api/files/3ef75a7obprno9h6"
+        },
+        {
+          "directionId": "t2",
+          "label": "Monogramme construit",
+          "concept": "Concept « Monogramme construit » pour Trace & papier : Numérisation de plaques photographiques.",
+          "identity": {
+            "signature": "Une approche claire.",
+            "palette": {
+              "primary": "#483d68",
+              "secondary": "#c4b7d6",
+              "accent": "#9a3662",
+              "light": "#f8f5fc",
+              "dark": "#201a2c"
+            },
+            "colorRoles": {
+              "primary": "Prune : titres éditoriaux",
+              "secondary": "Lavande grisée : surfaces posées",
+              "accent": "Baie : appels à l’action affirmés",
+              "light": "Blanc légèrement teinté : fond de lecture",
+              "dark": "Encre légèrement violacée : texte courant"
+            },
+            "fonts": {
+              "heading": "playfair_display_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Éditorial et posé",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Plans graphiques et espace",
+            "graphicLanguage": "Contraste de tailles et marges",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "8m1r444lzap7hm0m",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "9dyck1dkjhi4qsd6",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          },
+          "preview": {
+            "assetId": "6o3dyo9usmt2qxvz",
+            "version": 1,
+            "sha256": "330733a885eed87229e23412cbf73b4df20e37c12d92c0bbf010e915698a606d"
+          },
+          "present": true,
+          "href": "/api/files/8m1r444lzap7hm0m",
+          "downloadHref": "/api/files/8m1r444lzap7hm0m?download=1",
+          "originalHref": "/api/files/9dyck1dkjhi4qsd6?download=1",
+          "previewHref": "/api/files/6o3dyo9usmt2qxvz"
+        },
+        {
+          "directionId": "t3",
+          "label": "Geste abstrait",
+          "concept": "Concept « Geste abstrait » pour Trace & papier : Numérisation de plaques photographiques.",
+          "identity": {
+            "signature": "La matière prend place.",
+            "palette": {
+              "primary": "#614024",
+              "secondary": "#d8b77c",
+              "accent": "#47657a",
+              "light": "#fbf6ed",
+              "dark": "#282019"
+            },
+            "colorRoles": {
+              "primary": "Brun : titres liés à la matière",
+              "secondary": "Sable : surfaces chaleureuses",
+              "accent": "Bleu ardoise : appels à l’action nets",
+              "light": "Papier neutre : fond de lecture",
+              "dark": "Encre brune neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "montserrat_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Chaleureux et concret",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Textures et lumière latérale",
+            "graphicLanguage": "Formes organiques et aplats",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "xmly3aut62ddvx6k",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "6za2z50oojb3rdl4",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          },
+          "preview": {
+            "assetId": "je8p0zoie1ecmkgp",
+            "version": 1,
+            "sha256": "15294d6b21871a3787b394017a3f752a4013a419e93a681008da0f0369d078be"
+          },
+          "present": true,
+          "href": "/api/files/xmly3aut62ddvx6k",
+          "downloadHref": "/api/files/xmly3aut62ddvx6k?download=1",
+          "originalHref": "/api/files/6za2z50oojb3rdl4?download=1",
+          "previewHref": "/api/files/je8p0zoie1ecmkgp"
+        }
+      ],
+      "downloads": [
+        {
+          "asset": {
+            "assetId": "8m1r444lzap7hm0m",
+            "version": 1,
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          "original": {
+            "assetId": "9dyck1dkjhi4qsd6",
+            "version": 1,
+            "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+          }
+        },
+        {
+          "asset": {
+            "assetId": "xmly3aut62ddvx6k",
+            "version": 1,
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          "original": {
+            "assetId": "6za2z50oojb3rdl4",
+            "version": 1,
+            "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+          }
+        }
+      ],
+      "partial": {
+        "job": {
+          "id": "cxnfnyzs94wqu6di",
+          "type": "brand.logo.v2",
+          "label": "Créer les trois logos proposés avec SYNA",
+          "status": "failed",
+          "progress": 0.9,
+          "message": "Série partielle : 2/3 directions conservées. Aucune relance automatique ni identité remplacée.",
+          "error": "Série partielle : 2/3 directions conservées. Aucune relance automatique ni identité remplacée.",
+          "attempts": 1,
+          "parentId": null,
+          "result": null,
+          "createdAt": 1793299082537,
+          "updatedAt": 1793299085790,
+          "finishedAt": 1793299085790,
+          "startedAt": 1793299082537,
+          "alive": false,
+          "idleMs": 180
+        },
+        "outputs": [
+          {
+            "directionId": "t2",
+            "label": "Monogramme construit",
+            "concept": "Concept « Monogramme construit » pour Trace & papier : Numérisation de plaques photographiques.",
+            "identity": {
+              "signature": "Une approche claire.",
+              "palette": {
+                "primary": "#483d68",
+                "secondary": "#c4b7d6",
+                "accent": "#9a3662",
+                "light": "#f8f5fc",
+                "dark": "#201a2c"
+              },
+              "colorRoles": {
+                "primary": "Prune : titres éditoriaux",
+                "secondary": "Lavande grisée : surfaces posées",
+                "accent": "Baie : appels à l’action affirmés",
+                "light": "Blanc légèrement teinté : fond de lecture",
+                "dark": "Encre légèrement violacée : texte courant"
+              },
+              "fonts": {
+                "heading": "playfair_display_n6",
+                "body": "inter_n4"
+              },
+              "tone": {
+                "voice": "Éditorial et posé",
+                "do": [
+                  "Décrire les faits connus"
+                ],
+                "dont": [
+                  "Inventer une garantie"
+                ]
+              },
+              "mood": "Plans graphiques et espace",
+              "graphicLanguage": "Contraste de tailles et marges",
+              "rules": [
+                "Conserver une zone calme autour du logo",
+                "Un seul style de traits"
+              ],
+              "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+            },
+            "image": {
+              "assetId": "8m1r444lzap7hm0m",
+              "version": 1,
+              "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+            },
+            "original": {
+              "assetId": "9dyck1dkjhi4qsd6",
+              "version": 1,
+              "sha256": "ae61273ecf972ab33a866eade70029789190a9150eb28e043a4874f8c8dd5899"
+            },
+            "preview": {
+              "assetId": "6o3dyo9usmt2qxvz",
+              "version": 1,
+              "sha256": "330733a885eed87229e23412cbf73b4df20e37c12d92c0bbf010e915698a606d"
+            },
+            "present": true,
+            "href": "/api/files/8m1r444lzap7hm0m",
+            "downloadHref": "/api/files/8m1r444lzap7hm0m?download=1",
+            "originalHref": "/api/files/9dyck1dkjhi4qsd6?download=1",
+            "previewHref": "/api/files/6o3dyo9usmt2qxvz"
+          },
+          {
+            "directionId": "t3",
+            "label": "Geste abstrait",
+            "concept": "Concept « Geste abstrait » pour Trace & papier : Numérisation de plaques photographiques.",
+            "identity": {
+              "signature": "La matière prend place.",
+              "palette": {
+                "primary": "#614024",
+                "secondary": "#d8b77c",
+                "accent": "#47657a",
+                "light": "#fbf6ed",
+                "dark": "#282019"
+              },
+              "colorRoles": {
+                "primary": "Brun : titres liés à la matière",
+                "secondary": "Sable : surfaces chaleureuses",
+                "accent": "Bleu ardoise : appels à l’action nets",
+                "light": "Papier neutre : fond de lecture",
+                "dark": "Encre brune neutre : texte courant"
+              },
+              "fonts": {
+                "heading": "montserrat_n6",
+                "body": "inter_n4"
+              },
+              "tone": {
+                "voice": "Chaleureux et concret",
+                "do": [
+                  "Décrire les faits connus"
+                ],
+                "dont": [
+                  "Inventer une garantie"
+                ]
+              },
+              "mood": "Textures et lumière latérale",
+              "graphicLanguage": "Formes organiques et aplats",
+              "rules": [
+                "Conserver une zone calme autour du logo",
+                "Un seul style de traits"
+              ],
+              "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+            },
+            "image": {
+              "assetId": "xmly3aut62ddvx6k",
+              "version": 1,
+              "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+            },
+            "original": {
+              "assetId": "6za2z50oojb3rdl4",
+              "version": 1,
+              "sha256": "c8acdeda34c7008d087ca1ef8a3344f33d2e433389cb139983a792bdd252c317"
+            },
+            "preview": {
+              "assetId": "je8p0zoie1ecmkgp",
+              "version": 1,
+              "sha256": "15294d6b21871a3787b394017a3f752a4013a419e93a681008da0f0369d078be"
+            },
+            "present": true,
+            "href": "/api/files/xmly3aut62ddvx6k",
+            "downloadHref": "/api/files/xmly3aut62ddvx6k?download=1",
+            "originalHref": "/api/files/6za2z50oojb3rdl4?download=1",
+            "previewHref": "/api/files/je8p0zoie1ecmkgp"
+          }
+        ],
+        "trials": [
+          {
+            "assetId": "mk5prou67xg762p5",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6",
+            "href": "/api/files/mk5prou67xg762p5",
+            "downloadHref": "/api/files/mk5prou67xg762p5?download=1",
+            "diagnosticOnly": true,
+            "reusable": false
+          }
+        ],
+        "afterRepair": {
+          "providerHttpCalls": 37,
+          "textHttpCalls": 24,
+          "imageHttpCalls": 13,
+          "tokenCounts": 24,
+          "calls": 37,
+          "usage": 37,
+          "simulatedMicro": 1308785
+        },
+        "beforeRepair": {
+          "providerHttpCalls": 35,
+          "textHttpCalls": 23,
+          "imageHttpCalls": 12,
+          "tokenCounts": 23,
+          "calls": 35,
+          "usage": 35,
+          "simulatedMicro": 1214804
+        },
+        "repairedReceipt": "c66ud9yvwe29eej3"
+      },
+      "reused": true,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "servicesUnchanged": true,
+      "siteUnchanged": true,
+      "captures": [
+        "inedit-identite-manuelle.png",
+        "inedit-devis.png",
+        "inedit-concept-1.png",
+        "inedit-concept-2.png",
+        "inedit-concept-3.png",
+        "inedit-consigne-exacte.png",
+        "inedit-reouverture.png",
+        "inedit-enregistre.png",
+        "inedit-galerie-native-meme-serie.png",
+        "inedit-logo-1.png",
+        "inedit-planche-1.png",
+        "inedit-logo-2.png",
+        "inedit-planche-2.png",
+        "inedit-essai-non-livrable.png",
+        "inedit-reparation-devis.png",
+        "inedit-reparation-resultat.png",
+        "inedit-reutilisation-devis.png",
+        "inedit-reutilisation-sans-appel.png",
+        "inedit-identite-autre-largeur.png",
+        "inedit-autre-largeur.png",
+        "inedit-reprise.png"
+      ],
+      "geometry": [
+        {
+          "name": "identite-manuelle",
+          "availableWidth": 328,
+          "contentWidth": 328,
+          "columns": "328px",
+          "nameWidth": 286,
+          "nameLeft": 37,
+          "nameRight": 323,
+          "viewport": 360
+        },
+        {
+          "name": "identite-manuelle",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "concept-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "concept-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "concept-3",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "consigne-exacte",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "enregistre",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "galerie-native-meme-serie",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "logo-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "planche-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "logo-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "planche-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "essai-non-livrable",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reparation-devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reparation-resultat",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reutilisation-devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reutilisation-sans-appel",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "identite-autre-largeur",
+          "availableWidth": 1104,
+          "contentWidth": 1104,
+          "columns": "700px 380px",
+          "nameWidth": 642,
+          "nameLeft": 333,
+          "nameRight": 975,
+          "viewport": 1440
+        },
+        {
+          "name": "identite-autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "errors": []
+    },
+    {
+      "scene": "panne",
+      "business": "products",
+      "width": 390,
+      "before": {
+        "providerHttpCalls": 38,
+        "textHttpCalls": 25,
+        "imageHttpCalls": 13,
+        "tokenCounts": 25,
+        "calls": 38,
+        "usage": 38,
+        "simulatedMicro": 1316697
+      },
+      "after": {
+        "providerHttpCalls": 42,
+        "textHttpCalls": 27,
+        "imageHttpCalls": 15,
+        "tokenCounts": 27,
+        "calls": 42,
+        "usage": 41,
+        "simulatedMicro": 1418590
+      },
+      "job": {
+        "id": "kff8fdspub0othgh",
+        "type": "brand.logo.v2",
+        "label": "Créer les trois logos proposés avec SYNA",
+        "status": "failed",
+        "progress": 0.4,
+        "message": "Résultat incertain chez openai:gpt-image-2.5-sunburst (503 Panne image503 simulée après une première proposition acquise.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+        "error": "Résultat incertain chez openai:gpt-image-2.5-sunburst (503 Panne image503 simulée après une première proposition acquise.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+        "attempts": 1,
+        "parentId": null,
+        "result": null,
+        "createdAt": 1793299103099,
+        "updatedAt": 1793299104809,
+        "finishedAt": 1793299104809,
+        "startedAt": 1793299103099,
+        "alive": false,
+        "idleMs": 198
+      },
+      "outputs": [
+        {
+          "directionId": "t1",
+          "label": "Signature typographique",
+          "concept": "Concept « Signature typographique » pour Éclat de gravure : Outils de gravure manuelle.",
+          "identity": {
+            "signature": "Le détail, au quotidien.",
+            "palette": {
+              "primary": "#28504a",
+              "secondary": "#bfd0b4",
+              "accent": "#9b4f2c",
+              "light": "#fcfaf5",
+              "dark": "#171f20"
+            },
+            "colorRoles": {
+              "primary": "Vert profond : signature et titres précis",
+              "secondary": "Sauge douce : surfaces calmes",
+              "accent": "Terre cuite : appels à l’action chaleureux",
+              "light": "Ivoire neutre : fond de lecture",
+              "dark": "Encre neutre : texte courant"
+            },
+            "fonts": {
+              "heading": "jost_n6",
+              "body": "inter_n4"
+            },
+            "tone": {
+              "voice": "Précis et direct",
+              "do": [
+                "Décrire les faits connus"
+              ],
+              "dont": [
+                "Inventer une garantie"
+              ]
+            },
+            "mood": "Lumière diffuse, gestes simples",
+            "graphicLanguage": "Traits nets et grilles aérées",
+            "rules": [
+              "Conserver une zone calme autour du logo",
+              "Un seul style de traits"
+            ],
+            "sampleText": "Découvrez l’offre et ses caractéristiques confirmées."
+          },
+          "image": {
+            "assetId": "rap90vwz0v4f9ccs",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "5g1wyucxt7ui0cdf",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          },
+          "preview": {
+            "assetId": "liri9n56ici5uw8k",
+            "version": 1,
+            "sha256": "8babfc4098fe1b0d40f5249bc93c040f683004e6ddf57be890a532f6b30e0c50"
+          },
+          "present": true,
+          "href": "/api/files/rap90vwz0v4f9ccs",
+          "downloadHref": "/api/files/rap90vwz0v4f9ccs?download=1",
+          "originalHref": "/api/files/5g1wyucxt7ui0cdf?download=1",
+          "previewHref": "/api/files/liri9n56ici5uw8k"
+        }
+      ],
+      "downloads": [
+        {
+          "asset": {
+            "assetId": "rap90vwz0v4f9ccs",
+            "version": 1,
+            "sha256": "c323db3946ea4bf9b07552cbcc0204cfac8893466adbece02f3f8768566da1c6"
+          },
+          "original": {
+            "assetId": "5g1wyucxt7ui0cdf",
+            "version": 1,
+            "sha256": "048e6d35e073f396dfbee334fa1bb5132d85c847c5cb5ee0f792d1a5c2d9e4a3"
+          }
+        }
+      ],
+      "uncertain": [
+        {
+          "amount": 112994,
+          "actual": 112994
+        }
+      ],
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "identityUnchanged": true,
+      "catalogueUnchanged": true,
+      "siteUnchanged": true,
+      "captures": [
+        "panne-identite-manuelle.png",
+        "panne-devis.png",
+        "panne-concept-1.png",
+        "panne-concept-2.png",
+        "panne-concept-3.png",
+        "panne-consigne-exacte.png",
+        "panne-reouverture.png",
+        "panne-enregistre.png",
+        "panne-galerie-native-meme-serie.png",
+        "panne-logo-1.png",
+        "panne-planche-1.png",
+        "panne-panne-acquis-conserve.png",
+        "panne-panne-reprise-sans-relance.png"
+      ],
+      "geometry": [
+        {
+          "name": "identite-manuelle",
+          "availableWidth": 358,
+          "contentWidth": 358,
+          "columns": "358px",
+          "nameWidth": 316,
+          "nameLeft": 37,
+          "nameRight": 353,
+          "viewport": 390
+        },
+        {
+          "name": "identite-manuelle",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "concept-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "consigne-exacte",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reouverture",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "enregistre",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "galerie-native-meme-serie",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "logo-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "planche-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-acquis-conserve",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-reprise-sans-relance",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

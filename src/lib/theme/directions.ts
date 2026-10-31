@@ -201,7 +201,7 @@ export type BrandPalette = { primary: string; secondary: string; accent: string;
 
 type Scheme = { background: string; surface: string; text: string; muted: string; accent: string; accent_text: string; border: string };
 
-function scheme(bg: string, text: string, accent: string, surfaceT = 0.045): Scheme {
+export function scheme(bg: string, text: string, accent: string, surfaceT = 0.045): Scheme {
   // Texte visé à 7:1 ; quand ce n'est pas atteignable (fond de luminosité moyenne, rouge FRAISE), on garde le meilleur
   // des deux : jamais un texte sombre basculé en blanc moins lisible (3,98:1) que le sombre d'origine (4,62:1).
   const t7 = ensureContrast(text, bg, 7);

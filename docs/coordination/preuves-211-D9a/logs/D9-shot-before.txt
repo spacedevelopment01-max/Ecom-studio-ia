@@ -1,0 +1,39 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/image-v2-binding.test.ts (20 tests | 1 failed | 19 skipped) 263ms
+   ❯ D9 — lier les images à la bonne offre native et à ses vrais fichiers (20)
+     × transmet chaque détail de la composition acceptée au générateur, sans consigne de logo contradictoire 260ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/image-v2-binding.test.ts > D9 — lier les images à la bonne offre native et à ses vrais fichiers > transmet chaque détail de la composition acceptée au générateur, sans consigne de logo contradictoire
+AssertionError: expected 'Photographie publicitaire haut de gam…' to contain 'Le produit entier occupe le tiers dro…'
+
+- Expected
++ Received
+
+- Le produit entier occupe le tiers droit sur une étagère étroite.
++ Photographie publicitaire haut de gamme, photoréaliste, au format horizontal 16:9. Vue de face légèrement plongeante, cadrage rapproché.
++
++ La scène se déroule sur une table en bois clair, à la surface lisse. Un mur blanc chaud uni occupe le tiers supérieur de l’image, légèrement flou.
++
++ Au centre de l’image se trouve le produit de l’image de référence, reproduit exactement à l’identique : même forme, mêmes proportions, mêmes matières, mêmes couleurs, mêmes détails et mêmes inscriptions que sur la référence, vu sous le même angle. Il n’est ni redessiné, ni recoloré, ni simplifié. Le produit est entier dans le cadre : aucune partie coupée, cachée ou manquante (pour une montre : le bracelet complet, ses deux brins et la boucle). Il repose naturellement sur la surface, à sa taille réelle, avec une vraie ombre de contact.
++
++ La scène contient exactement un objet : le produit de la référence. Le côté gauche de l’image laisse une zone dégagée de bois clair, sans aucun objet.
++
++ Éclairage doux et naturel venant de la gauche. Ombre de contact réaliste sous le produit, reflets justes sur ses matières. Mise au point précise sur le produit, arrière-plan légèrement adouci. Ambiance : calme, précis, silencieux ; rendu photographique naturel.
++
++ Rien d’autre n’apparaît sur l’image : aucun texte, aucune lettre, aucun chiffre, aucune gravure, aucun logo, aucun filigrane, aucune personne, en dehors de ce qui figure déjà sur le produit de la référence. Aucun objet supplémentaire.
++ Consignes exactes du client : Garde exactement ma consigne de cadrage.. Ne pas écrire ces consignes sur l’image. Les restrictions de fidélité et de personnes restent obligatoires.
+
+ ❯ tests/image-v2-binding.test.ts:45:771
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 skipped (20)
+   Start at  12:58:31
+   Duration  2.71s (import 51%, transform 39%, tests 11%)

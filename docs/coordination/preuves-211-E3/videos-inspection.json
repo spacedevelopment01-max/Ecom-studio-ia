@@ -1,0 +1,71 @@
+{
+  "videos": [
+    {
+      "scenario": "products",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "762"
+          }
+        ],
+        "format": {
+          "duration": "30.480000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "30.480000",
+            "nb_read_frames": "762"
+          }
+        ],
+        "format": {
+          "duration": "30.480000"
+        }
+      },
+      "operation": "Transcodage seul, toutes les images/durée conservées. Aucune coupe ni accélération."
+    },
+    {
+      "scenario": "services",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "nb_read_frames": "759"
+          }
+        ],
+        "format": {
+          "duration": "30.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "duration": "30.360000",
+            "nb_read_frames": "759"
+          }
+        ],
+        "format": {
+          "duration": "30.360000"
+        }
+      },
+      "operation": "Transcodage seul, toutes les images/durée conservées. Aucune coupe ni accélération."
+    }
+  ],
+  "visualInspection": "17 captures UI et huit captures natives complètes ouvertes : cinq planches couvrant 72 segments ; détails avant/après 1440/390 ouverts. Six images réparties sur les deux vidéos ouvertes. La légende coupée à gauche en portrait devient entière en paysage ; les défauts hérités/placeholder restent visibles et non qualifiés."
+}

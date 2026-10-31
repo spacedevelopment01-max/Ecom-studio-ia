@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "source": "existing_synthetic_native_proposals_no_worker",
+  "version": {
+    "commit": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "before": {
+    "counts": {
+      "ai_calls": 13,
+      "usage_events": 7,
+      "jobs": 10,
+      "theme_versions": 0,
+      "assets": 0
+    },
+    "acquiredSha256": "bc605ea148c1de309645db39ea2b52d83673696eba11c92a93be3ab7458afd0c"
+  },
+  "after": {
+    "counts": {
+      "ai_calls": 13,
+      "usage_events": 7,
+      "jobs": 10,
+      "theme_versions": 0,
+      "assets": 0
+    },
+    "acquiredSha256": "bc605ea148c1de309645db39ea2b52d83673696eba11c92a93be3ab7458afd0c"
+  },
+  "newProviderCalls": 0,
+  "newJobs": 0,
+  "results": [
+    {
+      "file": "03-proposition-mobile-finale.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "metrics": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "headingVisible": true
+    },
+    {
+      "file": "04-proposition-ordinateur-finale.png",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "metrics": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "headingVisible": true
+    }
+  ]
+}

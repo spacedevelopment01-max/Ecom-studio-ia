@@ -29,6 +29,8 @@ export type Input = {
   services: ServiceProfile;
 };
 export type Brief = {
+  /** Paroles client non interprétées, conservées sans devenir automatiquement des faits commerciaux. */
+  clientStatements?: { id: string; text: string; source: 'user' }[];
   input: Input;
   profile: ProductProfile;
   services: ServiceProfile;
@@ -155,6 +157,8 @@ export type Data = {
   media: Media;
 };
 export type Stage<K extends Step = Step> = {
+  /** Tâche productrice du candidat natif ; les versions gardent cette preuve. */
+  producedByJobId?: string;
   data: Data[K];
   inputHash: string;
   status: "draft" | "approved" | "stale";

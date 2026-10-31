@@ -12,6 +12,8 @@ import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
 
 export type TraceScope = {
+  /** Demande persistante de l'agent commun ; impossible de la remplacer dans une sous-portée. */
+  agentBoundId?: string;
   /** Récupération des acquis uniquement : aucune nouvelle réservation fournisseur. */
   recoveryOnly?: boolean;
   jobId?: string | null;
@@ -38,8 +40,10 @@ export function currentTrace(): TraceScope {
 /** Exécute `fn` dans un contexte de trace (fusionné avec le contexte courant ; les étapes s'imbriquent en « a/b »). */
 export function withTrace<T>(scope: TraceScope, fn: () => Promise<T>): Promise<T> {
   const cur = currentTrace();
+  if(cur.agentBoundId&&scope.agentBoundId&&cur.agentBoundId!==scope.agentBoundId)throw new Error('agent_request_scope_conflict');
   const step = scope.step ? (cur.step ? `${cur.step}/${scope.step}` : scope.step) : cur.step;
-  return store.run({ ...cur, ...scope, recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
+  const costCapMicro=cur.costCapMicro==null?scope.costCapMicro:scope.costCapMicro==null?cur.costCapMicro:Math.min(cur.costCapMicro,scope.costCapMicro);
+  return store.run({ ...cur, ...scope, agentBoundId:cur.agentBoundId??scope.agentBoundId,costCapMicro,recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
 }
 
 /** Candidat évalué (piste de logo, image…) et sa tentative : les appels faits dans `fn` lui sont rattachés. */

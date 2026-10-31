@@ -71,19 +71,21 @@ export default function TabVideos() {
   };
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-video-bank>
-      <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="@container p-5">
+        <div className="flex min-w-0 flex-col gap-4 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
         <div className="min-w-0">
           <h2 className="font-display text-2xl font-semibold">{t("Banque de vidéos", "Video bank")}</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">{t("Des plans vidéo neutres, sans texte, utilisés dans vos publications vidéo et vos publicités. Les vidéos montées avec titres sont dans Publications › Publication vidéo.", "Neutral video clips, no text, used in your video posts and ads. Edited videos with titles are in Posts › Video post.")}</p>
         </div>
-        <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+        <div className="flex min-w-0 flex-wrap gap-2 @[60rem]:shrink-0 @[60rem]:justify-end">
           <input ref={fileRef} type="file" accept="video/mp4,video/quicktime,video/webm" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
           <Button variant="ghost" icon={<Upload className="size-4" />} loading={uploading} onClick={() => fileRef.current?.click()} data-bank-upload>{t("Importer", "Upload")}</Button>
           <Button variant="secondary" icon={<Search className="size-4" />} disabled={locked} onClick={() => setDialog("search")} data-bank-search>{t("Chercher des plans libres", "Find royalty-free clips")}</Button>
           <Button icon={<Wand2 className="size-4" />} disabled={aiLocked} onClick={() => setDialog("ai")} data-bank-create>{t("Créer un plan avec l'IA", "Create a clip with AI")}</Button>
         </div>
-        {locked && <div className="sm:basis-full"><PlanRequired what="videos" /></div>}
-        {!locked&&aiLocked&&<p className="text-sm text-ink-2 sm:basis-full" data-video-plan-lock>{t('Les plans filmés par l’IA sont disponibles avec Développer ou Dominer. Vos imports et la recherche de plans libres restent disponibles.','AI-filmed clips require Grow or Dominate. Your uploads and royalty-free clip search remain available.')} <a href="/studio/compte" className="underline">{t('Voir mon forfait','View my plan')}</a></p>}
+        </div>
+        {locked && <div className="mt-4"><PlanRequired what="videos" /></div>}
+        {!locked&&aiLocked&&<p className="mt-4 text-sm text-ink-2" data-video-plan-lock>{t('Les plans filmés par l’IA sont disponibles avec Développer ou Dominer. Vos imports et la recherche de plans libres restent disponibles.','AI-filmed clips require Grow or Dominate. Your uploads and royalty-free clip search remain available.')} <a href="/studio/compte" className="underline">{t('Voir mon forfait','View my plan')}</a></p>}
       </Card>
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div>

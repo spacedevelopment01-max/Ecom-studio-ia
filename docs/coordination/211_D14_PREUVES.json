@@ -1,0 +1,36 @@
+{
+  "nativeBuild": "5493d7c02d3a06493c32e2ad227a69ecbdac255f",
+  "finalUiBuild": "e404093c4b711b4dc51980b87b0a9c75e884ceaa",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/preuves-211-D14/01-devis-mobile.png": {
+      "bytes": 54236,
+      "sha256": "7dc7ac4aa35d67b7138418ec108d4de18073177c80da20ffbc1b1f2d7261b723"
+    },
+    "docs/coordination/preuves-211-D14/02-choix-mobile.png": {
+      "bytes": 61481,
+      "sha256": "95b725588a830ab7ebb8e10aadcffcc7df0cd82c15cc2ec5ea07667ffac2d6a6"
+    },
+    "docs/coordination/preuves-211-D14/03-choix-ordinateur.png": {
+      "bytes": 245811,
+      "sha256": "798802cad57d0445552aea7f27c77b3a59f4214027842a1db2ba0e93d249b872"
+    },
+    "docs/coordination/preuves-211-D14/checks.json": {
+      "bytes": 9873,
+      "sha256": "c252104012a6b3f753eee145d7ee4d53f4b178dd9018f95f786eafe68b381513"
+    },
+    "docs/coordination/preuves-211-D14/choix-identite.mp4": {
+      "bytes": 1368109,
+      "sha256": "1c6779c5f6e7afb91c8f43956115915f8882f0809b868e9fb96cde955eb6560c"
+    },
+    "docs/coordination/preuves-211-D14/native-proof.json": {
+      "bytes": 5843,
+      "sha256": "97eaf10950422323782b680d4bb8b0e1176bf43d95a72631497eefd4a83ad455"
+    },
+    "docs/coordination/preuves-211-D14/saved-captures.json": {
+      "bytes": 1284,
+      "sha256": "554d4492d05c586f4bfdbbf73cb5d4d2ecf131c1e1490861ddf8f7f41b7df0ca"
+    }
+  }
+}

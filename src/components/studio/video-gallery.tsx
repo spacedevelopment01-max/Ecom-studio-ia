@@ -27,6 +27,7 @@ export function EditedVideos() {
   useEffect(() => {
     if (!active.length) reload();
   }, [active.length, reload]);
+  useEffect(()=>{const updated=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:videos-changed',updated);return()=>window.removeEventListener('studio:videos-changed',updated);},[id,reload]);
   const videoStep = data?.pipeline?.steps.find((s) => s.id === "video")?.status;
   // Vidéos organiques seulement : les publicités vidéo et UGC sont dans l'onglet Publicités.
   const videos = (list?.assets ?? []).filter((a) => a.kind === "video" && a.role === "video" && !isAdVisual(a));

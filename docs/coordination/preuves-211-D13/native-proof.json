@@ -1,0 +1,159 @@
+{
+  "passed": true,
+  "transport": "native SDK/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "case": "produit",
+      "business": "products",
+      "passed": true,
+      "instructionCharacters": 1274,
+      "instructionSha256": "e08f2d43fb300498f4feb8796d9d35646779826d3a3472f490aa9cf268ba014c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "dbe2698af62ee73f88bc51a726817189b8f9adcecb9202058a663d972044ecc3"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "ase1eisv6anx3e78",
+          "usage_key": "ase1eisv6anx3e78:dialogue",
+          "cost": 7912
+        },
+        {
+          "status": "ok",
+          "job_id": "td4izbfml4r9fjkb",
+          "usage_key": "td4izbfml4r9fjkb:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "jqq9z8nq24875m8c",
+          "usage_key": "jqq9z8nq24875m8c:identity",
+          "cost": 0
+        }
+      ]
+    },
+    {
+      "case": "service",
+      "business": "services",
+      "passed": true,
+      "instructionCharacters": 1278,
+      "instructionSha256": "3ff4acee6fb9f6cfc61a37f57608539fc1adcb73d876061d2e7bded1ab00d01c",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "b03f1360ca36802457d24a335bc4009c3f5d22b66385b77ff10dc07de690e1f0"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "rnsvscw6slfstqq1",
+          "usage_key": "rnsvscw6slfstqq1:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "hpy3zgkls1gv2nlp",
+          "usage_key": "hpy3zgkls1gv2nlp:identity",
+          "cost": 0
+        }
+      ]
+    },
+    {
+      "case": "reserve",
+      "business": "services",
+      "passed": true,
+      "instructionCharacters": 1284,
+      "instructionSha256": "89fc50bd8aa3162028ea80779a65d7b0151b17e330c07e6c33cf8b74ee2b30de",
+      "wire": [
+        {
+          "hasExactInstruction": true,
+          "promptSha256": "9b7898348f9154552c4ccb3b696e7463ee0c41c3f18648982d6db0adf38794bf"
+        }
+      ],
+      "nativeRevision": 3,
+      "nativeUiApi": true,
+      "brandUnchanged": true,
+      "qualified": false,
+      "clientApproved": false,
+      "firstRetainedAfter503": true,
+      "oneFailureAttempt": true,
+      "freeReuse": true,
+      "reloadNoCall": true,
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forgedCost": 400,
+      "assets": 0,
+      "themes": 0,
+      "nativeCalls": [
+        {
+          "status": "ok",
+          "job_id": "zyc1mo5jwqwczz3m",
+          "usage_key": "zyc1mo5jwqwczz3m:identity",
+          "cost": 7912
+        },
+        {
+          "status": "error",
+          "job_id": "tbsb2yacy5s2e386",
+          "usage_key": "tbsb2yacy5s2e386:identity",
+          "cost": 0
+        }
+      ]
+    }
+  ]
+}

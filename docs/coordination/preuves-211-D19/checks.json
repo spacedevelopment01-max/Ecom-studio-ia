@@ -1,0 +1,75 @@
+{
+  "D19-targeted": {
+    "state": "passed",
+    "head": "99b52fe4f3be94d67266d15bf87a2da245665587",
+    "finalHead": "99b52fe4f3be94d67266d15bf87a2da245665587",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/agent211-receipt-wait.test.ts",
+      "tests/conversation211-video-voice.test.ts",
+      "tests/conversation211-video-clip.test.ts"
+    ],
+    "startedAt": "2026-10-30T22:23:57.336053+00:00",
+    "finishedAt": "2026-10-30T22:25:51.021082+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "e923289d3aef36c281790908370a857e3d41b1b3c31018b5cb8095e32728e87b"
+  },
+  "D19-types": {
+    "state": "passed",
+    "head": "99b52fe4f3be94d67266d15bf87a2da245665587",
+    "finalHead": "99b52fe4f3be94d67266d15bf87a2da245665587",
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    "startedAt": "2026-10-30T22:24:06.216234+00:00",
+    "finishedAt": "2026-10-30T22:24:16.949050+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "D19-voice-browser": {
+    "state": "passed",
+    "head": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+    "finalHead": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D19-voice-browser-proof",
+      "--voice-ui"
+    ],
+    "startedAt": "2026-10-30T22:26:24.023566+00:00",
+    "finishedAt": "2026-10-30T22:27:35.047665+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "logSha256": "162f1de52f454cbdd89a4c6de0709f4eff9826692d4e87eaf7807ed9d8202978"
+  },
+  "D19-clip-browser": {
+    "state": "passed",
+    "head": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+    "finalHead": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D19-clip-browser-proof",
+      "--clip-ui"
+    ],
+    "startedAt": "2026-10-30T22:26:24.027318+00:00",
+    "finishedAt": "2026-10-30T22:27:42.008118+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "logSha256": "ec06c83ea59f204a016a082e8161fbb2e3b22c684e73452e6bdeeb84e486332b"
+  }
+}

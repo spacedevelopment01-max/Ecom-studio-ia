@@ -1,0 +1,60 @@
+{
+  "scope": "Decoded MP4 versus original WebM, not versus still PNG or display calibration. No recoloring, cuts or speed change.",
+  "finding": "Range metadata differ legitimately; RGB comparison does not support attributing the lighter video appearance to MP4 conversion. PNG stills remain the color reference.",
+  "sampledVideos": [
+    {
+      "video": "videos/produit-mono.mp4",
+      "samples": [
+        {
+          "frame": 49,
+          "meanAbsoluteRgbErrorOn255": 0.3043
+        },
+        {
+          "frame": 123,
+          "meanAbsoluteRgbErrorOn255": 0.3781
+        },
+        {
+          "frame": 197,
+          "meanAbsoluteRgbErrorOn255": 0.0556
+        }
+      ],
+      "framesAndDurationPreserved": true
+    },
+    {
+      "video": "videos/produit-multi.mp4",
+      "samples": [
+        {
+          "frame": 46,
+          "meanAbsoluteRgbErrorOn255": 0.7174
+        },
+        {
+          "frame": 117,
+          "meanAbsoluteRgbErrorOn255": 0.7663
+        },
+        {
+          "frame": 187,
+          "meanAbsoluteRgbErrorOn255": 0.0808
+        }
+      ],
+      "framesAndDurationPreserved": true
+    },
+    {
+      "video": "videos/service.mp4",
+      "samples": [
+        {
+          "frame": 44,
+          "meanAbsoluteRgbErrorOn255": 0.4485
+        },
+        {
+          "frame": 111,
+          "meanAbsoluteRgbErrorOn255": 0.2228
+        },
+        {
+          "frame": 178,
+          "meanAbsoluteRgbErrorOn255": 0.2389
+        }
+      ],
+      "framesAndDurationPreserved": true
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "a1fab8a1c90083c4dfa8c2ca61b901fae133a295",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "strategyChoicesUi": {
+    "schema": "agent211-D7-choices-browser-1",
+    "cases": [
+      {
+        "scene": {
+          "id": "produit-mono",
+          "business": "products",
+          "width": 1440,
+          "storeType": "mono"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-mono-cinq-options-acquises.png",
+          "produit-mono-deux-options-exactes.png",
+          "produit-mono-preference-et-raison.png",
+          "produit-mono-rejet-explicite.png",
+          "produit-mono-annulation-native.png",
+          "produit-mono-devis-distinct-du-choix.png",
+          "produit-mono-conseil-simule-source.png",
+          "produit-mono-confirmation-preferee-sans-activation.png",
+          "produit-mono-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/produit-mono.webm"
+      },
+      {
+        "scene": {
+          "id": "produit-multi",
+          "business": "products",
+          "width": 1024,
+          "storeType": "multi"
+        },
+        "viewport": {
+          "width": 1024,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-cinq-options-acquises.png",
+          "produit-multi-deux-options-exactes.png",
+          "produit-multi-preference-et-raison.png",
+          "produit-multi-rejet-explicite.png",
+          "produit-multi-annulation-native.png",
+          "produit-multi-devis-distinct-du-choix.png",
+          "produit-multi-conseil-simule-source.png",
+          "produit-multi-confirmation-preferee-sans-activation.png",
+          "produit-multi-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/produit-multi.webm"
+      },
+      {
+        "scene": {
+          "id": "service",
+          "business": "services",
+          "width": 390,
+          "storeType": "mono"
+        },
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-cinq-options-acquises.png",
+          "service-deux-options-exactes.png",
+          "service-preference-et-raison.png",
+          "service-rejet-explicite.png",
+          "service-annulation-native.png",
+          "service-devis-distinct-du-choix.png",
+          "service-conseil-simule-source.png",
+          "service-confirmation-preferee-sans-activation.png",
+          "service-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/service.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "adviceQuality": "not_qualified",
+    "realProviderCalls": 0
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 6,
+    "calls": 9,
+    "usage": 6,
+    "simulatedMicro": 47472
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "finishedAt": "2026-10-28T23:05:53.980Z",
+  "success": true,
+  "runs": {
+    "D7-full-qualified": {
+      "command": [
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+      "startedAt": "2026-10-28T22:30:16.517806+00:00",
+      "finishedAt": "2026-10-28T22:53:23.460395+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "770332654c13458ee970d27b7dbd3bba92cb3324e5395ac1fd195f7a4ce268b5",
+        "scripts/verify-agent211-choices-ui.ts": "ee668e4a25887d2e72571a115976bfff05f4d1147306932297fbdb994f8a5f62",
+        "src/components/studio/conversation-panel.tsx": "7b6f17e2eb701c79bc6a0689c26c93b56769d85ed9472c6a8af9f4951bc1b5e2",
+        "src/components/studio/conversation-strategy-choices.tsx": "3cdb43488f35f1bf3391db69e9e60c5f67e34524eded9c3295b97e9da0ee2677",
+        "src/lib/conversation-presentation.ts": "8c72354cdd9ad334be816fcb1af0d70af1d1fd17565e0c56033a5c06ddc358c2",
+        "src/lib/orchestrator/conversation/contract.ts": "67e587f77634dbd1d471180b7bb4646453b8bae4240c5f1e3c4c99d81bcd2801",
+        "src/lib/orchestrator/conversation/index.ts": "534f95c84b40f43ad35147ab51a8b1dceee5a5298a2209f902707f69c292233c",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "6d6609c77ad1e952e8e97724aec46ad84a817502c0fc633a91252d20efea788e",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "5106fa7d0de0000eeee8137eece4baad74beb3cd4465bdd75d05fc6278d85355",
+        "src/lib/orchestrator/conversation/intelligence.ts": "dbf294354e71c31acad4d6d21605e36b4771da2cb6b5f81539124c0ffc9915bd",
+        "src/lib/orchestrator/conversation/strategy-choice-contract.ts": "cedccbc51e575d0165fe1b7332ee4fb3e4d3651060a0766d1f55596cf5a2b1c2",
+        "src/lib/orchestrator/conversation/strategy-choices.ts": "a2f1fa1d37f15f80ef724c531703b46eef3e35ea7311eb71c0a8f6931cec9d75",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "5346d4b0d9c51c6a9b4dbc31442b9aa3a4d63e9dcf6a26f1e81af49e6ea09a7d",
+        "tests/conversation211-strategy-choices.test.ts": "176383f4a90bb9bfc443aabfefa233428d36823ece816f54d310d74812d6047a"
+      },
+      "logSha256": "f461a20a839a25533a6d006ffa1e1ea8ede2b4cca7a6ad90eeaf4cfbdfdc2b6a"
+    },
+    "D7-types-qualified": {
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+      "startedAt": "2026-10-28T22:30:15.009298+00:00",
+      "finishedAt": "2026-10-28T22:30:24.707487+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "770332654c13458ee970d27b7dbd3bba92cb3324e5395ac1fd195f7a4ce268b5",
+        "scripts/verify-agent211-choices-ui.ts": "ee668e4a25887d2e72571a115976bfff05f4d1147306932297fbdb994f8a5f62",
+        "src/components/studio/conversation-panel.tsx": "7b6f17e2eb701c79bc6a0689c26c93b56769d85ed9472c6a8af9f4951bc1b5e2",
+        "src/components/studio/conversation-strategy-choices.tsx": "3cdb43488f35f1bf3391db69e9e60c5f67e34524eded9c3295b97e9da0ee2677",
+        "src/lib/conversation-presentation.ts": "8c72354cdd9ad334be816fcb1af0d70af1d1fd17565e0c56033a5c06ddc358c2",
+        "src/lib/orchestrator/conversation/contract.ts": "67e587f77634dbd1d471180b7bb4646453b8bae4240c5f1e3c4c99d81bcd2801",
+        "src/lib/orchestrator/conversation/index.ts": "534f95c84b40f43ad35147ab51a8b1dceee5a5298a2209f902707f69c292233c",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "6d6609c77ad1e952e8e97724aec46ad84a817502c0fc633a91252d20efea788e",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "5106fa7d0de0000eeee8137eece4baad74beb3cd4465bdd75d05fc6278d85355",
+        "src/lib/orchestrator/conversation/intelligence.ts": "dbf294354e71c31acad4d6d21605e36b4771da2cb6b5f81539124c0ffc9915bd",
+        "src/lib/orchestrator/conversation/strategy-choice-contract.ts": "cedccbc51e575d0165fe1b7332ee4fb3e4d3651060a0766d1f55596cf5a2b1c2",
+        "src/lib/orchestrator/conversation/strategy-choices.ts": "a2f1fa1d37f15f80ef724c531703b46eef3e35ea7311eb71c0a8f6931cec9d75",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "5346d4b0d9c51c6a9b4dbc31442b9aa3a4d63e9dcf6a26f1e81af49e6ea09a7d",
+        "tests/conversation211-strategy-choices.test.ts": "176383f4a90bb9bfc443aabfefa233428d36823ece816f54d310d74812d6047a"
+      },
+      "logSha256": "45342ca54fc3787657ce6eb4dbe6d4510cbf68d24318d44416c0176ab31ebf4b"
+    },
+    "D7-target-last-request": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-strategy-choices.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts",
+        "tests/conversation211-intelligence.test.ts"
+      ],
+      "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+      "startedAt": "2026-10-28T22:29:45.526153+00:00",
+      "finishedAt": "2026-10-28T22:29:52.756785+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {
+        "scripts/verify-agent211-build.ts": "770332654c13458ee970d27b7dbd3bba92cb3324e5395ac1fd195f7a4ce268b5",
+        "scripts/verify-agent211-choices-ui.ts": "ee668e4a25887d2e72571a115976bfff05f4d1147306932297fbdb994f8a5f62",
+        "src/components/studio/conversation-panel.tsx": "7b6f17e2eb701c79bc6a0689c26c93b56769d85ed9472c6a8af9f4951bc1b5e2",
+        "src/components/studio/conversation-strategy-choices.tsx": "3cdb43488f35f1bf3391db69e9e60c5f67e34524eded9c3295b97e9da0ee2677",
+        "src/lib/conversation-presentation.ts": "8c72354cdd9ad334be816fcb1af0d70af1d1fd17565e0c56033a5c06ddc358c2",
+        "src/lib/orchestrator/conversation/contract.ts": "67e587f77634dbd1d471180b7bb4646453b8bae4240c5f1e3c4c99d81bcd2801",
+        "src/lib/orchestrator/conversation/index.ts": "534f95c84b40f43ad35147ab51a8b1dceee5a5298a2209f902707f69c292233c",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "6d6609c77ad1e952e8e97724aec46ad84a817502c0fc633a91252d20efea788e",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "5106fa7d0de0000eeee8137eece4baad74beb3cd4465bdd75d05fc6278d85355",
+        "src/lib/orchestrator/conversation/intelligence.ts": "dbf294354e71c31acad4d6d21605e36b4771da2cb6b5f81539124c0ffc9915bd",
+        "src/lib/orchestrator/conversation/strategy-choice-contract.ts": "cedccbc51e575d0165fe1b7332ee4fb3e4d3651060a0766d1f55596cf5a2b1c2",
+        "src/lib/orchestrator/conversation/strategy-choices.ts": "a2f1fa1d37f15f80ef724c531703b46eef3e35ea7311eb71c0a8f6931cec9d75",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "5346d4b0d9c51c6a9b4dbc31442b9aa3a4d63e9dcf6a26f1e81af49e6ea09a7d",
+        "tests/conversation211-strategy-choices.test.ts": "176383f4a90bb9bfc443aabfefa233428d36823ece816f54d310d74812d6047a"
+      },
+      "logSha256": "f5a79c8a6da53646298740347dab54b7074994f3f4323e72cc1b2ab555d7388c"
+    },
+    "D7-build-clean": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "a1fab8a1c90083c4dfa8c2ca61b901fae133a295",
+      "startedAt": "2026-10-28T23:03:43.405551+00:00",
+      "finishedAt": "2026-10-28T23:04:47.901936+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "eedde494acddd1c21939672fb900438c72a5b43647ea0f7ba0e770f2c3e5be1d"
+    },
+    "D7-browser-first": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D7-browser-first",
+        "--choices-ui"
+      ],
+      "head": "a1fab8a1c90083c4dfa8c2ca61b901fae133a295",
+      "startedAt": "2026-10-28T23:05:17.511100+00:00",
+      "finishedAt": "2026-10-28T23:05:57.045738+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "sources": {},
+      "logSha256": "49504add55be8fb287d2294f4c6f6e52bf8bf375944fa0d9d27b7ed4619d0276"
+    }
+  },
+  "mediaVerification": [
+    {
+      "file": "videos/produit-mono.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "247"
+          }
+        ],
+        "format": {
+          "duration": "9.880000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "247"
+          }
+        ],
+        "format": {
+          "duration": "9.880000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "0f9bab2a3d45179ccf1dfad6aed75fa0bb2d7841baf5ab87aaf563399151a67d"
+    },
+    {
+      "file": "videos/produit-multi.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "234"
+          }
+        ],
+        "format": {
+          "duration": "9.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1024,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "234"
+          }
+        ],
+        "format": {
+          "duration": "9.360000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "81f5cc3e67f3434cc4f47fa9dd5421ff531d0c049568c1298d7e68769a192a39"
+    },
+    {
+      "file": "videos/service.mp4",
+      "source": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "223"
+          }
+        ],
+        "format": {
+          "duration": "8.920000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 900,
+            "r_frame_rate": "25/1",
+            "nb_read_frames": "223"
+          }
+        ],
+        "format": {
+          "duration": "8.920000"
+        }
+      },
+      "noCutOrAcceleration": true,
+      "sourceSha256": "46f3fa5e5fdb3852d13adc12dba9a1b0ae2005a9456ec77ec58b39354696fae7"
+    }
+  ],
+  "callAccounting": {
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "simulatedSdkCalls": 6,
+    "syntheticResearchReceiptsInsertedNotInvoked": 3,
+    "knownUsageRows": 6,
+    "simulatedMicro": 47472,
+    "D7Cases": 3,
+    "D7CaseMicroEach": 7912,
+    "baseControlCalls": 3
+  },
+  "limitations": [
+    "Synthetic acquired research fixtures; no real study or creative advice qualification.",
+    "Native API provenance=provider denotes the configured SDK route, which this harness redirects exclusively to fake loopback HTTP.",
+    "Three synthetic research receipts are inserted, not invocations; do not infer nine provider calls from nine ai_calls rows.",
+    "Marketing angles only; no image vision, logo/image/theme comparison or blending, no CMS/client instance.",
+    "CI #223 preview390x844 failure remains a separate F2 correction; no global CI green claimed."
+  ],
+  "decodedVideoFidelity": "fidelite-video.json"
+}

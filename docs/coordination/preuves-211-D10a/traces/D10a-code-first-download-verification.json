@@ -1,0 +1,160 @@
+{
+  "commit": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+  "baseCommit": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 10824,
+      "sha256": "82286cee64a9aea470097a674e1d2440923894e487f01af4dea5331e0704138c",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "scripts/verify-agent211-build.ts",
+      "bytes": 54248,
+      "sha256": "92edabf4f1ddd291484a7831f0ce1cf53132523ec60b90a00f45544262be02ff",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "scripts/verify-agent211-videos-ui.ts",
+      "bytes": 20098,
+      "sha256": "6626a1f001a8f69f672a6ab59883a50211189583980a791147b356ebb2e96725",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/app/api/studio-agent/conversations/[cid]/videos/route.ts",
+      "bytes": 939,
+      "sha256": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/components/studio/conversation-panel.tsx",
+      "bytes": 31296,
+      "sha256": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/components/studio/conversation-video-tools.tsx",
+      "bytes": 8890,
+      "sha256": "e505b651be5ebfbdf32cebea21bb5621cfce89f1fccbd84ff251c37869187244",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/components/studio/tab-publicites.tsx",
+      "bytes": 16916,
+      "sha256": "564e1328fda6c3779e7eee104dac921b24ed903f975c7ac6313df890b3ce38fa",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/components/studio/video-gallery.tsx",
+      "bytes": 8557,
+      "sha256": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/components/studio/video-v2-panel.tsx",
+      "bytes": 18136,
+      "sha256": "e4df60907719e2a4a29aef2d5a47bdfeb49f8643adeb16a7dff582448c1382bd",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/image-v2/request-binding.ts",
+      "bytes": 9994,
+      "sha256": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/contract.ts",
+      "bytes": 6876,
+      "sha256": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/image-tool-sources.ts",
+      "bytes": 5267,
+      "sha256": "c24173b36853a82cca21ad4ab42f9e96ffcdefddc253ae75f417b46ea517a69f",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/index.ts",
+      "bytes": 31206,
+      "sha256": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/intelligence-context.ts",
+      "bytes": 30623,
+      "sha256": "d57081cb8c52f257213ea4d0a9cd9ef93f7b08b3e625bfe43ad91ebc448ffe13",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/intelligence-contract.ts",
+      "bytes": 7061,
+      "sha256": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/intelligence.ts",
+      "bytes": 22902,
+      "sha256": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/studio-operations.ts",
+      "bytes": 9606,
+      "sha256": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/tool-flags.ts",
+      "bytes": 1685,
+      "sha256": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-tool-contract.ts",
+      "bytes": 3144,
+      "sha256": "9e4736d0a7cedd72e469affd5332705e34fc665492fa70ff32a11155ac86084d",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-tool-execution.ts",
+      "bytes": 17334,
+      "sha256": "e848d9920da091aa2940238c0834d2d156f32bd113eb8d950af5002546731651",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-tool-validation.ts",
+      "bytes": 7349,
+      "sha256": "242d2d58b6d617baad32c43b8ee13790c05417537875e8fc23ac60d4d41a0bf0",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "src/lib/video-v2/conversation-motion.ts",
+      "bytes": 4114,
+      "sha256": "a22dc6acc190e3e25bc89bbc09ee7f8318e8c6a12e837cce7abf4e3630a5e944",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "tests/conversation211-video-contract.test.ts",
+      "bytes": 5793,
+      "sha256": "b0ba2aca72e8ee3ccae3e33c293b0b635fb7e90665decd14be556e60b4204057",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "tests/conversation211-video-motion.test.ts",
+      "bytes": 18522,
+      "sha256": "c68937655c1c9b06de1807a4b368247f9af9ba5455ffa91c1bb66fa44da226b6",
+      "actualDownloadMatched": true
+    },
+    {
+      "path": "worker/handlers.ts",
+      "bytes": 42712,
+      "sha256": "981988a6da0a27e0245052b475c061c9cd4b11a486698a5aa28bce8f3dfbd288",
+      "actualDownloadMatched": true
+    }
+  ],
+  "count": 25,
+  "bytes": 394092,
+  "everyFileActuallyDownloaded": true,
+  "noProviderCalls": true
+}

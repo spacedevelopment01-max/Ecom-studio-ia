@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "applicationCommit": "4efb32af32e033572e142fc0f842734f6f3e200a",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "proofFiles": 8,
+  "filmDurationSeconds": 14.4,
+  "proofs": {
+    "docs/coordination/211_LOT_D12B_RESULTATS.md": {
+      "sha256": "9cfd7d28b06765729f61983f80d68e8ea13ec807a28dd277d50e69a87936b4fd",
+      "bytes": 5688
+    },
+    "docs/coordination/preuves-211-D12b/01-panneau-ferme-mobile.png": {
+      "sha256": "36f4ed594d9953320b3a8963996e3878f4925bb28467f9abf346875512924a08",
+      "bytes": 64940
+    },
+    "docs/coordination/preuves-211-D12b/02-reouverture-note-mobile.png": {
+      "sha256": "1931f0dd8e561e331cf58fbe268cd4f81476977faa86146c3ed74f876cafcbc6",
+      "bytes": 181698
+    },
+    "docs/coordination/preuves-211-D12b/03-editeur-natif-ordinateur.png": {
+      "sha256": "afea13ce3d99c2dcf4bae2ec68fd67f63a1a976d295b84022df8254aad5680bb",
+      "bytes": 203418
+    },
+    "docs/coordination/preuves-211-D12b/campaign-visual-proof.json": {
+      "sha256": "c778829a71a89558399ffdb318d1d17ac26994625f762910419430c465f2f76c",
+      "bytes": 1136
+    },
+    "docs/coordination/preuves-211-D12b/checks.json": {
+      "sha256": "ef7f0ecfdac5d19097e461017dbb5a32ea9ef91c8672e76d7361745def84b9fe",
+      "bytes": 6390
+    },
+    "docs/coordination/preuves-211-D12b/panneau-ferme.mp4": {
+      "sha256": "22efd8a1dfe77f93cbd7fac8f745a15e08690eb8c0b70b9f1ac45260c75f3e2f",
+      "bytes": 957266
+    },
+    "docs/coordination/preuves-211-D12b/social-production-proof.json": {
+      "sha256": "2a149385a6d7e696f34abc2d593f5685963b9415bdb48d2dea9cd1629d9afd7e",
+      "bytes": 1220
+    }
+  }
+}

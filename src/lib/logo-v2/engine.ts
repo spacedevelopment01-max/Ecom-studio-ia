@@ -3,6 +3,7 @@ import { assertAiAllowed } from "../ai/access";
 import { saveDirectionPreview } from "./direction-preview";
 import { currentSeries, directionSeries, reserveDirectionSeries, updateDirectionSeries, DirectionIdentitySchema, directionSetIssues, directionNamingBrand } from "./direction-series";
 import { directionSeriesPaletteIssues } from "./direction-palette";
+import {acceptedDirections,directionBrief} from './accepted-directions';
 import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
 /**
  * Brand & Logo Engine V2 (phase 4A) : DÉCOUVERTE → TERRITOIRES → CONSTRUCTION → BARRIÈRE V2 → REPRISE CIBLÉE /
@@ -13,7 +14,8 @@ import { imageUnavailableReason, mediaRouteFor } from "../ai/media-providers";
  */
 import crypto from "node:crypto";
 import type { JobContext } from "../jobs";
-import { JobCancelled, JobPaused, UserFacingError } from "../jobs";
+import { JobCancelled, JobPaused, UserFacingError, PermanentError } from "../jobs";
+import { redact } from "../redact";
 import { loadProject, remember } from "../projects";
 import { saveAsset } from "../library";
 import { logoPng } from "../media/logo";
@@ -38,6 +40,8 @@ import { ARTWORK_NEVER, artworkBoard, artworkText, cleanArtwork, correctArtworkT
 import type { ArtworkReview, BrandBrief, Candidate, EngineRun, LogoReview, LogoStyle, ProposalResult, Territory } from "./types";
 
 export type EngineOptions = {
+  /** Trois propositions IA acquises avant le devis, fournies par le serveur ; aucun appel territoires supplémentaire. */
+  acceptedTerritories?: TerritoryDraft[];
   /** Contrat de série complet aussi avec un fournisseur injecté dans une vérification isolée. */
   completeSeries?: boolean;
   expectedSeriesId?: string | null;
@@ -109,7 +113,21 @@ export async function developArtwork(ctx: JobContext, ai: LogoV2Ai, t: Territory
       d = gateArtwork(review, t, expected, c.attempt);
     } catch (e) {
       // Plafond atteint au moment de la relecture : l'image déjà payée est gardée (essai non contrôlé), jamais perdue.
-      if (e instanceof JobCancelled || e instanceof JobPaused || uncertain(e)) throw e;
+      if (e instanceof JobCancelled || e instanceof JobPaused || uncertain(e)) {
+        // Le dessin est déjà acquis. L'arrêt conserve un diagnostic et son original sans le valider,
+        // sans poursuivre la série et sans transformer un coût incertain en réponse connue.
+        const reason=L("Contrôle interrompu : image acquise conservée, non validée et non réutilisable. Aucun autre dessin automatique.","Review interrupted: acquired image kept, unvalidated and not reusable. No automatic further drawing.");
+        try {
+          await ctx.step(`v2:${t.id}${tag}:interrupted-review:${c.attempt}`,async()=>{
+            const decision=decide("logo_artwork",{checker:"ai",score:null,error:reason},{attempt:POLICIES.logo_artwork.maxRetries});
+            const checkId=saveCheck(decision,{userId,projectId:brief.projectId,jobId:ctx.job.id,candidateId:`logo-v2:${t.id}${tag}`,previousCheckId});
+            return saveProposal(ctx,userId,brief.projectId,{territory:t,candidate:c,verdict:"REJECTED",score:null,reason,codes:[...decision.fatalCodes,...decision.blockingCodes,"review_interrupted"],attempts:c.attempt+1,checkId,artworkReview:null},{diagnosticOnly:true,unreviewed:true});
+          });
+        }catch(saveError){
+          throw new PermanentError(`${(e as Error).message||reason} ${L("Image présente dans le checkpoint mais sauvegarde en bibliothèque impossible :","Image present in checkpoint but library save failed:")} ${redact(String((saveError as Error)?.message??saveError)).slice(0,160)}`);
+        }
+        throw e;
+      }
       if (e instanceof CostCapReached) notes.push(`${t.name} : relecture non faite (${e.message})`);
       d = decide("logo_artwork", { checker: "ai", score: null, error: (e as Error).message.slice(0, 200) }, { attempt: c.attempt });
     }
@@ -318,6 +336,7 @@ function withSeriesCap<T>(ctx: JobContext, quoteMicro: number, capMicro: number 
 
 /** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »), dans la limite de son devis. */
 export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: EngineOptions = {}): Promise<EngineRun> {
+  if(opts.acceptedTerritories){const p=loadProject(projectId);acceptedDirections(opts.acceptedTerritories,brandDiscovery({...p,brand:directionNamingBrand(projectId)},{style:opts.style,instructions:opts.instructions}));}
   if (opts.ai === undefined || opts.completeSeries) {
     const { stateOf, assertFresh } = await import("../preparation/engine");
     const preparation = stateOf(projectId);
@@ -387,7 +406,7 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
   let drafts: (TerritoryDraft & { source?: Territory["source"] })[] | null = null;
   if (ai && !series?.territories.length) {
     try {
-      drafts = await ctx.step("v2:territories", () => ai.territories(brief, strict ? 3 : n + 2, [...(opts.avoid ?? []), ...(strict ? directionSeries(projectId).filter(s => s.id !== series?.id).flatMap(s => s.directions.map(d => `${d.label} : ${d.concept}`)) : [])]));
+      drafts = await ctx.step("v2:territories", () => opts.acceptedTerritories?Promise.resolve(acceptedDirections(opts.acceptedTerritories,brief)):ai.territories(brief, strict ? 3 : n + 2, [...(opts.avoid ?? []), ...(strict ? directionSeries(projectId).filter(s => s.id !== series?.id).flatMap(s => s.directions.map(d => `${d.label} : ${d.concept}`)) : [])]));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
       if (e instanceof CostCapReached) stoppedByCostCap = true;
@@ -436,8 +455,8 @@ async function seriesSteps(ctx: JobContext, projectId: string, opts: EngineOptio
     ctx.progress(0.2 + (0.6 * i) / Math.max(1, sel.kept.length), useArt ? L(`Image de « ${t.name} » (IA d'images)`, `Image for "${t.name}" (image AI)`) : L(`Direction « ${t.name} »`, `Direction "${t.name}"`));
     live.dir(t.id, { status: "drawing" });
     try {
-      const directionBrief = t.identity ? { ...brief, palette: t.identity.palette, paletteLocked: true, fontsLocked: t.identity.fonts, tagline: null, brainContext: brief.brainContext + "\nDirection complète à contrôler : " + JSON.stringify(t.identity) + "\nPalettes des trois directions à distinguer : " + JSON.stringify(sel.kept.map(d => ({ direction: d.name, palette: d.identity?.palette, roles: d.identity?.colorRoles }))) } : brief;
-      const rs = await developTerritory(ctx, t.source === "local" ? null : ai, t, directionBrief, notes, t.source === "local" ? null : art, live);
+      const perDirectionBrief=directionBrief(brief,t,sel.kept,!!opts.acceptedTerritories);
+      const rs = await developTerritory(ctx, t.source === "local" ? null : ai, t, perDirectionBrief, notes, t.source === "local" ? null : art, live);
       const r = rs[0];
       if (r) {
         // Le meilleur essai du territoire est sa proposition ; un essai moins bon (relais) reste parmi les écartés.

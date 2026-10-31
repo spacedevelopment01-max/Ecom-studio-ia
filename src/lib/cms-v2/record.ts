@@ -3,6 +3,8 @@
  * versionné dans « Exports de thèmes ». Partagé par la route d'export du studio et par l'étape « cms_export » des
  * plans de l'orchestrateur (phase 12A) : un seul chemin. Un export REFUSÉ n'est jamais rangé comme livrable.
  */
+import {createHash} from 'node:crypto';
+import {stableHash} from '../brain/hash';
 import { themeFingerprint } from "../theme/compile";
 import { libraryLoader } from "../theme/loader";
 import { saveAsset } from "../library";
@@ -52,7 +54,7 @@ export async function exportAndRecord(
     role: "theme-export",
     folderKey: "shop.exports",
     origin: "export",
-    meta: { platform, delivery: exp.kind, themeVersion: v.number, versionId: v.id, fingerprint, gate: gateMeta(check.gate.decision, checkId), scope: check.gate.scope, unmeasured: check.gate.unmeasured, issues: check.static.issues.slice(0, 20), stats: check.static.stats, message },
+    meta: { proof:{schema:1,jobId:o.jobId??null,zipSha256:createHash('sha256').update(exp.zip).digest('hex'),sourceDigest:stableHash('native-export-source-v1',v.spec)}, platform, delivery: exp.kind, themeVersion: v.number, versionId: v.id, fingerprint, gate: gateMeta(check.gate.decision, checkId), scope: check.gate.scope, unmeasured: check.gate.unmeasured, issues: check.static.issues.slice(0, 20), stats: check.static.stats, message },
   });
   return { ...base, assetId: asset.id };
 }

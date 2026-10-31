@@ -1,0 +1,223 @@
+{
+  "nativeBuild": "5493d7c02d3a06493c32e2ad227a69ecbdac255f",
+  "finalUiBuild": "e404093c4b711b4dc51980b87b0a9c75e884ceaa",
+  "backendAndWorkerUnchangedAtFinalUi": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": {
+    "D14-research-red": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-brand-review.test.ts",
+        "-t",
+        "racheter"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "4d5b6e6e223edb76fd8e14c391ba78790d26b054",
+      "startedAt": "2026-10-30T20:19:22.130070+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-brand-review.test.ts": "3f5fb8b947916f7fdf749df21ac1cbe645d7b0e7e62f095892c0f1c53b35d178"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D14-research-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 568183,
+      "processGroup": 568183,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T20:19:26.204248+00:00",
+      "logSha256": "efcdf0fd107361ca400bcb9a7d45f98da5cfc1743023c110ca7c80dd18f1e55a",
+      "sourceUnchanged": true,
+      "finalHead": "4d5b6e6e223edb76fd8e14c391ba78790d26b054"
+    },
+    "D14-research-client-guard-red": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-brand-review.test.ts",
+        "-t",
+        "racheter"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "4d5b6e6e223edb76fd8e14c391ba78790d26b054",
+      "startedAt": "2026-10-30T20:23:39.828068+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-brand-ui.ts": "7acbcf69a96b195d69d784de3b5a3a62469ff9b7faf1bb4674ba2bb3dc06d6eb",
+        "src/components/studio/conversation-brand-tools.tsx": "631118bc0d60ee49848ff1ae3b4f35a59a7522b73471847bff651103e8e08f9e",
+        "src/lib/marketing-strategy/research.ts": "a0d847addf42cd8432955c76f1d6bcb3706394a8397765b50e5bcc88f513fbc0",
+        "src/lib/orchestrator/conversation/brand-tool-execution.ts": "4fc53885a2ab302a808912542e0396c230534eb987cbc64b60a22cc0c7b261d4",
+        "src/lib/preparation/engine.ts": "7907fd25026ac26f567d38cfc4f614343bc64df881d00f0d294dd9a9b139461f",
+        "tests/conversation211-brand-review.test.ts": "9b7e81b1055740e215f2939c23df7c283950d3d80425b0cac34be294a53a7d14"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D14-research-client-guard-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 569378,
+      "processGroup": 569378,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T20:23:43.906769+00:00",
+      "logSha256": "0e3c8aa3e04d5e383473b9b83ef61357a9dd0d51d23bbb772668b63464ccc602",
+      "sourceUnchanged": true,
+      "finalHead": "4d5b6e6e223edb76fd8e14c391ba78790d26b054"
+    },
+    "D14-targeted-final": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-brand-review.test.ts",
+        "tests/preparation.test.ts",
+        "tests/mission160-strategy.test.ts",
+        "tests/conversation211-strategy-choices.test.ts",
+        "tests/conversation211-brand.test.ts",
+        "tests/conversation211-generation-schema.test.ts",
+        "tests/conversation211-social-preview.test.ts",
+        "tests/ci-native-brand-placement.test.ts",
+        "tests/ci211-verdict-complet.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "4d5b6e6e223edb76fd8e14c391ba78790d26b054",
+      "startedAt": "2026-10-30T20:24:34.383944+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-brand-ui.ts": "7acbcf69a96b195d69d784de3b5a3a62469ff9b7faf1bb4674ba2bb3dc06d6eb",
+        "src/components/studio/conversation-brand-tools.tsx": "631118bc0d60ee49848ff1ae3b4f35a59a7522b73471847bff651103e8e08f9e",
+        "src/lib/marketing-strategy/research.ts": "d086979552f756682ac46006366c6063f8e12b37861abc500b3015147b27a9b4",
+        "src/lib/orchestrator/conversation/brand-tool-execution.ts": "4fc53885a2ab302a808912542e0396c230534eb987cbc64b60a22cc0c7b261d4",
+        "src/lib/preparation/engine.ts": "7907fd25026ac26f567d38cfc4f614343bc64df881d00f0d294dd9a9b139461f",
+        "tests/conversation211-brand-review.test.ts": "9b7e81b1055740e215f2939c23df7c283950d3d80425b0cac34be294a53a7d14"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D14-targeted-final.log",
+      "cleanCommitSnapshot": false,
+      "pid": 569630,
+      "processGroup": 569630,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:24:47.889294+00:00",
+      "logSha256": "f780d0fd1f5dab87217712375a342e86790c88b973e1ca680a9d5c239d2b59dd",
+      "sourceUnchanged": true,
+      "finalHead": "4d5b6e6e223edb76fd8e14c391ba78790d26b054"
+    },
+    "D14-types-final-source": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "4d5b6e6e223edb76fd8e14c391ba78790d26b054",
+      "startedAt": "2026-10-30T20:24:35.890973+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-brand-ui.ts": "7acbcf69a96b195d69d784de3b5a3a62469ff9b7faf1bb4674ba2bb3dc06d6eb",
+        "src/components/studio/conversation-brand-tools.tsx": "631118bc0d60ee49848ff1ae3b4f35a59a7522b73471847bff651103e8e08f9e",
+        "src/lib/marketing-strategy/research.ts": "d086979552f756682ac46006366c6063f8e12b37861abc500b3015147b27a9b4",
+        "src/lib/orchestrator/conversation/brand-tool-execution.ts": "4fc53885a2ab302a808912542e0396c230534eb987cbc64b60a22cc0c7b261d4",
+        "src/lib/preparation/engine.ts": "7907fd25026ac26f567d38cfc4f614343bc64df881d00f0d294dd9a9b139461f",
+        "tests/conversation211-brand-review.test.ts": "9b7e81b1055740e215f2939c23df7c283950d3d80425b0cac34be294a53a7d14"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D14-types-final-source.log",
+      "cleanCommitSnapshot": false,
+      "pid": 569726,
+      "processGroup": 569726,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:24:41.832530+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true,
+      "finalHead": "4d5b6e6e223edb76fd8e14c391ba78790d26b054"
+    },
+    "D14-build-final": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "5493d7c02d3a06493c32e2ad227a69ecbdac255f",
+      "startedAt": "2026-10-30T20:26:01.020486+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D14-build-final.log",
+      "cleanCommitSnapshot": true,
+      "pid": 570279,
+      "processGroup": 570279,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:27:03.914756+00:00",
+      "logSha256": "1a3834442c3bd67bc086a56957af21a5b52710678a3120e32bcaec637c7f62f8",
+      "sourceUnchanged": true,
+      "finalHead": "5493d7c02d3a06493c32e2ad227a69ecbdac255f"
+    },
+    "D14-browser-final": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D14-browser-final-proof",
+        "--brand-ui",
+        "--brand-review"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "5493d7c02d3a06493c32e2ad227a69ecbdac255f",
+      "startedAt": "2026-10-30T20:27:58.809735+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D14-browser-final.log",
+      "cleanCommitSnapshot": true,
+      "pid": 571045,
+      "processGroup": 571045,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:28:35.490130+00:00",
+      "logSha256": "88773caab7df47c7a018e4f8075faa060a9e6e62ce2f0c4e7df31c965432166d",
+      "sourceUnchanged": true,
+      "finalHead": "5493d7c02d3a06493c32e2ad227a69ecbdac255f"
+    },
+    "D14-types-delivery-final": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "5493d7c02d3a06493c32e2ad227a69ecbdac255f",
+      "startedAt": "2026-10-30T20:48:19.410098+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/agent211-failure-diagnostic.ts": "15aa809464c74a9cdd4f3a4d6cefd28b42b8b7a33716b8e7228543423b935831",
+        "scripts/verify-agent211-build.ts": "41c19d65e7596852610fc92171bf632bce806498e91cb728a6c4890c4b6a2775",
+        "src/components/studio/conversation-brand-tools.tsx": "09e13210ecb206c204a222104334f23b5e2742997022716d41ba0d49c1c9da8a"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D14-types-delivery-final.log",
+      "cleanCommitSnapshot": false,
+      "pid": 574811,
+      "processGroup": 574811,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:48:24.199767+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true,
+      "finalHead": "5493d7c02d3a06493c32e2ad227a69ecbdac255f"
+    },
+    "D14-build-ui-final": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "e404093c4b711b4dc51980b87b0a9c75e884ceaa",
+      "startedAt": "2026-10-30T20:50:05.107475+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D14-build-ui-final.log",
+      "cleanCommitSnapshot": true,
+      "pid": 575268,
+      "processGroup": 575268,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T20:51:08.841424+00:00",
+      "logSha256": "045d3cddf683a18f1cd763832858666470c2688fb8f414f966fc225ce05446e8",
+      "sourceUnchanged": true,
+      "finalHead": "e404093c4b711b4dc51980b87b0a9c75e884ceaa"
+    }
+  }
+}

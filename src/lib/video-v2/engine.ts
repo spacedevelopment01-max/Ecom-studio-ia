@@ -15,8 +15,10 @@ import { assertJobEntitlements } from "../job-entitlements";
 import { organicVideo, videoContext, editorialVideoIssues } from "./editorial";
 import { projectForSubject } from "../social-v2/ai-post";
 import { resolveSubject } from "../creative-subject";
+import { ImageBindingSchema } from "../image-v2/request-binding";
 import { videoScope,type VideoApproval } from "./approval";
 import { videoReceipt } from "./receipts";
+import {requiresClipRevisionQuote}from './clip-revision-contract';
 import { measuredCues,projectVoice,voiceAvailable } from "./voice";
 import {isOpenAIVoice} from "./openai-voice";
 import {loadCreativeMemory} from "./creative-memory";
@@ -35,7 +37,7 @@ import { POLICIES } from "../quality/policies";
 import { assetData, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { applyWordingDeep, loadWordingRules } from "../client-wording";
-import { contentLang } from "../i18n-server";
+import { contentLang, L } from "../i18n-server";
 import { EUR } from "../billing";
 import { budgetPctText } from "../ai/budget-pct";
 import { brandTypo, palette } from "../engine/images";
@@ -809,6 +811,7 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
   const deps = injected ?? realVideoDeps(ctx, p, aiActiveFor(p.userId, p.id));
   const cur = latestVideo(projectId, docKey);
   if (!cur) throw new Error("vidéo introuvable");
+  if(requiresClipRevisionQuote(cur.doc))throw new Error("Cette vidéo nécessite un devis ciblé et son accord dans SYNA. Aucun remplacement local ni achat par l’ancien parcours.");
   const k = cur.doc.clips.findIndex((c) => c.id === clipId);
   if (k < 0) throw new Error("plan introuvable");
   if(o.approve && ((cur.doc.meta.retakeCount??0)>=1 || one("SELECT 1 FROM jobs WHERE project_id=? AND type='video.v2.clip' AND json_extract(payload,'$.docKey')=? AND id<>? LIMIT 1",projectId,docKey,ctx?.job.id??""))) throw new Error("Limite de reprise ciblée atteinte : version utilisable conservée ; nouveau scénario et devis requis.");
@@ -860,17 +863,28 @@ function scenesMetaOf(projectId: string, docKey: string, createdFrom: string | n
   if(doc.meta.ending?.kind==="last_clip" && e) {
     const raw=e.subject as {kind?:unknown;key?:unknown;name?:unknown}|null;
     const selected=raw?.kind==="product"&&typeof raw.key==="string"?{kind:"product" as const,key:raw.key}:raw?.kind==="service"&&typeof raw.name==="string"?{kind:"service" as const,name:raw.name}:null;
-    const subject=resolveSubject(loadProject(projectId),selected);
+    let subject: {kind:"product"|"service";key:string;name:string}|null;
+    if(e.nativeBinding){
+      // Reprise locale des médias acquis : ne pas résoudre une autre offre depuis le projet actuel.
+      const bound=ImageBindingSchema.safeParse(e.nativeBinding);
+      const frozen=e.identity as {product?:{name?:unknown}}|undefined;
+      if(!bound.success||bound.data.edit||(!bound.data.product&&!bound.data.service))throw new Error(L("Référence native du document invalide : document et médias conservés.","Native document reference is invalid; document and media kept."));
+      const kind=bound.data.product?"product":"service",key=bound.data.product?.productId??bound.data.service!.key;
+      const name=raw?.kind===kind&&raw.key===key&&typeof raw.name==="string"?raw.name:frozen?.product?.name;
+      if(typeof name!=="string"||!name.trim())throw new Error(L("Nom de l’offre acquise absent du document : aucun autre produit substitué.","Acquired offer name is missing from the document; no other product substituted."));
+      subject={kind,key,name};
+    }else subject=resolveSubject(loadProject(projectId),selected);
     return {key:docKey,mode:doc.clips.some(c=>c.generated)?"ai":"stock",as:e.purpose==="ad"?"ad":"post",subject:subject?{kind:subject.kind,key:subject.key,name:subject.name}:null,request:typeof e.request==="string"?e.request:null,music:!!doc.audio.music};
   }
   return null;
 }
 
-export async function renderLatest(ctx: JobContext | null, projectId: string, docKey: string, o: { scale?: number; fps?: number } = {}): Promise<{ videoAssetId: string; verdict: string; issues: string[] }> {
+export async function renderLatest(ctx: JobContext | null, projectId: string, docKey: string, o: { scale?: number; fps?: number; expectedVersionId?:string } = {}): Promise<{ videoAssetId: string; verdict: string; issues: string[] }> {
   const { latestVideo } = await import("./store");
   const p = loadProject(projectId);
   const cur = latestVideo(projectId, docKey);
   if (!cur) throw new Error("vidéo introuvable");
+  if(o.expectedVersionId&&cur.version.id!==o.expectedVersionId)throw new Error(L("La version vidéo a changé avant encodage. Aucun écrasement.","The video version changed before encoding. No overwrite."));
   const scopeBefore=videoScope(p,{docKey});
   const ex = await renderVideoFile(projectId, cur.doc, { scale: o.scale, fps: o.fps, onProgress: (x) => ctx?.progress(x * 0.9, `Rendu ${Math.round(x * 100)} %`) });
   try {

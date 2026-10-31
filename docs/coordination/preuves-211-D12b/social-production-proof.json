@@ -1,0 +1,47 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "transport": "native SDK/HTTP loopback simulation",
+  "creativeQualityQualified": false,
+  "passed": true,
+  "postIds": [
+    "syna-9c735c4f042f624a1605f152e2e3"
+  ],
+  "success": {
+    "nativeCountersRefreshed": true,
+    "heldoutProduct": "Compas de charpentier pour grandes pièces",
+    "reusedWithoutAi": true,
+    "sameAsset": true,
+    "sha256": "2817a92fdd58b09c0eeae2bcf0863fff268ced7183b05a3edc8f03c50d28e9bf",
+    "downloadExact": true,
+    "requestAspect": "4:5",
+    "sourceRemoved": true,
+    "budgetExhausted": true,
+    "expiredOriginalQuoteAndBound": true,
+    "contextConflictHttp": 409,
+    "forgedAssetHttp": 400,
+    "boundsUnchanged": true,
+    "manualSchedulePreserved": true
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.95,
+    "origin": "INPUT_CHANGED_AFTER_ACQUISITION",
+    "acquiredReadable": true,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "counts": {
+    "providerHttpCalls": 13,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 10,
+    "imageHttpCalls": 3,
+    "tokenCounts": 10,
+    "calls": 13,
+    "usage": 12,
+    "simulatedMicro": 495050
+  }
+}

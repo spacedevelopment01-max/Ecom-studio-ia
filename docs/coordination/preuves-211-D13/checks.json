@@ -1,0 +1,158 @@
+{
+  "D13-targeted-final": {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-brand.test.ts",
+      "tests/conversation211-research.test.ts",
+      "tests/preparation.test.ts",
+      "tests/preparation-adapters.test.ts",
+      "tests/preparation-preuve-api.test.ts",
+      "tests/conversation211-generation-schema.test.ts",
+      "tests/conversation211-social-preview.test.ts",
+      "tests/conversation211-clip-preview.test.ts",
+      "tests/ci211-verdict-complet.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "6a75de1f9ba7d6a940b36c0a86c1bc638c350540",
+    "startedAt": "2026-10-30T19:49:33.381810+00:00",
+    "state": "passed",
+    "cleanCommitSnapshot": false,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T19:49:46.076108+00:00",
+    "logSha256": "83494a592d5588c3300729f1d666bc0a6785c4bb269816beac46c9ad36bf016e",
+    "sourceUnchanged": true
+  },
+  "D13-ci-placement": {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/ci-native-brand-placement.test.ts",
+      "tests/ci211-verdict-complet.test.ts"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "startedAt": "2026-10-30T19:55:45.368413+00:00",
+    "state": "passed",
+    "cleanCommitSnapshot": false,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T19:55:45.902162+00:00",
+    "logSha256": "bddcbf65410541c016c3dc46d9ffd047bc6c2906e6dbe8b82195cb0ba1b00d2b",
+    "sourceUnchanged": true
+  },
+  "D13-types-delivery": {
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "startedAt": "2026-10-30T19:55:43.856226+00:00",
+    "state": "passed",
+    "cleanCommitSnapshot": false,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T19:55:48.333996+00:00",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceUnchanged": true
+  },
+  "D13-build": {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "startedAt": "2026-10-30T19:50:34.411049+00:00",
+    "state": "passed",
+    "cleanCommitSnapshot": true,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T19:51:37.660185+00:00",
+    "logSha256": "d1b90d608dedf2f7de1cfb64ae2b9ed953504ed9f978d35cdf313f8608e23c3f",
+    "sourceUnchanged": true
+  },
+  "D13-browser": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D13-browser-proof",
+      "--brand-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "startedAt": "2026-10-30T19:51:53.435479+00:00",
+    "state": "failed",
+    "cleanCommitSnapshot": true,
+    "exitCode": 1,
+    "finishedAt": "2026-10-30T19:52:36.967487+00:00",
+    "logSha256": "0f28562a806af6b3a715b6e67bfb8b5ecd0b540637f48d88227e252ad86d55b6",
+    "sourceUnchanged": true
+  },
+  "D13-browser-harness-fixed": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D13-browser-fixed-proof",
+      "--brand-ui"
+    ],
+    "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+    "head": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "startedAt": "2026-10-30T19:53:21.407510+00:00",
+    "state": "passed",
+    "cleanCommitSnapshot": false,
+    "exitCode": 0,
+    "finishedAt": "2026-10-30T19:53:52.729865+00:00",
+    "logSha256": "bad77eb9e2fdb51c807ef8d43c0cee58a85b93be35f478d55aa5930d6495e1fb",
+    "sourceUnchanged": true
+  },
+  "testedApplicationCommit": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+  "harnessCommit": "bf0046ba13b9005bde6c2bff19e2bb343e8435d9",
+  "applicationUnchangedAtHarnessCommit": true,
+  "compiledVersion": {
+    "commit": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "localSimulatedTotals": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 10,
+    "imageHttpCalls": 0,
+    "tokenCounts": 10,
+    "calls": 13,
+    "usage": 7,
+    "simulatedMicro": 55384
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "targetedDistinctTests": 60,
+  "targetedDistinctFiles": 10,
+  "overlap": "59/9 in D13-targeted-final +1 new CI placement; 3 gate tests repeated, not counted twice",
+  "initialFailures": [
+    "Registry lacked native brand adapter (one red).",
+    "Two native requests collided because renamed jobs were omitted from attempt count (fixed in native cohort).",
+    "Test fixture expected trailing whitespace normalized by the pre-existing conversation schema (fixture normalized, internal spaces/newlines retained).",
+    "Later tests claimed a queued fixture from an earlier test; file-local pending job cleanup fixed.",
+    "First browser expected an opt-in button though its fixture already opened the conversation; harness fixed, no application rebuild.",
+    "Initial captures aligned a long card at its bottom; two new captures used saved proposals without jobs, provider calls or acquired state changes."
+  ],
+  "limitations": [
+    "All sources/SDK answers and success/failure costs synthetic, no real creative quality or provider tested.",
+    "No full local suite duplicated; complete final CI required.",
+    "Source-preserving recovery and cancellation injected, not reproduced as real supplier interruptions."
+  ]
+}

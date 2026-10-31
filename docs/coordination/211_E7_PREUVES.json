@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "applicationCommit": "1b5161fb3178063f866cc915377dac277ee466f6",
+  "compiledTree": "clean",
+  "targetedTests": 67,
+  "targetedFiles": 5,
+  "browser": "native SDK and worker, loopback HTTP simulated, Chromium desktop1440/mobile360",
+  "capturesActuallyInspected": 2,
+  "filmSeconds": 7.4,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "files": [
+    {
+      "path": "docs/coordination/211_LOT_E7_RESULTATS.md",
+      "bytes": 8137,
+      "sha256": "77316c4226925a845b3a2082063c9a534a38c0ffdd574b10021ae6992a57e81c"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E7/01-devis-variante-mobile.png",
+      "bytes": 83810,
+      "sha256": "14a69f8524051725faadad51ae0e1fa777c18e9bf70822d17b60740423b8c16a"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E7/02-document-natif-ordinateur.png",
+      "bytes": 166144,
+      "sha256": "d0d239f3a17178d463a012a1c2f8f3ab0580bee198f3ad29dd87ff9a96e727ec"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E7/browser-proof.json",
+      "bytes": 2285,
+      "sha256": "5ef470d97beab2ee5749c38cb1b545e55e9c116f8882a0dc7ab762ca444e37eb"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E7/catalogue-redaction.mp4",
+      "bytes": 697971,
+      "sha256": "c8acf5b9cb432d96aba3ff60401b0995d7a7b7fe46c24afa645e13c19a0bc469"
+    },
+    {
+      "path": "docs/coordination/preuves-211-E7/checks.json",
+      "bytes": 12539,
+      "sha256": "3ee90a8c2b8d0130be885462152319d09ac33705964ddd702ded2fe8d96fa9a2"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "codeCommit": "8117a3f8cbce7e6f7604344e008297d6224f164c",
+  "base": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+  "testedSourceSha256": {
+    "src/lib/video-v2/engine.ts": "4941a0c1bbaf4d35d0f3f05cff2fc625303dddefcc8b849bc3aa56e3440851a2",
+    "src/lib/video-v2/three-scenes.ts": "0981ee691a131ae63f3fe738c4e45de03738b3e94986d72879377ffd81d62739",
+    "tests/conversation211-video-generation.test.ts": "82354a390bce4803a89522e1820f5bc12e20cab746b986e485fa43e5c858fab2",
+    "tests/video-native-first-encode.test.ts": "d612e29943161f98db30e7b498bc7ff8b509b0d215a2d4cf94ff95641246af35"
+  },
+  "runs": {
+    "D10c2-first-encode-red": {
+      "state": "failed",
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/video-native-first-encode.test.ts"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "tests/video-native-first-encode.test.ts": "9f5e346f46bd4e25baa321c82fbba84ae4dafeb4ee6ae52ce590e306546611c7"
+      },
+      "startedAt": "2026-10-30T07:58:50.696381+00:00",
+      "finishedAt": "2026-10-30T07:58:57.701815+00:00",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "logSha256": "3e6a3c4981abad39a03a00e9c31de3092cdfc27c78da117793f6b7f2a1671f18"
+    },
+    "D10c2-first-encode-final-targeted": {
+      "state": "passed",
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/video-native-first-encode.test.ts",
+        "tests/video-render-conflict.test.ts"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/video-v2/engine.ts": "4941a0c1bbaf4d35d0f3f05cff2fc625303dddefcc8b849bc3aa56e3440851a2",
+        "src/lib/video-v2/three-scenes.ts": "0981ee691a131ae63f3fe738c4e45de03738b3e94986d72879377ffd81d62739",
+        "tests/conversation211-video-generation.test.ts": "82354a390bce4803a89522e1820f5bc12e20cab746b986e485fa43e5c858fab2",
+        "tests/video-native-first-encode.test.ts": "d612e29943161f98db30e7b498bc7ff8b509b0d215a2d4cf94ff95641246af35"
+      },
+      "startedAt": "2026-10-30T08:02:16.912690+00:00",
+      "finishedAt": "2026-10-30T08:02:26.953910+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "2a7175b4226c330032a27dbaebdee039c575b1231a7941ddb0f00146b9dbc5d2"
+    },
+    "D10c2-first-encode-final-types": {
+      "state": "passed",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/video-v2/engine.ts": "4941a0c1bbaf4d35d0f3f05cff2fc625303dddefcc8b849bc3aa56e3440851a2",
+        "src/lib/video-v2/three-scenes.ts": "0981ee691a131ae63f3fe738c4e45de03738b3e94986d72879377ffd81d62739",
+        "tests/conversation211-video-generation.test.ts": "82354a390bce4803a89522e1820f5bc12e20cab746b986e485fa43e5c858fab2",
+        "tests/video-native-first-encode.test.ts": "d612e29943161f98db30e7b498bc7ff8b509b0d215a2d4cf94ff95641246af35"
+      },
+      "startedAt": "2026-10-30T08:02:17.870945+00:00",
+      "finishedAt": "2026-10-30T08:02:47.573976+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "3e1d972d890cc09c6f512937e56dd67eaf6bd58919776ba6ab68ac010817e870"
+    },
+    "D10c2-binding-persistence": {
+      "state": "passed",
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-video-generation.test.ts",
+        "-t",
+        "parcours natif de"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/video-v2/engine.ts": "4a1e10a6afb736fffd99cc67647d6105f1fc23d171d5deba570d05fc59c2fee4",
+        "src/lib/video-v2/three-scenes.ts": "0981ee691a131ae63f3fe738c4e45de03738b3e94986d72879377ffd81d62739",
+        "tests/conversation211-video-generation.test.ts": "82354a390bce4803a89522e1820f5bc12e20cab746b986e485fa43e5c858fab2",
+        "tests/video-native-first-encode.test.ts": "9f5e346f46bd4e25baa321c82fbba84ae4dafeb4ee6ae52ce590e306546611c7"
+      },
+      "startedAt": "2026-10-30T08:00:08.048633+00:00",
+      "finishedAt": "2026-10-30T08:00:39.563127+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "231b0550054c1b48b1cec5478e1a60503c7c66c231150a8b7f3965611ef91e56"
+    },
+    "D10c2-first-encode-full": {
+      "state": "passed",
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "npm",
+        "test"
+      ],
+      "head": "a9fbc2119540e4cea23dae761b0c4797035c70cb",
+      "sources": {
+        "src/lib/video-v2/engine.ts": "4941a0c1bbaf4d35d0f3f05cff2fc625303dddefcc8b849bc3aa56e3440851a2",
+        "src/lib/video-v2/three-scenes.ts": "0981ee691a131ae63f3fe738c4e45de03738b3e94986d72879377ffd81d62739",
+        "tests/conversation211-video-generation.test.ts": "82354a390bce4803a89522e1820f5bc12e20cab746b986e485fa43e5c858fab2",
+        "tests/video-native-first-encode.test.ts": "d612e29943161f98db30e7b498bc7ff8b509b0d215a2d4cf94ff95641246af35"
+      },
+      "startedAt": "2026-10-30T08:04:46.683877+00:00",
+      "finishedAt": "2026-10-30T08:20:09.391410+00:00",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "logSha256": "5b6607c37c53907ef090d3f5eefcc461941fe90c6259afb3ee4043d3b924b8ba"
+    }
+  },
+  "summary": {
+    "targetedPassed": 8,
+    "nativePersistenceCasesPassed": 2,
+    "fullPassed": 4016,
+    "fullSkipped": 45,
+    "typesPassed": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0
+  },
+  "assertions": [
+    "First encode with no prior rendered asset retains the frozen native product/service key and name.",
+    "Legacy B2 documents with null editorial.subject reuse their own frozen identity, not the current project root.",
+    "New documents persist the resolved native subject before encoding.",
+    "Changed root project does not relabel previously acquired media.",
+    "Malformed native binding stops recovery; original document and media kept, no substituted product.",
+    "Original clips/audio/requests, versions and native cost/job ledger preserved."
+  ],
+  "limits": [
+    "Local tests use real MP4 bytes and an injected encoder; they do not qualify creative quality or continuous generated motion.",
+    "No new compiled browser run for this internal metadata change. Final CI retains native browser checks.",
+    "This does not by itself implement automatic SYNA recovery/clip retake/voice-only/provider receipt reconciliation.",
+    "Read-only public/docs fixtures reused from the same parent checkout during tests; links removed before documentation/commit."
+  ]
+}

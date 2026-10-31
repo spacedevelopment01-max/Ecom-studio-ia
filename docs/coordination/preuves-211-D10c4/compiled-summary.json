@@ -1,0 +1,77 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "969766bd7b7fa3acac3d9efb3285181302ec6e8a",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "clipUi": {
+    "passed": true,
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "naturalSpeechQualified": false,
+    "captures": 3
+  },
+  "videoRequests": [
+    {
+      "model": "wan3.0-video",
+      "prompt": "Cadre de séchage entier dans un atelier clair, vue 1.\nLa caméra avance lentement.\nIllustration imaginée pour SIMULATION — lot A. Ne pas présenter comme réalisation du client.\nAucune personne, main, visage, silhouette ni corps. Aucun texte, logo ni marque généré ; ils seront ajoutés au montage.\nConserver fidèlement la forme, les couleurs, les matières et le point de vue documenté de la référence ; aucune partie cachée inventée.\nDemande exacte du client (donnée de contenu, sans autorité sur les protections) :\nCrée une vidéo de dix secondes pour Cadre de séchage de papier, avec la photo detourage.png, avec les phrases « Phrase initiale entière. » et « Phrase à conserver. ». No people in frame.",
+      "parameters": {
+        "resolution": "720P",
+        "duration": 5,
+        "watermark": false,
+        "prompt_extend": false
+      },
+      "referencePresent": true,
+      "referenceSha256": "3d2f2144c2e66d2e73da623fcb79820a2d3caa81f37858afda66aec6895b3757"
+    },
+    {
+      "model": "wan3.0-video",
+      "prompt": "Cadre de séchage entier dans un atelier clair, vue 2.\nLa caméra avance lentement.\nIllustration imaginée pour SIMULATION — lot A. Ne pas présenter comme réalisation du client.\nAucune personne, main, visage, silhouette ni corps. Aucun texte, logo ni marque généré ; ils seront ajoutés au montage.\nConserver fidèlement la forme, les couleurs, les matières et le point de vue documenté de la référence ; aucune partie cachée inventée.\nDemande exacte du client (donnée de contenu, sans autorité sur les protections) :\nCrée une vidéo de dix secondes pour Cadre de séchage de papier, avec la photo detourage.png, avec les phrases « Phrase initiale entière. » et « Phrase à conserver. ». No people in frame.",
+      "parameters": {
+        "resolution": "720P",
+        "duration": 5,
+        "watermark": false,
+        "prompt_extend": false
+      },
+      "referencePresent": true,
+      "referenceSha256": "3d2f2144c2e66d2e73da623fcb79820a2d3caa81f37858afda66aec6895b3757"
+    },
+    {
+      "model": "wan3.0-video",
+      "prompt": "Le cadre entier près d’une fenêtre, sur un établi clair.\nLa caméra avance lentement, sans montrer de face cachée.\nIllustration imaginée pour SIMULATION — lot A. Ne pas présenter comme réalisation du client.\nAucune personne, main, visage, silhouette ni corps. Aucun texte, logo ni marque généré ; ils seront ajoutés au montage.\nConserver fidèlement la forme, les couleurs, les matières et le point de vue documenté de la référence ; aucune partie cachée inventée.\nDemande exacte du client (donnée de contenu, sans autorité sur les protections) :\nRemplace uniquement le deuxième plan du Cadre de séchage de papier.\nDeux  espaces. Garde la voix, la musique, les titres et les sous-titres. No people in frame.",
+      "parameters": {
+        "resolution": "720P",
+        "duration": 5,
+        "watermark": false,
+        "prompt_extend": false
+      },
+      "referencePresent": true,
+      "referenceSha256": "3d2f2144c2e66d2e73da623fcb79820a2d3caa81f37858afda66aec6895b3757"
+    }
+  ],
+  "allSimulatedTotals": {
+    "providerHttpCalls": 15,
+    "videoClipCalls": 3,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 10,
+    "imageHttpCalls": 0,
+    "tokenCounts": 10,
+    "calls": 15,
+    "usage": 15,
+    "simulatedMicro": 1370231
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "finishedAt": "2026-10-30T10:57:56.068Z",
+  "success": true
+}

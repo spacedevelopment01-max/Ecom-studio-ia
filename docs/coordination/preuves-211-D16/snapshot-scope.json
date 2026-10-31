@@ -1,0 +1,146 @@
+[
+  {
+    "file": "src/lib/orchestrator/conversation/brand-tool-execution.ts",
+    "functions": [
+      "brandReceipt",
+      "brandRegistry"
+    ],
+    "before": "4fc53885a2ab302a808912542e0396c230534eb987cbc64b60a22cc0c7b261d4",
+    "after": "a2ff14a5205613fa1f2f01acd5d8e5b865b3577adb47722890addfc232fa201d"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/content-tool-execution.ts",
+    "functions": [
+      "contentReceipt",
+      "contentRegistry"
+    ],
+    "before": "1202ac8132863fd69c1d1300d3a01cb170518f9c4a4e46dee7ffd470f369db87",
+    "after": "7ff3977e7b21f6ef7731e4f70a42c510d61d9422c383fe91337be0a7ab2a0124"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/export-tool-execution.ts",
+    "functions": [
+      "nativeExportReceipt",
+      "nativeExportsRegistry"
+    ],
+    "before": "32cd00ad073246ab4617e366f7da7b0840b90d6646e1b5592c35e035794a2867",
+    "after": "14a75b8e8fe2968b02e80c617053204928426f1f56cb597810625151e6c63fb6"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/research-tool-execution.ts",
+    "functions": [
+      "researchReceipt",
+      "researchRegistry"
+    ],
+    "before": "86e7eaf274dee5e8a13e95de4b9577625b957d808fd6260ddf78d836daa476ca",
+    "after": "18ae94b6f843fe7ff273c2f89ab1b2a2c5b5c4030bac4d9bb1451bd2ce96cac9"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/tool-execution.ts",
+    "functions": [
+      "toolRegistry",
+      "toolReceipt"
+    ],
+    "before": "b6ef55aa5be9d4d940f636d7c563738e35e98c2a5a9ce1830af19984b40470d5",
+    "after": "50ece1ab3a036f43c28bdb7a308e39dab89c519133786bb606079fbb30066a17"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/video-voice-execution.ts",
+    "functions": [
+      "videoVoiceReceipt",
+      "videoVoiceRegistry"
+    ],
+    "before": "d9ad86ee05fc20eac0a3e839c4daf35cf0fe4e85f8fe4a03b410209e16a4a35a",
+    "after": "6fddce5d803082e55ce50dbcac3fff9a117afe91ae39a1a845d0d62d983ab308"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/video-tool-execution.ts",
+    "functions": [
+      "videoToolReceipt",
+      "videoToolRegistry"
+    ],
+    "before": "f738cf1eba22da327e2d9413ef7fb35faf046274f51b73a95804184d5b64a35e",
+    "after": "11a94a362eeb1b3564ebedab707a7c6410a281c0986fb1683305197cba6caa84"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/render-tool-execution.ts",
+    "functions": [
+      "renderReceipt",
+      "renderRegistry"
+    ],
+    "before": "4d820de274e023dcff09cbb2950096c200a5b87bca69201da5fd38046e6b1587",
+    "after": "829f7971cb7acd234ee22da8b077f4cf7e32160dabfffa5d9a26c97883969b24"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/social-tool-execution.ts",
+    "functions": [
+      "socialPreparationReceipt",
+      "socialPreparationRegistry"
+    ],
+    "before": "240970e3b45369ddbae5798c47b85cd616f5d14fd311edd4f1ef478d8c469705",
+    "after": "06f754628903ebb3c09bad88926b14b50e2a35a0bcc57ed476e6ad090cfee576"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/video-generation-execution.ts",
+    "functions": [
+      "videoGenerationReceipt",
+      "videoGenerationRegistry"
+    ],
+    "before": "d8093b7136403b9f317f81e47ac0bc95cfe210c43b8c04942faaa72bf966ad28",
+    "after": "c579ba514e5a7a257b7d9d64d600e126fb5d4b013823584049d2d53da39637e1"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/logo-tool-execution.ts",
+    "functions": [
+      "logoToolReceipt",
+      "logoToolRegistry"
+    ],
+    "before": "f9e6a5578d40681f9379e9e523f77a3658c451442bf52d5c50bb359fd2cdc1f0",
+    "after": "ab7d30cf21871eaf725fd2d428da8fce47459faf4377ce0940d679fb1c5527cb"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/social-production-execution.ts",
+    "functions": [
+      "socialProductionReceipt",
+      "socialProductionRegistry"
+    ],
+    "before": "6bf3bfd151c171fa5e4bcd170a2530a4b59fece567cafc31deb8ba17ab58482e",
+    "after": "9079eb8c34cac1727c9a7edb53ff3ee7215ec7a500982e5134b9fbd4397eaa9d"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/image-tool-execution.ts",
+    "functions": [
+      "imageToolReceipt",
+      "imageToolRegistry"
+    ],
+    "before": "61d8ffa71dcd64a0f6f2955e348b024cf9ea6013bfba00a23cd458f2d3a3efda",
+    "after": "49b5aa20bf25fc59434108f827b7272dc998f229188bd3d8a5cc17fbe9290395"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/video-clip-execution.ts",
+    "functions": [
+      "videoClipReceipt",
+      "videoClipRegistry"
+    ],
+    "before": "fe18cbcea722c3c4cba0039fc83552ca7383cda1a64c8d7f0e0bbacaee92877c",
+    "after": "8b2fe109f7e2fac1ecae1449b10798bb74b1a9beb4031171d6a8913d6cc672c1"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/catalogue-tool-execution.ts",
+    "functions": [
+      "catalogueReceipt",
+      "catalogueRegistry"
+    ],
+    "before": "16d35477568df203be68b60859768e7b903c0a798118cb2dbfc792af25ffa3fa",
+    "after": "b1c77e19e40dcd5b57bcc36bcfeb34dafbab1c7b3ff426906ad7d236c3b4a696"
+  },
+  {
+    "file": "src/lib/orchestrator/conversation/campaign-visual-execution.ts",
+    "functions": [
+      "campaignVisualReceipt",
+      "campaignVisualRegistry"
+    ],
+    "before": "36f51f1af6106d2c6d5b1c7d96a8c15f8186e85fea148213738e9647f850bb73",
+    "after": "baede6fe768524f3458b727f454091e39778bf1474b8c69c84c05a19c937aa32"
+  }
+]

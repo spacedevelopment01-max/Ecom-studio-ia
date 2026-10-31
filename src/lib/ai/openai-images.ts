@@ -12,7 +12,7 @@
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI from "openai";
-import { EnvHttpProxyAgent, fetch as undiciFetch } from "undici";
+import { EnvHttpProxyAgent } from "undici";
 import { getJsonSetting } from "../settings";
 import { isGatewayKey } from "./gateway";
 import { mediaModel } from "./media-models";
@@ -44,7 +44,10 @@ function proxyOptions(): Pick<ConstructorParameters<typeof OpenAI>[0] & object, 
   if (!proxy || process.env.NODE_USE_ENV_PROXY === "1") return {};
   // Délais larges : une image haute qualité prend 1 à 2 minutes (les données arrivent en flux entre-temps).
   const dispatcher = new EnvHttpProxyAgent({ headersTimeout: 300_000, bodyTimeout: 300_000 });
-  return { fetch: undiciFetch as unknown as typeof fetch, fetchOptions: { dispatcher } as any };
+  // Garder fetch et FormData du même environnement. Le fetch de l'autre copie d'undici
+  // sérialise le FormData global en « [object FormData] » : le SDK refuse alors tout fichier.
+  // Le dispatcher natif conserve le proxy, NO_PROXY et les délais sans changer le codec multipart.
+  return { fetchOptions: { dispatcher } as any };
 }
 
 export function openaiClient(apiKey: string): OpenAI {

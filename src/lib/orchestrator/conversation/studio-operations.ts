@@ -1,0 +1,85 @@
+/** Catalogue d'opérations, pas des permissions. Un module manuel n'est pas un outil SYNA. */
+import {stableHash} from '../../brain/hash';
+import {conversationToolsEnabled,conversationThemeToolsEnabled,conversationCompositionEnabled,conversationOriginalEnabled,conversationExportsEnabled,conversationRenderEnabled,conversationResearchEnabled,conversationCatalogueEnabled,conversationImagesEnabled,conversationLogosEnabled,conversationVideosEnabled,conversationVideoGenerationEnabled,conversationVideoVoiceEnabled,conversationVideoClipEnabled,conversationSocialEnabled,conversationContentEnabled,conversationBrandEnabled} from './tool-flags';
+import {strategyChoicesEnabled} from './strategy-choices';
+import {conversationBrandReviewEnabled,conversationBlogEnabled,conversationLogoReviewEnabled} from './tool-flags';
+import type {SpaceId} from '../../studio-nav';
+type Adapter='logo-review'|'blog'|'brand-review'|'brand'|'content'|'brief'|'analysis'|'research'|'theme'|'compose'|'original'|'export'|'render'|'choices'|'catalogue'|'images'|'logos'|'videos'|'video-generation'|'voice'|'retake'|'social'|'social-production'|'campaign-visual'|'none';
+type Definition={id:string;tab:SpaceId;label:[string,string];adapter:Adapter;source:string;sensitive?:boolean};
+const op=(id:string,tab:SpaceId,fr:string,en:string,adapter:Adapter='none',sensitive=false):Definition=>({id,tab,label:[fr,en],adapter,sensitive,source:adapter==='logo-review'?'src/lib/orchestrator/conversation/logo-selection-execution.ts':adapter==='blog'?'src/lib/orchestrator/conversation/content-tool-execution.ts':adapter==='brand-review'?'src/lib/orchestrator/conversation/brand-review-execution.ts':adapter==='brand'?'src/lib/orchestrator/conversation/brand-tool-execution.ts':adapter==='content'?'src/lib/orchestrator/conversation/content-tool-execution.ts':adapter==='social-production'?'src/lib/orchestrator/conversation/social-production-execution.ts':adapter==='campaign-visual'?'src/lib/orchestrator/conversation/campaign-visual-execution.ts':adapter==='social'?'src/lib/orchestrator/conversation/social-tool-execution.ts':adapter==='retake'?'src/lib/orchestrator/conversation/video-clip-execution.ts':adapter==='voice'?'src/lib/orchestrator/conversation/video-voice-execution.ts':adapter==='video-generation'?'src/lib/orchestrator/conversation/video-generation-execution.ts':adapter==='videos'?'src/lib/orchestrator/conversation/video-tool-execution.ts':adapter==='logos'?'src/lib/orchestrator/conversation/logo-tool-execution.ts':adapter==='none'?`src/components/studio/tab-${tab}.tsx`:adapter==='brief'?'src/lib/orchestrator/conversation/index.ts':adapter==='analysis'?'src/lib/orchestrator/conversation/tool-execution.ts':adapter==='research'?'src/lib/orchestrator/conversation/research-tool-execution.ts':adapter==='images'?'src/lib/orchestrator/conversation/image-tool-execution.ts':adapter==='catalogue'?'src/lib/orchestrator/conversation/catalogue-tool-execution.ts':adapter==='choices'?'src/lib/orchestrator/conversation/strategy-choices.ts':adapter==='export'?'src/lib/orchestrator/conversation/export-tool-execution.ts':adapter==='render'?'src/lib/orchestrator/conversation/render-tool-execution.ts':'src/lib/orchestrator/conversation/theme-tool-execution.ts'});
+export const STUDIO_OPERATIONS:readonly Definition[]=[
+ op('brief.update','produit','Corriger une fiche encore modifiable','Correct an editable brief','brief'),
+ op('offer.analyse','pilote','Analyser l’offre sans avancer d’étape','Analyze the offer without advancing','analysis'),
+ op('research.generate','strategie','Rechercher et conserver les hypothèses','Research and retain hypotheses','research'),
+ op('research.approve','strategie','Valider un angle dans la préparation','Approve an angle in preparation'),
+ op('proposal.compare','strategie','Comparer des propositions versionnées','Compare versioned proposals'),
+ op('proposal.choose','strategie','Retenir une proposition et ses raisons','Choose a proposal and record reasons'),
+ op('strategy.compare','strategie','Comparer les angles marketing acquis','Compare acquired marketing angles','choices'),
+ op('strategy.preference','strategie','Retenir ou écarter un angle dans la discussion, puis annuler','Prefer or reject an angle in discussion, then undo','choices'),
+ op('brand.confirm','marque','Choisir une identité textuelle acquise','Choose an acquired textual identity','brand-review'),
+ op('brand.generate','marque','Créer une identité de marque','Create a brand identity','brand'),
+ op('brand.correct','marque','Corriger nom et signature avant leur choix','Correct name and tagline before choosing','brand-review'),
+ op('logo.generate','marque','Créer trois propositions de logo','Create three logo proposals','logos'),
+ op('logo.replace','marque','Choisir puis valider une identité acquise','Choose then approve an acquired identity','logo-review'),
+ op('images.upload','images','Importer ses images','Upload images'),
+ op('images.search','images','Chercher des photos libres','Search stock photos'),
+ op('images.generate','images','Créer de 1 à 5 images IA distinctes','Generate 1 to 5 distinct AI images','images'),
+ op('images.correct','images','Corriger une image avec sa source et son devis','Revise an image with its source and quote','images'),
+ op('videos.motion','videos','Monter les images acquises avec mouvement local','Edit acquired images with local motion','videos'),
+ op('videos.restore','videos','Restaurer une version vidéo conservée','Restore a retained video version','videos'),
+ op('videos.plan','videos','Préparer une vidéo filmée par IA','Plan an AI-filmed video'),
+ op('videos.retake','videos','Remplacer un seul clip avec devis, sans racheter les autres','Replace one quoted clip without repurchasing the others','retake'),
+ op('videos.voice','videos','Corriger les phrases vocales sans racheter les clips','Revise speech without repurchasing clips','voice'),
+ op('videos.generate','videos','Générer des clips IA après scénario et devis','Generate AI clips after scenario and quote','video-generation'),
+ op('videos.edit','videos','Retoucher durée, texte, transitions et musique locale','Edit duration, text, transitions and local music','videos'),
+ op('catalogue.read','catalogue','Lire une fiche et ses variantes autorisées','Read an authorized listing and variants','catalogue'),
+ op('catalogue.create','catalogue','Créer un brouillon produit','Create a product draft','catalogue'),
+ op('catalogue.update','catalogue','Retoucher un brouillon et ses variantes sans suppression','Edit a draft and variants without deletion','catalogue'),
+ op('catalogue.stock','catalogue','Renseigner les quantités d’un brouillon','Enter draft quantities','catalogue'),
+ op('catalogue.sync','catalogue','Synchroniser une boutique connectée','Sync a connected store','none',true),
+ op('services.update','produit','Modifier les prestations et coordonnées','Edit services and contact details'),
+ op('properties.update','biens','Modifier un bien immobilier','Edit a property listing'),
+ op('appointments.settings','rendez-vous','Modifier les règles de réservation','Edit booking settings'),
+ op('appointments.create','rendez-vous','Réserver un rendez-vous réel','Book a real appointment','none',true),
+ op('appointments.cancel','rendez-vous','Annuler un rendez-vous','Cancel an appointment','none',true),
+ op('theme.select','boutique','Choisir un thème dans la galerie','Choose a gallery theme'),
+ op('theme.exact-edit','boutique','Retoucher un texte exact ou média acquis','Edit exact text or an acquired image','theme'),
+ op('theme.compose','boutique','Composer avec les composants natifs','Compose with native components','compose'),
+ op('theme.original','boutique','Créer un site sans thème de départ','Build without a starting theme','original'),
+ op('theme.undo','boutique','Annuler une retouche avec son reçu','Undo an edit with its receipt','theme'),
+ op('theme.capture','boutique','Capturer le rendu réel et ses mesures','Capture the actual render and metrics','render'),
+ op('theme.export','boutique','Créer un ZIP natif en bibliothèque','Create a native library ZIP','export'),
+ op('theme.publish','boutique','Publier le site sur un CMS','Publish the site to a CMS','none',true),
+ op('copy.generate','boutique','Rédiger un document natif pour une page précise','Write one native document for a specific page','content'),
+ op('copy.edit','boutique','Retoucher les passages choisis d’un texte natif','Rewrite selected passages of native copy','content'),
+ op('seo.update','blog','Rédiger les métadonnées d’une page','Write metadata for a page','content'),
+ op('blog.generate','blog','Créer un brouillon d’article natif','Create a native article draft','blog'),
+ op('blog.publish','blog','Publier un article','Publish an article','none',true),
+ op('social.plan','publications','Préparer un calendrier de brouillons','Prepare a draft calendar','social'),
+ op('social.draft','publications','Enregistrer des brouillons avec les médias acquis','Save drafts with acquired media','social'),
+ op('social.generate','publications','Créer une image manquante d’un brouillon natif','Create a missing native draft image','social-production'),
+ op('social.publish','publications','Publier sur un réseau','Publish to a network','none',true),
+ op('calendar.update','calendrier','Déplacer une publication programmée','Reschedule a post','none',true),
+ op('campaign.draft','publicites','Préparer un brouillon de campagne avec les médias acquis','Prepare a campaign draft with acquired media','social'),
+ op('ads.create','publicites','Créer le visuel manquant d’une annonce brouillon','Create a missing draft ad visual','campaign-visual'),
+ op('ads.launch','publicites','Activer une campagne réelle','Launch a real campaign','none',true),
+ op('prompts.edit','prompts','Modifier les consignes d’un moteur','Edit an engine prompt'),
+ op('files.organize','fichiers','Ranger ou renommer un fichier','Organize or rename a file'),
+ op('files.delete','fichiers','Supprimer un fichier','Delete a file','none',true),
+ op('connections.configure','connexions','Connecter un compte externe','Connect an external account','none',true),
+];
+export function studioOperationCatalogue(projectId:string|null,writableBrief:boolean){
+ const enabled:Record<Adapter,boolean>={'logo-review':conversationLogoReviewEnabled(),blog:conversationBlogEnabled(),'brand-review':conversationBrandReviewEnabled(),brand:conversationBrandEnabled(),content:conversationContentEnabled(),'social-production':conversationSocialEnabled(),'campaign-visual':conversationSocialEnabled(),social:conversationSocialEnabled(),retake:conversationVideoClipEnabled(),voice:conversationVideoVoiceEnabled(),'video-generation':conversationVideoGenerationEnabled(),videos:conversationVideosEnabled(),logos:conversationLogosEnabled(),images:conversationImagesEnabled(),brief:writableBrief,analysis:conversationToolsEnabled(),research:conversationResearchEnabled(),choices:strategyChoicesEnabled(),catalogue:conversationCatalogueEnabled(),theme:conversationThemeToolsEnabled(),compose:conversationCompositionEnabled(),original:conversationOriginalEnabled(),export:conversationExportsEnabled(),render:conversationRenderEnabled(),none:false};
+ const rows=STUDIO_OPERATIONS.map(o=>({id:o.id,tab:o.tab,label:o.label,source:o.source,
+  implementation:o.adapter==='none'?'absent_from_syna' as const:'implemented' as const,
+  evidence:o.adapter==='none'?'not_tested' as const:'isolated_simulated_provider' as const,
+  connectionEnabled:o.adapter!=='none'&&enabled[o.adapter]&&(!!projectId||o.adapter==='brief'),
+  entryTool:o.adapter==='social-production'?'social.draft':o.adapter==='campaign-visual'?'campaign.draft':null,
+  nativeAvailability:['social-production','campaign-visual'].includes(o.adapter)?'native_draft_and_quote_checks_on_action':o.adapter==='none'?'not_verified_for_this_project':'native_checks_on_action',
+  availability:o.adapter==='none'?'not_connected_native_screen_only':!projectId&&o.adapter!=='brief'?'project_required':!enabled[o.adapter]?'disabled_or_locked':['social-production','campaign-visual'].includes(o.adapter)?'native_draft_then_quoted_acquisition':o.adapter==='choices'?'native_current_comparison_and_revision_checks':o.adapter==='brief'?'native_revision_and_lock_checks':'native_checks_on_each_quote',
+  confirmation:['brief','choices'].includes(o.adapter)?'explicit_client_command':o.adapter==='none'?'not_connected':'separate_native_quote_and_confirmation',
+  cost:['brief','choices','brand-review','logo-review'].includes(o.adapter)?'free':o.adapter==='none'?'unknown_not_quoted':['brand-review','theme','compose','original','export','render','catalogue','videos','social'].includes(o.adapter)?'free_native_application_reflection_quoted_separately':'native_quote_required',
+  sensitive:!!o.sensitive,href:projectId?`/studio/${projectId}/${o.tab}`:'/studio',
+ }));
+ return{schema:'studio-operation-catalogue-1' as const,version:stableHash('studio-operation-definitions-1',STUDIO_OPERATIONS),scope:'explicit_operations_only_not_exhaustive_ui_control_coverage',notExhaustive:true,realProviderTested:false,clientInstanceTested:false,ownerValidated:false,rows};
+}

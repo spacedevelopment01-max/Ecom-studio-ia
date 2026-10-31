@@ -135,7 +135,7 @@ export default function TabMarque() {
   const byRole = (r: string) => (logos?.assets ?? []).find((a) => a.role === r);
   const routes = (ident?.proposals ?? []).filter((x) => x.route);
   return (
-    <div className="mx-auto grid max-w-6xl gap-6">
+    <div className="@container mx-auto grid min-w-0 max-w-6xl gap-6" data-brand-editor>
       <MarketingStrategy projectId={id} onChange={reload} />
       <EngineNotice what={t("la direction de marque et le logo", "the brand direction and logo")} />
       <AiWait busy={busy} label={t("Mise à jour de la marque (logo, site, charte)…", "Updating the brand (logo, website, guide)…")} waitKey="brand-save" expectedMs={15000} className="mb-4" />
@@ -146,8 +146,8 @@ export default function TabMarque() {
       {!ident?.provided && <LogoV2Panel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && <FullLogoPanel onApplied={() => { reloadLogos(); reloadIdent(); reload(); }} />}
       {!ident?.provided && routes.length > 0 && <LogoRoutes routes={routes} max={ident!.max ?? 3} current={ident!.current} choosing={choosing} locked={validated.has("logo")} onChoose={(k) => chooseLogo({ proposalId: k })} onRegenerate={() => chooseLogo({ regenerate: true })} onDelete={async (k) => { try { await api(`/api/projects/${id}/brand/logo?proposal=${encodeURIComponent(k)}`, { method: "DELETE" }); reloadIdent(); } catch (e) { toast("bad", (e as Error).message); } }} />}
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <Card className="p-5 sm:p-7">
+      <div className="grid min-w-0 gap-6 @[850px]:grid-cols-[minmax(0,1fr)_380px]" data-brand-details-layout>
+        <Card className="min-w-0 p-5 sm:p-7">
           <SectionTitle title={t("Identité", "Identity")} action={<div className="flex gap-2">{site?.status !== "read" && <Button variant="secondary" size="sm" icon={<Sparkles className="size-4" />} onClick={() => setRegen(true)}>{t("Nouvelle proposition", "New proposal")}</Button>}<Button size="sm" onClick={() => save()} loading={busy} disabled={!dirty}>{t("Enregistrer", "Save")}</Button></div>}>
             {site?.status === "read" ? (
               <>
@@ -164,7 +164,7 @@ export default function TabMarque() {
               <ul className="mt-1 list-disc pl-5 text-muted">{b.checks!.map((c) => <li key={c}>{c}</li>)}</ul>
             </div>
           )}
-          <div className="grid gap-5">
+          <div className="grid min-w-0 grid-cols-1 gap-5" data-brand-fields>
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between"><label htmlFor="bname" className="text-sm font-medium">{t("Nom de marque", "Brand name")}</label>{V("name")}</div>
               {b.nameStatus === "proposed" && site?.status !== "read" && <p className="text-xs text-muted">{t("Nom proposé : vérifiez qu'il est libre (INPI, EUIPO, nom de domaine, réseaux sociaux) avant de l'adopter.", "Suggested name: check that it's available (trademark offices, domain name, social handles) before adopting it.")}</p>}
@@ -214,7 +214,7 @@ export default function TabMarque() {
                   </div>
                   <div className="grid grid-cols-5 gap-2" data-testid="brand-palette">
                     {(Object.keys(pal) as (keyof Brand["palette"])[]).map((k) => (
-                      <div key={k} className="grid gap-1.5 text-center text-xs">
+                      <div key={k} className="grid min-w-0 grid-cols-1 gap-1.5 break-words text-center text-xs">
                         <span className="h-16 rounded-2xl border border-line" style={{ background: pal[k] }} aria-label={t(`Couleur ${PALETTE_LABEL[k].fr} ${pal[k]}`, `${PALETTE_LABEL[k].en} color ${pal[k]}`)} role="img" />
                         <span className="text-muted">{t(PALETTE_LABEL[k].fr, PALETTE_LABEL[k].en)}</span>
                         <span className="font-mono text-[10px]">{pal[k]}</span>
@@ -229,15 +229,15 @@ export default function TabMarque() {
                         : t("Les couleurs sont liées à la direction choisie. Pour changer de couleurs, choisissez une autre direction ci-dessous.", "Colors are tied to the chosen direction. To change colors, choose another direction below.")}
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
-                    {!pending && !saved.paletteMode && <Button size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
+                    {!pending && saved.clientPalette && saved.paletteMode !== "client" && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "client" })}>{t("Revenir à vos couleurs", "Back to your colors")}</Button>}
+                    {!pending && !saved.paletteMode && <Button className="max-w-full" style={{whiteSpace:'normal',height:'auto',minHeight:32}} size="sm" variant="secondary" disabled={busy} onClick={() => save({ paletteMode: "direction" })}>{t(`Appliquer les couleurs de la direction ${dirName}`, `Apply the ${dirName} direction colors`)}</Button>}
                   </div>
                 </div>
               );
             })()}
           </div>
         </Card>
-        <div className="grid content-start gap-6">
+        <div className="grid min-w-0 content-start gap-6">
           <Card className="p-5">
             <div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-display text-lg font-semibold">{t("Logo", "Logo")} {b.logo.status === "provided" && b.logo.assetId && <Badge tone="ok">{t("fourni", "provided")}</Badge>}</h3>{V("logo")}</div>
             <p className="mt-1 text-xs text-muted">{b.logo.concept}</p>

@@ -1,0 +1,258 @@
+{
+  "code": "378ac552c43b7602b4afe816aa2e31fd77ff026e",
+  "base": "6e686dcc37915294a3087d0cb7e2a7484e7cce0b",
+  "sources": {
+    ".github/workflows/ci.yml": {
+      "sha256": "4bbf5e1d1cb28607cf87482ffc9846cde142f2e3d38185085b6ca8c9e94f2da3",
+      "bytes": 10280,
+      "gitBlob": "4b44a1cf03c6a2d058c54379f53a7ee123b1a2ff"
+    },
+    "scripts/verify-agent211-build.ts": {
+      "sha256": "fd21cda4c7216a837c3d68fa357edb3b3d26b4f89380836be03fd75c1e34d6c8",
+      "bytes": 53210,
+      "gitBlob": "a235c557f2e32c9bfbda2f390be6c832ca37cc4e"
+    },
+    "scripts/verify-agent211-logos-ui.ts": {
+      "sha256": "fb59d53e4d3a7537b2aef442db099e5b31d9a40127df0fca026d383278d1e180",
+      "bytes": 20042,
+      "gitBlob": "8719f24809c5b1d2cec299c4362e06d9660a6017"
+    },
+    "src/app/api/studio-agent/conversations/[cid]/logos/route.ts": {
+      "sha256": "45cce66e137c5442dec9d8fdd509e59c8ff68a4319ca82adb999ecd49cc68846",
+      "bytes": 939,
+      "gitBlob": "3c70cde5279f2597202d1df0b648c572b862c4c6"
+    },
+    "src/components/studio/conversation-logo-tools.tsx": {
+      "sha256": "f703b6a56016a94b81b4b85d0bbb8dfdf7701e02789ce7c33e3879e7330cd7f2",
+      "bytes": 11020,
+      "gitBlob": "ce605cdd99636082a6340133958a7ef6c9b7d5fb"
+    },
+    "src/components/studio/conversation-panel.tsx": {
+      "sha256": "6245701f47ffca6e18ab643bae68dde158a14e565d4176817f43c2fd81b21a79",
+      "bytes": 31129,
+      "gitBlob": "720d8aa69e8614ffdbb79e985ceafebc5a6d1f3f"
+    },
+    "src/components/studio/logo-v2-panel.tsx": {
+      "sha256": "f6bb61016879aca19d72d383a8d2e4887163dbf9530f50091f971d9e2cc15def",
+      "bytes": 37501,
+      "gitBlob": "8fafd99a2593008ce39f112c990cf78707811f5a"
+    },
+    "src/components/studio/tab-marque.tsx": {
+      "sha256": "6654b33b8ae7d53acb6fe7bfbe61d9189c4b9aec97b27bdd28b3050573542e11",
+      "bytes": 49117,
+      "gitBlob": "2be341e11afa55e34dab27dfeb9813d1f10f7a32"
+    },
+    "src/lib/ai/llm.ts": {
+      "sha256": "dc15d1a18d0fa92fdc7d219a56591610e41cef7b24490796793903a01756e7c5",
+      "bytes": 55870,
+      "gitBlob": "d184a748c7b707a92643fb5c06859bc03b4440cf"
+    },
+    "src/lib/ai/request-bounds.ts": {
+      "sha256": "a145f6e8322e3b6d5ababde59f978b24ff472e32895807d953b39feb09fec7c9",
+      "bytes": 7894,
+      "gitBlob": "9025e1fa8c26480becc6ee12af53254a9c637927"
+    },
+    "src/lib/logo-v2/accepted-directions.ts": {
+      "sha256": "1c6cc4e3e6e600c6dfd5cf4b9023fb767f4ea16b89d3736717470e41d8abf967",
+      "bytes": 3240,
+      "gitBlob": "3f97d1a855046e1bc9346e3f202a05133098c8f6"
+    },
+    "src/lib/logo-v2/ai.ts": {
+      "sha256": "8cec74fb7172095fcdd200f3ce89e567397b676b4ea3f4d119322beeff850673",
+      "bytes": 30216,
+      "gitBlob": "482bb7c1d8fbc17745d7fc92cf85a1ecc5431410"
+    },
+    "src/lib/logo-v2/artwork.ts": {
+      "sha256": "bda6b600cb9c85788b64da31f03004ce562cde36a480871a68593a9c14ef87e4",
+      "bytes": 37590,
+      "gitBlob": "9b67a28b5e75c6178f82d6c99fe3c24c51f4b088"
+    },
+    "src/lib/logo-v2/creation-quote.ts": {
+      "sha256": "e7e18b9f5f21040e1b673abaf17aeab3b3548eb0fa3a0b1061999429ddcf838d",
+      "bytes": 10880,
+      "gitBlob": "c3a5cabeaf537d33523c31b52faf458cb815ddbd"
+    },
+    "src/lib/logo-v2/engine.ts": {
+      "sha256": "ee2b7bd02ee9c686c5e874136fb2a8c65a704cff87471c798e91f5e1755b1f5d",
+      "bytes": 48652,
+      "gitBlob": "c1f2d70997bebedbb70170f6883939a0cfe00a50"
+    },
+    "src/lib/logo-v2/types.ts": {
+      "sha256": "f3181a84fdcd018dcc57759b982132fdcca69cbc0dec2117df9a2ae9177eb067",
+      "bytes": 10415,
+      "gitBlob": "6b2d00296763df871cd560b1be4c811341ed79f1"
+    },
+    "src/lib/orchestrator/conversation/contract.ts": {
+      "sha256": "6c278340acb9c346f8df57181406d40dd206ca3dd475cc7e562ad17e87686c76",
+      "bytes": 6841,
+      "gitBlob": "7647b2f0af9a3ee6bd4beb45b3221bf78e554c5b"
+    },
+    "src/lib/orchestrator/conversation/image-tool-sources.ts": {
+      "sha256": "dd5edf5f118f45f58af6c3df5aff9f2d79ba54b88553d5583fb976571098e5c0",
+      "bytes": 4547,
+      "gitBlob": "a9d45ba1f3e6ec33c4353908e0340afc8f763cf5"
+    },
+    "src/lib/orchestrator/conversation/index.ts": {
+      "sha256": "a57614000c1e7226e84f8955470e5ed9dea1aa0769f57c707d25062ee7bc5702",
+      "bytes": 31040,
+      "gitBlob": "01a1d05609920ffb3a6d81ea10abd91a8ca07963"
+    },
+    "src/lib/orchestrator/conversation/intelligence-context.ts": {
+      "sha256": "d79782cffa69af12fb9138541ddcd52088ca6626cf13a19db000470625b8acf8",
+      "bytes": 28614,
+      "gitBlob": "391f27e0aa9d2a5d93f85ff10f11ef2e90c704b7"
+    },
+    "src/lib/orchestrator/conversation/intelligence-contract.ts": {
+      "sha256": "fd972109305215a4183e780c0e204d580b02e0e2c7f7a7d8725df6f1572c6bdf",
+      "bytes": 6201,
+      "gitBlob": "a4561332b6d4eb5088ec668e948c2122469f6d3e"
+    },
+    "src/lib/orchestrator/conversation/intelligence.ts": {
+      "sha256": "41c9cda5ed6af2830245117c34a4d0b51c4c3f43cc9998162dc6e8f6301dcbc9",
+      "bytes": 22504,
+      "gitBlob": "bc61a3617760bfebd478b77c1fd9fada75cc362a"
+    },
+    "src/lib/orchestrator/conversation/logo-tool-contract.ts": {
+      "sha256": "f6e7ef5a52f417fbe7551f776ddfd016a068a7857b86e15365017b09620f7e23",
+      "bytes": 1038,
+      "gitBlob": "a2298f9b730194de8efb1e07a8f0b997d5714230"
+    },
+    "src/lib/orchestrator/conversation/logo-tool-execution.ts": {
+      "sha256": "f9e6a5578d40681f9379e9e523f77a3658c451442bf52d5c50bb359fd2cdc1f0",
+      "bytes": 16820,
+      "gitBlob": "ed7b8db1096d6c4a28016cb8ff3ac2167787bbc7"
+    },
+    "src/lib/orchestrator/conversation/logo-tool-validation.ts": {
+      "sha256": "75c9574040e36af12945d6d7e915328a9fab79d401a3e5a16089c3d003b62353",
+      "bytes": 2110,
+      "gitBlob": "1a454973e8ef1132ebae3f3c26ea68bd37f083de"
+    },
+    "src/lib/orchestrator/conversation/studio-operations.ts": {
+      "sha256": "42e0dbc6fb6a8ff34eafd69d4405ee4876bf8c0cca3998de539bc48b00fb611c",
+      "bytes": 9113,
+      "gitBlob": "9d5355aae1b14f493448e0e7b11f13eba025d685"
+    },
+    "src/lib/orchestrator/conversation/tool-execution.ts": {
+      "sha256": "b00db8bd06637b84e29960268a0dc77e89d9a1a4414e329e878f734851e5113c",
+      "bytes": 14755,
+      "gitBlob": "59a5a1fead59b72cb44e4cf283eb2e4c75ece258"
+    },
+    "src/lib/orchestrator/conversation/tool-flags.ts": {
+      "sha256": "acfa2470d847a6ccd743d5d23c2fae32fe22d719fc7dcc37f88e8d71809cf54c",
+      "bytes": 1537,
+      "gitBlob": "a2d3f140d3afbe37b80daa4a1f8a0acdb89715e0"
+    },
+    "tests/conversation211-continuation-bound.test.ts": {
+      "sha256": "80e1b00c9b895b84104296ba4d53a2d4ecdb6d2a5975d80c2fdee0ea7bf8c163",
+      "bytes": 4443,
+      "gitBlob": "ebec20754614769eaa3645c92754825be5cf08c1"
+    },
+    "tests/conversation211-logo-schema-budget.test.ts": {
+      "sha256": "6eb885e3951b167b48b57113d65f5b8422d44bb150f191ef4f0d75ffef1386c0",
+      "bytes": 1558,
+      "gitBlob": "4a1454653d27135ea7f6b7283f4e61563feb9589"
+    },
+    "tests/conversation211-logos.test.ts": {
+      "sha256": "23fcdfb589f4937a58125943f95478f45f9c3ee3327b6d103e8c3ec144ef49f1",
+      "bytes": 14387,
+      "gitBlob": "b469b2e049dd99684c80fc03df509189306e0834"
+    },
+    "tests/conversation211-photo-logo-guard.test.ts": {
+      "sha256": "c21b7e5dec78b4017cec4b238f0a79f49f4244dd85b45eb118d3be6922e6436f",
+      "bytes": 2180,
+      "gitBlob": "63c9eaf0d688ec33c63e3332e492100a06fe19e4"
+    },
+    "tests/llm-strict-receipt.test.ts": {
+      "sha256": "13554e50b87b034ef3b0179a0734a58828e94c195fa81cf9ce142e89da9a06bd",
+      "bytes": 5097,
+      "gitBlob": "c2f6452efe530db8ca48faa8959c23b44bfc5efb"
+    },
+    "tests/logo-v2-accepted-directions.test.ts": {
+      "sha256": "5c3a0c96f9e73d1385494909997c9b07da82d7de0d1fda318a41a88cc74b273a",
+      "bytes": 4615,
+      "gitBlob": "efaa9204f2071c23bc5a69b7a419e977e8f8e4d9"
+    },
+    "tests/logo-v2-acquired-engine.test.ts": {
+      "sha256": "f26c2161ee57ef9dc90ba1a6c645021c4fc23d058244a9dd34f9a6b45f91ae51",
+      "bytes": 3739,
+      "gitBlob": "caac9997bab38672cd8a5a8c8d5a3ebdbd8d4951"
+    },
+    "tests/logo-v2-bounded-review.test.ts": {
+      "sha256": "7db25a1b155a0cc025969abedf01c0a70cd8c4e6e7a3a979cac11601ac8c95f5",
+      "bytes": 2988,
+      "gitBlob": "54ad8bb18b0c27a608aa5d30137f05f312711e85"
+    },
+    "tests/logo-v2-exact-name-repair.test.ts": {
+      "sha256": "a2ae2fd348cd922acca617749558527aa412e8b9d92bdc0e657ecb2c124262ad",
+      "bytes": 2813,
+      "gitBlob": "3550e5dd5dc55b7391da762bc5ff0bc97fab1012"
+    },
+    "tests/logo-v2-interrupted-review.test.ts": {
+      "sha256": "96e56adbb5acbea28538fa31d75fc2f8a11817306f807f853f489d3f83d43d0b",
+      "bytes": 4095,
+      "gitBlob": "fded543e0e9ef4956fea4566775a38ea90e01ad5"
+    },
+    "tests/logo-v2-panel-state.test.ts": {
+      "sha256": "bd054658088028c85e5d23ac9d66b616d43347cb07d05f57450c22eee5a7a7d8",
+      "bytes": 2716,
+      "gitBlob": "8d5ac1f8e568e5886c19015981a6d39794356686"
+    },
+    "worker/handlers.ts": {
+      "sha256": "20a16fb026aa280e77f9c17e22b78f00a11de626ad5ae8e75202eeed96ba5256",
+      "bytes": 42536,
+      "gitBlob": "8783af58085aff22a98fda02a110196a25f2a85c"
+    }
+  },
+  "everySourceMatchesFrozenSnapshot": true,
+  "protected": {
+    "theme-base": {
+      "before": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "after": "54b893e8f2d979e787607834f36c80497dfa1166",
+      "unchanged": true
+    },
+    "src/lib/theme": {
+      "before": "1fa918c8217b89f44c1c64c4163b545baf77177e",
+      "after": "1fa918c8217b89f44c1c64c4163b545baf77177e",
+      "unchanged": true
+    },
+    "public/demo": {
+      "before": "69c6bbac36b0602b7e85fcd57cde8ee8262576bf",
+      "after": "69c6bbac36b0602b7e85fcd57cde8ee8262576bf",
+      "unchanged": true
+    },
+    "public/theme-assets": {
+      "before": "74f4c01fccf97a138ba3f9d65f6b8515d37de595",
+      "after": "74f4c01fccf97a138ba3f9d65f6b8515d37de595",
+      "unchanged": true
+    },
+    "src/lib/billing.ts": {
+      "before": "3785c9e9adb7102e5730ae5a3a6cb231db04398a",
+      "after": "3785c9e9adb7102e5730ae5a3a6cb231db04398a",
+      "unchanged": true
+    },
+    "src/lib/ai/access.ts": {
+      "before": "eb40ac212d9a220926f9edcbcb1a7db838bcd1e3",
+      "after": "eb40ac212d9a220926f9edcbcb1a7db838bcd1e3",
+      "unchanged": true
+    },
+    "src/lib/plan-gates.ts": {
+      "before": "fd175e190ca8b900b4af7c85157895c1459d7dc0",
+      "after": "fd175e190ca8b900b4af7c85157895c1459d7dc0",
+      "unchanged": true
+    },
+    "src/lib/ai/config.ts": {
+      "before": "fdc73b220f33c49e137ba7e66f2384229b46db20",
+      "after": "fdc73b220f33c49e137ba7e66f2384229b46db20",
+      "unchanged": true
+    },
+    "CLAUDE.md": {
+      "before": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "after": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "unchanged": true
+    }
+  },
+  "baselineCiStepsRetainedInOrder": 37,
+  "noFixtureBusinessNameInAddedApplicationCode": true,
+  "newFlagsDefaultOff": true,
+  "noEnvFileInCheckout": true
+}

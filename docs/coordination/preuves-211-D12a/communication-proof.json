@@ -1,0 +1,171 @@
+{
+  "version": {
+    "commit": "c4c31a0e37953cf117f8a1381c4c199524aa3bf7",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "ads": {
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "creativeQualityQualified": false,
+    "transport": "native SDK/HTTP loopback simulation",
+    "passed": true,
+    "campaignId": "syna-1i6u1fjkitjkdvo9",
+    "success": {
+      "nativeCountersRefreshed": true,
+      "refreshPreservedDraft": true,
+      "heldoutProduct": "Tranchet de sellier à lame courbe",
+      "sha256": "fbc3caeeef19e97a5c9acb5eadca1fd3345ae34c56da776ad1d3bfd532932660",
+      "downloadExact": true,
+      "aspect": "1:1",
+      "newImageCalls": 1,
+      "textExact": true,
+      "nativeEditor": true,
+      "approved": false
+    },
+    "failure": {
+      "status": "failed",
+      "progress": 0,
+      "newImageCalls": 1,
+      "automaticRetry": false
+    },
+    "foreign": 404,
+    "csrf": 403,
+    "reloadNoCall": true,
+    "firstAssetPreserved": true,
+    "counts": {
+      "providerHttpCalls": 9,
+      "videoClipCalls": 0,
+      "videoVoiceCalls": 0,
+      "textHttpCalls": 7,
+      "imageHttpCalls": 2,
+      "tokenCounts": 7,
+      "calls": 9,
+      "usage": 8,
+      "simulatedMicro": 261371
+    }
+  },
+  "social": {
+    "realProviderCalls": 0,
+    "realCostEur": 0,
+    "transport": "native SDK/HTTP loopback simulation",
+    "creativeQualityQualified": false,
+    "passed": true,
+    "postIds": [
+      "syna-1beca5b3bcf52ca3656b610132f0"
+    ],
+    "success": {
+      "nativeCountersRefreshed": true,
+      "heldoutProduct": "Compas de charpentier pour grandes pièces",
+      "reusedWithoutAi": true,
+      "sameAsset": true,
+      "sha256": "2817a92fdd58b09c0eeae2bcf0863fff268ced7183b05a3edc8f03c50d28e9bf",
+      "downloadExact": true,
+      "requestAspect": "4:5",
+      "sourceRemoved": true,
+      "budgetExhausted": true,
+      "expiredOriginalQuoteAndBound": true,
+      "contextConflictHttp": 409,
+      "forgedAssetHttp": 400,
+      "boundsUnchanged": true,
+      "manualSchedulePreserved": true
+    },
+    "failure": {
+      "status": "failed",
+      "progress": 0.95,
+      "origin": "INPUT_CHANGED_AFTER_ACQUISITION",
+      "acquiredReadable": true,
+      "automaticRetry": false
+    },
+    "foreign": 404,
+    "csrf": 403,
+    "reloadNoCall": true,
+    "counts": {
+      "providerHttpCalls": 13,
+      "videoClipCalls": 0,
+      "videoVoiceCalls": 0,
+      "textHttpCalls": 10,
+      "imageHttpCalls": 3,
+      "tokenCounts": 10,
+      "calls": 13,
+      "usage": 12,
+      "simulatedMicro": 495050
+    }
+  },
+  "imageReferenceTransports": [
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "7xo590mf75f7tj4t",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "d9e2a8b18e66f256c2c52bb51d4ba788139853a3fdf9f319c685f1c014e77aaa",
+      "wirePromptSha256": "980cefa44ddfeb4d4cc7dc90836bc0d87f5066125a334e548d8884b948075b98",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 6424,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    },
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "7xo590mf75f7tj4t",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "d8e6ee66daa56118a42294c0a2068b80f6e287fd9773502562aa56dde4797d88",
+      "wirePromptSha256": "a1717561ec7ad3e43cb1f5b3eca7e05ae19094cc1134f8409dceaa6ac1c33482",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 6426,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 503
+    },
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "36828os52j9l0o5n",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "645534bc4211410a4f50536866face99418b1a70f6e96f363d4b2d6b9cd32274",
+      "wirePromptSha256": "ee5ecd233e1db1e00361b68696a4a122f93049a8d27fa12da19544c1df820e38",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7219,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    }
+  ],
+  "nativeApiCalledViaRealWorker": true,
+  "beforeRegistry": {
+    "failed": 4,
+    "passed": 1
+  },
+  "screenshotsOpened": 6,
+  "publishedScreenshots": 4,
+  "films": {
+    "campaign-integration": {
+      "durationS": 13.333333,
+      "bytes": 875048
+    },
+    "social-integration": {
+      "durationS": 12.6,
+      "bytes": 737385
+    }
+  },
+  "filmsNotAccelerated": true
+}

@@ -75,7 +75,7 @@ const textOf = (b: Block) => ("items" in b ? b.items.join(" ") : "q" in b ? `${b
  * Contrôles locaux d'un document (gratuits). `others` : textes des autres pages du projet (doublons).
  * `pages` : pages connues — un lien vers une adresse absente est un lien inventé.
  */
-export function localContentChecks(doc: ContentDoc, p: Project, f: VerifiedFacts, o: { others?: { key: string; text: string }[]; pages?: PageRef[] } = {}): LocalContentCheck {
+export function localContentChecks(doc: ContentDoc, p: Project, f: VerifiedFacts, o: { others?: { key: string; text: string }[]; pages?: PageRef[]; factsUnavailable?: boolean } = {}): LocalContentCheck {
   const codes = new Set<string>();
   const issues: string[] = [];
   const blocks = new Set<string>();
@@ -91,6 +91,8 @@ export function localContentChecks(doc: ContentDoc, p: Project, f: VerifiedFacts
   const all: Block[] = [...doc.blocks, { id: "meta", kind: "p", text: `${doc.meta.seoTitle} ${doc.meta.metaDescription}` }];
   for (const b of all) {
     const t = stripInline(textOf(b)).replace(PLACEHOLDER, " ");
+    // Historical subject unavailable: keep structural checks, explicitly leave factual checks unperformed.
+    if(!o.factsUnavailable){
     // Affirmations non confirmées (motifs partagés avec la rédaction du studio).
     for (const c of lintClaims(t, p)) {
       if (COMMERCIAL.test(c.label)) add("unconfirmed_commercial", `information commerciale non confirmée : « ${c.term} » (${c.label})`, b.id);
@@ -109,6 +111,7 @@ export function localContentChecks(doc: ContentDoc, p: Project, f: VerifiedFacts
       const same = [...flat.matchAll(MEASURE)].filter((x) => x[2].toLowerCase() === unit);
       if (same.length) add("wrong_fact", `caractéristique fausse : « ${m[0]} » (confirmé : ${same.map((x) => x[0]).join(", ")})`, b.id);
       else add("invented_claim", `caractéristique non confirmée : « ${m[0]} »`, b.id);
+    }
     }
     // Formules creuses (communes + propres à la langue).
     const hollow = [...lintHollow(t).map((x) => x.term), ...pack.hollow.map((re) => t.match(re)?.[0]).filter((x): x is string => !!x)];

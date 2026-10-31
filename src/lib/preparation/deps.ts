@@ -37,12 +37,15 @@ import { remember } from "../projects";
 import { stateOf } from "./store";
 import { sitePages } from "../seo-v2/pages";
 export type Dependencies = {
+  /** Adaptateurs bornés : contrôle après acquisition, avant la transaction de sauvegarde. */
+  beforeRetain?: () => void;
   simulation?: boolean;
   inspect: (
     p: Project,
     b: Brief,
     ctx: JobContext,
     paid: boolean,
+    options?: { correction?: string },
   ) => Promise<Brief>;
   research: (
     p: Project,

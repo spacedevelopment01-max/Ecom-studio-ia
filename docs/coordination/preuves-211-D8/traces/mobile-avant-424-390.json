@@ -1,0 +1,487 @@
+{
+  "width": 390,
+  "clientWidth": 390,
+  "scrollWidth": 424,
+  "offenders": [
+    {
+      "tag": "DIV",
+      "class": "rounded-3xl border border-line bg-card p-5 sm:p-7",
+      "text": "CatalogueChaque produit se saisit une fois ici : photos, prix, options et varian",
+      "box": {
+        "x": 16,
+        "y": 535.5625,
+        "width": 408.125,
+        "height": 778,
+        "top": 535.5625,
+        "right": 424.125,
+        "bottom": 1313.5625,
+        "left": 16
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap items-start justify-between gap-3",
+      "text": "CatalogueChaque produit se saisit une fois ici : photos, prix, options et varian",
+      "box": {
+        "x": 37,
+        "y": 556.5625,
+        "width": 366.125,
+        "height": 164,
+        "top": 556.5625,
+        "right": 403.125,
+        "bottom": 720.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "max-w-2xl",
+      "text": "CatalogueChaque produit se saisit une fois ici : photos, prix, options et varian",
+      "box": {
+        "x": 37,
+        "y": 556.5625,
+        "width": 366.125,
+        "height": 112,
+        "top": 556.5625,
+        "right": 403.125,
+        "bottom": 668.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "H2",
+      "class": "font-display text-xl font-semibold",
+      "text": "Catalogue",
+      "box": {
+        "x": 37,
+        "y": 556.5625,
+        "width": 366.125,
+        "height": 28,
+        "top": 556.5625,
+        "right": 403.125,
+        "bottom": 584.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "P",
+      "class": "mt-1 text-sm text-muted",
+      "text": "Chaque produit se saisit une fois ici : photos, prix, options et variantes avec ",
+      "box": {
+        "x": 37,
+        "y": 588.5625,
+        "width": 366.125,
+        "height": 80,
+        "top": 588.5625,
+        "right": 403.125,
+        "bottom": 668.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "mt-5 grid gap-3",
+      "text": "Capteur de ruchePrix à renseigner · 1 variante(s) · stock non suiviDésigner pour",
+      "box": {
+        "x": 37,
+        "y": 740.5625,
+        "width": 366.125,
+        "height": 552,
+        "top": 740.5625,
+        "right": 403.125,
+        "bottom": 1292.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center",
+      "text": "Capteur de ruchePrix à renseigner · 1 variante(s) · stock non suiviDésigner pour",
+      "box": {
+        "x": 37,
+        "y": 740.5625,
+        "width": 366.125,
+        "height": 246,
+        "top": 740.5625,
+        "right": 403.125,
+        "bottom": 986.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "min-w-0 flex-1",
+      "text": "Capteur de ruchePrix à renseigner · 1 variante(s) · stock non suivi",
+      "box": {
+        "x": 50,
+        "y": 845.5625,
+        "width": 340.125,
+        "height": 44,
+        "top": 845.5625,
+        "right": 390.125,
+        "bottom": 889.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap items-center gap-2",
+      "text": "Capteur de ruche",
+      "box": {
+        "x": 50,
+        "y": 845.5625,
+        "width": 340.125,
+        "height": 24,
+        "top": 845.5625,
+        "right": 390.125,
+        "bottom": 869.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "P",
+      "class": "text-sm text-muted",
+      "text": "Prix à renseigner · 1 variante(s) · stock non suivi",
+      "box": {
+        "x": 50,
+        "y": 869.5625,
+        "width": 340.125,
+        "height": 20,
+        "top": 869.5625,
+        "right": 390.125,
+        "bottom": 889.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap gap-1",
+      "text": "Désigner pour SYNAVoir la ficheModifier",
+      "box": {
+        "x": 50,
+        "y": 901.5625,
+        "width": 340.125,
+        "height": 72,
+        "top": 901.5625,
+        "right": 390.125,
+        "bottom": 973.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-col gap-3 rounded-2xl border border-line p-3 sm:flex-row sm:items-center",
+      "text": "Support de partitions pliant — édition atelierBrouillon39,90 € · 1 variante(s) ·",
+      "box": {
+        "x": 37,
+        "y": 998.5625,
+        "width": 366.125,
+        "height": 294,
+        "top": 998.5625,
+        "right": 403.125,
+        "bottom": 1292.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "min-w-0 flex-1",
+      "text": "Support de partitions pliant — édition atelierBrouillon39,90 € · 1 variante(s) ·",
+      "box": {
+        "x": 50,
+        "y": 1103.5625,
+        "width": 340.125,
+        "height": 92,
+        "top": 1103.5625,
+        "right": 390.125,
+        "bottom": 1195.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap items-center gap-2",
+      "text": "Support de partitions pliant — édition atelierBrouillon",
+      "box": {
+        "x": 50,
+        "y": 1103.5625,
+        "width": 340.125,
+        "height": 52,
+        "top": 1103.5625,
+        "right": 390.125,
+        "bottom": 1155.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "P",
+      "class": "truncate font-semibold",
+      "text": "Support de partitions pliant — édition atelier",
+      "box": {
+        "x": 50,
+        "y": 1103.5625,
+        "width": 340.125,
+        "height": 24,
+        "top": 1103.5625,
+        "right": 390.125,
+        "bottom": 1127.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "P",
+      "class": "text-sm text-muted",
+      "text": "39,90 € · 1 variante(s) · stock non suivi · Fournitures",
+      "box": {
+        "x": 50,
+        "y": 1155.5625,
+        "width": 340.125,
+        "height": 40,
+        "top": 1155.5625,
+        "right": 390.125,
+        "bottom": 1195.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap gap-1",
+      "text": "Désigner pour SYNAVoir la ficheModifier",
+      "box": {
+        "x": 50,
+        "y": 1207.5625,
+        "width": 340.125,
+        "height": 72,
+        "top": 1207.5625,
+        "right": 390.125,
+        "bottom": 1279.5625,
+        "left": 50
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "rounded-3xl border border-line bg-card p-5 sm:p-7",
+      "text": "Boutiques connectéesEnvoyer crée les produits la première fois, puis les met à j",
+      "box": {
+        "x": 16,
+        "y": 1333.5625,
+        "width": 408.125,
+        "height": 310,
+        "top": 1333.5625,
+        "right": 424.125,
+        "bottom": 1643.5625,
+        "left": 16
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "flex flex-wrap items-start justify-between gap-3",
+      "text": "Boutiques connectéesEnvoyer crée les produits la première fois, puis les met à j",
+      "box": {
+        "x": 37,
+        "y": 1354.5625,
+        "width": 366.125,
+        "height": 212,
+        "top": 1354.5625,
+        "right": 403.125,
+        "bottom": 1566.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "max-w-2xl",
+      "text": "Boutiques connectéesEnvoyer crée les produits la première fois, puis les met à j",
+      "box": {
+        "x": 37,
+        "y": 1354.5625,
+        "width": 366.125,
+        "height": 160,
+        "top": 1354.5625,
+        "right": 403.125,
+        "bottom": 1514.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "H2",
+      "class": "font-display text-xl font-semibold",
+      "text": "Boutiques connectées",
+      "box": {
+        "x": 37,
+        "y": 1354.5625,
+        "width": 366.125,
+        "height": 28,
+        "top": 1354.5625,
+        "right": 403.125,
+        "bottom": 1382.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "P",
+      "class": "mt-1 text-sm text-muted",
+      "text": "Envoyer crée les produits la première fois, puis les met à jour (jamais de doubl",
+      "box": {
+        "x": 37,
+        "y": 1386.5625,
+        "width": 366.125,
+        "height": 100,
+        "top": 1386.5625,
+        "right": 403.125,
+        "bottom": 1486.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "DETAILS",
+      "class": "mt-2 text-sm text-muted",
+      "text": "Garanties et limites du stockShopify : le studio envoie un ajustement (+3, −2…) ",
+      "box": {
+        "x": 37,
+        "y": 1494.5625,
+        "width": 366.125,
+        "height": 20,
+        "top": 1494.5625,
+        "right": 403.125,
+        "bottom": 1514.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "SUMMARY",
+      "class": "cursor-pointer font-medium text-ink",
+      "text": "Garanties et limites du stock",
+      "box": {
+        "x": 37,
+        "y": 1494.5625,
+        "width": 366.125,
+        "height": 20,
+        "top": 1494.5625,
+        "right": 403.125,
+        "bottom": 1514.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "UL",
+      "class": "mt-2 grid list-disc gap-1.5 pl-5",
+      "text": "Shopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une ven",
+      "box": {
+        "x": 37,
+        "y": 1522.5625,
+        "width": 366.125,
+        "height": 444,
+        "top": 1522.5625,
+        "right": 403.125,
+        "bottom": 1966.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "LI",
+      "class": null,
+      "text": "Shopify : le studio envoie un ajustement (+3, −2…) et non une quantité ; une ven",
+      "box": {
+        "x": 57,
+        "y": 1522.5625,
+        "width": 346.125,
+        "height": 60,
+        "top": 1522.5625,
+        "right": 403.125,
+        "bottom": 1582.5625,
+        "left": 57
+      }
+    },
+    {
+      "tag": "LI",
+      "class": null,
+      "text": "WooCommerce et PrestaShop n'acceptent qu'une quantité totale : le studio la reli",
+      "box": {
+        "x": 57,
+        "y": 1588.5625,
+        "width": 346.125,
+        "height": 100,
+        "top": 1588.5625,
+        "right": 403.125,
+        "bottom": 1688.5625,
+        "left": 57
+      }
+    },
+    {
+      "tag": "LI",
+      "class": null,
+      "text": "Envoi resté sans réponse (coupure, délai dépassé) : il n'est jamais refait autom",
+      "box": {
+        "x": 57,
+        "y": 1694.5625,
+        "width": 346.125,
+        "height": 100,
+        "top": 1694.5625,
+        "right": 403.125,
+        "bottom": 1794.5625,
+        "left": 57
+      }
+    },
+    {
+      "tag": "LI",
+      "class": null,
+      "text": "Premier envoi d'un produit qui existait déjà dans la boutique (même identifiant ",
+      "box": {
+        "x": 57,
+        "y": 1800.5625,
+        "width": 346.125,
+        "height": 80,
+        "top": 1800.5625,
+        "right": 403.125,
+        "bottom": 1880.5625,
+        "left": 57
+      }
+    },
+    {
+      "tag": "LI",
+      "class": null,
+      "text": "Une seule synchronisation à la fois par boutique : un second envoi attend la fin",
+      "box": {
+        "x": 57,
+        "y": 1886.5625,
+        "width": 346.125,
+        "height": 80,
+        "top": 1886.5625,
+        "right": 403.125,
+        "bottom": 1966.5625,
+        "left": 57
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "mt-4 grid gap-3",
+      "text": "Aucune boutique connectée. Les exports restent disponibles dans l'onglet Boutiqu",
+      "box": {
+        "x": 37,
+        "y": 1582.5625,
+        "width": 366.125,
+        "height": 40,
+        "top": 1582.5625,
+        "right": 403.125,
+        "bottom": 1622.5625,
+        "left": 37
+      }
+    },
+    {
+      "tag": "P",
+      "class": "text-sm text-muted",
+      "text": "Aucune boutique connectée. Les exports restent disponibles dans l'onglet Boutiqu",
+      "box": {
+        "x": 37,
+        "y": 1582.5625,
+        "width": 366.125,
+        "height": 40,
+        "top": 1582.5625,
+        "right": 403.125,
+        "bottom": 1622.5625,
+        "left": 37
+      }
+    }
+  ]
+}

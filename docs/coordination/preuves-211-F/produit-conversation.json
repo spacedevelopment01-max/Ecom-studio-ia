@@ -1,0 +1,312 @@
+{
+  "scenario": "produit",
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0,
+  "clientInput": "Je conçois plusieurs capteurs pour les ruches. Aucun chiffre de performance n’est confirmé.",
+  "correctedTarget": "Apiculteurs professionnels — associations locales",
+  "conversation": {
+    "schema": "studio-conversation-1",
+    "id": "u048ed84ga6g0sl4",
+    "projectId": "1a0phdh4q5pgiej8",
+    "revision": 7,
+    "projectRevision": 2,
+    "mode": "ai",
+    "progress": "collect",
+    "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+    "question": null,
+    "correctionFields": [
+      "description",
+      "target",
+      "offerName",
+      "brandName",
+      "constraints",
+      "services",
+      "customization",
+      "process",
+      "quote"
+    ],
+    "readOnlyReason": null,
+    "creation": null,
+    "tools": [
+      {
+        "id": "brief.update",
+        "state": "available",
+        "executionEnabled": true
+      },
+      {
+        "id": "understand-offer",
+        "state": "quote_only",
+        "executionEnabled": false
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "publish",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "delete",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "purchase",
+        "state": "not_connected",
+        "executionEnabled": false
+      }
+    ],
+    "summary": {
+      "description": "Je conçois plusieurs capteurs pour les ruches. Aucun chiffre de performance n’est confirmé.",
+      "business": "products",
+      "businessSource": "ai",
+      "target": "Apiculteurs professionnels — associations locales",
+      "goals": "",
+      "offerName": "",
+      "brandName": "",
+      "constraints": "",
+      "services": [],
+      "contactModes": [],
+      "facts": [
+        {
+          "key": "conversation.target",
+          "label": "À qui souhaitez-vous vous adresser ?",
+          "value": "Apiculteurs professionnels — associations locales",
+          "status": "confirmed",
+          "source": "user"
+        },
+        {
+          "key": "conversation.ai.clients-prioritaires",
+          "label": "À qui souhaitez-vous vous adresser ?",
+          "value": "",
+          "status": "unknown",
+          "source": "user"
+        }
+      ],
+      "unknown": [
+        "Précisez le nom du produit ou de l’activité.",
+        "Délais et frais de livraison",
+        "Conditions de retour",
+        "À qui souhaitez-vous vous adresser ?"
+      ],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": false,
+      "preparationStatus": "draft"
+    },
+    "action": null,
+    "history": [
+      {
+        "revision": 1,
+        "request": {
+          "revision": 0,
+          "requestId": "0bd79ccb-8043-41b9-9d28-634692174b75",
+          "projectRevision": null,
+          "action": "message",
+          "text": "Je conçois plusieurs capteurs pour les ruches. Aucun chiffre de performance n’est confirmé."
+        },
+        "message": "Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.",
+        "at": 1793188043640
+      },
+      {
+        "revision": 2,
+        "request": {
+          "action": "agent-reply",
+          "quoteId": "eqi847yurkgkyx5o"
+        },
+        "message": "[Fournisseur simulé — recette isolée] Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+        "at": 1793188044382
+      },
+      {
+        "revision": 3,
+        "request": {
+          "revision": 2,
+          "requestId": "4df39c2a-39e5-4a61-a911-85601a40f98e",
+          "projectRevision": null,
+          "action": "explain"
+        },
+        "message": "La clientèle guide les textes sans inventer de promesse.",
+        "at": 1793188045905
+      },
+      {
+        "revision": 4,
+        "request": {
+          "revision": 3,
+          "requestId": "4d3e23dc-981f-4303-b636-9eb1da6deff8",
+          "projectRevision": null,
+          "action": "answer-ai",
+          "questionId": "clients-prioritaires",
+          "choices": [
+            "professionnels",
+            "other"
+          ],
+          "text": "Écoles spécialisées",
+          "unknown": false,
+          "clientAnswer": "Apiculteurs professionnels ; Écoles spécialisées"
+        },
+        "message": "Réponse exacte conservée ; la prochaine réflexion IA demande votre accord.",
+        "at": 1793188046278
+      },
+      {
+        "revision": 5,
+        "request": {
+          "revision": 4,
+          "requestId": "2ca42a3c-bf77-4f93-99af-60ba2db992e7",
+          "projectRevision": null,
+          "action": "back-ai",
+          "questionId": "clients-prioritaires"
+        },
+        "message": "Votre réponse reste conservée jusqu’à sa correction.",
+        "at": 1793188046493
+      },
+      {
+        "revision": 6,
+        "request": {
+          "revision": 5,
+          "requestId": "51ae6bcd-ebba-4771-b876-e4501952bc6a",
+          "projectRevision": null,
+          "action": "answer-ai",
+          "questionId": "clients-prioritaires",
+          "choices": [],
+          "text": "",
+          "unknown": true,
+          "clientAnswer": "Je ne sais pas encore."
+        },
+        "message": "Réponse exacte conservée ; la prochaine réflexion IA demande votre accord.",
+        "at": 1793188046569
+      },
+      {
+        "revision": 7,
+        "request": {
+          "revision": 6,
+          "requestId": "2556d99c-e951-43b0-a691-9af9c82e33b5",
+          "projectRevision": null,
+          "action": "edit",
+          "field": "target",
+          "value": "Apiculteurs professionnels — associations locales"
+        },
+        "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+        "at": 1793188046906
+      }
+    ],
+    "historyBefore": null,
+    "intelligence": {
+      "available": true,
+      "state": "stale",
+      "pendingJobId": null,
+      "reply": {
+        "message": "[Fournisseur simulé — recette isolée] Votre activité est conservée. Quelle clientèle souhaitez-vous atteindre en premier ?",
+        "status": "question",
+        "business": "products",
+        "businessEvidence": {
+          "sourceId": "brief.description",
+          "quote": "Je conçois plusieurs capteurs pour les ruches. Aucun chiffre de performance n’est confirmé."
+        },
+        "question": {
+          "id": "clients-prioritaires",
+          "field": "target",
+          "title": "À qui souhaitez-vous vous adresser ?",
+          "why": "La clientèle guide les textes sans inventer de promesse.",
+          "multiple": true,
+          "choices": [
+            {
+              "id": "professionnels",
+              "label": "Apiculteurs professionnels"
+            },
+            {
+              "id": "other",
+              "label": "Autre / préciser"
+            }
+          ]
+        },
+        "proposedChanges": [],
+        "knowledgeSourceIds": [],
+        "proposedTools": [],
+        "actionsExecuted": false
+      },
+      "proposalId": null,
+      "sourceRevision": 3,
+      "sourceProjectRevision": null,
+      "provenance": "provider",
+      "qualification": "real_provider_not_tested",
+      "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+    }
+  },
+  "site": {
+    "projectId": "1a0phdh4q5pgiej8",
+    "versionId": "38fz3l47cwr8bqvc",
+    "number": 1,
+    "name": "Capteurs de ruches — RECETTE",
+    "heading": "Observer la ruche, comprendre son rythme.",
+    "description": "Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.",
+    "illustration": "local-technical-fixture-not-product-photo"
+  },
+  "previewWidths": {
+    "closed": 1136,
+    "open": 720
+  },
+  "versionRestored": 3
+}

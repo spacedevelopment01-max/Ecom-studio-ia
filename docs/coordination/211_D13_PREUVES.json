@@ -1,0 +1,32 @@
+{
+  "applicationCommit": "3fdf3c32055a948735e37d7c8802b2454590c78b",
+  "harnessCommit": "bf0046ba13b9005bde6c2bff19e2bb343e8435d9",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "files": {
+    "docs/coordination/preuves-211-D13/01-proposition-mobile.png": {
+      "bytes": 65637,
+      "sha256": "1e045fb31a655a2c66762b735550bf3f21afe17b8eb47911efd8f304e951bcc2"
+    },
+    "docs/coordination/preuves-211-D13/02-proposition-ordinateur.png": {
+      "bytes": 245861,
+      "sha256": "03c9fb84129a1c157ca75127c7af1250328006ebede2656b702a1f3915c26a96"
+    },
+    "docs/coordination/preuves-211-D13/checks.json": {
+      "bytes": 5860,
+      "sha256": "b89aa6412ed41204bf846eb3ac0187490157d6351a5e050f44cf4a3068e1d8d5"
+    },
+    "docs/coordination/preuves-211-D13/native-proof.json": {
+      "bytes": 3995,
+      "sha256": "30d41b509942a5bb1fe3069f7224173f6680f6f08a32a4668777026446468ed4"
+    },
+    "docs/coordination/preuves-211-D13/proposition-marque.mp4": {
+      "bytes": 1070065,
+      "sha256": "580e6f41ad66ca2abb4fb071e87e11cf5f978a801343222029a4ee8e7092b19b"
+    },
+    "docs/coordination/preuves-211-D13/saved-captures.json": {
+      "bytes": 1298,
+      "sha256": "bd6d917047c9eb069890b0ad73ef8b433c3b8a4c735d8f0e12c78a649be86742"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/openai-image-upload-proxy.test.ts (4 tests | 4 failed) 21ms
+   ❯ téléversement natif OpenAI derrière le proxy (4)
+     × envoie vraiment le multipart local : no-proxy 14ms
+     × envoie vraiment le multipart local : proxy 1ms
+     × envoie vraiment le multipart local : gateway 2ms
+     × envoie vraiment le multipart local : 503 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/openai-image-upload-proxy.test.ts > téléversement natif OpenAI derrière le proxy > envoie vraiment le multipart local : no-proxy
+ FAIL  tests/openai-image-upload-proxy.test.ts > téléversement natif OpenAI derrière le proxy > envoie vraiment le multipart local : proxy
+ FAIL  tests/openai-image-upload-proxy.test.ts > téléversement natif OpenAI derrière le proxy > envoie vraiment le multipart local : gateway
+AssertionError: promise rejected "TypeError: The provided fetch function do…" instead of resolving
+ ❯ tests/openai-image-upload-proxy.test.ts:25:102
+
+
+Caused by: TypeError: The provided fetch function does not support file uploads with the current global FormData class.
+ ❯ createForm ../../Ecom-studio-ia/node_modules/openai/internal/uploads.mjs:195:15
+ ❯ multipartFormRequestOptions ../../Ecom-studio-ia/node_modules/openai/internal/uploads.mjs:140:29
+ ❯ OpenAI.makeRequest ../../Ecom-studio-ia/node_modules/openai/client.mjs:745:25
+ ❯ tests/openai-image-upload-proxy.test.ts:25:82
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/openai-image-upload-proxy.test.ts > téléversement natif OpenAI derrière le proxy > envoie vraiment le multipart local : 503
+AssertionError: expected TypeError: The provided fetch function do… to match object { status: 503 }
+
+- Expected
++ Received
+
+- {
+-   "status": 503,
++ TypeError {
++   "message": "The provided fetch function does not support file uploads with the current global FormData class.",
+  }
+
+ ❯ tests/openai-image-upload-proxy.test.ts:25:40
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  13:21:15
+   Duration  325ms (import 45%, transform 36%, tests 13%, setup 3%, worker 1%)

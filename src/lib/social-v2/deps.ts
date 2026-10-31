@@ -1,3 +1,4 @@
+import{postVisualAspect,type PublicationAspect}from "./post-aspect";
 import { usageExplicit } from "../ai/media-routing";
 /**
  * Outils du Social Engine V2 — branchés sur les moteurs V2 EXISTANTS (aucun moteur reconstruit) :
@@ -40,6 +41,8 @@ export type PostBrief = {
   scheduled_at: number | null;
   /** Produit ou service choisi par le client (création guidée) ; absent : produit principal. */
   subject?: CreativeSubject | null;
+  aspect?:PublicationAspect;
+  nativeBinding?:import("../image-v2/request-binding").ImageBinding;
   /** Demande libre du client pour ce visuel (création guidée). */
   request?: string | null;
   editorial?: Editorial;
@@ -48,7 +51,7 @@ export type PostBrief = {
   advertising?: Record<string, unknown>;
   series?: { id: string; index: number; total: number; pages: unknown[]; family?:unknown };
 };
-export type MediaOpts = { allowPaid: boolean; maxCostEur: number };
+export type MediaOpts = { allowPaid: boolean; maxCostEur: number; /** Relire le brouillon avant chaque envoi payant ; ne crée aucun accord. */ assertCurrent?:()=>void;publicationQuote?:import('./bounded-production-quote').NativePublicationQuote };
 
 export type SocialDeps = {
   /** IA active pour ce compte (forfait, budget, IA activée) : condition des générations payantes. */
@@ -95,10 +98,7 @@ export const realPublisher: Publisher = {
   canVerify: (provider) => provider === "facebook" || provider === "instagram",
 };
 
-const aspectOf = (network: string, format: string): "1:1" | "4:5" | "9:16" | "2:3" | "16:9" => {
-  const d = platformSpec(network).dims[format as keyof ReturnType<typeof platformSpec>["dims"]];
-  return (d?.aspect as "1:1" | "4:5" | "9:16" | "2:3") ?? "4:5";
-};
+
 
 /**
  * Photos de fond possibles d'une publication (scènes, photos du métier, photos du client), déjà validées. Une
@@ -157,7 +157,7 @@ const POSTER_ASPECT: Record<string, PosterAspect> = { "1:1": "1:1", "4:5": "4:5"
  * calme de la photo. Le document est enregistré : modifiable ensuite dans l'éditeur. Rendu local, gratuit.
  */
 export async function posterForPost(p: Project, post: PostBrief, background: Asset | null, by: MediaBy, costMicro = 0): Promise<MediaResult> {
-  const aspect = POSTER_ASPECT[aspectOf(post.network, post.format)] ?? "4:5";
+  const aspect = POSTER_ASPECT[postVisualAspect(post)] ?? "4:5";
   const cut = p.business === "services" ? null : (validCutouts(p.id)[0] ?? null);
   // Le produit réel n'est posé que sur le décor de studio de la marque (sans photo) : sur une photo, il n'est jamais
   // collé (une photo de produit le montre déjà ; une photo d'ambiance ne s'y prête pas : échelle et lumière fausses).
@@ -253,7 +253,7 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
     },
     async video(pp, post, o) {
       const { runVideoEngineV2 } = await import("../video-v2/engine");
-      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: post.request ?? post.caption ?? post.title, kind: "social_content", editorial: creativeContract(post,"organic"), subject:post.subject, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: aspectOf(post.network, post.format)==="2:3" ? "9:16" : aspectOf(post.network, post.format) as "9:16"|"4:5"|"1:1"|"16:9", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur });
+      const r = await runVideoEngineV2(ctx, pp.id, { ask: { text: post.request ?? post.caption ?? post.title, kind: "social_content", editorial: creativeContract(post,"organic"), subject:post.subject, platform: PLATFORM_VIDEO[post.network] ?? "reels", aspect: postVisualAspect(post)==="2:3" ? "9:16" : postVisualAspect(post) as "9:16"|"4:5"|"1:1"|"16:9", durationS: 15, allowGeneration: o.allowPaid }, approveGeneration: o.allowPaid, maxCostEur: o.maxCostEur });
       return { assetId: r.videoAssetId, costMicro: r.costMicro, by: "video_v2", note: r.videoAssetId ? undefined : r.reason };
     },
     async ad(pp, post, o) {
@@ -267,11 +267,12 @@ export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boo
       if (!o.allowPaid) return { assetId: null, costMicro: 0, by: "image_v2", note: C("visuel non créé : les images finales sont créées par l'IA et la dépense n'est pas acceptée (aucun gabarit à la place)", "visual not created: final images are created by AI and the spend isn't approved (no template instead)") };
       const { designPostWithAi, realAiPostDeps } = await import("./ai-post");
       const { resolveSubject } = await import("../creative-subject");
-      const a = aspectOf(post.network, post.format);
+      const a = postVisualAspect(post);
       const aspect = a;
       // Le produit (ou service) choisi par le client ; sinon le produit principal et sa photo de référence.
-      const subject = resolveSubject(pp, post.subject);
-      return designPostWithAi(pp, {...post,entryPoint:"publications"}, { as:"post", aspect, maxCostEur: o.maxCostEur, reference: subject?.referenceAssetId ?? null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null }));
+      const {nativeSocialSubject}=await import('./native-subject');
+      const native=nativeSocialSubject(pp,post),project=native?.project??pp,subject=native?.subject??resolveSubject(pp, post.subject);
+      return designPostWithAi(project, {...post,...(native?{nativeBinding:native.binding}:{}),entryPoint:"publications"}, { as:"post", aspect, maxCostEur: o.maxCostEur,...(o.publicationQuote?{maxAttempts:1,mode:o.publicationQuote.mode}:{}), reference: native?native.reference:subject?.referenceAssetId??null, subject }, realAiPostDeps({ userId: pp.userId, projectId: pp.id, jobId: ctx?.job.id ?? null },{project:native?.project,beforeDispatch:o.assertCurrent,quote:o.publicationQuote}));
     },
     local: (pp, post, o) => localRender(pp, post, ctx, o),
     async rewrite(pp, post, instruction, key) {

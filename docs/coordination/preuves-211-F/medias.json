@@ -1,0 +1,362 @@
+{
+  "schema": "agent211-F-media-inventory-1",
+  "compiledCommit": "ad41f4301052a79dfe4e2e735ba8f6a40b5de476",
+  "screenshots": 33,
+  "videos": 3,
+  "content": "Native Chromium captures and real recordings, local fake provider; no real client data.",
+  "inspected": {
+    "allCapturesOverview": true,
+    "keyCapturesOriginalSize": true,
+    "videoFramesAndFfprobe": true
+  },
+  "files": [
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-autre-onglet-meme-memoire.png",
+      "bytes": 253248,
+      "gitBlob": "8eea3ccda62b7068228f8644efca16af2162a01b",
+      "sha256": "508a714c4a5cac869887a8b9fb26c1970499f65f8cf41ecc30b651094e48ed0b",
+      "pixels": [
+        1440,
+        1203
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-correction-reouverte.png",
+      "bytes": 246333,
+      "gitBlob": "f920c045d49b5ba1c5ba1e2fff123728c7f8c66a",
+      "sha256": "9e8b0b19bb8ef89384a19b948e509c16ba11a10c29753f62dc9aa596e3fe0777",
+      "pixels": [
+        1440,
+        2924
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-devis.png",
+      "bytes": 109165,
+      "gitBlob": "18f6720fe59c73d25838e482cdad253d7eb9e4e0",
+      "sha256": "e211a25b9fc6012314ceca3b8cde47ea39aa0c58fbfd7465b8a8ad55f4b887b1",
+      "pixels": [
+        1440,
+        1210
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-dialogue-lisible.png",
+      "bytes": 78189,
+      "gitBlob": "3f73f22b23c3bd53de72c61d93f5fe0b62a8a300",
+      "sha256": "c793fd6767070c499aba90377d189b35620fdf76925207ab5d76211bdd55ee04",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-entree.png",
+      "bytes": 66072,
+      "gitBlob": "0604ea9900915727ca30f00eab1d67342beecad3",
+      "sha256": "b0224e5e165ce21c0fd9f99c5d86adc16c73acd3514af7896ead60ef3d5c2cf1",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-manuel-conserve.png",
+      "bytes": 121348,
+      "gitBlob": "8d4f8129df9d05dbb5291b5fd9d10220edd5ea4f",
+      "sha256": "f20e605f1186a3050902bb2b7f48978199d4089d8632198bda47ab59566f921e",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-memoire.png",
+      "bytes": 206285,
+      "gitBlob": "03bb9f576d999589b08188ece04dac8e7a8a05c3",
+      "sha256": "a5a3d9886b38fba73776a46b6737fb4ad8890972bf91cf48debe92e82fa811c7",
+      "pixels": [
+        1440,
+        2521
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-projet-repris.png",
+      "bytes": 149443,
+      "gitBlob": "341e4389185da1ab6e302a011a24cb3124cbf242",
+      "sha256": "848103dc6a2ebe0313faa3cba4e01d809fcabf8216df47880a3450f24916ecbb",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-question-360.png",
+      "bytes": 143145,
+      "gitBlob": "1a2ee00bc3bd2931b085383c8fa1e03723a3755f",
+      "sha256": "90ea19ecdeafd62ab904958433b0db38909ecb26ae69131280a27fce30a3ea78",
+      "pixels": [
+        393,
+        2445
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-question.png",
+      "bytes": 160379,
+      "gitBlob": "afa3a030928c7c700ed30333a4a4eb593015d9ab",
+      "sha256": "fdde56cfdb2de35fe034655ce69e20ed5d6e53910867da4cfd444ace2500445d",
+      "pixels": [
+        1440,
+        1940
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-agent-ouvert.png",
+      "bytes": 257719,
+      "gitBlob": "c71b452b4c340d3b677b5e21eae4dfb76d70e6c7",
+      "sha256": "66080b1e0e7125b486560aca990193750fec4791e9a1fe1d99f97037fa5a90a3",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-agent-replie.png",
+      "bytes": 213654,
+      "gitBlob": "5d6e3700d4c7d4462a13f7e79a5c25573eab2ad5",
+      "sha256": "0049fa9629ab32f3b3c3e72e5ac2c8aaed79a66405694597ccfa7c1721ad79c9",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-conseil-premiere-visite.png",
+      "bytes": 216815,
+      "gitBlob": "95a99e70598d9ff5ea7ec1dd987387e1c0bbb3bf",
+      "sha256": "c8688f6a5ccc8c4667acd912dbbe287d6aec4a99f54f6ddc2f580a8e9cd9cbeb",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-format-telephone.png",
+      "bytes": 179684,
+      "gitBlob": "a1766fd77481c8f8669984816b5fc341627531e3",
+      "sha256": "d84a8abb301099664af96b4cc18f6f15fe386d5ee90509391a11035a86249ae4",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-outils-conserves.png",
+      "bytes": 212934,
+      "gitBlob": "1ecba25f4785bf67e9ae988c9e6bc57ce40a820b",
+      "sha256": "b1bfb28d3260dd4fd10f9e257976f64ecf5c0bbc5739187257366ca4f71c4697",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/1-produit-site-version-restauree.png",
+      "bytes": 179515,
+      "gitBlob": "7786cbf36b4e2bd79bed47aae6f7b287cdfb8596",
+      "sha256": "3d8b88de2300ebf1b2186cac6fa7738d04be9eedf35f0eb70e6bea83a3d14fdb",
+      "pixels": [
+        1440,
+        960
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-autre-onglet-meme-memoire.png",
+      "bytes": 93166,
+      "gitBlob": "8b32d22b5994e9040fc89ec676f73d6b0f149390",
+      "sha256": "b75a9ff243bead17a0dab8e3079d1ccb47a059c0506668c5a005dbcda8f2c214",
+      "pixels": [
+        390,
+        1406
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-correction-reouverte.png",
+      "bytes": 219312,
+      "gitBlob": "25981cd2065a557d4cd969894a40af8db5b864e5",
+      "sha256": "9c7187d3db8056f73f026fb63ac1feb32e97b81abe9baf236f247233bb1f51cf",
+      "pixels": [
+        390,
+        3577
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-devis.png",
+      "bytes": 93642,
+      "gitBlob": "10aa678cd1116e0885d2502689139ab2bddf56f1",
+      "sha256": "09b5a184d53fe8887502d2c99309b8cfaa25262a5f405d3fd3bdf2d821b087f3",
+      "pixels": [
+        390,
+        1478
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-dialogue-lisible.png",
+      "bytes": 48670,
+      "gitBlob": "5232a3a6b3c0db5662a5f97dff9eaf6c59791994",
+      "sha256": "e53d9840918a414814dfa4031ffeadb53e69d9071e5d2969241b24523c199bd5",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-entree.png",
+      "bytes": 51245,
+      "gitBlob": "936231b25272886c4d5b56741ea897e7a9d1d976",
+      "sha256": "bcb17550bed8e7c440f5c7c531670d5f0df84fad354d5016bb1b6526c70be3be",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-manuel-conserve.png",
+      "bytes": 101834,
+      "gitBlob": "209f48a2400de41558a8490f22a7651baaa3b172",
+      "sha256": "f225976cb67e9984ae0b981a526423353274aaf0afb8c3b8aa985da5d1248817",
+      "pixels": [
+        390,
+        1212
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-memoire.png",
+      "bytes": 188240,
+      "gitBlob": "71022ae64acafc9d064bc8dde5d987df7d76eeb4",
+      "sha256": "78c1a1e952cecbee14e7970393b63370ea4a3b0c28a95e4fd3812fbc71709364",
+      "pixels": [
+        390,
+        3057
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-projet-repris.png",
+      "bytes": 61920,
+      "gitBlob": "f6fc0bbab5386c1b589ecaa4c8b5136c53f3bddb",
+      "sha256": "9cddd76985fae8f5cd327baa1fa0cc4d55987fdc7cd06827443b7b63d0712c79",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-question-360.png",
+      "bytes": 145199,
+      "gitBlob": "22938af6a3176969aad7be1cfc9530855b1e5681",
+      "sha256": "11c7e585251c0a282a737e45fa41b00605d7d5e44ec34a648fa99210df32230a",
+      "pixels": [
+        360,
+        2367
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-question.png",
+      "bytes": 144672,
+      "gitBlob": "000f8c99da5f048393cb2167f654b1f68b0a9560",
+      "sha256": "b40dd2d1ce54677648a8a78aa6cabf6aab212df133ed1420091a20d37fb3acdc",
+      "pixels": [
+        390,
+        2323
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-agent-ouvert.png",
+      "bytes": 61272,
+      "gitBlob": "f67bf8c3b0054a33f11255a730c689247fb88564",
+      "sha256": "caa5623f43645c9279c3315f482a165ee808706ebe03d97340f2a3970d682d15",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-agent-replie.png",
+      "bytes": 80007,
+      "gitBlob": "7463bd5e6fcb2d0f04f6cef6c6a8ba00606b21da",
+      "sha256": "ba4bf4109103110906e3cb22f0b68abd89bde8b6a5d00b44f1dc5802d413a087",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-conseil-premiere-visite.png",
+      "bytes": 84925,
+      "gitBlob": "fa53554a5e0d61489949ea03a8c10885864c068e",
+      "sha256": "e4b07a1e183570a98d4173db3ed1ff80d169f41a5b1af8daacddc3250c99a87d",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-format-telephone.png",
+      "bytes": 80007,
+      "gitBlob": "7463bd5e6fcb2d0f04f6cef6c6a8ba00606b21da",
+      "sha256": "ba4bf4109103110906e3cb22f0b68abd89bde8b6a5d00b44f1dc5802d413a087",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-outils-conserves.png",
+      "bytes": 83046,
+      "gitBlob": "abf01e9c093d7d19b42b463e5369e79668290b8b",
+      "sha256": "256150f6361d1cf1539bda4f0c664aaa3746368ff32381a9a6e3f24d250dffab",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/2-service-site-version-restauree.png",
+      "bytes": 79511,
+      "gitBlob": "3bfc506c1bde2c805267878d42e6c439cf57d619",
+      "sha256": "e4da6e02f3116e0656abde495a40234bef8620e56fd66d72507c6c0ac1530f72",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/captures/3-reprise-apres-reponse-perdue-390.png",
+      "bytes": 57382,
+      "gitBlob": "5596b10e9c2f06cfefa11764943bcc80f08b90bb",
+      "sha256": "377eb79d61ec8dc64d42a999a0ce84df96b5b26bcbae5fbcc8b707b530613bcf",
+      "pixels": [
+        390,
+        844
+      ]
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/videos/produit.mp4",
+      "bytes": 1518343,
+      "gitBlob": "7b13e64b1602f42992abca4d5ab813d79aeff009",
+      "sha256": "4ca42595efbae52bbc6685963dd4ef591f4cd709c4229d96a1544c3b2deb5ad4"
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/videos/reprise.mp4",
+      "bytes": 352511,
+      "gitBlob": "5c85b58792f26b7fdc632e9bb888fd51e1f221be",
+      "sha256": "0ad927a39eed5854459001a12ee6bb85f3d6b5a6d74f1e6aeb4f5944437f3d3c"
+    },
+    {
+      "path": "docs/coordination/preuves-211-F/videos/service.mp4",
+      "bytes": 819296,
+      "gitBlob": "b648902b0a2da38d13f90a7ff1773d01e9a91d1b",
+      "sha256": "217a050594c4cd03bb742cfe90747e8629ad59431caff185119ab302a75ec6b5"
+    }
+  ]
+}

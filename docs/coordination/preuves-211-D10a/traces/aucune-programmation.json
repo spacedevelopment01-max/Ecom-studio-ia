@@ -1,0 +1,9 @@
+{
+  "fixtureOnly": true,
+  "counts": {
+    "posts": 0,
+    "campaigns": 0
+  },
+  "noPublishingOrSchedulingRequested": true,
+  "realProviderCalls": 0
+}

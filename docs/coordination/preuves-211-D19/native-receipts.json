@@ -1,0 +1,120 @@
+{
+  "schema": "211-D19-native-receipt-proof-1",
+  "harnessCommit": "5e3d23280589bb2cf78bb10bfa1d58760557a5e7",
+  "compiledApplicationCommit": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+  "appAndWorkerIdentical": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": {
+    "voice": {
+      "passed": true,
+      "exactConfirmationReceipt": true,
+      "exactFailureJob": true,
+      "delayedConfirmationMs": 350,
+      "failureNoRetry": true,
+      "oldFilesKept": true,
+      "unchangedClipsAndOtherVoices": true,
+      "foreign": 404,
+      "csrf": 403,
+      "after": {
+        "providerHttpCalls": 15,
+        "videoClipCalls": 2,
+        "videoVoiceCalls": 4,
+        "textHttpCalls": 9,
+        "imageHttpCalls": 0,
+        "tokenCounts": 9,
+        "calls": 15,
+        "usage": 14,
+        "simulatedMicro": 933042
+      },
+      "decoded": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 10,
+        "currentTime": 1.762767
+      },
+      "result": {
+        "id": "nd663bxgv7w243a9",
+        "delivered": true,
+        "reused": false,
+        "newVoiceCalls": 1,
+        "isCurrent": true,
+        "job": {
+          "id": "01meqmcjr9ta6ddo",
+          "type": "video.v2.render",
+          "status": "done",
+          "progress": 1
+        }
+      },
+      "failed": {
+        "id": "zk20rmwyt7cl142p",
+        "delivered": false,
+        "reused": false,
+        "newVoiceCalls": 1,
+        "isCurrent": false,
+        "job": {
+          "id": "a2mqtcmw7skkqigv",
+          "type": "video.v2.render",
+          "status": "failed",
+          "progress": 0
+        }
+      },
+      "reused": {
+        "id": "e1qixiuw0y8zwire",
+        "delivered": true,
+        "reused": true,
+        "newVoiceCalls": 0,
+        "isCurrent": true,
+        "job": null
+      }
+    },
+    "clip": {
+      "passed": true,
+      "oldFilesKept": true,
+      "foreign": 404,
+      "csrf": 403,
+      "after": {
+        "providerHttpCalls": 15,
+        "videoClipCalls": 3,
+        "videoVoiceCalls": 2,
+        "textHttpCalls": 10,
+        "imageHttpCalls": 0,
+        "tokenCounts": 10,
+        "calls": 15,
+        "usage": 15,
+        "simulatedMicro": 1370231
+      },
+      "decoded": {
+        "width": 1080,
+        "height": 1920,
+        "duration": 10,
+        "currentTime": 1.760966
+      },
+      "result": {
+        "id": "y89apxpmqscdpq9w",
+        "delivered": true,
+        "reused": false,
+        "newVoiceCalls": 0,
+        "newClipCalls": 1,
+        "isCurrent": true,
+        "job": {
+          "id": "tz3pey0tnyfmmnov",
+          "type": "video.v2.render",
+          "status": "done",
+          "progress": 1
+        }
+      },
+      "reused": {
+        "id": "qs0ddto8wj522zdz",
+        "delivered": true,
+        "reused": true,
+        "newVoiceCalls": 0,
+        "newClipCalls": 0,
+        "isCurrent": true,
+        "job": null
+      },
+      "secondPaidAttemptRefused": true,
+      "unchangedOtherClipsAndAllVoices": true
+    }
+  }
+}

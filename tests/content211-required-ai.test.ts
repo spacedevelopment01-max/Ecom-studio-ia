@@ -1,0 +1,19 @@
+/** A requested AI draft must not become a new local substitute after provider/quality failure. */
+import {describe,it,expect} from 'vitest';
+import {account} from './conversation209-fixtures';
+import {seedImageFixture} from './image-v2-fixtures';
+import {grantProjectPlan} from '@/lib/project-subscriptions';
+import {runContentEngineV2} from '@/lib/seo-v2/engine';
+import {localOnlyDeps} from '@/lib/seo-v2/deps';
+import {mockSeoDeps,faithfulDraft} from './seo-v2-mock';
+import {listContents,contentVersionDoc} from '@/lib/seo-v2/store';
+import {one} from '@/lib/db';
+async function fixture(kind:'hightech'|'cosmetic'='hightech'){const u=await account(),pid=seedImageFixture(u.id,kind);grantProjectPlan(pid,'dominer');return{u,pid};}
+describe('#211 E6 — native copy, AI required without disguised local replacement',()=>{
+ it('refuse avant toute version si l’IA ou sa relecture ne sont pas raccordées',async()=>{const{pid}=await fixture();await expect(runContentEngineV2(null,pid,{type:'faq',requireAi:true},localOnlyDeps())).rejects.toMatchObject({code:'CONTENT_AI_UNAVAILABLE'});expect(listContents(pid)).toEqual([]);});
+ it('une panne de rédaction ne livre pas un nouveau texte local',async()=>{const{pid}=await fixture(),m=mockSeoDeps();m.deps.write=async()=>{throw new Error('simulated503');};await expect(runContentEngineV2(null,pid,{type:'faq',requireAi:true},m.deps)).rejects.toThrow('simulated503');expect(listContents(pid)).toEqual([]);});
+ it('un budget insuffisant ne devient pas un résultat local annoncé comme rédaction IA',async()=>{const{pid}=await fixture(),m=mockSeoDeps();await expect(runContentEngineV2(null,pid,{type:'faq',requireAi:true,maxCostEur:0},m.deps)).rejects.toMatchObject({name:'CostCapReached'});expect(m.log.writes).toEqual([]);expect(listContents(pid)).toEqual([]);});
+ it('ne réemploie pas un ancien mémo local créé après échec de l’IA',async()=>{const{pid}=await fixture(),broken=mockSeoDeps();broken.deps.write=async()=>{throw new Error('simulated503');};const old=await runContentEngineV2(null,pid,{type:'faq'},broken.deps);expect(old.by).toBe('local');const good=mockSeoDeps(),r=await runContentEngineV2(null,pid,{type:'faq',requireAi:true},good.deps);expect(r.by).toBe('ai');expect(r.skipped).toBe(false);expect(good.log.writes).toHaveLength(1);});
+ it('conserve les tentatives IA refusées dans le moteur, sans les remplacer par une version locale utilisable',async()=>{const{pid}=await fixture('cosmetic'),liar=(p:string)=>({...faithfulDraft(p),blocks:[...faithfulDraft(p).blocks,{kind:'p' as const,text:'Selon une étude, 92 % des utilisatrices voient un effet anti-âge prouvé.'}]}),m=mockSeoDeps({drafts:[liar],rewrite:p=>({blocks:JSON.parse(p.match(/Blocs à modifier : (\[.*\])/)![1]).map((b:{id:string})=>({id:b.id,text:'Selon une étude, 93 % des utilisatrices voient un effet anti-âge prouvé.'})),note:'still rejected'})});await expect(runContentEngineV2(null,pid,{type:'product_page',requireAi:true},m.deps)).rejects.toMatchObject({code:'CONTENT_AI_COPY_REJECTED'});expect(listContents(pid).length).toBeGreaterThan(0);for(const v of listContents(pid)){expect(contentVersionDoc(pid,v.docKey,v.version)!.meta2.by).toBe('ai');expect(['REJECTED','RETRY']).toContain(v.verdict);}});
+ it('signale chaque version effectivement retenue et sa preuve stockée, puis conserve le réemploi gratuit',async()=>{const{pid}=await fixture(),m=mockSeoDeps(),saved:{docKey:string;version:{id:string;version:number}}[]=[];m.deps.onRetained=v=>saved.push(v);const r=await runContentEngineV2(null,pid,{type:'faq',requireAi:true},m.deps);expect(r.by).toBe('ai');expect(saved).toHaveLength(1);expect(one('SELECT id FROM content_documents WHERE project_id=? AND id=?',pid,saved[0].version.id)).toBeTruthy();const again=await runContentEngineV2(null,pid,{type:'faq',requireAi:true},m.deps);expect(again.skipped).toBe(true);expect(again.costMicro).toBe(0);expect(m.log.writes).toHaveLength(1);});
+});

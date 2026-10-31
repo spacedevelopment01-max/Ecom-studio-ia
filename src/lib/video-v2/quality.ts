@@ -28,6 +28,11 @@ export const ShotReviewSchema = z.object({
   personVisible: z.boolean().catch(false),
   issues: z.array(z.string()).catch([]),
 });
+/** Parcours explicitement borné : aucun défaut ne transforme un contrôle incomplet en validation. */
+export const BoundedShotReviewSchema=z.object({
+ score:z.number().min(0).max(10),sameProduct:z.boolean().nullable(),foreignBrands:z.array(z.string().max(200)).max(30),textCorrect:z.boolean().nullable(),
+ productAltered:z.boolean(),characterConsistent:z.boolean().nullable(),offTopic:z.boolean(),artifacts:z.boolean(),personVisible:z.boolean(),issues:z.array(z.string().max(1000)).max(30),
+}).strict();
 export const VideoReviewSchema = z.object({
   criteria: z.object(Object.fromEntries(VIDEO_CRITERIA.map((k) => [k, score])) as Record<VideoCriterion, typeof score>),
   issues: z.array(z.string()).catch([]),
