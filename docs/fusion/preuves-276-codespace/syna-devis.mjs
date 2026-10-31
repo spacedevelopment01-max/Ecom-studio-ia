@@ -1,0 +1,10 @@
+import fs from "node:fs";
+import { browser, context, login, open, STUDIO, DIR } from "./lib.mjs";
+const b = await browser(); const page = await (await context(b)).newPage(); const posts = [];
+page.on("response", (r) => r.request().method() !== "GET" && /studio-agent|conversation/.test(r.url()) && posts.push(`${r.request().method()} ${r.status()} ${new URL(r.url()).pathname}`));
+await login(page, process.argv[2]); await open(page, `${STUDIO}/studio`); await page.waitForTimeout(2500);
+await page.getByRole("button", { name: /Voir le devis de la réponse de SYNA/ }).click(); await page.waitForTimeout(5000);
+const txt = (await page.locator("main").innerText()).replace(/\s+/g, " ");
+const i = txt.indexOf("devis"); console.log(JSON.stringify({ posts, extrait: txt.slice(Math.max(0, txt.length - 900)) }, null, 1));
+await page.screenshot({ path: `${DIR}preuves/isyna-neuf-devis.png` });
+await b.close();

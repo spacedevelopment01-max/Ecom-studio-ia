@@ -1,0 +1,15 @@
+{
+ "ordinateur_accueil": "Abonnement sélectionné : Développer SYNA · VOTRE PROJET, UNE CONVERSATION Quel projet souhaitez-vous créer ? Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Décrivez votre projet ou posez votre question à SYNA Lien / photo Enregistrer Utiliser ",
+ "ordinateur_zone_saisie": 1,
+ "ordinateur_apres_message": "Abonnement sélectionné : Développer SYNA · VOTRE PROJET, UNE CONVERSATION Quel projet souhaitez-vous créer ? Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Vous Je suis plâtrier à Lyon, je veux un site pour montrer mes chantiers. SYNA · Mémoire du projet Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation. Message enregistré. Demandez le devis pour une réponse de SYNA. Décrivez votre projet ou posez votre question à SYNA Lien / photo Enregistrer Voir le devis de la réponse de SYNA Votre fiche commune et ses corrections Utiliser le formulaire manuel",
+ "ordinateur_apres_rechargement_historique": true,
+ "telephone_accueil": "Abonnement sélectionné : Développer SYNA · VOTRE PROJET, UNE CONVERSATION Quel projet souhaitez-vous créer ? Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Vous Je suis plâtrier à Lyon, je veux un site pour montrer mes chantiers. SYNA · Mémoir",
+ "telephone_zone_saisie": 1,
+ "telephone_apres_message": "Abonnement sélectionné : Développer SYNA · VOTRE PROJET, UNE CONVERSATION Quel projet souhaitez-vous créer ? Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Vous Je suis plâtrier à Lyon, je veux un site pour montrer mes chantiers. SYNA · Mémoire du projet Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation. Vous Salon de coiffure fictif à Lyon, je veux la réservation en ligne. SYNA · Mémoire du projet Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation. Message enregistré. Demandez le devis pour une réponse de SYNA. Décrivez votre projet ou posez votre question à SYNA Lien / photo Enregistrer Voir le devis de la réponse de SYNA Votre fiche commune et ses corrections Utiliser le formulaire manuel",
+ "telephone_apres_rechargement_historique": true,
+ "ecritures": [
+  "ordinateur POST 200 /api/studio-agent/draft",
+  "ordinateur POST 200 /api/studio-agent/conversations/aqqu1qw7pudmvenu",
+  "telephone POST 200 /api/studio-agent/conversations/aqqu1qw7pudmvenu"
+ ]
+}

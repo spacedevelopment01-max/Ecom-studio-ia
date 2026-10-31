@@ -1,0 +1,5 @@
+{
+  "version": "e3c78d76d4c512f427115b54c6ca6b705a571736",
+  "date": "2026-10-31T13:09:06.005Z",
+  "message": "Command failed: /opt/node22/bin/node /tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/wt-integ/node_modules/tsx/dist/cli.mjs /tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/wt-main/scripts/reference-static-preview.ts /tmp/claude-0/-home-user/f42e41aa-"
+}

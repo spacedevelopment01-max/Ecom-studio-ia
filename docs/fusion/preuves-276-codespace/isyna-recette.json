@@ -1,0 +1,38 @@
+{
+ "ordinateur_accueil_studio_syna": 0,
+ "ordinateur_bouton_syna": 1,
+ "ordinateur_panneau_ouvert": true,
+ "ordinateur_apres_ouverture": "SYNA · Une mémoire pour tout le Studio SYNA · VOTRE PROJET, UNE CONVERSATION SYNA Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Activer ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée. Ouvrir le dialogue de ce projet La migration de ce projet existant n’est pas raccordée au",
+ "ordinateur_zone_saisie": 0,
+ "ordinateur_texte_panneau": "SYNA · Une mémoire pour tout le Studio SYNA · VOTRE PROJET, UNE CONVERSATION SYNA Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Activer ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée. Ouvrir le dialogue de ce projet La migration de ce projet existant n’est pas raccordée au lot A. Son parcours reste intact. Actualiser sans relancer SYNA",
+ "ordinateur_historique_apres_navigation": false,
+ "ordinateur_site_publication": {
+  "status": 200,
+  "configured": false,
+  "live": true
+ },
+ "ordinateur_bouton_globe": 1,
+ "ordinateur_section_domaine": 1,
+ "telephone_accueil_studio_syna": 0,
+ "telephone_bouton_syna": 1,
+ "telephone_panneau_ouvert": true,
+ "telephone_apres_ouverture": "SYNA · Une mémoire pour tout le Studio SYNA · VOTRE PROJET, UNE CONVERSATION SYNA Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Activer ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée. Ouvrir le dialogue de ce projet La migration de ce projet existant n’est pas raccordée au",
+ "telephone_zone_saisie": 0,
+ "telephone_texte_panneau": "SYNA · Une mémoire pour tout le Studio SYNA · VOTRE PROJET, UNE CONVERSATION SYNA Je suis SYNA. Décrivez-moi votre projet en quelques mots. Vos réponses sont sauvegardées ; chaque réflexion attend votre accord sur son coût. Vos choix restent les vôtres. Aucune publication automatique. Activer ce dialogue est facultatif. Vos acquis restent dans le parcours existant ; une migration indisponible sera signalée. Ouvrir le dialogue de ce projet La migration de ce projet existant n’est pas raccordée au lot A. Son parcours reste intact. Actualiser sans relancer SYNA",
+ "telephone_historique_apres_navigation": false,
+ "telephone_site_publication": {
+  "status": 200,
+  "configured": false,
+  "live": true
+ },
+ "telephone_bouton_globe": 1,
+ "telephone_section_domaine": 1,
+ "reponses": [
+  "ordinateur GET 200 /api/projects/oe6rq2jhft0kb3rh/conversation",
+  "ordinateur POST 409 /api/projects/oe6rq2jhft0kb3rh/conversation",
+  "ordinateur GET 200 /api/projects/oe6rq2jhft0kb3rh/conversation",
+  "telephone GET 200 /api/projects/oe6rq2jhft0kb3rh/conversation",
+  "telephone POST 409 /api/projects/oe6rq2jhft0kb3rh/conversation",
+  "telephone GET 200 /api/projects/oe6rq2jhft0kb3rh/conversation"
+ ]
+}

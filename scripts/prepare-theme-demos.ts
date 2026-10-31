@@ -6,9 +6,10 @@
  *   npx tsx scripts/prepare-theme-demos.ts            (les cinq thèmes du catalogue actif)
  *   npx tsx scripts/prepare-theme-demos.ts sillon     (un seul)
  *
- * Chaque démo est préparée dans un dossier de travail puis échangée d'un coup avec l'ancienne : le studio sert la démo
- * précédente jusqu'au dernier moment, jamais une démo à moitié écrite. Un thème qui échoue (ex. visuels du kit privé
- * absents) garde son ancienne démo et n'empêche pas les autres.
+ * Chaque démo est préparée dans un dossier de travail puis échangée d'un coup avec l'ancienne, gardée dans
+ * .precedentes/<id> pour un retour arrière : jamais une démo à moitié écrite. Un thème qui échoue (ex. visuels du kit privé
+ * absents) garde son ancienne démo, que le studio n'annonce plus comme prête si elle date d'une autre version (#280),
+ * et n'empêche pas les autres.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -38,13 +39,18 @@ try {
       const fresh = path.join(work, id);
       if (!fs.existsSync(path.join(fresh, "accueil.html"))) throw new Error("export incomplet (accueil absent)");
       fs.writeFileSync(path.join(fresh, "demo.json"), JSON.stringify({ id, version, date: new Date().toISOString() }, null, 2) + "\n");
-      const target = path.join(dir, id), old = path.join(work, `${id}.ancienne`);
-      if (fs.existsSync(target)) fs.renameSync(target, old);
+      // La démo remplacée est gardée (une seule, la dernière) pour un retour arrière : <dossier>/.precedentes/<id>, jamais
+      // servie (#280). Retour : mv .precedentes/<id> <id> (après avoir écarté la démo courante).
+      const target = path.join(dir, id), keep = path.join(dir, ".precedentes"), old = path.join(keep, id);
+      fs.mkdirSync(keep, { recursive: true });
+      if (fs.existsSync(target)) { fs.rmSync(old, { recursive: true, force: true }); fs.renameSync(target, old); }
       fs.renameSync(fresh, target);
-      fs.rmSync(old, { recursive: true, force: true });
+      fs.rmSync(path.join(dir, `.echec-${id}.json`), { force: true });
       console.log(`[démos] ${id} prête (${Math.round((Date.now() - started) / 1000)} s)`);
     } catch (e) {
       failed++;
+      // Noté pour le studio (#280) : la galerie dit « échec » au lieu d'une préparation sans fin, et ne relance pas en boucle.
+      fs.writeFileSync(path.join(dir, `.echec-${id}.json`), JSON.stringify({ version, date: new Date().toISOString(), message: (e as Error).message.slice(0, 300) }, null, 2) + "\n");
       console.error(`[démos] ${id} : échec, démo précédente conservée — ${(e as Error).message}`);
     }
   }

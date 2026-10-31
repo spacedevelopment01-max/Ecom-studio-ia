@@ -1,0 +1,118 @@
+{
+ "ordinateur_api": [
+  {
+   "id": "fraise",
+   "ready": false,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 25,
+   "failed": false
+  },
+  {
+   "id": "onde",
+   "ready": true,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 0,
+   "failed": false
+  },
+  {
+   "id": "rive",
+   "ready": true,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 0,
+   "failed": false
+  }
+ ],
+ "ordinateur_cartes": {
+  "rive": {
+   "bouton": "Voir la démo complète",
+   "actif": true,
+   "visuelsAbsents": false
+  },
+  "onde": {
+   "bouton": "Voir la démo complète",
+   "actif": true,
+   "visuelsAbsents": false
+  },
+  "fraise": {
+   "bouton": "Démo complète indisponible",
+   "actif": false,
+   "visuelsAbsents": true
+  }
+ },
+ "ordinateur_demo_rive": "Enfin chez vous.",
+ "ordinateur_demo_onde": "Votre monde. Votre fréquence.",
+ "ordinateur_rive_perimee_api": {
+  "id": "rive",
+  "ready": false,
+  "stale": true,
+  "preparing": true,
+  "version": "version-",
+  "missing": 0,
+  "failed": false
+ },
+ "ordinateur_rive_perimee": "Démo complète en cours d'actualisation…",
+ "telephone_api": [
+  {
+   "id": "fraise",
+   "ready": false,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 25,
+   "failed": false
+  },
+  {
+   "id": "onde",
+   "ready": true,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 0,
+   "failed": false
+  },
+  {
+   "id": "rive",
+   "ready": true,
+   "stale": false,
+   "preparing": false,
+   "version": "e3c78d76",
+   "missing": 0,
+   "failed": false
+  }
+ ],
+ "telephone_cartes": {
+  "rive": {
+   "bouton": "Voir la démo complète",
+   "actif": true,
+   "visuelsAbsents": false
+  },
+  "onde": {
+   "bouton": "Voir la démo complète",
+   "actif": true,
+   "visuelsAbsents": false
+  },
+  "fraise": {
+   "bouton": "Démo complète indisponible",
+   "actif": false,
+   "visuelsAbsents": true
+  }
+ },
+ "telephone_demo_rive": "Enfin chez vous.",
+ "telephone_demo_onde": "Votre monde. Votre fréquence.",
+ "telephone_rive_perimee_api": {
+  "id": "rive",
+  "ready": false,
+  "stale": true,
+  "preparing": true,
+  "version": "version-",
+  "missing": 0,
+  "failed": false
+ },
+ "telephone_rive_perimee": "Démo complète en cours d'actualisation…"
+}
