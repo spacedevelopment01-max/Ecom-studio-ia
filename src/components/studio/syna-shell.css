@@ -1,0 +1,165 @@
+/*
+ * Coquille SYNA du Studio (mission #282, lot 1), présentation Encre. Tous les sélecteurs passent par `.syna-ui` :
+ * les écrans des espaces (rendus hors de ces conteneurs) gardent exactement leur apparence actuelle.
+ */
+
+/* ——— Menu des espaces (ordinateur) ——— */
+.syna-ui.ss-side-scope { position: sticky; top: 0; height: 100dvh; z-index: 30; }
+.syna-ui .ss-side { display: flex; flex-direction: column; gap: 16px; height: 100%; padding: 18px 14px 14px; background: var(--sy-sheet); border-right: 1px solid var(--sy-rule); overflow: hidden; }
+.syna-ui .ss-side[data-folded] { padding-inline: 10px; align-items: center; }
+.syna-ui .ss-side-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-inline: 6px; width: 100%; }
+.syna-ui .ss-side[data-folded] .ss-side-top { flex-direction: column; padding: 0; }
+.syna-ui .ss-brand { display: inline-flex; min-width: 0; border-radius: var(--sy-r-sm); }
+.syna-ui .ss-icon-btn { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--sy-muted); cursor: pointer; transition: background-color var(--sy-dur) var(--sy-ease), color var(--sy-dur) var(--sy-ease); }
+.syna-ui .ss-icon-btn:hover { background: var(--sy-wash); color: var(--sy-ink); }
+@media (pointer: coarse) { .syna-ui .ss-icon-btn { width: 44px; height: 44px; } }
+.syna-ui .ss-switcher { width: 100%; }
+.syna-ui .ss-cover { display: grid; place-items: center; width: 44px; height: 44px; overflow: hidden; border-radius: var(--sy-r); background: var(--sy-wash); box-shadow: inset 0 0 0 1px var(--sy-rule); color: var(--sy-ink2); }
+.syna-ui .ss-cover img { width: 100%; height: 100%; object-fit: cover; }
+.syna-ui .ss-nav-wrap { position: relative; display: flex; flex: 1 1 auto; min-height: 0; width: 100%; }
+.syna-ui .ss-nav { flex: 1 1 auto; min-height: 0; width: 100%; overflow-y: auto; overflow-x: hidden; margin-inline: -4px; padding-inline: 4px; scrollbar-width: thin; }
+.syna-ui .ss-nav-wrap[data-more-up]::before, .syna-ui .ss-nav-wrap[data-more-down]::after { content: ""; position: absolute; left: 0; right: 0; height: 28px; pointer-events: none; }
+.syna-ui .ss-nav-wrap[data-more-up]::before { top: 0; background: linear-gradient(var(--sy-sheet), transparent); }
+.syna-ui .ss-nav-wrap[data-more-down]::after { bottom: 0; background: linear-gradient(transparent, var(--sy-sheet) 80%); }
+.syna-ui .ss-more { position: absolute; z-index: 1; bottom: 2px; left: 50%; width: 16px; height: 16px; margin-left: -8px; color: var(--sy-muted); pointer-events: none; }
+.syna-ui .ss-prefs { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px 8px 8px; }
+.syna-ui .ss-group { display: grid; gap: 1px; margin-bottom: 12px; }
+.syna-ui .ss-group-l { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; padding: 0 12px; font: 500 10.5px/1.2 var(--sy-f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--sy-muted); }
+.syna-ui .ss-group-btn { width: 100%; min-height: 28px; border: 0; background: none; cursor: pointer; text-align: left; border-radius: var(--sy-r-sm); }
+.syna-ui .ss-group-btn > span:first-child { flex: 1; }
+.syna-ui .ss-group-btn:hover { color: var(--sy-ink); }
+.syna-ui .ss-rule { display: block; width: 28px; height: 1px; margin: 4px auto 8px; background: var(--sy-rule); }
+.syna-ui .ss-link {
+  position: relative; display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px;
+  border-radius: var(--sy-r-sm); color: var(--sy-ink2); text-decoration: none; font: 500 14px/1.2 var(--sy-f-ui);
+  transition: background-color var(--sy-dur) var(--sy-ease), color var(--sy-dur) var(--sy-ease);
+}
+.syna-ui .ss-link:hover { background: var(--sy-wash); color: var(--sy-ink); }
+.syna-ui .ss-link[aria-current="page"] { background: var(--sy-accent-soft); color: var(--sy-ink); font-weight: 600; }
+.syna-ui .ss-link[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: var(--sy-accent); }
+.syna-ui .ss-link-i { width: 17px; height: 17px; flex: none; color: var(--sy-muted); }
+.syna-ui .ss-link:hover .ss-link-i { color: var(--sy-ink2); }
+.syna-ui .ss-link[aria-current="page"] .ss-link-i { color: var(--sy-accent); }
+.syna-ui .ss-link-l { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.syna-ui .ss-badge { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--sy-r-pill); background: var(--sy-accent); color: var(--sy-accent-ink); font: 600 11px/1 var(--sy-f-mono); }
+.syna-ui .ss-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--sy-accent); }
+.syna-ui .ss-side[data-folded] .ss-link { justify-content: center; width: 48px; padding: 0; margin-inline: auto; }
+.syna-ui .ss-side[data-folded] .ss-link .ss-dot { position: absolute; top: 7px; right: 8px; }
+.syna-ui .ss-side[data-folded] .ss-link[aria-current="page"]::before { left: -6px; }
+.syna-ui .ss-side-foot { display: grid; gap: 1px; width: 100%; padding-top: 10px; border-top: 1px solid var(--sy-rule); font-size: 14px; }
+.syna-ui .ss-foot-link { display: flex; align-items: center; gap: 12px; min-height: 34px; padding: 0 12px; border: 0; border-radius: var(--sy-r-sm); background: none; color: var(--sy-ink2); text-decoration: none; font: inherit; cursor: pointer; text-align: left; }
+.syna-ui .ss-foot-link:hover { background: var(--sy-wash); color: var(--sy-ink); }
+.syna-ui .ss-side[data-folded] .ss-foot-link, .syna-ui .ss-side[data-folded] .ss-side-foot > a { justify-content: center; padding: 0; }
+@media (max-height: 820px) {
+  .syna-ui .ss-side { gap: 10px; padding-top: 12px; }
+  .syna-ui .ss-link { min-height: 32px; }
+  .syna-ui .ss-group { margin-bottom: 8px; }
+  .syna-ui .ss-foot-link { min-height: 30px; }
+}
+
+/* ——— En-tête de l'espace ——— */
+.syna-ui.ss-head-scope { position: sticky; top: 0; z-index: 40; }
+.syna-ui .ss-head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 68px; padding: 10px 24px;
+  background: color-mix(in srgb, var(--sy-paper) 86%, transparent); border-bottom: 1px solid var(--sy-rule);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px); backdrop-filter: saturate(1.4) blur(14px);
+}
+.syna-ui .ss-head-logo { flex: none; }
+.syna-ui .ss-head-t { display: grid; gap: 3px; min-width: min(11rem, 100%); flex: 1 1 12rem; }
+.syna-ui .ss-crumb { display: flex; flex-wrap: wrap; gap: 0 10px; overflow: hidden; }
+.syna-ui .ss-crumb-p { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sy-ink2); }
+.syna-ui .ss-crumb-g::before { content: "·"; margin-right: 10px; color: var(--sy-muted); }
+.syna-ui .ss-title-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.syna-ui .ss-h1 { margin: 0; min-width: 0; font: 500 24px/1.12 var(--sy-f-voice); letter-spacing: -.012em; color: var(--sy-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.syna-ui .ss-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; font-size: 14px; line-height: 1.4; }
+@media (max-width: 1023px) {
+  .syna-ui .ss-head { flex-wrap: nowrap; padding: 8px max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px)); min-height: 60px; }
+  .syna-ui .ss-head-t { flex: 1 1 0; min-width: 0; }
+  .syna-ui .ss-tools { flex-wrap: nowrap; gap: 6px; }
+  .syna-ui .ss-h1 { font-size: 20px; }
+  .syna-ui .ss-crumb-g { display: none; }
+}
+
+/* ——— SYNA : onglet signature et colonne ——— */
+.syna-ui.ss-syna-scope { position: relative; z-index: 45; }
+@media (min-width: 1024px) {
+  .syna-ui.ss-syna-scope { position: sticky; top: 0; height: 100dvh; }
+}
+.syna-ui .ss-syna-col { height: 100%; }
+.syna-ui .ss-rail { height: 100%; background: var(--sy-sheet); border-left: 1px solid var(--sy-rule); }
+.syna-ui .ss-rail .sy-trigger[data-variant="rail"] { border-right: 0; width: 44px; min-height: 220px; padding-top: 22px; }
+.syna-ui .ss-rail .sy-wordmark { font-size: 23px; }
+.syna-ui .ss-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); background: var(--sy-sheet); color: var(--sy-ink); }
+.syna-ui .ss-panel[hidden] { display: none; }
+.syna-ui .ss-panel.is-docked { width: var(--sy-convo-w); height: 100dvh; border-left: 1px solid var(--sy-rule); }
+.syna-ui .ss-panel.is-overlay {
+  position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(var(--sy-convo-w), 100vw);
+  border-left: 1px solid var(--sy-rule); box-shadow: var(--sy-shadow-lg);
+  animation: ss-slide var(--sy-dur-slow) var(--sy-ease);
+}
+@keyframes ss-slide { from { transform: translateX(24px); opacity: 0; } }
+.syna-ui .ss-panel-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 14px 12px 20px; border-bottom: 1px solid var(--sy-rule); }
+.syna-ui .ss-panel-mark { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.syna-ui .ss-panel-mark .sy-small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.syna-ui .ss-panel-b { min-height: 0; overflow-y: auto; overscroll-behavior: contain; font: 400 14px/1.5 var(--sy-f-ui); }
+.syna-ui .ss-scrim { position: fixed; inset: 0; z-index: 85; border: 0; padding: 0; background: rgb(10 16 36 / .32); cursor: default; animation: ss-fade var(--sy-dur) var(--sy-ease); }
+@keyframes ss-fade { from { opacity: 0; } }
+@media (max-width: 1023px) {
+  /* Téléphone et tablette : le panneau occupe l'écran au-dessus de la barre basse, qui reste visible. */
+  .syna-ui .ss-panel.is-overlay { left: 0; width: 100vw; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); border-left: 0; box-shadow: none; animation-name: ss-rise; }
+  .syna-ui .ss-syna-scrim { display: none; }
+  .syna-ui .ss-panel-h { padding: 10px 12px 10px 16px; }
+}
+@keyframes ss-rise { from { transform: translateY(16px); opacity: 0; } }
+
+/* ——— Barre basse (téléphone, tablette) ——— */
+.syna-ui .ss-tabbar {
+  position: fixed; z-index: 95; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-around; gap: 4px;
+  padding: 6px max(8px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--sy-sheet) 94%, transparent); border-top: 1px solid var(--sy-rule);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.syna-ui .ss-tabbar > * { flex: 1 1 0; }
+.syna-ui .ss-tab {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: 3px; min-width: 0; min-height: 52px; padding: 6px 4px;
+  border: 0; border-radius: var(--sy-r); background: transparent; color: var(--sy-ink2); font: 500 12px/1.1 var(--sy-f-ui); cursor: pointer;
+}
+.syna-ui .ss-tab[aria-current="page"], .syna-ui .ss-tab[aria-expanded="true"] { color: var(--sy-accent); background: var(--sy-accent-soft); }
+.syna-ui .ss-tab-l { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.syna-ui .ss-tab-dot { position: absolute; top: 8px; right: calc(50% - 18px); }
+.syna-ui .ss-count { position: absolute; top: 4px; right: calc(50% - 24px); display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--sy-r-pill); background: var(--sy-accent); color: var(--sy-accent-ink); font: 600 10.5px/1 var(--sy-f-mono); }
+.syna-ui .ss-tabbar .sy-trigger[data-variant="tab"] { min-width: 0; }
+
+/* ——— Feuilles du bas : espaces, suivi ——— */
+.syna-ui .ss-sheet-layer { position: fixed; inset: 0; z-index: 92; }
+/* Dans la feuille, le voile reste derrière : un toucher sur un espace ouvre l'espace, il ne referme pas la feuille. */
+.syna-ui .ss-sheet-layer > .ss-scrim { z-index: 0; }
+.syna-ui .ss-sheet {
+  position: absolute; z-index: 1; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: min(78dvh, 100% - 80px); overflow-y: auto;
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) 20px max(16px, env(safe-area-inset-left, 0px));
+  border-radius: var(--sy-r-lg) var(--sy-r-lg) 0 0; background: var(--sy-paper); box-shadow: var(--sy-shadow-lg); animation: ss-rise var(--sy-dur-slow) var(--sy-ease);
+}
+.syna-ui .ss-sheet-h { position: sticky; top: -8px; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; margin: -8px -4px 8px; padding: 12px 4px 8px; background: var(--sy-paper); }
+.syna-ui .ss-grip { position: absolute; top: 5px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 4px; background: var(--sy-rule-strong); }
+.syna-ui .ss-sheet-t { font-size: 20px; }
+.syna-ui .ss-sheet-nav .ss-group-l { padding-left: 2px; }
+.syna-ui .ss-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 6px; }
+.syna-ui .ss-grid .ss-link { min-height: 48px; padding: 0 12px; background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .ss-grid .ss-link[aria-current="page"] { box-shadow: inset 0 0 0 1px var(--sy-accent-line); }
+.syna-ui .ss-jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.syna-ui .ss-job { display: grid; gap: 6px; padding: 14px; border-radius: var(--sy-r); background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .ss-job-h { display: flex; justify-content: space-between; gap: 12px; }
+.syna-ui .ss-job p { margin: 0; }
+.syna-ui .ss-jobs-f { display: flex; justify-content: flex-end; margin-top: 12px; }
+.syna-ui .ss-empty { padding: 8px 2px; }
+.syna-ui .ss-later { margin: 16px 2px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .syna-ui .ss-panel.is-overlay, .syna-ui .ss-sheet, .syna-ui .ss-scrim { animation: none; }
+}
+
+/* La bulle « Première visite ? » des tutoriels (rendue hors de la coquille) se pose à gauche de la colonne SYNA
+   ouverte, au lieu de la recouvrir. Ne s'applique que dans la coquille SYNA, colonne ouverte. */
+@media (min-width: 1280px) {
+  body:has(.syna-ui .ss-panel.is-docked:not([hidden])) [data-tuto-nudge] { right: calc(440px + 20px); }
+}

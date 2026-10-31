@@ -41,17 +41,17 @@ export const TABS = [
 export type TabId = (typeof TABS)[number]["id"];
 /** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
 /** Espaces d'un groupe du plan du studio, selon le métier du projet (voir `spaceVisible`). */
-type NavCtx = { business?: "products" | "services"; direction?: string | null; contactModes?: readonly string[] };
-const tabsOf = (g: SpaceGroup, ctx: NavCtx) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && spaceVisible(x.id, ctx));
-const navCtx = (d: { business?: "products" | "services"; theme?: { direction?: string | null } | null; services?: { contactMode?: string; contactModes?: string[] } | null } | null | undefined): NavCtx =>
+export type NavCtx = { business?: "products" | "services"; direction?: string | null; contactModes?: readonly string[] };
+export const tabsOf = (g: SpaceGroup, ctx: NavCtx) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && spaceVisible(x.id, ctx));
+export const navCtx = (d: { business?: "products" | "services"; theme?: { direction?: string | null } | null; services?: { contactMode?: string; contactModes?: string[] } | null } | null | undefined): NavCtx =>
   ({ business: d?.business, direction: d?.theme?.direction, contactModes: [d?.services?.contactMode ?? "", ...(d?.services?.contactModes ?? [])].filter(Boolean) });
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
 /** Icône d'un onglet (l'onglet Activité d'un projet de services a la sienne). */
-const tabIcon = (t: (typeof TABS)[number], business?: "products" | "services") => (t.id === "produit" && business === "services" ? Briefcase : t.icon);
+export const tabIcon = (t: (typeof TABS)[number], business?: "products" | "services") => (t.id === "produit" && business === "services" ? Briefcase : t.icon);
 
-const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
+export const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   queued: { label: "En file", labelEn: "Queued", tone: "neutral" },
   creating: { label: "Création en cours", labelEn: "Creating", tone: "info" },
   awaiting_validation: { label: "À valider", labelEn: "To review", tone: "warn" },
@@ -61,7 +61,7 @@ const STATUS: Record<string, { label: string; labelEn: string; tone: any }> = {
   draft: { label: "À démarrer", labelEn: "Not started", tone: "neutral" },
 };
 
-function ProjectSwitcher({ current }: { current: string }) {
+export function ProjectSwitcher({ current }: { current: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const { data } = useApi<{ projects: { id: string; name: string; status: string; cover: string | null }[] }>(open ? "/api/projects" : null);
@@ -97,7 +97,7 @@ function ProjectSwitcher({ current }: { current: string }) {
   );
 }
 
-function ActiveJobs() {
+export function ActiveJobs() {
   const t = useT();
   const { id, data, reload } = useProject();
   const [open, setOpen] = useState(false);
@@ -146,7 +146,7 @@ function ActiveJobs() {
   );
 }
 
-function Notifications() {
+export function Notifications() {
   const t = useT();
   const [open, setOpen] = useState(false);
   const { data, reload } = useApi<{ items: { id: string; title: string; body: string; level: string; read_at: number | null; created_at: number }[] }>("/api/notifications", { poll: 30000 });
@@ -184,7 +184,7 @@ function Notifications() {
 }
 
 /** Sélecteur de langue compact pour l'en-tête sur téléphone (un seul bouton : bascule FR ↔ EN). */
-function MobileLangToggle() {
+export function MobileLangToggle() {
   const { lang, setLang } = useLang();
   const next = lang === "en" ? "fr" : "en";
   return (
@@ -195,7 +195,7 @@ function MobileLangToggle() {
 }
 
 /** Menu de l'en-tête sur téléphone et tablette (le menu latéral n'y est pas affiché) : compte, tutoriels, déconnexion. */
-function MobileMenu({ tab, business, isAdmin, billing }: { tab: string; business?: "products" | "services"; isAdmin: boolean; billing: BillingView | null }) {
+export function MobileMenu({ tab, business, isAdmin, billing, extra }: { tab: string; business?: "products" | "services"; isAdmin: boolean; billing: BillingView | null; /** Entrée supplémentaire en fin de menu (choix de l'interface, mission #282). */ extra?: ReactNode }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -227,6 +227,7 @@ function MobileMenu({ tab, business, isAdmin, billing }: { tab: string; business
           <Link role="menuitem" href="/studio/compte" onClick={() => setOpen(false)} className={item}><Settings className="size-4 shrink-0" /> {t("Mon compte", "My account")}</Link>
           <TutorialsMenuLink tab={tab} business={business} />
           {isAdmin && <Link role="menuitem" href="/admin" onClick={() => setOpen(false)} className={item}><Shield className="size-4 shrink-0" /> {t("Administration", "Admin")}</Link>}
+          {extra}
           <button role="menuitem" type="button" onClick={async () => { await api("/api/auth/logout", { method: "POST" }).catch(() => {}); window.location.href = "/"; }} className={cx(item, "border-t border-line text-left")}><LogOut className="size-4 shrink-0" /> {t("Déconnexion", "Log out")}</button>
         </div>
       )}
@@ -238,7 +239,7 @@ function MobileMenu({ tab, business, isAdmin, billing }: { tab: string; business
  * Recherche rapide (Ctrl+K ou ⌘K) : taper quelques lettres pour aller à un espace du projet, à un autre projet, au
  * compte ou aux tutoriels. Flèches pour choisir, Entrée pour ouvrir, Échap pour fermer.
  */
-function QuickSearch({ projectId, business }: { projectId: string; business?: "products" | "services" }) {
+export function QuickSearch({ projectId, business }: { projectId: string; business?: "products" | "services" }) {
   const t = useT();
   const { lang } = useLang();
   const router = useRouter();
@@ -406,7 +407,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
  * conseillée du projet en un clic — le client sait toujours où il est et quoi faire ensuite. Pas sur le Pilote, qui
  * montre déjà l'avancement complet. Masquable (mémorisé sur cet appareil).
  */
-function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
+export function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
   const t = useT();
   const agentUi = useAgentUi();
   const { lang } = useLang();
@@ -444,7 +445,16 @@ function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
   return agentUi&&tab==='boutique'?<details className="mb-3 rounded-xl border border-line px-3 py-2 text-xs"><summary className="cursor-pointer font-semibold">{t('Repères et prochaine étape','Guidance and next step')}</summary>{content}</details>:content;
 }
 
-export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
+/** Pastille d'un espace dans le menu : questions sans réponse, publications à valider, projet à valider. */
+export function spaceBadge(data: ReturnType<typeof useProject>["data"], id: TabId): string | number | null {
+  if (!data) return null;
+  if (id === "produit") return (data.business === "services" ? missingActivity(data.services).length : 0) + data.product.questions.filter((q) => !q.answer).length || null;
+  if (id === "publications") return data.posts.review || null;
+  if (id === "pilote" && data.project.status === "awaiting_validation") return "!";
+  return null;
+}
+
+export function StudioShell({ projectId, children, synaShell }: { projectId: string; children: ReactNode; /** Nouvelle interface SYNA disponible sur cette installation (mission #282, lot 1) : lien pour y revenir. */ synaShell?: ReactNode }) {
   const agentPanel = useAgentPanel();
   const t = useT();
   const { lang } = useLang();
@@ -519,13 +529,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       window.removeEventListener("resize", update);
     };
   }, [tab, folded, showAdvanced]);
-  const badge = (id: TabId) => {
-    if (!data) return null;
-    if (id === "produit") return (data.business === "services" ? missingActivity(data.services).length : 0) + data.product.questions.filter((q) => !q.answer).length || null;
-    if (id === "publications") return data.posts.review || null;
-    if (id === "pilote" && data.project.status === "awaiting_validation") return "!";
-    return null;
-  };
+  const badge = (id: TabId) => spaceBadge(data, id);
   return (
     <div data-studio-workspace className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_minmax(0,1fr)]" : "lg:grid-cols-[272px_minmax(0,1fr)]", agentPanel.open && "xl:pr-[416px]")}>
       {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
@@ -587,6 +591,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           <TutorialsMenuLink tab={tab} business={data?.business} folded={folded} />
           <Link href="/studio/compte" title={folded ? t("Mon compte", "My account") : undefined} aria-label={folded ? t("Mon compte", "My account") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><Settings className="size-4 shrink-0" />{!folded && ` ${t("Mon compte", "My account")}`}</Link>
           {me?.user.role === "admin" && <Link href="/admin" title={folded ? t("Administration", "Admin") : undefined} aria-label={folded ? t("Administration", "Admin") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><Shield className="size-4 shrink-0" />{!folded && ` ${t("Administration", "Admin")}`}</Link>}
+          {!folded && synaShell}
           <button onClick={async () => { await api("/api/auth/logout", { method: "POST" }); router.push("/"); }} title={folded ? t("Déconnexion", "Log out") : undefined} aria-label={folded ? t("Déconnexion", "Log out") : undefined} className={cx("flex items-center gap-3 rounded-xl py-2 text-left text-ink-2 hover:bg-paper-2 short:py-1.5", folded ? "justify-center" : "px-3")}><LogOut className="size-4 shrink-0" />{!folded && ` ${t("Déconnexion", "Log out")}`}</button>
         </div>
       </aside>
@@ -609,7 +614,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
             <div className="hidden shrink-0 sm:flex"><LangSwitch /></div>
             <MobileLangToggle />
             <ThemeToggle className="shrink-0" />
-            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={gauge} />
+            <MobileMenu tab={tab} business={data?.business} isAdmin={me?.user.role === "admin"} billing={gauge} extra={synaShell} />
           </div>
         </header>
         <QuotaBanner billing={billing} />
