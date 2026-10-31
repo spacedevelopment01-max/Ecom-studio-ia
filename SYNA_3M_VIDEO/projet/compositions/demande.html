@@ -1,0 +1,93 @@
+<template>
+  <style>
+    @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+    @font-face { font-family: "InterV"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #F5F7FC; font-family: "InterV", sans-serif; }
+    .m3-probe { position: absolute; left: -9999px; top: 0; opacity: 0; }
+    .m3-o8 { font-family: Outfit; font-weight: 800; } .m3-o7 { font-family: Outfit; font-weight: 700; }
+    .m3-l4 { font-family: Lato; font-weight: 400; } .m3-l6 { font-family: Lato; font-weight: 600; } .m3-l7 { font-family: Lato; font-weight: 700; }
+    #dm-grid { position: absolute; inset: 0; background-image: linear-gradient(#E6EBF5 2px, transparent 2px), linear-gradient(90deg, #E6EBF5 2px, transparent 2px); background-size: 96px 96px; opacity: .7; }
+    #dm-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+    #dm-site { position: absolute; left: 96px; top: 176px; width: 720px; height: 460px; transform-origin: 0 0; border-radius: 18px; box-shadow: 0 40px 90px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; }
+    #dm-chat { position: absolute; left: 1290px; top: 176px; width: 540px; height: 713px; background: #fff; border-radius: 28px; box-shadow: 0 40px 90px -40px rgba(10,16,36,.35), 0 0 0 2px #E3E8F2; display: flex; flex-direction: column; overflow: hidden; }
+    .dm-head { display: flex; align-items: center; gap: 16px; padding: 24px 28px; border-bottom: 2px solid #EEF1F7; }
+    .dm-orb { width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #FFFFFF 0%, #CFE9FF 12%, #7CC4FF 30%, #3D6EF0 60%, #2F5BEA 78%, #1B3FB8 100%); box-shadow: inset -6px -8px 14px rgba(10,16,36,.25), 0 8px 22px -6px rgba(47,91,234,.55); }
+    .dm-head b { display: block; font: 600 32px/1 "Bricolage"; letter-spacing: -0.02em; color: #0A1024; }
+    .dm-head small { display: block; margin-top: 4px; font: 500 20px "InterV"; color: #5E6886; }
+    .dm-thread { flex: 1; position: relative; padding: 26px 28px; display: flex; flex-direction: column; gap: 18px; }
+    .dm-bub { max-width: 440px; padding: 18px 22px; border-radius: 22px; font: 500 28px/1.3 "InterV"; }
+    .dm-syna { align-self: flex-start; background: #EEF2FB; color: #0A1024; border-bottom-left-radius: 8px; }
+    .dm-me { align-self: flex-end; background: #2F5BEA; color: #fff; border-bottom-right-radius: 8px; }
+    .dm-dots { align-self: flex-start; background: #EEF2FB; border-radius: 22px; padding: 20px 24px; display: flex; gap: 10px; }
+    .dm-dots i { width: 12px; height: 12px; border-radius: 50%; background: #7E89A8; display: block; }
+    .dm-chip { align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 14px; background: #E3E9FD; color: #2F5BEA; font: 600 21px "InterV"; }
+    .dm-input { margin: 0 24px 24px; height: 84px; border-radius: 20px; background: #F4F6FB; box-shadow: inset 0 0 0 2px #E1E6F0; display: flex; align-items: center; padding: 0 14px 0 22px; gap: 14px; }
+    #dm-typed { flex: 1; font: 500 23px/1.25 "InterV"; color: #0A1024; white-space: nowrap; overflow: hidden; }
+    #dm-ph { position: absolute; font: 500 23px "InterV"; color: #69728C; }
+    .dm-send { width: 56px; height: 56px; border-radius: 16px; background: #2F5BEA; display: grid; place-items: center; flex: none; }
+    #dm-cursor { position: absolute; left: 0; top: 0; width: 64px; height: 64px; }
+  </style>
+  <div id="root" data-composition-id="demande" data-width="1920" data-height="1080">
+    <div class="m3-probe" aria-hidden="true"><span class="m3-o8">3M Aa</span><span class="m3-o7">Devis</span><span class="m3-l4">Aa</span><span class="m3-l6">Aa</span><span class="m3-l7">Aa</span></div>
+    <div id="dm-bg" style="position:absolute;inset:0;background:#F5F7FC"></div>
+    <div id="dm-grid"></div>
+    <div id="dm-stage">
+      <div id="dm-site"></div>
+      <div id="dm-chat">
+        <div class="dm-head"><div id="dm-horb" class="dm-orb"></div><div><b>Syna</b><small>Discussion</small></div></div>
+        <div class="dm-thread">
+          <div id="dm-b0" class="dm-bub dm-syna">Votre site est en ligne. Que voulez-vous changer ?</div>
+          <div id="dm-b1" class="dm-bub dm-me">Passe le bouton de devis en ocre.</div>
+          <div style="position:relative;align-self:stretch;display:flex;flex-direction:column"><div id="dm-dots" class="dm-dots" style="position:absolute;left:0;top:0"><i></i><i></i><i></i></div>
+          <div id="dm-b2" class="dm-bub dm-syna">C'est fait : le bouton est passé en ocre, sur tout le site.</div></div>
+          <div id="dm-chip" class="dm-chip"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2F5BEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Version 2 · restaurable</div>
+        </div>
+        <div class="dm-input"><div style="position:relative;flex:1;display:flex;align-items:center"><span id="dm-ph">Écrivez votre demande…</span><div id="dm-typed">Passe le bouton de devis en ocre.</div></div>
+          <div id="dm-send" class="dm-send"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M12 5l7 7-7 7"/></svg></div></div>
+      </div>
+    </div>
+    <svg id="dm-cursor" viewBox="0 0 64 64"><path d="M10 6 L10 50 L22 39 L30 58 L38 54 L30 36 L46 36 Z" fill="#0A1024" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg>
+  </div>
+  <script src="assets/brand3m.js"></script>
+  <script>
+    (function () {
+      document.getElementById("dm-site").innerHTML = M3.site("dm");
+      const tl = gsap.timeline({ paused: true });
+      const S = 1.6; // échelle du site posé à plat
+      // Arrivée : le site arrive grand (suite de la plongée) et se pose, la discussion entre par la droite
+      tl.fromTo("#dm-site", { scale: 2.7, x: -420, y: -260 }, { scale: S, x: 0, y: 0, duration: 0.8, ease: "expo.out" }, 0);
+      tl.fromTo("#dm-chat", { x: 640, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 0.3);
+      tl.fromTo("#dm-b0", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.7);
+      ["#dm-b1", "#dm-dots", "#dm-b2", "#dm-chip"].forEach((s) => tl.fromTo(s, { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0));
+      tl.fromTo("#dm-ripple", { scale: 0 }, { scale: 0, duration: 0.01 }, 0);
+      // La demande se tape
+      tl.fromTo("#dm-typed", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 1.3, ease: "none" }, 0.95);
+      tl.to("#dm-ph", { opacity: 0, duration: 0.05 }, 0.95);
+      // Curseur : entre par le bas-droite, clique sur « envoyer »
+      tl.fromTo("#dm-cursor", { x: 1980, y: 1120 }, { x: 1766, y: 840, duration: 0.6, ease: "expo.out" }, 1.85);
+      tl.to("#dm-cursor", { scale: 0.82, duration: 0.07, ease: "power2.in", yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, 2.5);
+      tl.to("#dm-send", { scale: 0.9, duration: 0.07, yoyo: true, repeat: 1 }, 2.5);
+      tl.to("#dm-cursor", { x: 2000, y: 1150, duration: 0.45, ease: "power3.in" }, 2.9);
+      // Envoi : le texte quitte le champ et devient la bulle
+      tl.to("#dm-typed", { opacity: 0, y: -20, duration: 0.15, ease: "power2.in" }, 2.62);
+      tl.to("#dm-ph", { opacity: 1, duration: 0.2 }, 2.8);
+      tl.fromTo("#dm-b1", { opacity: 0, y: 140, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }, 2.66);
+      // Syna réfléchit puis répond
+      tl.fromTo("#dm-dots", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 3.0);
+      tl.fromTo("#dm-dots i", { y: 0 }, { y: -8, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: 3, stagger: 0.1 }, 3.05);
+      tl.fromTo("#dm-horb", { scale: 1 }, { scale: 1.15, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1 }, 3.6);
+      tl.to("#dm-dots", { opacity: 0, duration: 0.12 }, 4.06);
+      tl.fromTo("#dm-b2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 4.18);
+      tl.fromTo("#dm-chip", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.8)" }, 4.75);
+      // Le bouton passe en ocre (vague depuis le centre) ; gros plan sur le bouton puis retour
+      tl.fromTo("#dm-ripple", { scale: 0 }, { scale: 1, duration: 0.7, ease: "power2.out", immediateRender: false }, 4.35);
+      tl.to("#dm-btn", { color: "#1F2A2E", duration: 0.3 }, 4.5);
+      tl.fromTo("#dm-btnw", { scale: 1 }, { scale: 1.14, duration: 0.3, ease: "power2.out", yoyo: true, repeat: 1, transformOrigin: "50% 50%" }, 4.3);
+      // Sortie : tout recule vers la ville
+      tl.fromTo("#dm-stage", { scale: 1, x: 0, y: 0 }, { scale: 0.16, x: 806, y: 454, duration: 0.55, ease: "power3.in", transformOrigin: "0 0" }, 7.85);
+      tl.to("#dm-grid", { opacity: 0, duration: 0.4 }, 7.95);
+      tl.fromTo("#dm-bg", { backgroundColor: "#F5F7FC" }, { backgroundColor: "#EEE7DC", duration: 0.4, ease: "power2.inOut" }, 7.95);
+      window.__timelines["demande"] = tl;
+    })();
+  </script>
+</template>

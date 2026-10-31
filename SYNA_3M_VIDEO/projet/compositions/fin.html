@@ -1,0 +1,114 @@
+<template>
+  <style>
+    @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+    @font-face { font-family: "InterV"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+    @font-face { font-family: "Instrument"; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-style: italic; font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #EEE7DC; font-family: "InterV", sans-serif; }
+    .m3-probe { position: absolute; left: -9999px; top: 0; opacity: 0; }
+    .m3-o8 { font-family: Outfit; font-weight: 800; } .m3-o7 { font-family: Outfit; font-weight: 700; }
+    .m3-l4 { font-family: Lato; font-weight: 400; } .m3-l7 { font-family: Lato; font-weight: 700; }
+    #fn-cam { position: absolute; left: 960px; top: 540px; width: 0; height: 0; transform-origin: 0 0; }
+    #fn-tilt { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+    #fn-iso { position: absolute; left: -1500px; top: -1500px; width: 3000px; height: 3000px; transform-style: preserve-3d; }
+    .fn-street { position: absolute; background: #DED5C6; }
+    #fn-notif { position: absolute; left: 0; top: 0; width: 470px; padding: 20px 24px; border-radius: 22px; background: #fff; box-shadow: 0 30px 70px -28px rgba(10,16,36,.45); display: flex; align-items: center; gap: 18px; }
+    #fn-notif b { display: block; font: 700 27px/1.15 "InterV"; color: #1F2A2E; }
+    #fn-notif small { display: block; margin-top: 4px; font: 500 21px "InterV"; color: #5E6886; }
+    #fn-iris { position: absolute; left: 960px; top: 540px; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: #0A1024; }
+    #fn-end { position: absolute; inset: 0; }
+    #fn-logo { position: absolute; left: 464px; top: 400px; width: 200px; height: 200px; }
+    #fn-word { position: absolute; left: 700px; top: 442px; font: 600 116px/1 "Bricolage"; letter-spacing: -0.035em; color: #EEF2FB; white-space: nowrap; }
+    #fn-word .ia { font-family: "Instrument"; font-style: italic; font-weight: 400; color: #3D6EF0; letter-spacing: 0; }
+    #fn-svc { position: absolute; left: 0; right: 0; top: 690px; text-align: center; font: 500 32px "InterV"; color: #8791AD; }
+    #fn-svc span { display: inline-block; }
+    #fn-svc .sep { color: #7CC4FF; margin: 0 14px; }
+    #fn-orb { position: absolute; left: 0; top: 0; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%;
+      background: radial-gradient(circle at 34% 30%, #FFFFFF 0%, #CFE9FF 12%, #7CC4FF 30%, #3D6EF0 60%, #2F5BEA 78%, #1B3FB8 100%);
+      box-shadow: inset -12px -16px 26px rgba(10,16,36,.28), 0 0 60px rgba(61,110,240,.45); }
+  </style>
+  <div id="root" data-composition-id="fin" data-width="1920" data-height="1080">
+    <div class="m3-probe" aria-hidden="true"><span class="m3-o8">3M Aa</span><span class="m3-o7">Devis</span><span class="m3-l4">Aa</span><span class="m3-l7">Aa</span></div>
+    <div id="fn-cam"><div id="fn-tilt"><div id="fn-iso" data-layout-ignore><div style="position:absolute;inset:0;background:#E8E0D3;border-radius:40px"></div></div></div></div>
+    <div id="fn-notif"><div id="fn-nbadge"></div><div><b>Nouvelle demande de devis</b><small>depuis votre site internet</small></div></div>
+    <div id="fn-iris"></div>
+    <div id="fn-end">
+      <svg id="fn-logo" viewBox="0 0 64 64"><rect id="fn-sq" width="64" height="64" rx="16" fill="#EEF2FB"/><path id="fn-e" d="M18 20h22v6H25v4h13v6H25v4h15v6H18z" fill="#070B17"/><circle id="fn-dot" cx="46" cy="44" r="5" fill="#3D6EF0"/></svg>
+      <div id="fn-word">E-COM STUDIO <span class="ia">ia</span></div>
+      <div id="fn-svc"><span>Logo</span><span class="sep">·</span><span>Identité</span><span class="sep">·</span><span>Visuels</span><span class="sep">·</span><span>Publicités</span><span class="sep">·</span><span>Site internet</span></div>
+      <div id="fn-orb"></div>
+    </div>
+  </div>
+  <script src="assets/iso.js"></script>
+  <script src="assets/brand3m.js"></script>
+  <script>
+    (function () {
+      const iso = document.getElementById("fn-iso");
+      const O = 1500, P = (v) => v + O;
+      document.getElementById("fn-nbadge").innerHTML = M3.badge(64);
+      let seed = 7331;
+      const rnd = () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+      for (let i = -3; i <= 3; i++) {
+        ISO.flat(iso, { cls: "fn-street", x: P(i * 380 + 190 - 60), y: P(-1330), w: 120, d: 2660, z: 0.2 });
+        ISO.flat(iso, { cls: "fn-street", x: P(-1330), y: P(i * 380 + 190 - 60), w: 2660, d: 120, z: 0.2 });
+      }
+      const roofs = ["#F3EEE6", "#ECE6DB", "#E7E1D6", "#F0EBE3"];
+      const pins = [];
+      for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
+        if (Math.abs(i) <= 1 && Math.abs(j) <= 1) continue;
+        const w = 150 + Math.round(rnd() * 80), d = 150 + Math.round(rnd() * 80), h = 70 + Math.round(rnd() * 130);
+        const cx = i * 380 - w / 2 + (rnd() - 0.5) * 30, cy = j * 380 - d / 2 + (rnd() - 0.5) * 30;
+        const hd = ISO.holder(iso, { x: P(cx), y: P(cy) });
+        ISO.shadow(hd, { x: 30, y: 30, w: w + 40, d: d + 40, a: 0.16 });
+        const c = roofs[Math.floor(rnd() * roofs.length)];
+        const b = ISO.box(hd, { w, d, h, color: c, left: ISO.shade(c, 0.9), right: ISO.shade(c, 0.78) });
+        b._faces.fy.innerHTML = '<div style="display:flex;gap:18px;padding:' + Math.max(14, h / 3) + 'px 20px">' + '<i style="display:block;width:26px;height:30px;background:#C9D3D8;border-radius:3px"></i>'.repeat(Math.max(1, Math.floor((w - 30) / 46))) + "</div>";
+        if (Math.abs(i) + Math.abs(j) <= 4 && (i + j) % 2 === 0) pins.push({ x: cx + w / 2, y: cy + d / 2, z: h });
+      }
+      // Liens des maisons vers l'atelier (au sol)
+      ISO.flat(iso, { x: 0, y: 0, w: 3000, d: 3000, z: 0.9, html: '<svg viewBox="0 0 3000 3000" style="width:100%;height:100%;overflow:visible"><g fill="none" stroke="#1E6B5E" stroke-width="12" stroke-linecap="round" opacity=".75">' +
+        pins.map((p) => { const mx = (p.x * 0.5) + O + (p.y * 0.25), my = (p.y * 0.5) + O - (p.x * 0.25); return '<path class="fn-link" pathLength="1000" d="M' + (p.x + O) + " " + (p.y + O) + " Q " + mx + " " + my + " " + O + " " + O + '"/>'; }).join("") + "</g></svg>" });
+      pins.forEach((p, k) => {
+        const hd = ISO.holder(iso, { id: "fn-pin" + k, cls: "fn-pin", x: P(p.x), y: P(p.y) });
+        ISO.panelX(hd, { x: -40, y: 0, z: p.z + 10, w: 80, h: 110, html: '<svg viewBox="0 0 80 110" style="width:100%;height:100%"><path d="M40 106C40 106 8 64 8 40a32 32 0 1 1 64 0c0 24-32 66-32 66z" fill="#1E6B5E"/><circle cx="40" cy="40" r="15" fill="#F3EEE6"/></svg>' });
+      });
+      // Atelier : murs peints, enseigne à la nouvelle marque, grande épingle 3M
+      const room = ISO.holder(iso, { id: "fn-room", x: P(-260), y: P(-210) });
+      ISO.shadow(room, { x: 40, y: 50, w: 600, d: 480, a: 0.2 });
+      ISO.box(room, { w: 520, d: 420, h: 20, color: "#D7C09C", left: "#C4AA82", right: "#B0966D" });
+      ISO.panelX(room, { x: 0, y: 0, z: 20, w: 520, h: 300, html: '<div style="width:100%;height:100%;background:#F7F2EA"></div>' });
+      ISO.panelY(room, { x: 0, y: 0, z: 20, w: 420, h: 300, html: '<div style="width:100%;height:100%;background:#EFE9DF"></div>' });
+      ISO.panelY(room, { x: 4, y: 110, z: 140, w: 300, h: 120, html: '<div style="width:100%;height:100%;background:#1E6B5E;border-radius:14px;display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:inset 0 -8px 0 #E3A53C">' + M3.badge(78) + '<div style="font:800 30px/1 Outfit;color:#F3EEE6">3M<div style="font:700 15px Lato;letter-spacing:.14em;margin-top:6px">PLÂTRERIE · PEINTURE</div></div></div>' });
+      const bigpin = ISO.holder(iso, { id: "fn-bigpin", x: P(0), y: P(0) });
+      ISO.panelX(bigpin, { x: -80, y: 0, z: 330, w: 160, h: 220, html: '<svg viewBox="0 0 80 110" style="width:100%;height:100%"><path d="M40 106C40 106 8 64 8 40a32 32 0 1 1 64 0c0 24-32 66-32 66z" fill="#1E6B5E"/><circle cx="40" cy="40" r="22" fill="#F3EEE6"/><text x="40" y="47" text-anchor="middle" font-family="Outfit" font-weight="800" font-size="20" fill="#1E6B5E">3M</text></svg>' });
+
+      const tl = gsap.timeline({ paused: true });
+      const F = ISO.focus;
+      tl.fromTo("#fn-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
+      tl.fromTo("#fn-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
+      tl.fromTo("#fn-cam", F(-256, 50, 200, 0.95), Object.assign(F(-60, 40, 120, 0.56, 0, 30), { duration: 1.5, ease: "expo.out" }), 0);
+      tl.to("#fn-cam", Object.assign(F(-60, 40, 120, 0.5, 0, 30), { duration: 1.7, ease: "none" }), 1.5);
+      tl.fromTo(".fn-pin", { "--sz": 0.001, scale: 0.3 }, { "--sz": 1, scale: 1, duration: 0.45, ease: "back.out(1.8)", stagger: 0.07 }, 0.5);
+      tl.fromTo(".fn-link", { opacity: 0 }, { opacity: 1, duration: 0.05, stagger: 0.06 }, 0.85);
+      tl.fromTo(".fn-link", { strokeDasharray: 1000, strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.inOut", stagger: 0.06 }, 0.85);
+      tl.fromTo("#fn-bigpin", { "--sz": 0.001, z: 120, scale: 0.3 }, { "--sz": 1, z: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.35);
+      // Notification posée au-dessus de l'atelier
+      tl.fromTo("#fn-notif", { x: 1010, y: 214, opacity: 0, scale: 0.85 }, { x: 1010, y: 214, opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 1.6);
+      // Inondation bleu nuit puis carte de fin
+      tl.fromTo("#fn-iris", { scale: 0 }, { scale: 16, duration: 0.55, ease: "power3.in" }, 2.95);
+      tl.to("#fn-notif", { opacity: 0, duration: 0.2 }, 3.2);
+      tl.fromTo("#fn-end", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 3.45);
+      // Syna arrive et devient le point bleu du logo
+      const dot = { x: 464 + (46 / 64) * 200, y: 400 + (44 / 64) * 200 };
+      tl.fromTo("#fn-orb", { x: -160, y: 760 }, { x: dot.x, duration: 0.75, ease: "power2.inOut" }, 3.3);
+      tl.fromTo("#fn-orb", { y: 760 }, { y: dot.y, duration: 0.75, ease: "back.out(1.2)", immediateRender: false }, 3.3);
+      tl.fromTo("#fn-orb", { scale: 1 }, { scale: (2 * 5 / 64) * 200 / 120, duration: 0.35, ease: "expo.out", immediateRender: false }, 4.0);
+      tl.to("#fn-orb", { opacity: 0, duration: 0.12 }, 4.3);
+      tl.fromTo("#fn-sq", { scale: 0, transformOrigin: "46px 44px" }, { scale: 1, duration: 0.6, ease: "expo.out" }, 4.05);
+      tl.fromTo("#fn-e", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.4, ease: "power2.out" }, 4.25);
+      tl.fromTo("#fn-dot", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 4.28);
+      tl.fromTo("#fn-word", { clipPath: "inset(0 100% 0 0)", x: -20 }, { clipPath: "inset(0 0% 0 0)", x: 0, duration: 0.6, ease: "power3.out" }, 4.45);
+      tl.fromTo("#fn-svc span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.07, ease: "power2.out" }, 5.25);
+      window.__timelines["fin"] = tl;
+    })();
+  </script>
+</template>

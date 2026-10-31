@@ -1,0 +1,179 @@
+<template>
+  <style>
+    @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+    @font-face { font-family: "InterV"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+    @font-face { font-family: "Instrument"; src: url("assets/fonts/instrument-italic.woff2") format("woff2"); font-style: italic; font-weight: 400; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #EEE7DC; font-family: "InterV", sans-serif; }
+    #st-iris { position: absolute; left: 960px; top: 540px; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: #F5F7FC; }
+    #st-cam { position: absolute; left: 960px; top: 540px; width: 0; height: 0; transform-origin: 0 0; }
+    #st-tilt { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+    #st-iso { position: absolute; left: -1500px; top: -1500px; width: 3000px; height: 3000px; transform-style: preserve-3d; }
+    #st-ov { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    .st-syna { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    .st-orb { position: absolute; left: -60px; top: -60px; width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle at 34% 30%, #FFFFFF 0%, #CFE9FF 12%, #7CC4FF 30%, #3D6EF0 60%, #2F5BEA 78%, #1B3FB8 100%);
+      box-shadow: inset -12px -16px 26px rgba(10,16,36,.28), 0 18px 40px -12px rgba(47,91,234,.55); }
+    .st-halo { position: absolute; left: -130px; top: -130px; width: 260px; height: 260px; border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(124,196,255,.55), rgba(61,110,240,.18) 60%, rgba(61,110,240,0)); }
+    #st-ui { position: absolute; inset: 0; pointer-events: none; }
+    #st-brand { position: absolute; left: 0; right: 0; top: 118px; text-align: center; font: 600 104px/1 "Bricolage"; letter-spacing: -0.035em; color: #0A1024; }
+    #st-brand span { display: inline-block; }
+    #st-brand .ia { font-family: "Instrument"; font-style: italic; font-weight: 400; color: #2F5BEA; letter-spacing: 0; }
+    #st-name { position: absolute; left: 0; top: 0; }
+    #st-name b { display: block; font: 600 76px/1 "Bricolage"; letter-spacing: -0.03em; color: #0A1024; }
+    #st-name small { display: block; margin-top: 8px; font: 500 32px "InterV"; color: #5E6886; }
+    .st-title { position: absolute; left: 120px; bottom: 118px; font: 600 80px/1 "Bricolage"; letter-spacing: -0.03em; color: #0A1024; }
+    .st-title span { display: inline-block; }
+    .st-title .acc { color: #2F5BEA; }
+    .m3-probe { position: absolute; left: -9999px; top: 0; opacity: 0; }
+    .m3-o8 { font-family: Outfit; font-weight: 800; } .m3-o7 { font-family: Outfit; font-weight: 700; }
+    .m3-l4 { font-family: Lato; font-weight: 400; } .m3-l6 { font-family: Lato; font-weight: 600; } .m3-l7 { font-family: Lato; font-weight: 700; }
+  </style>
+  <div id="root" data-composition-id="studio" data-width="1920" data-height="1080">
+    <div class="m3-probe" aria-hidden="true"><span class="m3-o8">3M Aa</span><span class="m3-o7">Devis</span><span class="m3-l4">Aa</span><span class="m3-l6">Aa</span><span class="m3-l7">Aa</span></div>
+    <div id="st-iris"></div>
+    <div id="st-cam"><div id="st-tilt"><div id="st-iso" data-layout-ignore></div></div>
+      <div id="st-ov">
+        <div id="st-syna" class="st-syna"><div id="st-halo" class="st-halo"></div><div id="st-orb" class="st-orb"></div></div>
+      </div>
+    </div>
+    <div id="st-ui">
+      <div id="st-brand"><span>E-COM</span> <span>STUDIO</span> <span class="ia">ia</span></div>
+      <div id="st-name"><b>Syna</b><small>votre agent</small></div>
+      <div id="st-title" class="st-title"><span>Une</span> <span>marque.</span> <span class="acc">Un</span> <span class="acc">seul</span> <span class="acc">endroit.</span></div>
+    </div>
+  </div>
+  <script src="assets/iso.js"></script>
+  <script src="assets/brand3m.js"></script>
+  <script>
+    (function () {
+      const iso = document.getElementById("st-iso");
+      const O = 1500, P = (v) => v + O;
+      // Sol du studio : plan clair, trame fine
+      ISO.flat(iso, { x: 0, y: 0, w: 3000, d: 3000, z: 0.1, html: '<div style="width:100%;height:100%;background:#EEF2FA;background-image:linear-gradient(#E1E7F3 2px,transparent 2px),linear-gradient(90deg,#E1E7F3 2px,transparent 2px);background-size:100px 100px;border-radius:60px"></div>' });
+      // Plateforme
+      const plat = ISO.holder(iso, { id: "st-plat", x: P(-820), y: P(-560) });
+      ISO.shadow(plat, { x: 80, y: 90, w: 2340, d: 980, a: 0.16 });
+      ISO.box(plat, { w: 2300, d: 920, h: 40, color: "#FFFFFF", top: "#FFFFFF", left: "#DCE4FB", right: "#2F5BEA", r: 28 });
+      // Stations alignées sur y = -350 (face tournée vers la caméra)
+      const Y = -350, Z = 40;
+      const A = ISO.holder(iso, { id: "st-A", x: P(-740), y: P(Y) });
+      ISO.shadow(A, { x: 0, y: -40, w: 420, d: 90, z: Z + 0.5, a: 0.2 });
+      ISO.panelX(A, { x: 0, y: 0, z: Z, w: 380, h: 380, html: M3.logoPanel("st-logo") });
+      // Identité : planche typographique + carreaux de couleurs
+      const B = ISO.holder(iso, { id: "st-B", x: P(-300), y: P(Y) });
+      ISO.shadow(B, { x: 0, y: -40, w: 380, d: 90, z: Z + 0.5, a: 0.2 });
+      ISO.panelX(B, { x: 0, y: 0, z: Z, w: 340, h: 230, html: M3.typo() });
+      const sw = [["#1F2A2E", 70], ["#1E6B5E", 100], ["#E3A53C", 84], ["#F3EEE6", 56], ["#D8CDBB", 44]];
+      sw.forEach(([c, h], k) => {
+        const s = ISO.holder(iso, { id: "st-sw" + k, cls: "st-sw", x: P(-300 + k * 70), y: P(Y + 110) });
+        ISO.shadow(s, { x: 10, y: 14, w: 80, d: 70, z: Z + 0.5, a: 0.18 });
+        ISO.box(s, { w: 56, d: 56, h, z: Z, color: c, r: 6 });
+      });
+      // Visuels : publication carrée + publicité verticale
+      const Cp = ISO.holder(iso, { id: "st-C1", x: P(120), y: P(Y) });
+      ISO.shadow(Cp, { x: 0, y: -40, w: 340, d: 90, z: Z + 0.5, a: 0.2 });
+      ISO.panelX(Cp, { x: 0, y: 0, z: Z, w: 300, h: 300, html: M3.post() });
+      const Ca = ISO.holder(iso, { id: "st-C2", x: P(450), y: P(Y) });
+      ISO.shadow(Ca, { x: 0, y: -40, w: 250, d: 90, z: Z + 0.5, a: 0.2 });
+      ISO.panelX(Ca, { x: 0, y: 0, z: Z, w: 210, h: 372, html: M3.ad() });
+      // Site internet
+      const D = ISO.holder(iso, { id: "st-D", x: P(720), y: P(Y) });
+      ISO.shadow(D, { x: 0, y: -40, w: 760, d: 100, z: Z + 0.5, a: 0.2 });
+      ISO.panelX(D, { x: 0, y: 0, z: Z, w: 720, h: 460, html: M3.site("st") });
+      // Ligne de marque au sol (passe devant chaque station)
+      ISO.flat(iso, { x: P(-800), y: P(-300), w: 2200, d: 300, z: Z + 0.8, html: '<svg viewBox="0 0 2200 300" style="width:100%;height:100%;overflow:visible"><path id="st-line" d="M150 150 C 260 230, 380 80, 560 150 S 760 220, 860 150 S 1060 90, 1190 150 S 1380 220, 1500 150 S 1760 100, 1980 150" fill="none" stroke="#1E6B5E" stroke-width="16" stroke-linecap="round" pathLength="1000"/>' +
+        [150, 560, 1010, 1300, 1980].map((x, k) => '<circle class="st-dot" cx="' + x + '" cy="150" r="22" fill="#E3A53C" stroke="#fff" stroke-width="6"/>').join("") + "</svg>" });
+      // Ombre de Syna (sur la plateforme)
+      const SS = ISO.holder(iso, { id: "st-synash", x: P(0), y: P(0) });
+      ISO.shadow(SS, { x: -70, y: -40, w: 140, d: 80, z: Z + 1, a: 0.28 });
+
+      // ---------------- Timeline (temps locaux : 0 = 22,4 s du film) ----------------
+      const tl = gsap.timeline({ paused: true });
+      const F = ISO.focus, pr = ISO.project;
+      tl.fromTo("#st-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
+      tl.fromTo("#st-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
+      // Inondation de couleur depuis le centre
+      tl.fromTo("#st-iris", { scale: 0.3 }, { scale: 16, duration: 0.25, ease: "power1.in" }, 0);
+      tl.fromTo("#st-cam", F(250, -150, 0, 0.36), Object.assign(F(250, -150, 60, 0.5), { duration: 1.2, ease: "expo.out" }), 0.12);
+      tl.fromTo("#st-plat", { "--sz": 0.001, z: -30 }, { "--sz": 1, z: 0, duration: 0.9, ease: "expo.out" }, 0.18);
+      ["#st-A", "#st-B", "#st-C1", "#st-C2", "#st-D", ".st-sw"].forEach((s) => tl.fromTo(s, { "--sz": 0.001, scale: 0.001 }, { "--sz": 0.001, scale: 0.001, duration: 0.01 }, 0));
+      tl.to("#st-cam", Object.assign(F(250, -150, 60, 0.56), { duration: 3.2, ease: "none" }), 1.45);
+      // Titre E-COM STUDIO ia
+      tl.fromTo("#st-brand span", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, stagger: 0.1, ease: "power2.out" }, 2.15);
+      tl.to("#st-brand span", { opacity: 0, filter: "blur(8px)", duration: 0.2, stagger: 0.05 }, 4.1);
+      // Syna tombe et s'allume
+      const s0 = pr(250, -150, 150);
+      tl.fromTo("#st-syna", { x: s0.x, y: s0.y - 900, opacity: 0 }, { x: s0.x, y: s0.y, opacity: 1, duration: 0.75, ease: "bounce.out", immediateRender: false }, 4.1);
+      tl.fromTo("#st-syna", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      tl.fromTo("#st-synash", { x: 250, y: -150, scale: 0.2, opacity: 0 }, { x: 250, y: -150, scale: 1, opacity: 1, duration: 0.75, ease: "power2.out" }, 4.1);
+      tl.fromTo("#st-halo", { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "expo.out" }, 4.6);
+      tl.fromTo("#st-orb", { scale: 1 }, { scale: 1.12, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, 4.75);
+      tl.to("#st-cam", Object.assign(F(250, -150, 150, 0.95, -140, 40), { duration: 0.75, ease: "power2.inOut" }), 4.1);
+      const nm = { x: 960 - 140 + 110, y: 540 + 40 - 96 };
+      tl.fromTo("#st-name", { x: nm.x, y: nm.y, opacity: 0, filter: "blur(8px)" }, { x: nm.x, y: nm.y, opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 4.85);
+      tl.to("#st-name", { opacity: 0, filter: "blur(8px)", duration: 0.18 }, 6.22);
+      // Flottement de Syna (petit mouvement de personnage)
+      tl.fromTo("#st-orb", { y: 0 }, { y: -10, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 27 }, 5.2);
+      tl.fromTo("#st-halo", { y: 0 }, { y: -10, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 27 }, 5.2);
+      // Stations : Syna va de l'une à l'autre, la caméra suit (plan continu)
+      const stops = [
+        { t: 6.2, wx: -550, cam: [-550, Y, 230, 1.35, 230, 30] },
+        { t: 9.0, wx: -170, cam: [-130, Y + 40, 140, 1.4, 230, 20] },
+        { t: 10.65, wx: 310, cam: [330, Y, 190, 1.32, 230, 30] },
+        { t: 12.95, wx: 640, cam: [1080, Y, 270, 1.45, 60, 10] },
+      ];
+      stops.forEach((s) => {
+        const q = s.wx === 640 ? pr(1080, -300, 600) : pr(s.wx, -170, 170);
+        tl.to("#st-syna", { x: q.x, y: q.y, duration: 0.8, ease: "power2.inOut" }, s.t);
+        tl.to("#st-synash", { x: s.wx === 640 ? 1080 : s.wx, y: s.wx === 640 ? -280 : -170, opacity: s.wx === 640 ? 0 : 1, duration: 0.8, ease: "power2.inOut" }, s.t);
+        tl.to("#st-cam", Object.assign(F.apply(null, s.cam), { duration: 0.8, ease: "power2.inOut" }), s.t);
+      });
+      // A — logo : tracé, remplissage, lettres à la truelle, trait ocre
+      tl.fromTo("#st-A", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.6, ease: "expo.out", immediateRender: false }, 6.5);
+      tl.fromTo("#st-logo-stroke", { strokeDasharray: 1000, strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 6.9);
+      tl.fromTo("#st-logo-fill", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 7.55);
+      tl.fromTo("#st-logo-letters", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power2.inOut" }, 7.8);
+      tl.fromTo("#st-logo-trowel", { x: 30, y: 92, opacity: 0 }, { x: 196, y: 92, opacity: 1, duration: 0.7, ease: "power2.inOut" }, 7.8);
+      tl.to("#st-logo-trowel", { opacity: 0, duration: 0.2 }, 8.5);
+      tl.fromTo("#st-logo-swoosh", { strokeDasharray: 1000, strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 0.45, ease: "power3.out" }, 8.45);
+      tl.fromTo("#st-logo-name", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25 }, 8.7);
+      // B — identité : couleurs qui montent, typographie
+      tl.fromTo(".st-sw", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.55, ease: "back.out(1.6)", stagger: 0.12, immediateRender: false }, 9.4);
+      tl.fromTo("#st-B", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.6, ease: "expo.out", immediateRender: false }, 9.7);
+      // C — publication puis publicité
+      tl.fromTo("#st-C1", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.6, ease: "expo.out", immediateRender: false }, 11.05);
+      tl.fromTo("#st-C2", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.6, ease: "expo.out", immediateRender: false }, 12.25);
+      // D — site construit section par section
+      tl.fromTo("#st-D", { "--sz": 0.001, scale: 0.6 }, { "--sz": 1, scale: 1, duration: 0.6, ease: "expo.out", immediateRender: false }, 13.3);
+      tl.fromTo("#st-ripple", { scale: 0 }, { scale: 0, duration: 0.01 }, 0);
+      [["#st-nav", 13.7], ["#st-eye", 13.95], ["#st-h1", 14.05], ["#st-sub", 14.2], ["#st-btnw", 14.35], ["#st-art", 14.5], ["#st-svc", 14.8]].forEach(([s, t]) => {
+        tl.fromTo(s, { opacity: 0, y: -26 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, t);
+      });
+      // Recul : la ligne de marque relie tout
+      tl.to("#st-cam", Object.assign(F(250, -250, 120, 0.6, 0, 20), { duration: 1.1, ease: "power2.inOut" }), 16.5);
+      tl.to("#st-syna", Object.assign({}, pr(250, 120, 170), { duration: 1.1, ease: "power2.inOut" }), 16.5);
+      tl.to("#st-synash", { x: 250, y: 120, opacity: 1, duration: 1.1, ease: "power2.inOut" }, 16.5);
+      tl.fromTo("#st-line", { opacity: 0 }, { opacity: 1, duration: 0.05 }, 16.95);
+      tl.fromTo("#st-line", { strokeDasharray: 1000, strokeDashoffset: 1000 }, { strokeDashoffset: 0, duration: 2.1, ease: "power1.inOut" , immediateRender: true }, 16.95);
+      tl.fromTo(".st-dot", { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.35, ease: "back.out(2.2)", stagger: 0.42 }, 17.05);
+      // Tout au même endroit : les stations se rapprochent
+      tl.to("#st-A", { x: 300, duration: 0.9, ease: "power3.inOut" }, 20.0);
+      tl.to("#st-B, .st-sw", { x: 200, duration: 0.9, ease: "power3.inOut" }, 20.0);
+      tl.to("#st-C1, #st-C2", { x: 120, duration: 0.9, ease: "power3.inOut" }, 20.0);
+      tl.to("#st-D", { x: 40, duration: 0.9, ease: "power3.inOut" }, 20.0);
+      tl.to("#st-line", { opacity: 0, duration: 0.4 }, 20.0);
+      tl.to(".st-dot", { opacity: 0, duration: 0.3 }, 20.0);
+      tl.to("#st-cam", Object.assign(F(420, -250, 140, 0.72, 0, -40), { duration: 0.9, ease: "power3.inOut" }), 20.0);
+      tl.to("#st-syna", Object.assign({}, pr(330, 60, 170), { duration: 0.9, ease: "power3.inOut" }), 20.0);
+      tl.to("#st-synash", { x: 330, y: 60, duration: 0.9, ease: "power3.inOut" }, 20.0);
+      tl.fromTo("#st-title span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.09, ease: "power2.out" }, 20.15);
+      tl.to("#st-title span", { opacity: 0, filter: "blur(8px)", duration: 0.16, stagger: 0.03 }, 21.75);
+      // Plongée dans le site
+      tl.to("#st-cam", Object.assign(F(960, Y, 250, 4.2, 0, 0), { duration: 0.65, ease: "power3.in" }), 21.95);
+      tl.to("#st-syna", { opacity: 0, duration: 0.25 }, 21.95);
+      tl.to("#st-synash", { opacity: 0, duration: 0.25 }, 21.95);
+      window.__timelines["studio"] = tl;
+    })();
+  </script>
+</template>

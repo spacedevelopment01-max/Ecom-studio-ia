@@ -1,0 +1,185 @@
+<template>
+  <style>
+    @font-face { font-family: "Bricolage"; src: url("assets/fonts/bricolage.woff2") format("woff2"); font-weight: 200 800; }
+    @font-face { font-family: "InterV"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #EEE7DC; font-family: "InterV", Inter, sans-serif; }
+    #ch-cam { position: absolute; left: 960px; top: 540px; width: 0; height: 0; transform-origin: 0 0; }
+    #ch-tilt { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+    #ch-iso { position: absolute; left: -1500px; top: -1500px; width: 3000px; height: 3000px; transform-style: preserve-3d; }
+    #ch-ground { position: absolute; inset: 0; background: #E8E0D3; border-radius: 40px; }
+    .ch-street { position: absolute; background: #DED5C6; }
+    .ch-win { width: 100%; height: 100%; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 0 0 3px rgba(10,16,36,.08); display: flex; flex-direction: column; }
+    .ch-bar { height: 34px; background: #F2F2F4; display: flex; align-items: center; gap: 7px; padding: 0 12px; font: 600 15px "InterV"; color: #555; }
+    .ch-bar i { width: 10px; height: 10px; border-radius: 50%; background: #D0D0D6; display: block; }
+    .ch-bar b { margin-left: 8px; font-weight: 600; }
+    .ch-body { flex: 1; position: relative; display: grid; place-items: center; }
+    .ch-badge { position: absolute; right: -14px; top: -14px; width: 34px; height: 34px; border-radius: 50%; background: #E5383B; border: 4px solid #fff; }
+    .ch-pin { position: absolute; width: 0; height: 0; }
+    .ch-pin svg { position: absolute; left: -26px; top: -70px; width: 52px; height: 70px; }
+    #ch-ui { position: absolute; inset: 0; pointer-events: none; }
+    #ch-scrim { position: absolute; inset: 0; background: #EEE7DC; opacity: 0; }
+    #ch-point { position: absolute; left: 960px; top: 540px; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: #F5F7FC; box-shadow: 0 0 0 6px rgba(47,91,234,.35); }
+    .ch-title { position: absolute; left: 120px; bottom: 120px; font: 600 84px/1 "Bricolage"; letter-spacing: -0.03em; color: #1F2430; }
+    .ch-title span { display: inline-block; }
+    .ch-title .w-mute { color: #A9A397; }
+    .ch-logos { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+    .ch-logo { width: 300px; height: 300px; border-radius: 28px; display: grid; place-items: center; box-shadow: 0 30px 60px -30px rgba(10,16,36,.45); }
+    .ch-neq { font: 700 76px "InterV"; color: #E5383B; }
+  </style>
+  <div id="root" data-composition-id="chantier" data-width="1920" data-height="1080">
+    <div id="ch-cam"><div id="ch-tilt"><div id="ch-iso" data-layout-ignore><div id="ch-ground"></div></div></div></div>
+    <div id="ch-ui">
+      <div id="ch-scrim"></div>
+      <div id="ch-title1" class="ch-title"><span>Un</span> <span>savoir-faire</span> <span class="w-mute">invisible.</span></div>
+      <div id="ch-point"></div>
+      <div id="ch-title2" class="ch-title" style="bottom:110px"><span>Quatre</span> <span>outils,</span> <span>quatre</span> <span>styles.</span></div>
+      <div id="ch-logos" class="ch-logos">
+        <div id="ch-lg1" class="ch-logo" style="background:#FFE14D"><div style="font:900 104px 'Archivo Black';color:#FF3EA5;transform:rotate(-8deg)">3M!</div></div>
+        <div id="ch-neq1" class="ch-neq">≠</div>
+        <div id="ch-lg2" class="ch-logo" style="background:#7B2FF7"><div style="font:italic 700 92px 'Playfair Display';color:#fff">3m</div></div>
+        <div id="ch-neq2" class="ch-neq">≠</div>
+        <div id="ch-lg3" class="ch-logo" style="background:#F4F4F4"><div style="font:500 86px Oswald;color:#7A7A7A;letter-spacing:.12em">3-M</div></div>
+        <div id="ch-neq3" class="ch-neq">≠</div>
+        <div id="ch-lg4" class="ch-logo" style="background:#FF7A00"><div style="font:800 74px Poppins;color:#111;line-height:.9;text-align:center">3M<br><span style="font-size:30px;letter-spacing:.2em">PEINTURE</span></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="assets/iso.js"></script>
+  <script>
+    (function () {
+      const iso = document.getElementById("ch-iso");
+      const O = 1500; // centre du plan
+      const P = (v) => v + O;
+      // Graine déterministe (mulberry32).
+      let seed = 7331;
+      const rnd = () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+
+      // Rues
+      for (let i = -3; i <= 3; i++) {
+        ISO.flat(iso, { cls: "ch-street", x: P(i * 380 + 190 - 60), y: P(-1330), w: 120, d: 2660, z: 0.2 });
+        ISO.flat(iso, { cls: "ch-street", x: P(-1330), y: P(i * 380 + 190 - 60), w: 2660, d: 120, z: 0.2 });
+      }
+      // Maisons (hors des 3 x 3 cases du centre)
+      const roofs = ["#F3EEE6", "#ECE6DB", "#E7E1D6", "#F0EBE3"];
+      const pins = [];
+      for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
+        if (Math.abs(i) <= 1 && Math.abs(j) <= 1) continue;
+        const w = 150 + Math.round(rnd() * 80), d = 150 + Math.round(rnd() * 80), h = 70 + Math.round(rnd() * 130);
+        const cx = i * 380 - w / 2 + (rnd() - 0.5) * 30, cy = j * 380 - d / 2 + (rnd() - 0.5) * 30;
+        const hd = ISO.holder(iso, { x: P(cx), y: P(cy) });
+        ISO.shadow(hd, { x: 30, y: 30, w: w + 40, d: d + 40, a: 0.16 });
+        const c = roofs[Math.floor(rnd() * roofs.length)];
+        const b = ISO.box(hd, { w, d, h, color: c, left: ISO.shade(c, 0.9), right: ISO.shade(c, 0.78) });
+        // fenêtres sur la face gauche
+        b._faces.fy.innerHTML = '<div style="display:flex;gap:18px;padding:' + Math.max(14, h / 3) + 'px 20px">' + '<i style="display:block;width:26px;height:30px;background:#C9D3D8;border-radius:3px"></i>'.repeat(Math.max(1, Math.floor((w - 30) / 46))) + "</div>";
+        if (Math.abs(i) + Math.abs(j) <= 4 && (i + j) % 2 === 0) pins.push({ x: cx + w / 2, y: cy + d / 2, z: h });
+      }
+      // Épingles « futurs clients » (grises)
+      pins.forEach((p, k) => {
+        const hd = ISO.holder(iso, { id: "ch-pinh" + k, x: P(p.x), y: P(p.y) });
+        const pn = ISO.panelX(hd, { x: -40, y: 0, z: p.z + 10, w: 80, h: 110, html: '<svg viewBox="0 0 80 110" style="width:100%;height:100%"><path d="M40 106C40 106 8 64 8 40a32 32 0 1 1 64 0c0 24-32 66-32 66z" fill="#8F96A3"/><circle cx="40" cy="40" r="16" fill="#fff"/><circle cx="37" cy="37" r="7" fill="none" stroke="#8F96A3" stroke-width="4"/><path d="M42 42l7 7" stroke="#8F96A3" stroke-width="4" stroke-linecap="round"/></svg>' });
+        pn.classList.add("ch-pinp");
+      });
+
+      // ---- La pièce en chantier (centre) ----
+      const room = ISO.holder(iso, { id: "ch-room", x: P(-260), y: P(-210) });
+      ISO.shadow(room, { x: 40, y: 50, w: 600, d: 480, a: 0.2 });
+      ISO.box(room, { w: 520, d: 420, h: 20, color: "#D7C09C", left: "#C4AA82", right: "#B0966D" });
+      ISO.flat(room, { x: 150, y: 70, w: 300, d: 120, z: 20.6, html: '<div style="width:100%;height:100%;background:#CBD3D6;border-radius:6px;opacity:.9"></div>' });
+      ISO.flat(room, { x: 210, y: 100, w: 40, d: 26, z: 21, html: '<div style="width:100%;height:100%;background:#F7F2EA;border-radius:50%"></div>' });
+      // Mur A (fond, le long de x) : plaques de plâtre + peinture fraîche + rouleau
+      const joints = [120, 240, 360, 480].map((x) => '<i style="position:absolute;left:' + (x - 6) + 'px;top:0;width:12px;height:100%;background:#E2DED6"></i>').join("");
+      ISO.panelX(room, { x: 0, y: 0, z: 20, w: 520, h: 300, html:
+        '<div style="position:relative;width:100%;height:100%;background:#C9C5BD;overflow:hidden">' + joints +
+        '<div id="ch-paint" style="position:absolute;left:0;top:0;width:100%;height:100%;background:#F7F2EA;transform-origin:0 50%"></div>' +
+        '<div id="ch-sheen" style="position:absolute;top:0;left:-200px;width:140px;height:100%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.75),rgba(255,255,255,0))"></div>' +
+        '<div id="ch-roller" style="position:absolute;left:0;top:0;width:0;height:0">' +
+        '<svg viewBox="0 0 90 200" style="position:absolute;left:-45px;top:-20px;width:90px;height:200px"><rect x="8" y="0" width="74" height="30" rx="12" fill="#EDE7DC" stroke="#B7AE9F" stroke-width="3"/><path d="M45 30v26h-22v80" fill="none" stroke="#5A5F68" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="128" width="16" height="64" rx="7" fill="#2E333B"/></svg></div>' +
+        "</div>" });
+      // Mur B (gauche, le long de y) : déjà peint, enseigne peinte à la main
+      ISO.panelY(room, { x: 0, y: 0, z: 20, w: 420, h: 300, html: '<div style="width:100%;height:100%;background:#EFE9DF"></div>' });
+      ISO.panelY(room, { x: 4, y: 150, z: 150, w: 250, h: 96, html: '<div style="width:100%;height:100%;background:#7E5530;border-radius:8px;display:grid;place-items:center;text-align:center;color:#FAF6EF;font:500 30px/1.05 Oswald;letter-spacing:.04em;box-shadow:inset 0 0 0 5px #63411F">3M PLÂTRERIE<br>PEINTURE</div>' });
+      // Escabeau, seau, sac d'enduit
+      ISO.panelX(room, { x: 360, y: 90, z: 20, w: 110, h: 230, html: '<svg viewBox="0 0 110 230" style="width:100%;height:100%"><path d="M22 228L48 6M88 228L62 6" stroke="#8D949E" stroke-width="9" stroke-linecap="round"/><path d="M42 50h26M36 100h38M30 150h50M25 196h60" stroke="#A9B0B9" stroke-width="8" stroke-linecap="round"/><rect x="40" y="2" width="30" height="12" rx="4" fill="#6E757F"/></svg>' });
+      const bk = ISO.box(room, { x: 90, y: 250, z: 20, w: 74, d: 74, h: 78, color: "#F2F1EE", top: "#E2DCD0", r: 0 });
+      bk._faces.top.innerHTML = '<div style="margin:8px;height:58px;border-radius:50%;background:#F7F2EA;box-shadow:inset 0 0 0 4px #CFC8BB"></div>';
+      const bag = ISO.box(room, { x: 210, y: 290, z: 20, w: 120, d: 80, h: 42, color: "#E8DFCF" });
+      bag._faces.fy.innerHTML = '<div style="font:700 18px Oswald;color:#4F4330;text-align:center;line-height:42px;letter-spacing:.18em">ENDUIT</div>';
+
+      // ---- Les outils éparpillés (fenêtres) ----
+      const wins = [
+        { id: 1, x: -760, y: 120, name: "Logo", body: '<div style="width:100%;height:100%;background:#FFE14D;display:grid;place-items:center"><div style="font:900 86px \'Archivo Black\';color:#FF3EA5;transform:rotate(-8deg)">3M!</div></div>' },
+        { id: 2, x: -330, y: 470, name: "Visuels", body: '<div style="width:100%;height:100%;background:#7B2FF7;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px"><div style="background:#B794FF;border-radius:8px"></div><div style="display:flex;flex-direction:column;gap:10px"><div style="font:italic 700 46px \'Playfair Display\';color:#fff">3m</div><i style="display:block;height:12px;background:#fff;opacity:.6;border-radius:6px"></i><i style="display:block;height:12px;width:70%;background:#fff;opacity:.6;border-radius:6px"></i></div></div>' },
+        { id: 3, x: 300, y: 380, name: "Site", body: '<div style="width:100%;height:100%;background:#fff"><div style="height:40px;background:#B6F500;display:flex;align-items:center;padding:0 14px;font:500 22px Oswald;color:#3B3B3B;letter-spacing:.1em">3-M</div><div style="padding:14px;display:grid;gap:10px"><i style="display:block;height:60px;background:#E4E4E4;border-radius:6px"></i><i style="display:block;height:12px;width:80%;background:#D0D0D0;border-radius:6px"></i><i style="display:block;height:12px;width:55%;background:#D0D0D0;border-radius:6px"></i></div></div>' },
+        { id: 4, x: 420, y: -330, name: "Publicités", body: '<div style="width:100%;height:100%;background:#FF7A00;display:grid;place-items:center;text-align:center"><div style="font:800 60px/0.9 Poppins;color:#111">3M<br><span style="font-size:24px;letter-spacing:.2em">PEINTURE</span></div></div>' },
+      ];
+      wins.forEach((w) => {
+        const hd = ISO.holder(iso, { id: "ch-w" + w.id, x: P(w.x), y: P(w.y) });
+        ISO.shadow(hd, { id: "ch-ws" + w.id, x: 40, y: -40, w: 380, d: 110, a: 0.18 });
+        ISO.panelX(hd, { x: 0, y: 0, z: 60, w: 360, h: 270, html: '<div class="ch-win"><div class="ch-bar"><i></i><i></i><i></i><b>' + w.name + '</b></div><div class="ch-body">' + w.body + '</div></div><div id="ch-bd' + w.id + '" class="ch-badge"></div>' });
+      });
+      // Câbles emmêlés entre les fenêtres et la pièce
+      ISO.flat(iso, { x: P(-1000), y: P(-700), w: 2000, d: 1500, z: 0.8, html: '<svg viewBox="0 0 2000 1500" style="width:100%;height:100%;overflow:visible"><g fill="none" stroke="#5B606B" stroke-width="10" stroke-linecap="round" opacity=".55">' +
+        '<path class="ch-cable" d="M420 860 C 600 1000, 760 600, 840 820 S 1000 1000, 760 1010"/>' +
+        '<path class="ch-cable" d="M760 1180 C 820 1000, 1100 1220, 980 980 S 900 760, 1240 900"/>' +
+        '<path class="ch-cable" d="M1360 1100 C 1300 900, 1500 980, 1240 860 S 1100 700, 1340 640"/>' +
+        '<path class="ch-cable" d="M1480 430 C 1300 520, 1420 760, 1200 700 S 980 640, 1060 820"/></g></svg>' });
+      // Horloge posée au sol
+      const clk = ISO.holder(iso, { id: "ch-clock", x: P(60), y: P(330) });
+      ISO.flat(clk, { x: -120, y: -120, w: 240, d: 240, z: 1, html: '<div style="position:relative;width:100%;height:100%;border-radius:50%;background:#FFFFFF;box-shadow:0 0 0 10px #1F2430">' +
+        Array.from({ length: 12 }, (_, k) => '<i style="position:absolute;left:117px;top:12px;width:6px;height:' + (k % 3 ? 14 : 24) + 'px;background:#1F2430;transform-origin:3px 108px;transform:rotate(' + k * 30 + 'deg)"></i>').join("") +
+        '<i id="ch-hh" style="position:absolute;left:114px;top:56px;width:12px;height:66px;border-radius:6px;background:#1F2430;transform-origin:6px 64px"></i>' +
+        '<i id="ch-mh" style="position:absolute;left:116px;top:28px;width:8px;height:94px;border-radius:4px;background:#E5383B;transform-origin:4px 92px"></i></div>' });
+
+      // ---------------- Timeline ----------------
+      const tl = gsap.timeline({ paused: true });
+      const F = (wx, wy, wz, s, ox, oy) => ISO.focus(wx, wy, wz, s, ox, oy);
+      tl.fromTo("#ch-tilt", { rotationX: 60 }, { rotationX: 60, duration: 0.01 }, 0);
+      tl.fromTo("#ch-iso", { rotationZ: 45 }, { rotationZ: 45, duration: 0.01 }, 0);
+      // Caméra : gros plan sur le rouleau → pièce → ville → outils → logos
+      tl.fromTo("#ch-cam", F(-130, -210, 190, 2.3), Object.assign(F(-40, -210, 180, 2.15), { duration: 1.1, ease: "none" }), 0);
+      tl.to("#ch-cam", Object.assign(F(-10, 0, 120, 1.18), { duration: 1.25, ease: "power2.inOut" }), 1.0);
+      tl.to("#ch-cam", Object.assign(F(0, 0, 110, 1.32), { duration: 2.4, ease: "none" }), 2.25);
+      tl.to("#ch-cam", Object.assign(F(0, 0, 0, 0.4, 0, -40), { duration: 1.35, ease: "power3.inOut" }), 4.65);
+      tl.to("#ch-cam", Object.assign(F(-60, 60, 0, 0.44, 0, -40), { duration: 2.6, ease: "none" }), 6.0);
+      tl.to("#ch-cam", Object.assign(F(-120, 60, 60, 0.82, 0, -10), { duration: 1.4, ease: "power2.inOut" }), 8.7);
+      tl.to("#ch-cam", Object.assign(F(-80, 60, 60, 0.86, 0, -10), { duration: 9.4, ease: "none" }), 10.1);
+      // Peinture du mur A, rouleau qui suit le bord et fait des passes verticales
+      tl.fromTo("#ch-paint", { scaleX: 0.22 }, { scaleX: 1, duration: 4.4, ease: "none" }, 0);
+      tl.fromTo("#ch-roller", { x: 0.22 * 520 }, { x: 520, duration: 4.4, ease: "none" }, 0);
+      tl.fromTo("#ch-roller", { y: 60 }, { y: 210, duration: 0.55, ease: "sine.inOut", yoyo: true, repeat: 7 }, 0);
+      tl.to("#ch-roller", { opacity: 0, duration: 0.25 }, 4.4);
+      tl.fromTo("#ch-sheen", { x: 0 }, { x: 900, duration: 1.1, ease: "power2.inOut" }, 3.6);
+      // Ville : épingles grises
+      tl.fromTo(".ch-pinp", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out", stagger: 0.06 }, 6.0);
+      tl.to(".ch-pinp", { opacity: 0, duration: 0.3, stagger: 0.02 }, 8.6);
+      // Titre 1
+      tl.fromTo("#ch-title1 span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.09, ease: "power2.out" }, 6.25);
+      tl.to("#ch-title1 span", { opacity: 0, filter: "blur(6px)", duration: 0.18, stagger: 0.04 }, 8.35);
+      // Les outils surgissent sur leur mot
+      [[1, 11.42], [2, 12.88], [3, 14.56], [4, 15.9]].forEach(([k, t]) => {
+        tl.fromTo("#ch-w" + k, { scale: 0.02, "--sz": 0.001 }, { scale: 1, "--sz": 1, duration: 0.7, ease: "back.out(1.6)" }, t - 0.12);
+      });
+            tl.fromTo(".ch-cable", { opacity: 0 }, { opacity: 1, duration: 0.05, stagger: 0.5 }, 12.2);
+      tl.fromTo(".ch-cable", { strokeDasharray: 1400, strokeDashoffset: 1400 }, { strokeDashoffset: 0, duration: 2.6, ease: "power1.inOut", stagger: 0.5 }, 12.2);
+      // Heures perdues : horloge qui s'emballe, badges rouges
+      tl.fromTo("#ch-clock", { scale: 0 }, { scale: 1, duration: 0.6, ease: "back.out(1.7)" }, 17.45);
+      tl.fromTo("#ch-mh", { rotation: 0 }, { rotation: 1440, duration: 3.6, ease: "power2.in" }, 17.6);
+      tl.fromTo("#ch-hh", { rotation: 20 }, { rotation: 140, duration: 3.6, ease: "power2.in" }, 17.6);
+      tl.fromTo(".ch-badge", { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(2.4)", stagger: 0.18 }, 17.9);
+      // Rien ne se ressemble : les quatre logos, « ≠ », puis tout s'effondre
+      tl.fromTo("#ch-scrim", { opacity: 0 }, { opacity: 0.78, duration: 0.35, ease: "power2.out" }, 20.2);
+      tl.to("#ch-scrim", { opacity: 0, duration: 0.3 }, 21.9);
+      tl.fromTo("#ch-logos .ch-logo", { opacity: 0, y: 70, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out", stagger: 0.1 }, 20.3);
+      tl.fromTo("#ch-logos .ch-neq", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power3.out", stagger: 0.1 }, 20.75);
+      tl.fromTo("#ch-title2 span", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, stagger: 0.07, ease: "power2.out" }, 20.55);
+      tl.fromTo("#ch-logos", { x: 0 }, { x: 8, duration: 0.05, ease: "none", yoyo: true, repeat: 9 }, 21.45);
+      tl.to("#ch-logos .ch-logo, #ch-logos .ch-neq", { y: 900, rotation: (i) => [-14, 8, -6, 12, -10, 7, 15][i], duration: 0.55, ease: "power3.in", stagger: 0.04 }, 21.85);
+      tl.to("#ch-title2", { opacity: 0, filter: "blur(8px)", duration: 0.2 }, 21.9);
+      tl.to(".iso-h[id^='ch-w'], #ch-clock", { scale: 0, "--sz": 0.001, duration: 0.5, ease: "power3.in", stagger: 0.03 }, 21.9);
+      tl.to("#ch-cam", { scale: 0.08, x: 0, y: 0, duration: 0.5, ease: "power3.in" }, 21.9);
+      tl.fromTo("#ch-point", { scale: 0 }, { scale: 0.3, duration: 0.3, ease: "back.out(2)" }, 22.1);
+      window.__timelines["chantier"] = tl;
+    })();
+  </script>
+</template>
