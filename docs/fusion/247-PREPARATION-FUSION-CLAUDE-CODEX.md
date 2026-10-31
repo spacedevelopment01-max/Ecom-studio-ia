@@ -2,7 +2,7 @@
 
 Document de préparation seulement. **Aucune fusion, aucun rebase ni cherry-pick, aucune branche modifiée, aucun déploiement.** Seule la branche documentaire `claude/247-preparation-fusion` (issue de `main`) a été créée.
 
-## Actualisation du 31 octobre 2026 : nouveau sommet Codex #275
+## Actualisation du 31 octobre 2026 : sommet Codex #275 (tête stabilisée `42ef034c`)
 
 Revue incrémentale (section 5), en lecture seule, signalée par Codex dans #248.
 
@@ -31,7 +31,13 @@ Revue incrémentale (section 5), en lecture seule, signalée par Codex dans #248
 
 **À ne pas rejouer.** Les têtes rouges #263, #266, #267 et #269 sont dépassées par des descendants verts contenus dans X.
 
-**Verdict inchangé** : préparé, **dépend de Codex** (CI #275 en cours ; #211 partielle selon Codex). C1 reste à corriger à l'intégration. **Pas prêt à fusionner.**
+**Tête stabilisée de #275 : `42ef034c`** (`codex/211-cloture-syna`, base #274 `4b9bae98`). CI verte vérifiée : 4 contrôles, dont « Types et suite complète (réseau fournisseur interdit) ».
+
+Elle ajoute 2 commits à `8eb15a6a`, qui ne touchent que les captures (`src/lib/theme/snapshot.ts`, `direction-thumb.ts`) et 2 tests. Ce sont toujours les 5 mêmes fichiers communs avec Claude, avec **0 conflit**. Aucune table, aucune route, aucun changement du middleware ni des dépendances. **C1 est toujours présent.**
+
+La simulation à `8eb15a6a` reste représentative ; elle sera refaite au point C du plan. **Le plan doit employer `42ef034c`** comme sommet Codex de référence.
+
+**Verdict inchangé** : préparé. Le sommet SYNA est favorable à une revue de son périmètre, mais **#211 reste globalement partielle selon Codex** (raccords métier, pages, prestations, rendez-vous). C1 reste à corriger à l'intégration. **Pas prêt à fusionner** sans validation croisée et accord du propriétaire.
 
 ## 0. État et sources analysées (30 octobre 2026)
 
