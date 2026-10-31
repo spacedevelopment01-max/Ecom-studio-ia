@@ -61,9 +61,9 @@ it("photo étrangère et dépôt avant projet : refus explicite, pas de média s
 });
 it("ouvrir le chat ne crée pas une préparation concurrente sur un ancien projet déjà construit",async()=>{
   const u=await account(),pid=project(u);run("UPDATE projects SET product_json=? WHERE id=?",JSON.stringify({summary:"Offre historique à préserver"}),pid);
-  const before=emptySpend();expect(()=>openProjectConversation(u,pid)).toThrow("migration");expect(stateOf(pid)).toBeNull();expect(emptySpend()).toEqual(before);
+  const before=emptySpend(),c=openProjectConversation(u,pid);expect(conversationView(u,c.id).recovery?.state).toBe('read-only');expect(stateOf(pid)).toBeNull();expect(emptySpend()).toEqual(before);
 });
 it("un prix saisi à la main protège un ancien projet même sans titre ni résumé",async()=>{
   const u=await account(),pid=project(u);run("UPDATE projects SET product_json=? WHERE id=?",JSON.stringify({price:{amount:4200,status:"confirmed",currency:"EUR"}}),pid);
-  expect(()=>openProjectConversation(u,pid)).toThrow("migration");expect(stateOf(pid)).toBeNull();
+  const c=openProjectConversation(u,pid);expect(conversationView(u,c.id).recovery?.state).toBe('read-only');expect(stateOf(pid)).toBeNull();expect(JSON.parse(one<{product_json:string}>("SELECT product_json FROM projects WHERE id=?",pid)!.product_json).price.amount).toBe(4200);
 });

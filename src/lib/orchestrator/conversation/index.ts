@@ -14,7 +14,8 @@ import type { Brief } from "../../preparation/types";
 import { explicitGoals, nextQuestion, proposedBusiness, providedTarget, questionFor } from "./questions";
 import { CommandSchema, EDIT_FIELDS, type ActionCard, type Command, type ConversationRow, type ConversationState, type ConversationView, type QuestionKey } from "./contract";
 import { assertBriefWritable, nativeAnalysisQuote, quoteCard, saveBrief, writeFact, type NativeQuote } from "./tools";
-import { currentBrief, metaOf, ownedConversation, turnsOf } from "./store";
+import { currentBrief, metaOf, ownedConversation, turnsOf, isExistingProjectRead } from "./store";
+import { existingProjectView, submitExistingProjectMessage } from './existing-project';
 import { creationFields } from "./creation";
 import { intelligenceEnabled, intelligenceView } from "./intelligence";
 import { applyCognitiveCommand } from "./intelligence-commands";
@@ -40,6 +41,8 @@ function effective(c: ConversationRow) {
   return { brief, revision, meta, status };
 }
 export function conversationView(user: User, cid: string, before?: number,includeStudioHelp=true): ConversationView {
+ const initial=ownedConversation(user,cid,true);
+ if(isExistingProjectRead(initial))return existingProjectView(user,cid,before);
  const {view,c,readOnlyReason}=readSnapshot(()=>{
   const c = ownedConversation(user, cid), { brief: b, revision, meta: m, status } = effective(c);
   const key = nextQuestion(b, m);
@@ -149,7 +152,8 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
   if (redact(JSON.stringify(cmd)) !== JSON.stringify(cmd)) throw new HttpError(400, L("Ne saisissez pas de clé ou de jeton dans la conversation. Utilisez les réglages sécurisés du Studio.", "Do not enter a key or token in the conversation. Use the Studio's secure settings."), "conversation_secret");
   const hash = stableHash("conversation-request-1", cmd);
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
-  const initial=ownedConversation(user, cid);
+  const initial=ownedConversation(user, cid, true);
+  if(isExistingProjectRead(initial))return submitExistingProjectMessage(user,cid,cmd,hash);
   const received = one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
   if (received) {
     if (received.request_hash !== hash) throw new HttpError(409, L("Cet identifiant correspond à une autre demande.", "This identifier belongs to another request."), "conversation_idempotency_conflict");

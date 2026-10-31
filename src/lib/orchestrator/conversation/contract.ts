@@ -46,6 +46,8 @@ export type ConversationState = {
   activeContext?: ActiveContext;
   strategyChoices?:import("./strategy-choices").StrategyChoicesState;
   studioObservation?:import('./studio-observation').StudioObservation;
+  /** A1 : rattachement historique en lecture, jamais une nouvelle Préparation. */
+  recovery?: { schema: 'existing-project-read-1'; mode: 'read-only' };
 };
 export type ConversationRow = { id: string; user_id: string; project_id: string | null; revision: number; state_json: string; created_at: number; updated_at: number };
 export type ChoiceCard = {
@@ -70,6 +72,7 @@ export type ActionCard = {
 };
 export type ConversationView = {
   schema: "studio-conversation-1";
+  recovery?: import('./existing-project').ExistingProjectRecovery;
   id: string;
   projectId: string | null;
   revision: number;
@@ -98,7 +101,7 @@ export type ConversationView = {
   readOnlyReason: string | null;
   creation: ReturnType<typeof import("./creation").creationFields> | null;
   tools: { id: string; state: "available" | "quote_only" | "not_connected" | "unavailable"; executionEnabled: boolean }[];
-  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale" };
+  summary: { description: string; business: BusinessType | null; businessSource: ConversationState["businessSource"]; target: string; goals: string; offerName: string; brandName: string; constraints: string; services: {name:string;description:string;source:string}[]; contactModes: string[]; facts: { key: string; label: string; value: string; status: string; source: string }[]; unknown: string[]; referenceUrls: string[]; photoIds: string[]; approved: boolean; preparationStatus:"draft"|"approved"|"stale"|"absent" };
   action: ActionCard | null;
   history: { revision: number; request: unknown; message: string; at: number }[];
   historyBefore: number | null;
