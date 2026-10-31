@@ -1,0 +1,12 @@
+{
+  "scope": "static_audit_consistency_only",
+  "checks": [
+    "54 empreintes source conformes au manifeste",
+    "65 opérations ; 37 adaptateurs / 28 absentes ; 13 sensibles",
+    "75 contrôles tracés une seule fois vers 12 chantiers",
+    "25 capacités ; tous les identifiants du catalogue présents",
+    "7 constats statiques centraux retrouvés ; aucune exécution HTTP alléguée"
+  ],
+  "runtimeTests": false,
+  "realProviderCalls": 0
+}

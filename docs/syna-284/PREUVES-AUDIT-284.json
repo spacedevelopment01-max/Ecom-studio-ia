@@ -1,0 +1,452 @@
+{
+  "scope": "static_source_audit_only",
+  "main": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+  "claude": "1f38ec565a7462e2da1a2b506586131e15ba72be",
+  "realProviderCalls": 0,
+  "runtimeTestsExecuted": false,
+  "uiHttpProofsNew": false,
+  "catalogueOperations": 65,
+  "mappedOperations": 65,
+  "sourceGroup2Controls": 75,
+  "technicalWorkstreams": 12,
+  "matrixCapabilities": 25,
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 23673,
+      "gitBlobSha": "8af9371a102c3f77d28e7541d919e14b0acbbe53",
+      "sha256": "97754dbe6f590a71d0cb37c05ec4258be5945a7dc7ac061c7c14c42beafcf853",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/CLAUDE.md#L1"
+    },
+    {
+      "path": "docs/coordination/211_CLOTURE_SYNA.md",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 37231,
+      "gitBlobSha": "fefe1ffc870e2106f8776e903f48c5a3f413013d",
+      "sha256": "dc4506e5eeae95636aade94674d086f23fc7486272f22f8a75c8014a403f7881",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/docs/coordination/211_CLOTURE_SYNA.md#L1"
+    },
+    {
+      "path": "docs/coordination/211_PROPOSITIONS_SYNA.md",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 9731,
+      "gitBlobSha": "fde078c2076c4e02cf0c211a8f2fb8be94b9fca2",
+      "sha256": "b985b94417436d2e413385373577a3f49850058b6c28b8599fa3c3c32fd22f8d",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/docs/coordination/211_PROPOSITIONS_SYNA.md#L1"
+    },
+    {
+      "path": "docs/fusion/276-INTEGRATION-CLAUDE-CODEX.md",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 12665,
+      "gitBlobSha": "8c74cbf2e0f4e179bb6ab2989e5eeef7c014212d",
+      "sha256": "e32273b025e3e1fdc1379c0660b3aba0433d0abb07d6070eba3a88cfcd8f421e",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/docs/fusion/276-INTEGRATION-CLAUDE-CODEX.md#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/brand/logo/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 8187,
+      "gitBlobSha": "dbbb5d6ed54271d5a9c4951631c304f2983db29f",
+      "sha256": "2865119734adb7afd72cc53a2c3d14a5c01caccc32d0a899589c34b9c94f31d0",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/brand/logo/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/campaigns/v2/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 9770,
+      "gitBlobSha": "338c0a1a27387b1c22002b9753978e3b0e1f470c",
+      "sha256": "ff0fdbe626f2488d7ebb8f484444849637856a7a2d51c89a8ead505790ce095c",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/campaigns/v2/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/contenus/[type]/[itemId]/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1825,
+      "gitBlobSha": "4d15bf1b7f46f12b8a7354da9a69a6edc639a570",
+      "sha256": "72bc62dd4990ab349725cdfe0d8449ab49fc0063362979d5bcb55ff46303f8a8",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/contenus/[type]/[itemId]/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/contenus/[type]/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1873,
+      "gitBlobSha": "99b65149b387f724f22b142c762c5d639242cf1f",
+      "sha256": "ea292e4097e73570c815db64f294e694b29ec72a2fc34cf40a748d1cec8c1419",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/contenus/[type]/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/contenus/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 687,
+      "gitBlobSha": "028d8850df50fe03826a330e17cda75a586e2e18",
+      "sha256": "bd11cccbc78d5523abc622d0e134ff76c5b38026404808e0f028a94253feb73b",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/contenus/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/conversation/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1087,
+      "gitBlobSha": "3d872e6d388c782a454e4cb069b2066c44fb73f0",
+      "sha256": "bb6f73e917a8c85c3b7a5702d4cd4567a06182e6e60d30f43ce1b7271c0e4f51",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/conversation/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/social/v2/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 20160,
+      "gitBlobSha": "7a8fefdd7b82556c8aa56c48b64534439a68d57f",
+      "sha256": "b38548f5ad6e15b1231bbfcbe59d97d4a99c2c406262db0985c57746e719342a",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/social/v2/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/projects/[id]/theme/chat/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 5330,
+      "gitBlobSha": "1a95f2fb8aca7078d2145f18a65fe58b13cf41a8",
+      "sha256": "0b4691532ac537f0b2d3dfa5975f4abaa364a062f7509ab29274671fd9873c69",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/projects/[id]/theme/chat/route.ts#L1"
+    },
+    {
+      "path": "src/app/api/studio-agent/conversations/[cid]/route.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 978,
+      "gitBlobSha": "7e28bf677abc9c8c6793960911e22df908ad7a46",
+      "sha256": "1a31d8dc962ff4027106736967a3fed29a1122c615f654fa7cbc607907064af0",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/app/api/studio-agent/conversations/[cid]/route.ts#L1"
+    },
+    {
+      "path": "src/components/studio/ad-editor/ad-editor.tsx",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 43715,
+      "gitBlobSha": "7ca2f4fc085e5258c4555a0c676ed5e14367a6e9",
+      "sha256": "cc510e3b5d84f35fea0468ab1102d3d948f40444cae81e0a49296801a8da9428",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/components/studio/ad-editor/ad-editor.tsx#L1"
+    },
+    {
+      "path": "src/lib/ai/request-bounds.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 7894,
+      "gitBlobSha": "9025e1fa8c26480becc6ee12af53254a9c637927",
+      "sha256": "a145f6e8322e3b6d5ababde59f978b24ff472e32895807d953b39feb09fec7c9",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/ai/request-bounds.ts#L1"
+    },
+    {
+      "path": "src/lib/billing.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 45680,
+      "gitBlobSha": "3785c9e9adb7102e5730ae5a3a6cb231db04398a",
+      "sha256": "43cac435f40c36880c649aba4db8a1b6c0edd0b484e4b352c183fc26cc057f89",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/billing.ts#L1"
+    },
+    {
+      "path": "src/lib/contenus/api.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 9771,
+      "gitBlobSha": "6f26547eea76ee50f0eb3566295cd3356fe8e4e4",
+      "sha256": "69c05cd5e424c35e32124d3d2d9c9f1a9f69b41fae5bf13cd5217587f3efa181",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/contenus/api.ts#L1"
+    },
+    {
+      "path": "src/lib/db.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 57545,
+      "gitBlobSha": "c20cb4b8e5a7d72e1339e3a5cc2be27dec852378",
+      "sha256": "5c091a4c138253a6d429ceedbbb5844f46edc4a28ae3366085616c805316e4ca",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/db.ts#L1"
+    },
+    {
+      "path": "src/lib/engine/local-first.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 7253,
+      "gitBlobSha": "e4c41f7b2d9fb4ec10d540117af217c06a8facab",
+      "sha256": "1d3759268513ca7d0dd077f7655d0c6d2dc46072caa3ef8b5172cef852990ae5",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/engine/local-first.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/active-context-contract.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1246,
+      "gitBlobSha": "ddc860c0aab31093960863d38c051e86413c1919",
+      "sha256": "176b4e58f9c227d6fc2f11c0c171d5d605e329995e68119c634d5ca0e289d19c",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/active-context-contract.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/brand-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 15778,
+      "gitBlobSha": "2bf00f670eaf6532a7f9945d133633caf61a0638",
+      "sha256": "a2ff14a5205613fa1f2f01acd5d8e5b865b3577adb47722890addfc232fa201d",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/brand-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/campaign-visual-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 16366,
+      "gitBlobSha": "4b772ad954e22afc3b9067c765dfa0a5ca22b102",
+      "sha256": "baede6fe768524f3458b727f454091e39778bf1474b8c69c84c05a19c937aa32",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/campaign-visual-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/catalogue-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 25256,
+      "gitBlobSha": "d6bd0ad05c44e05a52f230620c6022ece586a314",
+      "sha256": "b1c77e19e40dcd5b57bcc36bcfeb34dafbab1c7b3ff426906ad7d236c3b4a696",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/catalogue-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/content-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 23368,
+      "gitBlobSha": "6f97867bd792484e2032de8f81aa198153e7b18e",
+      "sha256": "d73b88f99b10f8f2f4a414c1945454d886d3f356665da78f764b8ea12261a7b8",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/content-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/creation.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 2853,
+      "gitBlobSha": "63ffa1e929e2edbe08d41b048bab4613cdf8f20c",
+      "sha256": "aa8f7b83c2b5eea381520ba824029eb52c5b43bd6322b61b238b60a8d33774fd",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/creation.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/export-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 12328,
+      "gitBlobSha": "71242cd0c3c81bd5ea3598bf3c52c125ef573a82",
+      "sha256": "2f96ec8767d31c40eae5dc4b79cf0a58692a62721a71e801f1f1c0f6d5207d16",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/export-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/image-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 18079,
+      "gitBlobSha": "c3b15e8af752dc2aaef0d227ba73fa0b1bb2638f",
+      "sha256": "49b5aa20bf25fc59434108f827b7272dc998f229188bd3d8a5cc17fbe9290395",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/image-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/index.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 32862,
+      "gitBlobSha": "7ea3988f5a42402c20f378dba147db598d98b1d2",
+      "sha256": "ea71f2b4e5b90d21683d975c0063f47b4dd5f77760b298f5140b997bba03ce70",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/index.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/intelligence.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 25801,
+      "gitBlobSha": "e89abe442554c325be7f311117141d0401980302",
+      "sha256": "d3ff703a548a37dbd6da4657e2acc4ce804a709aa56a772ce11cc31763ceb9e3",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/intelligence.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/logo-selection-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 12797,
+      "gitBlobSha": "0d406b4480aa9f103eb8f13f99d79bb1ded23756",
+      "sha256": "c81e73bb375d7557221d9fe6412ca632ff64746db9a89c6a8dfb8069e8b4de5e",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/logo-selection-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/logo-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 17355,
+      "gitBlobSha": "b2f00e0a51519916eafa1539d3d9a92224aa2061",
+      "sha256": "17f3b49ea3ca1a8964ec3c30ae0cd4ee951ae4b2f4102e2cd950aad812cca0d2",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/logo-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/render-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 13737,
+      "gitBlobSha": "b26aec714c3cffe8daef64451ac247e0d1d91cb1",
+      "sha256": "829f7971cb7acd234ee22da8b077f4cf7e32160dabfffa5d9a26c97883969b24",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/render-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/research-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 10821,
+      "gitBlobSha": "5722f39e3645da4f8480b89dfcadcbbcab6f1dc0",
+      "sha256": "18ae94b6f843fe7ff273c2f89ab1b2a2c5b5c4030bac4d9bb1451bd2ce96cac9",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/research-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/social-production-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 13775,
+      "gitBlobSha": "1a3dfa3eb9d750d8fa60b7aa5ceb4904138f8861",
+      "sha256": "9079eb8c34cac1727c9a7edb53ff3ee7215ec7a500982e5134b9fbd4397eaa9d",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/social-production-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/social-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 15644,
+      "gitBlobSha": "1100822e9b8d7f4fd4cc0e5bc5a859fc19b52512",
+      "sha256": "06f754628903ebb3c09bad88926b14b50e2a35a0bcc57ed476e6ad090cfee576",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/social-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/store.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 9594,
+      "gitBlobSha": "58d02cc94d1049f9bfe80cb0568f541ffa4a327c",
+      "sha256": "8dd7d5460d495e07a0868c3830d5f7ceaed40ff2d5085237afb16866553d054d",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/store.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/studio-operations.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 14117,
+      "gitBlobSha": "f3543c68ad5f1b4af1fd63d22ebb005f0ca6e055",
+      "sha256": "7fdcecf06f0e238714a8686dafe8023e749360014112e28feef31fa22c58678d",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/studio-operations.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/theme-tool-contract.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1555,
+      "gitBlobSha": "8877e13e682820923c2030e4faca043f7d10582e",
+      "sha256": "18f7a768481c0b055af894c66c285f25b42e8bdaf3aed96258e271776fcd0efd",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/theme-tool-contract.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 19951,
+      "gitBlobSha": "f62c499e47dbed6be0cc4586c316126ffa3189c6",
+      "sha256": "c94dc7c5d3c264d368d8fd7b901622da79094b4f1c98de50c14467c064621080",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/theme-tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/tool-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 16653,
+      "gitBlobSha": "7d22491bc6967b2400fa24f1130a2cd448dd2304",
+      "sha256": "1cd118e14f36471f30fd04d411031b040cc0bb5a3553585adb12b08749de4f8e",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/tool-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/tool-flags.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 2987,
+      "gitBlobSha": "9074d8a949eed5ed0af95c4254916099680914f9",
+      "sha256": "2ba03f7457a9670486eb8c43ee7e8e3ccef4baa903f4d2b418b5a3e164fb332e",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/tool-flags.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-clip-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 19929,
+      "gitBlobSha": "d8ef7ef5addda38d294fe6db138378ae2155d164",
+      "sha256": "8b2fe109f7e2fac1ecae1449b10798bb74b1a9beb4031171d6a8913d6cc672c1",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/video-clip-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-generation-contract.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 1603,
+      "gitBlobSha": "7b6c1fcb4da53df197a7f36e8032758f75f6d92b",
+      "sha256": "6a7246724c65a182f1fae70d9b6be3a07f4480c1a238d8afe165fb0f97c7c7e2",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/video-generation-contract.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-generation-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 19156,
+      "gitBlobSha": "89f7bdc8833216289c34b5d5fa211dc27cad63ba",
+      "sha256": "c579ba514e5a7a257b7d9d64d600e126fb5d4b013823584049d2d53da39637e1",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/video-generation-execution.ts#L1"
+    },
+    {
+      "path": "src/lib/orchestrator/conversation/video-voice-execution.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 18430,
+      "gitBlobSha": "59c541f5783d0b1b3b76b444beb91fad0cac8749",
+      "sha256": "6fddce5d803082e55ce50dbcac3fff9a117afe91ae39a1a845d0d62d983ab308",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/src/lib/orchestrator/conversation/video-voice-execution.ts#L1"
+    },
+    {
+      "path": "tests/conversation209-core.test.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 18856,
+      "gitBlobSha": "f8632411aee8ee7d799a7c9d889236df67772135",
+      "sha256": "33b32537514c980660a3d887359b9f41bc850e24c3d3e0625b63477575ac7183",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/tests/conversation209-core.test.ts#L1"
+    },
+    {
+      "path": "tests/conversation211-logos.test.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 14387,
+      "gitBlobSha": "b469b2e049dd99684c80fc03df509189306e0834",
+      "sha256": "23fcdfb589f4937a58125943f95478f45f9c3ee3327b6d103e8c3ec144ef49f1",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/tests/conversation211-logos.test.ts#L1"
+    },
+    {
+      "path": "tests/conversation211-theme-tools.test.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 19264,
+      "gitBlobSha": "378859e2e26704e06ebb40bf54a77807482e60b2",
+      "sha256": "a7cb33a53a922301caddfd28d1d7b83c115c93183cab14741361741d9f084102",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/tests/conversation211-theme-tools.test.ts#L1"
+    },
+    {
+      "path": "tests/local-dabord.test.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 6021,
+      "gitBlobSha": "a1c2909e96e2d7f1373a2147d90e3a0449e6e658",
+      "sha256": "9143282ef85cb754ae890b58de88d08132302d6eea7c956f55ab2b0f376912d8",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/tests/local-dabord.test.ts#L1"
+    },
+    {
+      "path": "worker/handlers.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 45041,
+      "gitBlobSha": "27242e00e750d98603da5dafc914f664363c0aa5",
+      "sha256": "ab7cb215824dd3aa3102e1e32630e2eda223917d8b414879ca84df503852ddb3",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/worker/handlers.ts#L1"
+    },
+    {
+      "path": "worker/index.ts",
+      "ref": "37fcfd2526705d274fd813b5da95be46058b7c9f",
+      "bytes": 11458,
+      "gitBlobSha": "12db8d73fcdfbf1d0ea8f4470ac8749cdcb4702a",
+      "sha256": "fc4c30d378b893098f84c8cae6cd3beff5f501ade33293bf44ddcb32af25c0ff",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/37fcfd2526705d274fd813b5da95be46058b7c9f/worker/index.ts#L1"
+    },
+    {
+      "path": "docs/syna-2030/01-AUDIT.md",
+      "ref": "1f38ec565a7462e2da1a2b506586131e15ba72be",
+      "bytes": 11370,
+      "gitBlobSha": "84d37c9a791ff9a006cf58c05bcafe51735635ff",
+      "sha256": "1f4bd2e76e10f6bc8c687fde087de240557b675943811f561fefd48ef2085b89",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/1f38ec565a7462e2da1a2b506586131e15ba72be/docs/syna-2030/01-AUDIT.md#L1"
+    },
+    {
+      "path": "docs/syna-2030/02-INVENTAIRE.md",
+      "ref": "1f38ec565a7462e2da1a2b506586131e15ba72be",
+      "bytes": 168136,
+      "gitBlobSha": "c99904259ff2e3930df17e816500fbab2a90b93f",
+      "sha256": "5fb308a9fbbc0854e4e930e080735ad7b624a16a777044a10287723f0bddf919",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/1f38ec565a7462e2da1a2b506586131e15ba72be/docs/syna-2030/02-INVENTAIRE.md#L1"
+    },
+    {
+      "path": "docs/syna-2030/05-PLAN-MIGRATION.md",
+      "ref": "1f38ec565a7462e2da1a2b506586131e15ba72be",
+      "bytes": 8199,
+      "gitBlobSha": "25e90a4d79008ad59cd9cb6e366693b596c8c168",
+      "sha256": "0bf879ab7598b7e7f96e48d2bc10e13e638ab2131b75a27446745b9f32addf0b",
+      "url": "https://github.com/spacedevelopment01-max/Ecom-studio-ia/blob/1f38ec565a7462e2da1a2b506586131e15ba72be/docs/syna-2030/05-PLAN-MIGRATION.md#L1"
+    }
+  ],
+  "limitations": [
+    "Git local ancien, fetch échoué : proxy:8080 inaccessible",
+    "Sources actuelles obtenues via connecteur GitHub à SHA figés",
+    "Tests et preuves antérieurs cités, pas réexécutés ; aucune qualification fournisseur réelle"
+  ]
+}
