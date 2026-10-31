@@ -22,7 +22,7 @@ export const BUILT_SERIES = 4;
 /** Modèle qui fera vraiment l'appel : celui du routage automatique s'il est actif, sinon la route de la tâche. */
 function textRoute(task: TaskId): { provider: string; model: string } {
   try {
-    const d = routeLlm({ task });
+    const d = routeLlm({ task, ...(task === 'quality_control' ? {routing:{difficulty:'complex' as const,deliverable:'logo_v2' as const},images:[{data:Buffer.alloc(1)}]} : {}) });
     if (d.provider !== "none" && d.provider !== "local") return d;
   } catch {}
   return routeFor(task);

@@ -1,0 +1,10 @@
+import { it, expect, vi } from 'vitest';
+vi.mock('@/lib/logo-v2/quote', async (original) => ({ ...await original<object>(), logoSeriesQuote: () => ({ mode: 'artwork', creations: 3, images: 3, maxMicro: 100000 }) }));
+let user: any;
+vi.mock('@/lib/auth', async (original) => ({ ...await original<object>(), requireUser: async () => user }));
+import * as legacy from '@/app/api/projects/[id]/brand/logo/route';
+import * as modern from '@/app/api/projects/[id]/brand/logo-v2/route';
+import { account, project } from './conversation209-fixtures';
+import { validatedBrand } from './preparation-mission-fixtures';
+import { all } from '@/lib/db';
+it.each(['legacy', 'v2'])('%s rejects unsigned purchase before enqueue', async (entry) => { user = await account(); const pid = project(user); validatedBrand(pid); const request = new Request('http://localhost/api/logo', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost' }, body: JSON.stringify(entry === 'legacy' ? { regenerate: true } : { action: 'generate' }) }); const result = await (entry === 'legacy' ? legacy : modern).POST(request, { params: Promise.resolve({ id: pid }) }); expect([400, 409]).toContain(result.status); expect(all('SELECT id FROM jobs WHERE project_id=?', pid)).toHaveLength(0); });

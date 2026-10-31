@@ -336,6 +336,7 @@ function withSeriesCap<T>(ctx: JobContext, quoteMicro: number, capMicro: number 
 
 /** Série complète de propositions pour un projet (tâche de fond « brand.logo.v2 »), dans la limite de son devis. */
 export async function runLogoEngineV2(ctx: JobContext, projectId: string, opts: EngineOptions = {}): Promise<EngineRun> {
+  if(opts.ai===undefined)await (await import('./native-consent')).assertGuidedLogoAuthorization(ctx,projectId);
   if(opts.acceptedTerritories){const p=loadProject(projectId);acceptedDirections(opts.acceptedTerritories,brandDiscovery({...p,brand:directionNamingBrand(projectId)},{style:opts.style,instructions:opts.instructions}));}
   if (opts.ai === undefined || opts.completeSeries) {
     const { stateOf, assertFresh } = await import("../preparation/engine");
@@ -596,6 +597,7 @@ export async function saveProposal(ctx: JobContext, userId: string, projectId: s
  * série (jamais remplacée ni supprimée). Rien n'est relancé automatiquement.
  */
 export async function redrawArtwork(ctx: JobContext, projectId: string, assetId: string, opts: { feedback?: string; ai?: LogoV2Ai | null; capMicro?: number } = {}): Promise<{ assetId: string | null; verdict: string | null; notes: string[] }> {
+  if(opts.ai===undefined)throw new UserFacingError("Nouvelle version sans autorisation économique : utilisez le devis natif. Aucun appel lancé.");
   const p = loadProject(projectId);
   const { getAsset } = await import("../library");
   const { json } = await import("../db");
