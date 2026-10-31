@@ -3,6 +3,8 @@
 Toutes les vérifications ont été faites en local sur la branche `claude/syna-lot0-fondations`, à partir de `main`
 à `37fcfd25`. Aucun appel IA, aucun fournisseur, aucune donnée réelle.
 
+Vue d'ensemble : [`captures/planche-lot0.jpg`](captures/planche-lot0.jpg) (coquille Encre et Plein cadre, clair et sombre, ordinateur et téléphone).
+
 ## 1. Tests exécutés
 
 | Vérification | Résultat |
