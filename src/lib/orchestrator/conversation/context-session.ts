@@ -80,6 +80,7 @@ export function submitContext(u:User,cid:string,raw:unknown){
   const prior=one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?",cid,cmd.requestId);
   if(prior){if(prior.request_hash!==hash)throw new HttpError(409,'conversation_idempotency_conflict');const saved=JSON.parse(prior.response_json) as {receipt:SelectionReceipt};return{...contextView(u,cid),receipt:saved.receipt,replayed:true};}
   if(c.revision!==cmd.revision)throw new HttpError(409,'conversation_conflict');if(c.revision>=1000)throw new HttpError(409,'conversation_limit');
+  if(['clear','select','select-preview','revalidate'].includes(cmd.action)){delete m.localSiteProposal;delete m.localSite;}
   if(cmd.action==='clear'){delete m.activeContext;delete m.activeContextReference;delete m.activeContextIdentity;}
   if(cmd.action==='navigate')m.activeContextTab=cmd.tab;
   if(cmd.action==='select'||cmd.action==='select-preview'){

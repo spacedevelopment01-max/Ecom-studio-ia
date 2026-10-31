@@ -1,3 +1,5 @@
+import {withAiDisabled} from '../../ai/access';
+import {localSiteCandidate,proposeLocalSite,confirmLocalSite} from './local-site';
 import {conversationBlogEnabled,conversationBrandReviewEnabled} from './tool-flags';
 /** Une conversation dans l'orchestrateur : interpréter/proposer ≠ autoriser/exécuter un outil. */
 import { HttpError, type User } from "../../auth";
@@ -56,6 +58,7 @@ export function conversationView(user: User, cid: string, before?: number,includ
     message: !b.input.description ? L("Décrivez votre projet en quelques mots. Vous pouvez joindre un lien ; aucune création n’est lancée.", "Describe your project in a few words. You may add a link; no creation is started.") : L("Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.", "Local understanding to review. Your answers are kept; no step is automatically approved."),
     question: key ? questionFor(key, b, m) : null, correctionFields: readOnlyReason?[]:[...EDIT_FIELDS],readOnlyReason,
     creation: c.project_id ? null : creationFields(b,m),
+    ...(m.localSite?{localSite:m.localSite}:{}),
     ...(activeContextEnabled()?{activeContext:{enabled:true as const,current:observedActiveContext(c,m.activeContext),presentation:contextPresentation(c)}}:{}),
     ...(c.project_id&&conversationToolsEnabled()?{execution:{enabled:true as const}}:{}),
     ...(c.project_id&&conversationContentEnabled()?{contentExecution:{enabled:true as const}}:{}),
@@ -147,7 +150,7 @@ function unavailable(tool: string, message: string, c: ConversationRow): ActionC
   return { kind: "action", tool, state: "unavailable", executed: false, message, ...(c.project_id ? { href: `/studio/${c.project_id}/pilote` } : {}) };
 }
 /** Cette API n'accepte aucun plan, rôle, permission, coût accepté ou nom d'exécuteur fournis par le client. */
-export async function submitConversation(user: User, cid: string, raw: unknown, tests: TestDependencies = {}): Promise<ConversationView> {
+async function submitConversationImpl(user: User, cid: string, raw: unknown, tests: TestDependencies = {}): Promise<ConversationView> {
   const cmd = CommandSchema.parse(raw);
   if (["answer-ai", "accept-ai-changes", "back-ai"].includes(cmd.action) && !intelligenceEnabled()) throw new HttpError(404, "conversation_ai_disabled");
   if (redact(JSON.stringify(cmd)) !== JSON.stringify(cmd)) throw new HttpError(400, L("Ne saisissez pas de clé ou de jeton dans la conversation. Utilisez les réglages sécurisés du Studio.", "Do not enter a key or token in the conversation. Use the Studio's secure settings."), "conversation_secret");
@@ -155,6 +158,7 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
   // Propriété et reprise contrôlées AVANT même un classificateur simulé ; recontrôle atomique après l'await.
   const initial=ownedConversation(user, cid, true);
   if(isExistingProjectRead(initial))return submitExistingProjectMessage(user,cid,cmd,hash);
+  if(initial.project_id)requirePlan(user,initial.project_id);
   const received = one<{request_hash:string;response_json:string}>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
   if (received) {
     if (received.request_hash !== hash) throw new HttpError(409, L("Cet identifiant correspond à une autre demande.", "This identifier belongs to another request."), "conversation_idempotency_conflict");
@@ -164,7 +168,8 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
   else if(!pendingSubscriptions(user.id).length)throw new HttpError(402,L("Rattachez ce brouillon à votre projet avant de le poursuivre.","Link this draft to your project before continuing."),"subscription_required");
   if(initial.revision!==cmd.revision || currentBrief(initial).revision!==cmd.projectRevision)throw new HttpError(409,L("La conversation ou la fiche a changé. Rechargez avant de répondre.","The conversation or brief changed. Reload before answering."),initial.revision!==cmd.revision?"conversation_conflict":"conversation_brief_conflict");
   // Réutilisation de l'Intent Engine ; pas de classificateur ou d'appel IA de production dans le lot A.
-  const intent = cmd.action === "message" && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
+  const localCommand=cmd.action==='message'&&localSiteCandidate(cmd.text);
+  const intent = cmd.action === "message" && !localCommand && !intelligenceEnabled() ? await understand({ text: cmd.text }, { aiActive: !!tests.classify, classify: tests.classify }) : null;
   return tx(() => {
     const c = ownedConversation(user, cid);
     const prior = one<{ request_hash: string; response_json: string }>("SELECT request_hash,response_json FROM agent_conversation_turns WHERE conversation_id=? AND request_id=?", cid, cmd.requestId);
@@ -185,7 +190,11 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
       m.activeContextTab=cmd.context.tab;
       if(cmd.context.target||!m.activeContext?.target){m.activeContext=resolved.selection;m.activeContextReference=stableHash('conversation-active-context-1',resolved);m.activeContextIdentity=resolved.canonical.identity;}
     }
-    if (cmd.action === 'message' && intelligenceEnabled()) {
+    if(localCommand||cmd.action==='confirm-local'){
+      const active={...c,state_json:JSON.stringify(m)};
+      m.localSite=cmd.action==='confirm-local'?confirmLocalSite(user,active,m,cmd.proposalId):proposeLocalSite(user,active,m,(cmd as Extract<Command,{action:'message'}>).text);
+      message=m.localSite.message;
+    } else if (cmd.action === 'message' && intelligenceEnabled()) {
       // Conservation exacte, sans classification locale ni appel facturant implicite.
       let writable = true;
       try { assertBriefWritable(c, user, revision); } catch (e) { if (!(e instanceof HttpError)) throw e; writable = false; }
@@ -309,6 +318,7 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
     }
     // Relevé figé AVANT le devis/appel : les réservations du futur job ne périment pas leur propre contexte.
     if(cmd.action==='message'&&studioKnowledgeEnabled())m.studioObservation=captureStudioObservation(c);
+    if(!localCommand&&cmd.action!=='confirm-local')delete m.localSite;
     const next = c.revision + 1;
     // Lire une explication ou rouvrir une carte ne périme pas une proposition aux données inchangées.
     if(!changed&&['explain','summary','back-ai','back'].includes(cmd.action)&&m.intelligence?.sourceRevision===c.revision&&(m.intelligence.sourceProjectRevision??null)===revision)m.intelligence.sourceRevision=next;
@@ -319,9 +329,17 @@ export async function submitConversation(user: User, cid: string, raw: unknown, 
     if (tests.classify || tests.quote) response.mode = "simulation";
     response.message = action?.message || message || L("Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.", "Answer kept. You can add detail, go back or ask why.");
     response.action = action;
+    if(m.localSite)response.localSite=m.localSite;
     // Pas de récursion des historiques dans les reçus ; GET sert l'historique paginé complet.
     response.history = []; response.historyBefore = null;
     run("INSERT INTO agent_conversation_turns (id,conversation_id,revision,request_id,request_hash,request_json,response_json,created_at) VALUES (?,?,?,?,?,?,?,?)", id(), c.id, next, cmd.requestId, hash, JSON.stringify(cmd), JSON.stringify(response), now());
     return response;
   });
+}
+
+/** Une commande locale candidate ne peut jamais devenir un appel fournisseur implicite. */
+export async function submitConversation(user:User,cid:string,raw:unknown,tests:TestDependencies={}):Promise<ConversationView>{
+ const parsed=CommandSchema.safeParse(raw),cmd=parsed.success?parsed.data:null;
+ const local=cmd?.action==='confirm-local'||cmd?.action==='message'&&localSiteCandidate(cmd.text);
+ return local?withAiDisabled('B1 : retouche gratuite déterministe, aucun devis IA',()=>submitConversationImpl(user,cid,raw,tests)):submitConversationImpl(user,cid,raw,tests);
 }
