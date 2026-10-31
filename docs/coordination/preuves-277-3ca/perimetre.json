@@ -1,0 +1,16 @@
+{
+  "candidate": "3ca5ccb08a9b995d5a86d9024f2ca7e27d86b8e1",
+  "previous": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "changedFiles": [
+    "docs/fusion/276-INTEGRATION-CLAUDE-CODEX.md",
+    "docs/hebergement/232-LOT-B-FIABILITE.md",
+    "src/instrumentation.ts",
+    "src/lib/sites/launch-check.ts",
+    "tests/integration276.test.ts"
+  ],
+  "appFiles": [
+    "src/instrumentation.ts",
+    "src/lib/sites/launch-check.ts"
+  ],
+  "applicativeChangeOnly": "startup_warning_no_route_or_theme_change"
+}
