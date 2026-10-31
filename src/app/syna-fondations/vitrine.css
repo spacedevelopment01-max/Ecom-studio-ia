@@ -1,0 +1,63 @@
+/* Mise en page de la vitrine interne SYNA (lot 0). Tout est enfermé dans `.syna-ui`, comme syna.css. */
+.syna-ui.sv-page { min-height: 100dvh; background: var(--sy-paper); color: var(--sy-ink); }
+.syna-ui .sv-wrap { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; padding-block: 40px 96px; padding-left: max(16px, 3vw, env(safe-area-inset-left, 0px)); padding-right: max(16px, 3vw, env(safe-area-inset-right, 0px)); }
+.syna-ui .sv-head { display: grid; gap: 24px; }
+.syna-ui .sv-head-t { display: grid; gap: 10px; max-width: 72ch; }
+.syna-ui .sv-h1 { font-size: clamp(30px, 5vw, 50px); line-height: 1.05; letter-spacing: -.02em; }
+.syna-ui .sv-h1 em { color: var(--sy-accent); font-style: italic; font-weight: 400; }
+.syna-ui[data-syna-mode="plein"] .sv-h1 em { font-style: normal; font-weight: 700; }
+.syna-ui .sv-intro { max-width: 68ch; }
+.syna-ui .sv-ctls { display: flex; flex-wrap: wrap; gap: 12px 20px; padding: 14px 16px; border-radius: var(--sy-r-lg); background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-ctl { display: grid; gap: 6px; min-width: 0; }
+.syna-ui .sv-ctl-l { font: 500 11px/1 var(--sy-f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--sy-muted); }
+.syna-ui .sv-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: calc(var(--sy-r-sm) + 3px); background: var(--sy-wash); }
+.syna-ui[data-syna-mode="plein"] .sv-seg { border-radius: var(--sy-r-pill); }
+.syna-ui .sv-seg button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; min-width: 40px; padding: 0 12px; border: 0; border-radius: var(--sy-r-sm); background: transparent; color: var(--sy-ink2); font: 500 13px/1 var(--sy-f-ui); cursor: pointer; }
+.syna-ui[data-syna-mode="plein"] .sv-seg button { border-radius: var(--sy-r-pill); }
+.syna-ui .sv-seg button:hover { color: var(--sy-ink); }
+.syna-ui .sv-seg button[aria-pressed="true"] { background: var(--sy-sheet); color: var(--sy-ink); box-shadow: 0 1px 2px rgb(14 21 38 / .12), inset 0 0 0 1px var(--sy-rule); }
+@media (pointer: coarse) { .syna-ui .sv-seg button { min-height: 44px; } }
+.syna-ui .sv-sw { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); }
+.syna-ui .sv-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; min-width: 0; }
+.syna-ui .sv-sec-h { display: grid; gap: 8px; }
+.syna-ui .sv-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.syna-ui .sv-row { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; }
+.syna-ui .sv-shell-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.syna-ui .sv-shell-box { height: 680px; border-radius: var(--sy-r-lg); overflow: hidden; box-shadow: var(--sy-shadow-lg), 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-mark { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.syna-ui .sv-mark .sy-small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.syna-ui .sv-crumb { display: grid; gap: 2px; min-width: 0; }
+.syna-ui .sv-crumb b { font-weight: 600; }
+.syna-ui[data-syna-mode="plein"] .sv-crumb b { font: 700 17px/1.2 var(--sy-f-display); letter-spacing: -.01em; }
+.syna-ui .sv-preview { position: relative; margin: 0; border-radius: var(--sy-r); overflow: hidden; background: var(--sy-sheet); box-shadow: 0 0 0 1px var(--sy-rule); }
+.syna-ui[data-syna-mode="plein"] .sv-preview { border-radius: var(--sy-r-lg); box-shadow: var(--sy-shadow); }
+.syna-ui .sv-preview img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.syna-ui .sv-outline { position: absolute; inset: 8% 8% auto 8%; height: 34%; border: 2px solid var(--sy-accent); border-radius: 8px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--sy-accent) 22%, transparent); pointer-events: none; }
+.syna-ui .sv-outline i { position: absolute; left: 6px; top: 6px; padding: 3px 8px; border-radius: 6px; background: var(--sy-accent); color: var(--sy-accent-ink); font: 500 12px/1.4 var(--sy-f-ui); font-style: normal; }
+.syna-ui .sv-tab { display: grid; place-items: center; min-width: 64px; min-height: 52px; padding: 0 10px; border: 0; border-radius: var(--sy-r); background: transparent; color: var(--sy-ink2); font: 500 13px/1 var(--sy-f-ui); cursor: pointer; }
+.syna-ui .sv-tab[aria-current="page"] { color: var(--sy-accent); background: var(--sy-accent-soft); }
+.syna-ui .sv-states { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.syna-ui .sv-states li { display: grid; gap: 8px; justify-items: start; padding: 14px 16px; border-radius: var(--sy-r); background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-access { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 20px; align-items: start; }
+.syna-ui .sv-tile { display: grid; gap: 14px; align-content: start; min-width: 0; padding: 18px; border-radius: var(--sy-r-lg); background: var(--sy-wash); }
+.syna-ui .sv-rails { display: flex; gap: 10px; flex-wrap: wrap; }
+.syna-ui .sv-rails .sy-trigger { border-radius: 0 var(--sy-r) var(--sy-r) 0; box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-cmds { justify-items: stretch; }
+.syna-ui .sv-tabs { display: flex; gap: 6px; padding: 6px; border-radius: var(--sy-r-lg); background: var(--sy-sheet); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 132px), 1fr)); gap: 10px; }
+.syna-ui .sv-swatches li { display: grid; gap: 4px; padding: 14px; border-radius: var(--sy-r); box-shadow: inset 0 0 0 1px var(--sy-rule); }
+.syna-ui .sv-swatches b { font: 500 28px/1 var(--sy-f-display); }
+.syna-ui .sv-swatches .sy-num { font-size: 12px; }
+
+@media (max-width: 1180px) {
+  .syna-ui .sv-access { grid-template-columns: minmax(0, 1fr); }
+  .syna-ui .sv-shell-box { height: 640px; }
+}
+@media (max-width: 900px) {
+  .syna-ui .sv-grid2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .syna-ui .sv-wrap { gap: 40px; padding-block: 24px 64px; }
+  .syna-ui .sv-ctls { padding: 12px; }
+  .syna-ui .sv-shell-box { height: 600px; border-radius: var(--sy-r); }
+}

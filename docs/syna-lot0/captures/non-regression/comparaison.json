@@ -1,0 +1,115 @@
+{
+  "avant": "avant",
+  "apres": "apres",
+  "results": [
+    {
+      "page": "ordinateur--connexion",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--studio-accueil",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--sillon-pilote",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--sillon-boutique",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--sillon-catalogue",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--sillon-images",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--sillon-marque",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--table-saison-boutique",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "ordinateur--table-saison-carte",
+      "pixels": 1296000,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--connexion",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--studio-accueil",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--sillon-pilote",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--sillon-boutique",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--sillon-catalogue",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--sillon-images",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--sillon-marque",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--table-saison-boutique",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    },
+    {
+      "page": "telephone--table-saison-carte",
+      "pixels": 329160,
+      "differing": 0,
+      "ratio": 0
+    }
+  ],
+  "errors": {}
+}

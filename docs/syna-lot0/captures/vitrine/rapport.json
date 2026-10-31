@@ -1,0 +1,274 @@
+{
+  "origin": "http://127.0.0.1:3977",
+  "date": "2026-10-31T16:19:58.820Z",
+  "pages": [
+    {
+      "file": "telephone-360--encre--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 203,
+        "skipped": 0,
+        "min": 4.964883947397458,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-360--encre--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 203,
+        "skipped": 0,
+        "min": 6.593748462565817,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-360--plein--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 201,
+        "skipped": 0,
+        "min": 4.733389943941696,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-360--plein--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 201,
+        "skipped": 0,
+        "min": 5.516072971493706,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-390--encre--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 203,
+        "skipped": 0,
+        "min": 4.964883947397458,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-390--encre--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 203,
+        "skipped": 0,
+        "min": 6.593748462565817,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-390--plein--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 201,
+        "skipped": 0,
+        "min": 4.733389943941696,
+        "fails": []
+      }
+    },
+    {
+      "file": "telephone-390--plein--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 201,
+        "skipped": 0,
+        "min": 5.516072971493706,
+        "fails": []
+      }
+    },
+    {
+      "file": "tablette-1024--encre--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 230,
+        "skipped": 0,
+        "min": 4.964883947397458,
+        "fails": []
+      }
+    },
+    {
+      "file": "tablette-1024--encre--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 230,
+        "skipped": 0,
+        "min": 6.593748462565817,
+        "fails": []
+      }
+    },
+    {
+      "file": "tablette-1024--plein--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 227,
+        "skipped": 0,
+        "min": 4.733389943941696,
+        "fails": []
+      }
+    },
+    {
+      "file": "tablette-1024--plein--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 227,
+        "skipped": 0,
+        "min": 5.516072971493706,
+        "fails": []
+      }
+    },
+    {
+      "file": "ordinateur-1440--encre--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 230,
+        "skipped": 0,
+        "min": 4.964883947397458,
+        "fails": []
+      }
+    },
+    {
+      "file": "ordinateur-1440--encre--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 230,
+        "skipped": 0,
+        "min": 6.593748462565817,
+        "fails": []
+      }
+    },
+    {
+      "file": "ordinateur-1440--plein--clair.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 227,
+        "skipped": 0,
+        "min": 4.733389943941696,
+        "fails": []
+      }
+    },
+    {
+      "file": "ordinateur-1440--plein--sombre.png",
+      "errors": [],
+      "overflow": 0,
+      "fontsMissing": [],
+      "contrast": {
+        "measured": 227,
+        "skipped": 0,
+        "min": 5.516072971493706,
+        "fails": []
+      }
+    }
+  ],
+  "keyboard": {
+    "reached": 40,
+    "withoutRing": []
+  },
+  "touch-encre": [],
+  "touch-plein": [],
+  "reducedMotion": [
+    {
+      "s": ".sy-state[data-state='running'] .sy-icon",
+      "duration": "1e-05s"
+    },
+    {
+      "s": ".sy-progress[data-indeterminate] > i",
+      "duration": "1e-05s"
+    },
+    {
+      "s": ".sy-card[data-state='running']",
+      "duration": "1e-05s"
+    }
+  ],
+  "bascule-telephone-390": {
+    "ok": true,
+    "before": {
+      "mode": "encre",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 949
+    },
+    "during": {
+      "mode": "plein",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 0
+    },
+    "after": {
+      "mode": "encre",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 0
+    },
+    "errors": []
+  },
+  "bascule-ordinateur-1440": {
+    "ok": true,
+    "before": {
+      "mode": "encre",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 685
+    },
+    "during": {
+      "mode": "plein",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 0
+    },
+    "after": {
+      "mode": "encre",
+      "draft": "Rends le titre plus court, sans changer la photo",
+      "chip": "En-tête",
+      "task": "En cours2/3",
+      "url": "/syna-fondations?mode=encre&appearance=light&view=conversation",
+      "scroll": 0
+    },
+    "errors": []
+  }
+}
