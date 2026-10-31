@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<script type="importmap">{"imports":{"three":"../assets/vendor/three/three.module.js","three/addons/":"../assets/vendor/three/addons/"}}</script>
+<style>body{margin:0;background:#222}canvas{display:block}</style></head>
+<body>
+<canvas id="cv" width="900" height="1200"></canvas>
+<script type="module">
+/* Photos produits fictives de « Maison Aube », rendues en 3D (aucune personne) : chaque vêtement sur un fond doux,
+   et un portant pour l'image d'ouverture du site. */
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { makeGarment, makeRack, PRODUCTS } from "../assets/garments.js";
+const cv = document.getElementById("cv");
+const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });
+r.setPixelRatio(1); r.shadowMap.enabled = true; r.toneMapping = THREE.NeutralToneMapping; r.outputColorSpace = THREE.SRGBColorSpace;
+const env = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), 0.04).texture;
+function studio(bg) {
+  const s = new THREE.Scene(); s.background = new THREE.Color(bg); s.environment = env; s.environmentIntensity = 0.35;
+  const sweep = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: bg, roughness: 1 }));
+  sweep.position.z = -0.6; sweep.receiveShadow = true; s.add(sweep);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: bg, roughness: 1 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -1.2; floor.receiveShadow = true; s.add(floor);
+  s.add(new THREE.HemisphereLight("#fff8f0", "#d9cbb8", 0.8));
+  const key = new THREE.DirectionalLight("#fff4e8", 2.4); key.position.set(-2.5, 3, 4); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.radius = 8; key.shadow.bias = -0.0005;
+  Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2 }); s.add(key);
+  const rim = new THREE.DirectionalLight("#ffd9c2", 1.2); rim.position.set(3, 2, -2); s.add(rim);
+  return s;
+}
+window.__photos = {};
+const shots = [];
+const bgs = { sweat: "#F3E6DC", chemise: "#E9E3DA", robe: "#E4E7EA", veste: "#EEE6D8" };
+PRODUCTS.forEach((p) => shots.push({ k: "produit-" + p.id, w: 900, h: 1200, build: () => { const s = studio(bgs[p.id]); const g = makeGarment(p.id); g.position.y = 0.0; g.rotation.y = -0.18; s.add(g); return s; }, cam: [0, 0.0, 3.0], look: [0, 0.0, 0] }));
+shots.push({ k: "portant", w: 900, h: 1100, build: () => { const s = studio("#EFE6DA"); const rack = makeRack(["chemise", "sweat", "robe", "veste"], 1.7); rack.position.set(0, -1.2, 0); rack.rotation.y = -0.25; s.add(rack);
+  const plant = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 16), new THREE.MeshStandardMaterial({ color: "#7A8F6A", roughness: 0.9 })); plant.position.set(1.25, -0.6, -0.3); plant.castShadow = true; s.add(plant);
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.14, 0.35, 24), new THREE.MeshStandardMaterial({ color: "#E58C6E", roughness: 0.7 })); pot.position.set(1.25, -1.02, -0.3); pot.castShadow = true; s.add(pot); return s; }, cam: [0.25, -0.1, 5.6], look: [0.15, -0.3, 0] });
+const cam = new THREE.PerspectiveCamera(32, 1, 0.05, 50);
+for (const sh of shots) {
+  r.setSize(sh.w, sh.h, false); cam.aspect = sh.w / sh.h; cam.updateProjectionMatrix();
+  cam.position.set(...sh.cam); cam.lookAt(...sh.look);
+  r.render(sh.build(), cam); window.__photos[sh.k] = cv.toDataURL("image/jpeg", 0.92);
+}
+window.__done = true;
+</script>
+</body></html>
