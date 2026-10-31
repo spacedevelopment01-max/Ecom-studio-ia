@@ -79,6 +79,16 @@ studio.<domaine du studio> {
 
 Le studio reçoit le nom d'hôte d'origine : son middleware ne sert que les sites sous ces noms. Variables : `SITES_DOMAIN=<domaine des sites>`, `APP_URL=https://studio.<domaine du studio>`.
 
+**Adresse d'écoute du studio** (contre-vérification #277) : lancer `next start` sans `-H` (image Docker, `npm start`, `npm run studio`), ou avec `-H localhost` ou `-H 0.0.0.0`. **Pas avec `-H 127.0.0.1` ni `-H ::1`** : Next ramène ces adresses à « localhost » dans le middleware mais pas dans son routeur, la réécriture vers la route des sites devient un renvoi HTTP externe et chaque site répond 404. Le serveur le signale au démarrage (`[sites] Lancement « -H … » non pris en charge`).
+
+| Lancement (`SITES_DOMAIN` défini) | Site publié |
+|---|---|
+| `next start -p PORT` (Docker, studio) | 200 |
+| `next start -H localhost -p PORT` | 200 |
+| `next start -H 0.0.0.0 -p PORT` | 200 |
+| `HOSTNAME=127.0.0.1 next start -p PORT` | 200 (variable ignorée par `next start`) |
+| `next start -H 127.0.0.1 -p PORT` | **404**, signalé au démarrage |
+
 ## 4. Coûts (ordres de grandeur, aucun engagé, à confirmer)
 
 | Poste | Ordre de grandeur |

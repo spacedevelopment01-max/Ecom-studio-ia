@@ -20,6 +20,7 @@ import { captureStudioObservation } from "@/lib/orchestrator/conversation/studio
 import { openProjectConversation } from "@/lib/orchestrator/conversation";
 import { ownedConversation } from "@/lib/orchestrator/conversation/store";
 import { eraseIsolatedAccountFixture, planAccountErasure } from "@/lib/privacy";
+import { unsupportedSitesHostname } from "@/lib/sites/launch-check";
 import { sitesRoot } from "@/lib/sites/store";
 import { assembleComposition } from "@/lib/theme/composition/assemble";
 import { seedHoldout } from "./lot1-holdout-fixtures";
@@ -123,5 +124,14 @@ describe("R4 — effacement : fichiers des sites publiés", () => {
     expect(res.hostedSiteDirectoriesRemoved).toBe(1);
     expect(fs.existsSync(path.join(sitesRoot(), a.pid))).toBe(false);
     expect(fs.existsSync(path.join(sitesRoot(), b.pid, "pub-test", "files", "index.html"))).toBe(true);
+  });
+});
+
+describe("Contre-vérification #277 — adresse d'écoute des sites hébergés", () => {
+  it("signale -H 127.0.0.1 / ::1 avec SITES_DOMAIN ; accepte sans -H, localhost, 0.0.0.0, ou sans hébergement", () => {
+    const D = "sites.recette.test";
+    for (const argv of [["next", "start", "-H", "127.0.0.1", "-p", "3000"], ["next", "start", "--hostname=127.0.0.2"], ["next", "start", "--hostname", "::1"], ["next", "start", "-H127.0.0.1"]]) expect(unsupportedSitesHostname(argv, D), argv.join(" ")).not.toBeNull();
+    for (const argv of [["next", "start", "-p", "3000"], ["next", "start", "-H", "localhost"], ["next", "start", "-H", "0.0.0.0"], ["next", "start", "--hostname", "studio.exemple.fr"]]) expect(unsupportedSitesHostname(argv, D), argv.join(" ")).toBeNull();
+    expect(unsupportedSitesHostname(["next", "start", "-H", "127.0.0.1"], undefined)).toBeNull();
   });
 });

@@ -25,7 +25,8 @@ PR non incluses, à décider séparément : #127, #165, #167, #179–#191 (très
 | `f04958e1` | Fusion `--no-ff` de la chaîne Codex `42ef034c`. **0 conflit textuel** |
 | `fe2ee362` | Fusion du plan #248 (documentation) |
 | `731277d5` | Correctifs d'intégration et `tests/integration276.test.ts` |
-| (suivant) | Ce rapport et ses preuves |
+| `f0019338` | Ce rapport et ses preuves (SHA soumis à la contre-vérification Codex #277) |
+| (suivant) | Correction issue de la contre-vérification : adresse d'écoute des sites hébergés (section 8) |
 
 **Fichiers modifiés des deux côtés**, fusionnés automatiquement et relus :
 - `src/app/api/projects/[id]/route.ts` : adresse unique (Claude) et drapeaux de contexte (Codex), sans recouvrement ;
@@ -113,7 +114,24 @@ Preuve : `preuves-276/syna-closure-api-proof.json`.
   - `SITES_DOMAIN` (hébergement) ;
   - SMTP réel (notifications).
 
-## 8. Suite
+## 8. Contre-vérification Codex (#277) et suites données
+
+Codex, sur `f0019338`, dans une copie séparée :
+- a confirmé la conservation (deux sommets ascendants, 5 fichiers communs conformes à la simulation, `theme-base/` intact) ;
+- a reproduit le build et 109 + 149 tests ciblés, ainsi que les sondes C1, P1 et P5 (P5 jugé justifié) ;
+- a fait passer les parcours SYNA compilés et les logos.
+
+**Constat retenu : sites publiés en 404 avec `next start -H 127.0.0.1`.**
+
+| | |
+|---|---|
+| Reproduit | Oui, sur le même build : 404 avec `-H 127.0.0.1` ; 200 sans `-H` (Docker, `npm run studio`, notre recette), avec `-H localhost` et avec `-H 0.0.0.0` |
+| Cause (code de Next 15.5) | Le middleware construit l'URL de réécriture à partir de `req.nextUrl`, que Next ramène à `localhost` pour 127.x et ::1. Le routeur, lui, compare avec `http://<-H>:<port>`. Les origines diffèrent, donc la réécriture devient un renvoi HTTP vers `localhost`. Au second passage, le middleware retire `x-ecs-site-host` (Host = localhost) et la route répond 404 |
+| Portée | Ce mode de lancement seulement. Ni l'image Docker (`npm start` = `next start -p 3000`) ni le Studio ne passent `-H` |
+| Traitement | Gardes conservées : aucun `x-ecs-site-host` accepté sans contrôle du Host, aucune vérification supprimée. Ajouts : signalement explicite au démarrage (`src/lib/sites/launch-check.ts`, appelé par `instrumentation.ts`), modes pris en charge dans `docs/hebergement/232-LOT-B-FIABILITE.md`, test unitaire. Vérifié sur le build : message présent avec `-H 127.0.0.1`, absent sans `-H` |
+| Non retenu | Rendre la réécriture insensible à l'adresse d'écoute. Il faudrait soit faire confiance à un en-tête transmis par un aller-retour HTTP interne (refusé), soit modifier Next |
+
+## 9. Suite
 
 1. **Codex** : contre-vérification indépendante sur le SHA figé de cette PR, dans un checkout séparé. Les anomalies et correctifs vont dans des PR distinctes ; aucune écriture sur cette branche.
 2. **Claude** : intégration des corrections retenues, contrôles relancés et rapport mis à jour.
