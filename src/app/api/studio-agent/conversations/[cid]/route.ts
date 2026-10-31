@@ -1,3 +1,4 @@
+import {ContextConflict} from '@/lib/orchestrator/conversation/context-session';
 import { requireUser } from "@/lib/auth";
 import { handle, ok, body } from "@/lib/http";
 import type { Ctx } from "@/lib/route-helpers";
@@ -12,5 +13,6 @@ export const GET = handle(async (req: Request, ctx: Ctx<{cid:string}>) => {
 });
 export const POST = handle(async (req: Request, ctx: Ctx<{cid:string}>) => {
   assertConversationEnabled(); const user = await requireUser(), { cid } = await ctx.params;
-  return ok(await submitConversation(user, cid, await body(req, CommandSchema)));
+  try{return ok(await submitConversation(user, cid, await body(req, CommandSchema)));}
+  catch(e){if(e instanceof ContextConflict)return ok({error:e.message,code:e.code,context:e.context,financialConsent:false,providerCalls:0},{status:409});throw e;}
 });

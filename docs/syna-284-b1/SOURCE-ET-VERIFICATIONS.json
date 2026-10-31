@@ -1,0 +1,70 @@
+{
+  "schema": "syna-b1-verifications-1",
+  "baseA2": "a555100d926ad09642ac43139a7d65218b9a9229",
+  "applicationCommit": "4b98d15adde5d9b5594ea01ce22baec128019876",
+  "applicationTree": "a35bde9f9b0921116ead67c0d49d8f5d9dc5c227",
+  "sourceSha256": {
+    "src/app/api/studio-agent/conversations/[cid]/route.ts": "0328cab9b884efcea0332350c40385d6761a374db65ba147f524d148d4f6d2bd",
+    "src/lib/engine/local-first.ts": "e7e27b64e564b933d2bb4e2d852de296a2b1a5a1664c8c1d132c5aab8cb8aef9",
+    "src/lib/orchestrator/conversation/context-session.ts": "14665e89d048b76fb544211544fbad36b165dd98508dde00cc7ed77c07ac03be",
+    "src/lib/orchestrator/conversation/contract.ts": "419e4490f6b492a9cf652f727bf5dbb72b437e04edd107d1839174d7a1ba1277",
+    "src/lib/orchestrator/conversation/index.ts": "a8676a2b944cab9371a383827bd48351c8ed85c33171ca07002cbb04f6fa3e02",
+    "src/lib/orchestrator/conversation/local-site.ts": "946a8f5d58413a60ae728750cc31d13c74556b759f67285a1f570f5f9f311afd",
+    "tests/conversation284-b1-fixtures.ts": "1bfd8c205bac6ca2449bf67f080213469f85c60d84371a022e9a9f0baa9eaff2",
+    "tests/conversation284-b1-local.test.ts": "4abdbf60417d042d6e7f6c74027cea8ee088ec0cd9ae5735d379dae26625d32b",
+    "scripts/verify-syna284-b1-local.ts": "5fc36a76351753178412cd4fe8ed42729bc21b85478cf91cf6be47efa5395517"
+  },
+  "targetedTests": {
+    "passed": 133,
+    "failed": 0,
+    "files": 7,
+    "newB1Cases": 23,
+    "log": "RUN  v5.0.3 /workspace/work/syna-b1\n\n\n Test Files  7 passed (7)\n      Tests  133 passed (133)\n   Start at  16:21:57\n   Duration  23.01s (tests 67%, import 20%, transform 13%)"
+  },
+  "typecheck": {
+    "errors": 0,
+    "runAfterNextStopped": true
+  },
+  "liveHttp": {
+    "checks": 32,
+    "scenarios": 2,
+    "captures": 4,
+    "failed": 0,
+    "invariantSnapshotsEqual": true,
+    "actualShopifyZipCompared": true,
+    "zipChangedFilesOnly": [
+      "templates/index.json"
+    ],
+    "nativeManualRestoreVerified": true
+  },
+  "unitAttemptSpies": {
+    "classifier": 0,
+    "nativeQuote": 0,
+    "cognitiveQuote": 0,
+    "cognitiveConfirmation": 0,
+    "financialReservation": 0,
+    "fetch": 0
+  },
+  "providerRealCalls": 0,
+  "apiCostEur": 0,
+  "walletAndBusinessOutsideExplicitThemeWritesUnchanged": true,
+  "screenshots": {
+    "products-desktop-preview.png": "0223aee546364107c6267192840d837a8335a9309e66760113e4811998f11f9e",
+    "products-mobile-preview.png": "c602ff38f47461b444c7380d37251966e8560dfeeaebe2299d435a81cb874e9c",
+    "services-desktop-preview.png": "8472c51f421f6cc5e3bbdf062af9d1c8e2ea0498b92a5570a7bf166071ee2df9",
+    "services-mobile-preview.png": "62a53843adcd8577981a422a9968b7b9e5509168a2a6fd0047600d82669d21f0"
+  },
+  "screenshotsScope": "Existing native preview, reduced-motion preference. No frontend free-confirmation UI wired.",
+  "notRunLocally": [
+    "full suite",
+    "production build",
+    "Theme Check",
+    "Docker"
+  ],
+  "dependencyCI": "A1/A2 in progress at last check, not globally validated",
+  "nextLot": "STOP; no B2/B3",
+  "componentsChanged": false,
+  "productionFlagsChanged": false,
+  "screenshotsPublishedToRepository": false,
+  "screenshotsPublicationLimit": "Automatic review rejected public upload as potentially sensitive; screenshots inspected and shown in chat, binary publication left pending explicit owner approval."
+}

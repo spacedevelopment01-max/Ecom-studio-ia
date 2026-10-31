@@ -15,6 +15,7 @@ const base = z.object({
   projectRevision: z.number().int().min(0).nullable(),
 });
 export const CommandSchema = z.discriminatedUnion("action", [
+  base.extend({action:z.literal("confirm-local"),proposalId:z.string().min(1).max(120),confirmation:z.literal(true)}).strict(),
   base.extend({action:z.literal("open-strategy-comparison"),comparisonId:z.string().min(1).max(100)}).strict(),
   base.extend({action:z.literal("compare-strategy-options"),angleIds:z.array(z.enum(ANGLE_IDS)).min(2).max(5).optional(),sourceComparisonId:z.string().min(1).max(100).optional(),sourceVersion:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict(),
   base.extend({action:z.literal("decide-strategy-option"),comparisonId:z.string().min(1).max(100),version:z.string().regex(/^[a-f0-9]{64}$/),angleId:z.enum(ANGLE_IDS),decision:z.enum(["prefer","reject"]),reason:z.string().trim().min(1).max(1200)}).strict(),
@@ -43,6 +44,8 @@ export type ConversationState = {
   answeredOrder: QuestionKey[];
   editing?: QuestionKey;
   intelligence?: import('./intelligence-contract').CognitiveState;
+  localSiteProposal?: import('./local-site').LocalSiteProposal;
+  localSite?: import('./local-site').LocalSitePresentation;
   activeContext?: ActiveContext;
   activeContextReference?: string;
   activeContextIdentity?: string;
@@ -74,6 +77,7 @@ export type ActionCard = {
   href?: string;
 };
 export type ConversationView = {
+  localSite?: import('./local-site').LocalSitePresentation;
   schema: "studio-conversation-1";
   recovery?: import('./existing-project').ExistingProjectRecovery;
   id: string;
