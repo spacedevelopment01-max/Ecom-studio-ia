@@ -22,8 +22,8 @@ Environnement :
 | `tests/syna-lot1bis-prefs.test.ts` (serveur, droits, validation, commandes) | réussi |
 | `tests/syna-lot1bis-modes.test.ts` (vrai rendu React des deux modes, garanties du code) | réussi |
 | Tests des lots 0 et 1 (`syna-lot0-*`, `syna-lot1-shell`), plus `plan-studio`, `fenetres-studio`, `hooks-avant-retour` | réussis. **Total : 10 fichiers, 101 tests sur 101** |
-| `next build` (production) | voir § 6 |
-| Suite complète `npx vitest run` | non relancée : elle dure plus de 30 minutes dans ce conteneur. La CI ne tourne que pour les PR vers `main`, donc pas sur cette PR empilée |
+| `next build` (production) | réussi (62 pages, dont la route `/api/studio/ui-prefs`), voir § 6 |
+| Suite complète `npx vitest run` | non relancée en local (plus de 30 minutes dans ce conteneur). **La CI GitHub de la PR #293 la joue** (types, suite complète sans réseau fournisseur, Theme Check, compilation, image Docker) : son résultat fait foi |
 
 Ce que vérifient les tests du serveur :
 - **Réglages du compte** : enregistrés, relus et validés ; une valeur inconnue ou un champ en trop est ignoré ; une largeur hors bornes est ramenée à 560 px.
@@ -156,7 +156,7 @@ Dossier [`captures/recette/`](captures/recette/) (JPG, réduites à 1 440 px de 
 
 ## 6. Compilation de production
 
-`next build` : en cours au moment de ce commit ; le résultat est ajouté au commit suivant.
+`next build` : **réussi**, 62 pages générées, dont la route `/api/studio/ui-prefs`. Un premier essai s'était arrêté à la vérification des types, faute de mémoire (plafond par défaut de Node, environ 2 Go, dans ce conteneur). Relancé avec `NODE_OPTIONS=--max-old-space-size=6144` : réussi, sans aucune modification du code.
 
 ## 7. Retour arrière
 
