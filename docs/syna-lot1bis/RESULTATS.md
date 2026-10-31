@@ -140,6 +140,12 @@ avant et juste après les bascules, les données sont strictement identiques.
    places de la barre.
 8. **Synchronisation entre appareils** : revenir sur une fenêtre déjà visible ne relisait pas les réglages. Corrigé :
    le retour sur la page relit toujours le serveur (ou renvoie un réglage en attente).
+9. **Bascules très rapides** (Plein cadre puis Encre en moins d'une seconde) : les deux enregistrements partaient en
+   même temps et pouvaient arriver au serveur dans le désordre. L'écran montrait Encre, mais le serveur gardait
+   Plein cadre, qu'on aurait retrouvé sur un autre appareil ou après rechargement. Défaut trouvé par la recette
+   d'intégration avec Codex (#292). Corrigé : les enregistrements partent l'un après l'autre, dans l'ordre, et seule
+   la réponse du dernier est appliquée (`src/lib/syna-ui/serial-queue.ts`, testé avec des réponses du serveur qui
+   arrivent dans le désordre).
 
 ## 5. Captures
 

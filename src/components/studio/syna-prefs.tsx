@@ -12,6 +12,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { resolveSynaPrefs, sanitizeSynaPrefs, type ResolvedSynaPrefs, type SynaUiPrefs } from "@/lib/syna-ui/preferences";
+import { serialQueue } from "@/lib/syna-ui/serial-queue";
 
 export type StoredSynaPrefs = { account: Partial<SynaUiPrefs>; project: Partial<SynaUiPrefs> | null; updatedAt: number };
 export type SynaPrefsScope = "account" | "project";
@@ -73,25 +74,32 @@ export function SynaPrefsProvider({ projectId, initial, children }: { projectId:
     } catch { /* hors ligne : on garde l'état courant */ }
   }, [url, accept]);
 
-  const push = useCallback(async (p: Pending) => {
+  // Les enregistrements partent l'un après l'autre, dans l'ordre des changements : deux bascules rapides ne peuvent
+  // pas arriver au serveur dans le désordre (l'écran montrerait Encre, le serveur garderait Plein cadre). Seule la
+  // réponse du dernier enregistrement est appliquée à l'écran.
+  const queue = useRef(serialQueue());
+  const push = useCallback((p: Pending) => {
     writing.current++;
     setStatus("saving");
-    try {
-      const r = await fetch("/api/studio/ui-prefs", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scope: p.scope, projectId: p.projectId, prefs: p.prefs }) });
-      if (!r.ok) throw new Error(String(r.status));
-      const v = (await r.json()) as StoredSynaPrefs;
-      writeLocal(PENDING, null);
-      accept(v);
-      setStatus("saved");
-      try { new BroadcastChannel(BUS).postMessage(Date.now()); } catch { /* ancien navigateur */ }
-    } catch (e) {
-      // Réseau coupé : on garde la demande et on la renvoie au retour. Refus du serveur (droits, valeur) : signalé.
-      const offline = e instanceof TypeError || (typeof navigator !== "undefined" && !navigator.onLine);
-      if (offline) writeLocal(PENDING, p);
-      setStatus(offline ? "offline" : "error");
-    } finally {
-      writing.current--;
-    }
+    return queue.current.run(async (isLatest) => {
+      try {
+        const r = await fetch("/api/studio/ui-prefs", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scope: p.scope, projectId: p.projectId, prefs: p.prefs }) });
+        if (!r.ok) throw new Error(String(r.status));
+        const v = (await r.json()) as StoredSynaPrefs;
+        if (!isLatest()) return;
+        writeLocal(PENDING, null);
+        accept(v);
+        setStatus("saved");
+        try { new BroadcastChannel(BUS).postMessage(Date.now()); } catch { /* ancien navigateur */ }
+      } catch (e) {
+        // Réseau coupé : on garde la demande et on la renvoie au retour. Refus du serveur (droits, valeur) : signalé.
+        const offline = e instanceof TypeError || (typeof navigator !== "undefined" && !navigator.onLine);
+        if (offline && isLatest()) writeLocal(PENDING, p);
+        setStatus(offline ? "offline" : "error");
+      } finally {
+        writing.current--;
+      }
+    });
   }, [accept]);
 
   // Premier affichage sans données serveur (cas rare) : copie locale, puis relecture.

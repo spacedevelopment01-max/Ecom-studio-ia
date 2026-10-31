@@ -107,6 +107,37 @@ describe("réglages enregistrés sur le serveur", () => {
   });
 });
 
+describe("bascules rapides : les enregistrements arrivent au serveur dans l'ordre", () => {
+  it("deux enregistrements lancés coup sur coup (le premier lent) : envoyés l'un après l'autre, seul le dernier est appliqué", async () => {
+    const { serialQueue } = await import("@/lib/syna-ui/serial-queue");
+    const q = serialQueue();
+    const server: string[] = [], applied: string[] = [];
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    // Sans file, « plein » (réponse lente) arriverait après « encre » et le serveur garderait Plein cadre.
+    const save = (mode: string, delay: number) => q.run(async (isLatest) => { await wait(delay); server.push(mode); if (isLatest()) applied.push(mode); });
+    await Promise.all([save("plein", 30), save("encre", 1)]);
+    expect(server).toEqual(["plein", "encre"]);
+    expect(server.at(-1)).toBe("encre");
+    expect(applied).toEqual(["encre"]);
+  });
+  it("un échec n'empêche pas l'enregistrement suivant de partir", async () => {
+    const { serialQueue } = await import("@/lib/syna-ui/serial-queue");
+    const q = serialQueue();
+    const sent: string[] = [];
+    const a = q.run(async () => { sent.push("a"); throw new Error("réseau"); });
+    const b = q.run(async () => { sent.push("b"); return "ok"; });
+    await expect(a).rejects.toThrow("réseau");
+    await expect(b).resolves.toBe("ok");
+    expect(sent).toEqual(["a", "b"]);
+  });
+  it("le navigateur passe par cette file pour chaque enregistrement", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync(new URL("../src/components/studio/syna-prefs.tsx", import.meta.url), "utf8");
+    expect(src).toContain("queue.current.run(async (isLatest)");
+    expect(src.match(/method: "PUT"/g)?.length).toBe(1);
+  });
+});
+
 describe("commandes d'affichage locales (sans IA)", () => {
   it.each([
     ["Passe en Plein cadre", { kind: "set", patch: { mode: "plein" } }],
