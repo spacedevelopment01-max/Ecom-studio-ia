@@ -1,0 +1,183 @@
+{
+  "schema": "syna-a2-live-http-1",
+  "http": [
+    {
+      "business": "products",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "navigate",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "quote",
+      "expected": 409,
+      "status": 409
+    },
+    {
+      "business": "products",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "select-preview",
+      "expected": 409,
+      "status": 409
+    },
+    {
+      "business": "products",
+      "operation": "revalidate",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "products",
+      "operation": "revalidate",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "select-preview",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "navigate",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "quote",
+      "expected": 409,
+      "status": 409
+    },
+    {
+      "business": "services",
+      "operation": "read",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "select-preview",
+      "expected": 409,
+      "status": 409
+    },
+    {
+      "business": "services",
+      "operation": "revalidate",
+      "expected": 200,
+      "status": 200
+    },
+    {
+      "business": "services",
+      "operation": "revalidate",
+      "expected": 200,
+      "status": 200
+    }
+  ],
+  "businessChecks": [
+    {
+      "business": "products",
+      "phase": "selection-navigation-A1-denial",
+      "before": "4cf811dd4c05eb12f20b2b919becf6e884e4eebbfa0c6acc98714263cc7add93",
+      "after": "4cf811dd4c05eb12f20b2b919becf6e884e4eebbfa0c6acc98714263cc7add93",
+      "equal": true
+    },
+    {
+      "business": "products",
+      "phase": "consented-revalidation-retry",
+      "before": "743bfc308737b7abb83e2e44306d48f4b5f46eb057c3e83a7c9d4d93a24a15cb",
+      "after": "743bfc308737b7abb83e2e44306d48f4b5f46eb057c3e83a7c9d4d93a24a15cb",
+      "equal": true
+    },
+    {
+      "business": "services",
+      "phase": "selection-navigation-A1-denial",
+      "before": "743bfc308737b7abb83e2e44306d48f4b5f46eb057c3e83a7c9d4d93a24a15cb",
+      "after": "743bfc308737b7abb83e2e44306d48f4b5f46eb057c3e83a7c9d4d93a24a15cb",
+      "equal": true
+    },
+    {
+      "business": "services",
+      "phase": "consented-revalidation-retry",
+      "before": "ba02c9d64b7e49c5c19a2278315cfd32c65427a831110ccb02cb5911804fdeb7",
+      "after": "ba02c9d64b7e49c5c19a2278315cfd32c65427a831110ccb02cb5911804fdeb7",
+      "equal": true
+    }
+  ],
+  "providerCalls": 0,
+  "apiCostEur": 0,
+  "ui": "No component changed; precise selection exposed by shared API only",
+  "errors": []
+}

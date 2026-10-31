@@ -1,0 +1,58 @@
+{
+  "schema": "syna-a2-verifications-1",
+  "baseA1": "2f6b5c6f67d08ffb3871aa7e9759a3694ee54571",
+  "applicationCommit": "a8ac6edb0570f9ccd6437752e75931112df131f4",
+  "applicationTree": "8d11e72456ee3e2d897b9fd9f8cec457a410d768",
+  "sourceSha256": {
+    "src/app/api/studio-agent/conversations/[cid]/theme-tools/route.ts": "38cd169de3d70aecf45733156b5f2cd7138450b872029d1c67d89923d6f12e29",
+    "src/lib/orchestrator/conversation/active-context-contract.ts": "b68e6d0b5dd925540084602218b6d5de6c003737b1f424dcb283528783dda230",
+    "src/lib/orchestrator/conversation/active-context.ts": "36dd007928e99ee75f9403fe8c6c36d9b0ce2767614d667ed7125e09416a85d6",
+    "src/lib/orchestrator/conversation/contract.ts": "fe4910b81ebb3111f74288db34d37a1a07f51842163c68eab673ca0c2781978b",
+    "src/lib/orchestrator/conversation/existing-project.ts": "4ee41efa46bb1692405c6ad1e95a188bb2ffeb173fc45bc8a3930af7d28e609f",
+    "src/lib/orchestrator/conversation/index.ts": "566e90939eae2391b0eb763beca6020560f928651afe27c1fed5e0e2d599405e",
+    "src/lib/orchestrator/conversation/theme-tool-execution.ts": "2e01cfa221f0f74565a173d95ef3f83f15882ddc1de1576920ad5d050558d4e1",
+    "tests/conversation211-active-context.test.ts": "9fc858798858173bfd7fa4cfe7f084391a611e294801d5b2ffeca590a1b2710b",
+    "scripts/verify-syna284-a2-context.ts": "8a076bbf37277785280a3756f7605c87f37d2692d4d7af66f80b1eff99292f86",
+    "src/app/api/studio-agent/conversations/[cid]/context/route.ts": "bd87e302d410f047c66c8514f244bd97fc5fc279da64b533fdcca589a4fb7886",
+    "src/lib/orchestrator/conversation/context-session.ts": "dda4a797c59212fa0ada22cdda5833a5754e3cd21be7bee7e91280608adf61d4",
+    "tests/conversation284-a2-context.test.ts": "f19548e47cff9850f2d10b57ba35d5e1582759cee720103e696d94ae37443463"
+  },
+  "targetedTests": {
+    "passed": 145,
+    "failed": 0,
+    "files": 9,
+    "newA2Cases": 23,
+    "logSummary": "RUN  v5.0.3 /workspace/work/syna-a2\n\n\n Test Files  9 passed (9)\n      Tests  145 passed (145)\n   Start at  16:00:32\n   Duration  29.14s (tests 66%, import 22%, transform 11%)"
+  },
+  "typecheck": {
+    "command": "tsc --noEmit",
+    "errors": 0
+  },
+  "http": {
+    "realNextServer": true,
+    "checks": 24,
+    "failed": 0,
+    "businessChecks": 4,
+    "allBusinessBytesUnchangedExceptExplicitManualFixtureChanges": true
+  },
+  "realProviderCalls": 0,
+  "apiCostEur": 0,
+  "componentsChanged": false,
+  "productionFlagsChanged": false,
+  "screenshots": "None; A2 has no visual component changes. Prior A1 screenshots are historical only.",
+  "localEnvironment": {
+    "node": "24.19.0",
+    "next": "15.5.28",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3",
+    "network": "native loopback-only guard"
+  },
+  "notRunLocally": [
+    "full suite",
+    "production build",
+    "Docker",
+    "Theme Check"
+  ],
+  "ci": "Check GitHub Actions at final head; not asserted green",
+  "stopAfter": "A2"
+}
