@@ -67,7 +67,7 @@
       '<div id="' + p + '-eye" style="font:700 11px Lato;letter-spacing:.18em;color:' + C.brand + '">PLÂTRERIE · PEINTURE · ENDUITS</div>' +
       '<div id="' + p + '-h1" style="font:800 38px/1.03 Outfit;color:' + C.ink + ';letter-spacing:-.01em">Des murs nets, des finitions soignées.</div>' +
       '<div id="' + p + '-sub" style="font:400 17px/1.4 Lato;color:' + C.text + '">Plaques de plâtre, enduits et peinture intérieure.</div>' +
-      '<div id="' + p + '-btnw" style="position:relative;align-self:flex-start;margin-top:4px"><div id="' + p + '-btn" style="position:relative;background:' + C.brand + ';color:' + C.chaux + ';font:700 18px Outfit;padding:13px 22px;border-radius:10px;overflow:hidden"><span style="position:relative;z-index:1">Demander un devis</span><i id="' + p + '-ripple" style="position:absolute;left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;background:' + C.ocre + ';display:block"></i></div></div></div>' +
+      '<div id="' + p + '-btnw" style="position:relative;align-self:flex-start;margin-top:4px"><div id="' + p + '-btn" style="position:relative;background:' + C.brand + ';color:' + C.chaux + ';font:700 18px Outfit;padding:13px 22px;border-radius:10px;overflow:hidden"><span style="position:relative;z-index:1">Demander un devis</span><i id="' + p + '-ripple" style="position:absolute;left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;background:' + C.ocre + ';display:block;opacity:0"></i></div></div></div>' +
       '<div id="' + p + '-art">' + roomArt(14) + "</div></div>" +
       '<div id="' + p + '-svc" style="display:flex;gap:12px;padding:0 24px 20px">' +
       svc("Plâtrerie", '<path d="M4 14l9-4 4 2-9 4z"/><path d="M13 10V5"/><path d="M12 5h2"/>') +

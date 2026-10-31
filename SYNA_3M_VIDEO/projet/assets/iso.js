@@ -35,7 +35,9 @@
     const top = el(c, "iso-top", { position: "absolute", left: 0, top: 0, width: px(o.w), height: px(o.d), background: o.top || o.color, transform: "translateZ(" + px(o.h) + ")", borderRadius: px(o.r || 0) });
     const fy = el(c, "iso-fy", { position: "absolute", left: 0, top: px(o.d), width: px(o.w), height: px(o.h), background: o.left || shade(o.color, 0.86), transformOrigin: "0 0", transform: "translateZ(" + px(o.h) + ") matrix3d(1,0,0,0, 0,0,-1,0, 0,1,0,0, 0,0,0,1)" });
     const fx = el(c, "iso-fx", { position: "absolute", left: px(o.w), top: px(o.d), width: px(o.d), height: px(o.h), background: o.right || shade(o.color, 0.72), transformOrigin: "0 0", transform: "translateZ(" + px(o.h) + ") matrix3d(0,-1,0,0, 0,0,-1,0, 1,0,0,0, 0,0,0,1)" });
-    c._faces = { top, fy, fx };
+    let back = null;
+    if (o.back) back = el(c, "iso-back", { position: "absolute", left: 0, top: 0, width: px(o.w), height: px(o.h), background: o.back, transformOrigin: "0 0", transform: "translateZ(" + px(o.h) + ") matrix3d(1,0,0,0, 0,0,-1,0, 0,1,0,0, 0,0,0,1)" });
+    c._faces = { top, fy, fx, back };
     return c;
   }
   /** Panneau debout le long de l'axe x, tourné vers +y (lu de gauche à droite sur la face gauche des blocs). */

@@ -1,5 +1,9 @@
 # SPEC — « 3M Plâtrerie Peinture × Syna » (démonstration E-COM STUDIO IA)
 
+> Version 2 (retour du propriétaire) : tout en blanc, 53,6 s, voix accélérée de 8 %, ordinateur portable avec
+> l'onglet « E-COM STUDIO ia », musique pop 120 BPM. Repères de temps : `assets/cues.js`. Le détail des plans
+> ci-dessous décrit la version 1 ; les changements sont listés dans REVIEW.md.
+
 GOAL:    le spectateur comprend qu'un artisan qui jonglait entre plusieurs outils obtient, avec Syna, logo, identité,
          visuels, publicités et site au même endroit, dans une seule ligne de marque, modifiables sur simple demande.
 OUTPUT:  HyperFrames, 1920 x 1080, 30 fps, MP4.
