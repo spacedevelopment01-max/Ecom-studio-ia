@@ -1,0 +1,351 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "tree": "27de32eb757804bb9c2fa48750d03ef73aa87948",
+  "testsStartedFromHead": "53a85a2c717072e901078562a7121bbddbe6fe9b",
+  "testSourcesUnchanged": true,
+  "all42FilesStillMatch": true,
+  "fullSourceManifest": {
+    "parent": "c827531fcccc615c4d5b7b7cfe550477fedfe98f",
+    "branch": "codex/211-lot-d10b2-clips-bornes",
+    "baseTree": "4f27ee2ceb4ce28b8f014d156b2c026a60ab9f47",
+    "treeBeforeCommit": "27de32eb757804bb9c2fa48750d03ef73aa87948",
+    "files": {
+      "scripts/agent211-video-transport.mjs": {
+        "bytes": 1990,
+        "sha256": "a8bebd2f4ab094ec84fddd9cf210138a80c0f61d069d893bb4540289132a2d25",
+        "blob": "6bcdb2ed3425728ec2c5cdb03b0339815e850c6e",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/agent211-video-transport.mjs",
+        "base64Length": 2656,
+        "mode": "100644"
+      },
+      "scripts/verify-agent211-build.ts": {
+        "bytes": 58307,
+        "sha256": "266d3b9aae9918525032f55f839e8548597e4a698ce2a6b6617593c44d8664e0",
+        "blob": "fad5a18f2839ae9401b2760781a9a31b1705aa63",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/verify-agent211-build.ts",
+        "base64Length": 77744,
+        "mode": "100644"
+      },
+      "scripts/verify-agent211-generated-videos-ui.ts": {
+        "bytes": 17643,
+        "sha256": "dd98394ac0074a8272adc722774bb9f017a24e3a0b8d8b687d2cac74e7dab2c4",
+        "blob": "165055f6feea7e86b1cf487c47a892e73926544d",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/scripts/verify-agent211-generated-videos-ui.ts",
+        "base64Length": 23524,
+        "mode": "100644"
+      },
+      "src/app/api/studio-agent/conversations/[cid]/generated-videos/route.ts": {
+        "bytes": 995,
+        "sha256": "96b86b5448c44d8d10ba984c2b199b20019ba42088eb8b9587721f87bfe46dcc",
+        "blob": "6d3ca4c08be81f560a726930b165a70b1270408b",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/app/api/studio-agent/conversations/[cid]/generated-videos/route.ts",
+        "base64Length": 1328,
+        "mode": "100644"
+      },
+      "src/components/studio/conversation-generated-videos.tsx": {
+        "bytes": 12877,
+        "sha256": "96572e6342be73df0543b6eb38f1e16e711a6ff1715b07818fdc8759672e918a",
+        "blob": "1997c5c1154db2ffbf6f7a1fd927ea2fce4050b9",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/components/studio/conversation-generated-videos.tsx",
+        "base64Length": 17172,
+        "mode": "100644"
+      },
+      "src/components/studio/conversation-panel.tsx": {
+        "bytes": 31481,
+        "sha256": "922225a32ec81579b9906cb9258797e1db6029d245c5e0f29ae05f417d1548c7",
+        "blob": "1407f154939fb65053f7c67981814d077e750394",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/components/studio/conversation-panel.tsx",
+        "base64Length": 41976,
+        "mode": "100644"
+      },
+      "src/lib/ai/media-providers.ts": {
+        "bytes": 111544,
+        "sha256": "e3572a5f33790690809ba3c8d1f99f8d141b8280c8135f2d8ffff2ac7eec68b9",
+        "blob": "7b6930e38dc28843a845ab50bd50cb25ba2f1016",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/ai/media-providers.ts",
+        "base64Length": 148728,
+        "mode": "100644"
+      },
+      "src/lib/image-v2/request-binding.ts": {
+        "bytes": 10463,
+        "sha256": "982ec320ce3f83a4df304f25d7e8787ba6cf79cdbbd368d72f8084d4ac49d4bd",
+        "blob": "0b82a10b0a7839db40ba6cf370f7ab8e3b581388",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/image-v2/request-binding.ts",
+        "base64Length": 13952,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/contract.ts": {
+        "bytes": 6893,
+        "sha256": "5e313ba15e3dcb1e4a8b6dc83f69247c98fb6647a8f59870f4028cc4b8aa917c",
+        "blob": "8d638d6e6fa667070e03ea675890b57932d7a976",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/contract.ts",
+        "base64Length": 9192,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/index.ts": {
+        "bytes": 31313,
+        "sha256": "349572952551705e65eb60c4d7bbbf17b809760e4e08f974e25e0da2dcae99ca",
+        "blob": "7c9d055378fe96fe9024df16ff991bf97fe5e819",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/index.ts",
+        "base64Length": 41752,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/intelligence-context.ts": {
+        "bytes": 33018,
+        "sha256": "f6aba5d75b39316b949b2f716cfc1ee865839f01bc2d430310fc0db1b090edac",
+        "blob": "dfb628d1f16703d6f7906bcd19f484cae8081d21",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/intelligence-context.ts",
+        "base64Length": 44024,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/intelligence-contract.ts": {
+        "bytes": 8088,
+        "sha256": "f0ad099eccb5893686daeef156cd245906a8f0c2e36299f3d23c9e9dad1472c0",
+        "blob": "ba06bd41d7d34d549334a8ce98a044ae5b650e24",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/intelligence-contract.ts",
+        "base64Length": 10784,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/intelligence.ts": {
+        "bytes": 23354,
+        "sha256": "1ed7b2962d5ebf1e81cf795d5fa46426975f036201b248636b7236706e36a284",
+        "blob": "45b76a83ea01b66faa4a4ebd5416524d9d1e10f6",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/intelligence.ts",
+        "base64Length": 31140,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/studio-operations.ts": {
+        "bytes": 9884,
+        "sha256": "7456bc4bf1c489cb8f128a0427dbf80b8ab19c33e553946d66f47761425dd9e5",
+        "blob": "2eb9c9aef3e585ad933747d8547362e03991b398",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/studio-operations.ts",
+        "base64Length": 13180,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/tool-flags.ts": {
+        "bytes": 1823,
+        "sha256": "f5e568b8096d14353f799460e682159dd2bfe2799443d1df87bf1c0d36474033",
+        "blob": "225f532e11cc5bf04cd6a191c7bd5e42657b2392",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/tool-flags.ts",
+        "base64Length": 2432,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/video-generation-contract.ts": {
+        "bytes": 1603,
+        "sha256": "6a7246724c65a182f1fae70d9b6be3a07f4480c1a238d8afe165fb0f97c7c7e2",
+        "blob": "7b6c1fcb4da53df197a7f36e8032758f75f6d92b",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/video-generation-contract.ts",
+        "base64Length": 2140,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/video-generation-execution.ts": {
+        "bytes": 18242,
+        "sha256": "1f4d95965b03265ce5fc36e85069e6268f5524d162f69d7720a6f7521b782930",
+        "blob": "ff178db3f970ed7149922acb9fd231ca58f8db28",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/video-generation-execution.ts",
+        "base64Length": 24324,
+        "mode": "100644"
+      },
+      "src/lib/orchestrator/conversation/video-generation-validation.ts": {
+        "bytes": 4620,
+        "sha256": "215d54b3ddc7757ce2dabcf34544f8150c12fcbcb21fd0baa3e28303ae2603a7",
+        "blob": "4fd58e255f4b7098f8cc1923dd7b5e0570801609",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/orchestrator/conversation/video-generation-validation.ts",
+        "base64Length": 6160,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/approval.ts": {
+        "bytes": 7027,
+        "sha256": "475ff9ebde9c1d4a5ea193e709180183efb98bb423ec8c9188fcc835e5beb3bc",
+        "blob": "ab317e77c791c3948f32366c9d7393a00cce3dc5",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/approval.ts",
+        "base64Length": 9372,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/bounded-quote.ts": {
+        "bytes": 7873,
+        "sha256": "94a37ce4b3c17ce1ed098540cb2346ba5f6540a38a9f4f0f27145fd5476b34c6",
+        "blob": "1920d329b0e661796b50e1911b0b0eb414637f17",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/bounded-quote.ts",
+        "base64Length": 10500,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/chain-quote.ts": {
+        "bytes": 7416,
+        "sha256": "b6b5810ff1194cff61ce6228e4de6975d34456bc07baec68be3b177f40900e45",
+        "blob": "9f25b4760f924a6d918bed27694cea3764e8eb7b",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/chain-quote.ts",
+        "base64Length": 9888,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/deps.ts": {
+        "bytes": 12571,
+        "sha256": "628e580d8592ec12da9ad2c03f80cd41633366d3bc758b334dcd1648bb0b710e",
+        "blob": "5c6e710aed6c33dd62891002f5b96c7650c3e235",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/deps.ts",
+        "base64Length": 16764,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/quality.ts": {
+        "bytes": 14211,
+        "sha256": "b1dc3999588d4e848f6843f154d72dfb78bc028119e1669b59b79d194d74d4fa",
+        "blob": "e2ca05f65b58ea73569b2d2b4e63ec4c4269569e",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/quality.ts",
+        "base64Length": 18948,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/scene-contract.ts": {
+        "bytes": 1276,
+        "sha256": "23e904d3a28e747803a574275abad32e1bd6a25fc593ed7ae0feb0d8aa79ef25",
+        "blob": "57ee47839686783bd615cc053e06c411d32fa888",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/scene-contract.ts",
+        "base64Length": 1704,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/shot-review-request.ts": {
+        "bytes": 1918,
+        "sha256": "f8e17f5b8bf80e25786ec8ba26b428802428669588c96a0a0d4094ad2c4537e8",
+        "blob": "3cecc5a5c869a774ee3a22484abfdc9dce9c0a53",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/shot-review-request.ts",
+        "base64Length": 2560,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/subject-binding.ts": {
+        "bytes": 3787,
+        "sha256": "de436f78773f2c347374cc364c42dce39ff6ac23ec0236bcf9a497608f0c0c78",
+        "blob": "2783f4e612df0445468f62c0bc2c2595bb6d4f85",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/subject-binding.ts",
+        "base64Length": 5052,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/three-scenes.ts": {
+        "bytes": 78684,
+        "sha256": "0993f35d40881a5a7cea80dcc486e338b02e5473494e40cccec67694c26913e0",
+        "blob": "6c9770726e74e50b3668b1c6e6d41caa03ead568",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/three-scenes.ts",
+        "base64Length": 104912,
+        "mode": "100644"
+      },
+      "src/lib/video-v2/voice.ts": {
+        "bytes": 4758,
+        "sha256": "17b1a3b96b5ad90ca47c4fcd09f035aec4247539c761ab0bd126d9aee299b39e",
+        "blob": "7bf5e628aeb584d294ca9a2bd18ca4f19e4195cf",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/lib/video-v2/voice.ts",
+        "base64Length": 6344,
+        "mode": "100644"
+      },
+      "tests/conversation211-generation-preview.test.ts": {
+        "bytes": 1871,
+        "sha256": "3b71166ad50ea2f93caab6f5f6b79c193f1b7427a5b606a2e5ecb6ddcb4b48ef",
+        "blob": "4a63ac472b9b0b250bf6cb2c81c7f3179666d99e",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/conversation211-generation-preview.test.ts",
+        "base64Length": 2496,
+        "mode": "100644"
+      },
+      "tests/conversation211-generation-schema.test.ts": {
+        "bytes": 915,
+        "sha256": "1faff8a50d0525871c1bd0b4f99e1ed28dc30a40d1814aae51c68f4bd1df622a",
+        "blob": "491643d91e27e663e795c87b905498fd6b32690e",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/conversation211-generation-schema.test.ts",
+        "base64Length": 1220,
+        "mode": "100644"
+      },
+      "tests/conversation211-studio-knowledge.test.ts": {
+        "bytes": 13789,
+        "sha256": "a205ff24ea054ec8d00fc8372ba549f26cd8ba993432f7fc6787bff3a09e789f",
+        "blob": "f9b6d7eea7795cddb433b8d4bf63deecc3aeaf6b",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/conversation211-studio-knowledge.test.ts",
+        "base64Length": 18388,
+        "mode": "100644"
+      },
+      "tests/conversation211-video-generation.test.ts": {
+        "bytes": 15057,
+        "sha256": "04f85d54dab2d0d6e001f38e8285c6fe85e527754f177d4d1fb7ae6b688d9738",
+        "blob": "cb5ece58f67068696f9576b971688090bcd762ad",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/conversation211-video-generation.test.ts",
+        "base64Length": 20076,
+        "mode": "100644"
+      },
+      "tests/higgsfield-engine.test.ts": {
+        "bytes": 18026,
+        "sha256": "4bd67a16f03192726ced7125cc76a24d7f3df30f36aafd771d103e2bfff75811",
+        "blob": "ae07bf1e0ea9a1c2b6cb9d8157752c895d3ee2c9",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/higgsfield-engine.test.ts",
+        "base64Length": 24036,
+        "mode": "100644"
+      },
+      "tests/video-bounded-chain.test.ts": {
+        "bytes": 17236,
+        "sha256": "d5c38fc6d6b2ca2b4a8dc5088223881c090232770d2d0552705af186c3bdf020",
+        "blob": "31efb4c081d827ec2dbe0d791c0bd765038f479d",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/video-bounded-chain.test.ts",
+        "base64Length": 22984,
+        "mode": "100644"
+      },
+      "tests/video-bounded-review.test.ts": {
+        "bytes": 2552,
+        "sha256": "df0d0c19c67d6d92c1d29b6b548aa84775694d97effde7b8ef9ce6fff06ac6d9",
+        "blob": "afb3bc98a120f8577a092da367131560b81d2c19",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/video-bounded-review.test.ts",
+        "base64Length": 3404,
+        "mode": "100644"
+      },
+      "tests/video-local-voice-identity.test.ts": {
+        "bytes": 1539,
+        "sha256": "008dfd04615629c7856ebd3906fc87a45dfbc79b1f6007582b65448397ab73f3",
+        "blob": "42e0925bcaee0498d2e72d90786de9d855f3bc50",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/video-local-voice-identity.test.ts",
+        "base64Length": 2052,
+        "mode": "100644"
+      },
+      "tests/video-native-binding.test.ts": {
+        "bytes": 8172,
+        "sha256": "2b973ac3b5a5c291bc9de9b322e25d1546277be9b490f5046f768baa1cd21e25",
+        "blob": "375c7f6cedf0fe56470df4ffc411081b7cad23e0",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/video-native-binding.test.ts",
+        "base64Length": 10896,
+        "mode": "100644"
+      },
+      "tests/video-voice-timing.test.ts": {
+        "bytes": 4863,
+        "sha256": "6a79276c854ea04b1077997af53440a7cc1242b3242e759fed35491f6e6e0808",
+        "blob": "4813269a603f815b83965e3ac9e0fda7bb6f0244",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/tests/video-voice-timing.test.ts",
+        "base64Length": 6484,
+        "mode": "100644"
+      },
+      "worker/handlers.ts": {
+        "bytes": 42936,
+        "sha256": "b9a027d0503fa2372be8b066ca2cd60b72187812ff7f434dba26afa1ce7e4656",
+        "blob": "af591f2d68e8c83a0aefa1b7808b657d44f0b6fd",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/worker/handlers.ts",
+        "base64Length": 57248,
+        "mode": "100644"
+      },
+      ".github/workflows/ci.yml": {
+        "bytes": 11371,
+        "sha256": "7b7d9c8c4a20a6f560952c337519786326d8a2b7cb5114bd47fc6d71e6404e29",
+        "blob": "09c54df23aae2275817378b4034a965f89990da8",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/.github/workflows/ci.yml",
+        "base64Length": 15164,
+        "mode": "100644"
+      },
+      "src/app/api/projects/[id]/creative/video/route.ts": {
+        "bytes": 18499,
+        "sha256": "a823fbdd3355ff371aaef809e121462456e2cfd472106bf364d36ca5aae28c5e",
+        "blob": "7a27993469fd5239ee136f50e33fb23cbbd644de",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/app/api/projects/[id]/creative/video/route.ts",
+        "base64Length": 24668,
+        "mode": "100644"
+      },
+      "src/components/studio/guided-video.tsx": {
+        "bytes": 28770,
+        "sha256": "672d7aae4f054b491f77a1c659a8a0a8d1b79bf56897a7e17cf552bdb119395b",
+        "blob": "2f4ccfe07d0c6192440cefc9682cebdc806d7e7d",
+        "localFile": "/workspace/reviews/ecom-211-lot-d10b2-clips/src/components/studio/guided-video.tsx",
+        "base64Length": 38360,
+        "mode": "100644"
+      }
+    }
+  }
+}

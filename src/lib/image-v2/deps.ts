@@ -11,21 +11,21 @@
  */
 import sharp from "sharp";
 import { activeProviderKey } from "../ai/config";
-import { llmConfigured, llmJson } from "../ai/llm";
-import { ambianceImage, imageProviderAvailable, mediaRouteFor, productImagePath, productScene } from "../ai/media-providers";
+import { llmConfigured, llmJson,type LlmCall } from "../ai/llm";
+import { ambianceImage, editPhoto,imageProviderAvailable, mediaRouteFor, productImagePath, productScene } from "../ai/media-providers";
 import type { MediaUsage } from "../ai/media-routing";
-import { brainContext } from "../ai/context";
+import { brainView } from "../ai/context";
 import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
 import { downloadStock } from "../stock/photos";
 import { L } from "../i18n-server";
 import { personCheckEn } from "../people-policy";
 import { FORMATS, generationAspect } from "./formats";
-import { ImageReviewSchema, REVIEW_SYSTEM } from "./quality";
+import { ImageReviewSchema,BoundedImageReviewSchema,BoundedEditImageReviewSchema, REVIEW_SYSTEM } from "./quality";
 import { STOCK_PROVIDERS, type StockProvider } from "./sources";
 import type { ImageReview, StockCandidate, VisualBrief } from "./types";
 
-export type GenerationPath = "masked_edit" | "composite_plate" | "reference_scene" | "text_to_image" | "none";
+export type GenerationPath = "masked_edit" | "composite_plate" | "reference_scene" | "reference_edit" | "text_to_image" | "none";
 
 export type ImageV2Deps = {
   providers: StockProvider[];
@@ -45,14 +45,21 @@ export type ImageV2Deps = {
 /** Résumé du brief pour la relecture (structuré, en anglais). */
 export function reviewPrompt(b: VisualBrief): string {
   return `BRIEF — kind: ${b.kind}; support: ${b.support}; format: ${b.format.aspect}${b.format.textZone !== "none" ? ` (text area ${b.format.textZone})` : ""}.
-Subject that MUST be shown: ${b.subject}.${b.action ? ` Action: ${b.action}.` : ""}${b.environment ? ` Setting: ${b.environment}.` : ""}
+Subject that MUST be shown: ${b.nativeEdit?'the exact subjects in the attached SOURCE image; do not replace them with another product or trade from project context':b.subject}.${!b.nativeEdit&&b.action ? ` Action: ${b.action}.` : ""}${!b.nativeEdit&&b.environment ? ` Setting: ${b.environment}.` : ""}
 ${b.instructions ? `Client instructions, also to verify: ${b.instructions}.` : ""}
-Art direction: ${b.artDirection} — composition: ${b.composition}; lighting: ${b.lighting}; camera: ${b.framing}.
-Relevant concepts: ${b.positive.slice(0, 8).join("; ")}.
-Off-topic (fail relevance if this is all the image shows): ${b.negative.slice(0, 10).join("; ")}.
-${b.productFidelity ? "A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
+Art direction: ${b.nativeEdit?'keep the SOURCE composition, camera, subjects and details outside the exact requested change':`${b.artDirection} — composition: ${b.composition}; lighting: ${b.lighting}; camera: ${b.framing}`}.
+${b.nativeEdit?'TARGETED EDIT: image 2 is the SOURCE image to preserve outside the exact requested change. Other attached references are labelled as style or the real product. sourceAltered MUST be true if any subject, framing, object, inscription, product colour or other detail changed outside that request. requestedChangeApplied MUST be true only if the requested change is visibly applied, false for an unchanged source or a missing change. A style reference only supplies background colours/light, never new objects or people. Include required booleans sourceAltered and requestedChangeApplied in the JSON.':''}
+Relevant concepts: ${b.nativeEdit?'the actual visible source and the requested edit':b.positive.slice(0, 8).join("; ")}.
+Off-topic (fail relevance if this is all the image shows): ${b.nativeEdit?'replacement subjects, a recreated scene, changes outside the request':b.negative.slice(0, 10).join("; ")}.
+${b.productFidelity ? b.nativeEdit?"For product fidelity, use the labelled REAL PRODUCT reference when attached; otherwise preserve the product visible in the SOURCE. The SOURCE is image 2, not the style reference. Preserve the product shape, colours, logo, inscriptions and proportions.\n":"A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
 ${personCheckEn(b.people !== false)}
-Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, "issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
+Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, ${b.nativeEdit?'"sourceAltered": false, "requestedChangeApplied": false, ':''}"issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
+}
+
+/** Demande commune au contrôle et à son devis ; les images sont réduites avant l'appel réel. */
+export function imageReviewRequest(p:Project,brief:VisualBrief,base:{userId:string;projectId:string;jobId:string|null;usageKey:string},images:NonNullable<LlmCall['images']>,origin:'stock'|'generated'='generated'):LlmCall{
+ const view=brainView(p,'image');
+ return{task:'quality_control',...base,promptKey:'image-v2-review',routing:{difficulty:brief.productFidelity?'complex':'standard',deliverable:origin==='stock'?'stock_v2':'image_v2'},system:REVIEW_SYSTEM,context:view.stable,volatile:view.volatile,images,prompt:reviewPrompt(brief),maxTokens:2500};
 }
 
 /**
@@ -113,7 +120,7 @@ export async function compositeProduct(plate: Buffer, cutout: Buffer, aspect: Vi
     .toBuffer();
 }
 
-export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: boolean }): ImageV2Deps {
+export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: boolean;singleReviewCall?:boolean;reviewRoute?:LlmCall['expectedRoute'];reviewEnvelope?:Pick<LlmCall,'context'|'volatile'|'reference'> }): ImageV2Deps {
   const base = { userId: p.userId, projectId: p.id, jobId: b.jobId };
   /** Usage de l'administration (Images & Vidéos) : publicité, image du produit réel, ou décor et ambiance. */
   const usageFor = (brief: VisualBrief): MediaUsage => (brief.support === "ad" || brief.kind === "ad_image" ? "ad_visual" : brief.productFidelity ? "product_image" : "scene");
@@ -121,6 +128,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
   const routeFor = (brief: VisualBrief): { path: GenerationPath; usage: MediaUsage } => {
     const usage = usageFor(brief);
     if (!b.aiActive) return { path: "none", usage };
+    if(brief.nativeEdit)return{path:mediaRouteFor('product_edit',{references:brief.references.length})?'reference_edit':'none',usage:'product_edit'};
     if (brief.productFidelity) {
       if (!brief.references.length) return { path: "none", usage };
       // Photographie publicitaire générée à partir de la photo du produit (référence) : le produit intégré à la scène.
@@ -128,7 +136,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       const r = productImagePath(usage === "ad_visual" ? "ad_visual" : "product_image");
       return r ? { path: "reference_scene", usage: r.usage } : { path: "none", usage };
     }
-    return { path: imageProviderAvailable({ usage }) ? "text_to_image" : "none", usage };
+    return { path: imageProviderAvailable({ usage,references:brief.references.length?1:0 }) ? "text_to_image" : "none", usage };
   };
   const pathFor = (brief: VisualBrief): GenerationPath => routeFor(brief).path;
   return {
@@ -144,25 +152,16 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
     async review(brief, img, reference, key, origin) {
       const small = await sharp(img, { failOn: "none" }).rotate().resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const images = [{ data: small, label: L("image à juger", "image to review") }];
-      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: L("produit de référence (réel)", "reference product (real)") });
+      if (reference) images.push({ data: await sharp(reference).resize(768, 768, { fit: "inside", background: { r: 255, g: 255, b: 255, alpha: 1 } }).flatten({ background: "#ffffff" }).jpeg({ quality: 85 }).toBuffer(), label: brief.productFidelity?L("produit de référence (réel)", "reference product (real)"):L('référence autorisée d’ambiance et de couleurs','authorized reference for atmosphere and colours') });
+      if(brief.nativeEdit){if(images[1])images[1].label=L('source à retoucher, conserver hors demande','source to edit, preserve outside the request');for(const [assetId,label]of [[brief.nativeEdit.styleAssetId,L('style du décor et lumière seulement','background style and lighting only')],[brief.nativeEdit.productAssetId,L('véritable produit à conserver','real product to preserve')]]as const){if(!assetId)continue;const a=getAsset(assetId);if(!a||a.project_id!==p.id||a.deleted_at)throw new Error('edit_reference_missing');images.push({data:await sharp(assetData(a)).resize(768,768,{fit:'inside'}).flatten({background:'#ffffff'}).jpeg({quality:85}).toBuffer(),label});}}
       return (await llmJson(
-        {
-          task: "quality_control",
-          ...base,
-          usageKey: key,
-          promptKey: "image-v2-review",
-          // La fidélité d'un produit réel se juge au niveau fort directement ; une ambiance au niveau standard.
-          routing: { difficulty: brief.productFidelity ? "complex" : "standard", deliverable: origin === "stock" ? "stock_v2" : "image_v2" },
-          system: REVIEW_SYSTEM,
-          context: brainContext(p, "image"),
-          images,
-          prompt: reviewPrompt(brief),
-          maxTokens: 2500,
-        },
-        ImageReviewSchema,
+        {...imageReviewRequest(p,brief,{...base,usageKey:key},images,origin),...b.reviewEnvelope,...(b.reviewRoute?{expectedRoute:b.reviewRoute}:{})},
+        b.singleReviewCall?(brief.nativeEdit?BoundedEditImageReviewSchema:BoundedImageReviewSchema):ImageReviewSchema,
+        b.singleReviewCall?{strict:true}:{},
       )) as ImageReview;
     },
     async generate(brief, prompt, reference, key) {
+      if(brief.nativeEdit){if(!reference)throw new Error('edit_source_missing');const bytes=(assetId:string|undefined)=>{if(!assetId)return undefined;const a=getAsset(assetId);if(!a||a.project_id!==p.id||a.deleted_at)throw new Error('edit_reference_missing');return assetData(a);};const r=mediaRouteFor('product_edit',{references:brief.references.length});return{img:await editPhoto({...base,usageKey:key},{image:reference,style:bytes(brief.nativeEdit.styleAssetId),product:bytes(brief.nativeEdit.productAssetId),instruction:brief.instructions??'',preparedPrompt:prompt,aspect:generationAspect(brief.format.aspect),usage:'product_edit',peoplePolicy:'none'}),provider:r?.provider??'ai',model:r?.model??null,path:'reference_edit' as const};}
       const { path, usage } = routeFor(brief);
       const aspect = generationAspect(brief.format.aspect);
       if (path === "reference_scene" && reference) {
@@ -171,8 +170,8 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
         return { img: await productScene({ ...base, usageKey: key }, { prompt, aspect, reference, textZone: zone, usage }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       if (path === "text_to_image") {
-        const r = mediaRouteFor(usage);
-        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
+        const r = mediaRouteFor(usage,{references:reference?1:0});
+        return { img: await ambianceImage({ ...base, usageKey: key }, { prompt, aspect, reference,usage, negative: brief.fr?.sceneExclude }), provider: r?.provider ?? "ai", model: r?.model ?? null, path };
       }
       throw new Error(L("aucun parcours de génération fiable pour cette image", "no reliable generation path for this image"));
     },

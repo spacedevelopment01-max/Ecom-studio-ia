@@ -1,0 +1,159 @@
+{
+ "publication_platrier": {
+  "ok": true,
+  "numero": 3,
+  "host": "platrerie-fictive-durand.sites.recette.test"
+ },
+ "pages_platrier_ordinateur": {
+  "/": 200,
+  "/pages/realisations": 200
+ },
+ "pages_platrier_telephone": {
+  "/": 200,
+  "/pages/realisations": 200
+ },
+ "publication_electricien": {
+  "ok": true,
+  "numero": 4,
+  "host": "volt-fictif-electricite.sites.recette.test"
+ },
+ "pages_electricien_ordinateur": {
+  "/": 200,
+  "/pages/realisations": 200
+ },
+ "pages_electricien_telephone": {
+  "/": 200,
+  "/pages/realisations": 200
+ },
+ "publication_salon": {
+  "ok": true,
+  "numero": 2,
+  "host": "salon-fil-d-or-2.sites.recette.test"
+ },
+ "pages_salon_ordinateur": {
+  "/": 200
+ },
+ "pages_salon_telephone": {
+  "/": 200
+ },
+ "publication_restaurant": {
+  "ok": true,
+  "numero": 3,
+  "host": "la-treille-fictive.sites.recette.test"
+ },
+ "pages_restaurant_ordinateur": {
+  "/": 200,
+  "/pages/la-carte": 200
+ },
+ "pages_restaurant_telephone": {
+  "/": 200,
+  "/pages/la-carte": 200
+ },
+ "publication_agence2": {
+  "ok": true,
+  "numero": 4,
+  "host": "agence-horizon-lumiere-2.sites.recette.test"
+ },
+ "pages_agence2_ordinateur": {
+  "/": 200,
+  "/pages/acheter": 200
+ },
+ "pages_agence2_telephone": {
+  "/": 200,
+  "/pages/acheter": 200
+ },
+ "devis": {
+  "bouton": "/pages/devis",
+  "envoi": 303,
+  "email": {
+   "a": [
+    "proprio@recette.invalid"
+   ],
+   "sujet": "=?UTF-8?Q?Nouvelle_demande_de_devis_de_Lou_Fictive?= =?UTF-8?Q?_=E2=80=94_Pl=C3=A2trerie_Fictive_Durand?="
+  }
+ },
+ "reservation": {
+  "status": 201,
+  "numero": null,
+  "creneau": "2026-11-30 09:00"
+ },
+ "versions": {
+  "modification": 200,
+  "noteSite": "Le site en ligne n'affiche pas encore ces changements : publiez une nouvelle version depuis l'onglet Site.",
+  "siteInchange": true,
+  "publication": 4,
+  "apresPublication": true,
+  "restauration": 200,
+  "apresRestauration": false,
+  "remiseOrigine": 200
+ },
+ "isolationHotes": {
+  "/studio": 404,
+  "/api/studio-agent/draft": 404,
+  "/api/projects/oe6rq2jhft0kb3rh/contenus": 404,
+  "/admin": 404,
+  "/preview/oe6rq2jhft0kb3rh/v/x/": 404
+ },
+ "menu_platrier": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "realisations",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_salon": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "rendez-vous",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_restaurant": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "carte",
+  "rendez-vous",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "menu_agence2": [
+  "pilote",
+  "produit",
+  "strategie",
+  "marque",
+  "boutique",
+  "biens",
+  "images",
+  "videos",
+  "publications",
+  "publicites",
+  "blog",
+  "compte"
+ ],
+ "compteEtranger": {
+  "contenus": 404,
+  "publication": 404,
+  "conversation": 404
+ }
+}

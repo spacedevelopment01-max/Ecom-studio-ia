@@ -99,6 +99,13 @@ export const ImageReviewSchema = z.object({
   fix: z.object({ target: z.enum(["lighting", "composition", "background", "crop", "product", "direction", "none"]).catch("none"), instruction: z.string().catch("") }).catch({ target: "none", instruction: "" }),
 });
 
+/** Parcours sur devis borné : aucune absence de contrôle de fidélité/personne interprétée comme « faux ». */
+export const BoundedImageReviewSchema=ImageReviewSchema.extend({
+ criteria:z.object(Object.fromEntries(IMAGE_CRITERIA.map(k=>[k,z.number().min(0).max(10)])) as Record<ImageCriterion,z.ZodNumber>),
+ offTopic:z.boolean(),productAltered:z.boolean(),wrongProduct:z.boolean(),textInImage:z.boolean(),deformed:z.boolean(),artifacts:z.boolean(),personVisible:z.boolean(),
+});
+export const BoundedEditImageReviewSchema=BoundedImageReviewSchema.extend({sourceAltered:z.boolean(),requestedChangeApplied:z.boolean()});
+
 export const REVIEW_SYSTEM = `Rôle : directeur artistique exigeant d'une agence de création visuelle (niveau 2026). Tu juges UNE image avant qu'elle soit utilisée par une marque, à partir de son brief.
 Note chaque critère de 0 à 10 : relevance (montre exactement le sujet du brief : le métier ET son geste, ou l'univers du produit), fidelity (si un produit de référence est fourni : même forme, couleurs, logo, étiquette, proportions ; sinon 10), aesthetics (qualité esthétique réelle, pas seulement technique), composition (hiérarchie, cadrage, équilibre, espace pour le texte si demandé), realism, brand (cohérence avec la palette et le ton), brief (direction artistique, lumière, cadrage demandés), support (adaptée au format et à l'usage), artifacts (10 = aucun artefact), commercial (exploitable par une marque sans gêne).
 offTopic = vrai si l'image ne montre pas le sujet (mur nu ou texture pour un artisan, décor sans lien, autre métier ou autre prestation) — même si elle est belle. productAltered = vrai si un client remarquerait un autre produit : autre couleur, autre forme, autre matière, proportions nettement différentes, texte ou logo changé ou ajouté, produit déformé. La fidélité se juge sur ce que la référence MONTRE : une partie cachée ou hors cadre sur la référence (masquée par une personne, de dos, coupée) ne peut pas être « modifiée ». De petits détails mécaniques redessinés qu'un client ne remarquerait pas (charnière, vis, couture) se citent dans « issues » et se notent dans fidelity (7 ou 8), sans productAltered. wrongProduct = vrai si ce n'est pas le même produit. textInImage = texte, lettres, logo ou filigrane ajoutés. deformed = mains, visages ou objets déformés. artifacts = défauts de génération visibles. personVisible = vrai si une personne, un visage, une main, un corps ou une silhouette est visible (même flou ou partiel) ; quand le brief dit que les personnes ne sont pas autorisées, l'image est alors refusée.
@@ -107,6 +114,7 @@ Sois strict : 8 se mérite ; une image correcte mais banale n'a pas plus de 6 en
 /** Codes de défauts tirés d'une relecture. */
 export function reviewCodes(r: ImageReview, brief: VisualBrief): string[] {
   const codes: string[] = [];
+  if(brief.nativeEdit){if(r.sourceAltered!==false)codes.push('source_altered');if(r.requestedChangeApplied!==true)codes.push('edit_not_applied');}
   if (r.offTopic || r.criteria.relevance < 4) codes.push("off_topic");
   // Règle de présence humaine : personne visible sans autorisation du client = refus (défaut fatal).
   codes.push(...personCodes(r.personVisible, brief.people !== false));

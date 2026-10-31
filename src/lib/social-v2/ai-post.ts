@@ -46,6 +46,7 @@ import {
   aiTextLayout,
   textLayoutMaxMicro,
 } from "../ai/media-providers";
+import {withQuotedImageRoute}from "../ai/media-providers";
 import { usageExplicit } from "../ai/media-routing";
 import { AI_POST_ATTEMPTS, type MediaResult, type PostBrief } from "./deps";
 import { MAIN_PRODUCT, type SubjectOption } from "../creative-subject";
@@ -286,6 +287,8 @@ export type PublicationContext = {
 };
 
 export type AiPostDeps = {
+  /** Relire la cible avant une nouvelle étape ; un acquis reste lisible sans appel. */
+  beforeDispatch?:()=>void;
   /** Accroche, ligne, bouton et scène écrits par l'IA de texte (null : textes du calendrier). */
   copy?: (
     p: Project,
@@ -399,7 +402,7 @@ export function projectForSubject(
           ? "Prestation de services"
           : (selected?.category ?? "Produit du catalogue"),
       price: {
-        amount: selected?.price != null ? selected.price / 100 : null,
+        amount: selected?.price ?? null,
         currency: p.product.price.currency,
         status: selected?.price != null ? "confirmed" : "unknown",
       },
@@ -453,6 +456,8 @@ async function designSinglePostWithAi(
   try {creative=creativeContract(post,isAd?"ad":"organic");}
   catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:(e as Error).message};}
   const capMicro = Math.round(o.maxCostEur * 1e6);
+  const stage=<T,>(key:string,fn:()=>Promise<T>,replaySafe=false)=>publicationStage(p.id,key,fn,replaySafe,deps.beforeDispatch);
+  const imageStage=(key:string,prompt:string,fn:()=>Promise<Buffer>)=>publicationImageStage(p,key,prompt,fn,deps.beforeDispatch);
   const ref = o.reference ? getAsset(o.reference) : null;
   if (
     ref &&
@@ -500,6 +505,7 @@ async function designSinglePostWithAi(
     policy: PUBLICATION_POLICY,
     post: {
       id: post.id,
+      ...(post.nativeBinding?{nativeBinding:post.nativeBinding}:{}),
       network: post.network,
       format: post.format,
       title: post.title,
@@ -539,7 +545,10 @@ async function designSinglePostWithAi(
     // An acquired final result does not need a currently available generation model.
     for(let i=0;i<Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS));i++) {
       const cached=publicationStageValue<{assetId?:string}>(p.id,`${prefix}:${i}:outcome`);
-      if(cached?.assetId){const a=getAsset(cached.assetId);if(!a||a.project_id!==p.id||a.deleted_at||!["ready","approved"].includes(a.status))return blocked("Version conservée indisponible : pas de nouvelle dépense automatique.");return {assetId:a.id,costMicro:spent(),by:"image_v2",attempts:i+1};}
+      if(cached?.assetId){const a=getAsset(cached.assetId);if(!a||a.project_id!==p.id||a.deleted_at||!["ready","approved"].includes(a.status))return blocked("Version conservée indisponible : pas de nouvelle dépense automatique.");
+        const texts=assetMeta<any>(a).aiPost?.texts,explicit=Object.values(deps.clientTexts??{}).filter((v):v is string=>typeof v==='string');
+        if(!texts||!['headline','subline','cta'].every(field=>typeof texts[field]==='string')||publicationCopyIssues(p,texts,post.request??'',explicit,deps.confirmedCommercialTexts).length)return{...blocked("Le visuel acquis est conservé, mais ses affirmations commerciales doivent être relues. Aucun nouveau débit ni remplacement automatique."),code:'ACQUIRED_COPY_FACTS_REQUIRED',partialAssetIds:[a.id]};
+        return {assetId:a.id,costMicro:spent(),by:"image_v2",attempts:i+1};}
     }
     // Deterministic prerequisites BEFORE buying copy or claiming a pending receipt.
     if(mode==="two-step"&&!deps.layout)return {...blocked("Étape de mise en page demandée indisponible, aucun remplacement automatique."),code:"LAYOUT_STAGE_UNAVAILABLE"};
@@ -609,7 +618,7 @@ async function designSinglePostWithAi(
     };
     const base = aiPostTexts(p, post);
     if(!creative.allowCommercial)base.cta="";
-    const acquired = await publicationStage(p.id, `${prefix}:copy`, async () => {
+    const acquired = await stage(`${prefix}:copy`, async () => {
       if (!fits(deps.conceptMaxMicro?.() ?? 0))
         throw new Error(
           "Budget insuffisant pour concevoir le visuel : aucun titre de calendrier certifié premium.",
@@ -723,8 +732,7 @@ async function designSinglePostWithAi(
     const pal = effectivePalette(p.brand) ?? p.brand?.palette;
     for (let attempt = 0; attempt < Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS)); attempt++) {
       const key = `${prefix}:${attempt}`;
-      const result = await publicationStage(
-        p.id,
+      const result = await stage(
         `${key}:outcome`,
         async () => {
           const imageReady = publicationStageDone(
@@ -772,8 +780,7 @@ async function designSinglePostWithAi(
                 fix: sceneVersion ? fix : undefined,
               }),
             );
-            scene = await publicationImageStage(
-              p,
+            scene = await imageStage(
               `${prefix}:scene:${sceneVersion}`,
               sp,
               () =>
@@ -786,8 +793,7 @@ async function designSinglePostWithAi(
                   { photoOnly: true },
                 ),
             );
-            const sr = await publicationStage(
-              p.id,
+            const sr = await stage(
               `${prefix}:scene:${sceneVersion}:review`,
               () =>
                 deps.review(
@@ -826,7 +832,7 @@ async function designSinglePostWithAi(
                 accent: pal?.accent ?? art.palette.accent,
               }) + (fix ? `\nTargeted correction: ${fix}` : ""),
             );
-            native = await publicationImageStage(p, `${key}:layout`, lp, () =>
+            native = await imageStage(`${key}:layout`, lp, () =>
               deps.layout!(scene!.data, lp, o.aspect, logoBuf, `${key}:layout`),
             );
           } else {
@@ -841,7 +847,7 @@ async function designSinglePostWithAi(
                 brief,
               }),
             );
-            native = await publicationImageStage(p, `${key}:image`, gp, () =>
+            native = await imageStage(`${key}:image`, gp, () =>
               deps.generate(gp, o.aspect, refBuf, `${key}:image`, logoBuf),
             );
           }
@@ -866,7 +872,7 @@ async function designSinglePostWithAi(
             ...brief.exactTexts.map((x) => x.text),
             ...(logoBuf ? [] : [t.brand]),
           ].filter(Boolean);
-          const r = await publicationStage(p.id, `${key}:review`, () =>
+          const r = await stage(`${key}:review`, () =>
             deps.review(
               rendition.data,
               refBuf,
@@ -932,6 +938,7 @@ async function designSinglePostWithAi(
                 sceneAssetId: scene?.assetId,
               },
               aiPost: {
+                ...(post.nativeBinding?{nativeBinding:post.nativeBinding}:{}),
                 texts: t,
                 score: r.score,
                 attempts: attempt + 1,
@@ -994,7 +1001,7 @@ async function designSinglePostWithAi(
       if (result.sceneFailed) sceneVersion++;
     }
     return blocked(
-      "Publication refusée après trois essais : défauts et versions conservés, aucun remplacement local.",
+      `Publication refusée après ${Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS))} essai(s) : défauts et versions conservés, aucun remplacement local.`,
     );
   } catch (e) {
     return blocked(
@@ -1011,7 +1018,8 @@ export function realAiPostDeps(base: {
   projectId: string;
   jobId: string | null;
   sourceAssetId?: string;
-}): AiPostDeps {
+},requestContext:{project?:Project;beforeDispatch?:()=>void;quote?:import('./bounded-production-quote').NativePublicationQuote}={}): AiPostDeps {
+  const quoted=requestContext.quote,quotedImage=<T,>(route:{provider:string;model:string}|null|undefined,fn:()=>T):T=>route?withQuotedImageRoute(route,fn):fn();
   const previous = base.sourceAssetId ? getAsset(base.sourceAssetId) : null;
   if (
     base.sourceAssetId &&
@@ -1019,6 +1027,7 @@ export function realAiPostDeps(base: {
   )
     throw new Error("Création d'origine inaccessible dans ce projet.");
   return {
+    beforeDispatch:requestContext.beforeDispatch,
     operationId: previous ? (base.jobId ?? undefined) : undefined,
     sourceAssetId: previous?.id,
     async copy(p, post, fallback, key, people, context) {
@@ -1036,6 +1045,7 @@ export function realAiPostDeps(base: {
       return llmJson(
         {
           task: "copywriting",
+          ...(quoted?.routes?{expectedRoute:quoted.routes.copy}:{}),
           ...base,
           usageKey: key,
           promptKey: "social-ai-post-copy",
@@ -1057,7 +1067,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
       );
     },
     async generate(prompt, aspect, reference, key, logo, options) {
-      return aiPostImage(
+      return quotedImage(quoted?.routes?.image,()=>aiPostImage(
         { ...base, usageKey: key },
         {
           prompt: previous
@@ -1067,10 +1077,10 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
           reference,
           logo,
           previous: previous ? assetData(previous) : null,
-          people: peopleAllowedFor(loadProjectForReview(base.projectId)),
+          people: peopleAllowedFor(requestContext.project??loadProjectForReview(base.projectId)),
           photoOnly: options?.photoOnly,
         },
-      );
+      ));
     },
     async review(image, reference, texts, key, people, logo, context) {
       const { llmJson } = await import("../ai/llm");
@@ -1078,6 +1088,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
       return llmJson(
         {
           task: "quality_control",
+          ...(quoted?.routes?{expectedRoute:quoted.routes.review}:{}),
           ...base,
           usageKey: `${key}:check`,
           promptKey: "social-ai-post-check",
@@ -1148,7 +1159,7 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
                 : [];
             }),
           ],
-          context: brainView(loadProjectForReview(base.projectId), "image")
+          context: brainView(requestContext.project??loadProjectForReview(base.projectId), "image")
             .stable,
           prompt: `${context?.creative?creativeInstruction(context.creative):""}
 Evaluate relevance and hierarchy against the declared purpose. Organic content must teach, help, explain or invite dialogue according to its role; never penalize absence of a commercial CTA, hero product or photography. Product fidelity means faithful if depicted, or legitimately absent for an editorial subject. Every useful block/step/authorized quotation must remain intact and readable. Invented review, attribution, proof or diagram data is fatal. A carousel page must match its declared order and series, not repeat the same sales poster.
@@ -1179,12 +1190,12 @@ Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lin
             logo: Buffer | null,
             key: string,
           ) {
-            return aiTextLayout(
+            return quotedImage(quoted?.routes?.layout,()=>aiTextLayout(
               { ...base, usageKey: key },
               { prompt, aspect, image: photo, logo },
-            );
+            ));
           },
-          layoutMaxMicro: textLayoutMaxMicro,
+          layoutMaxMicro: ()=>quoted?.costs?.layout??textLayoutMaxMicro(),
         }
       : {}),
     spentMicro: (prefix) =>
@@ -1194,11 +1205,11 @@ Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lin
         `${prefix}%`,
       )[0]?.c ?? 0,
     maxMicro: (references = 2, photoOnly = false) =>
-      aiPostMaxMicro(references + (previous ? 1 : 0), photoOnly),
+      quoted?.costs?.image??aiPostMaxMicro(references + (previous ? 1 : 0), photoOnly),
     conceptMaxMicro: () =>
-      estimateTaskMicro("copywriting", { input: 18000, output: 2000 }),
+      quoted?.costs?.copy??estimateTaskMicro("copywriting", { input: 18000, output: 2000 }),
     reviewMaxMicro: () =>
-      estimateTaskMicro("quality_control", { input: 24000, output: 2000 }),
+      quoted?.costs?.review??estimateTaskMicro("quality_control", { input: 24000, output: 2000 }),
   };
 }
 

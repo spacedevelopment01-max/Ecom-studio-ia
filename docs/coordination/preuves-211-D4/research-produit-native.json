@@ -1,0 +1,1036 @@
+{
+  "fixture": "FICTITIOUS CACHED SOURCES + LOCAL SDK SIMULATION",
+  "realProviderCalls": 0,
+  "registry": {
+    "available": true,
+    "href": "/studio/buqb6k7alpqi7wp6/pilote",
+    "acquired": {
+      "jobId": "fvs6xhk2arnqjdqg",
+      "result": {
+        "projectId": "buqb6k7alpqi7wp6",
+        "revision": 5,
+        "step": "research",
+        "provenance": "provider",
+        "fingerprint": "c3383dc5cf2efae3",
+        "isCurrentInput": true,
+        "awaitingClientReview": true,
+        "content": {
+          "formatVersion": 3,
+          "sources": [
+            {
+              "id": "offre-fictive",
+              "category": "offer",
+              "title": "Description fictive de l’offre de recette",
+              "excerpt": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti.",
+              "url": "https://source-0.example.invalid/recette-products",
+              "consultedAt": 1793209187437,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "8914caa3108211bf427e6d24d3b2b87d735a22b6f6e4abcb4e635cb92cb1606e",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "comparaison-fictive-a",
+              "category": "competitors",
+              "title": "Comparaison fictive A — aucune entreprise réelle",
+              "excerpt": "Catalogue fictif A : les bacs de semis sont décrits selon leurs dimensions et leur usage sur balcon. La notice reste à lire avant utilisation.",
+              "url": "https://source-1.example.invalid/recette-products",
+              "consultedAt": 1793209187437,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "e1906321bac33cc98d31147c8ffbca85e5a0d50d59c870a5ae46de45fdc32bcc",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "comparaison-fictive-b",
+              "category": "competitors",
+              "title": "Comparaison fictive B — aucune entreprise réelle",
+              "excerpt": "Catalogue fictif B : les accessoires de jardinage sont présentés séparément des graines. Les conditions de culture changent selon les végétaux choisis.",
+              "url": "https://source-2.example.invalid/recette-products",
+              "consultedAt": 1793209187437,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "043916dc8ce4441fc31ca94f5ee9f8b03390f460bb9c06c7d3b3d382fd585543",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "questions-fictives",
+              "category": "customers",
+              "title": "Questions fictives, aucun avis client",
+              "excerpt": "Question de recette : comment organiser un premier semis sans confondre matériel et graines ? La place disponible et les consignes sont des points à préciser.",
+              "url": "https://source-3.example.invalid/recette-products",
+              "consultedAt": 1793209187437,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "851a1cda72677f978343adf5955c3d23cc1639e8ea2217bae01e268b74d960bb",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            },
+            {
+              "id": "guide-fictif",
+              "category": "sector",
+              "title": "Guide sectoriel fictif de recette",
+              "excerpt": "Guide fictif de semis : observer le substrat et consulter la notice du matériel. Aucun taux de levée ne peut être déduit de cette illustration technique.",
+              "url": "https://source-4.example.invalid/recette-products",
+              "consultedAt": 1793209187437,
+              "status": "consulted",
+              "provenance": "simulation",
+              "contentHash": "532ddde09c886f847e8c587cd26b6227856db24f02be5e1eeda90d2e42024f9f",
+              "relevance": {
+                "accepted": true,
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            }
+          ],
+          "observations": [
+            {
+              "sourceId": "offre-fictive",
+              "quote": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti."
+            }
+          ],
+          "angles": [
+            {
+              "id": "usage",
+              "title": "Observer les premières pousses",
+              "positioning": "Installer un espace de semis sur son balcon",
+              "audience": "Débutants souhaitant cultiver dehors",
+              "motivation": "Organiser les gestes du quotidien",
+              "communicationChange": "[Simulation] Installer un espace de semis sur son balcon.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Commencez par organiser votre bac.",
+              "arguments": [
+                "Bac, godets et notice ; graines non incluses."
+              ],
+              "objections": [
+                {
+                  "objection": "Comment disposer les godets disponibles ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "reassurance",
+              "title": "Comparer le contenu du kit",
+              "positioning": "Lire les accessoires indiqués avant de décider",
+              "audience": "Acheteurs méthodiques vérifiant la notice",
+              "motivation": "Comprendre ce qui est fourni séparément",
+              "communicationChange": "[Simulation] Lire les accessoires indiqués avant de décider.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Bac, godets et notice ; graines non incluses.",
+              "arguments": [
+                "Bac, godets et notice ; graines non incluses."
+              ],
+              "objections": [
+                {
+                  "objection": "Les graines sont-elles incluses ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "expression",
+              "title": "Un coin vivant à aménager",
+              "positioning": "Associer les plantes à un petit espace extérieur",
+              "audience": "Amateurs d’aménagement végétal",
+              "motivation": "Donner une place aux plantations choisies",
+              "communicationChange": "[Simulation] Associer les plantes à un petit espace extérieur.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Imaginez votre coin de plantation.",
+              "arguments": [
+                "Bac, godets et notice ; graines non incluses."
+              ],
+              "objections": [
+                {
+                  "objection": "Comment intégrer le bac dans mon espace ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "discovery",
+              "title": "Apprendre en observant",
+              "positioning": "Découvrir les étapes de culture sans promesse de réussite",
+              "audience": "Curieux tenant un carnet d’observation",
+              "motivation": "Noter les changements au fil des semaines",
+              "communicationChange": "[Simulation] Découvrir les étapes de culture sans promesse de réussite.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Découvrez les consignes avant de semer.",
+              "arguments": [
+                "Bac, godets et notice ; graines non incluses."
+              ],
+              "objections": [
+                {
+                  "objection": "Quels points dois-je surveiller ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            },
+            {
+              "id": "generalist",
+              "title": "Le matériel de semis, simplement",
+              "positioning": "Présenter le bac, les godets et leur notice ensemble",
+              "audience": "Personnes préparant leur projet de jardinage",
+              "motivation": "Réunir les informations sur les accessoires",
+              "communicationChange": "[Simulation] Présenter le bac, les godets et leur notice ensemble.",
+              "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+              "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+              "message": "Consultez le contenu et les usages du kit.",
+              "arguments": [
+                "Bac, godets et notice ; graines non incluses."
+              ],
+              "objections": [
+                {
+                  "objection": "Où retrouver la description complète ?",
+                  "answer": "À préciser avec le client à partir des faits acquis."
+                }
+              ],
+              "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+              "sourceIds": [
+                "offre-fictive"
+              ],
+              "hypothesis": true
+            }
+          ],
+          "recommendedId": "generalist",
+          "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+          "legalAvailability": "not_checked",
+          "sourceReviews": [
+            {
+              "sourceId": "offre-fictive",
+              "accepted": true,
+              "category": "offer",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "comparaison-fictive-a",
+              "accepted": true,
+              "category": "competitors",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "comparaison-fictive-b",
+              "accepted": true,
+              "category": "competitors",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "questions-fictives",
+              "accepted": true,
+              "category": "customers",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            },
+            {
+              "sourceId": "guide-fictif",
+              "accepted": true,
+              "category": "sector",
+              "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+            }
+          ],
+          "recommendationSourceIds": [
+            "offre-fictive"
+          ],
+          "offerDigest": "ec671ac93cebab36278ec9d8c045d02d330cdf6435650d2694bba7fd151ea9cd",
+          "coverage": {
+            "target": 10,
+            "consulted": 5,
+            "status": "covered",
+            "missingCategories": [],
+            "limits": [
+              "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+            ]
+          },
+          "execution": {
+            "provider": "anthropic",
+            "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+            "usageKey": "fvs6xhk2arnqjdqg:research",
+            "vision": false,
+            "at": 1793209193383,
+            "calls": 1,
+            "spentMicro": 7912,
+            "spentPct": 0.0184
+          }
+        }
+      }
+    },
+    "receipts": [
+      {
+        "id": "bglgmxnequlkd0qj",
+        "sourceReceiptId": "xxgciemurs028gbc",
+        "state": "review",
+        "delivered": true,
+        "clientApproved": false,
+        "result": {
+          "projectId": "buqb6k7alpqi7wp6",
+          "revision": 5,
+          "step": "research",
+          "provenance": "provider",
+          "fingerprint": "c3383dc5cf2efae3",
+          "isCurrentInput": true,
+          "awaitingClientReview": true,
+          "content": {
+            "formatVersion": 3,
+            "sources": [
+              {
+                "id": "offre-fictive",
+                "category": "offer",
+                "title": "Description fictive de l’offre de recette",
+                "excerpt": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti.",
+                "url": "https://source-0.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "8914caa3108211bf427e6d24d3b2b87d735a22b6f6e4abcb4e635cb92cb1606e",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-a",
+                "category": "competitors",
+                "title": "Comparaison fictive A — aucune entreprise réelle",
+                "excerpt": "Catalogue fictif A : les bacs de semis sont décrits selon leurs dimensions et leur usage sur balcon. La notice reste à lire avant utilisation.",
+                "url": "https://source-1.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "e1906321bac33cc98d31147c8ffbca85e5a0d50d59c870a5ae46de45fdc32bcc",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-b",
+                "category": "competitors",
+                "title": "Comparaison fictive B — aucune entreprise réelle",
+                "excerpt": "Catalogue fictif B : les accessoires de jardinage sont présentés séparément des graines. Les conditions de culture changent selon les végétaux choisis.",
+                "url": "https://source-2.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "043916dc8ce4441fc31ca94f5ee9f8b03390f460bb9c06c7d3b3d382fd585543",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "questions-fictives",
+                "category": "customers",
+                "title": "Questions fictives, aucun avis client",
+                "excerpt": "Question de recette : comment organiser un premier semis sans confondre matériel et graines ? La place disponible et les consignes sont des points à préciser.",
+                "url": "https://source-3.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "851a1cda72677f978343adf5955c3d23cc1639e8ea2217bae01e268b74d960bb",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "guide-fictif",
+                "category": "sector",
+                "title": "Guide sectoriel fictif de recette",
+                "excerpt": "Guide fictif de semis : observer le substrat et consulter la notice du matériel. Aucun taux de levée ne peut être déduit de cette illustration technique.",
+                "url": "https://source-4.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "532ddde09c886f847e8c587cd26b6227856db24f02be5e1eeda90d2e42024f9f",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              }
+            ],
+            "observations": [
+              {
+                "sourceId": "offre-fictive",
+                "quote": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti."
+              }
+            ],
+            "angles": [
+              {
+                "id": "usage",
+                "title": "Observer les premières pousses",
+                "positioning": "Installer un espace de semis sur son balcon",
+                "audience": "Débutants souhaitant cultiver dehors",
+                "motivation": "Organiser les gestes du quotidien",
+                "communicationChange": "[Simulation] Installer un espace de semis sur son balcon.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Commencez par organiser votre bac.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment disposer les godets disponibles ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "reassurance",
+                "title": "Comparer le contenu du kit",
+                "positioning": "Lire les accessoires indiqués avant de décider",
+                "audience": "Acheteurs méthodiques vérifiant la notice",
+                "motivation": "Comprendre ce qui est fourni séparément",
+                "communicationChange": "[Simulation] Lire les accessoires indiqués avant de décider.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Bac, godets et notice ; graines non incluses.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Les graines sont-elles incluses ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "expression",
+                "title": "Un coin vivant à aménager",
+                "positioning": "Associer les plantes à un petit espace extérieur",
+                "audience": "Amateurs d’aménagement végétal",
+                "motivation": "Donner une place aux plantations choisies",
+                "communicationChange": "[Simulation] Associer les plantes à un petit espace extérieur.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Imaginez votre coin de plantation.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment intégrer le bac dans mon espace ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "discovery",
+                "title": "Apprendre en observant",
+                "positioning": "Découvrir les étapes de culture sans promesse de réussite",
+                "audience": "Curieux tenant un carnet d’observation",
+                "motivation": "Noter les changements au fil des semaines",
+                "communicationChange": "[Simulation] Découvrir les étapes de culture sans promesse de réussite.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Découvrez les consignes avant de semer.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quels points dois-je surveiller ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "generalist",
+                "title": "Le matériel de semis, simplement",
+                "positioning": "Présenter le bac, les godets et leur notice ensemble",
+                "audience": "Personnes préparant leur projet de jardinage",
+                "motivation": "Réunir les informations sur les accessoires",
+                "communicationChange": "[Simulation] Présenter le bac, les godets et leur notice ensemble.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Consultez le contenu et les usages du kit.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Où retrouver la description complète ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              }
+            ],
+            "recommendedId": "generalist",
+            "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+            "legalAvailability": "not_checked",
+            "sourceReviews": [
+              {
+                "sourceId": "offre-fictive",
+                "accepted": true,
+                "category": "offer",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-a",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-b",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "questions-fictives",
+                "accepted": true,
+                "category": "customers",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "guide-fictif",
+                "accepted": true,
+                "category": "sector",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            ],
+            "recommendationSourceIds": [
+              "offre-fictive"
+            ],
+            "offerDigest": "ec671ac93cebab36278ec9d8c045d02d330cdf6435650d2694bba7fd151ea9cd",
+            "coverage": {
+              "target": 10,
+              "consulted": 5,
+              "status": "covered",
+              "missingCategories": [],
+              "limits": [
+                "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+              ]
+            },
+            "execution": {
+              "provider": "anthropic",
+              "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+              "usageKey": "fvs6xhk2arnqjdqg:research",
+              "vision": false,
+              "at": 1793209193383,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            }
+          }
+        },
+        "job": {
+          "id": "fvs6xhk2arnqjdqg",
+          "type": "project.prepare",
+          "label": "Préparation : research",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "revision": 5,
+            "step": "research",
+            "action": "generate",
+            "ready": false,
+            "simulation": false
+          },
+          "createdAt": 1793209191707,
+          "updatedAt": 1793209193395,
+          "finishedAt": 1793209193395,
+          "startedAt": 1793209191707,
+          "alive": false,
+          "idleMs": 1363
+        },
+        "href": "/studio/buqb6k7alpqi7wp6/pilote",
+        "message": "Recherche acquise à relire. Ses angles restent des hypothèses ; aucune étape suivante."
+      }
+    ],
+    "limits": "Compréhension validée, sources et droits natifs requis. Devis et accord séparés ; aucune validation d’angle ou génération aval automatique."
+  },
+  "native": {
+    "state": {
+      "schemaVersion": 1,
+      "projectId": "buqb6k7alpqi7wp6",
+      "revision": 5,
+      "createdAt": 1793209187415,
+      "updatedAt": 1793209193394,
+      "stages": {
+        "brief": {
+          "data": {
+            "input": {
+              "offerName": "Premières pousses",
+              "brandName": "",
+              "description": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti.",
+              "target": "Personnes préparant des semis sur un balcon",
+              "constraints": "Ne pas inventer de germination garantie ni de graines incluses. Vouvoiement.",
+              "business": "products",
+              "photoIds": [],
+              "referenceUrls": [],
+              "price": "28,50",
+              "services": {
+                "services": [],
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form"
+              }
+            },
+            "profile": {
+              "name": "Premières pousses",
+              "nameStatus": "provided",
+              "category": "",
+              "sector": null,
+              "summary": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti.",
+              "facts": [
+                {
+                  "key": "shipping",
+                  "label": "Délais et frais de livraison",
+                  "value": "",
+                  "status": "unknown",
+                  "source": "ai"
+                },
+                {
+                  "key": "returns",
+                  "label": "Conditions de retour",
+                  "value": "",
+                  "status": "unknown",
+                  "source": "ai"
+                }
+              ],
+              "visual": {
+                "colors": [],
+                "description": ""
+              },
+              "price": {
+                "amount": 2850,
+                "currency": "EUR",
+                "status": "confirmed"
+              },
+              "variants": [],
+              "questions": [
+                {
+                  "id": "shipping",
+                  "question": "Quels sont vos délais et frais de livraison ?",
+                  "why": "Affichés dans la FAQ et la page Livraison ; rien ne sera inventé.",
+                  "required": false,
+                  "factKey": "shipping"
+                },
+                {
+                  "id": "returns",
+                  "question": "Quelles sont vos conditions de retour ?",
+                  "why": "Obligatoire pour la page Livraison et retours.",
+                  "required": false,
+                  "factKey": "returns"
+                }
+              ],
+              "claimsToAvoid": [],
+              "sources": [],
+              "analyzedBy": "local",
+              "contentAliases": [
+                "Premières pousses"
+              ]
+            },
+            "services": {
+              "services": [],
+              "area": "",
+              "address": "",
+              "phone": "",
+              "email": "",
+              "hours": "",
+              "bookingUrl": "",
+              "contactMode": "form"
+            },
+            "missing": [],
+            "provenance": "simulation",
+            "observations": [
+              "Analyse injectée de test, aucune API réelle."
+            ]
+          },
+          "inputHash": "2abb88c5bd19d0fe",
+          "status": "approved",
+          "candidateId": "kmpe8uy7uoo9mfsu",
+          "approvedAt": 1793209187437
+        },
+        "research": {
+          "data": {
+            "formatVersion": 3,
+            "sources": [
+              {
+                "id": "offre-fictive",
+                "category": "offer",
+                "title": "Description fictive de l’offre de recette",
+                "excerpt": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti.",
+                "url": "https://source-0.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "8914caa3108211bf427e6d24d3b2b87d735a22b6f6e4abcb4e635cb92cb1606e",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-a",
+                "category": "competitors",
+                "title": "Comparaison fictive A — aucune entreprise réelle",
+                "excerpt": "Catalogue fictif A : les bacs de semis sont décrits selon leurs dimensions et leur usage sur balcon. La notice reste à lire avant utilisation.",
+                "url": "https://source-1.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "e1906321bac33cc98d31147c8ffbca85e5a0d50d59c870a5ae46de45fdc32bcc",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "comparaison-fictive-b",
+                "category": "competitors",
+                "title": "Comparaison fictive B — aucune entreprise réelle",
+                "excerpt": "Catalogue fictif B : les accessoires de jardinage sont présentés séparément des graines. Les conditions de culture changent selon les végétaux choisis.",
+                "url": "https://source-2.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "043916dc8ce4441fc31ca94f5ee9f8b03390f460bb9c06c7d3b3d382fd585543",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "questions-fictives",
+                "category": "customers",
+                "title": "Questions fictives, aucun avis client",
+                "excerpt": "Question de recette : comment organiser un premier semis sans confondre matériel et graines ? La place disponible et les consignes sont des points à préciser.",
+                "url": "https://source-3.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "851a1cda72677f978343adf5955c3d23cc1639e8ea2217bae01e268b74d960bb",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              },
+              {
+                "id": "guide-fictif",
+                "category": "sector",
+                "title": "Guide sectoriel fictif de recette",
+                "excerpt": "Guide fictif de semis : observer le substrat et consulter la notice du matériel. Aucun taux de levée ne peut être déduit de cette illustration technique.",
+                "url": "https://source-4.example.invalid/recette-products",
+                "consultedAt": 1793209187437,
+                "status": "consulted",
+                "provenance": "simulation",
+                "contentHash": "532ddde09c886f847e8c587cd26b6227856db24f02be5e1eeda90d2e42024f9f",
+                "relevance": {
+                  "accepted": true,
+                  "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+                }
+              }
+            ],
+            "observations": [
+              {
+                "sourceId": "offre-fictive",
+                "quote": "Kit de semis pour balcon : bac, godets et notice. Les graines ne sont pas incluses. Aucun rendement garanti."
+              }
+            ],
+            "angles": [
+              {
+                "id": "usage",
+                "title": "Observer les premières pousses",
+                "positioning": "Installer un espace de semis sur son balcon",
+                "audience": "Débutants souhaitant cultiver dehors",
+                "motivation": "Organiser les gestes du quotidien",
+                "communicationChange": "[Simulation] Installer un espace de semis sur son balcon.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Commencez par organiser votre bac.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment disposer les godets disponibles ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "reassurance",
+                "title": "Comparer le contenu du kit",
+                "positioning": "Lire les accessoires indiqués avant de décider",
+                "audience": "Acheteurs méthodiques vérifiant la notice",
+                "motivation": "Comprendre ce qui est fourni séparément",
+                "communicationChange": "[Simulation] Lire les accessoires indiqués avant de décider.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Bac, godets et notice ; graines non incluses.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Les graines sont-elles incluses ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "expression",
+                "title": "Un coin vivant à aménager",
+                "positioning": "Associer les plantes à un petit espace extérieur",
+                "audience": "Amateurs d’aménagement végétal",
+                "motivation": "Donner une place aux plantations choisies",
+                "communicationChange": "[Simulation] Associer les plantes à un petit espace extérieur.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Imaginez votre coin de plantation.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Comment intégrer le bac dans mon espace ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "discovery",
+                "title": "Apprendre en observant",
+                "positioning": "Découvrir les étapes de culture sans promesse de réussite",
+                "audience": "Curieux tenant un carnet d’observation",
+                "motivation": "Noter les changements au fil des semaines",
+                "communicationChange": "[Simulation] Découvrir les étapes de culture sans promesse de réussite.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Découvrez les consignes avant de semer.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Quels points dois-je surveiller ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              },
+              {
+                "id": "generalist",
+                "title": "Le matériel de semis, simplement",
+                "positioning": "Présenter le bac, les godets et leur notice ensemble",
+                "audience": "Personnes préparant leur projet de jardinage",
+                "motivation": "Réunir les informations sur les accessoires",
+                "communicationChange": "[Simulation] Présenter le bac, les godets et leur notice ensemble.",
+                "tone": "Sobre, informatif, vouvoiement ; aucune promesse non confirmée.",
+                "visualDirection": "Illustration technique du contexte décrit, matériel seul.",
+                "message": "Consultez le contenu et les usages du kit.",
+                "arguments": [
+                  "Bac, godets et notice ; graines non incluses."
+                ],
+                "objections": [
+                  {
+                    "objection": "Où retrouver la description complète ?",
+                    "answer": "À préciser avec le client à partir des faits acquis."
+                  }
+                ],
+                "reason": "[Simulation] Proposition technique reliée à la description fictive, aucune étude de marché réelle.",
+                "sourceIds": [
+                  "offre-fictive"
+                ],
+                "hypothesis": true
+              }
+            ],
+            "recommendedId": "generalist",
+            "recommendation": "[Simulation] Présenter l’ensemble de l’offre fictive avant toute sélection ; ce n’est pas une recommandation issue d’un marché réel.",
+            "legalAvailability": "not_checked",
+            "sourceReviews": [
+              {
+                "sourceId": "offre-fictive",
+                "accepted": true,
+                "category": "offer",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-a",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "comparaison-fictive-b",
+                "accepted": true,
+                "category": "competitors",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "questions-fictives",
+                "accepted": true,
+                "category": "customers",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              },
+              {
+                "sourceId": "guide-fictif",
+                "accepted": true,
+                "category": "sector",
+                "reason": "Source fictive isolée, pertinente uniquement pour vérifier le contrat technique."
+              }
+            ],
+            "recommendationSourceIds": [
+              "offre-fictive"
+            ],
+            "offerDigest": "ec671ac93cebab36278ec9d8c045d02d330cdf6435650d2694bba7fd151ea9cd",
+            "coverage": {
+              "target": 10,
+              "consulted": 5,
+              "status": "covered",
+              "missingCategories": [],
+              "limits": [
+                "Couverture documentée, sans garantie d’exhaustivité ; les angles restent des hypothèses."
+              ]
+            },
+            "execution": {
+              "provider": "anthropic",
+              "modelRefSha256": "005912bee6ee4543cec4404b5a02b9bcb11a6f1dcc134b6693c7ccde5fdd2f69",
+              "usageKey": "fvs6xhk2arnqjdqg:research",
+              "vision": false,
+              "at": 1793209193383,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            }
+          },
+          "inputHash": "87bc5101efd48589",
+          "status": "draft",
+          "candidateId": "57ki3kmp69ta3bfm"
+        }
+      },
+      "simulation": true
+    },
+    "versions": [
+      {
+        "key": "preparation.version.1"
+      },
+      {
+        "key": "preparation.version.2"
+      },
+      {
+        "key": "preparation.version.3"
+      },
+      {
+        "key": "preparation.version.4"
+      },
+      {
+        "key": "preparation.version.5"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "xxgciemurs028gbc",
+        "usage_key": "xxgciemurs028gbc:dialogue"
+      },
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "fvs6xhk2arnqjdqg",
+        "usage_key": "fvs6xhk2arnqjdqg:research"
+      }
+    ],
+    "jobs": [
+      {
+        "type": "agent.reason",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "done"
+      }
+    ],
+    "themes": 0
+  }
+}

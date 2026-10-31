@@ -1,0 +1,188 @@
+{
+  "code": "c180c150bce48c1af705dd785c830cda0c78886c",
+  "group": "inedits",
+  "before": {
+    "jobs": {
+      "count": 11,
+      "sha256": "335a93a2a0bf5a685e036415265ee398fb487ebe3c833e8f67f5b6b918a694de"
+    },
+    "ai_calls": {
+      "count": 20,
+      "sha256": "b80e0fc9f34af10b7caa78ab988312f3f2f82ed0386f3cb7a980cccdfabaa9f3"
+    },
+    "ai_reservations": {
+      "count": 19,
+      "sha256": "1ab566c12496cdb1e27eba8a84b579958f1524f66061149dd46b76aba0a42e83"
+    },
+    "usage_events": {
+      "count": 18,
+      "sha256": "b3199d74f1da6ac5f60cbe9b62f9f1029b561ee1c1257fc5a6a6b5ceb0e4f891"
+    },
+    "video_documents": {
+      "count": 4,
+      "sha256": "1fd080d7a277c008b0c6bf20ffe1145bd0fe03175ac9194e398baff319a0c253"
+    },
+    "assets": {
+      "count": 15,
+      "sha256": "4d7b9dd8937655a45432c8bf82d961eed940ecaeab415ac98783c42ce070bf60"
+    }
+  },
+  "noWorker": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "captures": [
+    "mono-reprise.png",
+    "mono-autre-largeur.png",
+    "mono-reutilisation-sans-appel.png",
+    "inedit-reprise.png",
+    "inedit-autre-largeur.png",
+    "inedit-reutilisation-sans-appel.png",
+    "inedit-echec-reprise-sans-relance.png",
+    "inedit-acquis-partiel.png"
+  ],
+  "decoded": [
+    {
+      "scene": "mono",
+      "label": "reprise",
+      "width": 1080,
+      "height": 1080,
+      "time": 0.253519,
+      "readyState": 4
+    },
+    {
+      "scene": "mono",
+      "label": "autre-largeur",
+      "width": 1080,
+      "height": 1080,
+      "time": 1.730738,
+      "readyState": 4
+    },
+    {
+      "scene": "mono",
+      "label": "reutilisation-sans-appel",
+      "width": 1080,
+      "height": 1080,
+      "time": 2.53041,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "reprise",
+      "width": 1920,
+      "height": 1080,
+      "time": 0.308556,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "autre-largeur",
+      "width": 1920,
+      "height": 1080,
+      "time": 1.790341,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "reutilisation-sans-appel",
+      "width": 1920,
+      "height": 1080,
+      "time": 2.550389,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "echec-reprise-sans-relance",
+      "width": 90,
+      "height": 160,
+      "time": 2.55161,
+      "readyState": 4
+    },
+    {
+      "scene": "inedit",
+      "label": "acquis-partiel",
+      "width": 90,
+      "height": 160,
+      "time": 4.002828,
+      "readyState": 4
+    }
+  ],
+  "nativeExports": [
+    {
+      "scene": "mono",
+      "format": "json",
+      "bytes": 7433,
+      "sha256": "1ea1b7d20c5e4772feb702a17f518da41a532c086240bf5874a61898288c719a",
+      "http": 200
+    },
+    {
+      "scene": "mono",
+      "format": "srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http": 200
+    },
+    {
+      "scene": "mono",
+      "format": "vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "json",
+      "bytes": 8146,
+      "sha256": "430ecde1a238182750314b6b04569f5aed5f9755030752e3cfb28106e6bf764b",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "srt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http": 200
+    },
+    {
+      "scene": "inedit",
+      "format": "vtt",
+      "bytes": 8,
+      "sha256": "8eb5aec53542eaedb7502b22fb677161abba1e265b1338f1af1369a1f689837c",
+      "http": 200
+    }
+  ],
+  "originalRecordingsUnchanged": true,
+  "version": {
+    "commit": "c180c150bce48c1af705dd785c830cda0c78886c",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "after": {
+    "jobs": {
+      "count": 11,
+      "sha256": "335a93a2a0bf5a685e036415265ee398fb487ebe3c833e8f67f5b6b918a694de"
+    },
+    "ai_calls": {
+      "count": 20,
+      "sha256": "b80e0fc9f34af10b7caa78ab988312f3f2f82ed0386f3cb7a980cccdfabaa9f3"
+    },
+    "ai_reservations": {
+      "count": 19,
+      "sha256": "1ab566c12496cdb1e27eba8a84b579958f1524f66061149dd46b76aba0a42e83"
+    },
+    "usage_events": {
+      "count": 18,
+      "sha256": "b3199d74f1da6ac5f60cbe9b62f9f1029b561ee1c1257fc5a6a6b5ceb0e4f891"
+    },
+    "video_documents": {
+      "count": 4,
+      "sha256": "1fd080d7a277c008b0c6bf20ffe1145bd0fe03175ac9194e398baff319a0c253"
+    },
+    "assets": {
+      "count": 15,
+      "sha256": "4d7b9dd8937655a45432c8bf82d961eed940ecaeab415ac98783c42ce070bf60"
+    }
+  },
+  "success": true
+}

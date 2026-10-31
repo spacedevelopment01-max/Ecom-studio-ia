@@ -214,7 +214,7 @@ function serviceSlots(projectId: string, slots: ImageSlots, files: Record<string
   if (!slots.hero && slots.lifestyle) slots.hero = slots.lifestyle;
 }
 
-export function storeProduct(p: Project, copy: ShopCopy, gallery: string[], variantImages: Record<string, string> = {}): StoreProduct {
+export function storeProduct(p: Project, copy: { product: Pick<ShopCopy["product"], "title" | "description_html"> }, gallery: string[], variantImages: Record<string, string> = {}): StoreProduct {
   // Toutes les options du produit (Coloris, Taille…), combinées comme dans Shopify ; image de la variante quand un asset la porte.
   const combos = variantCombinations(p.product.variants);
   const variants = combos.length

@@ -1,0 +1,164 @@
+{
+ "publication": {
+  "adresse": "studio-lumiere-fictif.sites.recette.test",
+  "pages": 13,
+  "octets": 3400512,
+  "stockage": {
+   "used": 34005120,
+   "limit": 1073741824,
+   "keep": 10
+  }
+ },
+ "visiteur": {
+  "ordinateur": {
+   "/": {
+    "statut": 200,
+    "images": 8,
+    "chargees": 6,
+    "nonChargees": [
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-6.webp",
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-2.jpg"
+    ],
+    "largeurs": [
+     480,
+     2400,
+     0,
+     640,
+     2000
+    ]
+   },
+   "/pages/realisations": {
+    "statut": 404,
+    "images": 5,
+    "chargees": 5,
+    "nonChargees": [],
+    "largeurs": [
+     480,
+     900,
+     2400
+    ]
+   },
+   "/pages/prestations": {
+    "statut": 200,
+    "images": 7,
+    "chargees": 6,
+    "nonChargees": [
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-2.jpg"
+    ],
+    "largeurs": [
+     480,
+     2400,
+     900,
+     0
+    ]
+   },
+   "erreurs": [
+    "404 https://studio-lumiere-fictif.sites.recette.test:3943/pages/realisations"
+   ]
+  },
+  "telephone": {
+   "/": {
+    "statut": 200,
+    "images": 8,
+    "chargees": 5,
+    "nonChargees": [
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-7.webp",
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-8.jpg",
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-3.webp"
+    ],
+    "largeurs": [
+     480,
+     2400,
+     1200,
+     0,
+     1600
+    ]
+   },
+   "/pages/realisations": {
+    "statut": 404,
+    "images": 5,
+    "chargees": 5,
+    "nonChargees": [],
+    "largeurs": [
+     480,
+     900,
+     2400
+    ]
+   },
+   "/pages/prestations": {
+    "statut": 200,
+    "images": 7,
+    "chargees": 6,
+    "nonChargees": [
+     "https://studio-lumiere-fictif.sites.recette.test:3943/assets/rich-13.png"
+    ],
+    "largeurs": [
+     480,
+     2400,
+     900,
+     0,
+     1600
+    ]
+   },
+   "erreurs": [
+    "404 https://studio-lumiere-fictif.sites.recette.test:3943/pages/realisations"
+   ]
+  }
+ },
+ "diagnostic1": [
+  "OK live : Publication 14 en ligne",
+  "OK integrity : 52 fichiers intacts (empreintes vérifiées)",
+  "OK address : studio-lumiere-fictif.sites.recette.test",
+  "OK storage : 32 Mo sur 1024 Mo",
+  "OK traffic : 114 requêtes, 9 Mo sur 30 jours",
+  "OK smtp : Envoi des e-mails configuré",
+  "OK notifications : Aucun e-mail de demande en échec"
+ ],
+ "apresDouze": {
+  "publications": 25,
+  "purgees": [
+   15,
+   14,
+   13,
+   12,
+   11,
+   10,
+   9,
+   8,
+   7,
+   6,
+   5,
+   4,
+   3,
+   2,
+   1
+  ],
+  "restaurables": 10,
+  "stockage": {
+   "used": 34005120,
+   "limit": 1073741824,
+   "keep": 10
+  }
+ },
+ "restaurerPurgee": {
+  "statut": 409,
+  "message": "Les fichiers de cette ancienne publication ont été purgés (seules les plus récentes sont gardées) : elle ne peut plus être remise en ligne."
+ },
+ "restaurerGardee": {
+  "statut": 200,
+  "enLigne": 24
+ },
+ "diagnosticAltere": [
+  "integrity : 0 fichier(s) manquant(s), 1 altéré(s) : republiez ou remettez en ligne une version intacte"
+ ],
+ "restaurerAlteree": {
+  "statut": 409,
+  "message": "Les fichiers de cette publication sont incomplets ou altérés (0 manquant(s), 1 altéré(s)) : elle ne peut pas être restaurée."
+ },
+ "diagnosticApresRepublication": [],
+ "scriptSauvegarder": "CODE 1\n{\n \"dir\": \"/tmp/claude-0/-home-user/f42e41aa-36e1-5b4c-ac34-eb3ff7528781/scratchpad/h232/sauvegarde-recette\",\n \"at\": 1793301919878,\n \"database\": \"studio.db\",\n \"databaseSha\": \"96c784bbc1c74398681cacc9fd72f5df2f9d05a0ded0e4b86e1302987f964c5e\",\n \"publications\": 15,\n \"files\": 677,\n \"bytes\": 42844237\n}\nPROBLÈMES :\n- Publication mtep4fjpg2ajzdq6 (projet 98gk18xahukpi6vn) : 0 manquant(s), 1 altéré(s).\n",
+ "scriptVerifier": "CODE 1\nPROBLÈMES :\n- Publication mtep4fjpg2ajzdq6 (projet 98gk18xahukpi6vn) : 0 manquant(s), 1 altéré(s).\n",
+ "scriptControler": "CODE 1\n15 publication(s) contrôlée(s), 1 en défaut, 1 publication(s) interrompue(s) nettoyée(s).\n- 98gk18xahukpi6vn n°24 : 0 manquant(s), 1 altéré(s)\n",
+ "interrompueNettoyee": true,
+ "scriptVerifierApresAlteration": "CODE 1\nPROBLÈMES :\n- Publication 07antnuj4z701qxv (projet 98gk18xahukpi6vn) : 0 manquant(s), 1 altéré(s).\n- Publication mtep4fjpg2ajzdq6 (projet 98gk18xahukpi6vn) : 0 manquant(s), 1 altéré(s).\n"
+}

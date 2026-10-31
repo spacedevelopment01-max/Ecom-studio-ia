@@ -1,0 +1,7 @@
+import {it,expect} from 'vitest';
+import {terminalReceiptFor} from '../scripts/agent211-receipt-wait';
+const old={id:'old-paid',delivered:true,job:{id:'old-render',status:'done'}},reused={id:'free-reuse',delivered:true,job:{id:'old-render',status:'done'}},confirmed={id:'new-request',job:{id:'new-render',status:'queued'}};
+it('reproduit le faux choix de l’ancien wait pendant la confirmation et refuse cet acquis étranger',()=>{const rows=[reused,old];const legacy=rows.find(x=>x.id!==reused.id);expect(legacy).toEqual(old);expect(legacy!.delivered).toBe(true);expect(terminalReceiptFor(rows,confirmed)).toBeNull();});
+it.each(['queued','running','paused','blocked'])('attend le job exact encore %s, indépendamment de l’ordre et des anciens résultats',status=>{expect(terminalReceiptFor([old,{...confirmed,job:{...confirmed.job,status}},reused],confirmed)).toBeNull();});
+it.each(['done','failed','cancelled'])('retourne exactement le nouveau reçu terminal %s sans changer son verdict',status=>{const target={...confirmed,delivered:status==='done',job:{...confirmed.job,status}};expect(terminalReceiptFor([old,reused,target],confirmed)).toBe(target);});
+it('refuse un identifiant de job différent et reconnaît le réemploi exact sans nouveau job',()=>{expect(()=>terminalReceiptFor([{...confirmed,job:old.job}],confirmed)).toThrow('receipt/job mismatch');const free={id:'free-confirmed',job:null,delivered:true};expect(terminalReceiptFor([old,reused,free],free)).toBe(free);});

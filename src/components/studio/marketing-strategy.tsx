@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, type ComponentProps } from 'react';
 import { api, Button as BaseButton, Card, useApi } from '../ui';
 import { useT } from '../i18n';
 import { formatBudgetPct } from "@/lib/budget-pct";
+import {useOptionalProject} from './project-context';
 import type { RevisionBundle } from "@/lib/marketing-strategy/bundle";
 import type { StrategyState, StrategyPreparation, AngleId } from '@/lib/marketing-strategy/types';
 function Button(props:ComponentProps<typeof BaseButton>){return <BaseButton {...props} className={`max-w-full ${props.className??''}`} style={{whiteSpace:'normal',height:'auto',...props.style}}/>;}
@@ -11,6 +12,10 @@ function Button(props:ComponentProps<typeof BaseButton>){return <BaseButton {...
 export function MarketingStrategy({projectId,onChange}:{projectId:string;onChange?:()=>void}){
  const t=useT(),url=`/api/projects/${projectId}/marketing-strategy`;
  const {data,reload,error:loadError}=useApi<StrategyState & {revisionBundle?:RevisionBundle|null;modulePreparations?:{module:string;oldId:string;newIds:string[];state:string;note:string;preview?:string[]}[]}>(url);
+ const project=useOptionalProject(),nativeRevision=project?.id===projectId?project.data?.preparation?.revision:null;
+ // A job launched in SYNA changes the same native Preparation state. Refresh this projection,
+ // without clearing a review, typed correction or angle choice in this component.
+ useEffect(()=>{if(nativeRevision!=null)void reload();},[projectId,nativeRevision,reload]);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[preparation,setPreparation]=useState<StrategyPreparation|null>(null),[retain,setRetain]=useState(false);
  const [modules,setModules]=useState<{module:string;oldId:string;newIds:string[];state:string;note:string;preview?:string[]}[]>([]);
  const [preparedTheme,setPreparedTheme]=useState<{versionId:string}|null>(null);

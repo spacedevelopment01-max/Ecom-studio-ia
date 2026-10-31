@@ -1,0 +1,31 @@
+/** Devis d’UNE image sociale native, une passe : aucun envoi, aucune nouvelle grille tarifaire. */
+import{postVisualAspect}from './post-aspect';
+import {HttpError}from '../auth';import {productionInputVersions,productionPost,estimateProduction,pinAcquiredSocialImage}from './production';import {nativeSocialSubject}from './native-subject';import {realSocialDeps}from './deps';import {getAsset}from '../library';import {imageBindingHash,pinImageAsset,ImageBindingSchema,type ImageBinding}from '../image-v2/request-binding';import {mediaRouteFor,withQuotedImageRoute,aiPostMaxMicro,textLayoutMaxMicro}from '../ai/media-providers';import {usageExplicit}from '../ai/media-routing';import {routeLlm,callCostBoundMicro,type LlmCall}from '../ai/llm';import {activeProviderKey}from '../ai/config';import {creativeContract}from './creative-contract';import {assertContentAlignment}from '../marketing-strategy';import type {Project}from '../projects';
+type Route={provider:string;model:string;effort?:string};
+export type NativePublicationQuote={schema:1;postId:string;aspect?:import('../image-v2/types').AspectId;reuse?:ReturnType<typeof pinImageAsset>;instruction:string;inputVersion:string;binding:ImageBinding;mode:'one-step'|'two-step';maximumCalls:number;capMicro:number;estimateMicro:number;reused:boolean;routes:{image:Route;copy:Route;review:Route;layout:Route|null}|null;costs:{copy:number;image:number;review:number;layout:number}|null;logo?:ReturnType<typeof pinImageAsset>;fingerprint:string};
+export function quoteNativeSocialImage(p:Project,postId:string,forcePaid=false,instruction?:string,acquired?:ReturnType<typeof pinImageAsset>):NativePublicationQuote{
+ const post=productionPost(p.id,postId);if(!post||!post.nativeBinding)throw new HttpError(409,'Ce brouillon doit désigner sa fiche ou prestation native.');
+ if(post.format!=='image'||post.media!=='[]'||!['planned','draft','review','failed'].includes(post.status))throw new HttpError(409,'Ce devis crée une seule image manquante ; aucun texte seul, vidéo, carrousel ni média existant remplacé.');
+ creativeContract(post,'organic');assertContentAlignment(p.id,'post',postId);
+ const inputVersion=productionInputVersions(p.id,[postId])[postId],base={schema:1 as const,postId,aspect:postVisualAspect(post),instruction:instruction??post.request??'',inputVersion,mode:(usageExplicit('text_layout')?'two-step':'one-step')as 'one-step'|'two-step'};
+ if(acquired){const reuse=pinAcquiredSocialImage(p,post,acquired.assetId,base.instruction);if(imageBindingHash(reuse)!==imageBindingHash(acquired))throw new HttpError(409,'Le fichier acquis a changé. Aucun nouvel achat.');const meta=JSON.parse(getAsset(reuse.assetId)!.meta),binding=ImageBindingSchema.parse(meta.aiPost.nativeBinding),value={...base,binding,reuse,maximumCalls:0,capMicro:0,estimateMicro:0,reused:true,routes:null,costs:null};return{...value,fingerprint:imageBindingHash(value)};}
+ const free=estimateProduction(p,[postId],realSocialDeps(null,p,false),{allowPaid:false}).lines[0];
+ if(!forcePaid&&(instruction==null||instruction===(post.request??''))&&free?.method==='library'){const value={...base,binding:post.nativeBinding,maximumCalls:0,capMicro:0,estimateMicro:0,reused:true,routes:null,costs:null};return{...value,fingerprint:imageBindingHash(value)};}
+ return quoteNativePublicationPass(p,post,inputVersion,base.instruction);
+}
+
+/** Même tarification de la passe finale, pour une publication ou une annonce natives. */
+export function quoteNativePublicationPass(p:Project,post:import('./deps').PostBrief&{media?:string},inputVersion:string,instruction=post.request??''):NativePublicationQuote{
+ const base={schema:1 as const,postId:post.id,aspect:postVisualAspect(post),instruction,inputVersion,mode:(usageExplicit('text_layout')?'two-step':'one-step')as 'one-step'|'two-step'};
+ const resolved=nativeSocialSubject(p,{...post,request:base.instruction},true)!;const references=resolved.binding.references.length,logo=p.brand?.logo?.assetId?1:0;
+ if(logo){const a=getAsset(p.brand!.logo!.assetId!);if(!a||a.project_id!==p.id||a.deleted_at)throw new HttpError(409,'Logo validé indisponible, aucun remplacement inventé.');}
+ const image=mediaRouteFor('social_image',{text:base.mode==='one-step',references:references+(base.mode==='one-step'?logo:0)}),layout=base.mode==='two-step'?mediaRouteFor('text_layout',{text:true,references:1+logo}):null;
+ const copy=routeLlm({task:'copywriting',userId:p.userId,routing:{difficulty:'standard',deliverable:'ad_v2'}}),review=routeLlm({task:'quality_control',userId:p.userId,images:[{data:Buffer.alloc(1)}],routing:{difficulty:'standard',deliverable:'image_v2'}});
+ if(!image||base.mode==='two-step'&&!layout||copy.mode!=='llm'||review.mode!=='llm'||!activeProviderKey(copy.provider as Parameters<typeof activeProviderKey>[0])||!activeProviderKey(review.provider as Parameters<typeof activeProviderKey>[0]))throw new HttpError(409,'Configuration de conception, image ou contrôle incomplète. Aucun appel autorisé.');
+ const c=callCostBoundMicro(copy.provider,copy.model,18000,2000,copy.effort??null),q=callCostBoundMicro(review.provider,review.model,24000,2000,review.effort??null),i=withQuotedImageRoute(image,()=>aiPostMaxMicro(references+(base.mode==='one-step'?logo:0),base.mode==='two-step')),l=layout?withQuotedImageRoute(layout,()=>textLayoutMaxMicro()):0;
+ if([c,q,i,l].some(v=>v==null||!Number.isSafeInteger(v)||v<0)||!c||!q||!i||layout&&!l)throw new HttpError(409,'Tarif ou plafond inconnu. Aucun appel autorisé.');
+ const logoPin=logo?pinImageAsset(p.userId,p.id,p.brand!.logo!.assetId!,getAsset(p.brand!.logo!.assetId!)!.version):undefined;
+ const route=(r:typeof copy):Route=>({provider:r.provider,model:r.model,...(r.effort?{effort:r.effort}:{})}),costs={copy:c!,image:i!,review:q!,layout:l!},capMicro=costs.copy+costs.image+costs.layout+costs.review*(layout?2:1),value={...base,binding:resolved.binding,...(logoPin?{logo:logoPin}:{}),maximumCalls:layout?5:3,capMicro,estimateMicro:capMicro,reused:false,routes:{image:{provider:image.provider,model:image.model},copy:route(copy),review:route(review),layout:layout?{provider:layout.provider,model:layout.model}:null},costs};
+ return{...value,fingerprint:imageBindingHash(value)};
+}
+export type ExpectedPublicationRoute=NonNullable<LlmCall['expectedRoute']>;

@@ -1,0 +1,1 @@
+{"errors":0,"warnings":35,"byCheck":{"ExcessiveSettingsCount":25,"UnusedAssign":6,"RemoteAsset":1,"UnclosedHTMLElement":2,"LiquidComplexity":1},"zipSha256":"542ea1a9809db4b958752ac27a4d59ff3ffbd32441abd57a7c8a53093dbcdea4"}

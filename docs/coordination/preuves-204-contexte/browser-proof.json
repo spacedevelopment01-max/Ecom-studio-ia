@@ -1,0 +1,198 @@
+{
+  "simulation": true,
+  "realProviderCalls": 0,
+  "checks": [
+    {
+      "simulation": true,
+      "slug": "service-reprise",
+      "viewport": {
+        "width": 1440,
+        "mobile": false
+      },
+      "images": [
+        "service-reprise-ordinateur-action.png",
+        "service-reprise-ordinateur-fiche.png",
+        "service-reprise-ordinateur-devis-sans-confirmation.png",
+        "service-reprise-ordinateur-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "service-limite",
+      "viewport": {
+        "width": 1440,
+        "mobile": false
+      },
+      "images": [
+        "service-limite-ordinateur-action.png",
+        "service-limite-ordinateur-fiche.png",
+        "service-limite-ordinateur-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "service-historique",
+      "viewport": {
+        "width": 1440,
+        "mobile": false
+      },
+      "images": [
+        "service-historique-ordinateur-action.png",
+        "service-historique-ordinateur-fiche.png",
+        "service-historique-ordinateur-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "produit",
+      "viewport": {
+        "width": 1440,
+        "mobile": false
+      },
+      "images": [
+        "produit-ordinateur-action.png",
+        "produit-ordinateur-fiche.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "service-reprise",
+      "viewport": {
+        "width": 390,
+        "mobile": true
+      },
+      "images": [
+        "service-reprise-mobile-action.png",
+        "service-reprise-mobile-fiche.png",
+        "service-reprise-mobile-devis-sans-confirmation.png",
+        "service-reprise-mobile-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "service-limite",
+      "viewport": {
+        "width": 390,
+        "mobile": true
+      },
+      "images": [
+        "service-limite-mobile-action.png",
+        "service-limite-mobile-fiche.png",
+        "service-limite-mobile-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "service-historique",
+      "viewport": {
+        "width": 390,
+        "mobile": true
+      },
+      "images": [
+        "service-historique-mobile-action.png",
+        "service-historique-mobile-fiche.png",
+        "service-historique-mobile-reouverture.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    },
+    {
+      "simulation": true,
+      "slug": "produit",
+      "viewport": {
+        "width": 390,
+        "mobile": true
+      },
+      "images": [
+        "produit-mobile-action.png",
+        "produit-mobile-fiche.png"
+      ],
+      "overflow": 0,
+      "pageErrors": [],
+      "adminTraceAccessStatus": 403,
+      "quoteConfirmed": false,
+      "version": {
+        "commit": "5d86a5f3997576bce1a4678f5dab20bcd9a67017",
+        "commitOrigin": "build",
+        "mode": "production",
+        "tree": "clean",
+        "source": "compiled-build"
+      }
+    }
+  ]
+}

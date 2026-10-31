@@ -24,6 +24,17 @@ export function faithfulDraft(prompt: string): AiDraft {
   const blocks: AiDraft["blocks"] = [];
   const offer = facts.offre ?? facts.marque ?? "Offre";
   const services: { name: string; description: string }[] = facts.prestations ?? [];
+  if (type === "blog_article") {
+    // Transport fictif : garder le sujet et les seuls faits reçus, sans prétendre évaluer la créativité.
+    const topic=prompt.match(/\. Page : (.+)\. Langue :/)?.[1]??offer;
+    blocks.push({kind:"h1",text:topic});
+    blocks.push({kind:"p",text:services.length?services.map(s=>`${s.name} : ${s.description}`).join(" "):offer});
+    blocks.push({kind:"h2",text:"Les éléments de votre projet"});
+    const items=(facts.faits??[]).map((f:{label:string;value:string})=>f.label?`${f.label} : ${f.value}`:f.value);
+    blocks.push(items.length?{kind:"ul",items}:{kind:"p",text:services.length?services.map(s=>s.description).join(" "):offer});
+    blocks.push({kind:"cta",text:cta});
+    return {seoTitle:topic.slice(0,60),metaDescription:`${topic} : ${offer}.`.slice(0,155),blocks,unknowns:[]};
+  }
   if (type === "service_page" || (type === "home_page" && services.length)) {
     blocks.push({ kind: "h1", text: `${facts.categorie ?? offer}${facts.zone ? ` — ${facts.zone}` : ""}` });
     blocks.push({ kind: "p", text: `${facts.marque} propose ${services.map((s) => s.name.toLowerCase()).join(", ")}${facts.zone ? ` dans la zone ${facts.zone}` : ""}. Chaque demande commence par un échange sur votre projet.` });

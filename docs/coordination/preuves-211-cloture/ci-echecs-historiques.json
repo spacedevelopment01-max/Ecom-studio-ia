@@ -1,0 +1,68 @@
+{
+  "rawLogsNotRepublished": true,
+  "evidence": [
+    {
+      "pr": 223,
+      "job": 123123167457,
+      "evidence": [
+        "2026-10-28T22:28:07.4113062Z AssertionError [ERR_ASSERTION]: Preview must be visible above half the screen",
+        "2026-10-28T22:28:07.4113686Z     at verifyAgentBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-ui.ts:55:181)",
+        "2026-10-28T22:28:07.4115690Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:152:14) {"
+      ]
+    },
+    {
+      "pr": 224,
+      "job": 123135764029,
+      "evidence": [
+        "2026-10-28T23:13:44.5330733Z AssertionError [ERR_ASSERTION]: Preview must be visible above half the screen",
+        "2026-10-28T23:13:44.5332165Z     at verifyAgentBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-ui.ts:55:181)",
+        "2026-10-28T23:13:44.5336781Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:153:14) {"
+      ]
+    },
+    {
+      "pr": 225,
+      "job": 123161400816,
+      "evidence": [
+        "2026-10-29T00:04:35.8032693Z AssertionError [ERR_ASSERTION]: Preview must be visible above half the screen",
+        "2026-10-29T00:04:35.8033646Z     at verifyAgentBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-ui.ts:55:181)",
+        "2026-10-29T00:04:35.8034551Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:154:14) {"
+      ]
+    },
+    {
+      "pr": 226,
+      "job": 123169419774,
+      "evidence": [
+        "2026-10-29T00:26:09.9023988Z AssertionError [ERR_ASSERTION]: Preview must be visible above half the screen",
+        "2026-10-29T00:26:09.9024609Z     at verifyAgentBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-ui.ts:55:181)",
+        "2026-10-29T00:26:09.9025312Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:153:14) {"
+      ]
+    },
+    {
+      "pr": 263,
+      "job": 124243612162,
+      "evidence": [
+        "2026-10-30T19:50:40.6501625Z locator.waitFor: Timeout 45000ms exceeded.",
+        "2026-10-30T19:50:40.6504927Z   - waiting for getByRole('dialog', { name: 'SYNA \u2014 conversation du projet', exact: true }).locator('[data-agent-image-tools]').getByRole('button', { name: 'Voir la retouche et son devis', exact: true }) to be visible",
+        "2026-10-30T19:50:40.6507407Z     at verifyImageRetouch (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-retouch-ui.ts:30:268)",
+        "2026-10-30T19:50:40.6509329Z     at async verifyImagesBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-images-ui.ts:57:121)",
+        "2026-10-30T19:50:40.6511417Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:268:20) {",
+        "2026-10-30T19:50:40.6514606Z     \"  - waiting for getByRole('dialog', { name: 'SYNA \u2014 conversation du projet', exact: true }).locator('[data-agent-image-tools]').getByRole('button', { name: 'Voir la retouche et son devis', exact: true }) to be visible\"",
+        "2026-10-30T19:50:40.6516949Z   name: 'TimeoutError'"
+      ]
+    },
+    {
+      "pr": 267,
+      "job": 124266769346,
+      "evidence": [
+        "2026-10-30T20:13:45.0532254Z locator.click: Timeout 30000ms exceeded.",
+        "2026-10-30T20:13:45.0535236Z   - waiting for getByRole('dialog', { name: 'SYNA \u2014 conversation du projet', exact: true }).locator('[data-agent-theme-tools]').getByRole('button', { name: 'Voir la retouche et son co\u00fbt', exact: true })",
+        "2026-10-30T20:13:45.0536657Z     at verifyAcquiredHero (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-retouch-ui.ts:65:321)",
+        "2026-10-30T20:13:45.0537725Z     at async verifyImageRetouch (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-retouch-ui.ts:40:13)",
+        "2026-10-30T20:13:45.0538815Z     at async verifyImagesBrowser (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-images-ui.ts:57:121)",
+        "2026-10-30T20:13:45.0540153Z     at async <anonymous> (/home/runner/work/Ecom-studio-ia/Ecom-studio-ia/scripts/verify-agent211-build.ts:285:20) {",
+        "2026-10-30T20:13:45.0542005Z     \"  - waiting for getByRole('dialog', { name: 'SYNA \u2014 conversation du projet', exact: true }).locator('[data-agent-theme-tools]').getByRole('button', { name: 'Voir la retouche et son co\u00fbt', exact: true })\"",
+        "2026-10-30T20:13:45.0543578Z   name: 'TimeoutError'"
+      ]
+    }
+  ]
+}

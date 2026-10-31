@@ -1,0 +1,185 @@
+{
+  "D18-first-tests": {
+    "state": "failed",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-blog.test.ts"
+    ],
+    "head": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "finalHead": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "startedAt": "2026-10-30T22:08:42.353871+00:00",
+    "finishedAt": "2026-10-30T22:08:47.733253+00:00",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "a2076e229960ea5e7bdc603ded8b47860388d46d1de6038e9631b39166b03b2b"
+  },
+  "D18-native-tests": {
+    "state": "passed",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-blog.test.ts"
+    ],
+    "head": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "finalHead": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "startedAt": "2026-10-30T22:09:01.019976+00:00",
+    "finishedAt": "2026-10-30T22:09:06.524844+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "dbd40d636d69e5981994f2c2fb74463b67aaf3c364bcc5b24d4ec9c8b2b50529"
+  },
+  "D18-guards-tests": {
+    "state": "failed",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-blog.test.ts",
+      "tests/conversation211-content.test.ts",
+      "tests/conversation211-brand-review.test.ts"
+    ],
+    "head": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "finalHead": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "startedAt": "2026-10-30T22:09:54.999527+00:00",
+    "finishedAt": "2026-10-30T22:10:04.115806+00:00",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "aee12edc998e1745f2594e7460240ce7a231ad6a39ab47a20dbcba2d3f590602"
+  },
+  "D18-targeted-final": {
+    "state": "passed",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-blog.test.ts",
+      "tests/conversation211-content.test.ts",
+      "tests/conversation211-brand-review.test.ts",
+      "tests/conversation211-intelligence.test.ts",
+      "tests/budget-ia.test.ts",
+      "tests/prix-pourcentage-budget.test.ts",
+      "tests/seo-v2-engine.test.ts"
+    ],
+    "head": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "finalHead": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "startedAt": "2026-10-30T22:12:21.894985+00:00",
+    "finishedAt": "2026-10-30T22:12:38.566903+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "acfe80568793e36ef5679e41cb83d609d88d0cc56e31eb4c6a82e6a6c55c29c9"
+  },
+  "D18-mock-topics-tests": {
+    "state": "passed",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/conversation211-blog.test.ts",
+      "tests/seo-v2-engine.test.ts"
+    ],
+    "head": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "finalHead": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "startedAt": "2026-10-30T22:18:43.629013+00:00",
+    "finishedAt": "2026-10-30T22:18:49.816057+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "8315d70fcb2e2b558d025f7e1d38ea48147de411caa564db29b186b542f9c6d9"
+  },
+  "D18-types-final": {
+    "state": "passed",
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit"
+    ],
+    "head": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "finalHead": "b5b05d7f638e639715fb2a73d6f153f955dbedc2",
+    "startedAt": "2026-10-30T22:12:21.888913+00:00",
+    "finishedAt": "2026-10-30T22:12:30.642990+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "D18-build": {
+    "state": "passed",
+    "command": [
+      "node",
+      "node_modules/next/dist/bin/next",
+      "build"
+    ],
+    "head": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "finalHead": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "startedAt": "2026-10-30T22:14:51.232324+00:00",
+    "finishedAt": "2026-10-30T22:15:56.460836+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": true,
+    "logSha256": "92aa0d012fa92729ade7599760db110a055e224e8b674c34a6fd58b1dac55652"
+  },
+  "D18-browser": {
+    "state": "failed",
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D18-browser-proof",
+      "--blog-ui"
+    ],
+    "head": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "finalHead": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "startedAt": "2026-10-30T22:16:06.806644+00:00",
+    "finishedAt": "2026-10-30T22:16:52.034111+00:00",
+    "exitCode": 1,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "7cd4900e078a1d8aeef7d1823fc0e77e81c12bd562cf1460e5b2d4bc3f767f1f"
+  },
+  "D18-browser-fixed": {
+    "state": "passed",
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D18-browser-fixed-proof",
+      "--blog-ui"
+    ],
+    "head": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "finalHead": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "startedAt": "2026-10-30T22:17:26.064182+00:00",
+    "finishedAt": "2026-10-30T22:18:09.646362+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "1fecd5fc8e5f9556dda963b6c94a6c6e27fe08157e28fde7c7a1f4b8622b9732"
+  },
+  "D18-browser-final": {
+    "state": "passed",
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/D18-browser-final-proof",
+      "--blog-ui"
+    ],
+    "head": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "finalHead": "d4fd349242bf2906f0c1530fb4e7eeb91d62dac4",
+    "startedAt": "2026-10-30T22:19:12.707333+00:00",
+    "finishedAt": "2026-10-30T22:19:57.710090+00:00",
+    "exitCode": 0,
+    "sourceUnchanged": true,
+    "cleanCommitSnapshot": false,
+    "logSha256": "e5f5bbc004c93e9a898fcba048367f1c1c81cb36b8b7c8382fddc1f62d382a6c"
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "videos": [
+    {
+      "scenario": "produit",
+      "source": "produit.webm",
+      "published": "videos/produit.mp4",
+      "sourceProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "483"
+          }
+        ],
+        "format": {
+          "duration": "19.320000"
+        }
+      },
+      "publishedProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "19.320000",
+            "nb_read_frames": "483"
+          }
+        ],
+        "format": {
+          "duration": "19.320000"
+        }
+      },
+      "sourceSha256": "ef11cc8dbd518ad5149a339460c2d5f315b73935fb60c013e25cef2189d63000",
+      "publishedSha256": "23f861d187bb6048d32654d91a3e7937ded0d31ae4f92bb0de30ea5d7b9ea5bd",
+      "operation": "Transcodage seul, aucune coupe ni accélération ; toutes les images conservées."
+    },
+    {
+      "scenario": "service",
+      "source": "service.webm",
+      "published": "videos/service.mp4",
+      "sourceProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "nb_read_frames": "278"
+          }
+        ],
+        "format": {
+          "duration": "11.120000"
+        }
+      },
+      "publishedProbe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 390,
+            "height": 844,
+            "duration": "11.120000",
+            "nb_read_frames": "278"
+          }
+        ],
+        "format": {
+          "duration": "11.120000"
+        }
+      },
+      "sourceSha256": "aefb7786d8a4f1c908f8f6a07ee24579729ebd6f64e988d64808c03d5fce8810",
+      "publishedSha256": "9b959c803190084869cf8af997bb342d3772749a23a03f65de8c1378ac119708",
+      "operation": "Transcodage seul, aucune coupe ni accélération ; toutes les images conservées."
+    }
+  ],
+  "visualInspection": {
+    "status": "performed",
+    "capturesInspected": 22,
+    "videoFramesInspected": 12,
+    "method": "Planches de contact de toutes les captures, six images réparties sur chaque vidéo ; images originales clés ouvertes séparément.",
+    "qualification": "Recette technique de retouche, pas une validation créative professionnelle.",
+    "transport": "Images embarquées en data URI ; comparaison exacte des octets attendus, décodage et naturalWidth vérifiés dans le navigateur.",
+    "transitions": "Captures stabilisées avec animations disabled ; vidéos continues non coupées, transitions visibles."
+  }
+}

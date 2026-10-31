@@ -161,7 +161,7 @@ describe("Écrans : bouton principal, vocabulaire, rendez-vous, choix de départ
   });
 
   it("services : « Comprendre mon activité », aide demandée, photos facultatives, prestations annoncées", () => {
-    expect(pilote).toMatch(/t\("Comprendre mon activité", "Understand my business"\)/);
+    expect(read("src/components/studio/analysis-retry.tsx")).toMatch(/t\("Comprendre mon activité", "Understand my business"\)/);
     expect(pilote).toMatch(/L’IA analyse votre description et vos éventuelles photos pour identifier vos prestations et les informations à compléter\./);
     expect(pilote).toMatch(/Ajouter des photos de votre activité \(facultatif\)/);
     expect(pilote).toMatch(/data-services-pending/);
@@ -172,7 +172,7 @@ describe("Écrans : bouton principal, vocabulaire, rendez-vous, choix de départ
   it("devis : estimation, maximum autorisé et consommation constatée affichés séparément", () => {
     expect(pilote).toMatch(/Estimation de consommation : /);
     expect(pilote).toMatch(/Maximum autorisé pour cet essai : /);
-    expect(pilote).toMatch(/Consommation constatée : /);
+    expect(pilote).toMatch(/Dernière analyse : /);
   });
 
   it("rendez-vous : lien d'un outil externe facultatif, options réelles expliquées, aucun agenda annoncé", () => {

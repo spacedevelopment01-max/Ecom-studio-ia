@@ -1,0 +1,81 @@
+{
+  "D7-target-first": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-strategy-choices.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts",
+      "tests/conversation211-intelligence.test.ts"
+    ],
+    "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+    "startedAt": "2026-10-28T22:23:22.223549+00:00",
+    "state": "failed",
+    "exitCode": 1,
+    "finishedAt": "2026-10-28T22:23:29.630702+00:00",
+    "logSha256": "46167401f74826ba04e8b918aac1630e00e7b8c6c4ac436055eda34e5c750ae1",
+    "sourceUnchanged": true
+  },
+  "D7-target-second": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-strategy-choices.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts",
+      "tests/conversation211-intelligence.test.ts"
+    ],
+    "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+    "startedAt": "2026-10-28T22:23:47.209141+00:00",
+    "state": "failed",
+    "exitCode": 1,
+    "finishedAt": "2026-10-28T22:23:54.541088+00:00",
+    "logSha256": "f384c124418c2a6159be641e64c956208b89d1413c219b39fb43b457adc128d7",
+    "sourceUnchanged": true
+  },
+  "D7-target-third": {
+    "command": [
+      "npx",
+      "vitest",
+      "run",
+      "tests/conversation211-strategy-choices.test.ts",
+      "tests/conversation211-studio-knowledge.test.ts",
+      "tests/conversation211-intelligence.test.ts"
+    ],
+    "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+    "startedAt": "2026-10-28T22:24:29.577018+00:00",
+    "state": "passed",
+    "exitCode": 0,
+    "finishedAt": "2026-10-28T22:24:36.924067+00:00",
+    "logSha256": "54f9771c2787e5a606cdf3506f35d25a9345c4969f84d494fbf7bbbdb65639ab",
+    "sourceUnchanged": true
+  },
+  "D7-full-final": {
+    "command": [
+      "npx",
+      "vitest",
+      "run"
+    ],
+    "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+    "startedAt": "2026-10-28T22:27:23.053585+00:00",
+    "state": "failed",
+    "exitCode": -15,
+    "finishedAt": "2026-10-28T22:28:23.547174+00:00",
+    "logSha256": "cef0e8b5eb99863cf879c3d4964dd6e14b2815375692748dc83f42eaded93342",
+    "sourceUnchanged": true
+  },
+  "D7-full-frozen": {
+    "command": [
+      "npx",
+      "vitest",
+      "run"
+    ],
+    "head": "ef67bebe88c73d803d34d03536f80c64f41e4bae",
+    "startedAt": "2026-10-28T22:28:59.057236+00:00",
+    "state": "failed",
+    "exitCode": -15,
+    "finishedAt": "2026-10-28T22:29:45.074785+00:00",
+    "logSha256": "cef0e8b5eb99863cf879c3d4964dd6e14b2815375692748dc83f42eaded93342",
+    "sourceUnchanged": true
+  }
+}

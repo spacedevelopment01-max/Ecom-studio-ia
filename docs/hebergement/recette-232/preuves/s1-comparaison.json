@@ -1,0 +1,26 @@
+{
+ "s1-ordinateur-accueil": {
+  "taille": "1440x900",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s1-ordinateur-pages-prestations": {
+  "taille": "1440x900",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s1-ordinateur-pages-contact": {
+  "taille": "1440x900",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s1-telephone-accueil": {
+  "taille": "780x1688",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s1-telephone-pages-prestations": {
+  "taille": "780x1688",
+  "pixelsDifferents": "0.00 %"
+ },
+ "s1-telephone-pages-contact": {
+  "taille": "780x1688",
+  "pixelsDifferents": "0.00 %"
+ }
+}

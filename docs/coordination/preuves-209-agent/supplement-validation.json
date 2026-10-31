@@ -1,0 +1,39 @@
+{
+  "schema": "agent209-supplement-validation-1",
+  "baseCommit": "477e47f57612878d001223fafd2b666fd81ac31b",
+  "applicationUnchanged": true,
+  "testedSourceSha256": {
+    "scripts/agent209-orchestration-study.ts": "6f1651f99c39a634d18ffe28f9ae7201a594793bc0197c4f4be5e86033ad16cf",
+    "tests/conversation209-orchestration-study.test.ts": "e1e6a6bc14a87f3a469447c87458a97eba4eeaa7f9dd9b9282a36b815e9f7477"
+  },
+  "providerCalls": 0,
+  "newRealCost": 0,
+  "data": "isolated_fictitious_test_data_only",
+  "types": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "targeted": {
+    "command": "NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npx vitest run tests/conversation209-orchestration-study.test.ts",
+    "passed": 14,
+    "failed": 0
+  },
+  "fullSuite": {
+    "command": "XDG_CACHE_HOME=/tmp/ecom209-font-cache NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npm test",
+    "exitCode": 0,
+    "passed": 3519,
+    "skipped": 45,
+    "failed": 0,
+    "filesPassed": 409,
+    "filesSkipped": 1,
+    "durationSeconds": 660.06,
+    "targetedTestsIncludedNotAdded": true
+  },
+  "simulationCommand": "NODE_OPTIONS='--import=./scripts/lot9/network-guard.mjs' npx tsx scripts/agent209-orchestration-study.ts",
+  "qualityGainMeasured": false,
+  "localCompiledApiRerun": false,
+  "reason": "No production source changed; original compiled API evidence remains tied to its original SHA. The unchanged CI still executes all compiled checks on the published head.",
+  "merge": false,
+  "deploy": false,
+  "clientThemeChanges": false
+}

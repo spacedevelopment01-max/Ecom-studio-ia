@@ -1,0 +1,11 @@
+{
+  "checkout": "/workspace/reviews/ecom-211-lot-c-bornes",
+  "head": "f8b1405f037ac73bf5a328a16b71cee76db93e2d",
+  "inactiveOwnReviewCheckoutOnly": true,
+  "baselineReportFilesVerifiedAgainstGit": 3382,
+  "untrackedOrIgnoredReports": 0,
+  "sourcesCheckedUnchanged": 3272,
+  "reversibleSparseExclusion": "/reports/",
+  "restore": "git sparse-checkout disable",
+  "clientDataOrUniqueProofDeleted": false
+}

@@ -1,0 +1,23 @@
+{
+  "baseCommit": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+  "codeCommit": "7118b73ed013704062a8ee4adf568b04c75a56ba",
+  "candidateTree": "8985288605eea3b4fe2a54780c8f43153cceaede",
+  "frozenFiles": 26,
+  "allFileDigestsMatch": true,
+  "workerDigestIncluded": true,
+  "protectedPaths": [
+    "theme-base/",
+    "src/lib/theme/",
+    "public/demo/",
+    "public/theme-assets/",
+    "src/lib/billing",
+    "src/lib/ai/access.ts",
+    "clients/"
+  ],
+  "protectedChangedFiles": [],
+  "nativeRendererUnchanged": true,
+  "nativeExportUnchanged": true,
+  "noEnvFileInDiff": true,
+  "intentionalNativeImageBindingChange": "Separate resolver for local pixel reuse; generated-photo/logo/person guards retained.",
+  "noRealProviderCalls": true
+}

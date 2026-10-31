@@ -1,4 +1,4 @@
-import { saveAsset } from "../library";
+import { saveAsset,getAsset,assetData } from "../library";
 import sharp from "sharp";
 /**
  * Image & Search Engine V2 (phase 5A) — moteur central.
@@ -32,12 +32,12 @@ import { POLICIES } from "../quality/policies";
 import { loadProject, type Project } from "../projects";
 import { validCutouts } from "../engine/cutouts";
 import { EUR } from "../billing";
-import { buildBrief, briefHash, generationPrompt, type BriefRequest } from "./brief";
-import { applyWording, loadWordingRules } from "../client-wording";
+import { buildBrief, briefHash, generationRequestPrompt, type BriefRequest } from "./brief";
+import { loadWordingRules } from "../client-wording";
 import { rejectedDirections } from "./direction";
 import { frameTo } from "./formats";
 import { PRODUCT_KINDS, stagesFor } from "./intent";
-import { gateImage, localImageCheck } from "./quality";
+import { gateImage, localImageCheck,dHash } from "./quality";
 import { candidateKey, searchCandidates, shortlist, type SearchStats, type TypedSearch } from "./search";
 import { typedQueries, typedWords } from "../stock/typed-search";
 import { emptyBankPhotoDiag, noPhotoMessage, silhouetteBrief, stockFlagsNote, type BankPhotoDiag } from "../media/bank-photo";
@@ -45,10 +45,23 @@ import { creditLine } from "./sources";
 import { memoOf, projectHashes, rejectedKeys, remember, reusableFor, saveImageV2, usedStockKeys, briefSummary } from "./assets";
 import { realImageDeps, type ImageV2Deps } from "./deps";
 import type { ArtDirectionId, ImageOutcome, ImageReview, VisualBrief } from "./types";
+import {resolveImageBinding,boundReusableImage,type ImageBinding} from './request-binding';
+import {L} from '../i18n-server';
+import {withQuotedImageRoute} from '../ai/media-providers';
 
 export const IMAGE_V2_VERSION = "5a.1";
 
 export type ImageRequestV2 = BriefRequest & {
+  /** Raccordement versionné ; absent : comportement historique conservé. */
+  binding?: ImageBinding;
+  /** Un accord peut autoriser moins de reprises que la politique générale, jamais davantage. */
+  attemptLimit?: 1 | 2;
+  allowDirectionChange?: boolean;
+  singleReviewCall?: boolean;
+  quotedRoutes?:{image:{provider:string;model:string};review:NonNullable<import('../ai/llm').LlmCall['expectedRoute']>};
+  quotedReviewEnvelope?:Pick<import('../ai/llm').LlmCall,'context'|'volatile'|'reference'>;
+  reuseAsset?:import('zod').infer<typeof import('./request-binding').ImageAssetPinSchema>;
+  reuseOnly?:boolean;
   preserveOriginal?: boolean;
   /** Nombre d'images (série diversifiée) ; 1 par défaut. */
   count?: number;
@@ -114,19 +127,24 @@ export async function runImageEngineV2(ctx: JobContext | null, projectId: string
   if(req.themePlacement)await (await import("../theme/placement-request")).checkedPlacementRequest(projectId,req.themePlacement);
   if(req.kind==="ad_image"||req.support==="ad")(await import("../job-entitlements")).assertAdvertising(projectId);
   req = imagePolicy(req);
-  const p = loadProject(projectId);
+  if(req.nativeEdit&&!req.binding?.edit)throw new UserFacingError(L('La retouche exige une source native figée. Aucun appel lancé.','Editing requires a pinned native source. No request started.'),'image_edit_binding_missing');
+  const loaded = loadProject(projectId);
+  const resolved=req.binding?resolveImageBinding(loaded,req.binding):null;
+  if(resolved)for(const reference of resolved.pins){try{await sharp(assetData(getAsset(reference.assetId)!),{failOn:'error'}).stats();}catch{throw new UserFacingError(L('La photo de référence est illisible. Aucun appel de génération lancé.','Reference photo is unreadable. No generation request started.'),'image_reference_unreadable');}}
+  const p=resolved?.project??loaded;
+  if(resolved)req={...req,references:resolved.references,peopleAllowed:false,bindingDigest:resolved.digest,...(resolved.binding.product?{productFidelity:true}:{}),...(resolved.service?{service:resolved.service}:{}),...(resolved.nativeEdit?{nativeEdit:resolved.nativeEdit,attemptLimit:1,allowDirectionChange:false,singleReviewCall:true,noStock:true}:{} )};
   brainView(p, "image"); // Précontrôle avant tout appel, même si un adaptateur lit ensuite un brief local.
   const jobId = ctx?.job.id ?? null;
   const aiActive = aiActiveFor(p.userId, p.id);
-  const deps = injected ?? realImageDeps(p, { jobId, aiActive });
+  const deps = injected ?? realImageDeps(p, { jobId, aiActive,singleReviewCall:req.singleReviewCall,reviewRoute:req.quotedRoutes?.review,reviewEnvelope:req.quotedReviewEnvelope });
   // Plafond de CETTE tâche d'images : ce que la tâche de fond a déjà dépensé avant (autres étapes d'un plan) n'est pas
   // compté contre lui. Un plafond plus strict déjà posé par l'appelant (benchmark) est conservé.
   const before = jobId ? (all<{ c: number }>("SELECT COALESCE(SUM(cost), 0) c FROM ai_calls WHERE job_id = ?", jobId)[0]?.c ?? 0) : 0;
   const own = before + Math.round((req.maxCostEur ?? DEFAULT_IMAGE_CAP_EUR) * EUR);
   const cur = currentTrace();
   const capMicro = cur.costCapMicro != null ? Math.min(cur.costCapMicro, own) : own;
-  const run = () => engine(ctx, p, req, deps);
-  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: PRODUCT_KINDS.includes(req.kind) ? "GENERATE_IMAGE" : "FIND_STOCK_IMAGE" }), costCapMicro: capMicro }, run);
+  const run = () => req.quotedRoutes?withQuotedImageRoute(req.quotedRoutes.image,()=>engine(ctx,p,req,deps)):engine(ctx,p,req,deps);
+  return withTrace({ ...(jobId ? { jobId } : {}), projectId, ...(cur.intent ? {} : { intent: req.nativeEdit||PRODUCT_KINDS.includes(req.kind) ? "GENERATE_IMAGE" : "FIND_STOCK_IMAGE" }), costCapMicro: capMicro }, run);
 }
 
 async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps: ImageV2Deps): Promise<ImageRunResult> {
@@ -136,7 +154,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
   const result: ImageRunResult = { runId, outcomes: [], search: [], stats: { reused: 0, candidatesSeen: 0, controls: 0, controlsSkippedByMemo: 0, generations: 0, retries: 0, directionChanges: 0 }, stoppedByCostCap: false, costMicro: 0, notes };
   const memory = brainSnapshot(p).memory;
   const rejectedDirs = rejectedDirections(memory);
-  const stages = req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
+  const stages:ReturnType<typeof stagesFor> = req.nativeEdit?['reuse','generate']:req.noStock ? stagesFor(req.kind).filter((s) => s !== "search") : stagesFor(req.kind);
   const count = Math.max(1, Math.min(8, req.count ?? 1));
   const seriesHashes: string[] = [];
   // Détourage valide du produit (référence obligatoire pour toute image du produit).
@@ -145,9 +163,10 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
 
   try {
     for (let i = 0;i < count;i++) {
+      if(req.binding&&resolveImageBinding(loadProject(p.id),req.binding).digest!==req.bindingDigest)throw new UserFacingError(L('Le contexte image a changé. Les acquis restent conservés ; aucun nouvel appel lancé.','Image context changed. Acquired work is kept; no new request started.'),'image_binding_changed');
       let brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: rejectedDirs, peopleAllowed: req.peopleAllowed });
       const out = await one(ctx, p, req, deps, brief, stages, seriesHashes, result);
-      if (out.outcome.verdict === "REJECTED" && out.changeDirection && stages.includes("generate")) {
+      if (out.outcome.verdict === "REJECTED" && out.changeDirection && stages.includes("generate") && req.allowDirectionChange!==false) {
         // Scène hors sujet : une seule nouvelle direction, choisie localement (refus de celle-ci ajouté).
         result.stats.directionChanges++;
         brief = buildBrief(p, { ...req, references: refsUsed, variant: count > 1 ? i : (req.variant ?? null) }, { rejectedDirections: [...rejectedDirs, brief.artDirection], peopleAllowed: req.peopleAllowed });
@@ -155,6 +174,7 @@ async function engine(ctx: JobContext | null, p: Project, req: ImageRequestV2, d
         const second = await one(ctx, p, req, deps, brief, stages.filter((s) => s !== "search" && s !== "reuse"), seriesHashes, result);
         result.outcomes.push({ ...second.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
       } else result.outcomes.push({ ...out.outcome, brief: briefSummary(brief), artDirection: brief.artDirection });
+      if(result.stoppedByCostCap)break;
     }
   } catch (e) {
     if (!(e instanceof CostCapReached)) throw e;
@@ -179,7 +199,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
 
   // 1. Réutilisation : même brief, image FINAL, réutilisable automatiquement.
   if (stages.includes("reuse")) {
-    const prev = reusableFor(p.id, bh);
+    const prev = req.reuseAsset?boundReusableImage(p,bh,req.reuseAsset):reusableFor(p.id, bh);
     // Images 100 % IA : seule une image GÉNÉRÉE peut être reprise (jamais une photo de banque au même brief).
     const previousMeta = prev ? JSON.parse(prev.meta || "{}") : {};
     if (prev && (!req.noStock || (prev.origin === "generated" && !previousMeta.stock && previousMeta.imageV2?.origin !== "stock"))) {
@@ -188,7 +208,11 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       return { outcome: { briefHash: bh, verdict: "FINAL", score: null, codes: [], reason: "image FINAL réutilisée (même brief)", origin: "reused", assetId: prev.id, attempts: 0, candidateKey: null }, changeDirection: false };
     }
   }
-  const projectH = projectHashes(p.id);
+  if(req.reuseOnly)return{outcome:none('L’acquis annoncé manque ; aucune nouvelle génération autorisée par ce devis.'),changeDirection:false};
+  const editReferenceHashes=brief.nativeEdit?await Promise.all([brief.nativeEdit.sourceAssetId,brief.nativeEdit.styleAssetId].filter((v):v is string=>!!v).map(assetId=>dHash(assetData(getAsset(assetId)!)))):[];
+  // Une correction volontairement proche de sa source/style n'est pas un doublon indésirable.
+  // Les autres acquis gardent leur contrôle ; l'application de la demande et les changements hors périmètre sont relus.
+  const projectH = projectHashes(p.id).filter(h=>!editReferenceHashes.includes(h));
   let lastReason = "aucune image retenue";
 
   // 2. Recherche (banques d'images). Recherche du client : son texte tel quel, élargie et silhouettes s'il les a cochées.
@@ -291,15 +315,16 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
   const reference = brief.references[0] ? deps.reference(brief.references[0]) : null;
   if (brief.productFidelity && !reference) return { outcome: none("photo de référence du produit introuvable"), changeDirection: false };
 
-  const maxAttempts = POLICIES.image_v2.maxRetries + 1;
+  const maxAttempts = Math.min(POLICIES.image_v2.maxRetries + 1,req.attemptLimit??Infinity);
   const wording = loadWordingRules(p.id);
   const prompts = new Set<string>();
   const corrections: string[] = [];
   let correction: string | null = null;
   let last: ImageOutcome = none(lastReason);
   for (let attempt = 0;attempt < maxAttempts;attempt++) {
+    if(req.binding&&resolveImageBinding(loadProject(p.id),req.binding).digest!==req.bindingDigest)throw new UserFacingError(L('Le contexte image a changé. Les acquis restent conservés ; aucun nouvel appel lancé.','Image context changed. Acquired work is kept; no new request started.'),'image_binding_changed');
     // Vocabulaire du client (ex. ARVEN : « montre », jamais « chronographe ») : appliqué à chaque consigne.
-    const prompt = applyWording(generationPrompt(brief, correction), wording);
+    const prompt = generationRequestPrompt(brief,wording,correction);
     const ph = hash(prompt);
     // Jamais deux fois la même consigne (une reprise identique ne changerait rien, et se paierait).
     if (prompts.has(ph) || memoOf(p.id, `gen:${ph}`, bh)?.verdict === "REJECTED") break;
@@ -312,12 +337,14 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     const local = await localImageCheck(img, brief, [...projectH, ...seriesHashes]);
     let review: ImageReview | null = null;
     let reviewError: string | null = null;
+    let reviewCap:CostCapReached|null=null;
     if (local.ok && deps.canReview) {
       result.stats.controls++;
       try {
         review = await withCandidate(`img2:${bh}`, attempt, () => deps.review(brief, img, reference, `${key}:review`, "generated"));
       } catch (e) {
-        if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
+        if (e instanceof JobCancelled || e instanceof JobPaused) throw e;
+        if(e instanceof CostCapReached)reviewCap=e;
         reviewError = (e as Error).message;
       }
     }
@@ -337,12 +364,13 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       name: `${req.name ?? `${brief.kind}-${(brief.variant?.index ?? 0) + 1}`}${attempt ? `-essai-${attempt + 1}` : ""}.jpg`,
       business: p.business,
       brief,
-      meta: { version: IMAGE_V2_VERSION, origin: brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1 },
+      meta: { version: IMAGE_V2_VERSION, origin: brief.nativeEdit||brief.productFidelity ? "edited" : "generated", provider: gen.provider, model: gen.model, briefHash: d.verdict === "FINAL" ? bh : `trial:${bh}`, brief: briefSummary(brief), score: d.score, verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], license: null, productRef: brief.nativeEdit?.productAssetId??brief.references[0] ?? null, corrections: [...corrections], phash: local.hash, attempts: attempt + 1,...(req.binding?{binding:req.binding}:{}) },
       gate: g,
       status: d.verdict === "FINAL" || keep ? "review" : "rejected",
       slot: req.slot ?? null,
       service: req.service?.name ?? null,
       sourceAssetId: brief.references[0] ?? null,
+      versionOf:brief.nativeEdit?(getAsset(brief.nativeEdit.sourceAssetId)?.version_of??brief.nativeEdit.sourceAssetId):null,
     });
     if (req.preserveOriginal) {
       const format = (await sharp(gen.img).metadata()).format;
@@ -351,7 +379,8 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
       await saveAsset({ projectId: p.id, userId: p.userId, data: gen.img, name: `${req.slot?.replaceAll(":", "-") || "image"}-original.${ext}`, mime: format === "jpeg" ? "image/jpeg" : `image/${format}`, origin: "generated", role: "image-original", folderKey: "images.scenes", sourceAssetId: asset.id, status: "review", meta: { provider: gen.provider, model: gen.model, original: true, attempt } });
     }
     remember(p.id, `gen:${ph}`, bh, { verdict: d.verdict === "FINAL" ? "FINAL" : "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
-    last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null, attempts: attempt + 1, candidateKey: `gen:${ph}` };
+    last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null,...(d.verdict!=='FINAL'&&!keep?{diagnosticAssetId:asset.id}:{}), attempts: attempt + 1, candidateKey: `gen:${ph}` };
+    if(reviewCap){result.stoppedByCostCap=true;result.notes.push(`arrêt du contrôle au plafond : ${reviewCap.message}`);return{outcome:last,changeDirection:false};}
     if (d.verdict === "FINAL") {
       seriesHashes.push(local.hash);
       return { outcome: last, changeDirection: false };

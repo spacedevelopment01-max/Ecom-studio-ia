@@ -1,0 +1,1 @@
+{"success":true,"file":"/workspace/reviews/ecom-211-state/I1-native-edit-compose/api-proof.json","version":{"commit":"412f60dd5d3ed079ac46bae61e4b65055f97879e","commitOrigin":"build","mode":"production","tree":"clean","source":"compiled-build"},"totals":{"providerHttpCalls":6,"calls":6,"usage":6,"simulatedMicro":47472,"tokenCounts":6},"temp":"/tmp/ecs-agent-211-6qkdhK"}

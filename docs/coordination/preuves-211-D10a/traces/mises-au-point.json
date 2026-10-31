@@ -1,0 +1,555 @@
+[
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:02:45.728044+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "7977c936fef43fe3a73054f62a11eaf6c9ea0262d9e5216b90f9464c7ac37386",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8b7e806aa0146171fa9e4d2d09e9e6bc9c93d87907c51bfddb4ae1fad6ccae7",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "09ca55799e7a0c60372da8b6701ea511ea8413395e283a0b82fe5f369a2dd606",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "359fc68ea3df023c9761f891c177f3791b58804f3e97fca559ec6a17271e975d",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "87e2351cf3690c0973ebb733bf9e6115bbf6324c29b19e0718d6b402273a9df6",
+        "src/lib/video-v2/conversation-motion.ts": "6a43cd300e1d776411d50c8a855598418bb8927b29e4e23fcc96932e5280c060"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-types-first.log",
+      "pid": 1692546,
+      "processGroup": 1692546,
+      "exitCode": 2,
+      "finishedAt": "2026-10-29T19:03:13.227162+00:00",
+      "logSha256": "9cbaba4fa29153fdcc986270f8f29c37869a23aa17f82bac703ec10952110ae4",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:04:23.913747+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "0187dc61aff56094f5af4e95f26f56d3f956beb748f0f07f47896774bdcc78a9",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "7977c936fef43fe3a73054f62a11eaf6c9ea0262d9e5216b90f9464c7ac37386",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8b7e806aa0146171fa9e4d2d09e9e6bc9c93d87907c51bfddb4ae1fad6ccae7",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "09ca55799e7a0c60372da8b6701ea511ea8413395e283a0b82fe5f369a2dd606",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "01e88ec951c5e396fd2bccb6a061e07f0feff09a63901b7511a6ee05b5730c42",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "29079e14400ea437840584038019d8d8a822e0f73090a867a8767ea649b7b5db",
+        "src/lib/video-v2/conversation-motion.ts": "6a43cd300e1d776411d50c8a855598418bb8927b29e4e23fcc96932e5280c060"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-types-ui-first.log",
+      "pid": 1692946,
+      "processGroup": 1692946,
+      "exitCode": 2,
+      "finishedAt": "2026-10-29T19:04:32.492171+00:00",
+      "logSha256": "ca4ec13d99cb7047fc7e89b08d0ad091a204b851d8dfeed55c3df208c1e99f34",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-motion.test.ts",
+        "tests/conversation211-photo-logo-guard.test.ts",
+        "tests/conversation211-logo-schema-budget.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:06:01.274607+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "0187dc61aff56094f5af4e95f26f56d3f956beb748f0f07f47896774bdcc78a9",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "7977c936fef43fe3a73054f62a11eaf6c9ea0262d9e5216b90f9464c7ac37386",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "09ca55799e7a0c60372da8b6701ea511ea8413395e283a0b82fe5f369a2dd606",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "01e88ec951c5e396fd2bccb6a061e07f0feff09a63901b7511a6ee05b5730c42",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "29079e14400ea437840584038019d8d8a822e0f73090a867a8767ea649b7b5db",
+        "src/lib/video-v2/conversation-motion.ts": "6a43cd300e1d776411d50c8a855598418bb8927b29e4e23fcc96932e5280c060",
+        "tests/conversation211-video-motion.test.ts": "bc40eed9267de6b936430261282dbc4abdc3d23fa5f36a2486cc635b2ac991e1"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-targeted-first.log",
+      "pid": 1693261,
+      "processGroup": 1693261,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T19:06:12.908738+00:00",
+      "logSha256": "629b72a779cadfc037cfc4ff010b188ab022d4e8b75dc6f3bdb8350bb124dc8c",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-motion.test.ts",
+        "tests/conversation211-photo-logo-guard.test.ts",
+        "tests/conversation211-logo-schema-budget.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:07:48.415322+00:00",
+      "state": "failed",
+      "sources": {
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "e4df60907719e2a4a29aef2d5a47bdfeb49f8643adeb16a7dff582448c1382bd",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "8513881a0d55ca3eb93a556e7e6babddc1a53fdba0d5489288e88449458593e4",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "3c46fc37c500501624d23ed5dda0e6cdc74dc4bdbf557ee3b52bd025927c14e5",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "93b58f88f6a9ec9406fde64402012c965bc51231a9521339fcd27561d716002c",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "3db667877a87e6df175da8a56193d034a5c974c3f40bc19c2cce1e820c988f2f",
+        "src/lib/video-v2/conversation-motion.ts": "22c251d0fddc7bae1e82a3739d37225f28de57484ca874537701f79e5e8c25bd",
+        "tests/conversation211-video-motion.test.ts": "3eab839ed5a3f7572d1968106c110be82e6bf03ed02ca9754443df00a9c86b98"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-targeted-second.log",
+      "pid": 1694471,
+      "processGroup": 1694471,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T19:08:00.633154+00:00",
+      "logSha256": "fe02142da7c24fe600ef570d200bdd8ebe1a3b96468a922b7fca0193caa713aa",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-motion.test.ts",
+        "-t",
+        "une retouche ciblée"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:19:41.238014+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "92edabf4f1ddd291484a7831f0ce1cf53132523ec60b90a00f45544262be02ff",
+        "scripts/verify-agent211-videos-ui.ts": "9157d90ada4c1e4d58b393a3e4a4d27dd25a76db21513bfe3bcb98b7d5a1350a",
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/tab-publicites.tsx": "564e1328fda6c3779e7eee104dac921b24ed903f975c7ac6313df890b3ce38fa",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "e4df60907719e2a4a29aef2d5a47bdfeb49f8643adeb16a7dff582448c1382bd",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "d57081cb8c52f257213ea4d0a9cd9ef93f7b08b3e625bfe43ad91ebc448ffe13",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "9e4736d0a7cedd72e469affd5332705e34fc665492fa70ff32a11155ac86084d",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "de51ef829c55a1c5e958389ad9bcc75a5f176f4c61219fba7456e0ef31e63fac",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "28029c227c589e02c7fb5340d0b95a82c3b8764c231503a8a46449a2f9279b29",
+        "src/lib/video-v2/conversation-motion.ts": "a22dc6acc190e3e25bc89bbc09ee7f8318e8c6a12e837cce7abf4e3630a5e944",
+        "tests/conversation211-video-contract.test.ts": "b0ba2aca72e8ee3ccae3e33c293b0b635fb7e90665decd14be556e60b4204057",
+        "tests/conversation211-video-motion.test.ts": "f1ab3474fffdb0b40a1ad5b7e3a9449a2d0892a6d06dbedef62a313a57f4132f"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-restored-reuse-red.log",
+      "pid": 1700740,
+      "processGroup": 1700740,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T19:19:49.582800+00:00",
+      "logSha256": "2c0d3d108a50773ba92f14ef2ce25914baaab2c5d0ca53cff6d5e2836752a7b7",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-motion.test.ts",
+        "-t",
+        "anime les pixels"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:22:16.339139+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "92edabf4f1ddd291484a7831f0ce1cf53132523ec60b90a00f45544262be02ff",
+        "scripts/verify-agent211-videos-ui.ts": "9157d90ada4c1e4d58b393a3e4a4d27dd25a76db21513bfe3bcb98b7d5a1350a",
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/tab-publicites.tsx": "564e1328fda6c3779e7eee104dac921b24ed903f975c7ac6313df890b3ce38fa",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "e4df60907719e2a4a29aef2d5a47bdfeb49f8643adeb16a7dff582448c1382bd",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "d57081cb8c52f257213ea4d0a9cd9ef93f7b08b3e625bfe43ad91ebc448ffe13",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "9e4736d0a7cedd72e469affd5332705e34fc665492fa70ff32a11155ac86084d",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "de51ef829c55a1c5e958389ad9bcc75a5f176f4c61219fba7456e0ef31e63fac",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "28029c227c589e02c7fb5340d0b95a82c3b8764c231503a8a46449a2f9279b29",
+        "src/lib/video-v2/conversation-motion.ts": "a22dc6acc190e3e25bc89bbc09ee7f8318e8c6a12e837cce7abf4e3630a5e944",
+        "tests/conversation211-video-contract.test.ts": "b0ba2aca72e8ee3ccae3e33c293b0b635fb7e90665decd14be556e60b4204057",
+        "tests/conversation211-video-motion.test.ts": "f938adcb10fb13fb6edead5ef6428280594ab7605245937797532e358eceb80a"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-logo-pixels-red.log",
+      "pid": 1701643,
+      "processGroup": 1701643,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T19:22:20.617591+00:00",
+      "logSha256": "e3f89bd892c2d5baa1ab2103525441fb7326be0b4496bbaaa5f6d5b2c0d708c3",
+      "sourceUnchanged": false
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-video-motion.test.ts",
+        "-t",
+        "anime les pixels"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "a74b93759fef579a95b9cbcfc0fbe92ef6818413",
+      "startedAt": "2026-10-29T19:22:45.043806+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "92edabf4f1ddd291484a7831f0ce1cf53132523ec60b90a00f45544262be02ff",
+        "scripts/verify-agent211-videos-ui.ts": "9157d90ada4c1e4d58b393a3e4a4d27dd25a76db21513bfe3bcb98b7d5a1350a",
+        "src/app/api/studio-agent/conversations/[cid]/videos/route.ts": "8fe6fda508e5de69db9b09fe67e777885e8253d1e8f5556f54a1b0c926ccaff5",
+        "src/components/studio/conversation-panel.tsx": "178353abecb2864b3601a2d1fb5dc9a7c288804766a9f027acec8606dcb58769",
+        "src/components/studio/conversation-video-tools.tsx": "8288a13102418b46d007b11ee1e957d9d76db6aa6c343056fc27257c399ca091",
+        "src/components/studio/tab-publicites.tsx": "564e1328fda6c3779e7eee104dac921b24ed903f975c7ac6313df890b3ce38fa",
+        "src/components/studio/video-gallery.tsx": "ce8771393dcaf9ef38510114f98f8c700dc047f5d5071ce3b2877d04e7ba06ed",
+        "src/components/studio/video-v2-panel.tsx": "e4df60907719e2a4a29aef2d5a47bdfeb49f8643adeb16a7dff582448c1382bd",
+        "src/lib/image-v2/request-binding.ts": "cae90befe10bc33e7c8df91329f2858eacb1a4fb10066fdaa54bd09b1038efe5",
+        "src/lib/orchestrator/conversation/contract.ts": "844c9df1f85160d1ac2f02e6b473f9208e56a1224806cb73a5b93ae313dfeff0",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "d81f7f5571f9464f43ff0de6054adae2b6749cf3d9cb89dd1c35a650fc08fd32",
+        "src/lib/orchestrator/conversation/index.ts": "00b5a121c955f85ce28f4f2972ab4badcc00881a0b5b709500978d74de32a9df",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "d57081cb8c52f257213ea4d0a9cd9ef93f7b08b3e625bfe43ad91ebc448ffe13",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "c0d1720bdd3ecad9878d6e4072dca6828912a098839b00de5e966e03d20f5cfd",
+        "src/lib/orchestrator/conversation/intelligence.ts": "893e287a9cb05e7c626740a81def647469802d7411ab193eb89093855c220030",
+        "src/lib/orchestrator/conversation/studio-operations.ts": "53352d134e8aca8aff936441cf816f0bb9dfd0c936696d20ab098514cebb2931",
+        "src/lib/orchestrator/conversation/tool-flags.ts": "0cbb9c044c16b85a31bc85acb9609554b34d07d9f2f4a054ac1b23dfc2059bda",
+        "src/lib/orchestrator/conversation/video-tool-contract.ts": "9e4736d0a7cedd72e469affd5332705e34fc665492fa70ff32a11155ac86084d",
+        "src/lib/orchestrator/conversation/video-tool-execution.ts": "07d44ad7b4ff7715474f17034b3467eea26a286f6a36a9c7b3e5ebed9448c4ad",
+        "src/lib/orchestrator/conversation/video-tool-validation.ts": "28029c227c589e02c7fb5340d0b95a82c3b8764c231503a8a46449a2f9279b29",
+        "src/lib/video-v2/conversation-motion.ts": "a22dc6acc190e3e25bc89bbc09ee7f8318e8c6a12e837cce7abf4e3630a5e944",
+        "tests/conversation211-video-contract.test.ts": "b0ba2aca72e8ee3ccae3e33c293b0b635fb7e90665decd14be556e60b4204057",
+        "tests/conversation211-video-motion.test.ts": "f938adcb10fb13fb6edead5ef6428280594ab7605245937797532e358eceb80a"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-logo-pixels-red-frozen.log",
+      "pid": 1701808,
+      "processGroup": 1701808,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T19:22:49.430003+00:00",
+      "logSha256": "c06495be85a5c7a975f43eb5af1242626608235e76490cae4c66211e4b375133",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10a-browser-first-proof",
+        "--videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:03:36.331722+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10a-browser-first.log",
+      "pid": 1763504,
+      "processGroup": 1763504,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T20:03:58.182937+00:00",
+      "logSha256": "a51cef705af3857710425e667f5dd9dc332ee1ea50ffc6ec5f68f96099a69c5c",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10a-browser-json-proof",
+        "--videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:05:59.433362+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-videos-ui.ts": "04e6f8682f52b551d3466d88de0d715e1195dadce9a715e47c1cd27f4c72bad0"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-browser-json.log",
+      "pid": 1771727,
+      "processGroup": 1771727,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T20:06:52.162791+00:00",
+      "logSha256": "1c797ae3726df235b17e3bd83352dc1ab885758c4d577eaf0cfcf785f541f9f6",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10a-browser-gallery-proof",
+        "--videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:07:38.646223+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-videos-ui.ts": "ca6788e55413b0b70dcd0ce48ae1a43d942ee32e035a5f9cd2c97afb2f9ae5be"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-browser-gallery.log",
+      "pid": 1774247,
+      "processGroup": 1774247,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T20:10:42.247395+00:00",
+      "logSha256": "89b04303afd282b5f7c6c88adc4b865c8708190c3d7a8cadb2af6a42d5be374e",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "CHROMIUM=/usr/bin/chromium",
+        "PLAYWRIGHT_BROWSERS_PATH=/workspace/reviews/ecom-211-state/playwright-runtime",
+        "NEXT_TELEMETRY_DISABLED=1",
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D10a-browser-decoded-proof",
+        "--videos-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:11:34.044073+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "20b21d200495f41ca63a2d7488526515768cd9b069c0cb332c4c814320e5dd67",
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+        "scripts/verify-agent211-videos-ui.ts": "b669f9b77910accdd1598e745f3b3d0f9956e6467515be05f84d4e68c7530e69"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-browser-decoded.log",
+      "pid": 1788489,
+      "processGroup": 1788489,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T20:16:18.586520+00:00",
+      "logSha256": "a1f8eb6f3e750e4f879cbb043cb9bc2bb7d8ceb0188084b2cb125a3f8f98adaa",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D10a-failure.mjs",
+        "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+        "D10a-browser-decoded",
+        "D10a-browser-decoded-proof",
+        "D10a-failure-ui-red-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:19:54.846547+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "20b21d200495f41ca63a2d7488526515768cd9b069c0cb332c4c814320e5dd67",
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+        "scripts/verify-agent211-videos-ui.ts": "c17ce24180486901bf472152bab9ec0422d3bcad5ff77f424709d8c2fe9f120d",
+        "src/components/studio/conversation-video-tools.tsx": "bfd1bfdebbcbcf97836fdd1d8ce7fd0f5bb97eddf5e872df7ed76680849b0690"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-failure-ui-red.log",
+      "pid": 1813681,
+      "processGroup": 1813681,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T20:19:57.668965+00:00",
+      "logSha256": "55e3abf2c2183c826e0429f31fa6bed52b5ff2be0a48dd9f28a8c42142f411ea",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "XDG_CACHE_HOME=/workspace/reviews/ecom-211-state/font-cache",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "npx",
+        "vitest",
+        "run"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "221b130e8d63fdd92c62d54b1da9790d8075b5df",
+      "startedAt": "2026-10-29T20:11:34.018803+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "20b21d200495f41ca63a2d7488526515768cd9b069c0cb332c4c814320e5dd67",
+        "scripts/verify-agent211-retouch-ui.ts": "661b4b812a659719b4c265c4f8357b2cbcc0d35291cf140dc8d67f311b22d1b4",
+        "scripts/verify-agent211-videos-ui.ts": "b669f9b77910accdd1598e745f3b3d0f9956e6467515be05f84d4e68c7530e69"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D10a-full-browser-finalized.log",
+      "pid": 1788455,
+      "processGroup": 1788455,
+      "exitCode": -15,
+      "finishedAt": "2026-10-29T20:18:27.422823+00:00",
+      "logSha256": "81b27178185dd4372ad411c8393a17ccb0eac38cf6e9934ccc27ac46ece52124",
+      "sourceUnchanged": false
+    },
+    "notFinalEvidence": true
+  },
+  {
+    "run": {
+      "command": [
+        "env",
+        "NODE_OPTIONS=--import=/workspace/reviews/ecom-211-lot-d3-export/scripts/lot9/network-guard.mjs",
+        "node",
+        "/workspace/reviews/ecom-211-state/postflight-D10a-gallery-painted.mjs",
+        "7118b73ed013704062a8ee4adf568b04c75a56ba",
+        "D10a-browser-delivery",
+        "D10a-browser-delivery-proof",
+        "D10a-native-gallery-painted-proof"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d10a-video",
+      "head": "7118b73ed013704062a8ee4adf568b04c75a56ba",
+      "startedAt": "2026-10-29T20:48:00.619650+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D10a-native-gallery-painted.log",
+      "pid": 1861676,
+      "processGroup": 1861676,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T20:48:05.462796+00:00",
+      "logSha256": "a944b4760ba740ef3684f62903111216a0e55425cf5c47bd4ed49d80a2dadf86",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "reason": "Initial screenshot measurement did not separate letterbox/native controls from image content; unchanged threshold then mapped to actual image with native controls retained."
+  }
+]

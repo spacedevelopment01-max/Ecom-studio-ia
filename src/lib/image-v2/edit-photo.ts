@@ -37,7 +37,7 @@ export async function editProjectPhoto(ctx: JobContext, projectId: string, asset
   const data = assetData(src);
   const meta = await sharp(data, { failOn: "none" }).metadata();
   const aspect = editAspect(meta.width ?? 1, meta.height ?? 1);
-  ctx.progress(20, L("Retouche de la photo par l'IA…", "AI is editing the photo…"));
+  ctx.progress(.2, L("Retouche de la photo par l'IA…", "AI is editing the photo…"));
   const img = await editPhoto({ userId: ctx.job.user_id, projectId, jobId: ctx.job.id, usageKey: `photo-edit:${ctx.job.id}` }, { image: data, instruction: ask, aspect, usage: "ad_visual" });
   // Même cadre que la photo d'origine (le recadrage enregistré dans la création reste juste).
   const out = await sharp(img).resize(meta.width ?? undefined, meta.height ?? undefined, { fit: "cover" }).jpeg({ quality: 92 }).toBuffer();
@@ -51,8 +51,9 @@ export async function editProjectPhoto(ctx: JobContext, projectId: string, asset
     folderKey: "images.ads",
     origin: "generated",
     sourceAssetId: src.id,
-    meta: { photoEdit: { from: src.id, instruction: ask.slice(0, 400) }, recipe: L(`Retouche demandée à l'IA : « ${ask.slice(0, 200)} »`, `Edit asked to the AI: "${ask.slice(0, 200)}"`) },
+    versionOf:src.version_of??src.id,
+    meta: { photoEdit: { from: src.id, instruction: ask }, recipe: L(`Retouche demandée à l'IA : « ${ask} »`, `Edit asked to the AI: "${ask}"`) },
   });
-  ctx.progress(100, L("Photo retouchée.", "Photo edited."));
+  ctx.progress(1, L("Photo retouchée.", "Photo edited."));
   return { assetId: a.id, sourceAssetId: src.id };
 }

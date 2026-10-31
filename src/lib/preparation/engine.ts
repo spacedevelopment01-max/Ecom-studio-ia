@@ -1,4 +1,7 @@
-import {activeStrategy,currentStrategyInputDigest} from "../marketing-strategy";
+import { analysisAttempts, attemptProblem } from "./analysis-attempts";
+import { analysisCostPlan } from "./inspect";
+import {activeStrategy,currentStrategyInputDigest,proposeStrategies} from "../marketing-strategy";
+import {retainResearchAfterIdentityConfirmation} from "../marketing-strategy/research";
 import {researchDigest} from "../marketing-strategy/research";
 import { placementHash, receiptFor } from "./media-context";
 import { buildProjectHandoff } from "../project-handoff/contract";
@@ -620,7 +623,9 @@ export function confirmIdentity(
     fonts?: { heading: string; body: string };
   },
 ) {
-  return commitState(projectId, revision, (s) => {
+  return tx(() => {
+  const before=loadProject(projectId);
+  const next=commitState(projectId, revision, (s) => {
     requireUpstream(s, "brand");
     assertFresh(projectId, s, "brand");
     const st = stageOf(s, "brand");
@@ -661,6 +666,9 @@ export function confirmIdentity(
     invalidateAfter(s, "brand");
     st.status = "draft";
     if (!loadProject(projectId).brand?.artIdentity) saveBrand(projectId, b.proposal);
+  });
+  if(retainResearchAfterIdentityConfirmation(before,loadProject(projectId),next))proposeStrategies(projectId);
+  return next;
   });
 }
 export function assignMedia(
@@ -794,12 +802,16 @@ export function mediaReusable(projectId: string, s = stateOf(projectId)): boolea
   const p = loadProject(projectId), c = s?.stages.content?.data, m = s?.stages.media?.data;
   return !!c && !!m?.slots.length && m.slots.filter(slot=>!(slot.kind==="video"&&slot.source==="ai"&&!slot.assetId)).every(slot => !!slot.assetId && slot.alignment?.status === "accepted" && (s?.simulation || (!slotIssues(p, slot, getAsset(slot.assetId)).length && slot.alignment.contextHash === placementHash(p, c, slot))));
 }
+/** Les adaptateurs SYNA restent dans la même cohorte d’essais native. */
+export function preparationAttemptCount(projectId: string, hash: string) {
+  return one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND json_extract(payload,'$.inputHash')=?", projectId, hash)?.n ?? 0;
+}
 export function queuePreparation(
   projectId: string,
   revision: number,
   step: Step,
   action: RunAction,
-  opts: { capMicro: number; paid: boolean; slot?: string; correction?: string },
+  opts: { capMicro: number; paid: boolean; slot?: string; correction?: string; analysisFingerprint?: string },
 ) {
   return tx(() => {
     requirePlan(null, projectId);
@@ -810,7 +822,7 @@ export function queuePreparation(
     requireUpstream(s, step);
     if (
       one(
-        "SELECT 1 FROM jobs WHERE project_id=? AND type='project.prepare' AND status IN ('queued','running','paused')",
+        "SELECT 1 FROM jobs WHERE project_id=? AND type IN ('project.prepare','agent.brand.propose') AND status IN ('queued','running','paused')",
         projectId,
       )
     )
@@ -837,22 +849,10 @@ export function queuePreparation(
     )
       return { state: s, job: null, reused: true };
     if (action === "collect" && mediaReusable(projectId, s)) return { state: s, job: null, reused: true };
-    const attempts =
-      one<{ n: number }>(
-        "SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='project.prepare' AND json_extract(payload,'$.inputHash')=?",
-        projectId,
-        hash,
-      )?.n ?? 0;
-    if (attempts >= 2)
-      throw new HttpError(
-        409,
-        "Deux essais ont déjà été demandés pour ces mêmes données. Corrigez le brief ou le choix en amont avant un nouvel essai.",
-      );
-    if (attempts && (!opts.correction || opts.correction.trim().length < 8))
-      throw new HttpError(
-        409,
-        "Décrivez le défaut à corriger avant un nouvel essai.",
-      );
+    const analysis = action === "analyze" ? analysisAttempts(projectId, stageOf(s, "brief").data, hash) : null;
+    const attempts = analysis?.attempts ?? preparationAttemptCount(projectId, hash);
+    const problem = attemptProblem(attempts, opts.correction, analysis?.historyIncomplete);
+    if (problem) throw new HttpError(409, problem);
     const p = loadProject(projectId);
     if (opts.paid) {
       assertAiAllowed(p.userId, p.id);
@@ -868,11 +868,12 @@ export function queuePreparation(
         step,
         action,
         ...opts,
+        ...(analysis ? { analysisAttemptHash: analysis.hash } : {}),
         ...(action === "logo" ? { expectedSeriesId: currentSeries(projectId)?.id ?? null } : {}),
         inputHash: hash,
         revision: s.revision + 1,
       },
-      idempotencyKey: `prepare:${projectId}:${hash}:${attempts}`,
+      idempotencyKey: `prepare:${projectId}:${analysis?.hash ?? hash}:${attempts}`,
       maxAttempts: 1,
     });
     const next = commitState(projectId, revision, (n) => {
@@ -972,8 +973,16 @@ export async function runPreparation(
             }
             return stageOf(stateOf(projectId)!, "media").data;
           }
-          if (action === "analyze")
-            return deps.inspect(p, stageOf(s, "brief").data, ctx, paid);
+          if (action === "analyze") {
+            if (paid && !deps.simulation && !ctx.payload.analysisFingerprint)
+              throw new UserFacingError("Cet ancien devis ne couvre pas la demande complète : actualisez-le avant une nouvelle analyse. Les résultats déjà acquis restent conservés.");
+            if (ctx.payload.analysisFingerprint) {
+              const plan = analysisCostPlan(p, stageOf(s, "brief").data, ctx.payload.correction);
+              if (!plan || plan.fingerprint !== ctx.payload.analysisFingerprint || plan.maxMicro > capMicro)
+                throw new UserFacingError("La demande, les tarifs ou la route ont changé : actualisez le devis. Aucun nouvel appel lancé.");
+            }
+            return deps.inspect(p, stageOf(s, "brief").data, ctx, paid, { correction: ctx.payload.correction });
+          }
           if (step === "research") {
             const r = await deps.research(p, stageOf(s, "brief").data, ctx, paid);
             return validateResearch(r);
@@ -1014,6 +1023,7 @@ export async function runPreparation(
     const output = await (paid
       ? execute()
       : withAiDisabled("préparation locale sans devis payant", execute));
+    deps.beforeRetain?.();
     if (action === "logo")
       for (const aid of output as string[]) {
         const a = usableAsset(projectId, aid, "logo");
@@ -1045,6 +1055,10 @@ export async function runPreparation(
       );
     }
     const next = commitState(projectId, expectedRevision, (n) => {
+      if (deps.beforeRetain) {
+        ctx.progress(0.9, L("Proposition acquise, vérification avant enregistrement.", "Proposal acquired, checking before saving."));
+        deps.beforeRetain();
+      }
       if (action === "collect") { stageOf(n, "media").status = "draft"; }
       else if (action === "logo") {
         // Renouveler les propositions ne remplace ni l'identité active ni ses validations.
@@ -1067,7 +1081,10 @@ export async function runPreparation(
           reviewed: false,
           inputHash: inputHash(n, "media"),
         });
-      } else draft(n, step, output as any);
+      } else {
+        draft(n, step, output as any);
+        n.stages[step]!.producedByJobId = ctx.job.id;
+      }
       if (deps.simulation) n.simulation = true;
       delete n.pending;
       delete n.error;

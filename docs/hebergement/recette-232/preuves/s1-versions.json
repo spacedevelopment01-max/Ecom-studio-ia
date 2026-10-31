@@ -1,0 +1,31 @@
+{
+ "enLigne": {
+  "numero": 1,
+  "pages": 13
+ },
+ "historique": [
+  "restore → 0p2i02al4lkzucuq 1793297460530",
+  "publish → emr303j9x16u0uye 1793297459195",
+  "publish → 0p2i02al4lkzucuq 1793297365661"
+ ],
+ "adresses": [
+  "studio cle-de-fa-lyon.sites.recette.test active"
+ ],
+ "demandes": 1,
+ "nouvelleAdresse": 200,
+ "ancienneAdresse": 404,
+ "v1EnLigne": true,
+ "domaine": "www.cle-de-fa.example En attente du DNS\n\nChez votre fournisseur de domaine, ajoutez : TXT _ecs-verif.www.cle-de-fa.example = ecs-R4a_NDL_AmBrxaDd_9_NqOzQ puis CNAME www.cle-de-fa.example → cle-de-fa-lyon.sites.recette.test\n\nEnregistrement TXT de preuve introuvable (la propagation DNS peut prendre jusqu'à 48 h).\n\nVérifier\nRetirer",
+ "domaineServi": "injoignable (Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://www.)",
+ "compteEtranger": {
+  "lecture": {
+   "status": 404,
+   "body": "{\"error\":\"Projet introuvable.\"}"
+  },
+  "retrait": 404,
+  "restauration": 404
+ },
+ "compteEtrangerPage": "E-COM STUDIO ia\nFR\nEN\n\n404\n\nCette page n'existe pas.\n\nLe lien est peut-être incomplet, ou la page a été déplacée.\n\nRetour à l'accueil\nMes projets",
+ "siteToujoursEnLigne": 200,
+ "erreursStudio": []
+}

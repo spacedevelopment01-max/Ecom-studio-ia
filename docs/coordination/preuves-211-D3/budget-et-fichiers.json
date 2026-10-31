@@ -1,0 +1,186 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "simulatedTotals": {
+    "providerHttpCalls": 5,
+    "calls": 5,
+    "usage": 5,
+    "simulatedMicro": 39560
+  },
+  "nativeFreeJobs": [
+    {
+      "id": "lw8slyddjp3hbj2z",
+      "project_id": "6knsw4nmwjrryi6m",
+      "status": "done",
+      "result": "{\"assetId\":\"q6habo67fwb3whro\",\"zipSha256\":\"c1c8dbf56b01a2e4f7cafe02f766e35ecd1e09c4b392c5859e5bd75b61bfe94b\",\"sourceDigest\":\"da3ca17a46eade9c\",\"reused\":false}"
+    },
+    {
+      "id": "3ky3y3905qehrpp1",
+      "project_id": "6knsw4nmwjrryi6m",
+      "status": "done",
+      "result": "{\"assetId\":\"mhu0odzq11zg9fn6\",\"zipSha256\":\"de5f178b80d5f2053ae565403c1d8c80dff13da298109ff618da597ff04bc790\",\"sourceDigest\":\"da3ca17a46eade9c\",\"reused\":false}"
+    },
+    {
+      "id": "ru6qcm3pjq1tpn56",
+      "project_id": "6knsw4nmwjrryi6m",
+      "status": "done",
+      "result": "{\"assetId\":\"p9zjfu06ne9zepuh\",\"zipSha256\":\"5b6ae48d52f9ac9a16b1a446bb411b99472cdcae46a2a153a6911e4e1f8beab4\",\"sourceDigest\":\"da3ca17a46eade9c\",\"reused\":false}"
+    },
+    {
+      "id": "2pi7g1omjtztft1b",
+      "project_id": "6knsw4nmwjrryi6m",
+      "status": "done",
+      "result": "{\"assetId\":\"t634zuogiwv7445f\",\"zipSha256\":\"cb29588956619ec6330e4e272fc59636ec1c8ce900027967ddf6d4659ab2ef23\",\"sourceDigest\":\"da3ca17a46eade9c\",\"reused\":false}"
+    },
+    {
+      "id": "4z5pphbs5mdi0fca",
+      "project_id": "6knsw4nmwjrryi6m",
+      "status": "done",
+      "result": "{\"assetId\":\"59j274iia3b2sziq\",\"zipSha256\":\"b45ddbf414b10714b98e0fbfd4edf24c6176b9fa4a341df214de164c03cf328b\",\"sourceDigest\":\"da3ca17a46eade9c\",\"reused\":false}"
+    },
+    {
+      "id": "qhrtvofmbtzp4tkr",
+      "project_id": "lm26jndffgbx0q7t",
+      "status": "done",
+      "result": "{\"assetId\":\"0zt686wmnifyre6y\",\"zipSha256\":\"72af0be13142731cba49069728e460ce49154060bd28ba2b349b408a559573ad\",\"sourceDigest\":\"881527919f3a229a\",\"reused\":false}"
+    },
+    {
+      "id": "7k4bpc8yygv45abc",
+      "project_id": "lm26jndffgbx0q7t",
+      "status": "done",
+      "result": "{\"assetId\":\"cmrdtsuh89f21yfx\",\"zipSha256\":\"f6157a4a5c457bae789d48879a5a909b696aceccb9f06e759678c452399de300\",\"sourceDigest\":\"881527919f3a229a\",\"reused\":false}"
+    },
+    {
+      "id": "daklu9x8ww0l3bnv",
+      "project_id": "lm26jndffgbx0q7t",
+      "status": "done",
+      "result": "{\"assetId\":\"6ohnp9m0r0qok2a1\",\"zipSha256\":\"291359324917f17b0ee726a4028a193285c37f60a57fe9788b7f7ff9a9104c64\",\"sourceDigest\":\"881527919f3a229a\",\"reused\":false}"
+    },
+    {
+      "id": "f64ici2qfwzxr5di",
+      "project_id": "lm26jndffgbx0q7t",
+      "status": "done",
+      "result": "{\"assetId\":\"49s8z3burouhejj4\",\"zipSha256\":\"c1c25b619251b56c02ac26abf55519ebd98def70005c7e893e2ecd447dfc7687\",\"sourceDigest\":\"881527919f3a229a\",\"reused\":false}"
+    },
+    {
+      "id": "gj58vor02y7qs26h",
+      "project_id": "lm26jndffgbx0q7t",
+      "status": "done",
+      "result": "{\"assetId\":\"3lnuhoaq0gfpdchz\",\"zipSha256\":\"74e9996f956d414bd937c7903ec7c42b0f282d6be6a06279a2c53fe203e6700d\",\"sourceDigest\":\"881527919f3a229a\",\"reused\":false}"
+    }
+  ],
+  "nativeJobReservations": [],
+  "nativeJobAiCalls": [],
+  "assets": [
+    {
+      "id": "q6habo67fwb3whro",
+      "project_id": "6knsw4nmwjrryi6m",
+      "name": "filtre-ceramique-recette-kit-wix-v1.zip",
+      "size": 856005,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"lw8slyddjp3hbj2z\",\"zipSha256\":\"c1c8dbf56b01a2e4f7cafe02f766e35ecd1e09c4b392c5859e5bd75b61bfe94b\",\"sourceDigest\":\"da3ca17a46eade9c\"},\"platform\":\"wix\",\"delivery\":\"kit\",\"themeVersion\":1,\"versionId\":\"6tvttpd8oza6y946\",\"fingerprint\":\"fca0517f389f4b31\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.7,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"5q1kzf4cunxioycv\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"compatibility\",\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"native_editing\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":13,\"zipKb\":836,\"cssKb\":0,\"jsKb\":0,\"mediaKb\":13},\"message\":\"Kit de reconstruction Wix généré (textes, médias, couleurs, typographies, plan des pages). Wix n'accepte pas l'import d'un thème : le site se reconstruit à la main dans son éditeur, en suivant le kit.\"}"
+    },
+    {
+      "id": "mhu0odzq11zg9fn6",
+      "project_id": "6knsw4nmwjrryi6m",
+      "name": "filtre-ceramique-recette-shopify-v1.zip",
+      "size": 1672386,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"3ky3y3905qehrpp1\",\"zipSha256\":\"de5f178b80d5f2053ae565403c1d8c80dff13da298109ff618da597ff04bc790\",\"sourceDigest\":\"da3ca17a46eade9c\"},\"platform\":\"shopify\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"6tvttpd8oza6y946\",\"fingerprint\":\"fca0517f389f4b31\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.3,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"3tv1cfxv0avb4m7d\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":497,\"zipKb\":1633,\"cssKb\":2179,\"jsKb\":534,\"mediaKb\":59,\"themeCheckErrors\":0,\"themeCheckWarnings\":35},\"message\":\"Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "p9zjfu06ne9zepuh",
+      "project_id": "6knsw4nmwjrryi6m",
+      "name": "es-filtre-ceramique-recette-woocommerce-v1.zip",
+      "size": 791548,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"ru6qcm3pjq1tpn56\",\"zipSha256\":\"5b6ae48d52f9ac9a16b1a446bb411b99472cdcae46a2a153a6911e4e1f8beab4\",\"sourceDigest\":\"da3ca17a46eade9c\"},\"platform\":\"woocommerce\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"6tvttpd8oza6y946\",\"fingerprint\":\"fca0517f389f4b31\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.6,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"8uxhiknz3j5e8skc\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":139,\"zipKb\":773,\"cssKb\":548,\"jsKb\":125,\"mediaKb\":13,\"phpErrors\":0},\"message\":\"Votre thème WordPress / WooCommerce est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "t634zuogiwv7445f",
+      "project_id": "6knsw4nmwjrryi6m",
+      "name": "esfiltreceramiquerec3cf50238-prestashop-v1.zip",
+      "size": 693336,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"2pi7g1omjtztft1b\",\"zipSha256\":\"cb29588956619ec6330e4e272fc59636ec1c8ce900027967ddf6d4659ab2ef23\",\"sourceDigest\":\"da3ca17a46eade9c\"},\"platform\":\"prestashop\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"6tvttpd8oza6y946\",\"fingerprint\":\"fca0517f389f4b31\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.1,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"3m4ee5s4o1p60vnx\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":67,\"zipKb\":677,\"cssKb\":545,\"jsKb\":117,\"mediaKb\":13},\"message\":\"Votre thème PrestaShop est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "59j274iia3b2sziq",
+      "project_id": "6knsw4nmwjrryi6m",
+      "name": "filtre-ceramique-recette-kit-squarespace-v1.zip",
+      "size": 855969,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"4z5pphbs5mdi0fca\",\"zipSha256\":\"b45ddbf414b10714b98e0fbfd4edf24c6176b9fa4a341df214de164c03cf328b\",\"sourceDigest\":\"da3ca17a46eade9c\"},\"platform\":\"squarespace\",\"delivery\":\"kit\",\"themeVersion\":1,\"versionId\":\"6tvttpd8oza6y946\",\"fingerprint\":\"fca0517f389f4b31\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.7,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"uu8rcbup9ms35h9d\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"compatibility\",\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"native_editing\",\"ecommerce\"],\"issues\":[],\"stats\":{\"files\":13,\"zipKb\":836,\"cssKb\":0,\"jsKb\":0,\"mediaKb\":13},\"message\":\"Kit de reconstruction Squarespace généré (textes, médias, couleurs, typographies, plan des pages). Squarespace n'accepte pas l'import d'un thème : le site se reconstruit à la main dans son éditeur, en suivant le kit.\"}"
+    },
+    {
+      "id": "0zt686wmnifyre6y",
+      "project_id": "lm26jndffgbx0q7t",
+      "name": "entretien-de-pianos-recette-kit-wix-v1.zip",
+      "size": 857889,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"qhrtvofmbtzp4tkr\",\"zipSha256\":\"72af0be13142731cba49069728e460ce49154060bd28ba2b349b408a559573ad\",\"sourceDigest\":\"881527919f3a229a\"},\"platform\":\"wix\",\"delivery\":\"kit\",\"themeVersion\":1,\"versionId\":\"0ul8frr4yndkmf9s\",\"fingerprint\":\"37a21ee318bf96d7\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.5,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"d35895boi2g5v488\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"compatibility\",\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"native_editing\",\"forms\"],\"issues\":[],\"stats\":{\"files\":12,\"zipKb\":838,\"cssKb\":0,\"jsKb\":0,\"mediaKb\":13},\"message\":\"Kit de reconstruction Wix généré (textes, médias, couleurs, typographies, plan des pages). Wix n'accepte pas l'import d'un thème : le site se reconstruit à la main dans son éditeur, en suivant le kit.\"}"
+    },
+    {
+      "id": "cmrdtsuh89f21yfx",
+      "project_id": "lm26jndffgbx0q7t",
+      "name": "entretien-de-pianos-recette-shopify-v1.zip",
+      "size": 1677396,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"7k4bpc8yygv45abc\",\"zipSha256\":\"f6157a4a5c457bae789d48879a5a909b696aceccb9f06e759678c452399de300\",\"sourceDigest\":\"881527919f3a229a\"},\"platform\":\"shopify\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"0ul8frr4yndkmf9s\",\"fingerprint\":\"37a21ee318bf96d7\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.3,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"q3sk8scxcjenn6l8\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"forms\"],\"issues\":[],\"stats\":{\"files\":498,\"zipKb\":1638,\"cssKb\":2179,\"jsKb\":534,\"mediaKb\":59,\"themeCheckErrors\":0,\"themeCheckWarnings\":35},\"message\":\"Votre thème Shopify est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "6ohnp9m0r0qok2a1",
+      "project_id": "lm26jndffgbx0q7t",
+      "name": "es-entretien-de-pianos-recette-wordpress-v1.zip",
+      "size": 810792,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"daklu9x8ww0l3bnv\",\"zipSha256\":\"291359324917f17b0ee726a4028a193285c37f60a57fe9788b7f7ff9a9104c64\",\"sourceDigest\":\"881527919f3a229a\"},\"platform\":\"woocommerce\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"0ul8frr4yndkmf9s\",\"fingerprint\":\"37a21ee318bf96d7\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.5,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"ozqjvp9qufu9nde8\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"forms\"],\"issues\":[],\"stats\":{\"files\":135,\"zipKb\":792,\"cssKb\":561,\"jsKb\":127,\"mediaKb\":13,\"phpErrors\":0},\"message\":\"Votre thème WordPress / WooCommerce est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "49s8z3burouhejj4",
+      "project_id": "lm26jndffgbx0q7t",
+      "name": "esentretiendepianosrc96c9759-prestashop-v1.zip",
+      "size": 712177,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": null,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"f64ici2qfwzxr5di\",\"zipSha256\":\"c1c25b619251b56c02ac26abf55519ebd98def70005c7e893e2ecd447dfc7687\",\"sourceDigest\":\"881527919f3a229a\"},\"platform\":\"prestashop\",\"delivery\":\"theme\",\"themeVersion\":1,\"versionId\":\"0ul8frr4yndkmf9s\",\"fingerprint\":\"37a21ee318bf96d7\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.1,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"sutct8q418ls8rc6\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"forms\"],\"issues\":[],\"stats\":{\"files\":67,\"zipKb\":695,\"cssKb\":564,\"jsKb\":120,\"mediaKb\":13},\"message\":\"Votre thème PrestaShop est généré et a passé les vérifications disponibles (validation statique (fichiers seulement)). Son installation sur une boutique réelle reste à vérifier.\"}"
+    },
+    {
+      "id": "3lnuhoaq0gfpdchz",
+      "project_id": "lm26jndffgbx0q7t",
+      "name": "entretien-de-pianos-recette-kit-squarespace-v1.zip",
+      "size": 857900,
+      "mime": "application/zip",
+      "role": "theme-export",
+      "origin": "export",
+      "deleted_at": 1793204260358,
+      "meta": "{\"proof\":{\"schema\":1,\"jobId\":\"gj58vor02y7qs26h\",\"zipSha256\":\"74e9996f956d414bd937c7903ec7c42b0f282d6be6a06279a2c53fe203e6700d\",\"sourceDigest\":\"881527919f3a229a\"},\"platform\":\"squarespace\",\"delivery\":\"kit\",\"themeVersion\":1,\"versionId\":\"0ul8frr4yndkmf9s\",\"fingerprint\":\"37a21ee318bf96d7\",\"gate\":{\"verdict\":\"PROVISIONAL\",\"fatal\":false,\"score\":9.5,\"checked\":true,\"deliverable\":\"cms_export_v2\",\"reason\":\"contrôle insuffisant pour un résultat final : provisoire\",\"policyVersion\":\"2026-10-p11h\",\"checkId\":\"ftotq9d9i3dxlgj9\",\"provisional\":{\"use\":\"manual\",\"label\":\"needs_improvement\"}},\"scope\":\"static\",\"unmeasured\":[\"compatibility\",\"installation\",\"page_fidelity\",\"section_fidelity\",\"typography\",\"colors\",\"responsive\",\"navigation\",\"buttons\",\"native_editing\",\"forms\"],\"issues\":[],\"stats\":{\"files\":12,\"zipKb\":838,\"cssKb\":0,\"jsKb\":0,\"mediaKb\":13},\"message\":\"Kit de reconstruction Squarespace généré (textes, médias, couleurs, typographies, plan des pages). Squarespace n'accepte pas l'import d'un thème : le site se reconstruit à la main dans son éditeur, en suivant le kit.\"}"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+ "appels": [
+  "200 GET studio.recette.test:3943 …/api/public/cabinet/duizcr2bt3jlauqy/month?month=2026-11&service=offer-one&modality=cabinet",
+  "200 GET studio.recette.test:3943 …/api/public/cabinet/duizcr2bt3jlauqy/availability?date=2026-11-10&service=offer-one&modality=cabinet",
+  "200 GET studio.recette.test:3943 …/api/public/cabinet/duizcr2bt3jlauqy/availability?date=2026-11-02&service=offer-one&modality=cabinet",
+  "201 POST studio.recette.test:3943 …/api/public/cabinet/duizcr2bt3jlauqy/appointments"
+ ],
+ "jours": 21,
+ "creneaux": 7,
+ "texteConfirmation": "Prendre rendez-vous\nVotre parenthèse est réservée\n\nMerci pour votre confiance.\nVotre rendez-vous a bien été enregistré.\n\nRéférence de réservation\nP-2026-AZSLV\n\nLundi 2 novembre 2026\n09h00 (60 minutes)\nSéance de voix – 55 €\nAu cabinet\n1 rue de l'Exemple, 69000 Lyon\nAjouter à mon agenda\nGérer mon rendez-vous\n\nVotre rendez-vous est enregistré. Notez votre référence : aucun e-mail n'a pu être envoyé.",
+ "erreurs": [],
+ "studio": [
+  "Camille Fictive"
+ ]
+}

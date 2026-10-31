@@ -1,0 +1,1812 @@
+{
+  "provider": "loopback-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "creativeQualityQualified": false,
+  "cases": [
+    {
+      "scene": "mono",
+      "business": "products",
+      "width": 1440,
+      "requested": 5,
+      "delivered": 5,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 3,
+        "textHttpCalls": 3,
+        "imageHttpCalls": 0,
+        "tokenCounts": 3,
+        "calls": 3,
+        "usage": 3,
+        "simulatedMicro": 23736
+      },
+      "after": {
+        "providerHttpCalls": 14,
+        "textHttpCalls": 9,
+        "imageHttpCalls": 5,
+        "tokenCounts": 9,
+        "calls": 14,
+        "usage": 14,
+        "simulatedMicro": 1160483
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "9fc2ec1d23bd38ed881285e7d3fb28035366065f56530ba0647cd3bc084ba3d2",
+          "bytes": 252625
+        },
+        {
+          "index": 2,
+          "sha256": "6368bdd367db0d7bc7e2df414c129c1084868143729ac7fe7a2bfd1ad8929f70",
+          "bytes": 278563
+        },
+        {
+          "index": 3,
+          "sha256": "c9c5e20e5afc5b8cbd28fffe4d547d6319d734616e8941036eafef97f67bddc9",
+          "bytes": 256035
+        },
+        {
+          "index": 4,
+          "sha256": "56747940cbd490a67f0b4301d8fcad395b79c8df7ea120382aa572e562eacd59",
+          "bytes": 279222
+        },
+        {
+          "index": 5,
+          "sha256": "444c38b3013e157732966f620a1bdf801d76da481b768bef88db7e5a98bb8c18",
+          "bytes": 278897
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "mono-proposition.png",
+        "mono-devis.png",
+        "mono-composition-1.png",
+        "mono-composition-2.png",
+        "mono-composition-3.png",
+        "mono-composition-4.png",
+        "mono-composition-5.png",
+        "mono-reouverture-apres-accord.png",
+        "mono-enregistre.png",
+        "mono-image-1.png",
+        "mono-image-2.png",
+        "mono-image-3.png",
+        "mono-image-4.png",
+        "mono-image-5.png",
+        "mono-bibliotheque-native.png",
+        "mono-reprise.png",
+        "mono-autre-largeur.png",
+        "mono-retouche-proposition.png",
+        "mono-retouche-source-style-devis.png",
+        "mono-retouche-reference-1.png",
+        "mono-retouche-reference-2.png",
+        "mono-retouche-reference-3.png",
+        "mono-retouche-consigne-exacte.png",
+        "mono-retouche-nouvelle-version.png",
+        "mono-retouche-reprise.png",
+        "mono-site-avant-insertion-acquis.png",
+        "mono-site-devis-insertion-acquis.png",
+        "mono-site-nouvel-acquis-visible.png",
+        "mono-site-export-acquis.png",
+        "mono-site-annulation-original-visible.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-4",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "composition-5",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "enregistre",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-4",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "image-5",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "autre-largeur",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-proposition",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-source-style-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reference-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reference-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reference-3",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-consigne-exacte",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-nouvelle-version",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reprise",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-avant-insertion-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-devis-insertion-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-nouvel-acquis-visible",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-export-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-annulation-original-visible",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "retouch": {
+        "source": {
+          "assetId": "f2cgqzucxcndnnrk",
+          "version": 1,
+          "sha256": "6368bdd367db0d7bc7e2df414c129c1084868143729ac7fe7a2bfd1ad8929f70"
+        },
+        "style": {
+          "assetId": "ty5tawslc0cokn3f",
+          "version": 1,
+          "sha256": "9fc2ec1d23bd38ed881285e7d3fb28035366065f56530ba0647cd3bc084ba3d2"
+        },
+        "target": {
+          "kind": "product",
+          "productId": "3kdseoi14o7i76eh",
+          "version": 1
+        },
+        "referenceIds": [
+          "f2cgqzucxcndnnrk",
+          "ty5tawslc0cokn3f",
+          "yuefnojgoah5ie2z"
+        ],
+        "sourceStyleProductOrderVerifiedAtHttp": true,
+        "output": {
+          "assetId": "j8dkcmz8o9699zv6",
+          "version": 2,
+          "sha256": "c94c750434d41619a9b153ab213572bbad678be9438528e4acb84a88bd849919",
+          "bytes": 259212
+        },
+        "sourceBytesPreserved": true,
+        "styleBytesPreserved": true,
+        "originalSeriesPreserved": true,
+        "reloadedDuringRun": true,
+        "duplicateConfirmationSameJob": true,
+        "reopenedWithoutNewCall": true,
+        "foreign": 404,
+        "counts": {
+          "providerHttpCalls": 17,
+          "textHttpCalls": 11,
+          "imageHttpCalls": 6,
+          "tokenCounts": 11,
+          "calls": 17,
+          "usage": 17,
+          "simulatedMicro": 1394162
+        },
+        "site": {
+          "catalogueAndServicesUnchanged": true,
+          "fixtureSite": {
+            "projectId": "zvfoqjsiu7toofo2",
+            "versionId": "n7ou968audljahmx",
+            "number": 1,
+            "name": "Capteurs de ruches — RECETTE",
+            "heading": "Observer la ruche, comprendre son rythme.",
+            "description": "Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.",
+            "illustration": "local-technical-fixture-not-product-photo"
+          },
+          "insertedVersion": "7o4btz5t0js5tz2g",
+          "restoredVersion": "3qo4lhirdvg2iyy4",
+          "threeVersionsPreserved": true,
+          "otherFieldsUnchanged": true,
+          "actualBytesInPreview": true,
+          "actualBytesInShopifyZip": true,
+          "zipSha256": "a95aeb8c71556178723c3f048a9b6a50a163c74d276ce3e90b3a72b60c6dd9ff",
+          "zipBytes": 1812538,
+          "exportedVersion": "7o4btz5t0js5tz2g",
+          "cmsInstallation": "not_tested",
+          "publication": false,
+          "undoWithoutNewProviderCall": true,
+          "acquiredImageStillInLibrary": true
+        },
+        "rejectedReview": null,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "creativeQualityQualified": false
+      },
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "multi",
+      "business": "products",
+      "width": 390,
+      "requested": 2,
+      "delivered": 2,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 18,
+        "textHttpCalls": 12,
+        "imageHttpCalls": 6,
+        "tokenCounts": 12,
+        "calls": 18,
+        "usage": 18,
+        "simulatedMicro": 1402074
+      },
+      "after": {
+        "providerHttpCalls": 23,
+        "textHttpCalls": 15,
+        "imageHttpCalls": 8,
+        "tokenCounts": 15,
+        "calls": 23,
+        "usage": 23,
+        "simulatedMicro": 1861520
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "88c1759b77bb3836aba0699c493ce9fb9d51a8f1e406e3c80ca7f6073a00a0a3",
+          "bytes": 283082
+        },
+        {
+          "index": 2,
+          "sha256": "8caa2cc2f625638a372077e74284be92ca824de6bfc712d77d9305400501964d",
+          "bytes": 262105
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "multi-proposition.png",
+        "multi-devis.png",
+        "multi-composition-1.png",
+        "multi-composition-2.png",
+        "multi-reouverture-apres-accord.png",
+        "multi-enregistre.png",
+        "multi-image-1.png",
+        "multi-image-2.png",
+        "multi-bibliotheque-native.png",
+        "multi-reprise.png",
+        "multi-autre-largeur.png",
+        "multi-retouche-proposition.png",
+        "multi-retouche-source-style-devis.png",
+        "multi-retouche-reference-1.png",
+        "multi-retouche-reference-2.png",
+        "multi-retouche-reference-3.png",
+        "multi-retouche-consigne-exacte.png",
+        "multi-retouche-nouvelle-version.png",
+        "multi-retouche-reprise.png",
+        "multi-site-avant-insertion-acquis.png",
+        "multi-site-devis-insertion-acquis.png",
+        "multi-site-nouvel-acquis-visible.png",
+        "multi-site-export-acquis.png",
+        "multi-site-annulation-original-visible.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "composition-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "composition-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "enregistre",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "image-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "image-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "reprise",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-proposition",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-source-style-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-3",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-consigne-exacte",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-nouvelle-version",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-avant-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-devis-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-nouvel-acquis-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-export-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-annulation-original-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "retouch": {
+        "source": {
+          "assetId": "m9338c7yxscke16y",
+          "version": 1,
+          "sha256": "8caa2cc2f625638a372077e74284be92ca824de6bfc712d77d9305400501964d"
+        },
+        "style": {
+          "assetId": "s6mx6id1csv1jq3s",
+          "version": 1,
+          "sha256": "88c1759b77bb3836aba0699c493ce9fb9d51a8f1e406e3c80ca7f6073a00a0a3"
+        },
+        "target": {
+          "kind": "product",
+          "productId": "l8htbrjxo1oh9erp",
+          "version": 1
+        },
+        "referenceIds": [
+          "m9338c7yxscke16y",
+          "s6mx6id1csv1jq3s",
+          "drerz06v1369lq9i"
+        ],
+        "sourceStyleProductOrderVerifiedAtHttp": true,
+        "output": {
+          "assetId": "faoa5g6apswha698",
+          "version": 2,
+          "sha256": "48ab97ff2c6621547f64cda1b03beb41a4f2b54f93eb10f50659c45626044b9f",
+          "bytes": 286613
+        },
+        "sourceBytesPreserved": true,
+        "styleBytesPreserved": true,
+        "originalSeriesPreserved": true,
+        "reloadedDuringRun": true,
+        "duplicateConfirmationSameJob": true,
+        "reopenedWithoutNewCall": true,
+        "foreign": 404,
+        "counts": {
+          "providerHttpCalls": 26,
+          "textHttpCalls": 17,
+          "imageHttpCalls": 9,
+          "tokenCounts": 17,
+          "calls": 26,
+          "usage": 26,
+          "simulatedMicro": 2095199
+        },
+        "site": {
+          "catalogueAndServicesUnchanged": true,
+          "fixtureSite": {
+            "projectId": "yc6b7bmd36b21zwy",
+            "versionId": "ycsemmxxvx2g32rj",
+            "number": 1,
+            "name": "Capteurs de ruches — RECETTE",
+            "heading": "Observer la ruche, comprendre son rythme.",
+            "description": "Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.",
+            "illustration": "local-technical-fixture-not-product-photo"
+          },
+          "insertedVersion": "bnxc9olhlv74pawr",
+          "restoredVersion": "3hjejgq6shvljobt",
+          "threeVersionsPreserved": true,
+          "otherFieldsUnchanged": true,
+          "actualBytesInPreview": true,
+          "actualBytesInShopifyZip": true,
+          "zipSha256": "7e5ddb511231817ac720c3d09a95869c3339c97da9da3c1ce8450867787ac1c9",
+          "zipBytes": 1832632,
+          "exportedVersion": "bnxc9olhlv74pawr",
+          "cmsInstallation": "not_tested",
+          "publication": false,
+          "undoWithoutNewProviderCall": true,
+          "acquiredImageStillInLibrary": true
+        },
+        "rejectedReview": null,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "creativeQualityQualified": false
+      },
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "inedit",
+      "business": "products",
+      "width": 360,
+      "requested": 1,
+      "delivered": 1,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 27,
+        "textHttpCalls": 18,
+        "imageHttpCalls": 9,
+        "tokenCounts": 18,
+        "calls": 27,
+        "usage": 27,
+        "simulatedMicro": 2103111
+      },
+      "after": {
+        "providerHttpCalls": 30,
+        "textHttpCalls": 20,
+        "imageHttpCalls": 10,
+        "tokenCounts": 20,
+        "calls": 30,
+        "usage": 30,
+        "simulatedMicro": 2336790
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "261b6f5ac0e0afbfdedd11bf220133384479b5c679fad00e8928118c0ee8a339",
+          "bytes": 264148
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "inedit-proposition.png",
+        "inedit-devis.png",
+        "inedit-composition-1.png",
+        "inedit-reouverture-apres-accord.png",
+        "inedit-enregistre.png",
+        "inedit-image-1.png",
+        "inedit-bibliotheque-native.png",
+        "inedit-reprise.png",
+        "inedit-autre-largeur.png",
+        "inedit-retouche-proposition.png",
+        "inedit-retouche-source-style-devis.png",
+        "inedit-retouche-reference-1.png",
+        "inedit-retouche-reference-2.png",
+        "inedit-retouche-consigne-exacte.png",
+        "inedit-retouche-nouvelle-version.png",
+        "inedit-retouche-reprise.png",
+        "inedit-site-avant-insertion-acquis.png",
+        "inedit-site-devis-insertion-acquis.png",
+        "inedit-site-nouvel-acquis-visible.png",
+        "inedit-site-export-acquis.png",
+        "inedit-site-annulation-original-visible.png",
+        "inedit-controle-incomplet-essai-visible-non-livrable.png",
+        "inedit-controle-incomplet-reprise-sans-relance.png",
+        "inedit-controle-incomplet-mobile.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "composition-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "enregistre",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "image-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-proposition",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-source-style-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-consigne-exacte",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-nouvelle-version",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-avant-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-devis-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-nouvel-acquis-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-export-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-annulation-original-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "controle-incomplet-essai-visible-non-livrable",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "controle-incomplet-reprise-sans-relance",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "controle-incomplet-mobile",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "retouch": {
+        "source": {
+          "assetId": "4llyfxeg786wckl0",
+          "version": 1,
+          "sha256": "261b6f5ac0e0afbfdedd11bf220133384479b5c679fad00e8928118c0ee8a339"
+        },
+        "style": null,
+        "target": {
+          "kind": "product",
+          "productId": "b6nmsg24m239ft9n",
+          "version": 1
+        },
+        "referenceIds": [
+          "4llyfxeg786wckl0",
+          "4p19o0scho9qqvt2"
+        ],
+        "sourceStyleProductOrderVerifiedAtHttp": true,
+        "output": {
+          "assetId": "vbvqforus430tix4",
+          "version": 2,
+          "sha256": "d244838c1189a6e1e4df9d1a1d5c34d1b3ff66560e52317a737c74cb3ea96828",
+          "bytes": 288375
+        },
+        "sourceBytesPreserved": true,
+        "styleBytesPreserved": true,
+        "originalSeriesPreserved": true,
+        "reloadedDuringRun": true,
+        "duplicateConfirmationSameJob": true,
+        "reopenedWithoutNewCall": true,
+        "foreign": 404,
+        "counts": {
+          "providerHttpCalls": 33,
+          "textHttpCalls": 22,
+          "imageHttpCalls": 11,
+          "tokenCounts": 22,
+          "calls": 33,
+          "usage": 33,
+          "simulatedMicro": 2570469
+        },
+        "site": {
+          "catalogueAndServicesUnchanged": true,
+          "fixtureSite": {
+            "projectId": "qy5lnhghzxjhcdwb",
+            "versionId": "qmmtzexrvvuyvoaz",
+            "number": 1,
+            "name": "Capteurs de ruches — RECETTE",
+            "heading": "Observer la ruche, comprendre son rythme.",
+            "description": "Des capteurs pour les ruches. Les performances, tarifs et délais restent à confirmer.",
+            "illustration": "local-technical-fixture-not-product-photo"
+          },
+          "insertedVersion": "diyngoud2za5dr7k",
+          "restoredVersion": "ro0qpp0om5xizmp1",
+          "threeVersionsPreserved": true,
+          "otherFieldsUnchanged": true,
+          "actualBytesInPreview": true,
+          "actualBytesInShopifyZip": true,
+          "zipSha256": "53295f980ee2fa8b3c3c0e5b3d29cf3857660143dd99b0a751877384d460e69f",
+          "zipBytes": 1835357,
+          "exportedVersion": "diyngoud2za5dr7k",
+          "cmsInstallation": "not_tested",
+          "publication": false,
+          "undoWithoutNewProviderCall": true,
+          "acquiredImageStillInLibrary": true
+        },
+        "rejectedReview": {
+          "cause": "required_review_flags_omitted_by_fake_http_supplier",
+          "status": "failed",
+          "progress": 0.9,
+          "delivered": false,
+          "trial": {
+            "assetId": "k7gckqewenc6rlui",
+            "version": 3,
+            "sha256": "bf37da1cd8f620b07f7967327554495152a6018ff8266c3530baf3d9b6a9078c",
+            "bytes": 239058,
+            "reusable": false
+          },
+          "fileDecodedAndDownloaded": true,
+          "foreign": 404,
+          "reopenedWithoutNewCall": true,
+          "originalSeriesPreserved": true,
+          "counts": {
+            "providerHttpCalls": 37,
+            "textHttpCalls": 25,
+            "imageHttpCalls": 12,
+            "tokenCounts": 25,
+            "calls": 37,
+            "usage": 36,
+            "simulatedMicro": 2804148
+          },
+          "notABudgetCapTest": true,
+          "realProviderCalls": 0
+        },
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "creativeQualityQualified": false
+      },
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "error",
+          "cost": 0,
+          "task": "quality_control",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "services",
+      "business": "services",
+      "width": 1024,
+      "requested": 2,
+      "delivered": 2,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 37,
+        "textHttpCalls": 25,
+        "imageHttpCalls": 12,
+        "tokenCounts": 25,
+        "calls": 37,
+        "usage": 36,
+        "simulatedMicro": 2804148
+      },
+      "after": {
+        "providerHttpCalls": 42,
+        "textHttpCalls": 28,
+        "imageHttpCalls": 14,
+        "tokenCounts": 28,
+        "calls": 42,
+        "usage": 41,
+        "simulatedMicro": 3255682
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "285c2033ffb1508a4e40f32814331cef42dda85a0f1046c5d834807b274e7cbf",
+          "bytes": 268711
+        },
+        {
+          "index": 2,
+          "sha256": "61eaaaf6337add7a8b8867d91116251d97f8c917ae6da610191f483acef11e7b",
+          "bytes": 243117
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "services-proposition.png",
+        "services-devis.png",
+        "services-composition-1.png",
+        "services-composition-2.png",
+        "services-reouverture-apres-accord.png",
+        "services-enregistre.png",
+        "services-image-1.png",
+        "services-image-2.png",
+        "services-bibliotheque-native.png",
+        "services-reprise.png",
+        "services-autre-largeur.png",
+        "services-retouche-proposition.png",
+        "services-retouche-source-style-devis.png",
+        "services-retouche-reference-1.png",
+        "services-retouche-reference-2.png",
+        "services-retouche-consigne-exacte.png",
+        "services-retouche-nouvelle-version.png",
+        "services-retouche-reprise.png",
+        "services-site-avant-insertion-acquis.png",
+        "services-site-devis-insertion-acquis.png",
+        "services-site-nouvel-acquis-visible.png",
+        "services-site-export-acquis.png",
+        "services-site-annulation-original-visible.png",
+        "services-panne-devis-distinct.png",
+        "services-panne-visible-acquis-conserve.png",
+        "services-panne-reprise-sans-relance.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "devis",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "composition-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "composition-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "enregistre",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "image-1",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "image-2",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "reprise",
+          "width": 1024,
+          "scrollWidth": 1024
+        },
+        {
+          "name": "autre-largeur",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-proposition",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-source-style-devis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reference-1",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reference-2",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-consigne-exacte",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-nouvelle-version",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "retouche-reprise",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-avant-insertion-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-devis-insertion-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-nouvel-acquis-visible",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-export-acquis",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "site-annulation-original-visible",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-devis-distinct",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-visible-acquis-conserve",
+          "width": 390,
+          "scrollWidth": 390
+        },
+        {
+          "name": "panne-reprise-sans-relance",
+          "width": 390,
+          "scrollWidth": 390
+        }
+      ],
+      "retouch": {
+        "source": {
+          "assetId": "m8xgwj4wrhyfodki",
+          "version": 1,
+          "sha256": "61eaaaf6337add7a8b8867d91116251d97f8c917ae6da610191f483acef11e7b"
+        },
+        "style": {
+          "assetId": "ifrx6hu2xxuvgc8z",
+          "version": 1,
+          "sha256": "285c2033ffb1508a4e40f32814331cef42dda85a0f1046c5d834807b274e7cbf"
+        },
+        "target": {
+          "kind": "service",
+          "key": "zxdw2chfizb2kw57"
+        },
+        "referenceIds": [
+          "m8xgwj4wrhyfodki",
+          "ifrx6hu2xxuvgc8z"
+        ],
+        "sourceStyleProductOrderVerifiedAtHttp": true,
+        "output": {
+          "assetId": "03ijna1oa9oaev9s",
+          "version": 2,
+          "sha256": "315dc2a6b5412622fac32cb7fd2b312df5d5e13be4cc9cddd093fa8c3d1ed099",
+          "bytes": 270812
+        },
+        "sourceBytesPreserved": true,
+        "styleBytesPreserved": true,
+        "originalSeriesPreserved": true,
+        "reloadedDuringRun": true,
+        "duplicateConfirmationSameJob": true,
+        "reopenedWithoutNewCall": true,
+        "foreign": 404,
+        "counts": {
+          "providerHttpCalls": 45,
+          "textHttpCalls": 30,
+          "imageHttpCalls": 15,
+          "tokenCounts": 30,
+          "calls": 45,
+          "usage": 44,
+          "simulatedMicro": 3485405
+        },
+        "site": {
+          "catalogueAndServicesUnchanged": true,
+          "fixtureSite": {
+            "projectId": "45lfk5zvdc22lq4l",
+            "versionId": "codfl73206k692xk",
+            "number": 1,
+            "name": "Atelier des cordes — RECETTE",
+            "heading": "Votre instrument, votre histoire.",
+            "description": "Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.",
+            "illustration": "local-technical-fixture-not-product-photo"
+          },
+          "insertedVersion": "hohcyr99mgs7yzt8",
+          "restoredVersion": "7zvsmwldzh8tj7l8",
+          "threeVersionsPreserved": true,
+          "otherFieldsUnchanged": true,
+          "actualBytesInPreview": true,
+          "actualBytesInShopifyZip": true,
+          "zipSha256": "821326c40cb90be66a11f0780d89635bde17d6d6fd5028228fe2d88d73dc279d",
+          "zipBytes": 1827647,
+          "exportedVersion": "hohcyr99mgs7yzt8",
+          "cmsInstallation": "not_tested",
+          "publication": false,
+          "undoWithoutNewProviderCall": true,
+          "acquiredImageStillInLibrary": true
+        },
+        "rejectedReview": null,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "creativeQualityQualified": false
+      },
+      "failure": {
+        "status": "failed",
+        "progress": 0.45,
+        "delivered": false,
+        "acquiredOutputs": 1,
+        "uncertainReservations": 1,
+        "originalSeriesStillDelivered": true,
+        "noAutomaticRetry": true,
+        "reconnectedWithoutRetry": true,
+        "duplicateConfirmationSameJob": true,
+        "before": {
+          "providerHttpCalls": 46,
+          "textHttpCalls": 31,
+          "imageHttpCalls": 15,
+          "tokenCounts": 31,
+          "calls": 46,
+          "usage": 45,
+          "simulatedMicro": 3493317
+        },
+        "after": {
+          "providerHttpCalls": 50,
+          "textHttpCalls": 33,
+          "imageHttpCalls": 17,
+          "tokenCounts": 33,
+          "calls": 50,
+          "usage": 48,
+          "simulatedMicro": 3723040
+        }
+      },
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "error",
+          "cost": 0,
+          "task": "image_generation",
+          "unit": "tokens"
+        }
+      ]
+    },
+    {
+      "scene": "nouveau-service",
+      "business": "services",
+      "width": 360,
+      "requested": 2,
+      "delivered": 2,
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "before": {
+        "providerHttpCalls": 50,
+        "textHttpCalls": 33,
+        "imageHttpCalls": 17,
+        "tokenCounts": 33,
+        "calls": 50,
+        "usage": 48,
+        "simulatedMicro": 3723040
+      },
+      "after": {
+        "providerHttpCalls": 55,
+        "textHttpCalls": 36,
+        "imageHttpCalls": 19,
+        "tokenCounts": 36,
+        "calls": 55,
+        "usage": 53,
+        "simulatedMicro": 4174574
+      },
+      "downloads": [
+        {
+          "index": 1,
+          "sha256": "c611cadc254bdd0e99a27831013f97c617fe204c84a7ae54e28d56b2a2a13dec",
+          "bytes": 295980
+        },
+        {
+          "index": 2,
+          "sha256": "02531ae52fe0dc4fba837c7fccc1104c5417bab9d1405004ecf2264c3c95e871",
+          "bytes": 250764
+        }
+      ],
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "duplicatesPrevented": true,
+      "reconnected": true,
+      "catalogueUnchanged": true,
+      "siteChanged": false,
+      "errors": [],
+      "captures": [
+        "nouveau-service-proposition.png",
+        "nouveau-service-devis.png",
+        "nouveau-service-composition-1.png",
+        "nouveau-service-composition-2.png",
+        "nouveau-service-reouverture-apres-accord.png",
+        "nouveau-service-enregistre.png",
+        "nouveau-service-image-1.png",
+        "nouveau-service-image-2.png",
+        "nouveau-service-bibliotheque-native.png",
+        "nouveau-service-reprise.png",
+        "nouveau-service-autre-largeur.png",
+        "nouveau-service-retouche-proposition.png",
+        "nouveau-service-retouche-source-style-devis.png",
+        "nouveau-service-retouche-reference-1.png",
+        "nouveau-service-retouche-reference-2.png",
+        "nouveau-service-retouche-consigne-exacte.png",
+        "nouveau-service-retouche-nouvelle-version.png",
+        "nouveau-service-retouche-reprise.png",
+        "nouveau-service-site-avant-insertion-acquis.png",
+        "nouveau-service-site-devis-insertion-acquis.png",
+        "nouveau-service-site-nouvel-acquis-visible.png",
+        "nouveau-service-site-export-acquis.png",
+        "nouveau-service-site-annulation-original-visible.png"
+      ],
+      "geometry": [
+        {
+          "name": "proposition",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "devis",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "composition-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "composition-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reouverture-apres-accord",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "enregistre",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "image-1",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "image-2",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "bibliotheque-native",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "reprise",
+          "width": 360,
+          "scrollWidth": 360
+        },
+        {
+          "name": "autre-largeur",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-proposition",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-source-style-devis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-1",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reference-2",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-consigne-exacte",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-nouvelle-version",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "retouche-reprise",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-avant-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-devis-insertion-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-nouvel-acquis-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-export-acquis",
+          "width": 1440,
+          "scrollWidth": 1440
+        },
+        {
+          "name": "site-annulation-original-visible",
+          "width": 1440,
+          "scrollWidth": 1440
+        }
+      ],
+      "retouch": {
+        "source": {
+          "assetId": "eqnfl3ntgeh3ktij",
+          "version": 1,
+          "sha256": "02531ae52fe0dc4fba837c7fccc1104c5417bab9d1405004ecf2264c3c95e871"
+        },
+        "style": {
+          "assetId": "wev4r1lplphrjn0v",
+          "version": 1,
+          "sha256": "c611cadc254bdd0e99a27831013f97c617fe204c84a7ae54e28d56b2a2a13dec"
+        },
+        "target": {
+          "kind": "service",
+          "key": "rcmz71ftuckqjgzd"
+        },
+        "referenceIds": [
+          "eqnfl3ntgeh3ktij",
+          "wev4r1lplphrjn0v"
+        ],
+        "sourceStyleProductOrderVerifiedAtHttp": true,
+        "output": {
+          "assetId": "lou48wnyovm23wbk",
+          "version": 2,
+          "sha256": "1d7d11bb7be3edc0a05fb8b72daba6ad0e1a6ada52e7cf62c6810d801e04b05d",
+          "bytes": 275060
+        },
+        "sourceBytesPreserved": true,
+        "styleBytesPreserved": true,
+        "originalSeriesPreserved": true,
+        "reloadedDuringRun": true,
+        "duplicateConfirmationSameJob": true,
+        "reopenedWithoutNewCall": true,
+        "foreign": 404,
+        "counts": {
+          "providerHttpCalls": 58,
+          "textHttpCalls": 38,
+          "imageHttpCalls": 20,
+          "tokenCounts": 38,
+          "calls": 58,
+          "usage": 56,
+          "simulatedMicro": 4404297
+        },
+        "site": {
+          "catalogueAndServicesUnchanged": true,
+          "fixtureSite": {
+            "projectId": "87l2158knv0qex51",
+            "versionId": "513sqf7oucexqbnc",
+            "number": 1,
+            "name": "Atelier des cordes — RECETTE",
+            "heading": "Votre instrument, votre histoire.",
+            "description": "Réparation des instruments apportés à l’atelier. Devis et rendez-vous à préciser ensemble.",
+            "illustration": "local-technical-fixture-not-product-photo"
+          },
+          "insertedVersion": "rmq5egmk6w4onwih",
+          "restoredVersion": "zifanov7s53uahhq",
+          "threeVersionsPreserved": true,
+          "otherFieldsUnchanged": true,
+          "actualBytesInPreview": true,
+          "actualBytesInShopifyZip": true,
+          "zipSha256": "c91320f4bde44ca05683a4ce6f222aa930356301cf4da30d73b7be7c9a54849d",
+          "zipBytes": 1832148,
+          "exportedVersion": "rmq5egmk6w4onwih",
+          "cmsInstallation": "not_tested",
+          "publication": false,
+          "undoWithoutNewProviderCall": true,
+          "acquiredImageStillInLibrary": true
+        },
+        "rejectedReview": null,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "creativeQualityQualified": false
+      },
+      "failure": null,
+      "calls": [
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 217855,
+          "task": "image_generation",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 3956,
+          "task": "quality_control",
+          "unit": "tokens"
+        },
+        {
+          "status": "ok",
+          "cost": 7912,
+          "task": "agent_conversation",
+          "unit": "tokens"
+        }
+      ]
+    }
+  ]
+}

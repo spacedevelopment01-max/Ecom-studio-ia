@@ -1,0 +1,41 @@
+{
+  "schema": "211-D8-real-cart-ui-1",
+  "expectedCode": "7d900c13ae4f2764ca31689d9041864ce9157567",
+  "data": "isolated_fictitious",
+  "proposal": "structured_fixture_without_cognitive_provider",
+  "providerHttpCalls": 0,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "scene": "mono-mobile",
+      "width": 390,
+      "nativeReceiptDelivered": true,
+      "nativeFormClicked": true,
+      "nativeDrawerVisible": true,
+      "quantity": 1,
+      "liveSiteCartCount": 0,
+      "pageErrors": [],
+      "checkoutNotExecuted": true
+    },
+    {
+      "scene": "variantes-desktop",
+      "width": 1440,
+      "nativeReceiptDelivered": true,
+      "nativeFormClicked": true,
+      "nativeDrawerVisible": true,
+      "quantity": 2,
+      "liveSiteCartCount": 0,
+      "pageErrors": [],
+      "checkoutNotExecuted": true
+    }
+  ],
+  "version": {
+    "commit": "7d900c13ae4f2764ca31689d9041864ce9157567",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "success": true
+}

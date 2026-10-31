@@ -1,0 +1,202 @@
+[
+  {
+    "run": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/conversation211-images.test.ts",
+        "tests/image-v2-retouch-binding.test.ts",
+        "tests/image-v2-retouch-request.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2549f17706906e5466502ccd0690489988288828",
+      "startedAt": "2026-10-29T14:42:13.183457+00:00",
+      "state": "failed",
+      "sources": {
+        "src/components/studio/conversation-image-tools.tsx": "c3811afd22f475cdb90e241f7fbd6fb1af22a81c2f65239b93037ef1930305a9",
+        "src/lib/ai/media-providers.ts": "29d6541b23995a47fdd6524c11f04a6568c1fef98a4c1e1b834ab881dd3ab712",
+        "src/lib/image-v2/assets.ts": "025955cd7a97099df19eaaefb930ae4d17a0646109e14178468cf021a4507c4f",
+        "src/lib/image-v2/brief.ts": "deef2e533452adba989046b623713ca3bfbcecc8579afecb7f7d89111e86802b",
+        "src/lib/image-v2/creation-quote.ts": "427d9e0e726d8ab8f4d9ef8ab9e1a88b038b61035d6bf44cbdc7c7fdd9e1df6c",
+        "src/lib/image-v2/deps.ts": "fbafa2e9463aed7dec4e5b336f6efb341c613f41012984251d8964d8af2cf2ec",
+        "src/lib/image-v2/edit-photo.ts": "faf44c9a4bc7376a399ea79cdc79ad368bcfef05e79517170c39ff20add06d08",
+        "src/lib/image-v2/edit-request.ts": "8e2c5311dc87a7ee6cd60ac3ab264ea00da4b6c449ae851cf0148df642eae6fa",
+        "src/lib/image-v2/engine.ts": "9ba45b7b6d3c6c557b1fa7d8ace164dc8b1492ade28494f9a9e1266b1fc78a4b",
+        "src/lib/image-v2/quality.ts": "6f0e119be9d937e2df85e7e59c88876f9dc01be1c5809f1aff1f623dedb6a457",
+        "src/lib/image-v2/request-binding.ts": "bfb856144a13dda2566e6d4ed7b2bd9cfba8f0152d3aacc941b4a5c027d40192",
+        "src/lib/image-v2/types.ts": "bd429d05e6119e3fcf1d4a97f9fffe031c40c4c77832a76d2344c449084efeb9",
+        "src/lib/library.ts": "2b4e78a034d601fe381c08cd6671fa271970144fe3913c20cc755a693ef9773e",
+        "src/lib/orchestrator/conversation/image-tool-contract.ts": "58f496a82ff4c8e97bb5c40a647c8f8d8ef8422b3a13423abac848723c3936e5",
+        "src/lib/orchestrator/conversation/image-tool-execution.ts": "193e0cd03e6519816664b3d50f7d992b8a4bc8120d6fe27b2e107dce9132bdfc",
+        "src/lib/orchestrator/conversation/image-tool-sources.ts": "893ab4c4b61e06dfeb48fb79840adbc4ee6d1e3573aede5fb6acc05426e324d5",
+        "src/lib/orchestrator/conversation/image-tool-validation.ts": "3617220f7a6c32b246e90e3daea2e9511352f576e3581091b6d5865d75df0d02",
+        "src/lib/orchestrator/conversation/intelligence-context.ts": "e1173215482218cacbd6dac88ac0e85a112fd9c153a02374652ca169389ed75d",
+        "src/lib/orchestrator/conversation/intelligence-contract.ts": "d8cd3418972020b601075ed8bcfc626365f1ea303194a56ba9eaaeed23b41a41",
+        "src/lib/orchestrator/conversation/tool-execution.ts": "ee86c7802766d8ebbdb2803e53de4b613c54e5204830b6a7bbcd2a055374481f",
+        "src/lib/quality/policies.ts": "4a7fd11f2fac064d05c86182c49e0ee73ae23df96a97470de415446fd5278227",
+        "tests/conversation211-images.test.ts": "d5746a8c11edd4ac7df895373f012e86e19a65bde78b470ade210b04a71e9de0",
+        "tests/image-v2-retouch-binding.test.ts": "e331d365785bd6145ab6573e40eba8b6223dffdf00780f71bdd0404ce01319d3",
+        "tests/image-v2-retouch-request.test.ts": "bcd686cfcdbfb7d245648d0d721ee465f35da9d29f67f3e7ac9f035e9704adc8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-conversation-first.log",
+      "pid": 1304861,
+      "processGroup": 1304861,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T14:42:31.620814+00:00",
+      "logSha256": "36099d48a6619c5c09870de03bf410f75ac1de7063b668035bdef06fb6448f8c",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "36099d48a6619c5c09870de03bf410f75ac1de7063b668035bdef06fb6448f8c"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/image-v2-retouch-binding.test.ts",
+        "tests/image-v2-retouch-request.test.ts",
+        "tests/image-v2-binding.test.ts",
+        "tests/image-v2.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "2549f17706906e5466502ccd0690489988288828",
+      "startedAt": "2026-10-29T14:26:48.955345+00:00",
+      "state": "failed",
+      "sources": {
+        "src/lib/ai/media-providers.ts": "29d6541b23995a47fdd6524c11f04a6568c1fef98a4c1e1b834ab881dd3ab712",
+        "src/lib/image-v2/brief.ts": "deef2e533452adba989046b623713ca3bfbcecc8579afecb7f7d89111e86802b",
+        "src/lib/image-v2/deps.ts": "02ff2175b6357713c531367614aa577b372010fbdac072134ae2fd255231de8a",
+        "src/lib/image-v2/edit-photo.ts": "9e3ba1c278606485978e705c916325cbb46bb88b9f9221fdc135f1fa27767581",
+        "src/lib/image-v2/edit-request.ts": "8e2c5311dc87a7ee6cd60ac3ab264ea00da4b6c449ae851cf0148df642eae6fa",
+        "src/lib/image-v2/engine.ts": "60b849a29d0d6f21aaef5e66c07674975fbb91ef1f90a9cdce3d7b3971f65124",
+        "src/lib/image-v2/quality.ts": "6f0e119be9d937e2df85e7e59c88876f9dc01be1c5809f1aff1f623dedb6a457",
+        "src/lib/image-v2/request-binding.ts": "d669c10bb2e7d3b103c04c539a08211e0857e417a2d6ec4662240fbe73ff9e22",
+        "src/lib/image-v2/types.ts": "bd429d05e6119e3fcf1d4a97f9fffe031c40c4c77832a76d2344c449084efeb9",
+        "src/lib/quality/policies.ts": "4a7fd11f2fac064d05c86182c49e0ee73ae23df96a97470de415446fd5278227",
+        "tests/image-v2-retouch-binding.test.ts": "46e02dfeb27824f4e805e5698f05f838d07e89e7bdf75e11b5ea2501cf192bab",
+        "tests/image-v2-retouch-request.test.ts": "bcd686cfcdbfb7d245648d0d721ee465f35da9d29f67f3e7ac9f035e9704adc8"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-native-binding-first.log",
+      "pid": 1301704,
+      "processGroup": 1301704,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T14:27:01.482821+00:00",
+      "logSha256": "705fc238c1665adc9fd9380d468911491ccc8e85448e284a3f90a51372660d22",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "705fc238c1665adc9fd9380d468911491ccc8e85448e284a3f90a51372660d22"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9b-browser-exact-first-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:07:10.913975+00:00",
+      "state": "failed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D9b-browser-exact-first.log",
+      "pid": 1347203,
+      "processGroup": 1347203,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T15:07:37.711579+00:00",
+      "logSha256": "845f0ec15b42080f96f225ee570afc5743b38afc389ad0776bee0a6e209d7915",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "845f0ec15b42080f96f225ee570afc5743b38afc389ad0776bee0a6e209d7915"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v2-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:09:31.704004+00:00",
+      "state": "failed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "10d6c92aafa8d90a682083a951452f3e49e02e73cd8fb42a7c187aebcb2237e0"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v2.log",
+      "pid": 1348055,
+      "processGroup": 1348055,
+      "exitCode": 1,
+      "finishedAt": "2026-10-29T15:09:57.673923+00:00",
+      "logSha256": "7ec51b0086319a8ff19c103d368c5e6529f92f14f9c3ae3a198713f9fceb9de4",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "7ec51b0086319a8ff19c103d368c5e6529f92f14f9c3ae3a198713f9fceb9de4"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v3-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:10:47.565741+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "10d6c92aafa8d90a682083a951452f3e49e02e73cd8fb42a7c187aebcb2237e0",
+        "scripts/verify-agent211-retouch-ui.ts": "e7683414a24006bc144fecd4a4371c1373e31dc90379d485694861a81a592b6c"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v3.log",
+      "pid": 1348555,
+      "processGroup": 1348555,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:13:09.593219+00:00",
+      "logSha256": "c94ae69e0d2b80826342694768ef8cb5fe2757a508db35fea0ea2423d299a9d8",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "c94ae69e0d2b80826342694768ef8cb5fe2757a508db35fea0ea2423d299a9d8"
+  },
+  {
+    "run": {
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v4-proof",
+        "--retouches-ui"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d3-export",
+      "head": "d1e16e82125522fc0445d4164f8d5ca4ab9189d4",
+      "startedAt": "2026-10-29T15:14:16.018919+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-build.ts": "45d63c17317fe24b52e339a2abd013262497308cd8af250a18d2489174392a7e",
+        "scripts/verify-agent211-images-ui.ts": "5691b7118aa5efd4b970bfcd660fa5a5ba82ae6e6d438831c4419214c472a5a5",
+        "scripts/verify-agent211-retouch-ui.ts": "f9b9a3e8dd1b319d2638c25ec908b1813592abd0da1c60f08f7a64098884a0fb"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D9b-browser-debug-fixture-v4.log",
+      "pid": 1350111,
+      "processGroup": 1350111,
+      "exitCode": 0,
+      "finishedAt": "2026-10-29T15:16:44.281116+00:00",
+      "logSha256": "f98139573b55baba962ca9538406957f60eab858dad22b9a00729c291eb61dd3",
+      "sourceUnchanged": true
+    },
+    "notFinalEvidence": true,
+    "logSha256": "f98139573b55baba962ca9538406957f60eab858dad22b9a00729c291eb61dd3"
+  }
+]

@@ -1,0 +1,16 @@
+
+> ecom-studio-ia@1.0.0 test
+> vitest run
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d10b2-clips
+
+
+ Test Files  462 passed | 1 skipped (463)
+      Tests  4011 passed | 45 skipped (4056)
+   Start at  23:36:42
+   Duration  748.90s (tests 77%, import 22%, transform 1%)
+
+    Isolate  463 workers spawned · ~[CAP_PRIVE_OMIS] startup each (spawn + environment, per file)
+             at least ~[CAP_PRIVE_OMIS] faster with isolate: false — reuses workers across files instead of one per file
+

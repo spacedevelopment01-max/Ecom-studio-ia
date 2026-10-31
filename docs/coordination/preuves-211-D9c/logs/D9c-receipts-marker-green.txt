@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d9c-identity
+
+
+ Test Files  7 passed (7)
+      Tests  42 passed (42)
+   Start at  18:18:23
+   Duration  17.67s (tests 53%, import 28%, transform 19%)
+

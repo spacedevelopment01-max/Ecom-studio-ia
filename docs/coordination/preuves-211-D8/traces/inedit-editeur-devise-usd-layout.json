@@ -1,0 +1,217 @@
+{
+  "width": 390,
+  "clientWidth": 390,
+  "scrollWidth": 390,
+  "offenders": [
+    {
+      "tag": "TABLE",
+      "class": "w-full min-w-[640px] text-sm",
+      "text": "VarianteRéférence (SKU)Prix (USD)Stock (vide : non suivi)ÉpuiséProduit uniquePlu",
+      "box": {
+        "x": 21,
+        "y": 955.8125,
+        "width": 640,
+        "height": 101,
+        "top": 955.8125,
+        "right": 661,
+        "bottom": 1056.8125,
+        "left": 21
+      }
+    },
+    {
+      "tag": "THEAD",
+      "class": null,
+      "text": "VarianteRéférence (SKU)Prix (USD)Stock (vide : non suivi)Épuisé",
+      "box": {
+        "x": 21,
+        "y": 955.8125,
+        "width": 640,
+        "height": 48.5,
+        "top": 955.8125,
+        "right": 661,
+        "bottom": 1004.3125,
+        "left": 21
+      }
+    },
+    {
+      "tag": "TR",
+      "class": "text-left text-muted",
+      "text": "VarianteRéférence (SKU)Prix (USD)Stock (vide : non suivi)Épuisé",
+      "box": {
+        "x": 21,
+        "y": 955.8125,
+        "width": 640,
+        "height": 48.5,
+        "top": 955.8125,
+        "right": 661,
+        "bottom": 1004.3125,
+        "left": 21
+      }
+    },
+    {
+      "tag": "TH",
+      "class": "p-1",
+      "text": "Prix (USD)",
+      "box": {
+        "x": 258.265625,
+        "y": 955.8125,
+        "width": 138.15625,
+        "height": 48.5,
+        "top": 955.8125,
+        "right": 396.421875,
+        "bottom": 1004.3125,
+        "left": 258.265625
+      }
+    },
+    {
+      "tag": "TH",
+      "class": "p-1",
+      "text": "Stock (vide : non suivi)",
+      "box": {
+        "x": 396.421875,
+        "y": 955.8125,
+        "width": 137.609375,
+        "height": 48.5,
+        "top": 955.8125,
+        "right": 534.03125,
+        "bottom": 1004.3125,
+        "left": 396.421875
+      }
+    },
+    {
+      "tag": "TH",
+      "class": "p-1",
+      "text": "Épuisé",
+      "box": {
+        "x": 534.03125,
+        "y": 955.8125,
+        "width": 126.96875,
+        "height": 48.5,
+        "top": 955.8125,
+        "right": 661,
+        "bottom": 1004.3125,
+        "left": 534.03125
+      }
+    },
+    {
+      "tag": "TBODY",
+      "class": null,
+      "text": "Produit uniquePlus venduVendu quand même",
+      "box": {
+        "x": 21,
+        "y": 1004.3125,
+        "width": 640,
+        "height": 52.5,
+        "top": 1004.3125,
+        "right": 661,
+        "bottom": 1056.8125,
+        "left": 21
+      }
+    },
+    {
+      "tag": "TR",
+      "class": "border-t border-line",
+      "text": "Produit uniquePlus venduVendu quand même",
+      "box": {
+        "x": 21,
+        "y": 1004.3125,
+        "width": 640,
+        "height": 52.5,
+        "top": 1004.3125,
+        "right": 661,
+        "bottom": 1056.8125,
+        "left": 21
+      }
+    },
+    {
+      "tag": "TD",
+      "class": "p-1",
+      "text": "",
+      "box": {
+        "x": 258.265625,
+        "y": 1004.3125,
+        "width": 138.15625,
+        "height": 52.5,
+        "top": 1004.3125,
+        "right": 396.421875,
+        "bottom": 1056.8125,
+        "left": 258.265625
+      }
+    },
+    {
+      "tag": "INPUT",
+      "class": "h-11 w-full min-w-0 rounded-2xl border border-line bg-card px-4 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink",
+      "text": "",
+      "box": {
+        "x": 262.265625,
+        "y": 1008.8125,
+        "width": 130.15625,
+        "height": 44,
+        "top": 1008.8125,
+        "right": 392.421875,
+        "bottom": 1052.8125,
+        "left": 262.265625
+      }
+    },
+    {
+      "tag": "TD",
+      "class": "p-1",
+      "text": "",
+      "box": {
+        "x": 396.421875,
+        "y": 1004.3125,
+        "width": 137.609375,
+        "height": 52.5,
+        "top": 1004.3125,
+        "right": 534.03125,
+        "bottom": 1056.8125,
+        "left": 396.421875
+      }
+    },
+    {
+      "tag": "INPUT",
+      "class": "h-11 w-full min-w-0 rounded-2xl border border-line bg-card px-4 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink",
+      "text": "",
+      "box": {
+        "x": 400.421875,
+        "y": 1008.8125,
+        "width": 129.609375,
+        "height": 44,
+        "top": 1008.8125,
+        "right": 530.03125,
+        "bottom": 1052.8125,
+        "left": 400.421875
+      }
+    },
+    {
+      "tag": "TD",
+      "class": "p-1",
+      "text": "Plus venduVendu quand même",
+      "box": {
+        "x": 534.03125,
+        "y": 1004.3125,
+        "width": 126.96875,
+        "height": 52.5,
+        "top": 1004.3125,
+        "right": 661,
+        "bottom": 1056.8125,
+        "left": 534.03125
+      }
+    },
+    {
+      "tag": "SELECT",
+      "class": "h-11 w-full min-w-0 rounded-2xl border border-line bg-card px-4 text-[15px] text-ink placeholder:text-muted/70 outline-none transition focus:border-ink appearance-none bg-[length:16px] bg-[right_14px_center] bg-no-repeat pr-10",
+      "text": "Plus venduVendu quand même",
+      "box": {
+        "x": 538.03125,
+        "y": 1008.8125,
+        "width": 118.96875,
+        "height": 44,
+        "top": 1008.8125,
+        "right": 657,
+        "bottom": 1052.8125,
+        "left": 538.03125
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d3-export
+
+ ❯ tests/conversation211-exports.test.ts (13 tests | 1 failed | 11 skipped) 1078ms
+   ❯ #211 D3 — export depuis le même SYNA (13)
+     × garde un contexte cognitif stable après export malgré le temps écoulé, sans figer la télémétrie affichée 622ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-exports.test.ts > #211 D3 — export depuis le même SYNA > garde un contexte cognitif stable après export malgré le temps écoulé, sans figer la télémétrie affichée
+AssertionError: expected '28f0992aa588c0f9' to be '33e340139b425e7b' // Object.is equality
+
+Expected: "33e340139b425e7b"
+Received: "28f0992aa588c0f9"
+
+ ❯ tests/conversation211-exports.test.ts:40:629
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed | 11 skipped (13)
+   Start at  10:16:53
+   Duration  4.29s (transform 43%, import 31%, tests 26%)
+

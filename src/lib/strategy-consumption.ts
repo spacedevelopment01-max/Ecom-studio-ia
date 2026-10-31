@@ -93,7 +93,7 @@ export function contentStrategy(projectId:string,module:string,contentId:string)
 /** Communication jobs pin their content's strategy, not the latest default. Website jobs stay general. */
 export function communicationJob(type:string,payload:any):boolean {
  if(type.startsWith('video.')&&(payload?.request?.purpose==='site'||payload?.request?.siteAmbience||!payload?.request?.ask?.purpose&&['website','shop_page'].includes(payload?.request?.ask?.platform)))return false;
- return type==='image.ai_post'||/^(social\.|post\.|calendar\.|ads\.|campaign\.|ugc\.|video\.)/.test(type)||(type==='content.v2'&&payload?.request?.type==='ad_copy');
+ return type==='agent.campaign.visual'||type==='agent.social.produce'||type==='image.ai_post'||/^(social\.|post\.|calendar\.|ads\.|campaign\.|ugc\.|video\.)/.test(type)||(type==='content.v2'&&payload?.request?.type==='ad_copy');
 }
 export function jobStrategy(projectId:string,type:string,payload:any,executing=false):Selection|null {
  if(!serviceStrategyProject(projectId))return strategySelection(projectId);
@@ -102,7 +102,7 @@ export function jobStrategy(projectId:string,type:string,payload:any,executing=f
  const contentId=payload?.postId;const docKey=payload?.docKey;
  if(contentId&&!one("SELECT 1 FROM posts WHERE project_id=? AND id=?",projectId,contentId))throw new HttpError(404,"Publication introuvable.");
  if(docKey){const doc=one<{doc_json:string}>('SELECT doc_json FROM video_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1',projectId,docKey);if(doc){const parsed=JSON.parse(doc.doc_json);if(parsed.meta?.siteAmbience||['website','shop_page'].includes(parsed.platform))return null;}}
- const own=contentId?contentStrategy(projectId,'post',contentId):docKey?(()=>{const r=one<{id:string}>('SELECT id FROM video_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1',projectId,docKey);return r?contentStrategy(projectId,'video',r.id):null;})():null;
+ const own=contentId?contentStrategy(projectId,'post',contentId):payload?.campaignId?contentStrategy(projectId,'campaign',payload.campaignId):docKey?(()=>{const r=one<{id:string}>('SELECT id FROM video_documents WHERE project_id=? AND doc_key=? ORDER BY version DESC LIMIT 1',projectId,docKey);return r?contentStrategy(projectId,'video',r.id):null;})():null;
  if(own)return own;
  if(type==='post.publish'&&contentId)return null; // Legacy approved publication: native send gates still apply.
  const requested=payload?.angleId??payload?.request?.angleId;

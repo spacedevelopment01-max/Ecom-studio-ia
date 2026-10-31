@@ -1,0 +1,184 @@
+{
+  "passed": true,
+  "transport": "native SDK/worker/HTTP loopback simulated",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "cases": [
+    {
+      "case": "produit",
+      "passed": true,
+      "productOrService": "products",
+      "instructionCharacters": 880,
+      "exactInstruction": true,
+      "topicExact": true,
+      "quoteNoGeneration": true,
+      "quotaOnce": true,
+      "backgroundBlogUpdated": true,
+      "nativeBlogOpened": true,
+      "bodyMatchesVersion": true,
+      "reloadNoCall": true,
+      "freeReuse": true,
+      "duplicateSameJob": true,
+      "downloadSha256": "184b01e9195000aa13ba13feef405e01b65098c8b577e9e095289b8011c92b53",
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 5111,
+          "sha256": "d8be3bb90462ec2ef322831c7425574bacf0a86cdb27a74ae34016ac1d8c2cb1",
+          "hasExactInstruction": true,
+          "offerName": "Peigne à tisser",
+          "price": null,
+          "factValues": []
+        },
+        {
+          "phase": "review",
+          "bytes": 2149,
+          "sha256": "7266e50498e0e787465dacfc04d50d5f9fbfc94395b4669dc484ecd31b90db56",
+          "hasExactInstruction": true
+        }
+      ],
+      "failure": {
+        "status": "failed",
+        "httpAttempts": 1,
+        "progress": 0.2,
+        "priorArticlePreserved": true,
+        "noLocalReplacement": true,
+        "quotaNotConsumed": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "blogStatus": "draft",
+      "publication": false,
+      "creativeQualityQualified": false
+    },
+    {
+      "case": "service",
+      "passed": true,
+      "productOrService": "services",
+      "instructionCharacters": 880,
+      "exactInstruction": true,
+      "topicExact": true,
+      "quoteNoGeneration": true,
+      "quotaOnce": true,
+      "backgroundBlogUpdated": true,
+      "nativeBlogOpened": true,
+      "bodyMatchesVersion": true,
+      "reloadNoCall": true,
+      "freeReuse": true,
+      "duplicateSameJob": true,
+      "downloadSha256": "e04bead8ba3e39f92bedc9c66ec8912f1140b2092b58788275bc94d931f73ae8",
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 6681,
+          "sha256": "174dd119a0b1a83f58bc3f7babf54da6490cec09549680bf2e977fe48914f559",
+          "hasExactInstruction": true,
+          "offerName": "Reprise de sièges paillés",
+          "price": null,
+          "factValues": []
+        },
+        {
+          "phase": "review",
+          "bytes": 2311,
+          "sha256": "14df6f77abc07fafae20c21529df959db18480184fb5df3fb325bd398e624266",
+          "hasExactInstruction": true
+        }
+      ],
+      "failure": {
+        "status": "failed",
+        "httpAttempts": 1,
+        "progress": 0.2,
+        "priorArticlePreserved": true,
+        "noLocalReplacement": true,
+        "quotaNotConsumed": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "blogStatus": "draft",
+      "publication": false,
+      "creativeQualityQualified": false
+    },
+    {
+      "case": "reserve-apres-gel",
+      "passed": true,
+      "productOrService": "products",
+      "instructionCharacters": 899,
+      "exactInstruction": true,
+      "topicExact": true,
+      "quoteNoGeneration": true,
+      "quotaOnce": true,
+      "backgroundBlogUpdated": true,
+      "nativeBlogOpened": true,
+      "bodyMatchesVersion": true,
+      "reloadNoCall": true,
+      "freeReuse": true,
+      "duplicateSameJob": true,
+      "downloadSha256": "a9b5b4f4040d363af1cf0bbd29da162950a2743c378d034cfa26e0f9fa209b8b",
+      "widths": [
+        1440,
+        1024,
+        390,
+        360
+      ],
+      "wire": [
+        {
+          "phase": "write",
+          "bytes": 5257,
+          "sha256": "90966b043d87d96b650ae8b17a642a64faebcb977ea0b4b60d1d5045158e98bc",
+          "hasExactInstruction": true,
+          "offerName": "Presse à fleurs manuelle",
+          "price": null,
+          "factValues": []
+        },
+        {
+          "phase": "review",
+          "bytes": 2264,
+          "sha256": "64697e2517b61e9bc8f4546892fd98d74f4b6361394a2264273f000af24c3988",
+          "hasExactInstruction": true
+        }
+      ],
+      "failure": {
+        "status": "failed",
+        "httpAttempts": 1,
+        "progress": 0.2,
+        "priorArticlePreserved": true,
+        "noLocalReplacement": true,
+        "quotaNotConsumed": true
+      },
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "blogStatus": "draft",
+      "publication": false,
+      "creativeQualityQualified": false
+    }
+  ],
+  "counts": {
+    "providerHttpCalls": 18,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 18,
+    "imageHttpCalls": 0,
+    "tokenCounts": 18,
+    "calls": 18,
+    "usage": 15,
+    "simulatedMicro": 106812
+  }
+}

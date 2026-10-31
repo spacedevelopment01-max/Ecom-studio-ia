@@ -5,6 +5,9 @@ import type { Brand, BusinessType, ProductProfile, ProjectSettings, ServiceProfi
 
 export type JobView = { id: string; type: string; label: string; status: string; progress: number; message: string; error: string | null; failureCode?:string; result: any; createdAt: number; updatedAt: number; finishedAt: number | null; alive?: boolean; idleMs?: number; estimate?: { ms: number; source: "history" | "default" } | null; startedAt?: number };
 export type Overview = {
+  /** Repère natif du parcours SYNA ; fermé si absent ou désactivé sur le serveur. */
+  conversationContext?:boolean;
+  conversationCatalogue?:boolean;
   preparation?: {revision:number}|null;
   /** Forfait du projet (null : découverte, sans abonnement). */
   plan?: string | null;

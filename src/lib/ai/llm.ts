@@ -14,6 +14,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
 import { balance, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
 import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, routeFor, TEXT_MODEL_LIMITS, usdToEur, type TaskId } from "./config";
@@ -34,6 +35,8 @@ export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
   task: TaskId;
+  /** Route consentie par devis serveur : un changement impose un nouveau devis, jamais un repli facturé. */
+  expectedRoute?: { provider: string; model: string; effort?: string };
   /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
   prepare?: (raw: unknown) => unknown;
   userId: string;
@@ -52,6 +55,8 @@ export type LlmCall = {
   maxOutputTokens?: number;
   /** Clé d'idempotence de la consommation (reprise sans double débit). */
   usageKey?: string;
+  /** Serveur uniquement : reprise d'un reçu natif, interdit tout nouvel envoi s'il manque. */
+  acquiredOnly?: boolean;
   /** Nom du prompt système (trace) ; à défaut, la tâche. Le texte du prompt n'est jamais enregistré. */
   promptKey?: string;
   /**
@@ -90,6 +95,22 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     overrides: custom[call.task] && (!auto || pinnedTasks().includes(call.task)) ? { [call.task]: routeFor(call.task) } : undefined,
     auto: auto ? { budgetLeftMicro: call.userId ? budgetLeft(call.userId) : null } : undefined,
   });
+}
+
+/** Entrée d'un dialogue texte strict : même enveloppe/messages/format que rawCall, sans API ni réservation.
+ * La borne utilise les octets UTF-8 (pas une heuristique chars/2) et INCLUT le schéma structuré,
+ * facturé comme entrée par maxCostMicro/otherMaxCostMicro. Images refusées : leur budget est distinct.
+ */
+export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
+  if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
+  const stable = [call.context, call.reference].filter(Boolean) as string[];
+  const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
+  const volatile = brainOf(call).volatile;
+  if (volatile) content.push({ type: 'text', text: volatile });
+  content.push({ type: 'text', text: call.prompt });
+  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content }] });
+  const format = Buffer.byteLength(JSON.stringify(zodOutputFormat(schema as any)), 'utf8');
+  return { maximumTokens: Buffer.byteLength(request, 'utf8') + format + 500, typicalTokens: Math.ceil(request.length / 3.5) + format };
 }
 
 /** Reste disponible du budget IA du client (micro-euros), null si inconnu. */
@@ -241,6 +262,9 @@ const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
 function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
+  // Une réponse reçue sans usage exploitable n'est pas supposée gratuite : rawCall conserve sa réserve.
+  const counts=[usage?.input_tokens,usage?.output_tokens,...[usage?.cache_creation_input_tokens,usage?.cache_read_input_tokens].filter(n=>n!=null)];
+  if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
   const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
   if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
@@ -265,6 +289,8 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
 }
 
 type RawResult = { text: string; stop: string | null; model: string };
+/** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
+function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const operation = { task: call.task, projectId: call.projectId, usageKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined, requestHash: requestHash({ system: systemText(call), messages, format, maxTokens: call.maxTokens }) };
@@ -273,8 +299,11 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
+  if (call.acquiredOnly) throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
   if (call.projectId) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
+  if (call.expectedRoute && (decision.provider !== call.expectedRoute.provider || decision.model !== call.expectedRoute.model || (decision.effort ?? '') !== (call.expectedRoute.effort ?? '')))
+    throw new UserFacingError(L("La route IA a changé : demandez un nouveau devis. Aucun appel envoyé.", "The AI route changed: request a new quote. No request sent."));
   const route = { provider: decision.provider, model: decision.model, effort: decision.effort };
   // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
   if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry, operation);
@@ -338,6 +367,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     msg = await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
         try {
+          beforeAgentTextAttempt(call.userId,call.jobId,attempt);
           const stream = isHaiku ? client().messages.stream(params) : client().beta.messages.stream(params);
           return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
         } catch (e) {
@@ -350,7 +380,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Seuls les refus nets 4xx hors délai prouvent que l'appel n'a pas produit de résultat.
     const status = (e as { status?: unknown })?.status;
-    const uncertain = !(typeof status === "number" && providerRefused(status));
+    const uncertain = !(e instanceof AgentBoundStop || typeof status === "number" && providerRefused(status));
     if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
     else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
@@ -361,7 +391,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
     if (uncertain) {
       const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
-      throw new PermanentError(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+      throw uncertainProviderFailure(L(`Résultat incertain chez Anthropic (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at Anthropic (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
     }
     throw e; // 429 (saturation, réservation rendue) : la file de tâches réessaie plus tard.
   }
@@ -375,7 +405,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Réponse reçue (donc facturée) mais comptabilisation impossible : coût maximal retenu.
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
-    throw e;
+    throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
   recordCall({
     ...trace,
@@ -498,6 +528,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     for (let attempt = 0; ; attempt++) {
       attempts++;
       try {
+        beforeAgentTextAttempt(call.userId,call.jobId,attempt);
         res = await adapter.send(req, key);
         break;
       } catch (e) {
@@ -510,7 +541,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   } catch (e) {
     // Refus net (4xx hors délai) : rien n'a été produit ni facturé, la réservation est rendue. 5xx, délai, coupure :
     // résultat incertain, coût maximal retenu, et l'étape s'arrête (aucune relance par la file de tâches).
-    const uncertain = !(e instanceof ProviderHttpError && providerRefused(e.status));
+    const uncertain = !(e instanceof AgentBoundStop || e instanceof ProviderHttpError && providerRefused(e.status));
     if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
     else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
@@ -519,7 +550,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (uncertain) {
       const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
-      throw new PermanentError(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
+      throw uncertainProviderFailure(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
     }
     throw e;
   }
@@ -535,7 +566,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     billed = { costMicro, estimated: !p, ...b };
   } catch (e) {
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
-    throw e;
+    throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
   recordCall({
     ...trace,
@@ -671,7 +702,9 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   const content = await buildContent(call);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
   if (opts.strict) {
-    const r = await rawCall(call, messages, zodOutputFormat(schema as any));
+    // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
+    // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
+    const r = await rawCall(call, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text});
     return schema.parse(JSON.parse(r.text));
   }
   messages[0].content = [

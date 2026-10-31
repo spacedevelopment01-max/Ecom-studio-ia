@@ -1,0 +1,48 @@
+{
+  "I1-native-tools": {
+    "command": [
+      "npx",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/I1-native-tools",
+      "--specialists",
+      "--tools",
+      "--tools-ui",
+      "--theme-ui",
+      "--composition-ui",
+      "--exports-ui",
+      "--render-ui",
+      "--research-ui"
+    ],
+    "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+    "startedAt": "2026-10-28T23:55:00.299280+00:00",
+    "state": "failed",
+    "exitCode": 1,
+    "finishedAt": "2026-10-28T23:58:41.749701+00:00",
+    "logSha256": "aa72b7fec750f3519187b5ee45ac875d86c8cee4b0d82ec0b1e81b720d7d24a6",
+    "sourceUnchanged": true
+  },
+  "I1-native-core": {
+    "command": [
+      "npx",
+      "tsx",
+      "scripts/verify-agent211-build.ts",
+      "/workspace/reviews/ecom-211-state/I1-native-core",
+      "--specialists",
+      "--tools",
+      "--tools-ui",
+      "--theme-ui",
+      "--composition-ui",
+      "--exports-ui"
+    ],
+    "head": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+    "startedAt": "2026-10-28T23:59:14.608308+00:00",
+    "state": "failed",
+    "exitCode": -15,
+    "finishedAt": "2026-10-29T00:00:25.570184+00:00",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceUnchanged": true,
+    "deliberatelyInterrupted": true,
+    "reason": "Split before another >30-login/10min run, native guard unchanged"
+  }
+}

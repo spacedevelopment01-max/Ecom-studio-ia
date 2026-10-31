@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d10a-video
+
+
+ Test Files  453 passed | 1 skipped (454)
+      Tests  3951 passed | 45 skipped (3996)
+   Start at  20:20:32
+   Duration  721.46s (tests 76%, import 23%, transform 1%)
+
+    Isolate  454 workers spawned · ~[CAP_PRIVE_OMIS] startup each (spawn + environment, per file)
+             at least ~[CAP_PRIVE_OMIS] faster with isolate: false — reuses workers across files instead of one per file
+

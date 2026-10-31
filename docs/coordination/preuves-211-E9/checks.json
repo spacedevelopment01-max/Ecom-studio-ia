@@ -1,0 +1,363 @@
+{
+  "realProviderCalls": 0,
+  "checks": [
+    {
+      "name": "E9-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts"
+      ],
+      "head": "76ef3d1d021ad2f1b76a3e0358b39dfa869f1161",
+      "startedAt": "2026-10-30T18:37:31.696605+00:00",
+      "finishedAt": "2026-10-30T18:37:36.589519+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "baba7dc4cf7881dc6bbc20f0057dbc588b96df5a26b5226c466d68eea45a4462"
+    },
+    {
+      "name": "E9-first",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-plan.test.ts",
+        "tests/composition211-server.test.ts"
+      ],
+      "head": "76ef3d1d021ad2f1b76a3e0358b39dfa869f1161",
+      "startedAt": "2026-10-30T18:38:18.744912+00:00",
+      "finishedAt": "2026-10-30T18:38:24.210703+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "e60b850bc6a15c34e88a9028a8225ca5d420130cc1707771a578d794c18bedd5"
+    },
+    {
+      "name": "E9-second",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-syna.test.ts",
+        "tests/conversation211-theme-tools.test.ts"
+      ],
+      "head": "76ef3d1d021ad2f1b76a3e0358b39dfa869f1161",
+      "startedAt": "2026-10-30T18:38:37.535295+00:00",
+      "finishedAt": "2026-10-30T18:38:46.760638+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "c2d30c4b62946c96493b76d562a74aa1065d7efdcea58742df6735fd6ad3b134"
+    },
+    {
+      "name": "E9-targeted-stable",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-plan.test.ts",
+        "tests/composition211-server.test.ts",
+        "tests/composition211-syna.test.ts",
+        "tests/composition211-acquired-copy.test.ts",
+        "tests/conversation211-theme-tools.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts"
+      ],
+      "head": "76ef3d1d021ad2f1b76a3e0358b39dfa869f1161",
+      "startedAt": "2026-10-30T18:43:21.334301+00:00",
+      "finishedAt": "2026-10-30T18:43:35.766738+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "64e8f1fabe7816936e05a63c253496963d47a43e101b7557f802a2100749698d"
+    },
+    {
+      "name": "E9-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:44:40.293388+00:00",
+      "finishedAt": "2026-10-30T18:46:34.954015+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "logSha256": "89021c810c5b368d4df7130557d2a19de651afd04399521c664b4e32b3d22e0a"
+    },
+    {
+      "name": "E9-theme-rapid",
+      "command": [
+        "bash",
+        "scripts/verify-theme.sh",
+        "--rapide"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:44:41.794015+00:00",
+      "finishedAt": "2026-10-30T18:46:35.926420+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "logSha256": "9e7f527e1942a2bd72d270f211d65d8763204185dddfb712df1773ca8ef9d040"
+    },
+    {
+      "name": "E9-browser",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/E9-original-browser-proof",
+        "--original-ui"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:46:53.221352+00:00",
+      "finishedAt": "2026-10-30T18:47:33.348505+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "f4d4268170d76a42bad342b47c425ea8dc99681261910b283350ebfea3ff4964"
+    },
+    {
+      "name": "E9-browser-second",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/E9-original-second-proof",
+        "--original-ui"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:49:40.004072+00:00",
+      "finishedAt": "2026-10-30T18:50:42.690856+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "75e95394a71e4a7c05da4d014cc1a3a271d819606c3cc9fa2bd14223e938b64a"
+    },
+    {
+      "name": "E9-placeholder-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "-t",
+        "illustration manquante"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:51:26.720895+00:00",
+      "finishedAt": "2026-10-30T18:51:30.825846+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "91c0849fa327921d767d75d5614eac3e8bfa323133b2130b7a80c0cfc7c05be7"
+    },
+    {
+      "name": "E9-targeted-visual-fixed",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/composition211-original.test.ts",
+        "tests/composition211-plan.test.ts",
+        "tests/composition211-server.test.ts",
+        "tests/composition211-syna.test.ts",
+        "tests/composition211-acquired-copy.test.ts",
+        "tests/conversation211-theme-tools.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:52:15.775721+00:00",
+      "finishedAt": "2026-10-30T18:52:30.909472+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "988026e7d8c176d730e8a5ad62bc76036ce08c98803e71cf3f58e180e422701e"
+    },
+    {
+      "name": "E9-build-final",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+      "startedAt": "2026-10-30T18:53:47.210630+00:00",
+      "finishedAt": "2026-10-30T18:54:50.525410+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "logSha256": "8e1df3562069f24048875c2977c901d995b5481ec919e6e8a887e9811c5623fd"
+    },
+    {
+      "name": "E9-browser-final",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/E9-original-final-proof",
+        "--original-ui"
+      ],
+      "head": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+      "startedAt": "2026-10-30T18:55:16.610628+00:00",
+      "finishedAt": "2026-10-30T18:56:20.013658+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "c5314d54ab5e97e9a7491b61ca421c5a1f342a63482048dcbf0f5c3cc8deb19a"
+    },
+    {
+      "name": "E9-types-harness-final",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "head": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+      "startedAt": "2026-10-30T18:55:15.137534+00:00",
+      "finishedAt": "2026-10-30T18:55:20.270429+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "E9-browser-holdout",
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/E9-original-holdout-proof",
+        "--original-holdout-ui"
+      ],
+      "head": "207ff13d7df6c0f57b3f07b0ca839c519c248927",
+      "startedAt": "2026-10-30T19:00:24.555450+00:00",
+      "finishedAt": "2026-10-30T19:00:51.109158+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "165faa224cc961c7ad2e8fd72a312cbf98e8d62de50709c308a57288c9ca6673"
+    },
+    {
+      "name": "E9-types-heldout",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "head": "207ff13d7df6c0f57b3f07b0ca839c519c248927",
+      "startedAt": "2026-10-30T19:00:26.024843+00:00",
+      "finishedAt": "2026-10-30T19:00:31.146575+00:00",
+      "state": "failed",
+      "exitCode": 2,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "2b8aebe8b37ee365dcad5df9a5b0732e032a89c3c5c1a497a0081272c7be0e07"
+    },
+    {
+      "name": "E9-types-heldout-fixed",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "head": "207ff13d7df6c0f57b3f07b0ca839c519c248927",
+      "startedAt": "2026-10-30T19:01:38.087607+00:00",
+      "finishedAt": "2026-10-30T19:01:42.864865+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "E8-ci-regression-red",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/lot1-consignes-livraison.test.ts",
+        "-t",
+        "prestations"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:45:26.382450+00:00",
+      "finishedAt": "2026-10-30T18:45:40.758982+00:00",
+      "state": "failed",
+      "exitCode": 1,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "logSha256": "5b359db85ff085fac56cd49fcb7795cd83cc31777f7b21c5d9aa1b0d8eda5e68"
+    },
+    {
+      "name": "E8-ci-regression-green",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/lot1-consignes-livraison.test.ts"
+      ],
+      "head": "0035ba3a592144c92d6aed6e988be13a17334c07",
+      "startedAt": "2026-10-30T18:46:46.488453+00:00",
+      "finishedAt": "2026-10-30T18:46:58.358447+00:00",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "logSha256": "e6395db97bca5262bc716c90acbb190af97f846af448997e1df231b2d99bd20c"
+    }
+  ],
+  "savedPreviewWithoutNewGeneration": {
+    "passed": true,
+    "source": "saved_synthetic_native_version_no_worker",
+    "versionId": "8uyt61rhultm7ska",
+    "buildCommit": "cf6e630e3f30dfe72fe2236cdb9067c1b3722714",
+    "metrics": {
+      "width": 390,
+      "scrollWidth": 390,
+      "broken": 0,
+      "placeholders": 0
+    },
+    "before": {
+      "ai_calls": 11,
+      "usage_events": 7,
+      "jobs": 11,
+      "theme_versions": 4,
+      "assets": 12
+    },
+    "after": {
+      "ai_calls": 11,
+      "usage_events": 7,
+      "jobs": 11,
+      "theme_versions": 4,
+      "assets": 12
+    },
+    "newProviderCalls": 0,
+    "newJobs": 0
+  },
+  "fullSuite": "Final CI required on published head, not yet green",
+  "appSourcesIdenticalBetweenBuildAndFinalHarness": true
+}

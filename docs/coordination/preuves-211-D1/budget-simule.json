@@ -1,0 +1,160 @@
+{
+  "readOnlySnapshotAfterTest": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "costWarning": "Usage costs and uncertain maximum reservations are separate; none are a real provider invoice.",
+  "scenarios": [
+    {
+      "scenario": "produit",
+      "data": "isolated fictitious project, no real provider",
+      "wallet": [
+        {
+          "monthly_allowance": 43000000,
+          "monthly_used": 612400,
+          "reserved": 0,
+          "reserved_topup": 0,
+          "topup_balance": 0
+        }
+      ],
+      "reservations": [
+        {
+          "job_id": "0cwt356ci4zapzr1",
+          "status": "settled",
+          "amount": 597981,
+          "actual": 7912
+        },
+        {
+          "job_id": "msau3z0j4rooq3mt",
+          "status": "uncertain",
+          "amount": 596576,
+          "actual": 596576
+        },
+        {
+          "job_id": "r36alttrw632o65g",
+          "status": "settled",
+          "amount": 177246,
+          "actual": 7912
+        }
+      ],
+      "usage": [
+        {
+          "job_id": "r36alttrw632o65g",
+          "cost": 7912,
+          "billed": 7912
+        },
+        {
+          "job_id": "0cwt356ci4zapzr1",
+          "cost": 7912,
+          "billed": 7912
+        }
+      ],
+      "bounds": [
+        {
+          "cap_micro": 7376985,
+          "max_calls": 10,
+          "max_depth": 1,
+          "max_retries": 0,
+          "http_attempts": 3,
+          "deadline_at": 1793191949970,
+          "created_at": 1793191049904
+        }
+      ],
+      "boundJobs": [
+        {
+          "role": "principal",
+          "depth": 0,
+          "type": "agent.reason",
+          "status": "done"
+        },
+        {
+          "role": "understand-offer",
+          "depth": 1,
+          "type": "project.prepare",
+          "status": "done"
+        },
+        {
+          "role": "understand-offer",
+          "depth": 1,
+          "type": "project.prepare",
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "scenario": "service",
+      "data": "isolated fictitious project, no real provider",
+      "wallet": [
+        {
+          "monthly_allowance": 43000000,
+          "monthly_used": 252234,
+          "reserved": 0,
+          "reserved_topup": 0,
+          "topup_balance": 0
+        }
+      ],
+      "reservations": [
+        {
+          "job_id": "hyzwp64vskwb8i1l",
+          "status": "uncertain",
+          "amount": 236410,
+          "actual": 236410
+        },
+        {
+          "job_id": "krnj11psuu3tjig2",
+          "status": "settled",
+          "amount": 176036,
+          "actual": 7912
+        },
+        {
+          "job_id": "rigzv6e5bgjrppi1",
+          "status": "settled",
+          "amount": 236311,
+          "actual": 7912
+        }
+      ],
+      "usage": [
+        {
+          "job_id": "krnj11psuu3tjig2",
+          "cost": 7912,
+          "billed": 7912
+        },
+        {
+          "job_id": "rigzv6e5bgjrppi1",
+          "cost": 7912,
+          "billed": 7912
+        }
+      ],
+      "bounds": [
+        {
+          "cap_micro": 3383069,
+          "max_calls": 10,
+          "max_depth": 1,
+          "max_retries": 0,
+          "http_attempts": 3,
+          "deadline_at": 1793191962501,
+          "created_at": 1793191062434
+        }
+      ],
+      "boundJobs": [
+        {
+          "role": "principal",
+          "depth": 0,
+          "type": "agent.reason",
+          "status": "done"
+        },
+        {
+          "role": "understand-offer",
+          "depth": 1,
+          "type": "project.prepare",
+          "status": "done"
+        },
+        {
+          "role": "understand-offer",
+          "depth": 1,
+          "type": "project.prepare",
+          "status": "failed"
+        }
+      ]
+    }
+  ]
+}

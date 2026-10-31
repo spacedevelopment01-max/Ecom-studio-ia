@@ -1,0 +1,274 @@
+Deux régressions provoquées avec une autre connexion SQLite WAL, avant leurs corrections respectives. Aucun appel réel.
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-reemploi
+
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/var/cache/fontconfig
+	/home/agent/.cache/fontconfig
+	/home/agent/.fontconfig
+ ❯ tests/conversation211-theme-tools.test.ts (21 tests | 2 failed | 19 skipped) 736ms
+   × lit un reçu cohérent si le worker finit entre lecture du devis et lecture du job (edit) 509ms
+   × lit un reçu cohérent si le worker finit entre lecture du devis et lecture du job (undo) 225ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-theme-tools.test.ts > lit un reçu cohérent si le worker finit entre lecture du devis et lecture du job (edit)
+AssertionError: expected { id: 'd6rj39jlrbnbwu2h', …(16) } to match object { state: 'queued', …(3) }
+(32 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+    "job": {
+-     "status": "queued",
++     "status": "done",
+    },
+    "recorded": false,
+-   "state": "queued",
++   "state": "result_missing",
+  }
+
+ ❯ tests/conversation211-theme-tools.test.ts:49:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/conversation211-theme-tools.test.ts > lit un reçu cohérent si le worker finit entre lecture du devis et lecture du job (undo)
+AssertionError: expected { id: 'ils3v32mfy8ip7eo', …(16) } to match object { state: 'queued', …(3) }
+(32 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "delivered": false,
+    "job": {
+-     "status": "queued",
++     "status": "done",
+    },
+    "recorded": false,
+-   "state": "queued",
++   "state": "result_missing",
+  }
+
+ ❯ tests/conversation211-theme-tools.test.ts:49:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 skipped (21)
+   Start at  20:58:12
+   Duration  4.43s (transform 50%, import 32%, tests 17%)
+
+  Transform  transforming modules took 2.14s · 50% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-reemploi
+
+ ❯ tests/conversation211-intelligence.test.ts (31 tests | 2 failed | 29 skipped) 310ms
+   × ne perd pas le suivi si le worker répond entre lecture de la conversation et du job (réponse antérieure : false) 171ms
+   × ne perd pas le suivi si le worker répond entre lecture de la conversation et du job (réponse antérieure : true) 136ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/conversation211-intelligence.test.ts > ne perd pas le suivi si le worker répond entre lecture de la conversation et du job (réponse antérieure : false)
+AssertionError: expected { available: true, …(10) } to match object { state: 'running', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "pendingJobId": "ezf929kylybzbwkp",
+-   "state": "running",
++   "state": "requires_quote",
+  }
+
+ ❯ tests/conversation211-intelligence.test.ts:62:105
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/conversation211-intelligence.test.ts > ne perd pas le suivi si le worker répond entre lecture de la conversation et du job (réponse antérieure : true)
+AssertionError: expected { available: true, …(10) } to match object { state: 'running', …(1) }
+(18 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "pendingJobId": "4bt5emxz3r3x473x",
+-   "state": "running",
++   "state": "stale",
+  }
+
+ ❯ tests/conversation211-intelligence.test.ts:62:105
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 29 skipped (31)
+   Start at  21:00:16
+   Duration  4.16s (transform 58%, import 34%, tests 8%)
+
+  Transform  transforming modules took 2.28s · 58% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

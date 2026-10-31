@@ -1,0 +1,100 @@
+{
+  "applicationCommit": "9708be906bdc0e951c6b32fa70d6c32115af40f9",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "checks": {
+    "D11f-aspect-scoped-tests": {
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "tests/conversation211-social-production.test.ts",
+        "tests/conversation211-campaign-visual.test.ts",
+        "tests/social-native-production-binding.test.ts",
+        "tests/publications-qualite.test.ts"
+      ],
+      "head": "54767c35919ff3178e56d9b4dea2626cd72ed146",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T14:36:25.019743+00:00",
+      "finishedAt": "2026-10-30T14:36:34.637802+00:00",
+      "logSha256": "3b00c20b560b40f77cfe1ff65cd0a1b7eb94ba8867e2fde64aac4cc21b969110"
+    },
+    "D11f-final-types": {
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "head": "54767c35919ff3178e56d9b4dea2626cd72ed146",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": false,
+      "startedAt": "2026-10-30T14:37:41.047735+00:00",
+      "finishedAt": "2026-10-30T14:38:03.589820+00:00",
+      "logSha256": "b6403ca485a85ef2a37b272546a2d1bdcfecfeaae1603490b12a59851c0d4580"
+    },
+    "D11f-clean-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "head": "9708be906bdc0e951c6b32fa70d6c32115af40f9",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T14:39:16.369124+00:00",
+      "finishedAt": "2026-10-30T14:40:18.410479+00:00",
+      "logSha256": "f434a77a408d960ea47fdb044225d09693e3112cba5d34394e4ad1f0df706478"
+    },
+    "D11f-native-square-browser": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D11f-native-square-proof",
+        "--social-aspect-ui"
+      ],
+      "head": "9708be906bdc0e951c6b32fa70d6c32115af40f9",
+      "state": "passed",
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "cleanCommitSnapshot": true,
+      "startedAt": "2026-10-30T14:40:41.797988+00:00",
+      "finishedAt": "2026-10-30T14:41:12.284354+00:00",
+      "logSha256": "d50781e86af999abfc24ad5c0d5d91472e32aba7d8789a8c3a0da07c3297e2bc"
+    }
+  },
+  "proofFiles": {
+    "01-devis-visuel-ordinateur.png": {
+      "bytes": 219440,
+      "sha256": "f1f035f20f75dc69aeadab92fd8ef8a43d44e89d79487f0d77614f6989584b37"
+    },
+    "02-devis-visuel-mobile.png": {
+      "bytes": 50347,
+      "sha256": "4bd27c0626f2366ec31b71d1ee21ebb9703b83a878c4d33ad0f6f5a1df32051a"
+    },
+    "04-echec-mobile.png": {
+      "bytes": 166973,
+      "sha256": "9984d1686c9ee6e9ddff1c44a3fa15938f86ac65be9c049b2738ef8712f244ec"
+    },
+    "native-square-proof.json": {
+      "bytes": 2635,
+      "sha256": "bdb4bd0d74510d5ca18635a79efa34c55a697a1dba24912ca64339de612e2894"
+    },
+    "social-square-workflow.mp4": {
+      "bytes": 906919,
+      "sha256": "028ffe5defb6c63edf017aba2956846419fe640dd7d49bbca6132317a4722237"
+    },
+    "tests-cibles.txt": {
+      "bytes": 415,
+      "sha256": "3b00c20b560b40f77cfe1ff65cd0a1b7eb94ba8867e2fde64aac4cc21b969110"
+    }
+  }
+}

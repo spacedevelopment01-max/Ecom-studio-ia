@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d4-recherche
+
+
+ Test Files  429 passed | 1 skipped (430)
+      Tests  3706 passed | 45 skipped (3751)
+   Start at  20:47:21
+   Duration  1237.78s (tests 77%, import 22%, transform 1%)
+
+    Isolate  430 workers spawned · ~159ms startup each (spawn + environment, per file)
+             at least ~22.58s faster with isolate: false — reuses workers across files instead of one per file
+

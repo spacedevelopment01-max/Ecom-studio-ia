@@ -1,0 +1,3231 @@
+{
+  "schema": "agent209-compiled-api-proof-1",
+  "data": "fictitious-isolated",
+  "realProviderCalls": 0,
+  "paidGeneration": 0,
+  "workerStarted": false,
+  "cases": [
+    {
+      "business": "products",
+      "exchanges": [
+        {
+          "request": {
+            "revision": 0,
+            "projectRevision": null,
+            "requestId": "7h8s2bae1q43yypq",
+            "action": "message",
+            "text": "Je veux une marque de lampe pour chambre d'enfant"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": null,
+            "revision": 1,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "collect",
+            "message": "Votre description exacte est conservée. Ma proposition de type reste à relire ; aucune caractéristique n’est ajoutée.",
+            "question": {
+              "kind": "question",
+              "key": "goals",
+              "title": "Que souhaitez-vous obtenir en priorité ?",
+              "why": "Vos objectifs guident les prochaines étapes ; ils ne lancent aucune création.",
+              "multiple": true,
+              "choices": [
+                {
+                  "id": "sell",
+                  "label": "Vendre mes produits en ligne"
+                },
+                {
+                  "id": "present",
+                  "label": "Présenter mon offre"
+                },
+                {
+                  "id": "brand",
+                  "label": "Développer ma marque"
+                },
+                {
+                  "id": "other",
+                  "label": "Autre / préciser"
+                }
+              ],
+              "allowFreeText": true,
+              "allowUnknown": true,
+              "currentAnswer": ""
+            },
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "products",
+                "description": "Je veux une marque de lampe pour chambre d'enfant",
+                "productName": "",
+                "brandName": "",
+                "target": "",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "",
+              "goals": "",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 1,
+            "projectRevision": null,
+            "requestId": "yg59y755j589wlmj",
+            "action": "answer",
+            "question": "goals",
+            "choices": [
+              "brand",
+              "other"
+            ],
+            "text": "Présenter mon offre à des revendeurs"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": null,
+            "revision": 2,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "collect",
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "question": {
+              "kind": "question",
+              "key": "target",
+              "title": "À qui votre offre s’adresse-t-elle ?",
+              "why": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+              "multiple": true,
+              "choices": [
+                {
+                  "id": "individuals",
+                  "label": "Des particuliers"
+                },
+                {
+                  "id": "businesses",
+                  "label": "Des professionnels"
+                },
+                {
+                  "id": "other",
+                  "label": "Autre / préciser"
+                }
+              ],
+              "allowFreeText": true,
+              "allowUnknown": true,
+              "currentAnswer": ""
+            },
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "products",
+                "description": "Je veux une marque de lampe pour chambre d'enfant",
+                "productName": "",
+                "brandName": "",
+                "target": "",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 2,
+            "projectRevision": null,
+            "requestId": "1gr80f0slyur0rug",
+            "action": "explain"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": null,
+            "revision": 3,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "collect",
+            "message": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+            "question": {
+              "kind": "question",
+              "key": "target",
+              "title": "À qui votre offre s’adresse-t-elle ?",
+              "why": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+              "multiple": true,
+              "choices": [
+                {
+                  "id": "individuals",
+                  "label": "Des particuliers"
+                },
+                {
+                  "id": "businesses",
+                  "label": "Des professionnels"
+                },
+                {
+                  "id": "other",
+                  "label": "Autre / préciser"
+                }
+              ],
+              "allowFreeText": true,
+              "allowUnknown": true,
+              "currentAnswer": ""
+            },
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "products",
+                "description": "Je veux une marque de lampe pour chambre d'enfant",
+                "productName": "",
+                "brandName": "",
+                "target": "",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 3,
+            "projectRevision": null,
+            "requestId": "kuk52ocrbtw9keqd",
+            "action": "answer",
+            "question": "target",
+            "choices": [
+              "businesses"
+            ],
+            "text": "Entreprises de la recette fictive"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": null,
+            "revision": 4,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "review",
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "products",
+                "description": "Je veux une marque de lampe pour chambre d'enfant",
+                "productName": "",
+                "brandName": "",
+                "target": "Des professionnels ; Entreprises de la recette fictive",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form",
+                "contactModes": "form",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "Des professionnels ; Entreprises de la recette fictive",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Des professionnels ; Entreprises de la recette fictive",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 4,
+            "projectRevision": 2,
+            "requestId": "cvvpk9wis7q4f945",
+            "action": "edit",
+            "field": "target",
+            "value": "Cible corrigée sans nouvel appel"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": "kzjv45tyrxmt8wkh",
+            "revision": 5,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 5,
+            "projectRevision": 3,
+            "requestId": "xm75yj1olxngm84k",
+            "action": "message",
+            "text": "Crée mon site"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": "kzjv45tyrxmt8wkh",
+            "revision": 6,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Cette action existe peut-être dans son onglet, mais elle n’est pas raccordée à la conversation du lot A. Aucune création ni publication n’a été lancée.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": {
+              "kind": "action",
+              "tool": "CREATE_SHOP",
+              "state": "unavailable",
+              "executed": false,
+              "message": "Cette action existe peut-être dans son onglet, mais elle n’est pas raccordée à la conversation du lot A. Aucune création ni publication n’a été lancée.",
+              "href": "/studio/kzjv45tyrxmt8wkh/pilote"
+            },
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 6,
+            "projectRevision": 3,
+            "requestId": "kric4se0bpbtgaby",
+            "action": "prepare-action",
+            "tool": "understand-offer"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "59fe4rss3soqp03v",
+            "projectId": "kzjv45tyrxmt8wkh",
+            "revision": 7,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "Je veux une marque de lampe pour chambre d'enfant",
+              "business": "products",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Précisez le nom du produit ou de l’activité.",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": {
+              "kind": "action",
+              "tool": "understand-offer",
+              "state": "unavailable",
+              "executed": false,
+              "message": "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
+              "href": "/studio/kzjv45tyrxmt8wkh/pilote"
+            },
+            "history": [],
+            "historyBefore": null
+          }
+        }
+      ],
+      "afterReconnection": {
+        "schema": "studio-conversation-1",
+        "id": "59fe4rss3soqp03v",
+        "projectId": "kzjv45tyrxmt8wkh",
+        "revision": 5,
+        "projectRevision": 3,
+        "mode": "local",
+        "progress": "review",
+        "message": "Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.",
+        "question": null,
+        "correctionFields": [
+          "description",
+          "target",
+          "offerName",
+          "brandName",
+          "constraints",
+          "services",
+          "customization",
+          "process",
+          "quote"
+        ],
+        "readOnlyReason": null,
+        "creation": null,
+        "tools": [
+          {
+            "id": "brief.update",
+            "state": "available",
+            "executionEnabled": true
+          },
+          {
+            "id": "understand-offer",
+            "state": "quote_only",
+            "executionEnabled": false
+          },
+          {
+            "id": "brand",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "logo",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "theme",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "products",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "images",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "videos",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "seo",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "blog",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "ads",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "social",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "calendar",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "appointments",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "export",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "publish",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "delete",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "purchase",
+            "state": "not_connected",
+            "executionEnabled": false
+          }
+        ],
+        "summary": {
+          "description": "Je veux une marque de lampe pour chambre d'enfant",
+          "business": "products",
+          "businessSource": "local",
+          "target": "Cible corrigée sans nouvel appel",
+          "goals": "Développer ma marque ; Présenter mon offre à des revendeurs",
+          "offerName": "",
+          "brandName": "",
+          "constraints": "",
+          "services": [],
+          "contactModes": [],
+          "facts": [
+            {
+              "key": "conversation.goals",
+              "label": "Que souhaitez-vous obtenir en priorité ?",
+              "value": "Développer ma marque ; Présenter mon offre à des revendeurs",
+              "status": "confirmed",
+              "source": "user"
+            },
+            {
+              "key": "conversation.target",
+              "label": "À qui votre offre s’adresse-t-elle ?",
+              "value": "Cible corrigée sans nouvel appel",
+              "status": "confirmed",
+              "source": "user"
+            }
+          ],
+          "unknown": [
+            "Précisez le nom du produit ou de l’activité.",
+            "Délais et frais de livraison",
+            "Conditions de retour"
+          ],
+          "referenceUrls": [],
+          "photoIds": [],
+          "approved": false,
+          "preparationStatus": "draft"
+        },
+        "action": null,
+        "history": [
+          {
+            "revision": 1,
+            "request": {
+              "revision": 0,
+              "requestId": "7h8s2bae1q43yypq",
+              "projectRevision": null,
+              "action": "message",
+              "text": "Je veux une marque de lampe pour chambre d'enfant"
+            },
+            "message": "Votre description exacte est conservée. Ma proposition de type reste à relire ; aucune caractéristique n’est ajoutée.",
+            "at": 1793165660846
+          },
+          {
+            "revision": 2,
+            "request": {
+              "revision": 1,
+              "requestId": "yg59y755j589wlmj",
+              "projectRevision": null,
+              "action": "answer",
+              "question": "goals",
+              "choices": [
+                "brand",
+                "other"
+              ],
+              "text": "Présenter mon offre à des revendeurs",
+              "unknown": false
+            },
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "at": 1793165660853
+          },
+          {
+            "revision": 3,
+            "request": {
+              "revision": 2,
+              "requestId": "1gr80f0slyur0rug",
+              "projectRevision": null,
+              "action": "explain"
+            },
+            "message": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+            "at": 1793165660858
+          },
+          {
+            "revision": 4,
+            "request": {
+              "revision": 3,
+              "requestId": "kuk52ocrbtw9keqd",
+              "projectRevision": null,
+              "action": "answer",
+              "question": "target",
+              "choices": [
+                "businesses"
+              ],
+              "text": "Entreprises de la recette fictive",
+              "unknown": false
+            },
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "at": 1793165660863
+          },
+          {
+            "revision": 5,
+            "request": {
+              "revision": 4,
+              "requestId": "cvvpk9wis7q4f945",
+              "projectRevision": 2,
+              "action": "edit",
+              "field": "target",
+              "value": "Cible corrigée sans nouvel appel"
+            },
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "at": 1793165660923
+          }
+        ],
+        "historyBefore": null
+      },
+      "foreignRead": 404,
+      "forgedExecution": 400,
+      "csrf": 403,
+      "staleRevision": 409,
+      "preparation": {
+        "revision": 3,
+        "stage": "brief",
+        "status": "draft",
+        "provenance": "local"
+      }
+    },
+    {
+      "business": "services",
+      "exchanges": [
+        {
+          "request": {
+            "revision": 0,
+            "projectRevision": null,
+            "requestId": "6v0oeivi1schlcz6",
+            "action": "message",
+            "text": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": null,
+            "revision": 1,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "collect",
+            "message": "Votre description exacte est conservée. Ma proposition de type reste à relire ; aucune caractéristique n’est ajoutée.",
+            "question": {
+              "kind": "question",
+              "key": "target",
+              "title": "À qui votre offre s’adresse-t-elle ?",
+              "why": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+              "multiple": true,
+              "choices": [
+                {
+                  "id": "individuals",
+                  "label": "Des particuliers"
+                },
+                {
+                  "id": "businesses",
+                  "label": "Des professionnels"
+                },
+                {
+                  "id": "other",
+                  "label": "Autre / préciser"
+                }
+              ],
+              "allowFreeText": true,
+              "allowUnknown": true,
+              "currentAnswer": ""
+            },
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "services",
+                "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+                "productName": "",
+                "brandName": "",
+                "target": "",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "quote",
+                "contactModes": "quote,booking",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 1,
+            "projectRevision": null,
+            "requestId": "4rzbglbtsya9x45q",
+            "action": "explain"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": null,
+            "revision": 2,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "collect",
+            "message": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+            "question": {
+              "kind": "question",
+              "key": "target",
+              "title": "À qui votre offre s’adresse-t-elle ?",
+              "why": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+              "multiple": true,
+              "choices": [
+                {
+                  "id": "individuals",
+                  "label": "Des particuliers"
+                },
+                {
+                  "id": "businesses",
+                  "label": "Des professionnels"
+                },
+                {
+                  "id": "other",
+                  "label": "Autre / préciser"
+                }
+              ],
+              "allowFreeText": true,
+              "allowUnknown": true,
+              "currentAnswer": ""
+            },
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "services",
+                "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+                "productName": "",
+                "brandName": "",
+                "target": "",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "quote",
+                "contactModes": "quote,booking",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "À qui cette offre s’adresse-t-elle ?",
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 2,
+            "projectRevision": null,
+            "requestId": "q46yktax0lgr7foq",
+            "action": "answer",
+            "question": "target",
+            "choices": [
+              "businesses"
+            ],
+            "text": "Entreprises de la recette fictive"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": null,
+            "revision": 3,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "review",
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "services",
+                "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+                "productName": "",
+                "brandName": "",
+                "target": "Des professionnels ; Entreprises de la recette fictive",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "quote",
+                "contactModes": "quote,booking",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "Des professionnels ; Entreprises de la recette fictive",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Des professionnels ; Entreprises de la recette fictive",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 3,
+            "projectRevision": null,
+            "requestId": "dcl398z80kkazf6j",
+            "action": "edit-services",
+            "items": [
+              {
+                "name": "Rangements sur mesure",
+                "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui."
+              }
+            ]
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": null,
+            "revision": 4,
+            "projectRevision": null,
+            "mode": "local",
+            "progress": "review",
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": {
+              "available": true,
+              "endpoint": "/api/projects",
+              "method": "POST",
+              "format": "multipart",
+              "fields": {
+                "flow": "preparation",
+                "businessType": "services",
+                "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+                "productName": "",
+                "brandName": "",
+                "target": "Des professionnels ; Entreprises de la recette fictive",
+                "request": "",
+                "price": "",
+                "link": "",
+                "services": "[{\"name\":\"Rangements sur mesure\",\"description\":\"Dans le fourgon apporté par le client, périmètre étudié avec lui.\",\"source\":\"client\"}]",
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "quote",
+                "contactModes": "quote,booking",
+                "videos": "none"
+              },
+              "confirmationRequired": true
+            },
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "unavailable",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "Des professionnels ; Entreprises de la recette fictive",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [
+                {
+                  "name": "Rangements sur mesure",
+                  "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui.",
+                  "source": "client"
+                }
+              ],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Des professionnels ; Entreprises de la recette fictive",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 4,
+            "projectRevision": 2,
+            "requestId": "at3z8f9h4fmlp8v5",
+            "action": "edit",
+            "field": "target",
+            "value": "Cible corrigée sans nouvel appel"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": "eyohfvktssenlm1v",
+            "revision": 5,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [
+                {
+                  "name": "Rangements sur mesure",
+                  "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui.",
+                  "source": "client"
+                }
+              ],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": null,
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 5,
+            "projectRevision": 3,
+            "requestId": "l6hcx2rsc309wdg8",
+            "action": "message",
+            "text": "Crée mon site"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": "eyohfvktssenlm1v",
+            "revision": 6,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Cette action existe peut-être dans son onglet, mais elle n’est pas raccordée à la conversation du lot A. Aucune création ni publication n’a été lancée.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [
+                {
+                  "name": "Rangements sur mesure",
+                  "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui.",
+                  "source": "client"
+                }
+              ],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": {
+              "kind": "action",
+              "tool": "CREATE_SHOP",
+              "state": "unavailable",
+              "executed": false,
+              "message": "Cette action existe peut-être dans son onglet, mais elle n’est pas raccordée à la conversation du lot A. Aucune création ni publication n’a été lancée.",
+              "href": "/studio/eyohfvktssenlm1v/pilote"
+            },
+            "history": [],
+            "historyBefore": null
+          }
+        },
+        {
+          "request": {
+            "revision": 6,
+            "projectRevision": 3,
+            "requestId": "hka1g1xalbihi0e8",
+            "action": "prepare-action",
+            "tool": "understand-offer"
+          },
+          "response": {
+            "schema": "studio-conversation-1",
+            "id": "1i9rgwfrb7i14noj",
+            "projectId": "eyohfvktssenlm1v",
+            "revision": 7,
+            "projectRevision": 3,
+            "mode": "local",
+            "progress": "review",
+            "message": "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
+            "question": null,
+            "correctionFields": [
+              "description",
+              "target",
+              "offerName",
+              "brandName",
+              "constraints",
+              "services",
+              "customization",
+              "process",
+              "quote"
+            ],
+            "readOnlyReason": null,
+            "creation": null,
+            "tools": [
+              {
+                "id": "brief.update",
+                "state": "available",
+                "executionEnabled": true
+              },
+              {
+                "id": "understand-offer",
+                "state": "quote_only",
+                "executionEnabled": false
+              },
+              {
+                "id": "brand",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "logo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "theme",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "products",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "images",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "videos",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "seo",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "blog",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "ads",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "social",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "calendar",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "appointments",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "export",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "publish",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "delete",
+                "state": "not_connected",
+                "executionEnabled": false
+              },
+              {
+                "id": "purchase",
+                "state": "not_connected",
+                "executionEnabled": false
+              }
+            ],
+            "summary": {
+              "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+              "business": "services",
+              "businessSource": "local",
+              "target": "Cible corrigée sans nouvel appel",
+              "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "offerName": "",
+              "brandName": "",
+              "constraints": "",
+              "services": [
+                {
+                  "name": "Rangements sur mesure",
+                  "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui.",
+                  "source": "client"
+                }
+              ],
+              "contactModes": [
+                "quote",
+                "booking"
+              ],
+              "facts": [
+                {
+                  "key": "conversation.goals",
+                  "label": "Que souhaitez-vous obtenir en priorité ?",
+                  "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+                  "status": "confirmed",
+                  "source": "user"
+                },
+                {
+                  "key": "conversation.target",
+                  "label": "À qui votre offre s’adresse-t-elle ?",
+                  "value": "Cible corrigée sans nouvel appel",
+                  "status": "confirmed",
+                  "source": "user"
+                }
+              ],
+              "unknown": [
+                "Délais et frais de livraison",
+                "Conditions de retour"
+              ],
+              "referenceUrls": [],
+              "photoIds": [],
+              "approved": false,
+              "preparationStatus": "draft"
+            },
+            "action": {
+              "kind": "action",
+              "tool": "understand-offer",
+              "state": "unavailable",
+              "executed": false,
+              "message": "Fournisseur texte/vision indisponible. Étape en attente ; le brouillon et les choix restent conservés. Aucun résultat local ne remplace la livraison API.",
+              "href": "/studio/eyohfvktssenlm1v/pilote"
+            },
+            "history": [],
+            "historyBefore": null
+          }
+        }
+      ],
+      "afterReconnection": {
+        "schema": "studio-conversation-1",
+        "id": "1i9rgwfrb7i14noj",
+        "projectId": "eyohfvktssenlm1v",
+        "revision": 5,
+        "projectRevision": 3,
+        "mode": "local",
+        "progress": "review",
+        "message": "Compréhension locale à relire. Vos réponses sont conservées ; aucune étape n’est validée automatiquement.",
+        "question": null,
+        "correctionFields": [
+          "description",
+          "target",
+          "offerName",
+          "brandName",
+          "constraints",
+          "services",
+          "customization",
+          "process",
+          "quote"
+        ],
+        "readOnlyReason": null,
+        "creation": null,
+        "tools": [
+          {
+            "id": "brief.update",
+            "state": "available",
+            "executionEnabled": true
+          },
+          {
+            "id": "understand-offer",
+            "state": "quote_only",
+            "executionEnabled": false
+          },
+          {
+            "id": "brand",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "logo",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "theme",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "products",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "images",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "videos",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "seo",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "blog",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "ads",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "social",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "calendar",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "appointments",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "export",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "publish",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "delete",
+            "state": "not_connected",
+            "executionEnabled": false
+          },
+          {
+            "id": "purchase",
+            "state": "not_connected",
+            "executionEnabled": false
+          }
+        ],
+        "summary": {
+          "description": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV",
+          "business": "services",
+          "businessSource": "local",
+          "target": "Cible corrigée sans nouvel appel",
+          "goals": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+          "offerName": "",
+          "brandName": "",
+          "constraints": "",
+          "services": [
+            {
+              "name": "Rangements sur mesure",
+              "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui.",
+              "source": "client"
+            }
+          ],
+          "contactModes": [
+            "quote",
+            "booking"
+          ],
+          "facts": [
+            {
+              "key": "conversation.goals",
+              "label": "Que souhaitez-vous obtenir en priorité ?",
+              "value": "Recevoir des demandes de devis ; Recevoir des rendez-vous",
+              "status": "confirmed",
+              "source": "user"
+            },
+            {
+              "key": "conversation.target",
+              "label": "À qui votre offre s’adresse-t-elle ?",
+              "value": "Cible corrigée sans nouvel appel",
+              "status": "confirmed",
+              "source": "user"
+            }
+          ],
+          "unknown": [
+            "Délais et frais de livraison",
+            "Conditions de retour"
+          ],
+          "referenceUrls": [],
+          "photoIds": [],
+          "approved": false,
+          "preparationStatus": "draft"
+        },
+        "action": null,
+        "history": [
+          {
+            "revision": 1,
+            "request": {
+              "revision": 0,
+              "requestId": "6v0oeivi1schlcz6",
+              "projectRevision": null,
+              "action": "message",
+              "text": "J'aménage des fourgons apportés par les clients et je veux des devis et RDV"
+            },
+            "message": "Votre description exacte est conservée. Ma proposition de type reste à relire ; aucune caractéristique n’est ajoutée.",
+            "at": 1793165661074
+          },
+          {
+            "revision": 2,
+            "request": {
+              "revision": 1,
+              "requestId": "4rzbglbtsya9x45q",
+              "projectRevision": null,
+              "action": "explain"
+            },
+            "message": "Je vous pose cette question sans supposer qui achètera ni inventer des besoins.",
+            "at": 1793165661078
+          },
+          {
+            "revision": 3,
+            "request": {
+              "revision": 2,
+              "requestId": "q46yktax0lgr7foq",
+              "projectRevision": null,
+              "action": "answer",
+              "question": "target",
+              "choices": [
+                "businesses"
+              ],
+              "text": "Entreprises de la recette fictive",
+              "unknown": false
+            },
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "at": 1793165661082
+          },
+          {
+            "revision": 4,
+            "request": {
+              "revision": 3,
+              "requestId": "dcl398z80kkazf6j",
+              "projectRevision": null,
+              "action": "edit-services",
+              "items": [
+                {
+                  "name": "Rangements sur mesure",
+                  "description": "Dans le fourgon apporté par le client, périmètre étudié avec lui."
+                }
+              ]
+            },
+            "message": "Réponse conservée. Vous pouvez la compléter, revenir en arrière ou demander pourquoi.",
+            "at": 1793165661087
+          },
+          {
+            "revision": 5,
+            "request": {
+              "revision": 4,
+              "requestId": "at3z8f9h4fmlp8v5",
+              "projectRevision": 2,
+              "action": "edit",
+              "field": "target",
+              "value": "Cible corrigée sans nouvel appel"
+            },
+            "message": "Correction enregistrée dans la même fiche ; les versions précédentes restent conservées.",
+            "at": 1793165661106
+          }
+        ],
+        "historyBefore": null
+      },
+      "foreignRead": 404,
+      "forgedExecution": 400,
+      "csrf": 403,
+      "staleRevision": 409,
+      "preparation": {
+        "revision": 3,
+        "stage": "brief",
+        "status": "draft",
+        "provenance": "local"
+      }
+    }
+  ],
+  "version": {
+    "commit": "f4999022089d27778c0961c5d86c5ad7b528f721",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "before": {
+    "calls": 0,
+    "jobs": 0,
+    "usage": 0,
+    "ledger": 3,
+    "wallet": {
+      "used": 0,
+      "reserved": 0,
+      "reservedTopup": 0
+    }
+  },
+  "foreignAdministrator": 404,
+  "after": {
+    "calls": 0,
+    "jobs": 0,
+    "usage": 0,
+    "ledger": 3,
+    "wallet": {
+      "used": 0,
+      "reserved": 0,
+      "reservedTopup": 0
+    }
+  },
+  "spendEur": 0,
+  "accountExport": 200,
+  "defaultOff": {
+    "conversation": 404,
+    "existingProjects": 200
+  },
+  "finishedAt": "2026-10-28T05:34:22.596Z",
+  "success": true
+}

@@ -1,0 +1,22 @@
+
+> ecom-studio-ia@1.0.0 test
+> vitest run tests/publication-input-guard.test.ts tests/ci-native-social-placement.test.ts
+
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-production
+
+
+ Test Files  2 passed (2)
+      Tests  5 passed (5)
+   Start at  12:57:10
+   Duration  4.09s (transform 53%, import 35%, tests 12%)
+
+  Transform  transforming modules took 2.09s · 53% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d11-production
+
+
+ Test Files  10 passed (10)
+      Tests  111 passed (111)
+   Start at  12:50:39
+   Duration  13.38s (tests 50%, import 35%, transform 15%)
+

@@ -12,10 +12,25 @@ concurrency:
 jobs:
   verifications:
     name: Typecheck, tests, Theme Check, build
+    needs: [tests, natif, image-docker]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
-    # Suite fusionnée (#194) : environ 35 min en temps normal, coupée deux fois à 45 min sur des machines lentes
-    # (tests 21 min, ou installation de ffmpeg 10 min), sans aucun échec. Limite relevée, aucun contrôle retiré.
-    timeout-minutes: 75
+    timeout-minutes: 5
+    steps:
+      - name: Verdict obligatoire de tous les contrôles
+        env:
+          TESTS_RESULT: ${{ needs.tests.result }}
+          NATIVE_RESULT: ${{ needs.natif.result }}
+          DOCKER_RESULT: ${{ needs.image-docker.result }}
+        run: |
+          test "$TESTS_RESULT" = success
+          test "$NATIVE_RESULT" = success
+          test "$DOCKER_RESULT" = success
+
+  tests:
+    name: Types et suite complète (réseau fournisseur interdit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
       APP_SECRET: ci-only-secret-not-used-in-production-000000
@@ -41,16 +56,366 @@ jobs:
       - name: Tests (réseau fournisseur interdit)
         run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npm test
 
+
+  natif:
+    name: Theme Check, build et recettes natives compilées
+    runs-on: ubuntu-latest
+    # #264/41098085980 : 100min cumulées (tests ~32min, Theme Check ~26min),
+    # annulation pendant une recette active. Même couverture, un seul build hôte.
+    timeout-minutes: 100
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      APP_SECRET: ci-only-secret-not-used-in-production-000000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installation
+        run: npm ci
+
+      # ffmpeg encode les vidéos (déjà présent dans l'image Docker) : les tests de rendu vidéo en ont besoin.
+      - name: ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
       - name: "Shopify Theme Check (30 thèmes : FR, EN, multi-produit, niche, services FR et EN, ZIP client)"
         run: JOBS=4 scripts/verify-theme.sh
 
       - name: Build de production
         run: npm run build
 
+      # Lot A #209 : vraies routes du build, deux comptes fictifs et réseau extérieur interdit ; aucun worker.
+      - name: Conversation lot A sur le build compilé (sans fournisseur)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent209-build.ts
+
+      # Lot B #211 : SDK natif vers un faux serveur loopback, jamais une API fournisseur réelle.
+      - name: Dialogue IA lot B sur le build compilé (fournisseur HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts
+
+      - name: Navigateur de recette isolée
+        run: npx playwright install --with-deps chromium
+
+      - name: Interface conversationnelle sur le build compilé (fournisseur HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-F-proof --ui
+
+      - name: Conserver les preuves navigateur fictives, y compris en cas d’échec
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-F-${{ github.sha }}
+          path: /tmp/agent211-F-proof
+          if-no-files-found: ignore
+
+      - name: Rôles bornés lot C sur le build compilé (fournisseur HTTP simulé)
+        run: STUDIO_CONVERSATION_SPECIALISTS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-C-proof --specialists
+
+      - name: Outil natif de compréhension lot D sur le build compilé (fournisseur HTTP simulé)
+        run: STUDIO_CONVERSATION_SPECIALISTS=1 STUDIO_CONVERSATION_TOOLS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D-proof --specialists --tools --tools-ui
+
+      - name: Preuves de l’exécution depuis SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D1-${{ github.sha }}
+          path: /tmp/agent211-D-proof
+          if-no-files-found: ignore
+
+      - name: Retouche et annulation depuis SYNA sur le build compilé (fournisseur HTTP simulé)
+        run: STUDIO_CONVERSATION_SPECIALISTS=1 STUDIO_CONVERSATION_TOOLS=1 NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D2-proof --specialists --tools --theme-ui
+
+      - name: Preuves des retouches natives depuis SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D2-${{ github.sha }}
+          path: /tmp/agent211-D2-proof
+          if-no-files-found: ignore
+
+      - name: Composition native et textes acquis depuis SYNA, rendu et exports (HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E2-proof --composition-ui --original-ui
+
+      - name: Preuves de composition et limites des plateformes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-E2-${{ github.sha }}
+          path: /tmp/agent211-E2-proof
+          if-no-files-found: ignore
+
+      - name: Export natif depuis SYNA, téléchargement et reprise sans fournisseur réel
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D3-proof --exports-ui
+
+      - name: Preuves des exports natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D3-${{ github.sha }}
+          path: /tmp/agent211-D3-proof
+          if-no-files-found: ignore
+
+      - name: Captures natives, correction ciblée et recapture depuis SYNA
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-E3-proof --render-ui
+
+      - name: Preuves du rendu natif et de sa correction
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-E3-${{ github.sha }}
+          path: /tmp/agent211-E3-proof
+          if-no-files-found: ignore
+
       # Le build compilé peut différer du code source (empaquetage Next) : export Shopify par la vraie route du serveur
       # compilé, Theme Check réellement exécuté et 0 erreur exigée (#202). Base et démonstration fictives, aucune IA.
+      - name: Recherche native depuis SYNA (sources fictives préacquises, fournisseur HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D4-proof --research-ui
+
+      - name: Preuves de recherche native depuis SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-D4-sources-fictives
+          path: /tmp/agent211-D4-proof
+          if-no-files-found: warn
+
       - name: Export Shopify contrôlé sur le build compilé
         run: npx tsx scripts/export-shopify-build-check.ts
+
+      - name: Catalogue SYNA natif, brouillons, variantes, reprise, annulation et aperçu (IA HTTP simulée)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D8-proof --catalogue-ui
+
+      - name: Preuves du Catalogue SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D8-${{ github.sha }}
+          path: /tmp/agent211-D8-proof
+          if-no-files-found: ignore
+
+      - name: Images natives depuis SYNA, devis, bibliothèque et reprise (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9a-proof --images-ui
+
+      - name: Preuves des images natives de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D9a-${{ github.sha }}
+          path: /tmp/agent211-D9a-proof
+          if-no-files-found: ignore
+
+      - name: Retouches SYNA, source et style, versions et insertion annulable (HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9b-proof --retouches-ui
+
+      - name: Preuves des retouches natives de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D9b-${{ github.sha }}
+          path: /tmp/agent211-D9b-proof
+          if-no-files-found: ignore
+
+      - name: Logos SYNA, trois directions, reprise et réutilisation (HTTP simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D9c-proof --logos-ui
+
+      - name: Preuves des logos natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D9c-${{ github.sha }}
+          path: /tmp/agent211-D9c-proof
+          if-no-files-found: ignore
+
+      - name: Vidéos SYNA, montage natif, retouche et restauration (cognition HTTP simulée)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10a-proof --videos-ui
+
+      - name: Preuves des montages vidéo natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10a-${{ github.sha }}
+          path: /tmp/agent211-D10a-proof
+          if-no-files-found: warn
+
+      - name: Clips IA et voix SYNA depuis le Studio compilé (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10b2-proof --generated-videos-ui
+
+      - name: Preuves des clips IA natifs de SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10b2-${{ github.sha }}
+          path: /tmp/agent211-D10b2-proof
+          if-no-files-found: warn
+
+      - name: Correction vocale ciblée depuis SYNA compilé (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10c3-proof --voice-ui
+
+      - name: Preuves de la correction vocale ciblée
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10c3-${{ github.sha }}
+          path: /tmp/agent211-D10c3-proof
+          if-no-files-found: warn
+
+      - name: Reprise d’un plan depuis SYNA compilé (fournisseurs HTTP simulés)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D10c4-proof --clip-ui
+
+      - name: Preuves de la reprise ciblée du clip
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D10c4-${{ github.sha }}
+          path: /tmp/agent211-D10c4-proof
+          if-no-files-found: warn
+
+      - name: Brouillons et calendrier SYNA depuis le Studio compilé (cognition simulée, zéro fournisseur média)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11a-proof --social-ui
+
+      - name: Preuves de la préparation sociale native
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D11a-${{ github.sha }}
+          path: /tmp/agent211-D11a-proof
+          if-no-files-found: warn
+
+      - name: Visuel social depuis SYNA, devis borné et échec conservant les acquis (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-production --social-production-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves de la production sociale bornée
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-production-simulated
+          path: reports/ci-agent211-social-production
+          if-no-files-found: warn
+
+      - name: Campagne native depuis SYNA et édition manuelle (transport cognitif simulé)
+        run: NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$GITHUB_WORKSPACE/scripts/lot9/network-guard.mjs" npx tsx scripts/verify-agent211-build.ts /tmp/agent211-D11b-proof --campaign-ui
+
+      - name: Preuves des brouillons de campagne natifs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-D11b-${{ github.sha }}
+          path: /tmp/agent211-D11b-proof
+          if-no-files-found: ignore
+
+      - name: Visuel publicitaire natif depuis SYNA et refus sans rachat (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-campaign-visual --campaign-visual-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves des visuels publicitaires natifs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-campaign-visual-simulated
+          path: reports/ci-agent211-campaign-visual
+          if-no-files-found: warn
+
+      - name: Ratio social demandé conservé dans le Studio compilé (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-aspect --social-aspect-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves du ratio social natif
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-aspect-simulated
+          path: reports/ci-agent211-social-aspect
+          if-no-files-found: warn
+
+      - name: Acquis social après conflit et réemploi sans IA depuis le Studio compilé
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-social-reuse --social-reuse-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves du réemploi social sans achat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-social-reuse-simulated
+          path: reports/ci-agent211-social-reuse
+          if-no-files-found: warn
+
+      - name: Intégration SYNA, compteurs natifs et suivi panneau fermé (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-communication-integration --background-communication-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves de cohérence du Studio communication
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-communication-integration-simulated
+          path: reports/ci-agent211-communication-integration
+          if-no-files-found: warn
+
+      - name: Rédaction et retouche SYNA natives, Catalogue/variante/service, versions conservées (HTTP simulé)
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-content --content-ui
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+      - name: Preuves de rédaction native SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-native-content-simulated
+          path: reports/ci-agent211-native-content
+          if-no-files-found: warn
+
+      - name: Proposition de marque native depuis SYNA (simulation HTTP isolée)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-brand --brand-ui --brand-review --brand-correction
+      - name: Preuves de la proposition de marque SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-native-brand
+          path: reports/ci-agent211-native-brand
+          if-no-files-found: warn
+
+      - name: Brouillon Blog natif depuis SYNA, quota et suivi panneau fermé (HTTP simulé)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-native-blog --blog-ui
+      - name: Preuves du Blog natif SYNA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-native-blog
+          path: reports/ci-agent211-native-blog
+          if-no-files-found: warn
+
+      - name: Choix puis validation du logo natif depuis SYNA (HTTP simulé)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-logo-selection --logo-selection-ui
+      - name: Preuves du choix natif du logo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-logo-selection
+          path: reports/ci-agent211-logo-selection
+          if-no-files-found: warn
+      - name: Recette commune produit et service dans SYNA (HTTP simulé)
+        timeout-minutes: 8
+        env:
+          NODE_OPTIONS: --import=./scripts/lot9/network-guard.mjs
+        run: node --import tsx scripts/verify-agent211-build.ts reports/ci-agent211-closure --closure-ui
+      - name: Preuves du parcours commun
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent211-closure
+          path: reports/ci-agent211-closure
+          if-no-files-found: warn
 
   image-docker:
     name: Image Docker (construction et démarrage)

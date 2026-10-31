@@ -42,7 +42,7 @@ export function initialAuthorizationView(pid: string, deps = realInitialDeps()) 
   let available = false;
   try { sourceHash(pid); available = true; } catch { /* Still waiting for meaningful approvals. */ }
   const reason = c ? invalidReason(pid, c, deps) || c.reason || '' : '';
-  return { available, status: reason && c?.status !== 'cancelled' ? 'blocked' : c?.status ?? 'absent', reason, jobId: c?.jobId ?? null, validUntil: c?.validUntil ?? null, probableBudgetPct: c ? budgetPctOf(p.userId, c.probableMicro, pid) : null, maxBudgetPct: c ? budgetPctOf(p.userId, c.capMicro, pid) : null };
+  return { available, required: initialCreativeCount(pid), organicRequired: 10, adsRequired: initialCreativeCount(pid) - 10, status: reason && c?.status !== 'cancelled' ? 'blocked' : c?.status ?? 'absent', reason, jobId: c?.jobId ?? null, validUntil: c?.validUntil ?? null, probableBudgetPct: c ? budgetPctOf(p.userId, c.probableMicro, pid) : null, maxBudgetPct: c ? budgetPctOf(p.userId, c.capMicro, pid) : null };
 }
 export function quoteInitialAuthorization(pid: string, deps = realInitialDeps()) {
   const p = loadProject(pid), hash = sourceHash(pid), existing = read(pid);

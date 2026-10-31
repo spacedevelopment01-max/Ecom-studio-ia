@@ -1,0 +1,23 @@
+{
+  "head": "8eb15a6a1b6b9e70c6a4e933dcb62b4c5edb2938",
+  "run": 41162584267,
+  "conclusion": "failure",
+  "unitTests": {
+    "passed": 4380,
+    "skipped": 31
+  },
+  "docker": "success",
+  "themeCheck": "success",
+  "productionBuild": "success",
+  "legacyNativeRecipesThroughBlog": "success",
+  "failedStep": "Choix puis validation du logo natif depuis SYNA (HTTP simul\u00e9)",
+  "failedAt": "third_account_conversation_loading",
+  "firstTwoLogoSelectionsProved": true,
+  "artifactId": 13028544702,
+  "artifactSha256": "862553a741c5d80af7f1cd9b8cd629662d55fe2241f16c9dd5126dc96acf0fb4",
+  "observedServerError": "resource_not_found in Playwright route callback, unhandled rejection",
+  "exactHistoricalHttpInterleaving": "not_recorded",
+  "independentReproduction": "owner scope changes with browser emitter, legitimate resource rejected and foreign reference accepted under wrong scope",
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

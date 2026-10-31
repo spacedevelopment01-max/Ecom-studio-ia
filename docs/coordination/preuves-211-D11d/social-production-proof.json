@@ -1,0 +1,75 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "transport": "native SDK/HTTP loopback simulation",
+  "creativeQualityQualified": false,
+  "passed": true,
+  "postIds": [
+    "syna-c44e128167d8744d24c7d91f3186"
+  ],
+  "success": {
+    "delivered": true,
+    "sha256": "2855a737acbfa47f82ee5371c38fdfc881f60a9d4e3e4ee31cc9be6a0aa57ef8",
+    "downloadExact": true,
+    "newImageCalls": 1,
+    "clientApproved": false
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.95,
+    "newImageCalls": 1,
+    "automaticRetry": false
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "reloadNoCall": true,
+  "previousVersionPreserved": true,
+  "counts": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 0,
+    "videoVoiceCalls": 0,
+    "textHttpCalls": 8,
+    "imageHttpCalls": 2,
+    "tokenCounts": 8,
+    "calls": 10,
+    "usage": 9,
+    "simulatedMicro": 269283
+  },
+  "imageReferenceTransports": [
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "aklg234rclmus2p8",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "a6ed2b440158baf1c0fd8232e0493c38ae461e2aad8c77147f853f3f0785f604",
+      "wirePromptSha256": "dc7eda89fe0fe3a425871e4a92e5ec06a443b19767cade274fec7ddd055a01ef",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7107,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 200
+    },
+    {
+      "operation": "edit",
+      "hasReference": true,
+      "referenceProof": [
+        {
+          "assetId": "aklg234rclmus2p8",
+          "sha256": "aaac834d1312e5629a19f3952d73ebe81168de7e4e06eeba3a1a358ded20a8ec",
+          "bytes": 10494
+        }
+      ],
+      "promptSha256": "9066aa39220b23ff88823f666cda6a4a32f2928f925ec7b065ef52e4392e1c61",
+      "wirePromptSha256": "e7264394dc8eee7d0cfcec4c735e77027b9cffe9a6c9cdffe3e511a92a6213e8",
+      "multipartLineEndingsDecoded": true,
+      "promptBytes": 7029,
+      "requestRef": "68199b4ce3134fb8",
+      "simulatedResponseStatus": 503
+    }
+  ],
+  "providerAuthenticationTested": false
+}

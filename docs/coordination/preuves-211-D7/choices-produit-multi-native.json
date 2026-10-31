@@ -1,0 +1,1716 @@
+{
+  "initial": {
+    "schema": "studio-conversation-1",
+    "id": "3x20fldbzis0z4yp",
+    "projectId": "6klt3sif9q01rkr6",
+    "revision": 1,
+    "projectRevision": 1,
+    "mode": "ai",
+    "progress": "clarify",
+    "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+    "question": null,
+    "correctionFields": [],
+    "readOnlyReason": "Ce projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.",
+    "creation": null,
+    "tools": [
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "understand-offer",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "render",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "publish",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "delete",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "purchase",
+        "state": "not_connected",
+        "executionEnabled": false
+      }
+    ],
+    "summary": {
+      "description": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+      "business": null,
+      "businessSource": "unknown",
+      "target": "Public fictif de recette",
+      "goals": "",
+      "offerName": "Presse de reliure de recette",
+      "brandName": "",
+      "constraints": "Simulation explicite, aucune enquête réelle",
+      "services": [],
+      "contactModes": [],
+      "facts": [],
+      "unknown": [],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": true,
+      "preparationStatus": "approved"
+    },
+    "action": null,
+    "history": [
+      {
+        "revision": 1,
+        "request": {
+          "revision": 0,
+          "requestId": "1c596dfc-5383-4e31-8c74-d06b9e16cdde",
+          "projectRevision": 1,
+          "action": "compare-strategy-options"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228736857
+      }
+    ],
+    "historyBefore": null,
+    "intelligence": {
+      "available": true,
+      "state": "requires_quote",
+      "pendingJobId": null,
+      "reply": null,
+      "proposalId": null,
+      "sourceRevision": null,
+      "sourceProjectRevision": null,
+      "lastReceiptId": null,
+      "provenance": null,
+      "qualification": "real_provider_not_tested",
+      "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+    },
+    "strategyChoices": {
+      "schema": "strategy-comparisons-1",
+      "scope": "acquired_marketing_angles_only",
+      "available": true,
+      "nativeHref": "/studio/6klt3sif9q01rkr6/strategie",
+      "message": "Recherche acquise et analysée : les propositions peuvent être reprises sans nouvel appel.",
+      "active": {
+        "id": "ydvd1mlzbuhjriiu",
+        "projectId": "6klt3sif9q01rkr6",
+        "version": "30b8d77e6839c48464dc6543acd93a2088dd2c9523adf78b26ed0499b856e668",
+        "inputDigest": "15b88b5d9013a9a3dbc0ec6086a96d929bfb311144466d4407ede766e6b48f83",
+        "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+        "createdAt": 1793228736854,
+        "scope": "project",
+        "options": [
+          {
+            "id": "usage",
+            "title": "Choisir selon son trajet",
+            "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "situation": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "notPriority": "",
+            "tension": "Comprendre le rangement en déplacement avant de partir",
+            "motivation": "Comprendre le rangement en déplacement avant de partir",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Concret et pratique",
+            "messages": [
+              "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+            "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+            "examples": {
+              "hero": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+              "subtext": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "cta": "",
+              "advertisement": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "reassurance",
+            "title": "Comparer les informations disponibles",
+            "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "situation": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+            "notPriority": "",
+            "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+            "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Précis et documenté",
+            "messages": [
+              "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+            "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+            "examples": {
+              "hero": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+              "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+              "cta": "",
+              "advertisement": "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "expression",
+            "title": "Trouver sa place chez soi",
+            "audience": "Amateurs de décoration cherchant harmonie matières couleurs",
+            "situation": "Composer une présentation visuelle centrée sur les associations possibles. Reliure",
+            "notPriority": "",
+            "tension": "Imaginer une association personnelle sans engagement prématuré",
+            "motivation": "Imaginer une association personnelle sans engagement prématuré",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Une pièce à envisager dans votre univers — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Amateurs de décoration cherchant harmonie matières couleurs",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Évocateur et personnel",
+            "messages": [
+              "Une pièce à envisager dans votre univers — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Composer une présentation visuelle centrée sur les associations possibles",
+            "communicationChange": "Composer une présentation visuelle centrée sur les associations possibles",
+            "examples": {
+              "hero": "Une pièce à envisager dans votre univers — Presse de reliure de recette",
+              "subtext": "Composer une présentation visuelle centrée sur les associations possibles. Reliure",
+              "cta": "",
+              "advertisement": "Une pièce à envisager dans votre univers — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "discovery",
+            "title": "Découvrir progressivement cette catégorie",
+            "audience": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+            "situation": "Expliquer une notion différente par séquence pédagogique illustrée. Reliure",
+            "notPriority": "",
+            "tension": "Acquérir des repères simples dans un univers encore inconnu",
+            "motivation": "Acquérir des repères simples dans un univers encore inconnu",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Découvrir les repères pour commencer — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Pédagogique et progressif",
+            "messages": [
+              "Découvrir les repères pour commencer — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Expliquer une notion différente par séquence pédagogique illustrée",
+            "communicationChange": "Expliquer une notion différente par séquence pédagogique illustrée",
+            "examples": {
+              "hero": "Découvrir les repères pour commencer — Presse de reliure de recette",
+              "subtext": "Expliquer une notion différente par séquence pédagogique illustrée. Reliure",
+              "cta": "",
+              "advertisement": "Découvrir les repères pour commencer — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "generalist",
+            "title": "Présenter l’ensemble de votre offre",
+            "audience": "Visiteurs explorant librement catalogue prestations possibilités",
+            "situation": "Présenter une vue complète et factuelle de l’offre et de ses limites. Reliure",
+            "notPriority": "",
+            "tension": "Parcourir toutes les informations sans privilégier une motivation précise",
+            "motivation": "Parcourir toutes les informations sans privilégier une motivation précise",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Toutes les informations pour envisager cette offre — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Visiteurs explorant librement catalogue prestations possibilités",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Factuel et ouvert",
+            "messages": [
+              "Toutes les informations pour envisager cette offre — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+            "communicationChange": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+            "examples": {
+              "hero": "Toutes les informations pour envisager cette offre — Presse de reliure de recette",
+              "subtext": "Présenter une vue complète et factuelle de l’offre et de ses limites. Reliure",
+              "cta": "",
+              "advertisement": "Toutes les informations pour envisager cette offre — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          }
+        ],
+        "recommendation": {
+          "angleId": "usage",
+          "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+        },
+        "simulation": true,
+        "marketSourcesVerified": false,
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "isCurrent": true,
+        "preference": {
+          "preferred": null,
+          "rejected": []
+        }
+      },
+      "history": [
+        {
+          "id": "ydvd1mlzbuhjriiu",
+          "version": "30b8d77e6839c48464dc6543acd93a2088dd2c9523adf78b26ed0499b856e668",
+          "at": 1793228736854,
+          "scope": "project",
+          "optionIds": [
+            "usage",
+            "reassurance",
+            "expression",
+            "discovery",
+            "generalist"
+          ],
+          "isCurrent": true
+        }
+      ],
+      "decisions": [],
+      "cost": {
+        "comparisonPct": 0,
+        "preferencePct": 0,
+        "regeneration": false,
+        "advice": "separate_native_conversation_quote",
+        "activation": "not_authorized_by_discussion_preference"
+      },
+      "coverage": {
+        "logos": false,
+        "images": false,
+        "themes": false,
+        "blending": false,
+        "vision": false,
+        "realProviderTested": false
+      }
+    }
+  },
+  "comparison": {
+    "id": "y7fzfxd56fqk6g08",
+    "projectId": "6klt3sif9q01rkr6",
+    "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+    "inputDigest": "15b88b5d9013a9a3dbc0ec6086a96d929bfb311144466d4407ede766e6b48f83",
+    "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+    "createdAt": 1793228737575,
+    "scope": "project",
+    "options": [
+      {
+        "id": "usage",
+        "title": "Choisir selon son trajet",
+        "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+        "situation": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+        "notPriority": "",
+        "tension": "Comprendre le rangement en déplacement avant de partir",
+        "motivation": "Comprendre le rangement en déplacement avant de partir",
+        "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+        "promise": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+        "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+        "proofs": [],
+        "objections": [
+          {
+            "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+          }
+        ],
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "tone": "Concret et pratique",
+        "messages": [
+          "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+        ],
+        "exclusions": [],
+        "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+        "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+        "examples": {
+          "hero": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+          "subtext": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+          "cta": "",
+          "advertisement": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+        },
+        "source": "creative_hypothesis",
+        "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+        "sources": [
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 1",
+            "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+            "date": "2026-10-28T23:05:35.287Z",
+            "ref": "https://source-0.example.test/offre"
+          },
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 3",
+            "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+            "date": "2026-10-28T23:05:35.287Z",
+            "ref": "https://source-2.example.test/offre"
+          }
+        ]
+      },
+      {
+        "id": "reassurance",
+        "title": "Comparer les informations disponibles",
+        "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+        "situation": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+        "notPriority": "",
+        "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+        "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+        "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+        "promise": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+        "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+        "proofs": [],
+        "objections": [
+          {
+            "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+          }
+        ],
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "tone": "Précis et documenté",
+        "messages": [
+          "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+        ],
+        "exclusions": [],
+        "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+        "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+        "examples": {
+          "hero": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+          "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+          "cta": "",
+          "advertisement": "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+        },
+        "source": "creative_hypothesis",
+        "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+        "sources": [
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 1",
+            "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+            "date": "2026-10-28T23:05:35.287Z",
+            "ref": "https://source-0.example.test/offre"
+          },
+          {
+            "kind": "dated_source",
+            "label": "Source fictive 3",
+            "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+            "date": "2026-10-28T23:05:35.287Z",
+            "ref": "https://source-2.example.test/offre"
+          }
+        ]
+      }
+    ],
+    "recommendation": {
+      "angleId": "usage",
+      "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+    },
+    "simulation": true,
+    "marketSourcesVerified": false,
+    "limits": [
+      "Maquette — non issue d’une recherche réelle"
+    ],
+    "isCurrent": true,
+    "preference": {
+      "preferred": null,
+      "rejected": []
+    }
+  },
+  "inspected": {
+    "native": {
+      "active": null,
+      "usedAngleIds": [],
+      "researchStatus": "draft"
+    },
+    "state": {
+      "activeId": "y7fzfxd56fqk6g08",
+      "comparisons": [
+        {
+          "id": "ydvd1mlzbuhjriiu",
+          "projectId": "6klt3sif9q01rkr6",
+          "version": "30b8d77e6839c48464dc6543acd93a2088dd2c9523adf78b26ed0499b856e668",
+          "inputDigest": "15b88b5d9013a9a3dbc0ec6086a96d929bfb311144466d4407ede766e6b48f83",
+          "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+          "createdAt": 1793228736854,
+          "scope": "project",
+          "options": [
+            {
+              "id": "usage",
+              "title": "Choisir selon son trajet",
+              "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+              "situation": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "notPriority": "",
+              "tension": "Comprendre le rangement en déplacement avant de partir",
+              "motivation": "Comprendre le rangement en déplacement avant de partir",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Concret et pratique",
+              "messages": [
+                "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+              "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+              "examples": {
+                "hero": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+                "subtext": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+                "cta": "",
+                "advertisement": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "reassurance",
+              "title": "Comparer les informations disponibles",
+              "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+              "situation": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+              "notPriority": "",
+              "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+              "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Précis et documenté",
+              "messages": [
+                "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+              "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+              "examples": {
+                "hero": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+                "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+                "cta": "",
+                "advertisement": "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "expression",
+              "title": "Trouver sa place chez soi",
+              "audience": "Amateurs de décoration cherchant harmonie matières couleurs",
+              "situation": "Composer une présentation visuelle centrée sur les associations possibles. Reliure",
+              "notPriority": "",
+              "tension": "Imaginer une association personnelle sans engagement prématuré",
+              "motivation": "Imaginer une association personnelle sans engagement prématuré",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Une pièce à envisager dans votre univers — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Amateurs de décoration cherchant harmonie matières couleurs",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Évocateur et personnel",
+              "messages": [
+                "Une pièce à envisager dans votre univers — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Composer une présentation visuelle centrée sur les associations possibles",
+              "communicationChange": "Composer une présentation visuelle centrée sur les associations possibles",
+              "examples": {
+                "hero": "Une pièce à envisager dans votre univers — Presse de reliure de recette",
+                "subtext": "Composer une présentation visuelle centrée sur les associations possibles. Reliure",
+                "cta": "",
+                "advertisement": "Une pièce à envisager dans votre univers — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "discovery",
+              "title": "Découvrir progressivement cette catégorie",
+              "audience": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+              "situation": "Expliquer une notion différente par séquence pédagogique illustrée. Reliure",
+              "notPriority": "",
+              "tension": "Acquérir des repères simples dans un univers encore inconnu",
+              "motivation": "Acquérir des repères simples dans un univers encore inconnu",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Découvrir les repères pour commencer — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Nouveaux curieux explorant objets méthodes vocabulaire découverte",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Pédagogique et progressif",
+              "messages": [
+                "Découvrir les repères pour commencer — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Expliquer une notion différente par séquence pédagogique illustrée",
+              "communicationChange": "Expliquer une notion différente par séquence pédagogique illustrée",
+              "examples": {
+                "hero": "Découvrir les repères pour commencer — Presse de reliure de recette",
+                "subtext": "Expliquer une notion différente par séquence pédagogique illustrée. Reliure",
+                "cta": "",
+                "advertisement": "Découvrir les repères pour commencer — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "generalist",
+              "title": "Présenter l’ensemble de votre offre",
+              "audience": "Visiteurs explorant librement catalogue prestations possibilités",
+              "situation": "Présenter une vue complète et factuelle de l’offre et de ses limites. Reliure",
+              "notPriority": "",
+              "tension": "Parcourir toutes les informations sans privilégier une motivation précise",
+              "motivation": "Parcourir toutes les informations sans privilégier une motivation précise",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Toutes les informations pour envisager cette offre — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Visiteurs explorant librement catalogue prestations possibilités",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Factuel et ouvert",
+              "messages": [
+                "Toutes les informations pour envisager cette offre — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+              "communicationChange": "Présenter une vue complète et factuelle de l’offre et de ses limites",
+              "examples": {
+                "hero": "Toutes les informations pour envisager cette offre — Presse de reliure de recette",
+                "subtext": "Présenter une vue complète et factuelle de l’offre et de ses limites. Reliure",
+                "cta": "",
+                "advertisement": "Toutes les informations pour envisager cette offre — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            }
+          ],
+          "recommendation": {
+            "angleId": "usage",
+            "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+          },
+          "simulation": true,
+          "marketSourcesVerified": false,
+          "limits": [
+            "Maquette — non issue d’une recherche réelle"
+          ]
+        },
+        {
+          "id": "y7fzfxd56fqk6g08",
+          "projectId": "6klt3sif9q01rkr6",
+          "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+          "inputDigest": "15b88b5d9013a9a3dbc0ec6086a96d929bfb311144466d4407ede766e6b48f83",
+          "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+          "createdAt": 1793228737575,
+          "scope": "project",
+          "options": [
+            {
+              "id": "usage",
+              "title": "Choisir selon son trajet",
+              "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+              "situation": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "notPriority": "",
+              "tension": "Comprendre le rangement en déplacement avant de partir",
+              "motivation": "Comprendre le rangement en déplacement avant de partir",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Concret et pratique",
+              "messages": [
+                "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+              "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+              "examples": {
+                "hero": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+                "subtext": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+                "cta": "",
+                "advertisement": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            },
+            {
+              "id": "reassurance",
+              "title": "Comparer les informations disponibles",
+              "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+              "situation": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+              "notPriority": "",
+              "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+              "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+              "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "promise": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+              "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+              "proofs": [],
+              "objections": [
+                {
+                  "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                  "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+                }
+              ],
+              "limits": [
+                "Maquette — non issue d’une recherche réelle"
+              ],
+              "tone": "Précis et documenté",
+              "messages": [
+                "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+              ],
+              "exclusions": [],
+              "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+              "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+              "examples": {
+                "hero": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+                "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+                "cta": "",
+                "advertisement": "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+              },
+              "source": "creative_hypothesis",
+              "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+              "sources": [
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 1",
+                  "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-0.example.test/offre"
+                },
+                {
+                  "kind": "dated_source",
+                  "label": "Source fictive 3",
+                  "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                  "date": "2026-10-28T23:05:35.287Z",
+                  "ref": "https://source-2.example.test/offre"
+                }
+              ]
+            }
+          ],
+          "recommendation": {
+            "angleId": "usage",
+            "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+          },
+          "simulation": true,
+          "marketSourcesVerified": false,
+          "limits": [
+            "Maquette — non issue d’une recherche réelle"
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "id": "kzg4cu12ux3vbm9y",
+          "at": 1793228738143,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": null,
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          }
+        },
+        {
+          "id": "d4sd6xb8rzf9bp4a",
+          "at": 1793228738700,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "reject",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "y7fzfxd56fqk6g08",
+                "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+                "angleId": "reassurance"
+              }
+            ]
+          }
+        },
+        {
+          "id": "2o8ft07e4wo1612r",
+          "at": 1793228739147,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "undo",
+          "angleId": null,
+          "reason": "Annulation de la dernière préférence de discussion.",
+          "reasonSource": "system_undo",
+          "before": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "y7fzfxd56fqk6g08",
+                "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+                "angleId": "reassurance"
+              }
+            ]
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "undoOf": "d4sd6xb8rzf9bp4a"
+        },
+        {
+          "id": "j58s77ggkenpt68q",
+          "at": 1793228742519,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues.",
+          "reasonSource": "provider_proposal_confirmed",
+          "before": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "proposalReceiptId": "sym1tsidf429izj2"
+        }
+      ]
+    }
+  },
+  "saved": {
+    "schema": "studio-conversation-1",
+    "id": "3x20fldbzis0z4yp",
+    "projectId": "6klt3sif9q01rkr6",
+    "revision": 8,
+    "projectRevision": 1,
+    "mode": "ai",
+    "progress": "clarify",
+    "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse.",
+    "question": null,
+    "correctionFields": [],
+    "readOnlyReason": "Ce projet a déjà une préparation engagée ou validée. Modifiez-le dans le parcours existant ; vos acquis restent conservés.",
+    "creation": null,
+    "tools": [
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "understand-offer",
+        "state": "unavailable",
+        "executionEnabled": false
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "render",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "publish",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "delete",
+        "state": "not_connected",
+        "executionEnabled": false
+      },
+      {
+        "id": "purchase",
+        "state": "not_connected",
+        "executionEnabled": false
+      }
+    ],
+    "summary": {
+      "description": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+      "business": null,
+      "businessSource": "unknown",
+      "target": "Public fictif de recette",
+      "goals": "",
+      "offerName": "Presse de reliure de recette",
+      "brandName": "",
+      "constraints": "Simulation explicite, aucune enquête réelle",
+      "services": [],
+      "contactModes": [],
+      "facts": [],
+      "unknown": [],
+      "referenceUrls": [],
+      "photoIds": [],
+      "approved": true,
+      "preparationStatus": "approved"
+    },
+    "action": null,
+    "history": [
+      {
+        "revision": 1,
+        "request": {
+          "revision": 0,
+          "requestId": "1c596dfc-5383-4e31-8c74-d06b9e16cdde",
+          "projectRevision": 1,
+          "action": "compare-strategy-options"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228736857
+      },
+      {
+        "revision": 2,
+        "request": {
+          "revision": 1,
+          "requestId": "3aba2fb8-6a5e-4a1b-9297-ac88234b3029",
+          "projectRevision": 1,
+          "action": "compare-strategy-options",
+          "angleIds": [
+            "usage",
+            "reassurance"
+          ],
+          "sourceComparisonId": "ydvd1mlzbuhjriiu",
+          "sourceVersion": "30b8d77e6839c48464dc6543acd93a2088dd2c9523adf78b26ed0499b856e668"
+        },
+        "message": "Angles acquis comparés, sans nouvelle recherche ni validation.",
+        "at": 1793228737578
+      },
+      {
+        "revision": 3,
+        "request": {
+          "revision": 2,
+          "requestId": "76665f20-2d61-4f2d-ba4e-1015175b31e9",
+          "projectRevision": 1,
+          "action": "decide-strategy-option",
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+          "angleId": "reassurance",
+          "decision": "prefer",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles."
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228738147
+      },
+      {
+        "revision": 4,
+        "request": {
+          "revision": 3,
+          "requestId": "0bf6eaf7-1996-40b1-86c9-860742f4647d",
+          "projectRevision": 1,
+          "action": "decide-strategy-option",
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+          "angleId": "reassurance",
+          "decision": "reject",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles."
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228738703
+      },
+      {
+        "revision": 5,
+        "request": {
+          "revision": 4,
+          "requestId": "be8b144d-fe7f-4671-88b1-b259d57c658e",
+          "projectRevision": 1,
+          "action": "undo-strategy-preference",
+          "decisionId": "d4sd6xb8rzf9bp4a"
+        },
+        "message": "Préférence de discussion restaurée ; stratégie active inchangée.",
+        "at": 1793228739149
+      },
+      {
+        "revision": 6,
+        "request": {
+          "revision": 5,
+          "requestId": "b234134e-440e-4398-8adb-af60a363462e",
+          "projectRevision": 1,
+          "action": "message",
+          "text": "Garde la deuxième proposition pour notre discussion, sans activer la stratégie."
+        },
+        "message": "Message exact conservé. Une réponse IA nécessite maintenant un devis et votre confirmation.",
+        "at": 1793228739686
+      },
+      {
+        "revision": 7,
+        "request": {
+          "action": "agent-reply",
+          "quoteId": "nyl6id0lkgsvd6py"
+        },
+        "message": "[Fournisseur simulé — recette isolée] La deuxième option insiste sur les informations disponibles. Je la propose pour cette discussion, avec les réserves acquises. Son efficacité commerciale reste non vérifiée.",
+        "at": 1793228740589
+      },
+      {
+        "revision": 8,
+        "request": {
+          "revision": 7,
+          "requestId": "8d3eaea2-3c50-4bc8-aecc-13a7c2483d42",
+          "projectRevision": 1,
+          "action": "accept-strategy-preference",
+          "receiptId": "sym1tsidf429izj2"
+        },
+        "message": "Préférence de discussion conservée avec sa raison. Aucun angle activé, quota consommé ou contenu régénéré.",
+        "at": 1793228742522
+      }
+    ],
+    "historyBefore": null,
+    "intelligence": {
+      "available": true,
+      "state": "stale",
+      "pendingJobId": null,
+      "reply": {
+        "message": "[Fournisseur simulé — recette isolée] La deuxième option insiste sur les informations disponibles. Je la propose pour cette discussion, avec les réserves acquises. Son efficacité commerciale reste non vérifiée.",
+        "status": "answer",
+        "business": null,
+        "businessEvidence": null,
+        "question": null,
+        "proposedChanges": [],
+        "knowledgeSourceIds": [],
+        "proposedTools": [],
+        "strategyChoice": {
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+          "angleId": "reassurance",
+          "sourceId": "turn.6",
+          "quote": "Garde la deuxième proposition pour notre discussion, sans activer la stratégie.",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues."
+        },
+        "actionsExecuted": false
+      },
+      "proposalId": null,
+      "sourceRevision": 7,
+      "sourceProjectRevision": 1,
+      "lastReceiptId": "sym1tsidf429izj2",
+      "provenance": "provider",
+      "qualification": "real_provider_not_tested",
+      "message": "Réflexion IA sur devis et confirmation. Aucun outil métier n’est exécuté par cette réponse."
+    },
+    "strategyChoices": {
+      "schema": "strategy-comparisons-1",
+      "scope": "acquired_marketing_angles_only",
+      "available": false,
+      "nativeHref": "/studio/6klt3sif9q01rkr6/strategie",
+      "message": "Le contexte a changé ou la recherche est ancienne. Les choix et résultats précédents sont conservés ; préparez une recherche adaptée avant tout nouvel angle.",
+      "active": {
+        "id": "y7fzfxd56fqk6g08",
+        "projectId": "6klt3sif9q01rkr6",
+        "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+        "inputDigest": "15b88b5d9013a9a3dbc0ec6086a96d929bfb311144466d4407ede766e6b48f83",
+        "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+        "createdAt": 1793228737575,
+        "scope": "project",
+        "options": [
+          {
+            "id": "usage",
+            "title": "Choisir selon son trajet",
+            "audience": "Cyclistes quotidiens avec sacoches et chemin urbain",
+            "situation": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "notPriority": "",
+            "tension": "Comprendre le rangement en déplacement avant de partir",
+            "motivation": "Comprendre le rangement en déplacement avant de partir",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Cyclistes quotidiens avec sacoches et chemin urbain",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Concret et pratique",
+            "messages": [
+              "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Montrer la préparation du trajet et les objets transportés",
+            "communicationChange": "Montrer la préparation du trajet et les objets transportés",
+            "examples": {
+              "hero": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette",
+              "subtext": "Montrer la préparation du trajet et les objets transportés. Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+              "cta": "",
+              "advertisement": "Préparer ses affaires avec des repères concrets — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          },
+          {
+            "id": "reassurance",
+            "title": "Comparer les informations disponibles",
+            "audience": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+            "situation": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+            "notPriority": "",
+            "tension": "Évaluer sereinement les éléments documentés avant toute décision",
+            "motivation": "Évaluer sereinement les éléments documentés avant toute décision",
+            "benefit": "Presse manuelle pour assembler des cahiers, sans promesse de résultat.",
+            "promise": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+            "rationale": "Hypothèse de fixture fondée sur les observations s0 et s2 pour Presse de reliure de recette, pas une conclusion réelle.",
+            "proofs": [],
+            "objections": [
+              {
+                "objection": "Acheteurs méthodiques examinant caractéristiques conditions limites",
+                "answer": "Presse manuelle pour assembler des cahiers, sans promesse de résultat."
+              }
+            ],
+            "limits": [
+              "Maquette — non issue d’une recherche réelle"
+            ],
+            "tone": "Précis et documenté",
+            "messages": [
+              "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+            ],
+            "exclusions": [],
+            "visualDirection": "Mettre les caractéristiques connues en regard des questions restantes",
+            "communicationChange": "Mettre les caractéristiques connues en regard des questions restantes",
+            "examples": {
+              "hero": "Voir les détails qui comptent pour choisir — Presse de reliure de recette",
+              "subtext": "Mettre les caractéristiques connues en regard des questions restantes. Reliure",
+              "cta": "",
+              "advertisement": "Voir les détails qui comptent pour choisir — Presse de reliure de recette"
+            },
+            "source": "creative_hypothesis",
+            "researchDigest": "c68c9842d2fbe5a8b0698e27b35acf3c3da7382d7ac005ebafae099f27858d33",
+            "sources": [
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 1",
+                "value": "Maquette documentaire A pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 0.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-0.example.test/offre"
+              },
+              {
+                "kind": "dated_source",
+                "label": "Source fictive 3",
+                "value": "Maquette documentaire C pour Presse de reliure de recette. Des situations, choix et limites sont décrits pour vérifier le raccord informatique uniquement. Source fictive distincte 2.",
+                "date": "2026-10-28T23:05:35.287Z",
+                "ref": "https://source-2.example.test/offre"
+              }
+            ]
+          }
+        ],
+        "recommendation": {
+          "angleId": "usage",
+          "reason": "Dans cette maquette, les observations s0 et s2 orientent la comparaison vers les usages. Aucune qualité marketing démontrée."
+        },
+        "simulation": true,
+        "marketSourcesVerified": false,
+        "limits": [
+          "Maquette — non issue d’une recherche réelle"
+        ],
+        "isCurrent": false,
+        "preference": {
+          "preferred": {
+            "comparisonId": "y7fzfxd56fqk6g08",
+            "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+            "angleId": "reassurance"
+          },
+          "rejected": []
+        }
+      },
+      "history": [
+        {
+          "id": "ydvd1mlzbuhjriiu",
+          "version": "30b8d77e6839c48464dc6543acd93a2088dd2c9523adf78b26ed0499b856e668",
+          "at": 1793228736854,
+          "scope": "project",
+          "optionIds": [
+            "usage",
+            "reassurance",
+            "expression",
+            "discovery",
+            "generalist"
+          ],
+          "isCurrent": false
+        },
+        {
+          "id": "y7fzfxd56fqk6g08",
+          "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+          "at": 1793228737575,
+          "scope": "project",
+          "optionIds": [
+            "usage",
+            "reassurance"
+          ],
+          "isCurrent": false
+        }
+      ],
+      "decisions": [
+        {
+          "id": "kzg4cu12ux3vbm9y",
+          "at": 1793228738143,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": null,
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          }
+        },
+        {
+          "id": "d4sd6xb8rzf9bp4a",
+          "at": 1793228738700,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "reject",
+          "angleId": "reassurance",
+          "reason": "Je préfère lire les informations documentées et garder les inconnues visibles.",
+          "reasonSource": "client",
+          "before": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "y7fzfxd56fqk6g08",
+                "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+                "angleId": "reassurance"
+              }
+            ]
+          }
+        },
+        {
+          "id": "2o8ft07e4wo1612r",
+          "at": 1793228739147,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "undo",
+          "angleId": null,
+          "reason": "Annulation de la dernière préférence de discussion.",
+          "reasonSource": "system_undo",
+          "before": {
+            "preferred": null,
+            "rejected": [
+              {
+                "comparisonId": "y7fzfxd56fqk6g08",
+                "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+                "angleId": "reassurance"
+              }
+            ]
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "undoOf": "d4sd6xb8rzf9bp4a"
+        },
+        {
+          "id": "j58s77ggkenpt68q",
+          "at": 1793228742519,
+          "comparisonId": "y7fzfxd56fqk6g08",
+          "kind": "prefer",
+          "angleId": "reassurance",
+          "reason": "[Simulation] Mettre en avant les informations documentées correspond à votre préférence exprimée, sans supprimer les inconnues.",
+          "reasonSource": "provider_proposal_confirmed",
+          "before": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "after": {
+            "preferred": {
+              "comparisonId": "y7fzfxd56fqk6g08",
+              "version": "4c03eaaa339b803516ad00572971ccacbf33bf609fd8f14b9ad5e91fbdfad137",
+              "angleId": "reassurance"
+            },
+            "rejected": []
+          },
+          "proposalReceiptId": "sym1tsidf429izj2"
+        }
+      ],
+      "cost": {
+        "comparisonPct": 0,
+        "preferencePct": 0,
+        "regeneration": false,
+        "advice": "separate_native_conversation_quote",
+        "activation": "not_authorized_by_discussion_preference"
+      },
+      "coverage": {
+        "logos": false,
+        "images": false,
+        "themes": false,
+        "blending": false,
+        "vision": false,
+        "realProviderTested": false
+      }
+    }
+  },
+  "simulation": true,
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

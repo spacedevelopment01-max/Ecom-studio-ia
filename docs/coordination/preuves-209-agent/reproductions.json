@@ -1,0 +1,35 @@
+{
+  "schema": "agent209-development-reproductions-1",
+  "data": "isolated-fictitious",
+  "before": "Uncommitted work in progress for lot A, not a defect attributed to main",
+  "cases": [
+    {
+      "name": "repair-is-service",
+      "test": "tests/conversation209-questions.test.ts",
+      "input": "Je répare les montres de mes clients",
+      "before": "products instead of services",
+      "after": "services",
+      "realProviderCalls": 0
+    },
+    {
+      "name": "restore-single-source",
+      "test": "tests/conversation209-core.test.ts > restauration native",
+      "before": "Native brief restored to Librairies but copied active decision still Papeteries; regression test failed",
+      "after": "No parallel decision copy; native preparation.current and versioned memory authoritative, test passed",
+      "realProviderCalls": 0
+    },
+    {
+      "name": "manual-price-preserved",
+      "test": "tests/conversation209-http.test.ts > un prix saisi à la main",
+      "before": "A project with manual price but no name/summary could be mistaken for empty",
+      "after": "Entire native product and acquired records checked; refuses linking/migration without modifying data",
+      "realProviderCalls": 0
+    }
+  ],
+  "finalCodeCommit": "f4999022089d27778c0961c5d86c5ad7b528f721",
+  "finalTargetedPassed": 76,
+  "finalFullSuitePassed": 3505,
+  "finalFullSuiteFailed": 0,
+  "controlRemoved": false,
+  "timeoutRaised": false
+}

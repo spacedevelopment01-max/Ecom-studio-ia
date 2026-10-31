@@ -13,6 +13,7 @@ import { api, Badge, Button, Card, cx, Empty, Field, Input, Modal, Select, Toggl
 import { useProject } from "./project-context";
 import { JobProgress, ROLE_LABEL, StatusBadge, useActive, type AssetView } from "./common";
 import { AssetViewer } from "./asset-viewer";
+import {useAgentFocus,useAgentUi} from './agent-ui-context';
 import { useCostConfirm } from "./cost-confirm";
 import { useT } from "../i18n";
 import { PlanRequired, useBudgetPct, useCreationLocked } from "../billing-client";
@@ -231,6 +232,8 @@ export default function TabImages() {
   const services = data?.business === "services";
   const [source, setSource] = useState<Source | "">("");
   const [viewer, setViewer] = useState<AssetView | null>(null);
+  const agentUi=useAgentUi()&&data?.conversationContext===true,{setFocus:setAgentFocus}=useAgentFocus();
+  useEffect(()=>{if(agentUi&&viewer)setAgentFocus({projectId:id,tab:'images',label:viewer.name,target:{kind:'asset',assetId:viewer.id,version:viewer.version}});},[agentUi,id,viewer,setAgentFocus]);
   const [dialog, setDialog] = useState<"search" | "create" | null>(null);
   const [themePreparation,setThemePreparation]=useState<ThemeImagePreparation|null>(null);
   useEffect(()=>{const q=new URLSearchParams(window.location.search),slot=q.get("themeSlot"),version=q.get("themeVersion");if(!slot||!version)return;let active=true;api<ThemeImagePreparation>(`/api/projects/${id}/theme/adaptation?slot=${encodeURIComponent(slot)}&version=${encodeURIComponent(version)}`).then(p=>{if(active){setThemePreparation(p);setDialog("create");}}).catch(e=>{if(active)toast("bad",(e as Error).message);});return()=>{active=false;};},[id]);
@@ -238,6 +241,7 @@ export default function TabImages() {
   const active = useActive(["image.v2", "image.single", "images.generate"]);
   const { list, reload, status, setStatus } = useImageList(id, BANK_IMAGE_ROLES.join(","));
   const follow = useFollowJob(reload);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:images-changed',changed);return()=>window.removeEventListener('studio:images-changed',changed);},[id,reload]);
   // État de l'IA d'images du projet et prix d'une image (affiché avant toute création payante).
   const { data: q } = useApi<ImagesQuote>(`/api/projects/${id}/images`);
   useEffect(() => {
@@ -269,18 +273,20 @@ export default function TabImages() {
     <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6" data-image-bank>
       <CopyFailureHistory/>
       {!locked && q && !q.ai && <ImageAiNotice reason={q.reason} />}
-      <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Card className="@container p-5">
+        <div className="flex min-w-0 flex-col gap-4 @[60rem]:flex-row @[60rem]:items-center @[60rem]:justify-between">
         <div className="min-w-0">
           <h2 className="font-display text-2xl font-semibold">{t("Banque d'images", "Image bank")}</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">{t("Des images neutres, sans texte, réutilisées partout : site, publications, publicités. Les publications avec texte se créent dans Publications.", "Neutral images, no text, reused everywhere: website, posts, ads. Posts with text are created in Posts.")}</p>
         </div>
-        <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+        <div className="flex min-w-0 flex-wrap gap-2 @[60rem]:shrink-0 @[60rem]:justify-end">
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
           <Button variant="ghost" icon={<Upload className="size-4" />} loading={uploading} onClick={() => fileRef.current?.click()} data-bank-upload>{t("Importer", "Upload")}</Button>
           <Button variant="secondary" icon={<Search className="size-4" />} disabled={locked} onClick={() => setDialog("search")} data-bank-search>{t("Chercher des photos libres", "Find royalty-free photos")}</Button>
           <Button icon={<Wand2 className="size-4" />} disabled={locked} onClick={() => setDialog("create")} data-bank-create>{t("Créer une image", "Create an image")}</Button>
         </div>
-        {locked && <div className="sm:basis-full"><PlanRequired what="images" /></div>}
+        </div>
+        {locked && <div className="mt-4"><PlanRequired what="images" /></div>}
       </Card>
       {active.map((j) => <JobProgress key={j.id} job={j} />)}
       <div>

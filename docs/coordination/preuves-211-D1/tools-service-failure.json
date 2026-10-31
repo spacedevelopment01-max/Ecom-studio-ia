@@ -1,0 +1,424 @@
+{
+  "provider": "simulated-local-http",
+  "realProviderCalls": 0,
+  "registry": {
+    "projectId": "o9hii386d3tzr4mv",
+    "revision": 6,
+    "tools": [
+      {
+        "id": "project.inspect",
+        "state": "available",
+        "executionEnabled": true,
+        "cost": "free",
+        "effect": "Lire les acquis et leur provenance, sans modification."
+      },
+      {
+        "id": "brief.update",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "cost": "free",
+        "commandEndpoint": "/api/studio-agent/conversations/xg2nl718kj4u8ld8",
+        "effect": "Corrections explicites par les commandes natives du brief, avec versions et verrous."
+      },
+      {
+        "id": "understand-offer",
+        "state": "quote_only",
+        "executionEnabled": false,
+        "connected": true,
+        "availability": "checked_on_quote",
+        "cost": "native_quote",
+        "effect": "Compréhension native de cette offre, après vérification des droits, fournisseur, tarifs et devis. Proposition à relire ; aucun passage à l’étape suivante."
+      },
+      {
+        "id": "research",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "brand",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "logo",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "images",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "videos",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "products",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "services",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "theme",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "seo",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "blog",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "ads",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "social",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "calendar",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "appointments",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "export",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "connections",
+        "state": "not_connected",
+        "executionEnabled": false,
+        "effect": "Module existant, non raccordé à ce premier incrément d’outils. Utilisez son onglet manuel."
+      },
+      {
+        "id": "publish",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "send",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "delete",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "purchase",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      },
+      {
+        "id": "payment",
+        "state": "unavailable",
+        "executionEnabled": false,
+        "effect": "Action sensible non raccordée ; exige un accord spécifique et son contrôle propre."
+      }
+    ],
+    "acquired": {
+      "jobId": "rigzv6e5bgjrppi1",
+      "result": {
+        "projectId": "o9hii386d3tzr4mv",
+        "revision": 4,
+        "step": "brief",
+        "provenance": "provider",
+        "fingerprint": "d79097ee0030b849",
+        "awaitingClientReview": true,
+        "content": {
+          "name": "",
+          "category": "Réparation d’instruments",
+          "summary": "Je répare les instruments apportés par les musiciens. Je souhaite des devis et des rendez-vous, sans vente d’instruments. Analyse mon offre, sans recherche ni création de marque.",
+          "facts": [],
+          "questions": [],
+          "contactModes": [
+            "form"
+          ]
+        }
+      }
+    },
+    "receipts": [
+      {
+        "id": "2sz4a5aj63orerjj",
+        "tool": "understand-offer",
+        "sourceReceiptId": null,
+        "state": "failed",
+        "delivered": false,
+        "clientApproved": false,
+        "result": null,
+        "job": {
+          "id": "hyzwp64vskwb8i1l",
+          "type": "project.prepare",
+          "label": "Compréhension de votre activité",
+          "status": "failed",
+          "progress": 0.05,
+          "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "error": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+          "attempts": 1,
+          "parentId": null,
+          "result": null,
+          "createdAt": 1793191068882,
+          "updatedAt": 1793191069542,
+          "finishedAt": 1793191069542,
+          "startedAt": 1793191068882,
+          "alive": false,
+          "idleMs": 1131
+        },
+        "href": "/studio/o9hii386d3tzr4mv/pilote",
+        "message": "Le reçu ne prouve pas encore la livraison du résultat demandé."
+      },
+      {
+        "id": "9yh0o6grhay2e4fs",
+        "tool": "understand-offer",
+        "sourceReceiptId": "krnj11psuu3tjig2",
+        "state": "review",
+        "delivered": true,
+        "clientApproved": false,
+        "result": {
+          "projectId": "o9hii386d3tzr4mv",
+          "revision": 4,
+          "step": "brief",
+          "provenance": "provider",
+          "fingerprint": "d79097ee0030b849",
+          "awaitingClientReview": true,
+          "content": {
+            "name": "",
+            "category": "Réparation d’instruments",
+            "summary": "Je répare les instruments apportés par les musiciens. Je souhaite des devis et des rendez-vous, sans vente d’instruments. Analyse mon offre, sans recherche ni création de marque.",
+            "facts": [],
+            "questions": [],
+            "contactModes": [
+              "form"
+            ]
+          }
+        },
+        "job": {
+          "id": "rigzv6e5bgjrppi1",
+          "type": "project.prepare",
+          "label": "Compréhension de votre activité",
+          "status": "done",
+          "progress": 1,
+          "message": "Terminé",
+          "error": null,
+          "attempts": 1,
+          "parentId": null,
+          "result": {
+            "revision": 4,
+            "step": "brief",
+            "action": "analyze",
+            "ready": false,
+            "simulation": false
+          },
+          "createdAt": 1793191064516,
+          "updatedAt": 1793191064840,
+          "finishedAt": 1793191064840,
+          "startedAt": 1793191064516,
+          "alive": false,
+          "idleMs": 5834
+        },
+        "href": "/studio/o9hii386d3tzr4mv/pilote",
+        "message": "Proposition native acquise, à relire ; aucune étape suivante lancée."
+      }
+    ],
+    "href": "/studio/o9hii386d3tzr4mv/pilote",
+    "actionsExecuted": false
+  },
+  "native": {
+    "state": {
+      "schemaVersion": 1,
+      "projectId": "o9hii386d3tzr4mv",
+      "revision": 6,
+      "createdAt": 1793191062264,
+      "updatedAt": 1793191069541,
+      "stages": {
+        "brief": {
+          "data": {
+            "input": {
+              "description": "Je répare les instruments apportés par les musiciens. Je souhaite des devis et des rendez-vous, sans vente d’instruments. Analyse mon offre, sans recherche ni création de marque.",
+              "offerName": "",
+              "brandName": "",
+              "target": "",
+              "constraints": "",
+              "business": "services",
+              "photoIds": [],
+              "referenceUrls": [],
+              "price": "",
+              "services": {
+                "services": [],
+                "area": "",
+                "address": "",
+                "phone": "",
+                "email": "",
+                "hours": "",
+                "bookingUrl": "",
+                "contactMode": "form"
+              }
+            },
+            "profile": {
+              "name": "",
+              "nameStatus": "unknown",
+              "category": "Réparation d’instruments",
+              "sector": "artisanat",
+              "summary": "Je répare les instruments apportés par les musiciens. Je souhaite des devis et des rendez-vous, sans vente d’instruments. Analyse mon offre, sans recherche ni création de marque.",
+              "facts": [],
+              "visual": {
+                "colors": []
+              },
+              "price": {
+                "amount": null,
+                "currency": "EUR",
+                "status": "unknown"
+              },
+              "variants": [],
+              "questions": [],
+              "claimsToAvoid": [
+                "Aucun avis, prix, certification ou résultat commercial à inventer."
+              ],
+              "sources": [],
+              "analyzedBy": "ai",
+              "summaryStatus": "provided"
+            },
+            "services": {
+              "services": [],
+              "area": "",
+              "address": "",
+              "phone": "",
+              "email": "",
+              "hours": "",
+              "bookingUrl": "",
+              "contactMode": "form",
+              "contactModes": [
+                "form"
+              ]
+            },
+            "missing": [
+              "À qui cette offre s’adresse-t-elle ?",
+              "Quelles prestations proposez-vous ? L’analyse n’a pas pu les identifier dans votre description : ajoutez-les dans « Vos prestations et votre contact »."
+            ],
+            "provenance": "provider",
+            "documentStamp": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "execution": {
+              "provider": "anthropic",
+              "model": "claude-opus-5-5",
+              "usageKey": "rigzv6e5bgjrppi1:brief",
+              "vision": false,
+              "at": 1793191064838,
+              "calls": 1,
+              "spentMicro": 7912,
+              "spentPct": 0.0184
+            },
+            "observations": [
+              "Je répare les instruments apportés par les musiciens. Je souhaite des devis et des rendez-vous, sans vente d’instruments. Analyse mon offre, sans recherche ni création de marque."
+            ]
+          },
+          "inputHash": "9ad3ce1cd289ba87",
+          "status": "draft",
+          "candidateId": "oiwtd182khiwweth"
+        }
+      },
+      "error": {
+        "step": "brief",
+        "jobId": "hyzwp64vskwb8i1l",
+        "revision": 6,
+        "message": "Résultat incertain chez Anthropic (503 {\"error\":{\"type\":\"api_error\",\"message\":\"Panne simulée, aucun appel fournisseur réel.\"}}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.",
+        "at": 1793191069541
+      }
+    },
+    "versions": [
+      {
+        "key": "preparation.version.1"
+      },
+      {
+        "key": "preparation.version.2"
+      },
+      {
+        "key": "preparation.version.3"
+      },
+      {
+        "key": "preparation.version.4"
+      },
+      {
+        "key": "preparation.version.5"
+      },
+      {
+        "key": "preparation.version.6"
+      }
+    ],
+    "calls": [
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "krnj11psuu3tjig2",
+        "usage_key": "krnj11psuu3tjig2:dialogue"
+      },
+      {
+        "status": "ok",
+        "cost": 7912,
+        "job_id": "rigzv6e5bgjrppi1",
+        "usage_key": "rigzv6e5bgjrppi1:brief"
+      },
+      {
+        "status": "error",
+        "cost": 0,
+        "job_id": "hyzwp64vskwb8i1l",
+        "usage_key": "hyzwp64vskwb8i1l:brief"
+      }
+    ],
+    "jobs": [
+      {
+        "type": "agent.reason",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "done"
+      },
+      {
+        "type": "project.prepare",
+        "status": "failed"
+      }
+    ],
+    "themes": 0
+  },
+  "noAutomaticRetry": true
+}

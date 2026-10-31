@@ -17,6 +17,8 @@ export type BrandBrief = {
   projectId: string;
   /** Nom EXACT (accents, espaces, casse saisie) : le seul texte autorisé dans le logo. */
   name: string;
+  /** Contexte serveur SYNA accepté : la réparation locale garde aussi la casse exacte du nom. */
+  exactNameCase?: true;
   nameStatus: string;
   /** Ligne métier autorisée sous le nom (ex. « Boulangerie artisanale ») : seulement si elle vient du client. */
   descriptor: string | null;

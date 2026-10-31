@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "twoDistinctGuardModules": true,
+      "exitCode": 1,
+      "downloaded": false,
+      "error": "LOT9_EXTERNAL_NETWORK_BLOCKED"
+    },
+    {
+      "twoDistinctGuardModules": false,
+      "exitCode": 0,
+      "downloaded": true,
+      "otherExternalHttpBlocked": true
+    }
+  ],
+  "applicationChanged": false,
+  "realProviderCalls": 0,
+  "realCostEur": 0
+}

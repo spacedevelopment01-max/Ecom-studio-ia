@@ -1,0 +1,612 @@
+{
+  "schema": "agent211-B-compiled-proof-1",
+  "data": "fictitious-isolated",
+  "provider": "local-http-simulation",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "worker": "native",
+  "qualification": "real_provider_not_tested",
+  "version": {
+    "commit": "412f60dd5d3ed079ac46bae61e4b65055f97879e",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "simulatedTotals": {
+    "providerHttpCalls": 3,
+    "calls": 3,
+    "usage": 3,
+    "simulatedMicro": 23736,
+    "tokenCounts": 3
+  },
+  "allSimulatedTotals": {
+    "providerHttpCalls": 14,
+    "calls": 17,
+    "usage": 14,
+    "simulatedMicro": 110768
+  },
+  "defaultOff": {
+    "intelligence": 404,
+    "manualProjects": 200
+  },
+  "ui": {
+    "schema": "agent211-F-browser-proof-1",
+    "realBrowser": true,
+    "provider": "simulated-local-http",
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "1-produit-entree.png",
+          "1-produit-manuel-conserve.png",
+          "1-produit-devis.png",
+          "1-produit-dialogue-lisible.png",
+          "1-produit-question.png",
+          "1-produit-question-360.png",
+          "1-produit-memoire.png",
+          "1-produit-correction-reouverte.png",
+          "1-produit-projet-repris.png",
+          "1-produit-autre-onglet-meme-memoire.png",
+          "1-produit-site-conseil-premiere-visite.png",
+          "1-produit-site-agent-replie.png",
+          "1-produit-site-outils-conserves.png",
+          "1-produit-site-agent-ouvert.png",
+          "1-produit-site-format-telephone.png",
+          "1-produit-site-version-restauree.png"
+        ],
+        "checks": {
+          "naturalEntry": true,
+          "manualPreserved": true,
+          "reopened": true,
+          "quoteBeforeCall": true,
+          "explicitConsent": true,
+          "why": true,
+          "multipleAndFree": true,
+          "answeredQuestionNotRepeated": true,
+          "unknownClearsActiveTarget": true,
+          "correctionPersists": true,
+          "sameMemoryAcrossTabs": true,
+          "siteAgentOpenAndClosed": true,
+          "previewWidths": {
+            "closed": 1136,
+            "open": 720
+          },
+          "siteVersionEditAndRestore": true,
+          "keyboardEscapeAndFocus": true,
+          "noOverflow360": true,
+          "jsErrors": [],
+          "realProviderCalls": 0,
+          "simulatedProviderCalls": 1,
+          "video": "videos/produit.webm"
+        }
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "2-service-entree.png",
+          "2-service-manuel-conserve.png",
+          "2-service-devis.png",
+          "2-service-dialogue-lisible.png",
+          "2-service-question.png",
+          "2-service-question-360.png",
+          "2-service-memoire.png",
+          "2-service-correction-reouverte.png",
+          "2-service-projet-repris.png",
+          "2-service-autre-onglet-meme-memoire.png",
+          "2-service-site-conseil-premiere-visite.png",
+          "2-service-site-agent-replie.png",
+          "2-service-site-outils-conserves.png",
+          "2-service-site-agent-ouvert.png",
+          "2-service-site-format-telephone.png",
+          "2-service-site-version-restauree.png"
+        ],
+        "checks": {
+          "naturalEntry": true,
+          "manualPreserved": true,
+          "reopened": true,
+          "quoteBeforeCall": true,
+          "explicitConsent": true,
+          "why": true,
+          "multipleAndFree": true,
+          "answeredQuestionNotRepeated": true,
+          "unknownClearsActiveTarget": true,
+          "correctionPersists": true,
+          "sameMemoryAcrossTabs": true,
+          "siteAgentOpenAndClosed": true,
+          "previewWidths": {
+            "closed": 390,
+            "open": 390
+          },
+          "siteVersionEditAndRestore": true,
+          "keyboardEscapeAndFocus": true,
+          "noOverflow360": true,
+          "jsErrors": [],
+          "realProviderCalls": 0,
+          "simulatedProviderCalls": 1,
+          "video": "videos/service.webm"
+        }
+      },
+      {
+        "scenario": "reponse-creation-perdue",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "3-reprise-apres-reponse-perdue-390.png"
+        ],
+        "checks": {
+          "creationSucceededBeforeNetworkLoss": true,
+          "realBrowserRecovery": true,
+          "sameDraftImported": true,
+          "noExtraProviderCall": true,
+          "realProviderCalls": 0,
+          "video": "videos/reprise.webm"
+        }
+      }
+    ]
+  },
+  "activeContextUi": {
+    "schema": "agent211-D5-browser-proof-1",
+    "cases": [
+      {
+        "scene": "produit-mono",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-mono-avant.png",
+          "produit-mono-section-designee.png",
+          "produit-mono-designation-retiree.png",
+          "produit-mono-proposition-exacte.png",
+          "produit-mono-accord-distinct.png",
+          "produit-mono-resultat-visible.png",
+          "produit-mono-annulation-visible.png",
+          "produit-mono-media-exact-sans-generation.png",
+          "produit-mono-reprise-reference.png",
+          "produit-mono-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "m8hfz4f8eitgltdv",
+            "template": "index",
+            "section": "hero_editorial_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "psc5yw0hgzdj8yh1",
+        "restoredVersion": "3sjcehpu4oeyvwlh",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "91z5hr6610clnejo",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "91z5hr6610clnejo",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "de72944c34a018c4"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/produit-mono.webm"
+      },
+      {
+        "scene": "produit-multi",
+        "viewport": {
+          "width": 1024,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-avant.png",
+          "produit-multi-section-designee.png",
+          "produit-multi-designation-retiree.png",
+          "produit-multi-proposition-exacte.png",
+          "produit-multi-accord-distinct.png",
+          "produit-multi-resultat-visible.png",
+          "produit-multi-annulation-visible.png",
+          "produit-multi-media-exact-sans-generation.png",
+          "produit-multi-reprise-reference.png",
+          "produit-multi-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "0i40nbc2ym1b4nsy",
+            "template": "index",
+            "section": "hero_editorial_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "bqjhoou86gjggpw5",
+        "restoredVersion": "sqpw4lvccuo33ize",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "pjwbhq9sjb4o2r4k",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "pjwbhq9sjb4o2r4k",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "1977c7c1d0020342"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/produit-multi.webm"
+      },
+      {
+        "scene": "service-inedit",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-inedit-avant.png",
+          "service-inedit-section-designee.png",
+          "service-inedit-designation-retiree.png",
+          "service-inedit-proposition-exacte.png",
+          "service-inedit-accord-distinct.png",
+          "service-inedit-resultat-visible.png",
+          "service-inedit-annulation-visible.png",
+          "service-inedit-media-exact-sans-generation.png",
+          "service-inedit-reprise-reference.png",
+          "service-inedit-autre-onglet-sans-cible-ancienne.png"
+        ],
+        "selection": {
+          "tab": "boutique",
+          "target": {
+            "kind": "theme-section",
+            "versionId": "hvfccd4vguuu52pj",
+            "template": "index",
+            "section": "hero_split_1"
+          }
+        },
+        "providerSawExactReference": true,
+        "referenceValidatedOnServer": true,
+        "selectionClearedOnNewVersion": true,
+        "clearRemovesPreviewHighlight": true,
+        "previewRemainsOpenWithSyna": true,
+        "appliedVersion": "ex02z22olcsvphcv",
+        "restoredVersion": "3n4154hdtzvpwipc",
+        "media": {
+          "state": "resolved",
+          "selection": {
+            "tab": "images",
+            "target": {
+              "kind": "asset",
+              "assetId": "xad4dsl0dst7d5ak",
+              "version": 1
+            }
+          },
+          "kind": "asset",
+          "label": "media-neutre-recette.webp",
+          "asset": {
+            "id": "xad4dsl0dst7d5ak",
+            "version": 1,
+            "name": "media-neutre-recette.webp",
+            "kind": "image",
+            "status": "ready",
+            "mime": "image/webp",
+            "width": 1024,
+            "height": 768
+          },
+          "contentRead": false,
+          "visualQuality": "not_reviewed",
+          "reference": "491a4585f3e6d1b5"
+        },
+        "reloaded": true,
+        "navigationDoesNotCarryPreviousTarget": true,
+        "jsErrors": [],
+        "calls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "context-videos/service-inedit.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "creativeQuality": "not_measured",
+    "realProviderCalls": 0
+  },
+  "strategyChoicesUi": {
+    "schema": "agent211-D7-choices-browser-1",
+    "cases": [
+      {
+        "scene": {
+          "id": "produit-mono",
+          "business": "products",
+          "width": 1440,
+          "storeType": "mono"
+        },
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-mono-cinq-options-acquises.png",
+          "produit-mono-deux-options-exactes.png",
+          "produit-mono-preference-et-raison.png",
+          "produit-mono-rejet-explicite.png",
+          "produit-mono-annulation-native.png",
+          "produit-mono-devis-distinct-du-choix.png",
+          "produit-mono-conseil-simule-source.png",
+          "produit-mono-confirmation-preferee-sans-activation.png",
+          "produit-mono-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/produit-mono.webm"
+      },
+      {
+        "scene": {
+          "id": "produit-multi",
+          "business": "products",
+          "width": 1024,
+          "storeType": "multi"
+        },
+        "viewport": {
+          "width": 1024,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-cinq-options-acquises.png",
+          "produit-multi-deux-options-exactes.png",
+          "produit-multi-preference-et-raison.png",
+          "produit-multi-rejet-explicite.png",
+          "produit-multi-annulation-native.png",
+          "produit-multi-devis-distinct-du-choix.png",
+          "produit-multi-conseil-simule-source.png",
+          "produit-multi-confirmation-preferee-sans-activation.png",
+          "produit-multi-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/produit-multi.webm"
+      },
+      {
+        "scene": {
+          "id": "service",
+          "business": "services",
+          "width": 390,
+          "storeType": "mono"
+        },
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-cinq-options-acquises.png",
+          "service-deux-options-exactes.png",
+          "service-preference-et-raison.png",
+          "service-rejet-explicite.png",
+          "service-annulation-native.png",
+          "service-devis-distinct-du-choix.png",
+          "service-conseil-simule-source.png",
+          "service-confirmation-preferee-sans-activation.png",
+          "service-reprise-historique-perime.png"
+        ],
+        "freeComparison": true,
+        "freePreference": true,
+        "fullSourcesDeliveredToSdk": true,
+        "explicitAdviceConsent": true,
+        "noNativeActivation": true,
+        "undoVerified": true,
+        "historyAfterReload": true,
+        "staleChoiceDisabled": true,
+        "foreign": 404,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "choices-videos/service.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "adviceQuality": "not_qualified",
+    "realProviderCalls": 0
+  },
+  "studioKnowledgeUi": {
+    "schema": "agent211-D6-knowledge-browser-1",
+    "cases": [
+      {
+        "scene": "produit-multi",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "captures": [
+          "produit-multi-etat-natif.png",
+          "produit-multi-question-exacte.png",
+          "produit-multi-devis-separe.png",
+          "produit-multi-reponse-sourcee.png",
+          "produit-multi-mode-original-non-disponible.png",
+          "produit-multi-operation-absente-honnete.png",
+          "produit-multi-meme-conversation-autre-onglet.png"
+        ],
+        "sourceStateDeliveredToSdk": true,
+        "providerUsabilityNotClaimed": true,
+        "noAutomaticBusinessAction": true,
+        "foreign": 404,
+        "sameConversationAcrossTabs": true,
+        "refreshWithoutProviderCall": true,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "knowledge-videos/produit-multi.webm"
+      },
+      {
+        "scene": "service",
+        "viewport": {
+          "width": 390,
+          "height": 900
+        },
+        "captures": [
+          "service-etat-natif.png",
+          "service-echec-historique-observe.png",
+          "service-question-exacte.png",
+          "service-devis-separe.png",
+          "service-reponse-sourcee.png",
+          "service-mode-original-non-disponible.png",
+          "service-operation-absente-honnete.png",
+          "service-meme-conversation-autre-onglet.png"
+        ],
+        "sourceStateDeliveredToSdk": true,
+        "providerUsabilityNotClaimed": true,
+        "noAutomaticBusinessAction": true,
+        "foreign": 404,
+        "sameConversationAcrossTabs": true,
+        "refreshWithoutProviderCall": true,
+        "simulatedCalls": 1,
+        "simulatedMicro": 7912,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "jsErrors": [],
+        "video": "knowledge-videos/service.webm"
+      }
+    ],
+    "provider": "simulated-local-http",
+    "comprehensionQuality": "not_qualified",
+    "realProviderCalls": 0
+  },
+  "legacyContextUi": {
+    "manualSelectionPreserved": true,
+    "synaClosed": true,
+    "contextClosed": true,
+    "noAutomaticSynaOpening": true,
+    "newProviderCalls": 0
+  },
+  "contextFlagClosed": {
+    "manualSelectionPreserved": true,
+    "synaClosed": false,
+    "contextClosed": true,
+    "noAutomaticSynaOpening": true,
+    "newProviderCalls": 0
+  },
+  "failure": {
+    "status": "failed",
+    "progress": 0.15,
+    "conversationState": "failed",
+    "priorReplyPreserved": true,
+    "noAutomaticRetry": true
+  },
+  "accountExportIsolated": true,
+  "finishedAt": "2026-10-28T23:56:31.804Z",
+  "success": true,
+  "baselineCases": [
+    {
+      "business": "products",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    },
+    {
+      "business": "services",
+      "job": {
+        "status": "done",
+        "progress": 1
+      },
+      "reconnected": true,
+      "createdProjectWithoutAnalysis": true,
+      "csrf": 403,
+      "foreign": 404,
+      "forgedProvider": 400
+    }
+  ],
+  "completeLocalProofSha256": "92cbeaa0003289de966f22c610f59ab8062c4e251ee004a3a2a7ec0aa295fdb7"
+}

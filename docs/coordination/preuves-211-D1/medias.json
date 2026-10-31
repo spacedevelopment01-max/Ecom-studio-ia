@@ -1,0 +1,125 @@
+{
+  "count": 20,
+  "files": [
+    {
+      "path": "captures/produit-action-proposee.png",
+      "bytes": 232818,
+      "sha256": "f78a0a19ae30ac9583e70d343cfb27a6de9b1fe047058ab7528b9385ef5b4cb6",
+      "gitBlob": "b880589e6b142188fec4e61aec842ffa2d689584"
+    },
+    {
+      "path": "captures/produit-correction-en-echec-acquis-conserve.png",
+      "bytes": 229654,
+      "sha256": "453fe55acca19be2641114608cad30b433306c6d9429022d0123a5b08cec7547",
+      "gitBlob": "26fb0e081a7cd83eb70e1e0600a555a9fd72c709"
+    },
+    {
+      "path": "captures/produit-demande-exacte.png",
+      "bytes": 230815,
+      "sha256": "55eddb9773875ab89d1b9ef3b2161c5571ec145d5c0aba14ecd9365e6cff801b",
+      "gitBlob": "e98c9417e01cf71296f76afda58d7723707824f4"
+    },
+    {
+      "path": "captures/produit-devis-natif.png",
+      "bytes": 232775,
+      "sha256": "d84c3657550f217877ab47f6df1ba9ccedb8e3791654008d39623c72999c5c3c",
+      "gitBlob": "64754178edbf20f785f196f4a7996b4722c2f237"
+    },
+    {
+      "path": "captures/produit-meme-resultat-onglet-images.png",
+      "bytes": 232169,
+      "sha256": "7844509546d19b6b532dd2906eb533cbbb31f880e173184ec306522d03f67d62",
+      "gitBlob": "ad18537c5a4ebb3ae8cfe5e93778711bdc00d89e"
+    },
+    {
+      "path": "captures/produit-preparation-native.png",
+      "bytes": 154549,
+      "sha256": "81d29437ecb28c2d507b52a1d24d63c5556e7599777fb1599740b57bc297882c",
+      "gitBlob": "16088967ee18b3a5bf2be06930dbd148e64b4d0e"
+    },
+    {
+      "path": "captures/produit-reprise-nouvelle-session.png",
+      "bytes": 232165,
+      "sha256": "3bb3146a663e9c073b6fa401828d48a75b74d7dba90b0e0b2309714a87f9fde3",
+      "gitBlob": "ef7e69c395748dfb1f7d2225a5bc7d57e4571653"
+    },
+    {
+      "path": "captures/produit-resultat-360.png",
+      "bytes": 56880,
+      "sha256": "4f7fb9d7d1c0a034afa4ecd5c310ecd69f45d17cd0d5487f88541d1152c13d43",
+      "gitBlob": "ec890b5b9cbfe1e3d031284550bb9db4eaaca308"
+    },
+    {
+      "path": "captures/produit-resultat-enregistre.png",
+      "bytes": 210083,
+      "sha256": "de71bb69b16474437826c09fbe0b364a08692cadaa05b8ec0e992a07267e4ba0",
+      "gitBlob": "56bebeb6d9e7dcde815375a173b2f6cf01bcc62c"
+    },
+    {
+      "path": "captures/service-action-proposee.png",
+      "bytes": 56012,
+      "sha256": "a6282a32397510147bab9e710709e00d036db71ff05a3ddef8252b6858357fcc",
+      "gitBlob": "8f35f77c46c13c8789d87e78c479b12403380856"
+    },
+    {
+      "path": "captures/service-correction-en-echec-acquis-conserve.png",
+      "bytes": 59135,
+      "sha256": "08e7c2a9e3b5eb81c050f7f1a25aca55ea3f9af671faadb907fd65ffc8ea68f1",
+      "gitBlob": "e4fab5c6fe63e600cb8b78cfca723acbfe0ca602"
+    },
+    {
+      "path": "captures/service-demande-exacte.png",
+      "bytes": 48695,
+      "sha256": "926b91a5db82b918e506efa8c11ab8bcc92869471f8887a368189d9b518fc529",
+      "gitBlob": "7b979f491afe6dd186bfefb261c962d5a581143d"
+    },
+    {
+      "path": "captures/service-devis-natif.png",
+      "bytes": 57552,
+      "sha256": "62920c961473fa294279dea2e4b222e08806d7637411700ce5f6e2b1a467a019",
+      "gitBlob": "566ec1ca22a2acc6ac26092c127f13c62287aac0"
+    },
+    {
+      "path": "captures/service-meme-resultat-onglet-images.png",
+      "bytes": 56479,
+      "sha256": "72dc33691ba4fe8832bedc16eacf1d9ff849d76253859a904cddca052c03abbe",
+      "gitBlob": "2a34eaa04cca8f17cf9c7570e56aeb0b1999d4a3"
+    },
+    {
+      "path": "captures/service-preparation-native.png",
+      "bytes": 76219,
+      "sha256": "5cb3fc051a31701b35458e44f87d89e590341e2ca34dcbd6ff8c501ae34ace89",
+      "gitBlob": "e8c252fc2a485211fbe27cbcc7739f157691553e"
+    },
+    {
+      "path": "captures/service-reprise-nouvelle-session.png",
+      "bytes": 56479,
+      "sha256": "72dc33691ba4fe8832bedc16eacf1d9ff849d76253859a904cddca052c03abbe",
+      "gitBlob": "2a34eaa04cca8f17cf9c7570e56aeb0b1999d4a3"
+    },
+    {
+      "path": "captures/service-resultat-360.png",
+      "bytes": 52400,
+      "sha256": "7a19783416b95bee4744a7e22ffb92cdcd82e6156787ff95b1bb3c9bce875979",
+      "gitBlob": "6112d32c1721744eea8f5b67efd46e735a4493f6"
+    },
+    {
+      "path": "captures/service-resultat-enregistre.png",
+      "bytes": 57477,
+      "sha256": "96835195f83863518ad9151f6ce7020ae2574b8da709c12cbf28bc39303b0e74",
+      "gitBlob": "dd0599a9b754f9759bb7931278db00c645db27c3"
+    },
+    {
+      "path": "videos/produit.mp4",
+      "bytes": 1696540,
+      "sha256": "0658e9f9c3dfc1b4d3393d3922d4f10623ba0f1aa9eab85bec8f9d39d3bb20a5",
+      "gitBlob": "2abfc5a1051dd54fe53577634b875baa8359877e"
+    },
+    {
+      "path": "videos/service.mp4",
+      "bytes": 665987,
+      "sha256": "54c62be849aa1a0e0fd2956e8460fea1839267ec1d6934b9b3a8eaa74c6a7885",
+      "gitBlob": "8e78f2a2fcd9b6c6dfc2e3109c3e1929fe22bf41"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "code": "f490fd136433af4e9bc4533c4fb0795bed27e1c6",
+  "version": {
+    "commit": "f490fd136433af4e9bc4533c4fb0795bed27e1c6",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "fullSuite": {
+    "passed": 3609,
+    "skipped": 45,
+    "filesPassed": 419,
+    "filesSkipped": 1,
+    "seconds": 723.84,
+    "command": "NODE_OPTIONS=--import=$PWD/scripts/lot9/network-guard.mjs npx vitest run",
+    "logSha256": "8c0d784eba91f15c568c2e330f49c4c20e0d93f5aec32569f4b39bdf900b7e1c",
+    "scope": "Backend and tests frozen during full suite; final UI presentation verified by targeted types and browser. Harness-only change after code commit 8eb6985."
+  },
+  "targeted": {
+    "passed": 66,
+    "files": 6,
+    "seconds": 11.43,
+    "logSha256": "046b21480cc654a5454438b919070843165ae675b100297b55583cfa558fa606"
+  },
+  "typecheck": "passed",
+  "build": "passed clean production",
+  "browser": {
+    "schema": "agent211-D1-browser-proof-1",
+    "provider": "simulated-local-http",
+    "realBrowser": true,
+    "realProviderCalls": 0,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "produit-demande-exacte.png",
+          "produit-action-proposee.png",
+          "produit-devis-natif.png",
+          "produit-resultat-enregistre.png",
+          "produit-preparation-native.png",
+          "produit-meme-resultat-onglet-images.png",
+          "produit-resultat-360.png",
+          "produit-reprise-nouvelle-session.png",
+          "produit-correction-en-echec-acquis-conserve.png"
+        ],
+        "checks": {
+          "freeRequestStoredExactly": true,
+          "aiSelection": true,
+          "separateNativeQuoteAndConsent": true,
+          "realNativeWorker": true,
+          "verifiedImmutableVersion": true,
+          "awaitingClientReview": true,
+          "reopenedAcrossTabsAndSession": true,
+          "noExtraCallOnReopen": true,
+          "noOverflow360": true,
+          "noNextStage": true,
+          "correctionExplicitlyQuoted": true,
+          "failedCorrectionNotDelivered": true,
+          "previousVersionPreserved": true,
+          "noAutomaticPaidRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "simulatedMicro": 15824,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "tools-videos/produit.webm"
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "service-demande-exacte.png",
+          "service-action-proposee.png",
+          "service-devis-natif.png",
+          "service-resultat-enregistre.png",
+          "service-preparation-native.png",
+          "service-meme-resultat-onglet-images.png",
+          "service-resultat-360.png",
+          "service-reprise-nouvelle-session.png",
+          "service-correction-en-echec-acquis-conserve.png"
+        ],
+        "checks": {
+          "freeRequestStoredExactly": true,
+          "aiSelection": true,
+          "separateNativeQuoteAndConsent": true,
+          "realNativeWorker": true,
+          "verifiedImmutableVersion": true,
+          "awaitingClientReview": true,
+          "reopenedAcrossTabsAndSession": true,
+          "noExtraCallOnReopen": true,
+          "noOverflow360": true,
+          "noNextStage": true,
+          "correctionExplicitlyQuoted": true,
+          "failedCorrectionNotDelivered": true,
+          "previousVersionPreserved": true,
+          "noAutomaticPaidRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "simulatedMicro": 15824,
+        "realProviderCalls": 0,
+        "realCostEur": 0,
+        "video": "tools-videos/service.webm"
+      }
+    ]
+  },
+  "api": {
+    "csrf": 403,
+    "foreign": 404,
+    "forged": 400,
+    "reconnect": true,
+    "reuseWithoutCall": true,
+    "doneWithoutProof": "unit tested, result_missing"
+  },
+  "simulationTotals": {
+    "providerHttpCalls": 12,
+    "calls": 12,
+    "usage": 10,
+    "simulatedMicro": 79120
+  },
+  "limits": [
+    "No real creative/model qualification",
+    "No real client data",
+    "No actual CMS installation",
+    "Chromium automated, not physical phone/Safari"
+  ]
+}

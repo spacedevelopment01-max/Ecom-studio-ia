@@ -1,0 +1,170 @@
+{
+  "realProviderCalls": 0,
+  "checks": {
+    "D15-receipt-race-red": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-theme-tools.test.ts",
+        "-t",
+        "lit un re\u00e7u coh\u00e9rent"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "3a47efbab8326a8aa1da0602c6292d167b629bc2",
+      "startedAt": "2026-10-30T20:58:12.049990+00:00",
+      "state": "failed",
+      "sources": {
+        "tests/conversation211-theme-tools.test.ts": "a7cb33a53a922301caddfd28d1d7b83c115c93183cab14741361741d9f084102"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D15-receipt-race-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 577308,
+      "processGroup": 577308,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T20:58:16.721358+00:00",
+      "logSha256": "bed13b04e536be846fbb2b72bf377882920a15fde9b3159eeb7dd8f5f1db879a",
+      "sourceUnchanged": true,
+      "finalHead": "3a47efbab8326a8aa1da0602c6292d167b629bc2"
+    },
+    "D15-cognitive-race-red": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-intelligence.test.ts",
+        "-t",
+        "ne perd pas le suivi"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "3a47efbab8326a8aa1da0602c6292d167b629bc2",
+      "startedAt": "2026-10-30T21:00:16.124167+00:00",
+      "state": "failed",
+      "sources": {
+        "src/lib/db.ts": "5c091a4c138253a6d429ceedbbb5844f46edc4a28ae3366085616c805316e4ca",
+        "src/lib/orchestrator/conversation/theme-tool-execution.ts": "2507e12d1292b97e4c1cb9dc84adf11c4e38a6bad62ebe5bcdc21b79cad7f926",
+        "tests/conversation211-intelligence.test.ts": "7056b85f9f62ed7c46d7bc5ba7fe198ef98190ea935094d8cf428b06b5e6ad01",
+        "tests/conversation211-theme-tools.test.ts": "a7cb33a53a922301caddfd28d1d7b83c115c93183cab14741361741d9f084102"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D15-cognitive-race-red.log",
+      "cleanCommitSnapshot": false,
+      "pid": 578580,
+      "processGroup": 578580,
+      "exitCode": 1,
+      "finishedAt": "2026-10-30T21:00:20.532564+00:00",
+      "logSha256": "74c684b36840da320c52ca9f5e76bcd89e6a6d830a9a71bb8c013a77027ba98c",
+      "sourceUnchanged": true,
+      "finalHead": "3a47efbab8326a8aa1da0602c6292d167b629bc2"
+    },
+    "D15-targeted-final-source": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/conversation211-theme-tools.test.ts",
+        "tests/conversation211-intelligence.test.ts",
+        "tests/composition211-syna.test.ts",
+        "tests/composition211-original.test.ts",
+        "tests/conversation211-renders.test.ts",
+        "tests/db-migration-race.test.ts",
+        "tests/conversation211-brand-review.test.ts",
+        "tests/conversation211-studio-knowledge.test.ts"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "3a47efbab8326a8aa1da0602c6292d167b629bc2",
+      "startedAt": "2026-10-30T21:01:43.501017+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/db.ts": "5c091a4c138253a6d429ceedbbb5844f46edc4a28ae3366085616c805316e4ca",
+        "src/lib/orchestrator/conversation/index.ts": "d1e16326224d6f582e4b40f1c03176ce001b55d840aa3eb29f29789a23e0b4a3",
+        "src/lib/orchestrator/conversation/theme-tool-execution.ts": "2507e12d1292b97e4c1cb9dc84adf11c4e38a6bad62ebe5bcdc21b79cad7f926",
+        "tests/conversation211-intelligence.test.ts": "7056b85f9f62ed7c46d7bc5ba7fe198ef98190ea935094d8cf428b06b5e6ad01",
+        "tests/conversation211-theme-tools.test.ts": "a7cb33a53a922301caddfd28d1d7b83c115c93183cab14741361741d9f084102"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D15-targeted-final-source.log",
+      "cleanCommitSnapshot": false,
+      "pid": 579660,
+      "processGroup": 579660,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:02:01.564101+00:00",
+      "logSha256": "da3306d6ab47ea8bbe25449ea78b7cdf0554fa3bd7e9554dcc58a4a63905920b",
+      "sourceUnchanged": true,
+      "finalHead": "3a47efbab8326a8aa1da0602c6292d167b629bc2"
+    },
+    "D15-types-final-source": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "3a47efbab8326a8aa1da0602c6292d167b629bc2",
+      "startedAt": "2026-10-30T21:01:43.502430+00:00",
+      "state": "passed",
+      "sources": {
+        "src/lib/db.ts": "5c091a4c138253a6d429ceedbbb5844f46edc4a28ae3366085616c805316e4ca",
+        "src/lib/orchestrator/conversation/index.ts": "d1e16326224d6f582e4b40f1c03176ce001b55d840aa3eb29f29789a23e0b4a3",
+        "src/lib/orchestrator/conversation/theme-tool-execution.ts": "2507e12d1292b97e4c1cb9dc84adf11c4e38a6bad62ebe5bcdc21b79cad7f926",
+        "tests/conversation211-intelligence.test.ts": "7056b85f9f62ed7c46d7bc5ba7fe198ef98190ea935094d8cf428b06b5e6ad01",
+        "tests/conversation211-theme-tools.test.ts": "a7cb33a53a922301caddfd28d1d7b83c115c93183cab14741361741d9f084102"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D15-types-final-source.log",
+      "cleanCommitSnapshot": false,
+      "pid": 579662,
+      "processGroup": 579662,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:01:48.618773+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceUnchanged": true,
+      "finalHead": "3a47efbab8326a8aa1da0602c6292d167b629bc2"
+    },
+    "D15-build": {
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "f561a0ba0121804088662ab0e3c0224370121396",
+      "startedAt": "2026-10-30T21:02:35.170602+00:00",
+      "state": "passed",
+      "sources": {},
+      "log": "/workspace/reviews/ecom-211-state/D15-build.log",
+      "cleanCommitSnapshot": true,
+      "pid": 580703,
+      "processGroup": 580703,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:03:39.048972+00:00",
+      "logSha256": "999cef4b8b13b76de40ae25ae104e66afb8b7542545ddf9baa323c106527fc6f",
+      "sourceUnchanged": true,
+      "finalHead": "f561a0ba0121804088662ab0e3c0224370121396"
+    },
+    "D15-browser-service": {
+      "command": [
+        "node",
+        "--import",
+        "tsx",
+        "scripts/verify-agent211-build.ts",
+        "/workspace/reviews/ecom-211-state/D15-browser-service-proof",
+        "--composition-ui",
+        "--undo-diagnostic-only"
+      ],
+      "cwd": "/workspace/reviews/ecom-211-lot-d11-reemploi",
+      "head": "f561a0ba0121804088662ab0e3c0224370121396",
+      "startedAt": "2026-10-30T21:04:00.000069+00:00",
+      "state": "passed",
+      "sources": {
+        "scripts/verify-agent211-composition-ui.ts": "0de54dcdc7b7321b3fedce49c8c12c4c5c94b73d01d628616a724ab3fd59ad7f"
+      },
+      "log": "/workspace/reviews/ecom-211-state/D15-browser-service.log",
+      "cleanCommitSnapshot": false,
+      "pid": 581138,
+      "processGroup": 581138,
+      "exitCode": 0,
+      "finishedAt": "2026-10-30T21:05:07.494252+00:00",
+      "logSha256": "7a334ca73bc44f72443feea8719f6e483a58dfb5f3f69f601be01b95be7baad9",
+      "sourceUnchanged": true,
+      "finalHead": "f561a0ba0121804088662ab0e3c0224370121396"
+    }
+  }
+}

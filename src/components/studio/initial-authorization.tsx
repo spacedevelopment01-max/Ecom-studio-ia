@@ -21,8 +21,8 @@ export function InitialAuthorization() {
     finally { setBusy(false); }
   }
   return <Card className="min-w-0 p-4" data-initial-authorization>
-    <h2 className="font-display text-lg">{t('Préparer automatiquement vos vingt créations', 'Automatically prepare your twenty creations')}</h2>
-    <p className="mt-2 text-sm">{t('10 publications utiles et 10 publicités indépendantes. Le lot démarre en arrière-plan après votre accord et la validation définitive de votre marque, sans autre confirmation de ce même devis. Aucun envoi sur les réseaux.', '10 useful posts and 10 independent ads. The set starts in the background after consent and final identity approval, without another confirmation of the same quote. No social sending.')}</p>
+    <h2 className="font-display text-lg">{t(`Préparer automatiquement vos ${a.required} créations`, `Automatically prepare your ${a.required} creations`)}</h2>
+    <p className="mt-2 text-sm">{t(`${a.organicRequired} publications utiles${a.adsRequired ? ` et ${a.adsRequired} publicités indépendantes` : " ; publicités non incluses dans ce forfait"}. Le lot démarre en arrière-plan après votre accord et la validation définitive de votre marque. Aucun envoi sur les réseaux.`, `${a.organicRequired} useful posts${a.adsRequired ? ` and ${a.adsRequired} independent ads` : "; ads are not included in this plan"}. The set starts in the background after consent and final identity approval. No social sending.`)}</p>
     {a.status === 'authorized' && <p className="mt-2 text-sm" role="status">{t('Accord enregistré. Démarrage automatique après validation définitive de l’identité ; vous pouvez continuer le studio.', 'Consent saved. Automatic start after final identity approval; you can continue using the studio.')}</p>}
     {a.status === 'consumed' && <p className="mt-2 text-sm" role="status">{t('Accord déjà utilisé : les résultats sont suivis ci-dessus. Les acquis ne seront pas refaits.', 'Consent already used: results are tracked above. Accepted work will not be regenerated.')}</p>}
     {a.reason && <p className="mt-2 text-sm" role="status">{a.reason}</p>}

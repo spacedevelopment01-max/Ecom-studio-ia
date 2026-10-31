@@ -1,0 +1,218 @@
+{
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "naturalSpeechQualified": false,
+  "creativeQualityQualified": false,
+  "nativeWorker": true,
+  "nativeFfmpeg": true,
+  "passed": true,
+  "firstCounts": {
+    "providerHttpCalls": 10,
+    "videoClipCalls": 2,
+    "videoVoiceCalls": 2,
+    "textHttpCalls": 6,
+    "imageHttpCalls": 0,
+    "tokenCounts": 6,
+    "calls": 10,
+    "usage": 10,
+    "simulatedMicro": 908583
+  },
+  "finishedCounts": {
+    "providerHttpCalls": 12,
+    "videoClipCalls": 2,
+    "videoVoiceCalls": 3,
+    "textHttpCalls": 7,
+    "imageHttpCalls": 0,
+    "tokenCounts": 7,
+    "calls": 12,
+    "usage": 12,
+    "simulatedMicro": 917218
+  },
+  "result": {
+    "id": "qmwg8tebueujzt8o",
+    "sourceReceiptId": "mz2atn8ldqum5f4b",
+    "state": "review",
+    "delivered": true,
+    "reused": false,
+    "docKey": "vid:c8a97914d2f364e9d2e4",
+    "versionId": "hympf3k9a8rmy259",
+    "job": {
+      "id": "umg4s89fjyu0yjik",
+      "type": "video.v2.render",
+      "label": "Correction vocale acceptée avec SYNA",
+      "status": "done",
+      "progress": 1,
+      "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+      "error": null,
+      "attempts": 1,
+      "parentId": null,
+      "result": {
+        "quoteId": "qmwg8tebueujzt8o",
+        "docKey": "vid:c8a97914d2f364e9d2e4",
+        "versionId": "hympf3k9a8rmy259",
+        "output": {
+          "assetId": "zdhm3rho3rv84odo",
+          "version": 1,
+          "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f"
+        },
+        "delivery": {
+          "state": "review",
+          "message": "Vidéo enregistrée et lisible, à vérifier dans la bibliothèque.",
+          "assetIds": [
+            "zdhm3rho3rv84odo"
+          ],
+          "expected": 1,
+          "delivered": 1,
+          "review": 1
+        }
+      },
+      "createdAt": 1793352776486,
+      "updatedAt": 1793352789729,
+      "finishedAt": 1793352789729,
+      "startedAt": 1793352776486,
+      "alive": false,
+      "idleMs": 278
+    },
+    "output": {
+      "assetId": "zdhm3rho3rv84odo",
+      "version": 1,
+      "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f",
+      "present": true,
+      "href": "/api/files/zdhm3rho3rv84odo",
+      "downloadHref": "/api/files/zdhm3rho3rv84odo?download=1"
+    },
+    "profile": {
+      "id": "openai:nova",
+      "speed": 0.94,
+      "lang": "fr"
+    },
+    "parts": [],
+    "newVoiceCalls": 1,
+    "isCurrent": true,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 2,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793353674065,
+      "httpAttempts": 1
+    },
+    "newClips": false,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "siteChanged": false,
+    "message": "Vidéo et voix conservées, à écouter et vérifier. Aucun clip racheté ni publication."
+  },
+  "decoded": {
+    "width": 1080,
+    "height": 1920,
+    "duration": 10,
+    "currentTime": 1.763534
+  },
+  "failed": {
+    "id": "kyfw91ayvhpntdzs",
+    "sourceReceiptId": "wbge1vkkrz92hekg",
+    "state": "failed",
+    "delivered": false,
+    "reused": false,
+    "docKey": "vid:c8a97914d2f364e9d2e4",
+    "versionId": null,
+    "job": {
+      "id": "x1bbsl4u41sgkaoj",
+      "type": "video.v2.render",
+      "label": "Correction vocale acceptée avec SYNA",
+      "status": "failed",
+      "progress": 0,
+      "message": "Résultat vocal incertain ; enveloppe retenue, aucune relance automatique. Faites vérifier cette tentative.",
+      "error": "Résultat vocal incertain ; enveloppe retenue, aucune relance automatique. Faites vérifier cette tentative.",
+      "attempts": 1,
+      "parentId": null,
+      "result": null,
+      "createdAt": 1793352798688,
+      "updatedAt": 1793352800113,
+      "finishedAt": 1793352800113,
+      "startedAt": 1793352798688,
+      "alive": false,
+      "idleMs": 163
+    },
+    "output": null,
+    "profile": {
+      "id": "openai:nova",
+      "speed": 0.94,
+      "lang": "fr"
+    },
+    "parts": [],
+    "newVoiceCalls": 1,
+    "isCurrent": false,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 2,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793353696658,
+      "httpAttempts": 1
+    },
+    "newClips": false,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "siteChanged": false,
+    "message": "Correction complète non prouvée. Versions et audios acquis conservés ; aucune relance automatique."
+  },
+  "reused": {
+    "id": "tespvawn1u0rm17x",
+    "sourceReceiptId": "rof8gpacgznaid0u",
+    "state": "review",
+    "delivered": true,
+    "reused": true,
+    "docKey": "vid:c8a97914d2f364e9d2e4",
+    "versionId": "hympf3k9a8rmy259",
+    "job": null,
+    "output": {
+      "assetId": "zdhm3rho3rv84odo",
+      "version": 1,
+      "sha256": "a0c3a265ee392beb115cfe470ee9be1b6ff2b035f982d96fe8e211a5878fc74f",
+      "present": true,
+      "href": "/api/files/zdhm3rho3rv84odo",
+      "downloadHref": "/api/files/zdhm3rho3rv84odo?download=1"
+    },
+    "profile": {
+      "id": "openai:nova",
+      "speed": 0.94,
+      "lang": "fr"
+    },
+    "parts": [],
+    "newVoiceCalls": 0,
+    "isCurrent": true,
+    "requestBounds": {
+      "maxCalls": 4,
+      "remainingCalls": 3,
+      "maxDepth": 1,
+      "maxRetries": 0,
+      "deadlineAt": 1793353694112,
+      "httpAttempts": 1
+    },
+    "newClips": false,
+    "clientApproved": false,
+    "creativeQualityQualified": false,
+    "siteChanged": false,
+    "message": "Vidéo et voix conservées, à écouter et vérifier. Aucun clip racheté ni publication."
+  },
+  "failureNoRetry": true,
+  "oldFilesKept": true,
+  "unchangedClipsAndOtherVoices": true,
+  "after": {
+    "providerHttpCalls": 15,
+    "videoClipCalls": 2,
+    "videoVoiceCalls": 4,
+    "textHttpCalls": 9,
+    "imageHttpCalls": 0,
+    "tokenCounts": 9,
+    "calls": 15,
+    "usage": 14,
+    "simulatedMicro": 933042
+  },
+  "foreign": 404,
+  "csrf": 403,
+  "errors": [],
+  "captures": 4
+}

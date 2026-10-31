@@ -164,7 +164,7 @@ export type ContentDoc = {
   schema: Record<string, unknown>[];
   /** Liens internes du document (existants / prévus). */
   links: PageRef[];
-  meta2: { marketingStrategy?: import("../strategy-consumption").StrategyStamp | null; source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null; contract?: { request: string; contextHash: string; contextVersion: string; target: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } };
+  meta2: { nativeBinding?: import("../image-v2/request-binding").ImageBinding; marketingStrategy?: import("../strategy-consumption").StrategyStamp | null; source: "engine" | "user" | "ai_local" | "ai"; by: "ai" | "local"; runId: string | null; createdFrom: string | null; contract?: { request: string; contextHash: string; contextVersion: string; target: string; checks: { checked: string[]; issues: string[]; unchecked: string[] } } };
 };
 
 // ------------------------------------------------------------------------------------------- qualité

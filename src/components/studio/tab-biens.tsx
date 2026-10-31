@@ -52,6 +52,8 @@ export default function TabBiens() {
   const [editing, setEditing] = useState<Bien | null>(null);
   const [adding, setAdding] = useState(false);
   const biens = data?.biens ?? [];
+  // Site hébergé par le studio (#234) : ce qui change ici n'apparaît en ligne qu'après une nouvelle publication.
+  const { data: site, reload: reloadSite } = useApi<{ live: { number: number } | null; freshness: { upToDate: boolean; changedBiens: number } }>(`/api/projects/${id}/site-publication`);
   const versionId = project?.theme?.versionId ?? null;
   const preview = (b: Bien) => (versionId ? `/preview/${id}/v/${versionId}/pages/bien/${b.handle}${["published", "sold", "rented"].includes(b.status) ? "" : `?es_bien=${b.id}`}` : null);
 
@@ -59,15 +61,21 @@ export default function TabBiens() {
     const ids = biens.map((x) => x.id); const i = ids.indexOf(b.id), j = i + dir;
     if (j < 0 || j >= ids.length) return;
     [ids[i], ids[j]] = [ids[j], ids[i]];
-    try { await api(`/api/projects/${id}/biens/ordre`, { body: { ids } }); reload(); } catch (e) { toast("bad", (e as Error).message); }
+    try { await api(`/api/projects/${id}/biens/ordre`, { body: { ids } }); reload(); reloadSite(); } catch (e) { toast("bad", (e as Error).message); }
   };
   const setStatus = async (b: Bien, status: Status) => {
-    try { await api(`/api/projects/${id}/biens/${b.id}`, { method: "PATCH", body: { status } }); toast("ok", t(`« ${b.data.title || b.ref} » : ${STATUS[status].fr.toLowerCase()}.`, `“${b.data.title || b.ref}”: ${STATUS[status].en.toLowerCase()}.`)); reload(); }
+    try { await api(`/api/projects/${id}/biens/${b.id}`, { method: "PATCH", body: { status } }); toast("ok", t(`« ${b.data.title || b.ref} » : ${STATUS[status].fr.toLowerCase()}.`, `“${b.data.title || b.ref}”: ${STATUS[status].en.toLowerCase()}.`)); reload(); reloadSite(); }
     catch (e) { toast("bad", (e as Error).message); }
   };
 
   return (
     <div className="mx-auto max-w-6xl">
+      {site?.live && !site.freshness.upToDate && (
+        <p className="mb-4 rounded-xl bg-warn-soft p-3 text-sm text-warn" data-biens-pending>
+          {t(`Votre site en ligne (publication ${site.live.number}) n'affiche pas encore ces changements${site.freshness.changedBiens ? ` (${site.freshness.changedBiens} bien(s) modifié(s))` : ""} : ils sont visibles dans l'aperçu. Publiez une nouvelle version depuis l'onglet Site, « Publier votre site ».`, `Your live site (publication ${site.live.number}) doesn't show these changes yet${site.freshness.changedBiens ? ` (${site.freshness.changedBiens} propert(ies) changed)` : ""}: they're visible in the preview. Publish a new version from the Website tab, “Publish your site”.`)}
+          {" "}<a className="underline" href={`/studio/${id}/boutique`}>{t("Aller à l'onglet Site", "Go to the Website tab")}</a>
+        </p>
+      )}
       <Card className="mb-6 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
@@ -103,6 +111,7 @@ export default function TabBiens() {
                       <Badge>{b.transaction === "vente" ? t("À vendre", "For sale") : t("À louer", "For rent")}</Badge>
                       <span className="text-xs text-muted">{b.ref}</span>
                       {b.data.demo && <Badge tone="warn">{t("Exemple", "Example")}</Badge>}
+                      {b.data.type !== "terrain" && (!b.data.dpe || !b.data.ges) && <span title={t("Obligatoires dans une annonce : le site hébergé ne se publiera pas sans eux.", "Required in a listing: the hosted site won't publish without them.")}><Badge tone="warn">{t("DPE / GES à renseigner", "DPE / GES missing")}</Badge></span>}
                     </div>
                     <p className="mt-1 truncate font-semibold">{b.data.headline || b.data.title || t("Sans titre", "Untitled")}</p>
                     <p className="text-sm text-muted">{[b.data.city, amount, b.data.surface ? `${b.data.surface} m²` : "", t(`${b.data.photos.length} photo(s)`, `${b.data.photos.length} photo(s)`)].filter(Boolean).join(" · ")}</p>
@@ -128,7 +137,7 @@ export default function TabBiens() {
       <p className="mt-4 text-xs text-muted">{t("Rien n'est jamais effacé : « Archiver » retire le bien de tout affichage et le garde ici. « Retirer » le cache du site sans le perdre.", "Nothing is ever deleted: “Archive” removes the property from every page and keeps it here. “Hide” takes it off the site without losing it.")}</p>
 
       <AddBien open={adding} onClose={() => setAdding(false)} onCreated={(b) => { setAdding(false); reload(); setEditing(b); }} />
-      {editing && <EditBien key={editing.id} bien={editing} onClose={() => setEditing(null)} onSaved={(b) => { reload(); setEditing(b); }} preview={preview(editing)} />}
+      {editing && <EditBien key={editing.id} bien={editing} onClose={() => setEditing(null)} onSaved={(b) => { reload(); reloadSite(); setEditing(b); }} preview={preview(editing)} />}
     </div>
   );
 }

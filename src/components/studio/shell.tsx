@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes } from "lucide-react";
+import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes, UtensilsCrossed, Hammer } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -12,8 +12,10 @@ import { TutorialButton, TutorialsMenuLink } from "./tutorial";
 import { AiUsageBar, PlanLink, QuotaBanner, useBilling } from "../billing-client";
 import type { BillingView } from "@/lib/plans";
 import { DeleteProjectButton } from "./delete-project";
-import { advancedOpen, navSpace, space, spacePurpose, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
+import { advancedOpen, navSpace, space, spacePurpose, spaceVisible, SPACE_GROUPS, type SpaceGroup, type SpaceId } from "@/lib/studio-nav";
 import { projectProgress } from "@/lib/project-progress";
+import { ConversationDock } from "./conversation-panel";
+import { useAgentPanel, useAgentUi } from "./agent-ui-context";
 
 export const TABS = [
   { id: "pilote", label: "Pilote", labelEn: "Pilot", icon: Compass },
@@ -23,6 +25,8 @@ export const TABS = [
   { id: "boutique", label: "Boutique", labelEn: "Store", icon: Store },
   { id: "catalogue", label: "Catalogue", labelEn: "Catalog", icon: Boxes },
   { id: "biens", label: "Biens", labelEn: "Properties", icon: KeyRound },
+  { id: "carte", label: "Carte", labelEn: "Menu", icon: UtensilsCrossed },
+  { id: "realisations", label: "Réalisations", labelEn: "Projects", icon: Hammer },
   { id: "rendez-vous", label: "Rendez-vous", labelEn: "Bookings", icon: CalendarCheck },
   { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },
   { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film },
@@ -36,9 +40,11 @@ export const TABS = [
 ] as const satisfies readonly { id: SpaceId; label: string; labelEn: string; icon: unknown }[];
 export type TabId = (typeof TABS)[number]["id"];
 /** Espaces d'un groupe du plan du studio (votre projet, créer, diffuser, outils avancés). */
-const tabsOf = (g: SpaceGroup, realEstate = false) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && (x.id !== "biens" || realEstate));
-/** L'espace « Biens » n'apparaît que pour un site immobilier (thème Maison & Horizon) ; son adresse reste accessible. */
-const isRealEstate = (direction?: string | null) => direction === "maison-horizon";
+/** Espaces d'un groupe du plan du studio, selon le métier du projet (voir `spaceVisible`). */
+type NavCtx = { business?: "products" | "services"; direction?: string | null; contactModes?: readonly string[] };
+const tabsOf = (g: SpaceGroup, ctx: NavCtx) => TABS.filter((x) => space(x.id)?.group === g && !space(x.id)?.within && spaceVisible(x.id, ctx));
+const navCtx = (d: { business?: "products" | "services"; theme?: { direction?: string | null } | null; services?: { contactMode?: string; contactModes?: string[] } | null } | null | undefined): NavCtx =>
+  ({ business: d?.business, direction: d?.theme?.direction, contactModes: [d?.services?.contactMode ?? "", ...(d?.services?.contactModes ?? [])].filter(Boolean) });
 /** Libellé d'un onglet dans la langue de l'interface ; pour un site de services, « Produit » devient « Activité » et « Boutique » « Site ». */
 export const tabLabel = (t: (typeof TABS)[number], lang: "fr" | "en", business?: "products" | "services") =>
   t.id === "produit" && business === "services" ? (lang === "en" ? "Business" : "Activité") : t.id === "boutique" && business === "services" ? (lang === "en" ? "Website" : "Site") : lang === "en" ? t.labelEn : t.label;
@@ -327,7 +333,7 @@ function QuickSearch({ projectId, business }: { projectId: string; business?: "p
 const MOBILE_MAIN: TabId[] = ["pilote", "images", "videos", "publications"];
 
 function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab: TabId; business?: "products" | "services"; badge: (id: TabId) => string | number | null }) {
-  const realEstate = isRealEstate(useProject().data?.theme?.direction);
+  const ctx = navCtx(useProject().data);
   const t = useT();
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
@@ -353,7 +359,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
               <div key={g.id} className="mb-3">
                 <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[.16em] text-muted">{t(...g.label)}</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {tabsOf(g.id, realEstate).map((x) => {
+                  {tabsOf(g.id, ctx).map((x) => {
                     const Icon = tabIcon(x, business);
                     const b = badge(x.id);
                     return (
@@ -402,6 +408,7 @@ function MobileNav({ projectId, tab, business, badge }: { projectId: string; tab
  */
 function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
   const t = useT();
+  const agentUi = useAgentUi();
   const { lang } = useLang();
   const { data } = useProject();
   const [hidden, setHidden] = useState(false);
@@ -420,7 +427,7 @@ function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
       localStorage.setItem("ecs-space-guide", "hidden");
     } catch {}
   };
-  return (
+  const content = (
     <div className="mx-auto mb-5 flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-line bg-paper-2/60 px-4 py-2.5 text-sm" data-space-guide>
       <p className="min-w-0 flex-1 basis-64 text-ink-2">{purpose}</p>
       {next && next.tab !== tab && (
@@ -434,9 +441,11 @@ function SpaceGuide({ projectId, tab }: { projectId: string; tab: TabId }) {
       </button>
     </div>
   );
+  return agentUi&&tab==='boutique'?<details className="mb-3 rounded-xl border border-line px-3 py-2 text-xs"><summary className="cursor-pointer font-semibold">{t('Repères et prochaine étape','Guidance and next step')}</summary>{content}</details>:content;
 }
 
 export function StudioShell({ projectId, children }: { projectId: string; children: ReactNode }) {
+  const agentPanel = useAgentPanel();
   const t = useT();
   const { lang } = useLang();
   const pathname = usePathname();
@@ -486,7 +495,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
       if (e.key === "[" && !e.altKey && !e.ctrlKey && !e.metaKey && !(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)))) return toggleFoldRef.current();
       if (!e.altKey) return;
       const n = Number(e.key);
-      const visible = TABS.filter((x) => !space(x.id)?.within && x.id !== "biens");
+      const visible = TABS.filter((x) => !space(x.id)?.within && x.id !== "biens" && x.id !== "carte" && x.id !== "realisations");
       if (n >= 1 && n <= Math.min(9, visible.length)) router.push(`/studio/${projectId}/${visible[n - 1].id}`);
     };
     window.addEventListener("keydown", onKey);
@@ -518,7 +527,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
     return null;
   };
   return (
-    <div className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_1fr]" : "lg:grid-cols-[272px_1fr]")}>
+    <div data-studio-workspace className={cx("min-h-dvh lg:grid lg:transition-[grid-template-columns] lg:duration-300", folded ? "lg:grid-cols-[76px_minmax(0,1fr)]" : "lg:grid-cols-[272px_minmax(0,1fr)]", agentPanel.open && "xl:pr-[416px]")}>
       {/* Barre latérale (ordinateur), repliable pour agrandir l'espace de travail */}
       <aside className={cx("sticky top-0 hidden h-dvh flex-col gap-5 overflow-hidden border-r border-line bg-paper py-5 lg:flex short:gap-3 short:py-3", folded ? "px-2.5" : "px-4")}>
         <div className={cx("flex items-center gap-2", folded ? "flex-col" : "justify-between px-2")}>
@@ -541,7 +550,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
           {SPACE_GROUPS.map((g) => {
             // Outils avancés : repliés tant que le client ne les ouvre pas (ou qu'il n'est pas dans l'un d'eux).
             const shut = !folded && g.folded && !advancedOpen(tab, showAdvanced);
-            const hidden = shut ? tabsOf(g.id, isRealEstate(data?.theme?.direction)).filter((x) => badge(x.id) !== null).length : 0;
+            const hidden = shut ? tabsOf(g.id, navCtx(data)).filter((x) => badge(x.id) !== null).length : 0;
             return (
             <div key={g.id} className="mb-4 short:mb-2" data-nav-group={g.id}>
               {folded ? <div className="mx-auto mb-2 h-px w-8 bg-line short:mb-1" aria-hidden /> : g.folded ? (
@@ -551,7 +560,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
                   <ChevronDown className={cx("size-3.5 transition", !shut && "rotate-180")} />
                 </button>
               ) : <p className="mb-1.5 px-3 text-[11px] font-medium uppercase tracking-[.16em] text-muted short:mb-0.5">{t(...g.label)}</p>}
-              {!shut && tabsOf(g.id, isRealEstate(data?.theme?.direction)).map((x) => {
+              {!shut && tabsOf(g.id, navCtx(data)).map((x) => {
                 const Icon = tabIcon(x, data?.business);
                 const b = badge(x.id);
                 const label = tabLabel(x, lang, data?.business);
@@ -584,9 +593,9 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
 
       <div className="min-w-0">
         <header className="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur-xl">
-          <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 sm:px-6">
+          <div className="flex min-h-16 flex-wrap items-center gap-2 px-4 py-2 sm:gap-3 sm:px-6">
             <Link href="/studio" className="shrink-0 lg:hidden" aria-label={t("Mes projets", "My projects")}><Logo compact /></Link>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-[min(10rem,100%)] flex-1">
               <h1 className="truncate font-display text-lg font-semibold leading-tight sm:text-xl">{(() => { const cur = TABS.find((x) => x.id === tab); return cur ? tabLabel(cur, lang, data?.business) : null; })()}</h1>
               {data ? <p className="truncate text-xs text-muted">{data.brand?.name ?? data.project.name}</p> : <span className="skeleton mt-1 block h-3 w-28 rounded" aria-hidden />}
             </div>
@@ -610,6 +619,7 @@ export function StudioShell({ projectId, children }: { projectId: string; childr
         </main>
       </div>
       <MobileNav projectId={projectId} tab={tab} business={data?.business} badge={badge} />
+      <ConversationDock projectId={projectId} />
     </div>
   );
 }

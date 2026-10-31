@@ -12,7 +12,7 @@ import type { User } from "./auth";
 import { redact } from "./redact";
 
 const excluded = new Set(["sessions","password_resets","admin_claims","oauth_states","pending_registrations","settings","error_log","worker_heartbeat","rate_events","asset_cache_entries","wallets","ledger","ai_reservations","ai_calls","usage_events","billing_mutations","stripe_event_claims","stripe_events","stripe_cancellations"]);
-const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|budgetMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
+const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|cap(?:_micro|Micro)|estimateMicro|budgetMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
 const quote = (name: string) => { if (!/^\w+$/.test(name)) throw new Error("Invalid schema identifier"); return `"${name}"`; };
 const columns = (table: string) => all<{name:string}>(`PRAGMA table_info(${quote(table)})`).map(c=>c.name);
 function withoutCredentials(value:unknown,depth=0):unknown{
@@ -28,7 +28,7 @@ function withoutCredentials(value:unknown,depth=0):unknown{
 export function personalDataInventory() {
   return all<{name:string}>("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").map(({name})=>{
     const fields=columns(name);
-    const scope=name==="support_messages"?"support_ticket":fields.includes("project_id")?"project":fields.includes("owner_user_id")?"subscription_owner":fields.includes("user_id")?"account":name==="users"?"identity":"manual_review";
+    const scope=name==="agent_request_jobs"?'agent_request':name==="support_messages"?"support_ticket":["agent_conversation_turns","agent_conversation_quotes","agent_request_bounds"].includes(name)?"conversation":fields.includes("project_id")?"project":fields.includes("owner_user_id")?"subscription_owner":fields.includes("user_id")?"account":name==="users"?"identity":"manual_review";
     return {table:name,fields,scope,exported:!excluded.has(name)&&scope!=="manual_review"};
   });
 }
@@ -36,6 +36,8 @@ export function personalDataInventory() {
 function whereOwned(table:string, fields:string[], userId:string):{sql:string;args:unknown[]} | null {
   if(table==="users")return{sql:"id=?",args:[userId]};
   if(table==="support_messages")return{sql:"ticket_id IN (SELECT id FROM support_tickets WHERE user_id=?)",args:[userId]};
+  if(table==='agent_request_jobs')return{sql:'bound_id IN (SELECT id FROM agent_request_bounds WHERE user_id=?)',args:[userId]};
+  if(["agent_conversation_turns","agent_conversation_quotes","agent_request_bounds"].includes(table))return{sql:"conversation_id IN (SELECT id FROM agent_conversations WHERE user_id=? AND (project_id IS NULL OR project_id IN (SELECT id FROM projects WHERE user_id=?)))",args:[userId,userId]};
   if(fields.includes("owner_user_id"))return{sql:"owner_user_id=?",args:[userId]};
   const project = "project_id IN (SELECT id FROM projects WHERE user_id=?)";
   if(fields.includes("project_id")&&fields.includes("user_id"))return{sql:`user_id=? AND (project_id IS NULL OR ${project})`,args:[userId,userId]};
@@ -75,7 +77,8 @@ export function requestAccountErasure(userId:string){
 export const ERASURE_DECISIONS=["financial_retention","support_retention","backup_expiry","external_provider_requests","unindexed_legacy_caches","responsible_operator"] as const;
 export function planAccountErasure(userId:string){
   if(!one("SELECT 1 FROM users WHERE id=?",userId))throw new HttpError(404,"Compte introuvable / Account not found");
-  return{automaticEnabled:false,decisionsRequired:ERASURE_DECISIONS,projects:one<{n:number}>("SELECT COUNT(*) n FROM projects WHERE user_id=?",userId)!.n,media:one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId)!.n};
+  const sites=all<{name:string}>("SELECT name FROM sqlite_master WHERE type='table' AND name='site_live'").length?one<{n:number}>("SELECT COUNT(*) n FROM site_live WHERE project_id IN (SELECT id FROM projects WHERE user_id=?)",userId)!.n:0;
+  return{automaticEnabled:false,decisionsRequired:ERASURE_DECISIONS,hostedSites:sites,hostedSiteFilesIncluded:true,projects:one<{n:number}>("SELECT COUNT(*) n FROM projects WHERE user_id=?",userId)!.n,media:one<{n:number}>("SELECT COUNT(*) n FROM assets WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId)!.n};
 }
 
 export type FixtureErasurePolicy={financial:"retain";support:"retain";backups:"manual_pending";externalProviders:"manual_pending";legacyCaches:"manual_pending"};
@@ -88,6 +91,7 @@ export function eraseIsolatedAccountFixture(userId:string,policy:FixtureErasureP
   const assets=all<Asset>("SELECT a.* FROM assets a JOIN projects p ON p.id=a.project_id WHERE a.user_id=? AND p.user_id=?",userId,userId);
   const files=assets.flatMap(a=>[a.storage_key,a.thumb_key].filter((k):k is string=>!!k).map(k=>{if(!k.startsWith(`${userId}/${a.project_id}/`))throw new Error("Crossed storage reference refused");return storagePath(k);}));
   const cache=all<{cache_key:string}>("SELECT cache_key FROM asset_cache_entries WHERE user_id=? AND project_id IN (SELECT id FROM projects WHERE user_id=?)",userId,userId).map(c=>{if(!/^[0-9a-f]{40}\.[a-z0-9]+$/.test(c.cache_key))throw new Error("Invalid cache reference");return path.join(root,"cache","theme-assets",c.cache_key);});
+  const siteProjects=all<{id:string}>("SELECT id FROM projects WHERE user_id=?",userId).map(p=>p.id);
   tx(()=>{
     run("UPDATE jobs SET status='cancelled',locked_by=NULL,locked_until=NULL,payload='{}',result=NULL,checkpoint='{}',error=NULL,message='',finished_at=?,updated_at=? WHERE user_id=?",now(),now(),userId);
     for(const table of ["sessions","password_resets","admin_claims","oauth_states","connections"]){run(`DELETE FROM ${quote(table)} WHERE user_id=?`,userId);}
@@ -102,5 +106,8 @@ export function eraseIsolatedAccountFixture(userId:string,policy:FixtureErasureP
     run("UPDATE users SET email=?,name='Compte effacé — recette isolée',password_hash=?,role='client' WHERE id=?",`erased-${id()}@example.invalid`,sha256(randomToken(32)),userId);
   });
   for(const file of [...files,...cache]){try{fs.unlinkSync(file);}catch(e){if((e as NodeJS.ErrnoException).code!=="ENOENT")throw e;}}
-  return{status:"isolated_fixture_erased",originalsAndThumbnailsRemoved:files.length,indexedCachesRemoved:cache.length,automaticProductionErasure:false,retainedByFixturePolicy:["financial_records","support","pseudonymized_identity"],pending:["backups","external_providers","unindexed_legacy_caches"]};
+  // Sites publiés (#232) : leurs fichiers figés ne sont plus servis (lignes effacées ci-dessus) et sont supprimés ici.
+  const sitesDir=path.join(root,"sites");let sitesRemoved=0;
+  for(const pid of siteProjects){const dir=path.resolve(sitesDir,pid);if(!/^[A-Za-z0-9_-]{1,64}$/.test(pid)||path.dirname(dir)!==sitesDir)throw new Error("Crossed site reference refused");if(fs.existsSync(dir)){fs.rmSync(dir,{recursive:true,force:true});sitesRemoved++;}}
+  return{status:"isolated_fixture_erased",originalsAndThumbnailsRemoved:files.length,indexedCachesRemoved:cache.length,hostedSiteDirectoriesRemoved:sitesRemoved,automaticProductionErasure:false,retainedByFixturePolicy:["financial_records","support","pseudonymized_identity"],pending:["backups","external_providers","unindexed_legacy_caches"]};
 }

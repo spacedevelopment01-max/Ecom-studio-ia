@@ -48,3 +48,10 @@ export const budgetPctLabel = (micro: number, baseMicro: number | null | undefin
 
 /** Plafond saisi par le client en % de son budget → micro-euros (serveur et client). */
 export const pctToMicro = (pct: number, baseMicro: number | null | undefined) => (baseMicro && baseMicro > 0 ? Math.round((Math.max(0, pct) / 100) * baseMicro) : 0);
+
+/** Plafond lisible : arrondi supérieur, jamais inférieur au maximum réellement autorisé. */
+export function formatMaximumPct(pct:number|null,lang:'fr'|'en'):string {
+ if(pct==null||!Number.isFinite(pct))return '—';
+ const value=Math.ceil(Math.max(0,pct)*100)/100;
+ return value.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{maximumFractionDigits:2})+(lang==='fr'?'\u202f%':'%');
+}

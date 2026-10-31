@@ -1,0 +1,269 @@
+{
+  "videos": [
+    {
+      "file": "holdout-page.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "314"
+          }
+        ],
+        "format": {
+          "duration": "12.560000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "12.560000",
+            "nb_read_frames": "314"
+          }
+        ],
+        "format": {
+          "duration": "12.560000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "holdout.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "724"
+          }
+        ],
+        "format": {
+          "duration": "28.960000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "28.960000",
+            "nb_read_frames": "724"
+          }
+        ],
+        "format": {
+          "duration": "28.960000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "mono-page.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "469"
+          }
+        ],
+        "format": {
+          "duration": "18.760000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "18.760000",
+            "nb_read_frames": "469"
+          }
+        ],
+        "format": {
+          "duration": "18.760000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "mono.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "659"
+          }
+        ],
+        "format": {
+          "duration": "26.360000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "26.360000",
+            "nb_read_frames": "659"
+          }
+        ],
+        "format": {
+          "duration": "26.360000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "multi-page.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "401"
+          }
+        ],
+        "format": {
+          "duration": "16.040000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "16.040000",
+            "nb_read_frames": "401"
+          }
+        ],
+        "format": {
+          "duration": "16.040000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "multi.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "592"
+          }
+        ],
+        "format": {
+          "duration": "23.680000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "23.680000",
+            "nb_read_frames": "592"
+          }
+        ],
+        "format": {
+          "duration": "23.680000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "service-page.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "332"
+          }
+        ],
+        "format": {
+          "duration": "13.280000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "13.280000",
+            "nb_read_frames": "332"
+          }
+        ],
+        "format": {
+          "duration": "13.280000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    },
+    {
+      "file": "service.mp4",
+      "original": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "nb_read_frames": "637"
+          }
+        ],
+        "format": {
+          "duration": "25.480000"
+        }
+      },
+      "mp4": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "width": 1440,
+            "height": 960,
+            "duration": "25.480000",
+            "nb_read_frames": "637"
+          }
+        ],
+        "format": {
+          "duration": "25.480000"
+        }
+      },
+      "operation": "Transcodage seul ; toutes les images conservées, aucune coupe ni accélération."
+    }
+  ],
+  "frameInspection": "24 images réparties sur les huit vidéos effectivement ouvertes en trois planches ; mêmes étapes que les captures. Transcodages sans coupe ni accélération, compte de toutes les images et durée conservés."
+}

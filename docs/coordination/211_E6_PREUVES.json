@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "applicationCommit": "6aedfbd46b03b40ef13f2c614e7774a61c499c2e",
+  "harnessCommit": "7bd872c746bb3ded4444f75b7c1d4f27d4e20017",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "filmDurationSeconds": 9.52,
+  "proofs": {
+    "docs/coordination/211_LOT_E6_RESULTATS.md": {
+      "sha256": "1bab6f7637ade0b443db33fdaf942187acd5ab5faa4bb94025094d53a9370371",
+      "bytes": 9091
+    },
+    "docs/coordination/preuves-211-E6/01-devis-mobile.png": {
+      "sha256": "2b628ef0c5dec02c8f211d75c714a64378e04d245311f82c40d455380ba042cc",
+      "bytes": 83183
+    },
+    "docs/coordination/preuves-211-E6/02-prestation-mobile.png": {
+      "sha256": "1a5de5a5fa952284f329c1d84fab377022bcabe0ada0ae6081b779fd5aa3bca5",
+      "bytes": 65988
+    },
+    "docs/coordination/preuves-211-E6/03-document-natif-ordinateur.png": {
+      "sha256": "afa75926dda379125ac61c08fbb278604afef3fe8e2591cb0705aad5bbb3ab90",
+      "bytes": 169571
+    },
+    "docs/coordination/preuves-211-E6/browser-proof.json": {
+      "sha256": "f3c8ded7a7d7b395abe09b334b06769d1dc261703d739e1655dca7c568eee7fd",
+      "bytes": 3654
+    },
+    "docs/coordination/preuves-211-E6/checks.json": {
+      "sha256": "2a2d68e19a1d9e82c7b389accae59111da42a79968b5c3f595f6ae003a9bcccc",
+      "bytes": 12796
+    },
+    "docs/coordination/preuves-211-E6/redaction-native.mp4": {
+      "sha256": "917f7a0853c8823d46c5935f16a4ac180ffff08e67b9ef593412973ce668f868",
+      "bytes": 852475
+    }
+  }
+}

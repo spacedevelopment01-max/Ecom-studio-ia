@@ -1,0 +1,40 @@
+// Recette #232, site 1 (artisan sur devis, thème APLAT) : depuis l'onglet Site, vérification, blocage par la page légale
+// non rédigée, rédaction dans le studio, publication V1. Compte propriétaire fictif, ordinateur.
+import { browser, context, ids, login, open, save, shot, STUDIO, watch } from "./lib.mjs";
+const log = [];
+const b = await browser();
+const ctx = await context(b);
+const page = await ctx.newPage();
+watch(page, log);
+await login(page, "proprio@recette.invalid");
+await open(page, `${STUDIO}/studio/${ids.artisan}/boutique`);
+await page.waitForTimeout(3000);
+const close = page.getByRole("button", { name: /Fermer/ }); if (await close.count()) await close.first().click().catch(() => {});
+await shot(page, "s1-01-onglet-site");
+await page.locator("[data-open-site-publication]").click();
+await page.locator("[data-site-publication]").waitFor();
+await shot(page, "s1-02-fenetre-publier");
+await page.getByRole("button", { name: "Vérifier avant de publier" }).click();
+await page.locator("[data-publish-reasons], [data-publish-ready]").first().waitFor({ timeout: 60000 });
+const reasons = await page.locator("[data-publish-reasons] li").allInnerTexts();
+await page.locator("[data-publish-reasons], [data-publish-ready]").first().scrollIntoViewIfNeeded();
+await shot(page, "s1-03-blocage-page-legale");
+// Rédaction de la page légale dans le studio (texte fictif).
+const legal = page.locator('[data-policy="legal-notice"]');
+await legal.scrollIntoViewIfNeeded();
+await legal.getByRole("button", { name: "Rédiger" }).click();
+await legal.locator("textarea").fill("Mentions légales d'Atelier Clé de Fa (entreprise fictive de recette).\n\nÉditeur : Atelier Clé de Fa, 1 rue de l'Exemple, 69000 Lyon.\n\nHébergement : E-com Studio IA (prototype de recette, hébergeur à désigner avant toute mise en service).");
+await shot(page, "s1-04-redaction-page-legale");
+await legal.getByRole("button", { name: "Enregistrer" }).click();
+await page.waitForTimeout(1500);
+await page.getByRole("button", { name: "Vérifier avant de publier" }).click();
+await page.locator("[data-publish-ready]").waitFor({ timeout: 60000 });
+await page.getByRole("button", { name: "Publier la version actuelle" }).click();
+await page.locator("[data-site-live]").waitFor({ timeout: 120000 });
+await page.locator("[data-site-live]").scrollIntoViewIfNeeded();
+await shot(page, "s1-05-publie-v1");
+const live = await page.locator("[data-site-live]").innerText();
+const address = await page.locator("[data-site-address]").innerText();
+save("s1-publication", { reasonsAvant: reasons, enLigne: live, adresse: address, erreurs: log });
+console.log(JSON.stringify({ reasons, live, address, log }, null, 1));
+await b.close();

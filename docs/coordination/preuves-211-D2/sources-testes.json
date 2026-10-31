@@ -1,0 +1,97 @@
+{
+  "compiledCode": "974d2b9e6956a0a5ecde150c27e921488d964ca4",
+  "applicationCode": "8c1f288161a121a69488eb5cad4cb1a2cf18129e",
+  "harnessOnlyDifference": true,
+  "files": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "sha256": "6b9af803c2e3663122e7f1f3de38bf78be77b5aa44227d9682934bdf4582d712",
+      "gitBlob": "4dcd513a92e30e61a303d6d8f7ca692ef5fbd588"
+    },
+    {
+      "file": "scripts/verify-agent211-build.ts",
+      "sha256": "3d084bdab12d1b6fccb08d6d0bf8335a7a4ff372df35dd2eb21ccad05e908ec0",
+      "gitBlob": "fabd9800a2fe123c460c0a8de0e26b09c4c9ce10"
+    },
+    {
+      "file": "scripts/verify-agent211-theme-ui.ts",
+      "sha256": "d53268769c967d9106664343173a711a47e5d446ac3f68844c30ff2120ce7c67",
+      "gitBlob": "10b7b9e1dc63ebcbb66f6a5f456f420f6279d786"
+    },
+    {
+      "file": "src/app/api/studio-agent/conversations/[cid]/theme-tools/route.ts",
+      "sha256": "fd4332b14e37e2c1dccb309670f28d6a9408df17a84687cf748a23606fa63b70",
+      "gitBlob": "3e25d777a7dbec71bf1dcea923c6e4b93544358a"
+    },
+    {
+      "file": "src/components/studio/conversation-panel.tsx",
+      "sha256": "34dc33f6edc6eceda39f25b8b9b783672358cf4b05519f2e15ac902f75db0424",
+      "gitBlob": "ba1ac0ef79b36e3ec7ec2decd862ee8fe8440a7f"
+    },
+    {
+      "file": "src/components/studio/conversation-theme-tools.tsx",
+      "sha256": "644f055878c2ebc7effc20129c772320f069f07e64f2e94cb8a28b9446dd0d1c",
+      "gitBlob": "e6ec58fe8ba71cd4b0cafaa05e62feae78afc57e"
+    },
+    {
+      "file": "src/components/studio/conversation-tools.tsx",
+      "sha256": "74d053d048c15da540d78ee5b41a96b6ba5cb6a9d730f8d144bbb73b0dcc7b1b",
+      "gitBlob": "12d3ea30332fff648800a0484b181011f060604a"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/contract.ts",
+      "sha256": "46ac3e17b9bd4e0a4983b090172fdda8aa94f632dac26c2d6e01b6e21f3a7ce0",
+      "gitBlob": "cd72ab8fd1c5b90a9d704e012d01131186201624"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/index.ts",
+      "sha256": "eb23afbf30cf12804a7bc68274ca82bba0a87472c6fdfa9acd6e52860357f970",
+      "gitBlob": "e48a2697f0f3eaa00c541386c9c3ce485e43192a"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/intelligence-context.ts",
+      "sha256": "921acaf08800be66202c3e6fe29e554ca1c69ea70a0b0bc02d6d461b2ef050ea",
+      "gitBlob": "915fca0d6ab3b3f15b82b8af1b84893cca6bd931"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/intelligence-contract.ts",
+      "sha256": "df78d1f5ba50fa15b99f0edee946d6a80b18a5b057b4c66a7b04018ee5512aa3",
+      "gitBlob": "b79aa0e922f45de30262a56c332909ff52684258"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/theme-tool-context.ts",
+      "sha256": "3e26dbec1200eb3f6b0056fa240a5c8e434a982b8c01909ef95d12335603d5b8",
+      "gitBlob": "1e23456c6ee63dbcb3b6e48e8c3b4f9a9608b18b"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/theme-tool-contract.ts",
+      "sha256": "18f7a768481c0b055af894c66c285f25b42e8bdaf3aed96258e271776fcd0efd",
+      "gitBlob": "8877e13e682820923c2030e4faca043f7d10582e"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/theme-tool-execution.ts",
+      "sha256": "f51c3b62cebc7951cbe2d9525fe2262cc8f53de375d47c5aed5d8c8193cfd7b4",
+      "gitBlob": "84f23dc30dfaa9af1ef23efca82f17df5dd73d52"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/tool-execution.ts",
+      "sha256": "01c6ca17441328a7496f7f7738fb5f050823ada856b24bfed0fd1f067c17748e",
+      "gitBlob": "960f9a335c0d9c698e37f9a25d9c8b879eff678d"
+    },
+    {
+      "file": "src/lib/orchestrator/conversation/tool-flags.ts",
+      "sha256": "24a32a29eee04f65ec07aadf5af3a2094a01b7a8a2c369c0b23902d64c8a2a28",
+      "gitBlob": "b3256f0a14516cc108fd58eb6240b7a9201803d5"
+    },
+    {
+      "file": "tests/conversation211-theme-tools.test.ts",
+      "sha256": "eb4e7c2ff9f2682bf576a559a269fe162a3cc3e73e841355ff13f54ab29be1a4",
+      "gitBlob": "03944266ec4def50d4b2d940f97e6c996273612c"
+    },
+    {
+      "file": "worker/handlers.ts",
+      "sha256": "b8a28d6dc9b47d567b55c1b15aa2156c259f5fb2a41fdbc0ccde9b85310a3358",
+      "gitBlob": "e1ca612c2a70d0f12dd3461f4add6bb5a61ce6b3"
+    }
+  ]
+}

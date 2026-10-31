@@ -1,7 +1,7 @@
 "use client";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { AiWait } from "../wait-time";
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { useEffect } from "react";
 import { Download, Megaphone, Plus, Trash2, Wand2 } from "lucide-react";
 import { api, Badge, Button, Card, Empty, Field, Input, Modal, Select, Textarea, useApi, useToast } from "../ui";
@@ -74,6 +74,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const objectives = svc ? SERVICE_OBJECTIVES : OBJECTIVES;
   const mainCta = (lang: Lang) => ctaList[lang][svc ? ({ booking: 0, quote: 1, call: 2, form: 4 } as const)[data?.services?.contactMode ?? "form"] ?? 4 : 0];
   const { data: list, reload } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
+  useEffect(()=>{const changed=(event:Event)=>{if((event as CustomEvent<{projectId?:string}>).detail?.projectId===id)void reload();};window.addEventListener('studio:campaigns-changed',changed);return()=>window.removeEventListener('studio:campaigns-changed',changed);},[id,reload]);
   const remove = async (c: Campaign) => {
     const posts = c.posts.length ? t(` Ses ${c.posts.length} publication(s) sont gardées.`, ` Its ${c.posts.length} post(s) are kept.`) : "";
     if (!window.confirm(t(`Supprimer la campagne « ${c.name} » ?`, `Delete the “${c.name}” campaign?`) + posts)) return;
@@ -82,6 +83,8 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
     reload();
   };
   const [edit, setEdit] = useState<Campaign | null>(null);
+  const openedCampaign=useRef<string|null>(null);
+  useEffect(()=>{const wanted=new URLSearchParams(window.location.search).get('campaignId');if(!wanted||openedCampaign.current===wanted)return;const existing=list?.campaigns.find(c=>c.id===wanted);if(existing){openedCampaign.current=wanted;setEdit(structuredClone(existing));}},[list]);
   const [picker, setPicker] = useState<number | null>(null);
   const [drafting, setDrafting] = useState(false);
   // « Nouvelle campagne » demandée depuis une autre rubrique : l'éditeur s'ouvre directement.

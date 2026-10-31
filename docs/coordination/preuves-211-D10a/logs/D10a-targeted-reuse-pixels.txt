@@ -1,0 +1,9 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d10a-video
+
+
+ Test Files  6 passed (6)
+      Tests  70 passed (70)
+   Start at  19:23:50
+   Duration  24.83s (tests 72%, import 15%, transform 12%)
+

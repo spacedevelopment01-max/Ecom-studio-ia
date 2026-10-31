@@ -1,0 +1,12 @@
+
+ RUN  v5.0.3 /workspace/reviews/ecom-211-lot-d9c-identity
+
+
+ Test Files  451 passed | 1 skipped (452)
+      Tests  3926 passed | 45 skipped (3971)
+   Start at  18:21:40
+   Duration  706.61s (tests 76%, import 23%, transform 1%)
+
+    Isolate  452 workers spawned · ~[CAP_PRIVE_OMIS] startup each (spawn + environment, per file)
+             at least ~[CAP_PRIVE_OMIS] faster with isolate: false — reuses workers across files instead of one per file
+

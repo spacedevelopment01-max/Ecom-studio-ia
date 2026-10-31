@@ -1,0 +1,1 @@
+{"schema":"211-D8-existing-test-collision-1","data":"isolated_fictitious","boundedSearchAttempts":467,"oldMutationLeavesTokenUnchanged":true,"unchangedTokenAccepted":true,"guaranteedDifferentTokenRejected":true,"cryptographicGuardUnchanged":true,"realProviderCalls":0,"noTokenExported":true}

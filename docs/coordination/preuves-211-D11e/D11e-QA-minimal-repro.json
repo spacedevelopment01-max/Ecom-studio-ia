@@ -1,0 +1,8 @@
+{
+  "syntheticOnly": true,
+  "realProviderCalls": 0,
+  "rootCause": "FAKE_AD_TRANSCRIPTION_CONTAINED_NON_RENDERED_CAPTION_AND_CTA",
+  "originalAccepted": false,
+  "exactTranscriptionAccepted": true,
+  "qualityGateUnchanged": true
+}

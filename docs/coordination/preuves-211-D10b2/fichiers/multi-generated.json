@@ -1,0 +1,325 @@
+{
+  "version": 1,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "aspect": "9:16",
+  "platform": "reels",
+  "safe": {
+    "top": 230,
+    "bottom": 384,
+    "side": 65
+  },
+  "clips": [
+    {
+      "id": "scene-1",
+      "shotId": "scene-1",
+      "label": "Scène 1",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "4ihte3lk1mil6enn",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "ov-text",
+          "name": "Texte à l'écran",
+          "role": "title",
+          "x": 65,
+          "y": 268.4,
+          "w": 950,
+          "h": 260,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Ma ligne\nDeux  espaces.",
+          "font": {
+            "family": "Playfair Display",
+            "weight": 500,
+            "size": 100,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.1,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 55
+          },
+          "shadow": {
+            "color": "rgba(0,0,0,0.65)",
+            "blur": 30,
+            "x": 0,
+            "y": 4
+          },
+          "anim": {
+            "in": "rise",
+            "delay": 0.25,
+            "dur": 0.325
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "cut",
+        "durationS": 0
+      },
+      "generated": true
+    },
+    {
+      "id": "scene-2",
+      "shotId": "scene-2",
+      "label": "Scène 2",
+      "part": null,
+      "durationS": 5,
+      "source": {
+        "kind": "video",
+        "assetId": "8y6qtt4b5yvc4jab",
+        "inS": 0,
+        "outS": 5,
+        "muted": true
+      },
+      "overlays": [
+        {
+          "id": "closing-brand",
+          "name": "Marque",
+          "role": "title",
+          "x": 65,
+          "y": 952.8,
+          "w": 237.6,
+          "h": 145.6,
+          "rotation": 0,
+          "opacity": 1,
+          "visible": true,
+          "locked": false,
+          "anchor": {
+            "h": "center",
+            "v": "middle"
+          },
+          "kind": "text",
+          "text": "Trait ouvert",
+          "font": {
+            "family": "Playfair Display",
+            "weight": 500,
+            "size": 92,
+            "italic": false
+          },
+          "color": "#FFFFFF",
+          "align": "center",
+          "lineHeight": 1.12,
+          "letterSpacing": 0,
+          "uppercase": false,
+          "autoFit": {
+            "minSize": 51
+          },
+          "shadow": null,
+          "anim": {
+            "in": "fade",
+            "delay": 1.7999999999999998,
+            "dur": 0.35
+          }
+        }
+      ],
+      "transitionIn": {
+        "kind": "fade",
+        "durationS": 0.4
+      },
+      "generated": true
+    }
+  ],
+  "subtitles": {
+    "style": {
+      "enabled": true,
+      "family": "Jost",
+      "weight": 700,
+      "size": 50,
+      "color": "#FFFFFF",
+      "background": null,
+      "position": "bottom",
+      "offsetY": 0,
+      "maxChars": 32,
+      "uppercase": false
+    },
+    "cues": []
+  },
+  "audio": {
+    "voice": [],
+    "voiceId": null,
+    "music": null,
+    "sfx": [],
+    "duckingDb": -10,
+    "loudnessLufs": -14
+  },
+  "brand": {
+    "palette": {
+      "primary": "#735B45",
+      "secondary": "#DBD6D1",
+      "accent": "#B4B074",
+      "light": "#F7F5F2",
+      "dark": "#1F1914"
+    },
+    "fonts": {
+      "heading": "Playfair Display",
+      "body": "Jost"
+    },
+    "name": "Trait ouvert"
+  },
+  "disclosure": null,
+  "meta": {
+    "intent": "social_content",
+    "source": "engine",
+    "createdFrom": null,
+    "runId": null,
+    "promo": false,
+    "ending": {
+      "kind": "last_clip",
+      "holdS": 3.2
+    },
+    "retakeCount": 0,
+    "retakeBudgetMicro": 0,
+    "editorial": {
+      "purpose": "organic",
+      "business": "products",
+      "subject": null,
+      "request": "Crée deux clips pour Presse de linogravure avec Source-multi.png, dix secondes.\nGarde deux  espaces.",
+      "editorial": null,
+      "identity": {
+        "name": "Trait ouvert",
+        "brand": {
+          "name": "Trait ouvert",
+          "nameStatus": "validated",
+          "alternatives": [],
+          "tagline": "Des objets à vivre.",
+          "positioning": "[À définir avec vous : pour qui, pour quel usage, avec quelle différence]",
+          "audience": "[À préciser]",
+          "personality": [],
+          "tone": {
+            "voice": "Clair, précis et chaleureux",
+            "do": [
+              "Parler concret",
+              "Citer les caractéristiques vérifiées"
+            ],
+            "dont": [
+              "Promettre sans preuve",
+              "Superlatifs vides"
+            ]
+          },
+          "palette": {
+            "primary": "#735B45",
+            "secondary": "#DBD6D1",
+            "accent": "#B4B074",
+            "light": "#F7F5F2",
+            "dark": "#1F1914"
+          },
+          "fonts": {
+            "heading": "playfair_display_n4",
+            "body": "jost_n4"
+          },
+          "logo": {
+            "concept": "Logotype typographique en Playfair Display",
+            "status": "proposed"
+          },
+          "story": "",
+          "values": [],
+          "direction": "souple",
+          "validated": [
+            "name"
+          ],
+          "generatedBy": "local"
+        },
+        "product": {
+          "name": "Presse de linogravure",
+          "nameStatus": "provided",
+          "category": "",
+          "sector": null,
+          "summary": "",
+          "facts": [
+            {
+              "key": "catalogue.option.0",
+              "label": "Finition",
+              "value": "Nuit",
+              "status": "confirmed",
+              "source": "user"
+            }
+          ],
+          "visual": {
+            "colors": []
+          },
+          "price": {
+            "amount": null,
+            "currency": "EUR",
+            "status": "unknown"
+          },
+          "variants": [
+            {
+              "name": "Finition",
+              "values": [
+                "Nuit"
+              ]
+            }
+          ],
+          "questions": [],
+          "claimsToAvoid": [],
+          "sources": [
+            {
+              "type": "photo",
+              "ref": "4tm7zlqmfnxu6czt",
+              "summary": "Référence native de la fiche désignée."
+            }
+          ],
+          "analyzedBy": "local",
+          "summaryStatus": "provided"
+        },
+        "services": {
+          "services": [],
+          "area": "",
+          "address": "",
+          "phone": "",
+          "email": "",
+          "hours": "",
+          "bookingUrl": "",
+          "contactMode": "form"
+        },
+        "settings": {
+          "mode": "autopilot",
+          "timezone": "Europe/Paris",
+          "autopublish": {
+            "enabled": false,
+            "networks": [],
+            "requireApprovalFor": []
+          },
+          "language": "fr"
+        }
+      },
+      "nativeBinding": {
+        "schema": 1,
+        "people": "none",
+        "references": [
+          {
+            "assetId": "4tm7zlqmfnxu6czt",
+            "version": 1,
+            "sha256": "5a9938f2b2e9c5ac59362ba029a9e5a2b0ba92498be2edd27e290b58296f324d"
+          }
+        ],
+        "product": {
+          "productId": "eyv09tpdmosi7k3h",
+          "version": 1,
+          "variant": {
+            "variantId": "9fkc34a9xmb2hg5q",
+            "version": 1
+          }
+        }
+      }
+    }
+  }
+}

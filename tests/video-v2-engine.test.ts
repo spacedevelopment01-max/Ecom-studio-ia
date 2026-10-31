@@ -11,6 +11,17 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+// Signature de clé vérifiée dans les documents de recette ; aucune clé réelle utilisée.
+// Les préfixes fournisseur ont une casse canonique ; id() crée des IDs minuscules.
+// Le /i global confondait un assetId commençant par « aiza » avec une clé Google.
+function containsProviderSecretSignature(value:string){return /sk-[A-Za-z0-9]{8}|AIza[0-9A-Za-z_-]{10}/.test(value)||/api[_-]?key/i.test(value);}
+it('signature de clé : un identifiant natif entièrement minuscule ne devient pas une clé Google',()=>{
+ const doc=JSON.stringify({audio:{voice:[{assetId:'aiza'+'x'.repeat(12)}]}});expect(containsProviderSecretSignature(doc)).toBe(false);
+});
+it('signature de clé : les préfixes canoniques et noms de champs secrets restent détectés',()=>{
+ for(const value of ['sk-'+'x'.repeat(32),'AIza'+'x'.repeat(35),'API_key','apiKey'])expect(containsProviderSecretSignature(JSON.stringify({value}))).toBe(true);
+});
+
 describe("Video Engine V2 — moteur et rendu", async () => {
   const { createUser } = await import("@/lib/auth");
   const { all, json, run } = await import("@/lib/db");
@@ -232,7 +243,7 @@ describe("Video Engine V2 — moteur et rendu", async () => {
 
   it("aucun secret ni consigne stockés : documents et mémoire des plans sans clé, sans prompt", async () => {
     const rows = all<{ doc_json: string }>("SELECT doc_json FROM video_documents");
-    for (const r of rows) expect(r.doc_json).not.toMatch(/sk-[A-Za-z0-9]{8}|AIza[0-9A-Za-z_-]{10}|api[_-]?key/i);
+    for (const r of rows) expect(containsProviderSecretSignature(r.doc_json)).toBe(false);
     const cols = all<{ name: string }>("PRAGMA table_info(video_shots)").map((c) => c.name);
     expect(cols).not.toContain("prompt");
     for (const r of rows) expect(r.doc_json).not.toMatch(/Same synthetic presenter|The product must remain exactly identical/);

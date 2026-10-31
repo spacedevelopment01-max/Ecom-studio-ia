@@ -1,0 +1,159 @@
+{
+  "code": "c6cbc69b4be33ea8c216c0887f2cd09a5a95c5ff",
+  "version": {
+    "commit": "c6cbc69b4be33ea8c216c0887f2cd09a5a95c5ff",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "fullSuite": {
+    "passed": 3688,
+    "skipped": 45,
+    "filesPassed": 427,
+    "filesSkipped": 1,
+    "durationSeconds": 723.34,
+    "logSha256": "4eb9781d755bde5ab84bbc26cd0e74152a42ffc96963c5955e08e453bd99391c"
+  },
+  "targeted": {
+    "passed": 25,
+    "files": 2,
+    "durationSeconds": 6.63,
+    "logSha256": "58856dd0e1c86c2b727e4aa844166104c7dfddb3d34c451cc7ea22edd3b89092"
+  },
+  "sourcesFrozen": {
+    "src/app/api/studio-agent/conversations/[cid]/research/route.ts": "4cdbb966b3ab4a0c298e7ef1b16c0dc925de9f93021d3499a338601fe80223e0",
+    "src/components/studio/conversation-research-tools.tsx": "b4512665b3a19c9fb28b0bb725d522b96509f0beaf6e94d100bde691bfff7d1d",
+    "src/lib/orchestrator/conversation/research-tool-contract.ts": "e36222e1dec423286a6aea2e99feb79301a8dfbc6091c17861d7a8ea8d4d50b6",
+    "src/lib/orchestrator/conversation/research-tool-execution.ts": "86e7eaf274dee5e8a13e95de4b9577625b957d808fd6260ddf78d836daa476ca",
+    "tests/conversation211-research.test.ts": "cc5d2f0651875534471f64cbaf1ac630ee74161afb9de7d3d358e682f0c38c6e",
+    "src/components/studio/conversation-panel.tsx": "7bc3c6cc4a43b305f8de4a225611fa9bcec650765383c25e5c9170667f6e7266",
+    "src/components/studio/marketing-strategy.tsx": "119095e3b67a632f1945a7bbda228941f0e89d423fd077537a0a02367b393353",
+    "src/lib/orchestrator/conversation/contract.ts": "6a1f6dc8e53d9650cce53e75b99a99d3c02c1d6229ffb2b55cf46184bca4e46f",
+    "src/lib/orchestrator/conversation/index.ts": "fe5512462406a518ddc5dd68dd68fc1fd4bc7794c4840ab6a1f8600bfc2048a9",
+    "src/lib/orchestrator/conversation/intelligence-context.ts": "d8470c3baa44d8dbbca2dc5b9f055f7809f94958c61736470357dae605b99b34",
+    "src/lib/orchestrator/conversation/intelligence-contract.ts": "e78279d3968ea332f24f10ca3e4961ac665cfdc613c82ba0d9dc0cdb4ea11477",
+    "src/lib/orchestrator/conversation/tool-execution.ts": "7d8e9caf01f516c232255556d06fe582404eddfc5f298118ae19f72ce372f1d0",
+    "src/lib/orchestrator/conversation/tool-flags.ts": "5b565206e08d6464ce3b2fcf28f50277b6ed1444efc507f93995dfbc53172cb6"
+  },
+  "types": "passed",
+  "build": "clean passed",
+  "browser": {
+    "schema": "agent211-D4-browser-proof-1",
+    "realBrowser": true,
+    "realProviderCalls": 0,
+    "realInternetConsultation": false,
+    "report": [
+      {
+        "scenario": "produit",
+        "viewport": {
+          "width": 1440,
+          "height": 960
+        },
+        "captures": [
+          "produit-demande-exacte.png",
+          "produit-action-proposee.png",
+          "produit-devis-plafond-natif.png",
+          "produit-resultat-natif.png",
+          "produit-etat-manuel-actualise.png",
+          "produit-sources-fictives-explicites.png",
+          "produit-hypothese-1-integrale.png",
+          "produit-hypothese-2-integrale.png",
+          "produit-hypothese-3-integrale.png",
+          "produit-hypothese-4-integrale.png",
+          "produit-hypothese-5-integrale.png",
+          "produit-resultat-390.png",
+          "produit-resultat-360.png",
+          "produit-reprise-autre-onglet.png",
+          "produit-echec-acquis-conserve.png",
+          "produit-conversation-reprise-apres-echec.png",
+          "produit-limite-native-sans-nouvel-accord.png"
+        ],
+        "checks": {
+          "nativeQuoteAndConsent": true,
+          "estimateHonestlyUnavailable": true,
+          "immutableResearch": true,
+          "sourceCollectionFictitiousAndPreacquired": true,
+          "realInternetConsultation": false,
+          "nativeSDKWithFakeHTTP": true,
+          "fiveHypothesesNotApproved": true,
+          "allFiveAnglesEntireTextVerified": true,
+          "noBrandMediaTheme": true,
+          "reloginAndReuseNoExtraCall": true,
+          "foreign404": true,
+          "csrf403": true,
+          "noOverflow390And360": true,
+          "failedCorrectionPreservesFirst": true,
+          "freeConversationContinuesAfterFailure": true,
+          "thirdAttemptRefusedBeforeQuoteAndConsent": true,
+          "manualProjectionRefreshed": true,
+          "noAutomaticRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "realProviderCalls": 0,
+        "video": "research-videos/produit.webm"
+      },
+      {
+        "scenario": "service",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "captures": [
+          "service-demande-exacte.png",
+          "service-action-proposee.png",
+          "service-devis-plafond-natif.png",
+          "service-resultat-natif.png",
+          "service-etat-manuel-actualise.png",
+          "service-sources-fictives-explicites.png",
+          "service-hypothese-1-integrale.png",
+          "service-hypothese-2-integrale.png",
+          "service-hypothese-3-integrale.png",
+          "service-hypothese-4-integrale.png",
+          "service-hypothese-5-integrale.png",
+          "service-resultat-390.png",
+          "service-resultat-360.png",
+          "service-reprise-autre-onglet.png",
+          "service-echec-acquis-conserve.png",
+          "service-conversation-reprise-apres-echec.png",
+          "service-limite-native-sans-nouvel-accord.png"
+        ],
+        "checks": {
+          "nativeQuoteAndConsent": true,
+          "estimateHonestlyUnavailable": true,
+          "immutableResearch": true,
+          "sourceCollectionFictitiousAndPreacquired": true,
+          "realInternetConsultation": false,
+          "nativeSDKWithFakeHTTP": true,
+          "fiveHypothesesNotApproved": true,
+          "allFiveAnglesEntireTextVerified": true,
+          "noBrandMediaTheme": true,
+          "reloginAndReuseNoExtraCall": true,
+          "foreign404": true,
+          "csrf403": true,
+          "noOverflow390And360": true,
+          "failedCorrectionPreservesFirst": true,
+          "freeConversationContinuesAfterFailure": true,
+          "thirdAttemptRefusedBeforeQuoteAndConsent": true,
+          "manualProjectionRefreshed": true,
+          "noAutomaticRetry": true,
+          "jsErrors": []
+        },
+        "simulatedCalls": 3,
+        "realProviderCalls": 0,
+        "video": "research-videos/service.webm"
+      }
+    ]
+  },
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "limits": [
+    "Sources collected before this test are entirely fictitious checkpoint data; no Internet consultation tested.",
+    "Native SDK and worker reach a simulated local HTTP provider only; no real strategy qualification.",
+    "Research hypotheses and legal availability remain unapproved. No downstream generation or angle quota consumption.",
+    "Cognitive context is an explicit index with exact observations; full native result remains in the UI.",
+    "Native lexical claim validator can refuse negative planning instructions mentioning reviews; separate targeted follow-up remains necessary.",
+    "No new website writing, brand/logo/media/catalog/SEO/blog/social/appointments/connections execution in this increment."
+  ]
+}
