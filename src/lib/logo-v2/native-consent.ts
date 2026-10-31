@@ -56,7 +56,7 @@ function assetPins(pid: string) { return all<{
     bytes = createHash('sha256').update(assetData(asset)).digest('hex');
 }
 catch {
-    bytes = 'unavailable';
+    fail('Un fichier logo acquis est indisponible : aucun nouvel achat.');
 } return { ...a, bytes }; }); }
 function routes() {
     const image = mediaRouteFor('logo', { text: true });

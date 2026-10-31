@@ -23,10 +23,9 @@ describe("Logo V2 — point d'accès", async () => {
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const req = (pid: string, body: object) => new Request(`http://localhost:3000/api/projects/${pid}/brand/logo-v2`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   const ctx = (pid: string) => ({ params: Promise.resolve({ id: pid }) }) as any;
-  const asset = (pid: string, userId: string, role: string, meta: object) => {
-    const aid = id();
-    run("INSERT INTO assets (id, project_id, user_id, kind, role, name, mime, storage_key, size, status, origin, meta, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", aid, pid, userId, "image", role, "logo.png", "image/png", `x/${aid}.png`, 1, "review", "generated", JSON.stringify(meta), now());
-    return aid;
+  const asset = async(pid:string,userId:string,role:string,meta:object)=>{
+    const {saveAsset}=await import('@/lib/library');const {artFixture}=await import('./logo-v2-fixtures');
+    return(await saveAsset({projectId:pid,userId,role,meta,origin:'generated',status:'review',name:'synthetic-logo.png',mime:'image/png',data:await artFixture(0,128)})).id;
   };
 
   it("style transmis ; nouvelle version : logo complet seulement, refusée en Découverte ; nom faux jamais choisi", async () => {
@@ -47,15 +46,15 @@ describe("Logo V2 — point d'accès", async () => {
     const savedSeries=one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND key=?",pid,'logo.native.consent.'+json<any>(jobRow.payload,{}).nativeLogoQuote)!;expect(JSON.parse(savedSeries.value).input.style).toBe('textured');
     run("UPDATE jobs SET status = 'done' WHERE id = ?", jobRow.id);
     expect((await route.POST(req(pid, { action: "generate", style: "baroque" }), ctx(pid))).status).toBe(400);
-    const built = asset(pid, u.id, "logo-v2", { engine: "logo-v2", territory: { name: "T" }, gate: { verdict: "FINAL" } });
+    const built = await asset(pid, u.id, "logo-v2", { engine: "logo-v2", territory: { name: "T" }, gate: { verdict: "FINAL" } });
     expect((await route.POST(req(pid, { action: "quote", operation:"redraw", assetId: built }), ctx(pid))).status).toBe(404);
-    const art = asset(pid, u.id, "logo-v2", { engine: "logo-v2", territory: { name: "T" }, artwork: { expected: { name: "x" } }, gate: { verdict: "FINAL" } });
+    const art = await asset(pid, u.id, "logo-v2", { engine: "logo-v2", territory: { name: "T" }, artwork: { expected: { name: "x" } }, gate: { verdict: "FINAL" } });
     const ok = await purchase({operation:"redraw",assetId:art,feedback:"plus chaud"});
     expect(ok.status).toBe(200);
     const redraw = one<{ id: string; payload: string }>("SELECT id, payload FROM jobs WHERE project_id = ? AND type = 'brand.logo.v2.redraw'", pid)!;
     const authorization=json<any>(redraw.payload,{});expect(authorization.nativeLogoQuote).toBeTruthy();const saved=one<{value:string}>("SELECT value FROM memory WHERE project_id=? AND key=?",pid,'logo.native.consent.'+authorization.nativeLogoQuote)!;expect(JSON.parse(saved.value).input).toMatchObject({assetId:art,feedback:'plus chaud'});
     run("UPDATE jobs SET status = 'done' WHERE id = ?", redraw.id);
-    const wrong = asset(pid, u.id, "logo-v2-trial", { engine: "logo-v2", territory: { name: "T" }, artwork: { expected: { name: "x" } }, gate: { verdict: "REJECTED", codes: ["name_mismatch"] } });
+    const wrong = await asset(pid, u.id, "logo-v2-trial", { engine: "logo-v2", territory: { name: "T" }, artwork: { expected: { name: "x" } }, gate: { verdict: "REJECTED", codes: ["name_mismatch"] } });
     expect((await route.POST(req(pid, { action: "choose", assetId: wrong }), ctx(pid))).status).toBe(404);
     // Découverte : aucune image payée.
     run("UPDATE subscriptions SET plan = NULL, status = 'canceled' WHERE user_id = ?", u.id);
