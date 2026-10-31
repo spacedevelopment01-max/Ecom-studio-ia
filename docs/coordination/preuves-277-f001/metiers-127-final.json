@@ -1,0 +1,26 @@
+{
+  "schema": "integration277-business-compiled-1",
+  "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "media": "technical_synthetic_not_creative_quality",
+  "externalPublication": false,
+  "realSmtp": false,
+  "bindHost": "127.0.0.1",
+  "cases": [],
+  "version": {
+    "commit": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "publicHosting": {
+    "mode": "actual_host_http",
+    "rootStatus": 404,
+    "galleryStatus": 404
+  },
+  "passed": false,
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n404 !== 200\n",
+  "unhandledRejections": 0
+}

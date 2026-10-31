@@ -1,0 +1,44 @@
+{
+  "head": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "base": "70204a7ff83eb2382835a27a37a8465c0851a70a",
+  "testMerge": "3b3421002ee3bb940188e199274c76feb7ab0d6f",
+  "headTree": "3821e921eacbd68ece5061442e5e6390af966506",
+  "testMergeTree": "3821e921eacbd68ece5061442e5e6390af966506",
+  "equalTree": true,
+  "actuallyMerged": false,
+  "run": {
+    "id": 41185167523,
+    "head": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+    "status": "in_progress",
+    "conclusion": null
+  },
+  "jobs": [
+    {
+      "id": 124490517092,
+      "name": "Types et suite complète (réseau fournisseur interdit)",
+      "status": "completed",
+      "conclusion": "success",
+      "current": []
+    },
+    {
+      "id": 124490517274,
+      "name": "Theme Check, build et recettes natives compilées",
+      "status": "in_progress",
+      "conclusion": null,
+      "current": [
+        "Clips IA et voix SYNA depuis le Studio compilé (fournisseurs HTTP simulés)"
+      ]
+    },
+    {
+      "id": 124490517275,
+      "name": "Image Docker (construction et démarrage)",
+      "status": "completed",
+      "conclusion": "success",
+      "current": []
+    }
+  ],
+  "unitSummary": [
+    "2026-10-31T09:09:35.8129274Z  Test Files  511 passed | 1 skipped (512)",
+    "2026-10-31T09:09:35.8163758Z       Tests  4467 passed | 31 skipped (4498)"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "serverBind": "127.0.0.1",
+  "cases": [
+    {
+      "headers": {
+        "host": "agence-fictive-277-2.sites.recette.test"
+      },
+      "status": 404,
+      "body": "Not Found"
+    },
+    {
+      "headers": {
+        "host": "agence-fictive-277-2.sites.recette.test:39455"
+      },
+      "status": 404,
+      "body": "Not Found"
+    },
+    {
+      "headers": {
+        "host": "agence-fictive-277-2.sites.recette.test",
+        "x-forwarded-host": "agence-fictive-277-2.sites.recette.test",
+        "x-forwarded-proto": "http"
+      },
+      "status": 404,
+      "body": "Not Found"
+    },
+    {
+      "headers": {
+        "host": "agence-fictive-277-2.sites.recette.test:3943",
+        "x-forwarded-proto": "https"
+      },
+      "status": 500,
+      "body": "Internal Server Error"
+    },
+    {
+      "headers": {
+        "host": "agence-fictive-277-2.sites.recette.test",
+        "x-forwarded-proto": "https"
+      },
+      "status": 500,
+      "body": "Internal Server Error"
+    }
+  ],
+  "realProviderCalls": 0
+}

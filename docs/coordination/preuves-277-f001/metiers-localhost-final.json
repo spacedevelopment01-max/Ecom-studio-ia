@@ -1,0 +1,143 @@
+{
+  "schema": "integration277-business-compiled-1",
+  "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "realProviderCalls": 0,
+  "realCostEur": 0,
+  "media": "technical_synthetic_not_creative_quality",
+  "externalPublication": false,
+  "realSmtp": false,
+  "bindHost": "localhost",
+  "cases": [
+    {
+      "label": "agence",
+      "path": "/",
+      "status": 200,
+      "width": 1440,
+      "scroll": 1440,
+      "text": 1783,
+      "broken": 0
+    },
+    {
+      "label": "agence",
+      "path": "/pages/acheter",
+      "status": 200,
+      "width": 1440,
+      "scroll": 1440,
+      "text": 1174,
+      "broken": 0
+    },
+    {
+      "label": "agence",
+      "path": "/pages/louer",
+      "status": 200,
+      "width": 1440,
+      "scroll": 1440,
+      "text": 1126,
+      "broken": 0
+    },
+    {
+      "label": "agence",
+      "path": "/",
+      "status": 200,
+      "width": 390,
+      "scroll": 390,
+      "text": 1685,
+      "broken": 0
+    },
+    {
+      "label": "agence",
+      "path": "/pages/acheter",
+      "status": 200,
+      "width": 390,
+      "scroll": 390,
+      "text": 1074,
+      "broken": 0
+    },
+    {
+      "label": "agence",
+      "path": "/pages/louer",
+      "status": 200,
+      "width": 390,
+      "scroll": 390,
+      "text": 1026,
+      "broken": 0
+    },
+    {
+      "label": "service",
+      "path": "/",
+      "status": 200,
+      "width": 1440,
+      "scroll": 1440,
+      "text": 1284,
+      "broken": 0
+    },
+    {
+      "label": "service",
+      "path": "/pages/realisations",
+      "status": 200,
+      "width": 1440,
+      "scroll": 1440,
+      "text": 488,
+      "broken": 0
+    },
+    {
+      "label": "service",
+      "path": "/",
+      "status": 200,
+      "width": 390,
+      "scroll": 390,
+      "text": 1193,
+      "broken": 0
+    },
+    {
+      "label": "service",
+      "path": "/pages/realisations",
+      "status": 200,
+      "width": 390,
+      "scroll": 390,
+      "text": 397,
+      "broken": 0
+    }
+  ],
+  "version": {
+    "commit": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+    "commitOrigin": "build",
+    "mode": "production",
+    "tree": "clean",
+    "source": "compiled-build"
+  },
+  "publicHosting": {
+    "mode": "actual_host_http",
+    "rootStatus": 200,
+    "galleryStatus": 200
+  },
+  "contact": {
+    "status": 200,
+    "rows": 1,
+    "kind": "devis",
+    "notification": "queued",
+    "realEmailSent": false
+  },
+  "nativeChecksPassed": true,
+  "passed": true,
+  "status": "PASSED",
+  "rights": {
+    "foreign": 404,
+    "anonymous": 401,
+    "csrf": 403,
+    "missingConfirm": 428,
+    "staleVersion": 409,
+    "siteHostStudio": 404
+  },
+  "publication": {
+    "localOnly": true,
+    "changedAfterRepublish": true,
+    "restored": true
+  },
+  "reservation": {
+    "localOnly": true,
+    "status": 201,
+    "rows": 1
+  },
+  "unhandledRejections": 0
+}

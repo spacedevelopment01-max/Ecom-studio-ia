@@ -1,0 +1,273 @@
+{
+  "candidate": "f0019338a4b975f2daabc8ee912a339c2107b2b7",
+  "realProviderCalls": 0,
+  "cases": [
+    {
+      "passed": true,
+      "scene": "mono",
+      "nativeSource": "07u2ocxxslhlkn6k",
+      "selected": "x3na4cq8r1uv98p6",
+      "applied": "u2sxll7w1a6rxe6y",
+      "nativeJob": "4lfr7lqr96p2jjlq",
+      "kit": {
+        "main": "g6g8pamclocmsyl7",
+        "directionId": "t1",
+        "identityHash": "c74fd4420069f007",
+        "brandHash": "c806a96b52d1d8df",
+        "revision": 3,
+        "files": [
+          {
+            "id": "g6g8pamclocmsyl7",
+            "version": 1,
+            "role": "logo",
+            "sha256": "846e730597eed34b7c99b99f86a2edebf6368380ed8a5701f12054e0a7e29564"
+          },
+          {
+            "id": "m6k8104x2zrpvlve",
+            "version": 1,
+            "role": "logo-light",
+            "sha256": "9d8d2a684f2bbd2d876c413a9d9e6dd5138453b143ce114f2c51648f99ca1117"
+          },
+          {
+            "id": "oml05bfgf8vs0l6w",
+            "version": 1,
+            "role": "logo-mono",
+            "sha256": "484cb8f8fbbec8e0c42b95dd2b60a7aa7a4b4beb295a56f2383b90a60e184cda"
+          },
+          {
+            "id": "h8g0tijyqkfqjtnl",
+            "version": 1,
+            "role": "logo-white",
+            "sha256": "2b8d388cbafb1a287d0bb6ecd9c83711a3c30d8f94ae01d8b32c1f50cd71b90f"
+          },
+          {
+            "id": "fru7jadesf6c3uxq",
+            "version": 1,
+            "role": "logo-mark",
+            "sha256": "e26ae0c8d112e770a2f4e7d5433d32773059f5d060b776e3929a073fe0a34d0a"
+          },
+          {
+            "id": "w4oaqv49zujy7qjo",
+            "version": 1,
+            "role": "favicon",
+            "sha256": "1a1490d4611de96f4a87be62017e7e38d1639f3c4733a9febfa0e6b773e867f1"
+          },
+          {
+            "id": "65cq4dpfpabq2oc2",
+            "version": 1,
+            "role": "brand-board",
+            "sha256": "3be9b34b35bd99459e4482f8c0491fdcf3b1219b1a4980e90d5efa07cf358ad4"
+          },
+          {
+            "id": "7d0ahcwe706v22j0",
+            "version": 1,
+            "role": "brand-guide",
+            "sha256": "d3e6a9ea0da517d03a94e37317a8a232780d79452afe85feaa11b620201f2ef6"
+          },
+          {
+            "id": "75wipq9uhqv3ic7x",
+            "version": 1,
+            "role": "brand-book",
+            "sha256": "f9536b63192bdc805f6f0cdc2d675996e3235febbff7d980029d2c773fc5c28f"
+          }
+        ]
+      },
+      "firstChoiceDoesNotChangeIdentity": true,
+      "twoSeparateConsents": true,
+      "quoteCreatesNoJob": true,
+      "assetsBefore": 9,
+      "assetsAfter": 36,
+      "duplicateSameJob": true,
+      "creditExhaustedLocalKitWorks": true,
+      "reopened": true,
+      "filesDownloadedAndHashed": 9,
+      "themeUnchanged": true,
+      "noInitialContentStarted": true,
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    },
+    {
+      "passed": true,
+      "scene": "services",
+      "nativeSource": "6eues9097rpr9azy",
+      "selected": "wpi9cdludc43589d",
+      "applied": "v4en3jhzrpgs2a5i",
+      "nativeJob": "rezv4094dbotuy6e",
+      "kit": {
+        "main": "xa50spo5nic9nq3t",
+        "directionId": "t1",
+        "identityHash": "c74fd4420069f007",
+        "brandHash": "39b9384e0a58e9b7",
+        "revision": 3,
+        "files": [
+          {
+            "id": "xa50spo5nic9nq3t",
+            "version": 1,
+            "role": "logo",
+            "sha256": "1ba0c6289cb138bcd81822c7ac3a952db7cd24ded3726007f52da9bdaed9fce0"
+          },
+          {
+            "id": "bmv8m186l4arbv44",
+            "version": 1,
+            "role": "logo-light",
+            "sha256": "2f1334c017fd63bc4ebd8f59f7bddb238409d62272892e6ae089f85a36f2fa52"
+          },
+          {
+            "id": "k25tv4mpm9xbt61j",
+            "version": 1,
+            "role": "logo-mono",
+            "sha256": "ab705e267fa373b51cd7e7f786161042477b4c1cc4b771706d0685aac29c832e"
+          },
+          {
+            "id": "uktgslpy5czw9qbk",
+            "version": 1,
+            "role": "logo-white",
+            "sha256": "9fa722fac1a0abc3ee2dbf2701a6f32ea81df69a0d436b9de52e07593d986779"
+          },
+          {
+            "id": "tviec5tzb6chhn5e",
+            "version": 1,
+            "role": "logo-mark",
+            "sha256": "1815588ebcbcb5fabe11201fac8ab315379be57ee45816b85845037e58e46de0"
+          },
+          {
+            "id": "tj2w39nug6r8v9cb",
+            "version": 1,
+            "role": "favicon",
+            "sha256": "fc19a852ae9645c79a6ae415a9fb67f9017f5857dbe7982f4ce061111e433fe1"
+          },
+          {
+            "id": "fkbsp7dexkiu8k65",
+            "version": 1,
+            "role": "brand-board",
+            "sha256": "cf2c75e8af44de6e33e74d6ac0a249ec07f919c32890d2eafb5c55bc32b75f50"
+          },
+          {
+            "id": "16274v5chc76k592",
+            "version": 1,
+            "role": "brand-guide",
+            "sha256": "e78eeb42835a82df9e557ee451fd7bb029441167d0962dc0258ddf70a6410897"
+          },
+          {
+            "id": "pukegv8qexmhaj1m",
+            "version": 1,
+            "role": "brand-book",
+            "sha256": "b121e282773da0e3e0826808ce921d1f830e5ccc336dfc507941d84b78952ff6"
+          }
+        ]
+      },
+      "firstChoiceDoesNotChangeIdentity": true,
+      "twoSeparateConsents": true,
+      "quoteCreatesNoJob": true,
+      "assetsBefore": 9,
+      "assetsAfter": 36,
+      "duplicateSameJob": true,
+      "creditExhaustedLocalKitWorks": true,
+      "reopened": true,
+      "filesDownloadedAndHashed": 9,
+      "themeUnchanged": true,
+      "noInitialContentStarted": true,
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    },
+    {
+      "passed": true,
+      "scene": "inedit",
+      "nativeSource": "l3hin9q603b0p7ht",
+      "selected": "g6ak64avj09sz2ls",
+      "applied": "lru3kseq4b5grkye",
+      "nativeJob": "rhgjw9gnf37vsvev",
+      "kit": {
+        "main": "b6ka88xd6zp857vn",
+        "directionId": "t1",
+        "identityHash": "c74fd4420069f007",
+        "brandHash": "5f5435b7177a300c",
+        "revision": 3,
+        "files": [
+          {
+            "id": "b6ka88xd6zp857vn",
+            "version": 1,
+            "role": "logo",
+            "sha256": "80caa3ccb090f5f713aeb0dbd7457a1ea6484e4ce5006ee15b4af6d7bce16410"
+          },
+          {
+            "id": "ldj4qvhf261cejux",
+            "version": 1,
+            "role": "logo-light",
+            "sha256": "342acf9a3db7f236a12839121f896011e48b15f4351a0346f88bd252462f1da9"
+          },
+          {
+            "id": "wxlnthc9h9fd3skg",
+            "version": 1,
+            "role": "logo-mono",
+            "sha256": "30503e93ec5b41a6e29df2558cf4c926f653cdae50e3c4fc5db24ef9522fc2b2"
+          },
+          {
+            "id": "gwfpzqv02nxtk4d2",
+            "version": 1,
+            "role": "logo-white",
+            "sha256": "ff7ce19a0767fda0f9d88cf45c81f721b19056bf76daed78fdf7a3770288a3db"
+          },
+          {
+            "id": "wq8t4d1jtzwvg4wl",
+            "version": 1,
+            "role": "logo-mark",
+            "sha256": "0e9b0a9c86e21f6779d61609a2908e4268aaa83203d95ee72a9c86c974639c6c"
+          },
+          {
+            "id": "9pbj56zbcpcj3g2u",
+            "version": 1,
+            "role": "favicon",
+            "sha256": "9a24bdc6d83a26071ec170ce57f776a1350fd3cda68dde1eb8b539ca7b5c71e4"
+          },
+          {
+            "id": "d3mkjox4gncqf3uc",
+            "version": 1,
+            "role": "brand-board",
+            "sha256": "7d0ae014752e10e90187582c46662d5cc922fce293dc3e33e1ec0e436c905b14"
+          },
+          {
+            "id": "n0mo0o1043stw65s",
+            "version": 1,
+            "role": "brand-guide",
+            "sha256": "eb0fa0f9383dd394499b785fa88e8622ca5907c5e6aa0d6a4ddf4d05fbc947f9"
+          },
+          {
+            "id": "c90b17zoicn0z6qk",
+            "version": 1,
+            "role": "brand-book",
+            "sha256": "693c4c36bf96f56b2ae89fe38394732228fbb89dead97f72e5e8cc0f6cc9578b"
+          }
+        ]
+      },
+      "firstChoiceDoesNotChangeIdentity": true,
+      "twoSeparateConsents": true,
+      "quoteCreatesNoJob": true,
+      "assetsBefore": 9,
+      "assetsAfter": 36,
+      "duplicateSameJob": true,
+      "creditExhaustedLocalKitWorks": true,
+      "reopened": true,
+      "filesDownloadedAndHashed": 9,
+      "themeUnchanged": true,
+      "noInitialContentStarted": true,
+      "auth": 401,
+      "foreign": 404,
+      "csrf": 403,
+      "forged": 400,
+      "realProviderCalls": 0,
+      "realCostEur": 0,
+      "creativeQualityQualified": false
+    }
+  ]
+}
