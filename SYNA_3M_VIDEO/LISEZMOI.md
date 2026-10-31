@@ -1,4 +1,4 @@
-# Film de démonstration « 3M Plâtrerie Peinture × Syna » (58,5 s) — voix grave, sous-titres, paysage et story
+# Film de démonstration « 3M Plâtrerie Peinture × Syna » (62,9 s) — voix « ash », sous-titres, paysage et story
 
 Vidéo de présentation d'E-COM STUDIO IA en 3D isométrique, tout en blanc, avec le studio ouvert dans un onglet de
 navigateur sur un ordinateur portable (version 3, après deux retours du propriétaire : plus de rythme, plus d'animation, et Syna qui fait quatre
@@ -20,8 +20,8 @@ tous dans la même ligne de marque, puis modifie le site sur simple demande.
 - Plan du film : `projet/SPEC.md` ; relecture et limites connues : `projet/REVIEW.md`.
 
 ## Ce qui a coûté et ce qui est gratuit
-- Voix off : OpenAI `gpt-4o-mini-tts`, voix grave « onyx » (version actuelle, demandée par le propriétaire ; les
-  versions précédentes utilisaient la voix « cedar ») (accord écrit du propriétaire, budget annoncé < 0,05 $),
+- Voix off : OpenAI `gpt-4o-mini-tts`, voix « ash » sur un ton joyeux (choisie par le propriétaire parmi 8 exemples ;
+  versions précédentes : « cedar » puis « onyx ») (accord écrit du propriétaire, budget annoncé < 0,05 $),
   vérifiée par transcription OpenAI `whisper-1`. Dépense totale estimée : environ 0,02 $. Version 3 : voix
   accélérée de 12 % sur l'ordinateur et une nouvelle réplique sur les modifications (env. 0,003 $) ; total du film
   environ 0,03 $, sous le plafond de 0,05 $ accepté.
@@ -40,3 +40,8 @@ exemples créés pour le film.
 Répliques régénérées avec la voix « onyx » (accord écrit du propriétaire, environ 0,02 $ avec la vérification de la
 prononciation) ; total du film depuis le début : environ 0,05 $. Repères et sous-titres recalculés depuis la
 transcription (`assets/cues.js`, `assets/captions.js`) ; `gen-index.py` régénère `index.html`.
+
+## Voix « ash » (version actuelle)
+Après la voix « onyx » (jugée manquer de joie), le propriétaire a écouté 8 exemples (environ 0,01 $) et choisi « ash ».
+Narration refaite sur un ton joyeux (environ 0,025 $ avec deux essais de la première phrase et les vérifications de
+prononciation) ; film de 62,9 s. Total du film depuis le début : environ 0,09 $.
